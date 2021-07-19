@@ -21,14 +21,13 @@ using namespace ftm;
 class MergeTreeVisualization : virtual public Debug {
 protected:
   // Visualization parameters
-  bool PlanarLayout = false;
-  bool BranchDecompositionPlanarLayout = false;
-  double BranchSpacing = 1.;
-  bool RescaleTreesIndividually = false;
-  double ImportantPairs = 50.; // important pairs threshold
-  double ImportantPairsSpacing = 1.;
-  double NonImportantPairsSpacing = 1.;
-  double NonImportantPairsProximity = 0.05;
+  bool branchDecompositionPlanarLayout_ = false;
+  double branchSpacing_ = 1.;
+  bool rescaleTreesIndividually_ = false;
+  double importantPairs_ = 50.; // important pairs threshold
+  double importantPairsSpacing_ = 1.;
+  double nonImportantPairsSpacing_ = 1.;
+  double nonImportantPairsProximity_ = 0.05;
 
 public:
   MergeTreeVisualization() = default;
@@ -38,29 +37,26 @@ public:
   // Getter / Setter
   // ==========================================================================
   // Visualization parameters
-  void setPlanarLayout(bool b) {
-    PlanarLayout = b;
-  }
   void setBranchDecompositionPlanarLayout(bool b) {
-    BranchDecompositionPlanarLayout = b;
+    branchDecompositionPlanarLayout_ = b;
   }
   void setBranchSpacing(double d) {
-    BranchSpacing = d;
+    branchSpacing_ = d;
   }
   void setRescaleTreesIndividually(bool b) {
-    RescaleTreesIndividually = b;
+    rescaleTreesIndividually_ = b;
   }
   void setImportantPairs(double d) {
-    ImportantPairs = d;
+    importantPairs_ = d;
   }
   void setImportantPairsSpacing(double d) {
-    ImportantPairsSpacing = d;
+    importantPairsSpacing_ = d;
   }
   void setNonImportantPairsSpacing(double d) {
-    NonImportantPairsSpacing = d;
+    nonImportantPairsSpacing_ = d;
   }
   void setNonImportantPairsProximity(double d) {
-    NonImportantPairsProximity = d;
+    nonImportantPairsProximity_ = d;
   }
 
   // ==========================================================================
@@ -88,9 +84,9 @@ public:
 
     // Compute gap
     float nonImportantPairsGap
-      = (rootYmax - rootYmin) * 0.05 * NonImportantPairsSpacing;
+      = (rootYmax - rootYmin) * 0.05 * nonImportantPairsSpacing_;
     float importantPairsGap
-      = std::max(nonImportantPairsGap, (float)ImportantPairsSpacing);
+      = std::max(nonImportantPairsGap, (float)importantPairsSpacing_);
 
     // Some functions
     auto compLowerPers = [&](const ftm::idNode a, const ftm::idNode b) {
@@ -139,27 +135,27 @@ public:
           float nodeSpacing = 0;
           if(i > 0) {
             if(tree->isImportantPair<dataType>(
-                 nodeBranchingVector[i], ImportantPairs)) {
+                 nodeBranchingVector[i], importantPairs_)) {
               nodeSpacing = importantPairsGap;
             } else if(tree->isImportantPair<dataType>(
-                        nodeBranchingVector[i - 1], ImportantPairs)) {
-              nodeSpacing = NonImportantPairsProximity;
+                        nodeBranchingVector[i - 1], importantPairs_)) {
+              nodeSpacing = nonImportantPairsProximity_;
               // prevX =
             } else {
               nodeSpacing = nonImportantPairsGap;
             }
           } else if(not tree->isImportantPair<dataType>(
-                      nodeBranchingVector[i], ImportantPairs)
+                      nodeBranchingVector[i], importantPairs_)
                     and tree->isImportantPair<dataType>(
-                      nodeOrigin, ImportantPairs))
-            nodeSpacing = NonImportantPairsProximity;
+                      nodeOrigin, importantPairs_))
+            nodeSpacing = nonImportantPairsProximity_;
           float newMin = prevX + nodeSpacing;
           float shiftX = newMin - oldMin;
 
           // Set y coordinate according difference in persistence
           dataType nodeBranchingIPers
             = tree->getNodePersistence<dataType>(nodeBranchingI);
-          float shiftY = nodeBranchingIPers * BranchSpacing;
+          float shiftY = nodeBranchingIPers * branchSpacing_;
           float diffY = retVec[treeSimplexId[nodeBranchingI] * 2 + 1];
           retVec[treeSimplexId[nodeBranchingI] * 2 + 1]
             = retVec[treeSimplexId[nodeOrigin] * 2 + 1] - shiftY;
@@ -190,12 +186,12 @@ public:
           // Update x base for next iteration
           prevX = std::get<1>(allNodeSpanX[nodeBranchingI]);
           if(tree->isImportantPair<dataType>(
-               nodeBranchingVector[i], ImportantPairs)) {
+               nodeBranchingVector[i], importantPairs_)) {
             lastIndexImportant = i;
             prevX = std::get<1>(allNodeImportantSpanX[nodeBranchingI]);
             if(i < nodeBranchingVector.size() - 1
                and not tree->isImportantPair<dataType>(
-                 nodeBranchingVector[i + 1], ImportantPairs)) {
+                 nodeBranchingVector[i + 1], importantPairs_)) {
               float spanMin = std::get<0>(allNodeSpanX[nodeBranchingVector[0]]);
               float spanMax = std::get<1>(
                 allNodeImportantSpanX[nodeBranchingVector[lastIndexImportant]]);
@@ -350,11 +346,11 @@ public:
     }
     auto newBounds = std::make_tuple(x_min, x_max, y_min, y_max, 0, 0);
 
-    // TODO correctly manage diff and offset if RescaleTreesIndividually
+    // TODO correctly manage diff and offset if rescaleTreesIndividually_
     double diff = std::max((std::get<1>(oldBounds) - std::get<0>(oldBounds)),
                            (std::get<3>(oldBounds) - std::get<2>(oldBounds)));
     double offset = std::max(std::get<0>(oldBounds), std::get<2>(oldBounds));
-    if(not RescaleTreesIndividually) {
+    if(not rescaleTreesIndividually_) {
       // diff *= getNodePersistence<dataType>(tree, treeRoot) / refPersistence;
       diff = tree->getNodePersistence<dataType>(treeRoot);
       offset = tree->getBirth<dataType>(treeRoot);
@@ -386,7 +382,7 @@ public:
     // ----------------------------------------------------
     // Call Branch Decomposition Planar Layout if asked
     // ----------------------------------------------------
-    if(BranchDecompositionPlanarLayout) {
+    if(branchDecompositionPlanarLayout_) {
       treePlanarLayoutBDImpl<dataType>(
         tree, retVec, treeSimplexId, branching, nodeBranching);
       return retVec;
@@ -536,22 +532,22 @@ public:
       for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         bool isSubBranchImportant
-          = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
+          = tree->isImportantPair<dataType>(branchNodeOrigin, importantPairs_);
         if(not isSubBranchImportant)
           allBranchOriginsSize[nodeOrigin]
             += allBranchOriginsSize[branchNodeOrigin];
       }
 
-      if(tree->isImportantPair<dataType>(nodeOrigin, ImportantPairs))
+      if(tree->isImportantPair<dataType>(nodeOrigin, importantPairs_))
         maxSize = std::max(maxSize, allBranchOriginsSize[nodeOrigin]);
     }
     double nonImportantPairsGap
-      = (rootYmax - rootYmin) * 0.005 * NonImportantPairsSpacing;
+      = (rootYmax - rootYmin) * 0.005 * nonImportantPairsSpacing_;
     double importantPairsGap = (maxSize)*nonImportantPairsGap * 1.05;
-    bool customImportantPairsSpacing
-      = importantPairsGap < ImportantPairsSpacing;
-    if(customImportantPairsSpacing)
-      importantPairsGap = ImportantPairsSpacing;
+    bool customimportantPairsSpacing_
+      = importantPairsGap < importantPairsSpacing_;
+    if(customimportantPairsSpacing_)
+      importantPairsGap = importantPairsSpacing_;
 
     // ----- Positioning of branches and avoid conflict
     for(auto leaf : leaves)
@@ -571,7 +567,7 @@ public:
         ftm::idNode branchNode = tree->getNode(branchNodeOrigin)->getOrigin();
 
         bool isSubBranchImportant
-          = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
+          = tree->isImportantPair<dataType>(branchNodeOrigin, importantPairs_);
         bool toLeft = not isSubBranchImportant;
 
         // float branchNodeOriginXmin =
@@ -627,7 +623,7 @@ public:
                   previousbranchNodeOriginXmax
                     - retVec[treeSimplexId[branchNode] * 2];
             bool isSubBranchImportant = tree->isImportantPair<dataType>(
-              branchNodeOrigin, ImportantPairs);
+              branchNodeOrigin, importantPairs_);
             shift += (isLeft ? -1 : 1)
                      * (isSubBranchImportant ? importantPairsGap
                                              : nonImportantPairsGap);
@@ -656,7 +652,7 @@ public:
     // branches and we also need to manage to avoid conflict with this new gap.
     // Get real gap
     double realImportantPairsGap = std::numeric_limits<double>::lowest();
-    /*if(customImportantPairsSpacing)
+    /*if(customimportantPairsSpacing_)
       realImportantPairsGap = importantPairsGap;
     else{
       for(auto leaf : leaves)
@@ -669,7 +665,7 @@ public:
     for the others
 
         bool isBranchImportant = isImportantPair<dataType>(tree, nodeOrigin,
-    ImportantPairs); if(not isBranchImportant) continue;
+    importantPairs_); if(not isBranchImportant) continue;
 
         double gap = retVec[treeSimplexId[node]*2] -
     std::get<0>(allBranchBounds[nodeOrigin]); realImportantPairsGap =
@@ -688,19 +684,19 @@ public:
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
       bool isBranchImportant
-        = tree->isImportantPair<dataType>(nodeOrigin, ImportantPairs);
+        = tree->isImportantPair<dataType>(nodeOrigin, importantPairs_);
       if(not isBranchImportant)
         continue;
 
       for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         bool isSubBranchImportant
-          = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
+          = tree->isImportantPair<dataType>(branchNodeOrigin, importantPairs_);
         double shift = 0;
         if(not isSubBranchImportant) {
           double gap = retVec[treeSimplexId[node] * 2]
                        - std::get<0>(allBranchBounds[nodeOrigin]);
-          shift = -(realImportantPairsGap - gap) * NonImportantPairsProximity;
+          shift = -(realImportantPairsGap - gap) * nonImportantPairsProximity_;
         } else {
           shift = -(
             importantPairsGap

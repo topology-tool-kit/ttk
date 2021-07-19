@@ -33,6 +33,7 @@ using namespace ftm;
 class ttkMergeTreeVisualization : public MergeTreeVisualization {
 private:
   // Visualization parameters
+  bool PlanarLayout = false;
   double DimensionSpacing = 1.;
   int DimensionToShift = 0;
   bool OutputSegmentation = false;
@@ -84,6 +85,9 @@ public:
   // Getter / Setter
   // ==========================================================================
   // Visualization parameters
+  void setPlanarLayout(bool b) {
+    PlanarLayout = b;
+  }
   void setDimensionSpacing(double d) {
     DimensionSpacing = d;
   }
@@ -734,7 +738,7 @@ public:
           }
 
           // TODO too many dummy nodes are created
-          bool dummyNode = PlanarLayout and not BranchDecompositionPlanarLayout
+          bool dummyNode = PlanarLayout and not branchDecompositionPlanarLayout_
                            and !trees[i]->isRoot(node)
             /*and !isLeaf(trees[i], node)
             and isBranchOrigin(trees[i], node)*/
@@ -760,10 +764,10 @@ public:
             ftm::idNode nodeParent = trees[i]->getParentSafe(node);
             // TODO too many dummy cells are created
             bool dummyCell = PlanarLayout
-                             and not BranchDecompositionPlanarLayout
+                             and not branchDecompositionPlanarLayout_
                              and treeBranching[node] == nodeParent
                              and !trees[i]->isRoot(nodeParent);
-            if(PlanarLayout and BranchDecompositionPlanarLayout) {
+            if(PlanarLayout and branchDecompositionPlanarLayout_) {
               pointIds[1] = treeSimplexId[treeBranching[node]];
             } else if(dummyCell) {
               double dummyPoint[3]
@@ -820,7 +824,7 @@ public:
               if(verbose > 2)
                 printMsg("// Push arc persistence", debug::Priority::VERBOSE);
               idNode nodeToGetPers = treeBranching[node];
-              if(PlanarLayout and BranchDecompositionPlanarLayout)
+              if(PlanarLayout and branchDecompositionPlanarLayout_)
                 nodeToGetPers = node;
               double persToAdd
                 = trees[i]->getNodePersistence<dataType>(nodeToGetPers);
@@ -829,7 +833,7 @@ public:
               // Add arc persistence barycenter
               if(clusteringOutput and ShiftMode != 1) {
                 idNode nodeToGet = treeBranching[node];
-                if(PlanarLayout and BranchDecompositionPlanarLayout)
+                if(PlanarLayout and branchDecompositionPlanarLayout_)
                   nodeToGet = node;
                 if(treeMatching[nodeToGet] >= 0
                    and treeMatching[nodeToGet] < allBaryBranchingID[c].size())
@@ -847,10 +851,10 @@ public:
               // Add isImportantPair
               bool isImportant = false;
               idNode nodeToGetImportance = treeBranching[node];
-              if(PlanarLayout and BranchDecompositionPlanarLayout)
+              if(PlanarLayout and branchDecompositionPlanarLayout_)
                 nodeToGetImportance = node;
               isImportant = trees[i]->isImportantPair<dataType>(
-                nodeToGetImportance, ImportantPairs);
+                nodeToGetImportance, importantPairs_);
               isImportantPairsArc->InsertNextTuple1(isImportant);
 
               // Add isDummyArc
@@ -956,7 +960,7 @@ public:
             // Add isImportantPair
             bool isImportant = false;
             isImportant
-              = trees[i]->isImportantPair<dataType>(node, ImportantPairs);
+              = trees[i]->isImportantPair<dataType>(node, importantPairs_);
             isImportantPairsNode->InsertNextTuple1(isImportant);
           }
 
@@ -1004,7 +1008,7 @@ public:
     vtkOutputNode->GetPointData()->AddArray(branchNodeID);
     vtkOutputNode->GetPointData()->AddArray(nodeID);
     vtkOutputNode->GetPointData()->AddArray(isImportantPairsNode);
-    if(not BranchDecompositionPlanarLayout)
+    if(not branchDecompositionPlanarLayout_)
       vtkOutputNode->GetPointData()->AddArray(scalar);
     if(clusteringOutput and ShiftMode != 1) {
       vtkOutputNode->GetPointData()->AddArray(branchBaryNodeID);
