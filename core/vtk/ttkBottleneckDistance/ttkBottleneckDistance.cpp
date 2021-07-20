@@ -1,8 +1,8 @@
-#include "ttkBottleneckDistance.h"
+#include <ttkBottleneckDistance.h>
 #include <ttkMacros.h>
+#include <ttkPersistenceDiagramUtils.h>
 #include <ttkUtils.h>
 
-// VTK includes
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
@@ -14,9 +14,6 @@
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
-// Misc.
-#include <cstdlib>
-#include <ctime>
 #include <random>
 
 vtkStandardNewMacro(ttkBottleneckDistance);
@@ -119,128 +116,6 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 
     vertexId1++;
     vertexId2++;
-  }
-
-  sort(diagram.begin(), diagram.end(),
-       [](const diagramTuple &a, const diagramTuple &b) -> bool {
-         return std::get<6>(a) < std::get<6>(b);
-       });
-
-  return 1;
-}
-
-// Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-template <typename dataType>
-int ttkBottleneckDistance::getPersistenceDiagram(
-  std::vector<diagramTuple> &diagram,
-  vtkUnstructuredGrid *const CTPersistenceDiagram_,
-  const double spacing,
-  const int diagramNumber) {
-
-  auto pointData = CTPersistenceDiagram_->GetPointData();
-  auto cellData = CTPersistenceDiagram_->GetCellData();
-
-  if(pointData == nullptr || cellData == nullptr) {
-    return -1;
-  }
-
-  auto vertexIdentifierScalars = ttkSimplexIdTypeArray::SafeDownCast(
-    pointData->GetArray(ttk::VertexScalarFieldName));
-
-  auto nodeTypeScalars
-    = vtkIntArray::SafeDownCast(pointData->GetArray("CriticalType"));
-
-  auto pairIdentifierScalars
-    = ttkSimplexIdTypeArray::SafeDownCast(cellData->GetArray("PairIdentifier"));
-
-  auto extremumIndexScalars
-    = vtkIntArray::SafeDownCast(cellData->GetArray("PairType"));
-
-  auto persistenceScalars = cellData->GetArray("Persistence");
-
-  auto birthScalars = cellData->GetArray("Birth");
-
-  const auto coords = vtkFloatArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray(
-      ttk::PersistenceCoordinatesName));
-
-  vtkPoints *points = CTPersistenceDiagram_->GetPoints();
-  if(!pairIdentifierScalars)
-    return -2;
-
-  auto pairingsSize = (int)pairIdentifierScalars->GetNumberOfTuples();
-
-  // Continuous indexing (no gap in indices)
-  for(int pairIndex = 0; pairIndex < pairingsSize; ++pairIndex) {
-    const float indexOfPair = pairIndex;
-    if(*pairIdentifierScalars->GetTuple(pairIndex) != -1) // except diagonal
-      pairIdentifierScalars->SetTuple(pairIndex, &indexOfPair);
-  }
-
-  float s{0.0};
-
-  bool is2D = coords != nullptr;
-  bool is3D = !is2D;
-  if(Is3D && !is3D)
-    Is3D = false;
-  if(!Is3D && diagramNumber == 1)
-    s = (float)spacing;
-
-  if(pairingsSize < 1 || !vertexIdentifierScalars || !nodeTypeScalars
-     || !persistenceScalars || !extremumIndexScalars || !points)
-    return -2;
-
-  diagram.resize((unsigned long)pairingsSize);
-  int nbNonCompact = 0;
-
-  for(int i = 0; i < pairingsSize; ++i) {
-
-    int vertexId1 = vertexIdentifierScalars->GetValue(2 * i);
-    int vertexId2 = vertexIdentifierScalars->GetValue(2 * i + 1);
-    int nodeType1 = nodeTypeScalars->GetValue(2 * i);
-    int nodeType2 = nodeTypeScalars->GetValue(2 * i + 1);
-
-    int pairIdentifier = pairIdentifierScalars->GetValue(i);
-    int pairType = extremumIndexScalars->GetValue(i);
-    double persistence = persistenceScalars->GetTuple1(i);
-
-    int index1 = 2 * i;
-    double *coords1 = points->GetPoint(index1);
-    auto x1 = (float)coords1[0];
-    auto y1 = (float)coords1[1];
-    auto z1 = (float)coords1[2];
-
-    int index2 = index1 + 1;
-    double *coords2 = points->GetPoint(index2);
-    auto x2 = (float)coords2[0];
-    auto y2 = (float)coords2[1];
-    auto z2 = (float)coords2[2];
-
-    dataType value1 = birthScalars->GetTuple1(i);
-    dataType value2 = value1 + persistence;
-
-    if(pairIdentifier != -1 && pairIdentifier < pairingsSize)
-      diagram.at(pairIdentifier)
-        = std::make_tuple(vertexId1, (BNodeType)nodeType1, vertexId2,
-                          (BNodeType)nodeType2, (dataType)persistence, pairType,
-                          value1, x1, y1, z1 + s, value2, x2, y2, z2 + s);
-
-    if(pairIdentifier >= pairingsSize) {
-      nbNonCompact++;
-      if(nbNonCompact == 0) {
-        std::stringstream msg;
-        msg << "Diagram pair identifiers "
-            << "must be compact (not exceed the diagram size). " << std::endl;
-        this->printWrn(msg.str());
-      }
-    }
-  }
-
-  if(nbNonCompact > 0) {
-    std::stringstream msg;
-    msg << "Missed " << nbNonCompact << " pairs due to non-compactness."
-        << std::endl;
-    this->printWrn(msg.str());
   }
 
   sort(diagram.begin(), diagram.end(),
@@ -566,21 +441,15 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   // Call package
   int status = 0;
 
-  //  switch (dataType1) {
-  //    vtkTemplateMacro(({
-  // TODO template my methods
-  std::vector<diagramTuple> CTDiagram1;
-  std::vector<diagramTuple> CTDiagram2;
+  ttk::DiagramType CTDiagram1{}, CTDiagram2{};
 
-  status = getPersistenceDiagram<dataType>(
-    CTDiagram1, CTPersistenceDiagram1, Spacing, 0);
+  status = VTUToDiagram(CTDiagram1, CTPersistenceDiagram1, *this);
   if(status < 0) {
     this->printErr("Could not extract diagram from first input data-set");
     return 0;
   }
 
-  status = getPersistenceDiagram<dataType>(
-    CTDiagram2, CTPersistenceDiagram2, Spacing, 1);
+  status = VTUToDiagram(CTDiagram2, CTPersistenceDiagram2, *this);
   if(status < 0) {
     this->printErr("Could not extract diagram from second input data-set");
     return 0;

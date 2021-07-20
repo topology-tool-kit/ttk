@@ -90,13 +90,6 @@ public:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-  template <typename dataType>
-  int getPersistenceDiagram(std::vector<diagramTuple> &diagram,
-                            vtkUnstructuredGrid *const CTPersistenceDiagram_,
-                            double spacing,
-                            int diagramNumber);
-
   template <typename dataType>
   int generatePersistenceDiagram(std::vector<diagramTuple> &diagram, int size);
 
@@ -130,7 +123,6 @@ private:
   int BenchmarkSize{-1};
 
   bool UseOutputMatching{false};
-  bool Is3D{false};
   double Spacing{0.0};
   double Alpha{1.0};
   double Tolerance{1.0};

@@ -7,3 +7,4 @@ HEADERS
 DEPENDS
   bottleneckDistance
   ttkAlgorithm
+  ttkPersistenceDiagram
