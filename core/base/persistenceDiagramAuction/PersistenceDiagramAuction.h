@@ -23,6 +23,7 @@
 #include <Debug.h>
 #include <KDTree.h>
 #include <PersistenceDiagramAuctionActor.h>
+
 #include <cmath>
 #include <iostream>
 #include <limits>

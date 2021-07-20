@@ -2,6 +2,8 @@
 
 #include <Debug.h>
 #include <KDTree.h>
+#include <PersistenceDiagramUtils.h>
+
 #include <array>
 #include <cmath>
 #include <iostream>
