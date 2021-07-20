@@ -1,4 +1,6 @@
+#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkPointData.h>
 
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
@@ -99,7 +101,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   bool useGeometricSpacing = UseGeometricSpacing;
 
   // Build mesh.
-  ttkTrackingFromPersistenceDiagrams::buildMesh<dataType>(
+  ttkTrackingFromPersistenceDiagrams::buildMesh(
     trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
     spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
     persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
