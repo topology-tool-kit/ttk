@@ -20,6 +20,12 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
+/// \b Related \b publication \n
+/// "Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+/// Mathieu Pont, J. Vidal, Julie Delon, Julien Tierny.\n
+/// Proc. of IEEE VIS 2021.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
 /// \sa ttk::MergeTreeClustering
 /// \sa ttkAlgorithm
 

@@ -6,6 +6,11 @@
 /// This module defines the %MergeTreeBarycenter class that computes
 /// the barycenter of an ensemble of merge trees.
 ///
+/// \b Related \b publication \n
+/// "Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+/// Mathieu Pont, J. Vidal, Julie Delon, Julien Tierny.\n
+/// Proc. of IEEE VIS 2021.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
 
 #ifndef _MERGETREEBARYCENTER_H
 #define _MERGETREEBARYCENTER_H

@@ -8,6 +8,11 @@
 /// It is actually a version of KMeans (dynamic clustering algorithm)
 /// where centroids are merge trees
 ///
+/// \b Related \b publication \n
+/// "Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+/// Mathieu Pont, J. Vidal, Julie Delon, Julien Tierny.\n
+/// Proc. of IEEE VIS 2021.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
 
 #ifndef _MERGETREECLUSTERING_H
 #define _MERGETREECLUSTERING_H
