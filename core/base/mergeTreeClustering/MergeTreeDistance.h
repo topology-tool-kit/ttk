@@ -1144,7 +1144,7 @@ namespace ttk {
       ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
       int treeChildPushedSize = treeT->getNumberOfNodes();
       int treeChildPushed[treeChildPushedSize];
-      memset(treeChildPushed, 0, treeChildPushedSize*sizeof(int));
+      memset(treeChildPushed, 0, treeChildPushedSize * sizeof(int));
       std::vector<bool> treeNodesPushed(treeT->getNumberOfNodes(), false);
       std::vector<ftm::idNode> *treeTLeaves
         = (isTree1) ? &tree1Leaves : &tree2Leaves;
