@@ -1054,8 +1054,9 @@ namespace ttk {
       std::vector<int> treeChildDone(tree->getNumberOfNodes(), 0);
       std::vector<bool> treeNodeDone(tree->getNumberOfNodes(), false);
       std::queue<ftm::idNode> treeQueue;
-      for(ftm::idNode leaf : treeLeaves)
+      for(ftm::idNode leaf : treeLeaves) {
         treeQueue.emplace(leaf);
+      }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(numberOfThreads_) if(not isCalled_)
