@@ -58,7 +58,9 @@ namespace ttk {
       this->setDebugMsgPrefix(
         "MergeTreeBarycenter"); // inherited from Debug: prefix will be printed
                                 // at the beginning of every msg
+#ifdef TTK_ENABLE_OPENMP
       omp_set_nested(1);
+#endif
     };
     ~MergeTreeBarycenter(){};
 
