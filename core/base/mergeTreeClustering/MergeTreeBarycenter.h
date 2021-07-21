@@ -433,7 +433,7 @@ namespace ttk {
       getParametrizedBirthDeath(ftm::FTMTree_MT *tree1,
                                 ftm::idNode nodeId1,
                                 ftm::FTMTree_MT *tree2 = nullptr,
-                                ftm::idNode nodeId2 = nullptr) {
+                                ftm::idNode nodeId2 = ftm::nullNodes) {
       std::tuple<double, double> birthDeath;
       // Normalized Wasserstein
       if(normalizedWasserstein_ and not rescaledWasserstein_)

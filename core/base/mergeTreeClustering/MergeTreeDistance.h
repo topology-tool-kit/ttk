@@ -1142,7 +1142,9 @@ namespace ttk {
         &forestBackTable) {
       ftm::idNode nodeT = -1;
       ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
-      int treeChildPushed[treeT->getNumberOfNodes()] = {0};
+      int treeChildPushedSize = treeT->getNumberOfNodes();
+      int treeChildPushed[treeChildPushedSize];
+      memset(treeChildPushed, 0, treeChildPushedSize*sizeof(int));
       std::vector<bool> treeNodesPushed(treeT->getNumberOfNodes(), false);
       std::vector<ftm::idNode> *treeTLeaves
         = (isTree1) ? &tree1Leaves : &tree2Leaves;

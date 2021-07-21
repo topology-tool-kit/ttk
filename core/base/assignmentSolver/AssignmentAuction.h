@@ -90,7 +90,7 @@ namespace ttk {
     int iter = 0;
     double epsilon = -1;
     double epsilonDiviserMultiplier = 0;
-    dataType delta_lim = 0.01;
+    double delta_lim = 0.01;
 
     std::vector<int> bidderAssignments{1, -1};
     std::vector<int> goodAssignments{};
