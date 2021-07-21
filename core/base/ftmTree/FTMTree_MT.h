@@ -595,7 +595,6 @@ namespace ttk {
       // --------------------
       // Is
       // --------------------
-
       bool isNodeOriginDefined(idNode nodeId);
 
       bool isRoot(idNode nodeId);
@@ -614,10 +613,26 @@ namespace ttk {
       template <class dataType>
       bool isImportantPair(idNode nodeId, double threshold);
 
+      bool isNodeMerged(idNode nodeId);
+
+      bool isNodeIdInconsistent(idNode nodeId);
+
+      bool isThereOnlyOnePersistencePair();
+
+      // Do not normalize node is if root or son of a merged root
+      bool notNeedToNormalize(idNode nodeId);
+
+      bool isMultiPersPair(idNode nodeId);
+
+      template <class dataType>
+      bool isParentInconsistent(ftm::idNode nodeId);
+
+      template <class dataType>
+      bool verifyBranchDecompositionInconsistency();
+
       // --------------------
       // Get
       // --------------------
-
       idNode getRoot();
 
       idNode getParentSafe(idNode nodeId);
@@ -642,6 +657,29 @@ namespace ttk {
       void getTreeBranching(std::vector<idNode> &branching,
                             std::vector<int> &branchingID);
 
+      std::vector<idNode> getAllRoots();
+
+      int getNumberOfRoot();
+
+      int getNumberOfChildren(idNode nodeId);
+
+      int getTreeDepth();
+
+      int getNodeLevel(idNode nodeId);
+
+      std::vector<int> getAllNodeLevel();
+
+      std::vector<std::vector<idNode>> getLevelToNode();
+
+      std::vector<idNode> getBranchSubtree(std::vector<idNode> &branching,
+                                           idNode branchRoot);
+
+      template <class dataType>
+      idNode getLowestNode(idNode nodeStart);
+
+      // --------------------
+      // Persistence
+      // --------------------
       template <class dataType>
       std::tuple<dataType, dataType> getBirthDeath(idNode nodeId);
 
@@ -650,6 +688,77 @@ namespace ttk {
 
       template <class dataType>
       dataType getNodePersistence(idNode nodeId);
+
+      template <class dataType>
+      dataType getMaximumPersistence();
+
+      template <class dataType>
+      dataType getSecondMaximumPersistence();
+
+      template <class dataType>
+      void getPersistencePairsFromTree(
+        std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> &pairs,
+        bool useBD);
+
+      template <class dataType>
+      std::vector<ftm::idNode> getMultiPersOrigins(bool useBD);
+
+      std::vector<std::vector<idNode>> getMultiPersOriginsVectorFromTree();
+
+      // --------------------
+      // Set
+      // --------------------
+
+      void setParent(idNode nodeId, idNode newParentNodeId);
+
+      // --------------------
+      // Delete
+      // --------------------
+
+      // Delete node by keeping subtree
+      void deleteNode(idNode nodeId);
+
+      void deleteIthUpArc(idNode nodeId, int arcIth);
+
+      // Delete arc of the node to its parent
+      void deleteParent(idNode nodeId);
+
+      // Delete node without keeping subtree
+      void deleteSubtree(idNode nodeId);
+
+      // --------------------
+      // Create/Delete/Modify Tree
+      // --------------------
+
+      void copyMergeTreeStructure(FTMTree_MT *tree);
+
+      // --------------------
+      // Utils
+      // --------------------
+
+      void printNodeSS(idNode node, std::stringstream &ss);
+
+      template <class dataType>
+      void printNode2(idNode nodeId);
+
+      std::stringstream printTree(bool doPrint = true);
+
+      void printTreeStats();
+
+      template <class dataType>
+      void printTreeScalars(bool printNodeAlone = true);
+
+      template <class dataType>
+      std::stringstream printPairsFromTree(bool useBD = false,
+                                           bool printPairs = true,
+                                           bool doPrint = true);
+
+      std::stringstream printMultiPersOriginsVectorFromTree(bool doPrint
+                                                            = true);
+
+      template <class dataType>
+      void printMultiPersPairsFromTree(bool useBD = false,
+                                       bool printPairs = true);
 
       // ----------------------------------------
       // End of utils functions
@@ -750,14 +859,72 @@ namespace ttk {
     std::ostream &operator<<(std::ostream &o, Node const &n);
     std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
+    template <typename dataType>
     struct MergeTree {
       ftm::Scalars scalars;
+      std::vector<dataType> scalarsValues;
       ftm::Params params;
       ftm::FTMTree_MT tree;
+
+      ftm::Scalars emptyScalars() {
+        ftm::Scalars scalarsT;
+        scalarsT.size = 0;
+        dataType *scalarsValuesT = nullptr;
+        scalarsT.values = (void *)scalarsValuesT;
+        return scalarsT;
+      }
+
+      ftm::Params emptyParams() {
+        ftm::Params paramsT;
+        paramsT.treeType = ftm::Join_Split;
+        return paramsT;
+      }
+
+      MergeTree() : MergeTree(emptyScalars(), emptyParams()) {
+      }
+
       MergeTree(ftm::Scalars scalarsT, ftm::Params paramsT)
         : scalars(scalarsT), params(paramsT),
           tree(&params, &scalars, params.treeType) {
         tree.makeAlloc();
+        for(unsigned int i = 0; i < tree.getNumberOfNodes(); ++i)
+          scalarsValues.push_back(tree.getValue<dataType>(i));
+        scalars.values = (void *)(scalarsValues.data());
+      }
+
+      MergeTree(ftm::Scalars scalarsT,
+                std::vector<dataType> scalarValuesT,
+                ftm::Params paramsT)
+        : scalars(scalarsT), scalarsValues(scalarValuesT), params(paramsT),
+          tree(&params, &scalars, params.treeType) {
+        tree.makeAlloc();
+        scalars.values = (void *)(scalarsValues.data());
+      }
+
+      void copy(const MergeTree<dataType> &mt) {
+        // Copy scalars
+        scalars.size = mt.scalars.size;
+        scalarsValues = std::vector<dataType>(mt.scalarsValues);
+        scalars.values = (void *)(scalarsValues.data());
+
+        // Copy params
+        params.treeType = mt.params.treeType;
+
+        // Copy tree
+        tree.~FTMTree_MT();
+        tree.makeAlloc();
+        tree.copyMergeTreeStructure(const_cast<FTMTree_MT *>(&(mt.tree)));
+      }
+
+      MergeTree(const MergeTree<dataType> &mt)
+        : scalars(mt.scalars), scalarsValues(mt.scalarsValues),
+          params(mt.params), tree(&params, &scalars, params.treeType) {
+        copy(mt);
+      }
+
+      MergeTree<dataType> &operator=(const MergeTree<dataType> &mt) {
+        copy(mt);
+        return *this;
       }
     };
 

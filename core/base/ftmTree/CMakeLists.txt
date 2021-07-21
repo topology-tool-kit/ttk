@@ -19,6 +19,7 @@ ttk_add_base_library(ftmTree
     FTMSegmentation.h
     FTMStructures.h
     FTMSuperArc.h
+    FTMTreeUtils.h
     FTMTreeUtils_Template.h
   DEPENDS
     triangulation
