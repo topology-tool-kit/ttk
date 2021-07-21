@@ -5,7 +5,7 @@
 ///
 /// \b Related \b publication \n
 /// "Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
-/// Mathieu Pont, J. Vidal, Julie Delon, Julien Tierny.\n
+/// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 
@@ -1368,8 +1368,8 @@ public:
     ftm::FTMTree_MT *tree2,
     bool computeCosts = true) {
     dataType cost = 0;
-    bool tree1Done[tree1->getNumberOfNodes()]{false};
-    bool tree2Done[tree2->getNumberOfNodes()]{false};
+    std::vector<bool> tree1Done(tree1->getNumberOfNodes(), false);
+    std::vector<bool> tree2Done(tree2->getNumberOfNodes(), false);
     std::stringstream ss;
     for(std::tuple<ftm::idNode, ftm::idNode> matching : outputMatching) {
       ftm::idNode node0 = std::get<0>(matching);
