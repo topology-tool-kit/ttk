@@ -157,7 +157,6 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
   vtkUnstructuredGrid *treeNodes,
   vtkUnstructuredGrid *treeArcs,
   vtkUnstructuredGrid *output) {
-  int verbose = 0;
   MergeTree<dataType> mergeTree = makeTree<dataType>(treeNodes, treeArcs);
   FTMTree_MT *tree = &(mergeTree.tree);
   // tree->printTree2();
@@ -182,7 +181,8 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
   visuMaker.setVtkOutputArc(output);
   visuMaker.setTreesNodes(treeNodes);
   visuMaker.setTreesNodeCorrMesh(treeNodeCorrMesh);
-  visuMaker.makeTreesOutput<dataType>(tree, verbose);
+  visuMaker.setDebugLevel(this->debugLevel_);
+  visuMaker.makeTreesOutput<dataType>(tree);
 
   return 1;
 }

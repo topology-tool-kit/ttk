@@ -88,6 +88,75 @@ namespace ttk {
     }
 
     // --------------------
+    // Make tree utils
+    // --------------------
+    void manageInconsistentArcsMultiParent(FTMTree_MT *tree) {
+      ftm::idNode treeRoot = 0;
+      for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
+        if(tree->getNode(i)->getNumberOfDownSuperArcs() != 0
+           and tree->getNode(i)->getNumberOfUpSuperArcs() == 0)
+          treeRoot = i;
+      }
+
+      for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
+        if(tree->getNode(i)->getNumberOfUpSuperArcs() > 1) {
+          ftm::idNode lowestParent = std::numeric_limits<ftm::idNode>::max();
+          for(long unsigned int j = 0;
+              j < tree->getNode(i)->getNumberOfUpSuperArcs(); ++j) {
+            auto tParent
+              = tree->getSuperArc(tree->getNode(i)->getUpSuperArcId(j))
+                  ->getUpNodeId();
+            lowestParent = (lowestParent > tParent) ? tParent : lowestParent;
+          }
+
+          for(long unsigned int j = 0;
+              j < tree->getNode(i)->getNumberOfUpSuperArcs(); ++j) {
+            ftm::idSuperArc nodeArcId = tree->getNode(i)->getUpSuperArcId(j);
+            auto tParent = tree->getSuperArc(nodeArcId)->getUpNodeId();
+            if(tParent != lowestParent) {
+
+              if(tParent == treeRoot) {
+                for(long unsigned int k = 0;
+                    k < tree->getNode(i)->getNumberOfDownSuperArcs(); ++k) {
+                  ftm::idSuperArc nodeArcId2
+                    = tree->getNode(i)->getDownSuperArcId(k);
+                  auto tChildren
+                    = tree->getSuperArc(nodeArcId2)->getDownNodeId();
+                  if(tChildren > i) {
+                    tree->getNode(i)->removeDownSuperArc(nodeArcId2);
+                    tree->getNode(tChildren)->removeUpSuperArc(nodeArcId2);
+                    tree->makeSuperArc(tChildren, treeRoot);
+                    break;
+                  }
+                }
+              }
+
+              // Delete down arc from old parent
+              tree->getNode(tParent)->removeDownSuperArc(nodeArcId);
+              // Delete up arc from node
+              tree->getNode(i)->removeUpSuperArc(nodeArcId);
+            }
+          }
+        }
+    }
+
+    void removeSelfLink(FTMTree_MT *tree) {
+      for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
+        for(unsigned int j = 0; j < tree->getNode(i)->getNumberOfUpSuperArcs();
+            ++j) {
+          ftm::idSuperArc nodeArcId = tree->getNode(i)->getUpSuperArcId(j);
+          auto tParent = tree->getSuperArc(nodeArcId)->getUpNodeId();
+          if(tParent == i) {
+            // Delete down arc
+            tree->getNode(i)->removeDownSuperArc(nodeArcId);
+            // Delete up arc
+            tree->getNode(i)->removeUpSuperArc(nodeArcId);
+          }
+        }
+      }
+    }
+
+    // --------------------
     // MergeTree
     // --------------------
     template <class dataType>

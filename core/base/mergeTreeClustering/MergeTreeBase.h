@@ -45,8 +45,6 @@ protected:
   bool distanceSquared_ = true;
   bool useFullMerge_ = false;
 
-  int verbose_ = 1;
-
   // Old
   bool progressiveComputation_ = false;
   bool rescaledWasserstein_ = false;
@@ -110,7 +108,7 @@ public:
     numberOfThreads_ = noThreads;
     if(numberOfThreads_ == 0) {
       numberOfThreads_ = this->threadNumber_;
-      if(verbose_ > 0) {
+      if(this->debugLevel_ > 0) {
         std::stringstream ss;
         ss << "no threads : " << numberOfThreads_;
         printMsg(ss.str());
@@ -162,10 +160,6 @@ public:
 
   void setDeleteMultiPersPairs(bool deleteMultiPersPairsT) {
     deleteMultiPersPairs_ = deleteMultiPersPairsT;
-  }
-
-  void setVerbose(int verb) {
-    verbose_ = verb;
   }
 
   void setCleanTree(bool clean) {
@@ -600,8 +594,7 @@ public:
                                          bool branchDecompositionT,
                                          bool useMinMaxPairT,
                                          bool cleanTreeT,
-                                         std::vector<int> &nodeCorr,
-                                         int verboseT = 1) {
+                                         std::vector<int> &nodeCorr) {
     Timer t_proc;
 
     FTMTree_MT *tree = &(mTree.tree);
@@ -638,11 +631,9 @@ public:
 
     // verifyPairsTree(tree);
     auto t_preproc_time = t_proc.getElapsedTime();
-    if(verboseT > 0) {
-      std::stringstream ss;
-      ss << "TIME PREPROC.   = " << t_preproc_time;
-      printMsg(ss.str());
-    }
+    std::stringstream ss;
+    ss << "TIME PREPROC.   = " << t_preproc_time;
+    printMsg(ss.str(), debug::Priority::DETAIL);
 
     return treeOld;
   }

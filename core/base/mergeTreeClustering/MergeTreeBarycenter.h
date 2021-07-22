@@ -731,11 +731,10 @@ namespace ttk {
       ftm::FTMTree_MT *tree,
       ftm::FTMTree_MT *baryTree,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
-      dataType &distance,
-      int verboseT = 0) {
+      dataType &distance) {
       // Timer t_distance;
       MergeTreeDistance mergeTreeDistance;
-      mergeTreeDistance.setVerbose(0);
+      mergeTreeDistance.setDebugLevel(2);
       mergeTreeDistance.setProgressiveComputation(false);
       mergeTreeDistance.setPreprocess(false);
       mergeTreeDistance.setPostprocess(false);
@@ -758,15 +757,12 @@ namespace ttk {
       }*/
       distance
         = mergeTreeDistance.computeDistance<dataType>(baryTree, tree, matching);
-      if(verboseT >= 2) {
-        std::stringstream ss, ss2;
-        ss << "distance tree : " << distance;
-        printMsg(ss.str());
-        ss2 << "distance²tree : " << distance * distance;
-        printMsg(ss2.str());
-        // printOutputMatching<dataType>(matching, baryTree, tree);
-        // printMatching(matching);
-      }
+      std::stringstream ss, ss2;
+      ss << "distance tree : " << distance;
+      printMsg(ss.str(), debug::Priority::VERBOSE);
+      ss2 << "distance²tree : " << distance * distance;
+      printMsg(ss2.str(), debug::Priority::VERBOSE);
+
       // auto t_distance_time = t_distance.getElapsedTime();
       // allDistanceTime_ += t_distance_time;
     }
@@ -779,10 +775,9 @@ namespace ttk {
       ftm::FTMTree_MT *tree,
       MergeTree<dataType> &baryMergeTree,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
-      dataType &distance,
-      int verboseT = 0) {
+      dataType &distance) {
       computeOneDistance<dataType>(
-        tree, &(baryMergeTree.tree), matching, distance, verboseT);
+        tree, &(baryMergeTree.tree), matching, distance);
     }
 
     template <class dataType>
@@ -790,10 +785,9 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       MergeTree<dataType> &baryMergeTree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
-      dataType &distance,
-      int verboseT = 0) {
+      dataType &distance) {
       computeOneDistance<dataType>(
-        &(baryMergeTree.tree), baryMergeTree2, matching, distance, verboseT);
+        &(baryMergeTree.tree), baryMergeTree2, matching, distance);
     }
 
     template <class dataType>
@@ -802,12 +796,11 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
-      std::vector<dataType> &distances,
-      int verboseT = 0) {
+      std::vector<dataType> &distances) {
       if(not isCalled_)
-        assignmentPara(trees, baryMergeTree, matchings, distances, verboseT);
+        assignmentPara(trees, baryMergeTree, matchings, distances);
       else
-        assignmentTask(trees, baryMergeTree, matchings, distances, verboseT);
+        assignmentTask(trees, baryMergeTree, matchings, distances);
     }
 
     template <class dataType>
@@ -816,15 +809,14 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
-      std::vector<dataType> &distances,
-      int verboseT = 0) {
+      std::vector<dataType> &distances) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(numberOfThreads_) \
   shared(baryMergeTree) if(parallelize_)
       {
 #pragma omp single nowait
 #endif
-        assignmentTask(trees, baryMergeTree, matchings, distances, verboseT);
+        assignmentTask(trees, baryMergeTree, matchings, distances);
 #ifdef TTK_ENABLE_OPENMP
       } // pragma omp parallel
 #endif
@@ -836,15 +828,14 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
-      std::vector<dataType> &distances,
-      int verboseT = 0) {
+      std::vector<dataType> &distances) {
       for(unsigned int i = 0; i < trees.size(); ++i)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(i) \
   untied shared(baryMergeTree, matchings, distances)
 #endif
         computeOneDistance<dataType>(
-          trees[i], baryMergeTree, matchings[i], distances[i], verboseT);
+          trees[i], baryMergeTree, matchings[i], distances[i]);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
@@ -859,8 +850,7 @@ namespace ttk {
                          std::vector<MergeTree<dataType>> &mergeTrees,
                          std::vector<ftm::FTMTree_MT *> &oriTrees,
                          int iterationNumber,
-                         std::vector<std::vector<ftm::idNode>> &deletedNodes,
-                         int verboseT = 0) {
+                         std::vector<std::vector<ftm::idNode>> &deletedNodes) {
       deletedNodes = std::vector<std::vector<ftm::idNode>>(oriTrees.size());
       unsigned int noTreesUnscaled = 0;
 
@@ -904,8 +894,7 @@ namespace ttk {
         }
       }
 
-      if(verboseT >= 1)
-        printTreesStats(trees);
+      printTreesStats(trees);
 
       return noTreesUnscaled;
     }
@@ -937,8 +926,7 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       std::vector<double> &alphas,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &finalMatchings,
-      int verboseT = 0) {
+        &finalMatchings) {
       Timer t_bary;
 
       ftm::FTMTree_MT *baryTree = &(baryMergeTree.tree);
@@ -950,15 +938,14 @@ namespace ttk {
       if(progressiveBarycenter_) {
         oriTrees.insert(oriTrees.end(), trees.begin(), trees.end());
         persistenceScaling<dataType>(
-          trees, scaledMergeTrees, oriTrees, -1, deletedNodes, verboseT);
+          trees, scaledMergeTrees, oriTrees, -1, deletedNodes);
         std::vector<ftm::idNode> deletedNodesT;
         persistenceThresholding<dataType>(baryTree, 50, deletedNodesT);
       }
       bool treesUnscaled = false;
 
       // Print bary stats
-      if(verboseT >= 1)
-        printBaryStats(baryTree);
+      printBaryStats(baryTree);
 
       // Run
       bool converged = false;
@@ -969,12 +956,10 @@ namespace ttk {
       while(not converged) {
         ++NoIteration;
 
-        if(verboseT >= 1) {
-          printMsg(debug::Separator::L2);
-          std::stringstream ss;
-          ss << "Iteration " << NoIteration;
-          printMsg(ss.str());
-        }
+        printMsg(debug::Separator::L2);
+        std::stringstream ss;
+        ss << "Iteration " << NoIteration;
+        printMsg(ss.str());
 
         // --- Assignment
         std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
@@ -989,24 +974,21 @@ namespace ttk {
         addDeletedNodesTime_ += t_addDeletedNodes.getElapsedTime();
         auto t_assignment_time
           = t_assignment.getElapsedTime() - t_addDeletedNodes.getElapsedTime();
-        if(verboseT >= 1) {
-          std::stringstream ss;
-          ss << "assignment : " << t_assignment_time;
-          printMsg(ss.str());
-        }
+
+        std::stringstream ss2;
+        ss2 << "assignment : " << t_assignment_time;
+        printMsg(ss2.str());
 
         // --- Update
         Timer t_update;
         updateBarycenterTree<dataType>(trees, baryMergeTree, alphas, matchings);
         auto t_update_time = t_update.getElapsedTime();
-        if(verboseT >= 1) {
-          std::stringstream ss;
-          ss << "update     : " << t_update_time;
-          printMsg(ss.str());
-        }
         baryTree = &(baryMergeTree.tree);
-        if(verboseT >= 1)
-          printBaryStats(baryTree);
+
+        std::stringstream ss3;
+        ss3 << "update     : " << t_update_time;
+        printMsg(ss3.str());
+        printBaryStats(baryTree);
 
         // --- Check convergence
         dataType currentFrechetEnergy = 0;
@@ -1017,15 +999,14 @@ namespace ttk {
         converged = (frechetDiff <= tol_);
         converged = converged and (not progressiveBarycenter_ or treesUnscaled);
         frechetEnergy = currentFrechetEnergy;
-        if(verboseT >= 1) {
-          std::stringstream ss, ss2;
-          ss << "Frechet energy : " << frechetEnergy;
-          printMsg(ss.str());
-          ss2 << "TIME BARYCENTER = "
-              << t_bary.getElapsedTime() - addDeletedNodesTime_;
-          printMsg(ss2.str());
-        }
         tol_ = frechetEnergy / 125.0;
+
+        std::stringstream ss4, ss5;
+        ss4 << "Frechet energy : " << frechetEnergy;
+        printMsg(ss4.str());
+        ss5 << "TIME BARYCENTER = "
+            << t_bary.getElapsedTime() - addDeletedNodesTime_;
+        printMsg(ss5.str());
 
         minFrechet = std::min(minFrechet, frechetEnergy);
         if(not converged and (not progressiveBarycenter_ or treesUnscaled)) {
@@ -1035,37 +1016,33 @@ namespace ttk {
 
         // --- Persistence scaling
         if(progressiveBarycenter_) {
-          unsigned int noTreesUnscaled
-            = persistenceScaling<dataType>(trees, scaledMergeTrees, oriTrees,
-                                           NoIteration, deletedNodes, verboseT);
+          unsigned int noTreesUnscaled = persistenceScaling<dataType>(
+            trees, scaledMergeTrees, oriTrees, NoIteration, deletedNodes);
           treesUnscaled = (noTreesUnscaled == oriTrees.size());
         }
       }
 
       // Final processing
-      if(verboseT >= 1) {
-        printMsg(debug::Separator::L2);
-        printMsg("Final assignment");
-      }
+      printMsg(debug::Separator::L2);
+      printMsg("Final assignment");
+
       std::vector<dataType> distances(trees.size(), -1);
-      assignment<dataType>(
-        trees, baryMergeTree, finalMatchings, distances, verboseT);
+      assignment<dataType>(trees, baryMergeTree, finalMatchings, distances);
       for(auto dist : distances)
         finalDistances_.push_back(dist);
       dataType currentFrechetEnergy = 0;
       for(unsigned int i = 0; i < trees.size(); ++i)
         currentFrechetEnergy += alphas[i] * distances[i] * distances[i];
-      if(verboseT >= 1) {
-        std::stringstream ss, ss2;
-        ss << "Frechet energy : " << currentFrechetEnergy;
-        printMsg(ss.str());
-        ss2 << "TIME BARYCENTER = "
-            << t_bary.getElapsedTime() - addDeletedNodesTime_;
-        printMsg(ss2.str());
-      }
+
+      std::stringstream ss, ss2;
+      ss << "Frechet energy : " << currentFrechetEnergy;
+      printMsg(ss.str());
+      ss2 << "TIME BARYCENTER = "
+          << t_bary.getElapsedTime() - addDeletedNodesTime_;
+      printMsg(ss2.str());
       // std::cout << "Bary Distance Time = " << allDistanceTime_ << std::endl;
 
-      if(trees.size() == 2 and verboseT >= 1)
+      if(trees.size() == 2 and not isCalled_)
         verifyBarycenterTwoTrees<dataType>(
           trees, baryMergeTree, finalMatchings, distances);
 
@@ -1091,7 +1068,7 @@ namespace ttk {
           preprocessingPipeline<dataType>(trees[i], epsilonTree2_,
                                           epsilon2Tree2_, epsilon3Tree2_,
                                           branchDecomposition_, useMinMaxPair_,
-                                          cleanTree_, treesNodeCorr_[i], 0);
+                                          cleanTree_, treesNodeCorr_[i]);
         printTreesStats(trees);
       }
 
@@ -1102,7 +1079,7 @@ namespace ttk {
 
       // --- Execute
       computeBarycenter<dataType>(
-        treesT, baryMergeTree, alphas, finalMatchings, verbose_);
+        treesT, baryMergeTree, alphas, finalMatchings);
 
       // --- Postprocessing
       if(postprocess_) {

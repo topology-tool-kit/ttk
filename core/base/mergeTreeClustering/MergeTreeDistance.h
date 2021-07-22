@@ -22,7 +22,6 @@
 
 // ttk common includes
 #include <Debug.h>
-#include <Triangulation.h>
 
 #include "MergeTreeBase.h"
 #include <AssignmentAuction.h>
@@ -363,14 +362,12 @@ namespace ttk {
       }
       if(preprocess_) {
         treesNodeCorr_ = std::vector<std::vector<int>>(2);
-        preprocessingPipeline<dataType>(mTree1, epsilonTree1_, epsilon2Tree1_,
-                                        epsilon3Tree1_, branchDecomposition_,
-                                        useMinMaxPair_, cleanTree_,
-                                        treesNodeCorr_[0], verbose_);
-        preprocessingPipeline<dataType>(mTree2, epsilonTree2_, epsilon2Tree2_,
-                                        epsilon3Tree2_, branchDecomposition_,
-                                        useMinMaxPair_, cleanTree_,
-                                        treesNodeCorr_[1], verbose_);
+        preprocessingPipeline<dataType>(
+          mTree1, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_,
+          branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[0]);
+        preprocessingPipeline<dataType>(
+          mTree2, epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
+          branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[1]);
       }
       tree1 = &(mTree1.tree);
       tree2 = &(mTree2.tree);
@@ -392,24 +389,22 @@ namespace ttk {
             tree1, tree2, outputMatching);
       }
 
-      if(verbose_ > 0) {
-        // std::cout << "TIME COMP.MATC. = " << t_match_time << std::endl;
-        std::stringstream ss;
-        ss << "TIME TOTAL      = " << t_total.getElapsedTime();
-        printMsg(ss.str());
-        printMsg(debug::Separator::L2);
-        std::stringstream ss2;
-        ss2 << "DISTANCE²       = " << distance;
-        printMsg(ss2.str());
-        std::stringstream ss3;
-        ss3 << "DISTANCE        = " << std::sqrt(distance);
-        printMsg(ss3.str());
-        printMsg(debug::Separator::L2);
-        std::stringstream ss4;
-        ss4 << "MEMORY          = " << m.getElapsedUsage();
-        printMsg(ss4.str());
-        printMsg(debug::Separator::L2);
-      }
+      // std::cout << "TIME COMP.MATC. = " << t_match_time << std::endl;
+      std::stringstream ss;
+      ss << "TIME TOTAL      = " << t_total.getElapsedTime();
+      printMsg(ss.str());
+      printMsg(debug::Separator::L2);
+      std::stringstream ss2;
+      ss2 << "DISTANCE²       = " << distance;
+      printMsg(ss2.str());
+      std::stringstream ss3;
+      ss3 << "DISTANCE        = " << std::sqrt(distance);
+      printMsg(ss3.str());
+      printMsg(debug::Separator::L2);
+      std::stringstream ss4;
+      ss4 << "MEMORY          = " << m.getElapsedUsage();
+      printMsg(ss4.str());
+      printMsg(debug::Separator::L2);
 
       if(saveTree_) {
         mTree1 = tree1Ori;
@@ -467,15 +462,13 @@ namespace ttk {
                             treeBackTable, forestBackTable, nRows, nCols);
       }
 
-      if(verbose_ > 0) {
-        std::stringstream ss;
-        ss << "TIME DYNA.PROG. = " << t_dyn.getElapsedTime();
-        printMsg(ss.str());
-        if(not parallelize_) {
-          std::stringstream ss2;
-          ss2 << " - TIME ASSGNMT = " << t_assignment_time_;
-          printMsg(ss2.str());
-        }
+      std::stringstream ss;
+      ss << "TIME DYNA.PROG. = " << t_dyn.getElapsedTime();
+      printMsg(ss.str());
+      if(not parallelize_) {
+        std::stringstream ss2;
+        ss2 << " - TIME ASSGNMT = " << t_assignment_time_;
+        printMsg(ss2.str());
       }
     }
 

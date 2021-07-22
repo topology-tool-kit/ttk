@@ -101,7 +101,6 @@ private:
   double Tol = 0.0;
   bool Parallelize = true;
   int NumberOfThreads = 0;
-  bool Verbose = true;
 
   // ----------------------
   // Data for visualization
@@ -340,9 +339,6 @@ public:
 
   vtkSetMacro(ProgressiveSpeedDivisor, double);
   vtkGetMacro(ProgressiveSpeedDivisor, double);
-
-  vtkSetMacro(Verbose, bool);
-  vtkGetMacro(Verbose, bool);
 
   vtkSetMacro(Tol, double);
   vtkGetMacro(Tol, double);

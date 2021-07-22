@@ -243,20 +243,16 @@ public:
   // Matching Visualization
   // ==========================================================================
   template <class dataType>
-  void
-    makeMatchingOutput(FTMTree_MT *tree1, FTMTree_MT *tree2, int verbose = 0) {
+  void makeMatchingOutput(FTMTree_MT *tree1, FTMTree_MT *tree2) {
     std::vector<FTMTree_MT *> trees{tree1, tree2};
     std::vector<FTMTree_MT *> barycenters;
 
-    makeMatchingOutput<dataType>(trees, barycenters, verbose);
+    makeMatchingOutput<dataType>(trees, barycenters);
   }
 
   template <class dataType>
   void makeMatchingOutput(std::vector<FTMTree_MT *> &trees,
-                          std::vector<FTMTree_MT *> &barycenters,
-                          int verbose = 0) {
-    // verbose = 2;
-
+                          std::vector<FTMTree_MT *> &barycenters) {
     int numInputs = trees.size();
     int NumberOfBarycenters = barycenters.size();
     bool clusteringOutput = (NumberOfBarycenters != 0);
@@ -287,9 +283,7 @@ public:
     matchingPercentMatch->SetName("MatchingPercentMatch");
 
     // Iterate through clusters and trees
-    if(verbose > 0)
-      printMsg(
-        "// Iterate through clusters and trees", debug::Priority::VERBOSE);
+    printMsg("// Iterate through clusters and trees", debug::Priority::VERBOSE);
     int count = 0;
     for(int c = 0; c < NumberOfBarycenters; ++c) {
       for(int i = 0; i < numInputs; ++i) {
@@ -313,8 +307,7 @@ public:
             tree1 = barycenters[c];
 
           // Get first point
-          if(verbose > 1)
-            printMsg("// Get first point", debug::Priority::VERBOSE);
+          printMsg("// Get first point", debug::Priority::VERBOSE);
           SimplexId pointToGet1 = clusteringOutput ? nodeCorr2[c][tree1NodeId]
                                                    : nodeCorr1[0][tree1NodeId];
           double *point1 = vtkOutputNode2->GetPoints()->GetPoint(pointToGet1);
@@ -322,8 +315,7 @@ public:
           pointIds[0] = nextPointId1;
 
           // Get second point
-          if(verbose > 1)
-            printMsg("// Get second point", debug::Priority::VERBOSE);
+          printMsg("// Get second point", debug::Priority::VERBOSE);
           SimplexId pointToGet2 = clusteringOutput ? nodeCorr1[i][tree2NodeId]
                                                    : nodeCorr1[1][tree2NodeId];
           double *point2 = vtkOutputNode1->GetPoints()->GetPoint(pointToGet2);
@@ -331,22 +323,17 @@ public:
           pointIds[1] = nextPointId2;
 
           // Add cell
-          if(verbose > 1)
-            printMsg("// Add cell", debug::Priority::VERBOSE);
+          printMsg("// Add cell", debug::Priority::VERBOSE);
           vtkMatching->InsertNextCell(VTK_LINE, 2, pointIds);
 
           // Add arc matching percentage
-          if(verbose > 1)
-            printMsg(
-              "// Add arc matching percentage", debug::Priority::VERBOSE);
+          printMsg("// Add arc matching percentage", debug::Priority::VERBOSE);
           if(allBaryPercentMatch.size() != 0)
             matchingPercentMatch->InsertNextTuple1(
               allBaryPercentMatch[c][tree1NodeId]);
 
           // Add tree1 and tree2 node ids
-          if(verbose > 1)
-            printMsg(
-              "// Add tree1 and tree2 node ids", debug::Priority::VERBOSE);
+          printMsg("// Add tree1 and tree2 node ids", debug::Priority::VERBOSE);
           tree1NodeIdField->InsertNextTuple1(pointToGet1);
           tree2NodeIdField->InsertNextTuple1(pointToGet2);
 
@@ -354,8 +341,7 @@ public:
           matchingID->InsertNextTuple1(count);
 
           // Add matching type
-          if(verbose > 1)
-            printMsg("// Add matching type", debug::Priority::VERBOSE);
+          printMsg("// Add matching type", debug::Priority::VERBOSE);
           int thisType = 0;
           int tree1NodeDown
             = tree1->getNode(tree1NodeId)->getNumberOfDownSuperArcs();
@@ -377,9 +363,7 @@ public:
           matchingType->InsertNextTuple1(thisType);
 
           // Add mean matched persistence
-          if(verbose > 1)
-            printMsg(
-              "// Add mean matched persistence", debug::Priority::VERBOSE);
+          printMsg("// Add mean matched persistence", debug::Priority::VERBOSE);
           double tree1Pers = tree1->getNodePersistence<dataType>(tree1NodeId);
           double tree2Pers = tree2->getNodePersistence<dataType>(tree2NodeId);
           double meanPersistence = (tree1Pers + tree2Pers) / 2;
@@ -408,33 +392,30 @@ public:
   // Trees Visualization
   // ==========================================================================
   template <class dataType>
-  void makeTreesOutput(FTMTree_MT *tree1, int verbose = 0) {
+  void makeTreesOutput(FTMTree_MT *tree1) {
     std::vector<FTMTree_MT *> trees{tree1};
 
-    makeTreesOutput<dataType>(trees, verbose);
+    makeTreesOutput<dataType>(trees);
   }
 
   template <class dataType>
-  void makeTreesOutput(FTMTree_MT *tree1, FTMTree_MT *tree2, int verbose = 0) {
+  void makeTreesOutput(FTMTree_MT *tree1, FTMTree_MT *tree2) {
     std::vector<FTMTree_MT *> trees{tree1, tree2};
 
-    makeTreesOutput<dataType>(trees, verbose);
+    makeTreesOutput<dataType>(trees);
   }
 
   template <class dataType>
-  void makeTreesOutput(std::vector<FTMTree_MT *> &trees, int verbose = 0) {
+  void makeTreesOutput(std::vector<FTMTree_MT *> &trees) {
     std::vector<FTMTree_MT *> barycenters;
     clusteringAssignment = std::vector<int>(trees.size(), 0);
 
-    makeTreesOutput<dataType>(trees, barycenters, verbose);
+    makeTreesOutput<dataType>(trees, barycenters);
   }
 
   template <class dataType>
   void makeTreesOutput(std::vector<FTMTree_MT *> &trees,
-                       std::vector<FTMTree_MT *> &barycenters,
-                       int verbose = 0) {
-    // verbose = 5;
-
+                       std::vector<FTMTree_MT *> &barycenters) {
     int numInputs = trees.size();
     int numInputsOri = numInputs;
     int NumberOfBarycenters = barycenters.size();
@@ -443,8 +424,7 @@ public:
       = std::max(NumberOfBarycenters, 1); // to always enter the outer loop
 
     // Bounds
-    if(verbose > 0)
-      printMsg("Bounds and branching", debug::Priority::VERBOSE);
+    printMsg("Bounds and branching", debug::Priority::VERBOSE);
     std::vector<std::tuple<double, double, double, double, double, double>>
       allBounds(numInputs);
     for(int i = 0; i < numInputs; ++i) {
@@ -482,8 +462,7 @@ public:
     // ----------------------------------------------------------------------
     // Make Trees Output
     // ----------------------------------------------------------------------
-    if(verbose > 0)
-      printMsg("--- Make Trees Output", debug::Priority::VERBOSE);
+    printMsg("--- Make Trees Output", debug::Priority::VERBOSE);
     std::vector<FTMTree_MT *> treesOri(trees);
     if(ShiftMode == 1) { // Star Barycenter
       trees.clear();
@@ -572,13 +551,11 @@ public:
     // --------------------------------------------------------
     // Iterate through all clusters
     // --------------------------------------------------------
-    if(verbose > 0)
-      printMsg("Iterate through all clusters", debug::Priority::VERBOSE);
+    printMsg("Iterate through all clusters", debug::Priority::VERBOSE);
     for(int c = 0; c < NumberOfBarycenters; ++c) {
 
       // Get radius
-      if(verbose > 1)
-        printMsg("// Get radius", debug::Priority::VERBOSE);
+      printMsg("// Get radius", debug::Priority::VERBOSE);
       double delta_max = std::numeric_limits<double>::lowest();
       int noSample = 0 + noSampleOffset;
       for(int i = 0; i < numInputsOri; ++i) {
@@ -604,9 +581,8 @@ public:
       // ------------------------------------------
       // Iterate through all trees of this cluster
       // ------------------------------------------
-      if(verbose > 0)
-        printMsg("Iterate through all trees of this cluster",
-                 debug::Priority::VERBOSE);
+      printMsg(
+        "Iterate through all trees of this cluster", debug::Priority::VERBOSE);
       for(int i = 0; i < numInputs; ++i) {
         if(clusteringAssignment[i] != c)
           continue;
@@ -626,15 +602,13 @@ public:
         foundOneInterpolatedTree |= isInterpolatedTree;
 
         // Get branching
-        if(verbose > 1)
-          printMsg("// Get branching", debug::Priority::VERBOSE);
+        printMsg("// Get branching", debug::Priority::VERBOSE);
         std::vector<ftm::idNode> treeBranching;
         std::vector<int> treeBranchingID;
         trees[i]->getTreeBranching(treeBranching, treeBranchingID);
 
         // Get shift
-        if(verbose > 1)
-          printMsg("// Get shift", debug::Priority::VERBOSE);
+        printMsg("// Get shift", debug::Priority::VERBOSE);
         double angle = 360.0 / noSample * iSample;
         double pi = 3.14159265359;
         double diff_x = 0, diff_y = 0;
@@ -666,8 +640,7 @@ public:
         }
 
         // Get dimension shift
-        if(verbose > 1)
-          printMsg("// Get dimension shift", debug::Priority::VERBOSE);
+        printMsg("// Get dimension shift", debug::Priority::VERBOSE);
         double diff_z = PlanarLayout ? 0 : -std::get<4>(allBounds[i]);
         // TODO DimensionToShift for Planar Layout
         if(not PlanarLayout)
@@ -680,8 +653,7 @@ public:
           }
 
         // Planar layout
-        if(verbose > 1)
-          printMsg("// Planar Layout", debug::Priority::VERBOSE);
+        printMsg("// Planar Layout", debug::Priority::VERBOSE);
         std::vector<float> layout;
         if(PlanarLayout) {
           double refPersistence;
@@ -696,8 +668,7 @@ public:
         }
 
         // Internal arrays
-        if(verbose > 1)
-          printMsg("// Internal arrays", debug::Priority::VERBOSE);
+        printMsg("// Internal arrays", debug::Priority::VERBOSE);
         int cptNode = 0;
         nodeCorr[i] = std::vector<SimplexId>(trees[i]->getNumberOfNodes());
         std::vector<SimplexId> treeSimplexId(trees[i]->getNumberOfNodes());
@@ -723,8 +694,7 @@ public:
         // ----------------------------
         // Tree traversal
         // ----------------------------
-        if(verbose > 0)
-          printMsg("// Tree traversal", debug::Priority::VERBOSE);
+        printMsg("// Tree traversal", debug::Priority::VERBOSE);
         std::queue<idNode> queue;
         queue.emplace(trees[i]->getRoot());
         while(!queue.empty()) {
@@ -733,8 +703,7 @@ public:
           idNode nodeOrigin = trees[i]->getNode(node)->getOrigin();
 
           // Push children to the queue
-          if(verbose > 2)
-            printMsg("// Push children to the queue", debug::Priority::VERBOSE);
+          printMsg("// Push children to the queue", debug::Priority::VERBOSE);
           std::vector<idNode> children;
           trees[i]->getChildren(node, children);
           for(auto child : children)
@@ -743,8 +712,7 @@ public:
           // --------------
           // Insert point
           // --------------
-          if(verbose > 2)
-            printMsg("// Get and insert point", debug::Priority::VERBOSE);
+          printMsg("// Get and insert point", debug::Priority::VERBOSE);
           int nodeMesh = -1;
           int nodeMeshTreeIndex = -1;
           double noMatched = 0.0;
@@ -807,8 +775,7 @@ public:
           // --------------
           // Insert cell connecting parent
           // --------------
-          if(verbose > 2)
-            printMsg("// Add cell connecting parent", debug::Priority::VERBOSE);
+          printMsg("// Add cell connecting parent", debug::Priority::VERBOSE);
           if(!trees[i]->isRoot(node)) {
             vtkIdType pointIds[2];
             pointIds[0] = treeSimplexId[node];
@@ -848,9 +815,7 @@ public:
                   allBaryPercentMatch[c][allBaryBranching[c][node]]);
 
               // Add branch bary ID
-              if(verbose > 2)
-                printMsg(
-                  "// Push arc bary branch id", debug::Priority::VERBOSE);
+              printMsg("// Push arc bary branch id", debug::Priority::VERBOSE);
               if(clusteringOutput and ShiftMode != 1) {
                 int tBranchID = -1;
                 if(treeMatching[node] >= 0
@@ -874,8 +839,7 @@ public:
               downNodeId->InsertNextTuple1(treeSimplexId[node]);
 
               // Add arc persistence
-              if(verbose > 2)
-                printMsg("// Push arc persistence", debug::Priority::VERBOSE);
+              printMsg("// Push arc persistence", debug::Priority::VERBOSE);
               idNode nodeToGetPers = treeBranching[node];
               if(PlanarLayout and branchDecompositionPlanarLayout_)
                 nodeToGetPers = node;
@@ -933,8 +897,7 @@ public:
             scalar->InsertNextTuple1(trees[i]->getValue<dataType>(node));
 
             // Add criticalType
-            if(verbose > 2)
-              printMsg("// Add criticalType", debug::Priority::VERBOSE);
+            printMsg("// Add criticalType", debug::Priority::VERBOSE);
             int criticalTypeT = -1;
             if(not isInterpolatedTree) {
               if(ShiftMode == 1) {
@@ -962,8 +925,7 @@ public:
             }
 
             // Add node branch bary id
-            if(verbose > 2)
-              printMsg("// Add node bary branch id", debug::Priority::VERBOSE);
+            printMsg("// Add node bary branch id", debug::Priority::VERBOSE);
             if(clusteringOutput and ShiftMode != 1) {
               int tBranchID = -1;
               if(treeMatching[node] >= 0
@@ -983,8 +945,7 @@ public:
             branchNodeID->InsertNextTuple1(tBranchID);
 
             // Add node persistence
-            if(verbose > 2)
-              printMsg("// Push node persistence", debug::Priority::VERBOSE);
+            printMsg("// Push node persistence", debug::Priority::VERBOSE);
             persistenceNode->InsertNextTuple1(
               trees[i]->getNodePersistence<dataType>(node));
 
@@ -1019,15 +980,13 @@ public:
             pointCount++;
           }
 
-          if(verbose > 2)
-            printMsg("end loop", debug::Priority::VERBOSE);
+          printMsg("end loop", debug::Priority::VERBOSE);
         } // end tree traversal
 
         // --------------
         // Manage segmentation
         // --------------
-        if(verbose > 1)
-          printMsg("// Shift segmentation", debug::Priority::VERBOSE);
+        printMsg("// Shift segmentation", debug::Priority::VERBOSE);
         if(OutputSegmentation and not PlanarLayout) {
           auto iTreesSegmentationCopy
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
@@ -1053,8 +1012,7 @@ public:
       persistenceBaryArc->InsertNextTuple1(0);
 
     // --- Add VTK arrays to output
-    if(verbose > 1)
-      printMsg("// Add VTK arrays to output", debug::Priority::VERBOSE);
+    printMsg("// Add VTK arrays to output", debug::Priority::VERBOSE);
     // Manage node output
     vtkOutputNode->SetPoints(points);
     vtkOutputNode->GetPointData()->AddArray(criticalType);

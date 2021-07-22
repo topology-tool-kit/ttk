@@ -547,8 +547,8 @@ namespace ttk {
                 for(unsigned int j = 0; j < assignedAlphas[i].size(); ++j)
                   assignedAlphas[i][j] /= alphasSum;
                 treesMatchingVector matching(assignedTrees[i].size());
-                computeOneBarycenter<dataType>(assignedTrees[i], centroids[i],
-                                               assignedAlphas[i], matching, 0);
+                computeOneBarycenter<dataType>(
+                  assignedTrees[i], centroids[i], assignedAlphas[i], matching);
                 std::vector<ftm::idNode> deletedNodesT;
                 persistenceThresholding<dataType>(
                   &(centroids[i].tree), 0, deletedNodesT);
@@ -572,10 +572,9 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       std::vector<double> &alphas,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &finalMatchings,
-      int verboseT = 0) {
+        &finalMatchings) {
       MergeTreeBarycenter ftmTreeEditDistanceBary;
-      ftmTreeEditDistanceBary.setVerbose(0);
+      ftmTreeEditDistanceBary.setDebugLevel(2);
       ftmTreeEditDistanceBary.setProgressiveComputation(false);
       ftmTreeEditDistanceBary.setBranchDecomposition(true);
       ftmTreeEditDistanceBary.setNormalizedWasserstein(normalizedWasserstein_);
@@ -592,9 +591,8 @@ namespace ttk {
       ftmTreeEditDistanceBary.setDeterministic(deterministic_);
       ftmTreeEditDistanceBary.setTol(tol_);
 
-      // verboseT = 1;
       ftmTreeEditDistanceBary.computeBarycenter<dataType>(
-        trees, baryMergeTree, alphas, finalMatchings, verboseT);
+        trees, baryMergeTree, alphas, finalMatchings);
 
       addDeletedNodesTime_ += ftmTreeEditDistanceBary.getAddDeletedNodesTime();
     }
@@ -815,7 +813,7 @@ namespace ttk {
       for(unsigned int i = 0; i < trees.size(); ++i) {
         preprocessingPipeline<dataType>(
           trees[i], epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
-          branchDecomposition_, useMinMaxPairT, cleanTree_, nodeCorr[i], 0);
+          branchDecomposition_, useMinMaxPairT, cleanTree_, nodeCorr[i]);
         if(trees.size() < 40)
           printTreeStats(trees[i]);
       }

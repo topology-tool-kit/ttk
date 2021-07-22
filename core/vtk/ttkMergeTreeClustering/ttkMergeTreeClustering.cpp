@@ -114,25 +114,18 @@ int ttkMergeTreeClustering::FillOutputPortInformation(int port,
 int ttkMergeTreeClustering::RequestData(vtkInformation *request,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
-  int verbose = 0;
   // ------------------------------------------------------------------------------------
   // --- Get input object from input vector
   // ------------------------------------------------------------------------------------
-  if(verbose > 0)
-    std::cout << "Get input object from input vector" << std::endl;
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
   auto blocks2 = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
 
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
-  if(verbose > 0)
-    std::cout << "Load blocks" << std::endl;
   std::vector<vtkMultiBlockDataSet *> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
-  if(verbose > 0)
-    std::cout << "Load blocks done." << std::endl;
   int dataTypeInt
     = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
         ->GetPointData()
@@ -166,13 +159,9 @@ int ttkMergeTreeClustering::runCompute(
   vtkInformationVector *outputVector,
   std::vector<vtkMultiBlockDataSet *> &inputTrees,
   std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
-  int verbose = 0;
-
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
-  if(verbose > 0)
-    std::cout << "Construct trees" << std::endl;
 
   const int numInputs = inputTrees.size();
   const int numInputs2 = inputTrees2.size();
@@ -195,8 +184,6 @@ int ttkMergeTreeClustering::runCompute(
   // ------------------------------------------------------------------------------------
   // --- Call base
   // ------------------------------------------------------------------------------------
-  if(verbose > 0)
-    printMsg("Call base");
   bool AddNodes = true;
   // Classical distance
   double distance = 0;
@@ -235,7 +222,6 @@ int ttkMergeTreeClustering::runCompute(
   // Call base
   if(not ComputeBarycenter) {
     MergeTreeDistance mergeTreeDistance;
-    mergeTreeDistance.setVerbose(Verbose);
     mergeTreeDistance.setAssignmentSolver(AssignmentSolver);
     mergeTreeDistance.setEpsilonTree1(EpsilonTree1);
     mergeTreeDistance.setEpsilonTree2(EpsilonTree2);
@@ -354,8 +340,6 @@ int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
   std::vector<vtkMultiBlockDataSet *> &inputTrees,
   std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
-  int verbose = 0;
-
   std::vector<MergeTree<dataType>> intermediateMTrees;
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
   std::vector<FTMTree_MT *> intermediateTrees;
@@ -432,8 +416,9 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setVtkOutputNode(vtkOutputNode1);
       visuMaker.setVtkOutputArc(vtkOutputArc1);
       visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
+      visuMaker.setDebugLevel(this->debugLevel_);
 
-      visuMaker.makeTreesOutput<dataType>(tree1, verbose);
+      visuMaker.makeTreesOutput<dataType>(tree1);
       nodeCorr.push_back(visuMaker.getNodeCorr()[0]);
 
       // Second tree
@@ -444,8 +429,9 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setVtkOutputNode(vtkOutputNode2);
       visuMaker.setVtkOutputArc(vtkOutputArc2);
       visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation2);
+      visuMaker.setDebugLevel(this->debugLevel_);
 
-      visuMaker.makeTreesOutput<dataType>(tree2, verbose);
+      visuMaker.makeTreesOutput<dataType>(tree2);
       nodeCorr.push_back(visuMaker.getNodeCorr()[0]);
 
       // Field data
@@ -483,8 +469,9 @@ int ttkMergeTreeClustering::runOutput(
       visuMakerMatching.setVtkOutputNode2(vtkOutputNode1);
       visuMakerMatching.setVtkOutputNode1(vtkOutputNode2);
       visuMakerMatching.setNodeCorr1(nodeCorr);
+      visuMakerMatching.setDebugLevel(this->debugLevel_);
 
-      visuMakerMatching.makeMatchingOutput<dataType>(tree1, tree2, verbose);
+      visuMakerMatching.makeMatchingOutput<dataType>(tree1, tree2);
 
       // Field data
       vtkNew<vtkDoubleArray> vtkDistance{};
@@ -511,9 +498,6 @@ int ttkMergeTreeClustering::runOutput(
       // ------------------------------------------
       // --- Input trees
       // ------------------------------------------
-      if(verbose > 0)
-        std::cout << "// --- Input trees" << std::endl;
-
       output_clusters->SetNumberOfBlocks(numInputs);
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
         for(int i = 0; i < numInputs; ++i) {
@@ -554,9 +538,10 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setOutputMatchingBarycenter(outputMatchingBarycenter);
           visuMaker.setPrintTreeId(i);
           visuMaker.setPrintClusterId(c);
+          visuMaker.setDebugLevel(this->debugLevel_);
 
           visuMaker.makeTreesOutput<dataType>(
-            intermediateTrees, barycentersTree, verbose);
+            intermediateTrees, barycentersTree);
           auto nodeCorrT = visuMaker.getNodeCorr();
           nodeCorr[i] = nodeCorrT[i];
 
@@ -581,9 +566,6 @@ int ttkMergeTreeClustering::runOutput(
       // ------------------------------------------
       // --- Barycenter(s)
       // ------------------------------------------
-      if(verbose > 0)
-        std::cout << "// --- Barycenter" << std::endl;
-
       output_centroids->SetNumberOfBlocks(NumberOfBarycenters);
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
 
@@ -624,9 +606,10 @@ int ttkMergeTreeClustering::runOutput(
           visuMakerBary.setBarycenterPositionAlpha(BarycenterPositionAlpha);
           visuMakerBary.setAlpha(Alpha);
         }
+        visuMakerBary.setDebugLevel(this->debugLevel_);
 
         visuMakerBary.makeTreesOutput<dataType>(
-          intermediateTrees, barycentersTree, verbose);
+          intermediateTrees, barycentersTree);
         auto nodeCorrBaryT = visuMakerBary.getNodeCorr();
         nodeCorrBary[c] = nodeCorrBaryT[c];
         auto allBaryPercentMatchT = visuMakerBary.getAllBaryPercentMatch();
@@ -646,9 +629,6 @@ int ttkMergeTreeClustering::runOutput(
       // ------------------------------------------
       // --- Matching
       // ------------------------------------------
-      if(verbose > 0)
-        std::cout << "// --- Matching" << std::endl;
-
       output_matchings->SetNumberOfBlocks(numInputs);
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
         for(int i = 0; i < numInputs; ++i) {
@@ -679,9 +659,10 @@ int ttkMergeTreeClustering::runOutput(
           visuMakerMatching.setNodeCorr2(nodeCorrBary);
           visuMakerMatching.setPrintTreeId(i);
           visuMakerMatching.setPrintClusterId(c);
+          visuMakerMatching.setDebugLevel(this->debugLevel_);
 
           visuMakerMatching.makeMatchingOutput<dataType>(
-            intermediateTrees, barycentersTree, verbose);
+            intermediateTrees, barycentersTree);
 
           // Field data
           vtkNew<vtkDoubleArray> vtkDistance{};
@@ -697,11 +678,9 @@ int ttkMergeTreeClustering::runOutput(
     }
   }
 
-  if(Verbose > 0) {
-    std::stringstream ss;
-    ss << "TIME TREES OUT. = " << t_makeTreesOutput.getElapsedTime();
-    printMsg(ss.str());
-  }
+  std::stringstream ss;
+  ss << "TIME TREES OUT. = " << t_makeTreesOutput.getElapsedTime();
+  printMsg(ss.str());
 
   return 1;
 }

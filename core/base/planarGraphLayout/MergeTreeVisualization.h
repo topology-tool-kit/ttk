@@ -246,19 +246,14 @@ public:
     std::tuple<double, double, double, double, double, double> oldBounds,
     double refPersistence,
     std::vector<float> &retVec) {
-    int verbose = 0;
-
-    if(verbose > 0) {
-      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
-      printMsg("Planar Layout", debug::Priority::VERBOSE);
-    }
+    printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
+    printMsg("Planar Layout", debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Init internal parameters
     // ----------------------------------------------------
     Timer t_init;
-    if(verbose > 1)
-      printMsg("Init internal parameters", debug::Priority::VERBOSE);
+    printMsg("Init internal parameters", debug::Priority::VERBOSE);
 
     auto nPoints = tree->getRealNumberOfNodes();
     int outNumberOfPoints = nPoints * 2;
@@ -271,18 +266,15 @@ public:
     std::vector<std::vector<ftm::idNode>> nodeBranching;
     tree->getTreeBranching(branching, branchingID, nodeBranching);
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "INIT            = " << t_init.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss;
+    ss << "INIT            = " << t_init.getElapsedTime();
+    printMsg(ss.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Iterate through tree
     // ----------------------------------------------------
     Timer t_iterate;
-    if(verbose > 1)
-      printMsg("Iterate through tree", debug::Priority::VERBOSE);
+    printMsg("Iterate through tree", debug::Priority::VERBOSE);
 
     std::queue<idNode> queue;
     ftm::idNode treeRoot = tree->getRoot();
@@ -305,11 +297,9 @@ public:
       }
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "ITERATE TREE    = " << t_iterate.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss2;
+    ss2 << "ITERATE TREE    = " << t_iterate.getElapsedTime();
+    printMsg(ss2.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Prepositioning coordinates
@@ -335,8 +325,7 @@ public:
     // Rescale coordinates
     // ----------------------------------------------------
     Timer t_rescale;
-    if(verbose > 1)
-      printMsg("Rescale coordinates ", debug::Priority::VERBOSE);
+    printMsg("Rescale coordinates ", debug::Priority::VERBOSE);
 
     float x_min, y_min, x_max, y_max;
     x_min = std::numeric_limits<float>::max();
@@ -378,11 +367,9 @@ public:
       retVec[i + 1] = retVec[i + 1] * diff + offset;
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "RESCALE COORD.  = " << t_rescale.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss3;
+    ss3 << "RESCALE COORD.  = " << t_rescale.getElapsedTime();
+    printMsg(ss3.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Call Branch Decomposition Planar Layout if asked
@@ -397,8 +384,7 @@ public:
     // Move nodes given scalars
     // ----------------------------------------------------
     Timer t_move;
-    if(verbose > 1)
-      printMsg("Move nodes given scalars", debug::Priority::VERBOSE);
+    printMsg("Move nodes given scalars", debug::Priority::VERBOSE);
 
     float rootY = retVec[treeSimplexId[treeRoot] * 2 + 1];
     float rootOriginY = retVec[treeSimplexId[treeRootOrigin] * 2 + 1];
@@ -414,18 +400,15 @@ public:
         = retVec[treeSimplexId[i] * 2 + 1] * (rootYmax - rootYmin) + rootYmin;
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "MOVE SCALAR     = " << t_move.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss4;
+    ss4 << "MOVE SCALAR     = " << t_move.getElapsedTime();
+    printMsg(ss4.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Scale pairs given persistence
     // ----------------------------------------------------
     Timer t_scale;
-    if(verbose > 1)
-      printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
+    printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
 
     dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
 
@@ -471,9 +454,9 @@ public:
           oldNodeParent = nodeParent;
           nodeParent = tree->getParentSafe(nodeParent);
           if(oldNodeParent == nodeParent) {
-            std::stringstream ss;
-            ss << "treePlanarLayoutImpl oldNodeParent == nodeParent";
-            printMsg(ss.str(), debug::Priority::VERBOSE);
+            std::stringstream ss5;
+            ss5 << "treePlanarLayoutImpl oldNodeParent == nodeParent";
+            printMsg(ss5.str(), debug::Priority::VERBOSE);
             break;
           }
         }
@@ -488,18 +471,15 @@ public:
       }
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "SCALE PERS.     = " << t_scale.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss5;
+    ss5 << "SCALE PERS.     = " << t_scale.getElapsedTime();
+    printMsg(ss5.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Branches positionning and avoid edges crossing
     // ----------------------------------------------------
     Timer t_avoid;
-    if(verbose > 1)
-      printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
+    printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
 
     bool isJT = tree->isJoinTree<dataType>();
     auto compValue = [&](const ftm::idNode a, const ftm::idNode b) {
@@ -716,12 +696,10 @@ public:
       }
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "AVOID CROSSING  = " << t_avoid.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-      printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
-    }
+    std::stringstream ss6;
+    ss6 << "AVOID CROSSING  = " << t_avoid.getElapsedTime();
+    printMsg(ss6.str(), debug::Priority::VERBOSE);
+    printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
   }
 
   template <class dataType>
