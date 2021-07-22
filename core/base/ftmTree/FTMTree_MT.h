@@ -637,9 +637,9 @@ namespace ttk {
 
       idNode getParentSafe(idNode nodeId);
 
-      std::vector<idNode> getChildren(idNode nodeId);
+      void getChildren(idNode nodeId, std::vector<idNode> &res);
 
-      std::vector<idNode> getLeavesFromTree();
+      void getLeavesFromTree(std::vector<idNode> &res);
 
       int getNumberOfLeavesFromTree();
 
@@ -647,8 +647,8 @@ namespace ttk {
 
       int getRealNumberOfNodes();
 
-      std::tuple<std::vector<idNode>, std::vector<idNode>>
-        getBranchOriginsFromThisBranch(idNode node);
+      void getBranchOriginsFromThisBranch(
+        idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res);
 
       void getTreeBranching(std::vector<idNode> &branching,
                             std::vector<int> &branchingID,
@@ -657,7 +657,7 @@ namespace ttk {
       void getTreeBranching(std::vector<idNode> &branching,
                             std::vector<int> &branchingID);
 
-      std::vector<idNode> getAllRoots();
+      void getAllRoots(std::vector<idNode> &res);
 
       int getNumberOfRoot();
 
@@ -667,12 +667,13 @@ namespace ttk {
 
       int getNodeLevel(idNode nodeId);
 
-      std::vector<int> getAllNodeLevel();
+      void getAllNodeLevel(std::vector<int> &res);
 
-      std::vector<std::vector<idNode>> getLevelToNode();
+      void getLevelToNode(std::vector<std::vector<idNode>> &res);
 
-      std::vector<idNode> getBranchSubtree(std::vector<idNode> &branching,
-                                           idNode branchRoot);
+      void getBranchSubtree(std::vector<idNode> &branching,
+                            idNode branchRoot,
+                            std::vector<idNode> &res);
 
       template <class dataType>
       idNode getLowestNode(idNode nodeStart);
@@ -703,7 +704,8 @@ namespace ttk {
       template <class dataType>
       std::vector<ftm::idNode> getMultiPersOrigins(bool useBD);
 
-      std::vector<std::vector<idNode>> getMultiPersOriginsVectorFromTree();
+      void getMultiPersOriginsVectorFromTree(
+        std::vector<std::vector<idNode>> &res);
 
       // --------------------
       // Set

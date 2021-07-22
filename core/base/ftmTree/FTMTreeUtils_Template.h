@@ -39,7 +39,9 @@ namespace ttk {
     template <class dataType>
     bool FTMTree_MT::isJoinTree() {
       auto root = this->getRoot();
-      idNode child = this->getChildren(root)[0];
+      std::vector<idNode> rootChildren;
+      this->getChildren(root, rootChildren);
+      idNode child = rootChildren[0];
       if(this->isFullMerge()) {
         dataType min = std::numeric_limits<dataType>::max();
         for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i) {
@@ -80,7 +82,7 @@ namespace ttk {
     bool FTMTree_MT::verifyBranchDecompositionInconsistency() {
       bool inconsistency = false;
       std::queue<idNode> queue;
-      queue.push(this->getRoot());
+      queue.emplace(this->getRoot());
       while(!queue.empty()) {
         idNode node = queue.front();
         queue.pop();
@@ -90,8 +92,10 @@ namespace ttk {
           this->printNode2<dataType>(this->getParentSafe(node));
           inconsistency = true;
         }
-        for(idNode child : this->getChildren(node))
-          queue.push(child);
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
+          queue.emplace(child);
       }
       return inconsistency;
     }
@@ -115,7 +119,9 @@ namespace ttk {
           lowestNode = node;
           bestVal = val;
         }
-        for(auto child : this->getChildren(node))
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
           queue.emplace(child);
       }
       return lowestNode;
@@ -195,7 +201,7 @@ namespace ttk {
           if(!this->isNodeAlone(i) and this->getNode(i)->getOrigin() != (int)i)
             nodes.push_back(i);
       } else
-        nodes = this->getLeavesFromTree();
+        this->getLeavesFromTree(nodes);
       for(auto node : nodes) {
         auto pers = this->getNodePersistence<dataType>(node);
         pairs.push_back(

@@ -98,7 +98,8 @@ public:
     };
 
     // Go
-    std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
+    std::vector<ftm::idNode> leaves;
+    tree->getLeavesFromTree(leaves);
     std::sort(leaves.begin(), leaves.end(), compLowerPers);
     std::queue<ftm::idNode> queue;
     for(auto node : leaves)
@@ -240,10 +241,11 @@ public:
 
   // TODO manage multi pers pairs
   template <class dataType>
-  std::vector<float> treePlanarLayoutImpl(
+  void treePlanarLayoutImpl(
     FTMTree_MT *tree,
     std::tuple<double, double, double, double, double, double> oldBounds,
-    double refPersistence) {
+    double refPersistence,
+    std::vector<float> &retVec) {
     int verbose = 0;
 
     if(verbose > 0) {
@@ -260,7 +262,7 @@ public:
 
     auto nPoints = tree->getRealNumberOfNodes();
     int outNumberOfPoints = nPoints * 2;
-    std::vector<float> retVec(outNumberOfPoints);
+    retVec = std::vector<float>(outNumberOfPoints);
 
     int cptNode = 0;
     std::vector<LongSimplexId> treeSimplexId(tree->getNumberOfNodes());
@@ -295,7 +297,8 @@ public:
       ++cptNode;
 
       // Push children to the queue
-      auto children = tree->getChildren(node);
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
       for(size_t i = 0; i < children.size(); ++i) {
         auto child = children[i];
         queue.emplace(child);
@@ -322,7 +325,9 @@ public:
       retVec[treeSimplexId[node] * 2 + 1] = tree->getValue<dataType>(node);
 
       // Push children to the queue
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue2.emplace(child);
     }
 
@@ -385,7 +390,7 @@ public:
     if(branchDecompositionPlanarLayout_) {
       treePlanarLayoutBDImpl<dataType>(
         tree, retVec, treeSimplexId, branching, nodeBranching);
-      return retVec;
+      return;
     }
 
     // ----------------------------------------------------
@@ -424,7 +429,8 @@ public:
 
     dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
 
-    std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
+    std::vector<ftm::idNode> leaves;
+    tree->getLeavesFromTree(leaves);
     auto compLowerPers = [&](const ftm::idNode a, const ftm::idNode b) {
       return tree->getNodePersistence<dataType>(a)
              < tree->getNodePersistence<dataType>(b);
@@ -518,7 +524,9 @@ public:
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
       // Get saddle nodes in the branch
-      auto tupBranchOrigins = tree->getBranchOriginsFromThisBranch(nodeOrigin);
+      std::tuple<std::vector<ftm::idNode>, std::vector<ftm::idNode>>
+        tupBranchOrigins;
+      tree->getBranchOriginsFromThisBranch(nodeOrigin, tupBranchOrigins);
       allBranchOrigins[nodeOrigin] = std::get<0>(tupBranchOrigins);
       std::vector<ftm::idNode> nonBranchOrigins = std::get<1>(tupBranchOrigins);
       allBranchOrigins[nodeOrigin].insert(allBranchOrigins[nodeOrigin].end(),
@@ -714,18 +722,15 @@ public:
       printMsg(ss.str(), debug::Priority::VERBOSE);
       printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
     }
-
-    return retVec;
   }
 
   template <class dataType>
-  std::vector<float> treePlanarLayout(
+  void treePlanarLayout(
     FTMTree_MT *tree,
     std::tuple<double, double, double, double, double, double> oldBounds,
-    double refPersistence) {
-    std::vector<float> res;
-    res = treePlanarLayoutImpl<dataType>(tree, oldBounds, refPersistence);
-    return res;
+    double refPersistence,
+    std::vector<float> &res) {
+    treePlanarLayoutImpl<dataType>(tree, oldBounds, refPersistence, res);
   }
 
   // ==========================================================================
@@ -775,7 +780,9 @@ public:
         x_max = std::max(x_max, retVec[treeSimplexId[node] * 2]);
       }
 
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
 
@@ -875,7 +882,9 @@ public:
       if(node != branchRoot)
         retVec[treeSimplexId[node] * 2] += shift;
 
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
     allBranchBounds[branchRoot]
@@ -885,12 +894,12 @@ public:
         = shiftBranchBoundsTuple(allBranchBounds[node], shift);
   }
 
-  std::vector<double> tupleToVector(
-    std::tuple<double, double, double, double, double, double> &tup) {
-    std::vector<double> vec{std::get<0>(tup), std::get<1>(tup),
-                            std::get<2>(tup), std::get<3>(tup),
-                            std::get<4>(tup), std::get<5>(tup)};
-    return vec;
+  void tupleToVector(
+    std::tuple<double, double, double, double, double, double> &tup,
+    std::vector<double> &vec) {
+    vec = std::vector<double>{std::get<0>(tup), std::get<1>(tup),
+                              std::get<2>(tup), std::get<3>(tup),
+                              std::get<4>(tup), std::get<5>(tup)};
   }
 
   std::tuple<double, double, double, double, double, double>

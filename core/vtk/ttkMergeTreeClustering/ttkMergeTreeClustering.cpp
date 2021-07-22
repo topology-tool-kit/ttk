@@ -189,8 +189,8 @@ int ttkMergeTreeClustering::runCompute(
   constructTrees<dataType>(inputTrees2, intermediateMTrees2, treesNodes2,
                            treesArcs2, treesSegmentation2);
 
-  intermediateTrees = mergeTreeToFTMTree<dataType>(intermediateMTrees);
-  intermediateTrees2 = mergeTreeToFTMTree<dataType>(intermediateMTrees2);
+  mergeTreeToFTMTree<dataType>(intermediateMTrees, intermediateTrees);
+  mergeTreeToFTMTree<dataType>(intermediateMTrees2, intermediateTrees2);
 
   // ------------------------------------------------------------------------------------
   // --- Call base
@@ -295,8 +295,8 @@ int ttkMergeTreeClustering::runCompute(
         Epsilon1UseFarthestSaddle);
       mergeTreeBarycenter.setDebugLevel(this->debugLevel_);
 
-      barycenters[0] = mergeTreeBarycenter.execute<dataType>(
-        intermediateMTrees, outputMatchingBarycenter[0]);
+      mergeTreeBarycenter.execute<dataType>(
+        intermediateMTrees, outputMatchingBarycenter[0], barycenters[0]);
       trees1NodeCorrMesh = mergeTreeBarycenter.getTreesNodeCorr();
       finalDistances = mergeTreeBarycenter.getFinalDistances();
     } else {
@@ -330,21 +330,21 @@ int ttkMergeTreeClustering::runCompute(
         Epsilon1UseFarthestSaddle);
       mergeTreeClustering.setDebugLevel(this->debugLevel_);
 
-      barycenters = mergeTreeClustering.template execute<dataType>(
+      mergeTreeClustering.template execute<dataType>(
         intermediateMTrees, outputMatchingBarycenter, clusteringAssignment,
-        intermediateMTrees2, outputMatchingBarycenter2);
+        intermediateMTrees2, outputMatchingBarycenter2, barycenters);
       trees1NodeCorrMesh = mergeTreeClustering.getTreesNodeCorr();
       trees2NodeCorrMesh = mergeTreeClustering.getTrees2NodeCorr();
       finalDistances = mergeTreeClustering.getFinalDistances();
     }
   }
 
-  intermediateSTrees = mergeTreesTemplateToDouble<dataType>(intermediateMTrees);
+  mergeTreesTemplateToDouble<dataType>(intermediateMTrees, intermediateSTrees);
   if(numInputs2 != 0)
-    intermediateSTrees2
-      = mergeTreesTemplateToDouble<dataType>(intermediateMTrees2);
+    mergeTreesTemplateToDouble<dataType>(
+      intermediateMTrees2, intermediateSTrees2);
   if(ComputeBarycenter)
-    barycentersS = mergeTreesTemplateToDouble<dataType>(barycenters);
+    mergeTreesTemplateToDouble<dataType>(barycenters, barycentersS);
 
   return 1;
 }
@@ -356,14 +356,14 @@ int ttkMergeTreeClustering::runOutput(
   std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
   int verbose = 0;
 
-  std::vector<MergeTree<dataType>> intermediateMTrees
-    = mergeTreesDoubleToTemplate<dataType>(intermediateSTrees);
-  std::vector<FTMTree_MT *> intermediateTrees
-    = mergeTreeToFTMTree<dataType>(intermediateMTrees);
+  std::vector<MergeTree<dataType>> intermediateMTrees;
+  mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
+  std::vector<FTMTree_MT *> intermediateTrees;
+  mergeTreeToFTMTree<dataType>(intermediateMTrees, intermediateTrees);
 
   std::vector<MergeTree<dataType>> barycenters;
   if(ComputeBarycenter)
-    barycenters = mergeTreesDoubleToTemplate<dataType>(barycentersS);
+    mergeTreesDoubleToTemplate<dataType>(barycentersS, barycenters);
 
   const int numInputs = inputTrees.size();
   // const int numInputs2 = inputTrees2.size();
@@ -505,8 +505,8 @@ int ttkMergeTreeClustering::runOutput(
       // --- Declare internal arrays
       std::vector<std::vector<SimplexId>> nodeCorrBary(NumberOfBarycenters);
       std::vector<std::vector<float>> allBaryPercentMatch(NumberOfBarycenters);
-      std::vector<FTMTree_MT *> barycentersTree
-        = mergeTreeToFTMTree<dataType>(barycenters);
+      std::vector<FTMTree_MT *> barycentersTree;
+      mergeTreeToFTMTree<dataType>(barycenters, barycentersTree);
 
       // ------------------------------------------
       // --- Input trees

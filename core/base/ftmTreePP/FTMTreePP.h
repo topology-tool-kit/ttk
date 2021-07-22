@@ -134,7 +134,7 @@ void ttk::ftm::FTMTreePP::computePersistencePairs(
 
   if(useCustomTree) {
     tree = customTree;
-    customTreeLeaves = tree->getLeavesFromTree();
+    tree->getLeavesFromTree(customTreeLeaves);
     nbLeaves = customTreeLeaves.size();
     isJt = jt;
   } else {

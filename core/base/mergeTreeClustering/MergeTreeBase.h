@@ -239,7 +239,9 @@ public:
       ftm::idNode node = queue.front();
       queue.pop();
       nodeStack.emplace(node);
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
     // Iterate through nodes
@@ -320,7 +322,9 @@ public:
            and nodePers / maxPers < epsilon3)
           tree->setParent(node, tree->getParentSafe(nodeParent));
       }
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
 
@@ -374,8 +378,10 @@ public:
     for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
       if(not tree->isNodeAlone(i) and not tree->isNodeOriginDefined(i)) {
         std::stringstream ss;
+        std::vector<idNode> children;
+        tree->getChildren(i, children);
         ss << i << " has no origin (scalar=" << tree->getValue<dataType>(i)
-           << ", noChildren=" << tree->getChildren(i).size()
+           << ", noChildren=" << children.size()
            << ", parent=" << tree->getParentSafe(i) << ")";
         printMsg(ss.str());
         if(!tree->isRoot(i))
@@ -436,7 +442,7 @@ public:
 
     // Manage multi persistence pairing
     std::vector<std::vector<ftm::idNode>> treeMultiPers;
-    treeMultiPers = tree->getMultiPersOriginsVectorFromTree();
+    tree->getMultiPersOriginsVectorFromTree(treeMultiPers);
 
     // General case
     std::vector<bool> nodeDone(tree->getNumberOfNodes(), false);
@@ -505,7 +511,8 @@ public:
           tree->getNode(node)->setOrigin(node);
 
         // Push childrens of the node to the stack to process them
-        std::vector<ftm::idNode> childrenNode = treeNew->getChildren(newParent);
+        std::vector<ftm::idNode> childrenNode;
+        treeNew->getChildren(newParent, childrenNode);
         for(ftm::idNode children : childrenNode)
           if(!treeNew->isLeaf(children))
             queueNodes.emplace(children);
@@ -737,7 +744,8 @@ public:
       }
 
       // Get children and sort them by scalar values
-      std::vector<ftm::idNode> childrenOri = tree->getChildren(node);
+      std::vector<ftm::idNode> childrenOri;
+      tree->getChildren(node, childrenOri);
       std::vector<ftm::idNode> children = childrenOri;
       std::vector<std::tuple<ftm::idNode, dataType>> childrenScalars;
       for(unsigned int i = 0; i < children.size(); ++i) {
@@ -805,7 +813,8 @@ public:
       queue.pop();
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
       if(!tree->isLeaf(node)) {
-        std::vector<ftm::idNode> children = tree->getChildren(node);
+        std::vector<ftm::idNode> children;
+        tree->getChildren(node, children);
         std::vector<ftm::idNode> lowestNodes;
         ftm::idNode branchOrigin = nodeOrigin;
         for(auto child : children) {
@@ -838,7 +847,9 @@ public:
           tree->setParent(children[i], lowestNodeOrigin);
         }
       }
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
   }
@@ -1126,10 +1137,11 @@ public:
                         int i,
                         std::vector<std::vector<dataType>> &treeTable,
                         std::vector<std::vector<dataType>> &forestTable) {
-    std::vector<ftm::idNode> childrens = tree1->getChildren(nodeI);
+    std::vector<ftm::idNode> children;
+    tree1->getChildren(nodeI, children);
     forestTable[i][0] = 0;
-    for(ftm::idNode children : childrens)
-      forestTable[i][0] += treeTable[children + 1][0];
+    for(ftm::idNode child : children)
+      forestTable[i][0] += treeTable[child + 1][0];
   }
 
   template <class dataType>
@@ -1147,10 +1159,11 @@ public:
                          int j,
                          std::vector<std::vector<dataType>> &treeTable,
                          std::vector<std::vector<dataType>> &forestTable) {
-    std::vector<ftm::idNode> childrens = tree2->getChildren(nodeJ);
+    std::vector<ftm::idNode> children;
+    tree2->getChildren(nodeJ, children);
     forestTable[0][j] = 0;
-    for(ftm::idNode children : childrens)
-      forestTable[0][j] += treeTable[0][children + 1];
+    for(ftm::idNode child : children)
+      forestTable[0][j] += treeTable[0][child + 1];
   }
 
   template <class dataType>
@@ -1277,7 +1290,8 @@ public:
 
   template <class dataType>
   void printTreesStats(std::vector<MergeTree<dataType>> &trees) {
-    auto treesT = mergeTreeToFTMTree<dataType>(trees);
+    std::vector<ftm::FTMTree_MT *> treesT;
+    mergeTreeToFTMTree<dataType>(trees, treesT);
     printTreesStats(treesT);
   }
 

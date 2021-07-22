@@ -284,9 +284,9 @@ namespace ttk {
       int indR = tree1->getRoot() + 1;
       int indC = tree2->getRoot() + 1;
 
-      tree1Level_ = tree1->getAllNodeLevel();
-      tree2Level_ = tree2->getAllNodeLevel();
-      tree2LevelToNode_ = tree2->getLevelToNode();
+      tree1->getAllNodeLevel(tree1Level_);
+      tree2->getAllNodeLevel(tree2Level_);
+      tree2->getLevelToNode(tree2LevelToNode_);
 
       // ---------------------
       // ----- Compute edit distance
@@ -495,13 +495,15 @@ namespace ttk {
       int nRows,
       int nCols) {
       if(processTree1) {
-        std::vector<ftm::idNode> childrens = tree1->getChildren(nodeI);
+        std::vector<ftm::idNode> childrens;
+        tree1->getChildren(nodeI, childrens);
         for(auto children : childrens)
           classicEditDistance(tree1, tree2, processTree1, computeEmptyTree,
                               children, nodeJ, treeTable, forestTable,
                               treeBackTable, forestBackTable, nRows, nCols);
       } else {
-        std::vector<ftm::idNode> childrens = tree2->getChildren(nodeJ);
+        std::vector<ftm::idNode> childrens;
+        tree2->getChildren(nodeJ, childrens);
         for(auto children : childrens)
           classicEditDistance(tree1, tree2, processTree1, computeEmptyTree,
                               nodeI, children, treeTable, forestTable,
@@ -531,8 +533,10 @@ namespace ttk {
           //}else{
         } else if(keepSubtree_ or tree1Level_[nodeI] == tree2Level_[nodeJ]) {
           int i = nodeI + 1;
-          std::vector<ftm::idNode> children1 = tree1->getChildren(nodeI);
-          std::vector<ftm::idNode> children2 = tree2->getChildren(nodeJ);
+          std::vector<ftm::idNode> children1;
+          tree1->getChildren(nodeI, children1);
+          std::vector<ftm::idNode> children2;
+          tree2->getChildren(nodeJ, children2);
           // --- Equation 13
           computeEquation13(tree1, tree2, i, j, treeTable, forestTable,
                             forestBackTable, children1, children2);
@@ -559,14 +563,22 @@ namespace ttk {
       int nRows,
       int nCols) {
       std::vector<int> tree1NodeChildSize, tree2NodeChildSize;
-      for(unsigned int i = 0; i < tree1->getNumberOfNodes(); ++i)
-        tree1NodeChildSize.push_back(tree1->getChildren(i).size());
-      for(unsigned int j = 0; j < tree2->getNumberOfNodes(); ++j)
-        tree2NodeChildSize.push_back(tree2->getChildren(j).size());
+      for(unsigned int i = 0; i < tree1->getNumberOfNodes(); ++i) {
+        std::vector<idNode> children;
+        tree1->getChildren(i, children);
+        tree1NodeChildSize.push_back(children.size());
+      }
+      for(unsigned int j = 0; j < tree2->getNumberOfNodes(); ++j) {
+        std::vector<idNode> children;
+        tree2->getChildren(j, children);
+        tree2NodeChildSize.push_back(children.size());
+      }
 
       // Get trees data
-      std::vector<ftm::idNode> tree1Leaves = tree1->getLeavesFromTree();
-      std::vector<ftm::idNode> tree2Leaves = tree2->getLeavesFromTree();
+      std::vector<ftm::idNode> tree1Leaves;
+      tree1->getLeavesFromTree(tree1Leaves);
+      std::vector<ftm::idNode> tree2Leaves;
+      tree2->getLeavesFromTree(tree2Leaves);
 
       // Distance T1 to empty tree
       parallelEmptyTreeDistance_v2(tree1, true, tree1Leaves, tree1NodeChildSize,
@@ -723,8 +735,10 @@ namespace ttk {
             } else if(keepSubtree_
                       or tree1Level_[nodeI] == tree2Level_[nodeT]) {
               int j = nodeT + 1;
-              std::vector<ftm::idNode> children1 = tree1->getChildren(nodeI);
-              std::vector<ftm::idNode> children2 = tree2->getChildren(nodeT);
+              std::vector<ftm::idNode> children1;
+              tree1->getChildren(nodeI, children1);
+              std::vector<ftm::idNode> children2;
+              tree2->getChildren(nodeT, children2);
               // --- Equation 13
               computeEquation13(tree1, tree2, i, j, treeTable, forestTable,
                                 forestBackTable, children1, children2);
@@ -970,8 +984,10 @@ namespace ttk {
               } else {
                 int j = nodeT + 1;
                 ftm::idNode nodeI = i - 1;
-                std::vector<ftm::idNode> children1 = tree1->getChildren(nodeI);
-                std::vector<ftm::idNode> children2 = tree2->getChildren(nodeT);
+                std::vector<ftm::idNode> children1;
+                tree1->getChildren(nodeI, children1);
+                std::vector<ftm::idNode> children2;
+                tree2->getChildren(nodeT, children2);
                 // --- Equation 13
                 computeEquation13(tree1, tree2, i, j, treeTable, forestTable,
                                   forestBackTable, children1, children2);
@@ -1139,7 +1155,9 @@ namespace ttk {
           problem |= thisProblem;
         }
 
-        for(auto c : tree->getChildren(node))
+        std::vector<idNode> children;
+        tree->getChildren(node, children);
+        for(auto c : children)
           queue.emplace(c);
       }
 

@@ -112,23 +112,22 @@ namespace ttk {
       return nodeId;
     }
 
-    std::vector<idNode> FTMTree_MT::getChildren(idNode nodeId) {
-      std::vector<idNode> childrens;
+    void FTMTree_MT::getChildren(idNode nodeId,
+                                 std::vector<idNode> &childrens) {
+      childrens.clear();
       for(idSuperArc i = 0;
           i < this->getNode(nodeId)->getNumberOfDownSuperArcs(); ++i) {
         idSuperArc arcId = this->getNode(nodeId)->getDownSuperArcId(i);
         childrens.push_back(this->getSuperArc(arcId)->getDownNodeId());
       }
-      return childrens;
     }
 
-    std::vector<idNode> FTMTree_MT::getLeavesFromTree() {
-      std::vector<idNode> treeLeaves;
+    void FTMTree_MT::getLeavesFromTree(std::vector<idNode> &treeLeaves) {
+      treeLeaves.clear();
       for(idNode i = 0; i < this->getNumberOfNodes(); ++i) {
         if(this->isLeaf(i) and !this->isRoot(i))
           treeLeaves.push_back(i);
       }
-      return treeLeaves;
     }
 
     int FTMTree_MT::getNumberOfLeavesFromTree() {
@@ -147,8 +146,8 @@ namespace ttk {
       return this->getNumberOfNodes() - this->getNumberOfNodeAlone();
     }
 
-    std::tuple<std::vector<idNode>, std::vector<idNode>>
-      FTMTree_MT::getBranchOriginsFromThisBranch(idNode node) {
+    void FTMTree_MT::getBranchOriginsFromThisBranch(
+      idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res) {
       std::vector<idNode> branchOrigins, nonBranchOrigins;
 
       idNode nodeOrigin = this->getNode(node)->getOrigin();
@@ -161,7 +160,7 @@ namespace ttk {
         nodeParent = this->getParentSafe(nodeParent);
       }
 
-      return std::make_tuple(branchOrigins, nonBranchOrigins);
+      res = std::make_tuple(branchOrigins, nonBranchOrigins);
     }
 
     void FTMTree_MT::getTreeBranching(
@@ -193,7 +192,9 @@ namespace ttk {
           branchingID[node] = branchID;
         }
         ++branchID;
-        for(auto child : this->getChildren(node))
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
           queue.emplace(child);
       }
     }
@@ -204,12 +205,11 @@ namespace ttk {
       this->getTreeBranching(branching, branchingID, nodeBranching);
     }
 
-    std::vector<idNode> FTMTree_MT::getAllRoots() {
-      std::vector<idNode> roots;
+    void FTMTree_MT::getAllRoots(std::vector<idNode> &roots) {
+      roots.clear();
       for(idNode node = 0; node < this->getNumberOfNodes(); ++node)
         if(this->isRoot(node) and !this->isLeaf(node))
           roots.push_back(node);
-      return roots;
     }
 
     int FTMTree_MT::getNumberOfRoot() {
@@ -234,7 +234,9 @@ namespace ttk {
         idNode node = std::get<0>(tup);
         int depth = std::get<1>(tup);
         maxDepth = std::max(maxDepth, depth);
-        for(idNode child : this->getChildren(node))
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
           queue.push(std::make_tuple(child, depth + 1));
       }
       return maxDepth;
@@ -260,8 +262,8 @@ namespace ttk {
       return level;
     }
 
-    std::vector<int> FTMTree_MT::getAllNodeLevel() {
-      std::vector<int> allNodeLevel(this->getNumberOfNodes());
+    void FTMTree_MT::getAllNodeLevel(std::vector<int> &allNodeLevel) {
+      allNodeLevel = std::vector<int>(this->getNumberOfNodes());
       std::queue<std::tuple<idNode, int>> queue;
       queue.push(std::make_tuple(this->getRoot(), 0));
       while(!queue.empty()) {
@@ -270,26 +272,28 @@ namespace ttk {
         idNode node = std::get<0>(tup);
         int level = std::get<1>(tup);
         allNodeLevel[node] = level;
-        for(idNode child : this->getChildren(node))
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
           queue.push(std::make_tuple(child, level + 1));
       }
-      return allNodeLevel;
     }
 
-    std::vector<std::vector<idNode>> FTMTree_MT::getLevelToNode() {
-      std::vector<int> allNodeLevel = this->getAllNodeLevel();
+    void FTMTree_MT::getLevelToNode(
+      std::vector<std::vector<idNode>> &levelToNode) {
+      std::vector<int> allNodeLevel;
+      this->getAllNodeLevel(allNodeLevel);
       int maxLevel = *max_element(allNodeLevel.begin(), allNodeLevel.end());
-      std::vector<std::vector<idNode>> levelToNode(maxLevel + 1);
+      levelToNode = std::vector<std::vector<idNode>>(maxLevel + 1);
       for(unsigned int i = 0; i < allNodeLevel.size(); ++i) {
         levelToNode[allNodeLevel[i]].push_back(i);
       }
-      return levelToNode;
     }
 
-    std::vector<idNode>
-      FTMTree_MT::getBranchSubtree(std::vector<idNode> &branching,
-                                   idNode branchRoot) {
-      std::vector<idNode> branchSubtree;
+    void FTMTree_MT::getBranchSubtree(std::vector<idNode> &branching,
+                                      idNode branchRoot,
+                                      std::vector<idNode> &branchSubtree) {
+      branchSubtree.clear();
       std::queue<idNode> queue;
       queue.push(branchRoot);
       while(!queue.empty()) {
@@ -301,25 +305,26 @@ namespace ttk {
           continue;
 
         branchSubtree.push_back(node);
-        for(auto child : this->getChildren(node))
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
           queue.push(child);
       }
-      return branchSubtree;
     }
 
     // --------------------
     // Persistence
     // --------------------
-    std::vector<std::vector<idNode>>
-      FTMTree_MT::getMultiPersOriginsVectorFromTree() {
-      std::vector<std::vector<idNode>> treeMultiPers(this->getNumberOfNodes());
+    void FTMTree_MT::getMultiPersOriginsVectorFromTree(
+      std::vector<std::vector<idNode>> &treeMultiPers) {
+      treeMultiPers
+        = std::vector<std::vector<idNode>>(this->getNumberOfNodes());
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i)
         if(this->isLeaf(i) and this->isNodeOriginDefined(i)
            and not this->isNodeAlone(i)
            and this->getNode(this->getNode(i)->getOrigin())->getOrigin()
                  != (int)i)
           treeMultiPers[this->getNode(i)->getOrigin()].push_back(i);
-      return treeMultiPers;
     }
 
     // --------------------
@@ -381,8 +386,9 @@ namespace ttk {
       while(!queue.empty()) {
         idNode node = queue.front();
         queue.pop();
-        auto children = this->getChildren(node);
-        for(auto child : children)
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
           queue.push(child);
         this->deleteNode(node);
       }
@@ -413,7 +419,10 @@ namespace ttk {
     // --------------------
     void FTMTree_MT::printNodeSS(idNode node, std::stringstream &ss) {
       ss << "(" << node << ") \\ ";
-      for(auto child : this->getChildren(node))
+
+      std::vector<idNode> children;
+      this->getChildren(node, children);
+      for(idNode child : children)
         ss << "+" << child << " ";
 
       if(!this->isRoot(node))
@@ -423,7 +432,8 @@ namespace ttk {
 
     std::stringstream FTMTree_MT::printTree(bool doPrint) {
       std::stringstream ss;
-      std::vector<idNode> allRoots = this->getAllRoots();
+      std::vector<idNode> allRoots;
+      this->getAllRoots(allRoots);
       if(allRoots.size() != 1)
         ss << allRoots.size() << " roots" << std::endl;
       for(unsigned int i = 0; i < allRoots.size(); ++i) {
@@ -438,7 +448,9 @@ namespace ttk {
 
           printNodeSS(node, ss);
 
-          for(auto child : this->getChildren(node))
+          std::vector<idNode> children;
+          this->getChildren(node, children);
+          for(idNode child : children)
             queue.push(child);
         }
       }
@@ -464,7 +476,8 @@ namespace ttk {
     std::stringstream
       FTMTree_MT::printMultiPersOriginsVectorFromTree(bool doPrint) {
       std::stringstream ss;
-      auto vec = this->getMultiPersOriginsVectorFromTree();
+      std::vector<std::vector<idNode>> vec;
+      this->getMultiPersOriginsVectorFromTree(vec);
       for(unsigned int i = 0; i < vec.size(); ++i)
         if(vec[i].size() != 0) {
           ss << i << " : ";

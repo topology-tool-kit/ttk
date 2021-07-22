@@ -191,14 +191,11 @@ namespace ttk {
     }
 
     template <class dataType>
-    MergeTree<dataType>
-      initBarycenterTree(std::vector<ftm::FTMTree_MT *> &trees,
-                         bool distMinimizer = true) {
+    void initBarycenterTree(std::vector<ftm::FTMTree_MT *> &trees,
+                            MergeTree<dataType> &baryTree,
+                            bool distMinimizer = true) {
       int bestIndex = getBestInitTreeIndex<dataType>(trees, distMinimizer);
-      MergeTree<dataType> baryTree
-        = copyMergeTree<dataType>(trees[bestIndex], true);
-
-      return baryTree;
+      baryTree = copyMergeTree<dataType>(trees[bestIndex], true);
     }
 
     // ----------------------------------------
@@ -227,7 +224,8 @@ namespace ttk {
           tree2->getValue<dataType>(tree2->getNode(node)->getOrigin()));
         newScalarsVector.push_back(tree2->getValue<dataType>(node));
         // Process children
-        auto children = tree2->getChildren(node);
+        std::vector<ftm::idNode> children;
+        tree2->getChildren(node, children);
         for(auto child : children) {
           queue.emplace(std::make_tuple(child, nodeCpt + 1));
           nodesToProcess.push_back(std::make_tuple(child, nodeCpt + 1, i));
@@ -239,15 +237,18 @@ namespace ttk {
     }
 
     template <class dataType>
-    std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>> addNodes(
+    void addNodes(
       MergeTree<dataType> &mTree1,
       int noTrees,
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, int>> &nodesToProcess) {
+      std::vector<std::tuple<ftm::idNode, ftm::idNode, int>> &nodesToProcess,
+      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>
+        &nodesProcessed) {
       ftm::FTMTree_MT *tree1 = &(mTree1.tree);
 
       // Add nodes
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>
-        nodesProcessed(noTrees);
+      nodesProcessed
+        = std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>(
+          noTrees);
       for(auto processTuple : nodesToProcess) {
         ftm::idNode parent = std::get<1>(processTuple);
         ftm::idNode nodeTree1 = tree1->getNumberOfNodes();
@@ -261,17 +262,16 @@ namespace ttk {
         tree1->getNode(nodeTree1)->setOrigin(nodeTree1 + 1);
         tree1->getNode(nodeTree1 + 1)->setOrigin(nodeTree1);
       }
-
-      return nodesProcessed;
     }
 
     template <class dataType>
-    std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>
-      updateNodesAndScalars(
-        MergeTree<dataType> &mTree1,
-        int noTrees,
-        std::vector<std::tuple<ftm::idNode, ftm::idNode, int>> &nodesToProcess,
-        std::vector<dataType> &newScalarsVector) {
+    void updateNodesAndScalars(
+      MergeTree<dataType> &mTree1,
+      int noTrees,
+      std::vector<std::tuple<ftm::idNode, ftm::idNode, int>> &nodesToProcess,
+      std::vector<dataType> &newScalarsVector,
+      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>
+        &nodesProcessed) {
       ftm::FTMTree_MT *tree1 = &(mTree1.tree);
 
       // Create new tree
@@ -284,13 +284,10 @@ namespace ttk {
       treeNew->copyMergeTreeStructure(tree1);
 
       // Add nodes in the other trees
-      auto nodesProcessed
-        = addNodes<dataType>(mTreeNew, noTrees, nodesToProcess);
+      addNodes<dataType>(mTreeNew, noTrees, nodesToProcess, nodesProcessed);
 
       // Copy new tree
       mTree1 = mTreeNew;
-
-      return nodesProcessed;
     }
 
     template <class dataType>
@@ -341,7 +338,8 @@ namespace ttk {
             }
           }
           if(processChildren) {
-            auto children = trees[i]->getChildren(node);
+            std::vector<ftm::idNode> children;
+            trees[i]->getChildren(node, children);
             for(auto child : children)
               if(not(trees[i]->isThereOnlyOnePersistencePair()
                      and trees[i]->isLeaf(child)))
@@ -359,8 +357,8 @@ namespace ttk {
         // Add scalars and nodes not present in the barycenter
         ftm::idNode nodeCpt = baryTree->getNumberOfNodes();
         std::vector<std::tuple<ftm::idNode, ftm::idNode, int>> nodesToProcess;
-        std::vector<dataType> newScalarsVector
-          = getTreeScalars<dataType>(baryMergeTree);
+        std::vector<dataType> newScalarsVector;
+        getTreeScalars<dataType>(baryMergeTree, newScalarsVector);
         for(unsigned int i = 0; i < nodesToAdd.size(); ++i) {
           for(auto node : nodesToAdd[i]) {
             ftm::idNode parent
@@ -392,8 +390,11 @@ namespace ttk {
           }
         }
         if(addNodes_) {
-          auto nodesProcessed = updateNodesAndScalars<dataType>(
-            baryMergeTree, trees.size(), nodesToProcess, newScalarsVector);
+          std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>
+            nodesProcessed;
+          updateNodesAndScalars<dataType>(baryMergeTree, trees.size(),
+                                          nodesToProcess, newScalarsVector,
+                                          nodesProcessed);
           for(unsigned int i = 0; i < matchings.size(); ++i) {
             std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
               nodesProcessedT;
@@ -593,7 +594,8 @@ namespace ttk {
       std::vector<bool> nodesProcessed(baryTree->getNumberOfNodes(), false);
       std::vector<dataType> nodesMatchingCost(baryTree->getNumberOfNodes(), 0);
       std::vector<dataType> nodesDestructCost(baryTree->getNumberOfNodes(), 0);
-      auto leaves = baryTree->getLeavesFromTree();
+      std::vector<ftm::idNode> leaves;
+      baryTree->getLeavesFromTree(leaves);
       std::queue<ftm::idNode> queue;
       for(auto leaf : leaves)
         queue.emplace(leaf);
@@ -615,7 +617,8 @@ namespace ttk {
           nodesMatchingCost[node] += newMatchingCost;
           nodesDestructCost[node] += newDestructCost;
         }
-        auto children = baryTree->getChildren(node);
+        std::vector<ftm::idNode> children;
+        baryTree->getChildren(node, children);
         for(auto child : children) {
           nodesMatchingCost[node] += nodesMatchingCost[child];
           nodesDestructCost[node] += nodesDestructCost[child];
@@ -687,7 +690,8 @@ namespace ttk {
         newScalarsVector[node] = nodeScalar;
         newScalarsVector[baryTree->getNode(node)->getOrigin()]
           = nodeOriginScalar;
-        auto children = baryTree->getChildren(node);
+        std::vector<ftm::idNode> children;
+        baryTree->getChildren(node, children);
         for(auto child : children)
           queue.emplace(child);
       }
@@ -928,7 +932,7 @@ namespace ttk {
     // Main Functions
     // ----------------------------------------
     template <class dataType>
-    MergeTree<dataType> computeBarycenter(
+    void computeBarycenter(
       std::vector<ftm::FTMTree_MT *> &trees,
       MergeTree<dataType> &baryMergeTree,
       std::vector<double> &alphas,
@@ -1071,16 +1075,15 @@ namespace ttk {
         trees.clear();
         trees.insert(trees.end(), oriTrees.begin(), oriTrees.end());
       }
-
-      return baryMergeTree;
     }
 
     template <class dataType>
-    MergeTree<dataType> execute(
+    void execute(
       std::vector<MergeTree<dataType>> &trees,
       std::vector<double> &alphas,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &finalMatchings) {
+        &finalMatchings,
+      MergeTree<dataType> &baryMergeTree) {
       // --- Preprocessing
       if(preprocess_) {
         treesNodeCorr_ = std::vector<std::vector<int>>(trees.size());
@@ -1093,11 +1096,12 @@ namespace ttk {
       }
 
       // --- Init barycenter
-      auto treesT = mergeTreeToFTMTree<dataType>(trees);
-      MergeTree<dataType> baryMergeTree = initBarycenterTree<dataType>(treesT);
+      std::vector<ftm::FTMTree_MT *> treesT;
+      mergeTreeToFTMTree<dataType>(trees, treesT);
+      initBarycenterTree<dataType>(treesT, baryMergeTree);
 
       // --- Execute
-      baryMergeTree = computeBarycenter<dataType>(
+      computeBarycenter<dataType>(
         treesT, baryMergeTree, alphas, finalMatchings, verbose_);
 
       // --- Postprocessing
@@ -1114,15 +1118,14 @@ namespace ttk {
             &(baryMergeTree.tree), treesT[i], finalMatchings[i]);
         }
       }
-
-      return baryMergeTree;
     }
 
     template <class dataType>
-    MergeTree<dataType> execute(
+    void execute(
       std::vector<MergeTree<dataType>> &trees,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &finalMatchings) {
+        &finalMatchings,
+      MergeTree<dataType> &baryMergeTree) {
       std::vector<double> alphas;
       if(trees.size() != 2) {
         for(unsigned int i = 0; i < trees.size(); ++i)
@@ -1132,7 +1135,7 @@ namespace ttk {
         alphas.push_back(1 - alpha_);
       }
 
-      return execute<dataType>(trees, alphas, finalMatchings);
+      execute<dataType>(trees, alphas, finalMatchings, baryMergeTree);
     }
 
     // ----------------------------------------
@@ -1150,7 +1153,8 @@ namespace ttk {
 
       // Verify that scalars are consistent
       ftm::idNode treeRoot = tree->getRoot();
-      std::vector<dataType> newScalarsVector = getTreeScalars<dataType>(tree);
+      std::vector<dataType> newScalarsVector;
+      getTreeScalars<dataType>(tree, newScalarsVector);
       bool isJT = tree->isJoinTree<dataType>();
       if((isJT and tree->getValue<dataType>(maxIndex) > oldOriginValue)
          or (not isJT
@@ -1250,7 +1254,8 @@ namespace ttk {
                 trees[i]->getParentSafe(baryMatched[node][i]));
             }
         }
-        auto children = baryTree->getChildren(node);
+        std::vector<ftm::idNode> children;
+        baryTree->getChildren(node, children);
         for(auto child : children)
           queue.emplace(child);
       }

@@ -691,8 +691,8 @@ public:
           else
             refPersistence
               = trees[0]->getNodePersistence<dataType>(trees[0]->getRoot());
-          layout = treePlanarLayout<dataType>(
-            trees[i], allBaryBounds[c], refPersistence);
+          treePlanarLayout<dataType>(
+            trees[i], allBaryBounds[c], refPersistence, layout);
         }
 
         // Internal arrays
@@ -735,7 +735,9 @@ public:
           // Push children to the queue
           if(verbose > 2)
             printMsg("// Push children to the queue", debug::Priority::VERBOSE);
-          for(auto child : trees[i]->getChildren(node))
+          std::vector<idNode> children;
+          trees[i]->getChildren(node, children);
+          for(auto child : children)
             queue.emplace(child);
 
           // --------------
@@ -1130,7 +1132,9 @@ public:
       y_max = std::max(y_max, point[1]);
       z_min = std::min(z_min, point[2]);
       z_max = std::max(z_max, point[2]);
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
     return std::make_tuple(x_min, x_max, y_min, y_max, z_min, z_max);
