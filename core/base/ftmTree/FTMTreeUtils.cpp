@@ -2,24 +2,17 @@
 #include <FTMTreeUtils.h>
 #include <iostream>
 
-void myPause() {
-  std::cout << "pause" << std::endl;
-  int temp;
-  std::cin >> temp;
-}
-
-void printTreesStats(std::vector<ftm::FTMTree_MT *> &trees) {
-  for(auto tree : trees)
-    tree->printTreeStats();
-}
-
 namespace ttk {
   namespace ftm {
+
+    void printTreesStats(std::vector<ftm::FTMTree_MT *> &trees) {
+      for(auto tree : trees)
+        tree->printTreeStats();
+    }
 
     // --------------------
     // Is
     // --------------------
-
     bool FTMTree_MT::isNodeOriginDefined(idNode nodeId) {
       unsigned int origin = (unsigned int)this->getNode(nodeId)->getOrigin();
       return origin != nullNodes and origin < this->getNumberOfNodes()
@@ -102,7 +95,6 @@ namespace ttk {
     // --------------------
     // Get
     // --------------------
-
     idNode FTMTree_MT::getRoot() {
       for(idNode node = 0; node < this->getNumberOfNodes(); ++node)
         if(this->isRoot(node) and !this->isLeaf(node))
@@ -255,10 +247,9 @@ namespace ttk {
       if(noRoot != 1) {
         std::stringstream ss;
         ss << "problem, there is " << noRoot << " root(s)";
-        printMsg(ss.str(), debug::Priority::ERROR);
+        printErr(ss.str());
         this->printTree2();
         this->printTree();
-        myPause();
       }
       if(this->isNodeAlone(nodeId))
         return 0;
@@ -319,7 +310,6 @@ namespace ttk {
     // --------------------
     // Persistence
     // --------------------
-
     std::vector<std::vector<idNode>>
       FTMTree_MT::getMultiPersOriginsVectorFromTree() {
       std::vector<std::vector<idNode>> treeMultiPers(this->getNumberOfNodes());
@@ -335,7 +325,6 @@ namespace ttk {
     // --------------------
     // Set
     // --------------------
-
     void FTMTree_MT::setParent(idNode nodeId, idNode newParentNodeId) {
       this->deleteParent(nodeId);
       this->makeSuperArc(nodeId, newParentNodeId);
@@ -344,11 +333,10 @@ namespace ttk {
     // --------------------
     // Delete
     // --------------------
-
     // Delete node by keeping subtree
     void FTMTree_MT::deleteNode(idNode nodeId) {
       if(this->isRoot(nodeId) and !this->isLeaf(nodeId))
-        std::cout << "deletion of root!" << std::endl;
+        printErr("deletion of root!");
 
       idNode parentNodeId = this->getParentSafe(nodeId);
       if(!this->isRoot(nodeId)) {
@@ -403,9 +391,7 @@ namespace ttk {
     // --------------------
     // Create/Delete/Modify Tree
     // --------------------
-
     void FTMTree_MT::copyMergeTreeStructure(FTMTree_MT *tree) {
-
       // Add Nodes
       for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
         this->makeNode(i);
@@ -425,7 +411,6 @@ namespace ttk {
     // --------------------
     // Utils
     // --------------------
-
     void FTMTree_MT::printNodeSS(idNode node, std::stringstream &ss) {
       ss << "(" << node << ") \\ ";
       for(auto child : this->getChildren(node))

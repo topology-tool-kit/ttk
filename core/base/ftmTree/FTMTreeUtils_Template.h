@@ -12,18 +12,15 @@
 
 namespace ttk {
   namespace ftm {
+
     // --------------------
     // Utils
     // --------------------
-    template <typename type>
-    static type myAbs(const type var) {
-      return (var >= 0) ? var : -var;
-    }
-
     template <class dataType>
     bool isEqual(dataType first, dataType two, double eps = 1e-6) {
-      return myAbs<dataType>(first - two)
-             < eps * std::max(myAbs<dataType>(first), myAbs<dataType>(two));
+      double diff = first - two;
+      return std::abs(diff)
+             < eps * std::max(std::abs((double)first), std::abs((double)two));
     }
 
     template <class dataType>
@@ -88,7 +85,7 @@ namespace ttk {
         idNode node = queue.front();
         queue.pop();
         if(!this->isRoot(node) and this->isParentInconsistent<dataType>(node)) {
-          std::cout << "inconsistency" << std::endl;
+          printErr("inconsistency");
           this->printNode2<dataType>(node);
           this->printNode2<dataType>(this->getParentSafe(node));
           inconsistency = true;
@@ -242,26 +239,31 @@ namespace ttk {
     template <class dataType>
     void FTMTree_MT::printNode2(idNode nodeId) {
       auto birthDeath = this->getBirthDeath<dataType>(nodeId);
-      std::cout << "nodeId = " << nodeId << " (" << std::get<0>(birthDeath)
-                << ") _ originId = " << this->getNode(nodeId)->getOrigin()
-                << " (" << std::get<1>(birthDeath) << ")" << std::endl;
+      std::stringstream ss;
+      ss << "nodeId = " << nodeId << " (" << std::get<0>(birthDeath)
+         << ") _ originId = " << this->getNode(nodeId)->getOrigin() << " ("
+         << std::get<1>(birthDeath) << ")";
+      printMsg(ss.str());
     }
 
     template <class dataType>
     void FTMTree_MT::printTreeScalars(bool printNodeAlone) {
-      std::streamsize ss = std::cout.precision();
+      std::streamsize sSize = std::cout.precision();
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i) {
         idNode iOrigin
           = this->isNodeOriginDefined(i) ? this->getNode(i)->getOrigin() : i;
         if(printNodeAlone
            or (not printNodeAlone
                and (not this->isNodeAlone(i)
-                    or not this->isNodeAlone(iOrigin))))
-          std::cout << i << " _ " << std::setprecision(12)
-                    << this->getValue<dataType>(i) << std::endl;
+                    or not this->isNodeAlone(iOrigin)))) {
+          std::stringstream ss;
+          ss << i << " _ " << std::setprecision(12)
+             << this->getValue<dataType>(i);
+          printMsg(ss.str());
+        }
       }
-      std::cout << " ------------------------------ " << std::endl;
-      std::cout.precision(ss);
+      printMsg(debug::Separator::L2);
+      std::cout.precision(sSize);
     }
 
     template <class dataType>
@@ -280,10 +282,11 @@ namespace ttk {
              << this->getValue<dataType>(std::get<1>(pair)) << ") _ ";
           ss << std::get<2>(pair) << std::endl;
         }
-      ss << " ------------------------------ " << std::endl;
 
-      if(doPrint)
-        std::cout << ss.str();
+      if(doPrint) {
+        printMsg(ss.str());
+        printMsg(debug::Separator::L2);
+      }
       return ss;
     }
 
@@ -299,13 +302,15 @@ namespace ttk {
         noOrigin[std::get<1>(pair)]++;
         noMultiPers += (noOrigin[std::get<1>(pair)] > 1) ? 1 : 0;
       }
-      std::cout << "Number of multi pers pairs : " << noMultiPers << std::endl;
+      std::stringstream ss;
+      ss << "Number of multi pers pairs : " << noMultiPers << std::endl;
       if(printPairs) {
         auto multiPers = this->getMultiPersOrigins<dataType>(useBD);
         for(auto node : multiPers)
-          std::cout << node << std::endl;
+          ss << node << std::endl;
       }
-      std::cout << " ------------------------------ " << std::endl;
+      printMsg(ss.str());
+      printMsg(debug::Separator::L2);
     }
 
   } // namespace ftm

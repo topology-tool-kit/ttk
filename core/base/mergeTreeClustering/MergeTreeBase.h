@@ -383,7 +383,7 @@ public:
         else {
           std::stringstream ss2;
           ss2 << "the root has no origin!";
-          printMsg(ss2.str(), debug::Priority::ERROR);
+          printErr(ss2.str());
         }
       }
   }
@@ -576,7 +576,6 @@ public:
     std::stringstream ss;
     ss << cptBug;
     printMsg(ss.str());
-    myPause();
   }
 
   template <class dataType>
@@ -627,9 +626,7 @@ public:
     }
 
     if(tree->getNumberOfRoot() != 1) {
-      printMsg("preprocessingPipeline tree->getNumberOfRoot() != 1",
-               debug::Priority::ERROR);
-      myPause();
+      printErr("preprocessingPipeline tree->getNumberOfRoot() != 1");
     }
 
     // verifyPairsTree(tree);
@@ -700,8 +697,7 @@ public:
          and mergedRootOrigin != treeRoot)
         tree->getNode(treeRoot)->setOrigin(mergedRootOrigin);
       else {
-        printMsg("branchDecompositionToTree mergedRootOrigin inconsistent",
-                 debug::Priority::ERROR);
+        printErr("branchDecompositionToTree mergedRootOrigin inconsistent");
       }
     }
 
@@ -794,8 +790,7 @@ public:
         std::stringstream ss;
         ss << i << " _ " << tree->getNode(i)->getOrigin();
         printMsg(ss.str());
-        printMsg("1 up arc and 1 down arc", debug::Priority::ERROR);
-        myPause();
+        printErr("1 up arc and 1 down arc");
       }
   }
 
@@ -997,10 +992,10 @@ public:
   dataType computeDistance(
     dataType x1, dataType x2, dataType y1, dataType y2, double power = 2) {
     if(power <= 0)
-      return std::max(myAbs<dataType>(x1 - y1), myAbs<dataType>(x2 - y2));
+      return std::max(std::abs((double)(x1 - y1)), std::abs((double)(x2 - y2)));
     else
-      return std::pow(myAbs<dataType>(x1 - y1), power)
-             + std::pow(myAbs<dataType>(x2 - y2), power);
+      return std::pow(std::abs((double)(x1 - y1)), power)
+             + std::pow(std::abs((double)(x2 - y2)), power);
   }
 
   template <class dataType>

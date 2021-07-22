@@ -663,7 +663,7 @@ namespace ttk {
         dataType currentInertia = 0;
         for(auto distance : bestDistanceT)
           currentInertia += distance * distance;
-        converged = myAbs<dataType>(inertia - currentInertia) < 0.01;
+        converged = std::abs((double)(inertia - currentInertia)) < 0.01;
         inertia = currentInertia;
         std::stringstream ss3;
         ss3 << "Inertia : " << inertia;
@@ -800,7 +800,6 @@ namespace ttk {
               std::vector<int> &clusteringAssignment,
               std::vector<MergeTree<dataType>> &trees2,
               matchingVector &outputMatching2) {
-      // trees = makeMyTestClust<dataType>();
       if(trees2.size() != 0)
         printMsg("Use join and split trees");
 
@@ -922,53 +921,6 @@ namespace ttk {
           if(clusteringAssignment[i] == (int)c)
             convertBranchDecompositionMatching<dataType>(
               &(centroids[c].tree), &(trees[i].tree), outputMatching[c][i]);
-    }
-
-    // ----------------------------------------
-    // Testing
-    // ----------------------------------------
-    template <class dataType>
-    std::vector<ftm::FTMTree_MT *> makeMyTestClust() {
-      std::vector<ftm::FTMTree_MT *> trees;
-
-      float *nodesScalar1 = new float[4]{0, 1, 3, 8};
-      std::vector<SimplexId> nodes1{0, 1, 2, 3};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs1{
-        std::make_tuple(0, 2), std::make_tuple(1, 2), std::make_tuple(2, 3)};
-      ftm::FTMTree_MT *treeTemp1 = makeFakeTree(nodesScalar1, nodes1, arcs1);
-      trees.push_back(treeTemp1);
-
-      float *nodesScalar2 = new float[4]{1, 2, 4, 9};
-      std::vector<SimplexId> nodes2(nodes1);
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs2(arcs1);
-      ftm::FTMTree_MT *treeTemp2 = makeFakeTree(nodesScalar2, nodes2, arcs2);
-      trees.push_back(treeTemp2);
-
-      float *nodesScalar3 = new float[4]{3, 4, 6, 11};
-      std::vector<SimplexId> nodes3(nodes1);
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs3(arcs1);
-      ftm::FTMTree_MT *treeTemp3 = makeFakeTree(nodesScalar3, nodes3, arcs3);
-      trees.push_back(treeTemp3);
-
-      float *nodesScalar4 = new float[4]{30, 40, 60, 110};
-      std::vector<SimplexId> nodes4(nodes1);
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs4(arcs1);
-      ftm::FTMTree_MT *treeTemp4 = makeFakeTree(nodesScalar4, nodes4, arcs4);
-      trees.push_back(treeTemp4);
-
-      float *nodesScalar5 = new float[4]{10, 20, 40, 90};
-      std::vector<SimplexId> nodes5(nodes1);
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs5(arcs1);
-      ftm::FTMTree_MT *treeTemp5 = makeFakeTree(nodesScalar5, nodes5, arcs5);
-      trees.push_back(treeTemp5);
-
-      float *nodesScalar6 = new float[4]{0, 10, 30, 80};
-      std::vector<SimplexId> nodes6(nodes1);
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs6(arcs1);
-      ftm::FTMTree_MT *treeTemp6 = makeFakeTree(nodesScalar6, nodes6, arcs6);
-      trees.push_back(treeTemp6);
-
-      return trees;
     }
 
   }; // MergeTreeClustering class

@@ -44,13 +44,12 @@ dataType getMinMaxLocal(ftm::FTMTree_MT *tree,
 
   // Verify inconsistency
   if(tree->isParentInconsistent<dataType>(nodeId)) {
-    std::cout << "inconsistency" << std::endl;
+    // printErr("inconsistency");
     // if(tree->getNumberOfNodes() < 1000)
     tree->printTree();
     // printPairsFromTree<dataType>(tree, true);
     tree->printNode2<dataType>(nodeId);
     tree->printNode2<dataType>(nodeIdParent);
-    myPause();
   }
 
   return getMin ? std::get<0>(birthDeath) : std::get<1>(birthDeath);

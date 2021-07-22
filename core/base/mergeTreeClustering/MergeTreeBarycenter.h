@@ -299,16 +299,12 @@ namespace ttk {
       MergeTree<dataType> &baryMergeTree,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings) {
-      int verboseT = 0;
-
       ftm::FTMTree_MT *baryTree = &(baryMergeTree.tree);
       ftm::idNode baryTreeRoot = baryTree->getRoot();
 
       // Init matching matrix
       // m[i][j] contains the node in the barycenter matched to the jth node of
       // the ith tree
-      if(verboseT > 0)
-        printMsg("// Init matching matrix");
       std::vector<std::vector<ftm::idNode>> matrixMatchings(trees.size());
       std::vector<bool> baryMatched(baryTree->getNumberOfNodes(), false);
       for(unsigned int i = 0; i < matchings.size(); ++i) {
@@ -323,9 +319,6 @@ namespace ttk {
       }
 
       // Iterate through trees to get the nodes to add in the barycenter
-      if(verboseT > 0)
-        printMsg(
-          "// Iterate through trees to get the nodes to add in the barycenter");
       std::vector<std::vector<ftm::idNode>> nodesToAdd(trees.size());
       for(unsigned int i = 0; i < trees.size(); ++i) {
         ftm::idNode root = trees[i]->getRoot();
@@ -343,9 +336,8 @@ namespace ttk {
             } else {
               // not todo manage if keepSubtree=true (not important since it is
               // not a valid merge tree)
-              printMsg("ERROR barycenter with keepSubtree_=true is not "
-                       "implemented yet",
-                       debug::Priority::ERROR);
+              printErr(
+                "barycenter with keepSubtree_=true is not implemented yet");
             }
           }
           if(processChildren) {
@@ -359,16 +351,12 @@ namespace ttk {
       }
 
       // Delete nodes that are not matched in the barycenter
-      if(verboseT > 0)
-        printMsg("// Delete nodes that are not matched in the barycenter");
       for(unsigned int i = 0; i < baryTree->getNumberOfNodes(); ++i)
         if(not baryMatched[i])
           baryTree->deleteNode(i);
 
       if(not keepSubtree_) {
         // Add scalars and nodes not present in the barycenter
-        if(verboseT > 0)
-          printMsg("// Add scalars and nodes not present in the barycenter");
         ftm::idNode nodeCpt = baryTree->getNumberOfNodes();
         std::vector<std::tuple<ftm::idNode, ftm::idNode, int>> nodesToProcess;
         std::vector<dataType> newScalarsVector
@@ -392,7 +380,6 @@ namespace ttk {
               std::stringstream ss2;
               ss2 << "parent " << parent;
               printMsg(ss2.str());
-              myPause();
             }
             /*if(isRoot(trees[i], node))
               parent = baryTree->getRoot();*/
@@ -405,8 +392,6 @@ namespace ttk {
           }
         }
         if(addNodes_) {
-          if(verboseT > 0)
-            printMsg("// Add nodes");
           auto nodesProcessed = updateNodesAndScalars<dataType>(
             baryMergeTree, trees.size(), nodesToProcess, newScalarsVector);
           for(unsigned int i = 0; i < matchings.size(); ++i) {
@@ -422,9 +407,7 @@ namespace ttk {
       } else {
         // not todo manage if keepSubtree=true (not important since it is not a
         // valid merge tree)
-        printMsg(
-          "ERROR barycenter with keepSubtree_=true is not implemented yet",
-          debug::Priority::ERROR);
+        printErr("barycenter with keepSubtree_=true is not implemented yet");
       }
     }
 
@@ -1026,7 +1009,7 @@ namespace ttk {
         for(unsigned int i = 0; i < trees.size(); ++i)
           currentFrechetEnergy += alphas[i] * distances[i] * distances[i];
         auto frechetDiff
-          = myAbs<dataType>(frechetEnergy - currentFrechetEnergy);
+          = std::abs((double)(frechetEnergy - currentFrechetEnergy));
         converged = (frechetDiff <= tol_);
         converged = converged and (not progressiveBarycenter_ or treesUnscaled);
         frechetEnergy = currentFrechetEnergy;
@@ -1140,8 +1123,6 @@ namespace ttk {
       std::vector<MergeTree<dataType>> &trees,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &finalMatchings) {
-      // trees = makeMyTestBary<dataType>();
-
       std::vector<double> alphas;
       if(trees.size() != 2) {
         for(unsigned int i = 0; i < trees.size(); ++i)
@@ -1184,59 +1165,6 @@ namespace ttk {
     // ----------------------------------------
     // Testing
     // ----------------------------------------
-    template <class dataType>
-    std::vector<ftm::FTMTree_MT *> makeMyTestBary() {
-      std::vector<ftm::FTMTree_MT *> trees;
-
-      /*float *nodesScalar1 = new float[4]{0, 1, 3, 8};
-      std::vector<SimplexId> nodes1{0, 1, 2, 3};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs1{std::make_tuple(0,
-      2), std::make_tuple(1, 2), std::make_tuple(2, 3)}; ftm::FTMTree_MT
-      *treeTemp1 = makeFakeTree(nodesScalar1, nodes1, arcs1);
-      trees.push_back(treeTemp1);
-
-      float *nodesScalar2 = new float[2]{4, 12};
-      std::vector<SimplexId> nodes2{0, 1};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs2{std::make_tuple(0,
-      1)}; ftm::FTMTree_MT *treeTemp2 = makeFakeTree(nodesScalar2, nodes2,
-      arcs2); trees.push_back(treeTemp2);
-
-      float *nodesScalar3 = new float[2]{3, 11};
-      std::vector<SimplexId> nodes3{0, 1};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs3{std::make_tuple(0,
-      1)}; ftm::FTMTree_MT *treeTemp3 = makeFakeTree(nodesScalar3, nodes3,
-      arcs3); trees.push_back(treeTemp3);*/
-      float *nodesScalar1 = new float[2]{3, 12};
-      std::vector<SimplexId> nodes1{0, 1};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs1{
-        std::make_tuple(0, 1)};
-      ftm::FTMTree_MT *treeTemp1 = makeFakeTree(nodesScalar1, nodes1, arcs1);
-      trees.push_back(treeTemp1);
-
-      float *nodesScalar2 = new float[2]{3, 12};
-      std::vector<SimplexId> nodes2{0, 1};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs2{
-        std::make_tuple(0, 1)};
-      ftm::FTMTree_MT *treeTemp2 = makeFakeTree(nodesScalar2, nodes2, arcs2);
-      trees.push_back(treeTemp2);
-
-      float *nodesScalar3 = new float[2]{5, 10};
-      std::vector<SimplexId> nodes3{0, 1};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs3{
-        std::make_tuple(0, 1)};
-      ftm::FTMTree_MT *treeTemp3 = makeFakeTree(nodesScalar3, nodes3, arcs3);
-      trees.push_back(treeTemp3);
-
-      float *nodesScalar4 = new float[4]{5, 6, 8, 10};
-      std::vector<SimplexId> nodes4{0, 1, 2, 3};
-      std::vector<std::tuple<ftm::idNode, ftm::idNode>> arcs4{
-        std::make_tuple(0, 2), std::make_tuple(1, 2), std::make_tuple(2, 3)};
-      ftm::FTMTree_MT *treeTemp4 = makeFakeTree(nodesScalar4, nodes4, arcs4);
-      trees.push_back(treeTemp4);
-
-      return trees;
-    }
-
     template <class dataType>
     void verifyBarycenterTwoTrees(
       std::vector<ftm::FTMTree_MT *> &trees,
@@ -1289,11 +1217,11 @@ namespace ttk {
         else if((int)baryMatched[node][1] == -1)
           cost = deleteCost<dataType>(trees[0], baryMatched[node][0]);
         else
-          printMsg("problem", debug::Priority::ERROR);
+          printErr("problem");
         costs[0] = std::sqrt(costs[0]);
         costs[1] = std::sqrt(costs[1]);
         cost = std::sqrt(cost);
-        if(myAbs<dataType>(costs[0] - costs[1]) > 1e-7) {
+        if(std::abs((double)(costs[0] - costs[1])) > 1e-7) {
           printMsg(debug::Separator::L1);
           std::stringstream ss, ss2, ss3, ss4;
           ss << "cost T' T0    : " << costs[0];
@@ -1304,14 +1232,14 @@ namespace ttk {
           printMsg(ss2.str());
           ss4 << "cost T0 T' T1 : " << costs[0] + costs[1];
           printMsg(ss4.str());
-          if(myAbs<dataType>((costs[0] + costs[1]) - cost) > 1e-7) {
+          if(std::abs((double)((costs[0] + costs[1]) - cost)) > 1e-7) {
             std::stringstream ss5;
             ss5 << "diff          : "
-                << myAbs<dataType>((costs[0] + costs[1]) - cost);
+                << std::abs((double)((costs[0] + costs[1]) - cost));
             printMsg(ss5.str());
           }
           std::stringstream ss6;
-          ss6 << "diff2         : " << myAbs<dataType>(costs[0] - costs[1]);
+          ss6 << "diff2         : " << std::abs((double)(costs[0] - costs[1]));
           printMsg(ss.str());
           // baryTree->printNode2<dataType>(node);
           // baryTree->printNode2<dataType>(baryTree->getParentSafe(node));
