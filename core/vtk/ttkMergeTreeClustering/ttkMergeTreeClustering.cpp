@@ -238,11 +238,11 @@ int ttkMergeTreeClustering::runCompute(
     mergeTreeDistance.setRescaledWasserstein(RescaledWasserstein);
     mergeTreeDistance.setKeepSubtree(KeepSubtree);
     mergeTreeDistance.setUseMinMaxPair(UseMinMaxPair);
-    mergeTreeDistance.setNumberOfThreads(NumberOfThreads);
     mergeTreeDistance.setCleanTree(true);
     mergeTreeDistance.setPostprocess(OutputTrees);
     mergeTreeDistance.setDeleteMultiPersPairs(DeleteMultiPersPairs);
     mergeTreeDistance.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
+    mergeTreeDistance.setThreadNumber(this->threadNumber_);
     mergeTreeDistance.setDebugLevel(this->debugLevel_);
 
     distance = mergeTreeDistance.execute<dataType>(
@@ -271,7 +271,6 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeBarycenter.setTol(Tol);
       mergeTreeBarycenter.setAddNodes(AddNodes);
       mergeTreeBarycenter.setDeterministic(Deterministic);
-      mergeTreeBarycenter.setNumberOfThreads(NumberOfThreads);
       mergeTreeBarycenter.setProgressiveBarycenter(ProgressiveBarycenter);
       mergeTreeBarycenter.setProgressiveSpeedDivisor(ProgressiveSpeedDivisor);
       mergeTreeBarycenter.setAlpha(Alpha);
@@ -279,6 +278,7 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeBarycenter.setDeleteMultiPersPairs(DeleteMultiPersPairs);
       mergeTreeBarycenter.setEpsilon1UseFarthestSaddle(
         Epsilon1UseFarthestSaddle);
+      mergeTreeBarycenter.setThreadNumber(this->threadNumber_);
       mergeTreeBarycenter.setDebugLevel(this->debugLevel_);
 
       mergeTreeBarycenter.execute<dataType>(
@@ -306,7 +306,6 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setTol(Tol);
       mergeTreeClustering.setAddNodes(AddNodes);
       mergeTreeClustering.setDeterministic(Deterministic);
-      mergeTreeClustering.setNumberOfThreads(NumberOfThreads);
       mergeTreeClustering.setNoCentroids(NumberOfBarycenters);
       mergeTreeClustering.setProgressiveBarycenter(ProgressiveBarycenter);
       mergeTreeClustering.setProgressiveSpeedDivisor(ProgressiveSpeedDivisor);
@@ -314,6 +313,7 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setDeleteMultiPersPairs(DeleteMultiPersPairs);
       mergeTreeClustering.setEpsilon1UseFarthestSaddle(
         Epsilon1UseFarthestSaddle);
+      mergeTreeClustering.setThreadNumber(this->threadNumber_);
       mergeTreeClustering.setDebugLevel(this->debugLevel_);
 
       mergeTreeClustering.template execute<dataType>(

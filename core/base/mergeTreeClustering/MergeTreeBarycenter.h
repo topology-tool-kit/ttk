@@ -125,7 +125,7 @@ namespace ttk {
         trees.size(), std::vector<double>(trees.size(), 0));
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) \
-  num_threads(numberOfThreads_) if(parallelize_)
+  num_threads(this->threadNumber_) if(parallelize_)
 #endif
       for(unsigned int i = 0; i < trees.size(); ++i)
         for(unsigned int j = i + 1; j < trees.size(); ++j) {
@@ -748,7 +748,7 @@ namespace ttk {
       // mergeTreeDistance.setParallelize(false);
       mergeTreeDistance.setParallelize(parallelize_);
       mergeTreeDistance.setIsCalled(true);
-      mergeTreeDistance.setNumberOfThreads(numberOfThreads_);
+      mergeTreeDistance.setThreadNumber(this->threadNumber_);
       mergeTreeDistance.setDistanceSquared(true); // squared root
       mergeTreeDistance.setNodePerTask(nodePerTask_);
       /*if(progressiveBarycenter_){
@@ -811,7 +811,7 @@ namespace ttk {
         &matchings,
       std::vector<dataType> &distances) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(numberOfThreads_) \
+#pragma omp parallel num_threads(this->threadNumber_) \
   shared(baryMergeTree) if(parallelize_)
       {
 #pragma omp single nowait

@@ -662,7 +662,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       unsigned int nthreads = std::thread::hardware_concurrency();
 #pragma omp parallel num_threads( \
-  numberOfThreads_) if(firstCall or (int) nthreads == numberOfThreads_)
+  this->threadNumber_) if(firstCall or (int) nthreads == this->threadNumber_)
       {
 #pragma omp single nowait
 #endif
@@ -827,7 +827,7 @@ namespace ttk {
       std::vector<bool> &treeNodeDone,
       std::queue<ftm::idNode> &treeQueue) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(numberOfThreads_)
+#pragma omp parallel num_threads(this->threadNumber_)
       {
 #pragma omp single nowait
 #endif
@@ -948,9 +948,9 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_OPENMP
       unsigned int nthreads = std::thread::hardware_concurrency();
-#pragma omp parallel num_threads(                                  \
-  numberOfThreads_) if((firstCall or nthreads == numberOfThreads_) \
-                       and not isCalled_)
+#pragma omp parallel num_threads(                                        \
+  this->threadNumber_) if((firstCall or nthreads == this->threadNumber_) \
+                          and not isCalled_)
       {
 #pragma omp single nowait
 #endif
@@ -1046,7 +1046,7 @@ namespace ttk {
       }
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(numberOfThreads_) if(not isCalled_)
+#pragma omp parallel num_threads(this->threadNumber_) if(not isCalled_)
       {
 #pragma omp single nowait
 #endif

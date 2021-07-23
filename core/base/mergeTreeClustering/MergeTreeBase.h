@@ -50,7 +50,6 @@ protected:
   bool rescaledWasserstein_ = false;
   double normalizedWassersteinReg_ = 0.;
   bool parallelize_ = true;
-  int numberOfThreads_ = 0;
   int nodePerTask_ = 32;
   bool cleanTree_ = true;
 
@@ -102,18 +101,6 @@ public:
 
   void setParallelize(bool para) {
     parallelize_ = para;
-  }
-
-  void setNumberOfThreads(int noThreads) {
-    numberOfThreads_ = noThreads;
-    if(numberOfThreads_ == 0) {
-      numberOfThreads_ = this->threadNumber_;
-      if(this->debugLevel_ > 0) {
-        std::stringstream ss;
-        ss << "no threads : " << numberOfThreads_;
-        printMsg(ss.str());
-      }
-    }
   }
 
   void setNodePerTask(int npt) {

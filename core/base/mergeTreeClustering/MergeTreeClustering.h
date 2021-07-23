@@ -149,7 +149,7 @@ namespace ttk {
           continue;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) shared(allCentroids) \
-  num_threads(numberOfThreads_) if(parallelize_)
+  num_threads(this->threadNumber_) if(parallelize_)
 #endif
         for(unsigned int j = 0; j < trees.size(); ++j) {
           std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching,
@@ -194,7 +194,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
-  num_threads(numberOfThreads_) if(parallelize_)
+  num_threads(this->threadNumber_) if(parallelize_)
 #endif
       for(unsigned int i = 0; i < trees.size(); ++i) {
         for(unsigned int j = 0; j < centroids.size(); ++j) {
@@ -299,7 +299,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic)                     \
   shared(centroids, centroids2, oldCentroids_, oldCentroids2_) \
-    num_threads(numberOfThreads_) if(parallelize_)
+    num_threads(this->threadNumber_) if(parallelize_)
 #endif
         for(unsigned int i = 0; i < centroids.size(); ++i) {
           std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching,
@@ -352,7 +352,7 @@ namespace ttk {
         // Step 3
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
-  num_threads(numberOfThreads_) if(parallelize_)
+  num_threads(this->threadNumber_) if(parallelize_)
 #endif
       for(unsigned int i = 0; i < trees.size(); ++i)
         for(unsigned int c = 0; c < centroids.size(); ++c) {
@@ -457,7 +457,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
-  num_threads(numberOfThreads_) if(parallelize_)
+  num_threads(this->threadNumber_) if(parallelize_)
 #endif
       for(unsigned int i = 0; i < centroids.size(); ++i) {
         std::vector<dataType> distances(assignedTrees[i].size(), 0);
@@ -517,7 +517,7 @@ namespace ttk {
         assignedAlphas[std::get<0>(asgn)].push_back(alphas[std::get<1>(asgn)]);
       }
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(numberOfThreads_) \
+#pragma omp parallel num_threads(this->threadNumber_) \
   shared(centroids) if(parallelize_ and parallelizeUpdate_)
       {
 #pragma omp single nowait
@@ -585,7 +585,7 @@ namespace ttk {
       ftmTreeEditDistanceBary.setAssignmentSolver(assignmentSolverID_);
       ftmTreeEditDistanceBary.setParallelize(parallelize_);
       ftmTreeEditDistanceBary.setIsCalled(true);
-      ftmTreeEditDistanceBary.setNumberOfThreads(numberOfThreads_);
+      ftmTreeEditDistanceBary.setThreadNumber(this->threadNumber_);
       ftmTreeEditDistanceBary.setDistanceSquared(true); // squared root
       ftmTreeEditDistanceBary.setProgressiveBarycenter(progressiveBarycenter_);
       ftmTreeEditDistanceBary.setDeterministic(deterministic_);

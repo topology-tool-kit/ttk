@@ -100,7 +100,6 @@ private:
   bool ProgressiveBarycenter = false;
   double Tol = 0.0;
   bool Parallelize = true;
-  int NumberOfThreads = 0;
 
   // ----------------------
   // Data for visualization
@@ -348,9 +347,6 @@ public:
 
   vtkSetMacro(Parallelize, bool);
   vtkGetMacro(Parallelize, bool);
-
-  vtkSetMacro(NumberOfThreads, int);
-  vtkGetMacro(NumberOfThreads, int);
 
   vtkSetMacro(NormalizedWassersteinReg, double);
   vtkGetMacro(NormalizedWassersteinReg, double);
