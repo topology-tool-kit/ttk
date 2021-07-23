@@ -390,9 +390,8 @@ namespace ttk {
       }
 
       // std::cout << "TIME COMP.MATC. = " << t_match_time << std::endl;
-      std::stringstream ss;
-      ss << "TIME TOTAL      = " << t_total.getElapsedTime();
-      printMsg(ss.str());
+      printMsg("Total", 1, t_total.getElapsedTime(), this->threadNumber_,
+               debug::LineMode::NEW, debug::Priority::INFO);
       printMsg(debug::Separator::L2);
       std::stringstream ss2;
       ss2 << "DISTANCE²       = " << distance;
@@ -462,14 +461,13 @@ namespace ttk {
                             treeBackTable, forestBackTable, nRows, nCols);
       }
 
-      std::stringstream ss;
-      ss << "TIME DYNA.PROG. = " << t_dyn.getElapsedTime();
-      printMsg(ss.str());
-      if(not parallelize_) {
-        std::stringstream ss2;
-        ss2 << " - TIME ASSGNMT = " << t_assignment_time_;
-        printMsg(ss2.str());
-      }
+      printMsg("Dynamic programing", 1, t_dyn.getElapsedTime(),
+               this->threadNumber_, debug::LineMode::NEW,
+               debug::Priority::INFO);
+      if(not parallelize_)
+        printMsg("Assignment problems", 1, t_assignment_time_,
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::INFO);
     }
 
     template <class dataType>

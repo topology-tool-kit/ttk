@@ -1052,6 +1052,8 @@ public:
       vtkArcs->GetCellData()->AddArray(isInterpolatedTreeArc);
     if(ShiftMode == 1) // Star Barycenter
       vtkArcs->GetCellData()->AddArray(percentMatchArc);
+    if(vtkOutputArc == vtkOutputNode)
+      vtkArcs->GetPointData()->ShallowCopy(vtkOutputNode->GetPointData());
     vtkOutputArc->ShallowCopy(vtkArcs);
 
     // Manage segmentation output

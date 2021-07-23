@@ -14,26 +14,6 @@ namespace ttk {
   namespace ftm {
 
     // --------------------
-    // Utils
-    // --------------------
-    template <class dataType>
-    bool isEqual(dataType first, dataType two, double eps = 1e-6) {
-      double diff = first - two;
-      return std::abs(diff)
-             < eps * std::max(std::abs((double)first), std::abs((double)two));
-    }
-
-    template <class dataType>
-    bool isInferior(dataType first, dataType two) {
-      return first < two and not isEqual<dataType>(first, two);
-    }
-
-    template <class dataType>
-    bool isSuperior(dataType first, dataType two) {
-      return first > two and not isEqual<dataType>(first, two);
-    }
-
-    // --------------------
     // Is
     // --------------------
     template <class dataType>
@@ -73,8 +53,7 @@ namespace ttk {
       auto birthDeath = this->getBirthDeath<dataType>(nodeId);
       dataType birth = std::get<0>(birthDeath);
       dataType death = std::get<1>(birthDeath);
-      bool parentInconsistent = isInferior<dataType>(parentDeath, death)
-                                or isSuperior<dataType>(parentBirth, birth);
+      bool parentInconsistent = parentDeath < death or parentBirth > birth;
       return parentInconsistent;
     }
 

@@ -231,7 +231,6 @@ int ttkMergeTreeClustering::runCompute(
     mergeTreeDistance.setEpsilon3Tree2(Epsilon3Tree2);
     mergeTreeDistance.setProgressiveComputation(ProgressiveComputation);
     mergeTreeDistance.setBranchDecomposition(BranchDecomposition);
-    mergeTreeDistance.setParallelize(Parallelize);
     mergeTreeDistance.setPersistenceThreshold(PersistenceThreshold);
     mergeTreeDistance.setNormalizedWasserstein(NormalizedWasserstein);
     mergeTreeDistance.setNormalizedWassersteinReg(NormalizedWassersteinReg);
@@ -261,7 +260,6 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeBarycenter.setEpsilon3Tree2(Epsilon3Tree2);
       mergeTreeBarycenter.setProgressiveComputation(ProgressiveComputation);
       mergeTreeBarycenter.setBranchDecomposition(BranchDecomposition);
-      mergeTreeBarycenter.setParallelize(Parallelize);
       mergeTreeBarycenter.setPersistenceThreshold(PersistenceThreshold);
       mergeTreeBarycenter.setNormalizedWasserstein(NormalizedWasserstein);
       mergeTreeBarycenter.setNormalizedWassersteinReg(NormalizedWassersteinReg);
@@ -296,7 +294,6 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setEpsilon3Tree2(Epsilon3Tree2);
       mergeTreeClustering.setProgressiveComputation(ProgressiveComputation);
       mergeTreeClustering.setBranchDecomposition(BranchDecomposition);
-      mergeTreeClustering.setParallelize(Parallelize);
       mergeTreeClustering.setPersistenceThreshold(PersistenceThreshold);
       mergeTreeClustering.setNormalizedWasserstein(NormalizedWasserstein);
       mergeTreeClustering.setNormalizedWassersteinReg(NormalizedWassersteinReg);
@@ -678,9 +675,8 @@ int ttkMergeTreeClustering::runOutput(
     }
   }
 
-  std::stringstream ss;
-  ss << "TIME TREES OUT. = " << t_makeTreesOutput.getElapsedTime();
-  printMsg(ss.str());
+  printMsg(
+    "Trees output", 1, t_makeTreesOutput.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }

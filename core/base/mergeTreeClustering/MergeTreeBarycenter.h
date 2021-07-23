@@ -744,9 +744,6 @@ namespace ttk {
       mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
       mergeTreeDistance.setKeepSubtree(keepSubtree_);
       mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
-      // mergeTreeDistance.setParallelize(true);
-      // mergeTreeDistance.setParallelize(false);
-      mergeTreeDistance.setParallelize(parallelize_);
       mergeTreeDistance.setIsCalled(true);
       mergeTreeDistance.setThreadNumber(this->threadNumber_);
       mergeTreeDistance.setDistanceSquared(true); // squared root
@@ -974,21 +971,16 @@ namespace ttk {
         addDeletedNodesTime_ += t_addDeletedNodes.getElapsedTime();
         auto t_assignment_time
           = t_assignment.getElapsedTime() - t_addDeletedNodes.getElapsedTime();
-
-        std::stringstream ss2;
-        ss2 << "assignment : " << t_assignment_time;
-        printMsg(ss2.str());
+        printMsg("Assignment", 1, t_assignment_time, this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::INFO);
 
         // --- Update
         Timer t_update;
         updateBarycenterTree<dataType>(trees, baryMergeTree, alphas, matchings);
         auto t_update_time = t_update.getElapsedTime();
         baryTree = &(baryMergeTree.tree);
-
-        std::stringstream ss3;
-        ss3 << "update     : " << t_update_time;
-        printMsg(ss3.str());
-        printBaryStats(baryTree);
+        printMsg("Update", 1, t_update_time, this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::INFO);
 
         // --- Check convergence
         dataType currentFrechetEnergy = 0;
@@ -1001,12 +993,13 @@ namespace ttk {
         frechetEnergy = currentFrechetEnergy;
         tol_ = frechetEnergy / 125.0;
 
-        std::stringstream ss4, ss5;
+        std::stringstream ss4;
+        auto barycenterTime = t_bary.getElapsedTime() - addDeletedNodesTime_;
+        printMsg("Total", 1, barycenterTime, this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::INFO);
+        printBaryStats(baryTree);
         ss4 << "Frechet energy : " << frechetEnergy;
         printMsg(ss4.str());
-        ss5 << "TIME BARYCENTER = "
-            << t_bary.getElapsedTime() - addDeletedNodesTime_;
-        printMsg(ss5.str());
 
         minFrechet = std::min(minFrechet, frechetEnergy);
         if(not converged and (not progressiveBarycenter_ or treesUnscaled)) {
@@ -1037,9 +1030,9 @@ namespace ttk {
       std::stringstream ss, ss2;
       ss << "Frechet energy : " << currentFrechetEnergy;
       printMsg(ss.str());
-      ss2 << "TIME BARYCENTER = "
-          << t_bary.getElapsedTime() - addDeletedNodesTime_;
-      printMsg(ss2.str());
+      auto barycenterTime = t_bary.getElapsedTime() - addDeletedNodesTime_;
+      printMsg("Total", 1, barycenterTime, this->threadNumber_,
+               debug::LineMode::NEW, debug::Priority::INFO);
       // std::cout << "Bary Distance Time = " << allDistanceTime_ << std::endl;
 
       if(trees.size() == 2 and not isCalled_)

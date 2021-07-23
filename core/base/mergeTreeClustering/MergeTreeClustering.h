@@ -583,7 +583,6 @@ namespace ttk {
       ftmTreeEditDistanceBary.setRescaledWasserstein(rescaledWasserstein_);
       ftmTreeEditDistanceBary.setKeepSubtree(keepSubtree_);
       ftmTreeEditDistanceBary.setAssignmentSolver(assignmentSolverID_);
-      ftmTreeEditDistanceBary.setParallelize(parallelize_);
       ftmTreeEditDistanceBary.setIsCalled(true);
       ftmTreeEditDistanceBary.setThreadNumber(this->threadNumber_);
       ftmTreeEditDistanceBary.setDistanceSquared(true); // squared root
@@ -634,9 +633,7 @@ namespace ttk {
         assignmentCentroids<dataType>(
           trees, centroids, assignmentC, bestDistanceT, trees2, centroids2);
         auto t_assignment_time = t_assignment.getElapsedTime();
-        std::stringstream ss;
-        ss << "assignment : " << t_assignment_time;
-        printMsg(ss.str());
+        printMsg("Assignment", 1, t_assignment_time, this->threadNumber_);
 
         // --- Update
         Timer t_update;
@@ -647,9 +644,7 @@ namespace ttk {
           trees2Updated = updateCentroids<dataType>(
             trees2, centroids2, alphas, assignmentC);
         auto t_update_time = t_update.getElapsedTime();
-        std::stringstream ss2;
-        ss2 << "update     : " << t_update_time;
-        printMsg(ss2.str());
+        printMsg("Update", 1, t_update_time, this->threadNumber_);
 
         // --- Check convergence
         dataType currentInertia = 0;
@@ -711,10 +706,8 @@ namespace ttk {
         ++cptCentroid[centroid];
       }
 
-      std::stringstream ss2;
-      ss2 << "TIME CLUSTERING = "
-          << t_clust.getElapsedTime() - addDeletedNodesTime_;
-      printMsg(ss2.str());
+      auto clusteringTime = t_clust.getElapsedTime() - addDeletedNodesTime_;
+      printMsg("Total", 1, clusteringTime, this->threadNumber_);
     }
 
     template <class dataType>

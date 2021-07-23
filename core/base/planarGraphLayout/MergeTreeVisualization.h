@@ -770,15 +770,10 @@ public:
   bool
     isConflictingBoundsXOneWay(std::tuple<float, float, float, float> first,
                                std::tuple<float, float, float, float> second) {
-    double eps = std::numeric_limits<float>::epsilon();
     return (std::get<0>(first) <= std::get<0>(second)
             and std::get<0>(second) <= std::get<1>(first))
            or (std::get<0>(first) <= std::get<1>(second)
-               and std::get<1>(second) <= std::get<1>(first))
-           or (isEqual<float>(std::get<0>(first), std::get<0>(second), eps)
-               or isEqual<float>(std::get<0>(second), std::get<1>(first), eps)
-               or isEqual<float>(std::get<0>(first), std::get<1>(second), eps)
-               or isEqual<float>(std::get<1>(second), std::get<1>(first), eps));
+               and std::get<1>(second) <= std::get<1>(first));
   }
 
   bool isConflictingBoundsX(std::tuple<float, float, float, float> first,
@@ -790,15 +785,10 @@ public:
   bool
     isConflictingBoundsYOneWay(std::tuple<float, float, float, float> first,
                                std::tuple<float, float, float, float> second) {
-    double eps = std::numeric_limits<float>::epsilon();
     return (std::get<2>(first) <= std::get<2>(second)
             and std::get<2>(second) <= std::get<3>(first))
            or (std::get<2>(first) <= std::get<3>(second)
-               and std::get<3>(second) <= std::get<3>(first))
-           or (isEqual<float>(std::get<2>(first), std::get<2>(second), eps)
-               or isEqual<float>(std::get<2>(second), std::get<3>(first), eps)
-               or isEqual<float>(std::get<2>(first), std::get<3>(second), eps)
-               or isEqual<float>(std::get<3>(second), std::get<3>(first), eps));
+               and std::get<3>(second) <= std::get<3>(first));
   }
 
   bool isConflictingBoundsY(std::tuple<float, float, float, float> first,

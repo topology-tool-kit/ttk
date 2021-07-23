@@ -332,7 +332,6 @@ public:
     for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
       dataType nodePers = tree->getNodePersistence<dataType>(i);
       if((nodePers == 0 or nodePers <= threshold
-          or isEqual<dataType>(nodePers, threshold)
           or not tree->isNodeOriginDefined(i))
          and !tree->isRoot(i)) {
         tree->deleteNode(i);
