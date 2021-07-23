@@ -45,6 +45,7 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK includes
 #include <PlanarGraphLayout.h>

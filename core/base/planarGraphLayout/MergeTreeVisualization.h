@@ -98,7 +98,8 @@ public:
     };
 
     // Go
-    std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
+    std::vector<ftm::idNode> leaves;
+    tree->getLeavesFromTree(leaves);
     std::sort(leaves.begin(), leaves.end(), compLowerPers);
     std::queue<ftm::idNode> queue;
     for(auto node : leaves)
@@ -240,27 +241,23 @@ public:
 
   // TODO manage multi pers pairs
   template <class dataType>
-  std::vector<float> treePlanarLayoutImpl(
+  void treePlanarLayoutImpl(
     FTMTree_MT *tree,
     std::tuple<double, double, double, double, double, double> oldBounds,
-    double refPersistence) {
-    int verbose = 0;
-
-    if(verbose > 0) {
-      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
-      printMsg("Planar Layout", debug::Priority::VERBOSE);
-    }
+    double refPersistence,
+    std::vector<float> &retVec) {
+    printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
+    printMsg("Planar Layout", debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Init internal parameters
     // ----------------------------------------------------
     Timer t_init;
-    if(verbose > 1)
-      printMsg("Init internal parameters", debug::Priority::VERBOSE);
+    printMsg("Init internal parameters", debug::Priority::VERBOSE);
 
     auto nPoints = tree->getRealNumberOfNodes();
     int outNumberOfPoints = nPoints * 2;
-    std::vector<float> retVec(outNumberOfPoints);
+    retVec = std::vector<float>(outNumberOfPoints);
 
     int cptNode = 0;
     std::vector<LongSimplexId> treeSimplexId(tree->getNumberOfNodes());
@@ -269,18 +266,15 @@ public:
     std::vector<std::vector<ftm::idNode>> nodeBranching;
     tree->getTreeBranching(branching, branchingID, nodeBranching);
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "INIT            = " << t_init.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss;
+    ss << "INIT            = " << t_init.getElapsedTime();
+    printMsg(ss.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Iterate through tree
     // ----------------------------------------------------
     Timer t_iterate;
-    if(verbose > 1)
-      printMsg("Iterate through tree", debug::Priority::VERBOSE);
+    printMsg("Iterate through tree", debug::Priority::VERBOSE);
 
     std::queue<idNode> queue;
     ftm::idNode treeRoot = tree->getRoot();
@@ -295,18 +289,17 @@ public:
       ++cptNode;
 
       // Push children to the queue
-      auto children = tree->getChildren(node);
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
       for(size_t i = 0; i < children.size(); ++i) {
         auto child = children[i];
         queue.emplace(child);
       }
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "ITERATE TREE    = " << t_iterate.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss2;
+    ss2 << "ITERATE TREE    = " << t_iterate.getElapsedTime();
+    printMsg(ss2.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Prepositioning coordinates
@@ -322,7 +315,9 @@ public:
       retVec[treeSimplexId[node] * 2 + 1] = tree->getValue<dataType>(node);
 
       // Push children to the queue
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue2.emplace(child);
     }
 
@@ -330,8 +325,7 @@ public:
     // Rescale coordinates
     // ----------------------------------------------------
     Timer t_rescale;
-    if(verbose > 1)
-      printMsg("Rescale coordinates ", debug::Priority::VERBOSE);
+    printMsg("Rescale coordinates ", debug::Priority::VERBOSE);
 
     float x_min, y_min, x_max, y_max;
     x_min = std::numeric_limits<float>::max();
@@ -373,11 +367,9 @@ public:
       retVec[i + 1] = retVec[i + 1] * diff + offset;
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "RESCALE COORD.  = " << t_rescale.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss3;
+    ss3 << "RESCALE COORD.  = " << t_rescale.getElapsedTime();
+    printMsg(ss3.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Call Branch Decomposition Planar Layout if asked
@@ -385,15 +377,14 @@ public:
     if(branchDecompositionPlanarLayout_) {
       treePlanarLayoutBDImpl<dataType>(
         tree, retVec, treeSimplexId, branching, nodeBranching);
-      return retVec;
+      return;
     }
 
     // ----------------------------------------------------
     // Move nodes given scalars
     // ----------------------------------------------------
     Timer t_move;
-    if(verbose > 1)
-      printMsg("Move nodes given scalars", debug::Priority::VERBOSE);
+    printMsg("Move nodes given scalars", debug::Priority::VERBOSE);
 
     float rootY = retVec[treeSimplexId[treeRoot] * 2 + 1];
     float rootOriginY = retVec[treeSimplexId[treeRootOrigin] * 2 + 1];
@@ -409,22 +400,20 @@ public:
         = retVec[treeSimplexId[i] * 2 + 1] * (rootYmax - rootYmin) + rootYmin;
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "MOVE SCALAR     = " << t_move.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss4;
+    ss4 << "MOVE SCALAR     = " << t_move.getElapsedTime();
+    printMsg(ss4.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Scale pairs given persistence
     // ----------------------------------------------------
     Timer t_scale;
-    if(verbose > 1)
-      printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
+    printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
 
     dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
 
-    std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
+    std::vector<ftm::idNode> leaves;
+    tree->getLeavesFromTree(leaves);
     auto compLowerPers = [&](const ftm::idNode a, const ftm::idNode b) {
       return tree->getNodePersistence<dataType>(a)
              < tree->getNodePersistence<dataType>(b);
@@ -465,9 +454,9 @@ public:
           oldNodeParent = nodeParent;
           nodeParent = tree->getParentSafe(nodeParent);
           if(oldNodeParent == nodeParent) {
-            std::stringstream ss;
-            ss << "treePlanarLayoutImpl oldNodeParent == nodeParent";
-            printMsg(ss.str(), debug::Priority::VERBOSE);
+            std::stringstream ss5;
+            ss5 << "treePlanarLayoutImpl oldNodeParent == nodeParent";
+            printMsg(ss5.str(), debug::Priority::VERBOSE);
             break;
           }
         }
@@ -482,18 +471,15 @@ public:
       }
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "SCALE PERS.     = " << t_scale.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-    }
+    std::stringstream ss5;
+    ss5 << "SCALE PERS.     = " << t_scale.getElapsedTime();
+    printMsg(ss5.str(), debug::Priority::VERBOSE);
 
     // ----------------------------------------------------
     // Branches positionning and avoid edges crossing
     // ----------------------------------------------------
     Timer t_avoid;
-    if(verbose > 1)
-      printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
+    printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
 
     bool isJT = tree->isJoinTree<dataType>();
     auto compValue = [&](const ftm::idNode a, const ftm::idNode b) {
@@ -518,7 +504,9 @@ public:
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
       // Get saddle nodes in the branch
-      auto tupBranchOrigins = tree->getBranchOriginsFromThisBranch(nodeOrigin);
+      std::tuple<std::vector<ftm::idNode>, std::vector<ftm::idNode>>
+        tupBranchOrigins;
+      tree->getBranchOriginsFromThisBranch(nodeOrigin, tupBranchOrigins);
       allBranchOrigins[nodeOrigin] = std::get<0>(tupBranchOrigins);
       std::vector<ftm::idNode> nonBranchOrigins = std::get<1>(tupBranchOrigins);
       allBranchOrigins[nodeOrigin].insert(allBranchOrigins[nodeOrigin].end(),
@@ -708,24 +696,19 @@ public:
       }
     }
 
-    if(verbose > 0) {
-      std::stringstream ss;
-      ss << "AVOID CROSSING  = " << t_avoid.getElapsedTime();
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-      printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
-    }
-
-    return retVec;
+    std::stringstream ss6;
+    ss6 << "AVOID CROSSING  = " << t_avoid.getElapsedTime();
+    printMsg(ss6.str(), debug::Priority::VERBOSE);
+    printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
   }
 
   template <class dataType>
-  std::vector<float> treePlanarLayout(
+  void treePlanarLayout(
     FTMTree_MT *tree,
     std::tuple<double, double, double, double, double, double> oldBounds,
-    double refPersistence) {
-    std::vector<float> res;
-    res = treePlanarLayoutImpl<dataType>(tree, oldBounds, refPersistence);
-    return res;
+    double refPersistence,
+    std::vector<float> &res) {
+    treePlanarLayoutImpl<dataType>(tree, oldBounds, refPersistence, res);
   }
 
   // ==========================================================================
@@ -775,7 +758,9 @@ public:
         x_max = std::max(x_max, retVec[treeSimplexId[node] * 2]);
       }
 
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
 
@@ -785,15 +770,10 @@ public:
   bool
     isConflictingBoundsXOneWay(std::tuple<float, float, float, float> first,
                                std::tuple<float, float, float, float> second) {
-    double eps = std::numeric_limits<float>::epsilon();
     return (std::get<0>(first) <= std::get<0>(second)
             and std::get<0>(second) <= std::get<1>(first))
            or (std::get<0>(first) <= std::get<1>(second)
-               and std::get<1>(second) <= std::get<1>(first))
-           or (isEqual<float>(std::get<0>(first), std::get<0>(second), eps)
-               or isEqual<float>(std::get<0>(second), std::get<1>(first), eps)
-               or isEqual<float>(std::get<0>(first), std::get<1>(second), eps)
-               or isEqual<float>(std::get<1>(second), std::get<1>(first), eps));
+               and std::get<1>(second) <= std::get<1>(first));
   }
 
   bool isConflictingBoundsX(std::tuple<float, float, float, float> first,
@@ -805,15 +785,10 @@ public:
   bool
     isConflictingBoundsYOneWay(std::tuple<float, float, float, float> first,
                                std::tuple<float, float, float, float> second) {
-    double eps = std::numeric_limits<float>::epsilon();
     return (std::get<2>(first) <= std::get<2>(second)
             and std::get<2>(second) <= std::get<3>(first))
            or (std::get<2>(first) <= std::get<3>(second)
-               and std::get<3>(second) <= std::get<3>(first))
-           or (isEqual<float>(std::get<2>(first), std::get<2>(second), eps)
-               or isEqual<float>(std::get<2>(second), std::get<3>(first), eps)
-               or isEqual<float>(std::get<2>(first), std::get<3>(second), eps)
-               or isEqual<float>(std::get<3>(second), std::get<3>(first), eps));
+               and std::get<3>(second) <= std::get<3>(first));
   }
 
   bool isConflictingBoundsY(std::tuple<float, float, float, float> first,
@@ -875,7 +850,9 @@ public:
       if(node != branchRoot)
         retVec[treeSimplexId[node] * 2] += shift;
 
-      for(auto child : tree->getChildren(node))
+      std::vector<idNode> children;
+      tree->getChildren(node, children);
+      for(auto child : children)
         queue.emplace(child);
     }
     allBranchBounds[branchRoot]
@@ -885,12 +862,12 @@ public:
         = shiftBranchBoundsTuple(allBranchBounds[node], shift);
   }
 
-  std::vector<double> tupleToVector(
-    std::tuple<double, double, double, double, double, double> &tup) {
-    std::vector<double> vec{std::get<0>(tup), std::get<1>(tup),
-                            std::get<2>(tup), std::get<3>(tup),
-                            std::get<4>(tup), std::get<5>(tup)};
-    return vec;
+  void tupleToVector(
+    std::tuple<double, double, double, double, double, double> &tup,
+    std::vector<double> &vec) {
+    vec = std::vector<double>{std::get<0>(tup), std::get<1>(tup),
+                              std::get<2>(tup), std::get<3>(tup),
+                              std::get<4>(tup), std::get<5>(tup)};
   }
 
   std::tuple<double, double, double, double, double, double>
