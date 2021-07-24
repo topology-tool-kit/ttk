@@ -818,13 +818,10 @@ public:
               printMsg("// Push arc bary branch id", debug::Priority::VERBOSE);
               if(clusteringOutput and ShiftMode != 1) {
                 int tBranchID = -1;
-                if(treeMatching[node] >= 0
-                   and treeMatching[node] < allBaryBranchingID[c].size()) {
+                if(treeMatching[node] < allBaryBranchingID[c].size()) {
                   tBranchID = allBaryBranchingID[c][treeMatching[node]];
-                  if(not trees[i]->isLeaf(node)
-                     and treeMatching[nodeOrigin] >= 0
-                     and treeMatching[nodeOrigin]
-                           < allBaryBranchingID[c].size())
+                  if(!trees[i]->isLeaf(node)
+                     && treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
                     tBranchID = allBaryBranchingID[c][treeMatching[nodeOrigin]];
                 }
                 branchBaryID->InsertNextTuple1(tBranchID);
@@ -852,8 +849,7 @@ public:
                 idNode nodeToGet = treeBranching[node];
                 if(PlanarLayout and branchDecompositionPlanarLayout_)
                   nodeToGet = node;
-                if(treeMatching[nodeToGet] >= 0
-                   and treeMatching[nodeToGet] < allBaryBranchingID[c].size())
+                if(treeMatching[nodeToGet] < allBaryBranchingID[c].size())
                   persistenceBaryArc->InsertTuple1(
                     cellCount, barycenters[c]->getNodePersistence<dataType>(
                                  treeMatching[nodeToGet]));
@@ -928,11 +924,10 @@ public:
             printMsg("// Add node bary branch id", debug::Priority::VERBOSE);
             if(clusteringOutput and ShiftMode != 1) {
               int tBranchID = -1;
-              if(treeMatching[node] >= 0
-                 and treeMatching[node] < allBaryBranchingID[c].size()) {
+              if(treeMatching[node] < allBaryBranchingID[c].size()) {
                 tBranchID = allBaryBranchingID[c][treeMatching[node]];
-                if(not trees[i]->isLeaf(node) and treeMatching[nodeOrigin] >= 0
-                   and treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
+                if(!trees[i]->isLeaf(node)
+                   && treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
                   tBranchID = allBaryBranchingID[c][treeMatching[nodeOrigin]];
               }
               branchBaryNodeID->InsertNextTuple1(tBranchID);
@@ -951,8 +946,7 @@ public:
 
             // Add node persistence barycenter
             if(clusteringOutput and ShiftMode != 1)
-              if(treeMatching[node] >= 0
-                 and treeMatching[node] < allBaryBranchingID[c].size())
+              if(treeMatching[node] < allBaryBranchingID[c].size())
                 persistenceBaryNode->InsertTuple1(
                   pointCount, barycenters[c]->getNodePersistence<dataType>(
                                 treeMatching[node]));
