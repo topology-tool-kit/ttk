@@ -1,0 +1,10 @@
+ttk_add_base_library(mergeTreeDistanceMatrix
+  SOURCES
+    MergeTreeDistanceMatrix.cpp
+  HEADERS
+    MergeTreeDistanceMatrix.h
+  DEPENDS
+    triangulation
+    mergeTreeClustering
+    ftmTree
+    )

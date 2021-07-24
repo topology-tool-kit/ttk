@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="MergeTreeDistanceMatrix" class="ttkMergeTreeDistanceMatrix" label="TTK MergeTreeDistanceMatrix">
+           <Documentation long_help="MergeTreeDistanceMatrix Long" short_help="MergeTreeDistanceMatrix Short">
+               
+           </Documentation>
+
+            <!-- INPUT -->
+                <InputProperty
+                    name="Input"
+                    command="SetInputConnection">
+                  <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/> 
+                  </ProxyGroupDomain>
+                  <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet"/>
+                  </DataTypeDomain>
+                  <InputArrayDomain name="input_scalars" number_of_components="1">
+                    <Property name="Input" function="FieldDataSelection" />
+                  </InputArrayDomain>
+                  <Documentation>
+                    Data-set to process.
+                  </Documentation>
+                </InputProperty>
+
+            <!-- INPUT PARAMETER WIDGETS -->
+                <IntVectorProperty
+                name="Backend"
+                label="Backend"
+                command="SetBackend"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Wasserstein Distance (IEEE TVCG 2021)"/>
+                    <Entry value="1" text="Edit Distance (IEEE TVCG 2019)"/>
+                    <Entry value="2" text="Custom"/>
+                </EnumerationDomain>
+                  <Documentation>
+                  </Documentation>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="BranchDecomposition"
+                command="SetBranchDecomposition"
+                label="Use Branch Decomposition"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="Backend"
+                                           value="2" />
+                  </Hints>
+                  <Documentation>
+                    Use branch decomposition representation.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="NormalizedWasserstein"
+                command="SetNormalizedWasserstein"
+                label="Normalized Wasserstein"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="and">
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="BranchDecomposition"
+                                              value="1" />
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="Backend"
+                                              value="2" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+                  <Documentation>
+                    Use normalized Wasserstein (set to true to have a consistent barycenter of merge trees).
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="KeepSubtree"
+                command="SetKeepSubtree"
+                label="Keep Subtree"
+                number_of_elements="1"
+                default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="Backend"
+                                           value="2" />
+                  </Hints>
+                  <Documentation>
+                    Keep subtree when destroying/inserting a node (set to false to have a consistent barycenter of merge tree).
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>  
+                
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                  </Documentation>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="DistanceSquared"
+                command="SetDistanceSquared"
+                label="Distance Square Root"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <!-- Input options -->
+                 <IntVectorProperty
+                name="DeleteMultiPersPairs"
+                command="SetDeleteMultiPersPairs"
+                label="Delete Multi Pers. Pairs"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="Epsilon1UseFarthestSaddle"
+                command="SetEpsilon1UseFarthestSaddle"
+                label="Epsilon1 Use Farthest Saddle"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="EpsilonTree1"
+                command="SetEpsilonTree1"
+                label="Epsilon 1 (%)"
+                number_of_elements="1"
+                default_values="5">
+                  <Documentation>
+                    Merge saddle points (in a bottom-up manner) having their difference in function value below epsilon times the biggest difference in function value.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>   
+                
+                <DoubleVectorProperty
+                name="Epsilon2Tree1"
+                command="SetEpsilon2Tree1"
+                label="Epsilon 2 (%)"
+                number_of_elements="1"
+                default_values="95"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="or">
+                      <Expression type="and">
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="BranchDecomposition"
+                                                value="1" />
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="Backend"
+                                                value="2" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="Backend"
+                                              value="0" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+                  <Documentation>
+                    Given a branch decomposition, ascend a pair (by making it children of the parent of its parent) if the ratio between its persistence and the persistence of its parent is above epsilon2. A high value will ascend only pairs having a close persistence to their parent, more epsilon2 is low more the pairs having a distant persistence to their parent will also be ascended.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>   
+                
+                <DoubleVectorProperty
+                name="Epsilon3Tree1"
+                command="SetEpsilon3Tree1"
+                label="Epsilon 3 (%)"
+                number_of_elements="1"
+                default_values="90"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="or">
+                      <Expression type="and">
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="BranchDecomposition"
+                                                value="1" />
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="Backend"
+                                                value="2" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="Backend"
+                                              value="0" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+                  <Documentation>
+                    Will apply the processing of Epsilon2 only for the pairs having a ratio between their persistence and the maximum persistence inferior to epsilon3. A low value will apply the processing of Epsilon2 only to the small persistence pairs, more epsilon3 is high more the pairs having a high persistence will also be processed.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="PersistenceThreshold"
+                command="SetPersistenceThreshold"
+                label="Persistence Threshold (%)"
+                number_of_elements="1"
+                default_values="0">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>  
+                
+            <PropertyGroup panel_widget="Line" label="Execution options">
+              <Property name="Backend"/>
+              <Property name="BranchDecomposition"/>
+              <Property name="NormalizedWasserstein"/>
+              <Property name="KeepSubtree"/>
+              <Property name="AssignmentSolver"/>
+              <Property name="DistanceSquared"/>
+            </PropertyGroup>
+            
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <!-- <Property name="UseMinMaxPair"/> -->
+              <Property name="DeleteMultiPersPairs"/>
+              <Property name="Epsilon1UseFarthestSaddle"/>
+              <Property name="EpsilonTree1"/>
+              <Property name="Epsilon2Tree1"/>
+              <Property name="Epsilon3Tree1"/>
+              <Property name="PersistenceThreshold"/>
+            </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Distance Matrix" index="0" id="port0" />
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <!-- MENU CATEGORY -->
+                <Hints>
+                    <ShowInMenu category="TTK - Ensemble Scalar Data" />
+                </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

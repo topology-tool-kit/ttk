@@ -1,0 +1,12 @@
+NAME
+  ttkMergeTreeDistanceMatrix
+SOURCES
+  ttkMergeTreeDistanceMatrix.cpp
+HEADERS
+  ttkMergeTreeDistanceMatrix.h
+DEPENDS
+  mergeTreeDistanceMatrix
+  ftmTree
+  ttkFTMTree
+  ttkMergeTreeClustering
+  ttkAlgorithm
