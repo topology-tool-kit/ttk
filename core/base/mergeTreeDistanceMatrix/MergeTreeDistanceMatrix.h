@@ -1,12 +1,10 @@
-/// Provide your information
-///
 /// \ingroup base
 /// \class ttk::MergeTreeDistanceMatrix
-/// \author Mathieu Pont <mathieu.pont@outlook.com>
-/// \date 2020
+/// \author Mathieu Pont <mathieu.pont@lip6.fr>
+/// \date 2021.
 ///
 /// This VTK filter uses the ttk::MergeTreeDistanceMatrix module to compute the
-/// edit distance matrix of a group of merge trees.
+/// distance matrix of a group of merge trees.
 ///
 
 #ifndef _MERGETREEDISTANCEMATRIX_H

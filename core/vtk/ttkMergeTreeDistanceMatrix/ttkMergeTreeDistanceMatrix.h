@@ -1,17 +1,15 @@
-/// Provide your information
-///
 /// \ingroup vtk
 /// \class ttkMergeTreeDistanceMatrix
-/// \author Mathieu Pont <mathieu.pont@outlook.com>
-/// \date 2020
+/// \author Mathieu Pont <mathieu.pont@lip6.fr>
+/// \date 2021.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::MergeTreeDistanceMatrix module.
 ///
 /// This VTK filter uses the ttk::MergeTreeDistanceMatrix module to compute the
 /// distance matrix of a group of merge trees.
 ///
-/// \param Input
-/// \param Output
+/// \param Input vtkMultiBlockDataset
+/// \param Output vtkTable
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
