@@ -627,7 +627,7 @@ public:
   void reverseNodeCorr(ftm::FTMTree_MT *tree, std::vector<int> &nodeCorr) {
     std::vector<int> newNodeCorr(tree->getNumberOfNodes());
     for(unsigned int i = 0; i < nodeCorr.size(); ++i)
-      if(nodeCorr[i] >= (int)0 and nodeCorr[i] < (int)newNodeCorr.size())
+      if(nodeCorr[i] >= 0 && nodeCorr[i] < (int)newNodeCorr.size())
         newNodeCorr[nodeCorr[i]] = i;
     nodeCorr = newNodeCorr;
   }
