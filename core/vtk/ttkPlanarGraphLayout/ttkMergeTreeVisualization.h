@@ -8,11 +8,9 @@
 
 #pragma once
 
+#include <FTMTree.h>
 #include <MergeTreeVisualization.h>
 
-#include <FTMTree.h>
-
-#include <Debug.h>
 #include <ttkAlgorithm.h>
 
 // VTK Includes
@@ -24,11 +22,6 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
-
-#include <stack>
-
-using namespace ttk;
-using namespace ftm;
 
 class ttkMergeTreeVisualization : public MergeTreeVisualization {
 private:
@@ -75,15 +68,14 @@ private:
   std::vector<bool> interpolatedTrees;
 
   // Output
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode;
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc;
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation;
+  vtkUnstructuredGrid *vtkOutputNode{};
+  vtkUnstructuredGrid *vtkOutputArc{};
+  vtkUnstructuredGrid *vtkOutputSegmentation{};
 
   // Matching output
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1,
-    vtkOutputNode2; // input data
+  vtkUnstructuredGrid *vtkOutputNode1{}, *vtkOutputNode2{}; // input data
   std::vector<std::vector<SimplexId>> nodeCorr1, nodeCorr2;
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputMatching; // output
+  vtkUnstructuredGrid *vtkOutputMatching{}; // output
 
   // Filled by the algorithm
   std::vector<std::vector<SimplexId>> nodeCorr;
@@ -198,22 +190,21 @@ public:
   }
 
   // Output
-  void setVtkOutputNode(vtkSmartPointer<vtkUnstructuredGrid> vtkNode) {
+  void setVtkOutputNode(vtkUnstructuredGrid *vtkNode) {
     vtkOutputNode = vtkNode;
   }
-  void setVtkOutputArc(vtkSmartPointer<vtkUnstructuredGrid> vtkArc) {
+  void setVtkOutputArc(vtkUnstructuredGrid *vtkArc) {
     vtkOutputArc = vtkArc;
   }
-  void setVtkOutputSegmentation(
-    vtkSmartPointer<vtkUnstructuredGrid> vtkSegmentation) {
+  void setVtkOutputSegmentation(vtkUnstructuredGrid *vtkSegmentation) {
     vtkOutputSegmentation = vtkSegmentation;
   }
 
   // Matching output
-  void setVtkOutputNode1(vtkSmartPointer<vtkUnstructuredGrid> vtkNode1) {
+  void setVtkOutputNode1(vtkUnstructuredGrid *vtkNode1) {
     vtkOutputNode1 = vtkNode1;
   }
-  void setVtkOutputNode2(vtkSmartPointer<vtkUnstructuredGrid> vtkNode2) {
+  void setVtkOutputNode2(vtkUnstructuredGrid *vtkNode2) {
     vtkOutputNode2 = vtkNode2;
   }
   void setNodeCorr1(std::vector<std::vector<SimplexId>> &nodeCorrT) {
@@ -222,7 +213,7 @@ public:
   void setNodeCorr2(std::vector<std::vector<SimplexId>> &nodeCorrT) {
     nodeCorr2 = nodeCorrT;
   }
-  void setVtkOutputMatching(vtkSmartPointer<vtkUnstructuredGrid> vtkMatching) {
+  void setVtkOutputMatching(vtkUnstructuredGrid *vtkMatching) {
     vtkOutputMatching = vtkMatching;
   }
   void setOutputMatching(
@@ -269,9 +260,8 @@ public:
     if(not clusteringOutput)
       numInputs = 1;
 
-    vtkSmartPointer<vtkUnstructuredGrid> vtkMatching
-      = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkPoints> pointsM = vtkSmartPointer<vtkPoints>::New();
+    vtkNew<vtkUnstructuredGrid> vtkMatching{};
+    vtkNew<vtkPoints> pointsM{};
 
     // Fields
     vtkNew<vtkIntArray> matchingID{};
@@ -482,9 +472,8 @@ public:
       numInputs = trees.size();
     }
     // - Declare VTK arrays
-    vtkSmartPointer<vtkUnstructuredGrid> vtkArcs
-      = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkNew<vtkUnstructuredGrid> vtkArcs{};
+    vtkNew<vtkPoints> points{};
 
     // Node fields
     vtkNew<vtkIntArray> criticalType{};
@@ -545,8 +534,7 @@ public:
     persistenceBaryArc->SetName("PersistenceBarycenter");
 
     // Segmentation
-    vtkSmartPointer<vtkAppendFilter> appendFilter
-      = vtkSmartPointer<vtkAppendFilter>::New();
+    vtkNew<vtkAppendFilter> appendFilter{};
 
     // Internal data
     int cellCount = 0;
@@ -1012,8 +1000,7 @@ public:
         // --------------
         printMsg("// Shift segmentation", debug::Priority::VERBOSE);
         if(OutputSegmentation and not PlanarLayout) {
-          auto iTreesSegmentationCopy
-            = vtkSmartPointer<vtkUnstructuredGrid>::New();
+          vtkNew<vtkUnstructuredGrid> iTreesSegmentationCopy{};
           iTreesSegmentationCopy->DeepCopy(treesSegmentation[i]);
           auto iVkOutputSegmentationTemp
             = vtkUnstructuredGrid::SafeDownCast(iTreesSegmentationCopy);
