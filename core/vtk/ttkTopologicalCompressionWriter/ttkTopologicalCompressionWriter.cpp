@@ -83,6 +83,11 @@ int ttkTopologicalCompressionWriter::Write() {
   outputScalarField->SetName(inputScalarField->GetName());
   Modified();
 
+  // manage tolerance (relative % -> absolute)
+  std::array<double, 2> sfRange{};
+  inputScalarField->GetRange(sfRange.data());
+  this->relToAbsZFPTolerance(this->ZFPTolerance, sfRange);
+
   ttkVtkTemplateMacro(
     inputScalarField->GetDataType(), triangulation->getType(),
     this->execute(

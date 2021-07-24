@@ -72,14 +72,15 @@
 
 <DoubleVectorProperty
     name="ZFPTolerance"
-    label="ZFP Absolute Error Tolerance (extra)"
+    label="ZFP Relative Error Tolerance (extra)"
     command="SetZFPTolerance"
     number_of_elements="1"
     default_values="50">
   <Documentation>
     Additionally compress the data with ZFP for improved geometrical
-    quality (absolute error tolerance).
+    quality (relative error tolerance in % of scalar field range).
   </Documentation>
+  <DoubleRangeDomain name="range" min="1" max="100" />
 </DoubleVectorProperty>
 
 <IntVectorProperty

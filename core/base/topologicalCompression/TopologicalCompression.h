@@ -149,6 +149,14 @@ namespace ttk {
     inline double getZFPTolerance() const {
       return ZFPTolerance;
     }
+    /**
+     * @brief Switch from a relative (% of scalar field range) to an
+     * absolute ZFP tolerance
+     */
+    inline void relToAbsZFPTolerance(const double zfpRelTol,
+                                     const std::array<double, 2> &sfRange) {
+      this->ZFPTolerance = zfpRelTol * (sfRange[1] - sfRange[0]) / 100.0;
+    }
     inline bool getZFPOnly() const {
       return ZFPOnly;
     }
