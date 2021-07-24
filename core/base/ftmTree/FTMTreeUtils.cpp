@@ -15,9 +15,7 @@ namespace ttk {
     // --------------------
     bool FTMTree_MT::isNodeOriginDefined(idNode nodeId) {
       unsigned int origin = (unsigned int)this->getNode(nodeId)->getOrigin();
-      return origin != nullNodes and origin < this->getNumberOfNodes()
-             and origin >= 0;
-      ;
+      return origin != nullNodes && origin < this->getNumberOfNodes();
     }
 
     bool FTMTree_MT::isRoot(idNode nodeId) {
@@ -51,7 +49,7 @@ namespace ttk {
     }
 
     bool FTMTree_MT::isNodeIdInconsistent(idNode nodeId) {
-      return nodeId >= this->getNumberOfNodes() or nodeId < 0;
+      return nodeId >= this->getNumberOfNodes();
     }
 
     bool FTMTree_MT::isThereOnlyOnePersistencePair() {
