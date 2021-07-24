@@ -85,12 +85,9 @@ namespace ttk {
           std::stringstream stream;
           stream << i << " / " << distanceMatrix.size();
           printMsg(stream.str());
-          // trees[i]->printTree2();
 
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
-            // std::cout << " ___ " << j << " / " << distanceMatrix[0].size() <<
-            // std::endl;
             // Execute
             MergeTreeDistance mergeTreeDistance;
             mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
