@@ -945,10 +945,10 @@ namespace ttk {
           treeQueue.emplace(leaf);
 
 #ifdef TTK_ENABLE_OPENMP
-      unsigned int nthreads = std::thread::hardware_concurrency();
+      const int nthreads = std::thread::hardware_concurrency();
 #pragma omp parallel num_threads(                                        \
   this->threadNumber_) if((firstCall or nthreads == this->threadNumber_) \
-                          and not isCalled_)
+                          && !isCalled_)
       {
 #pragma omp single nowait
 #endif
@@ -964,7 +964,7 @@ namespace ttk {
             ss << &treeTable[0] << " _ " << tree1 << " _ " << tree2
                << std::endl;
             // std::cout << ss.str();
-            while(nodeT != -1) {
+            while(static_cast<int>(nodeT) != -1) {
               int t = nodeT + 1;
 
               if(isTree1) {
@@ -1057,7 +1057,7 @@ namespace ttk {
   untied // shared(treeTable, forestTable, treeBackTable, forestBackTable)
           {
 #endif
-            while(nodeT != -1) {
+            while(static_cast<int>(nodeT) != -1) {
               if(isTree1) {
                 int i = nodeT + 1;
                 // --- Equation 8
