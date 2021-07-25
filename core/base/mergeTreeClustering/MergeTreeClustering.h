@@ -482,7 +482,7 @@ namespace ttk {
 
     void matchingCorrespondence(treesMatchingVector &matchingT,
                                 std::vector<int> &nodeCorr,
-                                std::vector<int> assignedTreesIndex) {
+                                std::vector<int> &assignedTreesIndex) {
       for(int i : assignedTreesIndex) {
         std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> newMatching;
         for(auto tup : matchingT[i])
