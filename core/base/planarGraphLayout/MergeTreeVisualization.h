@@ -109,7 +109,7 @@ public:
       queue.pop();
       idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
-      dataType nodePers = tree->getNodePersistence<dataType>(node);
+      const double nodePers = tree->getNodePersistence<dataType>(node);
       retVec[treeSimplexId[nodeOrigin] * 2] = 0;
       retVec[treeSimplexId[nodeOrigin] * 2 + 1]
         = nodePers / rootPers * (rootYmax - rootYmin) + rootYmin;
@@ -391,8 +391,8 @@ public:
     float rootYmin = std::min(rootY, rootOriginY);
     float rootYmax = std::max(rootY, rootOriginY);
     auto rootBirthDeath = tree->getBirthDeath<dataType>(treeRoot);
-    dataType rootBirth = std::get<0>(rootBirthDeath);
-    dataType rootDeath = std::get<1>(rootBirthDeath);
+    const double rootBirth = std::get<0>(rootBirthDeath);
+    const double rootDeath = std::get<1>(rootBirthDeath);
     for(size_t i = 0; i < tree->getNumberOfNodes(); ++i) {
       retVec[treeSimplexId[i] * 2 + 1]
         = (tree->getValue<dataType>(i) - rootBirth) / (rootDeath - rootBirth);
@@ -438,7 +438,7 @@ public:
       if(tree->isLeaf(node)) {
         float nodeDiff = (retVec[treeSimplexId[node] * 2]
                           - retVec[treeSimplexId[nodeOrigin] * 2]);
-        int sign = nodeDiff / std::abs(nodeDiff);
+        const auto sign = nodeDiff / std::abs(nodeDiff);
         auto inc = sign * nodePers / rootPers * (rootYmax - rootYmin) / 2;
         retVec[treeSimplexId[node] * 2]
           = retVec[treeSimplexId[nodeOrigin] * 2] + inc;

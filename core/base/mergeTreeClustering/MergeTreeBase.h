@@ -296,8 +296,8 @@ public:
       queue.pop();
       ftm::idNode nodeParent = tree->getParentSafe(node);
       if(!tree->isRoot(node)) {
-        dataType nodePers = tree->getNodePersistence<dataType>(node);
-        dataType nodeParentPers
+        const double nodePers = tree->getNodePersistence<dataType>(node);
+        const double nodeParentPers
           = tree->getNodePersistence<dataType>(nodeParent);
         if(nodePers / nodeParentPers > epsilon2
            and nodePers / maxPers < epsilon3)

@@ -870,9 +870,9 @@ namespace ttk {
           int decrement = multiplier * pairs.size() / 10;
           int thresholdIndex = pairs.size() - noPairs - std::max(decrement, 2);
           thresholdIndex = std::max(thresholdIndex, 0);
-          dataType persistence = std::get<2>(pairs[thresholdIndex]);
+          const double persistence = std::get<2>(pairs[thresholdIndex]);
           persistenceThreshold
-            = persistence / std::get<2>(pairs[pairs.size() - 1]) * 100;
+            = persistence / std::get<2>(pairs.back()) * 100.0;
           if(thresholdIndex == 0) {
             persistenceThreshold = 0.;
             ++noTreesUnscaled;
