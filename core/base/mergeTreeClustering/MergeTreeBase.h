@@ -940,10 +940,11 @@ public:
     ftm::FTMTree_MT *tree2,
     std::vector<std::tuple<ftm::idNode, ftm::idNode>> &outputMatching) {
     std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
-      realOutputMatching;
-    for(auto tup : outputMatching)
-      realOutputMatching.push_back(
-        std::make_tuple(std::get<0>(tup), std::get<1>(tup), 0));
+      realOutputMatching(outputMatching.size());
+    for(size_t i = 0; i < outputMatching.size(); ++i) {
+      const auto &tup{outputMatching[i]};
+      realOutputMatching[i] = {std::get<0>(tup), std::get<1>(tup), 0.0};
+    }
 
     convertBranchDecompositionMatching<dataType>(
       tree1, tree2, realOutputMatching);
@@ -1328,10 +1329,12 @@ public:
 
   void printMatching(
     std::vector<std::tuple<ftm::idNode, ftm::idNode>> &matchings) {
-    std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matchingsT;
-    for(auto tup : matchings)
-      matchingsT.push_back(
-        std::make_tuple(std::get<0>(tup), std::get<1>(tup), 0));
+    std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matchingsT(
+      matchings.size());
+    for(size_t i = 0; i < matchings.size(); ++i) {
+      const auto &tup{matchings[i]};
+      matchingsT[i] = {std::get<0>(tup), std::get<1>(tup), 0.0};
+    }
     printMatching(matchingsT);
   }
 

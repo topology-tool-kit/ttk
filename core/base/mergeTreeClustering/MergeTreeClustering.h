@@ -225,9 +225,10 @@ namespace ttk {
     void getCentroidsDistanceMatrix(
       std::vector<MergeTree<dataType>> &centroids,
       std::vector<std::vector<double>> &distanceMatrix) {
-      std::vector<ftm::FTMTree_MT *> trees;
-      for(MergeTree<dataType> &centroid : centroids)
-        trees.push_back(&(centroid.tree));
+      std::vector<ftm::FTMTree_MT *> trees(centroids.size());
+      for(size_t i = 0; i < centroids.size(); ++i) {
+        trees[i] = &(centroids[i].tree);
+      }
       getDistanceMatrix<dataType>(trees, distanceMatrix);
     }
 

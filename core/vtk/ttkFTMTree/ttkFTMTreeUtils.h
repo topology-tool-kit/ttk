@@ -33,9 +33,9 @@ namespace ttk {
       vtkSmartPointer<vtkDataArray> nodesScalar
         = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
       scalars.size = nodesScalar->GetNumberOfTuples();
-      std::vector<dataType> scalarsValues;
+      std::vector<dataType> scalarsValues(nodesScalar->GetNumberOfTuples());
       for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i)
-        scalarsValues.push_back(nodesScalar->GetTuple1(i));
+        scalarsValues[i] = nodesScalar->GetTuple1(i);
       // scalars.values = ttkUtils::GetVoidPointer(nodesScalar);
       scalars.values = (void *)(scalarsValues.data());
 
