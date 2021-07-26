@@ -4,7 +4,6 @@ ttk_add_base_library(mergeTreeDistanceMatrix
   HEADERS
     MergeTreeDistanceMatrix.h
   DEPENDS
-    triangulation
     mergeTreeClustering
     ftmTree
     )

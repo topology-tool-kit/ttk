@@ -710,13 +710,11 @@ namespace ttk {
       // --------------------
       // Set
       // --------------------
-
       void setParent(idNode nodeId, idNode newParentNodeId);
 
       // --------------------
       // Delete
       // --------------------
-
       // Delete node by keeping subtree
       void deleteNode(idNode nodeId);
 
@@ -731,13 +729,11 @@ namespace ttk {
       // --------------------
       // Create/Delete/Modify Tree
       // --------------------
-
       void copyMergeTreeStructure(FTMTree_MT *tree);
 
       // --------------------
       // Utils
       // --------------------
-
       void printNodeSS(idNode node, std::stringstream &ss);
 
       template <class dataType>

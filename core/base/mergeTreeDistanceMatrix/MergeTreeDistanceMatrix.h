@@ -14,7 +14,6 @@
 
 // ttk common includes
 #include <Debug.h>
-#include <Triangulation.h>
 
 #include <FTMTree.h>
 #include <FTMTreeUtils.h>
@@ -24,15 +23,11 @@
 namespace ttk {
 
   /**
-   * The MergeTreeDistanceMatrix class provides methods to compute the edit
+   * The MergeTreeDistanceMatrix class provides methods to compute the
    * distance between multiple merge trees and output a distance matrix.
    */
   class MergeTreeDistanceMatrix : virtual public Debug,
                                   virtual public MergeTreeBase {
-
-  private:
-    bool parallelizeMatrix_ = true;
-
   public:
     MergeTreeDistanceMatrix() {
       this->setDebugMsgPrefix(
@@ -42,20 +37,13 @@ namespace ttk {
     };
     ~MergeTreeDistanceMatrix(){};
 
-    void setParallelizeMatrix(bool para) {
-      parallelizeMatrix_ = para;
-    }
-
     /**
      * Implementation of the algorithm.
      */
     template <class dataType>
     void execute(std::vector<MergeTree<dataType>> trees,
                  std::vector<std::vector<double>> &distanceMatrix) {
-      if(parallelizeMatrix_)
-        executePara<dataType>(trees, distanceMatrix);
-      else
-        executeParaImpl<dataType>(trees, distanceMatrix);
+      executePara<dataType>(trees, distanceMatrix);
     }
 
     template <class dataType>
@@ -79,7 +67,7 @@ namespace ttk {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(i) \
-  untied shared(distanceMatrix) if(parallelizeMatrix_)
+  untied shared(distanceMatrix)
         {
 #endif
           std::stringstream stream;
@@ -113,8 +101,7 @@ namespace ttk {
             mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
             mergeTreeDistance.setSaveTree(true);
             mergeTreeDistance.setCleanTree(true);
-            if(parallelizeMatrix_)
-              mergeTreeDistance.setIsCalled(true);
+            mergeTreeDistance.setIsCalled(true);
             std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
             distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
               trees[i], trees[j], outputMatching);

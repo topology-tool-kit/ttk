@@ -1,6 +1,3 @@
-#include <FTMStructures.h>
-#include <FTMTree.h>
-#include <FTMTreeUtils.h>
 #include <ttkFTMTreeUtils.h>
 #include <ttkMergeTreeDistanceMatrix.h>
 #include <ttkUtils.h>
@@ -8,15 +5,8 @@
 #include <vtkDataObject.h> // For port information
 #include <vtkObjectFactory.h> // for new macro
 
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkMultiBlockDataSet.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 using namespace ttk;
