@@ -123,6 +123,11 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   outputOffsetField->SetNumberOfTuples(vertexNumber);
   outputOffsetField->SetName(this->GetOrderArrayName(inputScalarField).data());
 
+  // manage tolerance (relative % -> absolute)
+  std::array<double, 2> sfRange{};
+  inputScalarField->GetRange(sfRange.data());
+  this->relToAbsZFPTolerance(this->ZFPTolerance, sfRange);
+
   // Call TopologicalCompression
   ttkVtkTemplateMacro(
     inputScalarField->GetDataType(), triangulation->getType(),
