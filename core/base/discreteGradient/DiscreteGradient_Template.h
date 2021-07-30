@@ -30,7 +30,6 @@ dataType DiscreteGradient::getPersistence(
   const Cell &up,
   const Cell &down,
   const dataType *const scalars,
-  const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
   return scalars[getCellGreaterVertex(up, triangulation)]
@@ -360,7 +359,6 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = inputOffsets_;
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -433,7 +431,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
 
         // update vpath
         const auto persistence
-          = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
+          = getPersistence(saddle2, saddle1, scalars, triangulation);
 
         vpaths.push_back(VPath(true, -1, sourceIndex, destinationIndex,
                                sourceSlot, destinationSlot, persistence));
@@ -524,7 +522,6 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = inputOffsets_;
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -802,7 +799,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -865,7 +862,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -956,7 +953,6 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = inputOffsets_;
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -1028,7 +1024,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
 
         // update vpath
         const auto persistence
-          = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
+          = getPersistence(saddle2, saddle1, scalars, triangulation);
 
         vpaths.push_back(VPath(true, -1, sourceIndex, destinationIndex,
                                sourceSlot, destinationSlot, persistence));
@@ -1122,7 +1118,6 @@ int DiscreteGradient::processSaddleSaddleConnections2(
                  + std::to_string(this->SaddleConnectorsPersistenceThreshold));
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = inputOffsets_;
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -1398,7 +1393,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -1460,7 +1455,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -1971,6 +1966,7 @@ inline void DiscreteGradient::pairCells(
   gradient_[2 * alpha.dim_][alpha.id_] = localBId;
   gradient_[2 * alpha.dim_ + 1][beta.id_] = localAId;
 #else
+  TTK_FORCE_USE(triangulation);
   gradient_[2 * alpha.dim_][alpha.id_] = beta.id_;
   gradient_[2 * alpha.dim_ + 1][beta.id_] = alpha.id_;
 #endif // TTK_ENABLE_DCG_OPTIMIZE_MEMORY
@@ -2243,6 +2239,10 @@ SimplexId
   static_assert(
     std::is_base_of<AbstractTriangulation, triangulationType>(),
     "triangulationType should be an AbstractTriangulation derivative");
+
+#ifndef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+  TTK_FORCE_USE(triangulation);
+#endif // !TTK_ENABLE_DCG_OPTIMIZE_MEMORY
 
   SimplexId id{-1};
   if(dimensionality_ == 2) {
@@ -2905,6 +2905,7 @@ int DiscreteGradient::reverseAscendingPath(
         }
       }
 #else
+      TTK_FORCE_USE(triangulation);
       gradient_[3][triangleId] = edgeId;
       gradient_[2][edgeId] = triangleId;
 #endif
@@ -2972,6 +2973,7 @@ int DiscreteGradient::reverseDescendingPath(
       }
     }
 #else
+    TTK_FORCE_USE(triangulation);
     gradient_[0][vertId] = edgeId;
     gradient_[1][edgeId] = vertId;
 #endif
@@ -3009,6 +3011,7 @@ int DiscreteGradient::reverseAscendingPathOnWall(
         }
       }
 #else
+      TTK_FORCE_USE(triangulation);
       gradient_[3][triangleId] = edgeId;
       gradient_[2][edgeId] = triangleId;
 #endif
@@ -3047,6 +3050,7 @@ int DiscreteGradient::reverseDescendingPathOnWall(
         }
       }
 #else
+      TTK_FORCE_USE(triangulation);
       gradient_[2][edgeId] = triangleId;
       gradient_[3][triangleId] = edgeId;
 #endif

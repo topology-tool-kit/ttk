@@ -502,7 +502,7 @@ int AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepSeven(int &step) {
+int AssignmentMunkres<dataType>::stepSeven(int &ttkNotUsed(step)) {
   this->printMsg("Step 7 over.", debug::Priority::DETAIL);
   return 0;
 }

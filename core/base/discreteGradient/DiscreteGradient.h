@@ -375,7 +375,6 @@ saddle-connectors.
       dataType getPersistence(const Cell &up,
                               const Cell &down,
                               const dataType *const scalars,
-                              const SimplexId *const offsets,
                               const triangulationType &triangulation) const;
 
       /**

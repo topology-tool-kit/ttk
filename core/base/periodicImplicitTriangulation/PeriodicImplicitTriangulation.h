@@ -49,8 +49,8 @@ namespace ttk {
                                 const int &id,
                                 SimplexId &triangleId) const override;
 
-    SimplexId
-      getCellTriangleNumberInternal(const SimplexId &cellId) const override {
+    SimplexId getCellTriangleNumberInternal(
+      const SimplexId &ttkNotUsed(cellId)) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
@@ -156,7 +156,7 @@ namespace ttk {
                                 SimplexId &edgeId) const override;
 
     SimplexId getTriangleEdgeNumberInternal(
-      const SimplexId &triangleId) const override {
+      const SimplexId &ttkNotUsed(triangleId)) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;

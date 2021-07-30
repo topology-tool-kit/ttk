@@ -378,7 +378,7 @@ namespace ttk {
 
     int computeMaximum(const int &id,
                        const bool &reset = true,
-                       const bool &parallel = true) {
+                       const bool &ttkNotUsed(parallel) = true) {
       int *output = outputMandatoryMaximum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
@@ -400,7 +400,7 @@ namespace ttk {
 
     int computeMinimum(const int &id,
                        const bool &reset = true,
-                       const bool &parallel = true) {
+                       const bool &ttkNotUsed(parallel) = true) {
       int *output = outputMandatoryMinimum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)

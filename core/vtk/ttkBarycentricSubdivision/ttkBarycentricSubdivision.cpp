@@ -60,8 +60,7 @@ vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
 int ttkBarycentricSubdivision::InterpolateScalarFields(
   vtkDataSet *const input,
   vtkUnstructuredGrid *const output,
-  ttk::Triangulation &inputTriangulation,
-  ttk::ExplicitTriangulation &outputTriangulation) const {
+  ttk::Triangulation &inputTriangulation) const {
 
   const size_t npointdata = input->GetPointData()->GetNumberOfArrays();
   const size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
@@ -99,7 +98,7 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
       this->interpolateContinuousScalarField<DATATYPE, TRIANGL_TYPE>(         \
         static_cast<DATATYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),  \
         static_cast<DATATYPE *>(ttkUtils::GetVoidPointer(outputScalarField)), \
-        *inpTri, outputTriangulation);                                        \
+        *inpTri);                                                             \
     }                                                                         \
     break;                                                                    \
   }
@@ -148,7 +147,7 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
   return 0;
 }
 
-int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
+int ttkBarycentricSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
 
@@ -177,8 +176,7 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
   this->execute(*triangulation, triangulationSubdivision);
 
   // first iteration: interpolate input scalar fields
-  int ret = InterpolateScalarFields(
-    input, output, *triangulation, triangulationSubdivision);
+  int ret = InterpolateScalarFields(input, output, *triangulation);
   if(ret != 0) {
     this->printErr("Error interpolating input data array(s)");
     return 0;
@@ -214,8 +212,7 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
     this->execute(*triangulation, triangulationSubdivision);
 
     // interpolate output scalar fields
-    InterpolateScalarFields(
-      output, output, *triangulation, triangulationSubdivision);
+    InterpolateScalarFields(output, output, *triangulation);
   }
 
   // generated 3D coordinates

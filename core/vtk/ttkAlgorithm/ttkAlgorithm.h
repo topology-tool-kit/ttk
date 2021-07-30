@@ -221,9 +221,10 @@ protected:
    * provide information about new vtkImageData output objects, such as
    * their extend, spacing, and origin.
    */
-  virtual int RequestInformation(vtkInformation *request,
-                                 vtkInformationVector **inputVectors,
-                                 vtkInformationVector *outputVector) {
+  virtual int
+    RequestInformation(vtkInformation *ttkNotUsed(request),
+                       vtkInformationVector **ttkNotUsed(inputVectors),
+                       vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   }
 
@@ -233,9 +234,10 @@ protected:
    *
    * In general it should not be necessary to override this method.
    */
-  virtual int RequestUpdateTime(vtkInformation *request,
-                                vtkInformationVector **inputVectors,
-                                vtkInformationVector *outputVector) {
+  virtual int
+    RequestUpdateTime(vtkInformation *ttkNotUsed(request),
+                      vtkInformationVector **ttkNotUsed(inputVectors),
+                      vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   }
 
@@ -245,10 +247,10 @@ protected:
    *
    * In general it should not be necessary to override this method.
    */
-  virtual int
-    RequestUpdateTimeDependentInformation(vtkInformation *request,
-                                          vtkInformationVector **inputVectors,
-                                          vtkInformationVector *outputVector) {
+  virtual int RequestUpdateTimeDependentInformation(
+    vtkInformation *ttkNotUsed(request),
+    vtkInformationVector **ttkNotUsed(inputVectors),
+    vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   }
 
@@ -260,9 +262,10 @@ protected:
    * In general it should not be necessary to override this method unless
    * the filter supports spatial or temporal streaming.
    */
-  virtual int RequestUpdateExtent(vtkInformation *request,
-                                  vtkInformationVector **inputVectors,
-                                  vtkInformationVector *outputVector) {
+  virtual int
+    RequestUpdateExtent(vtkInformation *ttkNotUsed(request),
+                        vtkInformationVector **ttkNotUsed(inputVectors),
+                        vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   };
 
@@ -273,9 +276,10 @@ protected:
    *
    * In general it should not be necessary to override this method.
    */
-  virtual int RequestDataNotGenerated(vtkInformation *request,
-                                      vtkInformationVector **inputVectors,
-                                      vtkInformationVector *outputVector) {
+  virtual int
+    RequestDataNotGenerated(vtkInformation *ttkNotUsed(request),
+                            vtkInformationVector **ttkNotUsed(inputVectors),
+                            vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   };
 
@@ -287,9 +291,9 @@ protected:
    * This method has to be overridden in order to implement the purpose of
    * the filter.
    */
-  virtual int RequestData(vtkInformation *request,
-                          vtkInformationVector **inputVectors,
-                          vtkInformationVector *outputVector) {
+  virtual int RequestData(vtkInformation *ttkNotUsed(request),
+                          vtkInformationVector **ttkNotUsed(inputVectors),
+                          vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   };
 
@@ -301,8 +305,9 @@ protected:
    * This method has to be overridden to specify the required input data
    * types.
    */
-  virtual int FillInputPortInformation(int port,
-                                       vtkInformation *info) override {
+  virtual int
+    FillInputPortInformation(int ttkNotUsed(port),
+                             vtkInformation *ttkNotUsed(info)) override {
     return 0;
   };
 
@@ -316,8 +321,9 @@ protected:
    * This method has to be overridden to specify the data types of the
    * outputs.
    */
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override {
+  virtual int
+    FillOutputPortInformation(int ttkNotUsed(port),
+                              vtkInformation *ttkNotUsed(info)) override {
     return 0;
   };
 };

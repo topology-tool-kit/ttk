@@ -797,7 +797,7 @@ namespace ttk {
 
     /// Get the number of vertices of a particular edge.
     /// Always returns 2.
-    inline int getEdgeVertexNumber(const SimplexId edgeId) const {
+    inline int getEdgeVertexNumber(const SimplexId ttkNotUsed(edgeId)) const {
       return 2;
     }
 
@@ -1256,7 +1256,8 @@ namespace ttk {
 
     /// Get the number of vertices of a particular triangle.
     /// Always returns 3.
-    inline int getTriangleVertexNumber(const SimplexId triangleId) const {
+    inline int
+      getTriangleVertexNumber(const SimplexId ttkNotUsed(triangleId)) const {
       return 3;
     }
 
@@ -2499,14 +2500,14 @@ namespace ttk {
     }
 
   protected:
-    virtual int getCellEdgeInternal(const SimplexId &cellId,
-                                    const int &localEdgeId,
-                                    SimplexId &edgeId) const {
+    virtual int getCellEdgeInternal(const SimplexId &ttkNotUsed(cellId),
+                                    const int &ttkNotUsed(localEdgeId),
+                                    SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getCellEdgeNumberInternal(const SimplexId &cellId) const {
+      getCellEdgeNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
     }
 
@@ -2515,14 +2516,15 @@ namespace ttk {
       return NULL;
     }
 
-    virtual inline int getCellNeighborInternal(const SimplexId &cellId,
-                                               const int &localNeighborId,
-                                               SimplexId &neighborId) const {
+    virtual inline int
+      getCellNeighborInternal(const SimplexId &ttkNotUsed(cellId),
+                              const int &ttkNotUsed(localNeighborId),
+                              SimplexId &ttkNotUsed(neighborId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getCellNeighborNumberInternal(const SimplexId &cellId) const {
+      getCellNeighborNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
     };
 
@@ -2531,14 +2533,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getCellTriangleInternal(const SimplexId &cellId,
-                                               const int &localTriangleId,
-                                               SimplexId &triangleId) const {
+    virtual inline int
+      getCellTriangleInternal(const SimplexId &ttkNotUsed(cellId),
+                              const int &ttkNotUsed(localTriangleId),
+                              SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getCellTriangleNumberInternal(const SimplexId &cellId) const {
+      getCellTriangleNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
     };
 
@@ -2547,14 +2550,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getCellVertexInternal(const SimplexId &cellId,
-                                             const int &localVertexId,
-                                             SimplexId &vertexId) const {
+    virtual inline int
+      getCellVertexInternal(const SimplexId &ttkNotUsed(cellId),
+                            const int &ttkNotUsed(localVertexId),
+                            SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getCellVertexNumberInternal(const SimplexId &cellId) const {
+      getCellVertexNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
     };
 
@@ -2567,14 +2571,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getEdgeLinkInternal(const SimplexId &edgeId,
-                                           const int &localLinkId,
-                                           SimplexId &linkId) const {
+    virtual inline int
+      getEdgeLinkInternal(const SimplexId &ttkNotUsed(edgeId),
+                          const int &ttkNotUsed(localLinkId),
+                          SimplexId &ttkNotUsed(linkId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getEdgeLinkNumberInternal(const SimplexId &edgeId) const {
+      getEdgeLinkNumberInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
     };
 
@@ -2583,14 +2588,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getEdgeStarInternal(const SimplexId &edgeId,
-                                           const int &localStarId,
-                                           SimplexId &starId) const {
+    virtual inline int
+      getEdgeStarInternal(const SimplexId &ttkNotUsed(edgeId),
+                          const int &ttkNotUsed(localStarId),
+                          SimplexId &ttkNotUsed(starId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getEdgeStarNumberInternal(const SimplexId &edgeId) const {
+      getEdgeStarNumberInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
     };
 
@@ -2599,14 +2605,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getEdgeTriangleInternal(const SimplexId &edgeId,
-                                               const int &localTriangleId,
-                                               SimplexId &triangleId) const {
+    virtual inline int
+      getEdgeTriangleInternal(const SimplexId &ttkNotUsed(edgeId),
+                              const int &ttkNotUsed(localTriangleId),
+                              SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const {
+      getEdgeTriangleNumberInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
     };
 
@@ -2615,9 +2622,10 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getEdgeVertexInternal(const SimplexId &edgeId,
-                                             const int &localVertexId,
-                                             SimplexId &vertexId) const {
+    virtual inline int
+      getEdgeVertexInternal(const SimplexId &ttkNotUsed(edgeId),
+                            const int &ttkNotUsed(localVertexId),
+                            SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -2642,14 +2650,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getTriangleEdgeInternal(const SimplexId &triangleId,
-                                               const int &localEdgeId,
-                                               SimplexId &edgeId) const {
+    virtual inline int
+      getTriangleEdgeInternal(const SimplexId &ttkNotUsed(triangleId),
+                              const int &ttkNotUsed(localEdgeId),
+                              SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
     };
 
-    virtual inline SimplexId
-      getTriangleEdgeNumberInternal(const SimplexId &triangleId) const {
+    virtual inline SimplexId getTriangleEdgeNumberInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
@@ -2658,14 +2667,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getTriangleLinkInternal(const SimplexId &triangleId,
-                                               const int &localLinkId,
-                                               SimplexId &linkId) const {
+    virtual inline int
+      getTriangleLinkInternal(const SimplexId &ttkNotUsed(triangleId),
+                              const int &ttkNotUsed(localLinkId),
+                              SimplexId &ttkNotUsed(linkId)) const {
       return 0;
     };
 
-    virtual inline SimplexId
-      getTriangleLinkNumberInternal(const SimplexId &triangleId) const {
+    virtual inline SimplexId getTriangleLinkNumberInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
@@ -2674,14 +2684,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getTriangleStarInternal(const SimplexId &triangleId,
-                                               const int &localStarId,
-                                               SimplexId &starId) const {
+    virtual inline int
+      getTriangleStarInternal(const SimplexId &ttkNotUsed(triangleId),
+                              const int &ttkNotUsed(localStarId),
+                              SimplexId &ttkNotUsed(starId)) const {
       return 0;
     };
 
-    virtual inline SimplexId
-      getTriangleStarNumberInternal(const SimplexId &triangleId) const {
+    virtual inline SimplexId getTriangleStarNumberInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
@@ -2690,20 +2701,22 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getTriangleVertexInternal(const SimplexId &triangleId,
-                                                 const int &localVertexId,
-                                                 SimplexId &vertexId) const {
+    virtual inline int
+      getTriangleVertexInternal(const SimplexId &ttkNotUsed(triangleId),
+                                const int &ttkNotUsed(localVertexId),
+                                SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
-    virtual inline int getVertexEdgeInternal(const SimplexId &vertexId,
-                                             const int &localEdgeId,
-                                             SimplexId &edgeId) const {
+    virtual inline int
+      getVertexEdgeInternal(const SimplexId &ttkNotUsed(vertexId),
+                            const int &ttkNotUsed(localEdgeId),
+                            SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getVertexEdgeNumberInternal(const SimplexId &vertexId) const {
+      getVertexEdgeNumberInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -2712,14 +2725,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getVertexLinkInternal(const SimplexId &vertexId,
-                                             const int &localLinkId,
-                                             SimplexId &linkId) const {
+    virtual inline int
+      getVertexLinkInternal(const SimplexId &ttkNotUsed(vertexId),
+                            const int &ttkNotUsed(localLinkId),
+                            SimplexId &ttkNotUsed(linkId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getVertexLinkNumberInternal(const SimplexId &vertexId) const {
+      getVertexLinkNumberInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -2728,14 +2742,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getVertexNeighborInternal(const SimplexId &vertexId,
-                                                 const int &localNeighborId,
-                                                 SimplexId &neighborId) const {
+    virtual inline int
+      getVertexNeighborInternal(const SimplexId &ttkNotUsed(vertexId),
+                                const int &ttkNotUsed(localNeighborId),
+                                SimplexId &ttkNotUsed(neighborId)) const {
       return 0;
     };
 
-    virtual inline SimplexId
-      getVertexNeighborNumberInternal(const SimplexId &vertexId) const {
+    virtual inline SimplexId getVertexNeighborNumberInternal(
+      const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -2744,21 +2759,23 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getVertexPointInternal(const SimplexId &vertexId,
-                                              float &x,
-                                              float &y,
-                                              float &z) const {
+    virtual inline int
+      getVertexPointInternal(const SimplexId &ttkNotUsed(vertexId),
+                             float &ttkNotUsed(x),
+                             float &ttkNotUsed(y),
+                             float &ttkNotUsed(z)) const {
       return 0;
     };
 
-    virtual inline int getVertexStarInternal(const SimplexId &vertexId,
-                                             const int &localStarId,
-                                             SimplexId &starId) const {
+    virtual inline int
+      getVertexStarInternal(const SimplexId &ttkNotUsed(vertexId),
+                            const int &ttkNotUsed(localStarId),
+                            SimplexId &ttkNotUsed(starId)) const {
       return 0;
     };
 
     virtual inline SimplexId
-      getVertexStarNumberInternal(const SimplexId &vertexId) const {
+      getVertexStarNumberInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -2767,14 +2784,15 @@ namespace ttk {
       return NULL;
     };
 
-    virtual inline int getVertexTriangleInternal(const SimplexId &vertexId,
-                                                 const int &localTriangleId,
-                                                 SimplexId &triangleId) const {
+    virtual inline int
+      getVertexTriangleInternal(const SimplexId &ttkNotUsed(vertexId),
+                                const int &ttkNotUsed(localTriangleId),
+                                SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
-    virtual inline SimplexId
-      getVertexTriangleNumberInternal(const SimplexId &vertexId) const {
+    virtual inline SimplexId getVertexTriangleNumberInternal(
+      const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -2784,17 +2802,17 @@ namespace ttk {
     };
 
     virtual inline bool
-      isEdgeOnBoundaryInternal(const SimplexId &edgeId) const {
+      isEdgeOnBoundaryInternal(const SimplexId &ttkNotUsed(edgeId)) const {
+      return 0;
+    };
+
+    virtual inline bool isTriangleOnBoundaryInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
     };
 
     virtual inline bool
-      isTriangleOnBoundaryInternal(const SimplexId &triangleId) const {
-      return 0;
-    };
-
-    virtual inline bool
-      isVertexOnBoundaryInternal(const SimplexId &vertexId) const {
+      isVertexOnBoundaryInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
     };
 
@@ -3175,7 +3193,7 @@ namespace ttk {
                                const std::string &tableName = "",
                                std::ostream &stream = std::cout) const;
 
-    int updateProgress(const float &progress) {
+    int updateProgress(const float &ttkNotUsed(progress)) {
       return 0;
     };
 
