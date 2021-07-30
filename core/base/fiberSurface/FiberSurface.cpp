@@ -1580,8 +1580,7 @@ int FiberSurface::snapToBasePoint(const vector<vector<double>> &basePoints,
   return 0;
 }
 
-int FiberSurface::snapVertexBarycentrics(
-  const double &distanceThreshold) const {
+int FiberSurface::snapVertexBarycentrics() const {
 
   vector<bool> inQueue(tetNumber_, false);
   vector<vector<pair<SimplexId, SimplexId>>> tetTriangles(tetNumber_);
@@ -1607,8 +1606,7 @@ int FiberSurface::snapVertexBarycentrics(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)tetList.size(); i++) {
-    snapVertexBarycentrics(
-      tetList[i], tetTriangles[tetList[i]], distanceThreshold);
+    snapVertexBarycentrics(tetList[i], tetTriangles[tetList[i]]);
   }
 
   mergeVertices(0);
@@ -1618,8 +1616,7 @@ int FiberSurface::snapVertexBarycentrics(
 
 int FiberSurface::snapVertexBarycentrics(
   const SimplexId &tetId,
-  const vector<pair<SimplexId, SimplexId>> &triangles,
-  const double &distanceThreshold) const {
+  const vector<pair<SimplexId, SimplexId>> &triangles) const {
 
   for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
 

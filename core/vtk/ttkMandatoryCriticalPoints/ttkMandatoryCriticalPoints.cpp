@@ -43,7 +43,6 @@ int ttkMandatoryCriticalPoints::FillOutputPortInformation(
 
 void buildVtkTree(
   vtkUnstructuredGrid *outputTree,
-  ttk::MandatoryCriticalPoints::TreeType treeType,
   const ttk::Graph &graph,
   const std::vector<double> &xCoord,
   const std::vector<double> &yCoord,
@@ -271,17 +270,14 @@ int ttkMandatoryCriticalPoints::RequestData(
     computeMaximumOutput_ = false;
   }
 
-  buildVtkTree(outputJoinTree, ttk::MandatoryCriticalPoints::TreeType::JoinTree,
-               mdtJoinTree_, mdtJoinTreePointXCoord_, mdtJoinTreePointYCoord_,
-               mdtJoinTreePointComponentId_, mdtJoinTreePointType_,
-               mdtJoinTreePointLowInterval_, mdtJoinTreePointUpInterval_,
-               mdtJoinTreeEdgeSwitchable_);
-  buildVtkTree(outputSplitTree,
-               ttk::MandatoryCriticalPoints::TreeType::SplitTree, mdtSplitTree_,
-               mdtSplitTreePointXCoord_, mdtSplitTreePointYCoord_,
-               mdtSplitTreePointComponentId_, mdtSplitTreePointType_,
-               mdtSplitTreePointLowInterval_, mdtSplitTreePointUpInterval_,
-               mdtSplitTreeEdgeSwitchable_);
+  buildVtkTree(outputJoinTree, mdtJoinTree_, mdtJoinTreePointXCoord_,
+               mdtJoinTreePointYCoord_, mdtJoinTreePointComponentId_,
+               mdtJoinTreePointType_, mdtJoinTreePointLowInterval_,
+               mdtJoinTreePointUpInterval_, mdtJoinTreeEdgeSwitchable_);
+  buildVtkTree(outputSplitTree, mdtSplitTree_, mdtSplitTreePointXCoord_,
+               mdtSplitTreePointYCoord_, mdtSplitTreePointComponentId_,
+               mdtSplitTreePointType_, mdtSplitTreePointLowInterval_,
+               mdtSplitTreePointUpInterval_, mdtSplitTreeEdgeSwitchable_);
 
   return 1;
 }

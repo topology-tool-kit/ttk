@@ -120,11 +120,10 @@ namespace ttk {
     }
 
   protected:
-    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    template <class dataTypeU, class dataTypeV>
     int executeLegacy(std::vector<std::pair<SimplexId, char>> &jacobiSet,
                       const dataTypeU *const uField,
-                      const dataTypeV *const vField,
-                      const triangulationType &triangulation);
+                      const dataTypeV *const vField);
 
     SimplexId vertexNumber_{};
     const SimplexId *tetList_{};

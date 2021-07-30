@@ -68,7 +68,7 @@ public:
     FTMTree_MT *tree,
     std::vector<float> &retVec,
     std::vector<LongSimplexId> &treeSimplexId,
-    std::vector<idNode> &branching,
+    std::vector<idNode> &ttkNotUsed(branching),
     std::vector<std::vector<ftm::idNode>> &nodeBranching) {
     idNode treeRoot = tree->getRoot();
     idNode treeRootOrigin = tree->getNode(treeRoot)->getOrigin();
@@ -244,7 +244,7 @@ public:
   void treePlanarLayoutImpl(
     FTMTree_MT *tree,
     std::tuple<double, double, double, double, double, double> oldBounds,
-    double refPersistence,
+    double ttkNotUsed(refPersistence),
     std::vector<float> &retVec) {
     printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
     printMsg("Planar Layout", debug::Priority::VERBOSE);

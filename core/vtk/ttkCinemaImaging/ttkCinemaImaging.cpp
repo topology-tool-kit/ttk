@@ -207,10 +207,10 @@ int ttkCinemaImaging::RequestDataSingle(
 
   vtkPointSet *inputObject,
   vtkPointSet *inputGrid,
-  const std::vector<double> &defaultFocalPoint,
-  const std::vector<double> &defaultNearFar,
-  const double defaultHeight,
-  const double defaultAngle) {
+  const std::vector<double> &ttkNotUsed(defaultFocalPoint),
+  const std::vector<double> &ttkNotUsed(defaultNearFar),
+  const double ttkNotUsed(defaultHeight),
+  const double ttkNotUsed(defaultAngle)) {
   ttk::Timer globalTimer;
 
   auto cells = ttkCinemaImaging::GetCells(inputObject);

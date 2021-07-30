@@ -203,7 +203,7 @@ namespace ttk {
     // ----------------------------------------
     template <class dataType>
     ftm::idNode getNodesAndScalarsToAdd(
-      MergeTree<dataType> &mTree1,
+      MergeTree<dataType> &ttkNotUsed(mTree1),
       ftm::idNode nodeId1,
       ftm::FTMTree_MT *tree2,
       ftm::idNode nodeId2,

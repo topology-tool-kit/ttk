@@ -22,7 +22,8 @@ ttkIcosphere::ttkIcosphere() {
 ttkIcosphere::~ttkIcosphere() {
 }
 
-int ttkIcosphere::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkIcosphere::FillInputPortInformation(int ttkNotUsed(port),
+                                           vtkInformation *ttkNotUsed(info)) {
   return 0;
 }
 
@@ -35,7 +36,7 @@ int ttkIcosphere::FillOutputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkIcosphere::RequestData(vtkInformation *ttkNotUsed(request),
-                              vtkInformationVector **inputVector,
+                              vtkInformationVector **ttkNotUsed(inputVector),
                               vtkInformationVector *outputVector) {
   // get parameter
   size_t nSpheres = this->Centers ? this->Centers->GetNumberOfTuples() : 1;

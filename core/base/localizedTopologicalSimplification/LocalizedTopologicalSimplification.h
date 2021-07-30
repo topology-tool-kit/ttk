@@ -975,10 +975,10 @@ namespace ttk {
       };
 
       template <typename IT>
-      int flattenOrder(IT *outputOrder,
+      int flattenOrder(
+        IT *outputOrder,
+        const std::vector<Propagation<IT> *> &parentPropagations) const {
 
-                       const std::vector<Propagation<IT> *> &parentPropagations,
-                       const IT &nVertices) const {
         ttk::Timer timer;
         this->printMsg("Flattening Order Array", 0, 0, this->threadNumber_,
                        debug::LineMode::REPLACE);
@@ -1005,11 +1005,10 @@ namespace ttk {
 
       template <typename DT, typename IT>
       int flattenScalars(DT *scalars,
-
-                         const IT &nVertices,
                          const std::vector<Propagation<IT>> &propagationsA,
                          const std::vector<Propagation<IT>> &propagationsB
                          = {}) const {
+
         ttk::Timer timer;
         this->printMsg("Flattening Scalar Array", 0, 0, this->threadNumber_,
                        debug::LineMode::REPLACE);
@@ -1199,9 +1198,7 @@ namespace ttk {
           return 0;
 
         // flatten order
-        status = this->flattenOrder<IT>(order,
-
-                                        parentPropagations, nVertices);
+        status = this->flattenOrder<IT>(order, parentPropagations);
         if(!status)
           return 0;
 
@@ -1283,9 +1280,7 @@ namespace ttk {
           return 0;
 
         // flatten order
-        status = this->flattenOrder<IT>(order,
-
-                                        parentPropagations, nVertices);
+        status = this->flattenOrder<IT>(order, parentPropagations);
         if(!status)
           return 0;
 
@@ -1294,12 +1289,12 @@ namespace ttk {
         if(!status)
           return 0;
 
-        status = this->flattenScalars<DT, IT>(scalars, nVertices, propagations);
+        status = this->flattenScalars<DT, IT>(scalars, propagations);
         if(!status)
           return 0;
 
         return 1;
-      };
+      }
 
       template <typename IT>
       int invertOrder(IT *outputOrder, const IT &nVertices) const {
@@ -1386,7 +1381,7 @@ namespace ttk {
 
         // flatten scalars
         status = this->flattenScalars<DT, IT>(
-          scalars, nVertices, propagationsMax, propagationsMin);
+          scalars, propagationsMax, propagationsMin);
         if(!status)
           return 0;
 

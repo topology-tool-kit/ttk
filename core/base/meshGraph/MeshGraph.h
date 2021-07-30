@@ -141,8 +141,7 @@ namespace ttk {
     int mapInputCellDataToOutputCellData(DT *outputCellData,
                                          const size_t &nInputCells,
                                          const DT *inputCellData,
-                                         const bool &useQuadraticCells,
-                                         const size_t &nSubdivisions = 0) const;
+                                         const bool &useQuadraticCells) const;
   };
 } // namespace ttk
 
@@ -643,11 +642,9 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 template <typename DT>
 int ttk::MeshGraph::mapInputCellDataToOutputCellData(
   DT *outputCellData,
-
   const size_t &nInputCells,
   const DT *inputCellData,
-  const bool &useQuadraticCells,
-  const size_t &nSubdivisions) const {
+  const bool &useQuadraticCells) const {
 
   if(useQuadraticCells) {
 #ifdef TTK_ENABLE_OPENMP

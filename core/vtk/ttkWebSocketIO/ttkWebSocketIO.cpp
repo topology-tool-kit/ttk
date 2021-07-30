@@ -99,7 +99,7 @@ int ttkWebSocketIO::processEvent(const std::string &eventName,
     if(!this->SendVtkDataObject(this->LastInput))
       return 0;
   } else if(eventData.rfind("{\"vtkDataSet", 12) == 0) {
-    if(!this->ParseVtkDataObjectFromJSON(eventData, nullptr))
+    if(!this->ParseVtkDataObjectFromJSON(eventData))
       return 0;
   }
 
@@ -130,8 +130,7 @@ bool jsonHasChild(const boost::property_tree::ptree &pt,
   return pt.find(key) != pt.not_found();
 }
 
-int ttkWebSocketIO::ParseVtkDataObjectFromJSON(const std::string &json,
-                                               vtkDataObject *object) {
+int ttkWebSocketIO::ParseVtkDataObjectFromJSON(const std::string &json) {
   ttk::Timer timer;
   this->printMsg("Parsing vtkDataObject from JSON string", 0, 0,
                  ttk::debug::LineMode::REPLACE);

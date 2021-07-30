@@ -49,9 +49,9 @@ int ttk::CinemaImagingNative::renderImage(
   float *depthBuffer,
   unsigned int *primitiveIds,
   float *barycentricCoordinates,
-  const size_t &nVertices,
+  const size_t &ttkNotUsed(nVertices),
   const float *vertexCoords,
-  const size_t &nTriangles,
+  const size_t &ttkNotUsed(nTriangles),
   const IT *connectivityList,
   const BoundingVolumeHierarchy<IT> &bvh,
   const double resolution[2],
@@ -220,4 +220,4 @@ int ttk::CinemaImagingNative::renderImage(
                  1, timer.getElapsedTime(), this->threadNumber_);
 
   return 1;
-};
+}

@@ -156,7 +156,7 @@ int ttkMergeTreeClustering::run(
 
 template <class dataType>
 int ttkMergeTreeClustering::runCompute(
-  vtkInformationVector *outputVector,
+  vtkInformationVector *ttkNotUsed(outputVector),
   std::vector<vtkMultiBlockDataSet *> &inputTrees,
   std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
   // ------------------------------------------------------------------------------------
@@ -336,7 +336,7 @@ template <class dataType>
 int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
   std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkMultiBlockDataSet *> &ttkNotUsed(inputTrees2)) {
   std::vector<MergeTree<dataType>> intermediateMTrees;
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
   std::vector<FTMTree_MT *> intermediateTrees;

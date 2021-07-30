@@ -322,7 +322,7 @@ void FTMTree_CT::finalizeSegmentation(void) {
     getSuperArc(i)->createSegmentation(scalars_);
   }
 
-  printTime(finSegmTime, "post-process segm", -1, 4);
+  printTime(finSegmTime, "post-process segm", 4);
 }
 
 void FTMTree_CT::insertNodes(void) {

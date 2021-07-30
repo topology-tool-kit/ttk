@@ -1,3 +1,4 @@
+#include "BaseClass.h"
 #include <ttkIdentifierRandomizer.h>
 
 #include <vtkCellData.h>
@@ -78,6 +79,7 @@ int shuffleScalarFieldValues(const T *const inputField,
     outputField[i] = originalToShuffledValues[inputField[i]];
   }
 
+  TTK_FORCE_USE(nThreads);
   return 1;
 }
 

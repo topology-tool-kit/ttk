@@ -1,3 +1,4 @@
+#include "BaseClass.h"
 #include <ttkExtract.h>
 
 #include <vtkInformationVector.h>
@@ -83,9 +84,10 @@ int ttkExtract::FillOutputPortInformation(int port, vtkInformation *info) {
 // =============================================================================
 // RequestInformation
 // =============================================================================
-int ttkExtract::RequestInformation(vtkInformation *,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
+int ttkExtract::RequestInformation(
+  vtkInformation *,
+  vtkInformationVector **ttkNotUsed(inputVector),
+  vtkInformationVector *outputVector) {
 
   if(this->ExtractionMode == EXTRACTION_MODE::BLOCKS
      && this->GetOutputType() == VTK_IMAGE_DATA) {
@@ -315,6 +317,7 @@ int computeMask_(signed char *mask,
     mask[i] = hasToBeMarked ? 1 : 0;
   }
 
+  TTK_FORCE_USE(threadNumber);
   return 1;
 }
 

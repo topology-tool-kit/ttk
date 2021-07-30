@@ -672,6 +672,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       } // pragma omp parallel
 #endif
+
+      TTK_FORCE_USE(firstCall);
     }
 
     template <class dataType>
@@ -910,6 +912,9 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
+
+      TTK_FORCE_USE(treeBackTable);
+      TTK_FORCE_USE(forestBackTable);
     }
 
     // ----------------------------------------
@@ -1021,6 +1026,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       } // pragma omp parallel
 #endif
+
+      TTK_FORCE_USE(firstCall);
     }
 
     // Equation 8, 9, 10, 11

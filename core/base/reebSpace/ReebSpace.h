@@ -395,8 +395,7 @@ namespace ttk {
 
     int prepareSimplification();
 
-    int printConnectivity(std::ostream &stream,
-                          const ReebSpaceData &data) const;
+    int printConnectivity(const ReebSpaceData &data) const;
 
     template <typename triangulationType>
     int simplifySheets(const double &simplificationThreshold,
@@ -1646,7 +1645,7 @@ int ttk::ReebSpace::connectSheets(const triangulationType &triangulation) {
 
   this->printMsg("Sheet connectivity established.");
 
-  printConnectivity(std::cout, originalData_);
+  printConnectivity(originalData_);
 
   hasConnectedSheets_ = true;
 
@@ -2069,7 +2068,7 @@ int ttk::ReebSpace::simplifySheets(
 
   // TODO: update segmentation for 1-sheets and 0-sheets?...
 
-  printConnectivity(std::cout, currentData_);
+  printConnectivity(currentData_);
 
   this->printMsg(std::vector<std::vector<std::string>>{
     {"#3-sheets simplified", std::to_string(simplifiedSheets)},

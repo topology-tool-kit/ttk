@@ -36,7 +36,6 @@ int ttkTrackingFromFields::FillInputPortInformation(int port,
 // (*) Persistence-driven approach
 template <class dataType, class triangulationType>
 int ttkTrackingFromFields::trackWithPersistenceMatching(
-  vtkDataSet *input,
   vtkUnstructuredGrid *output,
   unsigned long fieldNumber,
   const triangulationType *triangulation) {
@@ -246,7 +245,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
-         input, output, fieldNumber, (TTK_TT *)triangulation->getData())));
+         output, fieldNumber, (TTK_TT *)triangulation->getData())));
   } else {
     this->printMsg("The specified matching method is not supported.");
   }

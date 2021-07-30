@@ -1,3 +1,4 @@
+#include "BaseClass.h"
 #include <ttkCinemaDarkroomColorMapping.h>
 
 #include <vtkImageData.h>
@@ -73,8 +74,9 @@ int mapScalarsToColor(unsigned char *color,
       = 255.0 * (lambdaInv * colorMap[idx2 + 3] + lambda * colorMap[idx2 + 7]);
   }
 
+  TTK_FORCE_USE(threadNumber);
   return 1;
-};
+}
 
 int ttkCinemaDarkroomColorMapping::RequestData(
   vtkInformation *ttkNotUsed(request),

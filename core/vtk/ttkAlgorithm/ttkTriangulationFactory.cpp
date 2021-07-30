@@ -71,7 +71,9 @@ struct ttkOnDeleteCommand : public vtkCommand {
     this->observee->AddObserver(vtkCommand::DeleteEvent, this, 1);
   };
 
-  void Execute(vtkObject *, unsigned long eventId, void *callData) override {
+  void Execute(vtkObject *,
+               unsigned long ttkNotUsed(eventId),
+               void *ttkNotUsed(callData)) override {
     if(this->observee)
       this->observee->RemoveObserver(this);
 

@@ -52,7 +52,6 @@ void setArray(vtkArrayType &vtkArray, vectorType &vector) {
 
 template <typename scalarType, typename triangulationType>
 int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
-                                   vtkDataArray *const inputOffsets,
                                    vtkPolyData *const outputCriticalPoints,
                                    vtkPolyData *const outputSeparatrices1,
                                    vtkPolyData *const outputSeparatrices2,
@@ -590,7 +589,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
     (ret = dispatch<VTK_TT, TTK_TT>(
-       inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
+       inputScalars, outputCriticalPoints, outputSeparatrices1,
        outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {

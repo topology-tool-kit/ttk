@@ -203,6 +203,7 @@ void MergeTree::parallelInitNodeValence(const int nbThreadValence) {
     node->setDownValence(downVal);
     node->setUpValence(upVal);
   }
+  TTK_FORCE_USE(nbThreadValence);
 }
 
 // }

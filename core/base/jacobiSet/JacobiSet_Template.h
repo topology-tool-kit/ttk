@@ -13,7 +13,7 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
 #ifndef TTK_ENABLE_KAMIKAZE
   if((triangulation.isEmpty())) {
     if(vertexNumber_) {
-      return executeLegacy(jacobiSet, uField, vField, triangulation);
+      return executeLegacy(jacobiSet, uField, vField);
     }
     return -1;
   }
@@ -110,12 +110,11 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV, typename triangulationType>
+template <class dataTypeU, class dataTypeV>
 int ttk::JacobiSet::executeLegacy(
   std::vector<std::pair<SimplexId, char>> &jacobiSet,
   const dataTypeU *const uField,
-  const dataTypeV *const vField,
-  const triangulationType &triangulation) {
+  const dataTypeV *const vField) {
 
   Timer t;
 
