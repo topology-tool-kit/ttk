@@ -110,7 +110,6 @@ namespace ttk {
     int on_close(websocketpp::connection_hdl hdl);
     int on_message(websocketpp::connection_hdl hdl, server::message_ptr msg);
 
-    int packageIndex = 0;
     std::list<Message> messageQueue;
 #endif
   };

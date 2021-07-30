@@ -99,7 +99,12 @@ int DimensionReduction::execute() const {
   string modulePath;
 
   if(PyArray_API == NULL) {
+#ifndef __clang_analyzer__
     import_array1(-1);
+#endif // __clang_analyzer__
+  }
+  if(PyArray_API == nullptr) {
+    return -1;
   }
 
   // convert the input matrix into a NumPy array.

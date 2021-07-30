@@ -3,7 +3,13 @@
 if (NOT MSVC) # GCC and Clang
 
   # warning flags
-  list(APPEND TTK_COMPILER_FLAGS -Wall -Wshadow)
+  list(APPEND TTK_COMPILER_FLAGS
+    -Wall
+    -Wextra
+    -Wno-unused-parameter  # TODO fix warnings & remove
+    -Wtype-limits
+    -Wshadow
+    )
 
   # performance and debug flags
   if(TTK_ENABLE_CPU_OPTIMIZATION AND CMAKE_BUILD_TYPE MATCHES Release)

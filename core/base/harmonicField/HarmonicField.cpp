@@ -142,7 +142,9 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   for(const auto &pair : idValues) {
     triplets.emplace_back(TripletType(pair.first, pair.first, alpha));
   }
+#ifndef __clang_analyzer__
   penalty.setFromTriplets(triplets.begin(), triplets.end());
+#endif // __clang_analyzer__
 
   int res = 0;
   SpMat sol;

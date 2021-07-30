@@ -129,8 +129,10 @@ namespace ttk {
     // --------
 
     FTMAtomicVector<type> &operator=(const FTMAtomicVector<type> &other) {
-      std::vector<type>::operator=(other);
-      nextId = other.nextId;
+      if(&other != this) {
+        std::vector<type>::operator=(other);
+        nextId = other.nextId;
+      }
       return *this;
     }
 
