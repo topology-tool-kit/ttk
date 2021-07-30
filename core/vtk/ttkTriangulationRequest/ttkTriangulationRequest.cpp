@@ -29,7 +29,7 @@ int ttkTriangulationRequest::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkTriangulationRequest::RequestData(vtkInformation *request,
+int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 

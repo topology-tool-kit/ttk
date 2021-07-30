@@ -81,7 +81,7 @@ int shuffleScalarFieldValues(const T *const inputField,
   return 1;
 }
 
-int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
+int ttkIdentifierRandomizer::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 

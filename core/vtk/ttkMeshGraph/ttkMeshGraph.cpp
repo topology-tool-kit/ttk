@@ -115,7 +115,7 @@ int ttkMeshGraph::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkMeshGraph::RequestData(vtkInformation *request,
+int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
   ttk::Timer t;

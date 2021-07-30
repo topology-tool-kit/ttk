@@ -49,7 +49,7 @@ int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
 }
 
 int ttkScalarFieldCriticalPoints::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

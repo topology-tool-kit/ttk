@@ -33,7 +33,7 @@ int ttkFiber::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFiber::RequestData(vtkInformation *request,
+int ttkFiber::RequestData(vtkInformation *ttkNotUsed(request),
                           vtkInformationVector **inputVector,
                           vtkInformationVector *outputVector) {
   ttk::Timer t;

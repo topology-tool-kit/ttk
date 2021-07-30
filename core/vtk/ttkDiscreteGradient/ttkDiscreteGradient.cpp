@@ -218,7 +218,7 @@ int ttkDiscreteGradient::fillGradientGlyphs(
   return 0;
 }
 
-int ttkDiscreteGradient::RequestData(vtkInformation *request,
+int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 

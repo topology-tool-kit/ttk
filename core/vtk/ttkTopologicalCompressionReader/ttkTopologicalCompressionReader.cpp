@@ -32,7 +32,7 @@ int ttkTopologicalCompressionReader::FillOutputPortInformation(
 }
 
 int ttkTopologicalCompressionReader::RequestInformation(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
@@ -82,7 +82,7 @@ int ttkTopologicalCompressionReader::RequestInformation(
 }
 
 int ttkTopologicalCompressionReader::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

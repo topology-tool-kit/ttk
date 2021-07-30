@@ -34,7 +34,7 @@ int ttkEigenField::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkEigenField::RequestData(vtkInformation *request,
+int ttkEigenField::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
 

@@ -233,7 +233,7 @@ int ttkPersistenceDiagram::dispatch(
   return 1;
 }
 
-int ttkPersistenceDiagram::RequestData(vtkInformation *request,
+int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

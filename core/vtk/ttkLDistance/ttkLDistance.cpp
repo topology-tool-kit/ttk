@@ -31,7 +31,7 @@ int ttkLDistance::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkLDistance::RequestData(vtkInformation *request,
+int ttkLDistance::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
 

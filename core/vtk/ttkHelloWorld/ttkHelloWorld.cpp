@@ -86,7 +86,7 @@ int ttkHelloWorld::FillOutputPortInformation(int port, vtkInformation *info) {
  *     2) The output objects are already initialized based on the information
  *        provided by the FillOutputPortInformation method.
  */
-int ttkHelloWorld::RequestData(vtkInformation *request,
+int ttkHelloWorld::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
 

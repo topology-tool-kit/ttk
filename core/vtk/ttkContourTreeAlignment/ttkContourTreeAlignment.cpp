@@ -44,7 +44,7 @@ int ttkContourTreeAlignment::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkContourTreeAlignment::RequestData(vtkInformation *request,
+int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 

@@ -48,7 +48,7 @@ int ttkRangePolygon::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ttkRangePolygon::RequestData(vtkInformation *request,
+int ttkRangePolygon::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
 

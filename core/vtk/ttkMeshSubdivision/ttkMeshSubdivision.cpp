@@ -36,7 +36,7 @@ int ttkMeshSubdivision::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkMeshSubdivision::RequestData(vtkInformation *request,
+int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 

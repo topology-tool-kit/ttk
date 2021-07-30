@@ -34,7 +34,7 @@ int ttkIcosphere::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ttkIcosphere::RequestData(vtkInformation *request,
+int ttkIcosphere::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
   // get parameter

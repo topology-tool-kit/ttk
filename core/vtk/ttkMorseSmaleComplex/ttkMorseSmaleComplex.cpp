@@ -464,7 +464,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
   return ret;
 }
 
-int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
+int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 

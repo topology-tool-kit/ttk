@@ -44,7 +44,7 @@ int ttkPlanarGraphLayout::FillOutputPortInformation(int port,
 }
 
 int ttkPlanarGraphLayout::planarGraphLayoutCall(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   // Get input and output objects
@@ -188,7 +188,7 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
 }
 
 int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

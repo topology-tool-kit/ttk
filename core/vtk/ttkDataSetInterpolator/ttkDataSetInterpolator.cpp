@@ -38,7 +38,7 @@ int ttkDataSetInterpolator::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDataSetInterpolator::RequestData(vtkInformation *request,
+int ttkDataSetInterpolator::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   ttk::Timer t;

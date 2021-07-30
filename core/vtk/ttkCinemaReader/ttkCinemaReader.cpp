@@ -43,7 +43,7 @@ int ttkCinemaReader::validateDatabasePath() {
   return 1;
 }
 
-int ttkCinemaReader::RequestData(vtkInformation *request,
+int ttkCinemaReader::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
   ttk::Timer timer;

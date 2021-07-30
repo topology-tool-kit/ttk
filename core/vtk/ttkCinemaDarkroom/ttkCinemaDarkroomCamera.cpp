@@ -87,7 +87,7 @@ if view and self:
   return 1;
 }
 
-int ttkCinemaDarkroomCamera::RequestData(vtkInformation *request,
+int ttkCinemaDarkroomCamera::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
   ttk::Timer timer;

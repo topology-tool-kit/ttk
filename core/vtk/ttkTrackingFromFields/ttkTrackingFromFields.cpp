@@ -117,7 +117,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   return 1;
 }
 
-int ttkTrackingFromFields::RequestData(vtkInformation *request,
+int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

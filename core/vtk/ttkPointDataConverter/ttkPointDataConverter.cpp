@@ -88,7 +88,7 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
   return 0;
 }
 
-int ttkPointDataConverter::RequestData(vtkInformation *request,
+int ttkPointDataConverter::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

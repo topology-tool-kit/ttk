@@ -38,7 +38,7 @@ int ttkManifoldCheck::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkManifoldCheck::RequestData(vtkInformation *request,
+int ttkManifoldCheck::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 

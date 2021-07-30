@@ -679,7 +679,7 @@ int ttkExtract::ExtractArray(vtkDataObject *output,
 // =============================================================================
 // RequestData
 // =============================================================================
-int ttkExtract::RequestData(vtkInformation *request,
+int ttkExtract::RequestData(vtkInformation *ttkNotUsed(request),
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector) {
   // Get Input to Output

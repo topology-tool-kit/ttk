@@ -37,7 +37,7 @@ int ttkHarmonicField::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkHarmonicField::RequestData(vtkInformation *request,
+int ttkHarmonicField::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 

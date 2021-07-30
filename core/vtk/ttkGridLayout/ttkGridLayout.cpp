@@ -94,7 +94,7 @@ int ttkGridLayout::TranslateObject(vtkDataObject *input,
   return 1;
 }
 
-int ttkGridLayout::RequestData(vtkInformation *request,
+int ttkGridLayout::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
   ttk::Timer globalTimer;

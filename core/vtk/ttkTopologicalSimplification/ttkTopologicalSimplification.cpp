@@ -43,7 +43,7 @@ int ttkTopologicalSimplification::FillOutputPortInformation(
 }
 
 int ttkTopologicalSimplification::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

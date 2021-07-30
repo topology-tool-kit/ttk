@@ -207,7 +207,7 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   return ret;
 }
 
-int ttkPersistenceCurve::RequestData(vtkInformation *request,
+int ttkPersistenceCurve::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 

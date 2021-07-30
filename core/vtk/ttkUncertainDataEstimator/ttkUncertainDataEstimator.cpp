@@ -36,7 +36,7 @@ int ttkUncertainDataEstimator::FillOutputPortInformation(int port,
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
+int ttkUncertainDataEstimator::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
 

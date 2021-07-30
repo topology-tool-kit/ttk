@@ -22,7 +22,7 @@ int ttkGaussianPointCloud::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkGaussianPointCloud::RequestData(vtkInformation *request,
+int ttkGaussianPointCloud::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

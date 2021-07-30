@@ -111,7 +111,7 @@ int ttkMergeTreeClustering::FillOutputPortInformation(int port,
  *     2) The output objects are already initialized based on the information
  *        provided by the FillOutputPortInformation method.
  */
-int ttkMergeTreeClustering::RequestData(vtkInformation *request,
+int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   // ------------------------------------------------------------------------------------

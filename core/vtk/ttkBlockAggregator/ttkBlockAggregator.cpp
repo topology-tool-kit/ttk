@@ -97,7 +97,7 @@ int ttkBlockAggregator::AggregateBlock(vtkDataObject *dataObject) {
   return 1;
 }
 
-int ttkBlockAggregator::RequestData(vtkInformation *request,
+int ttkBlockAggregator::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // Get iteration information

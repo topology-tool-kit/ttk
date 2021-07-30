@@ -38,7 +38,7 @@ int ttkDistanceField::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDistanceField::RequestData(vtkInformation *request,
+int ttkDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   ttk::Timer globalTimer;

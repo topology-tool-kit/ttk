@@ -57,7 +57,7 @@ int ttkWebSocketIO::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkWebSocketIO::RequestData(vtkInformation *request,
+int ttkWebSocketIO::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
   const bool neededUpdate = this->GetNeedsUpdate();

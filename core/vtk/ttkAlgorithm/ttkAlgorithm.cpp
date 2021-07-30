@@ -289,7 +289,7 @@ void ttkAlgorithm::AddInputData(int index, vtkDataSet *input) {
   this->AddInputDataInternal(index, input);
 }
 
-int ttkAlgorithm::RequestDataObject(vtkInformation *request,
+int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // for each output

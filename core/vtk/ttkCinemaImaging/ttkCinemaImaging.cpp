@@ -53,7 +53,7 @@ int ttkCinemaImaging::FillOutputPortInformation(int port,
   return 0;
 };
 
-int ttkCinemaImaging::RequestData(vtkInformation *request,
+int ttkCinemaImaging::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 
