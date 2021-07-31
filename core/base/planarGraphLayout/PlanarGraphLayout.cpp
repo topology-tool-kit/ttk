@@ -55,7 +55,11 @@ int ttk::PlanarGraphLayout::computeDotLayout(
 
   return 1;
 #else
+  TTK_FORCE_USE(layout);
+  TTK_FORCE_USE(nodeIndicies);
+  TTK_FORCE_USE(dotString);
+
   this->printErr("This filter requires GraphViz to compute a layout.");
   return 0;
-#endif
+#endif // TTK_ENABLE_GRAPHVIZ
 }

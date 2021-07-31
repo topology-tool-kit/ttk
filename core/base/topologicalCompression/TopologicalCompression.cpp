@@ -535,6 +535,9 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
       += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpTolerance);
 
 #else
+    TTK_FORCE_USE(dataExtent);
+    TTK_FORCE_USE(toCompress);
+
     this->printErr("Attempted to write with ZFP but ZFP is not installed.");
     return -5;
 #endif
