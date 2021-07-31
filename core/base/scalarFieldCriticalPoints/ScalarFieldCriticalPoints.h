@@ -507,7 +507,14 @@ template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   const triangulationType *triangulation) {
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
-    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
+    if(std::is_same<triangulationType, ttk::TopoCluster>::value) {
+
+      printWrn("TopoCluster detected.");
+      printWrn("Defaulting to the generic backend.");
+
+      BackEnd = BACKEND::GENERIC;
+    } else if(!std::is_same<triangulationType,
+                            ttk::ImplicitTriangulation>::value) {
 
       printWrn("Explicit triangulation detected.");
       printWrn("Defaulting to the generic backend.");

@@ -39,6 +39,8 @@
       ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation, call); \
     ttkTemplateMacroCase(ttk::Triangulation::Type::PERIODIC,                 \
                          ttk::PeriodicImplicitTriangulation, call);          \
+    ttkTemplateMacroCase(                                                    \
+      ttk::Triangulation::Type::TOPOCLUSTER, ttk::TopoCluster, call);        \
   }
 
 namespace ttk {

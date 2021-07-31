@@ -53,14 +53,16 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     switch(dataType) { vtkTemplateMacro((call)); };      \
   }; break;
 
-#define ttkVtkTemplateMacro(dataType, triangulationType, call)            \
-  switch(triangulationType) {                                             \
-    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
-                            ttk::ExplicitTriangulation, call);            \
-    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
-                            ttk::ImplicitTriangulation, call);            \
-    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
-                            ttk::PeriodicImplicitTriangulation, call);    \
+#define ttkVtkTemplateMacro(dataType, triangulationType, call)               \
+  switch(triangulationType) {                                                \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT,    \
+                            ttk::ExplicitTriangulation, call);               \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT,    \
+                            ttk::ImplicitTriangulation, call);               \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC,    \
+                            ttk::PeriodicImplicitTriangulation, call);       \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::TOPOCLUSTER, \
+                            ttk::TopoCluster, call);                         \
   }
 
 #define ttkTemplate2IdMacro(call)                                           \
