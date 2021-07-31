@@ -249,6 +249,8 @@ ttk::SimplexId *
     // return a pointer to the vector internal buffer
     return spareStorage.data();
   }
+#else
+  TTK_FORCE_USE(spareStorage);
 #endif
 
   // return a pointer to the data array internal buffer
