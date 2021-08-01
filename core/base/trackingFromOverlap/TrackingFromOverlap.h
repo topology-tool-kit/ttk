@@ -64,7 +64,8 @@ using Nodes = std::vector<Node>;
 struct CoordinateComparator {
   const float *coordinates;
 
-  CoordinateComparator(const float *coords) : coordinates(coords){};
+  CoordinateComparator(const float *coords) : coordinates(coords) {
+  }
 
   inline bool operator()(const size_t &i, const size_t &j) {
     size_t ic = i * 3;
@@ -82,8 +83,8 @@ namespace ttk {
   public:
     TrackingFromOverlap() {
       this->setDebugMsgPrefix("TrackingFromOverlap");
-    };
-    ~TrackingFromOverlap(){};
+    }
+    ~TrackingFromOverlap() = default;
 
     // This function sorts points based on their x, y, and then z coordinate
     int sortCoordinates(const float *pointCoordinates,

@@ -45,7 +45,7 @@ namespace ttk {
     std::string
       toFixed(const IT &number0, const IT &number1, const int precision = 2) {
       return toFixed(((float)number0) / ((float)number1), precision);
-    };
+    }
 
     class LocalizedTopologicalSimplification : virtual public Debug {
 
@@ -58,13 +58,13 @@ namespace ttk {
 
       LocalizedTopologicalSimplification() {
         this->setDebugMsgPrefix("LTS");
-      };
-      ~LocalizedTopologicalSimplification(){};
+      }
+      ~LocalizedTopologicalSimplification() = default;
 
       int preconditionTriangulation(
         ttk::AbstractTriangulation *triangulation) const {
         return triangulation->preconditionVertexNeighbors();
-      };
+      }
 
       /// This method allocates all temporary memory required for LTS
       /// procedures.
@@ -91,7 +91,7 @@ namespace ttk {
         this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
         return 1;
-      };
+      }
 
       /// This method initializes all temporary memory for LTS procedures
       /// (assumes memory is already allocated).
@@ -121,7 +121,7 @@ namespace ttk {
         this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
         return 1;
-      };
+      }
 
       /// This method iterates over an order array and detects all maxima, for
       /// which it will then initialize a propagation data structure. One can
@@ -221,7 +221,7 @@ namespace ttk {
                        1, timer.getElapsedTime(), this->threadNumber_);
 
         return 1;
-      };
+      }
 
       /// This is a simple superlevel set propagation procedure that just
       /// absorbs the largest neighbor of the current set until the propagation
@@ -344,7 +344,7 @@ namespace ttk {
           "Simple propagations should never reach global minimum/maximum.");
 
         return 0;
-      };
+      }
 
       /// Basically the same as the simple propagation procedure, except that a
       /// propagation keeps track of the persistence of the computed
@@ -476,7 +476,7 @@ namespace ttk {
         }
 
         return 0;
-      };
+      }
 
       /// This method computes (optionally in parallel) a list of simple
       /// propagations.
@@ -603,7 +603,7 @@ namespace ttk {
                        1, timer.getElapsedTime(), this->threadNumber_);
 
         return 1;
-      };
+      }
 
       /// This method computes the domain segment of a given propagation. To
       /// this end, it stores a list of all segment vertices on the propagation
@@ -664,7 +664,7 @@ namespace ttk {
           segmentation[idx] = extremumIndex;
 
         return 1;
-      };
+      }
 
       /// This method computes the segments of a given list of propagations.
       template <typename IT, class TT>
@@ -728,7 +728,7 @@ namespace ttk {
         }
 
         return 1;
-      };
+      }
 
       template <typename IT, class TT>
       int computeLocalOrderOfSegmentIteration(
@@ -799,7 +799,7 @@ namespace ttk {
         }
 
         return 1;
-      };
+      }
 
       template <typename IT, class TT>
       int computeLocalOrderOfSegment(IT *localOrder,
@@ -903,7 +903,7 @@ namespace ttk {
         }
 
         return 1;
-      };
+      }
 
       template <typename IT, class TT>
       int computeLocalOrderOfSegments(
@@ -972,7 +972,7 @@ namespace ttk {
         }
 
         return 1;
-      };
+      }
 
       template <typename IT>
       int flattenOrder(
@@ -1001,7 +1001,7 @@ namespace ttk {
                        this->threadNumber_);
 
         return 1;
-      };
+      }
 
       template <typename DT, typename IT>
       int flattenScalars(DT *scalars,
@@ -1041,7 +1041,7 @@ namespace ttk {
                        this->threadNumber_);
 
         return 1;
-      };
+      }
 
       template <typename IT>
       int computeGlobalOrder(
@@ -1093,7 +1093,7 @@ namespace ttk {
                        this->threadNumber_);
 
         return 1;
-      };
+      }
 
       template <typename DT, typename IT>
       int computeNumericalPerturbation(
@@ -1125,7 +1125,7 @@ namespace ttk {
                        timer.getElapsedTime(), this->threadNumber_);
 
         return 1;
-      };
+      }
 
       template <typename IT, class TT>
       int detectAndRemoveUnauthorizedMaxima(
@@ -1208,7 +1208,7 @@ namespace ttk {
           return 0;
 
         return 1;
-      };
+      }
 
       template <typename IT, typename DT, class TT>
       int detectAndRemoveNonPersistentMaxima(
@@ -1401,7 +1401,7 @@ namespace ttk {
         this->printMsg(debug::Separator::L1);
 
         return 1;
-      };
+      }
 
       template <typename DT, typename IT, class TT>
       int removeNonPersistentExtrema(DT *scalars,
@@ -1485,7 +1485,7 @@ namespace ttk {
         this->printMsg(debug::Separator::L1);
 
         return 1;
-      };
+      }
 
     }; // class
   } // namespace lts

@@ -47,7 +47,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                  + std::string(dataSet->GetClassName()) + "'");
 
   return nullptr;
-};
+}
 
 vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                              const int &arrayIndex,

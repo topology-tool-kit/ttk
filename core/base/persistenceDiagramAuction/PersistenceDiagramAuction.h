@@ -111,7 +111,7 @@ namespace ttk {
       lambda_ = lambda;
 
       use_kdt_ = (use_kdTree && goods_.size() > 0);
-    };
+    }
 
     void runAuctionRound(int &n_biddings, const int kdt_index = 0);
     dataType getMatchingsAndDistance(std::vector<matchingTuple> *matchings,

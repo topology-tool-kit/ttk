@@ -19,7 +19,7 @@ namespace ttk {
     CinemaImagingNative() {
       this->setDebugMsgPrefix("CinemaImaging(Native)");
     }
-    ~CinemaImagingNative(){};
+    ~CinemaImagingNative() = default;
 
     template <typename IT>
     int renderImage(float *depthBuffer,
@@ -42,7 +42,7 @@ namespace ttk {
                     const double &viewAngle) const;
   };
 
-}; // namespace ttk
+} // namespace ttk
 
 template <typename IT>
 int ttk::CinemaImagingNative::renderImage(

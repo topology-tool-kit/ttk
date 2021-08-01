@@ -68,8 +68,8 @@ namespace ttk {
       this->setDebugMsgPrefix(
         "MergeTreeClustering"); // inherited from Debug: prefix will be printed
                                 // at the beginning of every msg
-    };
-    ~MergeTreeClustering(){};
+    }
+    ~MergeTreeClustering() = default;
 
     void setNoCentroids(unsigned int noCentroidsT) {
       noCentroids_ = noCentroidsT;

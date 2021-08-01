@@ -34,8 +34,8 @@ namespace ttk {
         "MergeTreeDistanceMatrix"); // inherited from Debug: prefix will be
                                     // printed at the
       // beginning of every msg
-    };
-    ~MergeTreeDistanceMatrix(){};
+    }
+    ~MergeTreeDistanceMatrix() = default;
 
     /**
      * Implementation of the algorithm.

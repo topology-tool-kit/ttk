@@ -59,7 +59,7 @@ public:
   void SetThreadNumber(int threadNumber) {
     this->ThreadNumber = threadNumber;
     this->UpdateThreadNumber();
-  };
+  }
 
   /**
    * Controls if the base code should use all available cores.
@@ -67,7 +67,7 @@ public:
   void SetUseAllCores(bool useAllCores) {
     this->UseAllCores = useAllCores;
     this->UpdateThreadNumber();
-  };
+  }
 
   /**
    * Controls the debug level used by algorithms that are invoked by the VTK
@@ -76,7 +76,7 @@ public:
   void SetDebugLevel(int debugLevel) {
     this->setDebugLevel(debugLevel); // from ttk::Debug
     this->Modified();
-  };
+  }
 
   /// This method retrieves an optional array to process.
   /// The logic of this method is as follows:
@@ -267,7 +267,7 @@ protected:
                         vtkInformationVector **ttkNotUsed(inputVectors),
                         vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
-  };
+  }
 
   /**
    * This method is called during the sixth pipeline pass in
@@ -281,7 +281,7 @@ protected:
                             vtkInformationVector **ttkNotUsed(inputVectors),
                             vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
-  };
+  }
 
   /**
    * This method is called during the seventh pipeline pass in
@@ -295,7 +295,7 @@ protected:
                           vtkInformationVector **ttkNotUsed(inputVectors),
                           vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
-  };
+  }
 
   /**
    * This method specifies the required input object data types of the
@@ -309,7 +309,7 @@ protected:
     FillInputPortInformation(int ttkNotUsed(port),
                              vtkInformation *ttkNotUsed(info)) override {
     return 0;
-  };
+  }
 
   /**
    * This method specifies in the port information the data type of the
@@ -325,7 +325,7 @@ protected:
     FillOutputPortInformation(int ttkNotUsed(port),
                               vtkInformation *ttkNotUsed(info)) override {
     return 0;
-  };
+  }
 };
 
 /// @}

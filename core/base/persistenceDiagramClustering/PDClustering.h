@@ -52,9 +52,9 @@ namespace ttk {
       UseDeltaLim_ = false;
       distanceWritingOptions_ = 0;
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
-    };
+    }
 
-    ~PDClustering(){};
+    ~PDClustering() = default;
 
     std::vector<int>
       execute(std::vector<std::vector<diagramTuple>> &final_centroids,

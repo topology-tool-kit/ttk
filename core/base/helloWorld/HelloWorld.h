@@ -43,7 +43,7 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       return triangulation->preconditionVertexNeighbors();
-    };
+    }
 
     /**
      * TODO 3: Implmentation of the algorithm.

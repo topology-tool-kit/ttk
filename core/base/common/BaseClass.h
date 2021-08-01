@@ -66,11 +66,11 @@ namespace ttk {
   public:
     BaseClass();
 
-    virtual ~BaseClass(){};
+    virtual ~BaseClass() = default;
 
     int getThreadNumber() const {
       return threadNumber_;
-    };
+    }
 
     virtual int setThreadNumber(const int threadNumber) {
       threadNumber_ = threadNumber;

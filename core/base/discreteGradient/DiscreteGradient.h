@@ -272,7 +272,7 @@ namespace ttk {
         }
 
         return (vpathId1 < vpathId2);
-      };
+      }
     };
 
     struct VisitedMask {

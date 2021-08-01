@@ -48,7 +48,7 @@ struct filtrationCtCmp {
               || ((v0.second.first == v1.second.first)
                   && (v0.second.second.first > v1.second.second.first)));
     }
-  };
+  }
 } filtrationCmp;
 
 struct _persistenceCmp {

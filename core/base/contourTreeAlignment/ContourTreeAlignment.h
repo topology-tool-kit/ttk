@@ -81,12 +81,12 @@ namespace ttk {
     /// constructor and destructor
     ContourTreeAlignment() {
       this->setDebugMsgPrefix("ContourTreeAlignment");
-    };
+    }
     ~ContourTreeAlignment() {
       contourtrees.clear();
       nodes.clear();
       arcs.clear();
-    };
+    }
 
     /// setter for parameters
     void setArcMatchMode(int mode) {

@@ -61,8 +61,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       omp_set_nested(1);
 #endif
-    };
-    ~MergeTreeBarycenter(){};
+    }
+    ~MergeTreeBarycenter() = default;
 
     void setTol(double tolT) {
       tol_ = tolT;

@@ -28,7 +28,7 @@ ttk::WebSocketIO::WebSocketIO() {
 
 ttk::WebSocketIO::~WebSocketIO() {
   this->stopServer();
-};
+}
 
 #if TTK_ENABLE_WEBSOCKETPP
 
