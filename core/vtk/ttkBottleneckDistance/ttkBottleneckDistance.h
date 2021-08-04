@@ -90,15 +90,6 @@ public:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-  template <typename dataType>
-  int augmentPersistenceDiagrams(
-    const std::vector<diagramTuple> &diagram1,
-    const std::vector<diagramTuple> &diagram2,
-    const std::vector<matchingTuple> &matchings,
-    vtkUnstructuredGrid *const CTPersistenceDiagram1_,
-    vtkUnstructuredGrid *const CTPersistenceDiagram2_);
-
   int doBenchmark();
 
 protected:

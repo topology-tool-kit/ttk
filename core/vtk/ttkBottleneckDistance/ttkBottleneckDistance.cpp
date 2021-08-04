@@ -7,6 +7,7 @@
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
+#include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
@@ -17,14 +18,14 @@
 vtkStandardNewMacro(ttkBottleneckDistance);
 
 ttkBottleneckDistance::ttkBottleneckDistance() {
-  SetNumberOfInputPorts(2);
-  SetNumberOfOutputPorts(3);
+  SetNumberOfInputPorts(1);
+  SetNumberOfOutputPorts(2);
 }
 
 int ttkBottleneckDistance::FillInputPortInformation(int port,
                                                     vtkInformation *info) {
-  if(port == 0 || port == 1) {
-    info->Set(ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+  if(port == 0) {
+    info->Set(ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
     return 1;
   }
   return 0;
@@ -32,8 +33,11 @@ int ttkBottleneckDistance::FillInputPortInformation(int port,
 
 int ttkBottleneckDistance::FillOutputPortInformation(int port,
                                                      vtkInformation *info) {
-  if(port == 0 || port == 1 || port == 2) {
-    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
   return 0;
@@ -107,13 +111,11 @@ int generatePersistenceDiagram(ttk::DiagramType &diagram, const int size) {
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-template <typename dataType>
-int ttkBottleneckDistance::augmentPersistenceDiagrams(
-  const std::vector<diagramTuple> &diagram1,
-  const std::vector<diagramTuple> &diagram2,
-  const std::vector<matchingTuple> &matchings,
-  vtkUnstructuredGrid *const CTPersistenceDiagram1,
-  vtkUnstructuredGrid *const CTPersistenceDiagram2) {
+int augmentPersistenceDiagrams(const ttk::DiagramType &diagram1,
+                               const ttk::DiagramType &diagram2,
+                               const std::vector<matchingTuple> &matchings,
+                               vtkUnstructuredGrid *const vtu0,
+                               vtkUnstructuredGrid *const vtu1) {
 
   auto diagramSize1 = (BIdVertex)diagram1.size();
   auto diagramSize2 = (BIdVertex)diagram2.size();
@@ -139,13 +141,11 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
       matchingIdentifiers2->InsertTuple1(i, -1);
 
     // Last cell = junction
-    if(diagramSize1
-       < CTPersistenceDiagram1->GetCellData()->GetNumberOfTuples()) {
+    if(diagramSize1 < vtu0->GetCellData()->GetNumberOfTuples()) {
       matchingIdentifiers1->InsertTuple1(diagramSize1, -1);
       matchingIdentifiers1->InsertTuple1(diagramSize1 + 1, -1);
     }
-    if(diagramSize2
-       < CTPersistenceDiagram2->GetCellData()->GetNumberOfTuples()) {
+    if(diagramSize2 < vtu1->GetCellData()->GetNumberOfTuples()) {
       matchingIdentifiers2->InsertTuple1(diagramSize2, -1);
       matchingIdentifiers2->InsertTuple1(diagramSize2 + 1, -1);
     }
@@ -161,8 +161,8 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
       pairingIndex++;
     }
 
-    CTPersistenceDiagram1->GetCellData()->AddArray(matchingIdentifiers1);
-    CTPersistenceDiagram2->GetCellData()->AddArray(matchingIdentifiers2);
+    vtu0->GetCellData()->AddArray(matchingIdentifiers1);
+    vtu1->GetCellData()->AddArray(matchingIdentifiers2);
   }
 
   return 1;
@@ -182,13 +182,13 @@ int translateDiagram(vtkUnstructuredGrid *output,
   return 1;
 }
 
-template <typename dataType>
 int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
                     const ttk::DiagramType &diagram1,
                     const ttk::DiagramType &diagram2,
                     const std::vector<matchingTuple> &matchings,
                     const double spacing,
-                    const bool is2D) {
+                    const bool is2D0,
+                    const bool is2D1) {
 
   vtkNew<vtkUnstructuredGrid> vtu{};
 
@@ -217,8 +217,8 @@ int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
     const auto &pair0 = diagram1[n1];
     const auto &pair1 = diagram2[n2];
 
-    const auto pairPoint = [is2D](const ttk::PairTuple &pair,
-                                  const double zval) -> std::array<double, 3> {
+    const auto pairPoint = [](const ttk::PairTuple &pair, const bool is2D,
+                              const double zval) -> std::array<double, 3> {
       if(is2D) {
         return {std::get<6>(pair), std::get<10>(pair), zval};
       } else {
@@ -226,9 +226,9 @@ int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
       }
     };
 
-    const auto p0 = pairPoint(pair0, spacing / 2.0);
+    const auto p0 = pairPoint(pair0, is2D0, spacing / 2.0);
     points->SetPoint(2 * i + 0, p0.data());
-    const auto p1 = pairPoint(pair1, -spacing / 2.0);
+    const auto p1 = pairPoint(pair1, is2D1, -spacing / 2.0);
     points->SetPoint(2 * i + 1, p1.data());
 
     std::array<vtkIdType, 2> ids{
@@ -289,9 +289,8 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     return doBenchmark();
   }
 
-  auto outputCT1 = vtkUnstructuredGrid::GetData(outputVector, 0);
-  auto outputCT2 = vtkUnstructuredGrid::GetData(outputVector, 1);
-  auto outputCT3 = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto outputDiagrams = vtkMultiBlockDataSet::GetData(outputVector, 0);
+  auto outputMatchings = vtkUnstructuredGrid::GetData(outputVector, 1);
 
   // Wrap
   // this->setWrapper(this);
@@ -302,42 +301,50 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
   this->setPE(PE);
   this->setPS(PS);
 
-  auto inputDiag0 = vtkUnstructuredGrid::GetData(inputVector[0]);
-  auto inputDiag1 = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0]);
+  std::vector<vtkUnstructuredGrid *> inputDiags{};
 
-  if(!inputDiag0 || !inputDiag1 || !outputCT3) {
-    this->printErr("Input grids should be non-NULL");
+  if(blocks == nullptr) {
+    this->printErr("No input diagrams");
     return 0;
   }
 
-  auto birthScalars1 = vtkDoubleArray::SafeDownCast(
-    inputDiag0->GetPointData()->GetArray("Birth"));
-  auto deathScalars1 = vtkDoubleArray::SafeDownCast(
-    inputDiag0->GetPointData()->GetArray("Death"));
-  auto birthScalars2 = vtkDoubleArray::SafeDownCast(
-    inputDiag1->GetPointData()->GetArray("Birth"));
-  auto deathScalars2 = vtkDoubleArray::SafeDownCast(
-    inputDiag1->GetPointData()->GetArray("Death"));
-  bool is2D1 = !deathScalars1 && !birthScalars1;
-  bool is2D2 = !deathScalars2 && !birthScalars2;
-  if(is2D1 != is2D2) {
-    this->printErr("Diagrams should not be embedded");
+  for(size_t i = 0; i < blocks->GetNumberOfBlocks(); ++i) {
+    const auto diag = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
+    if(diag != nullptr) {
+      inputDiags.emplace_back(diag);
+    }
+  }
+
+  if(inputDiags.size() < 2) {
+    this->printErr("Less than two input diagrams");
     return 0;
   }
-  bool is2D = is2D1;
+  if(inputDiags.size() > 2) {
+    this->printWrn("More than two input diagrams: "
+                   + std::to_string(inputDiags.size()));
+  }
+
+  const auto coords0 = vtkFloatArray::SafeDownCast(
+    inputDiags[0]->GetPointData()->GetArray("Coordinates"));
+  const auto coords1 = vtkFloatArray::SafeDownCast(
+    inputDiags[1]->GetPointData()->GetArray("Coordinates"));
+
+  const bool is2D0 = coords0 != nullptr;
+  const bool is2D1 = coords1 != nullptr;
 
   // Call package
   int status = 0;
 
   ttk::DiagramType diagram0{}, diagram1{};
 
-  status = VTUToDiagram(diagram0, inputDiag0, *this);
+  status = VTUToDiagram(diagram0, inputDiags[0], *this);
   if(status < 0) {
     this->printErr("Could not extract diagram from first input data-set");
     return 0;
   }
 
-  status = VTUToDiagram(diagram1, inputDiag1, *this);
+  status = VTUToDiagram(diagram1, inputDiags[1], *this);
   if(status < 0) {
     this->printErr("Could not extract diagram from second input data-set");
     return 0;
@@ -362,18 +369,10 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     return 0;
   }
 
-  // Apply results to outputs 0 and 1.
-  status = augmentPersistenceDiagrams<double>(
-    diagram0, diagram1, matchings, inputDiag0, inputDiag1);
-  if(status != 1) {
-    this->printErr("Could not augment diagrams");
-    return 0;
-  }
-
   // Apply results to output 2.
   if(this->UseOutputMatching) {
-    status = getMatchingMesh<double>(
-      outputCT3, diagram0, diagram1, matchings, this->Spacing, is2D);
+    status = getMatchingMesh(outputMatchings, diagram0, diagram1, matchings,
+                             this->Spacing, is2D0, is2D1);
 
     if(status != 1) {
       this->printErr("Could not compute matchings");
@@ -381,14 +380,27 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     }
   }
 
-  // Set output.
+  vtkNew<vtkUnstructuredGrid> vtu0{}, vtu1{};
   if(this->UseGeometricSpacing) {
-    translateDiagram(outputCT1, inputDiag0, this->Spacing / 2.0);
-    translateDiagram(outputCT2, inputDiag1, -this->Spacing / 2.0);
+    translateDiagram(vtu0, inputDiags[0], this->Spacing / 2.0);
+    translateDiagram(vtu1, inputDiags[1], -this->Spacing / 2.0);
   } else {
-    outputCT1->ShallowCopy(inputDiag0);
-    outputCT2->ShallowCopy(inputDiag1);
+    vtu0->ShallowCopy(inputDiags[0]);
+    vtu1->ShallowCopy(inputDiags[1]);
   }
+
+  // Add matchings infos
+  status
+    = augmentPersistenceDiagrams(diagram0, diagram1, matchings, vtu0, vtu1);
+  if(status != 1) {
+    this->printErr("Could not augment diagrams");
+    return 0;
+  }
+
+  // Set output.
+  outputDiagrams->SetNumberOfBlocks(2);
+  outputDiagrams->SetBlock(0, vtu0);
+  outputDiagrams->SetBlock(1, vtu1);
 
   return 1;
 }
