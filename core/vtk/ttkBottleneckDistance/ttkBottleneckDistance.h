@@ -90,9 +90,6 @@ public:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  template <typename dataType>
-  int generatePersistenceDiagram(std::vector<diagramTuple> &diagram, int size);
-
   // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
   template <typename dataType>
   int augmentPersistenceDiagrams(
@@ -101,15 +98,6 @@ public:
     const std::vector<matchingTuple> &matchings,
     vtkUnstructuredGrid *const CTPersistenceDiagram1_,
     vtkUnstructuredGrid *const CTPersistenceDiagram2_);
-
-  template <typename dataType>
-  int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
-                      const std::vector<diagramTuple> &diagram1,
-                      const std::vector<diagramTuple> &diagram2,
-                      const std::vector<matchingTuple> &matchings,
-                      bool useGeometricSpacing,
-                      double spacing,
-                      bool is2D);
 
   int doBenchmark();
 

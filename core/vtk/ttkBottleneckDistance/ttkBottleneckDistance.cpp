@@ -39,22 +39,10 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename dataType>
-int ttkBottleneckDistance::generatePersistenceDiagram(
-  std::vector<diagramTuple> &diagram, const int size) {
-  // srand(time(NULL));
-  int vertexId1 = 1;
-  int vertexId2 = 2;
+int generatePersistenceDiagram(ttk::DiagramType &diagram, const int size) {
 
-  // diagram.resize(size);
-  // diagram.push_back(std::make_tuple(
-  //    0, BLocalMin,
-  //    1, BLocalMax,
-  //    1.0,
-  //    2,
-  //    0.0, 0.0001, 0.0001, 0.0,
-  //    1.0, 0.0001, 1.0, 0.0
-  //));
+  int v0 = 1;
+  int v1 = 2;
 
   std::default_random_engine generator1(1998985);
   std::default_random_engine generator2(8584584);
@@ -63,14 +51,8 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 
   for(int i = 1; i < size; ++i) {
     int r0 = 2; // (rand() % 3);
-    float r1
-      = 0.001f + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-    // (float) dis1(generator1); // static_cast <float> (rand()) / static_cast
-    // <float> (RAND_MAX);
-    float r2
-      = 0.001f + static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-    // (float) dis2(generator2); // static_cast <float> (rand()) / static_cast
-    // <float> (RAND_MAX); r2 *= 0.1f;
+    float r1 = 0.001f + dis1(generator1);
+    float r2 = 0.001f + dis2(generator2);
 
     // BLocalMin BSaddle1 BSaddle2 BLocalMax
     int pairType = r0; // (0/min, 1/saddle, 2/max)
@@ -103,21 +85,21 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
     float y2 = x1 + 0.5f * r2; // x1 + rand(0.5)
     float z2 = 0.f; // 0
 
-    auto value1 = (dataType)x1;
-    auto value2 = (dataType)y2;
+    const auto birth = x1;
+    const auto death = y2;
 
-    dataType persistence = y2 - x1;
+    const auto pers = death - birth;
 
-    diagram.push_back(std::make_tuple(vertexId1, nodeType1, vertexId2,
-                                      nodeType2, persistence, pairType, value1,
-                                      x1, y1, z1, value2, x2, y2, z2));
+    diagram.push_back(std::make_tuple(v0, nodeType1, v1, nodeType2, pers,
+                                      pairType, birth, x1, y1, z1, death, x2,
+                                      y2, z2));
 
-    vertexId1++;
-    vertexId2++;
+    v0++;
+    v1++;
   }
 
   sort(diagram.begin(), diagram.end(),
-       [](const diagramTuple &a, const diagramTuple &b) -> bool {
+       [](const ttk::PairTuple &a, const ttk::PairTuple &b) -> bool {
          return std::get<6>(a) < std::get<6>(b);
        });
 
@@ -201,129 +183,77 @@ int translateDiagram(vtkUnstructuredGrid *output,
 }
 
 template <typename dataType>
-int ttkBottleneckDistance::getMatchingMesh(
-  vtkUnstructuredGrid *const outputCT3,
-  const std::vector<diagramTuple> &diagram1,
-  const std::vector<diagramTuple> &diagram2,
-  const std::vector<matchingTuple> &matchings,
-  const bool useGeometricSpacing,
-  const double spacing,
-  const bool is2D) {
+int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
+                    const ttk::DiagramType &diagram1,
+                    const ttk::DiagramType &diagram2,
+                    const std::vector<matchingTuple> &matchings,
+                    const double spacing,
+                    const bool is2D) {
+
+  vtkNew<vtkUnstructuredGrid> vtu{};
 
   vtkNew<vtkPoints> points{};
-  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
+  points->SetNumberOfPoints(2 * matchings.size());
+  vtu->SetPoints(points);
 
-  vtkNew<vtkDoubleArray> persistenceScalars{};
-  persistenceScalars->SetName("Cost");
+  vtkNew<vtkDoubleArray> costs{};
+  costs->SetName("Cost");
+  costs->SetNumberOfComponents(1);
+  costs->SetNumberOfTuples(matchings.size());
+  vtu->GetCellData()->AddArray(costs);
 
-  vtkNew<vtkIntArray> matchingIdScalars{};
-  matchingIdScalars->SetName("MatchingIdentifier");
-
-  auto matchingsSize = (BIdVertex)matchings.size();
+  vtkNew<vtkIntArray> matchingIds{};
+  matchingIds->SetName("MatchingIdentifier");
+  matchingIds->SetNumberOfComponents(1);
+  matchingIds->SetNumberOfTuples(matchings.size());
+  vtu->GetCellData()->AddArray(matchingIds);
 
   // Build matchings.
-  if(matchingsSize > 0) {
+  for(size_t i = 0; i < matchings.size(); ++i) {
+    const auto &t = matchings[i];
+    const auto n1 = std::get<0>(t);
+    const auto n2 = std::get<1>(t);
 
-    for(BIdVertex i = 0; i < matchingsSize; ++i) {
-      vtkIdType ids[2];
+    const auto &pair0 = diagram1[n1];
+    const auto &pair1 = diagram2[n2];
 
-      matchingTuple t = matchings.at((unsigned long)i);
-      auto n1 = (int)std::get<0>(t);
-      auto n2 = (int)std::get<1>(t);
-
-      diagramTuple tuple1 = diagram1.at(n1);
-      diagramTuple tuple2 = diagram2.at(n2);
-
-      double x1, y1, z1, x2, y2, z2;
-
-      bool linkMiddles = false;
-      if(linkMiddles) {
-        x1 = (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+    const auto pairPoint = [is2D](const ttk::PairTuple &pair,
+                                  const double zval) -> std::array<double, 3> {
+      if(is2D) {
+        return {std::get<6>(pair), std::get<10>(pair), zval};
       } else {
-        BNodeType t11 = std::get<1>(tuple1);
-        BNodeType t12 = std::get<3>(tuple1);
-        bool t11Max = t11 == BLocalMin || t11 == BLocalMax;
-        bool t12Max = t12 == BLocalMin || t12 == BLocalMax;
-        if(is2D) { // Quickchage for highlighting 2D matching
-          if(t11 != BLocalMax && t12 != BLocalMax) {
-            t11Max = t11 != BLocalMin;
-            t12Max = t12 != BLocalMin;
-          }
-        }
-        x1 = t12Max   ? std::get<11>(tuple1)
-             : t11Max ? std::get<7>(tuple1)
-                      : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = t12Max   ? std::get<12>(tuple1)
-             : t11Max ? std::get<8>(tuple1)
-                      : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = t12Max   ? std::get<13>(tuple1)
-             : t11Max ? std::get<9>(tuple1)
-                      : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        return {std::get<11>(pair), std::get<12>(pair), std::get<13>(pair)};
       }
-      points->InsertNextPoint(x1, y1, z1);
+    };
 
-      if(linkMiddles) {
-        x2 = (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
-        if(useGeometricSpacing)
-          z2 += spacing;
-      } else {
-        BNodeType t21 = std::get<1>(tuple2);
-        BNodeType t22 = std::get<3>(tuple2);
-        bool t21Max = t21 == BLocalMin || t21 == BLocalMax;
-        bool t22Max = t22 == BLocalMin || t22 == BLocalMax;
-        if(is2D) { // Quickchage for highlighting 2D matching
-          if(t21 != BLocalMax && t22 != BLocalMax) {
-            t21Max = t21 != BLocalMin;
-            t22Max = t22 != BLocalMin;
-          }
-        }
-        x2 = t22Max   ? std::get<11>(tuple2)
-             : t21Max ? std::get<7>(tuple2)
-                      : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = t22Max   ? std::get<12>(tuple2)
-             : t21Max ? std::get<8>(tuple2)
-                      : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = t22Max   ? std::get<13>(tuple2)
-             : t21Max ? std::get<9>(tuple2)
-                      : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
-      }
-      points->InsertNextPoint(x2, y2, z2);
+    const auto p0 = pairPoint(pair0, spacing / 2.0);
+    points->SetPoint(2 * i + 0, p0.data());
+    const auto p1 = pairPoint(pair1, -spacing / 2.0);
+    points->SetPoint(2 * i + 1, p1.data());
 
-      ids[0] = 2 * i;
-      ids[1] = 2 * i + 1;
+    std::array<vtkIdType, 2> ids{
+      2 * static_cast<vtkIdType>(i) + 0,
+      2 * static_cast<vtkIdType>(i) + 1,
+    };
+    vtu->InsertNextCell(VTK_LINE, 2, ids.data());
 
-      persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
-
-      persistenceScalars->InsertTuple1(i, std::get<2>(t));
-      matchingIdScalars->InsertTuple1(i, i);
-    }
+    costs->SetTuple1(i, std::get<2>(t));
+    matchingIds->SetTuple1(i, i);
   }
 
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
-  persistenceDiagram->GetCellData()->AddArray(matchingIdScalars);
-
-  outputCT3->ShallowCopy(persistenceDiagram);
+  outputCT3->ShallowCopy(vtu);
 
   return 1;
 }
 
 int ttkBottleneckDistance::doBenchmark() {
-  using dataType = double;
+  ttk::DiagramType CTDiagram1{}, CTDiagram2{};
 
-  std::vector<diagramTuple> CTDiagram1;
-  std::vector<diagramTuple> CTDiagram2;
-
-  int benchmarkSize = BenchmarkSize;
   int status = 0;
-  status = generatePersistenceDiagram<double>(CTDiagram1, benchmarkSize);
+  status = generatePersistenceDiagram(CTDiagram1, this->BenchmarkSize);
   if(status < 0)
     return status;
-  status = generatePersistenceDiagram<double>(CTDiagram2, 4 * benchmarkSize);
+  status = generatePersistenceDiagram(CTDiagram2, 4 * this->BenchmarkSize);
   if(status < 0)
     return status;
 
@@ -336,33 +266,26 @@ int ttkBottleneckDistance::doBenchmark() {
   this->setCTDiagram1(&CTDiagram1);
   this->setCTDiagram2(&CTDiagram2);
 
-  std::string wassersteinMetric = WassersteinMetric;
-  this->setWasserstein(wassersteinMetric);
-  std::string algorithm = DistanceAlgorithm;
-  this->setAlgorithm(algorithm);
-  int pvAlgorithm = PVAlgorithm;
-  this->setPVAlgorithm(pvAlgorithm);
-  // this->setThreadNumber(thread);
+  this->setWasserstein(this->WassersteinMetric);
+  this->setAlgorithm(this->DistanceAlgorithm);
+  this->setPVAlgorithm(this->PVAlgorithm);
 
   // Empty matchings.
-  auto matchings = new std::vector<diagramTuple>();
-  this->setOutputMatchings(matchings);
+  ttk::DiagramType matchings{};
+  this->setOutputMatchings(&matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
-  status = this->execute<dataType>(usePersistenceMetric);
+  status = this->execute<double>(usePersistenceMetric);
 
   return status;
 }
 
-int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
+int ttkBottleneckDistance::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
-  using dataType = double;
 
-  int benchmarkSize = BenchmarkSize;
-  bool benchmark = benchmarkSize > 0;
-  if(benchmark) {
+  if(this->BenchmarkSize > 0) {
     return doBenchmark();
   }
 
@@ -379,33 +302,22 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   this->setPE(PE);
   this->setPS(PS);
 
-  auto CTPersistenceDiagram1 = vtkUnstructuredGrid::GetData(inputVector[0]);
-  auto CTPersistenceDiagram2 = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto inputDiag0 = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto inputDiag1 = vtkUnstructuredGrid::GetData(inputVector[1]);
 
-  if(!CTPersistenceDiagram1 || !CTPersistenceDiagram2 || !outputCT3) {
+  if(!inputDiag0 || !inputDiag1 || !outputCT3) {
     this->printErr("Input grids should be non-NULL");
     return 0;
   }
 
-  int dataType1 = CTPersistenceDiagram1->GetCellData()
-                    ->GetArray("Persistence")
-                    ->GetDataType();
-  int dataType2 = CTPersistenceDiagram2->GetCellData()
-                    ->GetArray("Persistence")
-                    ->GetDataType();
-  if(dataType1 != dataType2) {
-    this->printErr("Persistence array data type should be the same");
-    return 0;
-  }
-
   auto birthScalars1 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1->GetPointData()->GetArray("Birth"));
+    inputDiag0->GetPointData()->GetArray("Birth"));
   auto deathScalars1 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1->GetPointData()->GetArray("Death"));
+    inputDiag0->GetPointData()->GetArray("Death"));
   auto birthScalars2 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram2->GetPointData()->GetArray("Birth"));
+    inputDiag1->GetPointData()->GetArray("Birth"));
   auto deathScalars2 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram2->GetPointData()->GetArray("Death"));
+    inputDiag1->GetPointData()->GetArray("Death"));
   bool is2D1 = !deathScalars1 && !birthScalars1;
   bool is2D2 = !deathScalars2 && !birthScalars2;
   if(is2D1 != is2D2) {
@@ -417,33 +329,33 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   // Call package
   int status = 0;
 
-  ttk::DiagramType CTDiagram1{}, CTDiagram2{};
+  ttk::DiagramType diagram0{}, diagram1{};
 
-  status = VTUToDiagram(CTDiagram1, CTPersistenceDiagram1, *this);
+  status = VTUToDiagram(diagram0, inputDiag0, *this);
   if(status < 0) {
     this->printErr("Could not extract diagram from first input data-set");
     return 0;
   }
 
-  status = VTUToDiagram(CTDiagram2, CTPersistenceDiagram2, *this);
+  status = VTUToDiagram(diagram1, inputDiag1, *this);
   if(status < 0) {
     this->printErr("Could not extract diagram from second input data-set");
     return 0;
   }
 
-  this->setCTDiagram1(&CTDiagram1);
-  this->setCTDiagram2(&CTDiagram2);
+  this->setCTDiagram1(&diagram0);
+  this->setCTDiagram2(&diagram1);
 
-  this->setWasserstein(WassersteinMetric);
-  this->setAlgorithm(DistanceAlgorithm);
-  this->setPVAlgorithm(PVAlgorithm);
+  this->setWasserstein(this->WassersteinMetric);
+  this->setAlgorithm(this->DistanceAlgorithm);
+  this->setPVAlgorithm(this->PVAlgorithm);
 
   // Empty matchings.
   std::vector<matchingTuple> matchings;
   this->setOutputMatchings(&matchings);
 
   // Exec.
-  status = this->execute<dataType>(UsePersistenceMetric);
+  status = this->execute<double>(this->UsePersistenceMetric);
   if(status != 0) {
     this->printErr("Base layer failed with error status "
                    + std::to_string(status));
@@ -451,19 +363,17 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   }
 
   // Apply results to outputs 0 and 1.
-  status = augmentPersistenceDiagrams<dataType>(
-    CTDiagram1, CTDiagram2, matchings, CTPersistenceDiagram1,
-    CTPersistenceDiagram2);
+  status = augmentPersistenceDiagrams<double>(
+    diagram0, diagram1, matchings, inputDiag0, inputDiag1);
   if(status != 1) {
     this->printErr("Could not augment diagrams");
     return 0;
   }
 
   // Apply results to output 2.
-  if(UseOutputMatching) {
-    status
-      = getMatchingMesh<dataType>(outputCT3, CTDiagram1, CTDiagram2, matchings,
-                                  UseGeometricSpacing, Spacing, is2D);
+  if(this->UseOutputMatching) {
+    status = getMatchingMesh<double>(
+      outputCT3, diagram0, diagram1, matchings, this->Spacing, is2D);
 
     if(status != 1) {
       this->printErr("Could not compute matchings");
@@ -473,11 +383,11 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
 
   // Set output.
   if(this->UseGeometricSpacing) {
-    translateDiagram(outputCT1, CTPersistenceDiagram1, this->Spacing / 2.0);
-    translateDiagram(outputCT2, CTPersistenceDiagram2, -this->Spacing / 2.0);
+    translateDiagram(outputCT1, inputDiag0, this->Spacing / 2.0);
+    translateDiagram(outputCT2, inputDiag1, -this->Spacing / 2.0);
   } else {
-    outputCT1->ShallowCopy(CTPersistenceDiagram1);
-    outputCT2->ShallowCopy(CTPersistenceDiagram2);
+    outputCT1->ShallowCopy(inputDiag0);
+    outputCT2->ShallowCopy(inputDiag1);
   }
 
   return 1;
