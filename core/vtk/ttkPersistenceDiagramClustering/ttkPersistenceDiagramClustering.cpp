@@ -76,6 +76,11 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
+  if(numInputs == 0) {
+    this->printErr("No input detected");
+    return 0;
+  }
+
   // Get output pointers
   auto output_clusters = vtkMultiBlockDataSet::GetData(outputVector, 0);
   auto output_centroids = vtkMultiBlockDataSet::GetData(outputVector, 1);
