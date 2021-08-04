@@ -20,7 +20,6 @@
 // VTK includes
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkPersistenceDiagramDistanceMatrixModule.h>

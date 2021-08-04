@@ -13,6 +13,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkTable.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkPersistenceDiagramDistanceMatrix);
 
@@ -70,6 +71,11 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
           vtkUnstructuredGrid::SafeDownCast(blocks[i]->GetBlock(j)));
       }
     }
+  }
+
+  if(nInputs[0] + nInputs[1] == 0) {
+    this->printErr("No input detected");
+    return 0;
   }
 
   // total number of diagrams
