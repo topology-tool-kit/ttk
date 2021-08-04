@@ -1,5 +1,4 @@
 #include <ttkBottleneckDistance.h>
-#include <ttkMacros.h>
 #include <ttkPersistenceDiagramUtils.h>
 #include <ttkUtils.h>
 
@@ -7,11 +6,10 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkInformationVector.h>
 #include <vtkIntArray.h>
-#include <vtkNew.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkTransform.h>
+#include <vtkTransformFilter.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <random>
@@ -188,38 +186,16 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   return 1;
 }
 
-template <typename dataType>
-int ttkBottleneckDistance::translateSecondDiagram(
-  vtkUnstructuredGrid *outputCT2, double &spacing) {
-
-  vtkNew<vtkPoints> points2{};
-  vtkPoints *points = (outputCT2->GetPoints());
-  auto pairIdentifierScalars = ttkSimplexIdTypeArray::SafeDownCast(
-    outputCT2->GetCellData()->GetArray("PairIdentifier"));
-
-  if(pairIdentifierScalars == nullptr) {
-    return -1;
-  }
-
-  auto pairingsSize = (int)pairIdentifierScalars->GetNumberOfTuples();
-
-  for(int i = 0; i < pairingsSize; ++i) {
-    int index1 = 2 * i;
-    double *coords1 = points->GetPoint(index1);
-    auto x1 = coords1[0];
-    auto y1 = coords1[1];
-    auto z1 = coords1[2] + spacing;
-
-    int index2 = index1 + 1;
-    double *coords2 = points->GetPoint(index2);
-    auto x2 = coords2[0];
-    auto y2 = coords2[1];
-    auto z2 = coords2[2] + spacing;
-    points2->InsertNextPoint(x1, y1, z1);
-    points2->InsertNextPoint(x2, y2, z2);
-  }
-
-  outputCT2->SetPoints(points2);
+int translateDiagram(vtkUnstructuredGrid *output,
+                     vtkUnstructuredGrid *input,
+                     const double spacing) {
+  vtkNew<vtkTransform> tr{};
+  tr->Translate(0, 0, spacing);
+  vtkNew<vtkTransformFilter> trf{};
+  trf->SetTransform(tr);
+  trf->SetInputData(input);
+  trf->Update();
+  output->ShallowCopy(trf->GetOutputDataObject(0));
 
   return 1;
 }
@@ -496,10 +472,13 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   }
 
   // Set output.
-  outputCT1->ShallowCopy(CTPersistenceDiagram1);
-  outputCT2->DeepCopy(CTPersistenceDiagram2);
-  if(UseGeometricSpacing)
-    translateSecondDiagram<dataType>(outputCT2, Spacing);
+  if(this->UseGeometricSpacing) {
+    translateDiagram(outputCT1, CTPersistenceDiagram1, this->Spacing / 2.0);
+    translateDiagram(outputCT2, CTPersistenceDiagram2, -this->Spacing / 2.0);
+  } else {
+    outputCT1->ShallowCopy(CTPersistenceDiagram1);
+    outputCT2->ShallowCopy(CTPersistenceDiagram2);
+  }
 
   return 1;
 }

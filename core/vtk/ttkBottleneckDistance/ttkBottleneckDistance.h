@@ -103,9 +103,6 @@ public:
     vtkUnstructuredGrid *const CTPersistenceDiagram2_);
 
   template <typename dataType>
-  int translateSecondDiagram(vtkUnstructuredGrid *outputCT2, double &spacing);
-
-  template <typename dataType>
   int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
                       const std::vector<diagramTuple> &diagram1,
                       const std::vector<diagramTuple> &diagram2,
