@@ -56,15 +56,14 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     input[i] = vtkDataSet::GetData(inputVector[0], i);
   }
 
-  std::vector<std::vector<diagramTuple>> inputPersistenceDiagrams(
-    (unsigned long)numInputs, std::vector<diagramTuple>());
+  std::vector<ttk::DiagramType> inputPersistenceDiagrams(
+    (unsigned long)numInputs);
 
   std::vector<vtkSmartPointer<vtkUnstructuredGrid>> outputPersistenceDiagrams(
     (unsigned long)2 * numInputs - 2,
     vtkSmartPointer<vtkUnstructuredGrid>::New());
 
-  std::vector<std::vector<matchingTuple>> outputMatchings(
-    (unsigned long)numInputs - 1, std::vector<matchingTuple>());
+  std::vector<std::vector<ttk::MatchingType>> outputMatchings(numInputs - 1);
 
   // Input parameters.
   double spacing = Spacing;
@@ -78,7 +77,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   for(int i = 0; i < numInputs; ++i) {
     vtkUnstructuredGrid *grid1 = vtkUnstructuredGrid::New();
     grid1->ShallowCopy(vtkUnstructuredGrid::SafeDownCast(input[i]));
-    this->getPersistenceDiagram(inputPersistenceDiagrams[i], grid1, spacing, 0);
+    this->getPersistenceDiagram<double>(
+      inputPersistenceDiagrams[i], grid1, spacing, 0);
   }
 
   this->performMatchings<dataType>(

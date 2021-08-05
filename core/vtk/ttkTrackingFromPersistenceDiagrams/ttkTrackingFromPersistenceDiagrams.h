@@ -86,8 +86,8 @@ public:
   template <typename dataType>
   static int
     buildMesh(std::vector<trackingTuple> &trackings,
-              std::vector<std::vector<matchingTuple>> &outputMatchings,
-              std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
+              std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
+              std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
               bool useGeometricSpacing,
               double spacing,
               bool DoPostProc,
@@ -117,7 +117,7 @@ protected:
   // Warn: this is a duplicate from ttkBottleneckDistance.h
   template <typename dataType>
   int getPersistenceDiagram(
-    std::vector<diagramTuple> &diagram,
+    ttk::DiagramType &diagram,
     const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram_,
     double spacing,
     int diagramNumber);
@@ -125,9 +125,9 @@ protected:
   // Warn: ditto
   template <typename dataType>
   int augmentPersistenceDiagrams(
-    const std::vector<diagramTuple> &diagram1,
-    const std::vector<diagramTuple> &diagram2,
-    const std::vector<matchingTuple> &matchings,
+    const ttk::DiagramType &diagram1,
+    const ttk::DiagramType &diagram2,
+    const std::vector<ttk::MatchingType> &matchings,
     const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram1_,
     const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram2_);
 
@@ -155,8 +155,8 @@ private:
 template <typename dataType>
 int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<trackingTuple> &trackings,
-  std::vector<std::vector<matchingTuple>> &outputMatchings,
-  std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
+  std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
+  std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
   bool useGeometricSpacing,
   double spacing,
   bool ttkNotUsed(DoPostProc),
@@ -170,13 +170,15 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   vtkIntArray *timeScalars,
   vtkIntArray *componentIds,
   vtkIntArray *pointTypeScalars) {
+
+  using ttk::CriticalType;
   int currentVertex = 0;
   for(unsigned int k = 0; k < trackings.size(); ++k) {
     trackingTuple tt = trackings.at((unsigned long)k);
 
     int numStart = std::get<0>(tt);
     //     int numEnd = std::get<1>(tt);
-    std::vector<BIdVertex> chain = std::get<2>(tt);
+    std::vector<ttk::SimplexId> chain = std::get<2>(tt);
     int chainLength = chain.size();
 
     if(chain.size() <= 1) {
@@ -185,11 +187,12 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     }
 
     for(int c = 0; c < (int)chain.size() - 1; ++c) {
-      std::vector<matchingTuple> &matchings1 = outputMatchings[numStart + c];
+      std::vector<ttk::MatchingType> &matchings1
+        = outputMatchings[numStart + c];
       int d1id = numStart + c;
       int d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
-      std::vector<diagramTuple> &diagram1 = inputPersistenceDiagrams[d1id];
-      std::vector<diagramTuple> &diagram2 = inputPersistenceDiagrams[d2id];
+      ttk::DiagramType &diagram1 = inputPersistenceDiagrams[d1id];
+      ttk::DiagramType &diagram2 = inputPersistenceDiagrams[d2id];
 
       // Insert segments
       vtkIdType ids[2];
@@ -198,7 +201,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       // Search for right matching.
       double cost = 0.0;
-      for(matchingTuple tup : matchings1) {
+      for(const auto &tup : matchings1) {
         auto d1id1 = (int)std::get<0>(tup);
         if(d1id1 == n1) {
           cost = std::get<2>(tup);
@@ -206,22 +209,27 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         }
       }
 
-      diagramTuple tuple1 = diagram1[n1];
-      diagramTuple tuple2 = diagram2[n2];
+      const auto &tuple1 = diagram1[n1];
+      const auto &tuple2 = diagram2[n2];
 
       double x1, y1, z1, x2, y2, z2;
 
-      BNodeType point1Type1 = std::get<1>(tuple1);
-      BNodeType point1Type2 = std::get<3>(tuple1);
-      BNodeType point1Type
-        = point1Type1 == BLocalMax || point1Type2 == BLocalMax   ? BLocalMax
-          : point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin
-          : point1Type1 == BSaddle2 || point1Type2 == BSaddle2   ? BSaddle2
-                                                                 : BSaddle1;
-      bool t11Min = point1Type1 == BLocalMin;
-      bool t11Max = point1Type1 == BLocalMax;
-      bool t12Min = point1Type2 == BLocalMin;
-      bool t12Max = point1Type2 == BLocalMax;
+      auto point1Type1 = std::get<1>(tuple1);
+      auto point1Type2 = std::get<3>(tuple1);
+      auto point1Type = point1Type1 == CriticalType::Local_maximum
+                            || point1Type2 == CriticalType::Local_maximum
+                          ? CriticalType::Local_maximum
+                        : point1Type1 == CriticalType::Local_minimum
+                            || point1Type2 == CriticalType::Local_minimum
+                          ? CriticalType::Local_minimum
+                        : point1Type1 == CriticalType::Saddle2
+                            || point1Type2 == CriticalType::Saddle2
+                          ? CriticalType::Saddle2
+                          : CriticalType::Saddle1;
+      bool t11Min = point1Type1 == CriticalType::Local_minimum;
+      bool t11Max = point1Type1 == CriticalType::Local_maximum;
+      bool t12Min = point1Type2 == CriticalType::Local_minimum;
+      bool t12Max = point1Type2 == CriticalType::Local_maximum;
       bool bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
       if(bothEx1) {
         x1 = t12Max ? std::get<11>(tuple1) : std::get<7>(tuple1);
@@ -266,24 +274,28 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
             // Replace former first end of the segment with previous ending
             // segment.
-            std::vector<BIdVertex> chain3 = std::get<2>(ttt);
+            std::vector<ttk::SimplexId> chain3 = std::get<2>(ttt);
             auto nn = (int)chain3.at(chain3.size() - 1);
-            std::vector<diagramTuple> &diagramRematch
+            ttk::DiagramType &diagramRematch
               = inputPersistenceDiagrams[numEnd2];
-            diagramTuple tupleN = diagramRematch.at((unsigned long)nn);
+            const auto &tupleN = diagramRematch.at((unsigned long)nn);
 
             point1Type1 = std::get<1>(tupleN);
             point1Type2 = std::get<3>(tupleN);
-            point1Type
-              = point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax
-                : point1Type1 == BLocalMin || point1Type2 == BLocalMin
-                  ? BLocalMin
-                : point1Type1 == BSaddle2 || point1Type2 == BSaddle2 ? BSaddle2
-                                                                     : BSaddle1;
-            t11Min = point1Type1 == BLocalMin;
-            t11Max = point1Type1 == BLocalMax;
-            t12Min = point1Type2 == BLocalMin;
-            t12Max = point1Type2 == BLocalMax;
+            point1Type = point1Type1 == CriticalType::Local_maximum
+                             || point1Type2 == CriticalType::Local_maximum
+                           ? CriticalType::Local_maximum
+                         : point1Type1 == CriticalType::Local_minimum
+                             || point1Type2 == CriticalType::Local_minimum
+                           ? CriticalType::Local_minimum
+                         : point1Type1 == CriticalType::Saddle2
+                             || point1Type2 == CriticalType::Saddle2
+                           ? CriticalType::Saddle2
+                           : CriticalType::Saddle1;
+            t11Min = point1Type1 == CriticalType::Local_minimum;
+            t11Max = point1Type1 == CriticalType::Local_maximum;
+            t12Min = point1Type2 == CriticalType::Local_minimum;
+            t12Max = point1Type2 == CriticalType::Local_maximum;
             bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
             // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 <<
             // std::endl;
@@ -318,23 +330,30 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       timeScalars->InsertTuple1(ids[0], (double)numStart + c);
       componentIds->InsertTuple1(ids[0], cid);
 
-      BNodeType point2Type1 = std::get<1>(tuple2);
-      BNodeType point2Type2 = std::get<3>(tuple2);
-      BNodeType point2Type
-        = point2Type1 == BLocalMax || point2Type2 == BLocalMax   ? BLocalMax
-          : point2Type1 == BLocalMin || point2Type2 == BLocalMin ? BLocalMin
-          : point2Type1 == BSaddle2 || point2Type2 == BSaddle2   ? BSaddle2
-                                                                 : BSaddle1;
-      bool t21Ex = point2Type1 == BLocalMin || point2Type1 == BLocalMax;
-      bool t22Ex = point2Type2 == BLocalMin || point2Type2 == BLocalMax;
+      const auto point2Type1 = std::get<1>(tuple2);
+      const auto point2Type2 = std::get<3>(tuple2);
+      const auto point2Type = point2Type1 == CriticalType::Local_maximum
+                                  || point2Type2 == CriticalType::Local_maximum
+                                ? CriticalType::Local_maximum
+                              : point2Type1 == CriticalType::Local_minimum
+                                  || point2Type2 == CriticalType::Local_minimum
+                                ? CriticalType::Local_minimum
+                              : point2Type1 == CriticalType::Saddle2
+                                  || point2Type2 == CriticalType::Saddle2
+                                ? CriticalType::Saddle2
+                                : CriticalType::Saddle1;
+      bool t21Ex = point2Type1 == CriticalType::Local_minimum
+                   || point2Type1 == CriticalType::Local_maximum;
+      bool t22Ex = point2Type2 == CriticalType::Local_minimum
+                   || point2Type2 == CriticalType::Local_maximum;
       bool bothEx2 = t21Ex && t22Ex;
       if(bothEx2) {
-        x2 = point2Type2 == BLocalMax ? std::get<11>(tuple2)
-                                      : std::get<7>(tuple2);
-        y2 = point2Type2 == BLocalMax ? std::get<12>(tuple2)
-                                      : std::get<8>(tuple2);
-        z2 = point2Type2 == BLocalMax ? std::get<13>(tuple2)
-                                      : std::get<9>(tuple2);
+        x2 = point2Type2 == CriticalType::Local_maximum ? std::get<11>(tuple2)
+                                                        : std::get<7>(tuple2);
+        y2 = point2Type2 == CriticalType::Local_maximum ? std::get<12>(tuple2)
+                                                        : std::get<8>(tuple2);
+        z2 = point2Type2 == CriticalType::Local_maximum ? std::get<13>(tuple2)
+                                                        : std::get<9>(tuple2);
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       } else {
@@ -385,7 +404,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 // Warn: this is a duplicate from ttkBottleneckDistance
 template <typename dataType>
 int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
-  std::vector<diagramTuple> &diagram,
+  ttk::DiagramType &diagram,
   const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram_,
   const double spacing,
   const int diagramNumber) {
@@ -467,10 +486,10 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
     dataType value2 = value1 + persistence;
 
     if(pairIdentifier != -1 && pairIdentifier < pairingsSize)
-      diagram.at(pairIdentifier)
-        = std::make_tuple(vertexId1, (BNodeType)nodeType1, vertexId2,
-                          (BNodeType)nodeType2, (dataType)persistence, pairType,
-                          value1, x1, y1, z1 + s, value2, x2, y2, z2 + s);
+      diagram.at(pairIdentifier) = std::make_tuple(
+        vertexId1, (ttk::CriticalType)nodeType1, vertexId2,
+        (ttk::CriticalType)nodeType2, (dataType)persistence, pairType, value1,
+        x1, y1, z1 + s, value2, x2, y2, z2 + s);
 
     if(pairIdentifier >= pairingsSize) {
       nbNonCompact++;
@@ -487,7 +506,7 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
   }
 
   sort(diagram.begin(), diagram.end(),
-       [](const diagramTuple &a, const diagramTuple &b) -> bool {
+       [](const ttk::PairTuple &a, const ttk::PairTuple &b) -> bool {
          return std::get<6>(a) < std::get<6>(b);
        });
 
@@ -497,15 +516,15 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
 // Warn: this is a duplicate from ttkBottleneckDistance
 template <typename dataType>
 int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
-  const std::vector<diagramTuple> &diagram1,
-  const std::vector<diagramTuple> &diagram2,
-  const std::vector<matchingTuple> &matchings,
+  const ttk::DiagramType &diagram1,
+  const ttk::DiagramType &diagram2,
+  const std::vector<ttk::MatchingType> &matchings,
   const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram1_,
   const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram2_) {
 
-  auto diagramSize1 = (BIdVertex)diagram1.size();
-  auto diagramSize2 = (BIdVertex)diagram2.size();
-  auto matchingsSize = (BIdVertex)matchings.size();
+  auto diagramSize1 = diagram1.size();
+  auto diagramSize2 = diagram2.size();
+  auto matchingsSize = matchings.size();
 
   vtkSmartPointer<vtkIntArray> matchingIdentifiers1
     = vtkSmartPointer<vtkIntArray>::New();
@@ -523,18 +542,18 @@ int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
     matchingIdentifiers2->SetNumberOfTuples(diagramSize2);
 
     // Unaffected by default
-    for(BIdVertex i = 0; i < diagramSize1; ++i)
+    for(size_t i = 0; i < diagramSize1; ++i)
       matchingIdentifiers1->InsertTuple1(i, -1);
-    for(BIdVertex i = 0; i < diagramSize2; ++i)
+    for(size_t i = 0; i < diagramSize2; ++i)
       matchingIdentifiers2->InsertTuple1(i, -1);
 
     // Last cell = junction
-    if(diagramSize1
+    if(static_cast<int>(diagramSize1)
        < CTPersistenceDiagram1_->GetCellData()->GetNumberOfTuples()) {
       matchingIdentifiers1->InsertTuple1(diagramSize1, -1);
       matchingIdentifiers1->InsertTuple1(diagramSize1 + 1, -1);
     }
-    if(diagramSize2
+    if(static_cast<int>(diagramSize2)
        < CTPersistenceDiagram2_->GetCellData()->GetNumberOfTuples()) {
       matchingIdentifiers2->InsertTuple1(diagramSize2, -1);
       matchingIdentifiers2->InsertTuple1(diagramSize2 + 1, -1);
@@ -542,8 +561,8 @@ int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
 
     // Affect bottleneck matchings
     int pairingIndex = 0;
-    for(BIdVertex i = 0; i < matchingsSize; ++i) {
-      matchingTuple t = matchings.at((unsigned long)i);
+    for(size_t i = 0; i < matchingsSize; ++i) {
+      const auto &t = matchings.at((unsigned long)i);
       ids[0] = std::get<0>(t);
       ids[1] = std::get<1>(t);
       matchingIdentifiers1->InsertTuple1(ids[0], pairingIndex);

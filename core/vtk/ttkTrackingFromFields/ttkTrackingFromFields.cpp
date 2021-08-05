@@ -39,15 +39,13 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   using trackingTuple = ttk::trackingTuple;
 
   // 1. get persistence diagrams.
-  std::vector<std::vector<diagramTuple>> persistenceDiagrams(
-    fieldNumber, std::vector<diagramTuple>());
+  std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
 
   this->performDiagramComputation<dataType, triangulationType>(
     (int)fieldNumber, persistenceDiagrams, triangulation);
 
   // 2. call feature tracking with threshold.
-  std::vector<std::vector<matchingTuple>> outputMatchings(
-    fieldNumber - 1, std::vector<matchingTuple>());
+  std::vector<std::vector<ttk::MatchingType>> outputMatchings(fieldNumber - 1);
 
   double spacing = Spacing;
   std::string algorithm = DistanceAlgorithm;

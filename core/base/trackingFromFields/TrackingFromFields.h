@@ -28,7 +28,7 @@ namespace ttk {
               typename triangulationType = ttk::AbstractTriangulation>
     int performDiagramComputation(
       int fieldNumber,
-      std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
+      std::vector<ttk::DiagramType> &persistenceDiagrams,
       const triangulationType *triangulation);
 
     /// Pass a pointer to an input array representing a scalarfield.
@@ -84,7 +84,7 @@ namespace ttk {
 template <typename dataType, typename triangulationType>
 int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
-  std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
+  std::vector<ttk::DiagramType> &persistenceDiagrams,
   const triangulationType *triangulation) {
 
 #ifdef TTK_ENABLE_OPENMP

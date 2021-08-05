@@ -6,9 +6,12 @@
 
 // base code includes
 #include <BottleneckDistance.h>
+#include <Geometry.h>
 #include <set>
 
 namespace ttk {
+
+  using trackingTuple = std::tuple<int, int, std::vector<SimplexId>>;
 
   class TrackingFromPersistenceDiagrams : virtual public Debug {
 
@@ -25,8 +28,8 @@ namespace ttk {
     template <typename dataType>
     int performSingleMatching(
       int i,
-      std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
-      std::vector<std::vector<matchingTuple>> &outputMatchings,
+      std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
+      std::vector<std::vector<MatchingType>> &outputMatchings,
       const std::string &algorithm,
       const std::string &wasserstein,
       double tolerance,
@@ -39,28 +42,28 @@ namespace ttk {
       double pe);
 
     template <typename dataType>
-    int performMatchings(
-      int numInputs,
-      std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
-      std::vector<std::vector<matchingTuple>> &outputMatchings,
-      const std::string &algorithm,
-      const std::string &wasserstein,
-      double tolerance,
-      bool is3D,
-      double alpha,
-      double px,
-      double py,
-      double pz,
-      double ps,
-      double pe);
+    int
+      performMatchings(int numInputs,
+                       std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
+                       std::vector<std::vector<MatchingType>> &outputMatchings,
+                       const std::string &algorithm,
+                       const std::string &wasserstein,
+                       double tolerance,
+                       bool is3D,
+                       double alpha,
+                       double px,
+                       double py,
+                       double pz,
+                       double ps,
+                       double pe);
 
     template <typename dataType>
-    int performTracking(std::vector<std::vector<diagramTuple>> &allDiagrams,
-                        std::vector<std::vector<matchingTuple>> &allMatchings,
+    int performTracking(std::vector<ttk::DiagramType> &allDiagrams,
+                        std::vector<std::vector<MatchingType>> &allMatchings,
                         std::vector<trackingTuple> &trackings);
 
     template <typename dataType>
-    int performPostProcess(std::vector<std::vector<diagramTuple>> &allDiagrams,
+    int performPostProcess(std::vector<ttk::DiagramType> &allDiagrams,
                            std::vector<trackingTuple> &trackings,
                            std::vector<std::set<int>> &trackingTupleToMerged,
                            double postProcThresh);
@@ -118,8 +121,8 @@ int ttk::TrackingFromPersistenceDiagrams::execute() {
 template <typename dataType>
 int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   int i,
-  std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
-  std::vector<std::vector<matchingTuple>> &outputMatchings,
+  std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
+  std::vector<std::vector<MatchingType>> &outputMatchings,
   const std::string &algorithm,
   const std::string &wasserstein,
   double tolerance,
@@ -141,10 +144,9 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   bottleneckDistance_.setAlgorithm(algorithm);
   bottleneckDistance_.setWasserstein(wasserstein);
 
-  bottleneckDistance_.setCTDiagram1(&inputPersistenceDiagrams[i]);
-  bottleneckDistance_.setCTDiagram2(&inputPersistenceDiagrams[i + 1]);
-  bottleneckDistance_.setOutputMatchings(&outputMatchings[i]);
-  bottleneckDistance_.execute<dataType>(false);
+  bottleneckDistance_.execute(inputPersistenceDiagrams[i],
+                              inputPersistenceDiagrams[i + 1],
+                              outputMatchings[i], false);
 
   return 0;
 }
@@ -152,8 +154,8 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
 template <typename dataType>
 int ttk::TrackingFromPersistenceDiagrams::performMatchings(
   int numInputs,
-  std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
-  std::vector<std::vector<matchingTuple>> &outputMatchings,
+  std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
+  std::vector<std::vector<MatchingType>> &outputMatchings,
   const std::string &algorithm,
   const std::string &wasserstein,
   double tolerance,
@@ -185,14 +187,14 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
 
 template <typename dataType>
 int ttk::TrackingFromPersistenceDiagrams::performTracking(
-  std::vector<std::vector<diagramTuple>> &allDiagrams,
-  std::vector<std::vector<matchingTuple>> &allMatchings,
+  std::vector<ttk::DiagramType> &allDiagrams,
+  std::vector<std::vector<MatchingType>> &allMatchings,
   std::vector<trackingTuple> &trackings) {
   auto numPersistenceDiagramsInput = (int)allDiagrams.size();
 
   for(int in = 1; in < numPersistenceDiagramsInput - 1; ++in) {
-    std::vector<matchingTuple> matchings1 = allMatchings[in - 1];
-    std::vector<matchingTuple> matchings2 = allMatchings[in];
+    std::vector<MatchingType> matchings1 = allMatchings[in - 1];
+    std::vector<MatchingType> matchings2 = allMatchings[in];
 
     auto matchingsSize1 = (int)matchings1.size();
     auto matchingsSize2 = (int)matchings2.size();
@@ -214,7 +216,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
         for(trackingTuple &tt : trackings) {
           int chainStart = std::get<0>(tt);
           int chainEnd = std::get<1>(tt);
-          std::vector<BIdVertex> &chain = std::get<2>(tt);
+          std::vector<SimplexId> &chain = std::get<2>(tt);
 
           if(chainEnd == -1) {
             auto chainSize = (int)chain.size();
@@ -237,7 +239,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
         }
 
         if(!found) {
-          std::vector<BIdVertex> chain;
+          std::vector<SimplexId> chain;
           chain.push_back(m1ai0);
           chain.push_back(m1ai1);
           if(in == endIndex) {
@@ -256,7 +258,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
       int chainStart = std::get<0>(tt);
       int chainEnd = std::get<1>(tt);
       if(chainEnd == -1) {
-        std::vector<BIdVertex> &chain = std::get<2>(tt);
+        std::vector<SimplexId> &chain = std::get<2>(tt);
         auto chainSize = (int)chain.size();
         if(chainStart + chainSize - 1 < in)
           std::get<1>(tt) = in - 1;
@@ -275,7 +277,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
 
 template <typename dataType>
 int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
-  std::vector<std::vector<diagramTuple>> &allDiagrams,
+  std::vector<ttk::DiagramType> &allDiagrams,
   std::vector<trackingTuple> &trackings,
   std::vector<std::set<int>> &trackingTupleToMerged,
   double postProcThresh) {
@@ -288,23 +290,23 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     int endK = std::get<1>(tk);
     if(endK < 0)
       endK = numPersistenceDiagramsInput - 1;
-    std::vector<BIdVertex> chainK = std::get<2>(tk);
-    std::vector<diagramTuple> &diagramStartK = allDiagrams[startK];
-    std::vector<diagramTuple> &diagramEndK = allDiagrams[endK];
+    std::vector<SimplexId> chainK = std::get<2>(tk);
+    ttk::DiagramType &diagramStartK = allDiagrams[startK];
+    ttk::DiagramType &diagramEndK = allDiagrams[endK];
 
     auto n1 = (int)chainK.at(0);
     auto n2 = (int)chainK.at(chainK.size() - 1);
-    diagramTuple &tuple1 = diagramStartK[n1];
-    diagramTuple &tuple2 = diagramEndK[n2];
+    const auto &tuple1 = diagramStartK[n1];
+    const auto &tuple2 = diagramEndK[n2];
 
     double x1, y1, z1, x2, y2, z2;
 
-    BNodeType point1Type1 = std::get<1>(tuple1);
-    BNodeType point1Type2 = std::get<3>(tuple1);
-    bool t11Min = point1Type1 == BLocalMin;
-    bool t11Max = point1Type1 == BLocalMax;
-    bool t12Min = point1Type2 == BLocalMin;
-    bool t12Max = point1Type2 == BLocalMax;
+    const auto point1Type1 = std::get<1>(tuple1);
+    const auto point1Type2 = std::get<3>(tuple1);
+    bool t11Min = point1Type1 == CriticalType::Local_minimum;
+    bool t11Max = point1Type1 == CriticalType::Local_maximum;
+    bool t12Min = point1Type2 == CriticalType::Local_minimum;
+    bool t12Max = point1Type2 == CriticalType::Local_maximum;
     // bool bothEx1 = t11Ex && t12Ex;
     bool t1Max = t11Max || t12Max;
     bool t1Min = !t1Max && (t11Min || t12Min);
@@ -313,12 +315,12 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     y1 = t1Max ? std::get<12>(tuple1) : t1Min ? std::get<8>(tuple1) : 0;
     z1 = t1Max ? std::get<13>(tuple1) : t1Min ? std::get<9>(tuple1) : 0;
 
-    BNodeType point2Type1 = std::get<1>(tuple2);
-    BNodeType point2Type2 = std::get<3>(tuple2);
-    bool t21Min = point2Type1 == BLocalMin;
-    bool t21Max = point2Type1 == BLocalMax;
-    bool t22Min = point2Type2 == BLocalMin;
-    bool t22Max = point2Type2 == BLocalMax;
+    const auto point2Type1 = std::get<1>(tuple2);
+    const auto point2Type2 = std::get<3>(tuple2);
+    bool t21Min = point2Type1 == CriticalType::Local_minimum;
+    bool t21Max = point2Type1 == CriticalType::Local_maximum;
+    bool t22Min = point2Type2 == CriticalType::Local_minimum;
+    bool t22Max = point2Type2 == CriticalType::Local_maximum;
     // bool bothEx2 = t21Ex && t22Ex;
     bool t2Max = t21Max || t22Max;
     bool t2Min = !t2Max && (t21Min || t22Min);
@@ -340,7 +342,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
       trackingTuple &tm = trackings[m];
       int startM = std::get<0>(tm);
       int endM = std::get<1>(tm);
-      std::vector<BIdVertex> &chainM = std::get<2>(tm);
+      std::vector<SimplexId> &chainM = std::get<2>(tm);
       if((endK > 0 && startM > endK) || (endM > 0 && startK > endM))
         continue;
 
@@ -354,15 +356,15 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
         /// Check proximity.
         auto n3 = (int)chainM[c];
-        std::vector<diagramTuple> &diagramM = allDiagrams[startM + c];
-        diagramTuple &tuple3 = diagramM[n3];
+        ttk::DiagramType &diagramM = allDiagrams[startM + c];
+        const auto &tuple3 = diagramM[n3];
         double x3, y3, z3;
-        BNodeType point3Type1 = std::get<1>(tuple3);
-        BNodeType point3Type2 = std::get<3>(tuple3);
-        bool t31Min = point3Type1 == BLocalMin;
-        bool t31Max = point3Type1 == BLocalMax;
-        bool t32Min = point3Type2 == BLocalMin;
-        bool t32Max = point3Type2 == BLocalMax;
+        const auto point3Type1 = std::get<1>(tuple3);
+        const auto point3Type2 = std::get<3>(tuple3);
+        bool t31Min = point3Type1 == CriticalType::Local_minimum;
+        bool t31Max = point3Type1 == CriticalType::Local_maximum;
+        bool t32Min = point3Type2 == CriticalType::Local_minimum;
+        bool t32Max = point3Type2 == CriticalType::Local_maximum;
         // bool bothEx3 = t31Ex && t32Ex;
         // if (!bothEx3)
         //  continue;
