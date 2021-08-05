@@ -111,58 +111,37 @@ int generatePersistenceDiagram(ttk::DiagramType &diagram, const int size) {
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-int augmentPersistenceDiagrams(const ttk::DiagramType &diagram1,
-                               const ttk::DiagramType &diagram2,
-                               const std::vector<matchingTuple> &matchings,
-                               vtkUnstructuredGrid *const vtu0,
-                               vtkUnstructuredGrid *const vtu1) {
+int augmentDiagrams(const ttk::DiagramType &diag0,
+                    const ttk::DiagramType &diag1,
+                    const std::vector<matchingTuple> &matchings,
+                    vtkUnstructuredGrid *const vtu0,
+                    vtkUnstructuredGrid *const vtu1) {
 
-  auto diagramSize1 = (BIdVertex)diagram1.size();
-  auto diagramSize2 = (BIdVertex)diagram2.size();
-  auto matchingsSize = (BIdVertex)matchings.size();
+  if(matchings.empty()) {
+    return 0;
+  }
 
-  vtkNew<vtkIntArray> matchingIdentifiers1{};
-  matchingIdentifiers1->SetName("MatchingIdentifier");
+  vtkNew<vtkIntArray> matchingIds0{};
+  matchingIds0->SetName("MatchingIdentifier");
+  matchingIds0->SetNumberOfComponents(1);
+  matchingIds0->SetNumberOfTuples(vtu0->GetNumberOfCells());
+  vtu0->GetCellData()->AddArray(matchingIds0);
 
-  vtkNew<vtkIntArray> matchingIdentifiers2{};
-  matchingIdentifiers2->SetName("MatchingIdentifier");
+  vtkNew<vtkIntArray> matchingIds1{};
+  matchingIds1->SetName("MatchingIdentifier");
+  matchingIds1->SetNumberOfComponents(1);
+  matchingIds1->SetNumberOfTuples(vtu1->GetNumberOfCells());
+  vtu1->GetCellData()->AddArray(matchingIds1);
 
-  if(matchingsSize > 0) {
-    ttk::SimplexId ids[2];
-    matchingIdentifiers1->SetNumberOfComponents(1);
-    matchingIdentifiers2->SetNumberOfComponents(1);
-    matchingIdentifiers1->SetNumberOfTuples(diagramSize1);
-    matchingIdentifiers2->SetNumberOfTuples(diagramSize2);
+  // Unaffected by default
+  matchingIds0->Fill(-1);
+  matchingIds1->Fill(-1);
 
-    // Unaffected by default
-    for(BIdVertex i = 0; i < diagramSize1; ++i)
-      matchingIdentifiers1->InsertTuple1(i, -1);
-    for(BIdVertex i = 0; i < diagramSize2; ++i)
-      matchingIdentifiers2->InsertTuple1(i, -1);
-
-    // Last cell = junction
-    if(diagramSize1 < vtu0->GetCellData()->GetNumberOfTuples()) {
-      matchingIdentifiers1->InsertTuple1(diagramSize1, -1);
-      matchingIdentifiers1->InsertTuple1(diagramSize1 + 1, -1);
-    }
-    if(diagramSize2 < vtu1->GetCellData()->GetNumberOfTuples()) {
-      matchingIdentifiers2->InsertTuple1(diagramSize2, -1);
-      matchingIdentifiers2->InsertTuple1(diagramSize2 + 1, -1);
-    }
-
-    // Affect bottleneck matchings
-    int pairingIndex = 0;
-    for(BIdVertex i = 0; i < matchingsSize; ++i) {
-      matchingTuple t = matchings.at((unsigned long)i);
-      ids[0] = std::get<0>(t);
-      ids[1] = std::get<1>(t);
-      matchingIdentifiers1->InsertTuple1(ids[0], pairingIndex);
-      matchingIdentifiers2->InsertTuple1(ids[1], pairingIndex);
-      pairingIndex++;
-    }
-
-    vtu0->GetCellData()->AddArray(matchingIdentifiers1);
-    vtu1->GetCellData()->AddArray(matchingIdentifiers2);
+  // Affect bottleneck matchings
+  for(size_t i = 0; i < matchings.size(); ++i) {
+    const auto &t = matchings[i];
+    matchingIds0->SetTuple1(std::get<0>(t), i);
+    matchingIds1->SetTuple1(std::get<1>(t), i);
   }
 
   return 1;
@@ -182,13 +161,13 @@ int translateDiagram(vtkUnstructuredGrid *output,
   return 1;
 }
 
-int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
-                    const ttk::DiagramType &diagram1,
-                    const ttk::DiagramType &diagram2,
-                    const std::vector<matchingTuple> &matchings,
-                    const double spacing,
-                    const bool is2D0,
-                    const bool is2D1) {
+int generateMatchings(vtkUnstructuredGrid *const outputCT3,
+                      const ttk::DiagramType &diagram1,
+                      const ttk::DiagramType &diagram2,
+                      const std::vector<matchingTuple> &matchings,
+                      const double spacing,
+                      const bool is2D0,
+                      const bool is2D1) {
 
   vtkNew<vtkUnstructuredGrid> vtu{};
 
@@ -369,10 +348,10 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     return 0;
   }
 
-  // Apply results to output 2.
+  // Generate matchings
   if(this->UseOutputMatching) {
-    status = getMatchingMesh(outputMatchings, diagram0, diagram1, matchings,
-                             this->Spacing, is2D0, is2D1);
+    status = generateMatchings(outputMatchings, diagram0, diagram1, matchings,
+                               this->Spacing, is2D0, is2D1);
 
     if(status != 1) {
       this->printErr("Could not compute matchings");
@@ -380,6 +359,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     }
   }
 
+  // Translate diagrams
   vtkNew<vtkUnstructuredGrid> vtu0{}, vtu1{};
   if(this->UseGeometricSpacing) {
     translateDiagram(vtu0, inputDiags[0], -this->Spacing / 2.0);
@@ -389,9 +369,8 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     vtu1->ShallowCopy(inputDiags[1]);
   }
 
-  // Add matchings infos
-  status
-    = augmentPersistenceDiagrams(diagram0, diagram1, matchings, vtu0, vtu1);
+  // Add matchings infos on diagrams
+  status = augmentDiagrams(diagram0, diagram1, matchings, vtu0, vtu1);
   if(status != 1) {
     this->printErr("Could not augment diagrams");
     return 0;
