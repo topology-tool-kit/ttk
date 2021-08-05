@@ -13,8 +13,6 @@
 #include <vtkTransformFilter.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <random>
-
 vtkStandardNewMacro(ttkBottleneckDistance);
 
 ttkBottleneckDistance::ttkBottleneckDistance() {
@@ -41,73 +39,6 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
     return 1;
   }
   return 0;
-}
-
-int generatePersistenceDiagram(ttk::DiagramType &diagram, const int size) {
-
-  int v0 = 1;
-  int v1 = 2;
-
-  std::default_random_engine generator1(1998985);
-  std::default_random_engine generator2(8584584);
-  std::uniform_real_distribution<> dis1(0.0, 1.0);
-  std::uniform_real_distribution<> dis2(0.0, 1.0);
-
-  for(int i = 1; i < size; ++i) {
-    int r0 = 2; // (rand() % 3);
-    float r1 = 0.001f + dis1(generator1);
-    float r2 = 0.001f + dis2(generator2);
-
-    // BLocalMin BSaddle1 BSaddle2 BLocalMax
-    int pairType = r0; // (0/min, 1/saddle, 2/max)
-    BNodeType nodeType1; //
-    BNodeType nodeType2; //
-    switch(pairType) {
-      // case 0:
-      //   nodeType1 = BLocalMin;
-      //   nodeType2 = BSaddle1;
-      //   break;
-      // case 1:
-      //   nodeType1 = BSaddle1;
-      //   nodeType2 = BSaddle2;
-      //   break;
-      case 2:
-      default:
-        nodeType1 = BSaddle2;
-        nodeType2 = BLocalMax;
-        break;
-        // default:
-        //   nodeType1 = (BNodeType) -1;
-        //   nodeType2 = (BNodeType) -1;
-    }
-
-    float x1 = 0.5f * r1;
-    float y1 = x1;
-    float z1 = 0.f;
-
-    float x2 = x1;
-    float y2 = x1 + 0.5f * r2; // x1 + rand(0.5)
-    float z2 = 0.f; // 0
-
-    const auto birth = x1;
-    const auto death = y2;
-
-    const auto pers = death - birth;
-
-    diagram.push_back(std::make_tuple(v0, nodeType1, v1, nodeType2, pers,
-                                      pairType, birth, x1, y1, z1, death, x2,
-                                      y2, z2));
-
-    v0++;
-    v1++;
-  }
-
-  sort(diagram.begin(), diagram.end(),
-       [](const ttk::PairTuple &a, const ttk::PairTuple &b) -> bool {
-         return std::get<6>(a) < std::get<6>(b);
-       });
-
-  return 1;
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
@@ -225,48 +156,9 @@ int generateMatchings(vtkUnstructuredGrid *const outputCT3,
   return 1;
 }
 
-int ttkBottleneckDistance::doBenchmark() {
-  ttk::DiagramType CTDiagram1{}, CTDiagram2{};
-
-  int status = 0;
-  status = generatePersistenceDiagram(CTDiagram1, this->BenchmarkSize);
-  if(status < 0)
-    return status;
-  status = generatePersistenceDiagram(CTDiagram2, 4 * this->BenchmarkSize);
-  if(status < 0)
-    return status;
-
-  this->setPersistencePercentThreshold(Tolerance);
-  this->setPX(PX);
-  this->setPY(PY);
-  this->setPZ(PZ);
-  this->setPE(PE);
-  this->setPS(PS);
-  this->setCTDiagram1(&CTDiagram1);
-  this->setCTDiagram2(&CTDiagram2);
-
-  this->setWasserstein(this->WassersteinMetric);
-  this->setAlgorithm(this->DistanceAlgorithm);
-  this->setPVAlgorithm(this->PVAlgorithm);
-
-  // Empty matchings.
-  ttk::DiagramType matchings{};
-  this->setOutputMatchings(&matchings);
-
-  // Exec.
-  bool usePersistenceMetric = UsePersistenceMetric;
-  status = this->execute<double>(usePersistenceMetric);
-
-  return status;
-}
-
 int ttkBottleneckDistance::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
-
-  if(this->BenchmarkSize > 0) {
-    return doBenchmark();
-  }
 
   auto outputDiagrams = vtkMultiBlockDataSet::GetData(outputVector, 0);
   auto outputMatchings = vtkUnstructuredGrid::GetData(outputVector, 1);

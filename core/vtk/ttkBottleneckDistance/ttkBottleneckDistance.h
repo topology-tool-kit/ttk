@@ -59,9 +59,6 @@ public:
   vtkSetMacro(UseOutputMatching, bool);
   vtkGetMacro(UseOutputMatching, bool);
 
-  vtkSetMacro(BenchmarkSize, int);
-  vtkGetMacro(BenchmarkSize, int);
-
   vtkSetMacro(UsePersistenceMetric, bool);
   vtkGetMacro(UsePersistenceMetric, bool);
 
@@ -90,14 +87,10 @@ public:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  int doBenchmark();
-
 protected:
   ttkBottleneckDistance();
 
 private:
-  int BenchmarkSize{-1};
-
   bool UseOutputMatching{false};
   double Spacing{0.0};
   double Alpha{1.0};
