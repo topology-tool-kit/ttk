@@ -58,7 +58,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   ttk::TrackingFromPersistenceDiagrams tfp{};
   tfp.setThreadNumber(this->threadNumber_);
-  tfp.performMatchings<dataType>(
+  tfp.performMatchings(
     (int)fieldNumber, persistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
     wasserstein, tolerance, is3D,
@@ -87,15 +87,13 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   // (+ vertex id)
   std::vector<trackingTuple> trackingsBase;
-  tfp.performTracking<dataType>(
-    persistenceDiagrams, outputMatchings, trackingsBase);
+  tfp.performTracking(persistenceDiagrams, outputMatchings, trackingsBase);
 
-  std::vector<std::set<int>> trackingTupleToMerged(
-    trackingsBase.size(), std::set<int>());
+  std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size());
 
   if(DoPostProc) {
-    tfp.performPostProcess<dataType>(persistenceDiagrams, trackingsBase,
-                                     trackingTupleToMerged, PostProcThresh);
+    tfp.performPostProcess(persistenceDiagrams, trackingsBase,
+                           trackingTupleToMerged, PostProcThresh);
   }
 
   bool useGeometricSpacing = UseGeometricSpacing;

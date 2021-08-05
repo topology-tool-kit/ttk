@@ -358,7 +358,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     VTUToDiagram(inputPersistenceDiagrams[i], inputVTUs[i], *this);
   }
 
-  this->performMatchings<double>(
+  this->performMatchings(
     numInputs, inputPersistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
     wasserstein, tolerance, is3D,
@@ -432,13 +432,13 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   // (+ vertex id)
   std::vector<ttk::trackingTuple>
     trackingsBase; // structure containing all trajectories
-  this->performTracking<double>(
+  this->performTracking(
     inputPersistenceDiagrams, outputMatchings, trackingsBase);
 
   std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size());
   if(DoPostProc)
-    this->performPostProcess<double>(inputPersistenceDiagrams, trackingsBase,
-                                     trackingTupleToMerged, PostProcThresh);
+    this->performPostProcess(inputPersistenceDiagrams, trackingsBase,
+                             trackingTupleToMerged, PostProcThresh);
 
   // bool Is3D = true;
   bool useGeometricSpacing = UseGeometricSpacing;
