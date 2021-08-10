@@ -39,14 +39,6 @@ void ttk::PersistenceDiagramAuction::runAuctionRound(int &n_biddings,
           &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_);
       }
     }
-    /*if(n_biddings>-1){
-      std::cout.precision(10);
-      std::cout<< n_biddings << ", out : " <<idx_reassigned<< ", " << b.id_ <<
-    "->" << b.getProperty()->id_ << ", distance : "<< b.cost(b.getProperty(),
-    wasserstein_, geometricalFactor_) << ", price : "
-    <<b.getProperty()->getPrice() << ", diagonal ? " << b.isDiagonal() << ", "<<
-    b.getProperty()->isDiagonal() << std::endl;
-    }*/
     if(idx_reassigned >= 0) {
       Bidder &reassigned = bidders_[idx_reassigned];
       reassigned.resetProperty();
@@ -77,7 +69,7 @@ double ttk::PersistenceDiagramAuction::getMaximalPrice() {
 }
 
 double ttk::PersistenceDiagramAuction::getMatchingsAndDistance(
-  std::vector<MatchingType> *matchings, bool get_diagonal_matches) {
+  std::vector<MatchingType> &matchings, bool get_diagonal_matches) {
   double wassersteinDistance = 0;
   for(size_t i = 0; i < bidders_.size(); i++) {
     Bidder &b = bidders_[i];
@@ -89,18 +81,15 @@ double ttk::PersistenceDiagramAuction::getMatchingsAndDistance(
         // good is not diagonal
         cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
         MatchingType t = std::make_tuple(i, good_id, cost);
-        matchings->push_back(t);
+        matchings.emplace_back(t);
       } else {
         if(!b.getProperty().isDiagonal()) {
-          std::cout << "[PersistenceDiagramAuctionImpl] Huho : both the bidder "
-                       "and the good are "
-                       "diagonal points"
-                    << std::endl;
+          this->printWrn("both the bidder and the good are diagonal points");
         }
-        cost = 2 * Geometry::pow(abs<double>((b.y_ - b.x_) / 2), wasserstein_);
+        cost = 2.0 * Geometry::pow(std::abs((b.y_ - b.x_) / 2.0), wasserstein_);
         if(get_diagonal_matches) {
           MatchingType t = std::make_tuple(i, good_id, cost);
-          matchings->push_back(t);
+          matchings.emplace_back(t);
         }
       }
       wassersteinDistance += cost;
@@ -108,10 +97,10 @@ double ttk::PersistenceDiagramAuction::getMatchingsAndDistance(
       // b is diagonal
       const Good &g = b.getProperty();
       double cost
-        = 2 * Geometry::pow(abs<double>((g.y_ - g.x_) / 2), wasserstein_);
+        = 2.0 * Geometry::pow(std::abs((g.y_ - g.x_) / 2.0), wasserstein_);
       if(get_diagonal_matches) {
         MatchingType t = std::make_tuple(b.id_, g.id_, cost);
-        matchings->push_back(t);
+        matchings.emplace_back(t);
       }
       wassersteinDistance += cost;
     }
@@ -120,7 +109,7 @@ double ttk::PersistenceDiagramAuction::getMatchingsAndDistance(
 }
 
 double
-  ttk::PersistenceDiagramAuction::run(std::vector<MatchingType> *matchings) {
+  ttk::PersistenceDiagramAuction::run(std::vector<MatchingType> &matchings) {
   initializeEpsilon();
   int n_biddings = 0;
   double delta = 5;
@@ -207,7 +196,6 @@ int ttk::Bidder::runBidding(GoodDiagram *goods,
   double new_price = old_price + best_val - second_val + epsilon;
   if(new_price > std::numeric_limits<double>::max() / 2) {
     new_price = old_price + epsilon;
-    std::cout << "Huho 376" << std::endl;
   }
   // Assign bidder to best_good
   this->setProperty(*best_good);
@@ -309,7 +297,6 @@ int ttk::Bidder::runDiagonalBidding(
   if(second_val == std::numeric_limits<double>::lowest()) {
     // There is only one acceptable good for the bidder
     second_val = best_val;
-    std::cout << "Huho 474" << std::endl;
   }
   double old_price = best_good->getPrice();
   double new_price = old_price + best_val - second_val + epsilon;
@@ -374,7 +361,6 @@ int ttk::Bidder::runDiagonalKDTBidding(
       }
     }
   }
-  // std::cout << "got here 1" << std::endl;
   std::pair<int, double> second_pair;
   if(non_empty_goods && diagonal_queue.size() > 0) {
     bool updated_second_pair = false;
@@ -393,7 +379,6 @@ int ttk::Bidder::runDiagonalKDTBidding(
     }
   }
 
-  // std::cout << "got here 1/2" << std::endl;
   Good *best_good{};
   double best_val = 0;
   double second_val = 0;
@@ -402,7 +387,6 @@ int ttk::Bidder::runDiagonalKDTBidding(
     second_val = diagonal_queue.size() > 0 ? -second_pair.second : best_val;
     best_good = &(*goods)[best_pair.first];
   }
-  // std::cout << "got here 2" << std::endl;
 
   // And now check for the corresponding twin bidder
   bool is_twin = false;
@@ -425,7 +409,6 @@ int ttk::Bidder::runDiagonalKDTBidding(
     second_val = best_val;
   }
 
-  // std::cout << "got here 3" << std::endl;
   if(second_val == std::numeric_limits<double>::lowest()) {
     // There is only one acceptable good for the bidder
     second_val = best_val;
@@ -434,33 +417,28 @@ int ttk::Bidder::runDiagonalKDTBidding(
   double new_price = old_price + best_val - second_val + epsilon;
   if(new_price > std::numeric_limits<double>::max() / 2) {
     new_price = old_price + epsilon;
-    std::cout << "Huho 592" << std::endl;
   }
 
   // Assign bidder to best_good
   this->setProperty(*best_good);
   this->setPricePaid(new_price);
 
-  // std::cout << "got here 4" << std::endl;
   // Assign best_good to bidder and unassign the previous owner of best_good
   // if need be
   int idx_reassigned = best_good->getOwner();
   best_good->assign(this->position_in_auction_, new_price);
   if(is_twin) {
-    // std::cout << "got here 5" << std::endl;
     // Update weight in KDTree if the closest good is in it
     correspondance_kdt_map[best_good->id_]->updateWeight(new_price, kdt_index);
     if(non_empty_goods) {
       diagonal_queue.push(best_pair);
     }
   } else {
-    // std::cout << "got here 6" << std::endl;
     if(non_empty_goods) {
       std::get<1>(best_pair) = new_price;
       diagonal_queue.push(best_pair);
     }
   }
-  // std::cout << "left that function" << std::endl;
   return idx_reassigned;
 }
 
@@ -485,14 +463,11 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
     coordinates.push_back((1 - geometricalFactor) * this->coords_[2]);
   }
 
-  // std::cout<<"got to 1"<<std::endl;
   kdt->getKClosest(2, coordinates, neighbours, costs, kdt_index);
-  // std::cout<<"got to 2"<<std::endl;
   double best_val, second_val;
   KDTree<double> *closest_kdt;
   Good *best_good{};
   if(costs.size() == 2) {
-    // std::cout<<"got to 735"<<std::endl;
     std::vector<int> idx(2);
     idx[0] = 0;
     idx[1] = 1;
@@ -506,14 +481,12 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
     best_val = -costs[idx[0]];
     second_val = -costs[idx[1]];
   } else {
-    // std::cout<<"got to 748"<<std::endl;
     // If the kdtree contains only one point
     closest_kdt = neighbours[0];
     best_good = &(*goods)[closest_kdt->id_];
     best_val = -costs[0];
     second_val = best_val;
   }
-  // std::cout<<"got to 755"<<std::endl;
   // And now check for the corresponding twin bidder
   bool twin_chosen = false;
   Good &g = twinGood;
@@ -528,7 +501,6 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
     second_val = val;
   }
 
-  // std::cout << "got here 2" << std::endl;
   if(second_val == std::numeric_limits<double>::lowest()) {
     // There is only one acceptable good for the bidder
     second_val = best_val;
@@ -537,7 +509,6 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
   double new_price = old_price + best_val - second_val + epsilon;
   if(new_price > std::numeric_limits<double>::max() / 2) {
     new_price = old_price + epsilon;
-    std::cout << "Huho 681" << std::endl;
   }
   // Assign bidder to best_good
   this->setProperty(*best_good);
@@ -546,7 +517,6 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
   // if need be
   int idx_reassigned = best_good->getOwner();
 
-  // std::cout << "got here 3" << std::endl;
   best_good->assign(this->position_in_auction_, new_price);
   // Update the price in the KDTree
   if(!twin_chosen) {

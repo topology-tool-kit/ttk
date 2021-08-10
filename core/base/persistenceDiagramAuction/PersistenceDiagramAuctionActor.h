@@ -6,8 +6,6 @@
 
 #include <array>
 #include <cmath>
-#include <iostream>
-#include <limits>
 #include <queue>
 
 namespace ttk {
@@ -139,7 +137,6 @@ namespace ttk {
         coords_z
           = lambda * std::get<9>(tuple) + (1 - lambda) * std::get<13>(tuple);
       } else { // pair saddle-saddle
-        std::cout << "\n\n\n SADDLE-SADDLE \n\n\n" << '\n';
         coords_x = (std::get<7>(tuple) + std::get<11>(tuple)) / 2;
         coords_y = (std::get<8>(tuple) + std::get<12>(tuple)) / 2;
         coords_z = (std::get<9>(tuple) + std::get<13>(tuple)) / 2;
