@@ -3,7 +3,6 @@ ttk_add_base_library(persistenceDiagramAuction
     PersistenceDiagramAuction.cpp
   HEADERS
     PersistenceDiagramAuction.h
-    PersistenceDiagramAuctionImpl.h
     PersistenceDiagramAuctionActor.h
   DEPENDS
     kdTree
