@@ -91,6 +91,7 @@ namespace ttk {
   class Good : public PersistenceDiagramAuctionActor {
   public:
     Good() = default;
+    Good(const Good &) = default;
     Good(double x, double y, bool is_diagonal, int id)
       : PersistenceDiagramAuctionActor(x, y, is_diagonal, id) {
     }
@@ -100,59 +101,47 @@ namespace ttk {
     // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
-    Good(const PairTuple &tuple, const int id, const double lambda)
-      : PersistenceDiagramAuctionActor{} {
+    Good(const PersistencePair &pair, const int id, const double lambda) {
+
       this->id_ = id;
+      this->SetCoordinates(pair.birth.sfValue, pair.death.sfValue);
+      this->geom_pair_length_ = {
+        std::abs(pair.birth.coords[0] - pair.death.coords[0]),
+        std::abs(pair.birth.coords[1] - pair.death.coords[1]),
+        std::abs(pair.birth.coords[2] - pair.death.coords[2]),
+      };
 
-      const auto type1 = std::get<1>(tuple);
-      const auto type2 = std::get<3>(tuple);
+      std::array<float, 3> coords{};
+      const float lb = lambda;
 
-      double x = std::get<6>(tuple);
-      double y = std::get<10>(tuple);
-      this->SetCoordinates(x, y);
-
-      double coords_x;
-      double coords_y;
-      double coords_z;
-
-      this->geom_pair_length_[0]
-        = std::abs(std::get<7>(tuple) - std::get<11>(tuple));
-      this->geom_pair_length_[1]
-        = std::abs(std::get<8>(tuple) - std::get<12>(tuple));
-      this->geom_pair_length_[2]
-        = std::abs(std::get<9>(tuple) - std::get<13>(tuple));
-
-      if(type2 == CriticalType::Local_maximum) {
-        coords_x
-          = (1 - lambda) * std::get<7>(tuple) + lambda * std::get<11>(tuple);
-        coords_y
-          = (1 - lambda) * std::get<8>(tuple) + lambda * std::get<12>(tuple);
-        coords_z
-          = (1 - lambda) * std::get<9>(tuple) + lambda * std::get<13>(tuple);
-      } else if(type1 == CriticalType::Local_minimum) {
-        coords_x
-          = lambda * std::get<7>(tuple) + (1 - lambda) * std::get<11>(tuple);
-        coords_y
-          = lambda * std::get<8>(tuple) + (1 - lambda) * std::get<12>(tuple);
-        coords_z
-          = lambda * std::get<9>(tuple) + (1 - lambda) * std::get<13>(tuple);
+      if(pair.death.type == CriticalType::Local_maximum) {
+        coords = {
+          (1.0f - lb) * pair.birth.coords[0] + lb * pair.death.coords[0],
+          (1.0f - lb) * pair.birth.coords[1] + lb * pair.death.coords[1],
+          (1.0f - lb) * pair.birth.coords[2] + lb * pair.death.coords[2],
+        };
+      } else if(pair.birth.type == CriticalType::Local_minimum) {
+        coords = {
+          lb * pair.birth.coords[0] + (1.0f - lb) * pair.death.coords[0],
+          lb * pair.birth.coords[1] + (1.0f - lb) * pair.death.coords[1],
+          lb * pair.birth.coords[2] + (1.0f - lb) * pair.death.coords[2],
+        };
       } else { // pair saddle-saddle
-        coords_x = (std::get<7>(tuple) + std::get<11>(tuple)) / 2;
-        coords_y = (std::get<8>(tuple) + std::get<12>(tuple)) / 2;
-        coords_z = (std::get<9>(tuple) + std::get<13>(tuple)) / 2;
+        coords = {
+          (pair.birth.coords[0] + pair.death.coords[0]) / 2.0f,
+          (pair.birth.coords[1] + pair.death.coords[1]) / 2.0f,
+          (pair.birth.coords[2] + pair.death.coords[2]) / 2.0f,
+        };
       }
 
-      this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
-      this->is_diagonal_ = x == y;
+      this->SetCriticalCoordinates(coords);
+      this->is_diagonal_ = (pair.birth.sfValue == pair.death.sfValue);
     }
 
-    Good(const PairTuple &tuple, const int id)
-      : PersistenceDiagramAuctionActor{} {
-      double x = std::get<6>(tuple);
-      double y = std::get<10>(tuple);
-      this->SetCoordinates(x, y);
+    Good(const PersistencePair &pair, const int id) {
+      this->SetCoordinates(pair.birth.sfValue, pair.death.sfValue);
       this->id_ = id;
-      this->is_diagonal_ = x == y;
+      this->is_diagonal_ = (pair.birth.sfValue == pair.death.sfValue);
     }
 
     inline void setPrice(const double price) {
@@ -200,53 +189,43 @@ namespace ttk {
       this->id_ = id;
     }
 
-    Bidder(const PairTuple &tuple, const int id, const double lambda)
-      : PersistenceDiagramAuctionActor{} {
+    Bidder(const PersistencePair &pair, const int id, const double lambda)
+      : diagonal_price_{}, price_paid_{} {
 
       this->id_ = id;
-      const auto type1 = std::get<1>(tuple);
-      const auto type2 = std::get<3>(tuple);
+      this->SetCoordinates(pair.birth.sfValue, pair.death.sfValue);
+      this->geom_pair_length_ = {
+        std::abs(pair.birth.coords[0] - pair.death.coords[0]),
+        std::abs(pair.birth.coords[1] - pair.death.coords[1]),
+        std::abs(pair.birth.coords[2] - pair.death.coords[2]),
+      };
 
-      double x = std::get<6>(tuple);
-      double y = std::get<10>(tuple);
-      this->SetCoordinates(x, y);
+      std::array<float, 3> coords{};
+      const float lb = lambda;
 
-      double coords_x;
-      double coords_y;
-      double coords_z;
-
-      this->geom_pair_length_[0]
-        = std::abs(std::get<7>(tuple) - std::get<11>(tuple));
-      this->geom_pair_length_[1]
-        = std::abs(std::get<8>(tuple) - std::get<12>(tuple));
-      this->geom_pair_length_[2]
-        = std::abs(std::get<9>(tuple) - std::get<13>(tuple));
-
-      if(type2 == CriticalType::Local_maximum) {
-        coords_x
-          = (1 - lambda) * std::get<7>(tuple) + lambda * std::get<11>(tuple);
-        coords_y
-          = (1 - lambda) * std::get<8>(tuple) + lambda * std::get<12>(tuple);
-        coords_z
-          = (1 - lambda) * std::get<9>(tuple) + lambda * std::get<13>(tuple);
-      } else if(type1 == CriticalType::Local_minimum) {
-        coords_x
-          = lambda * std::get<7>(tuple) + (1 - lambda) * std::get<11>(tuple);
-        coords_y
-          = lambda * std::get<8>(tuple) + (1 - lambda) * std::get<12>(tuple);
-        coords_z
-          = lambda * std::get<9>(tuple) + (1 - lambda) * std::get<13>(tuple);
+      if(pair.death.type == CriticalType::Local_maximum) {
+        coords = {
+          (1.0f - lb) * pair.birth.coords[0] + lb * pair.death.coords[0],
+          (1.0f - lb) * pair.birth.coords[1] + lb * pair.death.coords[1],
+          (1.0f - lb) * pair.birth.coords[2] + lb * pair.death.coords[2],
+        };
+      } else if(pair.birth.type == CriticalType::Local_minimum) {
+        coords = {
+          lb * pair.birth.coords[0] + (1.0f - lb) * pair.death.coords[0],
+          lb * pair.birth.coords[1] + (1.0f - lb) * pair.death.coords[1],
+          lb * pair.birth.coords[2] + (1.0f - lb) * pair.death.coords[2],
+        };
       } else { // pair saddle-saddle
-        coords_x = (std::get<7>(tuple) + std::get<11>(tuple)) / 2;
-        coords_y = (std::get<8>(tuple) + std::get<12>(tuple)) / 2;
-        coords_z = (std::get<9>(tuple) + std::get<13>(tuple)) / 2;
+        coords = {
+          (pair.birth.coords[0] + pair.death.coords[0]) / 2.0f,
+          (pair.birth.coords[1] + pair.death.coords[1]) / 2.0f,
+          (pair.birth.coords[2] + pair.death.coords[2]) / 2.0f,
+        };
       }
 
-      this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
-
-      this->is_diagonal_ = std::abs(x - y) < Geometry::powIntTen<double>(-12);
-      price_paid_ = 0;
-      diagonal_price_ = 0;
+      this->SetCriticalCoordinates(coords);
+      this->is_diagonal_ = std::abs(pair.birth.sfValue - pair.death.sfValue)
+                           < Geometry::powIntTen<double>(-12);
     }
 
     // Off-diagonal Bidding (with or without the use of a KD-Tree
