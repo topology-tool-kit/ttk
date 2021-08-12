@@ -127,12 +127,13 @@ int generateMatchings(vtkUnstructuredGrid *const outputCT3,
     const auto &pair0 = diagram1[n1];
     const auto &pair1 = diagram2[n2];
 
-    const auto pairPoint = [](const ttk::PairTuple &pair, const bool is2D,
+    const auto pairPoint = [](const ttk::PersistencePair &pair, const bool is2D,
                               const double zval) -> std::array<double, 3> {
       if(is2D) {
-        return {std::get<6>(pair), std::get<10>(pair), zval};
+        return {pair.birth.sfValue, pair.death.sfValue, zval};
       } else {
-        return {std::get<11>(pair), std::get<12>(pair), std::get<13>(pair)};
+        return {
+          pair.death.coords[0], pair.death.coords[1], pair.death.coords[2]};
       }
     };
 

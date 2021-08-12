@@ -109,21 +109,20 @@ void ttk::BottleneckDistance::buildCostMatrices(
   int sadI = 0, sadJ = 0;
 
   for(int i = 0; i < d1Size; ++i) {
-    const auto &t1 = CTDiagram1[i];
-    if(std::abs(std::get<4>(t1)) < zeroThresh)
+    const auto &p1 = CTDiagram1[i];
+    if(std::abs(p1.persistence) < zeroThresh)
       continue;
 
-    const auto t11 = std::get<1>(t1);
-    const auto t13 = std::get<3>(t1);
-    bool isMin1 = (t11 == CriticalType::Local_minimum
-                   || t13 == CriticalType::Local_minimum);
-    bool isMax1 = (t11 == CriticalType::Local_maximum
-                   || t13 == CriticalType::Local_maximum);
-    bool isSad1
-      = (t11 == CriticalType::Saddle1 && t13 == CriticalType::Saddle2)
-        || (t11 == CriticalType::Saddle2 && t13 == CriticalType::Saddle1);
-    if(t11 == CriticalType::Local_minimum
-       && t13 == CriticalType::Local_maximum) {
+    bool isMin1 = (p1.birth.type == CriticalType::Local_minimum
+                   || p1.death.type == CriticalType::Local_minimum);
+    bool isMax1 = (p1.birth.type == CriticalType::Local_maximum
+                   || p1.death.type == CriticalType::Local_maximum);
+    bool isSad1 = (p1.birth.type == CriticalType::Saddle1
+                   && p1.death.type == CriticalType::Saddle2)
+                  || (p1.birth.type == CriticalType::Saddle2
+                      && p1.death.type == CriticalType::Saddle1);
+    if(p1.birth.type == CriticalType::Local_minimum
+       && p1.death.type == CriticalType::Local_maximum) {
       isMin1 = false;
       isMax1 = true;
     }
@@ -133,30 +132,29 @@ void ttk::BottleneckDistance::buildCostMatrices(
     sadJ = 0;
 
     for(int j = 0; j < d2Size; ++j) {
-      const auto &t2 = CTDiagram2[j];
-      if(std::abs(std::get<4>(t2)) < zeroThresh)
+      const auto &p2 = CTDiagram2[j];
+      if(std::abs(p2.persistence) < zeroThresh)
         continue;
 
-      const auto t21 = std::get<1>(t2);
-      const auto t23 = std::get<3>(t2);
-      bool isMin2 = (t21 == CriticalType::Local_minimum
-                     || t23 == CriticalType::Local_minimum);
-      bool isMax2 = (t21 == CriticalType::Local_maximum
-                     || t23 == CriticalType::Local_maximum);
-      bool isSad2
-        = (t21 == CriticalType::Saddle1 && t23 == CriticalType::Saddle2)
-          || (t21 == CriticalType::Saddle2 && t23 == CriticalType::Saddle1);
-      if(t21 == CriticalType::Local_minimum
-         && t23 == CriticalType::Local_maximum) {
+      bool isMin2 = (p2.birth.type == CriticalType::Local_minimum
+                     || p2.death.type == CriticalType::Local_minimum);
+      bool isMax2 = (p2.birth.type == CriticalType::Local_maximum
+                     || p2.death.type == CriticalType::Local_maximum);
+      bool isSad2 = (p2.birth.type == CriticalType::Saddle1
+                     && p2.death.type == CriticalType::Saddle2)
+                    || (p2.birth.type == CriticalType::Saddle2
+                        && p2.death.type == CriticalType::Saddle1);
+      if(p2.birth.type == CriticalType::Local_minimum
+         && p2.death.type == CriticalType::Local_maximum) {
         isMin2 = false;
         isMax2 = true;
       }
       if((isMin1 && !isMin2) || (isMax1 && !isMax2) || (isSad1 && !isSad2))
         continue;
 
-      double distance = distanceFunction(t1, t2);
-      double diag1 = diagonalDistanceFunction(t1);
-      double diag2 = diagonalDistanceFunction(t2);
+      double distance = distanceFunction(p1, p2);
+      double diag1 = diagonalDistanceFunction(p1);
+      double diag2 = diagonalDistanceFunction(p2);
 
       if(distance > diag1 + diag2)
         distance = std::numeric_limits<double>::max();
@@ -179,7 +177,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
       }
     }
 
-    double distanceToDiagonal = diagonalDistanceFunction(t1);
+    double distanceToDiagonal = diagonalDistanceFunction(p1);
     if(isMin1) {
       if(reverseMin)
         minMatrix[minJ++][minI] = distanceToDiagonal;
@@ -213,26 +211,25 @@ void ttk::BottleneckDistance::buildCostMatrices(
 
   // Last row: match remaining J components with diagonal.
   for(int j = 0; j < d2Size; ++j) {
-    const auto &t2 = CTDiagram2[j];
-    if(std::abs(std::get<4>(t2)) < zeroThresh)
+    const auto &p3 = CTDiagram2[j];
+    if(std::abs(p3.persistence) < zeroThresh)
       continue;
 
-    const auto t21 = std::get<1>(t2);
-    const auto t23 = std::get<3>(t2);
-    bool isMin2 = (t21 == CriticalType::Local_minimum
-                   || t23 == CriticalType::Local_minimum);
-    bool isMax2 = (t21 == CriticalType::Local_maximum
-                   || t23 == CriticalType::Local_maximum);
-    bool isSad2
-      = (t21 == CriticalType::Saddle1 && t23 == CriticalType::Saddle2)
-        || (t21 == CriticalType::Saddle2 && t23 == CriticalType::Saddle1);
-    if(t21 == CriticalType::Local_minimum
-       && t23 == CriticalType::Local_maximum) {
+    bool isMin2 = (p3.birth.type == CriticalType::Local_minimum
+                   || p3.death.type == CriticalType::Local_minimum);
+    bool isMax2 = (p3.birth.type == CriticalType::Local_maximum
+                   || p3.death.type == CriticalType::Local_maximum);
+    bool isSad2 = (p3.birth.type == CriticalType::Saddle1
+                   && p3.death.type == CriticalType::Saddle2)
+                  || (p3.birth.type == CriticalType::Saddle2
+                      && p3.death.type == CriticalType::Saddle1);
+    if(p3.birth.type == CriticalType::Local_minimum
+       && p3.death.type == CriticalType::Local_maximum) {
       isMin2 = false;
       isMax2 = true;
     }
 
-    double distanceToDiagonal = diagonalDistanceFunction(t2);
+    double distanceToDiagonal = diagonalDistanceFunction(p3);
     if(isMin2) {
       if(reverseMin)
         minMatrix[minJ++][minI] = distanceToDiagonal;
@@ -279,44 +276,46 @@ double ttk::BottleneckDistance::computeGeometricalRange(
   const ttk::DiagramType &CTDiagram2,
   const int d1Size,
   const int d2Size) const {
-  float minX1, maxX1, minY1, maxY1, minZ1, maxZ1;
-  float minX2, maxX2, minY2, maxY2, minZ2, maxZ2;
+
   float minX, minY, minZ, maxX, maxY, maxZ;
-  minX1 = minY1 = minZ1 = minX2 = minY2 = minZ2
-    = std::numeric_limits<float>::max();
-  maxX1 = maxY1 = maxZ1 = maxX2 = maxY2 = maxZ2
-    = std::numeric_limits<float>::min();
 
-  for(int i = 0; i < d1Size; ++i) {
-    const auto &t = CTDiagram1[i];
-    float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
-    float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
-    minX1 = std::min(std::min(minX1, xa), xb);
-    minY1 = std::min(std::min(minY1, ya), yb);
-    minZ1 = std::min(std::min(minZ1, za), zb);
-    maxX1 = std::max(std::max(maxX1, xa), xb);
-    maxY1 = std::max(std::max(maxY1, ya), yb);
-    maxZ1 = std::max(std::max(maxZ1, za), zb);
+  std::array<float, 3> min1{
+    std::numeric_limits<float>::max(),
+    std::numeric_limits<float>::max(),
+    std::numeric_limits<float>::max(),
+  },
+    min2 = min1;
+  std::array<float, 3> max1{
+    std::numeric_limits<float>::lowest(),
+    std::numeric_limits<float>::lowest(),
+    std::numeric_limits<float>::lowest(),
+  },
+    max2 = max1;
+
+  for(const auto &p : CTDiagram1) {
+    min1[0] = std::min(std::min(min1[0], p.birth.coords[0]), p.death.coords[0]);
+    min1[1] = std::min(std::min(min1[1], p.birth.coords[1]), p.death.coords[1]);
+    min1[2] = std::min(std::min(min1[2], p.birth.coords[2]), p.death.coords[2]);
+    max1[0] = std::max(std::max(max1[0], p.birth.coords[0]), p.birth.coords[0]);
+    max1[1] = std::max(std::max(max1[1], p.birth.coords[1]), p.birth.coords[1]);
+    max1[2] = std::max(std::max(max1[2], p.birth.coords[2]), p.birth.coords[2]);
   }
 
-  for(int i = 0; i < d2Size; ++i) {
-    const auto &t = CTDiagram2[i];
-    float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
-    float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
-    minX2 = std::min(std::min(minX2, xa), xb);
-    minY2 = std::min(std::min(minY2, ya), yb);
-    minZ2 = std::min(std::min(minZ2, za), zb);
-    maxX2 = std::max(std::max(maxX2, xa), xb);
-    maxY2 = std::max(std::max(maxY2, ya), yb);
-    maxZ2 = std::max(std::max(maxZ2, za), zb);
+  for(const auto &p : CTDiagram2) {
+    min2[0] = std::min(std::min(min2[0], p.birth.coords[0]), p.death.coords[0]);
+    min2[1] = std::min(std::min(min2[1], p.birth.coords[1]), p.death.coords[1]);
+    min2[2] = std::min(std::min(min2[2], p.birth.coords[2]), p.death.coords[2]);
+    max2[0] = std::max(std::max(max2[0], p.birth.coords[0]), p.birth.coords[0]);
+    max2[1] = std::max(std::max(max2[1], p.birth.coords[1]), p.birth.coords[1]);
+    max2[2] = std::max(std::max(max2[2], p.birth.coords[2]), p.birth.coords[2]);
   }
 
-  minX = std::min(minX1, minX2);
-  maxX = std::max(maxX1, maxX2);
-  minY = std::min(minY1, minY2);
-  maxY = std::max(maxY1, maxY2);
-  minZ = std::min(minZ1, minZ2);
-  maxZ = std::max(maxZ1, maxZ2);
+  minX = std::min(min1[0], min2[0]);
+  minY = std::min(min1[1], min2[1]);
+  minZ = std::min(min1[2], min2[2]);
+  maxX = std::max(max1[0], max2[0]);
+  maxY = std::max(max1[1], max2[1]);
+  maxZ = std::max(max1[2], max2[2]);
 
   return std::sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
                    + Geometry::pow(maxZ - minZ, 2));
@@ -334,12 +333,12 @@ double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
   std::vector<double> toSort;
   for(int i = 0; i < d1Size; ++i) {
     const auto &t = CTDiagram1[i];
-    const auto persistence = std::abs(std::get<4>(t));
+    const auto persistence = std::abs(t.persistence);
     toSort.push_back(persistence);
   }
   for(int i = 0; i < d2Size; ++i) {
     const auto &t = CTDiagram2[i];
-    const auto persistence = std::abs(std::get<4>(t));
+    const auto persistence = std::abs(t.persistence);
     toSort.push_back(persistence);
   }
   sort(toSort.begin(), toSort.end());
@@ -374,9 +373,9 @@ void ttk::BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
 
   for(int i = 0; i < dSize; ++i) {
     const auto &t = CTDiagram[i];
-    const auto nt1 = std::get<1>(t);
-    const auto nt2 = std::get<3>(t);
-    const auto dt = std::get<4>(t);
+    const auto nt1 = t.birth.type;
+    const auto nt2 = t.death.type;
+    const auto dt = t.persistence;
     if(std::abs(dt) < zeroThresh)
       continue;
 
@@ -553,11 +552,11 @@ int ttk::BottleneckDistance::computeBottleneck(
   double pe = pe_;
   double ps = ps_;
 
-  const auto distanceFunction
-    = [wasserstein, px, py, pz, pe, ps](
-        const ttk::PairTuple &a, const ttk::PairTuple &b) -> double {
-    const auto ta1 = std::get<1>(a);
-    const auto ta2 = std::get<3>(a);
+  const auto distanceFunction = [wasserstein, px, py, pz, pe, ps](
+                                  const ttk::PersistencePair &a,
+                                  const ttk::PersistencePair &b) -> double {
+    const auto ta1 = a.birth.type;
+    const auto ta2 = a.death.type;
     const int w = wasserstein > 1 ? wasserstein : 1; // L_inf not managed.
 
     // We don't match critical points of different index.
@@ -568,34 +567,37 @@ int ttk::BottleneckDistance::computeBottleneck(
     bool isMax1 = ta2 == CriticalType::Local_maximum;
     // bool isBoth = isMin1 && isMax1;
 
-    const auto rX = std::get<6>(a);
-    const auto rY = std::get<10>(a);
-    const auto cX = std::get<6>(b);
-    const auto cY = std::get<10>(b);
+    const auto rX = a.birth.sfValue;
+    const auto rY = a.death.sfValue;
+    const auto cX = b.birth.sfValue;
+    const auto cY = b.death.sfValue;
     const auto x
       = ((isMin1 && !isMax1) ? pe : ps) * Geometry::pow(std::abs(rX - cX), w);
     const auto y = (isMax1 ? pe : ps) * Geometry::pow(std::abs(rY - cY), w);
     double geoDistance
-      = isMax1
-          ? (px * Geometry::pow(abs(std::get<11>(a) - std::get<11>(b)), w)
-             + py * Geometry::pow(abs(std::get<12>(a) - std::get<12>(b)), w)
-             + pz * Geometry::pow(abs(std::get<13>(a) - std::get<13>(b)), w))
-        : isMin1
-          ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
-             + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
-             + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
-          : (px
-               * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
-                                 - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                               w)
-             + py
-                 * Geometry::pow(abs(std::get<8>(a) + std::get<12>(a)) / 2
-                                   - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                                 w)
-             + pz
-                 * Geometry::pow(abs(std::get<9>(a) + std::get<13>(a)) / 2
-                                   - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                                 w));
+      = isMax1 ? (
+          px * Geometry::pow(abs(a.death.coords[0] - b.death.coords[0]), w)
+          + py * Geometry::pow(abs(a.death.coords[1] - b.death.coords[1]), w)
+          + pz * Geometry::pow(abs(a.death.coords[2] - b.death.coords[2]), w))
+        : isMin1 ? (
+            px * Geometry::pow(abs(a.birth.coords[0] - b.birth.coords[0]), w)
+            + py * Geometry::pow(abs(a.birth.coords[1] - b.birth.coords[1]), w)
+            + pz * Geometry::pow(abs(a.birth.coords[2] - b.birth.coords[2]), w))
+                 : (px
+                      * Geometry::pow(
+                        abs(a.birth.coords[0] + a.death.coords[0]) / 2
+                          - abs(b.birth.coords[0] + b.death.coords[0]) / 2,
+                        w)
+                    + py
+                        * Geometry::pow(
+                          abs(a.birth.coords[1] + a.death.coords[1]) / 2
+                            - abs(b.birth.coords[1] + b.death.coords[1]) / 2,
+                          w)
+                    + pz
+                        * Geometry::pow(
+                          abs(a.birth.coords[2] + a.death.coords[2]) / 2
+                            - abs(b.birth.coords[2] + b.death.coords[2]) / 2,
+                          w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
@@ -603,22 +605,22 @@ int ttk::BottleneckDistance::computeBottleneck(
     return val;
   };
 
-  const auto diagonalDistanceFunction
-    = [wasserstein, px, py, pz, ps, pe](const ttk::PairTuple a) -> double {
-    const auto ta1 = std::get<1>(a);
-    const auto ta2 = std::get<3>(a);
+  const auto diagonalDistanceFunction =
+    [wasserstein, px, py, pz, ps, pe](const ttk::PersistencePair a) -> double {
+    const auto ta1 = a.birth.type;
+    const auto ta2 = a.death.type;
     const int w = wasserstein > 1 ? wasserstein : 1;
     bool isMin1 = ta1 == CriticalType::Local_minimum;
     bool isMax1 = ta2 == CriticalType::Local_maximum;
 
-    const auto rX = std::get<6>(a);
-    const auto rY = std::get<10>(a);
-    double x1 = std::get<7>(a);
-    double y1 = std::get<8>(a);
-    double z1 = std::get<9>(a);
-    double x2 = std::get<11>(a);
-    double y2 = std::get<12>(a);
-    double z2 = std::get<13>(a);
+    const auto rX = a.birth.sfValue;
+    const auto rY = a.death.sfValue;
+    double x1 = a.birth.coords[0];
+    double y1 = a.birth.coords[1];
+    double z1 = a.birth.coords[2];
+    double x2 = a.death.coords[0];
+    double y2 = a.death.coords[1];
+    double z2 = a.death.coords[2];
 
     double infDistance
       = (isMin1 || isMax1 ? pe : ps) * Geometry::pow(std::abs(rX - rY), w);
