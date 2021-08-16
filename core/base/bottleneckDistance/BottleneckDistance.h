@@ -8,6 +8,9 @@
 #include <PersistenceDiagramUtils.h>
 
 namespace ttk {
+  constexpr unsigned long long str2int(const char *str, int h = 0) {
+    return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
+  }
 
   class BottleneckDistance : virtual public Debug {
   public:
@@ -15,35 +18,34 @@ namespace ttk {
 
     int execute(const ttk::DiagramType &diag0,
                 const ttk::DiagramType &diag1,
-                std::vector<MatchingType> &matchings,
-                const bool usePersistenceMetric);
+                std::vector<MatchingType> &matchings);
 
     inline void setPersistencePercentThreshold(const double t) {
-      zeroThreshold_ = t;
+      Tolerance = t;
     }
     inline void setPX(const double px) {
-      px_ = px;
+      PX = px;
     }
     inline void setPY(const double py) {
-      py_ = py;
+      PY = py;
     }
     inline void setPZ(const double pz) {
-      pz_ = pz;
+      PZ = pz;
     }
     inline void setPE(const double pe) {
-      pe_ = pe;
+      PE = pe;
     }
     inline void setPS(const double ps) {
-      ps_ = ps;
+      PS = ps;
     }
     inline void setAlgorithm(const std::string &algorithm) {
-      algorithm_ = algorithm;
+      DistanceAlgorithm = algorithm;
     }
     inline void setPVAlgorithm(const int algorithm) {
-      pvAlgorithm_ = algorithm;
+      PVAlgorithm = algorithm;
     }
     inline void setWasserstein(const std::string &wasserstein) {
-      wasserstein_ = wasserstein;
+      WassersteinMetric = wasserstein;
     }
 
     double getDistance() {
@@ -53,34 +55,35 @@ namespace ttk {
   protected:
     double distance_{-1.0};
 
-    std::string wasserstein_{"inf"};
-    std::string algorithm_{};
-    int pvAlgorithm_{-1};
-    double zeroThreshold_{};
-    double px_{};
-    double py_{};
-    double pz_{};
-    double pe_{};
-    double ps_{};
+    std::string WassersteinMetric{"2"};
+    std::string DistanceAlgorithm{};
+    int PVAlgorithm{-1};
+    double Tolerance{1.0};
+    double PX{0.0};
+    double PY{0.0};
+    double PZ{0.0};
+    double PE{1.0};
+    double PS{1.0};
 
   private:
     int computeBottleneck(const ttk::DiagramType &d1,
                           const ttk::DiagramType &d2,
-                          std::vector<MatchingType> &matchings,
-                          bool usePersistenceMetric);
+                          std::vector<MatchingType> &matchings);
 
     double computeGeometricalRange(const ttk::DiagramType &CTDiagram1,
-                                   const ttk::DiagramType &CTDiagram2,
-                                   int d1Size,
-                                   int d2Size) const;
+                                   const ttk::DiagramType &CTDiagram2) const;
 
-    double computeMinimumRelevantPersistence(const ttk::DiagramType &CTDiagram1,
-                                             const ttk::DiagramType &CTDiagram2,
-                                             int d1Size,
-                                             int d2Size) const;
+    double computeMinimumRelevantPersistence(
+      const ttk::DiagramType &CTDiagram1,
+      const ttk::DiagramType &CTDiagram2) const;
+
+    double distanceFunction(const PersistencePair &a,
+                            const PersistencePair &b,
+                            const int wasserstein) const;
+    double diagonalDistanceFunction(const PersistencePair &a,
+                                    const int wasserstein) const;
 
     void computeMinMaxSaddleNumberAndMapping(const ttk::DiagramType &CTDiagram,
-                                             int dSize,
                                              int &nbMin,
                                              int &nbMax,
                                              int &nbSaddle,
@@ -89,13 +92,8 @@ namespace ttk {
                                              std::vector<int> &sadMap,
                                              const double zeroThresh) const;
 
-    template <typename distFuncType, typename diagFuncType>
     void buildCostMatrices(const ttk::DiagramType &CTDiagram1,
                            const ttk::DiagramType &CTDiagram2,
-                           int d1Size,
-                           int d2Size,
-                           const distFuncType &distanceFunction,
-                           const diagFuncType &diagonalDistanceFunction,
                            double zeroThresh,
                            std::vector<std::vector<double>> &minMatrix,
                            std::vector<std::vector<double>> &maxMatrix,

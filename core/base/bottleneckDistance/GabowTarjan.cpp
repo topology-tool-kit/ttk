@@ -77,7 +77,7 @@ void ttk::GabowTarjan::HopcroftKarp(unsigned int &matching) {
     }
 }
 
-double ttk::GabowTarjan::Distance(double ttkNotUsed(maxLevel)) {
+double ttk::GabowTarjan::Distance() {
   // Clear the pairing
   Pair.clear();
   Pair.assign(2 * MaxSize, -1);
@@ -232,7 +232,7 @@ void ttk::GabowTarjan::printCurrentMatching() {
 
 int ttk::GabowTarjan::run(std::vector<MatchingType> &matchings) {
   // Compute distance.
-  double dist = Distance(1.0);
+  double dist = this->Distance();
   this->printMsg("Computed distance " + std::to_string(dist));
 
   // Fill matchings.

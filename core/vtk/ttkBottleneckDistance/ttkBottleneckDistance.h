@@ -35,9 +35,6 @@ public:
 
   vtkTypeMacro(ttkBottleneckDistance, ttkAlgorithm);
 
-  vtkSetMacro(Alpha, double);
-  vtkGetMacro(Alpha, double);
-
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
 
@@ -58,9 +55,6 @@ public:
 
   vtkSetMacro(UseOutputMatching, bool);
   vtkGetMacro(UseOutputMatching, bool);
-
-  vtkSetMacro(UsePersistenceMetric, bool);
-  vtkGetMacro(UsePersistenceMetric, bool);
 
   vtkSetMacro(WassersteinMetric, const std::string &);
   vtkGetMacro(WassersteinMetric, std::string);
@@ -91,18 +85,7 @@ protected:
   ttkBottleneckDistance();
 
 private:
-  bool UseOutputMatching{false};
   double Spacing{0.0};
-  double Alpha{1.0};
-  double Tolerance{1.0};
-  double PX{0.0};
-  double PY{0.0};
-  double PZ{0.0};
-  double PE{1.0};
-  double PS{1.0};
-  std::string DistanceAlgorithm{};
-  std::string WassersteinMetric{"2"};
-  bool UsePersistenceMetric{false};
+  bool UseOutputMatching{false};
   bool UseGeometricSpacing{false};
-  int PVAlgorithm{-1};
 };

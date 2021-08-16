@@ -42,9 +42,7 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-int augmentDiagrams(const ttk::DiagramType &diag0,
-                    const ttk::DiagramType &diag1,
-                    const std::vector<ttk::MatchingType> &matchings,
+int augmentDiagrams(const std::vector<ttk::MatchingType> &matchings,
                     vtkUnstructuredGrid *const vtu0,
                     vtkUnstructuredGrid *const vtu1) {
 
@@ -157,21 +155,12 @@ int generateMatchings(vtkUnstructuredGrid *const outputCT3,
   return 1;
 }
 
-int ttkBottleneckDistance::RequestData(vtkInformation *request,
+int ttkBottleneckDistance::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 
   auto outputDiagrams = vtkMultiBlockDataSet::GetData(outputVector, 0);
   auto outputMatchings = vtkUnstructuredGrid::GetData(outputVector, 1);
-
-  // Wrap
-  // this->setWrapper(this);
-  this->setPersistencePercentThreshold(Tolerance);
-  this->setPX(PX);
-  this->setPY(PY);
-  this->setPZ(PZ);
-  this->setPE(PE);
-  this->setPS(PS);
 
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0]);
   std::vector<vtkUnstructuredGrid *> inputDiags{};
@@ -223,13 +212,8 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     return 0;
   }
 
-  this->setWasserstein(this->WassersteinMetric);
-  this->setAlgorithm(this->DistanceAlgorithm);
-  this->setPVAlgorithm(this->PVAlgorithm);
-
   // Exec.
-  status
-    = this->execute(diagram0, diagram1, matchings, this->UsePersistenceMetric);
+  status = this->execute(diagram0, diagram1, matchings);
   if(status != 0) {
     this->printErr("Base layer failed with error status "
                    + std::to_string(status));
@@ -258,7 +242,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
   }
 
   // Add matchings infos on diagrams
-  status = augmentDiagrams(diagram0, diagram1, matchings, vtu0, vtu1);
+  status = augmentDiagrams(matchings, vtu0, vtu1);
   if(status != 1) {
     this->printErr("Could not augment diagrams");
     return 0;

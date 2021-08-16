@@ -9,10 +9,6 @@
 #include <queue>
 #include <vector>
 
-#ifndef matchingTuple
-#define matchingTuple std::tuple<int, int, dataType>
-#endif
-
 namespace ttk {
 
   class GabowTarjan : public Debug {
@@ -35,8 +31,7 @@ namespace ttk {
       this->setDebugMsgPrefix("Gabow-Tarjan");
     }
 
-
-    double Distance(double maxLevel);
+    double Distance();
 
     void printCurrentMatching();
 
@@ -143,4 +138,3 @@ namespace ttk {
   };
 
 } // namespace ttk
-
