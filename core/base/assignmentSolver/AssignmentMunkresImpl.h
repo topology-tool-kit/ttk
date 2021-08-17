@@ -6,7 +6,7 @@
 
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::run(
-  std::vector<asgnMatchingTuple> &matchings) {
+  std::vector<MatchingType> &matchings) {
   int step = 1;
   int iter = 0;
   int maxIter = 100000;
@@ -510,7 +510,7 @@ int ttk::AssignmentMunkres<dataType>::stepSeven(int &ttkNotUsed(step)) {
 
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::affect(
-  std::vector<asgnMatchingTuple> &matchings,
+  std::vector<MatchingType> &matchings,
   const std::vector<std::vector<dataType>> &C) {
   int nbC = this->colSize;
   int nbR = this->rowSize;
@@ -520,8 +520,7 @@ int ttk::AssignmentMunkres<dataType>::affect(
   for(int r = 0; r < nbR; ++r)
     for(int c = 0; c < nbC; ++c)
       if(M[r][c] == 1) {
-        asgnMatchingTuple t = std::make_tuple(r, c, C[r][c]);
-        matchings.push_back(t);
+        matchings.emplace_back(r, c, C[r][c]);
         // Use row cover to match to last column diagonal.
         if(r < nbR - 1)
           rowCover[r] = true;
@@ -531,8 +530,7 @@ int ttk::AssignmentMunkres<dataType>::affect(
   for(int r = 0; r < nbR - 1; ++r) {
     // Match to diagonal.
     if(!rowCover[r]) {
-      asgnMatchingTuple t = std::make_tuple(r, nbC - 1, C[r][nbC - 1]);
-      matchings.push_back(t);
+      matchings.emplace_back(r, nbC - 1, C[r][nbC - 1]);
     }
     // Ensure row covers are cleared.
     else {

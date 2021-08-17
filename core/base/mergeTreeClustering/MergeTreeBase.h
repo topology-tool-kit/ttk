@@ -1322,9 +1322,9 @@ namespace ttk {
       printTableVector<dataType>(vec);
     }
 
-    void printMatching(std::vector<asgnMatchingTuple> &matchings) {
+    void printMatching(std::vector<MatchingType> &matchings) {
       printMsg(debug::Separator::L2);
-      for(asgnMatchingTuple mTuple : matchings) {
+      for(const auto &mTuple : matchings) {
         std::stringstream ss;
         ss << std::get<0>(mTuple) << " - " << std::get<1>(mTuple) << " - "
            << std::get<2>(mTuple);

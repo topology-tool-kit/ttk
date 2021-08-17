@@ -1,7 +1,7 @@
 ttk_add_base_library(assignmentSolver
-  SOURCES 
+  SOURCES
     AssignmentSolver.cpp
-  HEADERS 
+  HEADERS
     AssignmentSolver.h
     AssignmentAuction.h
     AssignmentExhaustive.h
@@ -9,4 +9,5 @@ ttk_add_base_library(assignmentSolver
     AssignmentMunkresImpl.h
   DEPENDS
    triangulation
+   persistenceDiagram
 )
