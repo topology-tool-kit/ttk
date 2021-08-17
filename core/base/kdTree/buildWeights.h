@@ -147,6 +147,5 @@ namespace ttk {
       this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                    correspondance_map, weights, weight_number);
     }
-    return;
   }
 } // namespace ttk

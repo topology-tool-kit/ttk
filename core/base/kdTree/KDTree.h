@@ -60,26 +60,26 @@ namespace ttk {
         include_weights_{father->include_weights_}, parent_{father} {
     }
 
-    KDTreeMap build(dataType *coordinates,
+    KDTreeMap build(dataType *data,
                     const int &ptNumber,
                     const int &dimension,
                     const int weight_number = 1);
-    KDTreeMap build(dataType *coordinates,
+    KDTreeMap build(dataType *data,
                     const int &ptNumber,
                     const int &dimension,
                     std::vector<std::vector<dataType>> &weights,
                     const int weight_number = 1);
 
-    void buildRecursive(dataType *coordinates,
-                        std::vector<int> indexes,
+    void buildRecursive(dataType *data,
+                        std::vector<int> idx_side,
                         const int &ptNumber,
                         const int &dimension,
                         KDTree<dataType> *parent,
                         KDTreeMap &correspondance_map,
                         std::vector<std::vector<dataType>> &weights,
                         const int weight_number = 1);
-    void buildRecursive(dataType *coordinates,
-                        std::vector<int> indexes,
+    void buildRecursive(dataType *data,
+                        std::vector<int> idx_side,
                         const int &ptNumber,
                         const int &dimension,
                         KDTree<dataType> *parent,
@@ -108,11 +108,6 @@ namespace ttk {
 
     bool isLeaf();
     bool isRoot();
-
-    template <typename type>
-    inline static type abs(const type var) {
-      return (var > 0) ? var : -var;
-    }
   };
 
   template <typename dataType>
@@ -261,7 +256,6 @@ namespace ttk {
       this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                    correspondance_map, weight_number);
     }
-    return;
   }
 
   template <typename dataType>
@@ -317,7 +311,6 @@ namespace ttk {
         k, coordinates, neighbours, costs, weight_index);
     }
     // TODO sort neighbours and costs !
-    return;
   }
 
   template <typename dataType>
@@ -373,14 +366,13 @@ namespace ttk {
           k, coordinates, neighbours, costs, weight_index);
       }
     }
-    return;
   }
 
   template <typename dataType>
   dataType KDTree<dataType>::cost(const std::vector<dataType> &coordinates) {
     dataType cost = 0;
     for(size_t i = 0; i < coordinates.size(); i++) {
-      cost += Geometry::pow(abs(coordinates[i] - coordinates_[i]), p_);
+      cost += Geometry::pow(std::abs(coordinates[i] - coordinates_[i]), p_);
     }
     return cost;
   }
@@ -412,4 +404,5 @@ namespace ttk {
     return parent_ == nullptr;
   }
 } // namespace ttk
+
 #include <buildWeights.h>
