@@ -173,6 +173,8 @@ std::pair<float, std::vector<std::shared_ptr<AlignmentNode>>>
 /// iterated aligning
 ///=====================================================================================================================
 
+using ttk::cta::ContourTree;
+
 bool ttk::ContourTreeAlignment::initialize(
   const std::shared_ptr<ContourTree> &ct) {
 

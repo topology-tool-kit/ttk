@@ -125,6 +125,8 @@ namespace ttk {
                 vector<int> &outputEdges,
                 int seed);
 
+    using ContourTree = cta::ContourTree;
+
     /// functions for aligning single trees in iteration
     bool alignTree(const std::shared_ptr<ContourTree> &t);
     bool initialize(const std::shared_ptr<ContourTree> &t);

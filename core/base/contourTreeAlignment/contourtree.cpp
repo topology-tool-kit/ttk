@@ -3,6 +3,8 @@
 #include <cmath>
 #include <float.h>
 
+using ttk::cta::ContourTree;
+
 ContourTree::ContourTree(float *scalars,
                          int *regionSizes,
                          int *segmentationIds,
