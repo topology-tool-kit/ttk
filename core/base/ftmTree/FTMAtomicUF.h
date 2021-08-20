@@ -12,8 +12,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef ATOMICUF_H
-#define ATOMICUF_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -188,5 +187,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: ATOMICUF_H */
