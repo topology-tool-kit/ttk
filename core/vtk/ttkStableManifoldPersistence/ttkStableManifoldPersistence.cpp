@@ -282,7 +282,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
 }
 
 int ttkStableManifoldPersistence::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

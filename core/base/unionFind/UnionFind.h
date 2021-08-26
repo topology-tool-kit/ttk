@@ -24,18 +24,18 @@ namespace ttk {
 
     inline bool operator<(const UnionFind &other) const {
       return rank_ < other.rank_;
-    };
+    }
 
     inline bool operator>(const UnionFind &other) const {
       return rank_ > other.rank_;
-    };
+    }
 
     // 2) functions
     inline UnionFind *find();
 
     inline int getRank() const {
       return rank_;
-    };
+    }
 
     static inline UnionFind *makeUnion(UnionFind *uf0, UnionFind *uf1) {
       uf0 = uf0->find();
@@ -73,11 +73,11 @@ namespace ttk {
 
     inline void setParent(UnionFind *parent) {
       parent_ = parent;
-    };
+    }
 
     inline void setRank(const int &rank) {
       rank_ = rank;
-    };
+    }
 
   protected:
     int rank_{};

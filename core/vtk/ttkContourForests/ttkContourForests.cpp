@@ -1114,7 +1114,7 @@ void ttkContourForests::updateTree() {
   toUpdateTree_ = false;
 }
 
-int ttkContourForests::RequestData(vtkInformation *request,
+int ttkContourForests::RequestData(vtkInformation *ttkNotUsed(request),
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
   vtkWarningMacro(

@@ -103,7 +103,7 @@ namespace ttk {
   public:
     Memory() {
       initialMemory_ = OsCall::getMemoryInstantUsage();
-    };
+    }
 
     inline float getInitialMemoryUsage() {
       return initialMemory_;
@@ -126,7 +126,7 @@ namespace ttk {
   public:
     Timer() {
       start_ = getTimeStamp();
-    };
+    }
 
     Timer(const Timer &other) {
       start_ = other.start_;
@@ -136,7 +136,7 @@ namespace ttk {
 
       double end = getTimeStamp();
       return end - start_;
-    };
+    }
 
     inline double getStartTime() {
       return start_;

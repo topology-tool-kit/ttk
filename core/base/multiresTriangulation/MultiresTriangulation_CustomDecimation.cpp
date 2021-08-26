@@ -202,7 +202,7 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dA(
   const int id,
   const SimplexId shiftX,
   const SimplexId shiftY,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(a)={b,c}
   switch(id) {
     case 0:
@@ -217,7 +217,7 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dB(
   const int id,
   const SimplexId shiftX,
   const SimplexId shiftY,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(b)={a,c,d}
   switch(id) {
     case 0:
@@ -235,7 +235,7 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dC(
   const int id,
   const SimplexId shiftX,
   const SimplexId shiftY,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(c)={a,b,d}
   switch(id) {
     case 0:
@@ -252,7 +252,7 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dD(
   const int id,
   const SimplexId shiftX,
   const SimplexId shiftY,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(d)={c,b}
   switch(id) {
     case 0:
@@ -369,7 +369,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationA(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(a)={b,c,e,g}
   switch(id) {
     case 0:
@@ -390,7 +390,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationB(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(b)={a,c,d,e,f,g,h}
   switch(id) {
     case 0:
@@ -416,7 +416,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationC(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(c)={a,b,d,g}
   switch(id) {
     case 0:
@@ -437,7 +437,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationD(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(d)={b,c,g,h}
   switch(id) {
     case 0:
@@ -458,7 +458,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationE(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(e)={a,b,f,g}
   switch(id) {
     case 0:
@@ -479,7 +479,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationF(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(f)={b,e,g,h}
   switch(id) {
     case 0:
@@ -500,7 +500,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationG(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(g)={a,b,c,d,e,f,h}
   switch(id) {
     case 0:
@@ -527,7 +527,7 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationH(
   const SimplexId shiftX,
   const SimplexId shiftY,
   const SimplexId shiftZ,
-  const int decimation) const {
+  const int ttkNotUsed(decimation)) const {
   // V(h)={b,d,f,g}
   switch(id) {
     case 0:

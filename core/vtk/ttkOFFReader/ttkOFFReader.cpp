@@ -134,8 +134,8 @@ int processLineCell(vtkIdType curLine,
   return ++curLine;
 }
 
-int ttkOFFReader::RequestData(vtkInformation *vtkNotUsed(request),
-                              vtkInformationVector **vtkNotUsed(inputVector),
+int ttkOFFReader::RequestData(vtkInformation *ttkNotUsed(request),
+                              vtkInformationVector **ttkNotUsed(inputVector),
                               vtkInformationVector *outputVector) {
   std::ifstream offFile(FileName, ios::in);
 

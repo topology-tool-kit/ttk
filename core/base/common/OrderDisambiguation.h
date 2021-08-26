@@ -31,6 +31,8 @@ namespace ttk {
     // array of pre-sorted vertices
     std::vector<SimplexId> sortedVertices(nVerts);
 
+    TTK_FORCE_USE(nThreads);
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(nThreads)
 #endif // TTK_ENABLE_OPENMP

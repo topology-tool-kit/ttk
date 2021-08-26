@@ -22,6 +22,7 @@ template <typename ScalarType, typename triangulationType>
 void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
   const idVertex seed, Propagation *localProp, idSuperArc currentArc) {
 
+  TTK_FORCE_USE(seed);
   PRINT(seed << " :: " << localProp->getNbArcs());
   if(!localProp->getNbArcs()) {
     PRINT(seed << " Stop direct");
@@ -769,7 +770,7 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::lazyUpdatePreimage(
 template <typename ScalarType, typename triangulationType>
 void ttk::ftr::FTRGraph<ScalarType, triangulationType>::updateLazyStart(
   const orderedTriangle &oTriangle,
-  Propagation *const localProp,
+  Propagation *const ttkNotUsed(localProp),
   const idSuperArc curArc) {
   lazy_.addEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
 }
@@ -816,7 +817,7 @@ template <typename ScalarType, typename triangulationType>
 void ttk::ftr::FTRGraph<ScalarType, triangulationType>::updateLazyDel(
   const Propagation *const localProp,
   const linkEdge edge,
-  const idSuperArc arc) {
+  const idSuperArc ttkNotUsed(arc)) {
   dynGraph(localProp).removeEdge(std::get<0>(edge), std::get<1>(edge));
 }
 

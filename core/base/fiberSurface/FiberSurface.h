@@ -475,12 +475,11 @@ namespace ttk {
                         const std::vector<double> &t,
                         Vertex &v) const;
 
-    int snapVertexBarycentrics(const double &distanceThreshold) const;
+    int snapVertexBarycentrics() const;
 
     int snapVertexBarycentrics(
       const SimplexId &tetId,
-      const std::vector<std::pair<SimplexId, SimplexId>> &triangles,
-      const double &distanceThreshold) const;
+      const std::vector<std::pair<SimplexId, SimplexId>> &triangles) const;
 
     bool pointSnapping_{false};
 

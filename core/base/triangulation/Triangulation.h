@@ -886,7 +886,7 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->getTetraIncenter(tetraId, incenter);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE

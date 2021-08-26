@@ -6,7 +6,6 @@ if (NOT MSVC) # GCC and Clang
   list(APPEND TTK_COMPILER_FLAGS
     -Wall
     -Wextra
-    -Wno-unused-parameter  # TODO fix warnings & remove
     -Wtype-limits
     -Wshadow
     )

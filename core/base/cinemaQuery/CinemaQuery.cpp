@@ -156,7 +156,14 @@ int ttk::CinemaQuery::execute(
   return 1;
 
 #else
+  TTK_FORCE_USE(sqlTableDefinitions);
+  TTK_FORCE_USE(sqlInsertStatements);
+  TTK_FORCE_USE(sqlQuery);
+  TTK_FORCE_USE(resultCSV);
+  TTK_FORCE_USE(csvNColumns);
+  TTK_FORCE_USE(csvNRows);
+
   this->printErr("This filter requires Sqlite3");
   return 0;
-#endif
+#endif // TTK_ENABLE_SQLITE3
 }

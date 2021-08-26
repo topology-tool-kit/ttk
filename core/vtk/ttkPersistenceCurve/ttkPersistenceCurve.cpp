@@ -150,7 +150,6 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
                                   vtkTable *outputSTPersistenceCurve,
                                   vtkTable *outputCTPersistenceCurve,
                                   const VTK_TT *inputScalars,
-                                  int inputOffsetsDataType,
                                   const void *inputOffsets,
                                   const TTK_TT *triangulation) {
 
@@ -207,7 +206,7 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   return ret;
 }
 
-int ttkPersistenceCurve::RequestData(vtkInformation *request,
+int ttkPersistenceCurve::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 
@@ -253,14 +252,13 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
 #endif
 
   int status = 0;
-  ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
-    (status = this->dispatch<VTK_TT, TTK_TT>(
-       outputJTPersistenceCurve, outputMSCPersistenceCurve,
-       outputSTPersistenceCurve, outputCTPersistenceCurve,
-       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
-       offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
-       (TTK_TT *)(triangulation->getData()))));
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (status = this->dispatch<VTK_TT, TTK_TT>(
+                         outputJTPersistenceCurve, outputMSCPersistenceCurve,
+                         outputSTPersistenceCurve, outputCTPersistenceCurve,
+                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
+                         ttkUtils::GetVoidPointer(offsetField),
+                         (TTK_TT *)(triangulation->getData()))));
 
   // something wrong in baseCode
   if(status) {

@@ -87,9 +87,11 @@ if view and self:
   return 1;
 }
 
-int ttkCinemaDarkroomCamera::RequestData(vtkInformation *request,
-                                         vtkInformationVector **inputVector,
-                                         vtkInformationVector *outputVector) {
+int ttkCinemaDarkroomCamera::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **ttkNotUsed(inputVector),
+  vtkInformationVector *outputVector) {
+
   ttk::Timer timer;
   this->printMsg("Generating Camera", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 

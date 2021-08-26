@@ -75,7 +75,7 @@ int copyArrayData(vtkDataArray *target, vtkDataArray *copy) {
 // =============================================================================
 // RequestData
 // =============================================================================
-int ttkArrayEditor::RequestData(vtkInformation *request,
+int ttkArrayEditor::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
 

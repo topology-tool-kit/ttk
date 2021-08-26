@@ -39,7 +39,7 @@ int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFTMTree::RequestData(vtkInformation *request,
+int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector) {
 

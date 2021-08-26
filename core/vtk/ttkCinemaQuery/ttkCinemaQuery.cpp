@@ -43,7 +43,7 @@ int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkCinemaQuery::RequestData(vtkInformation *request,
+int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
   ttk::Timer timer;

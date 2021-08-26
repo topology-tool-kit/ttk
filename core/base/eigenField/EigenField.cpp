@@ -129,6 +129,12 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
                  mem.getElapsedUsage());
 
 #else
+  TTK_FORCE_USE(triangulation);
+  TTK_FORCE_USE(outputFieldPointer);
+  TTK_FORCE_USE(eigenNumber);
+  TTK_FORCE_USE(computeStatistics);
+  TTK_FORCE_USE(outputStatistics);
+
   this->printMsg(
     std::vector<std::string>{"Spectra support disabled, computation skipped!",
                              "Please re-compile TTK with Eigen AND Spectra "

@@ -57,7 +57,7 @@ int Class::FillOutputPortInformation(int port, vtkInformation *info) {
 
 //----------------------------------------------------------------------------//
 
-int Class::RequestData(vtkInformation *request,
+int Class::RequestData(vtkInformation *ttkNotUsed(request),
                        vtkInformationVector **iVec,
                        vtkInformationVector *oVec) {
 

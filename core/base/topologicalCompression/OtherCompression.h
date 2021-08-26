@@ -13,11 +13,11 @@
 
 template <typename dataType>
 int ttk::TopologicalCompression::compressForOther(
-  int vertexNumber,
-  const dataType *const inputData,
-  const SimplexId *const inputOffsets,
-  dataType *outputData,
-  const double &tol) const {
+  int ttkNotUsed(vertexNumber),
+  const dataType *const ttkNotUsed(inputData),
+  const SimplexId *const ttkNotUsed(inputOffsets),
+  dataType *ttkNotUsed(outputData),
+  const double &ttkNotUsed(tol)) const {
 
   ttk::Timer t;
   // Code me

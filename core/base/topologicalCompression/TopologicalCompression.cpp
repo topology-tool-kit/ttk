@@ -535,6 +535,9 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
       += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpTolerance);
 
 #else
+    TTK_FORCE_USE(dataExtent);
+    TTK_FORCE_USE(toCompress);
+
     this->printErr("Attempted to write with ZFP but ZFP is not installed.");
     return -5;
 #endif
@@ -574,25 +577,27 @@ int ttk::TopologicalCompression::computeOther() const {
   return 0;
 }
 
-int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) const {
+int ttk::TopologicalCompression::WriteOtherTopology(
+  FILE *ttkNotUsed(fm)) const {
   this->printWrn("Writing Other index / topology.");
   // Code me
   return 0;
 }
 
-int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) const {
+int ttk::TopologicalCompression::WriteOtherGeometry(
+  FILE *ttkNotUsed(fm)) const {
   this->printWrn("Writing Other buffer / geometry.");
   // Code me
   return 0;
 }
 
-int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) const {
+int ttk::TopologicalCompression::ReadOtherTopology(FILE *ttkNotUsed(fm)) const {
   this->printWrn("Reading Other index / topology.");
   // Code me
   return 0;
 }
 
-int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) const {
+int ttk::TopologicalCompression::ReadOtherGeometry(FILE *ttkNotUsed(fm)) const {
   this->printWrn("Reading Other buffer / geometry.");
   // Code me
   return 0;

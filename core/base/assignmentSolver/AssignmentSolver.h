@@ -24,9 +24,9 @@ namespace ttk {
   class AssignmentSolver : virtual public Debug {
 
   public:
-    AssignmentSolver(){};
+    AssignmentSolver() = default;
 
-    virtual ~AssignmentSolver(){};
+    virtual ~AssignmentSolver() = default;
 
     virtual int run(std::vector<asgnMatchingTuple> &matchings) = 0;
 

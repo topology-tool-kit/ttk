@@ -679,7 +679,7 @@ int ttkTrackingFromOverlap::computeBranches() {
 // =============================================================================
 // Request Data
 // =============================================================================
-int ttkTrackingFromOverlap::RequestData(vtkInformation *request,
+int ttkTrackingFromOverlap::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   Timer timer;

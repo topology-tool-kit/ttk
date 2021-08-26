@@ -876,7 +876,7 @@ int ttk::AbstractMorseSmaleComplex::setDescendingSegmentation(
 template <typename triangulationType>
 int ttk::AbstractMorseSmaleComplex::setFinalSegmentation(
   const SimplexId numberOfMaxima,
-  const SimplexId numberOfMinima,
+  const SimplexId ttkNotUsed(numberOfMinima),
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   SimplexId *const morseSmaleManifold,

@@ -22,9 +22,10 @@ int ttkGaussianPointCloud::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkGaussianPointCloud::RequestData(vtkInformation *request,
-                                       vtkInformationVector **inputVector,
-                                       vtkInformationVector *outputVector) {
+int ttkGaussianPointCloud::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **ttkNotUsed(inputVector),
+  vtkInformationVector *outputVector) {
 
   auto domain = vtkPolyData::GetData(outputVector);
 

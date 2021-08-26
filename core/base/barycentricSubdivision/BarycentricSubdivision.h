@@ -77,10 +77,7 @@ namespace ttk {
      */
     template <typename T, typename triangulationType>
     int interpolateContinuousScalarField(
-      const T *data,
-      T *output,
-      const triangulationType &inputTriangl,
-      const ExplicitTriangulation &outputTriangl) const {
+      const T *data, T *output, const triangulationType &inputTriangl) const {
       static_assert(
         std::is_floating_point<T>::value, "Floating point type required.");
       const auto nOutVerts = this->getNumberOfVertices();

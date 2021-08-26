@@ -68,8 +68,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       omp_set_nested(1);
 #endif
-    };
-    ~MergeTreeDistance(){};
+    }
+    ~MergeTreeDistance() = default;
 
     void setIsCalled(bool ic) {
       isCalled_ = ic;
@@ -174,8 +174,8 @@ namespace ttk {
 
     template <class dataType>
     dataType forestAssignmentProblem(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      ftm::FTMTree_MT *ttkNotUsed(tree1),
+      ftm::FTMTree_MT *ttkNotUsed(tree2),
       std::vector<std::vector<dataType>> &treeTable,
       std::vector<ftm::idNode> &children1,
       std::vector<ftm::idNode> &children2,
@@ -551,8 +551,8 @@ namespace ttk {
       std::vector<std::vector<std::tuple<int, int>>> &treeBackTable,
       std::vector<std::vector<std::vector<std::tuple<int, int>>>>
         &forestBackTable,
-      int nRows,
-      int nCols) {
+      int ttkNotUsed(nRows),
+      int ttkNotUsed(nCols)) {
       std::vector<int> tree1NodeChildSize, tree2NodeChildSize;
       for(unsigned int i = 0; i < tree1->getNumberOfNodes(); ++i) {
         std::vector<idNode> children;
@@ -672,6 +672,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       } // pragma omp parallel
 #endif
+
+      TTK_FORCE_USE(firstCall);
     }
 
     template <class dataType>
@@ -842,7 +844,7 @@ namespace ttk {
     void parallelEmptyTreeDistanceTask(
       ftm::FTMTree_MT *tree,
       bool isTree1,
-      std::vector<ftm::idNode> &treeLeaves,
+      std::vector<ftm::idNode> &ttkNotUsed(treeLeaves),
       std::vector<int> &treeNodeChildSize,
       std::vector<std::vector<dataType>> &treeTable,
       std::vector<std::vector<dataType>> &forestTable,
@@ -910,6 +912,9 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
+
+      TTK_FORCE_USE(treeBackTable);
+      TTK_FORCE_USE(forestBackTable);
     }
 
     // ----------------------------------------
@@ -1021,6 +1026,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       } // pragma omp parallel
 #endif
+
+      TTK_FORCE_USE(firstCall);
     }
 
     // Equation 8, 9, 10, 11
@@ -1032,9 +1039,9 @@ namespace ttk {
       std::vector<int> &treeNodeChildSize,
       std::vector<std::vector<dataType>> &treeTable,
       std::vector<std::vector<dataType>> &forestTable,
-      std::vector<std::vector<std::tuple<int, int>>> &treeBackTable,
-      std::vector<std::vector<std::vector<std::tuple<int, int>>>>
-        &forestBackTable) {
+      std::vector<std::vector<std::tuple<int, int>>> &ttkNotUsed(treeBackTable),
+      std::vector<std::vector<std::vector<std::tuple<int, int>>>> &ttkNotUsed(
+        forestBackTable)) {
       ftm::idNode nodeT = -1;
       std::vector<int> treeChildDone(tree->getNumberOfNodes(), 0);
       std::vector<bool> treeNodeDone(tree->getNumberOfNodes(), false);

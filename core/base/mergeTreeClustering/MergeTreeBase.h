@@ -61,7 +61,7 @@ public:
     this->setDebugMsgPrefix(
       "MergeTreeBase"); // inherited from Debug: prefix will be printed
                         // at the beginning of every msg
-  };
+  }
 
   void setAssignmentSolver(int assignmentSolver) {
     assignmentSolverID_ = assignmentSolver;

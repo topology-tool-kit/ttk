@@ -58,7 +58,7 @@ int ttkIdentifyByScalarField::dispatch(vector<SimplexId> &inputIds) {
   return 0;
 }
 
-int ttkIdentifyByScalarField::RequestData(vtkInformation *request,
+int ttkIdentifyByScalarField::RequestData(vtkInformation *ttkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);

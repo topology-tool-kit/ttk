@@ -27,7 +27,7 @@ class vtkSmartPointer;
 
 class TTKALGORITHM_EXPORT ttkUtils {
 private:
-  ttkUtils(){};
+  ttkUtils() = default;
 
 public:
   static int replaceVariable(const std::string &iString,
@@ -58,7 +58,7 @@ public:
   template <typename DT>
   static DT *GetPointer(vtkDataArray *array, vtkIdType start = 0) {
     return static_cast<DT *>(ttkUtils::GetVoidPointer(array, start));
-  };
+  }
 
   static void *
     WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);

@@ -48,7 +48,7 @@ struct filtrationCtCmp {
               || ((v0.second.first == v1.second.first)
                   && (v0.second.second.first > v1.second.second.first)));
     }
-  };
+  }
 } filtrationCmp;
 
 struct _persistenceCmp {
@@ -148,10 +148,10 @@ void SuperArc::sortRegularNodes(const vector<double> *vertexScalars,
     std::sort(regularNodeList_.rbegin(), regularNodeList_.rend(), cmp);
 }
 
-double
-  PersistenceMetric::computeSuperArcMetric(const int &downVertexId,
-                                           const int &upVertexId,
-                                           const vector<int> &interiorNodeIds) {
+double PersistenceMetric::computeSuperArcMetric(
+  const int &downVertexId,
+  const int &upVertexId,
+  const vector<int> &ttkNotUsed(interiorNodeIds)) {
 
   if(!tree_)
     return -DBL_MAX;
@@ -1302,8 +1302,9 @@ int SubLevelSetTree::getPersistenceDiagram(
 
 int SubLevelSetTree::getPersistencePairs(
   vector<pair<pair<int, int>, double>> &pairs,
-  std::vector<std::pair<std::pair<int, int>, double>> *mergePairs,
-  std::vector<std::pair<std::pair<int, int>, double>> *splitPairs) const {
+  std::vector<std::pair<std::pair<int, int>, double>> *ttkNotUsed(mergePairs),
+  std::vector<std::pair<std::pair<int, int>, double>> *ttkNotUsed(
+    splitPairs)) const {
 
   Timer t;
 

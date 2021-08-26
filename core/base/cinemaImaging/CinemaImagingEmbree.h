@@ -53,7 +53,7 @@ namespace ttk {
 
 #endif
   };
-}; // namespace ttk
+} // namespace ttk
 
 #if TTK_ENABLE_EMBREE
 

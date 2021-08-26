@@ -63,7 +63,7 @@ int ttkUtils::replaceVariable(const std::string &iString,
   }
 
   return 1;
-};
+}
 
 int ttkUtils::replaceVariables(const std::string &iString,
                                vtkFieldData *fieldData,
@@ -105,7 +105,7 @@ int ttkUtils::replaceVariables(const std::string &iString,
   }
 
   return 1;
-};
+}
 
 int ttkUtils::stringListToVector(const std::string &iString,
                                  std::vector<std::string> &v) {
@@ -123,7 +123,7 @@ int ttkUtils::stringListToVector(const std::string &iString,
     v.push_back(iString.substr(i, iString.length() - i));
 
   return 1;
-};
+}
 
 int ttkUtils::stringListToDoubleVector(const std::string &iString,
                                        std::vector<double> &v) {
@@ -141,7 +141,7 @@ int ttkUtils::stringListToDoubleVector(const std::string &iString,
   // }
 
   return 1;
-};
+}
 
 vtkSmartPointer<vtkAbstractArray>
   ttkUtils::csvToVtkArray(const std::string &line) {
@@ -187,7 +187,7 @@ vtkSmartPointer<vtkAbstractArray>
       array->SetValue(i, valuesAsString[i]);
     return array;
   }
-};
+}
 
 vtkSmartPointer<vtkDoubleArray>
   ttkUtils::csvToDoubleArray(const std::string &line) {
@@ -212,7 +212,7 @@ vtkSmartPointer<vtkDoubleArray>
     arrayData[i] = values[i];
 
   return array;
-};
+}
 
 /// Retrieve pointer to the internal data
 /// This method is a workaround to emulate
@@ -225,11 +225,11 @@ void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
       if(aosArray) { outPtr = aosArray->GetVoidPointer(start); });
   }
   return outPtr;
-};
+}
 
 void *ttkUtils::GetVoidPointer(vtkPoints *points, vtkIdType start) {
   return GetVoidPointer(points->GetData(), start);
-};
+}
 
 void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
                                  vtkIdType valueIdx,
@@ -243,7 +243,7 @@ void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
                      });
   }
   return outPtr;
-};
+}
 
 void *ttkUtils::WritePointer(vtkDataArray *array,
                              vtkIdType valueIdx,
@@ -255,7 +255,7 @@ void *ttkUtils::WritePointer(vtkDataArray *array,
       if(aosArray) { outPtr = aosArray->WritePointer(valueIdx, numValues); });
   }
   return outPtr;
-};
+}
 
 void ttkUtils::SetVoidArray(vtkDataArray *array,
                             void *data,
@@ -269,7 +269,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
         array->Print(std::cerr);
       });
   }
-};
+}
 
 [[deprecated]] void ttkUtils::FillCellArrayFromSingle(vtkIdType const *cells,
                                                       vtkIdType ncells,
@@ -286,7 +286,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
     }
     cellArray->InsertNextCell(verts);
   }
-};
+}
 
 void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
                                      vtkIdType const *cells_off,
@@ -303,4 +303,4 @@ void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
     }
     cellArray->InsertNextCell(verts);
   }
-};
+}

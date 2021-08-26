@@ -43,7 +43,7 @@ int ttkIdentifiers::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkIdentifiers::RequestData(vtkInformation *request,
+int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
 

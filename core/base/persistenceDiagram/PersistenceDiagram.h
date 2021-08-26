@@ -107,8 +107,7 @@ namespace ttk {
       ftm::FTMTreePP &tree,
       const std::vector<
         std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>> &pairs,
-      std::vector<PersistencePair> &diagram,
-      const scalarType *scalars) const;
+      std::vector<PersistencePair> &diagram) const;
 
     /**
      * @pre For this function to behave correctly in the absence of
@@ -176,8 +175,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   ftm::FTMTreePP &tree,
   const std::vector<
     std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>> &pairs,
-  std::vector<PersistencePair> &diagram,
-  const scalarType *scalars) const {
+  std::vector<PersistencePair> &diagram) const {
 
   const ttk::SimplexId numberOfPairs = pairs.size();
   diagram.resize(numberOfPairs);
@@ -332,8 +330,7 @@ int ttk::PersistenceDiagram::executeFTM(
   }
 
   // get persistence diagrams
-  computeCTPersistenceDiagram<scalarType>(
-    contourTree_, CTPairs, CTDiagram, inputScalars);
+  computeCTPersistenceDiagram<scalarType>(contourTree_, CTPairs, CTDiagram);
 
   // get the saddle-saddle pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
@@ -359,7 +356,7 @@ int ttk::PersistenceDiagram::executeFTM(
 
 template <class triangulationType>
 void ttk::PersistenceDiagram::checkProgressivityRequirement(
-  const triangulationType *triangulation) {
+  const triangulationType *ttkNotUsed(triangulation)) {
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
     if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 

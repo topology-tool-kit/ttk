@@ -32,8 +32,8 @@ int ttkTopologicalCompressionReader::FillOutputPortInformation(
 }
 
 int ttkTopologicalCompressionReader::RequestInformation(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **ttkNotUsed(inputVector),
   vtkInformationVector *outputVector) {
 
   if(FileName == nullptr) {
@@ -82,8 +82,8 @@ int ttkTopologicalCompressionReader::RequestInformation(
 }
 
 int ttkTopologicalCompressionReader::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **ttkNotUsed(inputVector),
   vtkInformationVector *outputVector) {
 
   // Initialize

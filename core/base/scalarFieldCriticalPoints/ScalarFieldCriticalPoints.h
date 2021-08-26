@@ -505,7 +505,7 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
 
 template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
-  const triangulationType *triangulation) {
+  const triangulationType *ttkNotUsed(triangulation)) {
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
     if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 

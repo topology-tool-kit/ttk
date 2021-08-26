@@ -33,19 +33,19 @@ namespace ttk {
   public:
     inline int getDownNodeId() const {
       return downNodeId_;
-    };
+    }
 
     inline int getUpNodeId() const {
       return upNodeId_;
-    };
+    }
 
     inline void setDownNodeId(const int &downNodeId) {
       downNodeId_ = downNodeId;
-    };
+    }
 
     inline void setUpNodeId(const int &upNodeId) {
       upNodeId_ = upNodeId;
-    };
+    }
 
   protected:
     int downNodeId_{-1}, upNodeId_{-1};
@@ -57,65 +57,65 @@ namespace ttk {
 
     inline void appendRegularNode(const int &nodeId) {
       regularNodeList_.push_back(nodeId);
-    };
+    }
 
     inline void appendBarycenter(const std::vector<double> &barycenter) {
       barycenterList_.push_back(barycenter);
-    };
+    }
 
     inline void appendSample(const std::vector<int> &sample) {
       sampleList_.push_back(sample);
-    };
+    }
 
     inline int getNumberOfRegularNodes() const {
       return (int)regularNodeList_.size();
-    };
+    }
 
     inline int getNumberOfBarycenters() const {
       return (int)barycenterList_.size();
-    };
+    }
 
     inline int getNumberOfSamples() const {
       return (int)sampleList_.size();
-    };
+    }
 
     inline int getRegularNodeId(const int &arcNodeId) const {
       if((arcNodeId < 0)
          || (((unsigned int)arcNodeId) >= regularNodeList_.size()))
         return -1;
       return regularNodeList_[arcNodeId];
-    };
+    }
 
     inline void getBarycenter(const int &id,
                               std::vector<double> &barycenter) const {
       for(unsigned int k = 0; k < 3; ++k)
         barycenter[k] = barycenterList_[id][k];
-    };
+    }
 
     inline void getBarycenter(const int &id, double barycenter[3]) const {
       for(unsigned int k = 0; k < 3; ++k)
         barycenter[k] = barycenterList_[id][k];
-    };
+    }
 
     inline void getSample(const int &id, std::vector<int> &sample) const {
       sample = sampleList_[id];
-    };
+    }
 
     inline void clearBarycenters() {
       barycenterList_.clear();
-    };
+    }
 
     inline void clearSamples() {
       sampleList_.clear();
-    };
+    }
 
     inline void clearRegularNodes() {
       regularNodeList_.clear();
-    };
+    }
 
     inline bool isPruned() const {
       return pruned_;
-    };
+    }
 
     void smooth(const std::vector<Node> &nodeList,
                 const std::vector<std::vector<double>> *vertexPositions,
@@ -137,63 +137,63 @@ namespace ttk {
   public:
     inline void addDownArcId(const int &downArcId) {
       downArcList_.push_back(downArcId);
-    };
+    }
 
     inline void addDownSuperArcId(const int &downSuperArcId) {
       downSuperArcList_.push_back(downSuperArcId);
-    };
+    }
 
     inline void addUpArcId(const int &upArcId) {
       upArcList_.push_back(upArcId);
-    };
+    }
 
     inline void addUpSuperArcId(const int &upSuperArcId) {
       upSuperArcList_.push_back(upSuperArcId);
-    };
+    }
 
     inline int getDownArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)downArcList_.size()))
         return -1;
       return downArcList_[neighborId];
-    };
+    }
 
     inline int getDownSuperArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)downSuperArcList_.size()))
         return -1;
       return downSuperArcList_[neighborId];
-    };
+    }
 
     inline int getUpArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)upArcList_.size()))
         return -1;
       return upArcList_[neighborId];
-    };
+    }
 
     inline int getUpSuperArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)upSuperArcList_.size()))
         return -1;
       return upSuperArcList_[neighborId];
-    };
+    }
 
     inline int getNumberOfDownArcs() const {
       return (int)downArcList_.size();
-    };
+    }
 
     inline int getNumberOfDownSuperArcs() const {
       return (int)downSuperArcList_.size();
-    };
+    }
 
     inline int getNumberOfUpArcs() const {
       return (int)upArcList_.size();
-    };
+    }
 
     inline int getNumberOfUpSuperArcs() const {
       return (int)upSuperArcList_.size();
-    };
+    }
 
     inline int getVertexId() const {
       return vertexId_;
-    };
+    }
 
     inline int removeDownArcId(const int &arcId) {
       if((arcId < 0) || (arcId >= (int)downArcList_.size()))
@@ -211,7 +211,7 @@ namespace ttk {
 
     inline void setVertexId(const int &vertexId) {
       vertexId_ = vertexId;
-    };
+    }
 
   protected:
     friend class SubLevelSetTree;
@@ -289,27 +289,27 @@ namespace ttk {
       if((arcId < 0) || (arcId >= (int)arcList_.size()))
         return NULL;
       return &(arcList_[arcId]);
-    };
+    }
 
     // this list is sorted only if buildExtremumList has been called before.
     inline const std::vector<int> *getExtremumList() const {
       if(minimumList_)
         return minimumList_;
       return maximumList_;
-    };
+    }
 
     inline const Node *getNode(const int &nodeId) const {
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
         return NULL;
       return &(nodeList_[nodeId]);
-    };
+    }
 
     inline const Node *getNodeDownNeighbor(const Node *n,
                                            const int &neighborId) const {
       if(!n)
         return NULL;
       return getNodeDownNeighbor(n - &(nodeList_[0]), neighborId);
-    };
+    }
 
     inline const Node *getNodeDownNeighbor(const int &nodeId,
                                            const int &neighborId) const {
@@ -317,14 +317,14 @@ namespace ttk {
         return NULL;
       return &(nodeList_[arcList_[nodeList_[nodeId].getDownArcId(neighborId)]
                            .getDownNodeId()]);
-    };
+    }
 
     inline const Node *getNodeUpNeighbor(const Node *n,
                                          const int &neighborId) const {
       if(!n)
         return NULL;
       return getNodeUpNeighbor(n - &(nodeList_[0]), neighborId);
-    };
+    }
 
     inline const Node *getNodeUpNeighbor(const int &nodeId,
                                          const int &neighborId) const {
@@ -332,7 +332,7 @@ namespace ttk {
         return NULL;
       return &(nodeList_[arcList_[nodeList_[nodeId].getUpArcId(neighborId)]
                            .getUpNodeId()]);
-    };
+    }
 
     inline double getNodeScalar(const int &nodeId) const {
       if(!vertexScalars_)
@@ -344,15 +344,15 @@ namespace ttk {
 
     inline int getNumberOfArcs() const {
       return (int)arcList_.size();
-    };
+    }
 
     inline int getNumberOfSuperArcs() const {
       return (int)superArcList_.size();
-    };
+    }
 
     inline int getNumberOfNodes() const {
       return (int)nodeList_.size();
-    };
+    }
 
     int getPersistenceDiagram(
       std::vector<std::pair<double, double>> &diagram,
@@ -379,7 +379,7 @@ namespace ttk {
       if((superArcId < 0) || (superArcId >= (int)superArcList_.size()))
         return NULL;
       return &(superArcList_[superArcId]);
-    };
+    }
 
     inline int getVertexScalar(const int &vertexId, double &scalar) {
 
@@ -402,13 +402,13 @@ namespace ttk {
         return NULL;
 
       return &(superArcList_[vertex2superArc_[vertexId]]);
-    };
+    }
 
     inline int getVertexSuperArcId(const int &vertexId) const {
       if((vertexId < 0) || (vertexId >= vertexNumber_))
         return -1;
       return vertex2superArc_[vertexId];
-    };
+    }
 
     inline const Node *getVertexNode(const int &vertexId) const {
       if((vertexId < 0) || (vertexId >= vertexNumber_))
@@ -416,13 +416,13 @@ namespace ttk {
       if(vertex2node_[vertexId] != -1)
         return &(nodeList_[vertex2node_[vertexId]]);
       return NULL;
-    };
+    }
 
     inline int getVertexNodeId(const int &vertexId) const {
       if((vertexId < 0) || (vertexId >= vertexNumber_))
         return -1;
       return vertex2node_[vertexId];
-    };
+    }
 
     bool isJoinTree() const {
       return ((maximumList_ == NULL)
@@ -453,18 +453,18 @@ namespace ttk {
 
     inline void setMaximumList(std::vector<int> &maximumList) {
       maximumList_ = &(maximumList);
-    };
+    }
 
     inline void setMinimumList(std::vector<int> &minimumList) {
       minimumList_ = &(minimumList);
-    };
+    }
 
     inline void setNumberOfVertices(const int &vertexNumber) {
       vertexNumber_ = vertexNumber;
       vertex2superArc_.resize(vertexNumber, -1);
       vertex2superArcNode_.resize(vertexNumber, -1);
       vertex2node_.resize(vertexNumber, -1);
-    };
+    }
 
     inline void
       setTriangulation(const AbstractTriangulation *const triangulation) {
@@ -474,7 +474,7 @@ namespace ttk {
     inline void
       setVertexPositions(std::vector<std::vector<double>> *vertexPositions) {
       vertexPositions_ = vertexPositions;
-    };
+    }
 
     inline void setVertexScalars(const std::vector<real> *const vertexScalars) {
       vertexScalars_ = vertexScalars;
@@ -487,11 +487,11 @@ namespace ttk {
           maxScalar_ = (*vertexScalars_)[i];
         }
       }
-    };
+    }
 
     inline void setVertexSoSoffsets(std::vector<int> *vertexSoSoffsets) {
       vertexSoSoffsets_ = vertexSoSoffsets;
-    };
+    }
 
     virtual int simplify(const double &simplificationThreshold,
                          ContourTreeSimplificationMetric *metric = NULL);
@@ -556,7 +556,7 @@ namespace ttk {
 
     inline const SubLevelSetTree *getMergeTree() const {
       return &mergeTree_;
-    };
+    }
 
     int getPersistencePairs(
       std::vector<std::pair<std::pair<int, int>, double>> &pairs,
@@ -580,7 +580,7 @@ namespace ttk {
 
     inline const SubLevelSetTree *getSplitTree() const {
       return &splitTree_;
-    };
+    }
 
     inline int maintainRegularVertices(const bool &onOff) {
       mergeTree_.maintainRegularVertices(onOff);

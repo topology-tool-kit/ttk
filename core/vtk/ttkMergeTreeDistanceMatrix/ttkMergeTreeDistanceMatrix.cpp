@@ -173,7 +173,7 @@ int ttkMergeTreeDistanceMatrix::run(
 }
 
 int ttkMergeTreeDistanceMatrix::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

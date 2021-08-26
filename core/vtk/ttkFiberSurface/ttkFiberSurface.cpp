@@ -55,7 +55,7 @@ int ttkFiberSurface::dispatch(ttk::Triangulation *const triangulation) {
   return 0;
 }
 
-int ttkFiberSurface::RequestData(vtkInformation *request,
+int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
 

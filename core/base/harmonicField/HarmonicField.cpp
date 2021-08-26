@@ -191,6 +191,15 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
 #else
+  TTK_FORCE_USE(triangulation);
+  TTK_FORCE_USE(constraintNumber);
+  TTK_FORCE_USE(sources);
+  TTK_FORCE_USE(constraints);
+  TTK_FORCE_USE(outputScalarField);
+  TTK_FORCE_USE(useCotanWeights);
+  TTK_FORCE_USE(solvingMethod);
+  TTK_FORCE_USE(logAlpha);
+
   this->printMsg(
     std::vector<std::string>{
       "Eigen support disabled, computation skipped!",

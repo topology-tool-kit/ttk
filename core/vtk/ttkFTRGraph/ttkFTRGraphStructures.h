@@ -57,7 +57,8 @@ namespace ttk {
         scalars->SetTuple1(n, scalar);
       }
 
-      void addArrays(vtkPointData *pointData, ttk::ftr::Params params) {
+      void addArrays(vtkPointData *pointData,
+                     ttk::ftr::Params ttkNotUsed(params)) {
         pointData->AddArray(ids);
         pointData->SetScalars(types);
         pointData->AddArray(scalars);
@@ -80,8 +81,8 @@ namespace ttk {
 #endif
       }
 
-      void setPointInfo(const ttk::ftr::Graph &graph,
-                        const ttk::ftr::idSuperArc a,
+      void setPointInfo(const ttk::ftr::Graph &ttkNotUsed(graph),
+                        const ttk::ftr::idSuperArc ttkNotUsed(a),
                         const vtkIdType skeletonVert,
                         bool r = false) {
         reg->SetTuple1(skeletonVert, r);
@@ -93,10 +94,13 @@ namespace ttk {
         ids->SetTuple1(skeletonCell, a);
 #ifndef NDEBUG
         fromUp->SetTuple1(skeletonCell, graph.getArc(a).getFromUp());
+#else
+        TTK_FORCE_USE(graph);
 #endif
       }
 
-      void addArrays(vtkUnstructuredGrid *arcs, ttk::ftr::Params params) {
+      void addArrays(vtkUnstructuredGrid *arcs,
+                     ttk::ftr::Params ttkNotUsed(params)) {
         // original size may be too large
         ids->SetNumberOfTuples(arcs->GetNumberOfCells());
         arcs->GetCellData()->SetScalars(ids);
@@ -150,7 +154,8 @@ namespace ttk {
 #endif
       }
 
-      void addArrays(vtkDataSet *segmentation, ttk::ftr::Params params) {
+      void addArrays(vtkDataSet *segmentation,
+                     ttk::ftr::Params ttkNotUsed(params)) {
         segmentation->GetPointData()->AddArray(ids);
         segmentation->GetPointData()->SetActiveScalars(ids->GetName());
         segmentation->GetPointData()->AddArray(regionType);

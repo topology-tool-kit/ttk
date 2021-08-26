@@ -583,7 +583,6 @@ namespace ttk {
 
       int printTime(Timer &t,
                     const std::string &s,
-                    SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;
 
       // ----------------------------------------

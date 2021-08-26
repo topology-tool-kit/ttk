@@ -213,7 +213,7 @@ int ttkProjectionFromField::projectPersistenceDiagram(
   return 1;
 }
 
-int ttkProjectionFromField::RequestData(vtkInformation *request,
+int ttkProjectionFromField::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

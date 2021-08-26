@@ -34,7 +34,7 @@ int ttkDimensionReduction::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDimensionReduction::RequestData(vtkInformation *request,
+int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

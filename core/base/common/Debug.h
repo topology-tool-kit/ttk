@@ -82,7 +82,7 @@ namespace ttk {
     } // namespace output
 
     const int LINEWIDTH = 80;
-  }; // namespace debug
+  } // namespace debug
 
   class Debug : public BaseClass {
 

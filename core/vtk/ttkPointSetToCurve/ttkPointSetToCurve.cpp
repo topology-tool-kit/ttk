@@ -51,7 +51,7 @@ void ttkPointSetToCurve::dispatch(
   }
 }
 
-int ttkPointSetToCurve::RequestData(vtkInformation *request,
+int ttkPointSetToCurve::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   const auto input = vtkPointSet::GetData(inputVector[0]);

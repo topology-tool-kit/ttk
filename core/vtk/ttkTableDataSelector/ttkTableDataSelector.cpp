@@ -39,7 +39,7 @@ int ttkTableDataSelector::RequestInformation(
   return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
-int ttkTableDataSelector::RequestData(vtkInformation *request,
+int ttkTableDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
   vtkTable *input = vtkTable::GetData(inputVector[0]);

@@ -41,7 +41,7 @@ int ttkMorseSmaleQuadrangulation::FillOutputPortInformation(
 }
 
 int ttkMorseSmaleQuadrangulation::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

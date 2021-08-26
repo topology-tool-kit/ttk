@@ -25,9 +25,9 @@ namespace ttk {
                             public AssignmentSolver<dataType> {
 
   public:
-    AssignmentAuction(){};
+    AssignmentAuction() = default;
 
-    ~AssignmentAuction(){};
+    ~AssignmentAuction() = default;
 
     int run(std::vector<asgnMatchingTuple> &matchings);
     void runAuctionRound(std::vector<std::vector<dataType>> &cMatrix);

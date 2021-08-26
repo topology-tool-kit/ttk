@@ -64,7 +64,7 @@ int ttkSphereFromPoint::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkSphereFromPoint::RequestData(vtkInformation *request,
+int ttkSphereFromPoint::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 

@@ -529,7 +529,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
   return 1;
 }
 
-int ttkCinemaWriter::RequestData(vtkInformation *request,
+int ttkCinemaWriter::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
   ttk::Timer timer;

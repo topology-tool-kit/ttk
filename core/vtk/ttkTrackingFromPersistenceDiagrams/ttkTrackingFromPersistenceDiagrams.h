@@ -159,7 +159,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
   bool useGeometricSpacing,
   double spacing,
-  bool DoPostProc,
+  bool ttkNotUsed(DoPostProc),
   std::vector<std::set<int>> &trackingTupleToMerged,
   vtkPoints *points,
   vtkUnstructuredGrid *persistenceDiagram,

@@ -33,7 +33,7 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       return triangulation->preconditionVertexNeighbors();
-    };
+    }
 
     template <class DT, class TT = ttk::AbstractTriangulation>
     int execute(

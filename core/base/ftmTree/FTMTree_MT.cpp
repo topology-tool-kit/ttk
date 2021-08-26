@@ -209,7 +209,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp taskwait
 #endif
 
-  printTime(segmentsSet, "segmentation set vertices", -1, 4);
+  printTime(segmentsSet, "segmentation set vertices", 4);
 
   if(mt_data_.trunkSegments->size() == 0) {
     // sort arc that have been filled by the trunk
@@ -226,7 +226,7 @@ void FTMTree_MT::buildSegmentation() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-    printTime(segmentsSortTime, "segmentation sort vertices", -1, 4);
+    printTime(segmentsSortTime, "segmentation sort vertices", 4);
   } else {
     // Contour tree: we create the arc segmentation for arcs in the trunk
     Timer segmentsArcTime;
@@ -245,7 +245,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp taskwait
 #endif
 
-    printTime(segmentsArcTime, "segmentation arcs lists", -1, 4);
+    printTime(segmentsArcTime, "segmentation arcs lists", 4);
   }
 
   // Update SuperArc region
@@ -517,7 +517,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
   return newNodeId;
 }
 
-idNode FTMTree_MT::makeNode(const Node *const n, SimplexId term) {
+idNode FTMTree_MT::makeNode(const Node *const n, SimplexId ttkNotUsed(term)) {
   return makeNode(n->getVertexId());
 }
 
@@ -644,7 +644,7 @@ void FTMTree_MT::normalizeIds(void) {
   }
 #endif
 
-  printTime(normTime, "normalize ids", -1, 4);
+  printTime(normTime, "normalize ids", 4);
 }
 
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId) {
@@ -749,7 +749,6 @@ void FTMTree_MT::printParams(void) const {
 
 int FTMTree_MT::printTime(Timer &t,
                           const string &s,
-                          SimplexId nbScalars,
                           const int debugLevel) const {
 
   if(this->debugLevel_ >= debugLevel) {

@@ -68,8 +68,8 @@ namespace ttk {
       this->setDebugMsgPrefix(
         "MergeTreeClustering"); // inherited from Debug: prefix will be printed
                                 // at the beginning of every msg
-    };
-    ~MergeTreeClustering(){};
+    }
+    ~MergeTreeClustering() = default;
 
     void setNoCentroids(unsigned int noCentroidsT) {
       noCentroids_ = noCentroidsT;
@@ -240,10 +240,10 @@ namespace ttk {
     }
 
     template <class dataType>
-    void
-      initAcceleratedKMeansVectors(std::vector<ftm::FTMTree_MT *> &trees,
-                                   std::vector<MergeTree<dataType>> &centroids,
-                                   std::vector<ftm::FTMTree_MT *> &trees2) {
+    void initAcceleratedKMeansVectors(
+      std::vector<ftm::FTMTree_MT *> &trees,
+      std::vector<MergeTree<dataType>> &centroids,
+      std::vector<ftm::FTMTree_MT *> &ttkNotUsed(trees2)) {
       lowerBound_ = std::vector<std::vector<double>>(
         trees.size(), std::vector<double>(centroids.size(), 0));
       upperBound_

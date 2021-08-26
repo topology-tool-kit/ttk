@@ -37,7 +37,7 @@ int ttkGeometrySmoother::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkGeometrySmoother::RequestData(vtkInformation *request,
+int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 

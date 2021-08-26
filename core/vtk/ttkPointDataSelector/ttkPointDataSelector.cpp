@@ -56,7 +56,7 @@ int ttkPointDataSelector::RequestInformation(
   return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
-int ttkPointDataSelector::RequestData(vtkInformation *request,
+int ttkPointDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 

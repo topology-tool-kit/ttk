@@ -69,6 +69,5 @@ protected:
                   vtkInformationVector *outputVector) override;
 
   int SendVtkDataObject(vtkDataObject *object);
-  int ParseVtkDataObjectFromJSON(const std::string &json,
-                                 vtkDataObject *object);
+  int ParseVtkDataObjectFromJSON(const std::string &json);
 };

@@ -51,7 +51,7 @@ int ttkJacobiSet::dispatch(const dataTypeU *const uField,
   return 0;
 }
 
-int ttkJacobiSet::RequestData(vtkInformation *request,
+int ttkJacobiSet::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
 

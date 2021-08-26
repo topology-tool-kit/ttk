@@ -49,7 +49,7 @@ int ttkTriangulationReader::validateFilePath() {
   return 1;
 }
 
-int ttkTriangulationReader::RequestData(vtkInformation *request,
+int ttkTriangulationReader::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   ttk::Timer timer;

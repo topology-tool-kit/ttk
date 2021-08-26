@@ -76,7 +76,7 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
   return 0;
 }
 
-int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
+int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
 
