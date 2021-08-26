@@ -72,6 +72,12 @@ jobs:
           | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
           | xargs grep -e "^#include.*vtk"
 
+    - name: No "using namespace" directive in header files
+      run: |
+        ! git ls-files \
+          | grep -E "\.h$|\.hpp$" \
+          | xargs grep "using namespace"
+
 
   # ------------- #
   # Code lint job #
