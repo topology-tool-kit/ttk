@@ -12,9 +12,6 @@
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 
-#ifndef _MERGETREEDISTANCE_H
-#define _MERGETREEDISTANCE_H
-
 #pragma once
 
 #include <stack>
@@ -259,8 +256,8 @@ namespace ttk {
     // ----------------------------------------
     template <class dataType>
     dataType
-      computeDistance(FTMTree_MT *tree1,
-                      FTMTree_MT *tree2,
+      computeDistance(ftm::FTMTree_MT *tree1,
+                      ftm::FTMTree_MT *tree2,
                       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
                         &outputMatching) {
       // ---------------------
@@ -316,8 +313,8 @@ namespace ttk {
 
     template <class dataType>
     dataType computeDistance(
-      FTMTree_MT *tree1,
-      FTMTree_MT *tree2,
+      ftm::FTMTree_MT *tree1,
+      ftm::FTMTree_MT *tree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode>> &outputMatching) {
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
         realOutputMatching;
@@ -330,8 +327,8 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType execute(MergeTree<dataType> &mTree1,
-                     MergeTree<dataType> &mTree2,
+    dataType execute(ftm::MergeTree<dataType> &mTree1,
+                     ftm::MergeTree<dataType> &mTree2,
                      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
                        &outputMatching) {
       Memory m;
@@ -348,11 +345,11 @@ namespace ttk {
       // ---------------------
       // ----- Preprocessing
       // --------------------
-      MergeTree<dataType> tree1Ori = mTree1;
-      MergeTree<dataType> tree2Ori = mTree2;
+      ftm::MergeTree<dataType> tree1Ori = mTree1;
+      ftm::MergeTree<dataType> tree2Ori = mTree2;
       if(saveTree_) {
-        mTree1 = copyMergeTree<dataType>(mTree1);
-        mTree2 = copyMergeTree<dataType>(mTree2);
+        mTree1 = ftm::copyMergeTree<dataType>(mTree1);
+        mTree2 = ftm::copyMergeTree<dataType>(mTree2);
         tree1 = &(mTree1.tree);
         tree2 = &(mTree2.tree);
       }
@@ -415,8 +412,8 @@ namespace ttk {
 
     template <class dataType>
     dataType execute(
-      MergeTree<dataType> &tree1,
-      MergeTree<dataType> &tree2,
+      ftm::MergeTree<dataType> &tree1,
+      ftm::MergeTree<dataType> &tree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode>> &outputMatching) {
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
         realOutputMatching;
@@ -555,12 +552,12 @@ namespace ttk {
       int ttkNotUsed(nCols)) {
       std::vector<int> tree1NodeChildSize, tree2NodeChildSize;
       for(unsigned int i = 0; i < tree1->getNumberOfNodes(); ++i) {
-        std::vector<idNode> children;
+        std::vector<ftm::idNode> children;
         tree1->getChildren(i, children);
         tree1NodeChildSize.push_back(children.size());
       }
       for(unsigned int j = 0; j < tree2->getNumberOfNodes(); ++j) {
-        std::vector<idNode> children;
+        std::vector<ftm::idNode> children;
         tree2->getChildren(j, children);
         tree2NodeChildSize.push_back(children.size());
       }
@@ -1126,7 +1123,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    void verifyMergeTreeStructure(FTMTree_MT *tree) {
+    void verifyMergeTreeStructure(ftm::FTMTree_MT *tree) {
       bool problem = false;
 
       bool isJT = tree->isJoinTree<dataType>();
@@ -1153,7 +1150,7 @@ namespace ttk {
           problem |= thisProblem;
         }
 
-        std::vector<idNode> children;
+        std::vector<ftm::idNode> children;
         tree->getChildren(node, children);
         for(auto c : children)
           queue.emplace(c);
@@ -1220,5 +1217,3 @@ namespace ttk {
   }; // MergeTreeDistance class
 
 } // namespace ttk
-
-#endif

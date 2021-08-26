@@ -5,10 +5,6 @@
 ///
 /// This VTK filter uses the ttk::MergeTreeDistanceMatrix module to compute the
 /// distance matrix of a group of merge trees.
-///
-
-#ifndef _MERGETREEDISTANCEMATRIX_H
-#define _MERGETREEDISTANCEMATRIX_H
 
 #pragma once
 
@@ -41,13 +37,13 @@ namespace ttk {
      * Implementation of the algorithm.
      */
     template <class dataType>
-    void execute(std::vector<MergeTree<dataType>> trees,
+    void execute(std::vector<ftm::MergeTree<dataType>> &trees,
                  std::vector<std::vector<double>> &distanceMatrix) {
       executePara<dataType>(trees, distanceMatrix);
     }
 
     template <class dataType>
-    void executePara(std::vector<MergeTree<dataType>> trees,
+    void executePara(std::vector<ftm::MergeTree<dataType>> &trees,
                      std::vector<std::vector<double>> &distanceMatrix) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(this->threadNumber_)
@@ -62,7 +58,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    void executeParaImpl(std::vector<MergeTree<dataType>> trees,
+    void executeParaImpl(std::vector<ftm::MergeTree<dataType>> &trees,
                          std::vector<std::vector<double>> &distanceMatrix) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
 #ifdef TTK_ENABLE_OPENMP
@@ -116,5 +112,3 @@ namespace ttk {
   }; // MergeTreeDistanceMatrix class
 
 } // namespace ttk
-
-#endif
