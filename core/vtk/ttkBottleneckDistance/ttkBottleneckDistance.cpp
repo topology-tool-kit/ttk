@@ -226,9 +226,9 @@ int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
       }
     };
 
-    const auto p0 = pairPoint(pair0, is2D0, spacing / 2.0);
+    const auto p0 = pairPoint(pair0, is2D0, -spacing / 2.0);
     points->SetPoint(2 * i + 0, p0.data());
-    const auto p1 = pairPoint(pair1, is2D1, -spacing / 2.0);
+    const auto p1 = pairPoint(pair1, is2D1, spacing / 2.0);
     points->SetPoint(2 * i + 1, p1.data());
 
     std::array<vtkIdType, 2> ids{
@@ -382,8 +382,8 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
 
   vtkNew<vtkUnstructuredGrid> vtu0{}, vtu1{};
   if(this->UseGeometricSpacing) {
-    translateDiagram(vtu0, inputDiags[0], this->Spacing / 2.0);
-    translateDiagram(vtu1, inputDiags[1], -this->Spacing / 2.0);
+    translateDiagram(vtu0, inputDiags[0], -this->Spacing / 2.0);
+    translateDiagram(vtu1, inputDiags[1], this->Spacing / 2.0);
   } else {
     vtu0->ShallowCopy(inputDiags[0]);
     vtu1->ShallowCopy(inputDiags[1]);
