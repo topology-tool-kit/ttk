@@ -8,7 +8,6 @@ TwoSkeleton::TwoSkeleton() {
 }
 
 int TwoSkeleton::buildCellNeighborsFromEdges(
-  const SimplexId &vertexNumber,
   const CellArray &cellArray,
   FlatJaggedArray &cellNeighbors,
   const FlatJaggedArray &edgeStars) const {

@@ -227,7 +227,7 @@ int ExplicitTriangulation::preconditionCellNeighborsInternal() {
       TwoSkeleton twoSkeleton;
       twoSkeleton.setWrapper(this);
       twoSkeleton.buildCellNeighborsFromEdges(
-        vertexNumber_, *cellArray_, cellNeighborData_, edgeStarData_);
+        *cellArray_, cellNeighborData_, edgeStarData_);
     }
   }
 
@@ -521,7 +521,7 @@ int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setWrapper(this);
     return zeroSkeleton.buildVertexNeighbors(
-      vertexNumber_, *cellArray_, vertexNeighborData_, edgeList_);
+      vertexNumber_, vertexNeighborData_, edgeList_);
   }
   return 0;
 }

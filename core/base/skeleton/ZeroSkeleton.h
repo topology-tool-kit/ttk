@@ -93,7 +93,6 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     int buildVertexNeighbors(
       const SimplexId &vertexNumber,
-      const CellArray &cellArray,
       FlatJaggedArray &vertexNeighbors,
       const std::vector<std::array<SimplexId, 2>> &edgeList) const;
 

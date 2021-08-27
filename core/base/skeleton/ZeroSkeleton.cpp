@@ -172,7 +172,6 @@ int ZeroSkeleton::buildVertexLinks(
 
 int ZeroSkeleton::buildVertexNeighbors(
   const SimplexId &vertexNumber,
-  const CellArray &cellArray,
   FlatJaggedArray &vertexNeighbors,
   const std::vector<std::array<SimplexId, 2>> &edgeList) const {
 

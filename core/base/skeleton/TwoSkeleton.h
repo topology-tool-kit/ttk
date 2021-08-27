@@ -45,8 +45,7 @@ namespace ttk {
     /// internal vertex star list. If this std::vector is not empty but
     /// incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
-                                    const CellArray &cellArray,
+    int buildCellNeighborsFromEdges(const CellArray &cellArray,
                                     FlatJaggedArray &cellNeighbors,
                                     const FlatJaggedArray &edgeStars) const;
 
