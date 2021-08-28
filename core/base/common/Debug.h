@@ -451,6 +451,7 @@ namespace ttk {
 } // namespace ttk
 
 #include <Os.h>
+#include <Timer.h>
 
 namespace ttk {
   /// \brief Legacy backward compatibility

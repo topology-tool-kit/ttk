@@ -70,8 +70,6 @@ namespace ttk {
 
     static int getNumberOfCores();
 
-    static double getTimeStamp();
-
     static std::vector<std::string>
       listFilesInDirectory(const std::string &directoryName,
                            const std::string &extension);
@@ -121,38 +119,6 @@ namespace ttk {
     float initialMemory_;
   };
 
-  class Timer {
-
-  public:
-    Timer() {
-      start_ = getTimeStamp();
-    }
-
-    Timer(const Timer &other) {
-      start_ = other.start_;
-    }
-
-    inline double getElapsedTime() {
-
-      double end = getTimeStamp();
-      return end - start_;
-    }
-
-    inline double getStartTime() {
-      return start_;
-    }
-
-    inline void reStart() {
-      start_ = getTimeStamp();
-    }
-
-  protected:
-    inline double getTimeStamp() {
-      return OsCall::getTimeStamp();
-    }
-
-    double start_;
-  };
 } // namespace ttk
 
 #endif

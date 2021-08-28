@@ -1,7 +1,6 @@
 #pragma once
 
-#include <DataTypes.h>
-#include <Debug.h>
+#include <BaseClass.h>
 
 #include <algorithm>
 #include <vector>
