@@ -139,7 +139,7 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data states
+    - name: Run ttk-data states [NOT ENFORCED]
       id: validate
       continue-on-error: true
       run: |
