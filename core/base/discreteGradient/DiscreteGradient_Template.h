@@ -472,7 +472,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   }
 
   this->printMsg(
-    " Initialization step", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Initialization step #1", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -496,7 +496,7 @@ int DiscreteGradient::orderSaddleSaddleConnections1(
   }
 
   this->printMsg(
-    " Ordering of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Ordering of the vpaths #1", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -881,8 +881,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
     ++numberOfIterations;
   }
 
-  this->printMsg(
-    " Processing of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(" Processing of the vpaths #1", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -934,7 +934,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
     saddle1Index, saddle2Index, triangulation);
 
-  this->printMsg("Saddle-Saddle pairs simplified", 1.0, t.getElapsedTime(),
+  this->printMsg("Saddle-Saddle pairs simplified #1", 1.0, t.getElapsedTime(),
                  this->threadNumber_);
 
   return 0;
@@ -1065,7 +1065,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   }
 
   this->printMsg(
-    " Initialization step", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Initialization step #2", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1089,7 +1089,7 @@ int DiscreteGradient::orderSaddleSaddleConnections2(
   }
 
   this->printMsg(
-    " Ordering of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Ordering of the vpaths #2", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1474,8 +1474,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
     ++numberOfIterations;
   }
 
-  this->printMsg(
-    " Processing of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(" Processing of the vpaths #2", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -1527,7 +1527,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
     saddle1Index, saddle2Index, triangulation);
 
-  this->printMsg("Saddle-Saddle pairs simplified", 1.0, t.getElapsedTime(),
+  this->printMsg("Saddle-Saddle pairs simplified #2", 1.0, t.getElapsedTime(),
                  this->threadNumber_);
 
   return 0;
@@ -1720,38 +1720,27 @@ void DiscreteGradient::computeSaddleSaddlePersistencePairs(
 template <typename triangulationType>
 SimplexId DiscreteGradient::getNumberOfCells(
   const int dimension, const triangulationType &triangulation) const {
-  if(dimensionality_ == 2) {
-    switch(dimension) {
-      case 0:
-        return triangulation.getNumberOfVertices();
-        break;
 
-      case 1:
-        return triangulation.getNumberOfEdges();
-        break;
+  if(dimension > this->dimensionality_ || dimension < 0) {
+    return -1;
+  }
 
-      case 2:
-        return triangulation.getNumberOfCells();
-        break;
-    }
-  } else if(dimensionality_ == 3) {
-    switch(dimension) {
-      case 0:
-        return triangulation.getNumberOfVertices();
-        break;
+  switch(dimension) {
+    case 0:
+      return triangulation.getNumberOfVertices();
+      break;
 
-      case 1:
-        return triangulation.getNumberOfEdges();
-        break;
+    case 1:
+      return triangulation.getNumberOfEdges();
+      break;
 
-      case 2:
-        return triangulation.getNumberOfTriangles();
-        break;
+    case 2:
+      return triangulation.getNumberOfTriangles();
+      break;
 
-      case 3:
-        return triangulation.getNumberOfCells();
-        break;
-    }
+    case 3:
+      return triangulation.getNumberOfCells();
+      break;
   }
 
   return -1;
@@ -2183,49 +2172,51 @@ int DiscreteGradient::processLowerStars(
 template <typename triangulationType>
 bool DiscreteGradient::isBoundary(
   const Cell &cell, const triangulationType &triangulation) const {
-  const int cellDim = cell.dim_;
-  const SimplexId cellId = cell.id_;
 
-  if(dimensionality_ == 2) {
-    switch(cellDim) {
-      case 0:
-        return triangulation.isVertexOnBoundary(cellId);
+  if(cell.dim_ > this->dimensionality_ || cell.dim_ < 0) {
+    return false;
+  }
 
-      case 1:
-        return triangulation.isEdgeOnBoundary(cellId);
+  if(cell.dim_ == 0) {
+    return triangulation.isVertexOnBoundary(cell.id_);
+  }
 
-      case 2:
-        for(int i = 0; i < 3; ++i) {
-          SimplexId edgeId;
-          triangulation.getCellEdge(cellId, i, edgeId);
-          if(triangulation.isEdgeOnBoundary(edgeId)) {
-            return true;
-          }
-        }
-        break;
+  if(cell.dim_ == 1) {
+    if(this->dimensionality_ > 1) {
+      return triangulation.isEdgeOnBoundary(cell.id_);
     }
-  } else if(dimensionality_ == 3) {
-    switch(cellDim) {
-      case 0:
-        return triangulation.isVertexOnBoundary(cellId);
-
-      case 1:
-        return triangulation.isEdgeOnBoundary(cellId);
-
-      case 2:
-        return triangulation.isTriangleOnBoundary(cellId);
-
-      case 3:
-        for(int i = 0; i < 4; ++i) {
-          SimplexId triangleId;
-          triangulation.getCellTriangle(cellId, i, triangleId);
-          if(triangulation.isTriangleOnBoundary(triangleId)) {
-            return true;
-          }
-        }
-        break;
+    for(int i = 0; i < 2; ++i) {
+      SimplexId v{};
+      triangulation.getEdgeVertex(cell.id_, i, v);
+      if(triangulation.isVertexOnBoundary(v)) {
+        return true;
+      }
     }
   }
+
+  if(cell.dim_ == 2) {
+    if(this->dimensionality_ > 2) {
+      return triangulation.isTriangleOnBoundary(cell.id_);
+    }
+    for(int i = 0; i < 3; ++i) {
+      SimplexId e{};
+      triangulation.getCellEdge(cell.id_, i, e);
+      if(triangulation.isEdgeOnBoundary(e)) {
+        return true;
+      }
+    }
+  }
+
+  if(cell.dim_ == 3) {
+    for(int i = 0; i < 4; ++i) {
+      SimplexId t{};
+      triangulation.getCellTriangle(cell.id_, i, t);
+      if(triangulation.isTriangleOnBoundary(t)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
@@ -2244,99 +2235,62 @@ SimplexId
   TTK_FORCE_USE(triangulation);
 #endif // !TTK_ENABLE_DCG_OPTIMIZE_MEMORY
 
+  if((cell.dim_ > this->dimensionality_ - 1 && !isReverse)
+     || (cell.dim_ > this->dimensionality_ && isReverse) || cell.dim_ < 0) {
+    return -1;
+  }
+
   SimplexId id{-1};
-  if(dimensionality_ == 2) {
-    switch(cell.dim_) {
-      case 0:
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getVertexEdge(cell.id_, gradient_[0][cell.id_], id);
-#else
-        return gradient_[0][cell.id_];
-#endif
-        break;
 
-      case 1:
-        if(isReverse) {
+  if(cell.dim_ == 0) {
+    if(!isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getEdgeVertex(cell.id_, gradient_[1][cell.id_], id);
-          return id;
+      triangulation.getVertexEdge(cell.id_, gradient_[0][cell.id_], id);
 #else
-          return gradient_[1][cell.id_];
+      id = gradient_[0][cell.id_];
 #endif
-        }
-
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getEdgeStar(cell.id_, gradient_[2][cell.id_], id);
-#else
-        return gradient_[2][cell.id_];
-#endif
-        break;
-
-      case 2:
-        if(isReverse) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getCellEdge(cell.id_, gradient_[3][cell.id_], id);
-          return id;
-#else
-          return gradient_[3][cell.id_];
-#endif
-        }
-        break;
     }
-  } else if(dimensionality_ == 3) {
-    switch(cell.dim_) {
-      case 0:
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getVertexEdge(cell.id_, gradient_[0][cell.id_], id);
-#else
-        return gradient_[0][cell.id_];
-#endif
-        break;
+  }
 
-      case 1:
-        if(isReverse) {
+  else if(cell.dim_ == 1) {
+    if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getEdgeVertex(cell.id_, gradient_[1][cell.id_], id);
-          return id;
+      triangulation.getEdgeVertex(cell.id_, gradient_[1][cell.id_], id);
 #else
-          return gradient_[1][cell.id_];
+      id = gradient_[1][cell.id_];
 #endif
-        }
+    } else {
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+      triangulation.getEdgeTriangle(cell.id_, gradient_[2][cell.id_], id);
+#else
+      id = gradient_[2][cell.id_];
+#endif
+    }
+  }
 
+  else if(cell.dim_ == 2) {
+    if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getEdgeTriangle(cell.id_, gradient_[2][cell.id_], id);
+      triangulation.getTriangleEdge(cell.id_, gradient_[3][cell.id_], id);
 #else
-        return gradient_[2][cell.id_];
+      id = gradient_[3][cell.id_];
 #endif
-        break;
+    } else {
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+      triangulation.getTriangleStar(cell.id_, gradient_[4][cell.id_], id);
+#else
+      id = gradient_[4][cell.id_];
+#endif
+    }
+  }
 
-      case 2:
-        if(isReverse) {
+  else if(cell.dim_ == 3) {
+    if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getTriangleEdge(cell.id_, gradient_[3][cell.id_], id);
-          return id;
+      triangulation.getCellTriangle(cell.id_, gradient_[5][cell.id_], id);
 #else
-          return gradient_[3][cell.id_];
+      id = gradient_[5][cell.id_];
 #endif
-        }
-
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getTriangleStar(cell.id_, gradient_[4][cell.id_], id);
-#else
-        return gradient_[4][cell.id_];
-#endif
-        break;
-
-      case 3:
-        if(isReverse) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getCellTriangle(cell.id_, gradient_[5][cell.id_], id);
-          return id;
-#else
-          return gradient_[5][cell.id_];
-#endif
-        }
-        break;
     }
   }
 
@@ -2349,84 +2303,43 @@ int DiscreteGradient::getDescendingPath(
   std::vector<Cell> &vpath,
   const triangulationType &triangulation) const {
 
-  if(dimensionality_ == 2) {
-    if(cell.dim_ == 0) {
-      // assume that cellId is a vertex
-      SimplexId currentId = cell.id_;
-      SimplexId connectedEdgeId;
-      do {
-        // add a vertex
-        const Cell vertex(0, currentId);
-        vpath.push_back(vertex);
+  if(cell.dim_ == 0) {
+    // assume that cellId is a vertex
+    SimplexId currentId = cell.id_;
+    SimplexId connectedEdgeId;
+    do {
+      // add a vertex
+      const Cell vertex(0, currentId);
+      vpath.push_back(vertex);
 
-        if(isCellCritical(vertex)) {
+      if(isCellCritical(vertex)) {
+        break;
+      }
+
+      connectedEdgeId = getPairedCell(vertex, triangulation);
+      if(connectedEdgeId == -1) {
+        break;
+      }
+
+      // add an edge
+      const Cell edge(1, connectedEdgeId);
+      vpath.push_back(edge);
+
+      if(isCellCritical(edge)) {
+        break;
+      }
+
+      for(int i = 0; i < 2; ++i) {
+        SimplexId vertexId;
+        triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
+
+        if(vertexId != currentId) {
+          currentId = vertexId;
           break;
         }
+      }
 
-        connectedEdgeId = getPairedCell(vertex, triangulation);
-        if(connectedEdgeId == -1) {
-          break;
-        }
-
-        // add an edge
-        const Cell edge(1, connectedEdgeId);
-        vpath.push_back(edge);
-
-        if(isCellCritical(edge)) {
-          break;
-        }
-
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
-
-          if(vertexId != currentId) {
-            currentId = vertexId;
-            break;
-          }
-        }
-
-      } while(connectedEdgeId != -1);
-    }
-  } else if(dimensionality_ == 3) {
-    if(cell.dim_ == 0) {
-      // assume that cellId is a vertex
-      SimplexId currentId = cell.id_;
-      SimplexId connectedEdgeId;
-      do {
-        // add a vertex
-        const Cell vertex(0, currentId);
-        vpath.push_back(vertex);
-
-        if(isCellCritical(vertex)) {
-          break;
-        }
-
-        connectedEdgeId = getPairedCell(vertex, triangulation);
-        if(connectedEdgeId == -1) {
-          break;
-        }
-
-        // add an edge
-        const Cell edge(1, connectedEdgeId);
-        vpath.push_back(edge);
-
-        if(isCellCritical(edge)) {
-          break;
-        }
-
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
-
-          if(vertexId != currentId) {
-            currentId = vertexId;
-            break;
-          }
-        }
-
-      } while(connectedEdgeId != -1);
-    }
+    } while(connectedEdgeId != -1);
   }
 
   return 0;

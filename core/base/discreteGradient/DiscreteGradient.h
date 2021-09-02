@@ -291,6 +291,10 @@ namespace ttk {
         // set size to 0 but keep allocated memory
         this->visitedIds_.clear();
       }
+      void insert(SimplexId id) {
+        this->isVisited_[id] = true;
+        this->visitedIds_.emplace_back(id);
+      }
     };
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
@@ -369,15 +373,6 @@ saddle-connectors.
       }
 
       /**
-       * Compute the difference of function values of a pair of cells.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType getPersistence(const Cell &up,
-                              const Cell &down,
-                              const dataType *const scalars,
-                              const triangulationType &triangulation) const;
-
-      /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
@@ -418,12 +413,14 @@ according to them.
           numberOfVertices_ = data->getNumberOfVertices();
 
           data->preconditionBoundaryVertices();
-          data->preconditionBoundaryEdges();
           data->preconditionVertexNeighbors();
           data->preconditionVertexEdges();
           data->preconditionVertexStars();
           data->preconditionEdges();
           data->preconditionEdgeStars();
+          if(dimensionality_ >= 2) {
+            data->preconditionBoundaryEdges();
+          }
           if(dimensionality_ == 2) {
             data->preconditionCellEdges();
           } else if(dimensionality_ == 3) {
@@ -699,6 +696,15 @@ in the gradient.
       template <typename triangulationType>
       int processLowerStars(const SimplexId *const offsets,
                             const triangulationType &triangulation);
+
+      /**
+       * Compute the difference of function values of a pair of cells.
+       */
+      template <typename dataType, typename triangulationType>
+      dataType getPersistence(const Cell &up,
+                              const Cell &down,
+                              const dataType *const scalars,
+                              const triangulationType &triangulation) const;
 
       /**
        * Get the list of maxima candidates for simplification.
