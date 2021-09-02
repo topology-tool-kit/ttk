@@ -190,6 +190,10 @@ jobs:
         key: ccache-macos-${{ github.sha }}
         restore-keys: ccache-macos
 
+    - name: Reduce ccache cache size
+      run: |
+        ccache -M 128M && ccache -c
+
     - name: Cache ttk-paraview package
       uses: actions/cache@v2
       id: cache-ttk-paraview
