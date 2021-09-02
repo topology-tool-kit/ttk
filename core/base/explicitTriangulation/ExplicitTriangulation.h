@@ -560,11 +560,7 @@ namespace ttk {
 
       // TODO: ASSUME Regular Mesh Here to compute dimension!
       if(cellNumber) {
-        if(cellArray_->getCellVertexNumber(0) == 3) {
-          maxCellDim_ = 2;
-        } else {
-          maxCellDim_ = 3;
-        }
+        maxCellDim_ = cellArray_->getCellVertexNumber(0) - 1;
       }
       return 0;
     }

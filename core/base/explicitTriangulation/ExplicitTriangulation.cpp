@@ -89,7 +89,7 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     }
   } else {
     // unsupported dimension
-    printErr("Unsupported dimension for boundary precondition");
+    printErr("Unsupported dimension for edge boundary precondition");
     return -1;
   }
 
@@ -128,7 +128,7 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     }
   } else {
     // unsupported dimension
-    printErr("Unsupported dimension for boundary precondition");
+    printErr("Unsupported dimension for triangle boundary precondition");
     return -1;
   }
 
@@ -185,7 +185,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     }
   } else {
     // unsupported dimension
-    printErr("Unsupported dimension for boundary precondition");
+    printErr("Unsupported dimension for vertex boundary precondition");
     return -1;
   }
 
@@ -201,15 +201,9 @@ int ExplicitTriangulation::preconditionCellEdgesInternal() {
     return 1;
   }
 
-  OneSkeleton os;
-  os.setWrapper(this);
-
-  if(tetraEdgeList_.empty() && getDimensionality() == 3) {
-    os.buildEdgeList(
-      vertexNumber_, *cellArray_, nullptr, nullptr, &tetraEdgeList_);
-  } else if(triangleEdgeList_.empty() && getDimensionality() == 2) {
-    os.buildEdgeList(
-      vertexNumber_, *cellArray_, nullptr, nullptr, &triangleEdgeList_);
+  if((tetraEdgeList_.empty() && getDimensionality() == 3)
+     || (triangleEdgeList_.empty() && getDimensionality() == 2)) {
+    this->preconditionEdgesInternal();
   }
 
   return 0;
@@ -229,10 +223,11 @@ int ExplicitTriangulation::preconditionCellNeighborsInternal() {
       threeSkeleton.buildCellNeighborsFromTriangles(
         vertexNumber_, *cellArray_, cellNeighborData_, &triangleStarData_);
     } else if(getDimensionality() == 2) {
+      this->preconditionEdgeStarsInternal();
       TwoSkeleton twoSkeleton;
       twoSkeleton.setWrapper(this);
       twoSkeleton.buildCellNeighborsFromEdges(
-        vertexNumber_, *cellArray_, cellNeighborData_, &edgeStarData_);
+        *cellArray_, cellNeighborData_, edgeStarData_);
     }
   }
 
@@ -293,12 +288,16 @@ int ExplicitTriangulation::preconditionEdgesInternal() {
     OneSkeleton oneSkeleton;
     oneSkeleton.setWrapper(this);
     // also computes edgeStar and triangleEdge / tetraEdge lists for free...
-    if(getDimensionality() == 2) {
-      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_,
-                                       &edgeStarData_, &triangleEdgeList_);
+    if(getDimensionality() == 1) {
+      std::vector<std::array<SimplexId, 1>> tmp{};
+      return oneSkeleton.buildEdgeList<1>(
+        vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tmp);
+    } else if(getDimensionality() == 2) {
+      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_,
+                                       edgeStarData_, triangleEdgeList_);
     } else if(getDimensionality() == 3) {
-      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_,
-                                       &edgeStarData_, &tetraEdgeList_);
+      return oneSkeleton.buildEdgeList(
+        vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tetraEdgeList_);
     }
   }
 
@@ -349,10 +348,7 @@ int ExplicitTriangulation::preconditionEdgeStarsInternal() {
   }
 
   if(edgeStarData_.empty()) {
-    OneSkeleton oneSkeleton;
-    oneSkeleton.setWrapper(this);
-    return oneSkeleton.buildEdgeList<3>(
-      vertexNumber_, *cellArray_, nullptr, &edgeStarData_, nullptr);
+    this->preconditionEdgesInternal();
   }
   return 0;
 }
@@ -365,12 +361,13 @@ int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
   }
 
   if(edgeTriangleData_.empty()) {
-    preconditionTriangleEdgesInternal();
+    this->preconditionEdgesInternal();
+    this->preconditionTriangleEdgesInternal();
 
     TwoSkeleton twoSkeleton;
     twoSkeleton.setWrapper(this);
     return twoSkeleton.buildEdgeTriangles(vertexNumber_, *cellArray_,
-                                          edgeTriangleData_, &edgeList_,
+                                          edgeTriangleData_, edgeList_,
                                           &triangleEdgeList_);
   }
 
@@ -404,6 +401,7 @@ int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
   }
 
   if(triangleEdgeList_.empty()) {
+    this->preconditionEdgesInternal();
 
     // WARNING
     // here triangleStarList and cellTriangleList will be computed (for
@@ -414,8 +412,9 @@ int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
     twoSkeleton.setWrapper(this);
 
     return twoSkeleton.buildTriangleEdgeList(
-      vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeData_,
-      &edgeList_, &triangleList_, &triangleStarData_, &tetraTriangleList_);
+      vertexNumber_, *cellArray_, triangleEdgeList_, edgeList_,
+      &vertexEdgeData_, &triangleList_, &triangleStarData_,
+      &tetraTriangleList_);
   }
 
   return 0;
@@ -470,9 +469,7 @@ int ExplicitTriangulation::preconditionVertexEdgesInternal() {
     ZeroSkeleton zeroSkeleton;
 
     if(edgeList_.empty()) {
-      OneSkeleton oneSkeleton;
-      oneSkeleton.setWrapper(this);
-      oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_);
+      this->preconditionEdgesInternal();
     }
 
     zeroSkeleton.setWrapper(this);
@@ -524,10 +521,11 @@ int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
   }
 
   if((SimplexId)vertexNeighborData_.subvectorsNumber() != vertexNumber_) {
+    this->preconditionEdgesInternal();
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setWrapper(this);
     return zeroSkeleton.buildVertexNeighbors(
-      vertexNumber_, *cellArray_, vertexNeighborData_, &edgeList_);
+      vertexNumber_, vertexNeighborData_, edgeList_);
   }
   return 0;
 }

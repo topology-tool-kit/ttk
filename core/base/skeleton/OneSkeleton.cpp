@@ -1,7 +1,6 @@
 #include <OneSkeleton.h>
 #include <boost/container/small_vector.hpp>
 
-using namespace std;
 using namespace ttk;
 
 OneSkeleton::OneSkeleton() {
@@ -10,7 +9,7 @@ OneSkeleton::OneSkeleton() {
 
 // 2D cells (triangles)
 int OneSkeleton::buildEdgeLinks(
-  const vector<std::array<SimplexId, 2>> &edgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   const FlatJaggedArray &edgeStars,
   const CellArray &cellArray,
   FlatJaggedArray &edgeLinks) const {
@@ -57,7 +56,7 @@ int OneSkeleton::buildEdgeLinks(
 
   edgeLinks.setData(std::move(links), std::move(offsets));
 
-  printMsg("Built " + to_string(edgeNumber) + " edge links", 1,
+  printMsg("Built " + std::to_string(edgeNumber) + " edge links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -65,9 +64,9 @@ int OneSkeleton::buildEdgeLinks(
 
 // 3D cells (tetrahedron)
 int OneSkeleton::buildEdgeLinks(
-  const vector<std::array<SimplexId, 2>> &edgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   const FlatJaggedArray &edgeStars,
-  const vector<std::array<SimplexId, 6>> &cellEdges,
+  const std::vector<std::array<SimplexId, 6>> &cellEdges,
   FlatJaggedArray &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -120,7 +119,7 @@ int OneSkeleton::buildEdgeLinks(
 
   edgeLinks.setData(std::move(links), std::move(offsets));
 
-  printMsg("Built " + to_string(edgeNumber) + " edge links", 1,
+  printMsg("Built " + std::to_string(edgeNumber) + " edge links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -130,35 +129,26 @@ template <std::size_t n>
 int OneSkeleton::buildEdgeList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> *edgeList,
-  FlatJaggedArray *edgeStars,
-  std::vector<std::array<SimplexId, n>> *cellEdgeList) const {
+  std::vector<std::array<SimplexId, 2>> &edgeList,
+  FlatJaggedArray &edgeStars,
+  std::vector<std::array<SimplexId, n>> &cellEdgeList) const {
 
   Timer t;
 
   // check parameters consistency (we need n to be consistent with the
   // dimensionality of the mesh)
-  const auto dim = cellArray.getCellVertexNumber(0) - 1;
-  if(n != dim * (dim + 1) / 2 && cellEdgeList != nullptr) {
+  const size_t dim = cellArray.getCellVertexNumber(0) - 1;
+  if(n != dim * (dim + 1) / 2) {
     this->printErr("Wrong template parameter (" + std::to_string(n)
-                   + "edges per cell in dim " + std::to_string(dim)
-                   + "), unable to compute cellEdgeList");
+                   + " edges per " + std::to_string(dim) + "D cell)");
+    this->printErr("Cannot build edge list");
     return -1;
   }
 
   printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-
-  // we will nee cellEdgeList to compute edgeStars
-  std::vector<std::array<SimplexId, n>> defaultCellEdgeList{};
-  if(edgeStars != nullptr && cellEdgeList == nullptr) {
-    cellEdgeList = &defaultCellEdgeList;
-  }
-
-  if(cellEdgeList != nullptr) {
-    cellEdgeList->resize(cellNumber);
-  }
+  cellEdgeList.resize(cellNumber);
 
   struct EdgeData {
     // the id of the edge higher vertex
@@ -198,15 +188,11 @@ int OneSkeleton::buildEdgeList(
         if(pos == vec.end()) {
           // not found in edgeTable: new edge
           vec.emplace_back(EdgeData{v1, edgeCount});
-          if(cellEdgeList != nullptr) {
-            (*cellEdgeList)[cid][ecid] = edgeCount;
-          }
+          cellEdgeList[cid][ecid] = edgeCount;
           edgeCount++;
         } else {
           // found an existing edge
-          if(cellEdgeList != nullptr) {
-            (*cellEdgeList)[cid][ecid] = pos->id;
-          }
+          cellEdgeList[cid][ecid] = pos->id;
         }
         ecid++;
       }
@@ -219,10 +205,7 @@ int OneSkeleton::buildEdgeList(
   }
 
   // allocate & fill edgeList in parallel
-
-  if(edgeList != nullptr) {
-    edgeList->resize(edgeCount);
-  }
+  edgeList.resize(edgeCount);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -230,49 +213,44 @@ int OneSkeleton::buildEdgeList(
   for(SimplexId i = 0; i < vertexNumber; ++i) {
     const auto &etable = edgeTable[i];
     for(const auto &data : etable) {
-      if(edgeList != nullptr) {
-        (*edgeList)[data.id] = {i, data.highVert};
-      }
+      edgeList[data.id] = {i, data.highVert};
     }
   }
 
   // return cellEdgeList to get edgeStars
+  std::vector<SimplexId> offsets(edgeCount + 1);
+  // number of cells processed per edge
+  std::vector<SimplexId> starIds(edgeCount);
 
-  if(cellEdgeList != nullptr && edgeStars != nullptr) {
-    std::vector<SimplexId> offsets(edgeCount + 1);
-    // number of cells processed per edge
-    std::vector<SimplexId> starIds(edgeCount);
-
-    // store number of cells per edge
-    for(const auto &ce : *cellEdgeList) {
-      for(const auto eid : ce) {
-        offsets[eid + 1]++;
-      }
+  // store number of cells per edge
+  for(const auto &ce : cellEdgeList) {
+    for(const auto eid : ce) {
+      offsets[eid + 1]++;
     }
-
-    // compute partial sum of number of cells per edge
-    for(size_t i = 1; i < offsets.size(); ++i) {
-      offsets[i] += offsets[i - 1];
-    }
-
-    // allocate flat edge stars vector
-    std::vector<SimplexId> edgeSt(offsets.back());
-
-    // fill flat neighbors vector using offsets and neighbors count vectors
-    for(size_t i = 0; i < cellEdgeList->size(); ++i) {
-      const auto &ce{(*cellEdgeList)[i]};
-      for(const auto eid : ce) {
-        edgeSt[offsets[eid] + starIds[eid]] = i;
-        starIds[eid]++;
-      }
-    }
-
-    // fill FlatJaggedArray struct
-    edgeStars->setData(std::move(edgeSt), std::move(offsets));
   }
 
+  // compute partial sum of number of cells per edge
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
+  }
+
+  // allocate flat edge stars vector
+  std::vector<SimplexId> edgeSt(offsets.back());
+
+  // fill flat neighbors vector using offsets and neighbors count vectors
+  for(size_t i = 0; i < cellEdgeList.size(); ++i) {
+    const auto &ce{cellEdgeList[i]};
+    for(const auto eid : ce) {
+      edgeSt[offsets[eid] + starIds[eid]] = i;
+      starIds[eid]++;
+    }
+  }
+
+  // fill FlatJaggedArray struct
+  edgeStars.setData(std::move(edgeSt), std::move(offsets));
+
   printMsg(
-    "Built " + to_string(edgeCount) + " edges", 1, t.getElapsedTime(), 1);
+    "Built " + std::to_string(edgeCount) + " edges", 1, t.getElapsedTime(), 1);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // 1 thread: 10.4979 s
@@ -281,18 +259,26 @@ int OneSkeleton::buildEdgeList(
   return 0;
 }
 
+// explicit template instantiation for 1D cells (edges)
+template int OneSkeleton::buildEdgeList<1>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  std::vector<std::array<SimplexId, 2>> &edgeList,
+  FlatJaggedArray &edgeStars,
+  std::vector<std::array<SimplexId, 1>> &cellEdgeList) const;
+
 // explicit template instantiation for 2D cells (triangles)
 template int OneSkeleton::buildEdgeList<3>(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> *edgeList,
-  FlatJaggedArray *edgeStars,
-  std::vector<std::array<SimplexId, 3>> *cellEdgeList) const;
+  std::vector<std::array<SimplexId, 2>> &edgeList,
+  FlatJaggedArray &edgeStars,
+  std::vector<std::array<SimplexId, 3>> &cellEdgeList) const;
 
 // explicit template instantiation for 3D cells (tetrathedron)
 template int OneSkeleton::buildEdgeList<6>(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> *edgeList,
-  FlatJaggedArray *edgeStars,
-  std::vector<std::array<SimplexId, 6>> *cellEdgeList) const;
+  std::vector<std::array<SimplexId, 2>> &edgeList,
+  FlatJaggedArray &edgeStars,
+  std::vector<std::array<SimplexId, 6>> &cellEdgeList) const;

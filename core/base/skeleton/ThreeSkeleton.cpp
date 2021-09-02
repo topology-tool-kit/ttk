@@ -1,7 +1,6 @@
 #include <ThreeSkeleton.h>
 #include <boost/container/small_vector.hpp>
 
-using namespace std;
 using namespace ttk;
 
 ThreeSkeleton::ThreeSkeleton() {
@@ -223,7 +222,7 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
   // convert to a FlatJaggedArray
   cellNeighbors.fillFrom(neighbors);
 
-  printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
+  printMsg("Built " + std::to_string(cellNumber) + " cell neighbors", 1,
            t.getElapsedTime(), threadNumber_);
 
   // ethaneDiol.vtu, 8.7Mtets, richard (4coresHT)

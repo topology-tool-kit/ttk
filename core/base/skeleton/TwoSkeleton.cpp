@@ -1,49 +1,32 @@
 #include <TwoSkeleton.h>
 #include <boost/container/small_vector.hpp>
 
-using namespace std;
 using namespace ttk;
 
 TwoSkeleton::TwoSkeleton() {
-
   setDebugMsgPrefix("TwoSkeleton");
 }
 
-int TwoSkeleton::buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
-                                             const CellArray &cellArray,
-                                             FlatJaggedArray &cellNeighbors,
-                                             FlatJaggedArray *edgeStars) const {
-
-  auto localEdgeStars = edgeStars;
-  FlatJaggedArray defaultEdgeStars{};
-
-  if(!localEdgeStars) {
-    localEdgeStars = &defaultEdgeStars;
-  }
-
-  if(localEdgeStars->empty()) {
-    OneSkeleton os;
-    os.setThreadNumber(threadNumber_);
-    os.setDebugLevel(debugLevel_);
-    os.buildEdgeList<3>(
-      vertexNumber, cellArray, nullptr, localEdgeStars, nullptr);
-  }
+int TwoSkeleton::buildCellNeighborsFromEdges(
+  const CellArray &cellArray,
+  FlatJaggedArray &cellNeighbors,
+  const FlatJaggedArray &edgeStars) const {
 
   Timer t;
 
   printMsg("Building cell neighbors", 0, 0, 1, debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-  const SimplexId edgeNumber = localEdgeStars->subvectorsNumber();
+  const SimplexId edgeNumber = edgeStars.subvectorsNumber();
   std::vector<SimplexId> offsets(cellNumber + 1);
   // number of neigbhors processed per cell
   std::vector<SimplexId> neighborsId(cellNumber);
 
   for(SimplexId i = 0; i < edgeNumber; i++) {
-    if(localEdgeStars->size(i) == 2) {
+    if(edgeStars.size(i) == 2) {
       // tetra cells in edge i's star
-      const auto cs0 = localEdgeStars->get(i, 0);
-      const auto cs1 = localEdgeStars->get(i, 1);
+      const auto cs0 = edgeStars.get(i, 0);
+      const auto cs1 = edgeStars.get(i, 1);
       offsets[cs0 + 1]++;
       offsets[cs1 + 1]++;
     }
@@ -59,10 +42,10 @@ int TwoSkeleton::buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
 
   // fill flat neighbors vector using offsets and neighbors count vectors
   for(SimplexId i = 0; i < edgeNumber; i++) {
-    if(localEdgeStars->size(i) == 2) {
+    if(edgeStars.size(i) == 2) {
       // tetra cells in edge i's star
-      const auto cs0 = localEdgeStars->get(i, 0);
-      const auto cs1 = localEdgeStars->get(i, 1);
+      const auto cs0 = edgeStars.get(i, 0);
+      const auto cs1 = edgeStars.get(i, 1);
       neighbors[offsets[cs0] + neighborsId[cs0]] = cs1;
       neighborsId[cs0]++;
       neighbors[offsets[cs1] + neighborsId[cs1]] = cs0;
@@ -73,7 +56,7 @@ int TwoSkeleton::buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
   // fill FlatJaggedArray struct
   cellNeighbors.setData(std::move(neighbors), std::move(offsets));
 
-  printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
+  printMsg("Built " + std::to_string(cellNumber) + " cell neighbors", 1,
            t.getElapsedTime(), 1);
 
   return 0;
@@ -167,7 +150,7 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
   // convert to a FlatJaggedArray
   cellNeighbors.fillFrom(neighbors);
 
-  printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
+  printMsg("Built " + std::to_string(cellNumber) + " cell neighbors", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -177,7 +160,7 @@ int TwoSkeleton::buildEdgeTriangles(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   FlatJaggedArray &edgeTriangleList,
-  std::vector<std::array<SimplexId, 2>> *edgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   std::vector<std::array<SimplexId, 3>> *triangleEdgeList) const {
 
   // check the consistency of the variables -- to adapt
@@ -186,32 +169,18 @@ int TwoSkeleton::buildEdgeTriangles(
     return -1;
 #endif
 
-  auto localEdgeList = edgeList;
-  vector<std::array<SimplexId, 2>> defaultEdgeList{};
-  if(!localEdgeList) {
-    localEdgeList = &defaultEdgeList;
-  }
-
-  OneSkeleton oneSkeleton;
-  oneSkeleton.setDebugLevel(debugLevel_);
-  oneSkeleton.setThreadNumber(threadNumber_);
-
-  // now do the pre-computation
-  if(localEdgeList->empty()) {
-    oneSkeleton.buildEdgeList(vertexNumber, cellArray, localEdgeList);
-  }
-
   auto localTriangleEdgeList = triangleEdgeList;
-  vector<std::array<SimplexId, 3>> defaultTriangleEdgeList{};
+  std::vector<std::array<SimplexId, 3>> defaultTriangleEdgeList{};
   if(!localTriangleEdgeList) {
     localTriangleEdgeList = &defaultTriangleEdgeList;
   }
 
   if(localTriangleEdgeList->empty()) {
-    buildTriangleEdgeList(vertexNumber, cellArray, *localTriangleEdgeList);
+    buildTriangleEdgeList(
+      vertexNumber, cellArray, *localTriangleEdgeList, edgeList);
   }
 
-  const auto edgeNumber{localEdgeList->size()};
+  const auto edgeNumber{edgeList.size()};
 
   std::vector<SimplexId> offsets(edgeNumber + 1);
   // number of neighbors processed per vertex
@@ -251,7 +220,7 @@ int TwoSkeleton::buildEdgeTriangles(
   // fill FlatJaggedArray struct
   edgeTriangleList.setData(std::move(edgeTriangles), std::move(offsets));
 
-  printMsg("Built " + to_string(edgeNumber) + " edge triangles", 1,
+  printMsg("Built " + std::to_string(edgeNumber) + " edge triangles", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -260,9 +229,9 @@ int TwoSkeleton::buildEdgeTriangles(
 int TwoSkeleton::buildTriangleList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 3>> *triangleList,
+  std::vector<std::array<SimplexId, 3>> *triangleList,
   FlatJaggedArray *triangleStars,
-  vector<std::array<SimplexId, 4>> *cellTriangleList) const {
+  std::vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   Timer t;
 
@@ -415,8 +384,8 @@ int TwoSkeleton::buildTriangleList(
     triangleStars->setData(std::move(triangleSt), std::move(offsets));
   }
 
-  printMsg(
-    "Built " + to_string(nTriangles) + " triangles", 1, t.getElapsedTime(), 1);
+  printMsg("Built " + std::to_string(nTriangles) + " triangles", 1,
+           t.getElapsedTime(), 1);
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)// 1 thread: 58.5631 s//
   // 24 threads: 87.5816 s (~) ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - no
   // tet adj// 1 thread: 5.7427 s// 4 threads: 9.14764 s (~)
@@ -430,26 +399,12 @@ int TwoSkeleton::buildTriangleList(
 int TwoSkeleton::buildTriangleEdgeList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 3>> &triangleEdgeList,
+  std::vector<std::array<SimplexId, 3>> &triangleEdgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   FlatJaggedArray *vertexEdgeList,
-  vector<std::array<SimplexId, 2>> *edgeList,
-  vector<std::array<SimplexId, 3>> *triangleList,
+  std::vector<std::array<SimplexId, 3>> *triangleList,
   FlatJaggedArray *triangleStarList,
-  vector<std::array<SimplexId, 4>> *cellTriangleList) const {
-
-  auto localEdgeList = edgeList;
-  vector<std::array<SimplexId, 2>> defaultEdgeList{};
-  if(!localEdgeList) {
-    localEdgeList = &defaultEdgeList;
-  }
-
-  if(!localEdgeList->size()) {
-    OneSkeleton oneSkeleton;
-    oneSkeleton.setDebugLevel(debugLevel_);
-    oneSkeleton.setThreadNumber(threadNumber_);
-
-    oneSkeleton.buildEdgeList(vertexNumber, cellArray, localEdgeList);
-  }
+  std::vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   auto localVertexEdgeList = vertexEdgeList;
   FlatJaggedArray defaultVertexEdgeList{};
@@ -464,7 +419,7 @@ int TwoSkeleton::buildTriangleEdgeList(
     zeroSkeleton.setThreadNumber(threadNumber_);
 
     zeroSkeleton.buildVertexEdges(
-      vertexNumber, (*localEdgeList), (*localVertexEdgeList));
+      vertexNumber, edgeList, (*localVertexEdgeList));
   }
 
   // NOTE:
@@ -472,7 +427,7 @@ int TwoSkeleton::buildTriangleEdgeList(
   // can compute them for free optionally.
 
   auto localTriangleList = triangleList;
-  vector<std::array<SimplexId, 3>> defaultTriangleList{};
+  std::vector<std::array<SimplexId, 3>> defaultTriangleList{};
   if(!localTriangleList) {
     localTriangleList = &defaultTriangleList;
   }
@@ -511,14 +466,14 @@ int TwoSkeleton::buildTriangleEdgeList(
 
   SimplexId triangleNumber = localTriangleList->size();
 
-  printMsg("Built " + to_string(triangleNumber) + " triangle edges", 1,
+  printMsg("Built " + std::to_string(triangleNumber) + " triangle edges", 1,
            tm.getElapsedTime(), threadNumber_);
 
   return 0;
 }
 
 int TwoSkeleton::buildTriangleLinks(
-  const vector<std::array<SimplexId, 3>> &triangleList,
+  const std::vector<std::array<SimplexId, 3>> &triangleList,
   const FlatJaggedArray &triangleStars,
   const CellArray &cellArray,
   FlatJaggedArray &triangleLinks) const {
@@ -582,7 +537,7 @@ int TwoSkeleton::buildTriangleLinks(
 
 int TwoSkeleton::buildVertexTriangles(
   const SimplexId &vertexNumber,
-  const vector<std::array<SimplexId, 3>> &triangleList,
+  const std::vector<std::array<SimplexId, 3>> &triangleList,
   FlatJaggedArray &vertexTriangles) const {
 
   Timer tm;
