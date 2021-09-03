@@ -9,6 +9,7 @@ on:
       - 'v*'
       - 'dev*'
       - 'ci*'
+      - 'check*'
   pull_request:
     # also triggered by pull requests on the "dev" branch
     branches:
