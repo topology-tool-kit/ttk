@@ -34,10 +34,6 @@
 // ttk code includes
 #include <UncertainDataEstimator.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKUNCERTAINDATAESTIMATOR_EXPORT ttkUncertainDataEstimator
   : public ttkAlgorithm,
     protected ttk::UncertainDataEstimator {
@@ -45,7 +41,7 @@ class TTKUNCERTAINDATAESTIMATOR_EXPORT ttkUncertainDataEstimator
 public:
   static ttkUncertainDataEstimator *New();
 
-  vtkTypeMacro(ttkUncertainDataEstimator, vtkAlgorithm);
+  vtkTypeMacro(ttkUncertainDataEstimator, ttkAlgorithm);
 
   vtkGetMacro(ComputeLowerBound, bool);
   vtkSetMacro(ComputeLowerBound, bool);
