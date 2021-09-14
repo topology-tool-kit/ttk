@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
 <!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
 <!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
 <!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
@@ -7,7 +7,12 @@
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMergeTreeTemporalReductionEncoding" class="ttkMergeTreeTemporalReductionEncoding" label="TTK MergeTreeTemporalReductionEncoding">
       <Documentation long_help="MergeTreeTemporalReductionEncoding Long" short_help="MergeTreeTemporalReductionEncoding Short">
-          TODO
+This VTK filter uses the ttk::MergeTreeTemporalReductionEncoding module to compute a temporal reduction of a sequence of merge trees.
+\b Related \b publication \n
+"Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
+Proc. of IEEE VIS 2021.\n
+IEEE Transactions on Visualization and Computer Graphics, 2021
       </Documentation>
 
       <!-- INPUT DATA OBJECTS -->

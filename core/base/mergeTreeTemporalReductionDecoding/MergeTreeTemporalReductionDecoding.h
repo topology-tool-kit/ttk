@@ -6,6 +6,11 @@
 /// This module defines the %MergeTreeTemporalReductionDecoding class that
 /// computes the reconstruction of a reduced sequence of merge trees.
 ///
+/// \b Related \b publication \n
+/// "Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+/// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
+/// Proc. of IEEE VIS 2021.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
 
 #pragma once
 

@@ -6,7 +6,14 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMergeTreeTemporalReductionDecoding" class="ttkMergeTreeTemporalReductionDecoding" label="TTK MergeTreeTemporalReductionDecoding">
-      <Documentation long_help="MergeTreeTemporalReductionDecoding Long" short_help="MergeTreeTemporalReductionDecoding Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+      <Documentation long_help="MergeTreeTemporalReductionDecoding Long" short_help="MergeTreeTemporalReductionDecoding Short">
+This VTK filter uses the ttk::MergeTreeTemporalReductionDecoding module to compute the reconstruction of a reduced sequence of merge trees.
+\b Related \b publication \n
+"Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
+Proc. of IEEE VIS 2021.\n
+IEEE Transactions on Visualization and Computer Graphics, 2021
+      </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty
