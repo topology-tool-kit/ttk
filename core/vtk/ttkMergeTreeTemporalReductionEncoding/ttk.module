@@ -1,0 +1,13 @@
+NAME
+  ttkMergeTreeTemporalReductionEncoding
+SOURCES
+  ttkMergeTreeTemporalReductionEncoding.cpp
+HEADERS
+  ttkMergeTreeTemporalReductionEncoding.h
+  ttkMergeTreeTemporalReductionUtils.h
+DEPENDS
+  mergeTreeTemporalReductionEncoding
+  ttkAlgorithm
+  ttkFTMTree
+  ttkPlanarGraphLayout
+  dimensionReduction

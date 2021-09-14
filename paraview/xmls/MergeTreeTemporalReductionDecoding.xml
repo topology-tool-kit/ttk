@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreeTemporalReductionDecoding" class="ttkMergeTreeTemporalReductionDecoding" label="TTK MergeTreeTemporalReductionDecoding">
+      <Documentation long_help="MergeTreeTemporalReductionDecoding Long" short_help="MergeTreeTemporalReductionDecoding Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+          name="Key Frames"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Merge trees to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="Metadata"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Encoding metadata.
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+               <!-- Output options -->
+                
+                <IntVectorProperty
+                name="OutputTrees"
+                command="SetOutputTrees"
+                label="Output Trees"
+                number_of_elements="1"
+                default_values="1">
+                  <Documentation>
+                    Display output trees. 
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="DimensionSpacing"
+                command="SetDimensionSpacing"
+                label="Dimension Spacing"
+                number_of_elements="1"
+                default_values="1.0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <IntVectorProperty
+                name="PlanarLayout"
+                command="SetPlanarLayout"
+                label="Planar Layout"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Display trees in a plane or in the original domain.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="BranchDecompositionPlanarLayout"
+                command="SetBranchDecompositionPlanarLayout"
+                label="Branch Decomposition Planar Layout"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="BranchSpacing"
+                command="SetBranchSpacing"
+                label="Branch Spacing"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="BranchDecompositionPlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="ImportantPairs"
+                command="SetImportantPairs"
+                label="Important Pairs (%)"
+                number_of_elements="1"
+                default_values="50">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="ImportantPairsSpacing"
+                command="SetImportantPairsSpacing"
+                label="Important Pairs Spacing"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="NonImportantPairsSpacing"
+                command="SetNonImportantPairsSpacing"
+                label="Non Important Pairs Spacing"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="NonImportantPairsProximity"
+                command="SetNonImportantPairsProximity"
+                label="Non Important Pairs Proximity"
+                number_of_elements="1"
+                default_values="0.05">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="1" />
+                </DoubleVectorProperty>
+                
+                <IntVectorProperty
+                name="RescaleTreesIndividually"
+                command="SetRescaleTreesIndividually"
+                label="Rescale Trees Individually"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Rescale trees individually. If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty> 
+                
+            <PropertyGroup panel_widget="Line" label="Output options">
+              <Property name="OutputTrees"/>
+              <Property name="DimensionSpacing"/>
+              <Property name="PlanarLayout"/>
+              <Property name="BranchDecompositionPlanarLayout"/>
+              <Property name="BranchSpacing"/>
+              <Property name="ImportantPairs"/>
+              <Property name="ImportantPairsSpacing"/>
+              <Property name="NonImportantPairsSpacing"/>
+              <Property name="NonImportantPairsProximity"/>
+              <Property name="RescaleTreesIndividually"/>
+            </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Reconstructed Sequence" index="0" id="port0" />
+                <OutputPort name="Matching" index="1" id="port1" />
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
