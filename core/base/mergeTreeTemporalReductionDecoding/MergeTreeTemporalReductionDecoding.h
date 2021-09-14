@@ -149,10 +149,10 @@ namespace ttk {
           MergeTree<dataType> tree = computeBarycenter<dataType>(
             mTrees[index1], mTrees[index2], alpha);
           allMT.push_back(tree);
-          // distancesToKeyFrames_[cpt*2] =
-          // computeDistance<dataType>(mTrees[index1], tree);
-          // distancesToKeyFrames_[cpt*2+1] = computeDistance<dataType>(tree,
-          // mTrees[index2]);
+          distancesToKeyFrames_[cpt * 2]
+            = computeDistance<dataType>(mTrees[index1], tree);
+          distancesToKeyFrames_[cpt * 2 + 1]
+            = computeDistance<dataType>(tree, mTrees[index2]);
           ++cpt;
         }
         allMT.push_back(mTrees[index]);
