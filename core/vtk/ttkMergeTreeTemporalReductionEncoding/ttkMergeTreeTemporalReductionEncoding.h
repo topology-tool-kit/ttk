@@ -70,8 +70,6 @@ private:
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
 
-  bool TemporalSubsamplingMDS = false;
-
   // ----------------------
   // Data for visualization
   // ----------------------
