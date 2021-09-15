@@ -453,7 +453,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
 
       <!-- MENU CATEGORY -->
       <Hints>
-        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+        <ShowInMenu category="TTK - Time-varying Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

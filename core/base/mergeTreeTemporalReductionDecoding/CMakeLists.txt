@@ -4,7 +4,5 @@ ttk_add_base_library(mergeTreeTemporalReductionDecoding
   HEADERS
     MergeTreeTemporalReductionDecoding.h
   DEPENDS
-    triangulation
-    ftmTree
     mergeTreeClustering
 )

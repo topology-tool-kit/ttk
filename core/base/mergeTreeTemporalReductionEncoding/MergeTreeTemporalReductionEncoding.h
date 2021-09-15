@@ -16,7 +16,6 @@
 
 // ttk common includes
 #include <Debug.h>
-#include <Triangulation.h>
 
 #include <FTMTreeUtils.h>
 #include <MergeTreeBarycenter.h>

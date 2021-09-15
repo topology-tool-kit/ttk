@@ -8,6 +8,4 @@ HEADERS
 DEPENDS
   mergeTreeTemporalReductionEncoding
   ttkAlgorithm
-  ttkFTMTree
   ttkPlanarGraphLayout
-  dimensionReduction

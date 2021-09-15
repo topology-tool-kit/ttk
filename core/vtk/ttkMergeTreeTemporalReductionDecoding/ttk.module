@@ -8,5 +8,4 @@ DEPENDS
   mergeTreeTemporalReductionDecoding
   ttkAlgorithm
   ttkPlanarGraphLayout
-  ftmTree
   

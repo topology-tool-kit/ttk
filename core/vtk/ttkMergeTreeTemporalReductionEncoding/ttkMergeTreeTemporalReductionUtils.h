@@ -1,37 +1,23 @@
 /// \ingroup base
 /// \class vtk::ttkMergeTreeTemporalReductionUtils
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
+/// \date 2021.
 ///
 
 #ifndef _TTKMERGETREETEMPORALREDUCTIONUTILS_H
 #define _TTKMERGETREETEMPORALREDUCTIONUTILS_H
 
-//#include <ttkUtils.h>
-#include <FTMStructures.h>
-#include <FTMTree.h>
 #include <FTMTreeUtils.h>
 
-#include <vtkCellType.h>
-
-#include <vtkAppendFilter.h>
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkFloatArray.h>
-#include <vtkIntArray.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
-
-//#include <ttkMacros.h>
-#include <DimensionReduction.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
 using namespace ttk;
 using namespace ftm;
 
 // -------------------------------------------------------------------------------------
-// Temporal Subsampling MDS
+// Temporal Subsampling
 // -------------------------------------------------------------------------------------
 template <class dataType>
 void makeTemporalSubsamplingOutput(
@@ -195,45 +181,6 @@ void makeTemporalSubsamplingOutput(
   vtkArcs->GetCellData()->AddArray(pathId);
   vtkArcs->GetCellData()->AddArray(arcId);
   vtkOutputArc1->ShallowCopy(vtkArcs);
-}
-
-template <class dataType>
-void makeTemporalSubsamplingMDSOutput(
-  std::vector<MergeTree<dataType>> &intermediateMTrees,
-  std::vector<std::vector<double>> &distanceMatrix,
-  std::vector<MergeTree<dataType>> &allMT,
-  std::vector<int> removed,
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1,
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc1,
-  bool metricMDS) {
-  // Call DimensionReduction filter
-  std::vector<std::vector<double>> embedding{};
-  std::vector<double> inputData;
-  for(int i = 0; i < (int)distanceMatrix.size(); ++i)
-    for(int j = 0; j < (int)distanceMatrix.size(); ++j)
-      inputData.push_back(distanceMatrix[i][j]);
-
-  DimensionReduction dimensionReduction;
-  dimensionReduction.setInputModulePath("default");
-  dimensionReduction.setInputModuleName("dimensionReduction");
-  dimensionReduction.setInputFunctionName("doIt");
-  dimensionReduction.setInputMatrixDimensions(
-    distanceMatrix.size(), distanceMatrix.size());
-  dimensionReduction.setInputMatrix(inputData.data());
-  dimensionReduction.setInputMethod(2);
-  dimensionReduction.setInputNumberOfComponents(2);
-  dimensionReduction.setInputNumberOfNeighbors(5);
-  dimensionReduction.setInputIsDeterministic(false);
-  // mds_Metric, mds_Init, mds_MaxIteration, mds_Verbose, mds_Epsilon,
-  // InputIsADistanceMatrix
-  dimensionReduction.setMDSParameters(metricMDS, 4, 300, 0, 0.001, true);
-  dimensionReduction.setOutputComponents(&embedding);
-  int errorCode = dimensionReduction.execute();
-
-  // Create output
-  makeTemporalSubsamplingOutput<dataType>(intermediateMTrees, embedding, allMT,
-                                          removed, vtkOutputNode1,
-                                          vtkOutputArc1);
 }
 
 template <class dataType>
