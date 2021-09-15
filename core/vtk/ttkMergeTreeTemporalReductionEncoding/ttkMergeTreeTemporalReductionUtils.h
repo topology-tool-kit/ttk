@@ -9,9 +9,9 @@
 
 #include <FTMTreeUtils.h>
 
-#include <vtkUnstructuredGrid.h>
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace ttk;
 using namespace ftm;
