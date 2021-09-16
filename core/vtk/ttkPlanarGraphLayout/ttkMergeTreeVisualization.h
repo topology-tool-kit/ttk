@@ -380,7 +380,7 @@ public:
     vtkMatching->GetCellData()->AddArray(matchingType);
     vtkMatching->GetCellData()->AddArray(matchPers);
     vtkMatching->GetCellData()->AddArray(matchingID);
-    // vtkMatching->GetCellData()->AddArray(costArray);
+    vtkMatching->GetCellData()->AddArray(costArray);
     vtkMatching->GetCellData()->AddArray(tree1NodeIdField);
     vtkMatching->GetCellData()->AddArray(tree2NodeIdField);
     if(allBaryPercentMatch.size() != 0)
