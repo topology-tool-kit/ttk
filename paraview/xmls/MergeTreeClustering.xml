@@ -47,7 +47,7 @@
                 </InputProperty>
                 
                 <InputProperty
-                    name="Input2 (optionnal, only for clustering)"
+                    name="Optional Input (clustering)"
                     port_index="1"
                     command="SetInputConnection">
                   <ProxyGroupDomain name="groups">
@@ -81,7 +81,10 @@
                   <Documentation>
                   </Documentation>
                 </IntVectorProperty>
-                
+
+
+
+
                 <IntVectorProperty
                 name="BranchDecomposition"
                 command="SetBranchDecomposition"
@@ -129,7 +132,7 @@
                 <IntVectorProperty
                 name="KeepSubtree"
                 command="SetKeepSubtree"
-                label="Keep Subtree"
+                label="Keep Subtreess"
                 number_of_elements="1"
                 default_values="0">
                   <Hints>
@@ -143,6 +146,23 @@
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>  
+
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                  </Documentation>
+                </IntVectorProperty>
+
+
                 
                 <IntVectorProperty
                 name="ComputeBarycenter"
@@ -185,7 +205,7 @@
                 <IntVectorProperty
                 name="NumberOfBarycenters"
                 command="SetNumberOfBarycenters"
-                label="Number Of Barycenters"
+                label="Number Of Clusters"
                 number_of_elements="1"
                 default_values="1">
                   <Hints>
@@ -224,33 +244,53 @@
                     Number of barycenter to compute (performs a KMeans with merge trees as centroids).
                   </Documentation>
                 </IntVectorProperty>
-                
+
                 <IntVectorProperty
                 name="Deterministic"
                 command="SetDeterministic"
                 label="Deterministic"
                 number_of_elements="1"
-                default_values="0">
+                  default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="and">
+                      <Expression type="and">
+                        <Expression type="or">
+                          <Expression type="and">
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="BranchDecomposition"
+                                                    value="1" />
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="Backend"
+                                                    value="2" />
+                          </Expression>
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="Backend"
+                                                  value="0" />
+                        </Expression>
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="KeepSubtree"
+                                                value="0" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="ComputeBarycenter"
+                                              value="1" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+
                   <Documentation>
                     
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
+
                 
-                <IntVectorProperty
-                name="AssignmentSolver"
-                label="Assignment Solver"
-                command="SetAssignmentSolver"
-                number_of_elements="1"
-                default_values="0">
-                <EnumerationDomain name="enum">
-                    <Entry value="0" text="Auction"/>
-                    <Entry value="1" text="Exhaustive Search"/>
-                    <Entry value="2" text="Munkres"/>
-                </EnumerationDomain>
-                  <Documentation>
-                  </Documentation>
-                </IntVectorProperty>
                 
                 <DoubleVectorProperty
                 name="Alpha"
@@ -307,7 +347,7 @@
                 <IntVectorProperty
                 name="DeleteMultiPersPairs"
                 command="SetDeleteMultiPersPairs"
-                label="Delete Multi Pers. Pairs"
+                label="Delete Multi Persistence Pairs"
                 number_of_elements="1"
                 default_values="0"
                 panel_visibility="advanced">
@@ -427,7 +467,8 @@
                 command="SetOutputTrees"
                 label="Output Trees"
                 number_of_elements="1"
-                default_values="1">
+                  default_values="1"
+                  panel_visibility="advanced">
                   <Documentation>
                     Display output trees. 
                   </Documentation>
@@ -480,7 +521,7 @@
                 <IntVectorProperty
                 name="BarycenterPositionAlpha"
                 command="SetBarycenterPositionAlpha"
-                label="Barycenter position according alpha"
+                label="Barycenter position according to alpha"
                 number_of_elements="1"
                 default_values="0"
                 panel_visibility="advanced">
@@ -491,7 +532,7 @@
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    Position barycenter according alpha parameter (when 2 input trees).
+                    Position barycenter according to alpha parameter (when 2 input trees).
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
@@ -664,21 +705,18 @@
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>  
-            
-            <PropertyGroup panel_widget="Line" label="Execution options">
+
+            <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="Backend"/>
               <Property name="BranchDecomposition"/>
               <Property name="NormalizedWasserstein"/>
               <Property name="KeepSubtree"/>
+              <Property name="AssignmentSolver"/>
               <Property name="ComputeBarycenter"/>
               <Property name="NumberOfBarycenters"/>
               <Property name="Deterministic"/>
-              <Property name="AssignmentSolver"/>
               <Property name="Alpha"/>
               <Property name="JoinSplitMixtureCoefficient"/>
-            </PropertyGroup>
-            
-            <PropertyGroup panel_widget="Line" label="Input options">
               <!-- <Property name="UseMinMaxPair"/> -->
               <Property name="DeleteMultiPersPairs"/>
               <Property name="Epsilon1UseFarthestSaddle"/>
