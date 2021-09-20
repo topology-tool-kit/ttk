@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreeTemporalReductionEncoding" class="ttkMergeTreeTemporalReductionEncoding" label="TTK MergeTreeTemporalReductionEncoding">
+      <Documentation long_help="MergeTreeTemporalReductionEncoding Long" short_help="MergeTreeTemporalReductionEncoding Short">
+This VTK filter uses the ttk::MergeTreeTemporalReductionEncoding module to compute a temporal reduction of a sequence of merge trees.
+\b Related \b publication \n
+"Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
+Proc. of IEEE VIS 2021.\n
+IEEE Transactions on Visualization and Computer Graphics, 2021
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+          name="Input"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1" attribute_type="field">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Merge trees to process.
+        </Documentation>
+      </InputProperty>
+
+           <!-- INPUT PARAMETER WIDGETS -->
+                <!-- Execution options -->
+                <DoubleVectorProperty
+                name="RemovalPercentage"
+                command="SetRemovalPercentage"
+                label="Removal Percentage"
+                number_of_elements="1"
+                default_values="50">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty> 
+      
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                  </Documentation>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="UseCustomTimeVariable"
+                command="SetUseCustomTimeVariable"
+                label="Use custom time variable"
+                number_of_elements="1"
+                default_values="0">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <StringVectorProperty
+                    name="TimeVariableName"
+                    command="SetTimeVariableName"
+                    label="Time Variable"
+                    element_types="0 0 0 0 2"
+                    number_of_elements="5"
+                    default_values="0"
+                    animateable="0"
+                    >
+                  <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator"
+                                            mode="visibility"
+                                            property="UseCustomTimeVariable"
+                                            value="1" />
+                  </Hints>
+                  <ArrayListDomain
+                      name="array_list"
+                      default_values="0">
+                    <RequiredProperties>
+                      <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                  </ArrayListDomain>
+                  <Documentation>
+                    Select the input string array.
+                  </Documentation>
+                </StringVectorProperty>
+                
+                <IntVectorProperty
+                name="UseL2Distance"
+                command="SetUseL2Distance"
+                label="Use L2 distance"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <!-- Input options -->                
+                <IntVectorProperty
+                name="DeleteMultiPersPairs"
+                command="SetDeleteMultiPersPairs"
+                label="Delete Multi Pers. Pairs"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="Epsilon1UseFarthestSaddle"
+                command="SetEpsilon1UseFarthestSaddle"
+                label="Epsilon1 Use Farthest Saddle"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="EpsilonTree1"
+                command="SetEpsilonTree1"
+                label="Epsilon 1 (%)"
+                number_of_elements="1"
+                default_values="5">
+                  <Documentation>
+                    Merge saddle points (in a bottom-up manner) having their difference in function value below epsilon times the biggest difference in function value.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>   
+                
+                <DoubleVectorProperty
+                name="Epsilon2Tree1"
+                command="SetEpsilon2Tree1"
+                label="Epsilon 2 (%)"
+                number_of_elements="1"
+                default_values="95"
+                panel_visibility="advanced">
+                  <Hints>
+
+                  </Hints>
+                  <Documentation>
+                    Given a branch decomposition, ascend a pair (by making it children of the parent of its parent) if the ratio between its persistence and the persistence of its parent is above epsilon2. A high value will ascend only pairs having a close persistence to their parent, more epsilon2 is low more the pairs having a distant persistence to their parent will also be ascended.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>   
+                
+                <DoubleVectorProperty
+                name="Epsilon3Tree1"
+                command="SetEpsilon3Tree1"
+                label="Epsilon 3 (%)"
+                number_of_elements="1"
+                default_values="90"
+                panel_visibility="advanced">
+                  <Hints>
+
+                  </Hints>
+                  <Documentation>
+                    Will apply the processing of Epsilon2 only for the pairs having a ratio between their persistence and the maximum persistence inferior to epsilon3. A low value will apply the processing of Epsilon2 only to the small persistence pairs, more epsilon3 is high more the pairs having a high persistence will also be processed.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="PersistenceThreshold"
+                command="SetPersistenceThreshold"
+                label="Persistence Threshold (%)"
+                number_of_elements="1"
+                default_values="0">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>  
+                
+                <!-- Output options -->
+                
+                <IntVectorProperty
+                name="OutputTrees"
+                command="SetOutputTrees"
+                label="Output Trees"
+                number_of_elements="1"
+                default_values="1">
+                  <Documentation>
+                    Display output trees. 
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="DimensionSpacing"
+                command="SetDimensionSpacing"
+                label="Dimension Spacing"
+                number_of_elements="1"
+                default_values="1.0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <IntVectorProperty
+                name="PlanarLayout"
+                command="SetPlanarLayout"
+                label="Planar Layout"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Display trees in a plane or in the original domain.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="BranchDecompositionPlanarLayout"
+                command="SetBranchDecompositionPlanarLayout"
+                label="Branch Decomposition Planar Layout"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="BranchSpacing"
+                command="SetBranchSpacing"
+                label="Branch Spacing"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="BranchDecompositionPlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="ImportantPairs"
+                command="SetImportantPairs"
+                label="Important Pairs (%)"
+                number_of_elements="1"
+                default_values="50">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="ImportantPairsSpacing"
+                command="SetImportantPairsSpacing"
+                label="Important Pairs Spacing"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="NonImportantPairsSpacing"
+                command="SetNonImportantPairsSpacing"
+                label="Non Important Pairs Spacing"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <DoubleVectorProperty
+                name="NonImportantPairsProximity"
+                command="SetNonImportantPairsProximity"
+                label="Non Important Pairs Proximity"
+                number_of_elements="1"
+                default_values="0.05">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="1" />
+                </DoubleVectorProperty>
+                
+                <IntVectorProperty
+                name="RescaleTreesIndividually"
+                command="SetRescaleTreesIndividually"
+                label="Rescale Trees Individually"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Rescale trees individually. If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="OutputSegmentation"
+                command="SetOutputSegmentation"
+                label="Output Segmentation"
+                number_of_elements="1"
+                default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="PlanarLayout"
+                                           value="0" />
+                  </Hints>
+                  <Documentation>
+                    Display output segmentation. Be careful, it can consume a lot of memory since some segmentations must be copied (to shift them).
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>  
+                
+                <DoubleVectorProperty
+                name="DistanceAxisStretch"
+                command="SetDistanceAxisStretch"
+                label="Distance Axis Stretch"
+                number_of_elements="1"
+                default_values="1.0">
+                  <Hints>
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+            
+            <PropertyGroup panel_widget="Line" label="Execution options">
+              <Property name="RemovalPercentage"/>
+              <Property name="AssignmentSolver"/>
+              <Property name="UseCustomTimeVariable"/>
+              <Property name="TimeVariableName"/>
+              <Property name="UseL2Distance"/>
+            </PropertyGroup>
+            
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="DeleteMultiPersPairs"/>
+              <Property name="Epsilon1UseFarthestSaddle"/>
+              <Property name="EpsilonTree1"/>
+              <Property name="Epsilon2Tree1"/>
+              <Property name="Epsilon3Tree1"/>
+              <Property name="PersistenceThreshold"/>
+            </PropertyGroup>
+                
+            <PropertyGroup panel_widget="Line" label="Output options">
+              <Property name="OutputTrees"/>
+              <Property name="DimensionSpacing"/>
+              <Property name="PlanarLayout"/>
+              <Property name="BranchDecompositionPlanarLayout"/>
+              <Property name="BranchSpacing"/>
+              <Property name="ImportantPairs"/>
+              <Property name="ImportantPairsSpacing"/>
+              <Property name="NonImportantPairsSpacing"/>
+              <Property name="NonImportantPairsProximity"/>
+              <Property name="RescaleTreesIndividually"/>
+              <Property name="OutputSegmentation"/>
+              <Property name="DistanceAxisStretch"/>
+            </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Key Frames" index="0" id="port0" />
+                <OutputPort name="Metadata" index="1" id="port1" />
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Time-varying Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
