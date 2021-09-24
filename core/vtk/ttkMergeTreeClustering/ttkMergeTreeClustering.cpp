@@ -310,6 +310,7 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setDeleteMultiPersPairs(DeleteMultiPersPairs);
       mergeTreeClustering.setEpsilon1UseFarthestSaddle(
         Epsilon1UseFarthestSaddle);
+      mergeTreeClustering.setMixtureCoefficient(JoinSplitMixtureCoefficient);
       mergeTreeClustering.setThreadNumber(this->threadNumber_);
       mergeTreeClustering.setDebugLevel(this->debugLevel_);
 
