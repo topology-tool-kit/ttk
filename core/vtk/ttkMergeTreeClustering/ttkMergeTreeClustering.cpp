@@ -620,7 +620,7 @@ int ttkMergeTreeClustering::runOutput(
         vtkClusterAssignment->SetNumberOfTuples(1);
         vtkClusterAssignment->SetTuple1(0, c);
         vtkBlock2->GetFieldData()->AddArray(vtkClusterAssignment);
-        
+
         // Construct multiblock
         vtkBlock2->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
         vtkBlock2->SetBlock(0, vtkOutputNode2);
