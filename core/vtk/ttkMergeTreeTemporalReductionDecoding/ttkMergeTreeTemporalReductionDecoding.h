@@ -150,10 +150,10 @@ public:
 
   vtkSetMacro(ImportantPairs, double);
   vtkGetMacro(ImportantPairs, double);
-  
+
   vtkSetMacro(MaximumImportantPairs, int);
   vtkGetMacro(MaximumImportantPairs, int);
-  
+
   vtkSetMacro(MinimumImportantPairs, int);
   vtkGetMacro(MinimumImportantPairs, int);
 

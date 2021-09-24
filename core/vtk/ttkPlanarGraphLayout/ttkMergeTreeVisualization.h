@@ -113,10 +113,10 @@ public:
   void setShiftMode(int mode) {
     ShiftMode = mode;
   }
-  void setMaximumImportantPairs(int maxPairs){
+  void setMaximumImportantPairs(int maxPairs) {
     MaximumImportantPairs = maxPairs;
   }
-  void setMinimumImportantPairs(int minPairs){
+  void setMinimumImportantPairs(int minPairs) {
     MinimumImportantPairs = minPairs;
   }
 
@@ -606,21 +606,25 @@ public:
 
         // Manage important pairs threshold
         importantPairs_ = importantPairsOriginal;
-        if(MaximumImportantPairs > 0 or MinimumImportantPairs > 0){
+        if(MaximumImportantPairs > 0 or MinimumImportantPairs > 0) {
           std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> pairs;
           trees[i]->getPersistencePairsFromTree(pairs, false);
           if(MaximumImportantPairs > 0) {
-            double tempThreshold = 0.999*std::get<2>(pairs[pairs.size()-MaximumImportantPairs]) / std::get<2>(pairs[pairs.size()-1]);
+            double tempThreshold
+              = 0.999 * std::get<2>(pairs[pairs.size() - MaximumImportantPairs])
+                / std::get<2>(pairs[pairs.size() - 1]);
             tempThreshold *= 100;
             importantPairs_ = std::max(importantPairs_, tempThreshold);
           }
           if(MinimumImportantPairs > 0) {
-            double tempThreshold = 0.999*std::get<2>(pairs[pairs.size()-MinimumImportantPairs]) / std::get<2>(pairs[pairs.size()-1]);
+            double tempThreshold
+              = 0.999 * std::get<2>(pairs[pairs.size() - MinimumImportantPairs])
+                / std::get<2>(pairs[pairs.size() - 1]);
             tempThreshold *= 100;
             importantPairs_ = std::min(importantPairs_, tempThreshold);
           }
         }
-        
+
         // Get is interpolated tree (temporal subsampling)
         bool isInterpolatedTree = false;
         if(interpolatedTrees.size() != 0)
