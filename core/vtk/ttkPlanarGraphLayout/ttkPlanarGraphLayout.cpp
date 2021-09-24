@@ -174,6 +174,8 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
   visuMaker.setBranchDecompositionPlanarLayout(BranchDecompositionPlanarLayout);
   visuMaker.setBranchSpacing(BranchSpacing);
   visuMaker.setImportantPairs(ImportantPairs);
+  visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+  visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
   visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
   visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
   visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);

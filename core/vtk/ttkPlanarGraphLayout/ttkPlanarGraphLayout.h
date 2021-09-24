@@ -71,6 +71,8 @@ private:
   bool BranchDecompositionPlanarLayout = false;
   double BranchSpacing = 1.;
   double ImportantPairs = 10.; // important pairs threshold
+  int MaximumImportantPairs = 0;
+  int MinimumImportantPairs = 0;
   double ImportantPairsSpacing = 1.;
   double NonImportantPairsSpacing = 0.1;
   double NonImportantPairsProximity = 0.05;
@@ -106,6 +108,12 @@ public:
 
   vtkSetMacro(ImportantPairs, double);
   vtkGetMacro(ImportantPairs, double);
+  
+  vtkSetMacro(MaximumImportantPairs, int);
+  vtkGetMacro(MaximumImportantPairs, int);
+  
+  vtkSetMacro(MinimumImportantPairs, int);
+  vtkGetMacro(MinimumImportantPairs, int);
 
   vtkSetMacro(ImportantPairsSpacing, double);
   vtkGetMacro(ImportantPairsSpacing, double);
