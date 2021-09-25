@@ -34,6 +34,8 @@ $PATCH_BIN VTKExtensions/Extraction/vtkPVSelectionSource.cxx \
   < "${PATCH_DIR}/vtkPVSelectionSource-5.8.cxx.patch"
 $PATCH_BIN VTK/Filters/Sources/vtkSelectionSource.cxx \
   < "${PATCH_DIR}/vtkSelectionSource.cxx.patch"
+$PATCH_BIN VTK/Rendering/RayTracing//vtkOSPRayPolyDataMapperNode.cxx \
+  < "${PATCH_DIR}/paraview-5.9.1-vtkOSPRayPolyDataMapperNode.cxx.patch"
 
 cp "${PATCH_DIR}/splash.png"  Clients/ParaView/PVSplashScreen.png
 cp "${PATCH_DIR}/icon128.png" Clients/ParaView/pvIcon.png
