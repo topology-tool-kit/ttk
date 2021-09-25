@@ -31,21 +31,6 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
 
-    - name: Cache ttk-paraview package
-      uses: actions/cache@v2
-      id: cache-ttk-paraview
-      with:
-        path: "ttk-paraview/build/ttk-paraview.deb"
-        key: ttk-paraview-${{ matrix.os }}
-
-    - uses: actions/checkout@v2
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      with:
-        repository: "topology-tool-kit/ttk-paraview"
-        ref: "5.9.0"
-        path: "ttk-paraview"
-      name: Checkout TTK-ParaView source code
-
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
@@ -74,37 +59,16 @@ jobs:
         key: ccache-${{ matrix.os }}-${{ github.sha }}
         restore-keys: ccache-${{ matrix.os }}
 
-    - name: Create & configure ParaView build directory
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      run: |
-        cd ttk-paraview
-        mkdir build && cd build
-        cmake \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/usr \
-          -DPARAVIEW_PYTHON_SITE_PACKAGES_SUFFIX=lib/python3/dist-packages \
-          -DPARAVIEW_USE_QT=OFF \
-          -DVTK_USE_X=OFF \
-          -DVTK_OPENGL_HAS_OSMESA=ON \
-          -GNinja \
-          ..
-
-    - name: Build ParaView
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      run: |
-        cd ttk-paraview/build
-        cmake --build . --parallel
-
-    - name: Create ParaView package
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      run: |
-        cd ttk-paraview/build
-        cpack -G DEB
+    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+      name: Fetch TTK-ParaView headless Debian package
+      with:
+        repo: "pierre-guillou/paraview-ttk"
+        version: "tags/5.9.1-headless"
+        file: "ttk-paraview-headless-${{ matrix.os }}.deb"
 
     - name: Install ParaView .deb
       run: |
-        cd ttk-paraview/build
-        sudo apt install ./ttk-paraview.deb
+        sudo apt install ./ttk-paraview-headless-${{ matrix.os }}.deb
 
     - name: Create & configure TTK build directory
       run: |
@@ -194,52 +158,13 @@ jobs:
       run: |
         ccache -M 128M && ccache -c
 
-    - name: Cache ttk-paraview package
-      uses: actions/cache@v2
-      id: cache-ttk-paraview
-      with:
-        path: "ttk-paraview/build/ttk-paraview.tar.gz"
-        key: ttk-paraview-macos
-
-    - uses: actions/checkout@v2
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      with:
-        repository: "topology-tool-kit/ttk-paraview"
-        ref: "5.9.0"
-        path: "ttk-paraview"
-      name: Checkout TTK-ParaView source code
-
-    - name: Create & configure ParaView build directory
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
+    - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
-        # switch to Xcode 11 since Xcode 12 breaks the ParaView build
-        sudo xcode-select -s "/Applications/Xcode_11.7.app"
-        cd ttk-paraview
-        mkdir build && cd build
-        cmake \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DPARAVIEW_USE_QT=OFF \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
-          -GNinja \
-          ..
-
-    - name: Build ParaView
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      run: |
-        cd ttk-paraview/build
-        cmake --build . --parallel
-        sudo cmake --build . --target install
-
-    - name: Create ParaView package
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      run: |
-        cd ttk-paraview/build
-        sudo cpack -G TGZ
+        wget https://github.com/pierre-guillou/paraview-ttk/releases/download/5.9.1-headless/ttk-paraview-headless.tar.gz
 
     - name: Install ParaView
       run: |
-        cd ttk-paraview/build
-        tar xzvf ttk-paraview.tar.gz
+        tar xzvf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
 
     - name: Create & configure TTK build directory
@@ -283,21 +208,6 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
 
-    - name: Cache ttk-paraview package
-      uses: actions/cache@v2
-      id: cache-ttk-paraview
-      with:
-        path: "ttk-paraview/build/ttk-paraview.exe"
-        key: ttk-paraview-${{ runner.os }}
-
-    - uses: actions/checkout@v2
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      with:
-        repository: "topology-tool-kit/ttk-paraview"
-        ref: "5.9.0"
-        path: "ttk-paraview"
-      name: Checkout TTK-ParaView source code
-
     - uses: s-weigand/setup-conda@v1
 
     - name: Install dependencies with conda
@@ -310,41 +220,16 @@ jobs:
       run: |
         rm -rf C:/hostedtoolcache/windows/Python
 
-    - name: Create & configure ParaView build directory
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      shell: cmd
+    - name: Fetch TTK-ParaView headless Windows installer
       run: |
-        call "%VCVARS%"
-        cd ttk-paraview
-        mkdir build
-        cd build
-        cmake ^
-          -DPARAVIEW_USE_QT=OFF ^
-          -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
-          -DCMAKE_BUILD_TYPE=Release ^
-          -GNinja ^
-          ..
-
-    - name: Build ParaView
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      shell: cmd
-      run: |
-        call "%VCVARS%"
-        cd ttk-paraview/build
-        cmake --build . --config Release --parallel
-
-    - name: Create ParaView package
-      if: steps.cache-ttk-paraview.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        cd ttk-paraview/build
-        cpack -G NSIS64
+        Invoke-WebRequest `
+        -OutFile ttk-paraview-headless.exe `
+        -Uri https://github.com/pierre-guillou/paraview-ttk/releases/download/5.9.1-headless/ttk-paraview-headless.exe
 
     - name: Install ParaView
       shell: cmd
       run: |
-        cd ttk-paraview/build
-        ttk-paraview.exe /S
+        ttk-paraview-headless.exe /S
 
     - name: Create & configure TTK build directory
       shell: cmd
