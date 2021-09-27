@@ -8,6 +8,7 @@ include(CMake/VTKModule.cmake)
 # TODO ... this has nothing to do here.
 file(READ "CMake/debug_widgets.xml" DEBUG_WIDGETS)
 file(READ "CMake/topological_compression.xml" TOPOLOGICAL_COMPRESSION_WIDGETS)
+file(READ "CMake/merge_tree_planar_layout.xml" MERGE_TREE_PLANAR_LAYOUT_WIDGETS)
 
 macro(ttk_register_pv_filter vtkModuleDir xmlFile)
   if(NOT EXISTS "${VTKWRAPPER_DIR}/${vtkModuleDir}/vtk.module")

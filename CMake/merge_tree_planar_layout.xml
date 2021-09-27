@@ -1,0 +1,10 @@
+<PropertyGroup panel_widget="Line" label="Output options">
+  <Property name="BranchDecompositionPlanarLayout"/>
+  <Property name="BranchSpacing"/>
+  <Property name="ImportantPairs"/>
+  <Property name="MaximumImportantPairs"/>
+  <Property name="MinimumImportantPairs"/>
+  <Property name="ImportantPairsSpacing"/>
+  <Property name="NonImportantPairsSpacing"/>
+  <Property name="NonImportantPairsProximity"/>
+</PropertyGroup>

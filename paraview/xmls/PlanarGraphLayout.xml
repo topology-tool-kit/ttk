@@ -43,7 +43,7 @@ TODO
 
            <!-- Merge Tree Planar Layout Options -->
             <IntVectorProperty
-            name="InputIsAMergeTree"
+            name="MergeTreePlanarLayout"
             command="SetInputIsAMergeTree"
             label="Input is a Merge Tree"
             number_of_elements="1"
@@ -63,7 +63,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -81,7 +81,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
@@ -102,7 +102,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -121,7 +121,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -139,7 +139,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -156,7 +156,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -173,7 +173,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -190,7 +190,7 @@ TODO
               <Hints>
               <PropertyWidgetDecorator type="GenericDecorator"
                                        mode="visibility"
-                                       property="InputIsAMergeTree"
+                                       property="MergeTreePlanarLayout"
                                        value="1" />
               </Hints>
               <Documentation>
@@ -205,7 +205,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -222,7 +222,7 @@ TODO
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSequences" value="1" />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Sequence Scalar Array.</Documentation>
@@ -232,7 +232,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -249,7 +249,7 @@ TODO
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSizes" value="1" />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Size Scalar Array.</Documentation>
@@ -259,7 +259,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -276,7 +276,7 @@ TODO
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseBranches" value="1" />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Branch Scalar Array.</Documentation>
@@ -286,7 +286,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -304,7 +304,7 @@ TODO
                     />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Level Scalar Array.</Documentation>
@@ -314,7 +314,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Name of the output layout array.</Documentation>
@@ -322,7 +322,7 @@ TODO
 
             <!-- -->
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="InputIsAMergeTree" />
+                <Property name="MergeTreePlanarLayout" />
                 <Property name="UseSequences" />
                 <Property name="SequenceArray" />
                 <Property name="UseSizes" />

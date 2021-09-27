@@ -538,7 +538,7 @@
                 </IntVectorProperty>
                 
                 <IntVectorProperty
-                name="PlanarLayout"
+                name="MergeTreePlanarLayout"
                 command="SetPlanarLayout"
                 label="Planar Layout"
                 number_of_elements="1"
@@ -565,7 +565,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -583,7 +583,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
@@ -604,7 +604,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -623,7 +623,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                           mode="visibility"
-                                          property="PlanarLayout"
+                                          property="MergeTreePlanarLayout"
                                           value="1" />
                   </Hints>
                   <Documentation>
@@ -641,7 +641,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                           mode="visibility"
-                                          property="InputIsAMergeTree"
+                                          property="MergeTreePlanarLayout"
                                           value="1" />
                   </Hints>
                   <Documentation>
@@ -658,7 +658,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -675,7 +675,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -692,7 +692,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -711,7 +711,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -733,7 +733,7 @@
                                            value="1" />
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="0" />
                   </Hints>
                   <Documentation>
@@ -767,15 +767,10 @@
               <Property name="DimensionSpacing"/>
               <Property name="DimensionToShift"/>
               <Property name="BarycenterPositionAlpha"/>
-              <Property name="PlanarLayout"/>
-              <Property name="BranchDecompositionPlanarLayout"/>
-              <Property name="BranchSpacing"/>
-              <Property name="ImportantPairs"/>
-              <Property name="MaximumImportantPairs"/>
-              <Property name="MinimumImportantPairs"/>
-              <Property name="ImportantPairsSpacing"/>
-              <Property name="NonImportantPairsSpacing"/>
-              <Property name="NonImportantPairsProximity"/>
+              <Property name="MergeTreePlanarLayout"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
+            <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="RescaleTreesIndividually"/>
               <Property name="OutputSegmentation"/>
             </PropertyGroup>
