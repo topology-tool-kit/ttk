@@ -641,7 +641,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                           mode="visibility"
-                                          property="InputIsAMergeTree"
+                                          property="PlanarLayout"
                                           value="1" />
                   </Hints>
                   <Documentation>
