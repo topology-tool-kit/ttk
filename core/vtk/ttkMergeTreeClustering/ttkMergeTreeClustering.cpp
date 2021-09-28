@@ -578,6 +578,8 @@ int ttkMergeTreeClustering::runOutput(
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
         vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation2
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock2
+          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
         // Fill vtk objects
         ttkMergeTreeVisualization visuMakerBary;
@@ -619,9 +621,14 @@ int ttkMergeTreeClustering::runOutput(
         auto allBaryPercentMatchT = visuMakerBary.getAllBaryPercentMatch();
         allBaryPercentMatch[c] = allBaryPercentMatchT[c];
 
+        // Field data
+        vtkNew<vtkDoubleArray> vtkClusterAssignment{};
+        vtkClusterAssignment->SetName("ClusterAssignment");
+        vtkClusterAssignment->SetNumberOfTuples(1);
+        vtkClusterAssignment->SetTuple1(0, c);
+        vtkBlock2->GetFieldData()->AddArray(vtkClusterAssignment);
+
         // Construct multiblock
-        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock2
-          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
         vtkBlock2->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
         vtkBlock2->SetBlock(0, vtkOutputNode2);
         vtkBlock2->SetBlock(1, vtkOutputArc2);
