@@ -126,6 +126,16 @@ public:
    * Automatically generate getters and setters of filter
    * parameters via vtkMacros.
    */
+  // Input Options
+  void SetAssignmentSolver(int assignmentSolver) {
+    assignmentSolverID_ = assignmentSolver;
+    Modified();
+    resetDataVisualization();
+  }
+  int GetAssignmentSolver() {
+    return assignmentSolverID_;
+  }
+   
   // Output Options
   vtkSetMacro(OutputTrees, bool);
   vtkGetMacro(OutputTrees, bool);

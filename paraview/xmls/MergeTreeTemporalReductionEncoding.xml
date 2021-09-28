@@ -37,18 +37,6 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
 
            <!-- INPUT PARAMETER WIDGETS -->
                 <!-- Execution options -->
-                <DoubleVectorProperty
-                name="RemovalPercentage"
-                command="SetRemovalPercentage"
-                label="Removal Percentage"
-                number_of_elements="1"
-                default_values="50">
-                  <Documentation>
-                    
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty> 
-      
                 <IntVectorProperty
                 name="AssignmentSolver"
                 label="Assignment Solver"
@@ -63,6 +51,18 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                   <Documentation>
                   </Documentation>
                 </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="RemovalPercentage"
+                command="SetRemovalPercentage"
+                label="Removal Percentage"
+                number_of_elements="1"
+                default_values="50">
+                  <Documentation>
+                    
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty> 
                 
                 <IntVectorProperty
                 name="UseCustomTimeVariable"
@@ -448,23 +448,15 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                   </Documentation>
                 </DoubleVectorProperty>
             
-            <PropertyGroup panel_widget="Line" label="Execution options">
-              <Property name="RemovalPercentage"/>
+            <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="AssignmentSolver"/>
+              <Property name="RemovalPercentage"/>
               <Property name="UseCustomTimeVariable"/>
               <Property name="TimeVariableName"/>
               <Property name="UseL2Distance"/>
             </PropertyGroup>
+            ${MERGE_TREE_PREPROCESS_WIDGETS}
             
-            <PropertyGroup panel_widget="Line" label="Input options">
-              <Property name="DeleteMultiPersPairs"/>
-              <Property name="Epsilon1UseFarthestSaddle"/>
-              <Property name="EpsilonTree1"/>
-              <Property name="Epsilon2Tree1"/>
-              <Property name="Epsilon3Tree1"/>
-              <Property name="PersistenceThreshold"/>
-            </PropertyGroup>
-                
             <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="OutputTrees"/>
               <Property name="DimensionSpacing"/>
@@ -484,7 +476,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
 
             <!-- OUTPUT PARAMETER WIDGETS -->
                 <OutputPort name="Key Frames" index="0" id="port0" />
-                <OutputPort name="Metadata" index="1" id="port1" />
+                <OutputPort name="Metadata" label="Reduction Coefficients" index="1" id="port1" />
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}
