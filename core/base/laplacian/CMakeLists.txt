@@ -10,5 +10,5 @@ ttk_add_base_library(laplacian
 
 if(TTK_ENABLE_EIGEN)
   target_compile_definitions(laplacian PRIVATE TTK_ENABLE_EIGEN)
-  target_include_directories(laplacian SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+  target_link_libraries(laplacian PRIVATE Eigen3::Eigen)
 endif()
