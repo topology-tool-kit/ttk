@@ -1974,56 +1974,37 @@ int DiscreteGradient::processLowerStars(
   // Comparison function for Cells inside priority queues
   const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
     if(a.dim_ == b.dim_) {
-      // there should be a shared facet between the two cells
-      // compare the vertices not in the shared facet
+      // compare the last non common vertex inserted in the filtration
       if(a.dim_ == 1) {
         return offsets[a.lowVerts_[0]] > offsets[b.lowVerts_[0]];
 
       } else if(a.dim_ == 2) {
-        const auto &m0 = a.lowVerts_[0];
-        const auto &m1 = a.lowVerts_[1];
-        const auto &n0 = b.lowVerts_[0];
-        const auto &n1 = b.lowVerts_[1];
-
-        if(m0 == n0) {
-          return offsets[m1] > offsets[n1];
-        } else if(m0 == n1) {
-          return offsets[m1] > offsets[n0];
-        } else if(m1 == n0) {
-          return offsets[m0] > offsets[n1];
-        } else if(m1 == n1) {
-          return offsets[m0] > offsets[n0];
-        }
+        std::array<SimplexId, 2> m{
+          offsets[a.lowVerts_[0]],
+          offsets[a.lowVerts_[1]],
+        };
+        std::array<SimplexId, 2> n{
+          offsets[b.lowVerts_[0]],
+          offsets[b.lowVerts_[1]],
+        };
+        std::sort(m.begin(), m.end());
+        std::sort(n.begin(), n.end());
+        return m > n;
 
       } else if(a.dim_ == 3) {
-        SimplexId m{-1}, n{-1};
-
-        const auto &m0 = a.lowVerts_[0];
-        const auto &m1 = a.lowVerts_[1];
-        const auto &m2 = a.lowVerts_[2];
-        const auto &n0 = b.lowVerts_[0];
-        const auto &n1 = b.lowVerts_[1];
-        const auto &n2 = b.lowVerts_[2];
-
-        // extract vertex of a not in b
-        if(m0 != n0 && m0 != n1 && m0 != n2) {
-          m = m0;
-        } else if(m1 != n0 && m1 != n1 && m1 != n2) {
-          m = m1;
-        } else if(m2 != n0 && m2 != n1 && m2 != n2) {
-          m = m2;
-        }
-
-        // extract vertex of b not in a
-        if(n0 != m0 && n0 != m1 && n0 != m2) {
-          n = n0;
-        } else if(n1 != m0 && n1 != m1 && n1 != m2) {
-          n = n1;
-        } else if(n2 != m0 && n2 != m1 && n2 != m2) {
-          n = n2;
-        }
-
-        return offsets[m] > offsets[n];
+        std::array<SimplexId, 3> m{
+          offsets[a.lowVerts_[0]],
+          offsets[a.lowVerts_[1]],
+          offsets[a.lowVerts_[2]],
+        };
+        std::array<SimplexId, 3> n{
+          offsets[b.lowVerts_[0]],
+          offsets[b.lowVerts_[1]],
+          offsets[b.lowVerts_[2]],
+        };
+        std::sort(m.begin(), m.end());
+        std::sort(n.begin(), n.end());
+        return m > n;
       }
     } else {
       // the cell of greater dimension should contain the cell of
