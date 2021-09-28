@@ -293,6 +293,8 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
     visuMaker.setDimensionSpacing(DimensionSpacing);
     visuMaker.setDimensionToShift(DimensionToShift);
     visuMaker.setImportantPairs(ImportantPairs);
+    visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+    visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
     visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
     visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
     visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);

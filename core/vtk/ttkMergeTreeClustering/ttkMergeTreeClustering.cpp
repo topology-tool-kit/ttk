@@ -401,6 +401,8 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setDimensionSpacing(DimensionSpacing);
       visuMaker.setDimensionToShift(DimensionToShift);
       visuMaker.setImportantPairs(ImportantPairs);
+      visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+      visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
       visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
       visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
       visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
@@ -523,6 +525,8 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setDimensionSpacing(DimensionSpacing);
           visuMaker.setDimensionToShift(DimensionToShift);
           visuMaker.setImportantPairs(ImportantPairs);
+          visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+          visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
           visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
           visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
           visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
@@ -586,6 +590,8 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setDimensionSpacing(DimensionSpacing);
         visuMakerBary.setDimensionToShift(DimensionToShift);
         visuMakerBary.setImportantPairs(ImportantPairs);
+        visuMakerBary.setMaximumImportantPairs(MaximumImportantPairs);
+        visuMakerBary.setMinimumImportantPairs(MinimumImportantPairs);
         visuMakerBary.setImportantPairsSpacing(ImportantPairsSpacing);
         visuMakerBary.setNonImportantPairsSpacing(NonImportantPairsSpacing);
         visuMakerBary.setNonImportantPairsProximity(NonImportantPairsProximity);

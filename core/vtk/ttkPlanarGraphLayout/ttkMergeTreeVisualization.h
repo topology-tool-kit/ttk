@@ -38,6 +38,8 @@ private:
   int DimensionToShift = 0;
   bool OutputSegmentation = false;
   int ShiftMode = 0; // 0: Star ; 1: Star Barycenter ; 2: Line ; 3: Double Line
+  int MaximumImportantPairs = 0;
+  int MinimumImportantPairs = 0;
 
   // Offset
   int iSampleOffset = 0;
@@ -110,6 +112,12 @@ public:
   }
   void setShiftMode(int mode) {
     ShiftMode = mode;
+  }
+  void setMaximumImportantPairs(int maxPairs) {
+    MaximumImportantPairs = maxPairs;
+  }
+  void setMinimumImportantPairs(int minPairs) {
+    MinimumImportantPairs = minPairs;
   }
 
   // Offset
@@ -552,6 +560,7 @@ public:
     // Iterate through all clusters
     // --------------------------------------------------------
     printMsg("Iterate through all clusters", debug::Priority::VERBOSE);
+    double importantPairsOriginal = importantPairs_;
     for(int c = 0; c < NumberOfBarycenters; ++c) {
 
       // Get radius
@@ -594,6 +603,27 @@ public:
            or (printTreeId != -1 and printClusterId != -1
                and (c != printClusterId or i != printTreeId)))
           continue;
+
+        // Manage important pairs threshold
+        importantPairs_ = importantPairsOriginal;
+        if(MaximumImportantPairs > 0 or MinimumImportantPairs > 0) {
+          std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> pairs;
+          trees[i]->getPersistencePairsFromTree(pairs, false);
+          if(MaximumImportantPairs > 0) {
+            double tempThreshold
+              = 0.999 * std::get<2>(pairs[pairs.size() - MaximumImportantPairs])
+                / std::get<2>(pairs[pairs.size() - 1]);
+            tempThreshold *= 100;
+            importantPairs_ = std::max(importantPairs_, tempThreshold);
+          }
+          if(MinimumImportantPairs > 0) {
+            double tempThreshold
+              = 0.999 * std::get<2>(pairs[pairs.size() - MinimumImportantPairs])
+                / std::get<2>(pairs[pairs.size() - 1]);
+            tempThreshold *= 100;
+            importantPairs_ = std::min(importantPairs_, tempThreshold);
+          }
+        }
 
         // Get is interpolated tree (temporal subsampling)
         bool isInterpolatedTree = false;

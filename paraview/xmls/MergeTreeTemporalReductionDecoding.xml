@@ -162,6 +162,42 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                   <DoubleRangeDomain name="range" min="0" max="100" />
                 </DoubleVectorProperty>
                 
+                <IntVectorProperty
+                name="MaximumImportantPairs"
+                command="SetMaximumImportantPairs"
+                label="Maximum Number of Important Pairs"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                          mode="visibility"
+                                          property="PlanarLayout"
+                                          value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="MinimumImportantPairs"
+                command="SetMinimumImportantPairs"
+                label="Minimum Number of Important Pairs"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                          mode="visibility"
+                                          property="PlanarLayout"
+                                          value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </IntVectorProperty>
+                
                 <DoubleVectorProperty
                 name="ImportantPairsSpacing"
                 command="SetImportantPairsSpacing"
@@ -240,6 +276,8 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
               <Property name="BranchDecompositionPlanarLayout"/>
               <Property name="BranchSpacing"/>
               <Property name="ImportantPairs"/>
+              <Property name="MaximumImportantPairs"/>
+              <Property name="MinimumImportantPairs"/>
               <Property name="ImportantPairsSpacing"/>
               <Property name="NonImportantPairsSpacing"/>
               <Property name="NonImportantPairsProximity"/>
