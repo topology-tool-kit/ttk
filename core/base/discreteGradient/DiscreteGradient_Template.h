@@ -1773,7 +1773,7 @@ inline void
       triangulation.getEdgeVertex(edgeId, 1, vertexId);
     }
     if(offsets[vertexId] < offsets[a]) {
-      ls[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
+      ls[1].emplace_back(CellExt{1, edgeId, {offsets[vertexId], -1, -1}, {}});
     }
   }
 
@@ -1782,33 +1782,34 @@ inline void
     return;
   }
 
-  const auto processTriangle = [&](const SimplexId triangleId,
-                                   const SimplexId v0, const SimplexId v1,
-                                   const SimplexId v2) {
-    std::array<SimplexId, 3> lowVerts{};
-    if(v0 == a) {
-      lowVerts[0] = v1;
-      lowVerts[1] = v2;
-    } else if(v1 == a) {
-      lowVerts[0] = v0;
-      lowVerts[1] = v2;
-    } else if(v2 == a) {
-      lowVerts[0] = v0;
-      lowVerts[1] = v1;
-    }
-    if(offsets[a] > offsets[lowVerts[0]] && offsets[a] > offsets[lowVerts[1]]) {
-      uint8_t j{}, k{};
-      // store edges indices of current triangle
-      std::array<uint8_t, 3> faces{};
-      for(const auto &e : ls[1]) {
-        if(e.lowVerts_[0] == lowVerts[0] || e.lowVerts_[0] == lowVerts[1]) {
-          faces[k++] = j;
+  const auto processTriangle
+    = [&](const SimplexId triangleId, const SimplexId v0, const SimplexId v1,
+          const SimplexId v2) {
+        std::array<SimplexId, 3> lowVerts{-1, -1, -1};
+        if(v0 == a) {
+          lowVerts[0] = offsets[v1];
+          lowVerts[1] = offsets[v2];
+        } else if(v1 == a) {
+          lowVerts[0] = offsets[v0];
+          lowVerts[1] = offsets[v2];
+        } else if(v2 == a) {
+          lowVerts[0] = offsets[v0];
+          lowVerts[1] = offsets[v1];
         }
-        j++;
-      }
-      ls[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
-    }
-  };
+        std::sort(lowVerts.rbegin(), lowVerts.rend());
+        if(offsets[a] > lowVerts[0] && offsets[a] > lowVerts[1]) {
+          uint8_t j{}, k{};
+          // store edges indices of current triangle
+          std::array<uint8_t, 3> faces{};
+          for(const auto &e : ls[1]) {
+            if(e.lowVerts_[0] == lowVerts[0] || e.lowVerts_[0] == lowVerts[1]) {
+              faces[k++] = j;
+            }
+            j++;
+          }
+          ls[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
+        }
+      };
 
   if(dimensionality_ == 2) {
     // store lower triangles
@@ -1849,32 +1850,32 @@ inline void
       for(SimplexId i = 0; i < ncells; ++i) {
         SimplexId cellId;
         triangulation.getVertexStar(a, i, cellId);
-        std::array<SimplexId, 3> lowVerts{};
+        std::array<SimplexId, 3> lowVerts{-1, -1, -1};
         SimplexId v0{}, v1{}, v2{}, v3{};
         triangulation.getCellVertex(cellId, 0, v0);
         triangulation.getCellVertex(cellId, 1, v1);
         triangulation.getCellVertex(cellId, 2, v2);
         triangulation.getCellVertex(cellId, 3, v3);
         if(v0 == a) {
-          lowVerts[0] = v1;
-          lowVerts[1] = v2;
-          lowVerts[2] = v3;
+          lowVerts[0] = offsets[v1];
+          lowVerts[1] = offsets[v2];
+          lowVerts[2] = offsets[v3];
         } else if(v1 == a) {
-          lowVerts[0] = v0;
-          lowVerts[1] = v2;
-          lowVerts[2] = v3;
+          lowVerts[0] = offsets[v0];
+          lowVerts[1] = offsets[v2];
+          lowVerts[2] = offsets[v3];
         } else if(v2 == a) {
-          lowVerts[0] = v0;
-          lowVerts[1] = v1;
-          lowVerts[2] = v3;
+          lowVerts[0] = offsets[v0];
+          lowVerts[1] = offsets[v1];
+          lowVerts[2] = offsets[v3];
         } else if(v3 == a) {
-          lowVerts[0] = v0;
-          lowVerts[1] = v1;
-          lowVerts[2] = v2;
+          lowVerts[0] = offsets[v0];
+          lowVerts[1] = offsets[v1];
+          lowVerts[2] = offsets[v2];
         }
-        if(offsets[a] > offsets[lowVerts[0]]
-           && offsets[a] > offsets[lowVerts[1]]
-           && offsets[a] > offsets[lowVerts[2]]) {
+        std::sort(lowVerts.rbegin(), lowVerts.rend());
+        if(offsets[a] > lowVerts[0] && offsets[a] > lowVerts[1]
+           && offsets[a] > lowVerts[2]) {
           uint8_t j{}, k{};
           // store triangles indices of current tetra
           std::array<uint8_t, 3> faces{};
@@ -1973,46 +1974,7 @@ int DiscreteGradient::processLowerStars(
 
   // Comparison function for Cells inside priority queues
   const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
-    if(a.dim_ == b.dim_) {
-      // compare the last non common vertex inserted in the filtration
-      if(a.dim_ == 1) {
-        return offsets[a.lowVerts_[0]] > offsets[b.lowVerts_[0]];
-
-      } else if(a.dim_ == 2) {
-        std::array<SimplexId, 2> m{
-          offsets[a.lowVerts_[0]],
-          offsets[a.lowVerts_[1]],
-        };
-        std::array<SimplexId, 2> n{
-          offsets[b.lowVerts_[0]],
-          offsets[b.lowVerts_[1]],
-        };
-        std::sort(m.begin(), m.end());
-        std::sort(n.begin(), n.end());
-        return m > n;
-
-      } else if(a.dim_ == 3) {
-        std::array<SimplexId, 3> m{
-          offsets[a.lowVerts_[0]],
-          offsets[a.lowVerts_[1]],
-          offsets[a.lowVerts_[2]],
-        };
-        std::array<SimplexId, 3> n{
-          offsets[b.lowVerts_[0]],
-          offsets[b.lowVerts_[1]],
-          offsets[b.lowVerts_[2]],
-        };
-        std::sort(m.begin(), m.end());
-        std::sort(n.begin(), n.end());
-        return m > n;
-      }
-    } else {
-      // the cell of greater dimension should contain the cell of
-      // smaller dimension
-      return a.dim_ > b.dim_;
-    }
-
-    return false;
+    return a.lowVerts_ > b.lowVerts_;
   };
 
   // Type alias for priority queues
@@ -2084,7 +2046,7 @@ int DiscreteGradient::processLowerStars(
       for(size_t i = 1; i < Lx[1].size(); ++i) {
         const auto &a = Lx[1][minId].lowVerts_[0];
         const auto &b = Lx[1][i].lowVerts_[0];
-        if(offsets[a] > offsets[b]) {
+        if(a > b) {
           // edge[i] < edge[0]
           minId = i;
         }
