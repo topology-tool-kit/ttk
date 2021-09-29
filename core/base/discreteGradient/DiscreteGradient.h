@@ -57,8 +57,6 @@ namespace ttk {
         : Cell{dim, id}, lowVerts_{lowVerts}, faces_{faces} {
       }
 
-      // if cell has been paired with another in current lower star
-      bool paired_{false};
       // (order field value on) lower vertices in current lower star
       // (1 for edges, 2 for triangles, 3 for tetras)
       const std::array<SimplexId, 3> lowVerts_{};
@@ -66,6 +64,8 @@ namespace ttk {
       // structure, only applicable for triangles (2 edge faces)  and tetras (3
       // triangle faces)
       const std::array<uint8_t, 3> faces_{};
+      // if cell has been paired with another in current lower star
+      bool paired_{false};
     };
 
     /**

@@ -1796,8 +1796,11 @@ inline void
           lowVerts[0] = offsets[v0];
           lowVerts[1] = offsets[v1];
         }
-        std::sort(lowVerts.rbegin(), lowVerts.rend());
-        if(offsets[a] > lowVerts[0] && offsets[a] > lowVerts[1]) {
+        // higher order vertex first
+        if(lowVerts[0] < lowVerts[1]) {
+          std::swap(lowVerts[0], lowVerts[1]);
+        }
+        if(offsets[a] > lowVerts[0]) { // triangle in lowerStar
           uint8_t j{}, k{};
           // store edges indices of current triangle
           std::array<uint8_t, 3> faces{};
@@ -1873,18 +1876,23 @@ inline void
           lowVerts[1] = offsets[v1];
           lowVerts[2] = offsets[v2];
         }
-        std::sort(lowVerts.rbegin(), lowVerts.rend());
-        if(offsets[a] > lowVerts[0] && offsets[a] > lowVerts[1]
-           && offsets[a] > lowVerts[2]) {
+        if(offsets[a] > *std::max_element(
+             lowVerts.begin(), lowVerts.end())) { // tetra in lowerStar
+
+          // higher order vertex first
+          std::sort(lowVerts.rbegin(), lowVerts.rend());
+
           uint8_t j{}, k{};
           // store triangles indices of current tetra
           std::array<uint8_t, 3> faces{};
           for(const auto &t : ls[2]) {
-            if((t.lowVerts_[0] == lowVerts[0] || t.lowVerts_[0] == lowVerts[1]
-                || t.lowVerts_[0] == lowVerts[2])
-               && (t.lowVerts_[1] == lowVerts[0]
-                   || t.lowVerts_[1] == lowVerts[1]
-                   || t.lowVerts_[1] == lowVerts[2])) {
+            // lowVerts & t.lowVerts are ordered, no need to check if
+            // t.lowVerts[0] == lowVerts[2] or t.lowVerts[1] == lowVerts[0]
+            if((t.lowVerts_[0] == lowVerts[0]
+                && (t.lowVerts_[1] == lowVerts[1]
+                    || t.lowVerts_[1] == lowVerts[2]))
+               || (t.lowVerts_[0] == lowVerts[1]
+                   && t.lowVerts_[1] == lowVerts[2])) {
               faces[k++] = j;
             }
             j++;
