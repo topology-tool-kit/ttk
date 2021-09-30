@@ -135,7 +135,7 @@ public:
   int GetAssignmentSolver() {
     return assignmentSolverID_;
   }
-   
+
   // Output Options
   vtkSetMacro(OutputTrees, bool);
   vtkGetMacro(OutputTrees, bool);

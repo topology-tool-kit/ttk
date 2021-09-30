@@ -118,7 +118,8 @@ int ttkMergeTreeTemporalReductionDecoding::RequestData(
         ->GetPointData()
         ->GetArray("Scalar")
         ->GetDataType();
-  auto assignmentSolverArray = blocks->GetFieldData()->GetArray("AssignmentSolver");
+  auto assignmentSolverArray
+    = blocks->GetFieldData()->GetArray("AssignmentSolver");
   if(assignmentSolverArray)
     assignmentSolverID_ = assignmentSolverArray->GetTuple1(0);
 
