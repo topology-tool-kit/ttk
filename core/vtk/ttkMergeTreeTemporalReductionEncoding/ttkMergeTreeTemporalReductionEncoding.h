@@ -56,7 +56,6 @@ private:
   bool DoResampleToImage = false;
 
   // Output options
-  double DistanceAxisStretch = 1.;
   bool OutputTrees = true;
   bool OutputSegmentation = false;
   bool PlanarLayout = false;
@@ -262,9 +261,6 @@ public:
 
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
-
-  vtkSetMacro(DistanceAxisStretch, double);
-  vtkGetMacro(DistanceAxisStretch, double);
 
   /**
    * This static method and the macro below are VTK conventions on how to

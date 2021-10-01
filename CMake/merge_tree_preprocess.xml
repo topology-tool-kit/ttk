@@ -109,7 +109,7 @@ label="Persistence Threshold (%)"
 number_of_elements="1"
 default_values="0">
   <Documentation>
-    
+    Delete persistence pairs having a persistence lower than this threshold (relative to the highest persistence).
   </Documentation>
   <DoubleRangeDomain name="range" min="0" max="100" />
 </DoubleVectorProperty>
