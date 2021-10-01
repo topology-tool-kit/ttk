@@ -219,6 +219,9 @@ vtkSmartPointer<vtkDoubleArray>
 /// the old GetVoidPointer in vtkDataArray
 void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
   void *outPtr = nullptr;
+  if(array == nullptr)
+    return outPtr;
+
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
@@ -229,6 +232,16 @@ void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
 
 void *ttkUtils::GetVoidPointer(vtkPoints *points, vtkIdType start) {
   return GetVoidPointer(points->GetData(), start);
+}
+
+vtkSmartPointer<vtkDataArray> ttkUtils::SliceArray(vtkDataArray *array,
+                                                   vtkIdType idx) {
+  auto slicedArray = vtkSmartPointer<vtkDataArray>::Take(array->NewInstance());
+  slicedArray->SetName(array->GetName());
+  slicedArray->SetNumberOfComponents(array->GetNumberOfComponents());
+  slicedArray->SetNumberOfTuples(1);
+  slicedArray->SetTuple(0, idx, array);
+  return slicedArray;
 }
 
 void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
