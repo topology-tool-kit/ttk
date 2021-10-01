@@ -52,7 +52,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
             number_of_elements="1"
             default_values="0">
               <Documentation>
-
+                If enabled, this filter needs the nodes and arc output of the FTMTree filter as input and will display a specialized layout for merge tree.
               </Documentation>
               <BooleanDomain name="bool"/>
             </IntVectorProperty>
