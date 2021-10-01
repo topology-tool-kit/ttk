@@ -51,7 +51,7 @@ default_values="10">
                            value="1" />
   </Hints>
   <Documentation>
-    Threshold to consider a persistence pair as important. They will be displayed such that they are much more visible than the rest.
+    Threshold to consider a persistence pair as important. They will be displayed such that they are much more visible than the other pairs.
   </Documentation>
   <DoubleRangeDomain name="range" min="0" max="100" />
 </DoubleVectorProperty>
@@ -70,7 +70,7 @@ panel_visibility="advanced">
                           value="1" />
   </Hints>
   <Documentation>
-    
+    Maximum number of important pairs for each tree.
   </Documentation>
 </IntVectorProperty>
 
@@ -88,7 +88,7 @@ panel_visibility="advanced">
                           value="1" />
   </Hints>
   <Documentation>
-    
+    Minimum number of important pairs for each tree.
   </Documentation>
 </IntVectorProperty>
 
