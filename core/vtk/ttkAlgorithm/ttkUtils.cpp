@@ -234,9 +234,10 @@ void *ttkUtils::GetVoidPointer(vtkPoints *points, vtkIdType start) {
   return GetVoidPointer(points->GetData(), start);
 }
 
-vtkSmartPointer<vtkDataArray> ttkUtils::SliceArray(vtkDataArray *array,
-                                                   vtkIdType idx) {
-  auto slicedArray = vtkSmartPointer<vtkDataArray>::Take(array->NewInstance());
+vtkSmartPointer<vtkAbstractArray> ttkUtils::SliceArray(vtkAbstractArray *array,
+                                                       vtkIdType idx) {
+  auto slicedArray
+    = vtkSmartPointer<vtkAbstractArray>::Take(array->NewInstance());
   slicedArray->SetName(array->GetName());
   slicedArray->SetNumberOfComponents(array->GetNumberOfComponents());
   slicedArray->SetNumberOfTuples(1);

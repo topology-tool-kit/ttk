@@ -60,8 +60,8 @@ public:
     return static_cast<DT *>(ttkUtils::GetVoidPointer(array, start));
   }
 
-  static vtkSmartPointer<vtkDataArray> SliceArray(vtkDataArray *array,
-                                                  vtkIdType idx);
+  static vtkSmartPointer<vtkAbstractArray> SliceArray(vtkAbstractArray *array,
+                                                      vtkIdType idx);
 
   static void *
     WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
