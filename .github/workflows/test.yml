@@ -52,12 +52,17 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - name: Cache object files with ccache
-      uses: actions/cache@v2
+    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+      name: Fetch archived ccache
       with:
-        path: /home/runner/.ccache
-        key: ccache-${{ matrix.os }}-${{ github.sha }}
-        restore-keys: ccache-${{ matrix.os }}
+        repo: "pierre-guillou/ttk"
+        version: "tags/ccache"
+        file: "ttk-ccache-${{ matrix.os }}.tar.gz"
+
+    - name: Decompress ccache archive
+      run: |
+        tar xzf ttk-ccache-${{ matrix.os }}.tar.gz
+        mv .ccache /home/runner/
 
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
       name: Fetch TTK-ParaView headless Debian package
@@ -147,16 +152,15 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - name: Cache object files with ccache
-      uses: actions/cache@v2
-      with:
-        path: /Users/runner/work/ttk/.ccache
-        key: ccache-macos-${{ github.sha }}
-        restore-keys: ccache-macos
-
-    - name: Reduce ccache cache size
+    - name: Fetch archived ccache
       run: |
-        ccache -M 128M && ccache -c
+        wget https://github.com/pierre-guillou/ttk/releases/download/ccache/ttk-ccache-macOS.tar.gz
+
+    - name: Decompress ccache archive
+      run: |
+        tar xzf ttk-ccache-macOS.tar.gz
+        rm -rf /Users/runner/work/ttk/.ccache
+        mv .ccache /Users/runner/work/ttk/
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
@@ -164,7 +168,7 @@ jobs:
 
     - name: Install ParaView
       run: |
-        tar xzvf ttk-paraview-headless.tar.gz
+        tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
 
     - name: Create & configure TTK build directory
