@@ -231,7 +231,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 </DoubleVectorProperty>
                 
                 <IntVectorProperty
-                name="PlanarLayout"
+                name="MergeTreePlanarLayout"
                 command="SetPlanarLayout"
                 label="Planar Layout"
                 number_of_elements="1"
@@ -249,152 +249,6 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 </IntVectorProperty>
                 
                 <IntVectorProperty
-                name="BranchDecompositionPlanarLayout"
-                command="SetBranchDecompositionPlanarLayout"
-                label="Branch Decomposition Planar Layout"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="BranchSpacing"
-                command="SetBranchSpacing"
-                label="Branch Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="BranchDecompositionPlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="ImportantPairs"
-                command="SetImportantPairs"
-                label="Important Pairs (%)"
-                number_of_elements="1"
-                default_values="50">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>
-                
-                <IntVectorProperty
-                name="MaximumImportantPairs"
-                command="SetMaximumImportantPairs"
-                label="Maximum Number of Important Pairs"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                          mode="visibility"
-                                          property="PlanarLayout"
-                                          value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="MinimumImportantPairs"
-                command="SetMinimumImportantPairs"
-                label="Minimum Number of Important Pairs"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                          mode="visibility"
-                                          property="PlanarLayout"
-                                          value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="ImportantPairsSpacing"
-                command="SetImportantPairsSpacing"
-                label="Important Pairs Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="NonImportantPairsSpacing"
-                command="SetNonImportantPairsSpacing"
-                label="Non Important Pairs Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="NonImportantPairsProximity"
-                command="SetNonImportantPairsProximity"
-                label="Non Important Pairs Proximity"
-                number_of_elements="1"
-                default_values="0.05">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="1" />
-                </DoubleVectorProperty>
-                
-                <IntVectorProperty
                 name="RescaleTreesIndividually"
                 command="SetRescaleTreesIndividually"
                 label="Rescale Trees Individually"
@@ -404,7 +258,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -426,7 +280,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                                            value="1" />
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="0" />
                   </Hints>
                   <Documentation>
@@ -468,15 +322,10 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
             <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="OutputTrees"/>
               <Property name="DimensionSpacing"/>
-              <Property name="PlanarLayout"/>
-              <Property name="BranchDecompositionPlanarLayout"/>
-              <Property name="BranchSpacing"/>
-              <Property name="ImportantPairs"/>
-              <Property name="MaximumImportantPairs"/>
-              <Property name="MinimumImportantPairs"/>
-              <Property name="ImportantPairsSpacing"/>
-              <Property name="NonImportantPairsSpacing"/>
-              <Property name="NonImportantPairsProximity"/>
+              <Property name="MergeTreePlanarLayout"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
+            <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="RescaleTreesIndividually"/>
               <Property name="OutputSegmentation"/>
               <Property name="DistanceAxisStretch"/>

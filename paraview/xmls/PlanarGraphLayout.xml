@@ -24,7 +24,10 @@ If the input is a merge tree, the filter can take the nodes output and the arc o
 
 Related publication:
 
-TODO
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
+IEEE Transactions on Visualization and Computer Graphics, 2021
             </Documentation>
 
             <!-- Inputs -->
@@ -43,169 +46,23 @@ TODO
 
            <!-- Merge Tree Planar Layout Options -->
             <IntVectorProperty
-            name="InputIsAMergeTree"
+            name="MergeTreePlanarLayout"
             command="SetInputIsAMergeTree"
             label="Input is a Merge Tree"
             number_of_elements="1"
             default_values="0">
               <Documentation>
-
+                If enabled, this filter needs the nodes and arc output of the FTMTree filter as input and will display a specialized layout for merge tree.
               </Documentation>
               <BooleanDomain name="bool"/>
             </IntVectorProperty>
-            
-            <IntVectorProperty
-            name="BranchDecompositionPlanarLayout"
-            command="SetBranchDecompositionPlanarLayout"
-            label="Branch Decomposition Planar Layout"
-            number_of_elements="1"
-            default_values="0">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-              <BooleanDomain name="bool"/>
-            </IntVectorProperty>
-            
-            <DoubleVectorProperty
-            name="BranchSpacing"
-            command="SetBranchSpacing"
-            label="Branch Spacing"
-            number_of_elements="1"
-            default_values="1">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="BranchDecompositionPlanarLayout"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-            </DoubleVectorProperty>
-            
-            <DoubleVectorProperty
-            name="ImportantPairs"
-            command="SetImportantPairs"
-            label="Important Pairs (%)"
-            number_of_elements="1"
-            default_values="10">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-              <DoubleRangeDomain name="range" min="0" max="100" />
-            </DoubleVectorProperty>
-            
-            <IntVectorProperty
-            name="MaximumImportantPairs"
-            command="SetMaximumImportantPairs"
-            label="Maximum Number of Important Pairs"
-            number_of_elements="1"
-            default_values="0"
-            panel_visibility="advanced">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-            </IntVectorProperty>
-            
-            <IntVectorProperty
-            name="MinimumImportantPairs"
-            command="SetMinimumImportantPairs"
-            label="Minimum Number of Important Pairs"
-            number_of_elements="1"
-            default_values="0"
-            panel_visibility="advanced">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-            </IntVectorProperty>
-            
-            <DoubleVectorProperty
-            name="ImportantPairsSpacing"
-            command="SetImportantPairsSpacing"
-            label="Important Pairs Spacing"
-            number_of_elements="1"
-            default_values="1">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-            </DoubleVectorProperty>
-            
-            <DoubleVectorProperty
-            name="NonImportantPairsSpacing"
-            command="SetNonImportantPairsSpacing"
-            label="Non Important Pairs Spacing"
-            number_of_elements="1"
-            default_values="0.1">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-            </DoubleVectorProperty>
-            
-            <DoubleVectorProperty
-            name="NonImportantPairsProximity"
-            command="SetNonImportantPairsProximity"
-            label="Non Important Pairs Proximity"
-            number_of_elements="1"
-            default_values="0.05">
-              <Hints>
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="InputIsAMergeTree"
-                                       value="1" />
-              </Hints>
-              <Documentation>
-                
-              </Documentation>
-              <DoubleRangeDomain name="range" min="0" max="1" />
-            </DoubleVectorProperty>
-
 
             <!-- Graph Planar Layout Options -->
             <IntVectorProperty name="UseSequences" label="Use Sequences" command="SetUseSequences" number_of_elements="1" default_values="1">
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -222,7 +79,7 @@ TODO
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSequences" value="1" />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Sequence Scalar Array.</Documentation>
@@ -232,7 +89,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -249,7 +106,7 @@ TODO
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSizes" value="1" />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Size Scalar Array.</Documentation>
@@ -259,7 +116,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -276,7 +133,7 @@ TODO
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseBranches" value="1" />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Branch Scalar Array.</Documentation>
@@ -286,7 +143,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
@@ -304,7 +161,7 @@ TODO
                     />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Level Scalar Array.</Documentation>
@@ -314,7 +171,7 @@ TODO
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
-                                             property="InputIsAMergeTree"
+                                             property="MergeTreePlanarLayout"
                                              value="0" />
                 </Hints>
                 <Documentation>Name of the output layout array.</Documentation>
@@ -322,7 +179,7 @@ TODO
 
             <!-- -->
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="InputIsAMergeTree" />
+                <Property name="MergeTreePlanarLayout" />
                 <Property name="UseSequences" />
                 <Property name="SequenceArray" />
                 <Property name="UseSizes" />
@@ -335,15 +192,8 @@ TODO
 
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="OutputArrayName" />
-                <Property name="BranchDecompositionPlanarLayout"/>
-                <Property name="BranchSpacing"/>
-                <Property name="ImportantPairs"/>
-                <Property name="MaximumImportantPairs"/>
-                <Property name="MinimumImportantPairs"/>
-                <Property name="ImportantPairsSpacing"/>
-                <Property name="NonImportantPairsSpacing"/>
-                <Property name="NonImportantPairsProximity"/>
             </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
 
             ${DEBUG_WIDGETS}
 
