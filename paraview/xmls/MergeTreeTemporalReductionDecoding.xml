@@ -7,11 +7,16 @@
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMergeTreeTemporalReductionDecoding" class="ttkMergeTreeTemporalReductionDecoding" label="TTK MergeTreeTemporalReductionDecoding">
       <Documentation long_help="MergeTreeTemporalReductionDecoding Long" short_help="MergeTreeTemporalReductionDecoding Short">
-This VTK filter uses the ttk::MergeTreeTemporalReductionDecoding module to compute the reconstruction of a reduced sequence of merge trees.
-\b Related \b publication \n
-"Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
-Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
-Proc. of IEEE VIS 2021.\n
+This filter allows to compute the reconstruction of a reduced sequence of merge trees.
+
+The input of this filter is the key frames and the reduction coefficients in the output of the MergeTreeTemporalReductionEncoding filter.
+
+The output of this filter contains the key frames and the reconstructed trees.
+
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
 IEEE Transactions on Visualization and Computer Graphics, 2021
       </Documentation>
 
@@ -36,7 +41,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
       </InputProperty>
 
       <InputProperty
-          name="Metadata"
+          name="ReductionCoefficients"
           port_index="1"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -50,13 +55,29 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Encoding metadata.
+          Encoding filter reduction coefficients output.
         </Documentation>
       </InputProperty>
 
       <!-- INPUT PARAMETER WIDGETS -->
-               <!-- Output options -->
+               <!-- Input options -->
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                    The assignment solver used in the algorithm.
+                  </Documentation>
+                </IntVectorProperty>
                 
+               <!-- Output options -->
                 <IntVectorProperty
                 name="OutputTrees"
                 command="SetOutputTrees"
@@ -64,7 +85,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 number_of_elements="1"
                 default_values="1">
                   <Documentation>
-                    Display output trees. 
+                    Display trees. 
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
@@ -82,7 +103,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    
+                    Distance between trees.
                   </Documentation>
                 </DoubleVectorProperty>
                 
@@ -118,11 +139,15 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    Rescale trees individually. If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
+                    If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty> 
                 
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="AssignmentSolver"/>
+            </PropertyGroup>
+            
             <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="OutputTrees"/>
               <Property name="DimensionSpacing"/>

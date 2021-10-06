@@ -10,7 +10,7 @@ default_values="0">
     <Entry value="2" text="Custom"/>
 </EnumerationDomain>
   <Documentation>
-    
+    Backend for the computation of the distance between merge trees. The Edit Distance does not allow to compute geodesics, barycenters and clusters contrary to the Wasserstein Distance. One can choose Custom to configure manually the three parameters controling the distance.
   </Documentation>
 </IntVectorProperty>
 
@@ -27,7 +27,7 @@ default_values="1">
                            value="2" />
   </Hints>
   <Documentation>
-    Use branch decomposition representation.
+    Use branch decomposition representation (each node is a persistence pair and no longer a critical point).
   </Documentation>
   <BooleanDomain name="bool"/>
 </IntVectorProperty>
@@ -53,7 +53,7 @@ default_values="1">
   </PropertyWidgetDecorator>
   </Hints>
   <Documentation>
-    Use normalized Wasserstein (set to true to have a consistent barycenter of merge trees).
+    Use normalized Wasserstein (set to true to have consistent geodesics, barycenters and clusters of merge trees).
   </Documentation>
   <BooleanDomain name="bool"/>
 </IntVectorProperty>
@@ -71,7 +71,7 @@ default_values="0">
                            value="2" />
   </Hints>
   <Documentation>
-    Keep subtree when destroying/inserting a node (set to false to have a consistent barycenter of merge tree).
+    Keep subtree when destroying/inserting a node (set to false to have consistent geodesics, barycenters and clusters of merge trees).
   </Documentation>
   <BooleanDomain name="bool"/>
 </IntVectorProperty>  

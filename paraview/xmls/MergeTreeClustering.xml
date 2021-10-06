@@ -13,16 +13,37 @@
                      label="TTK MergeTreeClustering">
            <Documentation long_help="TTK MergeTreeClustering plugin that compute distance, geodesics and barycenters between merge trees." 
                           short_help="TTK MergeTreeClustering plugin that compute distance, geodesics and barycenters between merge trees.">
-               TTK MergeTreeClustering plugin documentation.
-               
-               Related publication:
-               R. Sridharamurthy, T. B. Masood, A. Kamakshidasan, and V. Natarajan.
-               Edit distance between merge trees. 
-               IEEE Transactions on Visualization and Computer Graphics, 2018.
-               
-               M. Pont, J. Vidal, J. Delon, J. Tierny.
-               Wasserstein Distances, Geodesics and Barycenters of Merge Trees.
-               IEEE VIS 2021.
+This filter allows to compute distances, geodesics, barycenters and clusters of merge trees.
+
+Two backends are available:
+
+- The Wasserstein Distance:
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
+IEEE Transactions on Visualization and Computer Graphics, 2021
+
+- The Edit Distance:
+Related publication:
+'Edit distance between merge trees.'
+R. Sridharamurthy, T. B. Masood, A. Kamakshidasan, and V. Natarajan.
+IEEE Transactions on Visualization and Computer Graphics, 2018.
+
+Only the first backend allows to compute geodesics, barycenters and clusters of merge trees. The second one can only compute distances.
+These backends are different through 3 parameters:
+
+               Parameters | Wasserstein |  Edit |
+--------------------------|-------------|-------|
+     Branch Decomposition |        True | False |
+   Normalized Wasserstein |        True | False |
+             Keep Subtree |       False |  True |
+
+These parameters can be configured manually by selecting the Custom backend.
+
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+
+When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
            </Documentation>
 
             <!-- INPUT -->
@@ -146,7 +167,7 @@
                   </PropertyWidgetDecorator>
                   </Hints>
                   <Documentation>
-                    Number of barycenter to compute (performs a KMeans with merge trees as centroids).
+                    Number of barycenters/clusters to compute (performs a KMeans with merge trees as centroids).
                   </Documentation>
                 </IntVectorProperty>
 

@@ -326,6 +326,11 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
 
     output_keyFrames->SetBlock(i, vtkBlock1);
   }
+  // Add input parameters to field data
+  vtkNew<vtkIntArray> vtkAssignmentSolver{};
+  vtkAssignmentSolver->SetName("AssignmentSolver");
+  vtkAssignmentSolver->InsertNextTuple1(assignmentSolverID_);
+  output_keyFrames->GetFieldData()->AddArray(vtkAssignmentSolver);
 
   // ------------------------------------------
   // --- Table
