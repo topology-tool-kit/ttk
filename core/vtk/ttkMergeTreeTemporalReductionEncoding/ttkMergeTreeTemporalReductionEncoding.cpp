@@ -285,20 +285,6 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
       = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
     ttkMergeTreeVisualization visuMaker;
-    visuMaker.setPlanarLayout(PlanarLayout);
-    visuMaker.setBranchDecompositionPlanarLayout(
-      BranchDecompositionPlanarLayout);
-    visuMaker.setRescaleTreesIndividually(RescaleTreesIndividually);
-    visuMaker.setOutputSegmentation(OutputSegmentation);
-    visuMaker.setDimensionSpacing(DimensionSpacing);
-    visuMaker.setDimensionToShift(DimensionToShift);
-    visuMaker.setImportantPairs(ImportantPairs);
-    visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
-    visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
-    visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
-    visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
-    visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
-    // visuMaker.setShiftMode(3); // Double Line
     visuMaker.setShiftMode(2); // Line
     visuMaker.setVtkOutputNode(vtkOutputNode1);
     visuMaker.setVtkOutputArc(vtkOutputArc1);
@@ -306,7 +292,6 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
     visuMaker.setTreesNodes(treesNodes);
     visuMaker.setTreesNodeCorrMesh(treesNodeCorrMesh);
     visuMaker.setTreesSegmentation(treesSegmentation);
-    // visuMaker.setInterpolatedTrees(interpolatedTrees);
     visuMaker.setPrintTreeId(i);
     visuMaker.setPrintClusterId(0);
     visuMaker.setPrevXMaxOffset(prevXMax);
@@ -318,10 +303,11 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
     vtkBlock1->GetFieldData()->ShallowCopy(inputTrees[i]->GetFieldData());
 
     // Construct multiblock
-    vtkBlock1->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+    bool outputSegmentation = inputTrees[i]->GetNumberOfBlocks() == 3;
+    vtkBlock1->SetNumberOfBlocks((outputSegmentation ? 3 : 2));
     vtkBlock1->SetBlock(0, vtkOutputNode1);
     vtkBlock1->SetBlock(1, vtkOutputArc1);
-    if(OutputSegmentation)
+    if(outputSegmentation)
       vtkBlock1->SetBlock(2, vtkOutputSegmentation1);
 
     output_keyFrames->SetBlock(i, vtkBlock1);
