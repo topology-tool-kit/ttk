@@ -1,7 +1,8 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
-- Migration to ParaView-5.9.0
+- Migration to ParaView-5.9.1
+- Wasserstein Distances, Geodesics, Barycenters of Merge Trees (IEEE VIS 2021)
 - Progressive Scalar Field Topology (IEEE TVCG 2021)
 - Direct LTS-based persistence sensitive simplification
 - Marking deprecated filters (ParaView integration)
