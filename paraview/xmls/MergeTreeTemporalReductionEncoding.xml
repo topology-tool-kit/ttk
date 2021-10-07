@@ -123,96 +123,6 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
-                
-                <!-- Output options -->
-                
-                <IntVectorProperty
-                name="OutputTrees"
-                command="SetOutputTrees"
-                label="Output Trees"
-                number_of_elements="1"
-                default_values="1">
-                  <Documentation>
-                    Display trees. 
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="DimensionSpacing"
-                command="SetDimensionSpacing"
-                label="Dimension Spacing"
-                number_of_elements="1"
-                default_values="1.0">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="OutputTrees"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Distance between trees.
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <IntVectorProperty
-                name="MergeTreePlanarLayout"
-                command="SetPlanarLayout"
-                label="Planar Layout"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="OutputTrees"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Display trees using a planar layout or in the original domain.
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="RescaleTreesIndividually"
-                command="SetRescaleTreesIndividually"
-                label="Rescale Trees Individually"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="MergeTreePlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    If enabled, the trees will have the same height, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="OutputSegmentation"
-                command="SetOutputSegmentation"
-                label="Output Segmentation"
-                number_of_elements="1"
-                default_values="0">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="OutputTrees"
-                                           value="1" />
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="MergeTreePlanarLayout"
-                                           value="0" />
-                  </Hints>
-                  <Documentation>
-                    Display output segmentation. Be careful, it can consume a lot of memory since some segmentations must be copied (to shift them).
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>  
             
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="AssignmentSolver"/>
@@ -222,17 +132,6 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
               <Property name="UseL2Distance"/>
             </PropertyGroup>
             ${MERGE_TREE_PREPROCESS_WIDGETS}
-            
-            <PropertyGroup panel_widget="Line" label="Output options">
-              <Property name="OutputTrees"/>
-              <Property name="DimensionSpacing"/>
-              <Property name="MergeTreePlanarLayout"/>
-            </PropertyGroup>
-            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
-            <PropertyGroup panel_widget="Line" label="Output options">
-              <Property name="RescaleTreesIndividually"/>
-              <Property name="OutputSegmentation"/>
-            </PropertyGroup>
 
             <!-- OUTPUT PARAMETER WIDGETS -->
                 <OutputPort name="Key Frames" index="0" id="port0" />
