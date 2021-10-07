@@ -283,7 +283,7 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock1
       = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      
+
     ttkMergeTreeVisualization visuMaker;
     visuMaker.setShiftMode(2); // Line
     visuMaker.setVtkOutputNode(vtkOutputNode1);
