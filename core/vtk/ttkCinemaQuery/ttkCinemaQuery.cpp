@@ -65,8 +65,6 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<std::string> sqlInsertStatements;
   {
     ttk::Timer conversionTimer;
-    this->printMsg("Converting input VTK tables to SQL tables", 0,
-                   ttk::debug::LineMode::REPLACE);
 
     for(int i = 0; i < nTables; i++) {
       auto inTable = inTables[i];
@@ -75,18 +73,30 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
       size_t nr = inTable->GetNumberOfRows();
       std::vector<bool> isNumeric(nc);
 
-      // select all input columns whose name is NOT matching the regexp
-      std::vector<size_t> includeColumns{};
+      std::vector<size_t> includeColumns(nc);
+      std::iota(includeColumns.begin(), includeColumns.end(), 0);
+
+      // exclude input columns whose name matches the regexp
       if(this->ExcludeColumnsWithRegexp) {
-        for(size_t j = 0; j < nc; ++j) {
-          const auto &name = inTable->GetColumnName(j);
-          if(!std::regex_match(name, std::regex(RegexpString))) {
-            includeColumns.emplace_back(j);
-          }
+        const auto oldSize{includeColumns.size()};
+        includeColumns.erase(
+          std::remove_if(includeColumns.begin(), includeColumns.end(),
+                         [inTable, this](const size_t a) {
+                           const auto name{inTable->GetColumnName(a)};
+                           return std::regex_match(
+                             name, std::regex(this->RegexpString));
+                         }),
+          includeColumns.end());
+        if(includeColumns.size() < oldSize) {
+          this->printMsg("Removed "
+                         + std::to_string(oldSize - includeColumns.size())
+                         + " columns with regexp `" + this->RegexpString + "'");
         }
-      } else {
-        includeColumns.resize(nc);
-        std::iota(includeColumns.begin(), includeColumns.end(), 0);
+      }
+
+      if(includeColumns.empty()) {
+        this->printWrn("No columns to process!");
+        return 1;
       }
 
       // -----------------------------------------------------------------------
