@@ -21,6 +21,11 @@ set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
 mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 
+option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
+if (TTK_ENABLE_MPI)
+  find_package(MPI REQUIRED)
+endif()
+
 if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
   # Find ParaView, otherwise VTK
   find_package(ParaView)
@@ -236,10 +241,6 @@ else()
   endif()
 endif()
 
-option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
-if (TTK_ENABLE_MPI)
-  find_package(MPI REQUIRED)
-endif()
 
 find_package(WEBSOCKETPP QUIET)
 if(NOT WEBSOCKETPP_FOUND)
