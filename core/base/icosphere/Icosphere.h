@@ -384,7 +384,7 @@ int ttk::Icosphere::computeIcospheres(
 
   // Translating Icospheres
   ttk::Timer timer;
-  const std::string transMsg = "Transforming " + std::to_string(nSpheres)
+  const std::string transMsg = "Moving " + std::to_string(nSpheres)
                                + " Icospheres (R: " + std::to_string(radius)
                                + ")";
   this->printMsg(
