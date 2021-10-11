@@ -21,6 +21,8 @@ set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
 mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 
+# issue #605 
+# workaround https://gitlab.kitware.com/paraview/paraview/-/issues/20324
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
