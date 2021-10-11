@@ -7,11 +7,16 @@
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMergeTreeTemporalReductionDecoding" class="ttkMergeTreeTemporalReductionDecoding" label="TTK MergeTreeTemporalReductionDecoding">
       <Documentation long_help="MergeTreeTemporalReductionDecoding Long" short_help="MergeTreeTemporalReductionDecoding Short">
-This VTK filter uses the ttk::MergeTreeTemporalReductionDecoding module to compute the reconstruction of a reduced sequence of merge trees.
-\b Related \b publication \n
-"Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
-Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
-Proc. of IEEE VIS 2021.\n
+This filter allows to compute the reconstruction of a reduced sequence of merge trees.
+
+The input of this filter is the key frames and the reduction coefficients in the output of the MergeTreeTemporalReductionEncoding filter.
+
+The output of this filter contains the key frames and the reconstructed trees.
+
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
 IEEE Transactions on Visualization and Computer Graphics, 2021
       </Documentation>
 
@@ -36,7 +41,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
       </InputProperty>
 
       <InputProperty
-          name="Metadata"
+          name="ReductionCoefficients"
           port_index="1"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -50,13 +55,29 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Encoding metadata.
+          Encoding filter reduction coefficients output.
         </Documentation>
       </InputProperty>
 
       <!-- INPUT PARAMETER WIDGETS -->
-               <!-- Output options -->
+               <!-- Input options -->
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                    The assignment solver used in the algorithm.
+                  </Documentation>
+                </IntVectorProperty>
                 
+               <!-- Output options -->
                 <IntVectorProperty
                 name="OutputTrees"
                 command="SetOutputTrees"
@@ -64,7 +85,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 number_of_elements="1"
                 default_values="1">
                   <Documentation>
-                    Display output trees. 
+                    Display trees. 
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
@@ -82,12 +103,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    
+                    Distance between trees.
                   </Documentation>
                 </DoubleVectorProperty>
                 
                 <IntVectorProperty
-                name="PlanarLayout"
+                name="MergeTreePlanarLayout"
                 command="SetPlanarLayout"
                 label="Planar Layout"
                 number_of_elements="1"
@@ -105,152 +126,6 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 </IntVectorProperty>
                 
                 <IntVectorProperty
-                name="BranchDecompositionPlanarLayout"
-                command="SetBranchDecompositionPlanarLayout"
-                label="Branch Decomposition Planar Layout"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="BranchSpacing"
-                command="SetBranchSpacing"
-                label="Branch Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="BranchDecompositionPlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="ImportantPairs"
-                command="SetImportantPairs"
-                label="Important Pairs (%)"
-                number_of_elements="1"
-                default_values="50">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>
-                
-                <IntVectorProperty
-                name="MaximumImportantPairs"
-                command="SetMaximumImportantPairs"
-                label="Maximum Number of Important Pairs"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                          mode="visibility"
-                                          property="PlanarLayout"
-                                          value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="MinimumImportantPairs"
-                command="SetMinimumImportantPairs"
-                label="Minimum Number of Important Pairs"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                          mode="visibility"
-                                          property="PlanarLayout"
-                                          value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="ImportantPairsSpacing"
-                command="SetImportantPairsSpacing"
-                label="Important Pairs Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="NonImportantPairsSpacing"
-                command="SetNonImportantPairsSpacing"
-                label="Non Important Pairs Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="NonImportantPairsProximity"
-                command="SetNonImportantPairsProximity"
-                label="Non Important Pairs Proximity"
-                number_of_elements="1"
-                default_values="0.05">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="1" />
-                </DoubleVectorProperty>
-                
-                <IntVectorProperty
                 name="RescaleTreesIndividually"
                 command="SetRescaleTreesIndividually"
                 label="Rescale Trees Individually"
@@ -260,27 +135,26 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    Rescale trees individually. If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
+                    If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty> 
                 
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="AssignmentSolver"/>
+            </PropertyGroup>
+            
             <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="OutputTrees"/>
               <Property name="DimensionSpacing"/>
-              <Property name="PlanarLayout"/>
-              <Property name="BranchDecompositionPlanarLayout"/>
-              <Property name="BranchSpacing"/>
-              <Property name="ImportantPairs"/>
-              <Property name="MaximumImportantPairs"/>
-              <Property name="MinimumImportantPairs"/>
-              <Property name="ImportantPairsSpacing"/>
-              <Property name="NonImportantPairsSpacing"/>
-              <Property name="NonImportantPairsProximity"/>
+              <Property name="MergeTreePlanarLayout"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
+            <PropertyGroup panel_widget="Line" label="Output options">  
               <Property name="RescaleTreesIndividually"/>
             </PropertyGroup>
 

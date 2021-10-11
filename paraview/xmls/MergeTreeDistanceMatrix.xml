@@ -40,7 +40,7 @@
                 default_values="1"
                 panel_visibility="advanced">
                   <Documentation>
-                    
+                    The distance will be squared root.
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>

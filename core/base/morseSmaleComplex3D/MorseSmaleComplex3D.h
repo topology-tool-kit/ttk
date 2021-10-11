@@ -851,13 +851,8 @@ int ttk::MorseSmaleComplex3D::getSaddleConnectors(
 
   const auto nTriangles = triangulation.getNumberOfTriangles();
   // visited triangles (one vector per thread)
-  std::vector<std::vector<bool>> isVisited(this->threadNumber_);
-  std::vector<std::vector<SimplexId>> visitedTriangles(this->threadNumber_);
-
-  for(auto &vec : isVisited) {
-    // resize threads outside of main loop
-    vec.resize(nTriangles, false);
-  }
+  std::vector<bool> isVisited(nTriangles, false);
+  std::vector<SimplexId> visitedTriangles{};
 
   // list of 2-saddles
   std::vector<Cell> saddles2{};
@@ -873,19 +868,14 @@ int ttk::MorseSmaleComplex3D::getSaddleConnectors(
   std::vector<std::vector<Vpath>> sepsGeomByThread(saddles2.size());
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
+  firstprivate(isVisited, visitedTriangles)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < saddles2.size(); ++i) {
     const auto &s2{saddles2[i]};
 
-#ifdef TTK_ENABLE_OPENMP
-    const size_t tid = omp_get_thread_num();
-#else
-    const size_t tid = 0;
-#endif // TTK_ENABLE_OPENMP
-
     std::set<SimplexId> saddles1{};
-    dcg::VisitedMask mask{isVisited[tid], visitedTriangles[tid]};
+    dcg::VisitedMask mask{isVisited, visitedTriangles};
     discreteGradient_.getDescendingWall(
       s2, mask, triangulation, nullptr, &saddles1);
 
@@ -895,7 +885,7 @@ int ttk::MorseSmaleComplex3D::getSaddleConnectors(
       Vpath vpath;
       const bool isMultiConnected
         = discreteGradient_.getAscendingPathThroughWall(
-          s1, s2, isVisited[tid], &vpath, triangulation);
+          s1, s2, isVisited, &vpath, triangulation);
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
@@ -958,29 +948,21 @@ int ttk::MorseSmaleComplex3D::getAscendingSeparatrices2(
   separatricesGeometry.resize(numberOfSeparatrices);
   separatricesSaddles.resize(numberOfSeparatrices);
 
-  const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
-  std::vector<std::vector<bool>> isVisited(this->threadNumber_);
-  for(auto &vec : isVisited) {
-    vec.resize(numberOfEdges, false);
-  }
-  std::vector<std::vector<SimplexId>> visitedEdges(this->threadNumber_);
+  const auto nEdges = triangulation.getNumberOfEdges();
+  std::vector<bool> isVisited(nEdges, false);
+  std::vector<SimplexId> visitedEdges{};
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
+  firstprivate(isVisited, visitedEdges)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
     const SimplexId saddleIndex = saddleIndexes[i];
     const Cell &saddle1 = criticalPoints[saddleIndex];
 
-#ifdef TTK_ENABLE_OPENMP
-    const size_t tid = omp_get_thread_num();
-#else
-    const size_t tid = 0;
-#endif // TTK_ENABLE_OPENMP
-
     std::vector<Cell> wall;
-    dcg::VisitedMask mask{isVisited[tid], visitedEdges[tid]};
+    dcg::VisitedMask mask{isVisited, visitedEdges};
     discreteGradient_.getAscendingWall(
       saddle1, mask, triangulation, &wall, &separatricesSaddles[i]);
 
@@ -1017,29 +999,21 @@ int ttk::MorseSmaleComplex3D::getDescendingSeparatrices2(
   separatricesGeometry.resize(numberOfSeparatrices);
   separatricesSaddles.resize(numberOfSeparatrices);
 
-  const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
-  std::vector<std::vector<bool>> isVisited(this->threadNumber_);
-  for(auto &vec : isVisited) {
-    vec.resize(numberOfTriangles, false);
-  }
-  std::vector<std::vector<SimplexId>> visitedTriangles(this->threadNumber_);
+  const auto nTriangles = triangulation.getNumberOfTriangles();
+  std::vector<bool> isVisited(nTriangles, false);
+  std::vector<SimplexId> visitedTriangles{};
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
+  firstprivate(isVisited, visitedTriangles)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
     const SimplexId saddleIndex = saddleIndexes[i];
     const Cell &saddle2 = criticalPoints[saddleIndex];
 
-#ifdef TTK_ENABLE_OPENMP
-    const size_t tid = omp_get_thread_num();
-#else
-    const size_t tid = 0;
-#endif // TTK_ENABLE_OPENMP
-
     std::vector<Cell> wall;
-    dcg::VisitedMask mask{isVisited[tid], visitedTriangles[tid]};
+    dcg::VisitedMask mask{isVisited, visitedTriangles};
     discreteGradient_.getDescendingWall(
       saddle2, mask, triangulation, &wall, &separatricesSaddles[i]);
 

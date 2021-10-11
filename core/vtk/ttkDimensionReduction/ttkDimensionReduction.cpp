@@ -59,14 +59,12 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
     const SimplexId numberOfRows = input->GetNumberOfRows();
     const SimplexId numberOfColumns = ScalarFields.size();
 
-#ifndef TTK_ENABLE_KAMIKAZE
     if(numberOfRows <= 0 || numberOfColumns <= 0) {
       this->printErr("input matrix has invalid dimensions (rows: "
                      + std::to_string(numberOfRows)
                      + ", columns: " + std::to_string(numberOfColumns) + ")");
-      return -1;
+      return 0;
     }
-#endif
 
     std::vector<double> inputData;
     std::vector<vtkAbstractArray *> arrays;

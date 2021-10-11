@@ -55,23 +55,6 @@ private:
   // Input Options
   bool DoResampleToImage = false;
 
-  // Output options
-  double DistanceAxisStretch = 1.;
-  bool OutputTrees = true;
-  bool OutputSegmentation = false;
-  bool PlanarLayout = false;
-  bool BranchDecompositionPlanarLayout = false;
-  double BranchSpacing = 1.;
-  bool RescaleTreesIndividually = false;
-  double DimensionSpacing = 1.;
-  int DimensionToShift = 0;
-  double ImportantPairs = 50.;
-  int MaximumImportantPairs = 0;
-  int MinimumImportantPairs = 0;
-  double ImportantPairsSpacing = 1.;
-  double NonImportantPairsSpacing = 1.;
-  double NonImportantPairsProximity = 0.05;
-
   // ----------------------
   // Data for visualization
   // ----------------------
@@ -219,52 +202,6 @@ public:
     resetDataVisualization();
   }
   vtkGetMacro(TimeVariableName, std::string);
-
-  // Output Options
-  vtkSetMacro(OutputTrees, bool);
-  vtkGetMacro(OutputTrees, bool);
-
-  vtkSetMacro(OutputSegmentation, bool);
-  vtkGetMacro(OutputSegmentation, bool);
-
-  vtkSetMacro(PlanarLayout, bool);
-  vtkGetMacro(PlanarLayout, bool);
-
-  vtkSetMacro(BranchDecompositionPlanarLayout, bool);
-  vtkGetMacro(BranchDecompositionPlanarLayout, bool);
-
-  vtkSetMacro(BranchSpacing, double);
-  vtkGetMacro(BranchSpacing, double);
-
-  vtkSetMacro(RescaleTreesIndividually, bool);
-  vtkGetMacro(RescaleTreesIndividually, bool);
-
-  vtkSetMacro(DimensionSpacing, double);
-  vtkGetMacro(DimensionSpacing, double);
-
-  vtkSetMacro(DimensionToShift, int);
-  vtkGetMacro(DimensionToShift, int);
-
-  vtkSetMacro(ImportantPairs, double);
-  vtkGetMacro(ImportantPairs, double);
-
-  vtkSetMacro(MaximumImportantPairs, int);
-  vtkGetMacro(MaximumImportantPairs, int);
-
-  vtkSetMacro(MinimumImportantPairs, int);
-  vtkGetMacro(MinimumImportantPairs, int);
-
-  vtkSetMacro(ImportantPairsSpacing, double);
-  vtkGetMacro(ImportantPairsSpacing, double);
-
-  vtkSetMacro(NonImportantPairsSpacing, double);
-  vtkGetMacro(NonImportantPairsSpacing, double);
-
-  vtkSetMacro(NonImportantPairsProximity, double);
-  vtkGetMacro(NonImportantPairsProximity, double);
-
-  vtkSetMacro(DistanceAxisStretch, double);
-  vtkGetMacro(DistanceAxisStretch, double);
 
   /**
    * This static method and the macro below are VTK conventions on how to
