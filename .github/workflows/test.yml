@@ -16,8 +16,12 @@ on:
     branches:
       - 'dev'
 
-jobs:
+env:
+  PV_REPO: topology-tool-kit/ttk-paraview
+  PV_TAG: v5.9.1-headless
 
+
+jobs:
 
   # ------------------#
   # Test Ubuntu build #
@@ -67,8 +71,8 @@ jobs:
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
       name: Fetch TTK-ParaView headless Debian package
       with:
-        repo: "pierre-guillou/paraview-ttk"
-        version: "tags/5.9.1-headless"
+        repo: "${{ env.PV_REPO }}"
+        version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-headless-${{ matrix.os }}.deb"
 
     - name: Install ParaView .deb
@@ -164,7 +168,7 @@ jobs:
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
-        wget https://github.com/pierre-guillou/paraview-ttk/releases/download/5.9.1-headless/ttk-paraview-headless.tar.gz
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless.tar.gz
 
     - name: Install ParaView
       run: |
@@ -228,7 +232,7 @@ jobs:
       run: |
         Invoke-WebRequest `
         -OutFile ttk-paraview-headless.exe `
-        -Uri https://github.com/pierre-guillou/paraview-ttk/releases/download/5.9.1-headless/ttk-paraview-headless.exe
+        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless.exe
 
     - name: Install ParaView
       shell: cmd
