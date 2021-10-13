@@ -7,10 +7,10 @@
 
 Topological Data Analysis and Visualization
 
-Gallery: https://topology-tool-kit.github.io/gallery.html
+[Gallery](https://topology-tool-kit.github.io/gallery.html)
 
-Installation: https://topology-tool-kit.github.io/installation.html
+[Installation instructions](https://topology-tool-kit.github.io/installation.html)
 
-Tutorials: https://topology-tool-kit.github.io/tutorials.html
+[Video tutorials](https://topology-tool-kit.github.io/tutorials.html)
 
-Events: https://topology-tool-kit.github.io/events.html
+[Events](https://topology-tool-kit.github.io/events.html)
