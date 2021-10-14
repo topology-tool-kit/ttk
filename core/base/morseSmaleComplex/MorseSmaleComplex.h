@@ -322,11 +322,9 @@ namespace ttk {
     }
 
     inline int setOutputCriticalPoints(
-      SimplexId *const criticalPoints_numberOfPoints,
-      std::vector<float> *const criticalPoints_points,
+      std::vector<std::array<float, 3>> *const criticalPoints_points,
       std::vector<char> *const criticalPoints_points_cellDimensons,
       std::vector<SimplexId> *const criticalPoints_points_cellIds,
-      void *const criticalPoints_points_cellScalars,
       std::vector<char> *const criticalPoints_points_isOnBoundary,
       std::vector<SimplexId> *const criticalPoints_points_PLVertexIdentifiers,
       std::vector<SimplexId> *const criticalPoints_points_manifoldSize) {
@@ -336,9 +334,8 @@ namespace ttk {
       }
 #endif
       abstractMorseSmaleComplex_->setOutputCriticalPoints(
-        criticalPoints_numberOfPoints, criticalPoints_points,
-        criticalPoints_points_cellDimensons, criticalPoints_points_cellIds,
-        criticalPoints_points_cellScalars, criticalPoints_points_isOnBoundary,
+        criticalPoints_points, criticalPoints_points_cellDimensons,
+        criticalPoints_points_cellIds, criticalPoints_points_isOnBoundary,
         criticalPoints_points_PLVertexIdentifiers,
         criticalPoints_points_manifoldSize);
 
@@ -352,14 +349,13 @@ namespace ttk {
       std::vector<char> *const separatrices1_points_cellDimensions,
       std::vector<SimplexId> *const separatrices1_points_cellIds,
       SimplexId *const separatrices1_numberOfCells,
-      std::vector<long long> *const separatrices1_cells_connectivity,
+      std::vector<SimplexId> *const separatrices1_cells_connectivity,
       std::vector<SimplexId> *const separatrices1_cells_sourceIds,
       std::vector<SimplexId> *const separatrices1_cells_destinationIds,
       std::vector<SimplexId> *const separatrices1_cells_separatrixIds,
       std::vector<char> *const separatrices1_cells_separatrixTypes,
-      std::vector<double> *const separatrices1_cells_separatrixFunctionMaxima,
-      std::vector<double> *const separatrices1_cells_separatrixFunctionMinima,
-      std::vector<double> *const separatrices1_cells_separatrixFunctionDiffs,
+      std::vector<SimplexId> *const s1_separatrixFunctionMaximaId,
+      std::vector<SimplexId> *const s1_separatrixFunctionMinimaId,
       std::vector<char> *const separatrices1_cells_isOnBoundary) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -372,11 +368,8 @@ namespace ttk {
         separatrices1_points_cellIds, separatrices1_numberOfCells,
         separatrices1_cells_connectivity, separatrices1_cells_sourceIds,
         separatrices1_cells_destinationIds, separatrices1_cells_separatrixIds,
-        separatrices1_cells_separatrixTypes,
-        separatrices1_cells_separatrixFunctionMaxima,
-        separatrices1_cells_separatrixFunctionMinima,
-        separatrices1_cells_separatrixFunctionDiffs,
-        separatrices1_cells_isOnBoundary);
+        separatrices1_cells_separatrixTypes, s1_separatrixFunctionMaximaId,
+        s1_separatrixFunctionMinimaId, separatrices1_cells_isOnBoundary);
 
       return 0;
     }
@@ -385,14 +378,13 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<long long> *const separatrices2_cells_offsets,
-      std::vector<long long> *const separatrices2_cells_connectivity,
+      std::vector<SimplexId> *const separatrices2_cells_offsets,
+      std::vector<SimplexId> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
-      std::vector<double> *const separatrices2_cells_separatrixFunctionMaxima,
-      std::vector<double> *const separatrices2_cells_separatrixFunctionMinima,
-      std::vector<double> *const separatrices2_cells_separatrixFunctionDiffs,
+      std::vector<SimplexId> *const s2_separatrixFunctionMaximaId,
+      std::vector<SimplexId> *const s2_separatrixFunctionMinimaId,
       std::vector<char> *const separatrices2_cells_isOnBoundary) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -404,9 +396,7 @@ namespace ttk {
         separatrices2_numberOfCells, separatrices2_cells_offsets,
         separatrices2_cells_connectivity, separatrices2_cells_sourceIds,
         separatrices2_cells_separatrixIds, separatrices2_cells_separatrixTypes,
-        separatrices2_cells_separatrixFunctionMaxima,
-        separatrices2_cells_separatrixFunctionMinima,
-        separatrices2_cells_separatrixFunctionDiffs,
+        s2_separatrixFunctionMaximaId, s2_separatrixFunctionMinimaId,
         separatrices2_cells_isOnBoundary);
 
       return 0;
@@ -430,7 +420,7 @@ namespace ttk {
     int execute(const triangulationType &triangulation) {
       switch(dimensionality_) {
         case 2:
-          morseSmaleComplex2D_.execute<dataType>(triangulation);
+          morseSmaleComplex2D_.execute(triangulation);
           break;
 
         case 3:

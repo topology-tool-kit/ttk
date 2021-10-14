@@ -239,7 +239,7 @@ namespace ttk {
 
       void printGraph(const int verbosity) const;
 
-      void printTime(Timer &timer, const std::string &msg, const int lvl) const;
+      void printTime(Timer &timer, const std::string &msg) const;
 
       // Initialize functions (virtual inherit from Allocable)
       // called automatically by the build
@@ -288,7 +288,7 @@ namespace ttk {
       // return the number of component in lower/upper link
       std::pair<valence, valence> getLinkNbCC(const idVertex curVert,
                                               LocalForests &localForests,
-                                              VertCompFN comp);
+                                              const VertCompFN &comp);
 
       /// update (locally) the preimage graph (dynGraph) from that
       /// of immediately before f(v) to that of immediately after f(v).

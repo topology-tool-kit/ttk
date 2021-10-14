@@ -36,7 +36,6 @@ int ttkTrackingFromFields::FillInputPortInformation(int port,
 // (*) Persistence-driven approach
 template <class dataType, class triangulationType>
 int ttkTrackingFromFields::trackWithPersistenceMatching(
-  vtkDataSet *input,
   vtkUnstructuredGrid *output,
   unsigned long fieldNumber,
   const triangulationType *triangulation) {
@@ -117,7 +116,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   return 1;
 }
 
-int ttkTrackingFromFields::RequestData(vtkInformation *request,
+int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 
@@ -232,12 +231,12 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   this->setInputScalars(inputFields);
 
   // 0'. get offsets
-  std::vector<SimplexId *> inputOrders(fieldNumber);
+  std::vector<ttk::SimplexId *> inputOrders(fieldNumber);
   for(int i = 0; i < fieldNumber; ++i) {
     this->SetInputArrayToProcess(0, 0, 0, 0, inputScalarFields[i]->GetName());
     auto orderArray = this->GetOrderArray(input, 0, 0, false);
     inputOrders[i]
-      = static_cast<SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
+      = static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
   }
   this->setInputOffsets(inputOrders);
 
@@ -246,7 +245,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
-         input, output, fieldNumber, (TTK_TT *)triangulation->getData())));
+         output, fieldNumber, (TTK_TT *)triangulation->getData())));
   } else {
     this->printMsg("The specified matching method is not supported.");
   }

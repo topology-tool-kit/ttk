@@ -66,7 +66,7 @@ namespace ttk {
 
     template <typename Type>
     std::string DynamicGraph<Type>::print(
-      std::function<std::string(std::size_t)> printFunction) {
+      const std::function<std::string(std::size_t)> &printFunction) {
 
       std::stringstream res;
 

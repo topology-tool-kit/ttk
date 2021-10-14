@@ -12,7 +12,7 @@
 /// 'HelloWorld'
 /// Jonas Lukasczyk and Julien Tierny.
 /// TTK Publications.
-/// 2020.
+/// 2021.
 ///
 
 #pragma once
@@ -30,12 +30,7 @@ namespace ttk {
   class HelloWorld : virtual public Debug {
 
   public:
-    HelloWorld() {
-      this->setDebugMsgPrefix(
-        "HelloWorld"); // inherited from Debug: prefix will be printed at the
-      // beginning of every msg
-    };
-    ~HelloWorld(){};
+    HelloWorld();
 
     /**
      * TODO 2: This method preconditions the triangulation for all operations
@@ -48,7 +43,7 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       return triangulation->preconditionVertexNeighbors();
-    };
+    }
 
     /**
      * TODO 3: Implmentation of the algorithm.

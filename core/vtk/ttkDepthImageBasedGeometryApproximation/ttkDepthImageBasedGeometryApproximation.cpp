@@ -45,7 +45,7 @@ int ttkDepthImageBasedGeometryApproximation::FillOutputPortInformation(
 }
 
 int ttkDepthImageBasedGeometryApproximation::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   ttk::Timer globalTimer;

@@ -315,7 +315,7 @@ jobs:
 
   - script: |
       ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'
@@ -324,7 +324,7 @@ jobs:
   - script: |
       export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.6/site-packages
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/python/'
@@ -333,7 +333,7 @@ jobs:
   - script: |
       export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/pvpython/'
@@ -346,7 +346,7 @@ jobs:
 
 - job:
   condition: true
-  displayName: MacOS-PV-Python3-OpenMP-Make (no install)
+  displayName: MacOS-PV-Python3-OpenMP-Ninja
   timeoutInMinutes: 180
 
   variables:
@@ -363,18 +363,18 @@ jobs:
 
   steps:
   - script: |
-      brew cask install xquartz
-      brew install wget libomp mesa glew boost ccache qt
+      brew install --cask xquartz
+      brew install wget libomp mesa glew boost ccache ninja python
     displayName: 'Install dependencies'
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.8'
-
   - script: |
-      wget https://github.com/topology-tool-kit/ttk-paraview/releases/download/$(PV_VERSION)/ttk-paraview.pkg
-      sudo installer -pkg ttk-paraview.pkg -target /
-    displayName: 'Download and install ParaView'
+      wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
+      tar Jxvf ParaView-$(PV_VERSION).tar.xz
+      cd paraview/patch
+      ./patch-paraview-5.8.1.sh $(Build.SourcesDirectory)/ParaView-$(PV_VERSION)
+      # switch to Xcode 11 since Xcode 12 breaks the ParaView build
+      sudo xcode-select -s "/Applications/Xcode_11.7.app"
+    displayName: 'Download & patch ParaView $(PV_VERSION)'
 
   - task: Cache@2
     inputs:
@@ -385,28 +385,44 @@ jobs:
 
   - task: CMake@1
     inputs:
+      workingDirectory: 'ParaView-$(PV_VERSION)/build'
+      cmakeArgs: '.. $(CMakeArgs)
+                     -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+                     -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install
+                     -DCMAKE_BUILD_TYPE=Release
+                     -DPARAVIEW_USE_QT=OFF
+                     -GNinja'
+    displayName: 'Configure ParaView'
+
+  - script: |
+      cmake --build . --target install
+    workingDirectory: 'ParaView-$(PV_VERSION)/build'
+    displayName: 'Build and install ParaView'
+
+  - task: CMake@1
+    inputs:
       workingDirectory: 'build/'
       cmakeArgs: '.. $(CMakeArgs)
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
-                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
+                     -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                      $(TTK_MODULE_DISABLE)
-                     $(TTK_MODULE_TEST)'
+                     $(TTK_MODULE_TEST)
+                     -GNinja'
     displayName: 'Configure TTK'
 
   - script: |
-      cmake --build . --target install -- -j 4
+      cmake --build . --target install
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
 
   - script: |
-      # DYLD_PRINT_LIBRARIES=1 ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-      echo "Need a fix"
+      ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK Command line (DISABLED FOR NOW)'
+    displayName: 'Test TTK Command line'
 
   - task: CMake@1
     inputs:
@@ -426,8 +442,7 @@ jobs:
       workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
-                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake;$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake'
     displayName: 'Configure TTKVTK Example'
 
   - script: |
@@ -445,17 +460,17 @@ jobs:
 
   - script: |
       ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'
     displayName: 'Test TTKVTK Example'
 
   - script: |
-      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages
-      export DYLD_LIBRARY_PATH=/Applications/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
-      /Applications/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.9/site-packages:$(Build.ArtifactStagingDirectory)/pv-install/lib/python3.9/site-packages
+      export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
+      $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/python/'
@@ -463,9 +478,9 @@ jobs:
 
   - script: |
       export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
-      export DYLD_LIBRARY_PATH=/Applications/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
-      /Applications/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
+      $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/pvpython/'
@@ -491,6 +506,8 @@ jobs:
         compilerInitialization: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
         VTKVersion: v9.0.0
         VTKVPath: 9.0
+        BOOST_URL: https://sourceforge.net/projects/boost/files/boost-binaries/1.72.0/boost_1_72_0-msvc-14.2-64.exe
+        BOOST_ROOT_1_72_0: C:\hostedtoolcache\windows\Boost\1.72.0\x86_64
 
   variables:
     TTK_MODULE_DISABLE: '-DVTK_MODULE_ENABLE_ttkCinemaWriter=NO
@@ -531,6 +548,12 @@ jobs:
     workingDirectory: vtk/build
     condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install VTK'
+
+  - powershell: |
+      # Use the boost_1_72_0-msvc-14.1-64.exe for Windows 2016
+      (New-Object System.Net.WebClient).DownloadFile("$env:BOOST_URL", "$env:TEMP\boost.exe")
+      Start-Process -Wait -FilePath "$env:TEMP\boost.exe" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=${env:BOOST_ROOT_1_72_0}"
+    displayName: 'Download & install a binary version of Boost 1.72.0'
 
   - script: |
       mkdir build
@@ -595,7 +618,7 @@ jobs:
 
   - bash: |
       cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'

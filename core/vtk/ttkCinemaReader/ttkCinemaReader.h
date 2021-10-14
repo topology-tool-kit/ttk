@@ -26,9 +26,9 @@ public:
   static ttkCinemaReader *New();
   vtkTypeMacro(ttkCinemaReader, ttkAlgorithm);
 
-  vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, const std::string &);
   vtkGetMacro(DatabasePath, std::string);
-  vtkSetMacro(FilePathColumnNames, std::string);
+  vtkSetMacro(FilePathColumnNames, const std::string &);
   vtkGetMacro(FilePathColumnNames, std::string);
 
 protected:

@@ -17,9 +17,9 @@ namespace ttk {
   public:
     Wrapper() {
       processingProgress_ = 0;
-    };
+    }
 
-    virtual ~Wrapper(){};
+    virtual ~Wrapper() = default;
 
     virtual bool needsToAbort() = 0;
 

@@ -8,6 +8,9 @@ include(CMake/VTKModule.cmake)
 # TODO ... this has nothing to do here.
 file(READ "CMake/debug_widgets.xml" DEBUG_WIDGETS)
 file(READ "CMake/topological_compression.xml" TOPOLOGICAL_COMPRESSION_WIDGETS)
+file(READ "CMake/merge_tree_input.xml" MERGE_TREE_INPUT_WIDGETS)
+file(READ "CMake/merge_tree_preprocess.xml" MERGE_TREE_PREPROCESS_WIDGETS)
+file(READ "CMake/merge_tree_planar_layout.xml" MERGE_TREE_PLANAR_LAYOUT_WIDGETS)
 
 macro(ttk_register_pv_filter vtkModuleDir xmlFile)
   if(NOT EXISTS "${VTKWRAPPER_DIR}/${vtkModuleDir}/vtk.module")
@@ -23,7 +26,6 @@ macro(ttk_register_pv_filter vtkModuleDir xmlFile)
   ttk_get_target(${TTK_NAME} TTK_TARGET)
   if(NOT "${TTK_TARGET}" STREQUAL "")
     list(APPEND TTK_MODULES ${TTK_TARGET})
-    list(APPEND TTK_VTK_MODULE_FILES ${VTKWRAPPER_DIR}/${vtkModuleDir}/vtk.module)
     if(NOT "${xmlFile}" STREQUAL "")
 
       # replace variables of original XML file and store generated file in build dir

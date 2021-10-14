@@ -475,12 +475,11 @@ namespace ttk {
                         const std::vector<double> &t,
                         Vertex &v) const;
 
-    int snapVertexBarycentrics(const double &distanceThreshold) const;
+    int snapVertexBarycentrics() const;
 
     int snapVertexBarycentrics(
       const SimplexId &tetId,
-      const std::vector<std::pair<SimplexId, SimplexId>> &triangles,
-      const double &distanceThreshold) const;
+      const std::vector<std::pair<SimplexId, SimplexId>> &triangles) const;
 
     bool pointSnapping_{false};
 
@@ -2121,9 +2120,7 @@ inline int ttk::FiberSurface::processTetrahedron(
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if(lowerVertexNumber == 3) {
-          // well do nothing (empty triangle)
-        } else if(upperVertexNumber == 3) {
+        } else if(lowerVertexNumber == 3 || upperVertexNumber == 3) {
           // well do nothing (empty triangle)
         } else if((lowerVertexNumber == 1) && (upperVertexNumber == 1)
                   && (greyVertexNumber == 1)) {
@@ -2132,37 +2129,22 @@ inline int ttk::FiberSurface::processTetrahedron(
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if((lowerVertexNumber == 2) && (upperVertexNumber == 1)) {
+        } else if(((lowerVertexNumber == 2) && (upperVertexNumber == 1))
+                  || ((lowerVertexNumber == 1) && (upperVertexNumber == 2))) {
           createdVertices += computeCase2<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if((lowerVertexNumber == 1) && (upperVertexNumber == 2)) {
-          createdVertices += computeCase2<dataTypeU, dataTypeV>(
-            polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
-            uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
-            triangulation);
-        } else if((greyVertexNumber == 1) && (lowerVertexNumber == 2)) {
+        } else if((greyVertexNumber == 1)
+                  && ((lowerVertexNumber == 2) || (upperVertexNumber == 2))) {
           createdVertices += computeCase3<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if((greyVertexNumber == 1) && (upperVertexNumber == 2)) {
-          createdVertices += computeCase3<dataTypeU, dataTypeV>(
-            polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
-            uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
-            triangulation);
-        } else if((greyVertexNumber == 2) && (lowerVertexNumber == 1)) {
-          createdVertices += computeCase4<dataTypeU, dataTypeV>(
-            polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
-            uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
-            triangulation);
-        } else if((greyVertexNumber == 2) && (upperVertexNumber == 1)) {
+        } else if(((greyVertexNumber == 2))
+                  && ((lowerVertexNumber == 1) || (upperVertexNumber == 1))) {
           createdVertices += computeCase4<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,

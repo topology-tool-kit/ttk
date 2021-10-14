@@ -57,7 +57,7 @@ public:
   static ttkTrackingFromOverlap *New();
   vtkTypeMacro(ttkTrackingFromOverlap, ttkAlgorithm);
 
-  vtkSetMacro(LabelFieldName, std::string);
+  vtkSetMacro(LabelFieldName, const std::string &);
   vtkGetMacro(LabelFieldName, std::string);
 
 protected:

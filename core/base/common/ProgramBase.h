@@ -26,7 +26,7 @@ namespace ttk {
       ttkModule_ = NULL;
     }
 
-    virtual ~ProgramBase(){};
+    virtual ~ProgramBase() = default;
 
     virtual int init(int &argc, char **argv) {
 

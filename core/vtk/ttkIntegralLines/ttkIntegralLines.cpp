@@ -117,7 +117,7 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
   return 0;
 }
 
-int ttkIntegralLines::RequestData(vtkInformation *request,
+int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);
@@ -130,8 +130,10 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   vtkDataArray *inputOffsets
     = this->GetOrderArray(domain, 0, 1, ForceInputOffsetScalarField);
 
-  vtkDataArray *inputIdentifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds);
+  std::vector<SimplexId> idSpareStorage{};
+  auto *inputIdentifiers = this->GetIdentifierArrayPtr(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+    idSpareStorage);
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
@@ -179,7 +181,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   this->setInputOffsets(
     static_cast<SimplexId *>(inputOffsets->GetVoidPointer(0)));
 
-  this->setVertexIdentifierScalarField(inputIdentifiers->GetVoidPointer(0));
+  this->setVertexIdentifierScalarField(inputIdentifiers);
   this->setOutputTrajectories(&trajectories);
 
   this->preconditionTriangulation(triangulation);

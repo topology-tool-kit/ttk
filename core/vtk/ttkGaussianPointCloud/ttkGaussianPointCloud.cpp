@@ -1,6 +1,7 @@
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkPolyData.h>
 
 #include <ttkGaussianPointCloud.h>
 #include <ttkUtils.h>
@@ -15,17 +16,18 @@ ttkGaussianPointCloud::ttkGaussianPointCloud() {
 int ttkGaussianPointCloud::FillOutputPortInformation(int port,
                                                      vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
   return 0;
 }
 
-int ttkGaussianPointCloud::RequestData(vtkInformation *request,
-                                       vtkInformationVector **inputVector,
-                                       vtkInformationVector *outputVector) {
+int ttkGaussianPointCloud::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **ttkNotUsed(inputVector),
+  vtkInformationVector *outputVector) {
 
-  auto domain = vtkUnstructuredGrid::GetData(outputVector);
+  auto domain = vtkPolyData::GetData(outputVector);
 
   vtkNew<vtkPoints> points{};
   points->SetNumberOfPoints(NumberOfSamples);
@@ -41,6 +43,22 @@ int ttkGaussianPointCloud::RequestData(vtkInformation *request,
   }
 
   domain->SetPoints(points);
+
+  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+  offsets->SetNumberOfComponents(1);
+  offsets->SetNumberOfTuples(NumberOfSamples + 1);
+  connectivity->SetNumberOfComponents(1);
+  connectivity->SetNumberOfTuples(NumberOfSamples);
+
+  for(int i = 0; i < NumberOfSamples; i++) {
+    offsets->SetTuple1(i, i);
+    connectivity->SetTuple1(i, i);
+  }
+  offsets->SetTuple1(NumberOfSamples, NumberOfSamples);
+
+  vtkNew<vtkCellArray> cells{};
+  cells->SetData(offsets, connectivity);
+  domain->SetVerts(cells);
 
   return 1;
 }

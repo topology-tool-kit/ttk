@@ -1,0 +1,4 @@
+NAME
+  ttkTopologicalSimplificationByPersistence
+DEPENDS
+  ttkAlgorithm

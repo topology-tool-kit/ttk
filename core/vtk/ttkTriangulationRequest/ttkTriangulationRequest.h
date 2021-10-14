@@ -25,14 +25,6 @@
 #include <Triangulation.h>
 #include <ttkAlgorithm.h>
 
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkInformation.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
-
 // VTK Module
 #include <ttkTriangulationRequestModule.h>
 

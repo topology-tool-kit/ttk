@@ -1,0 +1,8 @@
+NAME
+  ttkTriangulationReader
+SOURCES
+  ttkTriangulationReader.cpp
+HEADERS
+  ttkTriangulationReader.h
+DEPENDS
+  ttkAlgorithm

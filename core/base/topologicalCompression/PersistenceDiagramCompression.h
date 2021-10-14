@@ -7,127 +7,9 @@
 #include <OrderDisambiguation.h>
 #include <TopologicalCompression.h>
 
-template <typename dataType>
-int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
-  std::vector<std::tuple<double, int>> &mapping,
-  std::vector<std::tuple<int, double, int>> &criticalConstraints,
-  bool zfpOnly,
-  int nSegments,
-  int nVertices,
-  double zfpBitBudget) {
-  using ttk::TopologicalCompression;
-
-  int totalSize = 0;
-
-  if(!(zfpOnly)) {
-    // Topological segments.
-    int numberOfBitsPerSegment = log2(nSegments) + 1;
-    double nbCharPerSegment = (double)numberOfBitsPerSegment / 8.0;
-    totalSize += (sizeof(int) * 2 + std::ceil(nbCharPerSegment * nVertices));
-
-    // Geometrical mapping.
-    auto mappingSize = (int)mapping.size();
-    auto constraintsSize = (int)criticalConstraints.size();
-    totalSize += (mappingSize) * (sizeof(int) + sizeof(double)) + sizeof(int);
-    totalSize
-      += (constraintsSize) * (2 * sizeof(int) + sizeof(double)) + sizeof(int);
-  }
-
-  totalSize += (zfpBitBudget <= 64 && zfpBitBudget > 0)
-                 ? (nVertices * std::ceil(zfpBitBudget / 2.0))
-                 : 0;
-  totalSize += 2;
-  // * 16 -> 32 bpd
-  // -> * bitbudget / 2
-  // -> * bitbudget / 2
-  return totalSize;
-}
-
-template <typename dataType>
-int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
-  int numberOfBytesWritten = 0;
-
-  int numberOfVertices = getNbVertices();
-  int numberOfSegments = getNbSegments();
-
-  // Test arguments.
-  if(numberOfSegments < 1)
-    return -1;
-
-  numberOfBytesWritten += sizeof(int);
-  Write(fm, numberOfVertices);
-
-  numberOfBytesWritten += sizeof(int);
-  Write(fm, numberOfSegments);
-
-  numberOfBytesWritten += WriteCompactSegmentation(
-    fm, getSegmentation(), numberOfVertices, numberOfSegments);
-
-  rawFileLength += numberOfBytesWritten;
-
-  return 0;
-}
-
-template <typename dataType>
-int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
-                                                          int *dataExtent,
-                                                          bool zfpOnly,
-                                                          double zfpBitBudget,
-                                                          double *toCompress) {
-  int numberOfBytesWritten = 0;
-
-  if(!zfpOnly) {
-    // 1. Write segmentation map.
-    // 2. Write critical constraints.
-    numberOfBytesWritten
-      += WritePersistenceIndex(fm, mapping_, criticalConstraints_);
-  }
-
-  this->printMsg("Wrote raw geometry.");
-
-  if(zfpBitBudget <= 64.0 && zfpBitBudget > 0) {
-#ifdef TTK_ENABLE_ZFP
-    // (1. or 3.) Write zfp-compressed array.
-    int nx = 1 + dataExtent[1] - dataExtent[0];
-    int ny = 1 + dataExtent[3] - dataExtent[2];
-    int nz = 1 + dataExtent[5] - dataExtent[4];
-
-    std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
-    using ttk::TopologicalCompression;
-    numberOfBytesWritten
-      += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
-
-#else
-    this->printErr("Attempted to write with ZFP but ZFP is not installed.");
-    return -5;
-#endif
-  }
-
-  rawFileLength += numberOfBytesWritten;
-
-  return 0;
-}
-
-template <typename dataType>
-int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
-  int numberOfSegments;
-  int numberOfVertices;
-
-  int numberOfBytesRead = ReadCompactSegmentation(
-    fm, segmentation_, numberOfVertices, numberOfSegments);
-
-  rawFileLength += numberOfBytesRead;
-
-  return 0;
-}
-
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::TopologicalCompression::ReadPersistenceGeometry(
   FILE *fm, const triangulationType &triangulation) {
-
-  int sqMethod = SQMethodInt;
-  double zfpBitBudget = ZFPBitBudget;
-  int *dataExtent = dataExtent_;
 
   std::vector<std::tuple<double, int>> mappingsSortedPerValue;
 
@@ -144,13 +26,13 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   }
 
   // Prepare array reconstruction.
-  int nx = 1 + dataExtent[1] - dataExtent[0];
-  int ny = 1 + dataExtent[3] - dataExtent[2];
-  int nz = 1 + dataExtent[5] - dataExtent[4];
+  int nx = 1 + dataExtent_[1] - dataExtent_[0];
+  int ny = 1 + dataExtent_[3] - dataExtent_[2];
+  int nz = 1 + dataExtent_[5] - dataExtent_[4];
   int vertexNumber = nx * ny * nz;
 
   decompressedData_.resize(vertexNumber);
-  if(zfpBitBudget > 64.0 || zfpBitBudget < 1) {
+  if(ZFPTolerance < 0.0) {
 
     // 2.a. (2.) Assign values to points thanks to topology indices.
     for(int i = 0; i < vertexNumber; ++i) {
@@ -180,9 +62,8 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   } else {
 #ifdef TTK_ENABLE_ZFP
     // 2.b. (2.) Read with ZFP.
-    using ttk::TopologicalCompression;
-    numberOfBytesRead += zfpBitBudget * vertexNumber;
-    CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, zfpBitBudget);
+    numberOfBytesRead
+      += CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, ZFPTolerance);
     this->printMsg("Successfully read with ZFP.");
 #else
     this->printErr(
@@ -192,7 +73,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   }
 
   // No SQ.
-  if(sqMethod == 0 || sqMethod == 3) {
+  if(SQMethodInt == 0 || SQMethodInt == 3) {
     for(int i = 0; i < (int)criticalConstraints_.size(); ++i) {
       std::tuple<int, double, int> t = criticalConstraints_[i];
       int id = std::get<0>(t);
@@ -208,7 +89,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
     // tolerance *= (max - min);
   }
 
-  if(sqMethod == 1 || sqMethod == 2)
+  if(SQMethodInt == 1 || SQMethodInt == 2)
     return 0;
 
   if(ZFPOnly)
@@ -225,7 +106,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
                                 triangulation);
   this->printMsg("Successfully performed simplification.");
 
-  rawFileLength += numberOfBytesRead;
+  this->rawFileLength += numberOfBytesRead;
 
   return 0;
 }
@@ -239,7 +120,7 @@ int ttk::TopologicalCompression::PerformSimplification(
   const triangulationType &triangulation) {
 
   std::vector<int> inputOffsets(vertexNumber);
-  std::vector<int> critConstraints(nbConstraints);
+  std::vector<SimplexId> critConstraints(nbConstraints);
   std::vector<double> inArray(vertexNumber);
   // std::vector<int> *oo = new std::vector<int>(vertexNumber);
   decompressedOffsets_.resize(vertexNumber); // oo->data();
@@ -314,7 +195,8 @@ void ttk::TopologicalCompression::CropIntervals(
   double max,
   int vertexNumber,
   double *array,
-  std::vector<int> &segmentation) {
+  std::vector<int> &segmentation) const {
+
   int numberOfMisses = 0;
   for(int i = 0; i < vertexNumber; ++i) {
     int seg = segmentation[i];
@@ -449,7 +331,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
   const char *sq = SQMethod.c_str();
   int nbCrit = 0;
-  std::vector<int> simplifiedConstraints;
+  std::vector<SimplexId> simplifiedConstraints;
   if(strcmp(sq, "") == 0 && !ZFPOnly) {
     // No SQ: perform topological control
 
@@ -485,9 +367,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum2 += (p1 * p1);
         persistentSum1 += abs<dataType>(p1);
         int type1 = topologicalSimplification.getCriticalType(
-          cp1, inputData, inputOffsets, triangulation);
+          cp1, inputOffsets, triangulation);
         int type2 = topologicalSimplification.getCriticalType(
-          cp2, inputData, inputOffsets, triangulation);
+          cp2, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
           topoIndices.push_back(std::make_tuple(idt1, cp1));
@@ -527,9 +409,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum1 += abs<dataType>(p1);
         // Saddle selection.
         int type1 = topologicalSimplification.getCriticalType(
-          cp1, inputData, inputOffsets, triangulation);
+          cp1, inputOffsets, triangulation);
         int type2 = topologicalSimplification.getCriticalType(
-          cp2, inputData, inputOffsets, triangulation);
+          cp2, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
           topoIndices.push_back(std::make_tuple(idt1, cp1));
@@ -868,7 +750,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       SimplexId id = simplifiedConstraints[i];
       dataType val = inputData[id];
       int type = topologicalSimplification.getCriticalType(
-        id, inputData, inputOffsets, triangulation);
+        id, inputOffsets, triangulation);
       if(type == -1 // Local_minimum
          || type == 1 // Local_maximum
          || type == 0) {

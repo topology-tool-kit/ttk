@@ -129,8 +129,8 @@ double BottleneckDistance::computeGeometricalRange(
   minZ = std::min(minZ1, minZ2);
   maxZ = std::max(maxZ1, maxZ2);
 
-  return sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
-              + Geometry::pow(maxZ - minZ, 2));
+  return std::sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
+                   + Geometry::pow(maxZ - minZ, 2));
 }
 
 template <typename dataType>
@@ -228,7 +228,7 @@ void BottleneckDistance::buildCostMatrices(
   const bool reverseMin,
   const bool reverseMax,
   const bool reverseSad,
-  const int wasserstein) {
+  const int ttkNotUsed(wasserstein)) {
   int maxI = 0, minI = 0;
   int maxJ = 0, minJ = 0;
   int sadI = 0, sadJ = 0;
@@ -389,22 +389,22 @@ void BottleneckDistance::buildCostMatrices(
 
 template <typename dataType>
 void BottleneckDistance::solvePWasserstein(
-  const int nbRow,
-  const int nbCol,
+  const int ttkNotUsed(nbRow),
+  const int ttkNotUsed(nbCol),
   std::vector<std::vector<dataType>> &matrix,
   std::vector<matchingTuple> &matchings,
-  Munkres &solver) {
-  solver.setInput(nbRow, nbCol, (void *)&matrix);
-  solver.run<dataType>(matchings);
-  solver.clearMatrix<dataType>();
+  AssignmentMunkres<dataType> &solver) {
+  solver.setInput(matrix);
+  solver.run(matchings);
+  solver.clearMatrix();
 }
 
 template <typename dataType>
 void BottleneckDistance::solveInfinityWasserstein(
   const int nbRow,
   const int nbCol,
-  const int nbRowToCut,
-  const int nbColToCut,
+  const int ttkNotUsed(nbRowToCut),
+  const int ttkNotUsed(nbColToCut),
   std::vector<std::vector<dataType>> &matrix,
   std::vector<matchingTuple> &matchings,
   GabowTarjan &solver) {
@@ -444,10 +444,7 @@ dataType BottleneckDistance::buildMappings(
     int p1 = std::get<0>(t);
     int p2 = std::get<1>(t);
 
-    if(p1 >= (int)map1.size() || p1 < 0) {
-      addedPersistence = (wasserstein > 0 ? addedPersistence + val
-                                          : std::max(val, addedPersistence));
-    } else if(p2 >= (int)map2.size() || p2 < 0) {
+    if(p1 >= (int)map1.size() || p1 < 0 || p2 >= (int)map2.size() || p2 < 0) {
       addedPersistence = (wasserstein > 0 ? addedPersistence + val
                                           : std::max(val, addedPersistence));
     } else {

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkMeshGraph" class="ttkMeshGraph" label="TTK MeshGraph">
+            <Documentation long_help="TTK MeshGraph" short_help="TTK MeshGraph">This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of a set of either quadratic quads or linear polygons.</Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkUnstructuredGrid" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>Input Graph.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="SizeArray" label="Size Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Scalar array that contains point sizes (If you want constant scaling create a point array with the calculator filter).</Documentation>
+            </StringVectorProperty>
+
+            <DoubleVectorProperty name="SizeScale" label="Size Scale" command="SetSizeScale" number_of_elements="1" default_values="1">
+                <Documentation>A constant factor that is multiplied with the size values to conveniently scale the width of edges.</Documentation>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="SizeAxis" label="Size Axis" command="SetSizeAxis" number_of_elements="1" default_values="1">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                <Documentation>Axis on which to map size values.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="UseQuadraticCells" label="Use Quadratic Cells" command="SetUseQuadraticCells" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Mesh graph with quadratic cells or linear polygons.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
+                <IntRangeDomain name="range" min="0" max="10" />
+                <Documentation>Number of edge subdivisions for linear polygons.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseQuadraticCells" value="0" />
+                </Hints>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="SizeArray" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="SizeAxis" />
+                <Property name="SizeScale" />
+                <Property name="UseQuadraticCells" />
+                <Property name="Subdivisions" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

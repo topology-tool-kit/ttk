@@ -76,15 +76,15 @@ namespace ttk {
 
       inline int getRank() const {
         return rank_;
-      };
+      }
 
       inline void setParent(ExtendedUnionFind *parent) {
         parent_ = parent;
-      };
+      }
 
       inline void setRank(const int &rank) {
         rank_ = rank;
-      };
+      }
 
       static inline ExtendedUnionFind *makeUnion(ExtendedUnionFind *uf0,
                                                  ExtendedUnionFind *uf1) {
@@ -124,11 +124,11 @@ namespace ttk {
 
       inline bool operator<(const ExtendedUnionFind &other) const {
         return rank_ < other.rank_;
-      };
+      }
 
       inline bool operator>(const ExtendedUnionFind &other) const {
         return rank_ > other.rank_;
-      };
+      }
     };
   } // namespace cf
 } // namespace ttk

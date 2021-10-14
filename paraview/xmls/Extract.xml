@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkExtract" class="ttkExtract" label="TTK Extract">
+            <Documentation long_help="TTK Extract" short_help="TTK Extract">
+This filter provides multiple methods to extract subsets of an input data object based on a logical expression:
+
+1. Blocks: The filter extracts all blocks of a vtkMultiBlockDataSet based on a list of block indices. It is also possible to extract a single block of a vtkMultiBlockDataSet and explicitly specify its type, which is then returned instead of a vtkMultiBlockDataSet containing a single block. This is especially useful to extract vtkImageData objects, in which case one also needs to specify the extent of the image.
+
+2. Block Tuples: Many pipelines produce vtkMultiBlockDataSets that contain vtkMultiBlockDataSets that represent lists. For example, a parent vtkMultiBlockDataSet might contain lists of Merge Trees, Persistence Diagrams, and Domain segmentations, where each entry in a list represents a timestep/ensemble member. Extracting all elements for a given list of timesteps/ensemble members is very cumbersome with the original block extraction method. The block tuples mode makes it possible to conveniently extract these tuples based on a list of timesteps/ensemble member indices.
+
+3. Rows: The filter extracts all rows of a vtkTable based on a list of row indices.
+
+4. Geometry: The filter extracts the subset of the input geometry whose point/cell data satisfies a logical expression. It is also possible to pass on the input dataset and only add a mask array that marks points/cells that satisfy the condition.
+
+5. Array Values: The filter extracts all array values of a vtkAbstractArray based on a list of value indices. The extracted values are stored in a new field data array.
+
+6. Arrays: The filter extracts all point/cell data arrays based on a given list of indices (not names).
+            </Documentation>
+
+            <InputProperty name="Input" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataObject" />
+                </DataTypeDomain>
+                <Documentation>Input vtkDataObject.</Documentation>
+            </InputProperty>
+
+            <!-- Global Mode -->
+            <IntVectorProperty name="ExtractionMode" label="Extraction Mode" command="SetExtractionMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Blocks"/>
+                    <Entry value="1" text="Rows"/>
+                    <Entry value="2" text="Geometry"/>
+                    <Entry value="3" text="Array Values"/>
+                    <Entry value="4" text="Arrays"/>
+                    <Entry value="5" text="Block Tuples"/>
+                </EnumerationDomain>
+                <Documentation>Extraction Mode.</Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="ExpressionString" label="Expression" command="SetExpressionString" number_of_elements="1" default_values="">
+                <Hints>
+                    <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="or">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="1"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="4"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="5"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractUniqueValues" value="0"/>
+                        </Expression>
+                    </PropertyWidgetDecorator>
+                </Hints>
+                <Documentation>List expression that is used to extract blocks/geometry/arrays (e.g., '0,1,3' or '{someFieldDataArrayName[0]}').</Documentation>
+            </StringVectorProperty>
+
+            <!-- Block Mode -->
+            <IntVectorProperty name="OutputType" label="Output Type" command="SetOutputType" number_of_elements="1" default_values="-1">
+                <EnumerationDomain name="enum">
+                  <Entry value="-1" text="Auto"/>
+                  <Entry value="13" text="vtkMultiBlockDataSet"/>
+                  <Entry value= "6" text="vtkImageData"/>
+                  <Entry value= "0" text="vtkPolyData"/>
+                  <Entry value= "4" text="vtkUnstructuredGrid"/>
+                  <Entry value="19" text="vtkTable"/>
+                </EnumerationDomain>
+                <Documentation>
+If mode is set to 'Block', then this parameter is used to set the output type of the filter at the 'RequestInformation' pass.
+
+Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet'. If the output type is specified, then only one object is returned which is of the specified type (Note: In this case the object is not contained in a 'vtkMultiBlockDataSet').
+                </Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0" />
+                </Hints>
+            </IntVectorProperty>
+
+            <IntVectorProperty command="SetImageExtent" default_values="0 0 0 0 0 0" name="ImageExtent" number_of_elements="6">
+              <ExtentDomain name="extent">
+                <RequiredProperties>
+                  <Property function="Input" name="Input" />
+                </RequiredProperties>
+              </ExtentDomain>
+              <Hints>
+                <PropertyWidgetDecorator type="CompositeDecorator">
+                  <Expression type="and">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0"/>
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6"/>
+                  </Expression>
+                </PropertyWidgetDecorator>
+              </Hints>
+              <Documentation>Controls the minimum and maximum extent index in each dimension for outputs of type vtkImageData.</Documentation>
+            </IntVectorProperty>
+
+            <!-- Array Mode -->
+            <IntVectorProperty name="ExtractUniqueValues" label="Extract unique values" number_of_elements="1" default_values="1" command="SetExtractUniqueValues" >
+                <BooleanDomain name="bool" />
+                <Documentation>Extract the set of all values in an array.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="3" />
+                </Hints>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="ValidationMode" command="SetValidationMode" number_of_elements="1" animateable="0" label="Validation Mode" default_values="2">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="&lt;"/>
+                    <Entry value="1" text="&lt;="/>
+                    <Entry value="2" text="=="/>
+                    <Entry value="3" text="!="/>
+                    <Entry value="4" text="&gt;="/>
+                    <Entry value="5" text="&gt; "/>
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
+                </Hints>
+                <Documentation>Determines how vertex values are compared agains each value of the expression.</Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="or">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="3"/>
+                        </Expression>
+                    </PropertyWidgetDecorator>
+                </Hints>
+                <Documentation>The array that will be used to determine which part of the geometry should be extracted.</Documentation>
+            </StringVectorProperty>
+
+            <!-- Geometry Mode -->
+            <IntVectorProperty name="CellMode" command="SetCellMode" number_of_elements="1" animateable="0" label="Cell Mode" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="All"/>
+                    <Entry value="1" text="Any"/>
+                    <!--<Entry value="2" text="Sub"/>-->
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
+                </Hints>
+                <Documentation>Determines if a complete cell is extracted if "All" or "Any" of its vertices fulfill the criterion.</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="MaskOnly" number_of_elements="1" default_values="0" command="SetMaskOnly" >
+                <BooleanDomain name="bool" />
+                <Documentation>This option controls whether the filter will only add a mask array to the input dataset that is either 0 or 1 depending if a point/cell satisfies the input condition.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
+                </Hints>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="ArrayAttributeType" label="Attribute" command="SetArrayAttributeType" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Point Data"/>
+                    <Entry value="1" text="Cell Data"/>
+                    <Entry value="2" text="Field Data"/>
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="4"/>
+                </Hints>
+                <Documentation>
+                    Specifies to extract point, cell, or field data arrays.
+                </Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="OutputArrayName" label="Output Array Name" command="SetOutputArrayName" number_of_elements="1" default_values="Data">
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="4"/>
+                </Hints>
+                <Documentation>.</Documentation>
+            </StringVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="ExtractionMode" />
+                <Property name="ExpressionString" />
+                <Property name="OutputType" />
+                <Property name="ImageExtent" />
+                <Property name="ValidationMode" />
+                <Property name="InputArray" />
+                <Property name="ExtractUniqueValues" />
+                <Property name="CellMode" />
+                <Property name="MaskOnly" />
+                <Property name="ArrayAttributeType" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Pipeline" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

@@ -15,7 +15,7 @@
 #ifndef _PDBARYCENTER_H
 #define _PDBARYCENTER_H
 
-#include <Auction.h>
+#include <PersistenceDiagramAuction.h>
 //
 #include <KDTree.h>
 //
@@ -44,9 +44,9 @@ namespace ttk {
       epsilon_decreases_ = true;
       early_stoppage_ = true;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
-    };
+    }
 
-    ~PDBarycenter(){};
+    ~PDBarycenter() = default;
 
     std::vector<std::vector<matchingTuple>>
       execute(std::vector<diagramTuple> &barycenter);

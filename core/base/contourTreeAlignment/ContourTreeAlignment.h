@@ -18,7 +18,7 @@
 /// \b Related \b publication: \n
 /// 'Fuzzy contour trees: Alignment and joint layout of multiple contour trees'
 /// Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and
-/// Christoph Garth. Comput. Graph. Forum, 39(3):343–355, 2020.
+/// Christoph Garth. Comput. Graph. Forum, 39(3):343-355, 2020.
 ///
 
 #pragma once
@@ -32,7 +32,7 @@
 
 enum Type_Alignmenttree { averageValues, medianValues, lastMatchedValue };
 // enum Type_Match { matchNodes, matchArcs };
-enum Mode_ArcMatch { persistence, area, volume };
+enum Mode_ArcMatch { persistence, area, volume, overlap };
 
 struct AlignmentTree {
   std::shared_ptr<AlignmentTree> child1;
@@ -60,11 +60,12 @@ struct AlignmentNode {
 
 struct AlignmentEdge {
 
-  std::shared_ptr<AlignmentNode> node1;
-  std::shared_ptr<AlignmentNode> node2;
+  std::weak_ptr<AlignmentNode> node1;
+  std::weak_ptr<AlignmentNode> node2;
   float scalardistance;
   float area;
   float volume;
+  std::vector<int> region;
   int freq;
 
   std::vector<std::pair<int, int>> arcRefs;
@@ -80,12 +81,12 @@ namespace ttk {
     /// constructor and destructor
     ContourTreeAlignment() {
       this->setDebugMsgPrefix("ContourTreeAlignment");
-    };
+    }
     ~ContourTreeAlignment() {
       contourtrees.clear();
       nodes.clear();
       arcs.clear();
-    };
+    }
 
     /// setter for parameters
     void setArcMatchMode(int mode) {
@@ -112,6 +113,8 @@ namespace ttk {
                 const vector<long long *> &topologies,
                 const vector<size_t> &nVertices,
                 const vector<size_t> &nEdges,
+                const vector<int *> &segmentations,
+                const vector<size_t> &segsizes,
 
                 vector<float> &outputVertices,
                 vector<long long> &outputFrequencies,
@@ -123,10 +126,11 @@ namespace ttk {
                 int seed);
 
     /// functions for aligning single trees in iteration
-    bool alignTree(std::shared_ptr<ContourTree> t);
-    bool initialize(std::shared_ptr<ContourTree> t);
-    bool alignTree_consistentRoot(std::shared_ptr<ContourTree> t);
-    bool initialize_consistentRoot(std::shared_ptr<ContourTree> t, int rootIdx);
+    bool alignTree(const std::shared_ptr<ContourTree> &t);
+    bool initialize(const std::shared_ptr<ContourTree> &t);
+    bool alignTree_consistentRoot(const std::shared_ptr<ContourTree> &t);
+    bool initialize_consistentRoot(const std::shared_ptr<ContourTree> &t,
+                                   int rootIdx);
 
     /// getters for graph data structures
     std::vector<std::pair<std::vector<std::shared_ptr<CTNode>>,
@@ -142,8 +146,8 @@ namespace ttk {
 
     /// function for aligning two sarbitrary binary trees
     std::pair<float, std::shared_ptr<AlignmentTree>>
-      getAlignmentBinary(std::shared_ptr<BinaryTree> t1,
-                         std::shared_ptr<BinaryTree> t2);
+      getAlignmentBinary(const std::shared_ptr<BinaryTree> &t1,
+                         const std::shared_ptr<BinaryTree> &t2);
 
     /// function that adds branch decomposition information
     void computeBranches();
@@ -169,52 +173,53 @@ namespace ttk {
 
     /// functions for aligning two trees (computing the alignment value and
     /// memoization matrix)
-    float alignTreeBinary(std::shared_ptr<BinaryTree> t1,
-                          std::shared_ptr<BinaryTree> t2,
+    float alignTreeBinary(const std::shared_ptr<BinaryTree> &t1,
+                          const std::shared_ptr<BinaryTree> &t2,
                           std::vector<std::vector<float>> &memT,
                           std::vector<std::vector<float>> &memF);
-    float alignForestBinary(std::shared_ptr<BinaryTree> t1,
-                            std::shared_ptr<BinaryTree> t2,
+    float alignForestBinary(const std::shared_ptr<BinaryTree> &t1,
+                            const std::shared_ptr<BinaryTree> &t2,
                             std::vector<std::vector<float>> &memT,
                             std::vector<std::vector<float>> &memF);
 
     /// functions for the traceback of the alignment computation (computing the
     /// actual alignment tree)
     std::shared_ptr<AlignmentTree>
-      traceAlignmentTree(std::shared_ptr<BinaryTree> t1,
-                         std::shared_ptr<BinaryTree> t2,
+      traceAlignmentTree(const std::shared_ptr<BinaryTree> &t1,
+                         const std::shared_ptr<BinaryTree> &t2,
                          std::vector<std::vector<float>> &memT,
                          std::vector<std::vector<float>> &memF);
     std::vector<std::shared_ptr<AlignmentTree>>
-      traceAlignmentForest(std::shared_ptr<BinaryTree> t1,
-                           std::shared_ptr<BinaryTree> t2,
+      traceAlignmentForest(const std::shared_ptr<BinaryTree> &t1,
+                           const std::shared_ptr<BinaryTree> &t2,
                            std::vector<std::vector<float>> &memT,
                            std::vector<std::vector<float>> &memF);
     std::shared_ptr<AlignmentTree>
-      traceNullAlignment(std::shared_ptr<BinaryTree> t, bool first);
+      traceNullAlignment(const std::shared_ptr<BinaryTree> &t, bool first);
 
     /// function that defines the local editing costs of two nodes
-    float editCost(std::shared_ptr<BinaryTree> t1,
-                   std::shared_ptr<BinaryTree> t2);
+    float editCost(const std::shared_ptr<BinaryTree> &t1,
+                   const std::shared_ptr<BinaryTree> &t2);
 
     /// helper functions for tree data structures
-    bool isBinary(std::shared_ptr<Tree> t);
-    std::shared_ptr<BinaryTree> rootAtNode(std::shared_ptr<AlignmentNode> root);
+    bool isBinary(const std::shared_ptr<Tree> &t);
     std::shared_ptr<BinaryTree>
-      computeRootedTree(std::shared_ptr<AlignmentNode> node,
-                        std::shared_ptr<AlignmentEdge> parent,
+      rootAtNode(const std::shared_ptr<AlignmentNode> &root);
+    std::shared_ptr<BinaryTree>
+      computeRootedTree(const std::shared_ptr<AlignmentNode> &node,
+                        const std::shared_ptr<AlignmentEdge> &parent,
                         int &id);
     std::shared_ptr<BinaryTree> computeRootedDualTree(
-      std::shared_ptr<AlignmentEdge> arc, bool parent1, int &id);
-    void computeNewAlignmenttree(std::shared_ptr<AlignmentTree> res);
+      const std::shared_ptr<AlignmentEdge> &arc, bool parent1, int &id);
+    void computeNewAlignmenttree(const std::shared_ptr<AlignmentTree> &res);
 
     /// helper functions for branch decomposition
     std::pair<float, std::vector<std::shared_ptr<AlignmentNode>>>
-      pathToMax(std::shared_ptr<AlignmentNode> root,
-                std::shared_ptr<AlignmentNode> parent);
+      pathToMax(const std::shared_ptr<AlignmentNode> &root,
+                const std::shared_ptr<AlignmentNode> &parent);
     std::pair<float, std::vector<std::shared_ptr<AlignmentNode>>>
-      pathToMin(std::shared_ptr<AlignmentNode> root,
-                std::shared_ptr<AlignmentNode> parent);
+      pathToMin(const std::shared_ptr<AlignmentNode> &root,
+                const std::shared_ptr<AlignmentNode> &parent);
   };
 } // namespace ttk
 
@@ -225,6 +230,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
                                        const vector<long long *> &topologies,
                                        const vector<size_t> &nVertices,
                                        const vector<size_t> &nEdges,
+                                       const vector<int *> &segmentations,
+                                       const vector<size_t> &segsizes,
                                        vector<float> &outputVertices,
                                        vector<long long> &outputFrequencies,
                                        vector<long long> &outputVertexIds,
@@ -281,6 +288,37 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     this->printMsg(tableLines, debug::Priority::VERBOSE);
   }
 
+  std::vector<std::vector<std::vector<int>>> segRegions;
+  if(!segsizes.empty()) {
+    for(size_t i = 0; i < nTrees; i++) {
+      int maxSegId = -1;
+      std::vector<int> seg(segsizes[i]);
+      for(size_t j = 0; j < segsizes[i]; j++) {
+        maxSegId = std::max(maxSegId, segmentations[i][j]);
+        seg[j] = segmentations[i][j];
+      }
+      std::vector<std::vector<int>> reg(maxSegId + 1);
+      for(size_t j = 0; j < segsizes[i]; j++) {
+        reg[segmentations[i][j]].push_back(j);
+      }
+      segRegions.push_back(reg);
+    }
+    for(size_t i = 0; i < nTrees; i++) {
+      int sum = 0;
+      for(const auto &seg : segRegions[i]) {
+        sum += seg.size();
+      }
+      this->printMsg("Tree " + std::to_string(i)
+                     + ", sum of segment sizes: " + std::to_string(sum));
+      sum = 0;
+      for(size_t j = 0; j < nEdges[i]; j++) {
+        sum += regionSizes[i][j];
+      }
+      this->printMsg("Tree " + std::to_string(i)
+                     + ", sum of region sizes: " + std::to_string(sum));
+    }
+  }
+
   // prepare data structures
   contourtrees = std::vector<std::shared_ptr<ContourTree>>();
   nodes = std::vector<std::shared_ptr<AlignmentNode>>();
@@ -330,7 +368,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     std::shared_ptr<ContourTree> ct(new ContourTree(
       scalars[permutation[i]], regionSizes[permutation[i]],
       segmentationIds[permutation[i]], topologies[permutation[i]],
-      nVertices[permutation[i]], nEdges[permutation[i]]));
+      nVertices[permutation[i]], nEdges[permutation[i]],
+      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]));
     if(ct->isBinary()) {
       contourtreesToAlign.push_back(ct);
     } else {
@@ -426,7 +465,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   this->printMsg("Writing output pointers", 0, timer.getElapsedTime(),
                  debug::LineMode::REPLACE);
 
-  for(std::shared_ptr<AlignmentNode> node : nodes) {
+  for(const auto &node : nodes) {
 
     outputVertices.push_back(node->scalarValue);
     outputFrequencies.push_back(node->freq);
@@ -448,16 +487,16 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     }
   }
 
-  for(std::shared_ptr<AlignmentEdge> edge : arcs) {
+  for(const auto &edge : arcs) {
 
     int i = 0;
-    for(std::shared_ptr<AlignmentNode> node : nodes) {
+    for(const auto &node : nodes) {
 
-      if(node == edge->node1) {
+      if(node == edge->node1.lock()) {
         outputEdges.push_back(i);
       }
 
-      if(node == edge->node2) {
+      if(node == edge->node2.lock()) {
         outputEdges.push_back(i);
       }
 

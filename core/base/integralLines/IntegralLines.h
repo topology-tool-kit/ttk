@@ -18,6 +18,7 @@
 #include <Triangulation.h>
 
 // std includes
+#include <limits>
 #include <unordered_set>
 
 namespace ttk {
@@ -92,7 +93,7 @@ namespace ttk {
       inputOffsets_ = data;
     }
 
-    inline void setVertexIdentifierScalarField(void *data) {
+    inline void setVertexIdentifierScalarField(SimplexId *const data) {
       vertexIdentifierScalarField_ = data;
     }
 
@@ -107,7 +108,7 @@ namespace ttk {
     int direction_;
     void *inputScalarField_;
     const SimplexId *inputOffsets_;
-    void *vertexIdentifierScalarField_;
+    SimplexId *vertexIdentifierScalarField_;
     std::vector<std::vector<SimplexId>> *outputTrajectories_;
   };
 } // namespace ttk
@@ -115,8 +116,7 @@ namespace ttk {
 template <typename dataType, class triangulationType>
 int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
   const auto offsets = inputOffsets_;
-  SimplexId *identifiers
-    = static_cast<SimplexId *>(vertexIdentifierScalarField_);
+  SimplexId *identifiers = vertexIdentifierScalarField_;
   dataType *scalars = static_cast<dataType *>(inputScalarField_);
   std::vector<std::vector<SimplexId>> *trajectories = outputTrajectories_;
 
@@ -126,9 +126,7 @@ int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
   std::unordered_set<SimplexId> isSeed;
   for(SimplexId k = 0; k < seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  std::vector<SimplexId> seeds;
-  for(auto k : isSeed)
-    seeds.push_back(k);
+  std::vector<SimplexId> seeds(isSeed.begin(), isSeed.end());
   isSeed.clear();
 
   trajectories->resize(seeds.size());
@@ -189,9 +187,7 @@ int ttk::IntegralLines::execute(Compare cmp,
   std::unordered_set<SimplexId> isSeed;
   for(SimplexId k = 0; k < seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  std::vector<SimplexId> seeds;
-  for(auto k : isSeed)
-    seeds.push_back(k);
+  std::vector<SimplexId> seeds(isSeed.begin(), isSeed.end());
   isSeed.clear();
 
   trajectories->resize(seeds.size());

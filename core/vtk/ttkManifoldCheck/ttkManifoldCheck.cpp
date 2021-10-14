@@ -3,7 +3,9 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkGenericCell.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 
 #include <ttkMacros.h>
@@ -36,7 +38,7 @@ int ttkManifoldCheck::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkManifoldCheck::RequestData(vtkInformation *request,
+int ttkManifoldCheck::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 

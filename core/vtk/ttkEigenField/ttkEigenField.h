@@ -46,7 +46,7 @@ public:
 
   vtkTypeMacro(ttkEigenField, ttkAlgorithm);
 
-  vtkSetMacro(OutputFieldName, std::string);
+  vtkSetMacro(OutputFieldName, const std::string &);
   vtkGetMacro(OutputFieldName, std::string);
 
   vtkSetMacro(EigenNumber, unsigned int);

@@ -38,7 +38,7 @@ int ttkTopologicalCompression::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkTopologicalCompression::RequestData(vtkInformation *request,
+int ttkTopologicalCompression::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
 
@@ -122,6 +122,11 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   vtkNew<vtkIntArray> outputOffsetField{};
   outputOffsetField->SetNumberOfTuples(vertexNumber);
   outputOffsetField->SetName(this->GetOrderArrayName(inputScalarField).data());
+
+  // manage tolerance (relative % -> absolute)
+  std::array<double, 2> sfRange{};
+  inputScalarField->GetRange(sfRange.data());
+  this->relToAbsZFPTolerance(this->ZFPTolerance, sfRange);
 
   // Call TopologicalCompression
   ttkVtkTemplateMacro(

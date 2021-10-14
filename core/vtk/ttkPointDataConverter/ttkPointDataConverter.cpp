@@ -24,6 +24,9 @@ ttkPointDataConverter::ttkPointDataConverter() {
   this->setDebugMsgPrefix("PointDataConverter");
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
+
+  vtkWarningMacro("`TTK PointDataConverter' is now deprecated. Please use "
+                  "`Calculator' instead.");
 }
 
 int ttkPointDataConverter::FillInputPortInformation(int port,
@@ -85,7 +88,7 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
   return 0;
 }
 
-int ttkPointDataConverter::RequestData(vtkInformation *request,
+int ttkPointDataConverter::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 
@@ -95,6 +98,10 @@ int ttkPointDataConverter::RequestData(vtkInformation *request,
   output->ShallowCopy(input);
 
   const auto inputScalarField = this->GetInputArrayToProcess(0, input);
+  if(inputScalarField == nullptr) {
+    this->printErr("No such input scalar field");
+    return 0;
+  }
   auto InputType = inputScalarField->GetDataType();
 
   bool oldUseNormalization{UseNormalization};

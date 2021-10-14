@@ -33,7 +33,7 @@
 // base code includes
 #include <Wrapper.h>
 //
-#include <Auction.h>
+#include <PersistenceDiagramAuction.h>
 //
 #include <KDTree.h>
 //
@@ -61,9 +61,9 @@ namespace ttk {
       epsilon_decreases_ = 1;
       use_progressive_ = 1;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
-    };
+    }
 
-    ~PersistenceDiagramBarycenter(){};
+    ~PersistenceDiagramBarycenter() = default;
 
     void execute(
       std::vector<std::vector<diagramTuple>> &intermediateDiagrams,

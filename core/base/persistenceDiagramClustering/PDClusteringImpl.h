@@ -278,10 +278,9 @@ std::vector<int> PDClustering<dataType>::execute(
               std::max(max_shift_vec[i_crit] / 8., epsilon_[i_crit] / 5.),
               epsilon0[i_crit] / Geometry::pow(n_iterations_, 2));
 
-            if(epsilon_candidate[i_crit] < epsilon_[i_crit]
-               && (!diagrams_complete[i_crit])) {
-              epsilon_[i_crit] = epsilon_candidate[i_crit];
-            } else if(diagrams_complete[i_crit]) {
+            if((epsilon_candidate[i_crit] < epsilon_[i_crit]
+                && !diagrams_complete[i_crit])
+               || diagrams_complete[i_crit]) {
               epsilon_[i_crit] = epsilon_candidate[i_crit];
             } else {
               epsilon_[i_crit] *= 0.95;
@@ -480,15 +479,17 @@ std::vector<int> PDClustering<dataType>::execute(
       }
     }
     resetDosToOriginalValues();
-    {
-      std::stringstream msg;
-      if(matchings_only) {
-        msg << " Wasserstein distance: " << cost_min_ + cost_sad_ + cost_max_;
-      } else {
-        msg << " Final Cost: " << min_cost_min + min_cost_sad + min_cost_max;
-      }
-      this->printMsg(msg.str());
-    }
+
+    // display results
+    std::vector<std::vector<std::string>> rows{
+      {" Min-saddle cost", std::to_string(cost_min_)},
+      {" Saddle-saddle cost", std::to_string(cost_sad_)},
+      {" Saddle-max cost", std::to_string(cost_max_)},
+      {matchings_only ? "Wasserstein Distance" : "Final Cost",
+       std::to_string(cost_min_ + cost_sad_ + cost_max_)},
+    };
+    this->printMsg(rows);
+
     // cout<<"TOTAL ELAPSED "<<total_time<<endl;
     // dataType real_cost=0;
     // real_cost=computeRealCost();
@@ -936,7 +937,7 @@ dataType
                                           const double delta_lim) {
   std::vector<matchingTuple> matchings;
   const auto D2_bis = centroidWithZeroPrices(D2);
-  Auction<dataType> auction(
+  PersistenceDiagramAuction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
   dataType cost = auction.run(&matchings);
@@ -949,7 +950,7 @@ dataType
                                           const GoodDiagram<dataType> *const D2,
                                           const double delta_lim) {
   std::vector<matchingTuple> matchings;
-  Auction<dataType> auction(
+  PersistenceDiagramAuction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
   int size1 = D1->size();
   auction.BuildAuctionDiagrams(D1, D2);
@@ -2272,7 +2273,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
         b.setPositionInAuction(bidders.size());
         bidders.addBidder(b);
         if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
+          this->printMsg("Diagonal point in diagram", debug::Priority::DETAIL);
         }
       }
       bidder_diagrams_min_.push_back(bidders);
@@ -2296,7 +2297,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
         b.setPositionInAuction(bidders.size());
         bidders.addBidder(b);
         if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
+          this->printMsg("Diagonal point in diagram", debug::Priority::DETAIL);
         }
       }
       bidder_diagrams_saddle_.push_back(bidders);
@@ -2320,7 +2321,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
         b.setPositionInAuction(bidders.size());
         bidders.addBidder(b);
         if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
+          this->printMsg("Diagonal point in diagram", debug::Priority::DETAIL);
         }
       }
       bidder_diagrams_max_.push_back(bidders);

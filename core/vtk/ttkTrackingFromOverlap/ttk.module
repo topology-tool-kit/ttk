@@ -8,4 +8,3 @@ DEPENDS
   trackingFromOverlap
   ttkAlgorithm
   Boost::boost
-  Boost::system

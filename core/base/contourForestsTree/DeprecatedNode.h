@@ -115,7 +115,7 @@ namespace ttk {
         }
 #endif
         return vect_downSuperArcList_[neighborId];
-      };
+      }
 
       inline idSuperArc getUpSuperArcId(const idSuperArc &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE

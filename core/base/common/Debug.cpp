@@ -31,14 +31,6 @@ Debug::~Debug() {
   }
 }
 
-int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
-
-  if((debugLevel_ >= debugLevel) || (globalDebugLevel_ >= debugLevel))
-    stream << msg.data() << flush;
-
-  return 0;
-}
-
 int Debug::welcomeMsg(ostream &stream) {
 
   int priorityAsInt = (int)debug::Priority::PERFORMANCE;
@@ -106,15 +98,6 @@ int Debug::welcomeMsg(ostream &stream) {
   }
 
   return 0;
-}
-
-int Debug::err(const string msg, const int &debugLevel) const {
-  return printMsg(msg, debug::Priority::ERROR, debug::LineMode::NEW, cerr);
-}
-
-int Debug::msg(const char *msg, const int &debugLevel) const {
-  return printMsg(
-    string(msg), debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
 }
 
 int Debug::setDebugLevel(const int &debugLevel) {

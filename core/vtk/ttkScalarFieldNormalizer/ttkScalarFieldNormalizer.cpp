@@ -2,8 +2,10 @@
 
 #include <Geometry.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
 #include <ttkMacros.h>
@@ -74,7 +76,7 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
   return 0;
 }
 
-int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
+int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
 
@@ -83,6 +85,10 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
 
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
+  if(inputArray == nullptr) {
+    this->printErr("No such input scalar field");
+    return 0;
+  }
 
   vtkSmartPointer<vtkDataArray> outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());

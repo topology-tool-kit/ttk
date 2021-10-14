@@ -3,16 +3,16 @@
 
 # example: ScalarFieldSmoother MyNewModule
 NameSource=$1
-NameDestination=$2
+NameTarget=$2
 
-smallNameDestination="$(tr '[:upper:]' '[:lower:]'  <<< "${NameDestination:0:1}")${NameDestination:1}"
-bigNameDestination=$(echo "$NameDestination" | tr '[:lower:]' '[:upper:]')
+smallNameTarget="$(tr '[:upper:]' '[:lower:]'  <<< "${NameTarget:0:1}")${NameTarget:1}"
+bigNameTarget=$(echo "$NameTarget" | tr '[:lower:]' '[:upper:]')
 
 
 smallNameSource="$(tr '[:upper:]' '[:lower:]'  <<< "${NameSource:0:1}")${NameSource:1}"
 bigNameSource=$(echo "$NameSource" | tr '[:lower:]' '[:upper:]')
 
-if [ -z "${NameDestination}" ]; then
+if [ -z "${NameTarget}" ]; then
   echo "Usage:"
   echo "  $0 <SourceTTKmodule> <DestinationTTKmodule>"
   echo "Example:"
@@ -33,14 +33,14 @@ if [ ! -e "scripts/createTTKmodule.sh" ]; then
   exit 3
 fi
 
-echo "Cloning TTK module '${NameSource}' into '${NameDestination}'..."
+echo "Cloning TTK module '${NameSource}' into '${NameTarget}'..."
 
 function replace {
-  $SED "s/${smallNameSource}/${smallNameDestination}/g" "$1" > tmp.cmake
+  $SED "s/${smallNameSource}/${smallNameTarget}/g" "$1" > tmp.cmake
   mv tmp.cmake "$1"
-  $SED "s/${NameSource}/${NameDestination}/g" "$1" > tmp.cmake
+  $SED "s/${NameSource}/${NameTarget}/g" "$1" > tmp.cmake
   mv tmp.cmake "$1"
-  $SED "s/${bigNameSource}/${bigNameDestination}/g" "$1" > tmp.cmake
+  $SED "s/${bigNameSource}/${bigNameTarget}/g" "$1" > tmp.cmake
   mv tmp.cmake "$1"
 }
 
@@ -50,69 +50,66 @@ mkdir -p standalone 2> /dev/null
 mkdir -p paraview/ 2> /dev/null
 
 # 1) duplicate the source base code
-echo "Creating base code functor 'core/base/${smallNameDestination}'..."
+echo "Creating base code functor 'core/base/${smallNameTarget}'..."
 cp -R "core/base/${smallNameSource}" \
-      "core/base/${smallNameDestination}"
-replace "core/base/${smallNameDestination}/CMakeLists.txt"
-mv "core/base/${smallNameDestination}/${NameSource}.cpp" \
-   "core/base/${smallNameDestination}/${NameDestination}.cpp"
-replace "core/base/${smallNameDestination}/${NameDestination}.cpp"
-mv "core/base/${smallNameDestination}/${NameSource}.h" \
-   "core/base/${smallNameDestination}/${NameDestination}.h"
-replace "core/base/${smallNameDestination}/${NameDestination}.h"
+      "core/base/${smallNameTarget}"
+replace "core/base/${smallNameTarget}/CMakeLists.txt"
+mv "core/base/${smallNameTarget}/${NameSource}.cpp" \
+   "core/base/${smallNameTarget}/${NameTarget}.cpp"
+replace "core/base/${smallNameTarget}/${NameTarget}.cpp"
+mv "core/base/${smallNameTarget}/${NameSource}.h" \
+   "core/base/${smallNameTarget}/${NameTarget}.h"
+replace "core/base/${smallNameTarget}/${NameTarget}.h"
 
 # 2) duplicate the source wrapper
-echo "Creating VTK wrapper 'core/vtk/ttk${NameDestination}'..."
+echo "Creating VTK wrapper 'core/vtk/ttk${NameTarget}'..."
 cp -R "core/vtk/ttk${NameSource}" \
-      "core/vtk/ttk${NameDestination}"
-replace "core/vtk/ttk${NameDestination}/vtk.module"
-replace "core/vtk/ttk${NameDestination}/ttk.module"
-mv "core/vtk/ttk${NameDestination}/ttk${NameSource}.cpp" \
-   "core/vtk/ttk${NameDestination}/ttk${NameDestination}.cpp"
-replace "core/vtk/ttk${NameDestination}/ttk${NameDestination}.cpp"
-mv "core/vtk/ttk${NameDestination}/ttk${NameSource}.h" \
-   "core/vtk/ttk${NameDestination}/ttk${NameDestination}.h"
-replace "core/vtk/ttk${NameDestination}/ttk${NameDestination}.h"
+      "core/vtk/ttk${NameTarget}"
+replace "core/vtk/ttk${NameTarget}/vtk.module"
+replace "core/vtk/ttk${NameTarget}/ttk.module"
+mv "core/vtk/ttk${NameTarget}/ttk${NameSource}.cpp" \
+   "core/vtk/ttk${NameTarget}/ttk${NameTarget}.cpp"
+replace "core/vtk/ttk${NameTarget}/ttk${NameTarget}.cpp"
+mv "core/vtk/ttk${NameTarget}/ttk${NameSource}.h" \
+   "core/vtk/ttk${NameTarget}/ttk${NameTarget}.h"
+replace "core/vtk/ttk${NameTarget}/ttk${NameTarget}.h"
 
 # 3) duplicate the source standalone modules
 if [ -d "standalone/${NameSource}/" ]; then
   if [ ! -d "standalone/${NameSource}/cmd" ] \
     && [ ! -d "standalone/${NameSource}/gui" ]; then
     # new standalone case
-    echo "Creating command line standalone program 'standalone/${NameDestination}'..."
+    echo "Creating command line standalone program 'standalone/${NameTarget}'..."
     cp -R "standalone/${NameSource}/" \
-          "standalone/${NameDestination}/"
-    replace "standalone/${NameDestination}/CMakeLists.txt"
-    replace "standalone/${NameDestination}/main.cpp"
+          "standalone/${NameTarget}/"
+    replace "standalone/${NameTarget}/CMakeLists.txt"
+    replace "standalone/${NameTarget}/main.cpp"
   fi
   if [ -d "standalone/${NameSource}/cmd" ]; then
-    echo "Creating command line standalone program 'standalone/${NameDestination}/cmd'..."
-    mkdir -p "standalone/${NameDestination}"
+    echo "Creating command line standalone program 'standalone/${NameTarget}/cmd'..."
+    mkdir -p "standalone/${NameTarget}"
     cp -R "standalone/${NameSource}/cmd/" \
-          "standalone/${NameDestination}/cmd"
-    replace "standalone/${NameDestination}/cmd/CMakeLists.txt"
-    replace "standalone/${NameDestination}/cmd/main.cpp"
+          "standalone/${NameTarget}/cmd"
+    replace "standalone/${NameTarget}/cmd/CMakeLists.txt"
+    replace "standalone/${NameTarget}/cmd/main.cpp"
   fi
   if [ -d "standalone/${NameSource}/gui" ]; then
-    echo "Creating GUI standalone program 'standalone/${NameDestination}/gui'..."
-    mkdir -p "standalone/${NameDestination}"
+    echo "Creating GUI standalone program 'standalone/${NameTarget}/gui'..."
+    mkdir -p "standalone/${NameTarget}"
     cp -R "standalone/${NameSource}/gui/" \
-          "standalone/${NameDestination}/gui"
-    replace "standalone/${NameDestination}/gui/CMakeLists.txt"
-    replace "standalone/${NameDestination}/gui/main.cpp"
+          "standalone/${NameTarget}/gui"
+    replace "standalone/${NameTarget}/gui/CMakeLists.txt"
+    replace "standalone/${NameTarget}/gui/main.cpp"
   fi
 fi
 
 # 4) duplicate the source paraview filter
-echo "Creating ParaView filter 'paraview/${NameDestination}'..."
-cp -R "paraview/${NameSource}/" \
-      "paraview/${NameDestination}"
-replace "paraview/${NameDestination}/TTKFilter.cmake"
-mv "paraview/${NameDestination}/${NameSource}.xml" \
-   "paraview/${NameDestination}/${NameDestination}.xml"
-replace "paraview/${NameDestination}/${NameDestination}.xml"
+echo "Creating ParaView filter 'paraview/${NameTarget}'..."
+cp -R "paraview/xmls/${NameSource}.xml" \
+      "paraview/xmls/${NameTarget}.xml"
+replace "paraview/xmls/${NameTarget}.xml"
 
-echo "Module ${NameDestination} created."
+echo "Module ${NameTarget} created."
 # Due to the use of file(GLOB...) make does not see any changes
 # if cmake is not run after the new module is created
 echo "/!\\ Please re-run cmake in your build folder to compile it."

@@ -272,10 +272,9 @@ int ttk::ReebSpace::prepareSimplification() {
   return 0;
 }
 
-int ttk::ReebSpace::printConnectivity(std::ostream &stream,
-                                      const ReebSpaceData &data) const {
+int ttk::ReebSpace::printConnectivity(const ReebSpaceData &data) const {
 
-  if(debugLevel_ < advancedInfoMsg)
+  if(debugLevel_ < static_cast<int>(debug::Priority::DETAIL))
     return -1;
 
   std::stringstream msg;

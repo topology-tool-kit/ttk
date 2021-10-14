@@ -479,7 +479,6 @@ int MandatoryCriticalPoints::computePlanarLayout(
 }
 
 int MandatoryCriticalPoints::computeExtremumComponent(
-  const int componentId,
   const PointType &pointType,
   const SubLevelSetTree &tree,
   const int seedVertexId,
@@ -721,7 +720,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   const PointType pointType,
   SubLevelSetTree &lowerTree,
   SubLevelSetTree &upperTree,
-  const std::vector<int> mandatoryExtremumVertex,
+  const std::vector<int> &mandatoryExtremumVertex,
   std::vector<std::pair<int, int>> &mandatorySaddleVertex,
   std::vector<std::vector<int>> &mandatoryMergedExtrema) {
 

@@ -21,6 +21,9 @@ ttkSphereFromPoint::ttkSphereFromPoint() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
   setDebugMsgPrefix("SphereFromPoint");
+
+  vtkWarningMacro("`TTK SphereFromPoint' is now deprecated. Please use "
+                  "`TTK IcospheresFromPoint' instead.");
 }
 
 ttkSphereFromPoint::~ttkSphereFromPoint() {
@@ -61,7 +64,7 @@ int ttkSphereFromPoint::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkSphereFromPoint::RequestData(vtkInformation *request,
+int ttkSphereFromPoint::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 

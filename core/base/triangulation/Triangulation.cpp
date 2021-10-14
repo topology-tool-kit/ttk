@@ -28,7 +28,7 @@ Triangulation::Triangulation(const Triangulation &rhs)
   }
 }
 
-Triangulation::Triangulation(Triangulation &&rhs)
+Triangulation::Triangulation(Triangulation &&rhs) noexcept
   : AbstractTriangulation(std::move(rhs)), abstractTriangulation_{nullptr},
     explicitTriangulation_{std::move(rhs.explicitTriangulation_)},
     implicitTriangulation_{std::move(rhs.implicitTriangulation_)},
@@ -69,7 +69,7 @@ Triangulation &Triangulation::operator=(const Triangulation &rhs) {
   return *this;
 }
 
-Triangulation &Triangulation::operator=(Triangulation &&rhs) {
+Triangulation &Triangulation::operator=(Triangulation &&rhs) noexcept {
   if(this != &rhs) {
     AbstractTriangulation::operator=(std::move(rhs));
     gridDimensions_ = std::move(rhs.gridDimensions_);

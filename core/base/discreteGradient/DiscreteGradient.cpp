@@ -12,6 +12,49 @@ int DiscreteGradient::getNumberOfDimensions() const {
   return dimensionality_ + 1;
 }
 
+void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
+
+  Timer tm{};
+  const int numberOfDimensions = this->getNumberOfDimensions();
+
+  // init number of cells by dimension
+  std::vector<SimplexId> numberOfCells(numberOfDimensions);
+  for(int i = 0; i < numberOfDimensions; ++i) {
+    numberOfCells[i] = this->getNumberOfCells(i, triangulation);
+  }
+
+  dmtMax2PL_.clear();
+  dmt1Saddle2PL_.clear();
+  dmt2Saddle2PL_.clear();
+
+  // clear & init gradient memory
+  for(int i = 0; i < dimensionality_; ++i) {
+    gradient_[2 * i].clear();
+    gradient_[2 * i].resize(numberOfCells[i], -1);
+    gradient_[2 * i + 1].clear();
+    gradient_[2 * i + 1].resize(numberOfCells[i + 1], -1);
+  }
+
+  std::vector<std::vector<std::string>> rows{
+    {"#Vertices", std::to_string(numberOfCells[0])},
+    {"#Edges", std::to_string(numberOfCells[1])},
+  };
+
+  if(dimensionality_ >= 2) {
+    rows.emplace_back(
+      std::vector<std::string>{"#Triangles", std::to_string(numberOfCells[2])});
+  }
+
+  if(dimensionality_ == 3) {
+    rows.emplace_back(
+      std::vector<std::string>{"#Tetras", std::to_string(numberOfCells[3])});
+  }
+
+  this->printMsg(rows);
+  this->printMsg("Initialized discrete gradient memory", 1.0,
+                 tm.getElapsedTime(), this->threadNumber_);
+}
+
 std::pair<size_t, SimplexId>
   DiscreteGradient::numUnpairedFaces(const CellExt &c,
                                      const lowerStarType &ls) const {
@@ -77,7 +120,7 @@ CriticalType
 
 bool DiscreteGradient::isMinimum(const Cell &cell) const {
   if(cell.dim_ == 0) {
-    return (gradient_[0][0][cell.id_] == -1);
+    return (gradient_[0][cell.id_] == -1);
   }
 
   return false;
@@ -85,8 +128,7 @@ bool DiscreteGradient::isMinimum(const Cell &cell) const {
 
 bool DiscreteGradient::isSaddle1(const Cell &cell) const {
   if(cell.dim_ == 1) {
-    return (gradient_[0][1][cell.id_] == -1
-            and gradient_[1][1][cell.id_] == -1);
+    return (gradient_[1][cell.id_] == -1 and gradient_[2][cell.id_] == -1);
   }
 
   return false;
@@ -94,20 +136,23 @@ bool DiscreteGradient::isSaddle1(const Cell &cell) const {
 
 bool DiscreteGradient::isSaddle2(const Cell &cell) const {
   if(dimensionality_ == 3 and cell.dim_ == 2) {
-    return (gradient_[1][2][cell.id_] == -1
-            and gradient_[2][2][cell.id_] == -1);
+    return (gradient_[3][cell.id_] == -1 and gradient_[4][cell.id_] == -1);
   }
 
   return false;
 }
 
 bool DiscreteGradient::isMaximum(const Cell &cell) const {
+  if(dimensionality_ == 1 and cell.dim_ == 1) {
+    return (gradient_[1][cell.id_] == -1);
+  }
+
   if(dimensionality_ == 2 and cell.dim_ == 2) {
-    return (gradient_[1][2][cell.id_] == -1);
+    return (gradient_[3][cell.id_] == -1);
   }
 
   if(dimensionality_ == 3 and cell.dim_ == 3) {
-    return (gradient_[2][3][cell.id_] == -1);
+    return (gradient_[5][cell.id_] == -1);
   }
 
   return false;
@@ -115,42 +160,29 @@ bool DiscreteGradient::isMaximum(const Cell &cell) const {
 
 bool DiscreteGradient::isCellCritical(const int cellDim,
                                       const SimplexId cellId) const {
-  if(dimensionality_ == 2) {
-    switch(cellDim) {
-      case 0:
-        return (gradient_[0][0][cellId] == -1);
-        break;
 
-      case 1:
-        return (gradient_[0][1][cellId] == -1
-                and gradient_[1][1][cellId] == -1);
-        break;
-
-      case 2:
-        return (gradient_[1][2][cellId] == -1);
-        break;
-    }
-  } else if(dimensionality_ == 3) {
-    switch(cellDim) {
-      case 0:
-        return (gradient_[0][0][cellId] == -1);
-        break;
-
-      case 1:
-        return (gradient_[0][1][cellId] == -1
-                and gradient_[1][1][cellId] == -1);
-        break;
-
-      case 2:
-        return (gradient_[1][2][cellId] == -1
-                and gradient_[2][2][cellId] == -1);
-        break;
-
-      case 3:
-        return (gradient_[2][3][cellId] == -1);
-        break;
-    }
+  if(cellDim > this->dimensionality_) {
+    return false;
   }
+
+  if(cellDim == 0) {
+    return (gradient_[0][cellId] == -1);
+  }
+
+  if(cellDim == 1) {
+    return (gradient_[1][cellId] == -1
+            && (dimensionality_ == 1 || gradient_[2][cellId] == -1));
+  }
+
+  if(cellDim == 2) {
+    return (gradient_[3][cellId] == -1
+            && (dimensionality_ == 2 || gradient_[4][cellId] == -1));
+  }
+
+  if(cellDim == 3) {
+    return (gradient_[5][cellId] == -1);
+  }
+
   return false;
 }
 
@@ -177,12 +209,13 @@ int DiscreteGradient::setManifoldSize(
   const std::vector<size_t> &nCriticalPointsByDim,
   const std::vector<SimplexId> &maxSeeds,
   const SimplexId *const ascendingManifold,
-  const SimplexId *const descendingManifold) {
+  const SimplexId *const descendingManifold,
+  std::vector<SimplexId> &manifoldSize) const {
 
   const auto nCritPoints = criticalPoints.size();
   const auto nDimensions = getNumberOfDimensions();
 
-  outputCriticalPoints_points_manifoldSize_.resize(nCritPoints, 0);
+  manifoldSize.resize(nCritPoints, 0);
 
   // pre-compute size of descending manifold cells
   std::map<SimplexId, size_t> descendingCellsSize{};
@@ -197,8 +230,7 @@ int DiscreteGradient::setManifoldSize(
   for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
     const Cell &cell = criticalPoints[i];
     const SimplexId seedId = descendingManifold[cell.id_];
-    const SimplexId manifoldSize = descendingCellsSize[seedId];
-    outputCriticalPoints_points_manifoldSize_[i] = manifoldSize;
+    manifoldSize[i] = descendingCellsSize[seedId];
   }
 
   // index of first maximum in critical points array
@@ -227,8 +259,7 @@ int DiscreteGradient::setManifoldSize(
     const Cell &cell = criticalPoints[i];
     if(seedsPos.find(cell.id_) != seedsPos.end()) {
       const auto seedId = seedsPos[cell.id_];
-      const SimplexId manifoldSize = ascendingCellsSize[seedId];
-      outputCriticalPoints_points_manifoldSize_[i] = manifoldSize;
+      manifoldSize[i] = ascendingCellsSize[seedId];
     }
   }
 

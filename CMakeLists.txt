@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.12.2) # confirmed by Chris <kappe@cs.uni-kl.de>
+cmake_minimum_required(VERSION 3.14) # see issue #532
 # The C is required to build with VTK when it has MPI
-project(ttk VERSION 0.9.9 LANGUAGES CXX C)
+project(ttk VERSION 1.0 LANGUAGES CXX C)
 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")
@@ -13,12 +13,6 @@ cmake_dependent_option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugin
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
-
-if(${TTK_WHITELIST_MODE})
-  set(TTK_ENABLE_FILTER_DEFAULT "DONT_WANT" CACHE INTERNAL "Default value for each filter build")
-else()
-  set(TTK_ENABLE_FILTER_DEFAULT "WANT" CACHE INTERNAL "Default value for each filter build")
-endif()
 
 # This option allows library to be built dynamic
 # like the TopologyToolKit.so file for paraview
@@ -45,7 +39,7 @@ else()
   set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
 endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-  "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
+  "ttk-paraview (= 5.9.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev, libgl1-mesa-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
@@ -191,6 +185,9 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
         "Directory where the ParaView plugin will be installed"
         )
   endif()
+
+  # set rpath for the plugin
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}")
 
   add_subdirectory(paraview)
 endif()

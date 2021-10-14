@@ -11,10 +11,11 @@
 //      dataType            -- scalar value at vertex 2
 //      float, float, float -- vertex 2 coordinates
 template <typename dataType>
-int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
-                                          const std::vector<diagramTuple> &d2,
-                                          std::vector<matchingTuple> &matchings,
-                                          const bool usePersistenceMetric) {
+int BottleneckDistance::computeBottleneck(
+  const std::vector<diagramTuple> &d1,
+  const std::vector<diagramTuple> &d2,
+  std::vector<matchingTuple> &matchings,
+  const bool ttkNotUsed(usePersistenceMetric)) {
   auto d1Size = (int)d1.size();
   auto d2Size = (int)d2.size();
 
@@ -183,21 +184,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   if(wasserstein > 0) {
 
     if(nbRowMin > 0 && nbColMin > 0) {
-      Munkres solverMin;
+      AssignmentMunkres<dataType> solverMin;
       this->printMsg("Affecting minima...");
       this->solvePWasserstein(
         minRowColMin, maxRowColMin, minMatrix, minMatchings, solverMin);
     }
 
     if(nbRowMax > 0 && nbColMax > 0) {
-      Munkres solverMax;
+      AssignmentMunkres<dataType> solverMax;
       this->printMsg("Affecting maxima...");
       this->solvePWasserstein(
         minRowColMax, maxRowColMax, maxMatrix, maxMatchings, solverMax);
     }
 
     if(nbRowSad > 0 && nbColSad > 0) {
-      Munkres solverSad;
+      AssignmentMunkres<dataType> solverSad;
       this->printMsg("Affecting saddles...");
       this->solvePWasserstein(
         minRowColSad, maxRowColSad, sadMatrix, sadMatchings, solverSad);

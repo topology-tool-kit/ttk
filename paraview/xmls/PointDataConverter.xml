@@ -1,0 +1,104 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+    name="ttkPointDataConverter"
+    class="ttkPointDataConverter"
+    label="TTK PointDataConverter">
+      <Documentation
+          long_help="TTK plugin that converts data types for point-based
+scalar fields (for instance, from double to float)."
+          short_help="TTK plugin that converts data types for point-based
+scalar fields (for instance, from double to float).">
+        TTK plugin that converts data types for point-based
+scalar fields (for instance, from double to float).
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars"
+              attribute_type="point">
+          <Property name="Input" function="FieldDataSelection"/>
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="Point Data Scalar Field"
+          command="SetInputArrayToProcess"
+          number_of_elements="5"
+          element_types="0 0 0 0 2"
+          default_values="0"
+          animateable="0"
+          >
+        <ArrayListDomain
+            name="array_list">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the point data scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="Output Type" command="SetOutputType"
+             number_of_elements="1" default_values="0">
+    <EnumerationDomain name="enum">
+    <Entry value="0" text="Char"/>
+    <Entry value="1" text="Double"/>
+    <Entry value="2" text="Float"/>
+    <Entry value="3" text="Int"/>
+    <Entry value="4" text="IdType"/>
+    <Entry value="5" text="Short"/>
+    <Entry value="6" text="Unsigned Short"/>
+    <Entry value="7" text="Unsigned Char"/>
+    </EnumerationDomain>
+    <Documentation>
+    Data output type.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="NormalizeToRange"
+          label="Normalize to data type range"
+          command="SetUseNormalization"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Normalizes the values to the data type range extent (useful for light
+data types such as char or unsigned chars).
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Point Data Scalar Field" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Output Type" />
+        <Property name="NormalizeToRange" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

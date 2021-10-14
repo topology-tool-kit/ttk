@@ -46,9 +46,11 @@
 /// Proc. of IEEE VIS 2020.
 /// IEEE Transactions on Visualization and Computer Graphics
 ///
+/// \sa ttkTopologicalSimplificationByPersistence
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
 /// \sa ttkFTMTree
+/// \sa ttkMorseSmaleComplex
 /// \sa ttkIdentifiers
 /// \sa ttk::TopologicalSimplification
 
@@ -86,6 +88,9 @@ public:
   vtkSetMacro(UseLTS, bool);
   vtkGetMacro(UseLTS, bool);
 
+  vtkSetMacro(PersistenceThreshold, double);
+  vtkGetMacro(PersistenceThreshold, double);
+
 protected:
   ttkTopologicalSimplification();
 
@@ -101,4 +106,5 @@ private:
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
   bool UseLTS{true};
+  double PersistenceThreshold{0};
 };

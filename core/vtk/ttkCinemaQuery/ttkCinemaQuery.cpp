@@ -43,7 +43,7 @@ int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkCinemaQuery::RequestData(vtkInformation *request,
+int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
   ttk::Timer timer;
@@ -123,11 +123,19 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
             if(firstCol) {
               firstCol = false;
             }
-            if(isNumeric[k])
-              sqlInsertStatement += inTable->GetValue(q, k).ToString();
-            else
+            if(isNumeric[k]) {
+              const auto var = inTable->GetValue(q, k);
+              if(var.IsChar() || var.IsSignedChar()) {
+                // convert char/signed char to int to get its value
+                // instead of its char representation
+                sqlInsertStatement += std::to_string(var.ToInt());
+              } else {
+                sqlInsertStatement += var.ToString();
+              }
+            } else {
               sqlInsertStatement
                 += "'" + inTable->GetValue(q, k).ToString() + "'";
+            }
           }
           sqlInsertStatement += ")";
           q++;

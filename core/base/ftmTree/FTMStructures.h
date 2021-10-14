@@ -51,11 +51,17 @@ namespace ttk {
       // [size-1] -> vertex id of the global maximum
       std::vector<SimplexId> sortedVertices{};
 
-      bool isLower(SimplexId a, SimplexId b) const {
-        return offsets[a] < offsets[b];
+      inline bool isLower(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] < this->offsets[b];
       }
-      bool isHigher(SimplexId a, SimplexId b) const {
-        return offsets[a] > offsets[b];
+      inline bool isEqLower(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] <= this->offsets[b];
+      }
+      inline bool isHigher(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] > this->offsets[b];
+      }
+      inline bool isEqHigher(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] >= this->offsets[b];
       }
     };
 
@@ -64,11 +70,11 @@ namespace ttk {
       boost::heap::fibonacci_heap<SimplexId, boost::heap::compare<VertCompFN>>
         propagation;
 
-      CurrentState(SimplexId startVert, VertCompFN vertComp)
+      CurrentState(SimplexId startVert, VertCompFN &vertComp)
         : vertex(startVert), propagation(vertComp) {
       }
 
-      CurrentState(VertCompFN vertComp)
+      CurrentState(VertCompFN &vertComp)
         : vertex(nullVertex), propagation(vertComp) {
         // will need to use setStartVert before use
       }

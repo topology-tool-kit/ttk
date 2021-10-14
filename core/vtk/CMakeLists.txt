@@ -1,6 +1,6 @@
 vtk_module_find_modules(
   TTK_VTK_MODULE_FILE
-    "${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
 vtk_module_scan(

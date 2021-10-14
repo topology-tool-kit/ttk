@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <map>
 #include <queue>
 #include <vector>
 
@@ -264,9 +265,7 @@ namespace ttk {
       inline const idNode &getLeave(const idNode &id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(id > treeData_.leaves.size()) {
-          std::stringstream msg;
-          msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
-          err(msg.str(), fatalMsg);
+          this->printErr("getLeaves out of bounds: " + std::to_string(id));
           return treeData_.leaves[0];
         }
 #endif
@@ -282,7 +281,7 @@ namespace ttk {
       // vert2tree
       // .....................{
 
-      inline void setVert2Tree(decltype(treeData_.vert2tree) const vect2tree) {
+      inline void setVert2Tree(decltype(treeData_.vert2tree) const &vect2tree) {
         treeData_.vert2tree = vect2tree;
       }
 
@@ -315,11 +314,9 @@ namespace ttk {
       inline idNode getCorrespondingNodeId(const SimplexId &val) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!isCorrespondingNode(val)) {
-          std::stringstream debug;
-          debug << "[MergeTree] : getCorrespondingNode, ";
-          debug << "Vertex :" << val << " is not a node :";
-          debug << treeData_.vert2tree[val] << std::endl;
-          err(debug.str(), fatalMsg);
+          this->printErr("getCorrespondingNode, Vertex: " + std::to_string(val)
+                         + " is not a node: "
+                         + std::to_string(treeData_.vert2tree[val]));
         }
 #endif
         return corr2idNode(val);
@@ -328,11 +325,9 @@ namespace ttk {
       inline idSuperArc getCorrespondingSuperArcId(const SimplexId &val) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!isCorrespondingArc(val)) {
-          std::stringstream debug;
-          debug << "[MergeTree] : getCorrespondingSuperArcId, ";
-          debug << "Vertex :" << val << " is not on an arc :";
-          debug << treeData_.vert2tree[val] << std::endl;
-          err(debug.str(), fatalMsg);
+          this->printErr(
+            "getCorrespondingSuperArcId, Vertex: " + std::to_string(val)
+            + " is not on an arc: " + std::to_string(treeData_.vert2tree[val]));
         }
 #endif
         return treeData_.vert2tree[val];

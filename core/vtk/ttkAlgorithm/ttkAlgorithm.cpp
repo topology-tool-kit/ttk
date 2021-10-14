@@ -8,6 +8,7 @@
 
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
+#include <vtkDataSet.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationIntegerKey.h>
@@ -46,7 +47,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                  + std::string(dataSet->GetClassName()) + "'");
 
   return nullptr;
-};
+}
 
 vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                              const int &arrayIndex,
@@ -146,8 +147,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   switch(isValidOrderArray(orderArray)) {
     case -4: {
       ttk::Timer timer;
-      this->printWrn("No pre-existing order for array `"
-                     + std::string(scalarArray->GetName()) + "`.");
+      this->printWrn("No pre-existing order for array:");
+      this->printWrn("  `" + std::string(scalarArray->GetName()) + "`.");
 
       this->printMsg("Initializing order array.", 0, 0, this->threadNumber_,
                      ttk::debug::LineMode::REPLACE);
@@ -176,8 +177,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
-      this->printWrn("Tip: run `ttkArrayPreconditioning` first for improved "
-                     "performances :)");
+      this->printWrn("TIP: run `ttkArrayPreconditioning` first");
+      this->printWrn("for improved performances :)");
 
       return newOrderArray;
     }
@@ -211,8 +212,53 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   }
 }
 
+ttk::SimplexId *
+  ttkAlgorithm::GetIdentifierArrayPtr(const bool &enforceArrayIndex,
+                                      const int &arrayIndex,
+                                      const std::string &arrayName,
+                                      vtkDataSet *const inputData,
+                                      std::vector<ttk::SimplexId> &spareStorage,
+                                      const int inputPort) {
+
+  // fetch data array
+  const auto array = this->GetOptionalArray(
+    enforceArrayIndex, arrayIndex, arrayName, inputData, inputPort);
+  if(array == nullptr) {
+    this->printErr("Could not find the requested identifiers array");
+    return {};
+  }
+  if(array->GetNumberOfComponents() != 1) {
+    this->printErr("Identifiers field must have only one component!");
+    return {};
+  }
+
+#ifndef TTK_ENABLE_64BIT_IDS
+  if(array->GetDataType() == VTK_ID_TYPE
+     || array->GetDataType() == VTK_LONG_LONG) {
+    this->printMsg(
+      "Converting identifiers field from vtkIdType to SimplexId...");
+    const auto nItems = array->GetNumberOfTuples();
+
+    // fills the vector with the content of the data array converted to
+    // ttk::SimplexId
+    spareStorage.resize(nItems);
+    for(vtkIdType i = 0; i < nItems; ++i) {
+      spareStorage[i] = static_cast<ttk::SimplexId>(array->GetTuple1(i));
+    }
+
+    // return a pointer to the vector internal buffer
+    return spareStorage.data();
+  }
+#else
+  TTK_FORCE_USE(spareStorage);
+#endif
+
+  // return a pointer to the data array internal buffer
+  return static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(array));
+}
+
 template <class vtkDataType>
-int prepOutput(vtkInformation *info, std::string className) {
+int prepOutput(vtkInformation *info, const std::string &className) {
   auto output = vtkDataObject::GetData(info);
   if(!output || !output->IsA(className.data())) {
     auto newOutput = vtkSmartPointer<vtkDataType>::New();
@@ -221,7 +267,31 @@ int prepOutput(vtkInformation *info, std::string className) {
   return 1;
 }
 
-int ttkAlgorithm::RequestDataObject(vtkInformation *request,
+vtkDataSet *ttkAlgorithm::GetOutput() {
+  return this->GetOutput(0);
+}
+
+vtkDataSet *ttkAlgorithm::GetOutput(int port) {
+  return vtkDataSet::SafeDownCast(this->GetOutputDataObject(port));
+}
+
+void ttkAlgorithm::SetInputData(vtkDataSet *input) {
+  this->SetInputData(0, input);
+}
+
+void ttkAlgorithm::SetInputData(int index, vtkDataSet *input) {
+  this->SetInputDataInternal(index, input);
+}
+
+void ttkAlgorithm::AddInputData(vtkDataSet *input) {
+  this->AddInputData(0, input);
+}
+
+void ttkAlgorithm::AddInputData(int index, vtkDataSet *input) {
+  this->AddInputDataInternal(index, input);
+}
+
+int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // for each output

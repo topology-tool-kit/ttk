@@ -50,9 +50,9 @@ namespace ttk {
   public:
     Triangulation();
     Triangulation(const Triangulation &);
-    Triangulation(Triangulation &&);
+    Triangulation(Triangulation &&) noexcept;
     Triangulation &operator=(const Triangulation &);
-    Triangulation &operator=(Triangulation &&);
+    Triangulation &operator=(Triangulation &&) noexcept;
     ~Triangulation();
 
     enum class Type { EXPLICIT, IMPLICIT, PERIODIC };
@@ -451,7 +451,7 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge list.
-    inline const std::vector<std::pair<SimplexId, SimplexId>> *getEdges() {
+    inline const std::vector<std::array<SimplexId, 2>> *getEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;
@@ -886,7 +886,7 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->getTetraIncenter(tetraId, incenter);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -912,7 +912,7 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle list.
-    inline const std::vector<std::vector<SimplexId>> *getTriangles() {
+    inline const std::vector<std::array<SimplexId, 3>> *getTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;

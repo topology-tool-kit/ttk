@@ -1,15 +1,18 @@
 # read the ttk.module file and create a list named moduleFileContent from it
 # this list can then be parsed using the cmake_parse_arguments method
 macro(ttk_parse_module_file moduleFile)
-  # reconfigure when the module file is changed
   get_filename_component(moduleRealFile ${moduleFile} REALPATH)
-  set_property(
-    DIRECTORY
-      "${CMAKE_CURRENT_SOURCE_DIR}"
-    APPEND PROPERTY
-    CMAKE_CONFIGURE_DEPENDS
-      ${moduleRealFile}
-  )
+  if(moduleFile MATCHES "ttk.module$")
+    # rebuild when ttk.module is changed
+    # already done by VTK for vtk.module
+    set_property(
+      DIRECTORY
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+      APPEND PROPERTY
+      CMAKE_CONFIGURE_DEPENDS
+        ${moduleRealFile}
+    )
+  endif()
   file(READ ${moduleRealFile} moduleFileContent)
   # Replace comments.
   string(REGEX REPLACE "#[^\n]*\n" "\n" moduleFileContent "${moduleFileContent}")
@@ -99,15 +102,19 @@ endmacro()
 # Also check dependencies of each module.
 function(ttk_get_target ttk_module ttk_target)
   # default status
-  if(NOT DEFINED VTK_MODULE_ENABLE_${ttk_module})
-    set(VTK_MODULE_ENABLE_${ttk_module} "${TTK_ENABLE_FILTER_DEFAULT}" CACHE STRING "Enable the ${ttk_module} module.")
-    mark_as_advanced(VTK_MODULE_ENABLE_${ttk_module})
+  if(${TTK_WHITELIST_MODE})
+    # If whitelist mode is ON, no more filters are enabled by default.
+    # Filters with default status are switced to DONT_WANT
+    if((NOT DEFINED VTK_MODULE_ENABLE_${ttk_module}) OR (${VTK_MODULE_ENABLE_${ttk_module}} STREQUAL "DEFAULT"))
+      set(VTK_MODULE_ENABLE_${ttk_module} "DONT_WANT" CACHE STRING "Enable the ${ttk_module} module." FORCE)
+      mark_as_advanced(VTK_MODULE_ENABLE_${ttk_module})
+    endif()
   endif()
 
   # dependencies check
   ttk_parse_module_file(${VTKWRAPPER_DIR}/${ttk_module}/vtk.module)
   cmake_parse_arguments("VTK" "" "NAME" "DEPENDS;PRIVATE_DEPENDS" ${moduleFileContent})
-   foreach(VTK_DEP_TARGET ${VTK_DEPENDS}) 
+  foreach(VTK_DEP_TARGET ${VTK_DEPENDS})
     # Check VTK targets are available (Assume VTK use the VTK namespace)
     string(REGEX MATCH "VTK::.*" TARGET_VTK ${VTK_DEP_TARGET})
     if(NOT "${TARGET_VTK}" STREQUAL "")
@@ -117,7 +124,7 @@ function(ttk_get_target ttk_module ttk_target)
       endif()
     endif()
   endforeach()
-  foreach(VTK_DEP_TARGET ${VTK_PRIVATE_DEPENDS}) 
+  foreach(VTK_DEP_TARGET ${VTK_PRIVATE_DEPENDS})
     if(NOT TARGET ${VTK_DEP_TARGET})
       message(WARNING "Missing (private) dependency ${VTK_DEP_TARGET} for module ${ttk_module}.")
       set(VTK_MODULE_ENABLE_${ttk_module} "NO" CACHE STRING "Enable the ${ttk_module} module." FORCE)

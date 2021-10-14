@@ -63,7 +63,7 @@ int compositeArray(DT *array0,
 };
 
 int ttkCinemaDarkroomCompositing::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

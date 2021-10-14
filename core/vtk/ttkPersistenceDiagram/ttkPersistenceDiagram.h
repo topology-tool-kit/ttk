@@ -37,6 +37,20 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
+/// Two backends are available for the computation:
+///
+///  1) FTM
+/// \b Related \b publication \n
+/// "Task-based Augmented Contour Trees with Fibonacci Heaps"
+/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
+/// IEEE Transactions on Parallel and Distributed Systems, 2019
+///
+///  2) Progressive Approach
+/// \b Related \b publication \n
+/// "A Progressive Approach to Scalar Field Topology" \n
+/// Jules Vidal, Pierre Guillou, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
 /// \sa ttkFTMTreePP
 /// \sa ttkPersistenceCurve
 /// \sa ttkScalarFieldCriticalPoints
@@ -55,6 +69,7 @@
 // ttk code includes
 #include <PersistenceDiagram.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public ttkAlgorithm,
@@ -73,6 +88,21 @@ public:
 
   vtkSetMacro(ShowInsideDomain, bool);
   vtkGetMacro(ShowInsideDomain, bool);
+
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
+  vtkGetMacro(StartingResolutionLevel, int);
+  vtkSetMacro(StartingResolutionLevel, int);
+
+  vtkGetMacro(StoppingResolutionLevel, int);
+  vtkSetMacro(StoppingResolutionLevel, int);
+
+  vtkGetMacro(IsResumable, bool);
+  vtkSetMacro(IsResumable, bool);
+
+  vtkGetMacro(TimeLimit, double);
+  vtkSetMacro(TimeLimit, double);
 
 protected:
   ttkPersistenceDiagram();

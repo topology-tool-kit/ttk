@@ -3,8 +3,10 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
 using namespace std;
@@ -38,7 +40,7 @@ int ttkScalarFieldSmoother::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
+int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

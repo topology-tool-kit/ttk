@@ -196,7 +196,7 @@ namespace ttk {
     /// [0,numberOfInputs_[ \param idx Index of the input scalar field. \param
     /// data Pointer to the data array. \return Returns 0 upon success, negative
     /// values otherwise. \sa setNumberOfInputs() and setVertexNumber().
-    inline int setInputDataPointer(int idx, void *data) {
+    inline int setInputDataPointer(const int idx, void *const data) {
       if(idx < numberOfInputs_) {
         inputData_[idx] = data;
       } else {
@@ -209,7 +209,7 @@ namespace ttk {
     /// field. The array is expected to be correctly allocated. \param data
     /// Pointer to the data array. \return Returns 0 upon success, negative
     /// values otherwise. \sa setVertexNumber()
-    inline void setOutputLowerBoundField(void *data) {
+    inline void setOutputLowerBoundField(void *const data) {
       outputLowerBoundField_ = data;
     }
 
@@ -217,25 +217,25 @@ namespace ttk {
     /// field. The array is expected to be correctly allocated. \param data
     /// Pointer to the data array. \return Returns 0 upon success, negative
     /// values otherwise. \sa setVertexNumber()
-    inline void setOutputUpperBoundField(void *data) {
+    inline void setOutputUpperBoundField(void *const data) {
       outputUpperBoundField_ = data;
     }
 
-    inline void setOutputProbability(int idx, double *data) {
+    inline void setOutputProbability(const int idx, double *const data) {
       if(idx < BinCount) {
         outputProbability_[idx] = data;
       }
     }
 
-    inline void setOutputMeanField(void *data) {
+    inline void setOutputMeanField(void *const data) {
       outputMeanField_ = data;
     }
 
-    inline void setComputeLowerBound(const bool &state) {
+    inline void setComputeLowerBound(const bool state) {
       ComputeLowerBound = state;
     }
 
-    inline void setComputeUpperBound(const bool &state) {
+    inline void setComputeUpperBound(const bool state) {
       ComputeUpperBound = state;
     }
 
@@ -246,13 +246,10 @@ namespace ttk {
       vertexNumber_ = vertexNumber;
     }
 
-    inline void setBinCount(const int &binCount) {
+    inline void setBinCount(const int binCount) {
       BinCount = binCount;
       outputProbability_.clear();
-      outputProbability_.resize(binCount);
-      for(int b = 0; b < binCount; b++)
-        outputProbability_[b] = NULL;
-
+      outputProbability_.resize(binCount, nullptr);
       binValues_.clear();
       binValues_.resize(binCount);
     }
@@ -260,13 +257,10 @@ namespace ttk {
     /// Set the number of input scalar fields
     /// \param numberOfInputs Number of input scalar fields.
     /// \return Returns 0 upon success, negative values otherwise
-    inline void setNumberOfInputs(int numberOfInputs) {
+    inline void setNumberOfInputs(const int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
       inputData_.clear();
-      inputData_.resize(numberOfInputs);
-      for(int i = 0; i < numberOfInputs; i++) {
-        inputData_[i] = NULL;
-      }
+      inputData_.resize(numberOfInputs, nullptr);
     }
 
     inline double getBinValue(int b) {
@@ -355,7 +349,7 @@ int ttk::UncertainDataEstimator::execute() {
       }
 
       // Update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ > advancedInfoMsg) {
+      if(debugLevel_ > static_cast<int>(debug::Priority::DETAIL)) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif

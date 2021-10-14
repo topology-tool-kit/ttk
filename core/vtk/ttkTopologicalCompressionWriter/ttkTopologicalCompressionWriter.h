@@ -35,8 +35,8 @@ public:
   vtkGetMacro(MaximumError, double);
   vtkSetMacro(MaximumError, double);
 
-  vtkGetMacro(ZFPBitBudget, double);
-  vtkSetMacro(ZFPBitBudget, double);
+  vtkGetMacro(ZFPTolerance, double);
+  vtkSetMacro(ZFPTolerance, double);
 
   vtkGetMacro(ZFPOnly, bool);
   vtkSetMacro(ZFPOnly, bool);
@@ -51,7 +51,7 @@ public:
   vtkSetMacro(NbVertices, int);
 
   vtkGetMacro(SQMethod, std::string);
-  vtkSetMacro(SQMethod, std::string);
+  vtkSetMacro(SQMethod, const std::string &);
 
   vtkSetMacro(Subdivide, bool);
   vtkGetMacro(Subdivide, bool);

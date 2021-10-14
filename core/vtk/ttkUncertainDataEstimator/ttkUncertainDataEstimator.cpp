@@ -28,7 +28,7 @@ int ttkUncertainDataEstimator::FillInputPortInformation(int port,
 
 int ttkUncertainDataEstimator::FillOutputPortInformation(int port,
                                                          vtkInformation *info) {
-  if(port == 0 || port == 1 || port == 3) {
+  if(port == 0 || port == 1 || port == 2) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -36,7 +36,7 @@ int ttkUncertainDataEstimator::FillOutputPortInformation(int port,
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
+int ttkUncertainDataEstimator::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
 
@@ -147,6 +147,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
 
   if(numFields > 0) {
     this->setVertexNumber(boundFields->GetNumberOfPoints());
+    this->setBinCount(this->BinCount);
 
     this->setNumberOfInputs(numFields);
     for(int i = 0; i < numFields; i++) {
@@ -161,7 +162,8 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
     this->setOutputMeanField(ttkUtils::GetVoidPointer(meanField));
 
     for(int b = 0; b < BinCount; b++) {
-      this->setOutputProbability(b, probabilityScalarField[b]->GetPointer(0));
+      this->setOutputProbability(
+        b, ttkUtils::GetPointer<double>(probabilityScalarField[b]));
     }
 
     switch(inputScalarField[0]->GetDataType()) {

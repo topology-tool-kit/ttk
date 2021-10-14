@@ -15,7 +15,7 @@
 #ifndef _PDCLUSTERING_H
 #define _PDCLUSTERING_H
 
-#include <Auction.h>
+#include <PersistenceDiagramAuction.h>
 //
 #include <KDTree.h>
 //
@@ -52,13 +52,17 @@ namespace ttk {
       UseDeltaLim_ = false;
       distanceWritingOptions_ = 0;
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
-    };
+    }
 
-    ~PDClustering(){};
+    ~PDClustering() = default;
 
     std::vector<int>
       execute(std::vector<std::vector<diagramTuple>> &final_centroids,
               vector<vector<vector<vector<matchingTuple>>>> &all_matchings);
+
+    std::array<double, 3> getDistances() const {
+      return {this->cost_min_, this->cost_sad_, this->cost_max_};
+    }
 
     dataType getMostPersistent(int type = -1);
     vector<vector<int>> get_centroids_sizes();

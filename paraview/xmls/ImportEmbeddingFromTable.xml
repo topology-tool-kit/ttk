@@ -1,0 +1,125 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+            name="ttkImportEmbeddingFromTable"
+            class="ttkImportEmbeddingFromTable"
+            label="TTK ImportEmbeddingFromTable">
+      <Documentation
+              long_help="TTK fieldSelector plugin."
+              short_help="TTK fieldSelector plugin.">
+        TTK fieldSelector plugin documentation.
+      </Documentation>
+
+      <InputProperty
+              name="DataSet"
+              port_index="0"
+              command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+              name="Table"
+              port_index="1"
+              command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+              name="X Column"
+              command="SetXColumn"
+              number_of_elements="1"
+              animateable="0"
+              label="X Column"
+      >
+        <ArrayListDomain
+                name="array_list"
+                default_values="0">
+          <RequiredProperties>
+            <Property name="Table" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Input x column.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+              name="Y Column"
+              command="SetYColumn"
+              number_of_elements="1"
+              animateable="0"
+              label="Y Column"
+      >
+        <ArrayListDomain
+                name="array_list"
+                default_values="0">
+          <RequiredProperties>
+            <Property name="Table" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Input y column.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+              name="Z Column"
+              command="SetZColumn"
+              number_of_elements="1"
+              animateable="0"
+              label="Z Column"
+      >
+        <ArrayListDomain
+                name="array_list"
+                default_values="0">
+          <RequiredProperties>
+            <Property name="Table" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Input z column.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="2D Points"
+                         label="2DPoints"
+                         command="SetEmbedding2D"
+                         number_of_elements="1"
+                         default_values="0"
+                         panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGET}
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -16,13 +16,23 @@ runtime_pkgs \
 # --------------------------------------------------------------------------
 
 # install ISPC
-curl -L https://github.com/ispc/ispc/releases/download/v1.12.0/ispc-v1.12.0b-linux.tar.gz | \
-  tar xz -C /usr/bin --strip-components 2 --wildcards "*/bin/ispc"
+case $PARAVIEW_VERSION in
+5.[678]*)
+    echo "selected ispc 1.12.0"
+    curl -L https://github.com/ispc/ispc/releases/download/v1.12.0/ispc-v1.12.0b-linux.tar.gz | \
+        tar xz -C /usr/bin --strip-components 2 --wildcards "*/bin/ispc"
+    ;;
+*)
+    echo "selected ispc 1.14.1"
+    curl -L https://github.com/ispc/ispc/releases/download/v1.14.1/ispc-v1.14.1-linux.tar.gz | \
+        tar xz -C /usr/bin --strip-components 2 --wildcards "*/bin/ispc"
+    ;;
+esac
 
 # --------------------------------------------------------------------------
 
 # get source code
-curl -L https://github.com/embree/embree/archive/v3.8.0.tar.gz | \
+curl -L https://github.com/embree/embree/archive/v3.11.0.tar.gz | \
   tar xz --strip-components 1
 
 mkdir build
@@ -34,7 +44,7 @@ cmake -G Ninja \
   -DEMBREE_ISA_SSE2=ON          \
   -DEMBREE_ISA_SSE42=ON         \
   -DEMBREE_ISA_AVX=ON           \
-  -DEMBREE_ISA_AVX2=ON          \
+  -DEMBREE_ISA_AVX2=OFF         \
   -DEMBREE_ISA_AVX512SKX=OFF    \
   -DEMBREE_ISA_AVX512KNL=OFF    \
   ..

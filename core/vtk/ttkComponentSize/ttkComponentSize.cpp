@@ -15,6 +15,9 @@ ttkComponentSize::ttkComponentSize() {
 
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
+
+  vtkWarningMacro("`TTK ComponentSize' is now deprecated. Please use "
+                  "`Connectivity' instead.");
 }
 
 ttkComponentSize::~ttkComponentSize() {
@@ -37,7 +40,7 @@ int ttkComponentSize::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkComponentSize::RequestData(vtkInformation *request,
+int ttkComponentSize::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   ttk::Timer t;

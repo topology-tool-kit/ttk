@@ -27,7 +27,7 @@ class vtkSmartPointer;
 
 class TTKALGORITHM_EXPORT ttkUtils {
 private:
-  ttkUtils(){};
+  ttkUtils() = default;
 
 public:
   static int replaceVariable(const std::string &iString,
@@ -46,13 +46,22 @@ public:
   static int stringListToDoubleVector(const std::string &iString,
                                       std::vector<double> &v);
 
-  static vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
+  static vtkSmartPointer<vtkAbstractArray>
+    csvToVtkArray(const std::string &line);
 
-  static vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
+  static vtkSmartPointer<vtkDoubleArray>
+    csvToDoubleArray(const std::string &line);
 
   // Emultate old VTK functions
   static void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
   static void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
+  template <typename DT>
+  static DT *GetPointer(vtkDataArray *array, vtkIdType start = 0) {
+    return static_cast<DT *>(ttkUtils::GetVoidPointer(array, start));
+  }
+
+  static vtkSmartPointer<vtkAbstractArray> SliceArray(vtkAbstractArray *array,
+                                                      vtkIdType idx);
 
   static void *
     WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);

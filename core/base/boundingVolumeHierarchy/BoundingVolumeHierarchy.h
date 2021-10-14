@@ -25,7 +25,7 @@ namespace ttk {
       Node() {
       }
       // leaf constructor
-      Node(const std::vector<int> triangleIndices,
+      Node(const std::vector<int> &triangleIndices,
            const size_t nTriangles,
            const float *pMin,
            const float *pMax) {
@@ -381,4 +381,4 @@ namespace ttk {
       return (v1 + v2 + v3) / 3;
     }
   };
-}; // namespace ttk
+} // namespace ttk

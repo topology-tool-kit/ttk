@@ -12,7 +12,7 @@ if(TARGET ttkFTRGraph)
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
       INSTALL_RPATH
-        "${CMAKE_INSTALL_RPATH}/lib64/TopologyToolKit"
+        "${CMAKE_INSTALL_RPATH}"
     )
   install(
     TARGETS

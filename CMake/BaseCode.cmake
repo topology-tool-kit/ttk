@@ -25,7 +25,7 @@ function(ttk_add_base_library library)
   target_include_directories(${library}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:include/ttk/base>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ttk/base>
     )
 
   if(ARG_DEPENDS)
@@ -47,7 +47,7 @@ function(ttk_add_base_library library)
     )
 
   if(ARG_HEADERS)
-    install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
+    install(FILES ${ARG_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ttk/base)
   endif()
 endfunction()
 
@@ -70,7 +70,7 @@ function(ttk_add_base_template_library library)
   target_include_directories(${library}
     INTERFACE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:include/ttk/base>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ttk/base>
     )
 
   if(TTK_ENABLE_DOUBLE_TEMPLATING)
@@ -145,43 +145,12 @@ function(ttk_set_compile_options library)
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
     target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
-
-    if (TTK_ENABLE_OMP_PRIORITY)
-      target_compile_definitions(${library} PUBLIC TTK_ENABLE_OMP_PRIORITY)
-    endif()
   endif()
 
   if (TTK_ENABLE_MPI)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI)
     target_include_directories(${library} PUBLIC ${MPI_CXX_INCLUDE_PATH})
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
-  endif()
-
-  if (TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
-    target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CDT_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
-  endif()
-
-  if (TTK_ENABLE_EMBREE AND EMBREE_FOUND)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_EMBREE)
-    target_include_directories(${library} PUBLIC ${EMBREE_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${EMBREE_LIBRARY})
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_SQLITE3)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
-    target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
   endif()
 
   if (TTK_ENABLE_64BIT_IDS)

@@ -24,7 +24,7 @@ vtkCellArray *GetCells(vtkDataSet *dataSet) {
     }
   }
   return nullptr;
-};
+}
 
 int checkCellTypes(vtkPointSet *object) {
   auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
@@ -49,7 +49,7 @@ int checkCellTypes(vtkPointSet *object) {
   }
 
   return 1;
-};
+}
 
 struct ttkOnDeleteCommand : public vtkCommand {
   RegistryKey key;
@@ -69,9 +69,11 @@ struct ttkOnDeleteCommand : public vtkCommand {
       this->observee = static_cast<vtkObject *>(dataSet);
 
     this->observee->AddObserver(vtkCommand::DeleteEvent, this, 1);
-  };
+  }
 
-  void Execute(vtkObject *, unsigned long eventId, void *callData) override {
+  void Execute(vtkObject *,
+               unsigned long ttkNotUsed(eventId),
+               void *ttkNotUsed(callData)) override {
     if(this->observee)
       this->observee->RemoveObserver(this);
 
@@ -109,7 +111,7 @@ RegistryValue::RegistryValue(vtkDataSet *dataSet,
 
   auto onDelete = vtkSmartPointer<ttkOnDeleteCommand>::New();
   onDelete->Init(dataSet);
-};
+}
 
 bool RegistryValue::isValid(vtkDataSet *dataSet) const {
   auto cells = GetCells(dataSet);
@@ -142,11 +144,11 @@ bool RegistryValue::isValid(vtkDataSet *dataSet) const {
   }
 
   return false;
-};
+}
 
 ttkTriangulationFactory::ttkTriangulationFactory() {
   this->setDebugMsgPrefix("TriangulationFactory");
-};
+}
 
 RegistryTriangulation
   ttkTriangulationFactory::CreateImplicitTriangulation(vtkImageData *image) {
@@ -182,7 +184,7 @@ RegistryTriangulation
                  ttk::debug::Priority::DETAIL);
 
   return triangulation;
-};
+}
 
 RegistryTriangulation
   ttkTriangulationFactory::CreateExplicitTriangulation(vtkPointSet *pointSet) {
@@ -268,7 +270,7 @@ RegistryTriangulation
                  ttk::debug::Priority::DETAIL);
 
   return triangulation;
-};
+}
 
 RegistryTriangulation
   ttkTriangulationFactory::CreateTriangulation(vtkDataSet *dataSet) {
@@ -288,7 +290,7 @@ RegistryTriangulation
   }
 
   return nullptr;
-};
+}
 
 ttk::Triangulation *
   ttkTriangulationFactory::GetTriangulation(int debugLevel,
@@ -338,7 +340,7 @@ ttk::Triangulation *
     triangulation->setDebugLevel(debugLevel);
 
   return triangulation;
-};
+}
 
 int ttkTriangulationFactory::FindImplicitTriangulation(
   ttk::Triangulation *&triangulation, vtkImageData *image) {
@@ -353,7 +355,7 @@ int ttkTriangulationFactory::FindImplicitTriangulation(
   }
 
   return 0;
-};
+}
 
 RegistryKey ttkTriangulationFactory::GetKey(vtkDataSet *dataSet) {
   switch(dataSet->GetDataObjectType()) {
@@ -368,6 +370,6 @@ RegistryKey ttkTriangulationFactory::GetKey(vtkDataSet *dataSet) {
   }
 
   return 0;
-};
+}
 
 ttkTriangulationFactory ttkTriangulationFactory::Instance{};

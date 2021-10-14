@@ -49,12 +49,12 @@ namespace ttk {
                                 const int &id,
                                 SimplexId &triangleId) const override;
 
-    SimplexId
-      getCellTriangleNumberInternal(const SimplexId &cellId) const override {
+    SimplexId getCellTriangleNumberInternal(
+      const SimplexId &ttkNotUsed(cellId)) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
-    };
+    }
 
     const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() override;
@@ -69,7 +69,7 @@ namespace ttk {
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
-    };
+    }
 
     int
       TTK_TRIANGULATION_INTERNAL(getEdgeLink)(const SimplexId &edgeId,
@@ -107,24 +107,24 @@ namespace ttk {
                               const int &localVertexId,
                               SimplexId &vertexId) const override;
 
-    const std::vector<std::pair<SimplexId, SimplexId>> *
+    const std::vector<std::array<SimplexId, 2>> *
       TTK_TRIANGULATION_INTERNAL(getEdges)() override;
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
       return cellNumber_;
-    };
+    }
 
     SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
-    };
+    }
 
     SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
-    };
+    }
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const override {
       return vertexNumber_;
-    };
+    }
 
     int getTetrahedronEdge(const SimplexId &tetId,
                            const int &id,
@@ -156,7 +156,7 @@ namespace ttk {
                                 SimplexId &edgeId) const override;
 
     SimplexId getTriangleEdgeNumberInternal(
-      const SimplexId &triangleId) const override {
+      const SimplexId &ttkNotUsed(triangleId)) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
@@ -202,7 +202,7 @@ namespace ttk {
                                   const int &localVertexId,
                                   SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *
+    const std::vector<std::array<SimplexId, 3>> *
       TTK_TRIANGULATION_INTERNAL(getTriangles)() override;
 
     int getVertexEdgeInternal(const SimplexId &vertexId,
@@ -266,9 +266,9 @@ namespace ttk {
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;
 
-    bool isEmpty() const override {
+    inline bool isEmpty() const override {
       return !vertexNumber_;
-    };
+    }
 
     bool TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
       const SimplexId &triangleId) const override;
@@ -974,15 +974,7 @@ inline ttk::SimplexId
 inline ttk::SimplexId
   ttk::PeriodicImplicitTriangulation::getEdgeStar2dL(const SimplexId p[2],
                                                      const int id) const {
-  if(p[1] > 0 and p[1] < nbvoxels_[Dj_]) {
-    switch(id) {
-      case 0:
-        return p[0] * 2 + p[1] * tshift_[0];
-      case 1:
-        return p[0] * 2 + (p[1] - 1) * tshift_[0] + 1;
-    }
-    return -1;
-  } else if(p[1] == 0) {
+  if(p[1] == 0) {
     switch(id) {
       case 0:
         return p[0] * 2 + p[1] * tshift_[0];
@@ -1004,15 +996,7 @@ inline ttk::SimplexId
 inline ttk::SimplexId
   ttk::PeriodicImplicitTriangulation::getEdgeStar2dH(const SimplexId p[2],
                                                      const int id) const {
-  if(p[0] > 0 and p[0] < nbvoxels_[Di_]) {
-    switch(id) {
-      case 0:
-        return p[0] * 2 + p[1] * tshift_[0];
-      case 1:
-        return (p[0] - 1) * 2 + p[1] * tshift_[0] + 1;
-    }
-    return -1;
-  } else if(p[0] == 0) {
+  if(p[0] == 0) {
     switch(id) {
       case 0:
         return p[0] * 2 + p[1] * tshift_[0];

@@ -1,0 +1,42 @@
+<ServerManagerConfiguration>
+
+  <ProxyGroup name="writers">
+    <!-- ================================================================== -->
+    <WriterProxy
+        name="ttkTriangulationWriter"
+        class="ttkTriangulationWriter"
+        label="TTK Triangulation File Writer">
+        <Documentation
+          long_help="Write a TTK Triangulation into a file."
+          short_help="Write TTK Triangulation to disk.">
+          Export a TTK (Explicit) Triangulation into a file.
+        </Documentation>
+        <InputProperty name="Input" command="SetInputConnection">
+          <ProxyGroupDomain name="groups">
+            <Group name="sources"/>
+            <Group name="filters"/>
+          </ProxyGroupDomain>
+          <DataTypeDomain name="input_type" composite_data_supported="0">
+            <DataType value="vtkUnstructuredGrid"/>
+          </DataTypeDomain>
+        </InputProperty>
+        <StringVectorProperty
+          name="FileName"
+          command="SetFilename"
+          number_of_elements="1">
+          <FileListDomain name="files"/>
+          <Documentation>
+              This property specifies the file name for the Triangulation writer.
+          </Documentation>
+        </StringVectorProperty>
+        <Hints>
+          <Property name="Input" show="0"/>
+          <Property name="FileName" show="0"/>
+          <WriterFactory extensions="tpt"
+                         file_description="TTK Preconditioned Triangulation File Format" />
+        </Hints>
+    </WriterProxy>
+    <!-- End Writer -->
+  </ProxyGroup>
+
+</ServerManagerConfiguration>

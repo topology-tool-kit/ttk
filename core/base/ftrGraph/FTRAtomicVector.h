@@ -9,6 +9,8 @@
 #ifndef FTRATOMICVECTOR_H
 #define FTRATOMICVECTOR_H
 
+#include "BaseClass.h"
+
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
 #endif // TTK_ENABLE_OPENMP
@@ -52,7 +54,7 @@ namespace ttk {
     }
 
     // move constructor
-    FTRAtomicVector(FTRAtomicVector &&other) = default;
+    FTRAtomicVector(FTRAtomicVector &&other) noexcept = default;
 
     virtual ~FTRAtomicVector() = default;
 
@@ -85,6 +87,7 @@ namespace ttk {
           std::vector<type>::resize(newSize);
         }
       }
+      TTK_FORCE_USE(fromOther);
     }
 
     void reset(const std::size_t &nId = 0) {
@@ -149,14 +152,16 @@ namespace ttk {
     // --------
 
     FTRAtomicVector<type> &operator=(const FTRAtomicVector<type> &other) {
-      std::vector<type>::operator=(other);
-      nextId = other.nextId;
+      if(&other != this) {
+        std::vector<type>::operator=(other);
+        nextId = other.nextId;
+      }
       return *this;
     }
 
-    FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) {
-      std::vector<type>::operator=(std::move(other));
+    FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) noexcept {
       nextId = std::move(other.nextId);
+      std::vector<type>::operator=(std::move(other));
       return *this;
     }
 

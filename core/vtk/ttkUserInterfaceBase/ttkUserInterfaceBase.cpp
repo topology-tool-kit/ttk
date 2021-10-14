@@ -191,7 +191,7 @@ int ttkUserInterfaceBase::run() {
   {
     stringstream msg;
     msg << "[UserInterace] Initializing user interface..." << endl;
-    dMsg(cout, msg.str(), 1);
+    printMsg(msg.str());
   }
 
   renderWindow_->AddRenderer(renderer_);
@@ -216,7 +216,7 @@ int ttkUserInterfaceBase::run() {
   {
     stringstream msg;
     msg << "[ttkUserInterfaceBase] Running user interface!" << endl;
-    dMsg(cout, msg.str(), 1);
+    printMsg(msg.str());
   }
 
   isUp_ = true;
@@ -243,7 +243,7 @@ int ttkUserInterfaceBase::switchOutput(const int &outputId) {
     msg << "on";
   }
   msg << endl;
-  dMsg(cout, msg.str(), infoMsg);
+  printMsg(msg.str());
 
   visibleOutputs_[outputId] = !visibleOutputs_[outputId];
 
@@ -261,7 +261,7 @@ int ttkUserInterfaceBase::switchTransparency() {
     msg << "on";
   }
   msg << endl;
-  dMsg(cout, msg.str(), infoMsg);
+  printMsg(msg.str());
 
   transparency_ = !transparency_;
 

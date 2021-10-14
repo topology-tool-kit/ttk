@@ -37,7 +37,7 @@ int ttkDataSetToTable::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDataSetToTable::RequestData(vtkInformation *request,
+int ttkDataSetToTable::RequestData(vtkInformation *ttkNotUsed(request),
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
   ttk::Timer t;

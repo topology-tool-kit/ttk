@@ -277,7 +277,7 @@ int ttkFTRGraph::dispatch(Graph &graph) {
   return 0;
 }
 
-int ttkFTRGraph::RequestData(vtkInformation *request,
+int ttkFTRGraph::RequestData(vtkInformation *ttkNotUsed(request),
                              vtkInformationVector **inputVector,
                              vtkInformationVector *outputVector) {
 
