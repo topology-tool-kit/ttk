@@ -205,6 +205,32 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
+    - uses: actions/checkout@v2
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data states [NOT ENFORCED]
+      if: false
+      id: validate
+      continue-on-error: true
+      run: |
+        cd ttk-data/tests
+        mkdir output_screenshots
+        python3 -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+
+    - name: Upload result screenshots
+      if: steps.validate.outcome == 'failure'
+      uses: actions/upload-artifact@v2
+      with:
+        name: screenshots-macOS.tar.gz
+        path: ttk-data/tests/screenshots.tar.gz
+
+
   # ------------------ #
   # Test Windows build #
   # ------------------ #
