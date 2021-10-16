@@ -32,7 +32,6 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           ccache \
-          g++-11 \
           libboost-system-dev \
           libeigen3-dev \
           libgraphviz-dev \
@@ -62,7 +61,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        CC=gcc-11 CXX=g++-11 cmake \
+        cmake \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           -DCMAKE_INSTALL_PREFIX=/usr \
