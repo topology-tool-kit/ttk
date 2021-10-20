@@ -493,7 +493,7 @@ const vector<vector<SimplexId>> *
 
 SimplexId ImplicitTriangulation::getVertexEdgeNumberInternal(
   const SimplexId &vertexId) const {
-  return getVertexNeighborNumber(vertexId);
+  return TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(vertexId);
 }
 
 int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
@@ -837,7 +837,7 @@ const vector<vector<SimplexId>> *
 
 SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   getVertexLinkNumber)(const SimplexId &vertexId) const {
-  return getVertexStarNumber(vertexId);
+  return TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(vertexId);
 }
 
 int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
@@ -1577,7 +1577,7 @@ const vector<vector<SimplexId>> *
 
 SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
   const SimplexId &edgeId) const {
-  return getEdgeStarNumber(edgeId);
+  return TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(edgeId);
 }
 
 int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
@@ -2026,7 +2026,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
 
 SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   getTriangleLinkNumber)(const SimplexId &triangleId) const {
-  return getTriangleStarNumber(triangleId);
+  return TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId);
 }
 
 const vector<vector<SimplexId>> *
