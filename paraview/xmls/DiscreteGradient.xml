@@ -1,0 +1,128 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkDiscreteGradient"
+      class="ttkDiscreteGradient"
+      label="TTK DiscreteGradient">
+      <Documentation
+        long_help="TTK discreteGradient plugin."
+        short_help="TTK discreteGradient plugin.">
+        TTK discreteGradient plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+          TTK assumes that the input dataset is made of only one connected component.
+          If it's not the case, you can use the filter "Connectivity" (and select "Extract Largest Region").
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
+        label="Force Input Offset Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="ComputeGradientGlyphs"
+        label="Compute Gradient Glyphs"
+        command="SetComputeGradientGlyphs"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Compute the gradient glyphs.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="Offset Field"/>
+        <Property name="ComputeGradientGlyphs"/>
+      </PropertyGroup>
+
+      <OutputPort name="Critical Points" index="0" id="port0"/>
+      <OutputPort name="Gradient Glyphs" index="1" id="port1"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -7,6 +7,7 @@ if(TARGET ttkHelloWorld)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkHelloWorld
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

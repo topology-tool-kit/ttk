@@ -28,7 +28,7 @@
 #include <map>
 
 // base code includes
-#include <Wrapper.h>
+#include <Debug.h>
 
 namespace ttk {
 
@@ -293,7 +293,8 @@ int ttk::PlanarGraphLayout::computeSlots(
   struct ChildrenComparator {
     const float *layout_;
 
-    ChildrenComparator(const float *layout) : layout_(layout){};
+    ChildrenComparator(const float *layout) : layout_(layout) {
+    }
 
     inline bool operator()(const size_t &i, const size_t &j) {
       return layout_[i * 2 + 1] < layout_[j * 2 + 1];

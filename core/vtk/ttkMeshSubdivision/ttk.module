@@ -6,4 +6,4 @@ HEADERS
   ttkMeshSubdivision.h
 DEPENDS
   common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

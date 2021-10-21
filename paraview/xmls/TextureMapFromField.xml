@@ -1,0 +1,145 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkTextureMapFromField"
+     class="ttkTextureMapFromField"
+     label="TTK TextureMapFromField">
+     <Documentation
+        long_help="TTK plugin which generates a texture map from one or two
+point data scalar fields."
+        short_help="TTK plugin which generates a texture map from one or two
+point data scalar fields.">
+          This plugin is useful to convert scalar fields to texture coordinates
+or to generate texture-based level lines out of a single scalar fields.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to texture map.
+        </Documentation>
+      </InputProperty>
+
+
+
+      <IntVectorProperty
+         name="OnlyUComponent"
+         label="Only U Component"
+         command="SetOnlyUComponent"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool" />
+         <Documentation>
+          Define only the U component (set the V component to 0).
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="RepeatUTexture"
+         label="Repeat U Texture"
+         command="SetRepeatUTexture"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool" />
+         <Documentation>
+          Repeat texture on the U component.
+         </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to use as the U component.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         name="OnlyVComponent"
+         label="Only V Component"
+         command="SetOnlyVComponent"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool" />
+         <Documentation>
+          Define only the V component (set the U component to 0).
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="RepeatVTexture"
+         label="Repeat V Texture"
+         command="SetRepeatVTexture"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool" />
+         <Documentation>
+          Repeat texture on the V component.
+         </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to use as the V component.
+        </Documentation>
+      </StringVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="OnlyUComponent" />
+        <Property name="RepeatUTexture" />
+        <Property name="U Component" />
+        <Property name="OnlyVComponent" />
+        <Property name="RepeatVTexture" />
+        <Property name="V Component" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

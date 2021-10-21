@@ -7,6 +7,7 @@ if(TARGET ttkContourAroundPoint)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkContourAroundPoint
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

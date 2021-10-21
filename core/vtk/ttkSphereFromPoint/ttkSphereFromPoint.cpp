@@ -21,6 +21,9 @@ ttkSphereFromPoint::ttkSphereFromPoint() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
   setDebugMsgPrefix("SphereFromPoint");
+
+  vtkWarningMacro("`TTK SphereFromPoint' is now deprecated. Please use "
+                  "`TTK IcospheresFromPoint' instead.");
 }
 
 ttkSphereFromPoint::~ttkSphereFromPoint() {
@@ -61,7 +64,7 @@ int ttkSphereFromPoint::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkSphereFromPoint::RequestData(vtkInformation *request,
+int ttkSphereFromPoint::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 
@@ -163,10 +166,12 @@ int ttkSphereFromPoint::RequestData(vtkInformation *request,
         array->GetTuple(i, &value);
 
         vtkDataArray *dataArray = array->NewInstance();
-        dataArray->SetName(array->GetName());
-        dataArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
-        for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints(); k++) {
-          dataArray->SetTuple(k, &value);
+        if(dataArray != nullptr) {
+          dataArray->SetName(array->GetName());
+          dataArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
+          for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints(); k++) {
+            dataArray->SetTuple(k, &value);
+          }
         }
         sphereSurface->GetPointData()->AddArray(dataArray);
         dataArrayList_[threadId].emplace_back(dataArray);

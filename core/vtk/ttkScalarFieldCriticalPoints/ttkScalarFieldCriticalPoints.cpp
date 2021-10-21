@@ -2,12 +2,14 @@
 
 #include <vtkInformation.h>
 
-#include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkPolyData.h>
+#include <vtkSignedCharArray.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -39,7 +41,7 @@ int ttkScalarFieldCriticalPoints::FillInputPortInformation(
 int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
   else
     return 0;
 
@@ -47,12 +49,12 @@ int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
 }
 
 int ttkScalarFieldCriticalPoints::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
+  vtkPolyData *output = vtkPolyData::GetData(outputVector, 0);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
@@ -70,21 +72,11 @@ int ttkScalarFieldCriticalPoints::RequestData(
   if(!inputScalarField)
     return 0;
 
-  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
-
-  sosOffsets_.resize(inputScalarField->GetNumberOfTuples());
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
-    SimplexId offset = i;
-    if(offsetField) {
-      offset = offsetField->GetTuple1(i);
-    }
-    sosOffsets_[i] = offset;
-  }
+  vtkDataArray *offsetField
+    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
 
   // setting up the base layer
-  this->setupTriangulation(triangulation);
-  this->setSosOffsets(&sosOffsets_);
+  this->preconditionTriangulation(triangulation);
   this->setOutput(&criticalPoints_);
 
   printMsg("Starting computation...");
@@ -92,35 +84,50 @@ int ttkScalarFieldCriticalPoints::RequestData(
             {"  Offset Array", offsetField ? offsetField->GetName() : "None"}});
 
   int status = 0;
-  ttkVtkTemplateMacro(inputScalarField->GetDataType(), triangulation->getType(),
-                      (status = this->execute<VTK_TT, TTK_TT>(
-                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField),
-                         (TTK_TT *)triangulation->getData())));
+  ttkTemplateMacro(
+    triangulation->getType(),
+    (status = this->execute(
+       static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
+       (TTK_TT *)triangulation->getData())));
+
   if(status < 0)
     return 0;
 
   // allocate the output
-  vtkSmartPointer<vtkCharArray> vertexTypes
-    = vtkSmartPointer<vtkCharArray>::New();
-
+  vtkNew<vtkSignedCharArray> vertexTypes{};
   vertexTypes->SetNumberOfComponents(1);
   vertexTypes->SetNumberOfTuples(criticalPoints_.size());
   vertexTypes->SetName("CriticalType");
 
-  vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> pointSet{};
   pointSet->SetNumberOfPoints(criticalPoints_.size());
-  double p[3];
-  for(SimplexId i = 0; i < (SimplexId)criticalPoints_.size(); i++) {
-    input->GetPoint(criticalPoints_[i].first, p);
-    pointSet->SetPoint(i, p);
+  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+  offsets->SetNumberOfComponents(1);
+  offsets->SetNumberOfTuples(criticalPoints_.size() + 1);
+  connectivity->SetNumberOfComponents(1);
+  connectivity->SetNumberOfTuples(criticalPoints_.size());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < criticalPoints_.size(); i++) {
+    std::array<double, 3> p{};
+    input->GetPoint(criticalPoints_[i].first, p.data());
+    pointSet->SetPoint(i, p.data());
     vertexTypes->SetTuple1(i, (float)criticalPoints_[i].second);
+    offsets->SetTuple1(i, i);
+    connectivity->SetTuple1(i, i);
   }
+  offsets->SetTuple1(criticalPoints_.size(), criticalPoints_.size());
+
+  vtkNew<vtkCellArray> cells{};
+  cells->SetData(offsets, connectivity);
+  output->SetVerts(cells);
   output->SetPoints(pointSet);
   output->GetPointData()->AddArray(vertexTypes);
 
   if(VertexBoundary) {
-    vtkSmartPointer<vtkCharArray> vertexBoundary
-      = vtkSmartPointer<vtkCharArray>::New();
+    vtkNew<vtkSignedCharArray> vertexBoundary{};
     vertexBoundary->SetNumberOfComponents(1);
     vertexBoundary->SetNumberOfTuples(criticalPoints_.size());
     vertexBoundary->SetName("IsOnBoundary");
@@ -128,9 +135,10 @@ int ttkScalarFieldCriticalPoints::RequestData(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(SimplexId i = 0; i < (SimplexId)criticalPoints_.size(); i++) {
+    for(size_t i = 0; i < criticalPoints_.size(); i++) {
       vertexBoundary->SetTuple1(
-        i, (char)triangulation->isVertexOnBoundary(criticalPoints_[i].first));
+        i, (signed char)triangulation->isVertexOnBoundary(
+             criticalPoints_[i].first));
     }
 
     output->GetPointData()->AddArray(vertexBoundary);
@@ -139,13 +147,12 @@ int ttkScalarFieldCriticalPoints::RequestData(
   }
 
   if(VertexIds) {
-    vtkSmartPointer<ttkSimplexIdTypeArray> vertexIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    vtkNew<ttkSimplexIdTypeArray> vertexIds{};
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName(ttk::VertexScalarFieldName);
 
-    for(SimplexId i = 0; i < (SimplexId)criticalPoints_.size(); i++) {
+    for(size_t i = 0; i < criticalPoints_.size(); i++) {
       vertexIds->SetTuple1(i, criticalPoints_[i].first);
     }
 
@@ -158,48 +165,17 @@ int ttkScalarFieldCriticalPoints::RequestData(
     for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
 
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
-      vtkSmartPointer<vtkDataArray> scalarArray;
+      vtkSmartPointer<vtkDataArray> scalarArray{scalarField->NewInstance()};
 
-      auto copyToScalarArray = [&]() {
-        scalarArray->SetNumberOfComponents(
-          scalarField->GetNumberOfComponents());
-        scalarArray->SetNumberOfTuples(criticalPoints_.size());
-        scalarArray->SetName(scalarField->GetName());
-        std::vector<double> value(scalarField->GetNumberOfComponents());
-        for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-          scalarField->GetTuple(criticalPoints_[j].first, value.data());
-          scalarArray->SetTuple(j, value.data());
-        }
-        output->GetPointData()->AddArray(scalarArray);
-      };
-
-      switch(scalarField->GetDataType()) {
-        case VTK_CHAR:
-          scalarArray = vtkSmartPointer<vtkCharArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_DOUBLE:
-          scalarArray = vtkSmartPointer<vtkDoubleArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_FLOAT:
-          scalarArray = vtkSmartPointer<vtkFloatArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_INT:
-          scalarArray = vtkSmartPointer<vtkIntArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_ID_TYPE:
-          scalarArray = vtkSmartPointer<vtkIdTypeArray>::New();
-          copyToScalarArray();
-          break;
-        default: {
-          printMsg("Unsupported data type for scalar attachment `"
-                     + std::string(scalarField->GetName()) + "' :(",
-                   ttk::debug::Priority::DETAIL);
-        } break;
+      scalarArray->SetNumberOfComponents(scalarField->GetNumberOfComponents());
+      scalarArray->SetNumberOfTuples(criticalPoints_.size());
+      scalarArray->SetName(scalarField->GetName());
+      std::vector<double> value(scalarField->GetNumberOfComponents());
+      for(size_t j = 0; j < criticalPoints_.size(); j++) {
+        scalarField->GetTuple(criticalPoints_[j].first, value.data());
+        scalarArray->SetTuple(j, value.data());
       }
+      output->GetPointData()->AddArray(scalarArray);
     }
   } else {
     for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {

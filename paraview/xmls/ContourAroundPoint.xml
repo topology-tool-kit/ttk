@@ -1,0 +1,123 @@
+<ServerManagerConfiguration><ProxyGroup name="filters"><SourceProxy
+  name="ttkContourAroundPoint"
+  class="ttkContourAroundPoint"
+  label="TTK ContourAroundPoint">
+  <Documentation
+    long_help="For a set of points, draw a contour around each one to
+    highlight it. The filter was originally intended for extreme points in
+    a scalar field. It is typically applied in a pipeline after
+    TTKTopologicalSimplification and TTKMergeandContourTreeFTM.
+
+    Related publication: 'Topology-based Feature Detection in Climate
+    Data', Christopher P Kappe, Michael Boettinger, Heike Leitte,
+    Visualization in Environmental Sciences (EnvirVis), 2019 (accepted, yet
+    to be published)."
+    short_help="TTK contourAroundPoint plugin.">
+    TTK contourAroundPoint plugin.
+  </Documentation>
+
+  <InputProperty  command="SetInputConnection" name="Domain" port_index="0">
+    <ProxyGroupDomain name="groups">
+      <Group name="sources"/>
+      <Group name="filters"/>
+    </ProxyGroupDomain>
+    <DataTypeDomain name="input_type">
+      <DataType value="vtkDataSet"/>
+    </DataTypeDomain>
+    <InputArrayDomain name="input_scalars" number_of_components="1">
+      <Property name="Domain" function="FieldDataSelection" />
+    </InputArrayDomain>
+    <Documentation>
+      Domain in which the contours are computed.
+    </Documentation>
+  </InputProperty>
+
+  <InputProperty  command="SetInputConnection" name="Nodes" port_index="1">
+    <ProxyGroupDomain name="groups">
+      <Group name="sources"/>
+      <Group name="filters"/>
+    </ProxyGroupDomain>
+    <DataTypeDomain name="input_type">
+      <DataType value="vtkUnstructuredGrid"/>
+    </DataTypeDomain>
+    <InputArrayDomain name="input_scalars" number_of_components="1">
+      <Property name="Nodes" function="FieldDataSelection" />
+    </InputArrayDomain>
+    <Documentation>
+      Points (like "Skeleton Nodes" from "TTKMergeandContourTreeFTM") with the following data
+      arrays: CriticalType: int, Scalar: float.
+    </Documentation>
+  </InputProperty>
+
+  <InputProperty  command="SetInputConnection" name="Arcs" port_index="2">
+    <ProxyGroupDomain name="groups">
+      <Group name="sources"/>
+      <Group name="filters"/>
+    </ProxyGroupDomain>
+    <DataTypeDomain name="input_type">
+      <DataType value="vtkUnstructuredGrid"/>
+    </DataTypeDomain>
+    <InputArrayDomain name="input_scalars" number_of_components="1">
+      <Property name="Arcs" function="FieldDataSelection" />
+    </InputArrayDomain>
+    <Documentation>
+      Cells (like "Skeleton Arcs" from "TTKMergeandContourTreeFTM") with the following data
+      arrays: downNodeId: int, upNodeId: int.
+    </Documentation>
+  </InputProperty>
+
+  <StringVectorProperty
+    name="ScalarAttribute" label="Scalar Attribute" command="SetInputArrayToProcess"
+    element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+    <ArrayListDomain name="array_list" default_values="0">
+      <RequiredProperties>
+        <Property name="Domain" function="Input" />
+      </RequiredProperties>
+    </ArrayListDomain>
+    <Documentation>
+      Select the scalar attribute to consider.
+    </Documentation>
+  </StringVectorProperty>
+
+  <DoubleVectorProperty
+    name="ui_extension" label="Contour extension" command="Setui_extension"
+    number_of_elements="1" default_values="67" >
+    <DoubleRangeDomain name="range" min="0" max="100" />
+    <Documentation>
+      Extension of the contour. 0 --> only the point, 100 --> touching the nearest contour.
+    </Documentation>
+  </DoubleVectorProperty>
+
+  <DoubleVectorProperty
+    name="ui_sizeFilter" label="Size filter" command="Setui_sizeFilter"
+    number_of_elements="1" default_values="7" >
+    <DoubleRangeDomain name="range" min="0" max="10000" />
+    <Documentation>
+      Filter out small regions. 0 --> unfiltered, 10000 --> empty output.
+    </Documentation>
+  </DoubleVectorProperty>
+
+  <IntVectorProperty
+    name="ui_spherical" label="Domain is a sphere" command="Setui_spherical"
+    number_of_elements="1" default_values="0">
+    <BooleanDomain name="bool"/>
+    <Documentation>
+      Select this if both the scalar field and the points lie on a sphere and the output
+      shall lie on the same sphere.
+    </Documentation>
+  </IntVectorProperty>
+
+  <PropertyGroup panel_widget="Line" label="Input Parameters">
+    <Property name="ScalarAttribute" />
+    <Property name="ui_extension" />
+    <Property name="ui_sizeFilter" />
+    <Property name="ui_spherical" />
+  </PropertyGroup>
+
+  ${DEBUG_WIDGETS}
+
+  <OutputPort name="Contours" index="0" id="port0" />
+  <OutputPort name="Centroids" index="1" id="port1" />
+
+  <Hints><ShowInMenu category="TTK - Scalar Data" /></Hints>
+</SourceProxy></ProxyGroup></ServerManagerConfiguration>

@@ -6,4 +6,4 @@ HEADERS
   ttkJacobiSet.h
 DEPENDS
   jacobiSet
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

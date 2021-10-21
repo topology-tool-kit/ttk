@@ -7,6 +7,7 @@ if(TARGET ttkScalarFieldCriticalPoints)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkScalarFieldCriticalPoints
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

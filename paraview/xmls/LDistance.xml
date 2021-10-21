@@ -1,0 +1,117 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkLDistance"
+     class="ttkLDistance"
+     label="TTK LDistance">
+
+     <Documentation
+        long_help="TTK lDistance plugin."
+        short_help="TTK lDistance plugin.">
+          TTK lDistance plugin documentation.
+     </Documentation>
+
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars_1" number_of_components="1">
+          <Property name="Input1" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field 1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the first scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+     <StringVectorProperty
+        name="Scalar Field 2"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the second scalar field to process.
+        </Documentation>
+     </StringVectorProperty>
+
+     <StringVectorProperty
+         name="n"
+         label="p parameter"
+         command="SetDistanceType"
+         number_of_elements="1"
+         default_values="2" >
+         <Documentation>
+          Value of the parameter p for the Lp distance computation (type "inf"
+for the L-infinity distance).
+         </Documentation>
+     </StringVectorProperty>
+
+     <StringVectorProperty
+         name="name"
+         label="Output name"
+         command="SetDistanceFieldName"
+         number_of_elements="1"
+         default_values="L2-distance" panel_visibility="advanced">
+       <Documentation>
+         Name of the output distance field.
+       </Documentation>
+     </StringVectorProperty>
+
+     ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field 1" />
+        <Property name="Scalar Field 2" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="n" />
+        <Property name="name" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,19 +1,41 @@
+// VTK includes
+#include <vtkActor.h>
+#include <vtkActorCollection.h>
+#include <vtkAssemblyPath.h>
+#include <vtkCamera.h>
+#include <vtkCellArray.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkDataArray.h>
+#include <vtkDataObject.h>
+#include <vtkGeometryFilter.h>
+#include <vtkLightCollection.h>
+#include <vtkMapper.h>
+#include <vtkMath.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+#include <vtkSmartPointer.h>
+#include <vtkTransform.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkVRMLExporter.h>
+
+// base code includes
+#include <Debug.h>
+
 #include <ttkWRLExporter.h>
 
-using namespace std;
-using namespace ttk;
-
-vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
+TTKWRLEXPORTER_EXPORT vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.
 void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
 
-  {
-    ttk::Debug debugInfo;
-    stringstream msg;
-    msg << "[ttkWRLExporter] Using TTK fix for VRML export..." << endl;
-    debugInfo.dMsg(cout, msg.str(), 2);
-  }
+  ttk::Debug debugInfo;
+  debugInfo.setDebugMsgPrefix("WRLExporter");
+  debugInfo.printWrn("Using TTK fix for VRML export...");
 
   vtkSmartPointer<vtkPolyData> pd;
   vtkPointData *pntData;

@@ -6,5 +6,4 @@ HEADERS
   ttkTrackingFromPersistenceDiagrams.h
 DEPENDS
   trackingFromPersistenceDiagrams
-  bottleneckDistance
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

@@ -37,7 +37,7 @@ int ttkHarmonicField::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkHarmonicField::RequestData(vtkInformation *request,
+int ttkHarmonicField::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 
@@ -53,10 +53,10 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   this->preconditionTriangulation(*triangulation, UseCotanWeights);
 
   vtkDataArray *inputField = this->GetInputArrayToProcess(0, identifiers);
-  vtkDataArray *vertsid
-    = this->GetInputArrayInformation(1) && this->ForceConstraintIdentifiers
-        ? this->GetInputArrayToProcess(1, inputVector)
-        : identifiers->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  const auto *vertsid = this->GetIdentifierArrayPtr(
+    ForceConstraintIdentifiers, 1, ttk::VertexScalarFieldName, identifiers,
+    idSpareStorage);
 
   if(vertsid == nullptr || inputField == nullptr) {
     this->printErr("Input fields are NULL");
@@ -68,6 +68,10 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   } else if(inputField->IsA("vtkFloatArray")) {
     OutputScalarFieldType = FieldType::FLOAT;
   } else {
+    this->printErr("Filter only supports floating point scalar fields");
+    this->printErr(
+      "Please select a floating point input scalar field or convert an "
+      "existing one with TTKPointDataConverter or TTKArrayEditor");
     return -2;
   }
 
@@ -102,16 +106,14 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   switch(OutputScalarFieldType) {
     case FieldType::FLOAT:
       res = this->execute<float>(
-        *triangulation, nSources,
-        static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(vertsid)),
+        *triangulation, nSources, vertsid,
         static_cast<float *>(ttkUtils::GetVoidPointer(inputField)),
         static_cast<float *>(ttkUtils::GetVoidPointer(outputField)),
         UseCotanWeights, SolvingMethod, LogAlpha);
       break;
     case FieldType::DOUBLE:
       res = this->execute<double>(
-        *triangulation, nSources,
-        static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(vertsid)),
+        *triangulation, nSources, vertsid,
         static_cast<double *>(ttkUtils::GetVoidPointer(inputField)),
         static_cast<double *>(ttkUtils::GetVoidPointer(outputField)),
         UseCotanWeights, SolvingMethod, LogAlpha);

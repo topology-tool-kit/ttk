@@ -6,6 +6,7 @@
 #include <ttkUtils.h>
 
 // VTK includes
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkPointSet.h>
 #include <vtkTable.h>
@@ -15,13 +16,8 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkImportEmbeddingFromTable)
 
-  // transmit abort signals
-  bool ttkImportEmbeddingFromTable::needsToAbort() {
-  return GetAbortExecute();
-}
-
-int ttkImportEmbeddingFromTable::FillInputPortInformation(
-  int port, vtkInformation *info) {
+  int ttkImportEmbeddingFromTable::FillInputPortInformation(
+    int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
@@ -43,21 +39,8 @@ int ttkImportEmbeddingFromTable::FillOutputPortInformation(
   return 0;
 }
 
-// transmit progress status
-int ttkImportEmbeddingFromTable::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << progress * 100 << "% processed....";
-    printMsg(msg.str(), debug::Priority::VERBOSE);
-  }
-
-  UpdateProgress(progress);
-  return 0;
-}
-
 template <typename VTK_TT>
-inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
+inline void setPointFromData(const vtkSmartPointer<vtkPoints> &points,
                              VTK_TT *xdata,
                              VTK_TT *ydata,
                              VTK_TT *zdata,
@@ -72,7 +55,7 @@ inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
 }
 
 int ttkImportEmbeddingFromTable::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

@@ -1,0 +1,50 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkComponentSize"
+     class="ttkComponentSize"
+     label="TTK ComponentSize">
+     <Documentation
+        long_help="TTK plugin that computes the connected components of a
+data-set, and that computes their size (number of vertices, number of cells,
+etc.)."
+        short_help="TTK plugin that computes the connected components of a
+data-set, and that computes their size (number of vertices, number of cells,
+etc.).">
+          This plugin computes the connected component of a point-set
+data-set and computes their size (number of vertices, number of cells, etc).
+The size information is attached on the output, either as point or cell data.
+The identifier of each connected component is also attached to the geometry
+as point or cell data. This plugin is useful when used in conjunction with
+some thresholding, to only display the largest connected components of a
+data-set.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input data-set.
+        </Documentation>
+      </InputProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

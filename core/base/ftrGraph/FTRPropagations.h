@@ -59,7 +59,7 @@ namespace ttk {
 
       // Create a new propagation starting at leaf
       Propagation *newPropagation(const idVertex leaf,
-                                  VertCompFN comp,
+                                  const VertCompFN &comp,
                                   const bool fromMin) {
         Propagation *localProp = new Propagation(leaf, comp, fromMin);
         const auto propId = propagations_.getNext();

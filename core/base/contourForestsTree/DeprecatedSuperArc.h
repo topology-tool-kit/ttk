@@ -282,10 +282,10 @@ namespace ttk {
       // append regular nodes :
 
       // From array : alloc should be already done
-      inline void
-        appendVertLists(std::list<std::pair<SimplexId, bool> *> vertLists,
-                        std::list<SimplexId> vertSizes,
-                        const SimplexId &totalSize) {
+      inline void appendVertLists(
+        const std::list<std::pair<SimplexId, bool> *> &vertLists,
+        std::list<SimplexId> vertSizes,
+        const SimplexId &totalSize) {
         // size local
         SimplexId newSize = sizeVertList_;
         if(newSize == -1)

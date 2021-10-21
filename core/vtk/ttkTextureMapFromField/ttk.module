@@ -6,4 +6,4 @@ HEADERS
   ttkTextureMapFromField.h
 DEPENDS
   common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

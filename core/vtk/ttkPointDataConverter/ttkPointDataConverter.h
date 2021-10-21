@@ -18,40 +18,48 @@
 /// \sa vtkCellDataConverter
 ///
 
-#ifndef _TTK_POINTDATACONVERTER_H
-#define _TTK_POINTDATACONVERTER_H
-
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
+#pragma once
 
 // VTK Module
 #include <ttkPointDataConverterModule.h>
 
 // ttk code includes
-#include <Wrapper.h>
+#include <ttkAlgorithm.h>
 
-#include <limits>
+class TTKPOINTDATACONVERTER_EXPORT ttkPointDataConverter : public ttkAlgorithm {
 
-class TTKPOINTDATACONVERTER_EXPORT ttkPointDataConverter
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+public:
+  static ttkPointDataConverter *New();
 
-  enum SupportedType {
+  vtkTypeMacro(ttkPointDataConverter, ttkAlgorithm);
+
+  void SetOutputType(int outputType) {
+    OutputType = static_cast<SupportedType>(outputType);
+    Modified();
+  }
+  int GetOutputType() {
+    return static_cast<int>(OutputType);
+  }
+
+  vtkGetMacro(UseNormalization, bool);
+  vtkSetMacro(UseNormalization, bool);
+
+protected:
+  ttkPointDataConverter();
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+
+  template <typename InputFieldType,
+            typename OutputFieldType,
+            typename OutputVTKArrayType>
+  int convert(vtkDataArray *inputData, vtkDataSet *output);
+
+private:
+  enum class SupportedType {
     Char = 0,
     Double,
     Float,
@@ -62,74 +70,6 @@ class TTKPOINTDATACONVERTER_EXPORT ttkPointDataConverter
     UnsignedChar,
   };
 
-public:
-  static ttkPointDataConverter *New();
-
-  vtkTypeMacro(ttkPointDataConverter, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  void SetOutputType(int outputType) {
-    OutputType = outputType;
-    Modified();
-  }
-  vtkGetMacro(OutputType, int);
-
-  void SetUseNormalization(bool onOff) {
-    UseNormalization = onOff;
-    Modified();
-  }
-  vtkGetMacro(UseNormalization, int);
-
-protected:
-  ttkPointDataConverter();
-  ~ttkPointDataConverter() override;
-
-  int RequestData(vtkInformation *request,
-                  vtkInformationVector **inputVector,
-                  vtkInformationVector *outputVector) override;
-
-  template <typename A, typename B, typename C>
-  int convert(vtkDataArray *inputData, vtkDataSet *output);
-
-private:
-  bool UseAllCores;
-  int ThreadNumber;
-  std::string ScalarField;
-  int OutputType;
-  bool UseNormalization;
-
-  // base code features
-  int doIt(vtkDataSet *input, vtkDataSet *output);
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
+  SupportedType OutputType{SupportedType::Char};
+  bool UseNormalization{false};
 };
-
-#endif // _TTK_POINTDATACONVERTER_H

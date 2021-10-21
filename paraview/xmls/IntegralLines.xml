@@ -1,0 +1,192 @@
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkIntegralLines"
+      class="ttkIntegralLines"
+      label="TTK IntegralLines">
+      <Documentation
+        long_help="TTK plugin for the computation of edge-based integral
+lines of the gradient of an input scalar field."
+        short_help="TTK plugin for the computation of edge-based integral
+lines of the gradient of an input scalar field.">
+
+The filter takes on its input a scalar field attached as point data to an
+input geometry (either 2D or 3D, either regular grids or triangulations)
+and computes the forward or backward integral lines along the edges of the
+input mesh, given a list of input sources.
+
+The sources are specified with a vtkPointSet on which is attached as point
+data a scalar field that represent the vertex identifiers of the sources in
+the input geometry (use the Identifiers plugin prior to the selection of the
+sources if necessary to create such an identifier field).
+
+      </Documentation>
+
+      <InputProperty
+        name="Domain"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain attribute_type="point" name="input_array" number_of_components="1" optional="0"/>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Seeds"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="seeds_scalars" number_of_components="1">
+          <Property name="Seeds" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          vtkPointSet that represent the constraints of the topological simplification.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="ScalarFieldNew"
+                            label="Scalar Field"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
+                            number_of_elements="5"
+                            default_values="0">
+        <ArrayListDomain
+          name="array_list"
+          input_domain_name="input_array"
+          default_values="0">
+          <RequiredProperties>
+              <Property name="Domain" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="Direction"
+        label="Direction"
+        command="SetDirection"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Forward" />
+          <Entry value="1" text="Backward" />
+        </EnumerationDomain>
+        <Documentation>
+
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+        <StringVectorProperty name="InputVertexScalarField"
+                              label="Vertex identifier field"
+                              command="SetInputArrayToProcess"
+                              element_types="0 0 0 0 2"
+                              number_of_elements="5"
+                              default_values="2"
+                              panel_visibility="advanced">
+        <ArrayListDomain
+          name="array_list"
+          input_domain_name="seeds_scalars"
+          default_values="0"
+          >
+          <RequiredProperties>
+              <Property name="Seeds" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifier scalar field in the sources.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputOffsetScalarField"
+        label="Force Input Offset Field"
+        command="SetForceInputOffsetScalarField"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+        <StringVectorProperty name="OffsetScalarField"
+                              label="Input Offset Field"
+                              command="SetInputArrayToProcess"
+                              element_types="0 0 0 0 2"
+                              number_of_elements="5"
+                              default_values="1"
+                              panel_visibility="advanced">
+        <ArrayListDomain
+          name="array_list"
+          input_domain_name="input_array"
+          default_values="0"
+          >
+          <RequiredProperties>
+              <Property name="Domain" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (to disambiguate flat
+plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup label="Input options">
+        <Property name="ScalarFieldNew" />
+        <Property name="Direction" />
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="InputVertexScalarField" />
+        <Property name="ForceInputOffsetScalarField" />
+        <Property name="OffsetScalarField" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

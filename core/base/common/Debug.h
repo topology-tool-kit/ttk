@@ -1,6 +1,6 @@
 /// \namespace ttk The Topology ToolKit
 
-/// \mainpage TTK 0.9.9 Documentation
+/// \mainpage TTK 1.0 Documentation
 /// \image html "../img/splash.png"
 /// Useful links:
 ///   - TTK Home:
@@ -20,10 +20,10 @@
 /// and local scope, time and memory measurements, etc.
 /// Each ttk class should inheritate from it.
 
-#ifndef _DEBUG_H
-#define _DEBUG_H
+#pragma once
 
 #include <BaseClass.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <fstream>
@@ -34,9 +34,9 @@
 
 namespace ttk {
 
-  extern bool welcomeMsg_;
-  extern bool goodbyeMsg_;
-  extern int globalDebugLevel_;
+  COMMON_EXPORTS extern bool welcomeMsg_;
+  COMMON_EXPORTS extern bool goodbyeMsg_;
+  COMMON_EXPORTS extern int globalDebugLevel_;
 
   namespace debug {
     enum class Priority : int {
@@ -82,7 +82,7 @@ namespace ttk {
     } // namespace output
 
     const int LINEWIDTH = 80;
-  }; // namespace debug
+  } // namespace debug
 
   class Debug : public BaseClass {
 
@@ -92,42 +92,7 @@ namespace ttk {
 
     virtual ~Debug();
 
-    enum debugPriority {
-      fatalMsg, // 0
-      timeMsg, // 1
-      memoryMsg, // 2
-      infoMsg, // 3
-      detailedInfoMsg, // 4
-      advancedInfoMsg // 5
-    };
-
     // 2) functions
-    /// Send a debug message to a stream with a priority debugLevel (lower
-    /// means higher priority).
-    /// If the global debug level for the program is set to 0, the program
-    /// should be completely quiet. So the '0' priority should only be
-    /// reserved for fatal errors.
-    /// \param stream Output stream.
-    /// \param msg %Debug message (can contain std::endl characters).
-    /// \param debugLevel Priority of the message.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa msg(), err()
-    virtual int dMsg(std::ostream &stream,
-                     std::string msg,
-                     const int &debugLevel = infoMsg) const;
-
-    /// Wrapper for dMsg() that sends a debug message to the standard error
-    /// output stream.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa dMsg(), msg()
-    int err(const std::string msg, const int &debugLevel = fatalMsg) const;
-
-    /// Wrapper for dMsg() that sends a debug message to the standard
-    /// output stream.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa dMsg(), msg()
-    int msg(const char *msg, const int &debugLevel = infoMsg) const;
-
     /// Set the debug level of a particular object. The global variable
     /// globalDebugLevel_ will over-ride this setting if it has a lower value.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -140,7 +105,6 @@ namespace ttk {
     /// number of threads, etc.) from a wrapper to a base object.
     /// \param wrapper Pointer to the wrapping object.
     /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa ttkBlank
     virtual int setWrapper(const Wrapper *wrapper);
 
     // =========================================================================
@@ -401,7 +365,7 @@ namespace ttk {
   protected:
     mutable int debugLevel_;
 
-    static debug::LineMode lastLineMode;
+    COMMON_EXPORTS static debug::LineMode lastLineMode;
 
     std::string debugMsgPrefix_;
 
@@ -443,6 +407,10 @@ namespace ttk {
                                 const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
 
+      if((this->debugLevel_ < (int)priority)
+         && (globalDebugLevel_ < (int)priority))
+        return 0;
+
       // on error or warning print end of line
       if((int)priority < 2 && this->lastLineMode == debug::LineMode::REPLACE)
         stream << "\n";
@@ -483,6 +451,7 @@ namespace ttk {
 } // namespace ttk
 
 #include <Os.h>
+#include <Timer.h>
 
 namespace ttk {
   /// \brief Legacy backward compatibility
@@ -491,5 +460,6 @@ namespace ttk {
   class DebugMemory : public Memory {};
 } // namespace ttk
 
-#endif
+#include <OrderDisambiguation.h>
+
 /// @}

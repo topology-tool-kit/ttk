@@ -15,10 +15,6 @@
 // base code includes
 #include <AbstractTriangulation.h>
 
-#ifdef _WIN32
-#include <ciso646>
-#endif
-
 namespace ttk {
 
   class ImplicitTriangulation final : public AbstractTriangulation {
@@ -26,6 +22,16 @@ namespace ttk {
   public:
     ImplicitTriangulation();
     ~ImplicitTriangulation();
+
+    int getGridDimensions(std::vector<int> &dimensions) override {
+
+      dimensions.resize(3);
+      dimensions[0] = dimensions_[0];
+      dimensions[1] = dimensions_[1];
+      dimensions[2] = dimensions_[2];
+
+      return 0;
+    }
 
     int getCellEdgeInternal(const SimplexId &cellId,
                             const int &id,
@@ -55,7 +61,7 @@ namespace ttk {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
-    };
+    }
 
     const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() override;
@@ -70,7 +76,7 @@ namespace ttk {
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
-    };
+    }
 
     int
       TTK_TRIANGULATION_INTERNAL(getEdgeLink)(const SimplexId &edgeId,
@@ -108,24 +114,24 @@ namespace ttk {
                               const int &localVertexId,
                               SimplexId &vertexId) const override;
 
-    const std::vector<std::pair<SimplexId, SimplexId>> *
+    const std::vector<std::array<SimplexId, 2>> *
       TTK_TRIANGULATION_INTERNAL(getEdges)() override;
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
       return cellNumber_;
-    };
+    }
 
     SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
-    };
+    }
 
     SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
-    };
+    }
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const override {
       return vertexNumber_;
-    };
+    }
 
     int getTetrahedronEdge(const SimplexId &tetId,
                            const int &id,
@@ -203,7 +209,7 @@ namespace ttk {
                                   const int &localVertexId,
                                   SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *
+    const std::vector<std::array<SimplexId, 3>> *
       TTK_TRIANGULATION_INTERNAL(getTriangles)() override;
 
     int getVertexEdgeInternal(const SimplexId &vertexId,
@@ -326,9 +332,9 @@ namespace ttk {
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;
 
-    bool isEmptyInternal() const {
+    inline bool isEmpty() const override {
       return !vertexNumber_;
-    };
+    }
 
     bool TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
       const SimplexId &triangleId) const override;

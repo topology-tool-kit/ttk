@@ -25,6 +25,7 @@ int ttkPersistenceDiagramDistanceMatrix::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
     return 1;
   }
   return 0;
@@ -49,16 +50,30 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   // Get input data
   std::vector<vtkUnstructuredGrid *> inputDiagrams;
 
-  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
+  auto nBlocks = inputVector[0]->GetNumberOfInformationObjects();
+  std::vector<vtkMultiBlockDataSet *> blocks(nBlocks);
 
-  if(blocks != nullptr) {
-    inputDiagrams.resize(blocks->GetNumberOfBlocks());
-    for(size_t i = 0; i < inputDiagrams.size(); ++i) {
-      inputDiagrams[i] = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
+  if(nBlocks > 2) {
+    this->printWrn("Only dealing with the first two MultiBlockDataSets");
+    nBlocks = 2;
+  }
+
+  // number of diagrams per input block
+  std::array<size_t, 2> nInputs{0, 0};
+
+  for(int i = 0; i < nBlocks; ++i) {
+    blocks[i] = vtkMultiBlockDataSet::GetData(inputVector[0], i);
+    if(blocks[i] != nullptr) {
+      nInputs[i] = blocks[i]->GetNumberOfBlocks();
+      for(size_t j = 0; j < nInputs[i]; ++j) {
+        inputDiagrams.emplace_back(
+          vtkUnstructuredGrid::SafeDownCast(blocks[i]->GetBlock(j)));
+      }
     }
   }
 
-  const int numInputs = inputDiagrams.size();
+  // total number of diagrams
+  const int nDiags = inputDiagrams.size();
 
   // Sanity check
   for(const auto vtu : inputDiagrams) {
@@ -71,18 +86,22 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   // Set output
   auto diagramsDistTable = vtkTable::GetData(outputVector);
 
-  std::vector<std::vector<ttk::DiagramTuple>> intermediateDiagrams(numInputs);
+  std::vector<ttk::Diagram> intermediateDiagrams(nDiags);
 
   double max_dimension_total = 0.0;
-  for(int i = 0; i < numInputs; i++) {
+  for(int i = 0; i < nDiags; i++) {
     double max_dimension
       = getPersistenceDiagram(intermediateDiagrams[i], inputDiagrams[i]);
+    if(max_dimension < 0.0) {
+      this->printErr("Could not read Persistence Diagram");
+      return 0;
+    }
     if(max_dimension_total < max_dimension) {
       max_dimension_total = max_dimension;
     }
   }
 
-  const auto diagramsDistMat = this->execute(intermediateDiagrams);
+  const auto diagramsDistMat = this->execute(intermediateDiagrams, nInputs);
 
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad
@@ -93,13 +112,15 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
         colName.append(zer).append(cur);
       };
 
+  const auto nTuples = nInputs[1] == 0 ? nInputs[0] : nInputs[1];
+
   // copy diagrams distance matrix to output
   for(size_t i = 0; i < diagramsDistMat.size(); ++i) {
     std::string name{"Diagram"};
     zeroPad(name, diagramsDistMat.size(), i);
 
     vtkNew<vtkDoubleArray> col{};
-    col->SetNumberOfTuples(numInputs);
+    col->SetNumberOfTuples(nTuples);
     col->SetName(name.c_str());
     for(size_t j = 0; j < diagramsDistMat[i].size(); ++j) {
       col->SetTuple1(j, diagramsDistMat[i][j]);
@@ -110,8 +131,8 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   // aggregate input field data
   vtkNew<vtkFieldData> fd{};
   fd->CopyStructure(inputDiagrams[0]->GetFieldData());
-  fd->SetNumberOfTuples(inputDiagrams.size());
-  for(size_t i = 0; i < inputDiagrams.size(); ++i) {
+  fd->SetNumberOfTuples(nTuples);
+  for(size_t i = 0; i < nTuples; ++i) {
     fd->SetTuple(i, 0, inputDiagrams[i]->GetFieldData());
   }
 
@@ -124,18 +145,16 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 }
 
 double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
-  std::vector<ttk::DiagramTuple> &diagram,
-  vtkUnstructuredGrid *CTPersistenceDiagram_) {
+  ttk::Diagram &diagram, vtkUnstructuredGrid *CTPersistenceDiagram_) {
 
   const auto pd = CTPersistenceDiagram_->GetPointData();
   const auto cd = CTPersistenceDiagram_->GetCellData();
   const auto points = CTPersistenceDiagram_->GetPoints();
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(pd == nullptr || points == nullptr) {
-    return -2;
+  if(pd == nullptr || cd == nullptr || points == nullptr) {
+    this->printErr("Missing Diagram PointData, CellData or Points");
+    return -1.0;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   const auto vertexIdentifierScalars
     = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
@@ -154,12 +173,10 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
 
   const bool embed = birthScalars != nullptr && deathScalars != nullptr;
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(!embed && critCoordinates == nullptr) {
-    // missing data
-    return -2;
+    this->printErr("Malformed Persistence Diagram");
+    return -2.0;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   int pairingsSize = (int)pairIdentifierScalars->GetNumberOfTuples();
   // FIX : no more missed pairs
@@ -169,20 +186,23 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
       pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
+  // If diagram has the diagonal (we assume it is last)
+  if(*pairIdentifierScalars->GetTuple(pairingsSize - 1) == -1)
+    pairingsSize -= 1;
+
   if(pairingsSize < 1 || !vertexIdentifierScalars || !pairIdentifierScalars
      || !nodeTypeScalars || !persistenceScalars || !extremumIndexScalars
      || !points) {
-    return -2;
+    this->printErr("Missing Persistence Diagram data array");
+    return -3.0;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   diagram.resize(pairingsSize + 1);
   int nbNonCompact = 0;
   double max_dimension = 0;
 
   // skip diagonal cell (corresponding points already dealt with)
-  for(int i = 0; i < pairingsSize - 1; ++i) {
+  for(int i = 0; i < pairingsSize; ++i) {
 
     int vertexId1 = vertexIdentifierScalars->GetValue(2 * i);
     int vertexId2 = vertexIdentifierScalars->GetValue(2 * i + 1);

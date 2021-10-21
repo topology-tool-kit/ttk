@@ -44,6 +44,13 @@
 /// Thomas Banchoff \n
 /// American Mathematical Monthly, 1970.
 ///
+///  Progressive Approach used by default
+///
+/// \b Related \b publication \n
+/// "A Progressive Approach to Scalar Field Topology" \n
+/// Jules Vidal, Pierre Guillou, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
 /// \sa ttk::ScalarFieldCriticalPoints
 ///
 #pragma once
@@ -53,6 +60,7 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 // ttk baseCode includes
 #include <ScalarFieldCriticalPoints.h>
@@ -82,6 +90,21 @@ public:
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
+  vtkGetMacro(StartingResolutionLevel, int);
+  vtkSetMacro(StartingResolutionLevel, int);
+
+  vtkGetMacro(StoppingResolutionLevel, int);
+  vtkSetMacro(StoppingResolutionLevel, int);
+
+  vtkGetMacro(IsResumable, bool);
+  vtkSetMacro(IsResumable, bool);
+
+  vtkGetMacro(TimeLimit, double);
+  vtkSetMacro(TimeLimit, double);
+
 protected:
   ttkScalarFieldCriticalPoints();
 
@@ -102,5 +125,4 @@ private:
   std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>>
     vertexLinkEdgeList_;
   std::vector<std::pair<ttk::SimplexId, char>> criticalPoints_;
-  std::vector<ttk::SimplexId> sosOffsets_;
 };

@@ -25,7 +25,13 @@ namespace ttk {
      */
     class FTMTreePP : public FTMTree {
     private:
-      std::vector<AtomicUF *> nodesUF_;
+      std::vector<AtomicUF> nodesUF_;
+
+      // Custom tree option
+      ftm::FTMTree_MT *customTree;
+      std::vector<idNode> customTreeLeaves;
+      bool useCustomTree = false;
+      bool isJt;
 
     public:
       FTMTreePP();
@@ -35,6 +41,11 @@ namespace ttk {
       void computePersistencePairs(
         std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
         const bool jt);
+
+      void setCustomTree(ftm::FTMTree_MT *cTree) {
+        customTree = cTree;
+        useCustomTree = true;
+      }
 
     protected:
       template <typename scalarType>
@@ -50,22 +61,27 @@ namespace ttk {
       void addPendingNode(const idNode parentNode, const idNode toAdd) {
         // Trick, we use the arc list to maintaint nodes
         // coming to this UF.
-        nodesUF_[parentNode]->find()->addArcToClose(toAdd);
+        nodesUF_[parentNode].find()->addArcToClose(toAdd);
       }
 
       idNode countPendingNode(const idNode current) {
-        return nodesUF_[current]->find()->getOpenedArcs().size();
+        return nodesUF_[current].find()->getOpenedArcs().size();
       }
 
       template <typename scalarType>
       SimplexId getMostPersistVert(const idNode current,
                                    ftm::FTMTree_MT *tree) {
         SimplexId minVert = tree->getNode(current)->getVertexId();
-        AtomicUF *uf = nodesUF_[current]->find();
+        scalarType minVal = tree->getValue<scalarType>(minVert);
+        AtomicUF *uf = nodesUF_[current].find();
 
         for(const auto nodeid : uf->getOpenedArcs()) {
-          const SimplexId vtmp = nodesUF_[nodeid]->find()->getExtrema();
-          if(tree->compLower(vtmp, minVert)) {
+          const SimplexId vtmp = nodesUF_[nodeid].find()->getExtrema();
+          const scalarType tmpVal = tree->getValue<scalarType>(vtmp);
+          if((useCustomTree
+              and ((!isJt and tmpVal > minVal) or (isJt and tmpVal < minVal)))
+             or (not useCustomTree and tree->compLower(vtmp, minVert))) {
+            minVal = tmpVal;
             minVert = vtmp;
           }
         }
@@ -74,7 +90,7 @@ namespace ttk {
       }
 
       void clearPendingNodes(const idNode current) {
-        nodesUF_[current]->find()->clearOpenedArcs();
+        nodesUF_[current].find()->clearOpenedArcs();
       }
 
       template <typename scalarType>
@@ -83,16 +99,21 @@ namespace ttk {
         std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
         ftm::FTMTree_MT *tree,
         const SimplexId mp) {
-        AtomicUF *uf = nodesUF_[current]->find();
+        AtomicUF *uf = nodesUF_[current].find();
         const SimplexId curVert = tree->getNode(current)->getVertexId();
-        const scalarType curVal = getValue<scalarType>(curVert);
+        const scalarType curVal = (not useCustomTree)
+                                    ? getValue<scalarType>(curVert)
+                                    : tree->getValue<scalarType>(curVert);
 
         for(const auto nodeid : uf->getOpenedArcs()) {
-          const SimplexId tmpVert = nodesUF_[nodeid]->find()->getExtrema();
-          AtomicUF::makeUnion(uf, nodesUF_[nodeid]);
+          const SimplexId tmpVert = nodesUF_[nodeid].find()->getExtrema();
+          AtomicUF::makeUnion(uf, &nodesUF_[nodeid]);
           if(tmpVert != mp) {
-            const scalarType tmpVal = getValue<scalarType>(tmpVert);
-            if(scalars_->isLower(tmpVert, curVert)) {
+            const scalarType tmpVal = (not useCustomTree)
+                                        ? getValue<scalarType>(tmpVert)
+                                        : tree->getValue<scalarType>(tmpVert);
+            if((useCustomTree and tmpVal < curVal)
+               or (not useCustomTree and scalars_->isLower(tmpVert, curVert))) {
               pairs.emplace_back(tmpVert, curVert, curVal - tmpVal);
             } else {
               pairs.emplace_back(tmpVert, curVert, tmpVal - curVal);
@@ -108,27 +129,31 @@ template <typename scalarType>
 void ttk::ftm::FTMTreePP::computePersistencePairs(
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
   const bool jt) {
-  ftm::FTMTree_MT *tree = jt ? getJoinTree() : getSplitTree();
+  ftm::FTMTree_MT *tree;
+  idNode nbLeaves;
 
-  nodesUF_.clear();
+  if(useCustomTree) {
+    tree = customTree;
+    tree->getLeavesFromTree(customTreeLeaves);
+    nbLeaves = customTreeLeaves.size();
+    isJt = jt;
+  } else {
+    tree = jt ? getJoinTree() : getSplitTree();
+    nbLeaves = tree->getNumberOfLeaves();
+  }
+
   pairs.clear();
-  nodesUF_.resize(tree->getNumberOfNodes(), nullptr);
-  pairs.reserve(tree->getNumberOfLeaves());
+  pairs.reserve(nbLeaves);
 
   const auto nbNodes = tree->getNumberOfNodes();
+  nodesUF_.resize(nbNodes);
+
   for(idNode nid = 0; nid < nbNodes; ++nid) {
-    nodesUF_[nid] = new AtomicUF(tree->getNode(nid)->getVertexId());
+    nodesUF_[nid] = AtomicUF{tree->getNode(nid)->getVertexId()};
   }
 
   computePairs<scalarType>(tree, pairs);
-
   sortPairs<scalarType>(tree, pairs);
-
-  // destruct
-  for(AtomicUF *uf : nodesUF_) {
-    delete uf;
-    uf = nullptr;
-  }
 }
 
 template <typename scalarType>
@@ -143,7 +168,7 @@ void ttk::ftm::FTMTreePP::computePairs(
   ::std::queue<idNode> toSee;
 
   // start at the leaves
-  auto &vectLeaves = tree->getLeaves();
+  auto &vectLeaves = (not useCustomTree) ? tree->getLeaves() : customTreeLeaves;
   for(auto nid : vectLeaves) {
     toSee.emplace(nid);
   }
@@ -168,7 +193,7 @@ void ttk::ftm::FTMTreePP::computePairs(
       const SimplexId mostPersist
         = getMostPersistVert<scalarType>(parentNode, tree);
       createPairs<scalarType>(parentNode, pairs, tree, mostPersist);
-      nodesUF_[parentNode]->find()->setExtrema(mostPersist);
+      nodesUF_[parentNode].find()->setExtrema(mostPersist);
       toSee.push(parentNode);
     }
   }
@@ -176,7 +201,7 @@ void ttk::ftm::FTMTreePP::computePairs(
 
 template <typename scalarType>
 void ttk::ftm::FTMTreePP::sortPairs(
-  ftm::FTMTree_MT *tree,
+  ftm::FTMTree_MT *ttkNotUsed(tree),
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs) {
   auto comp = [&](const std::tuple<SimplexId, SimplexId, scalarType> a,
                   const std::tuple<SimplexId, SimplexId, scalarType> b) {

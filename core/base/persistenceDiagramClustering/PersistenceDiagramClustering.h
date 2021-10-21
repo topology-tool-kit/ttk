@@ -56,9 +56,9 @@ namespace ttk {
   public:
     PersistenceDiagramClustering() {
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
-    };
+    }
 
-    ~PersistenceDiagramClustering(){};
+    ~PersistenceDiagramClustering() = default;
 
     template <class dataType>
     std::vector<int> execute(
@@ -66,15 +66,8 @@ namespace ttk {
       std::vector<std::vector<diagramTuple>> &centroids,
       std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
 
-    inline int setNumberOfInputs(int numberOfInputs) {
-      numberOfInputs_ = numberOfInputs;
-      // 			if(inputData_)
-      // 			free(inputData_);
-      // 			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
-      // 			for(int i=0 ; i<numberOfInputs ; i++){
-      // 			inputData_[i] = NULL;
-      // 			}
-      return 0;
+    std::array<double, 3> getDistances() const {
+      return this->distances;
     }
 
     template <class dataType>
@@ -86,12 +79,14 @@ namespace ttk {
     // Critical pairs used for clustering
     // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
 
+    // distance results per pair type
+    std::array<double, 3> distances{};
+
     int DistanceWritingOptions{0};
     int PairTypeClustering{-1};
     bool Deterministic{true};
     int WassersteinMetric{2};
 
-    int numberOfInputs_{};
     bool UseProgressive{true};
 
     bool ForceUseOfAlgorithm{false};
@@ -119,6 +114,7 @@ namespace ttk {
     std::vector<std::vector<diagramTuple>> &final_centroids,
     std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
 
+    const int numberOfInputs_ = intermediateDiagrams.size();
     Timer tm;
     {
       printMsg("Clustering " + std::to_string(numberOfInputs_) + " diagrams in "
@@ -228,6 +224,8 @@ namespace ttk {
     inv_clustering
       = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
+
+    this->distances = KMeans.getDistances();
 
     /// Reconstruct matchings
     //

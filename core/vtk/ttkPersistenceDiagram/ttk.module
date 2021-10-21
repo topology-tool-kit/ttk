@@ -6,4 +6,4 @@ HEADERS
   ttkPersistenceDiagram.h
 DEPENDS
   persistenceDiagram
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

@@ -1,0 +1,28 @@
+NAME
+  ttkCinemaDarkroom
+SOURCES
+  ttkCinemaDarkroomCamera.cpp
+  ttkCinemaDarkroomShader.cpp
+  ttkCinemaDarkroomIBS.cpp
+  ttkCinemaDarkroomFXAA.cpp
+  ttkCinemaDarkroomSSAO.cpp
+  ttkCinemaDarkroomSSSAO.cpp
+  ttkCinemaDarkroomSSDoF.cpp
+  ttkCinemaDarkroomCompositing.cpp
+  ttkCinemaDarkroomColorMapping.cpp
+  ttkCinemaDarkroomNoise.cpp
+  ttkCinemaDarkroomColorMaps.cpp
+HEADERS
+  ttkCinemaDarkroomCamera.h
+  ttkCinemaDarkroomShader.h
+  ttkCinemaDarkroomIBS.h
+  ttkCinemaDarkroomFXAA.h
+  ttkCinemaDarkroomSSAO.h
+  ttkCinemaDarkroomSSSAO.h
+  ttkCinemaDarkroomSSDoF.h
+  ttkCinemaDarkroomCompositing.h
+  ttkCinemaDarkroomColorMapping.h
+  ttkCinemaDarkroomNoise.h
+DEPENDS
+  ttkAlgorithm
+  Boost::boost

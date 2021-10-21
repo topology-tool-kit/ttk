@@ -22,7 +22,6 @@ mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 ttk_add_base_library(ftrGraph
   SOURCES
     Graph.cpp
-    Mesh.cpp
     FTRSegmentation.cpp
   HEADERS
     FTRAtomicUF.h
@@ -50,7 +49,6 @@ ttk_add_base_library(ftrGraph
     triangulation
     scalarFieldCriticalPoints
     Boost::boost
-    Boost::system
     ${profiler_lib}
     )
 

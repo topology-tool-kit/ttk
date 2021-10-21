@@ -2,7 +2,6 @@
 
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
-#include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkInformation.h>
@@ -52,7 +51,7 @@ void ttkPointSetToCurve::dispatch(
   }
 }
 
-int ttkPointSetToCurve::RequestData(vtkInformation *request,
+int ttkPointSetToCurve::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   const auto input = vtkPointSet::GetData(inputVector[0]);
@@ -77,8 +76,9 @@ int ttkPointSetToCurve::RequestData(vtkInformation *request,
   std::vector<std::pair<vtkIdType, double>> orderedValues{};
 
   switch(oa->GetDataType()) {
-    vtkTemplateMacro(dispatch(
-      orderedValues, static_cast<VTK_TT *>(oa->GetVoidPointer(0)), nvalues));
+    vtkTemplateMacro(
+      dispatch(orderedValues,
+               static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(oa)), nvalues));
   }
 
   // compare two pairs of index/value according to their values

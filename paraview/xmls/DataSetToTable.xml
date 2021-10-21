@@ -1,0 +1,58 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkDataSetToTable"
+      class="ttkDataSetToTable"
+      label="TTK DataSetToTable">
+      <Documentation
+        long_help="TTK fieldSelector plugin."
+        short_help="TTK fieldSelector plugin.">
+        TTK fieldSelector plugin documentation.
+      </Documentation>
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars"
+          attribute_type="point">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="DataAssociation"
+        command="SetDataAssociation"
+        number_of_elements="1"
+        default_values="1">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Point"/>
+          <Entry value="1" text="Cell"/>
+          <Entry value="2" text="Field"/>
+        </EnumerationDomain>
+        <Documentation>
+          Set the input data association (point, cell, or field).
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

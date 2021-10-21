@@ -1,0 +1,124 @@
+<IntVectorProperty
+name="DeleteMultiPersPairs"
+command="SetDeleteMultiPersPairs"
+label="Delete Multi Persistence Pairs"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Documentation>
+    Delete persistence pairs for which the saddle point is involved in more than one pair.
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="Epsilon1UseFarthestSaddle"
+command="SetEpsilon1UseFarthestSaddle"
+label="Epsilon1 Use Farthest Saddle"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Documentation>
+    
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
+<DoubleVectorProperty
+name="EpsilonTree1"
+command="SetEpsilonTree1"
+label="Epsilon 1 (%)"
+number_of_elements="1"
+default_values="5">
+  <Documentation>
+    Merge saddle points (in a bottom-up manner) having their difference in function value below epsilon times the biggest difference in function value. No effect for epsilon = 0.
+  </Documentation>
+  <DoubleRangeDomain name="range" min="0" max="100" />
+</DoubleVectorProperty>   
+
+<DoubleVectorProperty
+name="Epsilon2Tree1"
+command="SetEpsilon2Tree1"
+label="Epsilon 2 (%)"
+number_of_elements="1"
+default_values="95"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="or">
+      <Expression type="and">
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="BranchDecomposition"
+                                value="1" />
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="Backend"
+                                value="2" />
+      </Expression>
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="0" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
+  <Documentation>
+    Given a branch decomposition, ascend a pair (by making it children of the parent of its parent) if the ratio between its persistence and the persistence of its parent is above epsilon2. A high value will ascend only pairs having a close persistence to their parent, more epsilon2 is low more the pairs having a distant persistence to their parent will also be ascended. No effect for epsilon2 = 100.
+  </Documentation>
+  <DoubleRangeDomain name="range" min="0" max="100" />
+</DoubleVectorProperty>   
+
+<DoubleVectorProperty
+name="Epsilon3Tree1"
+command="SetEpsilon3Tree1"
+label="Epsilon 3 (%)"
+number_of_elements="1"
+default_values="90"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="or">
+      <Expression type="and">
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="BranchDecomposition"
+                                value="1" />
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="Backend"
+                                value="2" />
+      </Expression>
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="0" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
+  <Documentation>
+    Will apply the processing of Epsilon2 only for the pairs having a ratio between their persistence and the maximum persistence inferior to epsilon3. A low value will apply the processing of Epsilon2 only to the small persistence pairs, more epsilon3 is high more the pairs having a high persistence will also be processed. No effect for epsilon3 = 100.
+  </Documentation>
+  <DoubleRangeDomain name="range" min="0" max="100" />
+</DoubleVectorProperty>
+
+<DoubleVectorProperty
+name="PersistenceThreshold"
+command="SetPersistenceThreshold"
+label="Persistence Threshold (%)"
+number_of_elements="1"
+default_values="0">
+  <Documentation>
+    Delete persistence pairs having a persistence lower than this threshold (relative to the highest persistence).
+  </Documentation>
+  <DoubleRangeDomain name="range" min="0" max="100" />
+</DoubleVectorProperty>
+
+<PropertyGroup panel_widget="Line" label="Input options">
+  <Property name="DeleteMultiPersPairs"/>
+  <Property name="Epsilon1UseFarthestSaddle"/>
+  <Property name="EpsilonTree1"/>
+  <Property name="Epsilon2Tree1"/>
+  <Property name="Epsilon3Tree1"/>
+  <Property name="PersistenceThreshold"/>
+</PropertyGroup>

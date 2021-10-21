@@ -39,7 +39,7 @@ int ttkStringArrayConverter::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkStringArrayConverter::RequestData(vtkInformation *request,
+int ttkStringArrayConverter::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
   const auto input = vtkDataSet::GetData(inputVector[0]);

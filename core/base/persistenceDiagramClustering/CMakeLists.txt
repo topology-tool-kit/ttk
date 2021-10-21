@@ -7,8 +7,6 @@ ttk_add_base_library(persistenceDiagramClustering
     PersistenceDiagramBarycenter.h
   DEPENDS
     common
-    auction
-    persistenceDiagram
-    bottleneckDistance
+    persistenceDiagramAuction
     kdTree
   )

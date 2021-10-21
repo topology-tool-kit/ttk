@@ -1,6 +1,4 @@
-ttk_add_base_library(depthImageBasedGeometryApproximation
-  SOURCES
-    DepthImageBasedGeometryApproximation.cpp
+ttk_add_base_template_library(depthImageBasedGeometryApproximation
   HEADERS
     DepthImageBasedGeometryApproximation.h
   DEPENDS

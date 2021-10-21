@@ -1,0 +1,79 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPointSetToCurve"
+        class="ttkPointSetToCurve"
+        label="TTK PointSetToCurve">
+      <Documentation
+          long_help="TTK filter converting string arrays into int arrays"
+          short_help="Converts string arrays into int arrays.">
+        This filter generates lines between points in a Point Set
+        according to the ordering of a given Point Data.
+      </Documentation>
+
+      <InputProperty
+          name="Domain"
+          label="Input Data Set"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="InputOrderingArray"
+          command="SetInputArrayToProcess"
+          label="Input Ordering Array"
+          element_types="0 0 0 0 2"
+          default_values="0"
+          number_of_elements="5"
+          animateable="0"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="0"
+            >
+          <RequiredProperties>
+            <Property
+                name="Domain"
+                function="Input"
+                />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input ordering array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="CloseCurve"
+          label="Close Curve"
+          command="SetCloseCurve"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Close the curve by generating a line cell between the last
+          point and the first point of the point set.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputOrderingArray" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

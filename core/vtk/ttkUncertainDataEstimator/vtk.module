@@ -1,6 +1,4 @@
 NAME
  ttkUncertainDataEstimator
 DEPENDS
-  VTK::FiltersCore
-PRIVATE_DEPENDS
-  VTK::CommonCore
+ ttkAlgorithm

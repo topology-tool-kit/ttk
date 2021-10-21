@@ -26,12 +26,16 @@ vtkStandardNewMacro(ttkTrackingFromOverlap)
   void getData(vtkMultiBlockDataSet *mb,
                size_t time,
                size_t level,
-               string labelFieldName,
+               const string &labelFieldName,
                vtkPointSet *&pointSet,
                vtkDataArray *&labels) {
   auto timesteps = vtkMultiBlockDataSet::SafeDownCast(mb->GetBlock(level));
   pointSet = vtkPointSet::SafeDownCast(timesteps->GetBlock(time));
-  labels = pointSet->GetPointData()->GetArray(labelFieldName.data());
+  if(pointSet == nullptr) {
+    return;
+  }
+  const auto pd = pointSet->GetPointData();
+  labels = pd->GetArray(labelFieldName.data());
 };
 
 // Function to compute number of levels and timesteps contained in a
@@ -52,7 +56,7 @@ int finalize(vector<vector<Nodes>> &levelTimeNodesMap,
              vector<vector<Edges>> &levelTimeEdgesTMap,
              vector<vector<Edges>> &timeLevelEdgesNMap,
              int labelTypeId,
-             string labelFieldName,
+             const string &labelFieldName,
 
              vtkDataObject *trackingGraphObject) {
   auto trackingGraph = vtkUnstructuredGrid::SafeDownCast(trackingGraphObject);
@@ -60,8 +64,8 @@ int finalize(vector<vector<Nodes>> &levelTimeNodesMap,
   size_t nL = levelTimeNodesMap.size();
   size_t nT = levelTimeNodesMap[0].size();
 
-  auto prepArray = [](vtkAbstractArray *array, string name, size_t nComponents,
-                      size_t nValues) {
+  auto prepArray = [](vtkAbstractArray *array, const string &name,
+                      size_t nComponents, size_t nValues) {
     array->SetName(name.data());
     array->SetNumberOfComponents(nComponents);
     array->SetNumberOfTuples(nValues);
@@ -130,6 +134,10 @@ int finalize(vector<vector<Nodes>> &levelTimeNodesMap,
 
   // Add Cells
   {
+    if(nT * nL + 1 <= 0) {
+      return 0;
+    }
+
     // Build node index offset vector
     vector<size_t> timeLevelOffsetMap(nT * nL + 1);
     {
@@ -368,6 +376,9 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
 
     for(size_t t = 0; t < nT; t++) {
       auto pointSet = vtkPointSet::SafeDownCast(timesteps->GetBlock(t));
+      if(pointSet == nullptr) {
+        return 0;
+      }
       size_t nPoints = pointSet->GetNumberOfPoints();
       auto labels = pointSet->GetPointData()->GetAbstractArray(
         this->GetLabelFieldName().data());
@@ -668,7 +679,7 @@ int ttkTrackingFromOverlap::computeBranches() {
 // =============================================================================
 // Request Data
 // =============================================================================
-int ttkTrackingFromOverlap::RequestData(vtkInformation *request,
+int ttkTrackingFromOverlap::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   Timer timer;

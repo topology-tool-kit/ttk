@@ -6,8 +6,7 @@
 /// \brief Class to answer range minimum queries in an array in constant time
 /// after a linearithmic time preprocess.
 
-#ifndef RANGEMINIMUMQUERY_H
-#define RANGEMINIMUMQUERY_H
+#pragma once
 
 #include <Debug.h>
 
@@ -20,11 +19,10 @@
 namespace ttk {
 
   template <class DataType>
-  class RangeMinimumQuery : public Debug {
+  class RangeMinimumQuery : virtual public Debug {
   public:
     RangeMinimumQuery();
     RangeMinimumQuery(std::vector<DataType> &input);
-    ~RangeMinimumQuery();
 
     inline void setVector(std::vector<DataType> &input) {
       input_ = input.data();
@@ -36,11 +34,11 @@ namespace ttk {
 
   protected:
     // Input vector
-    DataType *input_;
-    DataType *input_end_;
+    DataType *input_{};
+    DataType *input_end_{};
 
     // Sparse Table
-    std::vector<std::vector<int>> table_;
+    std::vector<std::vector<int>> table_{};
   };
 
 } // namespace ttk
@@ -50,18 +48,13 @@ namespace ttk {
 // Constructors
 template <class DataType>
 ttk::RangeMinimumQuery<DataType>::RangeMinimumQuery() {
-  input_ = nullptr;
-  input_end_ = nullptr;
+  this->setDebugMsgPrefix("RangeMinimumQuery");
 }
 template <class DataType>
 ttk::RangeMinimumQuery<DataType>::RangeMinimumQuery(
   std::vector<DataType> &input) {
   setVector(input);
 }
-
-// Destructor
-template <class DataType>
-ttk::RangeMinimumQuery<DataType>::~RangeMinimumQuery(){};
 
 // Preprocessing
 template <class DataType>
@@ -96,11 +89,8 @@ int ttk::RangeMinimumQuery<DataType>::preprocess(const bool silent) {
     }
   }
   // Debug messages
-  if(!silent && (debugLevel_ > timeMsg)) {
-    std::stringstream msg;
-    msg << "[RangeMinimumQuery] Preprocessed queries in " << t.getElapsedTime()
-        << "s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+  if(!silent) {
+    this->printMsg("Preprocessed queries.", 1.0, t.getElapsedTime(), 1);
   }
   return 0;
 }
@@ -124,5 +114,3 @@ int ttk::RangeMinimumQuery<DataType>::query(int i, int j) const {
     return table_[j - (1 << k) + 1][k];
   }
 }
-
-#endif

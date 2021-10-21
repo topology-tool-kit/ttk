@@ -6,4 +6,4 @@ HEADERS
   ttkFTRGraph.h
 DEPENDS
   ftrGraph
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

@@ -55,7 +55,7 @@ int ttkContinuousScatterPlot::dispatch(const dataType1 *scalars1,
   return status;
 }
 
-int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
+int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0], 0);
@@ -98,7 +98,7 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
   SimplexId numberOfPoints = input->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points
-  if(!numberOfPoints) {
+  if(numberOfPoints < 1) {
     this->printErr("no points.");
     return -4;
   }
@@ -142,7 +142,6 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars1),
                          inputScalars2, (TTK_TT *)triangulation->getData())));
 
-#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(status != 0) {
     std::stringstream msg;
@@ -150,7 +149,6 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
     this->printErr(msg.str());
     return -6;
   }
-#endif
 
   vtkNew<vtkCharArray> maskScalars;
   maskScalars->SetNumberOfComponents(1);

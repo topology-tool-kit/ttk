@@ -1,393 +1,161 @@
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkSmartPointer.h>
+
+#include <ttkMacros.h>
 #include <ttkTopologicalSimplification.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+#include <LocalizedTopologicalSimplification.h>
 
-vtkStandardNewMacro(ttkTopologicalSimplification)
+vtkStandardNewMacro(ttkTopologicalSimplification);
 
-  ttkTopologicalSimplification::ttkTopologicalSimplification()
-  : hasUpdatedMesh_{false}, identifiers_{}, inputScalars_{}, offsets_{},
-    inputOffsets_{} {
-  SetNumberOfInputPorts(2);
-  triangulation_ = NULL;
-
-  ScalarFieldId = 0;
-  OffsetFieldId = -1;
-  ForceInputOffsetScalarField = false;
-  AddPerturbation = false;
-  OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  ForceInputVertexScalarField = false;
-  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
-  ConsiderIdentifierAsBlackList = false;
-  InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  PeriodicBoundaryConditions = false;
-
-  UseAllCores = true;
-}
-
-ttkTopologicalSimplification::~ttkTopologicalSimplification() {
-  if(offsets_)
-    offsets_->Delete();
+ttkTopologicalSimplification::ttkTopologicalSimplification() {
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
 int ttkTopologicalSimplification::FillInputPortInformation(
   int port, vtkInformation *info) {
-
-  if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-
-  if(port == 1)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-
-  return 1;
-}
-
-int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_) {
-    cerr << "[ttkTopologicalSimplification] Error : input triangulation "
-            "pointer is NULL."
-         << endl;
-    return -1;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
   }
-#endif
-
-  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
-  triangulation_->setWrapper(this);
-  topologicalSimplification_.setWrapper(this);
-  topologicalSimplification_.setupTriangulation(triangulation_);
-  Modified();
-  hasUpdatedMesh_ = true;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkTopologicalSimplification] Error : ttkTriangulation "
-            "allocation problem."
-         << endl;
-    return -1;
-  }
-#endif
-
   return 0;
 }
 
-int ttkTopologicalSimplification::getScalars(vtkDataSet *input) {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!input) {
-    cerr << "[ttkTopologicalSimplification] Error : input pointer is NULL."
-         << endl;
-    return -1;
+int ttkTopologicalSimplification::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-  if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkTopologicalSimplification] Error : input has no point."
-         << endl;
-    return -1;
-  }
-#endif
-
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkTopologicalSimplification] Error : input has no point data."
-         << endl;
-    return -1;
-  }
-#endif
-
-  if(ScalarField.length()) {
-    inputScalars_ = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars_ = pointData->GetArray(ScalarFieldId);
-    if(inputScalars_)
-      ScalarField = inputScalars_->GetName();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    cerr << "[ttkTopologicalSimplification] Error : input scalar field pointer "
-            "is null."
-         << endl;
-    return -3;
-  }
-#endif
-
   return 0;
 }
 
-int ttkTopologicalSimplification::getIdentifiers(vtkPointSet *input) {
-  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
-    identifiers_
-      = input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
-  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_ = input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+int ttkTopologicalSimplification::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!identifiers_) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong vertex identifier "
-            "scalar field."
-         << endl;
+  using ttk::SimplexId;
+
+  const auto domain = vtkDataSet::GetData(inputVector[0]);
+  const auto constraints = vtkPointSet::GetData(inputVector[1]);
+  if(!domain || !constraints)
+    return !this->printErr("Unable to retrieve required input data objects.");
+
+  auto output = vtkDataSet::GetData(outputVector);
+
+  // triangulation
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
+
+  if(!triangulation) {
+    this->printErr("Input triangulation pointer is NULL.");
     return -1;
   }
-#endif
 
-  return 0;
-}
+  this->preconditionTriangulation(triangulation);
 
-int ttkTopologicalSimplification::getOffsets(vtkDataSet *input) {
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-    inputOffsets_
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
-  } else if(OffsetFieldId != -1
-            and input->GetPointData()->GetArray(OffsetFieldId)) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and offsets_) {
-      offsets_->Delete();
-      offsets_ = nullptr;
-      hasUpdatedMesh_ = false;
-    }
-
-    if(!offsets_) {
-      const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-      offsets_ = ttkSimplexIdTypeArray::New();
-      offsets_->SetNumberOfComponents(1);
-      offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfVertices; ++i)
-        offsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets_ = offsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets_) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong input offset scalar "
-            "field."
-         << endl;
+  if(triangulation->isEmpty()) {
+    this->printErr("Triangulation allocation problem.");
     return -1;
   }
-#endif
 
-  return 0;
-}
-
-template <typename VTK_TT>
-int ttkTopologicalSimplification::dispatch() {
-  int ret = 0;
-  if(inputOffsets_->GetDataType() == VTK_INT) {
-    ret = topologicalSimplification_.execute<VTK_TT, int>();
-  }
-  if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
-    ret = topologicalSimplification_.execute<VTK_TT, vtkIdType>();
-  }
-  return ret;
-}
-
-int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
-                                       vector<vtkDataSet *> &outputs) {
-
-  Memory m;
-
-  vtkDataSet *domain = inputs[0];
-  vtkPointSet *constraints = vtkPointSet::SafeDownCast(inputs[1]);
-  vtkDataSet *output = outputs[0];
-
-  int ret{};
-
-  ret = getTriangulation(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong triangulation."
-         << endl;
+  if(!domain) {
+    this->printErr("Input pointer is NULL.");
     return -1;
   }
-#endif
 
-  ret = getScalars(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong scalars." << endl;
-    return -2;
-  }
-#endif
-
-  ret = getIdentifiers(constraints);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong identifiers." << endl;
-    return -3;
-  }
-#endif
-
-  ret = getOffsets(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong offsets." << endl;
-    return -4;
-  }
-#endif
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
-    cerr << "[ttkTopologicalSimplification] Error : input offset field type "
-            "not supported."
-         << endl;
-    return -1;
-  }
-#endif
-
-  const SimplexId numberOfVertices = domain->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
+  const auto numberOfVertices = domain->GetNumberOfPoints();
   if(numberOfVertices <= 0) {
-    cerr << "[ttkTopologicalSimplification] Error : domain has no points."
-         << endl;
+    this->printErr("Domain has no points.");
     return -5;
   }
-#endif
 
-  if(OutputOffsetScalarFieldName.length() <= 0)
-    OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputOffsets
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  if(outputOffsets) {
-    outputOffsets->SetNumberOfComponents(1);
-    outputOffsets->SetNumberOfTuples(numberOfVertices);
-    outputOffsets->SetName(OutputOffsetScalarFieldName.data());
+  // domain scalar field
+  const auto inputScalars = this->GetInputArrayToProcess(0, domain);
+  if(!inputScalars) {
+    this->printErr("Input scalar field pointer is null.");
+    return -3;
   }
-#ifndef TTK_ENABLE_KAMIKAZE
-  else {
-    cerr << "[ttkTopologicalSimplification] Error : ttkSimplexIdTypeArray "
-            "allocation problem."
-         << endl;
-    return -7;
+
+  // domain offset field
+  const auto inputOrder
+    = this->GetOrderArray(domain, 0, 2, ForceInputOffsetScalarField);
+  if(!inputOrder) {
+    this->printErr("Wrong input offset scalar field.");
+    return -1;
   }
-#endif
 
-  vtkDataArray *outputScalars{};
-  switch(inputScalars_->GetDataType()) {
-    case VTK_DOUBLE:
-      outputScalars = vtkDoubleArray::New();
-      break;
+  // create output arrays
+  auto outputScalars
+    = vtkSmartPointer<vtkDataArray>::Take(inputScalars->NewInstance());
+  outputScalars->DeepCopy(inputScalars);
+  auto outputOrder
+    = vtkSmartPointer<vtkDataArray>::Take(inputOrder->NewInstance());
+  outputOrder->DeepCopy(inputOrder);
 
-    case VTK_FLOAT:
-      outputScalars = vtkFloatArray::New();
-      break;
+  // constraint identifier field
+  int numberOfConstraints = constraints->GetNumberOfPoints();
 
-    case VTK_INT:
-      outputScalars = vtkIntArray::New();
-      break;
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  auto identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField, 1,
+                                                 ttk::VertexScalarFieldName,
+                                                 constraints, idSpareStorage);
 
-    case VTK_ID_TYPE:
-      outputScalars = vtkIdTypeArray::New();
-      break;
+  // NOTE it'd be better if the two backends were inheriting from the same API
+  // (the switch would then happen in the base code)
+  int ret{};
+  if(this->UseLTS) {
+    ttk::lts::LocalizedTopologicalSimplification lts{};
+    lts.setDebugLevel(this->debugLevel_);
+    lts.setThreadNumber(this->threadNumber_);
 
-    case VTK_SHORT:
-      outputScalars = vtkShortArray::New();
-      break;
+    lts.preconditionTriangulation(triangulation);
 
-    case VTK_UNSIGNED_SHORT:
-      outputScalars = vtkUnsignedShortArray::New();
-      break;
+    ttkVtkTemplateMacro(
+      inputScalars->GetDataType(), triangulation->getType(),
+      (ret = lts.removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
+         ttkUtils::GetPointer<VTK_TT>(outputScalars),
+         ttkUtils::GetPointer<SimplexId>(outputOrder),
 
-    case VTK_CHAR:
-      outputScalars = vtkCharArray::New();
-      break;
+         static_cast<TTK_TT *>(triangulation->getData()), identifiers,
+         numberOfConstraints, this->AddPerturbation)));
 
-    case VTK_UNSIGNED_CHAR:
-      outputScalars = vtkUnsignedCharArray::New();
-      break;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-    default:
-      cerr << "[ttkTopologicalSimplification] Error : Unsupported data type."
-           << endl;
-      return -8;
-#endif
+    // TODO: fix convention in original ttk module
+    ret = !ret;
+  } else {
+    switch(inputScalars->GetDataType()) {
+      vtkTemplateMacro(
+        ret = this->execute(ttkUtils::GetPointer<VTK_TT>(inputScalars),
+                            ttkUtils::GetPointer<VTK_TT>(outputScalars),
+                            identifiers,
+                            ttkUtils::GetPointer<SimplexId>(inputOrder),
+                            ttkUtils::GetPointer<SimplexId>(outputOrder),
+                            numberOfConstraints, *triangulation->getData()));
+    }
   }
-  if(outputScalars) {
-    outputScalars->SetNumberOfTuples(numberOfVertices);
-    outputScalars->SetName(inputScalars_->GetName());
-  }
-#ifndef TTK_ENABLE_KAMIKAZE
-  else {
-    cerr << "[ttkTopologicalSimplification] Error : vtkDataArray allocation "
-            "problem."
-         << endl;
-    return -9;
-  }
-#endif
 
-  const SimplexId numberOfConstraints = constraints->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(numberOfConstraints <= 0) {
-    cerr << "[ttkTopologicalSimplification] Error : input has no constraints."
-         << endl;
-    return -10;
-  }
-#endif
-
-  topologicalSimplification_.setVertexNumber(numberOfVertices);
-  topologicalSimplification_.setConstraintNumber(numberOfConstraints);
-  topologicalSimplification_.setInputScalarFieldPointer(
-    inputScalars_->GetVoidPointer(0));
-  topologicalSimplification_.setVertexIdentifierScalarFieldPointer(
-    identifiers_->GetVoidPointer(0));
-  topologicalSimplification_.setConsiderIdentifierAsBlackList(
-    ConsiderIdentifierAsBlackList);
-  topologicalSimplification_.setAddPerturbation(AddPerturbation);
-
-  topologicalSimplification_.setInputOffsetScalarFieldPointer(
-    inputOffsets_->GetVoidPointer(0));
-
-  topologicalSimplification_.setOutputScalarFieldPointer(
-    outputScalars->GetVoidPointer(0));
-
-  topologicalSimplification_.setOutputOffsetScalarFieldPointer(
-    outputOffsets->GetVoidPointer(0));
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(identifiers_->GetDataType() != inputOffsets_->GetDataType()) {
-    cerr << "[ttkTopologicalSimplification] Error : type of identifiers and "
-            "offsets are different."
-         << endl;
-    return -11;
-  }
-#endif
-
-  switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>());
-  }
-#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret) {
-    cerr << "[ttkTopologicalSimplification] "
-            "TopologicalSimplification.execute() error code : "
-         << ret << endl;
+    this->printErr("TopologicalSimplification.execute() error code: "
+                   + std::to_string(ret));
     return -12;
   }
-#endif
 
   output->ShallowCopy(domain);
-  output->GetPointData()->AddArray(outputOffsets);
+  output->GetPointData()->AddArray(outputOrder);
   output->GetPointData()->AddArray(outputScalars);
-  outputScalars->Delete();
 
-  {
-    stringstream msg;
-    msg << "[ttkTopologicalSimplification] Memory usage: "
-        << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return ret;
+  return 1;
 }

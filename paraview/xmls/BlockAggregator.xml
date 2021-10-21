@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkBlockAggregator" class="ttkBlockAggregator" label="TTK BlockAggregator">
+            <Documentation long_help="ttkBlockAggregator" short_help="ttkBlockAggregator">
+            This filter appends every input vtkDataObject as a block to an output vtkMultiBlockDataSet.
+            </Documentation>
+
+            <InputProperty name="Input" port_index="0" clean_command="RemoveAllInputs" command="AddInputConnection" multiple_input="1">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <Documentation>vtkDataObjects that will be added as blocks.</Documentation>
+            </InputProperty>
+
+            <IntVectorProperty name="ForceReset" label="Force Reset" command="SetForceReset" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Force deletion of previously aggregated data.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="FlattenInput" label="Flatten Input" command="SetFlattenInput" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>If enabled and if the input vtkDataObject is a 'vtkMultiBlockDataSet' then this filter will add its blocks to the output and not the vtkMultiBlockDataSet itself.</Documentation>
+            </IntVectorProperty>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Pipeline" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

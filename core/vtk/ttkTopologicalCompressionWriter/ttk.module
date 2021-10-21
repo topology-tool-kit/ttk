@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkTopologicalCompressionWriter.h
 DEPENDS
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
   topologicalCompression

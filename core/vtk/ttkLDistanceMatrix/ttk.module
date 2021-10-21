@@ -6,4 +6,4 @@ HEADERS
   ttkLDistanceMatrix.h
 DEPENDS
   lDistanceMatrix
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

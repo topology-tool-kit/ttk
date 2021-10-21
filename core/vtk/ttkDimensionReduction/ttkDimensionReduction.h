@@ -34,7 +34,7 @@ public:
   static ttkDimensionReduction *New();
   vtkTypeMacro(ttkDimensionReduction, ttkAlgorithm);
 
-  void SetScalarFields(std::string s) {
+  void SetScalarFields(const std::string &s) {
     ScalarFields.push_back(s);
     Modified();
   }
@@ -48,7 +48,7 @@ public:
   vtkSetMacro(SelectFieldsWithRegexp, bool);
   vtkGetMacro(SelectFieldsWithRegexp, bool);
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
   vtkSetMacro(NumberOfComponents, int);
@@ -78,20 +78,20 @@ public:
   vtkGetMacro(InputIsADistanceMatrix, bool);
 
   // SE
-  vtkSetMacro(se_Affinity, std::string);
+  vtkSetMacro(se_Affinity, const std::string &);
   vtkGetMacro(se_Affinity, std::string);
 
   vtkSetMacro(se_Gamma, float);
   vtkGetMacro(se_Gamma, float);
 
-  vtkSetMacro(se_EigenSolver, std::string);
+  vtkSetMacro(se_EigenSolver, const std::string &);
   vtkGetMacro(se_EigenSolver, std::string);
 
   // LLE
   vtkSetMacro(lle_Regularization, float);
   vtkGetMacro(lle_Regularization, float);
 
-  vtkSetMacro(lle_EigenSolver, std::string);
+  vtkSetMacro(lle_EigenSolver, const std::string &);
   vtkGetMacro(lle_EigenSolver, std::string);
 
   vtkSetMacro(lle_Tolerance, float);
@@ -100,7 +100,7 @@ public:
   vtkSetMacro(lle_MaxIteration, int);
   vtkGetMacro(lle_MaxIteration, int);
 
-  vtkSetMacro(lle_Method, std::string);
+  vtkSetMacro(lle_Method, const std::string &);
   vtkGetMacro(lle_Method, std::string);
 
   vtkSetMacro(lle_HessianTolerance, float);
@@ -109,7 +109,7 @@ public:
   vtkSetMacro(lle_ModifiedTolerance, float);
   vtkGetMacro(lle_ModifiedTolerance, float);
 
-  vtkSetMacro(lle_NeighborsAlgorithm, std::string);
+  vtkSetMacro(lle_NeighborsAlgorithm, const std::string &);
   vtkGetMacro(lle_NeighborsAlgorithm, std::string);
 
   // MDS
@@ -147,23 +147,23 @@ public:
   vtkSetMacro(tsne_GradientThreshold, float);
   vtkGetMacro(tsne_GradientThreshold, float);
 
-  vtkSetMacro(tsne_Metric, std::string);
+  vtkSetMacro(tsne_Metric, const std::string &);
   vtkGetMacro(tsne_Metric, std::string);
 
-  vtkSetMacro(tsne_Init, std::string);
+  vtkSetMacro(tsne_Init, const std::string &);
   vtkGetMacro(tsne_Init, std::string);
 
   vtkSetMacro(tsne_Verbose, int);
   vtkGetMacro(tsne_Verbose, int);
 
-  vtkSetMacro(tsne_Method, std::string);
+  vtkSetMacro(tsne_Method, const std::string &);
   vtkGetMacro(tsne_Method, std::string);
 
   vtkSetMacro(tsne_Angle, float);
   vtkGetMacro(tsne_Angle, float);
 
   // Iso
-  vtkSetMacro(iso_EigenSolver, std::string);
+  vtkSetMacro(iso_EigenSolver, const std::string &);
   vtkGetMacro(iso_EigenSolver, std::string);
 
   vtkSetMacro(iso_Tolerance, float);
@@ -172,10 +172,10 @@ public:
   vtkSetMacro(iso_MaxIteration, int);
   vtkGetMacro(iso_MaxIteration, int);
 
-  vtkSetMacro(iso_PathMethod, std::string);
+  vtkSetMacro(iso_PathMethod, const std::string &);
   vtkGetMacro(iso_PathMethod, std::string);
 
-  vtkSetMacro(iso_NeighborsAlgorithm, std::string);
+  vtkSetMacro(iso_NeighborsAlgorithm, const std::string &);
   vtkGetMacro(iso_NeighborsAlgorithm, std::string);
 
   // PCA
@@ -185,23 +185,23 @@ public:
   vtkSetMacro(pca_Whiten, bool);
   vtkGetMacro(pca_Whiten, bool);
 
-  vtkSetMacro(pca_SVDSolver, std::string);
+  vtkSetMacro(pca_SVDSolver, const std::string &);
   vtkGetMacro(pca_SVDSolver, std::string);
 
   vtkSetMacro(pca_Tolerance, float);
   vtkGetMacro(pca_Tolerance, float);
 
-  vtkSetMacro(pca_MaxIteration, std::string);
+  vtkSetMacro(pca_MaxIteration, const std::string &);
   vtkGetMacro(pca_MaxIteration, std::string);
 
   // testing
-  vtkSetMacro(ModulePath, std::string);
+  vtkSetMacro(ModulePath, const std::string &);
   vtkGetMacro(ModulePath, std::string);
 
-  vtkSetMacro(ModuleName, std::string);
+  vtkSetMacro(ModuleName, const std::string &);
   vtkGetMacro(ModuleName, std::string);
 
-  vtkSetMacro(FunctionName, std::string);
+  vtkSetMacro(FunctionName, const std::string &);
   vtkGetMacro(FunctionName, std::string);
 
 protected:

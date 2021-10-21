@@ -4,6 +4,7 @@
 
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
@@ -116,20 +117,7 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
   return 0;
 }
 
-template <typename VTK_TT, typename TTK_TT>
-int ttkIntegralLines::dispatch(int inputOffsetsDataType,
-                               const TTK_TT *triangulation) {
-  int ret = 0;
-  if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(triangulation);
-  }
-  if(inputOffsetsDataType == VTK_ID_TYPE) {
-    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(triangulation);
-  }
-  return ret;
-}
-
-int ttkIntegralLines::RequestData(vtkInformation *request,
+int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);
@@ -139,20 +127,13 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
-  vtkDataArray *inputOffsets = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
-  if(!inputOffsets) {
-    const SimplexId numberOfPoints = domain->GetNumberOfPoints();
-    inputOffsets = ttkSimplexIdTypeArray::New();
-    inputOffsets->SetNumberOfComponents(1);
-    inputOffsets->SetNumberOfTuples(numberOfPoints);
-    inputOffsets->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfPoints; ++i)
-      inputOffsets->SetTuple1(i, i);
-  }
+  vtkDataArray *inputOffsets
+    = this->GetOrderArray(domain, 0, 1, ForceInputOffsetScalarField);
 
-  vtkDataArray *inputIdentifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);
+  std::vector<SimplexId> idSpareStorage{};
+  auto *inputIdentifiers = this->GetIdentifierArrayPtr(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+    idSpareStorage);
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
@@ -197,21 +178,21 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   this->setSeedNumber(numberOfPointsInSeeds);
   this->setDirection(Direction);
   this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputOffsets(
+    static_cast<SimplexId *>(inputOffsets->GetVoidPointer(0)));
 
-  this->setVertexIdentifierScalarField(inputIdentifiers->GetVoidPointer(0));
+  this->setVertexIdentifierScalarField(inputIdentifiers);
   this->setOutputTrajectories(&trajectories);
 
   this->preconditionTriangulation(triangulation);
 
   int status = 0;
-  ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
-    (status = this->dispatch<VTK_TT, TTK_TT>(
-       inputOffsets->GetDataType(), (TTK_TT *)(triangulation->getData()))))
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (status = this->execute<VTK_TT, TTK_TT>(
+                         static_cast<TTK_TT *>(triangulation->getData()))));
 #ifndef TTK_ENABLE_KAMIKAZE
-    // something wrong in baseCode
-    if(status) {
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "IntegralLines.execute() error code : " << status;
     this->printErr(msg.str());

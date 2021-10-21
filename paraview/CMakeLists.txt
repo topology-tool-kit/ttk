@@ -1,19 +1,13 @@
-set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
-
 # Fill TTK_MODULES, TTK_MODULES_FILES
 # These lists are then used by singlePlugin/CMakeLists.txt
 # The goal is to create a single plugin for parview
 set(TTK_XMLS             "" CACHE INTERNAL "")
 set(TTK_MODULES          "" CACHE INTERNAL "")
-set(TTK_VTK_MODULE_FILES "" CACHE INTERNAL "")
-file(GLOB PARAVIEW_PLUGIN_DIRS *)
-foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
-  if(IS_DIRECTORY ${PARAVIEW_PLUGIN})
-    if(NOT ${PARAVIEW_PLUGIN} MATCHES "patch"
-        AND NOT ${PARAVIEW_PLUGIN} MATCHES "singlePlugin")
-      include(${PARAVIEW_PLUGIN}/TTKFilter.cmake)
-    endif()
-  endif()
+file(GLOB XML_FILES xmls/*.xml)
+
+foreach(XML_FILE ${XML_FILES})
+  get_filename_component(MODULE_NAME ${XML_FILE} NAME_WLE)
+  ttk_register_pv_filter(ttk${MODULE_NAME} xmls/${MODULE_NAME}.xml)
 endforeach()
 
 set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
@@ -46,12 +40,12 @@ paraview_plugin_build(
     ${TTK_PLUGINS}
   AUTOLOAD
     ${TTK_PLUGINS}
+  INSTALL_HEADERS
+    OFF
   RUNTIME_DESTINATION
-    "${CMAKE_INSTALL_BINDIR}"
+    "${CMAKE_INSTALL_BINDIR}/plugins"
   LIBRARY_DESTINATION
-    "${CMAKE_INSTALL_LIBDIR}"
-  LIBRARY_SUBDIRECTORY
-    "${PARAVIEW_PLUGIN_SUBDIR}"
+    "${CMAKE_INSTALL_BINDIR}/plugins"
   )
 
 install(

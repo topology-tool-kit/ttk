@@ -1,9 +1,11 @@
 <StringVectorProperty
-    name="ScalarField"
-    command="SetScalarField"
-    number_of_elements="1"
+    name="Scalar Field"
+    command="SetInputArrayToProcess"
+    element_types="0 0 0 0 2"
+    number_of_elements="5"
+    default_values="0"
     animateable="0"
-    label="Scalar Field">
+    >
   <ArrayListDomain
       name="array_list"
       default_values="0">
@@ -68,18 +70,18 @@
   <DoubleRangeDomain name="range" min="1" max="100" />
 </DoubleVectorProperty>
 
-<IntVectorProperty
-    name="ZFPBitBudget"
-    label="ZFP bit budget (extra)"
-    command="SetZFPBitBudget"
+<DoubleVectorProperty
+    name="ZFPTolerance"
+    label="ZFP Relative Error Tolerance (extra)"
+    command="SetZFPTolerance"
     number_of_elements="1"
-    default_values="0">
-  <IntRangeDomain name="range" min="0" max="64" />
+    default_values="50">
   <Documentation>
     Additionally compress the data with ZFP for improved geometrical
-    quality (number of bits per vertex).
+    quality (relative error tolerance in % of scalar field range).
   </Documentation>
-</IntVectorProperty>
+  <DoubleRangeDomain name="range" min="1" max="100" />
+</DoubleVectorProperty>
 
 <IntVectorProperty
     name="ZFPOnly"

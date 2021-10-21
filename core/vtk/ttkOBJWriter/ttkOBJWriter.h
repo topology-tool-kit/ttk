@@ -9,26 +9,25 @@
 #pragma once
 
 #include <vtkDataSetWriter.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
 
 // VTK Module
+#include <Debug.h>
 #include <ttkOBJWriterModule.h>
 
-#include <iostream>
-#include <string>
-#include <vector>
+#include <fstream>
 
-class TTKOBJWRITER_EXPORT ttkOBJWriter : public vtkDataSetWriter {
+class TTKOBJWRITER_EXPORT ttkOBJWriter : public vtkDataSetWriter,
+                                         protected ttk::Debug {
 
 public:
   vtkTypeMacro(ttkOBJWriter, vtkDataSetWriter);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   static ttkOBJWriter *New();
 
+  void PrintSelf(std::ostream &os, vtkIndent indent) override;
+
   // Description:
-  // Specify file name of the .abc file.
+  // Specify file name of the .obj file.
   vtkSetStringMacro(Filename);
   vtkGetStringMacro(Filename);
 
@@ -39,7 +38,7 @@ protected:
   int OpenFile();
   virtual void WriteData() override;
 
-  char *Filename;
+  char *Filename{};
   std::ofstream Stream{};
 
 private:

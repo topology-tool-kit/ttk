@@ -148,7 +148,7 @@ namespace ttk {
       inline SimplexId count(void) const {
         SimplexId res = 0;
         for(const auto &reg : segmentsIn_) {
-          res += labs(distance(reg.segmentBegin, reg.segmentEnd));
+          res += std::abs(distance(reg.segmentBegin, reg.segmentEnd));
         }
         return res;
       }

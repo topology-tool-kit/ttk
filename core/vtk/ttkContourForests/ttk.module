@@ -8,4 +8,4 @@ DEPENDS
   geometry
   contourForests
   contourForestsTree
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

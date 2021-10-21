@@ -1,6 +1,7 @@
 #include <ttkCinemaReader.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
@@ -42,8 +43,8 @@ int ttkCinemaReader::validateDatabasePath() {
   return 1;
 }
 
-int ttkCinemaReader::RequestData(vtkInformation *request,
-                                 vtkInformationVector **inputVector,
+int ttkCinemaReader::RequestData(vtkInformation *ttkNotUsed(request),
+                                 vtkInformationVector **ttkNotUsed(inputVector),
                                  vtkInformationVector *outputVector) {
   ttk::Timer timer;
 

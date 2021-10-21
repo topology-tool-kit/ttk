@@ -1,13 +1,18 @@
+#include <ttkMacros.h>
 #include <ttkPersistenceCurve.h>
+#include <ttkUtils.h>
+
+#include <vtkIdTypeArray.h>
+#include <vtkIntArray.h>
 
 using namespace std;
 using namespace ttk;
 
 using namespace ftm;
 
-vtkStandardNewMacro(ttkPersistenceCurve)
+vtkStandardNewMacro(ttkPersistenceCurve);
 
-  ttkPersistenceCurve::ttkPersistenceCurve() {
+ttkPersistenceCurve::ttkPersistenceCurve() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(4);
 }
@@ -46,13 +51,105 @@ int ttkPersistenceCurve::FillOutputPortInformation(int port,
   return 0;
 }
 
+template <typename vtkArrayType, typename scalarType>
+int ttkPersistenceCurve::getPersistenceCurve(
+  vtkTable *outputCurve,
+  ttk::ftm::TreeType treeType,
+  const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
+  const ttk::SimplexId numberOfPairs = plot.size();
+
+  vtkSmartPointer<vtkArrayType> persistenceScalars
+    = vtkSmartPointer<vtkArrayType>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> numberOfPairsScalars
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+
+  switch(treeType) {
+    case ttk::ftm::TreeType::Join:
+      persistenceScalars->SetName("Persistence (minimum-saddle pairs)");
+      numberOfPairsScalars->SetName("Number Of Pairs (minimum-saddle pairs)");
+      break;
+
+    case ttk::ftm::TreeType::Split:
+      persistenceScalars->SetName("Persistence (maximum-saddle pairs)");
+      numberOfPairsScalars->SetName("Number Of Pairs (maximum-saddle pairs)");
+      break;
+
+    case ttk::ftm::TreeType::Join_Split:
+    case ttk::ftm::TreeType::Contour:
+      persistenceScalars->SetName("Persistence (all pairs)");
+      numberOfPairsScalars->SetName("Number Of Pairs (all pairs)");
+      break;
+  }
+
+  vtkSmartPointer<vtkTable> persistenceCurve = vtkSmartPointer<vtkTable>::New();
+
+  if(numberOfPairs) {
+    persistenceScalars->SetNumberOfTuples(numberOfPairs);
+    numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
+    persistenceCurve->SetNumberOfRows(numberOfPairs);
+
+    for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
+      persistenceScalars->SetTuple1(i, plot[i].first);
+      numberOfPairsScalars->SetTuple1(i, plot[i].second);
+    }
+
+    persistenceCurve->AddColumn(persistenceScalars);
+    persistenceCurve->AddColumn(numberOfPairsScalars);
+
+    switch(treeType) {
+      case ttk::ftm::TreeType::Join:
+      case ttk::ftm::TreeType::Split:
+      case ttk::ftm::TreeType::Join_Split:
+      case ttk::ftm::TreeType::Contour:
+        outputCurve->ShallowCopy(persistenceCurve);
+        break;
+    }
+  }
+
+  return 0;
+}
+
+template <typename vtkArrayType, typename scalarType>
+int ttkPersistenceCurve::getMSCPersistenceCurve(
+  vtkTable *outputMSCPersistenceCurve,
+  const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
+  const ttk::SimplexId numberOfPairs = plot.size();
+
+  vtkSmartPointer<vtkArrayType> persistenceScalars
+    = vtkSmartPointer<vtkArrayType>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> numberOfPairsScalars
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+
+  persistenceScalars->SetName("Persistence (saddle-saddle pairs)");
+  numberOfPairsScalars->SetName("Number Of Pairs (saddle-saddle pairs)");
+
+  vtkSmartPointer<vtkTable> persistenceCurve = vtkSmartPointer<vtkTable>::New();
+
+  if(numberOfPairs) {
+    persistenceScalars->SetNumberOfTuples(numberOfPairs);
+    numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
+    persistenceCurve->SetNumberOfRows(numberOfPairs);
+
+    for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
+      persistenceScalars->SetTuple1(i, plot[i].first);
+      numberOfPairsScalars->SetTuple1(i, plot[i].second);
+    }
+
+    persistenceCurve->AddColumn(persistenceScalars);
+    persistenceCurve->AddColumn(numberOfPairsScalars);
+
+    outputMSCPersistenceCurve->ShallowCopy(persistenceCurve);
+  }
+
+  return 0;
+}
+
 template <typename VTK_TT, typename TTK_TT>
 int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
                                   vtkTable *outputMSCPersistenceCurve,
                                   vtkTable *outputSTPersistenceCurve,
                                   vtkTable *outputCTPersistenceCurve,
                                   const VTK_TT *inputScalars,
-                                  int inputOffsetsDataType,
                                   const void *inputOffsets,
                                   const TTK_TT *triangulation) {
 
@@ -62,16 +159,13 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   std::vector<std::pair<VTK_TT, SimplexId>> MSCPlot{};
   std::vector<std::pair<VTK_TT, SimplexId>> CTPlot{};
 
-  if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(JTPlot, STPlot, MSCPlot, CTPlot,
-                                             inputScalars, (int *)inputOffsets,
-                                             triangulation);
-  }
-  if(inputOffsetsDataType == VTK_ID_TYPE) {
-    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-      JTPlot, STPlot, MSCPlot, CTPlot, inputScalars, (vtkIdType *)inputOffsets,
-      triangulation);
-  }
+  this->setOutputJTPlot(&JTPlot);
+  this->setOutputSTPlot(&STPlot);
+  this->setOutputCTPlot(&CTPlot);
+  this->setOutputMSCPlot(&MSCPlot);
+
+  ret = this->execute<VTK_TT, TTK_TT>(
+    inputScalars, (SimplexId *)inputOffsets, triangulation);
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
     outputJTPersistenceCurve, TreeType::Join, JTPlot);
@@ -112,7 +206,7 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   return ret;
 }
 
-int ttkPersistenceCurve::RequestData(vtkInformation *request,
+int ttkPersistenceCurve::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 
@@ -124,14 +218,6 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   vtkTable *outputSTPersistenceCurve = vtkTable::GetData(outputVector, 2);
   vtkTable *outputCTPersistenceCurve = vtkTable::GetData(outputVector, 3);
 
-  vtkPointData *pointData = input->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkPersistenceCurve] Error : input has no point data." << endl;
-    return -1;
-  }
-#endif
-
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation) {
@@ -139,9 +225,8 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     return 0;
   }
 #endif
-  preconditionTriangulation(triangulation);
-  // TODO: Remove when FTM and MSC are migrated
-  setupTriangulation(triangulation);
+
+  this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, inputVector);
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -151,23 +236,9 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
+  vtkDataArray *offsetField
+    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
 
-  if(!offsetField) {
-    offsetField = pointData->GetArray(ttk::OffsetScalarFieldName);
-  }
-
-  if(!offsetField) {
-    const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-    offsetField = ttkSimplexIdTypeArray::New();
-    offsetField->SetNumberOfComponents(1);
-    offsetField->SetNumberOfTuples(numberOfVertices);
-    offsetField->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfVertices; ++i)
-      offsetField->SetTuple1(i, i);
-  }
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {
     this->printErr("Wrong input offsets");
@@ -181,16 +252,16 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
 #endif
 
   int status = 0;
-  ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
-    (status = this->dispatch<VTK_TT, TTK_TT>(
-       outputJTPersistenceCurve, outputMSCPersistenceCurve,
-       outputSTPersistenceCurve, outputCTPersistenceCurve,
-       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
-       offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
-       (TTK_TT *)(triangulation->getData()))))
-    // something wrong in baseCode
-    if(status) {
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (status = this->dispatch<VTK_TT, TTK_TT>(
+                         outputJTPersistenceCurve, outputMSCPersistenceCurve,
+                         outputSTPersistenceCurve, outputCTPersistenceCurve,
+                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
+                         ttkUtils::GetVoidPointer(offsetField),
+                         (TTK_TT *)(triangulation->getData()))));
+
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "PersistenceCurve::execute() error code : " << status;
     this->printErr(msg.str());

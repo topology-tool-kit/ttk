@@ -2,7 +2,7 @@
 #define TTKFTMSTRUCTURES_H
 
 #include <FTMTree.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -15,6 +15,8 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+
+#include <ttkMacros.h>
 
 namespace ttk {
   namespace ftm {

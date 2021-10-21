@@ -186,7 +186,7 @@ namespace ttk {
 
       std::string print(void);
 
-      std::string print(std::function<std::string(std::size_t)>);
+      std::string print(const std::function<std::string(std::size_t)> &);
 
       std::string printNbCC(void);
 
@@ -303,8 +303,10 @@ namespace ttk {
       }
 
       DynGraphNode &operator=(const DynGraphNode &other) {
-        parent_ = other.parent_;
-        weight_ = other.weight_;
+        if(this != &other) {
+          parent_ = other.parent_;
+          weight_ = other.weight_;
+        }
         return *this;
       }
 

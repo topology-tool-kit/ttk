@@ -2,8 +2,11 @@ NAME
   ttkAlgorithm
 SOURCES
   ttkAlgorithm.cpp
+  ttkTriangulationFactory.cpp
+  ttkUtils.cpp
 HEADERS
   ttkAlgorithm.h
+  ttkTriangulationFactory.h
   ttkUtils.h
   ttkMacros.h
 DEPENDS

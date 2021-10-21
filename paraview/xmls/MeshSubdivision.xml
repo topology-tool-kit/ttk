@@ -1,0 +1,74 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkMeshSubdivision"
+     class="ttkMeshSubdivision"
+     label="TTK MeshSubdivision">
+     <Documentation
+        long_help="TTK plugin for the computation of mesh
+subdivisions (without vertex displacement)."
+        short_help="TTK plugin for the computation of mesh
+subdivisions (without vertex displacement).">
+This filter subdivides an input mesh with a strategy inspired by
+Discrete Morse theory. It does not modify the position of the original
+vertices.
+
+The filter inserts a new vertex at the barycenter of each d-cell C and
+connects it with an edge to the new vertices inserted in the (d-1) and
+(d+1)-cells that are faces or co-faces of C.
+
+In practice, for surface meshes, this subdivision scheme corresponds to a
+Catmull-Clark subdivision (without vertex displacement). It will turn a
+triangle-mesh into a quad mesh, a quad mesh into a (finer) quad-mesh, a
+tetrahedral mesh into a hexahedral mesh, a hexahedral mesh into a (finer)
+hexadrehal mesh, etc. Generally, it will turn any 2D mesh into a quad mesh
+and any 3D mesh into a hexadrehal mesh.
+
+This filter assumes that all the cells of the input mesh are of the same
+type. Also, the filter creates duplicate points, to be merged after the
+fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+         name="IterationNumber"
+         label="Iteration Number"
+         command="SetIterationNumber"
+         number_of_elements="1"
+         default_values="1" >
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+          Set the number of iterations for the mesh subdivision.
+         </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="IterationNumber" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

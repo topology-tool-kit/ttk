@@ -5,9 +5,9 @@
 #include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
 #include <vtkInformationVector.h>
+#include <vtkObjectFactory.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
-#include <vtkVersionMacros.h>
 
 #include <ttkUtils.h>
 
@@ -43,7 +43,7 @@ int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkCinemaQuery::RequestData(vtkInformation *request,
+int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
   ttk::Timer timer;
@@ -123,11 +123,19 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
             if(firstCol) {
               firstCol = false;
             }
-            if(isNumeric[k])
-              sqlInsertStatement += inTable->GetValue(q, k).ToString();
-            else
+            if(isNumeric[k]) {
+              const auto var = inTable->GetValue(q, k);
+              if(var.IsChar() || var.IsSignedChar()) {
+                // convert char/signed char to int to get its value
+                // instead of its char representation
+                sqlInsertStatement += std::to_string(var.ToInt());
+              } else {
+                sqlInsertStatement += var.ToString();
+              }
+            } else {
               sqlInsertStatement
                 += "'" + inTable->GetValue(q, k).ToString() + "'";
+            }
           }
           sqlInsertStatement += ")";
           q++;
@@ -166,10 +174,6 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
   // ===========================================================================
   // Process Result
   {
-#if VTK_MAJOR_VERSION < 7
-    this->printErr("This filter requires at least VTK 7.0");
-    return 0;
-#else
     if(csvNRows < 1 || status != 1) {
       csvResult << "NULL";
       for(int i = 0; i < csvNColumns; i++)
@@ -208,7 +212,6 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
 
     this->printMsg("Converting SQL result to VTK table", 1,
                    conversionTimer.getElapsedTime());
-#endif
   }
 
   // print stats

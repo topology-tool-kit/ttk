@@ -1,0 +1,71 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkLDistanceMatrix"
+     class="ttkLDistanceMatrix"
+     label="TTK LDistanceMatrix">
+     <Documentation
+       long_help="Computes distance matrix between datasets with the same number of points."
+       shorthelp="LDiagrams Distance Matrix."
+       >
+    </Documentation>
+
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process. This scalar field should
+          be available in all blocks of the input vtkMultiBlockDataSet.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="n"
+         label="p parameter"
+         command="SetDistanceType"
+         number_of_elements="1"
+         default_values="2" >
+         <Documentation>
+          Value of the parameter p for the Lp distance computation
+          (type "inf" for the L-infinity distance).
+         </Documentation>
+     </StringVectorProperty>
+
+       ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,9 +1,9 @@
 #include <BaseClass.h>
 
 #ifdef TTK_ENABLE_OPENMP
-int ttk::globalThreadNumber_ = omp_get_num_procs();
+COMMON_EXPORTS int ttk::globalThreadNumber_ = omp_get_num_procs();
 #else
-int ttk::globalThreadNumber_ = 1;
+COMMON_EXPORTS int ttk::globalThreadNumber_ = 1;
 #endif
 
 using namespace ttk;

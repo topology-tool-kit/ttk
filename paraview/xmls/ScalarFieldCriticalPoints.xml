@@ -1,0 +1,282 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkScalarFieldCriticalPoints"
+     class="ttkScalarFieldCriticalPoints"
+     label="TTK ScalarFieldCriticalPoints">
+     <Documentation
+       long_help="TTK plugin for the computation of critical points in PL
+       scalar fields defined on PL manifolds."
+       short_help="TTK plugin for the computation of critical points in PL
+       scalar fields defined on PL manifolds.">
+
+       This plugin computes the list of critical points of the input scalar field and classify them according to their type.
+
+       Related publication:
+       "Critical points and curvature for embedded polyhedral surfaces"
+       Thomas Banchoff
+       American Mathematical Monthly, 1970.
+
+       Two backends are available for the computation of critical points:
+
+        1) Default generic backend
+
+        This generic backend uses a Union Find data structure on the lower and upper link of each vertex to compute its critical type.
+
+        2) A progressive approach
+
+        Related publication:
+        'A Progressive Approach to Scalar Field Topology'
+        Jules Vidal, Pierre Guillou, Julien Tierny
+        IEEE Transaction on Visualization and Computer Graphics, 2021
+
+        This approach requires the input data to be defined on a regular grid (implicit triangulation).
+        It processes the data using a multiresolution hierarchical
+        representation in a coarse-to-fine fashion.
+        Set both the Start and End resolution levels to -1 to execute in
+        non-progressive mode on the finest level, i.e. the original grid.
+        Even when using the full data hierarchy, this backend provides substantical performance improvements and is used by default for data defined on regular grids.
+
+       CriticalType:
+       * 0 - minimum,
+       * 1 - 1saddle,
+       * 2 - 2saddle,
+       * 3 - maximum,
+       * 4 - degenerate,
+       * 5 - regular,
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty 
+          name="ScalarFieldNew" 
+          label="Scalar Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          default_values="0"
+          number_of_elements="5">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="With predefined offset"
+        label="Force Input Offset Field"
+        command="SetForceInputOffsetScalarField"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty 
+          name="OffsetNew" 
+          label="Input Offset Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          default_values="1"
+          number_of_elements="5">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the scalar field to use as a vertex offset
+          (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="With boundary mask"
+       command="SetVertexBoundary"
+       number_of_elements="1"
+       default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Indicate if a critical point is on the boundary or not.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="With vertex identifiers"
+       command="SetVertexIds"
+       number_of_elements="1"
+       default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Add vertex identifiers on the output.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="With vertex scalars"
+       command="SetVertexScalars"
+       number_of_elements="1"
+       default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Add vertex scalars on the output.
+        </Documentation>
+      </IntVectorProperty>
+
+       <IntVectorProperty
+          name="BackEnd"
+          label="Backend"
+          command="SetBackEnd"
+          number_of_elements="1"
+         default_values="1" 
+         panel_visibility="advanced" >
+		 <EnumerationDomain name="enum">
+          <Entry value="0" text="Default generic backend"/>
+          <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
+        </EnumerationDomain>
+        <Documentation>
+            Backend for the computation of critical points.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StartingResolutionLevel"
+         label="Start resolution level"
+         command="SetStartingResolutionLevel"
+         number_of_elements="1"
+         default_values="0" 
+         panel_visibility="advanced" >
+        <IntRangeDomain name="range" min="-1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="1" />
+        </Hints>
+        <Documentation>
+             Set the starting level of resolution for the progressive approach.
+             Set -1 for the finest level.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StoppingResolutionLevel"
+         label="End resolution level"
+         command="SetStoppingResolutionLevel"
+         number_of_elements="1"
+         default_values="-1" 
+         panel_visibility="advanced" >
+        <IntRangeDomain name="range" min="-1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="1" />
+        </Hints>
+        <Documentation>
+             Set the ending level of resolution for the progressive approach.
+             Set -1 for the finest level.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="IsResumable"
+          label="Resumable Computation"
+          command="SetIsResumable"
+          number_of_elements="1"
+          default_values="1"
+         panel_visibility="advanced" >
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Allow resuming computation from a lower resolution
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="TimeLimit"
+          label="Time Limit (s)"
+          command="SetTimeLimit"
+          number_of_elements="1"
+          default_values="0"
+         panel_visibility="advanced" >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Maximal time of computation for the progressive computation. 
+          Set 0 for no time limit.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFieldNew" />
+        <Property name="With predefined offset" />
+        <Property name="OffsetNew" />
+        <Property name="BackEnd" />
+        <Property name="StartingResolutionLevel" />
+        <Property name="StoppingResolutionLevel" />
+        <Property name="IsResumable" />
+        <Property name="TimeLimit" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="With boundary mask" />
+        <Property name="With vertex identifiers" />
+        <Property name="With vertex scalars" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+      
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+
+      <Hints>
+        <Visibility replace_input="0" />
+      </Hints>
+
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

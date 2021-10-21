@@ -1,0 +1,223 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistenceDiagramDistanceMatrix"
+        class="ttkPersistenceDiagramDistanceMatrix"
+        label="TTK PersistenceDiagramDistanceMatrix">
+      <Documentation
+          long_help="Computes distance matrix between persistence diagrams."
+          shorthelp="Persistence Diagrams Distance Matrix."
+          >
+        This filter computes a distance matrix between an input set of
+        persistence diagrams.
+
+        Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+        Jules Vidal, Joseph Budin, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proceedings of IEEE VIS 2019.
+
+        See also PersistenceDiagram, BottleneckDistance
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="AddInputConnection"
+          clean_command="RemoveAllInputs"
+          multiple_input="1">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="Critical pairs"
+          label="Critical pairs used"
+          command="SetPairType"
+          number_of_elements="1"
+          default_values="-1" >
+        <EnumerationDomain name="enum">
+          <Entry value="-1" text="All pairs : global clustering"/>
+          <Entry value="0" text="min-saddle pairs"/>
+          <Entry value="1" text="saddle-saddle pairs"/>
+          <Entry value="2" text="saddle-max pairs"/>
+        </EnumerationDomain>
+        <Documentation>
+          Specify the types of critical pairs to be taken into account for the clustering.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="n"
+          label="p parameter"
+          command="SetWassersteinMetric"
+          number_of_elements="1"
+          default_values="2"
+          panel_visibility="advanced">
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+          name="DeltaLim"
+          label="Minimal relative precision"
+          command="SetDeltaLim"
+          number_of_elements="1"
+          default_values="0.01"
+          >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="UseAdditionalPrecision"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Minimal precision for the approximation of the Wasserstein
+          distance used in the assignment between diagrams.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+          name="AntiAlpha"
+          label="Geometrical Lifting (alpha)"
+          command="SetAntiAlpha"
+          number_of_elements="1"
+          default_values="0"
+          >
+        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
+        <Documentation>
+          Blending coefficient for the cost evaluation of each critical point
+          matching. By default (1), only distances  in
+          the persistence diagrams are considered between matched critical points. When
+          set to 0, only distances in the original 3D domain are considered
+          between matched critical points.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+          name="Lambda"
+          label="Extremas weight in blending"
+          command="SetLambda"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="lambda" min="0.0" max="1.0"/>
+        <Documentation>
+          Parametrizes the point used for the geometrical coordinates of the persistence pair.
+          Set to 1 to choose the potential extremum, for an increased stability.
+          Set to 0 to choose the other point (saddle point). This is not advised.
+          Set to 0.5 to choose the geometrical middle of the pair points (bad stability)
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+          name="Constraint"
+          label="Filter Pairs"
+          command="SetConstraint"
+          number_of_elements="1"
+          default_values="4"
+          panel_visibility="advanced"
+          >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Use Full Diagrams (SLOW!)"/>
+          <Entry value="1" text="Number Of Pairs"/>
+          <Entry value="2" text="Absolute Persistence"/>
+          <Entry value="3" text="Relative Persistence (Per Diagram)"/>
+          <Entry value="4" text="Relative Persistence (All Diagrams)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Filter the input diagrams pairs.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="MaxNumberOfPairs"
+          command="SetMaxNumberOfPairs"
+          label="Number Of Pairs"
+          number_of_elements="1"
+          default_values="20"
+          panel_visibility="advanced"
+          >
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="Constraint"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Number of high-persistence diagrams pairs to take into
+          account to compute distance.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="MinAbsPersistence"
+          command="SetMinPersistence"
+          label="Minimum Absolute Persistence"
+          number_of_elements="1"
+          default_values="0.0"
+          panel_visibility="advanced"
+          >
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="Constraint"
+              value="2" />
+        </Hints>
+        <Documentation>
+          Minimum absolute persistence of diagram pairs to take into
+          account to compute distance.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+          name="MinRelPersistence"
+          command="SetMinPersistence"
+          label="Minimum Relative Persistence"
+          number_of_elements="1"
+          default_values="0.1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Hints>
+          <Expression type="or">
+            <PropertyWidgetDecorator
+                type="GenericDecorator"
+                mode="visibility"
+                property="Constraint"
+                value="3" />
+            <PropertyWidgetDecorator
+                type="GenericDecorator"
+                mode="visibility"
+                property="Constraint"
+                value="4" />
+          </Expression>
+        </Hints>
+        <Documentation>
+          Minimum relative persistence of diagram pairs to take into
+          account to compute distance.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

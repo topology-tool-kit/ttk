@@ -23,9 +23,8 @@
 #endif
 
 // base code includes
+#include <AssignmentMunkres.h>
 #include <GabowTarjan.h>
-#include <Munkres.h>
-#include <PersistenceDiagram.h>
 #include <Triangulation.h>
 
 #include <functional>
@@ -45,7 +44,7 @@ namespace ttk {
       this->setDebugMsgPrefix("BottleneckDistance");
     }
 
-    ~BottleneckDistance(){};
+    ~BottleneckDistance() = default;
 
     template <typename dataType>
     int execute(bool usePersistenceMetric);
@@ -197,7 +196,7 @@ namespace ttk {
                            int nbCol,
                            std::vector<std::vector<dataType>> &matrix,
                            std::vector<matchingTuple> &matchings,
-                           Munkres &solver);
+                           AssignmentMunkres<dataType> &solver);
 
     template <typename dataType>
     void solveInfinityWasserstein(int nbRow,

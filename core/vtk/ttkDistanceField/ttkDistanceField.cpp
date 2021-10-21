@@ -1,214 +1,138 @@
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+
 #include <ttkDistanceField.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkDistanceField);
 
-vtkStandardNewMacro(ttkDistanceField)
-
-  ttkDistanceField::ttkDistanceField()
-  : identifiers_{} {
-  OutputScalarFieldType = 0;
-  OutputScalarFieldName = "OutputDistanceField";
-  ForceInputVertexScalarField = false;
-  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
-  UseAllCores = true;
-  SetNumberOfInputPorts(2);
-
-  triangulation_ = NULL;
-}
-
-ttkDistanceField::~ttkDistanceField() {
+ttkDistanceField::ttkDistanceField() {
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
 int ttkDistanceField::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  if(port == 1)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
-
-  return 1;
-}
-
-int ttkDistanceField::getTriangulation(vtkDataSet *input) {
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-  triangulation_->setWrapper(this);
-  distanceField_.setWrapper(this);
-
-  distanceField_.setupTriangulation(triangulation_);
-  Modified();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkDistanceField] Error : ttkTriangulation allocation problem."
-         << endl;
-    return -1;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
   }
-#endif
-
   return 0;
 }
 
-int ttkDistanceField::getIdentifiers(vtkDataSet *input) {
-  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
-    identifiers_
-      = input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
-  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_ = input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(!identifiers_) {
-    cerr << "[ttkDistanceField] Error : wrong vertex identifiers." << endl;
-    return -1;
+int ttkDistanceField::FillOutputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-#endif
-
   return 0;
 }
 
-int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
-                           vector<vtkDataSet *> &outputs) {
+int ttkDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
+  ttk::Timer globalTimer;
 
-  Memory m;
+  vtkDataSet *domain = vtkDataSet::GetData(inputVector[0]);
+  vtkPointSet *sources = vtkPointSet::GetData(inputVector[1]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  vtkDataSet *domain = vtkDataSet::SafeDownCast(inputs[0]);
-  vtkPointSet *sources = vtkPointSet::SafeDownCast(inputs[1]);
-  vtkDataSet *output = vtkDataSet::SafeDownCast(outputs[0]);
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
+  if(triangulation == nullptr) {
+    this->printErr("Wrong triangulation.");
+    return 0;
+  }
 
+  this->preconditionTriangulation(triangulation);
+
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  auto *identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField,
+                                                  0, ttk::VertexScalarFieldName,
+                                                  sources, idSpareStorage);
+  if(identifiers == nullptr) {
+    printErr("Wrong identifiers.");
+    return 0;
+  }
+
+  const int numberOfPointsInDomain = domain->GetNumberOfPoints();
+  if(numberOfPointsInDomain == 0) {
+    printErr("Domain has no points.");
+    return 0;
+  }
+
+  const int numberOfPointsInSources = sources->GetNumberOfPoints();
+  if(numberOfPointsInSources == 0) {
+    printErr("Sources have no points.");
+    return 0;
+  }
+
+  vtkNew<ttkSimplexIdTypeArray> origin{};
+  origin->SetNumberOfComponents(1);
+  origin->SetNumberOfTuples(numberOfPointsInDomain);
+  origin->SetName(ttk::VertexScalarFieldName);
+
+  vtkNew<ttkSimplexIdTypeArray> seg{};
+  seg->SetNumberOfComponents(1);
+  seg->SetNumberOfTuples(numberOfPointsInDomain);
+  seg->SetName("SeedIdentifier");
+
+  this->setVertexNumber(numberOfPointsInDomain);
+  this->setSourceNumber(numberOfPointsInSources);
+  this->setVertexIdentifierScalarFieldPointer(identifiers);
+  this->setOutputIdentifiers(ttkUtils::GetVoidPointer(origin));
+  this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
+
+  vtkSmartPointer<vtkDataArray> distanceScalars{};
   int ret{};
-
-  ret = getTriangulation(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkDistanceField] Error : wrong triangulation." << endl;
-    return -1;
-  }
-#endif
-
-  ret = getIdentifiers(sources);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkDistanceField] Error : wrong identifiers." << endl;
-    return -2;
-  }
-#endif
-
-  const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!numberOfPointsInDomain) {
-    cerr << "[ttkDistanceField] Error : domain has no points." << endl;
-    return -3;
-  }
-#endif
-
-  const SimplexId numberOfPointsInSources = sources->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!numberOfPointsInSources) {
-    cerr << "[ttkDistanceField] Error : sources have no points." << endl;
-    return -4;
-  }
-#endif
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> origin
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  if(origin) {
-    origin->SetNumberOfComponents(1);
-    origin->SetNumberOfTuples(numberOfPointsInDomain);
-    origin->SetName(ttk::VertexScalarFieldName);
-  }
-#ifndef TTK_ENABLE_KAMIKAZE
-  else {
-    cerr
-      << "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem."
-      << endl;
-    return -5;
-  }
-#endif
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> seg
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  if(seg) {
-    seg->SetNumberOfComponents(1);
-    seg->SetNumberOfTuples(numberOfPointsInDomain);
-    seg->SetName("SeedIdentifier");
-  }
-#ifndef TTK_ENABLE_KAMIKAZE
-  else {
-    cerr
-      << "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem."
-      << endl;
-    return -6;
-  }
-#endif
-
-  distanceField_.setVertexNumber(numberOfPointsInDomain);
-  distanceField_.setSourceNumber(numberOfPointsInSources);
-
-  distanceField_.setVertexIdentifierScalarFieldPointer(
-    identifiers_->GetVoidPointer(0));
-  distanceField_.setOutputIdentifiers(origin->GetVoidPointer(0));
-  distanceField_.setOutputSegmentation(seg->GetVoidPointer(0));
-
-  vtkDataArray *distanceScalars{};
-  switch(OutputScalarFieldType) {
+  switch(static_cast<DistanceType>(OutputScalarFieldType)) {
     case DistanceType::Float:
       distanceScalars = vtkFloatArray::New();
-      if(distanceScalars) {
-        distanceScalars->SetNumberOfComponents(1);
-        distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
-        distanceScalars->SetName(OutputScalarFieldName.data());
-      }
-#ifndef TTK_ENABLE_KAMIKAZE
-      else {
-        cerr << "[ttkDistanceField] Error : vtkFloatArray allocation problem."
-             << endl;
-        return -7;
-      }
-#endif
+      distanceScalars->SetNumberOfComponents(1);
+      distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
+      distanceScalars->SetName(OutputScalarFieldName.data());
 
-      distanceField_.setOutputScalarFieldPointer(
-        distanceScalars->GetVoidPointer(0));
-      ret = distanceField_.execute<float>();
+      this->setOutputScalarFieldPointer(
+        ttkUtils::GetVoidPointer(distanceScalars));
+      ttkTemplateMacro(
+        triangulation->getType(), (ret = this->execute<float, TTK_TT>(
+                                     (TTK_TT *)triangulation->getData())));
       break;
 
     case DistanceType::Double:
       distanceScalars = vtkDoubleArray::New();
-      if(distanceScalars) {
-        distanceScalars->SetNumberOfComponents(1);
-        distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
-        distanceScalars->SetName(OutputScalarFieldName.data());
-      }
-#ifndef TTK_ENABLE_KAMIKAZE
-      else {
-        cerr << "[ttkDistanceField] Error : vtkDoubleArray allocation problem."
-             << endl;
-        return -8;
-      }
-#endif
+      distanceScalars->SetNumberOfComponents(1);
+      distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
+      distanceScalars->SetName(OutputScalarFieldName.data());
 
-      distanceField_.setOutputScalarFieldPointer(
-        distanceScalars->GetVoidPointer(0));
-      ret = distanceField_.execute<double>();
+      this->setOutputScalarFieldPointer(
+        ttkUtils::GetVoidPointer(distanceScalars));
+
+      ttkTemplateMacro(
+        triangulation->getType(), (ret = this->execute<double, TTK_TT>(
+                                     (TTK_TT *)triangulation->getData())));
       break;
 
     default:
-#ifndef TTK_ENABLE_KAMIKAZE
-      cerr << "[ttkDistanceField] Error : Scalar field type problem." << endl;
-      return -9;
-#endif
+      printErr("Invalid scalar field type.");
+      return 0;
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
-  if(ret) {
-    cerr << "[ttkDistanceField] DistanceField.execute() error code : " << ret
-         << endl;
-    return -10;
+  if(ret != 0) {
+    printErr("DistanceField.execute() error code : " + std::to_string(ret));
+    return 0;
   }
-#endif
 
   // update result
   output->ShallowCopy(domain);
@@ -217,12 +141,5 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   output->GetPointData()->AddArray(seg);
   distanceScalars->Delete();
 
-  {
-    stringstream msg;
-    msg << "[ttkDistanceField] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return ret;
+  return 1;
 }

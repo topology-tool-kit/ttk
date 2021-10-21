@@ -1,3 +1,7 @@
+/// \defgroup vtk vtk
+/// \brief The Topology ToolKit - VTK wrapping code for the processing
+/// packages.
+/// @{
 /// \ingroup vtk
 /// \class ttkAlgorithm
 /// \author Jonas Lukasczyk <jl@jluk.de>
@@ -14,20 +18,11 @@
 // VTK Module
 #include <ttkAlgorithmModule.h>
 
-// std includes
-#include <unordered_map>
-
 // VTK Includes
 #include <vtkAlgorithm.h>
-class vtkCellArray;
-class vtkCommand;
 class vtkDataSet;
 class vtkInformation;
 class vtkInformationIntegerKey;
-class vtkPoints;
-
-template <class d0>
-class vtkSmartPointer;
 
 // Base Includes
 #include <Debug.h>
@@ -35,46 +30,12 @@ class vtkSmartPointer;
 namespace ttk {
   class Triangulation;
 }
-// #include <Triangulation.h>
 
 class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
                                          virtual public ttk::Debug {
 private:
-  /**
-   * A static registry that maps owners (e.g. vtkCellArrays or vtkImageData
-   * objects) to a ttk::Triangulation object. The registry also checks if a
-   * triangulation needs to be updated in case the owner was modified since
-   * initialization, and it also stores an event listener that automatically
-   * deletes a triangulation if its corresponding owner is deleted.
-   */
-  static std::unordered_map<void *,
-                            std::tuple<ttk::Triangulation,
-                                       vtkObject *,
-                                       vtkSmartPointer<vtkCommand>,
-                                       vtkMTimeType>>
-    DataSetToTriangulationMap;
-
   int ThreadNumber{1};
   bool UseAllCores{true};
-
-  /**
-   * This function checks if the registry contains a triangulation for a given
-   * owner. It also checks if the triangulation would need an update, in which
-   * case the triangulation and its auxiliary objects are deleted from the
-   * registry (now a new triangulation can be recreated from scratch).
-   */
-  ttk::Triangulation *FindTriangulation(void *key);
-
-  /**
-   * This function creates a ttk::Triangulation object for a given.
-   * Specifically, it initializes either an explicit ttk::Triangulation (in case
-   * points and cells are provided), or an implicit triangulation (in case owner
-   * is a vtkImageData object).
-   */
-  ttk::Triangulation *InitTriangulation(void *key,
-                                        vtkObject *owner,
-                                        vtkPoints *points = nullptr,
-                                        vtkCellArray *cells = nullptr);
 
 public:
   static ttkAlgorithm *New();
@@ -98,7 +59,7 @@ public:
   void SetThreadNumber(int threadNumber) {
     this->ThreadNumber = threadNumber;
     this->UpdateThreadNumber();
-  };
+  }
 
   /**
    * Controls if the base code should use all available cores.
@@ -106,7 +67,7 @@ public:
   void SetUseAllCores(bool useAllCores) {
     this->UseAllCores = useAllCores;
     this->UpdateThreadNumber();
-  };
+  }
 
   /**
    * Controls the debug level used by algorithms that are invoked by the VTK
@@ -115,7 +76,7 @@ public:
   void SetDebugLevel(int debugLevel) {
     this->setDebugLevel(debugLevel); // from ttk::Debug
     this->Modified();
-  };
+  }
 
   /// This method retrieves an optional array to process.
   /// The logic of this method is as follows:
@@ -130,8 +91,46 @@ public:
   vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
                                  const int &arrayIndex,
                                  const std::string &arrayName,
-                                 vtkInformationVector **inputVectors,
+                                 vtkDataSet *const inputData,
                                  const int &inputPort = 0);
+
+  /**
+   * Returns a string containing the name of the corresponding offset
+   * field from a given scalar field
+   */
+  static std::string GetOrderArrayName(vtkDataArray *const array);
+
+  /**
+   * Retrieves an offset field from the given scalar field \p sfArray
+   * or generates one, either disambiguated with the implicit vertex
+   * identifier field, or with a user-provided offset field through
+   * the \p enforceArrayIndex parameter and the \p arrayIndex. The
+   * generated sorted offset field is then attached to the input
+   * vtkDataset \p inputData.
+   */
+  vtkDataArray *GetOrderArray(vtkDataSet *const inputData,
+                              const int scalarArrayIdx,
+                              const int orderArrayIdx = 0,
+                              const bool enforceOrderArrayIdx = false);
+
+  /**
+   * Retrieve an identifier field and provides a ttk::SimplexId
+   * pointer to the underlaying buffer.
+   *
+   * Use the same parameters as GetOptionalArray to fetch the VTK data
+   * array.
+   *
+   * Fills the vector \p spareStorage if the VTK data array is not a
+   * ttkSimplexIdTypeArray. This vector should have a lifetime of a
+   * least the filter's RequestData method.
+   */
+  ttk::SimplexId *
+    GetIdentifierArrayPtr(const bool &enforceArrayIndex,
+                          const int &arrayIndex,
+                          const std::string &arrayName,
+                          vtkDataSet *const inputData,
+                          std::vector<ttk::SimplexId> &spareStorage,
+                          const int inputPort = 0);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
@@ -175,6 +174,28 @@ public:
                      vtkInformationVector **inputVectors,
                      vtkInformationVector *outputVector) override;
 
+  /**
+   * Get the output data object for a port on this algorithm.
+   */
+  vtkDataSet *GetOutput();
+  vtkDataSet *GetOutput(int);
+
+  /**
+   * Assign a data object as input. Note that this method does not
+   * establish a pipeline connection. Use SetInputConnection() to
+   * setup a pipeline connection.
+   */
+  void SetInputData(vtkDataSet *);
+  void SetInputData(int, vtkDataSet *);
+
+  /**
+   * Assign a data object as input. Note that this method does not
+   * establish a pipeline connection. Use AddInputConnection() to
+   * setup a pipeline connection.
+   */
+  void AddInputData(vtkDataSet *);
+  void AddInputData(int, vtkDataSet *);
+
 protected:
   ttkAlgorithm();
   virtual ~ttkAlgorithm();
@@ -200,9 +221,10 @@ protected:
    * provide information about new vtkImageData output objects, such as
    * their extend, spacing, and origin.
    */
-  virtual int RequestInformation(vtkInformation *request,
-                                 vtkInformationVector **inputVectors,
-                                 vtkInformationVector *outputVector) {
+  virtual int
+    RequestInformation(vtkInformation *ttkNotUsed(request),
+                       vtkInformationVector **ttkNotUsed(inputVectors),
+                       vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   }
 
@@ -212,9 +234,10 @@ protected:
    *
    * In general it should not be necessary to override this method.
    */
-  virtual int RequestUpdateTime(vtkInformation *request,
-                                vtkInformationVector **inputVectors,
-                                vtkInformationVector *outputVector) {
+  virtual int
+    RequestUpdateTime(vtkInformation *ttkNotUsed(request),
+                      vtkInformationVector **ttkNotUsed(inputVectors),
+                      vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   }
 
@@ -224,10 +247,10 @@ protected:
    *
    * In general it should not be necessary to override this method.
    */
-  virtual int
-    RequestUpdateTimeDependentInformation(vtkInformation *request,
-                                          vtkInformationVector **inputVectors,
-                                          vtkInformationVector *outputVector) {
+  virtual int RequestUpdateTimeDependentInformation(
+    vtkInformation *ttkNotUsed(request),
+    vtkInformationVector **ttkNotUsed(inputVectors),
+    vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
   }
 
@@ -239,11 +262,12 @@ protected:
    * In general it should not be necessary to override this method unless
    * the filter supports spatial or temporal streaming.
    */
-  virtual int RequestUpdateExtent(vtkInformation *request,
-                                  vtkInformationVector **inputVectors,
-                                  vtkInformationVector *outputVector) {
+  virtual int
+    RequestUpdateExtent(vtkInformation *ttkNotUsed(request),
+                        vtkInformationVector **ttkNotUsed(inputVectors),
+                        vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
-  };
+  }
 
   /**
    * This method is called during the sixth pipeline pass in
@@ -252,11 +276,12 @@ protected:
    *
    * In general it should not be necessary to override this method.
    */
-  virtual int RequestDataNotGenerated(vtkInformation *request,
-                                      vtkInformationVector **inputVectors,
-                                      vtkInformationVector *outputVector) {
+  virtual int
+    RequestDataNotGenerated(vtkInformation *ttkNotUsed(request),
+                            vtkInformationVector **ttkNotUsed(inputVectors),
+                            vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
-  };
+  }
 
   /**
    * This method is called during the seventh pipeline pass in
@@ -266,11 +291,11 @@ protected:
    * This method has to be overridden in order to implement the purpose of
    * the filter.
    */
-  virtual int RequestData(vtkInformation *request,
-                          vtkInformationVector **inputVectors,
-                          vtkInformationVector *outputVector) {
+  virtual int RequestData(vtkInformation *ttkNotUsed(request),
+                          vtkInformationVector **ttkNotUsed(inputVectors),
+                          vtkInformationVector *ttkNotUsed(outputVector)) {
     return 1;
-  };
+  }
 
   /**
    * This method specifies the required input object data types of the
@@ -280,10 +305,11 @@ protected:
    * This method has to be overridden to specify the required input data
    * types.
    */
-  virtual int FillInputPortInformation(int port,
-                                       vtkInformation *info) override {
+  virtual int
+    FillInputPortInformation(int ttkNotUsed(port),
+                             vtkInformation *ttkNotUsed(info)) override {
     return 0;
-  };
+  }
 
   /**
    * This method specifies in the port information the data type of the
@@ -295,8 +321,11 @@ protected:
    * This method has to be overridden to specify the data types of the
    * outputs.
    */
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override {
+  virtual int
+    FillOutputPortInformation(int ttkNotUsed(port),
+                              vtkInformation *ttkNotUsed(info)) override {
     return 0;
-  };
+  }
 };
+
+/// @}

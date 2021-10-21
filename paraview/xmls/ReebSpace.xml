@@ -1,0 +1,522 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkReebSpace"
+     class="ttkReebSpace"
+     label="TTK ReebSpace">
+     <Documentation
+        long_help="TTK plugin that efficiently computes the Reeb space of
+bivariate volumetric data."
+        short_help="TTK plugin that efficiently computes the Reeb space of
+bivariate volumetric data.">
+
+The Reeb space is a useful topological abstraction of bivariate scalar
+fields for data segmentation purposes. Intuitively, it allows the automatic
+separation of volumetric regions that project to the same areas in the
+range. This class also implements a simplification heuristic for progressive
+coarsening. Used in conjunction with continuous scatterplots, this class
+enables continuous scattterplot peeling for instance.
+
+The input data must be provided as two independent point data scalar fields
+defined on the geometry.
+WARNING: Only tetrahedral meshes are supported.
+
+Related publication:
+"Jacobi Fiber Surfaces for Bivariate Reeb Space Computation"
+Julien Tierny, Hamish Carr
+Proc. of IEEE VIS 2016.
+IEEE Transactions on Visualization and Computer Graphics, 2016.
+
+See also ContinuousScatterplot, JacobiSet, Fiber, FiberSurface,
+ProjectionFromField, RangePolygon.
+
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the U component of the bivariate field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the V component of the bivariate field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="With predefined offset"
+        label="Force Input Offset Field"
+        command="SetForceInputOffsetScalarField"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="U Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the scalar field to use as a vertex offset for the
+u-coordinate (used to disambiguate collinear edges).
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="V Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the scalar field to use as a vertex offset for the
+v-coordinate (used to disambiguate collinear edges).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="SimplificationCriterion"
+        command="SetSimplificationCriterion"
+        number_of_elements="1" default_values="1">
+        <EnumerationDomain name="enum">
+                <Entry value="0" text="Domain Volume"/>
+                <Entry value="1" text="Range Area"/>
+                <Entry value="2" text="Hyper Volume"/>
+        </EnumerationDomain>
+        <Documentation>
+          Set the simplification criterion.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="SimplificationThreshold"
+        label="Simplification Threshold"
+        command="SetSimplificationThreshold"
+        number_of_elements="1"
+        default_values="0">
+        <DoubleRangeDomain name="range" min="0" max="1" />
+        <Documentation>
+          Threshold for the simplification of the Reeb space.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+         name="OctreeAcceleration"
+         label="With Range Query Acceleration"
+         command="SetUseOctreeAcceleration"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use range driven octree for range query accelerations.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="0-scalar"
+        label="With field values"
+        command="SetZeroSheetValue"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the input field values on the 0-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="0-vertexId"
+        label="With vertex Ids"
+        command="SetZeroSheetVertexId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the vertex Ids on the 0-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="0-type"
+        label="With sheet type"
+        command="SetZeroSheetType"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the sheet type on the 0-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="0-sheetId"
+        label="With sheet Ids"
+        command="SetZeroSheetId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the sheet Ids on the 0-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="1-scalar"
+        label="With field values"
+        command="SetOneSheetValue"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the input field values on the 1-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="1-vertexId"
+        label="With vertex Ids"
+        command="SetOneSheetVertexId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the vertex Ids on the 1-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="1-edgeId"
+        label="With edge Ids"
+        command="SetOneSheetEdgeId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the edge Ids on the 1-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty name="1-type"
+        label="With sheet type"
+        command="SetOneSheetType"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the sheet type on the 1-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="1-sheetId"
+        label="With sheet Ids"
+        command="SetOneSheetId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the sheet Ids on the 1-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheets"
+        label="With 2-sheets"
+        command="SetTwoSheets"
+        number_of_elements="1"
+        default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to visualize the 2-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetValue"
+        label="With field values"
+        command="SetTwoSheetValue"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the input field values on the 2-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetParameterization"
+        label="With edge length parameterization"
+        command="SetTwoSheetParameterization"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the edge-length parameterization
+          on the 2-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetId"
+        label="With sheet Ids"
+        command="SetTwoSheetId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the sheet Ids on the 2-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetEdgeId"
+        label="With edge Ids"
+        command="SetTwoSheetEdgeId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the 1-sheet edgeIds on the 2-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetTetId"
+        label="With tet Ids"
+        command="SetTwoSheetTetId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the tetIds on the 2-sheets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetCaseId"
+        label="With case Ids"
+        command="SetTwoSheetCaseId"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the case Ids for each 2-sheet triangle.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-sheetEdgeType"
+        label="With edge type"
+        command="SetTwoSheetEdgeType"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the edge type of the corresponding edge in the
+          1-sheet.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="3-sheetVertexNumber"
+        label="3-sheet vertex number"
+        command="SetThreeSheetVertexNumber"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the number of vertices per 3-sheet as an extra
+          attribute field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="3-sheetTetNumber"
+        label="3-sheet tet number"
+        command="SetThreeSheetTetNumber"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the number of tetrahedra per 3-sheet as an
+          extra attribute field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="3-sheetExpansion"
+        label="3-sheet expansion"
+        command="SetThreeSheetExpansion"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to trigger the expansion of the 3-sheets to their
+          maximal extent.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="3-sheetDomainVolume"
+        label="3-sheet domain volume"
+        command="SetThreeSheetDomainVolume"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the volume in the domain of each 3-sheet as an
+          extra attribute field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="3-sheetRangeArea"
+        label="3-sheet range area"
+        command="SetThreeSheetRangeArea"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the area in the range of each 3-sheet as an
+          extra attribute field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="3-sheetHyperVolume"
+        label="3-sheet hyper volume"
+        command="SetThreeSheetHyperVolume"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to save the hyper-volume of each 3-sheet as an
+          extra attribute field.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="U Component" />
+        <Property name="V Component" />
+        <Property name="With predefined offset" />
+        <Property name="U Offset Field" />
+        <Property name="V Offset Field" />
+        <Property name="SimplificationCriterion" />
+        <Property name="SimplificationThreshold" />
+        <Property name="OctreeAcceleration" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options - 0-sheets">
+        <Property name="0-scalar" />
+        <Property name="0-vertexId" />
+        <Property name="0-type" />
+        <Property name="0-sheetId" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options - 1-sheets">
+        <Property name="1-scalar" />
+        <Property name="1-vertexId" />
+        <Property name="1-edgeId" />
+        <Property name="1-type" />
+        <Property name="1-sheetId" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options - 2-sheets">
+        <Property name="2-sheets" />
+        <Property name="2-sheetValue" />
+        <Property name="2-sheetParameterization" />
+        <Property name="2-sheetId" />
+        <Property name="2-sheetEdgeId" />
+        <Property name="2-sheetTetId" />
+        <Property name="2-sheetCaseId" />
+        <Property name="2-sheetEdgeType" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options - 3-sheets">
+        <Property name="3-sheetVertexNumber" />
+        <Property name="3-sheetTetNumber" />
+        <Property name="3-sheetExpansion" />
+        <Property name="3-sheetDomainVolume" />
+        <Property name="3-sheetRangeArea" />
+        <Property name="3-sheetHyperVolume" />
+      </PropertyGroup>
+
+      <OutputPort name="0-sheets" index="0" id="port0" />
+      <OutputPort name="1-sheets" index="1" id="port1"/>
+      <OutputPort name="2-sheets" index="2" id="port2" default_values="0" />
+      <OutputPort name="3-sheets" index="3" id="port3"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Bivariate Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

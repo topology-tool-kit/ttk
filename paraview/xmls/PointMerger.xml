@@ -1,0 +1,68 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkPointMerger"
+     class="ttkPointMerger"
+     label="TTK PointMerger">
+     <Documentation
+        long_help="TTK plugin for point merging."
+        short_help="TTK plugin for point merging.">
+          This plugin merges the points of a mesh whose distance is lower than
+a user defined threshold.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="BoundaryOnly"
+        label="Boundary only"
+        command="SetBoundaryOnly"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Only merge points on the boundary.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="DistanceThreshold"
+         label="Distance threshold"
+         command="SetDistanceThreshold"
+         number_of_elements="1"
+         default_values="0.001" >
+        <DoubleRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+          Distance threshold for point merging.
+         </Documentation>
+      </DoubleVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="BoundaryOnly" />
+        <Property name="DistanceThreshold" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

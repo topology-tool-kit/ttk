@@ -1,6 +1,7 @@
 # Hidden files
 .*
 !.gitignore
+!.github
 
 # Temporary and backup files
 \#*\#

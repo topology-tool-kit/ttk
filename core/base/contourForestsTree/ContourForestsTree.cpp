@@ -15,12 +15,11 @@ using namespace ttk;
 using namespace cf;
 
 ContourForestsTree::ContourForestsTree(Params *const params,
-                                       Triangulation *mesh,
                                        Scalars *const scalars,
                                        idPartition part)
-  : MergeTree(params, mesh, scalars, TreeType::Contour, part),
-    jt_(new MergeTree(params, mesh, scalars, TreeType::Join, part)),
-    st_(new MergeTree(params, mesh, scalars, TreeType::Split, part)) {
+  : MergeTree(params, scalars, TreeType::Contour, part),
+    jt_(new MergeTree(params, scalars, TreeType::Join, part)),
+    st_(new MergeTree(params, scalars, TreeType::Split, part)) {
 }
 
 ContourForestsTree::~ContourForestsTree() {
@@ -225,12 +224,12 @@ int ContourForestsTree::combine(const SimplexId &seed0,
 
       // If the created arc cross tha above or below interface, keep this info
       if(s0 != nullVertex) {
-        overlapB = (isEqHigher(currentNode->getVertexId(), s0)
-                    != isEqHigher(parentNode->getVertexId(), s0));
+        overlapB = (isHigher(currentNode->getVertexId(), s0)
+                    != isHigher(parentNode->getVertexId(), s0));
       }
       if(s1 != nullVertex) {
-        overlapA = (isEqHigher(currentNode->getVertexId(), s1)
-                    != isEqHigher(parentNode->getVertexId(), s1));
+        overlapA = (isHigher(currentNode->getVertexId(), s1)
+                    != isHigher(parentNode->getVertexId(), s1));
       }
 
       idSuperArc createdArc;

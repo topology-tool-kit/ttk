@@ -13,6 +13,9 @@ ttkDataSetInterpolator::ttkDataSetInterpolator() {
   this->setDebugMsgPrefix("DataSetInterpolator");
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
+
+  vtkWarningMacro("`TTK DataSetInterpolator' is now deprecated. Please use "
+                  "`ResampleWithDataset' instead.");
 }
 ttkDataSetInterpolator::~ttkDataSetInterpolator() {
 }
@@ -35,7 +38,7 @@ int ttkDataSetInterpolator::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDataSetInterpolator::RequestData(vtkInformation *request,
+int ttkDataSetInterpolator::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   ttk::Timer t;

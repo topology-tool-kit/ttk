@@ -35,71 +35,43 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \b Related \b publication \n
+/// \b Related \b publications \n
 /// "Generalized Topological Simplification of Scalar Fields on Surfaces" \n
 /// Julien Tierny, Valerio Pascucci \n
 /// Proc. of IEEE VIS 2012.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2012.
 ///
+/// "Localized Topological Simplification of Scalar Data"
+/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+/// Proc. of IEEE VIS 2020.
+/// IEEE Transactions on Visualization and Computer Graphics
+///
+/// \sa ttkTopologicalSimplificationByPersistence
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
 /// \sa ttkFTMTree
+/// \sa ttkMorseSmaleComplex
 /// \sa ttkIdentifiers
 /// \sa ttk::TopologicalSimplification
-#ifndef _TTK_TOPOLOGICALSIMPLIFICATION_H
-#define _TTK_TOPOLOGICALSIMPLIFICATION_H
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
+#pragma once
 
 // VTK Module
 #include <ttkTopologicalSimplificationModule.h>
 
 // ttk code includes
 #include <TopologicalSimplification.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-#include <ttkTriangulation.h>
+class vtkDataArray;
 
 class TTKTOPOLOGICALSIMPLIFICATION_EXPORT ttkTopologicalSimplification
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::TopologicalSimplification {
 
 public:
   static ttkTopologicalSimplification *New();
-  vtkTypeMacro(ttkTopologicalSimplification, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkTypeMacro(ttkTopologicalSimplification, ttkAlgorithm);
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
@@ -110,58 +82,29 @@ public:
   vtkSetMacro(AddPerturbation, bool);
   vtkGetMacro(AddPerturbation, bool);
 
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
-  vtkSetMacro(OutputOffsetScalarFieldName, std::string);
-  vtkGetMacro(OutputOffsetScalarFieldName, std::string);
-
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
+  vtkSetMacro(UseLTS, bool);
+  vtkGetMacro(UseLTS, bool);
 
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
-
-  int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
-  int getIdentifiers(vtkPointSet *input);
-  int getOffsets(vtkDataSet *input);
-
-  template <typename VTK_TT>
-  int dispatch();
+  vtkSetMacro(PersistenceThreshold, double);
+  vtkGetMacro(PersistenceThreshold, double);
 
 protected:
   ttkTopologicalSimplification();
 
-  ~ttkTopologicalSimplification() override;
-
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int ScalarFieldId;
-  int OffsetFieldId;
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  std::string OutputOffsetScalarFieldName;
-  bool ForceInputVertexScalarField;
-  std::string InputVertexScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool PeriodicBoundaryConditions;
-  bool ConsiderIdentifierAsBlackList;
-  bool AddPerturbation;
-  bool hasUpdatedMesh_;
-
-  ttk::TopologicalSimplification topologicalSimplification_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *identifiers_;
-  vtkDataArray *inputScalars_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
+  bool ForceInputVertexScalarField{false};
+  bool ForceInputOffsetScalarField{false};
+  bool ConsiderIdentifierAsBlackList{false};
+  bool AddPerturbation{false};
+  bool UseLTS{true};
+  double PersistenceThreshold{0};
 };
-
-#endif // _TTK_TOPOLOGICALSIMPLIFICATION_H

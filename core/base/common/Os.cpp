@@ -12,17 +12,14 @@
 
 #include <windows.h>
 
-#include <ciso646>
 #include <cwchar>
 #include <direct.h>
 #include <stdint.h>
-#include <time.h>
 
 #elif defined(__unix__) || defined(__APPLE__)
 
 #include <dirent.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -37,7 +34,9 @@ namespace ttk {
 #ifdef _WIN32
     directoryPath = _getcwd(NULL, 0);
 #else
-    directoryPath = getcwd(NULL, PATH_MAX);
+    std::vector<char> cwdName(PATH_MAX);
+    char *returnedString = getcwd(cwdName.data(), cwdName.size());
+    directoryPath = std::string{returnedString};
 #endif
     directoryPath += "/";
 
@@ -67,30 +66,6 @@ namespace ttk {
     return omp_get_num_procs();
 #endif
     return 1;
-  }
-
-  double OsCall::getTimeStamp() {
-#ifdef _WIN32
-    LARGE_INTEGER frequency;
-    QueryPerformanceFrequency(&frequency);
-
-    LARGE_INTEGER temp;
-    QueryPerformanceCounter(&temp);
-
-    return (double)temp.QuadPart / frequency.QuadPart;
-#endif
-
-#ifdef __APPLE__
-    struct timeval stamp;
-    gettimeofday(&stamp, NULL);
-    return (stamp.tv_sec * 1000000 + stamp.tv_usec) / 1000000.0;
-#endif
-
-#ifdef __unix__
-    struct timeval stamp;
-    gettimeofday(&stamp, NULL);
-    return (stamp.tv_sec * 1000000 + stamp.tv_usec) / 1000000.0;
-#endif
   }
 
   std::vector<std::string>

@@ -10,11 +10,14 @@
 function(ttk_add_base_library library)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;DEPENDS;OPTIONAL_DEPENDS" ${ARGN})
 
-  add_library(${library}
-    STATIC
-      ${ARG_SOURCES}
-      ${ARG_HEADERS}
-    )
+  if(TTK_ENABLE_SHARED_BASE_LIBRARIES)
+    add_library(${library} SHARED ${ARG_SOURCES} ${ARG_HEADERS})
+  else()
+    add_library(${library} STATIC ${ARG_SOURCES} ${ARG_HEADERS})
+  endif()
+
+  set_target_properties(${library} PROPERTIES OUTPUT_NAME "ttkBase${library}")
+
   set_target_properties(${library}
     PROPERTIES
       POSITION_INDEPENDENT_CODE TRUE
@@ -22,7 +25,7 @@ function(ttk_add_base_library library)
   target_include_directories(${library}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:include/ttk/base>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ttk/base>
     )
 
   if(ARG_DEPENDS)
@@ -36,22 +39,15 @@ function(ttk_add_base_library library)
       endif()
     endforeach()
   endif()
- 
+
   ttk_set_compile_options(${library})
 
   install(TARGETS ${library}
-    EXPORT
-      TTKBaseTargets
-    RUNTIME DESTINATION
-      "${CMAKE_INSTALL_BINDIR}/ttk"
-    ARCHIVE DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk"
-    LIBRARY DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk"
+    EXPORT TTKBaseTargets
     )
 
   if(ARG_HEADERS)
-    install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
+    install(FILES ${ARG_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ttk/base)
   endif()
 endfunction()
 
@@ -74,8 +70,12 @@ function(ttk_add_base_template_library library)
   target_include_directories(${library}
     INTERFACE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:include/ttk/base>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ttk/base>
     )
+
+  if(TTK_ENABLE_DOUBLE_TEMPLATING)
+    target_compile_definitions(${library} INTERFACE TTK_ENABLE_DOUBLE_TEMPLATING)
+  endif()
 
   if(TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
@@ -90,7 +90,7 @@ function(ttk_add_base_template_library library)
 
   if(TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP)
-    target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
+    target_link_libraries(${library} INTERFACE OpenMP::OpenMP_CXX)
   endif()
 
   if(ARG_DEPENDS)
@@ -107,15 +107,9 @@ function(ttk_add_base_template_library library)
 
   install(TARGETS ${library}
     EXPORT TTKBaseTargets
-    RUNTIME DESTINATION
-      "${CMAKE_INSTALL_BINDIR}/ttk"
-    ARCHIVE DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk"
-    LIBRARY DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk"
     )
 
-  install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
+  install(FILES ${ARG_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ttk/base")
 endfunction()
 
 # Add compile flags and defintions to the target
@@ -131,18 +125,26 @@ function(ttk_set_compile_options library)
   # compilation flags
   target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
 
+  # linker flags
+  if(TTK_LINKER_FLAGS)
+    target_link_options(${library} PRIVATE ${TTK_LINKER_FLAGS})
+  endif()
+
+  if (TTK_ENABLE_DOUBLE_TEMPLATING)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_DOUBLE_TEMPLATING)
+  endif()
+
+  if (TTK_ENABLE_SHARED_BASE_LIBRARIES)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SHARED_BASE_LIBRARIES)
+  endif()
+
   if (TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
   endif()
 
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
-    target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
-    target_link_libraries(${library} PUBLIC ${OpenMP_CXX_LIBRARIES})
-
-    if (TTK_ENABLE_OMP_PRIORITY)
-      target_compile_definitions(${library} PUBLIC TTK_ENABLE_OMP_PRIORITY)
-    endif()
+    target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
   endif()
 
   if (TTK_ENABLE_MPI)
@@ -151,86 +153,8 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
   endif()
 
-  if (TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
-  endif()
-
-  if (TTK_ENABLE_ZLIB)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
-    target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CDT_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_SQLITE3)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
-    target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
-  endif()
-
   if (TTK_ENABLE_64BIT_IDS)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_64BIT_IDS)
-  endif()
-
-endfunction()
-
-# Used by basedCode requiring "Python.h"
-
-function(ttk_find_python)
-  find_package(PythonLibs QUIET)
-
-  if(PYTHON_INCLUDE_DIRS)
-    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
-
-    string(REPLACE \".\" \" \"
-      PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-
-    if(NOT PYTHON_VERSION_LIST)
-      string(REPLACE "." " "
-        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    endif()
-
-    separate_arguments(PYTHON_VERSION_LIST)
-    list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-    list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
-
-    set(TTK_PYTHON_MAJOR_VERSION "${PYTHON_MAJOR_VERSION}"
-      CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
-    set(TTK_PYTHON_MINOR_VERSION "${PYTHON_MINOR_VERSION}"
-      CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
-
-    if(TTK_PYTHON_MAJOR_VERSION)
-      message(STATUS "Python version: ${TTK_PYTHON_MAJOR_VERSION}.${TTK_PYTHON_MINOR_VERSION}")
-    else()
-      message(STATUS "Python version: NOT-FOUND")
-    endif()
-
-    find_path(PYTHON_NUMPY_INCLUDE_DIR numpy/arrayobject.h PATHS
-      ${PYTHON_INCLUDE_DIRS}
-      /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
-      /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
-    if(PYTHON_NUMPY_INCLUDE_DIR)
-      message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
-      include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR})
-    else()
-      message(STATUS "Numpy headers: NOT-FOUND")
-    endif()
-  endif()
-
-  if(PYTHON_NUMPY_INCLUDE_DIR)
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
-  else()
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-    message(STATUS 
-      "Improper python/numpy setup. Disabling sckikit-learn support in TTK.")
   endif()
 
 endfunction()

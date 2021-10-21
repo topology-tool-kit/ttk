@@ -6,52 +6,25 @@
 /// \brief VTK-filter that wraps the topologicalCompressionWriter processing
 /// package.
 
-#ifndef _VTK_TOPOLOGICALCOMPRESSIONREADER_H
-#define _VTK_TOPOLOGICALCOMPRESSIONREADER_H
+#pragma once
 
 // TTK
 #include <TopologicalCompression.h>
-#include <ttkTriangulationAlgorithm.h>
-
-// VTK
-#include <vtkAlgorithm.h>
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataObject.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDemandDrivenPipeline.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkImageAlgorithm.h>
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
-#include <vtkPolyData.h>
-#include <vtkSmartPointer.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include <ttkAlgorithm.h>
 
 // VTK Module
 #include <ttkTopologicalCompressionReaderModule.h>
 
-// STD
-#include <fstream>
-#include <iostream>
-#include <limits.h>
-#include <string>
+class vtkImageData;
 
 class TTKTOPOLOGICALCOMPRESSIONREADER_EXPORT ttkTopologicalCompressionReader
-  : public vtkImageAlgorithm {
+  : public ttkAlgorithm,
+    protected ttk::TopologicalCompression {
 
 public:
   static ttkTopologicalCompressionReader *New();
 
-  vtkTypeMacro(ttkTopologicalCompressionReader, vtkAlgorithm);
+  vtkTypeMacro(ttkTopologicalCompressionReader, ttkAlgorithm);
 
   vtkSetStringMacro(FileName);
   vtkGetStringMacro(FileName);
@@ -59,14 +32,12 @@ public:
   vtkSetMacro(DataScalarType, int);
   vtkGetMacro(DataScalarType, int);
 
-  void SetDebugLevel(const int val) {
-    this->topologicalCompression.setDebugLevel(val);
-  }
+  // need this method to align with the vtkImageAlgorithm API
+  vtkImageData *GetOutput();
 
 protected:
   // Regular ImageData reader management.
   ttkTopologicalCompressionReader();
-  ~ttkTopologicalCompressionReader() override = default;
   int FillOutputPortInformation(int, vtkInformation *) override;
   int RequestData(vtkInformation *,
                   vtkInformationVector **,
@@ -76,27 +47,15 @@ protected:
                                  vtkInformationVector *outputVector) override;
 
   // TTK management.
-  void BuildMesh();
+  void BuildMesh(vtkImageData *mesh) const;
 
 private:
   // General properties.
-  char *FileName;
-  FILE *fp;
+  char *FileName{};
 
   // Data properties.
   int DataScalarType;
-  int DataExtent[6];
-  double DataSpacing[3];
-  double DataOrigin[3];
-  bool ZFPOnly;
-  int SQMethod;
-
-  // TTK object dependencies.
-  ttkTriangulation triangulation;
-  ttk::TopologicalCompression topologicalCompression;
-  vtkSmartPointer<vtkImageData> mesh;
-  vtkSmartPointer<vtkDoubleArray> decompressed;
-  vtkSmartPointer<vtkIntArray> vertexOffset;
+  std::array<int, 6> DataExtent{0, 0, 0, 0, 0, 0};
+  std::array<double, 3> DataSpacing{1.0, 1.0, 1.0};
+  std::array<double, 3> DataOrigin{0.0, 0.0, 0.0};
 };
-
-#endif // _VTK_TOPOLOGICALCOMPRESSIONREADER_H

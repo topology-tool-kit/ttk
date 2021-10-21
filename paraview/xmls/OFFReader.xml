@@ -1,0 +1,30 @@
+<ServerManagerConfiguration>
+
+   <ProxyGroup name="sources">
+      <!-- ================================================================== -->
+      <SourceProxy name="ttkOFFReader" class="ttkOFFReader" label="TTK OFFReader">
+         <Documentation
+            long_help="Import an Object File Format mesh into a VTK Unstructured Grid."
+            short_help="Read an .off file.">
+           Import an Object File Format mesh into a VTK Unstructured Grid.
+         </Documentation>
+         <StringVectorProperty
+            name="FileName"
+            animateable="0"
+            command="SetFileName"
+            number_of_elements="1">
+            <FileListDomain name="files"/>
+            <Documentation>
+               This property specifies the file name for the OFF reader.
+            </Documentation>
+         </StringVectorProperty>
+
+         <Hints>
+            <ReaderFactory extensions="off"
+               file_description="Object File Format" />
+         </Hints>
+      </SourceProxy>
+      <!-- End Reader -->
+   </ProxyGroup>
+
+</ServerManagerConfiguration>

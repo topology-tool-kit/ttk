@@ -2,3 +2,5 @@ NAME
   ttkMeshGraph
 DEPENDS
   ttkAlgorithm
+PRIVATE_DEPENDS
+  VTK::FiltersGeneral

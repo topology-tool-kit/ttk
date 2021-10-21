@@ -6,3 +6,4 @@ HEADERS
   ttkUncertainDataEstimator.h
 DEPENDS
   uncertainDataEstimator
+  ttkAlgorithm

@@ -45,7 +45,7 @@ int ttkPeriodicGrid::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ttkPeriodicGrid::RequestData(vtkInformation *request,
+int ttkPeriodicGrid::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
 

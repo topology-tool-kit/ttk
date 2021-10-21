@@ -39,14 +39,14 @@ public:
 
   // default ttk setters
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
 
   vtkGetVector2Macro(RangeId, int);
   vtkSetVector2Macro(RangeId, int);
 
   // end of default ttk setters
 
-  void AddCol(std::string s) {
+  void AddCol(const std::string &s) {
     SelectedCols.push_back(s);
     Modified();
   }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkTrackingFromOverlap" class="ttkTrackingFromOverlap" label="TTK TrackingFromOverlap">
+            <Documentation long_help="TTK TrackingFromOverlap" short_help="TTK TrackingFromOverlap">
+This filter identifies and tracks labled vtkPointSets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal. This filter can be executed iteratively and can generate nested tracking graphs.
+
+Related publication:
+
+'Nested Tracking Graphs'.
+Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
+Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
+
+Type:
+* 0 - tracking graph,
+* 1 - nesting tree
+                </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>A vtkMultiBlockDataSet that represents a sequence of vtkPointSets. Optionally: a vtkMultiBlockDataSet that contains multiple sequences, where each sequence corresponds to a level.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="LabelFieldName" command="SetLabelFieldName" number_of_elements="1" animateable="0" label="Labels">
+                <ArrayListDomain name="array_list" default_values="RegionId" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Point data that associates a label with each point.</Documentation>
+            </StringVectorProperty>
+
+            ${DEBUG_WIDGETS}
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="LabelFieldName" />
+            </PropertyGroup>
+
+            <Hints>
+                <ShowInMenu category="TTK - Time-varying Scalar Data" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

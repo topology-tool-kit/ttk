@@ -6,4 +6,4 @@ HEADERS
   ttkMandatoryCriticalPoints.h
 DEPENDS
   mandatoryCriticalPoints
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

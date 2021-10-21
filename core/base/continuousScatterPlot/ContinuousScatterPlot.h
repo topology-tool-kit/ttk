@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <limits>
+
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>

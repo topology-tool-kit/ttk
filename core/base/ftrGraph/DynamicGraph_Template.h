@@ -1,5 +1,4 @@
-#ifndef DYNAMICGRAPH_TEMPLATE_H
-#define DYNAMICGRAPH_TEMPLATE_H
+#pragma once
 
 #include "DynamicGraph.h"
 
@@ -45,9 +44,8 @@ namespace ttk {
 
     template <typename Type>
     std::string DynamicGraph<Type>::print(void) {
-      using namespace std;
 
-      stringstream res;
+      std::stringstream res;
 
       for(const auto &node : nodes_) {
         if(1 or node.parent_) {
@@ -60,7 +58,7 @@ namespace ttk {
           res << " root: " << findRoot(&node) - &nodes_[0];
           res << " weight: " << (float)node.weight_;
           res << " cArc: " << node.corArc_;
-          res << endl;
+          res << std::endl;
         }
       }
       return res.str();
@@ -68,10 +66,9 @@ namespace ttk {
 
     template <typename Type>
     std::string DynamicGraph<Type>::print(
-      std::function<std::string(std::size_t)> printFunction) {
-      using namespace std;
+      const std::function<std::string(std::size_t)> &printFunction) {
 
-      stringstream res;
+      std::stringstream res;
 
       for(const auto &node : nodes_) {
         if(node.parent_) {
@@ -90,8 +87,8 @@ namespace ttk {
 
     template <typename Type>
     std::string DynamicGraph<Type>::printNbCC(void) {
-      using namespace std;
-      stringstream res;
+
+      std::stringstream res;
       std::vector<DynGraphNode<Type> *> roots;
       roots.reserve(nodes_.size());
       for(const auto &n : nodes_) {
@@ -230,8 +227,9 @@ namespace ttk {
     void DynGraphNode<Type>::removeEdge(void) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!parent_) {
-        std::cerr << "[FTR Graph]: DynGraph remove edge in root node"
-                  << std::endl;
+        Debug dbg{};
+        dbg.setDebugMsgPrefix("DynamicGraph");
+        dbg.printErr("DynGraph remove edge in root node");
         return;
       }
 #endif
@@ -241,5 +239,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: DYNAMICGRAPH_TEMPLATE_H */

@@ -3,9 +3,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-// #include <vtkVersion.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkVersion.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -37,9 +37,6 @@ int Class::FillInputPortInformation(int port, vtkInformation *info) {
       info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
       return 1;
     case 1:
-      info->Set(
-        vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
-      return 1;
     case 2:
       info->Set(
         vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
@@ -51,8 +48,6 @@ int Class::FillInputPortInformation(int port, vtkInformation *info) {
 int Class::FillOutputPortInformation(int port, vtkInformation *info) {
   switch(port) {
     case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      return 1;
     case 1:
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
       return 1;
@@ -62,7 +57,7 @@ int Class::FillOutputPortInformation(int port, vtkInformation *info) {
 
 //----------------------------------------------------------------------------//
 
-int Class::RequestData(vtkInformation *request,
+int Class::RequestData(vtkInformation *ttkNotUsed(request),
                        vtkInformationVector **iVec,
                        vtkInformationVector *oVec) {
 
@@ -167,16 +162,15 @@ bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
   _isovals.resize(0);
   _flags.resize(0);
 
-  auto addPoint
-    = [this, coords, scalarBuf, codeBuf](int p, float isoval, int code) {
-        const auto point = &coords[p * 3];
-        _coords.push_back(point[0]);
-        _coords.push_back(point[1]);
-        _coords.push_back(point[2]);
-        _scalars.push_back(scalarBuf[p]);
-        _isovals.push_back(isoval);
-        _flags.push_back(code == minCode ? 0 : 1);
-      };
+  auto addPoint = [this, coords, scalarBuf](int p, float isoval, int code) {
+    const auto point = &coords[p * 3];
+    _coords.push_back(point[0]);
+    _coords.push_back(point[1]);
+    _coords.push_back(point[2]);
+    _scalars.push_back(scalarBuf[p]);
+    _isovals.push_back(isoval);
+    _flags.push_back(code == minCode ? 0 : 1);
+  };
 
   const vtkIdType nc = arcs->GetNumberOfCells();
   for(vtkIdType c = 0; c < nc; ++c) {
@@ -259,7 +253,7 @@ bool Class::postprocess() {
   int *ctypes = new int[nc];
 
   vtkIdType cinfoCounter = 0;
-  for(std::size_t c = 0; c < nc; ++c) {
+  for(ttk::SimplexId c = 0; c < nc; ++c) {
     const auto nvOfCell = cinfosBuf[cinfoCounter];
     assert(nvOfCell >= 2 && nvOfCell <= 3); // ensured in super class
     ctypes[c] = nvOfCell == 2 ? VTK_LINE : VTK_TRIANGLE;
@@ -272,7 +266,7 @@ bool Class::postprocess() {
     // Actually a warning would be in order-
     // what if conversion is not possible (e.g. too large indices)?
     cinfosBufVtk = new vtkIdType[cinfosSize];
-    for(std::size_t i = 0; i < cinfosSize; ++i)
+    for(ttk::SimplexId i = 0; i < cinfosSize; ++i)
       cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
     delete[] cinfosBuf;
   }

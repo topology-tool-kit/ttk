@@ -20,6 +20,8 @@
 // TTK Base Includes
 #include <Icosphere.h>
 
+class vtkDataArray;
+
 class TTKICOSPHERE_EXPORT ttkIcosphere : public ttkAlgorithm,
                                          protected ttk::Icosphere {
 private:
@@ -31,7 +33,7 @@ private:
   double Center[3]{0, 0, 0};
 
   // alternatvely create a sphere at each point
-  vtkPoints *Centers{nullptr};
+  vtkDataArray *Centers{nullptr};
 
 public:
   static ttkIcosphere *New();
@@ -49,8 +51,8 @@ public:
   vtkSetMacro(ComputeNormals, bool);
   vtkGetMacro(ComputeNormals, bool);
 
-  vtkSetMacro(Centers, vtkPoints *);
-  vtkGetMacro(Centers, vtkPoints *);
+  vtkSetMacro(Centers, vtkDataArray *);
+  vtkGetMacro(Centers, vtkDataArray *);
 
 protected:
   ttkIcosphere();

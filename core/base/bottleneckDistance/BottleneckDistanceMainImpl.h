@@ -11,10 +11,11 @@
 //      dataType            -- scalar value at vertex 2
 //      float, float, float -- vertex 2 coordinates
 template <typename dataType>
-int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
-                                          const std::vector<diagramTuple> &d2,
-                                          std::vector<matchingTuple> &matchings,
-                                          const bool usePersistenceMetric) {
+int BottleneckDistance::computeBottleneck(
+  const std::vector<diagramTuple> &d1,
+  const std::vector<diagramTuple> &d2,
+  std::vector<matchingTuple> &matchings,
+  const bool ttkNotUsed(usePersistenceMetric)) {
   auto d1Size = (int)d1.size();
   auto d2Size = (int)d2.size();
 
@@ -120,25 +121,22 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
           ? (px * Geometry::pow(abs(std::get<11>(a) - std::get<11>(b)), w)
              + py * Geometry::pow(abs(std::get<12>(a) - std::get<12>(b)), w)
              + pz * Geometry::pow(abs(std::get<13>(a) - std::get<13>(b)), w))
-          : isMin1
-              ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
-                 + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
-                 + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
-              : (
-                px
-                  * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
-                                    - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                                  w)
-                + py
-                    * Geometry::pow(
-                      abs(std::get<8>(a) + std::get<12>(a)) / 2
-                        - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                      w)
-                + pz
-                    * Geometry::pow(
-                      abs(std::get<9>(a) + std::get<13>(a)) / 2
-                        - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                      w));
+        : isMin1
+          ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
+             + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
+             + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
+          : (px
+               * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
+                                 - abs(std::get<7>(b) + std::get<11>(b)) / 2,
+                               w)
+             + py
+                 * Geometry::pow(abs(std::get<8>(a) + std::get<12>(a)) / 2
+                                   - abs(std::get<8>(b) + std::get<12>(b)) / 2,
+                                 w)
+             + pz
+                 * Geometry::pow(abs(std::get<9>(a) + std::get<13>(a)) / 2
+                                   - abs(std::get<9>(b) + std::get<13>(b)) / 2,
+                                 w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
@@ -186,21 +184,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   if(wasserstein > 0) {
 
     if(nbRowMin > 0 && nbColMin > 0) {
-      Munkres solverMin;
+      AssignmentMunkres<dataType> solverMin;
       this->printMsg("Affecting minima...");
       this->solvePWasserstein(
         minRowColMin, maxRowColMin, minMatrix, minMatchings, solverMin);
     }
 
     if(nbRowMax > 0 && nbColMax > 0) {
-      Munkres solverMax;
+      AssignmentMunkres<dataType> solverMax;
       this->printMsg("Affecting maxima...");
       this->solvePWasserstein(
         minRowColMax, maxRowColMax, maxMatrix, maxMatchings, solverMax);
     }
 
     if(nbRowSad > 0 && nbColSad > 0) {
-      Munkres solverSad;
+      AssignmentMunkres<dataType> solverSad;
       this->printMsg("Affecting saddles...");
       this->solvePWasserstein(
         minRowColSad, maxRowColSad, sadMatrix, sadMatchings, solverSad);
@@ -315,7 +313,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
                    + "), diagMin(" + std::to_string(addedMinPersistence)
                    + "), diagSad(" + std::to_string(addedSadPersistence) + ")");
     this->printMsg("affAll(" + std::to_string(affectationD) + "), res("
-                   + std::to_string(d) + ")" + std::to_string(d) + ")");
+                   + std::to_string(d) + ")");
   }
 
   distance_ = (double)d;

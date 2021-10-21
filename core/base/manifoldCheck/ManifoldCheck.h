@@ -75,7 +75,8 @@ namespace ttk {
     /// \param triangulation Pointer to a valid triangulation.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa ttk::Triangulation
-    inline int preconditionTriangulation(Triangulation *triangulation) {
+    inline int
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
 
       if(triangulation) {
 
@@ -277,7 +278,7 @@ int ttk::ManifoldCheck::vertexManifoldCheck(
         }
       }
 
-      seedList[uf0] = makeUnion(seedList[uf0], seedList[uf1]);
+      seedList[uf0] = UnionFind::makeUnion(seedList[uf0], seedList[uf1]);
       seedList[uf1] = seedList[uf0];
     }
 
@@ -306,8 +307,8 @@ int ttk::ManifoldCheck::vertexManifoldCheck(
         }
       }
 
-      seedList[uf0] = makeUnion(seedList[uf0], seedList[uf1]);
-      seedList[uf0] = makeUnion(seedList[uf0], seedList[uf2]);
+      seedList[uf0] = UnionFind::makeUnion(seedList[uf0], seedList[uf1]);
+      seedList[uf0] = UnionFind::makeUnion(seedList[uf0], seedList[uf2]);
       seedList[uf1] = seedList[uf0];
       seedList[uf2] = seedList[uf0];
     }
@@ -401,7 +402,7 @@ int ttk::ManifoldCheck::edgeManifoldCheck(
       }
     }
 
-    seedList[uf0] = makeUnion(seedList[uf0], seedList[uf1]);
+    seedList[uf0] = UnionFind::makeUnion(seedList[uf0], seedList[uf1]);
     seedList[uf1] = seedList[uf0];
   }
 

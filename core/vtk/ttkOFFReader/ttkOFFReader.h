@@ -10,25 +10,22 @@
 
 #pragma once
 
-#include "vtkPoints.h"
-#include "vtkSmartPointer.h"
-#include "vtkUnstructuredGridAlgorithm.h"
-
+#include <Debug.h>
 #include <ttkOFFReaderModule.h>
-#include <vtkDataSetReader.h>
 
-#include <string>
-#include <vector>
+#include <vtkUnstructuredGridAlgorithm.h>
 
-class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm {
+class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm,
+                                         protected ttk::Debug {
 public:
   vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   static ttkOFFReader *New();
 
+  void PrintSelf(std::ostream &os, vtkIndent indent) override;
+
   // Description:
-  // Specify file name of the .abc file.
+  // Specify file name of the .off file.
   vtkSetStringMacro(FileName);
   vtkGetStringMacro(FileName);
 
@@ -40,21 +37,9 @@ protected:
                   vtkInformationVector **,
                   vtkInformationVector *) override;
 
-  int countVertsData(std::string line);
-  int countCellsData(std::string line);
-  int processLineVert(vtkIdType curLine, std::string &line);
-  int processLineCell(vtkIdType curLine, std::string &line);
-
 private:
   ttkOFFReader(const ttkOFFReader &) = delete;
   void operator=(const ttkOFFReader &) = delete;
 
-  char *FileName;
-  vtkIdType nbVerts_, nbCells_;
-  vtkIdType nbVertsData_, nbCellsData_;
-
-  vtkSmartPointer<vtkUnstructuredGrid> mesh_;
-  vtkSmartPointer<vtkPoints> points_;
-  std::vector<vtkSmartPointer<vtkDoubleArray>> vertScalars_;
-  std::vector<vtkSmartPointer<vtkDoubleArray>> cellScalars_;
+  char *FileName{};
 };

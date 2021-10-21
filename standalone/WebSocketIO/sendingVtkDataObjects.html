@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>ttkWebSocketIO</title>
+    <script type="text/javascript" src="./ttkWebSocketIO.js"></script>
+    <style>
+      html {
+        zoom: 1;
+        font-family: Sans-Serif;
+      }
+
+      code {
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      textarea {
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        font-family: "Lucida Console", Monaco, monospace;
+        background-color: #efefef;
+        padding: 0.5em;
+        overflow: hidden;
+      }
+
+      li {
+        margin: 0.5em 0em;
+      }
+
+    </style>
+  </head>
+    <body>
+      <h2>ttkWebSocketIO Library: Sending vtkDataObjects</h2>
+
+      <hr>
+      <h3>Overview</h3>
+      <ul>
+        <li>The <code>ttkWebSocketIO</code> library enables bidirectional data transfer between VTK (ParaView) and the browser by serializing <code>vtkDataObjects</code> and sending them through a websocket connection.</li>
+        <li>The libary consits of the two endpoints necessary for such a connection:
+          <ol>
+            <li>Server: A <code>ttkWebSocketIO</code> VTK filter (e.g., at the end of a pipeline in ParaView).</li>
+            <li>Client: A webpage that uses the <code>ttkWebSocketIO.js</code> library (e.g., a visual analytics interface).</li>
+          </ol>
+        </li>
+        <li>Each <code>ttkWebSocketIO</code> filter will internally start a websocket server at a user-specified port (default 9285), and webpages can connect to it using the <code>ttkWebSocketIO.js</code> library.</li>
+        <li>Every time the input <code>vtkDataObject</code> of the <code>ttkWebSocketIO</code> filter changes, the input is send to the connected clients in the form of a serialized JSON object (further processing of the data on the client is up to the developer).</li>
+        <li>Symmetrically, clients can send a serialized <code>vtkDataObject</code> via the <code>ttkWebSocketIO.js</code> API to the connected <code>ttkWebSocketIO</code> filter, which uses the transmitted object to instantiate its output.</li>
+        <li>Note: it is actually possible to send and receive any kind of data (not only serialized <code>vtkDataObjects</code>), and a webpage can be connected to multiple <code>ttkWebSocketIO</code> filters.</li>
+      </ul>
+
+      <hr>
+      <h3>Example Code</h3>
+      <textarea id='code' readonly></textarea>
+
+      <script id='sourceCode'>
+// This simple example just establishes via the WebSocketIO.js library a
+// connection to a ttkWebSocketIO VTK filter, and then sends a serialized
+// vtkDataObject to the server.
+
+// 1) Create a WebSocketIO instance
+const connection = new TTK.ttkWebSocketIO();
+
+// 2) Attach connection listeners
+connection.on( 'open',  ()=>alert('Connected.') );
+connection.on( 'close', ()=>alert('Connection Closed.') );
+connection.on( 'error', ()=>alert('Error (see console for details).') );
+
+// 3) Create a button that will trigger a connection request (default ip/port)
+const button0 = document.createElement('button');
+button0.innerHTML = 'Connect';
+button0.onclick = ()=>connection.connect('localhost',9285);
+document.body.appendChild( button0 );
+
+// 4) create a button that will send two triangles to the server
+const button1 = document.createElement('button');
+button1.innerHTML = 'SendData';
+button1.onclick = ()=>{
+  const obj = new TTK.vtkDataSet( 'vtkUnstructuredGrid' );
+  obj.points.coordinates = new TTK.vtkArray(
+    "coordinates", 5, 3, TTK.CONSTS.VTK_FLOAT,
+    [ 0,0,0,  -1,0,0,  -1,1,0,  1,0,0,  1,1,0 ]
+  );
+  obj.cells.offsetsArray = new TTK.vtkArray(
+    "offsetsArray", 3, 1, TTK.CONSTS.VTK_INT,
+    [ 0,3,6 ]
+  );
+  obj.cells.connectivityArray = new TTK.vtkArray(
+    "connectivityArray", 6, 1, TTK.CONSTS.VTK_INT,
+    [ 0,1,2, 0,3,4 ]
+  );
+  obj.pointData.ExamplePointDataArray = new TTK.vtkArray(
+    "ExamplePointDataArray", 5, 1, TTK.CONSTS.VTK_INT,
+    [ -1,-2,-3,-4,-5 ]
+  );
+  obj.cellData.ExampleCellDataArray = new TTK.vtkArray(
+    "ExampleCellDataArray", 2, 1, TTK.CONSTS.VTK_DOUBLE,
+    [ -100,-200 ]
+  );
+  connection.sendVTKDataSet(obj);
+  alert('Data Send (Check ParaView).')
+};
+document.body.appendChild( button1 );
+      </script>
+
+      <script>
+        const textarea = document.getElementById('code');
+        textarea.value = document.getElementById('sourceCode').innerHTML;
+        textarea.style.height = 0;
+        textarea.style.height = textarea.scrollHeight + 'px';
+      </script>
+   </body>
+</html>

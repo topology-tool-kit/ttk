@@ -1,6 +1,5 @@
 NAME
- ttkDistanceField
+  ttkDistanceField
 DEPENDS
-  VTK::FiltersCore
-PRIVATE_DEPENDS
-  VTK::CommonCore
+  ttkAlgorithm
+ 

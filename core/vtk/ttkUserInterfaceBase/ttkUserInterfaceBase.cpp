@@ -1,6 +1,7 @@
 // local includes
 #include <ttkUserInterfaceBase.h>
 
+#include <vtkPointData.h>
 #include <vtkTexture.h>
 
 #ifndef TTK_INSTALL_ASSETS_DIR
@@ -190,7 +191,7 @@ int ttkUserInterfaceBase::run() {
   {
     stringstream msg;
     msg << "[UserInterace] Initializing user interface..." << endl;
-    dMsg(cout, msg.str(), 1);
+    printMsg(msg.str());
   }
 
   renderWindow_->AddRenderer(renderer_);
@@ -215,7 +216,7 @@ int ttkUserInterfaceBase::run() {
   {
     stringstream msg;
     msg << "[ttkUserInterfaceBase] Running user interface!" << endl;
-    dMsg(cout, msg.str(), 1);
+    printMsg(msg.str());
   }
 
   isUp_ = true;
@@ -242,7 +243,7 @@ int ttkUserInterfaceBase::switchOutput(const int &outputId) {
     msg << "on";
   }
   msg << endl;
-  dMsg(cout, msg.str(), infoMsg);
+  printMsg(msg.str());
 
   visibleOutputs_[outputId] = !visibleOutputs_[outputId];
 
@@ -260,7 +261,7 @@ int ttkUserInterfaceBase::switchTransparency() {
     msg << "on";
   }
   msg << endl;
-  dMsg(cout, msg.str(), infoMsg);
+  printMsg(msg.str());
 
   transparency_ = !transparency_;
 
@@ -275,10 +276,11 @@ int ttkUserInterfaceBase::updateScalarFieldTexture() {
     if((boundaryFilters_[i]->GetOutput()->GetPointData())
        && (boundaryFilters_[i]->GetOutput()->GetPointData()->GetArray(0))) {
 
-      textureMapFromFields_[i]->SetInputData(boundaryFilters_[i]->GetOutput());
+      textureMapFromFields_[i]->SetInputDataObject(
+        0, boundaryFilters_[i]->GetOutput());
       textureMapFromFields_[i]->Update();
-      surfaces_[i]
-        = vtkPolyData::SafeDownCast(textureMapFromFields_[i]->GetOutput());
+      surfaces_[i] = vtkPolyData::SafeDownCast(
+        textureMapFromFields_[i]->GetOutputDataObject(0));
 
       texture_->SetInputConnection(pngReader_->GetOutputPort());
 

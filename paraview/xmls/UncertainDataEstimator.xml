@@ -1,0 +1,91 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkUncertainDataEstimator"
+     class="ttkUncertainDataEstimator"
+     label="TTK UncertainDataEstimator">
+     <Documentation
+        long_help="TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
+(PDF estimation, bounds, moments, etc.)."
+        short_help="TTK plugin that takes an input ensemble data set
+(represented
+by a list of scalar fields) and which computes various vertexwise statistics
+(PDF estimation, bounds, moments, etc.).">
+          TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
+(PDF estimation, bounds, moments, etc.).
+
+See also MandatoryCriticalPoints.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="AddInputConnection"
+        multiple_input="1">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty name="Bound to Compute" command="SetBoundToCompute"
+      number_of_elements="1" default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Lower and Upper"/>
+          <Entry value="1" text="Lower only"/>
+          <Entry value="2" text="Upper only"/>
+        </EnumerationDomain>
+        <Documentation>
+          Set what boundaries to compute.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Bound Fields">
+        <Property name="Bound to Compute" />
+      </PropertyGroup>
+
+      <IntVectorProperty
+         name="BinCount"
+         label="Bin count"
+         command="SetBinCount"
+         number_of_elements="1"
+         default_values="10">
+        <IntRangeDomain name="range" min="1" max="1000" />
+         <Documentation>
+          Thread number.
+         </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Probability Density Functions">
+        <Property name="BinCount" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Bound to Compute" />
+      </PropertyGroup>
+
+      <OutputPort name="Bound Fields" index="0" id="port0" />
+      <OutputPort name="Probabilities" index="1" id="port1" />
+      <OutputPort name="MeanField" index="2" id="port2" />
+
+      <Hints>
+        <ShowInMenu category="TTK - Uncertain Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

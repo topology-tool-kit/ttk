@@ -5,10 +5,10 @@
 ///
 /// \brief Interactions and rendering.
 
-#ifndef _TTK_USERINTERFACE_BASE_H
-#define _TTK_USERINTERFACE_BASE_H
+#pragma once
 
 #include <ttkProgramBase.h>
+#include <ttkUserInterfaceBaseModule.h>
 
 // VTK includes
 #include <ttkTextureMapFromField.h>
@@ -28,7 +28,8 @@
 class ttkUserInterfaceBase;
 
 // Custom interactors
-class ttkCustomInteractor : public vtkInteractorStyleTrackballCamera {
+class TTKUSERINTERFACEBASE_EXPORT ttkCustomInteractor
+  : public vtkInteractorStyleTrackballCamera {
 
 public:
   static ttkCustomInteractor *New();
@@ -47,7 +48,7 @@ protected:
   ttkUserInterfaceBase *userInterface_;
 };
 
-class ttkKeyHandler : public ttk::Debug {
+class TTKUSERINTERFACEBASE_EXPORT ttkKeyHandler : public ttk::Debug {
 
 public:
   virtual int OnKeyPress(vtkRenderWindowInteractor *interactor,
@@ -55,7 +56,7 @@ public:
     = 0;
 };
 
-class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
+class TTKUSERINTERFACEBASE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
 
 public:
   ttkUserInterfaceBase();
@@ -136,5 +137,3 @@ public:
 
   vtkSmartPointer<ttkModule> ttkObject_;
 };
-
-#endif //_TTK_USERINTERFACE_BASE_H

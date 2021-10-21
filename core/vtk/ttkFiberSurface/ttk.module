@@ -6,4 +6,4 @@ HEADERS
   ttkFiberSurface.h
 DEPENDS
   fiberSurface
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

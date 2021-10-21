@@ -1,0 +1,298 @@
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkContourForests"
+      class="ttkContourForests"
+      label="TTK ContourForests">
+      <Documentation
+        long_help="TTK plugin that efficiently computes the contour tree of
+        scalar data and more."
+        short_help="TTK plugin that efficiently computes the contour tree of
+        scalar data and more.">
+        This plugin takes a scalar field attached as point data to a geometry
+        (either 2D or 3D, either regular grids or triangulations) and computes
+        its contour tree. Several outputs are produced to encode the nodes of
+        the tree (as points in 3D space), the arcs of the tree and the data
+        segmentation.
+
+        Related publication:
+        'Contour Forests: Fast Multi-threaded Augmented Contour Trees',
+        Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny,
+        Proc. of IEEE LDAV 2016.
+
+        CriticalType:
+        * 0 - minimum,
+        * 1 - 1saddle,
+        * 2 - 2saddle,
+        * 3 - degenerate,
+        * 4 - maximum,
+        * 5 - regular,
+
+        RegionType:
+        * 0 - (x,minimum),
+        * 1 - (x,maximum),
+        * 2 - (1-saddle,1-saddle),
+        * 3 - (2-saddle,2-saddle),
+        * 4 - (1-saddle,2-saddle).
+      </Documentation>
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Input scalar field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
+        label="Force Input Offset Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Input offset field (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="Tree Type" command="SetTreeType"
+        number_of_elements="1" default_values="2">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Join Tree"/>
+          <Entry value="1" text="Split Tree"/>
+          <Entry value="2" text="Contour Tree"/>
+        </EnumerationDomain>
+        <Documentation>
+          Tree type (full contour tree, join tree or split tree).
+        </Documentation>
+      </IntVectorProperty>
+
+<!--      <IntVectorProperty name="Simplification Type"
+        command="SetSimplificationType"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Persistence"/>
+          <Entry value="1" text="Volume"/>
+        </EnumerationDomain>
+        <Documentation>
+          Simplification metric.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="Normalized Simplification Threshold"
+        command="SetSimplificationThreshold"
+        number_of_elements="1"
+        default_values="0">
+        <DoubleRangeDomain name="range" min="0" max="1"/>
+        <Documentation>
+          Simplification threshold (from 0 to 1).
+        </Documentation>
+      </DoubleVectorProperty>-->
+
+      <IntVectorProperty name="Arc Resolution"
+        label="Arc Sampling"
+        command="SetArcResolution"
+        number_of_elements="1"
+        default_values="20">
+        <IntRangeDomain name="range" min="0" max="100"/>
+        <Documentation>
+          Number of samples per arc (for 3D embedding purpose).
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="Skeleton Smoothing"
+        label="Arc Smoothing"
+        command="SetSkeletonSmoothing"
+        number_of_elements="1"
+        default_values="15">
+        <DoubleRangeDomain name="range" min="0" max="100"/>
+        <Documentation>
+          Smoothing iterations for the arcs of the 3D embedding of the tree.
+        </Documentation>
+      </DoubleVectorProperty>
+
+<!--      <IntVectorProperty name="Show Arc"
+        command="ShowArc"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show the arcs in the tree.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="Local Maximum"
+        command="ShowMax"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show Local Maxima.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="Local Minimum"
+        command="ShowMin"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show Local Minima.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="1-Saddle Point"
+        command="ShowSaddle1"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show 1-saddle point.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="2-Saddle Point"
+        command="ShowSaddle2"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show 2-saddle point.
+        </Documentation>
+      </IntVectorProperty>-->
+
+      <IntVectorProperty name="Independant Merge Trees"
+        command="SetLessPartition"
+        label="Parallel Join/Split tree computation"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use twice less partitions and compute the join and split trees in
+          independent threads.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="Partition Number"
+        label="Focus on partition"
+        command="SetPartitionNumber"
+        number_of_elements="1"
+        default_values="-1"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="-1" max="64"
+          />
+        <Documentation>
+          Enter a non-zero, positive partition identifier to restrict the
+          output to a given partition.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Parallelism">
+        <Property name="Independant Merge Trees"/>
+        <Property name="Partition Number"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+<!--       <PropertyGroup panel_widget="Line" label="Output options - Contour tree"> -->
+        <Property name="Tree Type"/>
+<!--       </PropertyGroup> -->
+
+<!--       <PropertyGroup panel_widget="Line"  -->
+<!--         label="Output options - Simplification"> -->
+<!--         <Property name="Simplification Type"/> -->
+<!--         <Property name="Normalized Simplification Threshold"/> -->
+<!--       </PropertyGroup> -->
+
+<!--       <PropertyGroup panel_widget="Line" label="Output options - Skeleton"> -->
+        <Property name="Arc Resolution"/>
+        <Property name="Skeleton Smoothing"/>
+<!--         <Property name="Show Arc"/> -->
+<!--         <Property name="Local Maximum"/> -->
+<!--         <Property name="Local Minimum"/> -->
+<!--         <Property name="1-Saddle Point"/> -->
+<!--         <Property name="2-Saddle Point"/> -->
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field"/>
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="Offset Field"/>
+      </PropertyGroup>
+
+      <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+      <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+      <OutputPort name="Segmentation" index="2" id="port2"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
