@@ -1359,10 +1359,10 @@ inline ttk::SimplexId
       return p[0] * 2 + p[1] * tshift_[0] + p[2] * tshift_[1];
     case 30:
       return tsetshift_[3] + (p[0] - 1) * 2 + (p[1] - 1) * tshift_[8]
-             + (p[2] - 1) * tshift_[9] + 1 + wrapXLeft + wrapZBack;
+             + (p[2] - 1) * tshift_[9] + 1 + wrapXLeft + wrapYTop + wrapZBack;
     case 31:
       return tsetshift_[0] + (p[0] - 1) * 2 + p[1] * tshift_[2]
-             + (p[2] - 1) * tshift_[3] + 1 + wrapXLeft + wrapYTop + wrapZBack;
+             + (p[2] - 1) * tshift_[3] + 1 + wrapXLeft + wrapZBack;
     case 32:
       return tsetshift_[0] + p[0] * 2 + p[1] * tshift_[2] + p[2] * tshift_[3];
     case 33:
