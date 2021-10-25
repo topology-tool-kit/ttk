@@ -115,7 +115,7 @@ int ttkMeshGraph::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkMeshGraph::RequestData(vtkInformation *request,
+int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
   ttk::Timer t;
@@ -277,10 +277,9 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
       ttkTypeMacroA(
         iArray->GetDataType(),
         (status = this->mapInputCellDataToOutputCellData<T0>(
-           static_cast<T0 *>(ttkUtils::GetVoidPointer(oArray)),
-
-           nInputCells, static_cast<T0 *>(ttkUtils::GetVoidPointer(iArray)),
-           this->GetUseQuadraticCells(), this->GetSubdivisions())));
+           static_cast<T0 *>(ttkUtils::GetVoidPointer(oArray)), nInputCells,
+           static_cast<T0 *>(ttkUtils::GetVoidPointer(iArray)),
+           this->GetUseQuadraticCells())));
       if(!status)
         return 0;
     }

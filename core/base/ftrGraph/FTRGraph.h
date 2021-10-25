@@ -239,7 +239,7 @@ namespace ttk {
 
       void printGraph(const int verbosity) const;
 
-      void printTime(Timer &timer, const std::string &msg, const int lvl) const;
+      void printTime(Timer &timer, const std::string &msg) const;
 
       // Initialize functions (virtual inherit from Allocable)
       // called automatically by the build

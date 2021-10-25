@@ -15,7 +15,7 @@ ttkCinemaDarkroomNoise::ttkCinemaDarkroomNoise() : ttkCinemaDarkroomShader() {
 ttkCinemaDarkroomNoise::~ttkCinemaDarkroomNoise() {
 }
 
-int ttkCinemaDarkroomNoise::RequestData(vtkInformation *request,
+int ttkCinemaDarkroomNoise::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

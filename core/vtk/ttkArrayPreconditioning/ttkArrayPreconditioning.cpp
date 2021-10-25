@@ -44,7 +44,7 @@ int ttkArrayPreconditioning::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkArrayPreconditioning::RequestData(vtkInformation *request,
+int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 

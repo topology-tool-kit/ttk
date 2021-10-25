@@ -130,7 +130,7 @@ namespace ttk {
         return getTriangleEdgeNumber(cellId);
 
       return getCellEdgeNumberInternal(cellId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -172,7 +172,7 @@ namespace ttk {
         return getTriangleEdgesInternal();
 
       return getCellEdgesInternal();
-    };
+    }
 
     /// Get the \p localNeighborId-th cell neighbor of the \p cellId-th cell.
     ///
@@ -205,7 +205,7 @@ namespace ttk {
         return -1;
 #endif
       return getCellNeighborInternal(cellId, localNeighborId, neighborId);
-    };
+    }
 
     /// Get the number of cell neighbors for the \p cellId-th cell.
     ///
@@ -263,7 +263,7 @@ namespace ttk {
         return NULL;
 #endif
       return getCellNeighborsInternal();
-    };
+    }
 
     /// Get the \p localTriangleId-th triangle id of the \p cellId-th cell.
     ///
@@ -304,7 +304,7 @@ namespace ttk {
         return getCellNeighbor(cellId, localTriangleId, triangleId);
 
       return getCellTriangleInternal(cellId, localTriangleId, triangleId);
-    };
+    }
 
     /// Get the number of triangles for the \p cellId-th cell.
     ///
@@ -336,7 +336,7 @@ namespace ttk {
         return getCellNeighborNumber(cellId);
 
       return getCellTriangleNumberInternal(cellId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -382,7 +382,7 @@ namespace ttk {
         return getCellNeighbors();
 
       return getCellTrianglesInternal();
-    };
+    }
 
     /// Get the \p localVertexId-th vertex identifier of the \p cellId-th
     /// cell.
@@ -400,7 +400,7 @@ namespace ttk {
                                      SimplexId &vertexId) const {
 
       return getCellVertexInternal(cellId, localVertexId, vertexId);
-    };
+    }
 
     /// Get the number of vertices in a cell.
     ///
@@ -411,14 +411,14 @@ namespace ttk {
     virtual inline SimplexId
       getCellVertexNumber(const SimplexId &cellId) const {
       return getCellVertexNumberInternal(cellId);
-    };
+    }
 
     /// Get the dimensionality of the triangulation (this value is equal to
     /// the dimension of the simplex with largest dimensionality).
     /// \return Returns the dimensionality of the triangulation.
     virtual inline int getDimensionality() const {
       return getDimensionalityInternal();
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -453,7 +453,7 @@ namespace ttk {
         return NULL;
 #endif
       return getEdgesInternal();
-    };
+    }
 
     /// Get the \p localLinkId-th simplex of the link of the \p edgeId-th
     /// edge.
@@ -488,7 +488,7 @@ namespace ttk {
         return -2;
 #endif
       return getEdgeLinkInternal(edgeId, localLinkId, linkId);
-    };
+    }
 
     /// Get the number of simplicies in the link of the \p edgeId-th edge.
     ///
@@ -513,7 +513,7 @@ namespace ttk {
         return -2;
 #endif
       return getEdgeLinkNumberInternal(edgeId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -547,7 +547,7 @@ namespace ttk {
         return NULL;
 #endif
       return getEdgeLinksInternal();
-    };
+    }
 
     /// Get the \p localStarId-th cell of the star of the \p edgeId-th edge.
     ///
@@ -586,7 +586,7 @@ namespace ttk {
         return -2;
 #endif
       return getEdgeStarInternal(edgeId, localStarId, starId);
-    };
+    }
 
     /// Get the number of star cells for the \p edgeId-th edge.
     ///
@@ -614,7 +614,7 @@ namespace ttk {
         return -2;
 #endif
       return getEdgeStarNumberInternal(edgeId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -653,7 +653,7 @@ namespace ttk {
         return NULL;
 #endif
       return getEdgeStarsInternal();
-    };
+    }
 
     /// Get the \p localTriangleId-th triangle id of the \p edgeId-th edge.
     ///
@@ -691,7 +691,7 @@ namespace ttk {
         return getEdgeStar(edgeId, localTriangleId, triangleId);
 
       return getEdgeTriangleInternal(edgeId, localTriangleId, triangleId);
-    };
+    }
 
     /// Get the number of triangles for the \p edgeId-th edge.
     ///
@@ -721,7 +721,7 @@ namespace ttk {
         return getEdgeStarNumber(edgeId);
 
       return getEdgeTriangleNumberInternal(edgeId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -762,7 +762,7 @@ namespace ttk {
         return getEdgeStars();
 
       return getEdgeTrianglesInternal();
-    };
+    }
 
     /// Get the \p localVertexId-th vertex identifier of the \p edgeId-th
     /// edge.
@@ -795,11 +795,11 @@ namespace ttk {
         return getCellVertex(edgeId, localVertexId, vertexId);
 
       return getEdgeVertexInternal(edgeId, localVertexId, vertexId);
-    };
+    }
 
     /// Get the number of vertices of a particular edge.
     /// Always returns 2.
-    inline int getEdgeVertexNumber(const SimplexId edgeId) const {
+    inline int getEdgeVertexNumber(const SimplexId ttkNotUsed(edgeId)) const {
       return 2;
     }
 
@@ -832,7 +832,7 @@ namespace ttk {
     /// \return Returns the number of cells.
     virtual inline SimplexId getNumberOfCells() const {
       return getNumberOfCellsInternal();
-    };
+    }
 
     /// Get the number of edges in the triangulation.
     ///
@@ -856,7 +856,7 @@ namespace ttk {
         return getNumberOfCells();
 
       return getNumberOfEdgesInternal();
-    };
+    }
 
     /// Get the number of triangles in the triangulation.
     ///
@@ -883,13 +883,13 @@ namespace ttk {
         return getNumberOfCells();
 
       return getNumberOfTrianglesInternal();
-    };
+    }
 
     /// Get the number of vertices in the triangulation.
     /// \return Returns the number of vertices.
     virtual inline SimplexId getNumberOfVertices() const {
       return getNumberOfVerticesInternal();
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -921,7 +921,7 @@ namespace ttk {
         return NULL;
 #endif
       return getTrianglesInternal();
-    };
+    }
 
     /// Get the \p localEdgeId-th edge of the \p triangleId-th triangle.
     ///
@@ -956,7 +956,7 @@ namespace ttk {
 #endif
 
       return getTriangleEdgeInternal(triangleId, localEdgeId, edgeId);
-    };
+    }
 
     /// Get the number of edges of the \p triangleId-th triangle.
     ///
@@ -983,7 +983,7 @@ namespace ttk {
 #endif
 
       return getTriangleEdgeNumberInternal(triangleId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1021,7 +1021,7 @@ namespace ttk {
 #endif
 
       return getTriangleEdgesInternal();
-    };
+    }
 
     /// Get the \p localLinkId-th simplex of the link of the \p triangleId-th
     /// triangle.
@@ -1056,7 +1056,7 @@ namespace ttk {
         return -2;
 #endif
       return getTriangleLinkInternal(triangleId, localLinkId, linkId);
-    };
+    }
 
     /// Get the number of simplices in the link of the \p triangleId-th
     /// triangle.
@@ -1083,7 +1083,7 @@ namespace ttk {
         return -2;
 #endif
       return getTriangleLinkNumberInternal(triangleId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1119,7 +1119,7 @@ namespace ttk {
         return NULL;
 #endif
       return getTriangleLinksInternal();
-    };
+    }
 
     /// Get the \p localStarId-th cell of the star of the \p triangleId-th
     /// triangle.
@@ -1155,7 +1155,7 @@ namespace ttk {
         return -2;
 #endif
       return getTriangleStarInternal(triangleId, localStarId, starId);
-    };
+    }
 
     /// Get the number of star cells for the \p triangleId-th triangle.
     ///
@@ -1181,7 +1181,7 @@ namespace ttk {
         return -2;
 #endif
       return getTriangleStarNumberInternal(triangleId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1218,7 +1218,7 @@ namespace ttk {
         return NULL;
 #endif
       return getTriangleStarsInternal();
-    };
+    }
 
     /// Get the \p localVertexId-th vertex identifier of the \p triangleId-th
     /// triangle.
@@ -1254,11 +1254,12 @@ namespace ttk {
         return getCellVertex(triangleId, localVertexId, vertexId);
 
       return getTriangleVertexInternal(triangleId, localVertexId, vertexId);
-    };
+    }
 
     /// Get the number of vertices of a particular triangle.
     /// Always returns 3.
-    inline int getTriangleVertexNumber(const SimplexId triangleId) const {
+    inline int
+      getTriangleVertexNumber(const SimplexId ttkNotUsed(triangleId)) const {
       return 3;
     }
 
@@ -1297,7 +1298,7 @@ namespace ttk {
         return getVertexStar(vertexId, localEdgeId, edgeId);
 
       return getVertexEdgeInternal(vertexId, localEdgeId, edgeId);
-    };
+    }
 
     /// Get the number of edges connected to the \p vertexId-th vertex.
     ///
@@ -1323,7 +1324,7 @@ namespace ttk {
         return getVertexStarNumber(vertexId);
 
       return getVertexEdgeNumberInternal(vertexId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1360,7 +1361,7 @@ namespace ttk {
         return getVertexStars();
 
       return getVertexEdgesInternal();
-    };
+    }
 
     /// Get the \p localLinkId-th simplex of the link of the \p vertexId-th
     /// vertex.
@@ -1392,7 +1393,7 @@ namespace ttk {
         return -1;
 #endif
       return getVertexLinkInternal(vertexId, localLinkId, linkId);
-    };
+    }
 
     /// Get the number of simplices in the link of the \p vertexId-th vertex.
     ///
@@ -1415,7 +1416,7 @@ namespace ttk {
         return -1;
 #endif
       return getVertexLinkNumberInternal(vertexId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1447,7 +1448,7 @@ namespace ttk {
         return NULL;
 #endif
       return getVertexLinksInternal();
-    };
+    }
 
     /// Get the \p localNeighborId-th vertex neighbor of the \p vertexId-th
     /// vertex.
@@ -1476,7 +1477,7 @@ namespace ttk {
         return -1;
 #endif
       return getVertexNeighborInternal(vertexId, localNeighborId, neighborId);
-    };
+    }
 
     /// Get the number of vertex neighbors for the \p vertexId-th vertex.
     ///
@@ -1496,7 +1497,7 @@ namespace ttk {
         return -1;
 #endif
       return getVertexNeighborNumberInternal(vertexId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1528,7 +1529,7 @@ namespace ttk {
         return NULL;
 #endif
       return getVertexNeighborsInternal();
-    };
+    }
 
     /// Get the point (3D coordinates) for the \p vertexId-th vertex.
     /// \param vertexId Input global vertex identifier.
@@ -1541,7 +1542,7 @@ namespace ttk {
                                       float &y,
                                       float &z) const {
       return getVertexPointInternal(vertexId, x, y, z);
-    };
+    }
 
     /// Get the \p localStarId-th cell of the star of the \p vertexId-th
     /// vertex.
@@ -1574,7 +1575,7 @@ namespace ttk {
         return -1;
 #endif
       return getVertexStarInternal(vertexId, localStarId, starId);
-    };
+    }
 
     /// Get the number of star cells for the \p vertexId-th vertex.
     ///
@@ -1597,7 +1598,7 @@ namespace ttk {
         return -1;
 #endif
       return getVertexStarNumberInternal(vertexId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1630,7 +1631,7 @@ namespace ttk {
         return NULL;
 #endif
       return getVertexStarsInternal();
-    };
+    }
 
     /// Get the \p localTriangleId-th triangle id of the
     /// \p vertexId-th vertex.
@@ -1669,7 +1670,7 @@ namespace ttk {
         return getVertexStar(vertexId, localTriangleId, triangleId);
 
       return getVertexTriangleInternal(vertexId, localTriangleId, triangleId);
-    };
+    }
 
     /// Get the number of triangles for the \p vertexId-th vertex.
     ///
@@ -1699,7 +1700,7 @@ namespace ttk {
         return getVertexStarNumber(vertexId);
 
       return getVertexTriangleNumberInternal(vertexId);
-    };
+    }
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -1739,7 +1740,7 @@ namespace ttk {
         return getVertexStars();
 
       return getVertexTrianglesInternal();
-    };
+    }
 
     /// Returns true if the grid uses period boundary conditions.
     inline bool hasPeriodicBoundaries() const {
@@ -1771,13 +1772,13 @@ namespace ttk {
         return false;
 #endif
       return isEdgeOnBoundaryInternal(edgeId);
-    };
+    }
 
     /// Check if the data structure is empty or not.
     /// \return Returns true if empty, false otherwise.
     virtual inline bool isEmpty() const {
       return true;
-    };
+    }
 
     /// Check if the triangle with global identifier \p triangleId is on the
     /// boundary of the domain.
@@ -1806,7 +1807,7 @@ namespace ttk {
         return false;
 #endif
       return isTriangleOnBoundaryInternal(triangleId);
-    };
+    }
 
     /// Check if the vertex with global identifier \p vertexId is on the
     /// boundary of the domain.
@@ -1831,7 +1832,7 @@ namespace ttk {
         return false;
 #endif
       return isVertexOnBoundaryInternal(vertexId);
-    };
+    }
 
     /// Pre-process the boundary edges.
     ///
@@ -2501,14 +2502,14 @@ namespace ttk {
     }
 
   protected:
-    virtual int getCellEdgeInternal(const SimplexId &cellId,
-                                    const int &localEdgeId,
-                                    SimplexId &edgeId) const {
+    virtual int getCellEdgeInternal(const SimplexId &ttkNotUsed(cellId),
+                                    const int &ttkNotUsed(localEdgeId),
+                                    SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getCellEdgeNumberInternal(const SimplexId &cellId) const {
+      getCellEdgeNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
     }
 
@@ -2517,48 +2518,51 @@ namespace ttk {
       return NULL;
     }
 
-    virtual inline int getCellNeighborInternal(const SimplexId &cellId,
-                                               const int &localNeighborId,
-                                               SimplexId &neighborId) const {
+    virtual inline int
+      getCellNeighborInternal(const SimplexId &ttkNotUsed(cellId),
+                              const int &ttkNotUsed(localNeighborId),
+                              SimplexId &ttkNotUsed(neighborId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getCellNeighborNumberInternal(const SimplexId &cellId) const {
+      getCellNeighborNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellNeighborsInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getCellTriangleInternal(const SimplexId &cellId,
-                                               const int &localTriangleId,
-                                               SimplexId &triangleId) const {
+    virtual inline int
+      getCellTriangleInternal(const SimplexId &ttkNotUsed(cellId),
+                              const int &ttkNotUsed(localTriangleId),
+                              SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getCellTriangleNumberInternal(const SimplexId &cellId) const {
+      getCellTriangleNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getCellVertexInternal(const SimplexId &cellId,
-                                             const int &localVertexId,
-                                             SimplexId &vertexId) const {
+    virtual inline int
+      getCellVertexInternal(const SimplexId &ttkNotUsed(cellId),
+                            const int &ttkNotUsed(localVertexId),
+                            SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getCellVertexNumberInternal(const SimplexId &cellId) const {
+      getCellVertexNumberInternal(const SimplexId &ttkNotUsed(cellId)) const {
       return 0;
-    };
+    }
 
     virtual inline int getDimensionalityInternal() const {
       return 0;
@@ -2567,73 +2571,77 @@ namespace ttk {
     virtual inline const std::vector<std::array<SimplexId, 2>> *
       getEdgesInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getEdgeLinkInternal(const SimplexId &edgeId,
-                                           const int &localLinkId,
-                                           SimplexId &linkId) const {
+    virtual inline int
+      getEdgeLinkInternal(const SimplexId &ttkNotUsed(edgeId),
+                          const int &ttkNotUsed(localLinkId),
+                          SimplexId &ttkNotUsed(linkId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getEdgeLinkNumberInternal(const SimplexId &edgeId) const {
+      getEdgeLinkNumberInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeLinksInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getEdgeStarInternal(const SimplexId &edgeId,
-                                           const int &localStarId,
-                                           SimplexId &starId) const {
+    virtual inline int
+      getEdgeStarInternal(const SimplexId &ttkNotUsed(edgeId),
+                          const int &ttkNotUsed(localStarId),
+                          SimplexId &ttkNotUsed(starId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getEdgeStarNumberInternal(const SimplexId &edgeId) const {
+      getEdgeStarNumberInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeStarsInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getEdgeTriangleInternal(const SimplexId &edgeId,
-                                               const int &localTriangleId,
-                                               SimplexId &triangleId) const {
+    virtual inline int
+      getEdgeTriangleInternal(const SimplexId &ttkNotUsed(edgeId),
+                              const int &ttkNotUsed(localTriangleId),
+                              SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const {
+      getEdgeTriangleNumberInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeTrianglesInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getEdgeVertexInternal(const SimplexId &edgeId,
-                                             const int &localVertexId,
-                                             SimplexId &vertexId) const {
+    virtual inline int
+      getEdgeVertexInternal(const SimplexId &ttkNotUsed(edgeId),
+                            const int &ttkNotUsed(localVertexId),
+                            SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId getNumberOfCellsInternal() const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId getNumberOfEdgesInternal() const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId getNumberOfTrianglesInternal() const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId getNumberOfVerticesInternal() const {
       return 0;
@@ -2642,163 +2650,173 @@ namespace ttk {
     virtual inline const std::vector<std::array<SimplexId, 3>> *
       getTrianglesInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getTriangleEdgeInternal(const SimplexId &triangleId,
-                                               const int &localEdgeId,
-                                               SimplexId &edgeId) const {
+    virtual inline int
+      getTriangleEdgeInternal(const SimplexId &ttkNotUsed(triangleId),
+                              const int &ttkNotUsed(localEdgeId),
+                              SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
 
-    virtual inline SimplexId
-      getTriangleEdgeNumberInternal(const SimplexId &triangleId) const {
+    virtual inline SimplexId getTriangleEdgeNumberInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getTriangleLinkInternal(const SimplexId &triangleId,
-                                               const int &localLinkId,
-                                               SimplexId &linkId) const {
+    virtual inline int
+      getTriangleLinkInternal(const SimplexId &ttkNotUsed(triangleId),
+                              const int &ttkNotUsed(localLinkId),
+                              SimplexId &ttkNotUsed(linkId)) const {
       return 0;
-    };
+    }
 
-    virtual inline SimplexId
-      getTriangleLinkNumberInternal(const SimplexId &triangleId) const {
+    virtual inline SimplexId getTriangleLinkNumberInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleLinksInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getTriangleStarInternal(const SimplexId &triangleId,
-                                               const int &localStarId,
-                                               SimplexId &starId) const {
+    virtual inline int
+      getTriangleStarInternal(const SimplexId &ttkNotUsed(triangleId),
+                              const int &ttkNotUsed(localStarId),
+                              SimplexId &ttkNotUsed(starId)) const {
       return 0;
-    };
+    }
 
-    virtual inline SimplexId
-      getTriangleStarNumberInternal(const SimplexId &triangleId) const {
+    virtual inline SimplexId getTriangleStarNumberInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleStarsInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getTriangleVertexInternal(const SimplexId &triangleId,
-                                                 const int &localVertexId,
-                                                 SimplexId &vertexId) const {
+    virtual inline int
+      getTriangleVertexInternal(const SimplexId &ttkNotUsed(triangleId),
+                                const int &ttkNotUsed(localVertexId),
+                                SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
-    virtual inline int getVertexEdgeInternal(const SimplexId &vertexId,
-                                             const int &localEdgeId,
-                                             SimplexId &edgeId) const {
+    virtual inline int
+      getVertexEdgeInternal(const SimplexId &ttkNotUsed(vertexId),
+                            const int &ttkNotUsed(localEdgeId),
+                            SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getVertexEdgeNumberInternal(const SimplexId &vertexId) const {
+      getVertexEdgeNumberInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexEdgesInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getVertexLinkInternal(const SimplexId &vertexId,
-                                             const int &localLinkId,
-                                             SimplexId &linkId) const {
+    virtual inline int
+      getVertexLinkInternal(const SimplexId &ttkNotUsed(vertexId),
+                            const int &ttkNotUsed(localLinkId),
+                            SimplexId &ttkNotUsed(linkId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getVertexLinkNumberInternal(const SimplexId &vertexId) const {
+      getVertexLinkNumberInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexLinksInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getVertexNeighborInternal(const SimplexId &vertexId,
-                                                 const int &localNeighborId,
-                                                 SimplexId &neighborId) const {
+    virtual inline int
+      getVertexNeighborInternal(const SimplexId &ttkNotUsed(vertexId),
+                                const int &ttkNotUsed(localNeighborId),
+                                SimplexId &ttkNotUsed(neighborId)) const {
       return 0;
-    };
+    }
 
-    virtual inline SimplexId
-      getVertexNeighborNumberInternal(const SimplexId &vertexId) const {
+    virtual inline SimplexId getVertexNeighborNumberInternal(
+      const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexNeighborsInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getVertexPointInternal(const SimplexId &vertexId,
-                                              float &x,
-                                              float &y,
-                                              float &z) const {
+    virtual inline int
+      getVertexPointInternal(const SimplexId &ttkNotUsed(vertexId),
+                             float &ttkNotUsed(x),
+                             float &ttkNotUsed(y),
+                             float &ttkNotUsed(z)) const {
       return 0;
-    };
+    }
 
-    virtual inline int getVertexStarInternal(const SimplexId &vertexId,
-                                             const int &localStarId,
-                                             SimplexId &starId) const {
+    virtual inline int
+      getVertexStarInternal(const SimplexId &ttkNotUsed(vertexId),
+                            const int &ttkNotUsed(localStarId),
+                            SimplexId &ttkNotUsed(starId)) const {
       return 0;
-    };
+    }
 
     virtual inline SimplexId
-      getVertexStarNumberInternal(const SimplexId &vertexId) const {
+      getVertexStarNumberInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexStarsInternal() {
       return NULL;
-    };
+    }
 
-    virtual inline int getVertexTriangleInternal(const SimplexId &vertexId,
-                                                 const int &localTriangleId,
-                                                 SimplexId &triangleId) const {
+    virtual inline int
+      getVertexTriangleInternal(const SimplexId &ttkNotUsed(vertexId),
+                                const int &ttkNotUsed(localTriangleId),
+                                SimplexId &ttkNotUsed(triangleId)) const {
       return 0;
-    };
+    }
 
-    virtual inline SimplexId
-      getVertexTriangleNumberInternal(const SimplexId &vertexId) const {
+    virtual inline SimplexId getVertexTriangleNumberInternal(
+      const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
+    }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexTrianglesInternal() {
       return NULL;
-    };
+    }
 
     virtual inline bool
-      isEdgeOnBoundaryInternal(const SimplexId &edgeId) const {
+      isEdgeOnBoundaryInternal(const SimplexId &ttkNotUsed(edgeId)) const {
       return 0;
-    };
+    }
+
+    virtual inline bool isTriangleOnBoundaryInternal(
+      const SimplexId &ttkNotUsed(triangleId)) const {
+      return 0;
+    }
 
     virtual inline bool
-      isTriangleOnBoundaryInternal(const SimplexId &triangleId) const {
+      isVertexOnBoundaryInternal(const SimplexId &ttkNotUsed(vertexId)) const {
       return 0;
-    };
-
-    virtual inline bool
-      isVertexOnBoundaryInternal(const SimplexId &vertexId) const {
-      return 0;
-    };
+    }
 
     inline bool hasPreconditionedBoundaryEdges() const {
 
@@ -3079,7 +3097,7 @@ namespace ttk {
     // empty wrapping to VTK for now
     bool needsToAbort() {
       return false;
-    };
+    }
 
     virtual inline int preconditionBoundaryEdgesInternal() {
       return 0;
@@ -3177,9 +3195,9 @@ namespace ttk {
                                const std::string &tableName = "",
                                std::ostream &stream = std::cout) const;
 
-    int updateProgress(const float &progress) {
+    int updateProgress(const float &ttkNotUsed(progress)) {
       return 0;
-    };
+    }
 
     bool hasPeriodicBoundaries_, hasPreconditionedBoundaryEdges_,
       hasPreconditionedBoundaryTriangles_, hasPreconditionedBoundaryVertices_,

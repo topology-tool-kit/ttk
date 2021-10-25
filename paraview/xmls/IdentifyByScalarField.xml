@@ -86,7 +86,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Pipeline" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

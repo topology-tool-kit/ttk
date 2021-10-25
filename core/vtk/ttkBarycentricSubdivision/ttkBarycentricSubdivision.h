@@ -59,11 +59,9 @@ protected:
     AllocateScalarField(vtkDataArray *const inputScalarField,
                         int ntuples) const;
 
-  int InterpolateScalarFields(
-    vtkDataSet *const input,
-    vtkUnstructuredGrid *const output,
-    ttk::Triangulation &inputTriangulation,
-    ttk::ExplicitTriangulation &outputTriangulation) const;
+  int InterpolateScalarFields(vtkDataSet *const input,
+                              vtkUnstructuredGrid *const output,
+                              ttk::Triangulation &inputTriangulation) const;
 
 private:
   // number of subdivisions

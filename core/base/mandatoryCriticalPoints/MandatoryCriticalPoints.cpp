@@ -479,7 +479,6 @@ int MandatoryCriticalPoints::computePlanarLayout(
 }
 
 int MandatoryCriticalPoints::computeExtremumComponent(
-  const int componentId,
   const PointType &pointType,
   const SubLevelSetTree &tree,
   const int seedVertexId,

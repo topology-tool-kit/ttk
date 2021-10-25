@@ -13,16 +13,37 @@
                      label="TTK MergeTreeClustering">
            <Documentation long_help="TTK MergeTreeClustering plugin that compute distance, geodesics and barycenters between merge trees." 
                           short_help="TTK MergeTreeClustering plugin that compute distance, geodesics and barycenters between merge trees.">
-               TTK MergeTreeClustering plugin documentation.
-               
-               Related publication:
-               R. Sridharamurthy, T. B. Masood, A. Kamakshidasan, and V. Natarajan.
-               Edit distance between merge trees. 
-               IEEE Transactions on Visualization and Computer Graphics, 2018.
-               
-               M. Pont, J. Vidal, J. Delon, J. Tierny.
-               Wasserstein Distances, Geodesics and Barycenters of Merge Trees.
-               IEEE VIS 2021.
+This filter allows to compute distances, geodesics, barycenters and clusters of merge trees.
+
+Two backends are available:
+
+- The Wasserstein Distance:
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
+IEEE Transactions on Visualization and Computer Graphics, 2021
+
+- The Edit Distance:
+Related publication:
+'Edit distance between merge trees.'
+R. Sridharamurthy, T. B. Masood, A. Kamakshidasan, and V. Natarajan.
+IEEE Transactions on Visualization and Computer Graphics, 2018.
+
+Only the first backend allows to compute geodesics, barycenters and clusters of merge trees. The second one can only compute distances.
+These backends are different through 3 parameters:
+
+               Parameters | Wasserstein |  Edit |
+--------------------------|-------------|-------|
+     Branch Decomposition |        True | False |
+   Normalized Wasserstein |        True | False |
+             Keep Subtree |       False |  True |
+
+These parameters can be configured manually by selecting the Custom backend.
+
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+
+When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
            </Documentation>
 
             <!-- INPUT -->
@@ -47,7 +68,7 @@
                 </InputProperty>
                 
                 <InputProperty
-                    name="Input2 (optionnal, only for clustering)"
+                    name="Optional Input (clustering)"
                     port_index="1"
                     command="SetInputConnection">
                   <ProxyGroupDomain name="groups">
@@ -67,83 +88,8 @@
 
             <!-- INPUT PARAMETER WIDGETS -->
                 <!-- Execution options -->
-                <IntVectorProperty
-                name="Backend"
-                label="Backend"
-                command="SetBackend"
-                number_of_elements="1"
-                default_values="0">
-                <EnumerationDomain name="enum">
-                    <Entry value="0" text="Wasserstein Distance (IEEE TVCG 2021)"/>
-                    <Entry value="1" text="Edit Distance (IEEE TVCG 2019)"/>
-                    <Entry value="2" text="Custom"/>
-                </EnumerationDomain>
-                  <Documentation>
-                  </Documentation>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="BranchDecomposition"
-                command="SetBranchDecomposition"
-                label="Use Branch Decomposition"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="Backend"
-                                           value="2" />
-                  </Hints>
-                  <Documentation>
-                    Use branch decomposition representation.
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="NormalizedWasserstein"
-                command="SetNormalizedWasserstein"
-                label="Normalized Wasserstein"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="CompositeDecorator">
-                    <Expression type="and">
-                      <PropertyWidgetDecorator type="GenericDecorator"
-                                              mode="visibility"
-                                              property="BranchDecomposition"
-                                              value="1" />
-                      <PropertyWidgetDecorator type="GenericDecorator"
-                                              mode="visibility"
-                                              property="Backend"
-                                              value="2" />
-                    </Expression>
-                  </PropertyWidgetDecorator>
-                  </Hints>
-                  <Documentation>
-                    Use normalized Wasserstein (set to true to have a consistent barycenter of merge trees).
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="KeepSubtree"
-                command="SetKeepSubtree"
-                label="Keep Subtree"
-                number_of_elements="1"
-                default_values="0">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="Backend"
-                                           value="2" />
-                  </Hints>
-                  <Documentation>
-                    Keep subtree when destroying/inserting a node (set to false to have a consistent barycenter of merge tree).
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>  
-                
+                ${MERGE_TREE_INPUT_WIDGETS}
+                                
                 <IntVectorProperty
                 name="ComputeBarycenter"
                 command="SetComputeBarycenter"
@@ -185,7 +131,7 @@
                 <IntVectorProperty
                 name="NumberOfBarycenters"
                 command="SetNumberOfBarycenters"
-                label="Number Of Barycenters"
+                label="Number Of Clusters"
                 number_of_elements="1"
                 default_values="1">
                   <Hints>
@@ -221,36 +167,56 @@
                   </PropertyWidgetDecorator>
                   </Hints>
                   <Documentation>
-                    Number of barycenter to compute (performs a KMeans with merge trees as centroids).
+                    Number of barycenters/clusters to compute (performs a KMeans with merge trees as centroids).
                   </Documentation>
                 </IntVectorProperty>
-                
+
                 <IntVectorProperty
                 name="Deterministic"
                 command="SetDeterministic"
                 label="Deterministic"
                 number_of_elements="1"
-                default_values="0">
+                  default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="and">
+                      <Expression type="and">
+                        <Expression type="or">
+                          <Expression type="and">
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="BranchDecomposition"
+                                                    value="1" />
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="Backend"
+                                                    value="2" />
+                          </Expression>
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="Backend"
+                                                  value="0" />
+                        </Expression>
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="KeepSubtree"
+                                                value="0" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="ComputeBarycenter"
+                                              value="1" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+
                   <Documentation>
                     
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
+
                 
-                <IntVectorProperty
-                name="AssignmentSolver"
-                label="Assignment Solver"
-                command="SetAssignmentSolver"
-                number_of_elements="1"
-                default_values="0">
-                <EnumerationDomain name="enum">
-                    <Entry value="0" text="Auction"/>
-                    <Entry value="1" text="Exhaustive Search"/>
-                    <Entry value="2" text="Munkres"/>
-                </EnumerationDomain>
-                  <Documentation>
-                  </Documentation>
-                </IntVectorProperty>
                 
                 <DoubleVectorProperty
                 name="Alpha"
@@ -303,123 +269,6 @@
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty> -->
-                
-                <IntVectorProperty
-                name="DeleteMultiPersPairs"
-                command="SetDeleteMultiPersPairs"
-                label="Delete Multi Pers. Pairs"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Documentation>
-                    Delete persistence pairs for which the saddle point is involved in more than one pair.
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <IntVectorProperty
-                name="Epsilon1UseFarthestSaddle"
-                command="SetEpsilon1UseFarthestSaddle"
-                label="Epsilon1 Use Farthest Saddle"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Documentation>
-                    
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="EpsilonTree1"
-                command="SetEpsilonTree1"
-                label="Epsilon 1 (%)"
-                number_of_elements="1"
-                default_values="5">
-                  <Documentation>
-                    Merge saddle points (in a bottom-up manner) having their difference in function value below epsilon times the biggest difference in function value. No effect for epsilon = 0.
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>   
-                
-                <DoubleVectorProperty
-                name="Epsilon2Tree1"
-                command="SetEpsilon2Tree1"
-                label="Epsilon 2 (%)"
-                number_of_elements="1"
-                default_values="95"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="CompositeDecorator">
-                    <Expression type="or">
-                      <Expression type="and">
-                        <PropertyWidgetDecorator type="GenericDecorator"
-                                                mode="visibility"
-                                                property="BranchDecomposition"
-                                                value="1" />
-                        <PropertyWidgetDecorator type="GenericDecorator"
-                                                mode="visibility"
-                                                property="Backend"
-                                                value="2" />
-                      </Expression>
-                      <PropertyWidgetDecorator type="GenericDecorator"
-                                              mode="visibility"
-                                              property="Backend"
-                                              value="0" />
-                    </Expression>
-                  </PropertyWidgetDecorator>
-                  </Hints>
-                  <Documentation>
-                    Given a branch decomposition, ascend a pair (by making it children of the parent of its parent) if the ratio between its persistence and the persistence of its parent is above epsilon2. A high value will ascend only pairs having a close persistence to their parent, more epsilon2 is low more the pairs having a distant persistence to their parent will also be ascended. No effect for epsilon2 = 100.
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>   
-                
-                <DoubleVectorProperty
-                name="Epsilon3Tree1"
-                command="SetEpsilon3Tree1"
-                label="Epsilon 3 (%)"
-                number_of_elements="1"
-                default_values="90"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="CompositeDecorator">
-                    <Expression type="or">
-                      <Expression type="and">
-                        <PropertyWidgetDecorator type="GenericDecorator"
-                                                mode="visibility"
-                                                property="BranchDecomposition"
-                                                value="1" />
-                        <PropertyWidgetDecorator type="GenericDecorator"
-                                                mode="visibility"
-                                                property="Backend"
-                                                value="2" />
-                      </Expression>
-                      <PropertyWidgetDecorator type="GenericDecorator"
-                                              mode="visibility"
-                                              property="Backend"
-                                              value="0" />
-                    </Expression>
-                  </PropertyWidgetDecorator>
-                  </Hints>
-                  <Documentation>
-                    Will apply the processing of Epsilon2 only for the pairs having a ratio between their persistence and the maximum persistence inferior to epsilon3. A low value will apply the processing of Epsilon2 only to the small persistence pairs, more epsilon3 is high more the pairs having a high persistence will also be processed. No effect for epsilon3 = 100.
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="PersistenceThreshold"
-                command="SetPersistenceThreshold"
-                label="Persistence Threshold (%)"
-                number_of_elements="1"
-                default_values="0">
-                  <Documentation>
-                    
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>  
-                
                 <!-- Output options -->
                 
                 <IntVectorProperty
@@ -427,7 +276,8 @@
                 command="SetOutputTrees"
                 label="Output Trees"
                 number_of_elements="1"
-                default_values="1">
+                  default_values="1"
+                  panel_visibility="advanced">
                   <Documentation>
                     Display output trees. 
                   </Documentation>
@@ -465,7 +315,7 @@
                                            value="1" />
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="0" />
                   </Hints>
                 <EnumerationDomain name="enum">
@@ -480,7 +330,7 @@
                 <IntVectorProperty
                 name="BarycenterPositionAlpha"
                 command="SetBarycenterPositionAlpha"
-                label="Barycenter position according alpha"
+                label="Barycenter position according to alpha"
                 number_of_elements="1"
                 default_values="0"
                 panel_visibility="advanced">
@@ -491,13 +341,13 @@
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    Position barycenter according alpha parameter (when 2 input trees).
+                    Position barycenter according to alpha parameter (when 2 input trees).
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
                 
                 <IntVectorProperty
-                name="PlanarLayout"
+                name="MergeTreePlanarLayout"
                 command="SetPlanarLayout"
                 label="Planar Layout"
                 number_of_elements="1"
@@ -515,116 +365,6 @@
                 </IntVectorProperty>
                 
                 <IntVectorProperty
-                name="BranchDecompositionPlanarLayout"
-                command="SetBranchDecompositionPlanarLayout"
-                label="Branch Decomposition Planar Layout"
-                number_of_elements="1"
-                default_values="0"
-                panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Display a planar layout of the branch decomposition (each node is a branch in the original tree).
-                  </Documentation>
-                  <BooleanDomain name="bool"/>
-                </IntVectorProperty>
-                
-                <DoubleVectorProperty
-                name="BranchSpacing"
-                command="SetBranchSpacing"
-                label="Branch Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="BranchDecompositionPlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Manage the distance between branch in the branch decomposition planar layout.
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="ImportantPairs"
-                command="SetImportantPairs"
-                label="Important Pairs (%)"
-                number_of_elements="1"
-                default_values="10">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Threshold to consider a persistence pair as important. They will be displayed such that they are much more visible than the rest.
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="100" />
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="ImportantPairsSpacing"
-                command="SetImportantPairsSpacing"
-                label="Important Pairs Spacing"
-                number_of_elements="1"
-                default_values="1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Manage the distance of the important pairs with each other.
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="NonImportantPairsSpacing"
-                command="SetNonImportantPairsSpacing"
-                label="Non Important Pairs Spacing"
-                number_of_elements="1"
-                default_values="0.1">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Manage the distance of the non-important pairs with each other.
-                  </Documentation>
-                </DoubleVectorProperty>
-                
-                <DoubleVectorProperty
-                name="NonImportantPairsProximity"
-                command="SetNonImportantPairsProximity"
-                label="Non Important Pairs Proximity"
-                number_of_elements="1"
-                default_values="0.05">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="PlanarLayout"
-                                           value="1" />
-                  </Hints>
-                  <Documentation>
-                    Manage the distance of the non-important pairs to the important pairs they are attached to.
-                  </Documentation>
-                  <DoubleRangeDomain name="range" min="0" max="1" />
-                </DoubleVectorProperty>
-                
-                <IntVectorProperty
                 name="RescaleTreesIndividually"
                 command="SetRescaleTreesIndividually"
                 label="Rescale Trees Individually"
@@ -634,7 +374,7 @@
                   <Hints>
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="1" />
                   </Hints>
                   <Documentation>
@@ -656,7 +396,7 @@
                                            value="1" />
                   <PropertyWidgetDecorator type="GenericDecorator"
                                            mode="visibility"
-                                           property="PlanarLayout"
+                                           property="MergeTreePlanarLayout"
                                            value="0" />
                   </Hints>
                   <Documentation>
@@ -664,42 +404,26 @@
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>  
-            
-            <PropertyGroup panel_widget="Line" label="Execution options">
-              <Property name="Backend"/>
-              <Property name="BranchDecomposition"/>
-              <Property name="NormalizedWasserstein"/>
-              <Property name="KeepSubtree"/>
+
+            <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="ComputeBarycenter"/>
               <Property name="NumberOfBarycenters"/>
               <Property name="Deterministic"/>
-              <Property name="AssignmentSolver"/>
               <Property name="Alpha"/>
               <Property name="JoinSplitMixtureCoefficient"/>
-            </PropertyGroup>
-            
-            <PropertyGroup panel_widget="Line" label="Input options">
               <!-- <Property name="UseMinMaxPair"/> -->
-              <Property name="DeleteMultiPersPairs"/>
-              <Property name="Epsilon1UseFarthestSaddle"/>
-              <Property name="EpsilonTree1"/>
-              <Property name="Epsilon2Tree1"/>
-              <Property name="Epsilon3Tree1"/>
-              <Property name="PersistenceThreshold"/>
             </PropertyGroup>
+            ${MERGE_TREE_PREPROCESS_WIDGETS}
                 
             <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="OutputTrees"/>
               <Property name="DimensionSpacing"/>
               <Property name="DimensionToShift"/>
               <Property name="BarycenterPositionAlpha"/>
-              <Property name="PlanarLayout"/>
-              <Property name="BranchDecompositionPlanarLayout"/>
-              <Property name="BranchSpacing"/>
-              <Property name="ImportantPairs"/>
-              <Property name="ImportantPairsSpacing"/>
-              <Property name="NonImportantPairsSpacing"/>
-              <Property name="NonImportantPairsProximity"/>
+              <Property name="MergeTreePlanarLayout"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
+            <PropertyGroup panel_widget="Line" label="Output options">
               <Property name="RescaleTreesIndividually"/>
               <Property name="OutputSegmentation"/>
             </PropertyGroup>

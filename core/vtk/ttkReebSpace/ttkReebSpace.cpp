@@ -79,7 +79,7 @@ int ttkReebSpace::dispatch(const dataTypeU *const uField,
 
   return 0;
 }
-int ttkReebSpace::RequestData(vtkInformation *request,
+int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
 

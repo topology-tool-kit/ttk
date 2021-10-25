@@ -146,6 +146,7 @@ namespace ttk {
           this->data_[this->offsets_[i] + j] = src[i][j];
         }
       }
+      TTK_FORCE_USE(threadNumber);
     }
 
     /**
@@ -165,6 +166,7 @@ namespace ttk {
           dst[i][j] = this->get(i, j);
         }
       }
+      TTK_FORCE_USE(threadNumber);
     }
 
     // ##################### //

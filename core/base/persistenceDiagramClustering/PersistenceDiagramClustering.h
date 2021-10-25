@@ -56,9 +56,9 @@ namespace ttk {
   public:
     PersistenceDiagramClustering() {
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
-    };
+    }
 
-    ~PersistenceDiagramClustering(){};
+    ~PersistenceDiagramClustering() = default;
 
     template <class dataType>
     std::vector<int> execute(

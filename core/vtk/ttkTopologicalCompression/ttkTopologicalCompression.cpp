@@ -38,7 +38,7 @@ int ttkTopologicalCompression::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkTopologicalCompression::RequestData(vtkInformation *request,
+int ttkTopologicalCompression::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
 

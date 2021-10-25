@@ -27,7 +27,7 @@ namespace ttk {
 #endif
           { leafSearch(mesh); }
         }
-        printTime(precomputeTime, "leafSearch", -1, 3);
+        printTime(precomputeTime, "leafSearch", 3);
       }
 
 #ifdef TTK_ENABLE_OMP_PRIORITY
@@ -68,7 +68,7 @@ namespace ttk {
 #endif
       }
 
-      printTime(mergeTreesTime, "merge trees ", -1, 3);
+      printTime(mergeTreesTime, "merge trees ", 3);
 
       // Combine
       if(tt == TreeType::Contour) {
@@ -78,8 +78,8 @@ namespace ttk {
 
         Timer combineTime;
         combine();
-        printTime(combineTime, "combine trees", -1, 4);
-        printTime(combineFullTime, "combine full", -1, 3);
+        printTime(combineTime, "combine trees", 4);
+        printTime(combineFullTime, "combine full", 3);
       }
       // Debug
       if(debugLevel_ > 3) {

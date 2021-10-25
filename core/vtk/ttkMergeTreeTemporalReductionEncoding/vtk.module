@@ -1,0 +1,4 @@
+NAME
+  ttkMergeTreeTemporalReductionEncoding
+DEPENDS
+  ttkAlgorithm

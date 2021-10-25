@@ -217,7 +217,6 @@ namespace ttk {
                          const SimplexId *const offsets) const;
 
     char getCriticalTypeFromLink(
-      const SimplexId vertexId,
       const std::vector<std::pair<polarity, polarity>> &vlp,
       DynamicTree &link) const;
 

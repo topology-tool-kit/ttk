@@ -102,7 +102,6 @@ private:
                vtkTable *outputSTPersistenceCurve,
                vtkTable *outputCTPersistenceCurve,
                const VTK_TT *inputScalars,
-               int inputOffsetsDataType,
                const void *inputOffsets,
                const TTK_TT *triangulation);
 };

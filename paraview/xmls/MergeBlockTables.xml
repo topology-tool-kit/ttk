@@ -1,0 +1,40 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkMergeBlockTables"
+        class="ttkMergeBlockTables"
+        label="TTK MergeBlockTables">
+      <Documentation
+          long_help="Merge vtkTables from a vtkMultiBlockDataSet."
+          shorthelp="Merge vtkTables inside blocks."
+          >
+        This filter merges vtkTables stored in a vtkMultiBlockDataSet
+        into one unique vtkTable.
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="AddInputConnection"
+          clean_command="RemoveAllInputs"
+          multiple_input="1">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          MultiBlockDataSet of vtkTables to process.
+        </Documentation>
+      </InputProperty>
+
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

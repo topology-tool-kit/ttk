@@ -87,6 +87,8 @@ private:
   double DimensionSpacing = 1.;
   int DimensionToShift = 0;
   double ImportantPairs = 50.;
+  int MaximumImportantPairs = 0;
+  int MinimumImportantPairs = 0;
   double ImportantPairsSpacing = 1.;
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
@@ -322,6 +324,12 @@ public:
 
   vtkSetMacro(ImportantPairs, double);
   vtkGetMacro(ImportantPairs, double);
+
+  vtkSetMacro(MaximumImportantPairs, int);
+  vtkGetMacro(MaximumImportantPairs, int);
+
+  vtkSetMacro(MinimumImportantPairs, int);
+  vtkGetMacro(MinimumImportantPairs, int);
 
   vtkSetMacro(ImportantPairsSpacing, double);
   vtkGetMacro(ImportantPairsSpacing, double);

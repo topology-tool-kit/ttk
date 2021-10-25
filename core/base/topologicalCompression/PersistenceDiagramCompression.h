@@ -367,9 +367,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum2 += (p1 * p1);
         persistentSum1 += abs<dataType>(p1);
         int type1 = topologicalSimplification.getCriticalType(
-          cp1, inputData, inputOffsets, triangulation);
+          cp1, inputOffsets, triangulation);
         int type2 = topologicalSimplification.getCriticalType(
-          cp2, inputData, inputOffsets, triangulation);
+          cp2, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
           topoIndices.push_back(std::make_tuple(idt1, cp1));
@@ -409,9 +409,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum1 += abs<dataType>(p1);
         // Saddle selection.
         int type1 = topologicalSimplification.getCriticalType(
-          cp1, inputData, inputOffsets, triangulation);
+          cp1, inputOffsets, triangulation);
         int type2 = topologicalSimplification.getCriticalType(
-          cp2, inputData, inputOffsets, triangulation);
+          cp2, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
           topoIndices.push_back(std::make_tuple(idt1, cp1));
@@ -750,7 +750,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       SimplexId id = simplifiedConstraints[i];
       dataType val = inputData[id];
       int type = topologicalSimplification.getCriticalType(
-        id, inputData, inputOffsets, triangulation);
+        id, inputOffsets, triangulation);
       if(type == -1 // Local_minimum
          || type == 1 // Local_maximum
          || type == 0) {

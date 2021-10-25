@@ -130,8 +130,8 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
         ascendingManifoldArray->GetTuple(i, &extremumId);
         cellId = max2simplex_[(int)extremumId];
       }
-      double persistence = simplex2persistence_[(int)cellId];
-      double pairType = simplex2pairType_[(int)cellId];
+      double persistence = simplex2persistence_[cellId];
+      double pairType = simplex2pairType_[cellId];
       persistenceArray->SetTuple(i, &persistence);
       pairTypeArray->SetTuple(i, &pairType);
     }
@@ -282,7 +282,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
 }
 
 int ttkStableManifoldPersistence::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

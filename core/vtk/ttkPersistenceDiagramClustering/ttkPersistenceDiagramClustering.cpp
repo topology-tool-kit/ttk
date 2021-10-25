@@ -50,7 +50,7 @@ void ttkPersistenceDiagramClustering::Modified() {
 }
 
 int ttkPersistenceDiagramClustering::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
@@ -490,12 +490,6 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     vtkNew<vtkUnstructuredGrid> vtu{};
     vtu->ShallowCopy(diags[i]);
 
-    vtkNew<vtkIntArray> diagId{};
-    diagId->SetName("DiagramID");
-    diagId->SetNumberOfTuples(vtu->GetNumberOfPoints());
-    diagId->Fill(i);
-    vtu->GetPointData()->AddArray(diagId);
-
     vtkNew<vtkIntArray> clusterId{};
     clusterId->SetName("ClusterID");
     clusterId->SetNumberOfComponents(1);
@@ -558,6 +552,12 @@ void ttkPersistenceDiagramClustering::outputCentroids(
   for(size_t i = 0; i < final_centroids.size(); ++i) {
     vtkNew<vtkUnstructuredGrid> vtu{};
     this->diagramToVTU(vtu, final_centroids[i], i, this->max_dimension_total_);
+
+    vtkNew<vtkIntArray> cid{};
+    cid->SetName("ClusterId");
+    cid->SetNumberOfTuples(1);
+    cid->SetTuple1(0, i);
+    vtu->GetFieldData()->AddArray(cid);
 
     if(dm == DISPLAY::STARS && spacing > 0) {
       // shift centroid along the X axis

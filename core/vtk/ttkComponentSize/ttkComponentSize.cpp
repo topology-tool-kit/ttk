@@ -40,7 +40,7 @@ int ttkComponentSize::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkComponentSize::RequestData(vtkInformation *request,
+int ttkComponentSize::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   ttk::Timer t;

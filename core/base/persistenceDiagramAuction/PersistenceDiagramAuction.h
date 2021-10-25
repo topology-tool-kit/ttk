@@ -33,13 +33,11 @@
 namespace ttk {
   template <typename dataType>
   struct Compare {
-    // clang-format off
     constexpr bool
       operator()(std::pair<int, dataType> const &a,
                  std::pair<int, dataType> const &b) const noexcept {
       return a.second > b.second;
     }
-    // clang-format on
   };
 
   template <typename dataType>
@@ -113,7 +111,7 @@ namespace ttk {
       lambda_ = lambda;
 
       use_kdt_ = (use_kdTree && goods_.size() > 0);
-    };
+    }
 
     void runAuctionRound(int &n_biddings, const int kdt_index = 0);
     dataType getMatchingsAndDistance(std::vector<matchingTuple> *matchings,

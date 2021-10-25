@@ -31,9 +31,9 @@ namespace ttk {
                                public AssignmentSolver<dataType> {
 
   public:
-    AssignmentExhaustive(){};
+    AssignmentExhaustive() = default;
 
-    ~AssignmentExhaustive(){};
+    ~AssignmentExhaustive() = default;
 
     int run(std::vector<asgnMatchingTuple> &matchings);
 

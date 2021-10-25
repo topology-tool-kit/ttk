@@ -111,7 +111,7 @@ int ttkMergeTreeClustering::FillOutputPortInformation(int port,
  *     2) The output objects are already initialized based on the information
  *        provided by the FillOutputPortInformation method.
  */
-int ttkMergeTreeClustering::RequestData(vtkInformation *request,
+int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   // ------------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ int ttkMergeTreeClustering::run(
 
 template <class dataType>
 int ttkMergeTreeClustering::runCompute(
-  vtkInformationVector *outputVector,
+  vtkInformationVector *ttkNotUsed(outputVector),
   std::vector<vtkMultiBlockDataSet *> &inputTrees,
   std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
   // ------------------------------------------------------------------------------------
@@ -310,6 +310,7 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setDeleteMultiPersPairs(DeleteMultiPersPairs);
       mergeTreeClustering.setEpsilon1UseFarthestSaddle(
         Epsilon1UseFarthestSaddle);
+      mergeTreeClustering.setMixtureCoefficient(JoinSplitMixtureCoefficient);
       mergeTreeClustering.setThreadNumber(this->threadNumber_);
       mergeTreeClustering.setDebugLevel(this->debugLevel_);
 
@@ -336,7 +337,7 @@ template <class dataType>
 int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
   std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkMultiBlockDataSet *> &ttkNotUsed(inputTrees2)) {
   std::vector<MergeTree<dataType>> intermediateMTrees;
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
   std::vector<FTMTree_MT *> intermediateTrees;
@@ -400,6 +401,8 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setDimensionSpacing(DimensionSpacing);
       visuMaker.setDimensionToShift(DimensionToShift);
       visuMaker.setImportantPairs(ImportantPairs);
+      visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+      visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
       visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
       visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
       visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
@@ -522,6 +525,8 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setDimensionSpacing(DimensionSpacing);
           visuMaker.setDimensionToShift(DimensionToShift);
           visuMaker.setImportantPairs(ImportantPairs);
+          visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+          visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
           visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
           visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
           visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
@@ -573,6 +578,8 @@ int ttkMergeTreeClustering::runOutput(
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
         vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation2
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock2
+          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
         // Fill vtk objects
         ttkMergeTreeVisualization visuMakerBary;
@@ -585,6 +592,8 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setDimensionSpacing(DimensionSpacing);
         visuMakerBary.setDimensionToShift(DimensionToShift);
         visuMakerBary.setImportantPairs(ImportantPairs);
+        visuMakerBary.setMaximumImportantPairs(MaximumImportantPairs);
+        visuMakerBary.setMinimumImportantPairs(MinimumImportantPairs);
         visuMakerBary.setImportantPairsSpacing(ImportantPairsSpacing);
         visuMakerBary.setNonImportantPairsSpacing(NonImportantPairsSpacing);
         visuMakerBary.setNonImportantPairsProximity(NonImportantPairsProximity);
@@ -612,9 +621,14 @@ int ttkMergeTreeClustering::runOutput(
         auto allBaryPercentMatchT = visuMakerBary.getAllBaryPercentMatch();
         allBaryPercentMatch[c] = allBaryPercentMatchT[c];
 
+        // Field data
+        vtkNew<vtkDoubleArray> vtkClusterAssignment{};
+        vtkClusterAssignment->SetName("ClusterAssignment");
+        vtkClusterAssignment->SetNumberOfTuples(1);
+        vtkClusterAssignment->SetTuple1(0, c);
+        vtkBlock2->GetFieldData()->AddArray(vtkClusterAssignment);
+
         // Construct multiblock
-        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock2
-          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
         vtkBlock2->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
         vtkBlock2->SetBlock(0, vtkOutputNode2);
         vtkBlock2->SetBlock(1, vtkOutputArc2);

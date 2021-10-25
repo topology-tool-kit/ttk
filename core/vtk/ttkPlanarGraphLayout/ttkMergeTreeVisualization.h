@@ -38,6 +38,8 @@ private:
   int DimensionToShift = 0;
   bool OutputSegmentation = false;
   int ShiftMode = 0; // 0: Star ; 1: Star Barycenter ; 2: Line ; 3: Double Line
+  int MaximumImportantPairs = 0;
+  int MinimumImportantPairs = 0;
 
   // Offset
   int iSampleOffset = 0;
@@ -110,6 +112,12 @@ public:
   }
   void setShiftMode(int mode) {
     ShiftMode = mode;
+  }
+  void setMaximumImportantPairs(int maxPairs) {
+    MaximumImportantPairs = maxPairs;
+  }
+  void setMinimumImportantPairs(int minPairs) {
+    MinimumImportantPairs = minPairs;
   }
 
   // Offset
@@ -380,7 +388,7 @@ public:
     vtkMatching->GetCellData()->AddArray(matchingType);
     vtkMatching->GetCellData()->AddArray(matchPers);
     vtkMatching->GetCellData()->AddArray(matchingID);
-    // vtkMatching->GetCellData()->AddArray(costArray);
+    vtkMatching->GetCellData()->AddArray(costArray);
     vtkMatching->GetCellData()->AddArray(tree1NodeIdField);
     vtkMatching->GetCellData()->AddArray(tree2NodeIdField);
     if(allBaryPercentMatch.size() != 0)
@@ -552,6 +560,7 @@ public:
     // Iterate through all clusters
     // --------------------------------------------------------
     printMsg("Iterate through all clusters", debug::Priority::VERBOSE);
+    double importantPairsOriginal = importantPairs_;
     for(int c = 0; c < NumberOfBarycenters; ++c) {
 
       // Get radius
@@ -594,6 +603,27 @@ public:
            or (printTreeId != -1 and printClusterId != -1
                and (c != printClusterId or i != printTreeId)))
           continue;
+
+        // Manage important pairs threshold
+        importantPairs_ = importantPairsOriginal;
+        if(MaximumImportantPairs > 0 or MinimumImportantPairs > 0) {
+          std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> pairs;
+          trees[i]->getPersistencePairsFromTree(pairs, false);
+          if(MaximumImportantPairs > 0) {
+            double tempThreshold
+              = 0.999 * std::get<2>(pairs[pairs.size() - MaximumImportantPairs])
+                / std::get<2>(pairs[pairs.size() - 1]);
+            tempThreshold *= 100;
+            importantPairs_ = std::max(importantPairs_, tempThreshold);
+          }
+          if(MinimumImportantPairs > 0) {
+            double tempThreshold
+              = 0.999 * std::get<2>(pairs[pairs.size() - MinimumImportantPairs])
+                / std::get<2>(pairs[pairs.size() - 1]);
+            tempThreshold *= 100;
+            importantPairs_ = std::min(importantPairs_, tempThreshold);
+          }
+        }
 
         // Get is interpolated tree (temporal subsampling)
         bool isInterpolatedTree = false;
@@ -818,13 +848,10 @@ public:
               printMsg("// Push arc bary branch id", debug::Priority::VERBOSE);
               if(clusteringOutput and ShiftMode != 1) {
                 int tBranchID = -1;
-                if(treeMatching[node] >= 0
-                   and treeMatching[node] < allBaryBranchingID[c].size()) {
+                if(treeMatching[node] < allBaryBranchingID[c].size()) {
                   tBranchID = allBaryBranchingID[c][treeMatching[node]];
-                  if(not trees[i]->isLeaf(node)
-                     and treeMatching[nodeOrigin] >= 0
-                     and treeMatching[nodeOrigin]
-                           < allBaryBranchingID[c].size())
+                  if(!trees[i]->isLeaf(node)
+                     && treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
                     tBranchID = allBaryBranchingID[c][treeMatching[nodeOrigin]];
                 }
                 branchBaryID->InsertNextTuple1(tBranchID);
@@ -852,8 +879,7 @@ public:
                 idNode nodeToGet = treeBranching[node];
                 if(PlanarLayout and branchDecompositionPlanarLayout_)
                   nodeToGet = node;
-                if(treeMatching[nodeToGet] >= 0
-                   and treeMatching[nodeToGet] < allBaryBranchingID[c].size())
+                if(treeMatching[nodeToGet] < allBaryBranchingID[c].size())
                   persistenceBaryArc->InsertTuple1(
                     cellCount, barycenters[c]->getNodePersistence<dataType>(
                                  treeMatching[nodeToGet]));
@@ -928,11 +954,10 @@ public:
             printMsg("// Add node bary branch id", debug::Priority::VERBOSE);
             if(clusteringOutput and ShiftMode != 1) {
               int tBranchID = -1;
-              if(treeMatching[node] >= 0
-                 and treeMatching[node] < allBaryBranchingID[c].size()) {
+              if(treeMatching[node] < allBaryBranchingID[c].size()) {
                 tBranchID = allBaryBranchingID[c][treeMatching[node]];
-                if(not trees[i]->isLeaf(node) and treeMatching[nodeOrigin] >= 0
-                   and treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
+                if(!trees[i]->isLeaf(node)
+                   && treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
                   tBranchID = allBaryBranchingID[c][treeMatching[nodeOrigin]];
               }
               branchBaryNodeID->InsertNextTuple1(tBranchID);
@@ -951,8 +976,7 @@ public:
 
             // Add node persistence barycenter
             if(clusteringOutput and ShiftMode != 1)
-              if(treeMatching[node] >= 0
-                 and treeMatching[node] < allBaryBranchingID[c].size())
+              if(treeMatching[node] < allBaryBranchingID[c].size())
                 persistenceBaryNode->InsertTuple1(
                   pointCount, barycenters[c]->getNodePersistence<dataType>(
                                 treeMatching[node]));

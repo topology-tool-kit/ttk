@@ -187,7 +187,7 @@ namespace ttk {
   class Good : public PersistenceDiagramAuctionActor<dataType> {
 
   public:
-    Good(){};
+    Good() = default;
     Good(dataType x, dataType y, bool is_diagonal, int id)
       : PersistenceDiagramAuctionActor<dataType>(x, y, is_diagonal, id) {
       PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = is_diagonal;
@@ -312,9 +312,9 @@ namespace ttk {
   class GoodDiagram {
 
   public:
-    GoodDiagram(){};
+    GoodDiagram() = default;
 
-    ~GoodDiagram(){};
+    ~GoodDiagram() = default;
 
     void addGood(Good<dataType> &g);
     Good<dataType> &get(int idx);
@@ -353,7 +353,7 @@ namespace ttk {
   public:
     dataType diagonal_price_;
 
-    Bidder(){};
+    Bidder() = default;
     Bidder(dataType x, dataType y, bool is_diagonal, int id)
       : PersistenceDiagramAuctionActor<dataType>(x, y, is_diagonal, id) {
       price_paid_ = 0;
@@ -914,9 +914,9 @@ namespace ttk {
   public:
     std::vector<Bidder<dataType>> bidders_;
 
-    BidderDiagram(){};
+    BidderDiagram() = default;
 
-    ~BidderDiagram(){};
+    ~BidderDiagram() = default;
 
     inline void addBidder(Bidder<dataType> &b) {
       bidders_.push_back(b);

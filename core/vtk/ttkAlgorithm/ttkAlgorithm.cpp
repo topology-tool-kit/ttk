@@ -47,7 +47,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                  + std::string(dataSet->GetClassName()) + "'");
 
   return nullptr;
-};
+}
 
 vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                              const int &arrayIndex,
@@ -249,6 +249,8 @@ ttk::SimplexId *
     // return a pointer to the vector internal buffer
     return spareStorage.data();
   }
+#else
+  TTK_FORCE_USE(spareStorage);
 #endif
 
   // return a pointer to the data array internal buffer
@@ -289,7 +291,7 @@ void ttkAlgorithm::AddInputData(int index, vtkDataSet *input) {
   this->AddInputDataInternal(index, input);
 }
 
-int ttkAlgorithm::RequestDataObject(vtkInformation *request,
+int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // for each output

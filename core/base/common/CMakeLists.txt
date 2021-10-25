@@ -13,5 +13,6 @@ ttk_add_base_library(common
         OrderDisambiguation.h
         Os.h
         ProgramBase.h
+        Timer.h
         Wrapper.h
         )

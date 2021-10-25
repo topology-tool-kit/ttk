@@ -38,7 +38,7 @@ int ttkPointMerger::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkPointMerger::RequestData(vtkInformation *request,
+int ttkPointMerger::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
 

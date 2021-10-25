@@ -32,6 +32,9 @@
 
 #if TTK_ENABLE_WEBSOCKETPP
 
+// fix undefined reference to boost::system link error
+#define BOOST_ERROR_CODE_HEADER_ONLY
+
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
@@ -110,7 +113,6 @@ namespace ttk {
     int on_close(websocketpp::connection_hdl hdl);
     int on_message(websocketpp::connection_hdl hdl, server::message_ptr msg);
 
-    int packageIndex = 0;
     std::list<Message> messageQueue;
 #endif
   };

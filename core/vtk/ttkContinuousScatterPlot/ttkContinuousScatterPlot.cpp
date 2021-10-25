@@ -55,7 +55,7 @@ int ttkContinuousScatterPlot::dispatch(const dataType1 *scalars1,
   return status;
 }
 
-int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
+int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0], 0);

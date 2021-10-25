@@ -43,8 +43,8 @@ namespace ttk {
   public:
     MeshGraph() {
       this->setDebugMsgPrefix("MeshGraph");
-    };
-    ~MeshGraph(){};
+    }
+    ~MeshGraph() = default;
 
     inline size_t computeNumberOfOutputPoints(const size_t &nInputPoints,
                                               const size_t &nInputCells,
@@ -60,7 +60,7 @@ namespace ttk {
                        * (nSubdivisions
                           * 2); // 2 per input point (a -> a0,a1) + 2 per cell
                                 // subdivision (sIu+sId)
-    };
+    }
 
     inline size_t
       computeNumberOfOutputCells(const size_t &nInputCells,
@@ -70,11 +70,11 @@ namespace ttk {
                    * 2 // each cell gets converted into two quadratic quads
                : nInputCells; // each cell gets converted into a one cell with
                               // multiple points
-    };
+    }
 
     inline size_t computeOutputCellSize(const size_t &nSubdivisions) const {
       return 4 + nSubdivisions * 2; // 4 corners + 2 for each subdivision
-    };
+    }
 
     inline size_t
       computeOutputConnectivityArraySize(const size_t &nInputCells,
@@ -86,7 +86,7 @@ namespace ttk {
                    * 16 // 8 corners (a0,m0,m1,a1, m0,b0,b1,m1) + 8
                         // mid-edge nodes (a0m0,c,m1a1,a, m0b0,b,b1m1,c)
                : nInputCells * this->computeOutputCellSize(nSubdivisions);
-    };
+    }
 
     // Mesh graph with quadratic quads
     template <typename IT, typename CT, typename DT>
@@ -141,8 +141,7 @@ namespace ttk {
     int mapInputCellDataToOutputCellData(DT *outputCellData,
                                          const size_t &nInputCells,
                                          const DT *inputCellData,
-                                         const bool &useQuadraticCells,
-                                         const size_t &nSubdivisions = 0) const;
+                                         const bool &useQuadraticCells) const;
   };
 } // namespace ttk
 
@@ -635,7 +634,7 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
   }
 
   return 1;
-};
+}
 
 // =============================================================================
 // Map input cell data to output cell data
@@ -643,11 +642,9 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 template <typename DT>
 int ttk::MeshGraph::mapInputCellDataToOutputCellData(
   DT *outputCellData,
-
   const size_t &nInputCells,
   const DT *inputCellData,
-  const bool &useQuadraticCells,
-  const size_t &nSubdivisions) const {
+  const bool &useQuadraticCells) const {
 
   if(useQuadraticCells) {
 #ifdef TTK_ENABLE_OPENMP
@@ -668,4 +665,4 @@ int ttk::MeshGraph::mapInputCellDataToOutputCellData(
   }
 
   return 1;
-};
+}

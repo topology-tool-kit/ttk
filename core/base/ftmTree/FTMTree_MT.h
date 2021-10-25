@@ -583,7 +583,6 @@ namespace ttk {
 
       int printTime(Timer &t,
                     const std::string &s,
-                    SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;
 
       // ----------------------------------------
@@ -921,7 +920,9 @@ namespace ttk {
       }
 
       MergeTree<dataType> &operator=(const MergeTree<dataType> &mt) {
-        copy(mt);
+        if(&mt != this) {
+          copy(mt);
+        }
         return *this;
       }
     };

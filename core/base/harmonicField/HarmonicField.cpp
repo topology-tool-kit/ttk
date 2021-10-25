@@ -142,7 +142,9 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   for(const auto &pair : idValues) {
     triplets.emplace_back(TripletType(pair.first, pair.first, alpha));
   }
+#ifndef __clang_analyzer__
   penalty.setFromTriplets(triplets.begin(), triplets.end());
+#endif // __clang_analyzer__
 
   int res = 0;
   SpMat sol;
@@ -189,6 +191,15 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
 #else
+  TTK_FORCE_USE(triangulation);
+  TTK_FORCE_USE(constraintNumber);
+  TTK_FORCE_USE(sources);
+  TTK_FORCE_USE(constraints);
+  TTK_FORCE_USE(outputScalarField);
+  TTK_FORCE_USE(useCotanWeights);
+  TTK_FORCE_USE(solvingMethod);
+  TTK_FORCE_USE(logAlpha);
+
   this->printMsg(
     std::vector<std::string>{
       "Eigen support disabled, computation skipped!",

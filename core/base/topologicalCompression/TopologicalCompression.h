@@ -179,11 +179,11 @@ namespace ttk {
     inline static bool cmp(const std::tuple<double, int> &a,
                            const std::tuple<double, int> &b) {
       return std::get<1>(a) > std::get<1>(b);
-    };
+    }
     inline static bool cmp2(const std::tuple<double, int> &a,
                             const std::tuple<double, int> &b) {
       return std::get<1>(a) < std::get<1>(b);
-    };
+    }
 
     template <typename T>
     T Read(FILE *fm) const {

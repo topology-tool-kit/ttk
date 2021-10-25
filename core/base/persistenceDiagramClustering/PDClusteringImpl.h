@@ -2273,7 +2273,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
         b.setPositionInAuction(bidders.size());
         bidders.addBidder(b);
         if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
+          this->printMsg("Diagonal point in diagram", debug::Priority::DETAIL);
         }
       }
       bidder_diagrams_min_.push_back(bidders);
@@ -2297,7 +2297,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
         b.setPositionInAuction(bidders.size());
         bidders.addBidder(b);
         if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
+          this->printMsg("Diagonal point in diagram", debug::Priority::DETAIL);
         }
       }
       bidder_diagrams_saddle_.push_back(bidders);
@@ -2321,7 +2321,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
         b.setPositionInAuction(bidders.size());
         bidders.addBidder(b);
         if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
+          this->printMsg("Diagonal point in diagram", debug::Priority::DETAIL);
         }
       }
       bidder_diagrams_max_.push_back(bidders);

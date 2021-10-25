@@ -117,7 +117,7 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
   return 0;
 }
 
-int ttkIntegralLines::RequestData(vtkInformation *request,
+int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);

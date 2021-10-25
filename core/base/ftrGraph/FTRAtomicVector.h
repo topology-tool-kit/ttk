@@ -9,6 +9,8 @@
 #ifndef FTRATOMICVECTOR_H
 #define FTRATOMICVECTOR_H
 
+#include "BaseClass.h"
+
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
 #endif // TTK_ENABLE_OPENMP
@@ -85,6 +87,7 @@ namespace ttk {
           std::vector<type>::resize(newSize);
         }
       }
+      TTK_FORCE_USE(fromOther);
     }
 
     void reset(const std::size_t &nId = 0) {
@@ -149,8 +152,10 @@ namespace ttk {
     // --------
 
     FTRAtomicVector<type> &operator=(const FTRAtomicVector<type> &other) {
-      std::vector<type>::operator=(other);
-      nextId = other.nextId;
+      if(&other != this) {
+        std::vector<type>::operator=(other);
+        nextId = other.nextId;
+      }
       return *this;
     }
 

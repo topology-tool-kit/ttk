@@ -44,7 +44,7 @@ int ttkTopologicalSimplificationByPersistence::FillOutputPortInformation(
 }
 
 int ttkTopologicalSimplificationByPersistence::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

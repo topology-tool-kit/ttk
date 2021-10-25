@@ -381,4 +381,4 @@ namespace ttk {
       return (v1 + v2 + v3) / 3;
     }
   };
-}; // namespace ttk
+} // namespace ttk

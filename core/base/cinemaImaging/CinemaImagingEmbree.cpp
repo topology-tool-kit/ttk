@@ -33,9 +33,10 @@ int ttk::CinemaImagingEmbree::initializeDevice(RTCDevice &device) const {
     return 0;
   }
 
-  auto errorFunction = [](void *userPtr, enum RTCError error, const char *str) {
-    printf("error %d: %s\n", error, str);
-  };
+  auto errorFunction
+    = [](void *ttkNotUsed(userPtr), enum RTCError error, const char *str) {
+        printf("error %d: %s\n", error, str);
+      };
 
   rtcSetDeviceErrorFunction(device, errorFunction, NULL);
 

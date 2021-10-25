@@ -1,0 +1,221 @@
+name: build_headless_packages
+
+on:
+  push:
+    branch-ignore:
+      - '*'
+    tags:
+      - 'v?\d+.\d+.\d+-headless'
+
+jobs:
+
+  # ------ #
+  # Ubuntu #
+  # ------ #
+  build-ubuntu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK-ParaView source code
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK-ParaView dependencies
+        sudo apt install -y \
+          g++-11 \
+          libosmesa-dev \
+          ninja-build \
+          dpkg-dev
+
+    - name: Create & configure ParaView build directory
+      run: |
+        mkdir build && cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DPARAVIEW_PYTHON_SITE_PACKAGES_SUFFIX=lib/python3/dist-packages \
+          -DPARAVIEW_USE_QT=OFF \
+          -DVTK_USE_X=OFF \
+          -DVTK_OPENGL_HAS_OSMESA=ON \
+          -GNinja \
+          ..
+
+    - name: Build ParaView
+      run: |
+        cd build
+        cmake --build . --parallel
+
+    - name: Create ParaView package
+      run: |
+        cd build
+        cpack -G DEB
+
+    - name: Upload Debian package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk-paraview-headless-${{ matrix.os }}
+        path: build/ttk-paraview.deb
+
+  # ----- #
+  # macOS #
+  # ----- #
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK-ParaView source code
+
+    - name: Remove hosted Python
+      run: |
+        sudo rm -rf /usr/local/Frameworks/Python.framework
+
+    - name: Install macOS dependencies
+      run: |
+        # ParaView dependencies
+        brew install --cask xquartz
+        brew install wget libomp ninja python
+
+    - name: Create & configure ParaView build directory
+      run: |
+        # switch to Xcode 11 since Xcode 12 breaks the ParaView build
+        sudo xcode-select -s "/Applications/Xcode_11.7.app"
+        mkdir build && cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DPARAVIEW_USE_QT=OFF \
+          -DPython3_ROOT_DIR=$(brew --prefix python) \
+          -GNinja \
+          ..
+
+    - name: Build ParaView
+      run: |
+        cd build
+        cmake --build . --parallel
+        sudo cmake --build . --target install
+
+    - name: Create ParaView package
+      run: |
+        cd build
+        sudo cpack -G TGZ
+
+    - name: Upload compressed binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk-paraview-headless-macOS
+        path: build/ttk-paraview.tar.gz
+
+
+  # ------- #
+  # Windows #
+  # ------- #
+  build-windows:
+    runs-on: windows-latest
+    env:
+      CONDA_ROOT: C:\Miniconda
+      VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK-ParaView source code
+
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c conda-forge glew
+
+    - name: Remove hosted Python
+      shell: bash
+      run: |
+        rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Create & configure ParaView build directory
+      shell: cmd
+      run: |
+        call "%VCVARS%"
+        mkdir build
+        cd build
+        cmake ^
+          -DPARAVIEW_USE_QT=OFF ^
+          -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -GNinja ^
+          ..
+
+    - name: Build ParaView
+      shell: cmd
+      run: |
+        call "%VCVARS%"
+        cd build
+        cmake --build . --config Release --parallel
+
+    - name: Create ParaView package
+      shell: bash
+      run: |
+        cd build
+        cpack -G NSIS64
+
+    - name: Upload install executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk-paraview-headless-windows
+        path: build/ttk-paraview.exe
+
+
+  # --------------------- #
+  # Upload release assets #
+  # --------------------- #
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu, build-macos, build-windows]
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Fetch all uploaded artifacts
+      uses: actions/download-artifact@v2
+
+    - name: Upload Ubuntu Bionic .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-ubuntu-18.04/ttk-paraview.deb
+        asset_name: ttk-paraview-headless-ubuntu-18.04.deb
+
+    - name: Upload Ubuntu Focal .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-ubuntu-20.04/ttk-paraview.deb
+        asset_name: ttk-paraview-headless-ubuntu-20.04.deb
+
+    - name: Upload .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-macOS/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-headless.tar.gz
+
+    - name: Upload .exe as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-windows/ttk-paraview.exe
+        asset_name: ttk-paraview-headless.exe

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14) # see issue #532
 # The C is required to build with VTK when it has MPI
-project(ttk VERSION 0.9.10 LANGUAGES CXX C)
+project(ttk VERSION 1.0 LANGUAGES CXX C)
 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")
@@ -39,7 +39,7 @@ else()
   set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
 endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-  "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
+  "ttk-paraview (= 5.9.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev, libgl1-mesa-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows

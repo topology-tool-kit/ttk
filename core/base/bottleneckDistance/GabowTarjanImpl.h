@@ -81,7 +81,7 @@ void GabowTarjan::HopcroftKarp(unsigned int &matching) {
 }
 
 template <typename dataType>
-dataType GabowTarjan::Distance(dataType maxLevel) {
+dataType GabowTarjan::Distance(dataType ttkNotUsed(maxLevel)) {
   // Clear the pairing
   Pair.clear();
   Pair.assign(2 * MaxSize, -1);

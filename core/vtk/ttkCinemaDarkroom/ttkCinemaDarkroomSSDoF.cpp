@@ -113,7 +113,7 @@ void main() {
   )");
 }
 
-int ttkCinemaDarkroomSSDoF::RequestData(vtkInformation *request,
+int ttkCinemaDarkroomSSDoF::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

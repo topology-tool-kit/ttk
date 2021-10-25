@@ -95,7 +95,7 @@ int ttkCinemaProductReader::addFieldDataRecursively(vtkDataObject *object,
   return 1;
 }
 
-int ttkCinemaProductReader::RequestData(vtkInformation *request,
+int ttkCinemaProductReader::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   ttk::Timer timer;

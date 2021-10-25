@@ -61,8 +61,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       omp_set_nested(1);
 #endif
-    };
-    ~MergeTreeBarycenter(){};
+    }
+    ~MergeTreeBarycenter() = default;
 
     void setTol(double tolT) {
       tol_ = tolT;
@@ -203,7 +203,7 @@ namespace ttk {
     // ----------------------------------------
     template <class dataType>
     ftm::idNode getNodesAndScalarsToAdd(
-      MergeTree<dataType> &mTree1,
+      MergeTree<dataType> &ttkNotUsed(mTree1),
       ftm::idNode nodeId1,
       ftm::FTMTree_MT *tree2,
       ftm::idNode nodeId2,

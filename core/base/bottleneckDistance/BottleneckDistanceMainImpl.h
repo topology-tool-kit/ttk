@@ -11,10 +11,11 @@
 //      dataType            -- scalar value at vertex 2
 //      float, float, float -- vertex 2 coordinates
 template <typename dataType>
-int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
-                                          const std::vector<diagramTuple> &d2,
-                                          std::vector<matchingTuple> &matchings,
-                                          const bool usePersistenceMetric) {
+int BottleneckDistance::computeBottleneck(
+  const std::vector<diagramTuple> &d1,
+  const std::vector<diagramTuple> &d2,
+  std::vector<matchingTuple> &matchings,
+  const bool ttkNotUsed(usePersistenceMetric)) {
   auto d1Size = (int)d1.size();
   auto d2Size = (int)d2.size();
 

@@ -38,7 +38,7 @@ int ttkMorphologicalOperators::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkMorphologicalOperators::RequestData(vtkInformation *request,
+int ttkMorphologicalOperators::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
   // get input and output

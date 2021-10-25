@@ -27,7 +27,7 @@ namespace ttk {
       this->setDebugMsgPrefix("AssignmentMunkres");
     }
 
-    ~AssignmentMunkres(){};
+    ~AssignmentMunkres() = default;
 
     int run(std::vector<asgnMatchingTuple> &matchings);
 

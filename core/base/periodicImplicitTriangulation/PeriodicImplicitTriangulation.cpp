@@ -425,6 +425,8 @@ bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(vertexId);
 #endif
 
   return false;
@@ -435,6 +437,8 @@ bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(edgeId);
 #endif
 
   return false;
@@ -445,6 +449,8 @@ bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(triangleId);
 #endif
 
   return false;
@@ -455,6 +461,8 @@ SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(vertexId);
 #endif
 
   if(dimensionality_ == 3) {
@@ -586,6 +594,8 @@ SimplexId PeriodicImplicitTriangulation::getVertexTriangleNumberInternal(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(vertexId);
 #endif
 
   if(dimensionality_ == 3) {
@@ -682,6 +692,8 @@ SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(vertexId);
 #endif
 
   if(dimensionality_ == 3) {
@@ -1385,6 +1397,8 @@ SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
+#else
+  TTK_FORCE_USE(triangleId);
 #endif
 
   if(dimensionality_ == 3) {
@@ -1458,6 +1472,7 @@ SimplexId PeriodicImplicitTriangulation::getTriangleNeighborNumber(
     return -1;
 #endif
 
+  TTK_FORCE_USE(triangleId);
   if(dimensionality_ == 2) {
     return 3;
   }
@@ -1729,6 +1744,7 @@ SimplexId PeriodicImplicitTriangulation::getTetrahedronNeighborNumber(
     return -1;
 #endif
 
+  TTK_FORCE_USE(tetId);
   if(dimensionality_ == 3) {
     return 4;
   }
@@ -1796,7 +1812,7 @@ int PeriodicImplicitTriangulation::getTetrahedronNeighbors(
 }
 
 SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getCellVertexNumber)(const SimplexId &cellId) const {
+  getCellVertexNumber)(const SimplexId &ttkNotUsed(cellId)) const {
 
   return dimensionality_ + 1;
 }
@@ -1817,7 +1833,7 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellVertex)(
 }
 
 SimplexId PeriodicImplicitTriangulation::getCellEdgeNumberInternal(
-  const SimplexId &cellId) const {
+  const SimplexId &ttkNotUsed(cellId)) const {
   if(dimensionality_ == 3)
     return 6;
   else if(dimensionality_ == 2)

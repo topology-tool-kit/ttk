@@ -540,7 +540,7 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
                         vertexLink[globalId], link[globalId],
                         vertexLinkByBoundaryType, offsets);
         vertexTypes[globalId] = getCriticalTypeFromLink(
-          globalId, vertexLinkPolarity[globalId], link[globalId]);
+          vertexLinkPolarity[globalId], link[globalId]);
       }
       isNew[globalId] = false;
 
@@ -557,7 +557,7 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
           toProcess[globalId] = 255; // mark as processed
         }
         vertexTypes[globalId] = getCriticalTypeFromLink(
-          globalId, vertexLinkPolarity[globalId], link[globalId]);
+          vertexLinkPolarity[globalId], link[globalId]);
         toReprocess[globalId] = 0;
       }
     }
@@ -811,8 +811,8 @@ void ttk::ProgressiveTopology::initCriticalPoints(
     initDynamicLink(globalId, vertexLinkPolarity[globalId],
                     vertexLink[globalId], link[globalId],
                     vertexLinkByBoundaryType, offsets);
-    vertexTypes[globalId] = getCriticalTypeFromLink(
-      globalId, vertexLinkPolarity[globalId], link[globalId]);
+    vertexTypes[globalId]
+      = getCriticalTypeFromLink(vertexLinkPolarity[globalId], link[globalId]);
     toProcess[globalId] = 255;
     isNew[globalId] = 0;
   }
@@ -1176,7 +1176,6 @@ void ttk::ProgressiveTopology::clearResumableState() {
 }
 
 char ttk::ProgressiveTopology::getCriticalTypeFromLink(
-  const SimplexId vertexId,
   const std::vector<std::pair<polarity, polarity>> &vlp,
   DynamicTree &link) const {
 

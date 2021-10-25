@@ -97,7 +97,7 @@ data types such as char or unsigned chars).
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Pipeline" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

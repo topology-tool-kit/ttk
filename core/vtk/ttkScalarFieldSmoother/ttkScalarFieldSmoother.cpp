@@ -40,7 +40,7 @@ int ttkScalarFieldSmoother::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
+int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

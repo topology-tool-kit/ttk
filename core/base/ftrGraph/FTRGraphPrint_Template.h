@@ -62,7 +62,7 @@ namespace ttk {
 
     template <typename ScalarType, typename triangulationType>
     void FTRGraph<ScalarType, triangulationType>::printTime(
-      Timer &timer, const std::string &msg, const int lvl) const {
+      Timer &timer, const std::string &msg) const {
       this->printMsg(msg, 1.0, timer.getElapsedTime(), this->threadNumber_);
     }
 

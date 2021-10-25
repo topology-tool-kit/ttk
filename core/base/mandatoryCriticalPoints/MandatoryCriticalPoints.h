@@ -378,7 +378,7 @@ namespace ttk {
 
     int computeMaximum(const int &id,
                        const bool &reset = true,
-                       const bool &parallel = true) {
+                       const bool &ttkNotUsed(parallel) = true) {
       int *output = outputMandatoryMaximum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
@@ -386,10 +386,9 @@ namespace ttk {
       if(id < (int)mandatoryMaximumVertex_.size()) {
         if(!isMdtMaximumSimplified_[id]) {
           if(mandatoryMaximumComponentVertices_[id].empty())
-            computeExtremumComponent(id, PointType::Maximum, upperSplitTree_,
-                                     mandatoryMaximumVertex_[id],
-                                     lowerVertexScalars_,
-                                     mandatoryMaximumComponentVertices_[id]);
+            computeExtremumComponent(
+              PointType::Maximum, upperSplitTree_, mandatoryMaximumVertex_[id],
+              lowerVertexScalars_, mandatoryMaximumComponentVertices_[id]);
           for(int i = 0; i < (int)mandatoryMaximumComponentVertices_[id].size();
               i++)
             output[mandatoryMaximumComponentVertices_[id][i]] = id;
@@ -400,7 +399,7 @@ namespace ttk {
 
     int computeMinimum(const int &id,
                        const bool &reset = true,
-                       const bool &parallel = true) {
+                       const bool &ttkNotUsed(parallel) = true) {
       int *output = outputMandatoryMinimum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
@@ -408,10 +407,9 @@ namespace ttk {
       if(id < (int)mandatoryMinimumVertex_.size()) {
         if(!isMdtMinimumSimplified_[id]) {
           if(mandatoryMinimumComponentVertices_[id].empty())
-            computeExtremumComponent(id, PointType::Minimum, lowerJoinTree_,
-                                     mandatoryMinimumVertex_[id],
-                                     upperVertexScalars_,
-                                     mandatoryMinimumComponentVertices_[id]);
+            computeExtremumComponent(
+              PointType::Minimum, lowerJoinTree_, mandatoryMinimumVertex_[id],
+              upperVertexScalars_, mandatoryMinimumComponentVertices_[id]);
           for(int i = 0; i < (int)mandatoryMinimumComponentVertices_[id].size();
               i++)
             output[mandatoryMinimumComponentVertices_[id][i]] = id;
@@ -641,8 +639,7 @@ namespace ttk {
                             std::vector<double> &xCoord,
                             std::vector<double> &yCoord) const;
 
-    int computeExtremumComponent(const int componentId,
-                                 const PointType &pointType,
+    int computeExtremumComponent(const PointType &pointType,
                                  const SubLevelSetTree &tree,
                                  const int seedVertexId,
                                  const std::vector<double> &vertexScalars,

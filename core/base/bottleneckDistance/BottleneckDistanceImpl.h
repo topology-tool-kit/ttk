@@ -228,7 +228,7 @@ void BottleneckDistance::buildCostMatrices(
   const bool reverseMin,
   const bool reverseMax,
   const bool reverseSad,
-  const int wasserstein) {
+  const int ttkNotUsed(wasserstein)) {
   int maxI = 0, minI = 0;
   int maxJ = 0, minJ = 0;
   int sadI = 0, sadJ = 0;
@@ -389,8 +389,8 @@ void BottleneckDistance::buildCostMatrices(
 
 template <typename dataType>
 void BottleneckDistance::solvePWasserstein(
-  const int nbRow,
-  const int nbCol,
+  const int ttkNotUsed(nbRow),
+  const int ttkNotUsed(nbCol),
   std::vector<std::vector<dataType>> &matrix,
   std::vector<matchingTuple> &matchings,
   AssignmentMunkres<dataType> &solver) {
@@ -403,8 +403,8 @@ template <typename dataType>
 void BottleneckDistance::solveInfinityWasserstein(
   const int nbRow,
   const int nbCol,
-  const int nbRowToCut,
-  const int nbColToCut,
+  const int ttkNotUsed(nbRowToCut),
+  const int ttkNotUsed(nbColToCut),
   std::vector<std::vector<dataType>> &matrix,
   std::vector<matchingTuple> &matchings,
   GabowTarjan &solver) {

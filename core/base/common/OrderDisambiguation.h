@@ -1,7 +1,6 @@
 #pragma once
 
-#include <DataTypes.h>
-#include <Debug.h>
+#include <BaseClass.h>
 
 #include <algorithm>
 #include <vector>
@@ -30,6 +29,8 @@ namespace ttk {
 
     // array of pre-sorted vertices
     std::vector<SimplexId> sortedVertices(nVerts);
+
+    TTK_FORCE_USE(nThreads);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(nThreads)
