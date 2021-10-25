@@ -24,8 +24,9 @@
 #pragma once
 
 // base code includes
-#include "contourtree.h"
+#include <CTA_contourtree.h>
 #include <Debug.h>
+
 #include <algorithm>
 #include <memory>
 #include <random>

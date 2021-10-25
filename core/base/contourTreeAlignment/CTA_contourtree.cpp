@@ -1,4 +1,4 @@
-#include "contourtree.h"
+#include <CTA_contourtree.h>
 #include <algorithm>
 #include <cmath>
 #include <float.h>
