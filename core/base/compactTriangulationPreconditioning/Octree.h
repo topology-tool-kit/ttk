@@ -1,6 +1,9 @@
 /// \ingroup base
 /// \class Octree
 /// \author Guoxi Liu (guoxil@g.clemson.edu)
+
+/// \brief Implementation of the point region (PR) octree.
+
 /// \date May 2021.
 
 #include <Triangulation.h>
@@ -37,13 +40,14 @@ protected:
   friend class Octree;
 };
 
-class Octree {
+class Octree : public virtual Debug {
 public:
   Octree(const AbstractTriangulation *t) {
     Octree(t, 1000);
   }
 
   Octree(const AbstractTriangulation *t, const int k) {
+    this->setDebugMsgPrefix("PR Octree");
     OctreeNode root(1);
     allNodes[1] = root;
     capacity = k;
@@ -111,7 +115,7 @@ public:
   void visitAll(const OctreeNode *node) {
     if(node == nullptr)
       return;
-    cout << node->locCode << endl;
+    this->printMsg(to_string(node->locCode));
     for(int i = 0; i < 8; i++) {
       if(node->childExists & (1 << i)) {
         const uint32_t locCodeChild = (node->locCode << 3) | i;
@@ -129,8 +133,9 @@ public:
     unordered_map<uint32_t, OctreeNode>::iterator it;
     for(it = allNodes.begin(); it != allNodes.end(); it++) {
       if(it->second.childExists && it->second.vertexIds) {
-        cout << "[Octree] WRONG! The internal node " << it->second.locCode
-             << " should not contain any vertices!";
+        this->printErr("[Octree] WRONG! The internal node "
+                       + to_string(it->second.locCode)
+                       + " should not contain any vertices!");
         return -1;
       }
       if(it->second.vertexIds) {
@@ -138,8 +143,9 @@ public:
       }
     }
     if(vertexCount != vertexNum) {
-      cerr << "The number of vertices in the tree is " << vertexCount
-           << ", which is not equal to " << vertexNum << endl;
+      this->printErr("The number of vertices in the tree is "
+                     + to_string(vertexCount) + ", which is not equal to "
+                     + to_string(vertexNum));
       return -1;
     }
 
@@ -203,8 +209,8 @@ public:
       }
 
       if(current == nullptr) {
-        cerr << "[Octree] insertCell(): Cannot find the vertex id (" << vertexId
-             << ") in the tree!\n";
+        this->printErr("[Octree] insertCell(): Cannot find the vertex id ("
+                       + to_string(vertexId) + ") in the tree!");
         return -1;
       } else {
         if(current->cellIds == nullptr) {
@@ -240,7 +246,7 @@ public:
       nodeStack.pop();
 
       if(topNode == nullptr) {
-        cerr << "[Octree] reindex(): shouldn't get here!\n";
+        this->printErr("[Octree] reindex(): shouldn't get here!");
         break;
       }
       if(topNode->childExists) {
@@ -277,7 +283,8 @@ public:
       }
       cells->at(cellMap[i]) = i;
     }
-    cout << "[Octree] reindex(): There are " << count << " wrong entries!\n";
+    this->printMsg("reindex(): There are " + to_string(count)
+                   + " wrong entries!");
   }
 
 private:
@@ -308,9 +315,10 @@ private:
       leftmost++;
     }
     if(leftmost % 3 != 0) {
-      cout << "[Octree] Location: " << location << ", leftmost: " << leftmost
-           << ", ";
-      cerr << "computeCenterSize(): the location seems not correct!\n";
+      this->printMsg("Location: " + to_string(location)
+                     + ", leftmost: " + to_string(leftmost));
+      this->printErr("computeCenterSize(): the location seems not correct!");
+      this->printErr("Please try a larger bucket capacity!");
       return;
     }
 
@@ -343,9 +351,9 @@ private:
     getChildLocation(uint32_t parLoc, SimplexId vertexId, float centerArr[3]) {
     float xval, yval, zval;
     if(triangulation_->getVertexPoint(vertexId, xval, yval, zval)) {
-      cout << "getChildLocation(): FAILED to get the coordinate values of the "
-              "vertex id "
-           << vertexId << endl;
+      this->printErr("getChildLocation(): FAILED to get the coordinate values "
+                     "of the vertex id "
+                     + to_string(vertexId));
       return -1;
     }
 
@@ -379,7 +387,7 @@ private:
       }
     }
 
-    cout << "getChildLocation(): Shouldn't get here!\n";
+    this->printErr("getChildLocation(): Shouldn't get here!");
     return -1;
   }
 

@@ -15,7 +15,7 @@ Triangulation::Triangulation(const Triangulation &rhs)
     explicitTriangulation_{rhs.explicitTriangulation_},
     implicitTriangulation_{rhs.implicitTriangulation_},
     periodicImplicitTriangulation_{rhs.periodicImplicitTriangulation_},
-    topoCluster_{rhs.topoCluster_} {
+    compactTriangulation_{rhs.compactTriangulation_} {
 
   gridDimensions_ = rhs.gridDimensions_;
   hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
@@ -26,8 +26,8 @@ Triangulation::Triangulation(const Triangulation &rhs)
     abstractTriangulation_ = &implicitTriangulation_;
   } else if(rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation_) {
     abstractTriangulation_ = &periodicImplicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.topoCluster_) {
-    abstractTriangulation_ = &topoCluster_;
+  } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
+    abstractTriangulation_ = &compactTriangulation_;
   }
 }
 
@@ -37,7 +37,7 @@ Triangulation::Triangulation(Triangulation &&rhs) noexcept
     implicitTriangulation_{std::move(rhs.implicitTriangulation_)},
     periodicImplicitTriangulation_{
       std::move(rhs.periodicImplicitTriangulation_)},
-    topoCluster_{std::move(rhs.topoCluster_)} {
+    compactTriangulation_{std::move(rhs.compactTriangulation_)} {
 
   gridDimensions_ = std::move(rhs.gridDimensions_);
   hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
@@ -48,8 +48,8 @@ Triangulation::Triangulation(Triangulation &&rhs) noexcept
     abstractTriangulation_ = &implicitTriangulation_;
   } else if(rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation_) {
     abstractTriangulation_ = &periodicImplicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.topoCluster_) {
-    abstractTriangulation_ = &topoCluster_;
+  } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
+    abstractTriangulation_ = &compactTriangulation_;
   }
 }
 
@@ -61,7 +61,7 @@ Triangulation &Triangulation::operator=(const Triangulation &rhs) {
     explicitTriangulation_ = rhs.explicitTriangulation_;
     implicitTriangulation_ = rhs.implicitTriangulation_;
     periodicImplicitTriangulation_ = rhs.periodicImplicitTriangulation_;
-    topoCluster_ = rhs.topoCluster_;
+    compactTriangulation_ = rhs.compactTriangulation_;
     hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
     if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
@@ -71,8 +71,8 @@ Triangulation &Triangulation::operator=(const Triangulation &rhs) {
     } else if(rhs.abstractTriangulation_
               == &rhs.periodicImplicitTriangulation_) {
       abstractTriangulation_ = &periodicImplicitTriangulation_;
-    } else if(rhs.abstractTriangulation_ == &rhs.topoCluster_) {
-      abstractTriangulation_ = &topoCluster_;
+    } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
+      abstractTriangulation_ = &compactTriangulation_;
     }
   }
   return *this;
@@ -87,7 +87,7 @@ Triangulation &Triangulation::operator=(Triangulation &&rhs) noexcept {
     implicitTriangulation_ = std::move(rhs.implicitTriangulation_);
     periodicImplicitTriangulation_
       = std::move(rhs.periodicImplicitTriangulation_);
-    topoCluster_ = std::move(rhs.topoCluster_);
+    compactTriangulation_ = std::move(rhs.compactTriangulation_);
     hasPeriodicBoundaries_ = std::move(rhs.hasPeriodicBoundaries_);
 
     if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
@@ -97,8 +97,8 @@ Triangulation &Triangulation::operator=(Triangulation &&rhs) noexcept {
     } else if(rhs.abstractTriangulation_
               == &rhs.periodicImplicitTriangulation_) {
       abstractTriangulation_ = &periodicImplicitTriangulation_;
-    } else if(rhs.abstractTriangulation_ == &rhs.topoCluster_) {
-      abstractTriangulation_ = &topoCluster_;
+    } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
+      abstractTriangulation_ = &compactTriangulation_;
     }
   }
   return *this;

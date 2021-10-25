@@ -39,7 +39,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                  ttk::debug::Priority::DETAIL);
 
   auto triangulation
-    = ttkTriangulationFactory::GetTriangulation(this->debugLevel_, dataSet);
+    = ttkTriangulationFactory::GetTriangulation(this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
   if(triangulation)
     return triangulation;
 

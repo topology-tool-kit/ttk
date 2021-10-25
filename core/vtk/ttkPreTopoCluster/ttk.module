@@ -1,9 +1,0 @@
-NAME
-  ttkPreTopoCluster
-SOURCES
-  ttkPreTopoCluster.cpp
-HEADERS
-  ttkPreTopoCluster.h
-DEPENDS
-  preTopoCluster
-  ttkAlgorithm

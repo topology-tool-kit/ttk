@@ -1,7 +1,8 @@
-#include <ttkPreTopoCluster.h>
+#include <ttkCompactTriangulationPreconditioning.h>
 
 #include <vtkInformation.h>
-
+#include <vtkInformationVector.h>
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
@@ -12,19 +13,22 @@
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
-vtkStandardNewMacro(ttkPreTopoCluster);
+vtkStandardNewMacro(ttkCompactTriangulationPreconditioning);
 
-ttkPreTopoCluster::ttkPreTopoCluster() {
+ttkCompactTriangulationPreconditioning::
+  ttkCompactTriangulationPreconditioning() {
+  this->setDebugMsgPrefix("ttkCompactTriangulationPreconditioning");
   this->Threshold = 1000;
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkPreTopoCluster::~ttkPreTopoCluster() {
+ttkCompactTriangulationPreconditioning::
+  ~ttkCompactTriangulationPreconditioning() {
 }
 
-int ttkPreTopoCluster::FillInputPortInformation(int port,
-                                                vtkInformation *info) {
+int ttkCompactTriangulationPreconditioning::FillInputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -32,8 +36,8 @@ int ttkPreTopoCluster::FillInputPortInformation(int port,
   return 0;
 }
 
-int ttkPreTopoCluster::FillOutputPortInformation(int port,
-                                                 vtkInformation *info) {
+int ttkCompactTriangulationPreconditioning::FillOutputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
@@ -41,9 +45,10 @@ int ttkPreTopoCluster::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkPreTopoCluster::RequestData(vtkInformation *request,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
+int ttkCompactTriangulationPreconditioning::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
   // Get input object from input vector
   // Note: has to be a vtkDataSet as required by FillInputPortInformation
@@ -87,7 +92,7 @@ int ttkPreTopoCluster::RequestData(vtkInformation *request,
   vtkSmartPointer<vtkIntArray> indices = vtkSmartPointer<vtkIntArray>::New();
 
   indices->SetNumberOfComponents(1);
-  indices->SetName("_index");
+  indices->SetName(compactTriangulationIndex);
 
   // insert the vertices in the output mesh
   for(size_t i = 0; i < this->vertices->size(); i++) {
@@ -102,12 +107,25 @@ int ttkPreTopoCluster::RequestData(vtkInformation *request,
   vtkPointData *pointData = outputMesh->GetPointData();
   pointData->AddArray(indices);
 
-  for(auto name : scalarFields) {
-    vtkDataArray *inputScalars_
-      = inputDataSet->GetPointData()->GetArray(name.data());
+  std::vector<std::string>::iterator iter = scalarFields.begin();
+  while(iter != scalarFields.end()) {
+    vtkDataArray *inputArray = inputDataSet->GetPointData()->GetArray(iter->data());
+    if(inputArray == nullptr) {
+      iter++;
+      continue;
+    }
+
+    iter = scalarFields.erase(iter);
     vtkDataArray *newField = nullptr;
 
-    switch(inputScalars_->GetDataType()) {
+    // // To make sure that the selected array can be processed by this filter,
+    // // one should also check that the array association and format is correct.
+    // if(this->GetInputArrayAssociation(0, inputVector) != 0) {
+    //   this->printErr("Input array needs to be a point data array.");
+    //   return 0;
+    // }
+
+    switch(inputArray->GetDataType()) {
 
       case VTK_CHAR:
         newField = vtkCharArray::New();
@@ -130,9 +148,9 @@ int ttkPreTopoCluster::RequestData(vtkInformation *request,
         break;
     }
 
-    newField->DeepCopy(inputScalars_);
-    for(size_t i = 0; i < this->vertices->size(); i++) {
-      newField->SetTuple(i, inputScalars_->GetTuple(this->vertices->at(i)));
+    newField->DeepCopy(inputArray);
+    for(size_t j = 0; j < this->vertices->size(); j++) {
+      newField->SetTuple(j, inputArray->GetTuple(this->vertices->at(j)));
     }
 
     pointData->AddArray(newField);
@@ -157,11 +175,30 @@ int ttkPreTopoCluster::RequestData(vtkInformation *request,
     } else if(dimension == 4) {
       outputMesh->InsertNextCell(VTK_TETRA, 4, cell);
     } else {
-      cerr << "[ttkPreprocessStellar] Should not get here!\n";
+      this->printErr("Should not get here!");
     }
   }
 
-  scalarFields.clear();
+  // the cell is the same order as the input mesh
+  vtkCellData *cellData = outputMesh->GetCellData();
+  iter = scalarFields.begin();
+  while(iter != scalarFields.end()) {
+    vtkDataArray *inputArray = inputDataSet->GetCellData()->GetArray(iter->data());
+    if(inputArray == nullptr) {
+      iter++;
+      continue;
+    }
+
+    iter = scalarFields.erase(iter);
+    cellData->AddArray(inputArray);
+  }
+
+  if(!scalarFields.empty()) {
+    this->printErr("Some scalar fields are not processed!");
+    return 0;
+  }
+
+  // scalarFields.clear();
 
   // return success
   return 1;

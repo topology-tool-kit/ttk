@@ -2,7 +2,7 @@
 
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkPreTopoCluster" class="ttkPreTopoCluster" label="TTK PreTopoCluster">
+    <SourceProxy name="ttkCompactTriangulationPreconditioning" class="ttkCompactTriangulationPreconditioning" label="TTK CompactTriangulationPreconditioning">
        <Documentation long_help="TTK plugin for the generation of clusters before using TopoCluster." short_help="TTK preprocessing plugin for TopoCluster.">
         Given a simplicial mesh, this filter uses the PR star octree to divide 
         the mesh into different regions, and adds this clustering information as 
@@ -19,9 +19,9 @@
           <DataTypeDomain name="input_type">
             <DataType value="vtkDataSet" />
           </DataTypeDomain>
-          <InputArrayDomain name="input_array" attribute_type="point"
+          <!-- <InputArrayDomain name="input_array" attribute_type="point"
                 number_of_components="1" />
-          <Documentation>A vtkDataSet that has at least one point data scalar array that can be used to compute averages.</Documentation>
+          <Documentation>A vtkDataSet that has at least one point data scalar array that can be used to compute averages.</Documentation> -->
         </InputProperty>
 
       <!-- INPUT PARAMETER WIDGETS -->

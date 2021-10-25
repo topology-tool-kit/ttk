@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::PreTopoCluster
+/// \class ttk::CompactTriangulationPreconditioning
 /// \author Guoxi Liu <guoxil@g.clemson.edu>
 /// \date May 2021.
 ///
@@ -11,7 +11,7 @@
 /// field.
 ///
 /// \sa ttk::TopoCluster
-/// \sa ttkPreTopoCluster.cpp %for a usage example.
+/// \sa ttkCompactTriangulationPreconditioning.cpp %for a usage example.
 
 #pragma once
 
@@ -23,18 +23,19 @@
 namespace ttk {
 
   /**
-   * The PreTopoCluster class provides methods to compute the indexing for each
-   * vertex and then used for TopoCluster data structure.
+   * The CompactTriangulationPreconditioning class provides methods to compute
+   * the indexing for each vertex and then used for TopoCluster data structure.
    */
-  class PreTopoCluster : virtual public Debug {
+  class CompactTriangulationPreconditioning : virtual public Debug {
 
   public:
-    PreTopoCluster() {
-      this->setDebugMsgPrefix("PreTopoCluster"); // inherited from Debug: prefix
-                                                 // will be printed at the
+    CompactTriangulationPreconditioning() {
+      this->setDebugMsgPrefix(
+        "CompactTriangulationPreconditioning"); // inherited from Debug: prefix
+                                                // will be printed at the
       // beginning of every msg
     };
-    ~PreTopoCluster(){};
+    ~CompactTriangulationPreconditioning(){};
 
     template <class triangulationType = ttk::AbstractTriangulation>
     int execute(const triangulationType *triangulation,
@@ -112,6 +113,6 @@ namespace ttk {
   protected:
     std::vector<SimplexId> *vertices, *nodes, *cells;
 
-  }; // PreTopoCluster class
+  }; // CompactTriangulationPreconditioning class
 
 } // namespace ttk

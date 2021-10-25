@@ -6,7 +6,7 @@
 
 // TTK Includes
 #include <CommandLineParser.h>
-#include <ttkPreTopoCluster.h>
+#include <ttkCompactTriangulationPreconditioning.h>
 
 // VTK Includes
 #include <vtkCellData.h>
@@ -22,9 +22,9 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Program variables
   // ---------------------------------------------------------------------------
+  int bucketThreshold = 100;
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
-  std::string outputArrayName{"AveragedArray"};
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     // -------------------------------------------------------------------------
     // TODO 13: Declare custom arguments and options
     // -------------------------------------------------------------------------
-    parser.setArgument("O", &outputArrayName, "Output array name", true);
+    parser.setArgument("b", &bucketThreshold, "Bucket threshold", true);
 
     parser.parse(argc, argv);
   }
@@ -56,22 +56,24 @@ int main(int argc, char **argv) {
   // Command line output messages.
   // ---------------------------------------------------------------------------
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("PreTopoCluster");
+  msg.setDebugMsgPrefix("CompactTriangulationPreconditioning");
 
   // ---------------------------------------------------------------------------
-  // Initialize ttkPreTopoCluster module (adjust parameters)
+  // Initialize ttkCompactTriangulationPreconditioning module (adjust
+  // parameters)
   // ---------------------------------------------------------------------------
-  auto preTopoCluster = vtkSmartPointer<ttkPreTopoCluster>::New();
+  auto compactTriangulationPreconditioning
+    = vtkSmartPointer<ttkCompactTriangulationPreconditioning>::New();
 
   // ---------------------------------------------------------------------------
   // TODO 14: Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
-  // preTopoCluster->SetOutputArrayName(outputArrayName);
+  // compactTriangulationPreconditioning->SetOutputArrayName(outputArrayName);
+  compactTriangulationPreconditioning->SetThreshold(bucketThreshold);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
   // ---------------------------------------------------------------------------
-  vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
     // init a reader that can parse any vtkDataObject stored in xml format
     auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
@@ -108,14 +110,16 @@ int main(int argc, char **argv) {
         return 1;
       }
     } else {
-      // feed input object to ttkPreTopoCluster filter
-      preTopoCluster->SetInputDataObject(i, reader->GetOutput());
-
-      // default arrays
-      if(!defaultArray) {
-        defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
-        if(!defaultArray)
-          defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
+      // feed input object to ttkCompactTriangulationPreconditioning filter
+      compactTriangulationPreconditioning->SetInputDataObject(
+        i, reader->GetOutput());
+      auto pointData = inputAsVtkDataSet->GetPointData();
+      for(int j = 0; j < pointData->GetNumberOfArrays(); j++) {
+        inputArrayNames.push_back(pointData->GetArrayName(j));
+      }
+      auto cellData = inputAsVtkDataSet->GetCellData();
+      for(int j = 0; j < cellData->GetNumberOfArrays(); j++) {
+        inputArrayNames.push_back(cellData->GetArrayName(j));
       }
     }
   }
@@ -128,25 +132,25 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Specify which arrays of the input vtkDataObjects will be processed
   // ---------------------------------------------------------------------------
-  if(!inputArrayNames.size()) {
-    if(defaultArray)
-      inputArrayNames.push_back(defaultArray->GetName());
+  for(size_t i = 0; i < inputArrayNames.size(); i++) {
+    // compactTriangulationPreconditioning->SetInputArrayToProcess(
+    //   i, 0, 0, 0, inputArrayNames[i].data());
+    compactTriangulationPreconditioning->SetScalarField(inputArrayNames[i]);
   }
-  for(size_t i = 0; i < inputArrayNames.size(); i++)
-    preTopoCluster->SetInputArrayToProcess(
-      i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
-  // Execute ttkPreTopoCluster filter
+  // Execute ttkCompactTriangulationPreconditioning filter
   // ---------------------------------------------------------------------------
-  preTopoCluster->Update();
+  compactTriangulationPreconditioning->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < preTopoCluster->GetNumberOfOutputPorts(); i++) {
-      auto output = preTopoCluster->GetOutputDataObject(i);
+    for(int i = 0;
+        i < compactTriangulationPreconditioning->GetNumberOfOutputPorts();
+        i++) {
+      auto output = compactTriangulationPreconditioning->GetOutputDataObject(i);
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
 

@@ -1,31 +1,31 @@
 /// \ingroup vtk
-/// \class ttkPreTopoCluster
+/// \class ttkCompactTriangulationPreconditioning
 /// \author Guoxi Liu <guoxil@g.clemson.edu>
 /// \date May 2021.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::PreTopoCluster module.
+/// \brief TTK VTK-filter for the preconditioning of the compact triangulation.
 ///
 /// Given a simplicial mesh, this filter uses the PR star octree to divide
 /// the mesh into different regions, and adds this clustering information as
 /// a new scalar field to the original dataset. This clustering index scalar
-/// field can be further used by TopoCluster data structure.
+/// field can be further used by Compact Triangulation.
 ///
 /// \param Input vtkDataSet.
 /// \param Output vtkDataSet.
 ///
 /// See the corresponding standalone program for a usage example:
-///   - standalone/PreTopoCluster/main.cpp
+///   - standalone/CompactTriangulationPreconditioning/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::PreTopoCluster
+/// \sa ttk::CompactTriangulationPreconditioning
 /// \sa ttk::TopoCluster
 
 #pragma once
 
 // VTK Module
-#include <ttkPreTopoClusterModule.h>
+#include <ttkCompactTriangulationPreconditioningModule.h>
 
 // VTK Includes
 // VTK includes -- to adapt
@@ -44,39 +44,19 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-/* Note on including VTK modules
- *
- * Each VTK module that you include a header from needs to be specified in this
- * module's vtk.module file, either in the DEPENDS or PRIVATE_DEPENDS (if the
- * header is included in the cpp file only) sections.
- *
- * In order to find the corresponding module, check its location within the VTK
- * source code. The VTK module name is composed of the path to the header. You
- * can also find the module name within the vtk.module file located in the same
- * directory as the header file.
- *
- * For example, vtkSphereSource.h is located in directory VTK/Filters/Sources/,
- * so its corresponding VTK module is called VTK::FiltersSources. In this case,
- * the vtk.module file would need to be extended to
- *
- * NAME
- *   ttkPreTopoCluster
- * DEPENDS
- *   ttkAlgorithm
- *   VTK::FiltersSources
- */
-
 // TTK Base Includes
-#include <PreTopoCluster.h>
+#include <CompactTriangulationPreconditioning.h>
 
-class TTKPRETOPOCLUSTER_EXPORT ttkPreTopoCluster
+class TTKCOMPACTTRIANGULATIONPRECONDITIONING_EXPORT
+  ttkCompactTriangulationPreconditioning
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
   ,
-    protected ttk::PreTopoCluster // and we inherit from the base class
+    protected ttk::CompactTriangulationPreconditioning // and we inherit from
+                                                       // the base class
 {
 private:
   int Threshold;
-  vector<string> scalarFields;
+  std::vector<std::string> scalarFields;
 
 public:
   vtkSetMacro(Threshold, int);
@@ -91,12 +71,12 @@ public:
    * This static method and the macro below are VTK conventions on how to
    * instantiate VTK objects. You don't have to modify this.
    */
-  static ttkPreTopoCluster *New();
-  vtkTypeMacro(ttkPreTopoCluster, ttkAlgorithm);
+  static ttkCompactTriangulationPreconditioning *New();
+  vtkTypeMacro(ttkCompactTriangulationPreconditioning, ttkAlgorithm);
 
 protected:
-  ttkPreTopoCluster();
-  ~ttkPreTopoCluster() override;
+  ttkCompactTriangulationPreconditioning();
+  ~ttkCompactTriangulationPreconditioning() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

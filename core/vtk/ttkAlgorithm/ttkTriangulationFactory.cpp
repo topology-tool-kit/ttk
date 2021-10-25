@@ -202,10 +202,11 @@ RegistryTriangulation
   }
 
   auto triangulation = RegistryTriangulation(new ttk::Triangulation());
-  int hasIndexArray = pointSet->GetPointData()->HasArray("_index");
+  int hasIndexArray
+    = pointSet->GetPointData()->HasArray(ttk::compactTriangulationIndex);
 
   if(hasIndexArray) {
-    this->printMsg("Initializing TopoCluster", 0, 0,
+    this->printMsg("Initializing Compact Triangulation", 0, 0,
                    ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
   } else {
     this->printMsg("Initializing Explicit Triangulation", 0, 0,
@@ -223,8 +224,8 @@ RegistryTriangulation
 
     void *pointDataArray = ttkUtils::GetVoidPointer(points);
     if(hasIndexArray) {
-      vtkAbstractArray *indexArray
-        = pointSet->GetPointData()->GetAbstractArray("_index");
+      vtkAbstractArray *indexArray = pointSet->GetPointData()->GetAbstractArray(
+        ttk::compactTriangulationIndex);
       triangulation->setStellarInputPoints(
         points->GetNumberOfPoints(), pointDataArray,
         (int *)indexArray->GetVoidPointer(0), pointDataType == VTK_DOUBLE);
@@ -286,7 +287,7 @@ RegistryTriangulation
   }
 
   if(hasIndexArray) {
-    this->printMsg("Initializing TopoCluster", 1, timer.getElapsedTime(),
+    this->printMsg("Initializing Compact Triangulation", 1, timer.getElapsedTime(),
                    ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
   } else {
     this->printMsg("Initializing Explicit Triangulation", 1,
@@ -319,6 +320,7 @@ RegistryTriangulation
 
 ttk::Triangulation *
   ttkTriangulationFactory::GetTriangulation(int debugLevel,
+                                            float cacheRatio,
                                             vtkDataSet *object) {
   auto instance = &ttkTriangulationFactory::Instance;
   instance->setDebugLevel(debugLevel);
@@ -361,8 +363,10 @@ ttk::Triangulation *
     "# Registered Triangulations: " + std::to_string(instance->registry.size()),
     ttk::debug::Priority::VERBOSE);
 
-  if(triangulation)
+  if(triangulation) {
     triangulation->setDebugLevel(debugLevel);
+    triangulation->setCacheSize(cacheRatio);
+  }
 
   return triangulation;
 };

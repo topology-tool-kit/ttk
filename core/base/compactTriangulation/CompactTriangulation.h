@@ -1,20 +1,25 @@
 /// \ingroup base
-/// \class ttk::TopoCluster
+/// \class ttk::CompactTriangulation
 /// \author Guoxi Liu <guoxil@g.clemson.edu>
 /// \date November 2021.
 ///
-/// \brief TTK processing package for the TopoCluster data structure.
-///
-/// %TopoCluster is a localized data structure for simplicial meshes.
+/// \brief CompactTriangulation is a class implemented based on the
+/// TopoCluster data structure, which is a localized data structure for
+/// simplicial meshes.
 /// The key idea of TopoCluster is to subdivide the simplicial mesh into
 /// clusters. Then, the connectivity information is computed locally for each
 /// cluster and discarded when it is no longer needed. The simplicial mesh needs
 /// to be subdivided before using TopoCluster, i.e., there has to be a scalar
-/// field named "_index" to denote the cluster index of each vertex. Note
-/// Topocluster will reindex the simplices based on the clustering input array.
+/// field named "ttkCompactTriangulationIndex" to denote the cluster index of
+/// each vertex. Note Topocluster will reindex the simplices based on the
+/// clustering input array.
+/// \b Related \b publications \n
+/// "TopoCluster: A Localized Data Structure for Topology-based Visualization" \n
+/// Guoxi Liu, Federico Iuricich et al. \n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021.
 ///
 /// \sa ttk::Triangulation
-/// \sa ttk::PreTopoCluster
+/// \sa ttk::CompactTriangulationPreconditioning
 
 #pragma once
 
@@ -128,15 +133,15 @@ namespace ttk {
       delete tetraTriangles_;
     }
 
-    friend class TopoCluster;
+    friend class CompactTriangulation;
   };
 
-  class TopoCluster final : public AbstractTriangulation {
+  class CompactTriangulation final : public AbstractTriangulation {
 
   public:
-    TopoCluster();
+    CompactTriangulation();
 
-    ~TopoCluster();
+    ~CompactTriangulation();
 
     /**
      * Set up vertices from the input.
@@ -240,6 +245,7 @@ namespace ttk {
         cellArray_ = std::make_shared<CellArray>(
           cellArray, cellNumber, cellArray[0] - 1);
       }
+
       return 0;
     }
 #endif
@@ -1437,7 +1443,7 @@ namespace ttk {
       } else {
         // // unsupported dimension
         // std::stringstream msg;
-        // msg << "[TopoCluster] Unsupported dimension for boundary "
+        // msg << "[CompactTriangulation] Unsupported dimension for boundary "
         //   << "precondition." << std::endl;
         // dMsg(std::cerr, msg.str(), infoMsg);
         return -1;
@@ -1452,7 +1458,7 @@ namespace ttk {
       } else {
         // unsupported dimension
         // std::stringstream msg;
-        // msg << "[TopoCluster] Unsupported dimension for boundary "
+        // msg << "[CompactTriangulation] Unsupported dimension for boundary "
         //   << "precondition." << std::endl;
         // dMsg(std::cerr, msg.str(), infoMsg);
         return -1;
@@ -1515,8 +1521,8 @@ namespace ttk {
           edgeIntervals_[nid] = edgeIntervals_[nid - 1] + edgeCount[nid];
         }
 
-        cout << "[TopoCluster] Edges preconditioned in " << t.getElapsedTime()
-             << " s.\n";
+        this->printMsg("Edges preconditioned in "
+                       + to_string(t.getElapsedTime()) + " s.");
       }
 
       return 0;
@@ -1530,7 +1536,7 @@ namespace ttk {
         // unsupported dimension
         // std::stringstream msg;
         // msg
-        //   << "[TopoCluster] Unsupported dimension for edge link "
+        //   << "[CompactTriangulation] Unsupported dimension for edge link "
         //   << "precondition." << std::endl;
         // dMsg(std::cerr, msg.str(), infoMsg);
         return -1;
@@ -1582,8 +1588,8 @@ namespace ttk {
         }
 
         hasPreconditionedTriangles_ = true;
-        std::cout << "[TopoCluster] Triangles preconditioned in "
-                  << t.getElapsedTime() << " s.\n";
+        this->printMsg("Triangles preconditioned in "
+                       + to_string(t.getElapsedTime()) + " s.");
       }
 
       return 0;
@@ -1619,7 +1625,7 @@ namespace ttk {
       } else {
         // unsupported dimension
         // std::stringstream msg;
-        // msg << "[TopoCluster] Unsupported dimension for vertex"
+        // msg << "[CompactTriangulation] Unsupported dimension for vertex"
         //   << " link precondition." << std::endl;
         // dMsg(std::cerr, msg.str(), infoMsg);
         // return -1;
@@ -1650,17 +1656,6 @@ namespace ttk {
     }
 
     /**
-     * Initialize the cache with the size.
-     */
-    void initCache(const size_t size = 100) {
-      cacheSize_ = size;
-      for(int i = 0; i < threadNumber_; i++) {
-        caches_[i].clear();
-        cacheMaps_[i].clear();
-      }
-    }
-
-    /**
      * Initialize the cache with the ratio.
      */
     void initCache(const float ratio = 0.2) {
@@ -1669,6 +1664,7 @@ namespace ttk {
         caches_[i].clear();
         cacheMaps_[i].clear();
       }
+      this->printMsg("Initializing cache: " + std::to_string(cacheSize_));
     }
 
     /**
@@ -2309,7 +2305,6 @@ namespace ttk {
         sort(localVertexStars[i].begin(), localVertexStars[i].end());
       }
 
-
       boost::unordered_map<SimplexId, vector<vector<SimplexId>>> nodeMaps;
       for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
           cid <= cellIntervals_[nodePtr->nid]; cid++) {
@@ -2363,34 +2358,34 @@ namespace ttk {
             SimplexId pos0 = 0, pos1 = 0;
             SimplexId intersection = -1;
 
-            while((pos0 < (SimplexId) stars0.size()) && (pos1 < (SimplexId) stars1.size())){
+            while((pos0 < (SimplexId)stars0.size())
+                  && (pos1 < (SimplexId)stars1.size())) {
               SimplexId biggest = stars0[pos0];
-              if(stars1[pos1] > biggest){
+              if(stars1[pos1] > biggest) {
                 biggest = stars1[pos1];
               }
-              
-              for(SimplexId l = pos0; l < (SimplexId) stars0.size(); l++){
-                if(stars0[l] < biggest){
+
+              for(SimplexId l = pos0; l < (SimplexId)stars0.size(); l++) {
+                if(stars0[l] < biggest) {
                   pos0++;
-                }
-                else{
+                } else {
                   break;
                 }
               }
-              for(SimplexId l = pos1; l < (SimplexId) stars1.size(); l++){
-                if(stars1[l] < biggest){
+              for(SimplexId l = pos1; l < (SimplexId)stars1.size(); l++) {
+                if(stars1[l] < biggest) {
                   pos1++;
-                }
-                else{
+                } else {
                   break;
                 }
               }
-              
-              if(pos0 >= (SimplexId) stars0.size() || pos1 >= (SimplexId) stars1.size())
+
+              if(pos0 >= (SimplexId)stars0.size()
+                 || pos1 >= (SimplexId)stars1.size())
                 break;
 
-              if(stars0[pos0] == stars1[pos1]){
-                if(stars0[pos0] != cid){
+              if(stars0[pos0] == stars1[pos1]) {
+                if(stars0[pos0] != cid) {
                   intersection = stars0[pos0];
                   break;
                 }
@@ -2398,8 +2393,8 @@ namespace ttk {
                 pos1++;
               }
             }
-            
-            if(intersection != -1){
+
+            if(intersection != -1) {
               localCellNeighbors[cid - cellIntervals_[nodePtr->nid - 1] - 1]
                 .push_back(intersection);
             }
@@ -2444,59 +2439,59 @@ namespace ttk {
             // perform an intersection of the 3 (sorted) star lists
             SimplexId pos0 = 0, pos1 = 0, pos2 = 0;
             SimplexId intersection = -1;
-            
-            while((pos0 < (SimplexId) stars0.size())
-              &&(pos1 < (SimplexId) stars1.size())
-              &&(pos2 < (SimplexId) stars2.size())){
-              
+
+            while((pos0 < (SimplexId)stars0.size())
+                  && (pos1 < (SimplexId)stars1.size())
+                  && (pos2 < (SimplexId)stars2.size())) {
+
               SimplexId biggest = stars0[pos0];
-              if(stars1[pos1] > biggest){
+              if(stars1[pos1] > biggest) {
                 biggest = stars1[pos1];
               }
-              if(stars2[pos2] > biggest){
+              if(stars2[pos2] > biggest) {
                 biggest = stars2[pos2];
               }
-              
-              for(SimplexId l = pos0; l < (SimplexId) stars0.size(); l++){
-                if(stars0[l] < biggest){
+
+              for(SimplexId l = pos0; l < (SimplexId)stars0.size(); l++) {
+                if(stars0[l] < biggest) {
                   pos0++;
-                }
-                else{
+                } else {
                   break;
                 }
               }
-              for(SimplexId l = pos1; l < (SimplexId) stars1.size(); l++){
-                if(stars1[l] < biggest){
+              for(SimplexId l = pos1; l < (SimplexId)stars1.size(); l++) {
+                if(stars1[l] < biggest) {
                   pos1++;
-                }
-                else{
+                } else {
                   break;
                 }
               }
-              for(SimplexId l = pos2; l < (SimplexId) stars2.size(); l++){
-                if(stars2[l] < biggest){
+              for(SimplexId l = pos2; l < (SimplexId)stars2.size(); l++) {
+                if(stars2[l] < biggest) {
                   pos2++;
-                }
-                else{
+                } else {
                   break;
                 }
               }
-              
-              if(pos0 >= (SimplexId) stars0.size() 
-                || pos1 >= (SimplexId) stars1.size() 
-                || pos2 >= (SimplexId) stars2.size())
-                break;  
-              
-              if((stars0[pos0] == stars1[pos1]) && (stars0[pos0] == stars2[pos2])){
-                if(stars0[pos0] != cid){
+
+              if(pos0 >= (SimplexId)stars0.size()
+                 || pos1 >= (SimplexId)stars1.size()
+                 || pos2 >= (SimplexId)stars2.size())
+                break;
+
+              if((stars0[pos0] == stars1[pos1])
+                 && (stars0[pos0] == stars2[pos2])) {
+                if(stars0[pos0] != cid) {
                   intersection = stars0[pos0];
                   break;
                 }
-                pos0++; pos1++; pos2++;
+                pos0++;
+                pos1++;
+                pos2++;
               }
             }
 
-            if(intersection != -1){
+            if(intersection != -1) {
               localCellNeighbors[cid - cellIntervals_[nodePtr->nid - 1] - 1]
                 .push_back(intersection);
             }
@@ -2599,15 +2594,18 @@ namespace ttk {
 #endif
 
       nodePtr->edgeLinks_ = new FlatJaggedArray();
-      SimplexId localEdgeNum = edgeIntervals_[nodePtr->nid] - edgeIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localEdgeNum+1, 0), linksCount(localEdgeNum, 0);
-      
+      SimplexId localEdgeNum
+        = edgeIntervals_[nodePtr->nid] - edgeIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localEdgeNum + 1, 0),
+        linksCount(localEdgeNum, 0);
+
       if(getDimensionality() == 2) {
         if(nodePtr->edgeStars_ == nullptr) {
           getEdgeStars(nodePtr);
         }
         // set the offsets vector
-        boost::unordered_map<array<SimplexId, 2>, SimplexId>::const_iterator iter;
+        boost::unordered_map<array<SimplexId, 2>, SimplexId>::const_iterator
+          iter;
         for(iter = nodePtr->internalEdgeMap_->begin();
             iter != nodePtr->internalEdgeMap_->end(); iter++) {
           for(SimplexId j = 0; j < nodePtr->edgeStars_->size(iter->second - 1);
@@ -2620,12 +2618,12 @@ namespace ttk {
                 break;
               }
             }
-            }
           }
+        }
 
         // compute partial sum of number of links per edge
         for(SimplexId i = 1; i <= localEdgeNum; i++) {
-          offsets[i] += offsets[i-1];
+          offsets[i] += offsets[i - 1];
         }
 
         // allocate the flat vector for edge link data
@@ -2640,8 +2638,10 @@ namespace ttk {
             for(int k = 0; k < 3; k++) {
               SimplexId vertexId = cellArray_->getCellVertex(cellId, k);
               if((vertexId != iter->first[0]) && (vertexId != iter->first[1])) {
-                SimplexId localVertexId = vertexId - vertexIntervals_[nodePtr->nid-1]-1;
-                edgeLinkData[offsets[localVertexId] + linksCount[localVertexId]] = vertexId;
+                SimplexId localVertexId
+                  = vertexId - vertexIntervals_[nodePtr->nid - 1] - 1;
+                edgeLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+                  = vertexId;
                 break;
               }
             }
@@ -2649,7 +2649,8 @@ namespace ttk {
         }
 
         // fill FlatJaggedArray struct
-        nodePtr->edgeLinks_->setData(std::move(edgeLinkData), std::move(offsets));
+        nodePtr->edgeLinks_->setData(
+          std::move(edgeLinkData), std::move(offsets));
       } else if(getDimensionality() == 3) {
         if(nodePtr->tetraEdges_ == nullptr) {
           getCellEdges(nodePtr);
@@ -2663,12 +2664,11 @@ namespace ttk {
           = cellIntervals_[nodePtr->nid] - cellIntervals_[nodePtr->nid - 1];
         for(SimplexId cid = 0; cid < localCellNum; cid++) {
           SimplexId cellId = cid + cellIntervals_[nodePtr->nid - 1] + 1;
-          array<SimplexId, 4> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cellId, 0), 
-            (SimplexId)cellArray_->getCellVertex(cellId, 1), 
-            (SimplexId)cellArray_->getCellVertex(cellId, 2), 
-            (SimplexId)cellArray_->getCellVertex(cellId, 3)
-          };
+          array<SimplexId, 4> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cellId, 0),
+               (SimplexId)cellArray_->getCellVertex(cellId, 1),
+               (SimplexId)cellArray_->getCellVertex(cellId, 2),
+               (SimplexId)cellArray_->getCellVertex(cellId, 3)};
           array<SimplexId, 2> edgePair;
           edgePair[0] = vertexIds[0];
           for(SimplexId j = 1; j < 4; j++) {
@@ -2691,12 +2691,11 @@ namespace ttk {
         // loop through the external cell list
         for(SimplexId cid : externalCells_[nodePtr->nid]) {
           array<SimplexId, 2> edgeIds;
-          array<SimplexId, 4> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cid, 0), 
-            (SimplexId)cellArray_->getCellVertex(cid, 1), 
-            (SimplexId)cellArray_->getCellVertex(cid, 2), 
-            (SimplexId)cellArray_->getCellVertex(cid, 3) 
-          };
+          array<SimplexId, 4> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cid, 0),
+               (SimplexId)cellArray_->getCellVertex(cid, 1),
+               (SimplexId)cellArray_->getCellVertex(cid, 2),
+               (SimplexId)cellArray_->getCellVertex(cid, 3)};
 
           // loop through each edge of the cell
           for(SimplexId j = 0; j < 3; j++) {
@@ -2715,41 +2714,45 @@ namespace ttk {
 
         // compute partial sum of number of neighbors per vertex
         for(SimplexId i = 1; i <= localEdgeNum; i++) {
-          offsets[i] += offsets[i-1];
+          offsets[i] += offsets[i - 1];
         }
 
         // allocate the flat vector for edge link data
         vector<SimplexId> edgeLinkData(offsets.back());
-        
+
         // fill the flat vector using offsets and count vectors
         for(SimplexId cid = 0; cid < localCellNum; cid++) {
           SimplexId cellId = cid + cellIntervals_[nodePtr->nid - 1] + 1;
-          array<SimplexId, 4> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cellId, 0), 
-            (SimplexId)cellArray_->getCellVertex(cellId, 1), 
-            (SimplexId)cellArray_->getCellVertex(cellId, 2), 
-            (SimplexId)cellArray_->getCellVertex(cellId, 3)
-          };
+          array<SimplexId, 4> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cellId, 0),
+               (SimplexId)cellArray_->getCellVertex(cellId, 1),
+               (SimplexId)cellArray_->getCellVertex(cellId, 2),
+               (SimplexId)cellArray_->getCellVertex(cellId, 3)};
           array<SimplexId, 2> edgePair;
           edgePair[0] = vertexIds[0];
           for(SimplexId j = 1; j < 4; j++) {
             edgePair[1] = vertexIds[j];
             SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edgePair) - 1;
-            edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]] = nodePtr->tetraEdges_->at(cid)[6-j];
+            edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]]
+              = nodePtr->tetraEdges_->at(cid)[6 - j];
             linksCount[localEdgeId]++;
           }
           if(vertexIds[1] <= vertexIntervals_[nodePtr->nid]) {
             edgePair[0] = vertexIds[1];
             for(int j = 2; j < 4; j++) {
               edgePair[1] = vertexIds[j];
-              SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edgePair) - 1;
-              edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]] = nodePtr->tetraEdges_->at(cid)[4-j];
+              SimplexId localEdgeId
+                = nodePtr->internalEdgeMap_->at(edgePair) - 1;
+              edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]]
+                = nodePtr->tetraEdges_->at(cid)[4 - j];
               linksCount[localEdgeId]++;
             }
             if(vertexIds[2] <= vertexIntervals_[nodePtr->nid]) {
               edgePair = {vertexIds[2], vertexIds[3]};
-              SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edgePair) - 1;
-              edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]] = nodePtr->tetraEdges_->at(cid)[0];
+              SimplexId localEdgeId
+                = nodePtr->internalEdgeMap_->at(edgePair) - 1;
+              edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]]
+                = nodePtr->tetraEdges_->at(cid)[0];
               linksCount[localEdgeId]++;
             }
           }
@@ -2758,12 +2761,11 @@ namespace ttk {
         // loop through the external cell list
         boost::unordered_map<SimplexId, ImplicitCluster *> nodeMaps;
         for(SimplexId cid : externalCells_[nodePtr->nid]) {
-          array<SimplexId, 4> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cid, 0), 
-            (SimplexId)cellArray_->getCellVertex(cid, 1), 
-            (SimplexId)cellArray_->getCellVertex(cid, 2), 
-            (SimplexId)cellArray_->getCellVertex(cid, 3) 
-          };
+          array<SimplexId, 4> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cid, 0),
+               (SimplexId)cellArray_->getCellVertex(cid, 1),
+               (SimplexId)cellArray_->getCellVertex(cid, 2),
+               (SimplexId)cellArray_->getCellVertex(cid, 3)};
 
           array<SimplexId, 2> edgeIds;
           // loop through each edge of the cell
@@ -2783,7 +2785,8 @@ namespace ttk {
                     } else if(otherEdge[1] == -1) {
                       otherEdge[1] = vertexIds[i];
                     } else {
-                      printErr("[TopoCluster] More than two other vertices are "
+                      printErr("[CompactTriangulation] More than two other "
+                               "vertices are "
                                "found in the edge!\n");
                     }
                   }
@@ -2794,8 +2797,10 @@ namespace ttk {
                   buildInternalEdgeMap(newNode, false, true);
                   nodeMaps[nodeId] = newNode;
                 }
-                SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edgeIds) - 1;
-                edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]] = nodeMaps[nodeId]->internalEdgeMap_->at(otherEdge);
+                SimplexId localEdgeId
+                  = nodePtr->internalEdgeMap_->at(edgeIds) - 1;
+                edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]]
+                  = nodeMaps[nodeId]->internalEdgeMap_->at(otherEdge);
                 linksCount[localEdgeId]++;
               }
             }
@@ -2803,7 +2808,8 @@ namespace ttk {
         }
 
         // fill FlatJaggedArray struct
-        nodePtr->edgeLinks_->setData(std::move(edgeLinkData), std::move(offsets));
+        nodePtr->edgeLinks_->setData(
+          std::move(edgeLinkData), std::move(offsets));
 
         // release the memory
         for(auto iter = nodeMaps.begin(); iter != nodeMaps.end(); iter++) {
@@ -2813,7 +2819,7 @@ namespace ttk {
 
       return 0;
     }
-    
+
     /**
      * Get the edge stars for all the edges in a given node.
      */
@@ -2826,8 +2832,9 @@ namespace ttk {
 
       nodePtr->edgeStars_ = new FlatJaggedArray();
       SimplexId verticesPerCell = cellArray_->getCellVertexNumber(0);
-      SimplexId localEdgeNum = edgeIntervals_[nodePtr->nid] - edgeIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localEdgeNum+1, 0), starsCount(localEdgeNum);
+      SimplexId localEdgeNum
+        = edgeIntervals_[nodePtr->nid] - edgeIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localEdgeNum + 1, 0), starsCount(localEdgeNum);
 
       if(nodePtr->internalEdgeMap_ == nullptr) {
         buildInternalEdgeMap(nodePtr, false, true);
@@ -2867,7 +2874,7 @@ namespace ttk {
 
       // compute partial sum of number of stars per edge
       for(SimplexId i = 1; i <= localEdgeNum; i++) {
-        offsets[i] += offsets[i-1];
+        offsets[i] += offsets[i - 1];
       }
 
       // allocate the flat vector for edge star data
@@ -2901,8 +2908,10 @@ namespace ttk {
             edgeIds[1] = cellArray_->getCellVertex(cid, k);
             if(edgeIds[0] > vertexIntervals_[nodePtr->nid - 1]
                && edgeIds[0] <= vertexIntervals_[nodePtr->nid]) {
-              SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edgeIds) - 1;
-              edgeStarData[offsets[localEdgeId] + starsCount[localEdgeId]] = cid;
+              SimplexId localEdgeId
+                = nodePtr->internalEdgeMap_->at(edgeIds) - 1;
+              edgeStarData[offsets[localEdgeId] + starsCount[localEdgeId]]
+                = cid;
               starsCount[localEdgeId]++;
             }
           }
@@ -2926,8 +2935,10 @@ namespace ttk {
 #endif
 
       nodePtr->edgeTriangles_ = new FlatJaggedArray();
-      SimplexId localEdgeNum = edgeIntervals_[nodePtr->nid] - edgeIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localEdgeNum+1, 0), trianglesCount(localEdgeNum, 0);
+      SimplexId localEdgeNum
+        = edgeIntervals_[nodePtr->nid] - edgeIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localEdgeNum + 1, 0),
+        trianglesCount(localEdgeNum, 0);
 
       if(nodePtr->internalEdgeMap_ == nullptr) {
         buildInternalEdgeMap(nodePtr, false, true);
@@ -2963,11 +2974,11 @@ namespace ttk {
 
       // compute partial sum of number of triangles per edge
       for(SimplexId i = 1; i <= localEdgeNum; i++) {
-        offsets[i] += offsets[i-1];
+        offsets[i] += offsets[i - 1];
       }
 
       // allocate the flat vector for edge triangle data
-      vector<SimplexId> edgeTriangleData(offsets.back()); 
+      vector<SimplexId> edgeTriangleData(offsets.back());
 
       // fill the flat vector using offsets and count vectors
       for(iter = nodePtr->internalTriangleMap_->begin();
@@ -2975,16 +2986,19 @@ namespace ttk {
         array<SimplexId, 2> edge1 = {iter->first[0], iter->first[1]};
         array<SimplexId, 2> edge2 = {iter->first[0], iter->first[2]};
         SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edge1) - 1;
-        edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]] = iter->second + triangleIntervals_[nodePtr->nid - 1];
+        edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]]
+          = iter->second + triangleIntervals_[nodePtr->nid - 1];
         trianglesCount[localEdgeId]++;
         localEdgeId = nodePtr->internalEdgeMap_->at(edge2) - 1;
-        edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]] = iter->second + triangleIntervals_[nodePtr->nid - 1];
+        edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]]
+          = iter->second + triangleIntervals_[nodePtr->nid - 1];
         trianglesCount[localEdgeId]++;
 
         if(iter->first[1] <= vertexIntervals_[nodePtr->nid]) {
           edge1 = {iter->first[1], iter->first[2]};
           localEdgeId = nodePtr->internalEdgeMap_->at(edge1) - 1;
-          edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]] = iter->second + triangleIntervals_[nodePtr->nid - 1];
+          edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]]
+            = iter->second + triangleIntervals_[nodePtr->nid - 1];
           trianglesCount[localEdgeId]++;
         }
       }
@@ -2996,13 +3010,15 @@ namespace ttk {
         if(edge[0] > vertexIntervals_[nodePtr->nid - 1]
            && edge[0] <= vertexIntervals_[nodePtr->nid]) {
           SimplexId localEdgeId = nodePtr->internalEdgeMap_->at(edge) - 1;
-          edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]] = iter->second;
+          edgeTriangleData[offsets[localEdgeId] + trianglesCount[localEdgeId]]
+            = iter->second;
           trianglesCount[localEdgeId]++;
         }
       }
 
       // fill FlatJaggedArray struct
-      nodePtr->edgeTriangles_->setData(std::move(edgeTriangleData), std::move(offsets));
+      nodePtr->edgeTriangles_->setData(
+        std::move(edgeTriangleData), std::move(offsets));
 
       return 0;
     }
@@ -3089,8 +3105,9 @@ namespace ttk {
 
       nodePtr->triangleLinks_ = new FlatJaggedArray();
       SimplexId localTriangleNum = triangleIntervals_[nodePtr->nid]
-        - triangleIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localTriangleNum+1, 0), linksCount(localTriangleNum, 0);
+                                   - triangleIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localTriangleNum + 1, 0),
+        linksCount(localTriangleNum, 0);
 
       if(nodePtr->triangleStars_ == nullptr) {
         getTriangleStars(nodePtr);
@@ -3102,7 +3119,7 @@ namespace ttk {
           iter != nodePtr->internalTriangleMap_->end(); iter++) {
         for(SimplexId i = 0;
             i < nodePtr->triangleStars_->size(iter->second - 1); i++) {
-          SimplexId cellId = nodePtr->triangleStars_->get(iter->second-1, i);
+          SimplexId cellId = nodePtr->triangleStars_->get(iter->second - 1, i);
           for(int j = 0; j < 4; j++) {
             SimplexId vertexId = cellArray_->getCellVertex(cellId, j);
             if((vertexId != iter->first[0]) && (vertexId != iter->first[1])
@@ -3116,9 +3133,9 @@ namespace ttk {
 
       // compute partial sum of number of links per triangle
       for(SimplexId i = 1; i <= localTriangleNum; i++) {
-        offsets[i] += offsets[i-1];
+        offsets[i] += offsets[i - 1];
       }
-      
+
       // allocate the flat vector for triangle link data
       vector<SimplexId> triangleLinkData(offsets.back());
 
@@ -3127,13 +3144,15 @@ namespace ttk {
           iter != nodePtr->internalTriangleMap_->end(); iter++) {
         for(SimplexId i = 0;
             i < nodePtr->triangleStars_->size(iter->second - 1); i++) {
-          SimplexId cellId = nodePtr->triangleStars_->get(iter->second-1, i);
+          SimplexId cellId = nodePtr->triangleStars_->get(iter->second - 1, i);
           for(int j = 0; j < 4; j++) {
             SimplexId vertexId = cellArray_->getCellVertex(cellId, j);
             if((vertexId != iter->first[0]) && (vertexId != iter->first[1])
                && (vertexId != iter->first[2])) {
-              triangleLinkData[offsets[iter->second-1] + linksCount[iter->second-1]] = vertexId;
-              linksCount[iter->second-1]++;
+              triangleLinkData[offsets[iter->second - 1]
+                               + linksCount[iter->second - 1]]
+                = vertexId;
+              linksCount[iter->second - 1]++;
               break;
             }
           }
@@ -3141,7 +3160,8 @@ namespace ttk {
       }
 
       // fill FlatJaggedArray struct
-      nodePtr->triangleLinks_->setData(std::move(triangleLinkData), std::move(offsets));
+      nodePtr->triangleLinks_->setData(
+        std::move(triangleLinkData), std::move(offsets));
 
       return 0;
     }
@@ -3158,8 +3178,10 @@ namespace ttk {
 
       nodePtr->triangleStars_ = new FlatJaggedArray();
       SimplexId verticesPerCell = cellArray_->getCellVertexNumber(0);
-      SimplexId localTriangleNum = triangleIntervals_[nodePtr->nid] - triangleIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localTriangleNum+1, 0), starsCount(localTriangleNum, 0);
+      SimplexId localTriangleNum = triangleIntervals_[nodePtr->nid]
+                                   - triangleIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localTriangleNum + 1, 0),
+        starsCount(localTriangleNum, 0);
 
       if(nodePtr->internalTriangleMap_ == nullptr) {
         buildInternalTriangleMap(nodePtr, false, true);
@@ -3204,7 +3226,7 @@ namespace ttk {
 
       // compute partial sum of number of stars per triangle
       for(SimplexId i = 1; i <= localTriangleNum; i++) {
-        offsets[i] += offsets[i-1];
+        offsets[i] += offsets[i - 1];
       }
 
       // allocate the flat vector for triangle star data
@@ -3225,8 +3247,11 @@ namespace ttk {
             for(SimplexId l = k + 1; l < verticesPerCell; l++) {
               triangleIds[1] = cellArray_->getCellVertex(cid, k);
               triangleIds[2] = cellArray_->getCellVertex(cid, l);
-              SimplexId localTriangleId = nodePtr->internalTriangleMap_->at(triangleIds) - 1;
-              triangleStarData[offsets[localTriangleId] + starsCount[localTriangleId]] = cid;
+              SimplexId localTriangleId
+                = nodePtr->internalTriangleMap_->at(triangleIds) - 1;
+              triangleStarData[offsets[localTriangleId]
+                               + starsCount[localTriangleId]]
+                = cid;
               starsCount[localTriangleId]++;
             }
           }
@@ -3245,8 +3270,11 @@ namespace ttk {
               for(SimplexId l = k + 1; l < verticesPerCell; l++) {
                 triangleIds[1] = cellArray_->getCellVertex(cid, k);
                 triangleIds[2] = cellArray_->getCellVertex(cid, l);
-                SimplexId localTriangleId = nodePtr->internalTriangleMap_->at(triangleIds) - 1;
-                triangleStarData[offsets[localTriangleId] + starsCount[localTriangleId]] = cid;
+                SimplexId localTriangleId
+                  = nodePtr->internalTriangleMap_->at(triangleIds) - 1;
+                triangleStarData[offsets[localTriangleId]
+                                 + starsCount[localTriangleId]]
+                  = cid;
                 starsCount[localTriangleId]++;
               }
             }
@@ -3255,7 +3283,8 @@ namespace ttk {
       }
 
       // fill FlatJaggedArray struct
-      nodePtr->triangleStars_->setData(std::move(triangleStarData), std::move(offsets));
+      nodePtr->triangleStars_->setData(
+        std::move(triangleStarData), std::move(offsets));
 
       return 0;
     }
@@ -3271,8 +3300,10 @@ namespace ttk {
 #endif
 
       nodePtr->vertexEdges_ = new FlatJaggedArray();
-      SimplexId localVertexNum = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localVertexNum+1, 0), edgesCount(localVertexNum, 0);
+      SimplexId localVertexNum
+        = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localVertexNum + 1, 0),
+        edgesCount(localVertexNum, 0);
 
       if(nodePtr->internalEdgeMap_ == nullptr) {
         buildInternalEdgeMap(nodePtr, false, true);
@@ -3285,18 +3316,18 @@ namespace ttk {
       boost::unordered_map<array<SimplexId, 2>, SimplexId>::iterator iter;
       for(iter = nodePtr->internalEdgeMap_->begin();
           iter != nodePtr->internalEdgeMap_->end(); iter++) {
-          offsets[iter->first[0]-vertexIntervals_[nodePtr->nid-1]]++;
+        offsets[iter->first[0] - vertexIntervals_[nodePtr->nid - 1]]++;
         if(iter->first[1] <= vertexIntervals_[nodePtr->nid]) {
-            offsets[iter->first[1]-vertexIntervals_[nodePtr->nid-1]]++;
+          offsets[iter->first[1] - vertexIntervals_[nodePtr->nid - 1]]++;
         }
       }
       for(iter = nodePtr->externalEdgeMap_->begin();
           iter != nodePtr->externalEdgeMap_->end(); iter++) {
-          offsets[iter->first[1]-vertexIntervals_[nodePtr->nid-1]]++;
+        offsets[iter->first[1] - vertexIntervals_[nodePtr->nid - 1]]++;
       }
       // compute partial sum of number of edges per vertex
-      for (SimplexId i = 1; i <= localVertexNum; i++) {
-        offsets[i] += offsets[i-1];
+      for(SimplexId i = 1; i <= localVertexNum; i++) {
+        offsets[i] += offsets[i - 1];
       }
 
       // allocate the flat vector for vertex edge data
@@ -3305,24 +3336,31 @@ namespace ttk {
       // fill the flat vector using offsets and count vectors
       for(iter = nodePtr->internalEdgeMap_->begin();
           iter != nodePtr->internalEdgeMap_->end(); iter++) {
-          SimplexId localVertexId = iter->first[0] - vertexIntervals_[nodePtr->nid-1] - 1;
-          vertexEdgeData[offsets[localVertexId] + edgesCount[localVertexId]] = iter->second + edgeIntervals_[nodePtr->nid - 1];
+        SimplexId localVertexId
+          = iter->first[0] - vertexIntervals_[nodePtr->nid - 1] - 1;
+        vertexEdgeData[offsets[localVertexId] + edgesCount[localVertexId]]
+          = iter->second + edgeIntervals_[nodePtr->nid - 1];
+        edgesCount[localVertexId]++;
+        if(iter->first[1] <= vertexIntervals_[nodePtr->nid]) {
+          localVertexId
+            = iter->first[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
+          vertexEdgeData[offsets[localVertexId] + edgesCount[localVertexId]]
+            = iter->second + edgeIntervals_[nodePtr->nid - 1];
           edgesCount[localVertexId]++;
-          if (iter->first[1] <= vertexIntervals_[nodePtr->nid]) {
-            localVertexId = iter->first[1] - vertexIntervals_[nodePtr->nid-1] - 1;
-            vertexEdgeData[offsets[localVertexId] + edgesCount[localVertexId]] = iter->second + edgeIntervals_[nodePtr->nid - 1];
-            edgesCount[localVertexId]++;
-          }
+        }
       }
       for(iter = nodePtr->externalEdgeMap_->begin();
           iter != nodePtr->externalEdgeMap_->end(); iter++) {
-          SimplexId localVertexId = iter->first[1] - vertexIntervals_[nodePtr->nid-1] - 1;
-          vertexEdgeData[offsets[localVertexId] + edgesCount[localVertexId]] = iter->second;
-          edgesCount[localVertexId]++;
+        SimplexId localVertexId
+          = iter->first[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
+        vertexEdgeData[offsets[localVertexId] + edgesCount[localVertexId]]
+          = iter->second;
+        edgesCount[localVertexId]++;
       }
 
       // fill FlatJaggedArray struct
-      nodePtr->vertexEdges_->setData(std::move(vertexEdgeData), std::move(offsets));
+      nodePtr->vertexEdges_->setData(
+        std::move(vertexEdgeData), std::move(offsets));
 
       return 0;
     }
@@ -3338,8 +3376,10 @@ namespace ttk {
 #endif
 
       nodePtr->vertexLinks_ = new FlatJaggedArray();
-      SimplexId localVertexNum = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localVertexNum+1, 0), linksCount(localVertexNum, 0);
+      SimplexId localVertexNum
+        = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localVertexNum + 1, 0),
+        linksCount(localVertexNum, 0);
       boost::unordered_map<SimplexId, ImplicitCluster *> nodeMaps;
       // triangle mesh
       if(getDimensionality() == 2) {
@@ -3350,25 +3390,29 @@ namespace ttk {
         // set the offsets vector
         for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
             cid <= cellIntervals_[nodePtr->nid]; cid++) {
-          offsets[cellArray_->getCellVertex(cid, 0) - vertexIntervals_[nodePtr->nid - 1]]++;
+          offsets[cellArray_->getCellVertex(cid, 0)
+                  - vertexIntervals_[nodePtr->nid - 1]]++;
           for(SimplexId j = 1; j < 3; j++) {
-            if(cellArray_->getCellVertex(cid, j) <= vertexIntervals_[nodePtr->nid]) {
-              offsets[cellArray_->getCellVertex(cid, j) - vertexIntervals_[nodePtr->nid - 1]]++;
+            if(cellArray_->getCellVertex(cid, j)
+               <= vertexIntervals_[nodePtr->nid]) {
+              offsets[cellArray_->getCellVertex(cid, j)
+                      - vertexIntervals_[nodePtr->nid - 1]]++;
             }
           }
         }
         for(SimplexId cid : externalCells_[nodePtr->nid]) {
           for(SimplexId j = 1; j < 3; j++) {
             SimplexId vertexId = cellArray_->getCellVertex(cid, j);
-            if(vertexId > vertexIntervals_[nodePtr->nid - 1] && vertexId <= vertexIntervals_[nodePtr->nid]) {
-              offsets[vertexId - vertexIntervals_[nodePtr->nid-1]]++;
+            if(vertexId > vertexIntervals_[nodePtr->nid - 1]
+               && vertexId <= vertexIntervals_[nodePtr->nid]) {
+              offsets[vertexId - vertexIntervals_[nodePtr->nid - 1]]++;
             }
           }
         }
 
         // compute partial sum of number of links per vertex
         for(SimplexId i = 1; i <= localVertexNum; i++) {
-          offsets[i] += offsets[i-1];
+          offsets[i] += offsets[i - 1];
         }
 
         // allocate the flat vector for vertex link data
@@ -3377,11 +3421,10 @@ namespace ttk {
         // fill the flat vector using offsets and count vectors
         for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
             cid <= cellIntervals_[nodePtr->nid]; cid++) {
-          array<SimplexId, 3> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cid, 0),
-            (SimplexId)cellArray_->getCellVertex(cid, 1),
-            (SimplexId)cellArray_->getCellVertex(cid, 2)
-          };
+          array<SimplexId, 3> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cid, 0),
+               (SimplexId)cellArray_->getCellVertex(cid, 1),
+               (SimplexId)cellArray_->getCellVertex(cid, 2)};
           // the first vertex of the cell must be in the cluster
           array<SimplexId, 2> edgePair = {vertexIds[1], vertexIds[2]};
           SimplexId nodeId = vertexIndices_[vertexIds[1]];
@@ -3390,29 +3433,37 @@ namespace ttk {
             buildInternalEdgeMap(newNode, false, true);
             nodeMaps[nodeId] = newNode;
           }
-          SimplexId localVertexId = vertexIds[0]-vertexIntervals_[nodePtr->nid-1]-1;
-          vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalEdgeMap_->at(edgePair) + edgeIntervals_[nodeId - 1];
+          SimplexId localVertexId
+            = vertexIds[0] - vertexIntervals_[nodePtr->nid - 1] - 1;
+          vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+            = nodeMaps[nodeId]->internalEdgeMap_->at(edgePair)
+              + edgeIntervals_[nodeId - 1];
           linksCount[localVertexId]++;
-          
+
           if(vertexIds[1] <= vertexIntervals_[nodePtr->nid]) {
             edgePair[0] = vertexIds[0];
-            localVertexId = vertexIds[1]-vertexIntervals_[nodePtr->nid-1]-1;
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodePtr->internalEdgeMap_->at(edgePair) + edgeIntervals_[nodePtr->nid - 1];
+            localVertexId
+              = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodePtr->internalEdgeMap_->at(edgePair)
+                + edgeIntervals_[nodePtr->nid - 1];
             linksCount[localVertexId]++;
             if(vertexIds[2] <= vertexIntervals_[nodePtr->nid]) {
-              localVertexId = vertexIds[2]-vertexIntervals_[nodePtr->nid-1]-1;
+              localVertexId
+                = vertexIds[2] - vertexIntervals_[nodePtr->nid - 1] - 1;
               edgePair[1] = vertexIds[1];
-              vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodePtr->internalEdgeMap_->at(edgePair) + edgeIntervals_[nodePtr->nid - 1];
+              vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+                = nodePtr->internalEdgeMap_->at(edgePair)
+                  + edgeIntervals_[nodePtr->nid - 1];
               linksCount[localVertexId]++;
             }
           }
         }
         for(SimplexId cid : externalCells_[nodePtr->nid]) {
-          array<SimplexId, 3> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cid, 0),
-            (SimplexId)cellArray_->getCellVertex(cid, 1),
-            (SimplexId)cellArray_->getCellVertex(cid, 2)
-          };
+          array<SimplexId, 3> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cid, 0),
+               (SimplexId)cellArray_->getCellVertex(cid, 1),
+               (SimplexId)cellArray_->getCellVertex(cid, 2)};
           array<SimplexId, 2> edgePair = {vertexIds[0], vertexIds[2]};
           SimplexId nodeId = vertexIndices_[edgePair[0]];
           if(nodeMaps.find(nodeId) == nodeMaps.end()) {
@@ -3420,25 +3471,32 @@ namespace ttk {
             buildInternalEdgeMap(newNode, false, true);
             nodeMaps[nodeId] = newNode;
           }
-          SimplexId localVertexId = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
+          SimplexId localVertexId
+            = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
           if(vertexIds[1] > vertexIntervals_[nodePtr->nid - 1]
              && vertexIds[1] <= vertexIntervals_[nodePtr->nid]) {
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalEdgeMap_->at(edgePair) + edgeIntervals_[nodeId - 1];
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodeMaps[nodeId]->internalEdgeMap_->at(edgePair)
+                + edgeIntervals_[nodeId - 1];
             linksCount[localVertexId]++;
           }
           if(vertexIds[2] > vertexIntervals_[nodePtr->nid - 1]
              && vertexIds[2] <= vertexIntervals_[nodePtr->nid]) {
             edgePair[1] = vertexIds[1];
-            localVertexId = vertexIds[2] -  - vertexIntervals_[nodePtr->nid - 1] - 1;
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalEdgeMap_->at(edgePair) + edgeIntervals_[nodeId - 1];
+            localVertexId
+              = vertexIds[2] - -vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodeMaps[nodeId]->internalEdgeMap_->at(edgePair)
+                + edgeIntervals_[nodeId - 1];
             linksCount[localVertexId]++;
           }
         }
 
         // fill FlatJaggedArray struct
-        nodePtr->vertexLinks_->setData(std::move(vertexLinkData), std::move(offsets));
+        nodePtr->vertexLinks_->setData(
+          std::move(vertexLinkData), std::move(offsets));
 
-      // tetrahedral mesh
+        // tetrahedral mesh
       } else if(getDimensionality() == 3) {
 
         if(nodePtr->internalTriangleMap_ == nullptr) {
@@ -3448,69 +3506,85 @@ namespace ttk {
         // set the offsets vector
         for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
             cid <= cellIntervals_[nodePtr->nid]; cid++) {
-          offsets[cellArray_->getCellVertex(cid, 0) - vertexIntervals_[nodePtr->nid - 1]]++;
+          offsets[cellArray_->getCellVertex(cid, 0)
+                  - vertexIntervals_[nodePtr->nid - 1]]++;
           for(SimplexId j = 1; j < 4; j++) {
-            if(cellArray_->getCellVertex(cid, j) <= vertexIntervals_[nodePtr->nid]) {
-              offsets[cellArray_->getCellVertex(cid, j) - vertexIntervals_[nodePtr->nid - 1]]++;
+            if(cellArray_->getCellVertex(cid, j)
+               <= vertexIntervals_[nodePtr->nid]) {
+              offsets[cellArray_->getCellVertex(cid, j)
+                      - vertexIntervals_[nodePtr->nid - 1]]++;
             }
           }
         }
         for(SimplexId cid : externalCells_[nodePtr->nid]) {
           for(SimplexId j = 1; j < 4; j++) {
             SimplexId vertexId = cellArray_->getCellVertex(cid, j);
-            if(vertexId > vertexIntervals_[nodePtr->nid - 1] && vertexId <= vertexIntervals_[nodePtr->nid]) {
-              offsets[vertexId - vertexIntervals_[nodePtr->nid-1]]++;
+            if(vertexId > vertexIntervals_[nodePtr->nid - 1]
+               && vertexId <= vertexIntervals_[nodePtr->nid]) {
+              offsets[vertexId - vertexIntervals_[nodePtr->nid - 1]]++;
             }
           }
         }
 
         // compute partial sum of number of links per vertex
         for(SimplexId i = 1; i <= localVertexNum; i++) {
-          offsets[i] += offsets[i-1];
+          offsets[i] += offsets[i - 1];
         }
 
         // allocate the flat vector for vertex link data
         vector<SimplexId> vertexLinkData(offsets.back());
 
-        // fill the flat vector using offsets and count vectors 
+        // fill the flat vector using offsets and count vectors
         for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
             cid <= cellIntervals_[nodePtr->nid]; cid++) {
-          array<SimplexId, 4> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cid, 0), 
-            (SimplexId)cellArray_->getCellVertex(cid, 1), 
-            (SimplexId)cellArray_->getCellVertex(cid, 2), 
-            (SimplexId)cellArray_->getCellVertex(cid, 3)
-          };
+          array<SimplexId, 4> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cid, 0),
+               (SimplexId)cellArray_->getCellVertex(cid, 1),
+               (SimplexId)cellArray_->getCellVertex(cid, 2),
+               (SimplexId)cellArray_->getCellVertex(cid, 3)};
 
           // v1: (v2, v3, v4)
-          array<SimplexId, 3> triangleVec = {vertexIds[1], vertexIds[2], vertexIds[3]};
+          array<SimplexId, 3> triangleVec
+            = {vertexIds[1], vertexIds[2], vertexIds[3]};
           SimplexId nodeId = vertexIndices_[vertexIds[1]];
           if(nodeMaps.find(nodeId) == nodeMaps.end()) {
             ImplicitCluster *newNode = new ImplicitCluster(nodeId);
             buildInternalTriangleMap(newNode, false, true);
             nodeMaps[nodeId] = newNode;
           }
-          SimplexId localVertexId = vertexIds[0] - vertexIntervals_[nodePtr->nid - 1] - 1;
-          vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodeId - 1];
+          SimplexId localVertexId
+            = vertexIds[0] - vertexIntervals_[nodePtr->nid - 1] - 1;
+          vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+            = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec)
+              + triangleIntervals_[nodeId - 1];
           linksCount[localVertexId]++;
           // v2: (v1, v3, v4)
           if(vertexIds[1] <= vertexIntervals_[nodePtr->nid]) {
             triangleVec[0] = vertexIds[0];
-            localVertexId = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodePtr->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodePtr->nid - 1];
+            localVertexId
+              = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodePtr->internalTriangleMap_->at(triangleVec)
+                + triangleIntervals_[nodePtr->nid - 1];
             linksCount[localVertexId]++;
             // v3: (v1, v2, v4)
             if(vertexIds[2] <= vertexIntervals_[nodePtr->nid]) {
               triangleVec[1] = vertexIds[1];
-              localVertexId = vertexIds[2] - vertexIntervals_[nodePtr->nid - 1] - 1;
-              vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodePtr->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodePtr->nid - 1];
+              localVertexId
+                = vertexIds[2] - vertexIntervals_[nodePtr->nid - 1] - 1;
+              vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+                = nodePtr->internalTriangleMap_->at(triangleVec)
+                  + triangleIntervals_[nodePtr->nid - 1];
               linksCount[localVertexId]++;
             }
             // v4: (v1, v2, v3)
             if(vertexIds[3] <= vertexIntervals_[nodePtr->nid]) {
               triangleVec[2] = vertexIds[2];
-              localVertexId = vertexIds[3] - vertexIntervals_[nodePtr->nid-1] - 1;
-              vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodePtr->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodePtr->nid - 1];
+              localVertexId
+                = vertexIds[3] - vertexIntervals_[nodePtr->nid - 1] - 1;
+              vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+                = nodePtr->internalTriangleMap_->at(triangleVec)
+                  + triangleIntervals_[nodePtr->nid - 1];
               linksCount[localVertexId]++;
             }
           }
@@ -3518,45 +3592,55 @@ namespace ttk {
 
         // loop through the external cell list
         for(SimplexId cid : externalCells_[nodePtr->nid]) {
-          array<SimplexId, 4> vertexIds = {
-            (SimplexId)cellArray_->getCellVertex(cid, 0), 
-            (SimplexId)cellArray_->getCellVertex(cid, 1), 
-            (SimplexId)cellArray_->getCellVertex(cid, 2), 
-            (SimplexId)cellArray_->getCellVertex(cid, 3)
-          };
+          array<SimplexId, 4> vertexIds
+            = {(SimplexId)cellArray_->getCellVertex(cid, 0),
+               (SimplexId)cellArray_->getCellVertex(cid, 1),
+               (SimplexId)cellArray_->getCellVertex(cid, 2),
+               (SimplexId)cellArray_->getCellVertex(cid, 3)};
           // start from v2
-          array<SimplexId, 3> triangleVec = {vertexIds[0], vertexIds[2], vertexIds[3]};
+          array<SimplexId, 3> triangleVec
+            = {vertexIds[0], vertexIds[2], vertexIds[3]};
           SimplexId nodeId = vertexIndices_[vertexIds[0]];
           if(nodeMaps.find(nodeId) == nodeMaps.end()) {
             ImplicitCluster *newNode = new ImplicitCluster(nodeId);
             buildInternalTriangleMap(newNode, false, true);
             nodeMaps[nodeId] = newNode;
           }
-          SimplexId localVertexId = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1; 
+          SimplexId localVertexId
+            = vertexIds[1] - vertexIntervals_[nodePtr->nid - 1] - 1;
           if(vertexIds[1] > vertexIntervals_[nodePtr->nid - 1]
              && vertexIds[1] <= vertexIntervals_[nodePtr->nid]) {
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodeId - 1];
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec)
+                + triangleIntervals_[nodeId - 1];
             linksCount[localVertexId]++;
           }
           if(vertexIds[2] > vertexIntervals_[nodePtr->nid - 1]
              && vertexIds[2] <= vertexIntervals_[nodePtr->nid]) {
             triangleVec[1] = vertexIds[1];
-            localVertexId = vertexIds[2] - vertexIntervals_[nodePtr->nid - 1] - 1;
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodeId - 1];
+            localVertexId
+              = vertexIds[2] - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec)
+                + triangleIntervals_[nodeId - 1];
             linksCount[localVertexId]++;
           }
           if(vertexIds[3] > vertexIntervals_[nodePtr->nid - 1]
              && vertexIds[3] <= vertexIntervals_[nodePtr->nid]) {
             triangleVec[1] = vertexIds[1];
             triangleVec[2] = vertexIds[2];
-            localVertexId = vertexIds[3] - vertexIntervals_[nodePtr->nid - 1] - 1;
-            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]] = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec) + triangleIntervals_[nodeId - 1];
+            localVertexId
+              = vertexIds[3] - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexLinkData[offsets[localVertexId] + linksCount[localVertexId]]
+              = nodeMaps[nodeId]->internalTriangleMap_->at(triangleVec)
+                + triangleIntervals_[nodeId - 1];
             linksCount[localVertexId]++;
           }
         }
 
         // fill FlatJaggedArray struct
-        nodePtr->vertexLinks_->setData(std::move(vertexLinkData), std::move(offsets));
+        nodePtr->vertexLinks_->setData(
+          std::move(vertexLinkData), std::move(offsets));
       }
 
       // release the memory
@@ -3579,7 +3663,8 @@ namespace ttk {
 
       SimplexId verticesPerCell = cellArray_->getCellVertexNumber(0);
       nodePtr->vertexNeighbors_ = new FlatJaggedArray();
-      SimplexId localVertexNum = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
+      SimplexId localVertexNum
+        = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
       vector<SimplexId> vertexNeighborData, offsets(localVertexNum + 1, 0);
 
       SimplexId v1, v2;
@@ -3625,11 +3710,12 @@ namespace ttk {
       for(SimplexId i = 1; i <= localVertexNum; i++) {
         offsets[i] = offsets[i - 1] + vertexNeighborSet[i - 1].size();
         vertexNeighborData.insert(vertexNeighborData.end(),
-                                    vertexNeighborSet[i - 1].begin(),
-                                    vertexNeighborSet[i - 1].end());
+                                  vertexNeighborSet[i - 1].begin(),
+                                  vertexNeighborSet[i - 1].end());
       }
 
-      nodePtr->vertexNeighbors_->setData(std::move(vertexNeighborData), std::move(offsets));
+      nodePtr->vertexNeighbors_->setData(
+        std::move(vertexNeighborData), std::move(offsets));
       return 0;
     }
 
@@ -3646,14 +3732,16 @@ namespace ttk {
 
       nodePtr->vertexStars_ = new FlatJaggedArray();
       SimplexId verticesPerCell = cellArray_->getCellVertexNumber(0);
-      SimplexId localVertexNum = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localVertexNum+1, 0), starsCount(localVertexNum, 0);
+      SimplexId localVertexNum
+        = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localVertexNum + 1, 0),
+        starsCount(localVertexNum, 0);
 
       // set the offsets vector
       for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
           cid <= cellIntervals_[nodePtr->nid]; cid++) {
         SimplexId vertexId = cellArray_->getCellVertex(cid, 0);
-        offsets[vertexId - vertexIntervals_[nodePtr->nid-1]]++;
+        offsets[vertexId - vertexIntervals_[nodePtr->nid - 1]]++;
         for(SimplexId j = 1; j < verticesPerCell; j++) {
           vertexId = cellArray_->getCellVertex(cid, j);
           if(vertexId > vertexIntervals_[nodePtr->nid - 1]
@@ -3674,7 +3762,7 @@ namespace ttk {
 
       // compute partial sum of number of stars per vertex
       for(SimplexId i = 1; i <= localVertexNum; i++) {
-        offsets[i] += offsets[i-1];
+        offsets[i] += offsets[i - 1];
       }
 
       // allocate the flat vector for vertex star data
@@ -3683,8 +3771,10 @@ namespace ttk {
       // fill the flat vector using offsets and count vectors
       for(SimplexId cid = cellIntervals_[nodePtr->nid - 1] + 1;
           cid <= cellIntervals_[nodePtr->nid]; cid++) {
-        SimplexId localVertexId = cellArray_->getCellVertex(cid, 0) - vertexIntervals_[nodePtr->nid - 1] - 1;
-        vertexStarData[offsets[localVertexId] + starsCount[localVertexId]] = cid;
+        SimplexId localVertexId = cellArray_->getCellVertex(cid, 0)
+                                  - vertexIntervals_[nodePtr->nid - 1] - 1;
+        vertexStarData[offsets[localVertexId] + starsCount[localVertexId]]
+          = cid;
         starsCount[localVertexId]++;
         for(SimplexId j = 1; j < verticesPerCell; j++) {
           SimplexId vertexId = cellArray_->getCellVertex(cid, j);
@@ -3692,10 +3782,11 @@ namespace ttk {
           if(vertexId > vertexIntervals_[nodePtr->nid - 1]
              && vertexId <= vertexIntervals_[nodePtr->nid]) {
             localVertexId = vertexId - vertexIntervals_[nodePtr->nid - 1] - 1;
-            vertexStarData[offsets[localVertexId] + starsCount[localVertexId]] = cid;
+            vertexStarData[offsets[localVertexId] + starsCount[localVertexId]]
+              = cid;
             starsCount[localVertexId]++;
+          }
         }
-      }
       }
       for(SimplexId cid : externalCells_[nodePtr->nid]) {
         for(SimplexId j = 0; j < verticesPerCell; j++) {
@@ -3703,15 +3794,18 @@ namespace ttk {
           SimplexId vertexId = cellArray_->getCellVertex(cid, j);
           if(vertexId > vertexIntervals_[nodePtr->nid - 1]
              && vertexId <= vertexIntervals_[nodePtr->nid]) {
-            SimplexId localVertexId = vertexId - vertexIntervals_[nodePtr->nid - 1] - 1;
-            vertexStarData[offsets[localVertexId] + starsCount[localVertexId]] = cid;
+            SimplexId localVertexId
+              = vertexId - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexStarData[offsets[localVertexId] + starsCount[localVertexId]]
+              = cid;
             starsCount[localVertexId]++;
           }
         }
       }
 
       // fill FlatJaggedArray struct
-      nodePtr->vertexStars_->setData(std::move(vertexStarData), std::move(offsets));
+      nodePtr->vertexStars_->setData(
+        std::move(vertexStarData), std::move(offsets));
 
       // sort the vector for cell neighbor relation
       // for(size_t i = 0; i < localVertexStars.size(); i++) {
@@ -3732,8 +3826,10 @@ namespace ttk {
 #endif
 
       nodePtr->vertexTriangles_ = new FlatJaggedArray();
-      SimplexId localVertexNum = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
-      vector<SimplexId> offsets(localVertexNum+1, 0), trianglesCount(localVertexNum, 0);
+      SimplexId localVertexNum
+        = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
+      vector<SimplexId> offsets(localVertexNum + 1, 0),
+        trianglesCount(localVertexNum, 0);
 
       if(nodePtr->internalTriangleMap_ == nullptr) {
         buildInternalTriangleMap(nodePtr, false, true);
@@ -3749,22 +3845,23 @@ namespace ttk {
         for(SimplexId j = 0; j < 3; j++) {
           if(iter->first[j] > vertexIntervals_[nodePtr->nid - 1]
              && iter->first[j] <= vertexIntervals_[nodePtr->nid])
-             offsets[iter->first[j]-vertexIntervals_[nodePtr->nid-1]]++;
+            offsets[iter->first[j] - vertexIntervals_[nodePtr->nid - 1]]++;
         }
       }
       for(iter = nodePtr->externalTriangleMap_->begin();
           iter != nodePtr->externalTriangleMap_->end(); iter++) {
         for(SimplexId j = 0; j < 3; j++) {
-          if(iter->first[j] > vertexIntervals_[nodePtr->nid - 1] && iter->first[j] <= vertexIntervals_[nodePtr->nid])
-            offsets[iter->first[j]-vertexIntervals_[nodePtr->nid-1]]++;
+          if(iter->first[j] > vertexIntervals_[nodePtr->nid - 1]
+             && iter->first[j] <= vertexIntervals_[nodePtr->nid])
+            offsets[iter->first[j] - vertexIntervals_[nodePtr->nid - 1]]++;
         }
       }
 
       // compute partial sum of number of triangles per vertex
-      for (SimplexId i = 1; i <= localVertexNum; i++) {
-        offsets[i] += offsets[i-1];
+      for(SimplexId i = 1; i <= localVertexNum; i++) {
+        offsets[i] += offsets[i - 1];
       }
-      
+
       // allocate the flat vector for vertex triangle data
       vector<SimplexId> vertexTriangleData(offsets.back());
 
@@ -3774,8 +3871,11 @@ namespace ttk {
         for(SimplexId j = 0; j < 3; j++) {
           if(iter->first[j] > vertexIntervals_[nodePtr->nid - 1]
              && iter->first[j] <= vertexIntervals_[nodePtr->nid]) {
-            SimplexId localVertexId = iter->first[j] - vertexIntervals_[nodePtr->nid-1] - 1;
-            vertexTriangleData[offsets[localVertexId] + trianglesCount[localVertexId]] = iter->second + triangleIntervals_[nodePtr->nid - 1];
+            SimplexId localVertexId
+              = iter->first[j] - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexTriangleData[offsets[localVertexId]
+                               + trianglesCount[localVertexId]]
+              = iter->second + triangleIntervals_[nodePtr->nid - 1];
             trianglesCount[localVertexId]++;
           }
         }
@@ -3783,16 +3883,21 @@ namespace ttk {
       for(iter = nodePtr->externalTriangleMap_->begin();
           iter != nodePtr->externalTriangleMap_->end(); iter++) {
         for(SimplexId j = 0; j < 3; j++) {
-          if(iter->first[j] > vertexIntervals_[nodePtr->nid - 1] && iter->first[j] <= vertexIntervals_[nodePtr->nid]) {
-            SimplexId localVertexId = iter->first[j] - vertexIntervals_[nodePtr->nid-1] - 1;
-            vertexTriangleData[offsets[localVertexId] + trianglesCount[localVertexId]] = iter->second;
+          if(iter->first[j] > vertexIntervals_[nodePtr->nid - 1]
+             && iter->first[j] <= vertexIntervals_[nodePtr->nid]) {
+            SimplexId localVertexId
+              = iter->first[j] - vertexIntervals_[nodePtr->nid - 1] - 1;
+            vertexTriangleData[offsets[localVertexId]
+                               + trianglesCount[localVertexId]]
+              = iter->second;
             trianglesCount[localVertexId]++;
           }
         }
       }
 
       // fill FlatJaggedArray struct
-      nodePtr->vertexTriangles_->setData(std::move(vertexTriangleData), std::move(offsets));
+      nodePtr->vertexTriangles_->setData(
+        std::move(vertexTriangleData), std::move(offsets));
 
       return 0;
     }
@@ -4026,7 +4131,5 @@ namespace ttk {
     mutable vector<
       boost::unordered_map<SimplexId, list<ImplicitCluster *>::iterator>>
       cacheMaps_;
-
-    friend class TestTopoCluster;
   };
 } // namespace ttk
