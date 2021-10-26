@@ -184,7 +184,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
     for(size_t i = 0; i < images.size(); ++i) {
       auto array = images[i]->GetPointData()->GetArray("Scalars");
       for(vtkIdType j = 0; j < array->GetNumberOfTuples(); ++j)
-        fieldL2_[i].push_back(static_cast<double>(array->GetTuple1(j)));
+        fieldL2_[i].push_back(array->GetTuple1(j));
     }
   }
 
