@@ -7,4 +7,5 @@ ttk_add_base_library(compactTriangulation
   DEPENDS
     abstractTriangulation
     skeleton
+    Boost::boost
     )

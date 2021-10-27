@@ -14,8 +14,8 @@
 /// each vertex. Note Topocluster will reindex the simplices based on the
 /// clustering input array.
 /// \b Related \b publications \n
-/// "TopoCluster: A Localized Data Structure for Topology-based Visualization" \n
-/// Guoxi Liu, Federico Iuricich et al. \n
+/// "TopoCluster: A Localized Data Structure for Topology-based Visualization"
+/// Guoxi Liu, Federico Iuricich, Riccardo Fellegara, and Leila De Floriani
 /// IEEE Transactions on Visualization and Computer Graphics, 2021.
 ///
 /// \sa ttk::Triangulation
@@ -433,22 +433,29 @@ namespace ttk {
                                    SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= cellNumber_))
-        return -1;
-      if((localEdgeId < 0))
-        return -2;
+      if((cellId < 0) || (cellId >= cellNumber_)) {
+        edgeId = -1;
+        return 0;
+      }
+      if(localEdgeId < 0) {
+        edgeId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
       SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->tetraEdges_ == nullptr) {
-        getCellEdges(exnode);
+        getClusterCellEdges(exnode);
       }
-      if(localEdgeId >= (SimplexId)(*(exnode->tetraEdges_))[localCellId].size())
-        return -2;
 
-      edgeId = (*(exnode->tetraEdges_))[localCellId][localEdgeId];
+      if(localEdgeId
+         >= (SimplexId)(*(exnode->tetraEdges_))[localCellId].size()) {
+        edgeId = -2;
+      } else {
+        edgeId = (*(exnode->tetraEdges_))[localCellId][localEdgeId];
+      }
       return 0;
     }
 
@@ -460,6 +467,7 @@ namespace ttk {
         return -1;
 #endif
 
+      (void)cellId;
       return (maxCellDim_ + 1) * maxCellDim_ / 2;
     }
 
@@ -469,7 +477,7 @@ namespace ttk {
         for(SimplexId nid = 1; nid <= nodeNumber_; nid++) {
           ImplicitCluster *exnode = searchCache(nid);
           if(exnode->tetraEdges_ == nullptr) {
-            getCellEdges(exnode);
+            getClusterCellEdges(exnode);
           }
           for(size_t i = 0; i < exnode->tetraEdges_->size(); i++) {
             cellEdgeVector_.push_back({exnode->tetraEdges_->at(i).begin(),
@@ -486,22 +494,28 @@ namespace ttk {
       SimplexId &neighborId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= cellNumber_))
-        return -1;
-      if((localNeighborId < 0))
-        return -2;
+      if((cellId < 0) || (cellId >= cellNumber_)) {
+        neighborId = -1;
+        return 0;
+      }
+      if(localNeighborId < 0) {
+        neighborId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
       SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->cellNeighbors_ == nullptr) {
-        getCellNeighbors(exnode);
+        getClusterCellNeighbors(exnode);
       }
-      if(localNeighborId >= exnode->cellNeighbors_->size(localCellId))
-        return -2;
 
-      neighborId = exnode->cellNeighbors_->get(localCellId, localNeighborId);
+      if(localNeighborId >= exnode->cellNeighbors_->size(localCellId)) {
+        neighborId = -2;
+      } else {
+        neighborId = exnode->cellNeighbors_->get(localCellId, localNeighborId);
+      }
       return 0;
     }
 
@@ -517,7 +531,7 @@ namespace ttk {
       SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->cellNeighbors_ == nullptr) {
-        getCellNeighbors(exnode);
+        getClusterCellNeighbors(exnode);
       }
       return exnode->cellNeighbors_->size(localCellId);
     }
@@ -529,7 +543,7 @@ namespace ttk {
         vector<vector<SimplexId>> localCellNeighbors;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->cellNeighbors_ == nullptr) {
-          getCellNeighbors(exnode);
+          getClusterCellNeighbors(exnode);
         }
         exnode->cellNeighbors_->copyTo(localCellNeighbors);
         cellNeighborList_.insert(cellNeighborList_.end(),
@@ -544,18 +558,22 @@ namespace ttk {
                                        SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= cellNumber_))
-        return -1;
+      if((cellId < 0) || (cellId >= cellNumber_)) {
+        triangleId = -1;
+        return 0;
+      }
       if((localTriangleId < 0)
-         || (localTriangleId >= getCellTriangleNumber(cellId)))
-        return -2;
+         || (localTriangleId >= getCellTriangleNumber(cellId))) {
+        triangleId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
       SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->tetraTriangles_ == nullptr) {
-        getCellTriangles(exnode);
+        getClusterCellTriangles(exnode);
       }
       triangleId = (*(exnode->tetraTriangles_))[localCellId][localTriangleId];
       return 0;
@@ -569,6 +587,7 @@ namespace ttk {
         return -1;
 #endif
 
+      (void)cellId;
       return (maxCellDim_ + 1) * maxCellDim_ * (maxCellDim_ - 1) / 6;
     }
 
@@ -579,7 +598,7 @@ namespace ttk {
         for(SimplexId nid = 1; nid <= nodeNumber_; nid++) {
           ImplicitCluster *exnode = searchCache(nid);
           if(exnode->tetraTriangles_ == nullptr) {
-            getCellTriangles(exnode);
+            getClusterCellTriangles(exnode);
           }
           for(size_t i = 0; i < exnode->tetraTriangles_->size(); i++) {
             cellTriangleVector_.push_back(
@@ -597,11 +616,15 @@ namespace ttk {
       SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= cellNumber_))
-        return -1;
+      if((cellId < 0) || (cellId >= cellNumber_)) {
+        vertexId = -1;
+        return 0;
+      }
       if((localVertexId < 0)
-         || (localVertexId >= cellArray_->getCellVertexNumber(cellId)))
-        return -2;
+         || (localVertexId >= cellArray_->getCellVertexNumber(cellId))) {
+        vertexId = -2;
+        return 0;
+      }
 #endif
 
       vertexId = cellArray_->getCellVertex(cellId, localVertexId);
@@ -642,22 +665,28 @@ namespace ttk {
       SimplexId &linkId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
-        return -1;
-      if(localLinkId < 0)
-        return -2;
+      if((edgeId < 0) || (edgeId > edgeIntervals_.back())) {
+        linkId = -1;
+        return 0;
+      }
+      if(localLinkId < 0) {
+        linkId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeLinks_ == nullptr) {
-        getEdgeLinks(exnode);
+        getClusterEdgeLinks(exnode);
       }
-      if(localLinkId >= exnode->edgeLinks_->size(localEdgeId))
-        return -2;
 
-      linkId = exnode->edgeLinks_->get(localEdgeId, localLinkId);
+      if(localLinkId >= exnode->edgeLinks_->size(localEdgeId)) {
+        linkId = -2;
+      } else {
+        linkId = exnode->edgeLinks_->get(localEdgeId, localLinkId);
+      }
       return 0;
     }
 
@@ -673,7 +702,7 @@ namespace ttk {
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeLinks_ == nullptr) {
-        getEdgeLinks(exnode);
+        getClusterEdgeLinks(exnode);
       }
       return exnode->edgeLinks_->size(localEdgeId);
     }
@@ -685,7 +714,7 @@ namespace ttk {
         vector<vector<SimplexId>> localEdgeLinks;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->edgeLinks_ == nullptr) {
-          getEdgeLinks(exnode);
+          getClusterEdgeLinks(exnode);
         }
         exnode->edgeLinks_->copyTo(localEdgeLinks);
         edgeLinkList_.insert(
@@ -700,21 +729,28 @@ namespace ttk {
       SimplexId &starId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
-        return -1;
-      if(localStarId < 0)
-        return -2;
+      if((edgeId < 0) || (edgeId > edgeIntervals_.back())) {
+        starId = -1;
+        return 0;
+      }
+      if(localStarId < 0) {
+        starId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeStars_ == nullptr) {
-        getEdgeStars(exnode);
+        getClusterEdgeStars(exnode);
       }
-      if(localStarId >= exnode->edgeStars_->size(localEdgeId))
-        return -2;
-      starId = exnode->edgeStars_->get(localEdgeId, localStarId);
+
+      if(localStarId >= exnode->edgeStars_->size(localEdgeId)) {
+        starId = -2;
+      } else {
+        starId = exnode->edgeStars_->get(localEdgeId, localStarId);
+      }
       return 0;
     }
 
@@ -730,7 +766,7 @@ namespace ttk {
       ImplicitCluster *exnode = searchCache(nid);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       if(exnode->edgeStars_ == nullptr) {
-        getEdgeStars(exnode);
+        getClusterEdgeStars(exnode);
       }
       return exnode->edgeStars_->size(localEdgeId);
     }
@@ -742,7 +778,7 @@ namespace ttk {
         vector<vector<SimplexId>> localEdgeStars;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->edgeStars_ == nullptr) {
-          getEdgeStars(exnode);
+          getClusterEdgeStars(exnode);
         }
         exnode->edgeStars_->copyTo(localEdgeStars);
         edgeStarList_.insert(
@@ -756,21 +792,28 @@ namespace ttk {
                                        SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId > (SimplexId)edgeIntervals_.back()))
-        return -1;
-      if(localTriangleId < 0)
-        return -2;
+      if((edgeId < 0) || (edgeId > (SimplexId)edgeIntervals_.back())) {
+        triangleId = -1;
+        return 0;
+      }
+      if(localTriangleId < 0) {
+        triangleId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeTriangles_ == nullptr) {
-        getEdgeTriangles(exnode);
+        getClusterEdgeTriangles(exnode);
       }
-      if(localTriangleId >= exnode->edgeTriangles_->size(localEdgeId))
-        return -2;
-      triangleId = exnode->edgeTriangles_->get(localEdgeId, localTriangleId);
+
+      if(localTriangleId >= exnode->edgeTriangles_->size(localEdgeId)) {
+        triangleId = -2;
+      } else {
+        triangleId = exnode->edgeTriangles_->get(localEdgeId, localTriangleId);
+      }
       return 0;
     }
 
@@ -786,7 +829,7 @@ namespace ttk {
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeTriangles_ == nullptr) {
-        getEdgeTriangles(exnode);
+        getClusterEdgeTriangles(exnode);
       }
       return exnode->edgeTriangles_->size(localEdgeId);
     }
@@ -798,7 +841,7 @@ namespace ttk {
         vector<vector<SimplexId>> localEdgeTriangles;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->edgeTriangles_ == nullptr) {
-          getEdgeTriangles(exnode);
+          getClusterEdgeTriangles(exnode);
         }
         exnode->edgeTriangles_->copyTo(localEdgeTriangles);
         edgeTriangleList_.insert(edgeTriangleList_.end(),
@@ -813,10 +856,14 @@ namespace ttk {
                                      SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId > (SimplexId)edgeIntervals_.back()))
-        return -1;
-      if((localVertexId != 0) && (localVertexId != 1))
-        return -2;
+      if((edgeId < 0) || (edgeId > (SimplexId)edgeIntervals_.back())) {
+        vertexId = -1;
+        return 0;
+      }
+      if((localVertexId != 0) && (localVertexId != 1)) {
+        vertexId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
@@ -894,17 +941,21 @@ namespace ttk {
                                        SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0) || (triangleId > triangleIntervals_.back()))
-        return -1;
-      if((localEdgeId < 0) || (localEdgeId > 2))
-        return -2;
+      if((triangleId < 0) || (triangleId > triangleIntervals_.back())) {
+        edgeId = -1;
+        return 0;
+      }
+      if((localEdgeId < 0) || (localEdgeId > 2)) {
+        edgeId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleEdges_ == nullptr) {
-        getTriangleEdges(exnode);
+        getClusterTriangleEdges(exnode);
       }
       edgeId = (*(exnode->triangleEdges_))[localTriangleId][localEdgeId];
       return 0;
@@ -917,6 +968,7 @@ namespace ttk {
         return -1;
 #endif
 
+      (void)triangleId;
       return 3;
     }
 
@@ -927,7 +979,7 @@ namespace ttk {
         for(SimplexId nid = 1; nid <= nodeNumber_; nid++) {
           ImplicitCluster *exnode = searchCache(nid);
           if(exnode->triangleEdges_ == nullptr) {
-            getTriangleEdges(exnode);
+            getClusterTriangleEdges(exnode);
           }
           for(size_t i = 0; i < exnode->triangleEdges_->size(); i++) {
             triangleEdgeVector_.push_back(
@@ -945,22 +997,28 @@ namespace ttk {
       SimplexId &linkId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0) || (triangleId > triangleIntervals_.back()))
-        return -1;
-      if(localLinkId < 0)
-        return -2;
+      if((triangleId < 0) || (triangleId > triangleIntervals_.back())) {
+        linkId = -1;
+        return 0;
+      }
+      if(localLinkId < 0) {
+        linkId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleLinks_ == nullptr) {
-        getTriangleLinks(exnode);
+        getClusterTriangleLinks(exnode);
       }
-      if(localLinkId >= exnode->triangleLinks_->size(localTriangleId))
-        return -2;
 
-      linkId = exnode->triangleLinks_->get(localTriangleId, localLinkId);
+      if(localLinkId >= exnode->triangleLinks_->size(localTriangleId)) {
+        linkId = -2;
+      } else {
+        linkId = exnode->triangleLinks_->get(localTriangleId, localLinkId);
+      }
       return 0;
     }
 
@@ -976,7 +1034,7 @@ namespace ttk {
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleLinks_ == nullptr) {
-        getTriangleLinks(exnode);
+        getClusterTriangleLinks(exnode);
       }
       return exnode->triangleLinks_->size(localTriangleId);
     }
@@ -988,7 +1046,7 @@ namespace ttk {
         vector<vector<SimplexId>> localTriangleLinks;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->triangleLinks_ == nullptr) {
-          getTriangleLinks(exnode);
+          getClusterTriangleLinks(exnode);
         }
         exnode->triangleLinks_->copyTo(localTriangleLinks);
         triangleLinkList_.insert(triangleLinkList_.end(),
@@ -1005,22 +1063,28 @@ namespace ttk {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if((triangleId < 0) || !triangleIntervals_.size()
-         || (triangleId > triangleIntervals_.back()))
-        return -1;
-      if(localStarId < 0)
-        return -2;
+         || (triangleId > triangleIntervals_.back())) {
+        starId = -1;
+        return 0;
+      }
+      if(localStarId < 0) {
+        starId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleStars_ == nullptr) {
-        getTriangleStars(exnode);
+        getClusterTriangleStars(exnode);
       }
-      if(localStarId >= exnode->triangleStars_->size(localTriangleId))
-        return -2;
 
-      starId = exnode->triangleStars_->get(localTriangleId, localStarId);
+      if(localStarId >= exnode->triangleStars_->size(localTriangleId)) {
+        starId = -2;
+      } else {
+        starId = exnode->triangleStars_->get(localTriangleId, localStarId);
+      }
       return 0;
     }
 
@@ -1037,9 +1101,8 @@ namespace ttk {
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleStars_ == nullptr) {
-        getTriangleStars(exnode);
+        getClusterTriangleStars(exnode);
       }
-
       return exnode->triangleStars_->size(localTriangleId);
     }
 
@@ -1050,7 +1113,7 @@ namespace ttk {
         vector<vector<SimplexId>> localTriangleStars;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->triangleStars_ == nullptr) {
-          getTriangleStars(exnode);
+          getClusterTriangleStars(exnode);
         }
         triangleStarList_.insert(triangleStarList_.end(),
                                  localTriangleStars.begin(),
@@ -1064,10 +1127,14 @@ namespace ttk {
                                          SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0) || (triangleId > triangleIntervals_.back()))
-        return -1;
-      if((localVertexId < 0) || (localVertexId > 2))
-        return -2;
+      if((triangleId < 0) || (triangleId > triangleIntervals_.back())) {
+        vertexId = -1;
+        return 0;
+      }
+      if((localVertexId < 0) || (localVertexId > 2)) {
+        vertexId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
@@ -1086,21 +1153,27 @@ namespace ttk {
                                      SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
-      if(localEdgeId < 0)
-        return -2;
+      if((vertexId < 0) || (vertexId >= vertexNumber_)) {
+        edgeId = -1;
+        return 0;
+      }
+      if(localEdgeId < 0) {
+        edgeId = -1;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[vertexId];
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexEdges_ == nullptr) {
-        getVertexEdges(exnode);
+        getClusterVertexEdges(exnode);
       }
-      if(localEdgeId >= exnode->vertexEdges_->size(localVertexId))
-        return -2;
-      edgeId = exnode->vertexEdges_->get(localVertexId, localEdgeId);
+      if(localEdgeId >= exnode->vertexEdges_->size(localVertexId)) {
+        edgeId = -2;
+      } else {
+        edgeId = exnode->vertexEdges_->get(localVertexId, localEdgeId);
+      }
       return 0;
     }
 
@@ -1116,7 +1189,7 @@ namespace ttk {
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexEdges_ == nullptr) {
-        getVertexEdges(exnode);
+        getClusterVertexEdges(exnode);
       }
       return exnode->vertexEdges_->size(localVertexId);
     }
@@ -1127,7 +1200,7 @@ namespace ttk {
         vector<vector<SimplexId>> localVertexEdges;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->vertexEdges_ == nullptr) {
-          getVertexEdges(exnode);
+          getClusterVertexEdges(exnode);
         }
         exnode->vertexEdges_->copyTo(localVertexEdges);
         vertexEdgeList_.insert(vertexEdgeList_.end(), localVertexEdges.begin(),
@@ -1143,22 +1216,27 @@ namespace ttk {
       SimplexId &linkId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId > vertexIntervals_.back()))
-        return -1;
-      if(localLinkId < 0)
-        return -2;
+      if((vertexId < 0) || (vertexId > vertexIntervals_.back())) {
+        linkId = -1;
+        return 0;
+      }
+      if(localLinkId < 0) {
+        linkId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[vertexId];
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexLinks_ == nullptr) {
-        getVertexLinks(exnode);
+        getClusterVertexLinks(exnode);
       }
-      if(localLinkId >= exnode->vertexLinks_->size(localVertexId))
-        return -2;
-
-      linkId = exnode->vertexLinks_->get(localVertexId, localLinkId);
+      if(localLinkId >= exnode->vertexLinks_->size(localVertexId)) {
+        linkId = -2;
+      } else {
+        linkId = exnode->vertexLinks_->get(localVertexId, localLinkId);
+      }
       return 0;
     }
 
@@ -1174,7 +1252,7 @@ namespace ttk {
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexLinks_ == nullptr) {
-        getVertexLinks(exnode);
+        getClusterVertexLinks(exnode);
       }
       return exnode->vertexLinks_->size(localVertexId);
     }
@@ -1186,7 +1264,7 @@ namespace ttk {
         vector<vector<SimplexId>> localVertexLinks;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->vertexLinks_ == nullptr) {
-          getVertexLinks(exnode);
+          getClusterVertexLinks(exnode);
         }
         exnode->vertexLinks_->copyTo(localVertexLinks);
         vertexLinkList_.insert(vertexLinkList_.end(), localVertexLinks.begin(),
@@ -1200,22 +1278,28 @@ namespace ttk {
       const int &localNeighborId,
       SimplexId &neighborId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
-      if(localNeighborId < 0)
-        return -2;
+      if((vertexId < 0) || (vertexId >= vertexNumber_)) {
+        neighborId = -1;
+        return 0;
+      }
+      if(localNeighborId < 0) {
+        neighborId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[vertexId];
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexNeighbors_ == nullptr) {
-        getVertexNeighbors(exnode);
+        getClusterVertexNeighbors(exnode);
       }
-      if(localNeighborId >= exnode->vertexNeighbors_->size(localVertexId))
-        return -2;
-      neighborId
-        = exnode->vertexNeighbors_->get(localVertexId, localNeighborId);
+      if(localNeighborId >= exnode->vertexNeighbors_->size(localVertexId)) {
+        neighborId = -2;
+      } else {
+        neighborId
+          = exnode->vertexNeighbors_->get(localVertexId, localNeighborId);
+      }
       return 0;
     }
 
@@ -1231,7 +1315,7 @@ namespace ttk {
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexNeighbors_ == nullptr) {
-        getVertexNeighbors(exnode);
+        getClusterVertexNeighbors(exnode);
       }
       return exnode->vertexNeighbors_->size(localVertexId);
     }
@@ -1243,7 +1327,7 @@ namespace ttk {
         vector<vector<SimplexId>> localVertexNeighbors;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->vertexNeighbors_ == nullptr) {
-          getVertexNeighbors(exnode);
+          getClusterVertexNeighbors(exnode);
         }
         exnode->vertexNeighbors_->copyTo(localVertexNeighbors);
         vertexNeighborList_.insert(vertexNeighborList_.end(),
@@ -1280,21 +1364,27 @@ namespace ttk {
       SimplexId &starId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
-      if(localStarId < 0)
-        return -2;
+      if((vertexId < 0) || (vertexId >= vertexNumber_)) {
+        starId = -1;
+        return 0;
+      }
+      if(localStarId < 0) {
+        starId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[vertexId];
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexStars_ == nullptr) {
-        getVertexStars(exnode);
+        getClusterVertexStars(exnode);
       }
-      if(localStarId >= exnode->vertexStars_->size(localVertexId))
-        return -2;
-      starId = exnode->vertexStars_->get(localVertexId, localStarId);
+      if(localStarId >= exnode->vertexStars_->size(localVertexId)) {
+        starId = -2;
+      } else {
+        starId = exnode->vertexStars_->get(localVertexId, localStarId);
+      }
       return 0;
     }
 
@@ -1310,7 +1400,7 @@ namespace ttk {
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexStars_ == nullptr) {
-        getVertexStars(exnode);
+        getClusterVertexStars(exnode);
       }
       return exnode->vertexStars_->size(localVertexId);
     }
@@ -1322,7 +1412,7 @@ namespace ttk {
         vector<vector<SimplexId>> localVertexStars;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->vertexStars_ == nullptr) {
-          getVertexStars(exnode);
+          getClusterVertexStars(exnode);
         }
         exnode->vertexStars_->copyTo(localVertexStars);
         vertexStarList_.insert(vertexStarList_.end(), localVertexStars.begin(),
@@ -1336,23 +1426,28 @@ namespace ttk {
                                          SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
-      if(localTriangleId < 0)
-        return -2;
+      if((vertexId < 0) || (vertexId >= vertexNumber_)) {
+        triangleId = -1;
+        return 0;
+      }
+      if(localTriangleId < 0) {
+        triangleId = -2;
+        return 0;
+      }
 #endif
 
       SimplexId nid = vertexIndices_[vertexId];
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexTriangles_ == nullptr) {
-        getVertexTriangles(exnode);
+        getClusterVertexTriangles(exnode);
       }
-      if(localTriangleId >= exnode->vertexTriangles_->size(localVertexId))
-        return -2;
-      triangleId
-        = exnode->vertexTriangles_->get(localVertexId, localTriangleId);
-
+      if(localTriangleId >= exnode->vertexTriangles_->size(localVertexId)) {
+        triangleId = -2;
+      } else {
+        triangleId
+          = exnode->vertexTriangles_->get(localVertexId, localTriangleId);
+      }
       return 0;
     }
 
@@ -1368,7 +1463,7 @@ namespace ttk {
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexTriangles_ == nullptr) {
-        getVertexTriangles(exnode);
+        getClusterVertexTriangles(exnode);
       }
       return exnode->vertexTriangles_->size(localVertexId);
     }
@@ -1380,7 +1475,7 @@ namespace ttk {
         vector<vector<SimplexId>> localVertexTriangles;
         ImplicitCluster *exnode = searchCache(nid);
         if(exnode->vertexTriangles_ == nullptr) {
-          getVertexTriangles(exnode);
+          getClusterVertexTriangles(exnode);
         }
         exnode->vertexTriangles_->copyTo(localVertexTriangles);
         vertexTriangleList_.insert(vertexTriangleList_.end(),
@@ -1441,11 +1536,7 @@ namespace ttk {
         preconditionEdgesInternal();
         hasPreconditionedBoundaryEdges_ = true;
       } else {
-        // // unsupported dimension
-        // std::stringstream msg;
-        // msg << "[CompactTriangulation] Unsupported dimension for boundary "
-        //   << "precondition." << std::endl;
-        // dMsg(std::cerr, msg.str(), infoMsg);
+        this->printErr("Unsupported dimension for boundary edge precondition.");
         return -1;
       }
       return 0;
@@ -1456,11 +1547,8 @@ namespace ttk {
         preconditionTrianglesInternal();
         hasPreconditionedBoundaryTriangles_ = true;
       } else {
-        // unsupported dimension
-        // std::stringstream msg;
-        // msg << "[CompactTriangulation] Unsupported dimension for boundary "
-        //   << "precondition." << std::endl;
-        // dMsg(std::cerr, msg.str(), infoMsg);
+        this->printErr(
+          "Unsupported dimension for boundary triangle precondition.");
         return -1;
       }
       return 0;
@@ -1533,12 +1621,7 @@ namespace ttk {
         preconditionEdges();
         hasPreconditionedEdgeLinks_ = true;
       } else {
-        // unsupported dimension
-        // std::stringstream msg;
-        // msg
-        //   << "[CompactTriangulation] Unsupported dimension for edge link "
-        //   << "precondition." << std::endl;
-        // dMsg(std::cerr, msg.str(), infoMsg);
+        this->printErr("Unsupported dimension for edge link precondition.");
         return -1;
       }
       return 0;
@@ -1623,12 +1706,8 @@ namespace ttk {
         preconditionTrianglesInternal();
         hasPreconditionedVertexLinks_ = true;
       } else {
-        // unsupported dimension
-        // std::stringstream msg;
-        // msg << "[CompactTriangulation] Unsupported dimension for vertex"
-        //   << " link precondition." << std::endl;
-        // dMsg(std::cerr, msg.str(), infoMsg);
-        // return -1;
+        this->printErr("Unsupported dimension for vertex link precondtion");
+        return -1;
       }
       return 0;
     }
@@ -2202,10 +2281,10 @@ namespace ttk {
     }
 
     /**
-     * Get the cell edges for all cells in a given node.
+     * Get the cell edges for all cells in a given cluster.
      * Check if the tetraEdges_ is NULL before calling the function.
      */
-    int getCellEdges(ImplicitCluster *const nodePtr) const {
+    int getClusterCellEdges(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2281,9 +2360,9 @@ namespace ttk {
     }
 
     /**
-     * Get the cell neighbors for all cells in a given node.
+     * Get the cell neighbors for all cells in a given cluster.
      */
-    int getCellNeighbors(ImplicitCluster *const nodePtr) const {
+    int getClusterCellNeighbors(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2297,7 +2376,7 @@ namespace ttk {
       vector<vector<SimplexId>> localVertexStars;
 
       if(nodePtr->vertexStars_ == nullptr) {
-        getVertexStars(nodePtr);
+        getClusterVertexStars(nodePtr);
       }
       // sort the vertex star vector
       nodePtr->vertexStars_->copyTo(localVertexStars);
@@ -2315,7 +2394,7 @@ namespace ttk {
               = vertexIndices_[cellArray_->getCellVertex(cid, j)];
             if(nodeMaps.find(nodeId) == nodeMaps.end()) {
               ImplicitCluster *newNode = new ImplicitCluster(nodeId);
-              getVertexStars(newNode);
+              getClusterVertexStars(newNode);
               // sort the vertex star list
               vector<vector<SimplexId>> tmpVec;
               newNode->vertexStars_->copyTo(tmpVec);
@@ -2504,9 +2583,9 @@ namespace ttk {
     }
 
     /**
-     * Get the cell triangles for all cells in a given node.
+     * Get the cell triangles for all cells in a given cluster.
      */
-    int getCellTriangles(ImplicitCluster *const nodePtr) const {
+    int getClusterCellTriangles(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2584,9 +2663,9 @@ namespace ttk {
     }
 
     /**
-     * Get the edge links for all the edges in a given node.
+     * Get the edge links for all the edges in a given cluster.
      */
-    int getEdgeLinks(ImplicitCluster *const nodePtr) const {
+    int getClusterEdgeLinks(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2601,7 +2680,7 @@ namespace ttk {
 
       if(getDimensionality() == 2) {
         if(nodePtr->edgeStars_ == nullptr) {
-          getEdgeStars(nodePtr);
+          getClusterEdgeStars(nodePtr);
         }
         // set the offsets vector
         boost::unordered_map<array<SimplexId, 2>, SimplexId>::const_iterator
@@ -2653,7 +2732,7 @@ namespace ttk {
           std::move(edgeLinkData), std::move(offsets));
       } else if(getDimensionality() == 3) {
         if(nodePtr->tetraEdges_ == nullptr) {
-          getCellEdges(nodePtr);
+          getClusterCellEdges(nodePtr);
         }
         if(nodePtr->internalEdgeMap_ == nullptr) {
           buildInternalEdgeMap(nodePtr, false, true);
@@ -2821,9 +2900,9 @@ namespace ttk {
     }
 
     /**
-     * Get the edge stars for all the edges in a given node.
+     * Get the edge stars for all the edges in a given cluster.
      */
-    int getEdgeStars(ImplicitCluster *const nodePtr) const {
+    int getClusterEdgeStars(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2925,9 +3004,9 @@ namespace ttk {
     }
 
     /**
-     * Get the edge triangles for all the edges in a given node.
+     * Get the edge triangles for all the edges in a given cluster.
      */
-    int getEdgeTriangles(ImplicitCluster *const nodePtr) const {
+    int getClusterEdgeTriangles(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3024,9 +3103,9 @@ namespace ttk {
     }
 
     /**
-     * Get the triangle edges for all the triangles in a given node.
+     * Get the triangle edges for all the triangles in a given cluster.
      */
-    int getTriangleEdges(ImplicitCluster *const nodePtr) const {
+    int getClusterTriangleEdges(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3094,9 +3173,9 @@ namespace ttk {
     }
 
     /**
-     * Get the triangle links for all the triangles in a given node.
+     * Get the triangle links for all the triangles in a given cluster.
      */
-    int getTriangleLinks(ImplicitCluster *const nodePtr) const {
+    int getClusterTriangleLinks(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3110,7 +3189,7 @@ namespace ttk {
         linksCount(localTriangleNum, 0);
 
       if(nodePtr->triangleStars_ == nullptr) {
-        getTriangleStars(nodePtr);
+        getClusterTriangleStars(nodePtr);
       }
 
       // set the offsets vector
@@ -3167,9 +3246,9 @@ namespace ttk {
     }
 
     /**
-     * Get the triangle stars for all the triangles in a given node.
+     * Get the triangle stars for all the triangles in a given cluster.
      */
-    int getTriangleStars(ImplicitCluster *const nodePtr) const {
+    int getClusterTriangleStars(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3290,9 +3369,9 @@ namespace ttk {
     }
 
     /**
-     * Get the vertex edges for all the vertices in a given node.
+     * Get the vertex edges for all the vertices in a given cluster.
      */
-    int getVertexEdges(ImplicitCluster *const nodePtr) const {
+    int getClusterVertexEdges(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3366,9 +3445,9 @@ namespace ttk {
     }
 
     /**
-     * Get the vertex links for all the vertices in a given node.
+     * Get the vertex links for all the vertices in a given cluster.
      */
-    int getVertexLinks(ImplicitCluster *const nodePtr) const {
+    int getClusterVertexLinks(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3652,9 +3731,9 @@ namespace ttk {
     }
 
     /**
-     * Get the vertex neighbors for all the vertices in a given node.
+     * Get the vertex neighbors for all the vertices in a given cluster.
      */
-    int getVertexNeighbors(ImplicitCluster *const nodePtr) const {
+    int getClusterVertexNeighbors(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3720,10 +3799,10 @@ namespace ttk {
     }
 
     /**
-     * Get the vertex stars for all the vertices in a given node.
+     * Get the vertex stars for all the vertices in a given cluster.
      * The function is similar as getVertexCells().
      */
-    int getVertexStars(ImplicitCluster *const nodePtr) const {
+    int getClusterVertexStars(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3816,9 +3895,9 @@ namespace ttk {
     }
 
     /**
-     * Get the vertex triangles for all the vertices in a given node.
+     * Get the vertex triangles for all the vertices in a given cluster.
      */
-    int getVertexTriangles(ImplicitCluster *const nodePtr) const {
+    int getClusterVertexTriangles(ImplicitCluster *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -3903,7 +3982,7 @@ namespace ttk {
     }
 
     /**
-     * Get the boundary cells in a given node.
+     * Get the boundary cells in a given cluster.
      */
     int getBoundaryCells(ImplicitCluster *const nodePtr,
                          const SimplexId dim = 2) const {
@@ -3919,7 +3998,7 @@ namespace ttk {
         if(nodePtr->boundaryEdges_ == nullptr) {
           nodePtr->boundaryEdges_ = new vector<bool>(localEdgeNum, false);
           if(nodePtr->edgeStars_ == nullptr) {
-            getEdgeStars(nodePtr);
+            getClusterEdgeStars(nodePtr);
           }
           for(SimplexId i = 0; i < localEdgeNum; i++) {
             if(nodePtr->edgeStars_->size(i) == 1) {
@@ -3980,7 +4059,7 @@ namespace ttk {
           nodePtr->boundaryTriangles_
             = new vector<bool>(localTriangleNum, false);
           if(nodePtr->triangleStars_ == nullptr) {
-            getTriangleStars(nodePtr);
+            getClusterTriangleStars(nodePtr);
           }
           for(SimplexId i = 0; i < localTriangleNum; i++) {
             if(nodePtr->triangleStars_->size(i) == 1) {

@@ -1,10 +1,10 @@
 #include <ttkCompactTriangulationPreconditioning.h>
 
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
@@ -46,7 +46,7 @@ int ttkCompactTriangulationPreconditioning::FillOutputPortInformation(
 }
 
 int ttkCompactTriangulationPreconditioning::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
@@ -109,7 +109,8 @@ int ttkCompactTriangulationPreconditioning::RequestData(
 
   std::vector<std::string>::iterator iter = scalarFields.begin();
   while(iter != scalarFields.end()) {
-    vtkDataArray *inputArray = inputDataSet->GetPointData()->GetArray(iter->data());
+    vtkDataArray *inputArray
+      = inputDataSet->GetPointData()->GetArray(iter->data());
     if(inputArray == nullptr) {
       iter++;
       continue;
@@ -119,8 +120,8 @@ int ttkCompactTriangulationPreconditioning::RequestData(
     vtkDataArray *newField = nullptr;
 
     // // To make sure that the selected array can be processed by this filter,
-    // // one should also check that the array association and format is correct.
-    // if(this->GetInputArrayAssociation(0, inputVector) != 0) {
+    // // one should also check that the array association and format is
+    // correct. if(this->GetInputArrayAssociation(0, inputVector) != 0) {
     //   this->printErr("Input array needs to be a point data array.");
     //   return 0;
     // }
@@ -161,7 +162,7 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   int dimension = triangulation->getCellVertexNumber(0);
 
   for(unsigned int i = 0; i < this->cells->size(); i++) {
-    vtkIdType cell[dimension];
+    vtkIdType *cell = new vtkIdType[dimension];
     for(int j = 0; j < dimension; j++) {
       SimplexId vertexId;
       triangulation->getCellVertex(this->cells->at(i), j, vertexId);
@@ -183,7 +184,8 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   vtkCellData *cellData = outputMesh->GetCellData();
   iter = scalarFields.begin();
   while(iter != scalarFields.end()) {
-    vtkDataArray *inputArray = inputDataSet->GetCellData()->GetArray(iter->data());
+    vtkDataArray *inputArray
+      = inputDataSet->GetCellData()->GetArray(iter->data());
     if(inputArray == nullptr) {
       iter++;
       continue;
