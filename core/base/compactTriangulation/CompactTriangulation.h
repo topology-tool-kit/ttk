@@ -1486,7 +1486,7 @@ namespace ttk {
     }
 
     inline bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
-      const SimplexId &edgeId) const {
+      const SimplexId &edgeId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
         return false;
@@ -1498,7 +1498,7 @@ namespace ttk {
       return (*(exnode->boundaryEdges_))[localedgeId];
     }
 
-    bool isEmpty() const {
+    bool isEmpty() const override {
       return !vertexNumber_;
     }
 

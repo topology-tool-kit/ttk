@@ -289,8 +289,9 @@ RegistryTriangulation
   }
 
   if(hasIndexArray) {
-    this->printMsg("Initializing Compact Triangulation", 1, timer.getElapsedTime(),
-                   ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
+    this->printMsg("Initializing Compact Triangulation", 1,
+                   timer.getElapsedTime(), ttk::debug::LineMode::NEW,
+                   ttk::debug::Priority::DETAIL);
   } else {
     this->printMsg("Initializing Explicit Triangulation", 1,
                    timer.getElapsedTime(), ttk::debug::LineMode::NEW,
@@ -320,10 +321,8 @@ RegistryTriangulation
   return nullptr;
 }
 
-ttk::Triangulation *
-  ttkTriangulationFactory::GetTriangulation(int debugLevel,
-                                            float cacheRatio,
-                                            vtkDataSet *object) {
+ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
+  int debugLevel, float cacheRatio, vtkDataSet *object) {
   auto instance = &ttkTriangulationFactory::Instance;
   instance->setDebugLevel(debugLevel);
 

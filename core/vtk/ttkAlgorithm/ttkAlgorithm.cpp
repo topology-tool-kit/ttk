@@ -38,8 +38,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
 
-  auto triangulation
-    = ttkTriangulationFactory::GetTriangulation(this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
+  auto triangulation = ttkTriangulationFactory::GetTriangulation(
+    this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
   if(triangulation)
     return triangulation;
 
