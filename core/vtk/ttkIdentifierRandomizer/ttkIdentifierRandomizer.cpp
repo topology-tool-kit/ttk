@@ -1,4 +1,4 @@
-#include "BaseClass.h"
+#include <Shuffle.h>
 #include <ttkIdentifierRandomizer.h>
 
 #include <vtkCellData.h>
@@ -42,14 +42,6 @@ int ttkIdentifierRandomizer::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename T, typename U>
-void fisher_yates_shuffle(std::vector<T> &toShuffle, U &&rng) {
-  for(size_t i = toShuffle.size() - 1; i >= 1; i--) {
-    const auto j = rng() % i;
-    std::swap(toShuffle[i], toShuffle[j]);
-  }
-}
-
 template <typename T>
 int shuffleScalarFieldValues(const T *const inputField,
                              T *const outputField,
@@ -73,7 +65,7 @@ int shuffleScalarFieldValues(const T *const inputField,
   random_engine.seed(seed);
   // use the Fisher-Yates algorithm instead of std::shuffle, whose
   // results are platform-dependent
-  fisher_yates_shuffle(shuffledValues, random_engine);
+  ttk::shuffle(shuffledValues, random_engine);
 
   // link original value to shuffled value correspondance
   std::map<T, T> originalToShuffledValues{};
