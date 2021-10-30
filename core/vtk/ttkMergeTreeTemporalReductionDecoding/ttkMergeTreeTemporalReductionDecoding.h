@@ -73,6 +73,8 @@ class TTKMERGETREETEMPORALREDUCTIONDECODING_EXPORT
                                                       // base class
 {
 private:
+  using idNode = ttk::ftm::idNode;
+
   // Output options
   bool OutputTrees = true;
   bool PlanarLayout = false;
@@ -97,9 +99,8 @@ private:
   std::vector<vtkDataSet *> treesSegmentation;
   // Output
   std::vector<std::vector<int>> treesNodeCorrMesh;
-  std::vector<MergeTree<double>> intermediateSTrees;
-  std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-    allMatching;
+  std::vector<ttk::ftm::MergeTree<double>> intermediateSTrees;
+  std::vector<std::vector<std::tuple<idNode, idNode, double>>> allMatching;
 
   void setDataVisualization(int numInputs) {
     // Trees
@@ -111,9 +112,9 @@ private:
   void resetDataVisualization() {
     setDataVisualization(0);
     treesNodeCorrMesh = std::vector<std::vector<int>>();
-    intermediateSTrees = std::vector<MergeTree<double>>();
-    allMatching = std::vector<
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>();
+    intermediateSTrees = std::vector<ttk::ftm::MergeTree<double>>();
+    allMatching
+      = std::vector<std::vector<std::tuple<idNode, idNode, double>>>();
   }
 
   bool isDataVisualizationFilled() {

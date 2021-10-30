@@ -65,7 +65,7 @@ private:
   // Output
   std::vector<std::vector<int>> treesNodeCorrMesh;
   std::vector<double> emptyTreeDistances;
-  std::vector<MergeTree<double>> keyFrames;
+  std::vector<ttk::ftm::MergeTree<double>> keyFrames;
   std::vector<int> removed;
 
   void setDataVisualization(int numInputs) {
@@ -79,7 +79,7 @@ private:
     setDataVisualization(0);
     treesNodeCorrMesh = std::vector<std::vector<int>>();
     emptyTreeDistances = std::vector<double>();
-    keyFrames = std::vector<MergeTree<double>>();
+    keyFrames = std::vector<ttk::ftm::MergeTree<double>>();
     removed = std::vector<int>();
   }
 
