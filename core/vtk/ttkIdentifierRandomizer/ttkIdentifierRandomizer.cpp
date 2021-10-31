@@ -1,4 +1,4 @@
-#include "BaseClass.h"
+#include <Shuffle.h>
 #include <ttkIdentifierRandomizer.h>
 
 #include <vtkCellData.h>
@@ -63,7 +63,9 @@ int shuffleScalarFieldValues(const T *const inputField,
   // shuffle them using the seed
   std::mt19937 random_engine{};
   random_engine.seed(seed);
-  std::shuffle(shuffledValues.begin(), shuffledValues.end(), random_engine);
+  // use the Fisher-Yates algorithm instead of std::shuffle, whose
+  // results are platform-dependent
+  ttk::shuffle(shuffledValues, random_engine);
 
   // link original value to shuffled value correspondance
   std::map<T, T> originalToShuffledValues{};
