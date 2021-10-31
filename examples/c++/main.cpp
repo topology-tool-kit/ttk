@@ -19,11 +19,7 @@
 /// (C++-only) TTK component.
 
 // include the local headers
-#include <CommandLineParser.h>
-#include <MorseSmaleComplex.h>
-#include <PersistenceCurve.h>
-#include <PersistenceDiagram.h>
-#include <TopologicalSimplification.h>
+#include <TopologyToolKit.h>
 
 #include <cassert>
 #include <iostream>

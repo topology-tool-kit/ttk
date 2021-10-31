@@ -10,8 +10,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef SUPERARC_H
-#define SUPERARC_H
+#pragma once
 
 #include <list>
 #include <vector>
@@ -243,5 +242,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: SUPERARC_H */

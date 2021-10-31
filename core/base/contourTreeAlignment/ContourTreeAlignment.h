@@ -24,8 +24,9 @@
 #pragma once
 
 // base code includes
-#include "contourtree.h"
+#include <CTA_contourtree.h>
 #include <Debug.h>
+
 #include <algorithm>
 #include <memory>
 #include <random>
@@ -124,6 +125,8 @@ namespace ttk {
                 vector<long long> &outputArcIds,
                 vector<int> &outputEdges,
                 int seed);
+
+    using ContourTree = cta::ContourTree;
 
     /// functions for aligning single trees in iteration
     bool alignTree(const std::shared_ptr<ContourTree> &t);

@@ -6,8 +6,7 @@
 ///
 ///\brief TTK structures for the contour tree
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#pragma once
 
 #include <forward_list>
 #include <iterator>
@@ -162,5 +161,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: STRUCTURES_H */

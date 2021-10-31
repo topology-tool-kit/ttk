@@ -8,8 +8,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include <vector>
 
@@ -181,5 +180,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: NODE_H */
