@@ -52,9 +52,9 @@ void getNumberOfLevelsAndTimesteps(vtkMultiBlockDataSet *mb,
 // Finalize
 // =============================================================================
 template <typename labelType>
-int finalize(vector<vector<Nodes>> &levelTimeNodesMap,
-             vector<vector<Edges>> &levelTimeEdgesTMap,
-             vector<vector<Edges>> &timeLevelEdgesNMap,
+int finalize(vector<vector<TrackingFromOverlap::Nodes>> &levelTimeNodesMap,
+             vector<vector<TrackingFromOverlap::Edges>> &levelTimeEdgesTMap,
+             vector<vector<TrackingFromOverlap::Edges>> &timeLevelEdgesNMap,
              int labelTypeId,
              const string &labelFieldName,
 

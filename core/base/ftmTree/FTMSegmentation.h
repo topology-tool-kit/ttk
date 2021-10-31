@@ -9,8 +9,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef SEGMENTATION_H_
-#define SEGMENTATION_H_
+#pragma once
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
@@ -219,5 +218,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: SEGMENTATION_H_ */

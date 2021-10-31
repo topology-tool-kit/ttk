@@ -1,7 +1,9 @@
-#include "contourtree.h"
+#include <CTA_contourtree.h>
 #include <algorithm>
 #include <cmath>
 #include <float.h>
+
+using ttk::cta::ContourTree;
 
 ContourTree::ContourTree(float *scalars,
                          int *regionSizes,

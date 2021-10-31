@@ -1,5 +1,4 @@
-#ifndef CONTOURTREE_H
-#define CONTOURTREE_H
+#pragma once
 
 #include <fstream>
 #include <functional>
@@ -83,42 +82,47 @@ struct CTEdge {
 /// class for an unrooted contour tree
 ///=====================================================================================================================
 
-class ContourTree {
+namespace ttk {
 
-public:
-  ContourTree(float *scalars,
-              int *regionSizes,
-              int *segmentationIds,
-              long long *topology,
-              size_t nVertices,
-              size_t nEdges,
-              std::vector<std::vector<int>> regions
-              = std::vector<std::vector<int>>());
-  ~ContourTree();
+  namespace cta {
+    class ContourTree {
 
-  std::shared_ptr<BinaryTree> rootAtMax();
-  std::shared_ptr<BinaryTree> rootAtNode(const std::shared_ptr<CTNode> &root);
-  bool isBinary();
-  void computeBranches();
-  std::pair<std::vector<std::shared_ptr<CTNode>>,
-            std::vector<std::shared_ptr<CTEdge>>>
-    getGraph();
+    public:
+      ContourTree(float *scalars,
+                  int *regionSizes,
+                  int *segmentationIds,
+                  long long *topology,
+                  size_t nVertices,
+                  size_t nEdges,
+                  std::vector<std::vector<int>> regions = {});
+      ~ContourTree();
 
-private:
-  std::vector<std::shared_ptr<CTNode>> nodes;
-  std::vector<std::shared_ptr<CTEdge>> arcs;
+      std::shared_ptr<BinaryTree> rootAtMax();
+      std::shared_ptr<BinaryTree>
+        rootAtNode(const std::shared_ptr<CTNode> &root);
+      bool isBinary();
+      void computeBranches();
+      std::pair<std::vector<std::shared_ptr<CTNode>>,
+                std::vector<std::shared_ptr<CTEdge>>>
+        getGraph();
 
-  bool binary;
+    private:
+      std::vector<std::shared_ptr<CTNode>> nodes;
+      std::vector<std::shared_ptr<CTEdge>> arcs;
 
-  std::shared_ptr<Tree> computeRootedTree(const std::shared_ptr<CTNode> &node,
-                                          const std::shared_ptr<CTEdge> &parent,
-                                          int &id);
-  std::shared_ptr<BinaryTree>
-    computeRootedTree_binary(const std::shared_ptr<CTNode> &node,
-                             const std::shared_ptr<CTEdge> &parent,
-                             int &id);
-  std::pair<float, std::vector<int>> pathToMax(int root, int parent);
-  std::pair<float, std::vector<int>> pathToMin(int root, int parent);
-};
+      bool binary;
 
-#endif // CONTOURTREE_H
+      std::shared_ptr<Tree>
+        computeRootedTree(const std::shared_ptr<CTNode> &node,
+                          const std::shared_ptr<CTEdge> &parent,
+                          int &id);
+      std::shared_ptr<BinaryTree>
+        computeRootedTree_binary(const std::shared_ptr<CTNode> &node,
+                                 const std::shared_ptr<CTEdge> &parent,
+                                 int &id);
+      std::pair<float, std::vector<int>> pathToMax(int root, int parent);
+      std::pair<float, std::vector<int>> pathToMin(int root, int parent);
+    };
+
+  }; // namespace cta
+}; // namespace ttk
