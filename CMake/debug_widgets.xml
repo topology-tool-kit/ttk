@@ -63,5 +63,6 @@
   <Property name='Debug_UseAllCores' />
   <Property name='Debug_ThreadNumber' />
   <Property name='Debug_DebugLevel' />
+  <Property name='CompactTriangulationCacheSize' />
   <Property name='Debug_Execute' />
 </PropertyGroup>
