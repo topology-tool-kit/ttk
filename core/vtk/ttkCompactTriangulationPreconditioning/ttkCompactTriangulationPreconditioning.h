@@ -19,6 +19,15 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
+/// \b Related \b publications \n
+/// "The PR-star octree: A spatio-topological data structure for tetrahedral
+/// meshes." Kenneth Weiss, Leila Floriani, Riccardo Fellegara, and Marcelo
+/// Velloso Proc. of ACM SIGSPATIAL 2011.
+///
+/// "TopoCluster: A Localized Data Structure for Topology-based Visualization"
+/// Guoxi Liu, Federico Iuricich, Riccardo Fellegara, and Leila De Floriani
+/// IEEE Transactions on Visualization and Computer Graphics, 2021.
+///
 /// \sa ttk::CompactTriangulationPreconditioning
 /// \sa ttk::TopoCluster
 

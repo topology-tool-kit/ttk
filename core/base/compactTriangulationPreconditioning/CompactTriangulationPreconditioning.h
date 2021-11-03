@@ -10,6 +10,16 @@
 /// multiple clusters, and the cluster of each vertex is written as a new scalar
 /// field.
 ///
+/// \b Related \b publications \n
+/// "The PR-star octree: A spatio-topological data structure for tetrahedral
+/// meshes." Kenneth Weiss, Leila Floriani, Riccardo Fellegara, and Marcelo
+/// Velloso In Proceedings of the 19th ACM SIGSPATIAL International Conference
+/// on Advances in Geographic Information Systems, 2011.
+///
+/// "TopoCluster: A Localized Data Structure for Topology-based Visualization"
+/// Guoxi Liu, Federico Iuricich, Riccardo Fellegara, and Leila De Floriani
+/// IEEE Transactions on Visualization and Computer Graphics, 2021.
+///
 /// \sa ttk::TopoCluster
 /// \sa ttkCompactTriangulationPreconditioning.cpp %for a usage example.
 

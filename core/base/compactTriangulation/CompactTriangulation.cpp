@@ -6,14 +6,8 @@ using namespace ttk;
 CompactTriangulation::CompactTriangulation() {
   setDebugMsgPrefix("CompactTriangulation");
   clear();
-
-#ifdef TTK_ENABLE_OPENMP
   caches_.resize(threadNumber_);
   cacheMaps_.resize(threadNumber_);
-#else
-  caches_.resize(1);
-  cacheMaps_.resize(1);
-#endif
 }
 
 CompactTriangulation::~CompactTriangulation() {
