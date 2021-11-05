@@ -39,13 +39,13 @@ int ttkTrackingFromPersistenceDiagrams::FillOutputPortInformation(
 }
 
 int ttkTrackingFromPersistenceDiagrams::buildMesh(
-  std::vector<ttk::trackingTuple> &trackings,
-  std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
-  std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
-  bool useGeometricSpacing,
-  double spacing,
-  bool DoPostProc,
-  std::vector<std::set<int>> &trackingTupleToMerged,
+  const std::vector<ttk::trackingTuple> &trackings,
+  const std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
+  const std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
+  const bool useGeometricSpacing,
+  const double spacing,
+  const bool ttkNotUsed(doPostProc),
+  const std::vector<std::set<int>> &trackingTupleToMerged,
   vtkPoints *points,
   vtkUnstructuredGrid *persistenceDiagram,
   vtkDoubleArray *persistenceScalars,
@@ -72,12 +72,11 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     }
 
     for(int c = 0; c < (int)chain.size() - 1; ++c) {
-      std::vector<ttk::MatchingType> &matchings1
-        = outputMatchings[numStart + c];
+      const auto &matchings1 = outputMatchings[numStart + c];
       int d1id = numStart + c;
       int d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
-      ttk::DiagramType &diagram1 = inputPersistenceDiagrams[d1id];
-      ttk::DiagramType &diagram2 = inputPersistenceDiagrams[d2id];
+      const auto &diagram1 = inputPersistenceDiagrams[d1id];
+      const auto &diagram2 = inputPersistenceDiagrams[d2id];
 
       // Insert segments
       vtkIdType ids[2];
@@ -94,13 +93,13 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         }
       }
 
-      const auto &tuple1 = diagram1[n1];
-      const auto &tuple2 = diagram2[n2];
+      const auto &pair0 = diagram1[n1];
+      const auto &pair1 = diagram2[n2];
 
       double x1, y1, z1, x2, y2, z2;
 
-      auto point1Type1 = std::get<1>(tuple1);
-      auto point1Type2 = std::get<3>(tuple1);
+      auto point1Type1 = pair0.birth.type;
+      auto point1Type2 = pair0.death.type;
       auto point1Type = point1Type1 == CriticalType::Local_maximum
                             || point1Type2 == CriticalType::Local_maximum
                           ? CriticalType::Local_maximum
@@ -117,21 +116,21 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       bool t12Max = point1Type2 == CriticalType::Local_maximum;
       bool bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
       if(bothEx1) {
-        x1 = t12Max ? std::get<11>(tuple1) : std::get<7>(tuple1);
-        y1 = t12Max ? std::get<12>(tuple1) : std::get<8>(tuple1);
-        z1 = t12Max ? std::get<13>(tuple1) : std::get<9>(tuple1);
+        x1 = t12Max ? pair0.death.coords[0] : pair0.birth.coords[0];
+        y1 = t12Max ? pair0.death.coords[1] : pair0.birth.coords[1];
+        z1 = t12Max ? pair0.death.coords[2] : pair0.birth.coords[2];
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       } else {
-        x1 = t12Max   ? std::get<11>(tuple1)
-             : t11Min ? std::get<7>(tuple1)
-                      : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = t12Max   ? std::get<12>(tuple1)
-             : t11Min ? std::get<8>(tuple1)
-                      : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = t12Max   ? std::get<13>(tuple1)
-             : t11Min ? std::get<9>(tuple1)
-                      : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        x1 = t12Max   ? pair0.death.coords[0]
+             : t11Min ? pair0.birth.coords[0]
+                      : (pair0.death.coords[0] + pair0.birth.coords[0]) / 2.0;
+        y1 = t12Max   ? pair0.death.coords[1]
+             : t11Min ? pair0.birth.coords[1]
+                      : (pair0.death.coords[1] + pair0.birth.coords[1]) / 2.0;
+        z1 = t12Max   ? pair0.death.coords[2]
+             : t11Min ? pair0.birth.coords[2]
+                      : (pair0.death.coords[2] + pair0.birth.coords[2]) / 2.0;
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       }
@@ -141,7 +140,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       bool hasMergedFirst = false;
       // if(DoPostProc) {
       if(false) {
-        std::set<int> &connected = trackingTupleToMerged[k];
+        const auto &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());
           ttk::trackingTuple ttt = trackings.at((unsigned long)min);
@@ -161,12 +160,11 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
             // segment.
             std::vector<ttk::SimplexId> chain3 = std::get<2>(ttt);
             const auto nn = chain3[chain3.size() - 1];
-            ttk::DiagramType &diagramRematch
-              = inputPersistenceDiagrams[numEnd2];
-            const auto &tupleN = diagramRematch.at((unsigned long)nn);
+            const auto &diagramRematch = inputPersistenceDiagrams[numEnd2];
+            const auto &pairN = diagramRematch.at((unsigned long)nn);
 
-            point1Type1 = std::get<1>(tupleN);
-            point1Type2 = std::get<3>(tupleN);
+            point1Type1 = pairN.birth.type;
+            point1Type2 = pairN.death.type;
             point1Type = point1Type1 == CriticalType::Local_maximum
                              || point1Type2 == CriticalType::Local_maximum
                            ? CriticalType::Local_maximum
@@ -185,21 +183,24 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
             // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 <<
             // std::endl;
             if(bothEx1) {
-              x1 = t12Max ? std::get<11>(tupleN) : std::get<7>(tupleN);
-              y1 = t12Max ? std::get<12>(tupleN) : std::get<8>(tupleN);
-              z1 = t12Max ? std::get<13>(tupleN) : std::get<9>(tupleN);
+              x1 = t12Max ? pairN.death.coords[0] : pairN.birth.coords[0];
+              y1 = t12Max ? pairN.death.coords[1] : pairN.birth.coords[1];
+              z1 = t12Max ? pairN.death.coords[2] : pairN.birth.coords[2];
               if(useGeometricSpacing)
                 z1 += spacing * (numStart + c);
             } else {
-              x1 = t12Max   ? std::get<11>(tupleN)
-                   : t11Min ? std::get<7>(tupleN)
-                            : (std::get<7>(tupleN) + std::get<11>(tupleN)) / 2;
-              y1 = t12Max   ? std::get<12>(tupleN)
-                   : t11Min ? std::get<8>(tupleN)
-                            : (std::get<8>(tupleN) + std::get<12>(tupleN)) / 2;
-              z1 = t12Max   ? std::get<13>(tupleN)
-                   : t11Min ? std::get<9>(tupleN)
-                            : (std::get<9>(tupleN) + std::get<13>(tupleN)) / 2;
+              x1 = t12Max ? pairN.death.coords[0]
+                   : t11Min
+                     ? pairN.birth.coords[0]
+                     : (pairN.birth.coords[0] + pairN.death.coords[0]) / 2.0;
+              y1 = t12Max ? pairN.death.coords[1]
+                   : t11Min
+                     ? pairN.birth.coords[1]
+                     : (pairN.birth.coords[1] + pairN.death.coords[1]) / 2.0;
+              z1 = t12Max ? pairN.death.coords[2]
+                   : t11Min
+                     ? pairN.birth.coords[2]
+                     : (pairN.birth.coords[2] + pairN.death.coords[2]) / 2.0;
               if(useGeometricSpacing)
                 z1 += spacing * (numStart + c);
             }
@@ -215,8 +216,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       timeScalars->InsertTuple1(ids[0], (double)numStart + c);
       componentIds->InsertTuple1(ids[0], cid);
 
-      const auto point2Type1 = std::get<1>(tuple2);
-      const auto point2Type2 = std::get<3>(tuple2);
+      const auto point2Type1 = pair1.birth.type;
+      const auto point2Type2 = pair1.death.type;
       const auto point2Type = point2Type1 == CriticalType::Local_maximum
                                   || point2Type2 == CriticalType::Local_maximum
                                 ? CriticalType::Local_maximum
@@ -233,24 +234,24 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
                    || point2Type2 == CriticalType::Local_maximum;
       bool bothEx2 = t21Ex && t22Ex;
       if(bothEx2) {
-        x2 = point2Type2 == CriticalType::Local_maximum ? std::get<11>(tuple2)
-                                                        : std::get<7>(tuple2);
-        y2 = point2Type2 == CriticalType::Local_maximum ? std::get<12>(tuple2)
-                                                        : std::get<8>(tuple2);
-        z2 = point2Type2 == CriticalType::Local_maximum ? std::get<13>(tuple2)
-                                                        : std::get<9>(tuple2);
+        x2 = point2Type2 == CriticalType::Local_maximum ? pair1.death.coords[0]
+                                                        : pair1.birth.coords[0];
+        y2 = point2Type2 == CriticalType::Local_maximum ? pair1.death.coords[1]
+                                                        : pair1.birth.coords[1];
+        z2 = point2Type2 == CriticalType::Local_maximum ? pair1.death.coords[2]
+                                                        : pair1.birth.coords[2];
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       } else {
-        x2 = t22Ex   ? std::get<11>(tuple2)
-             : t21Ex ? std::get<7>(tuple2)
-                     : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = t22Ex   ? std::get<12>(tuple2)
-             : t21Ex ? std::get<8>(tuple2)
-                     : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = t22Ex   ? std::get<13>(tuple2)
-             : t21Ex ? std::get<9>(tuple2)
-                     : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
+        x2 = t22Ex   ? pair1.death.coords[0]
+             : t21Ex ? pair1.birth.coords[0]
+                     : (pair1.birth.coords[0] + pair1.death.coords[0]) / 2;
+        y2 = t22Ex   ? pair1.death.coords[1]
+             : t21Ex ? pair1.birth.coords[1]
+                     : (pair1.birth.coords[1] + pair1.death.coords[1]) / 2;
+        z2 = t22Ex   ? pair1.death.coords[2]
+             : t21Ex ? pair1.birth.coords[2]
+                     : (pair1.birth.coords[2] + pair1.death.coords[2]) / 2;
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       }
@@ -266,7 +267,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       persistenceScalars->InsertTuple1(currentVertex, cost);
       valueScalars->InsertTuple1(
-        currentVertex, (std::get<10>(tuple1) + std::get<10>(tuple2)) / 2);
+        currentVertex, (pair0.death.sfValue + pair1.death.sfValue) / 2);
       matchingIdScalars->InsertTuple1(currentVertex, currentVertex);
       lengthScalars->InsertTuple1(currentVertex, chainLength);
 
@@ -287,9 +288,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 }
 
 // Warn: this is a duplicate from ttkBottleneckDistance
-int augmentDiagrams(const ttk::DiagramType &diag0,
-                    const ttk::DiagramType &diag1,
-                    const std::vector<ttk::MatchingType> &matchings,
+int augmentDiagrams(const std::vector<ttk::MatchingType> &matchings,
                     vtkUnstructuredGrid *const vtu0,
                     vtkUnstructuredGrid *const vtu1) {
 
@@ -348,9 +347,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   // Input parameters.
   double spacing = Spacing;
   std::string algorithm = DistanceAlgorithm;
-  double alpha = Alpha;
   double tolerance = Tolerance;
-  bool is3D = Is3D;
   std::string wasserstein = WassersteinMetric;
 
   // Transform inputs into the right structure.
@@ -361,9 +358,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   this->performMatchings(
     numInputs, inputPersistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
-    wasserstein, tolerance, is3D,
-    alpha, // Blending
-    PX, PY, PZ, PS, PE // Coefficients
+    wasserstein, tolerance, PX, PY, PZ, PS, PE // Coefficients
   );
 
   // Get back meshes.
@@ -373,7 +368,6 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     outputDiags[2 * i + 1]->ShallowCopy(inputVTUs[i + 1]);
 
     int status = augmentDiagrams(
-      inputPersistenceDiagrams[i], inputPersistenceDiagrams[i + 1],
       outputMatchings[i], outputDiags[2 * i + 0], outputDiags[2 * i + 1]);
     if(status < 0)
       return -2;

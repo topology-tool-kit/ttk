@@ -22,9 +22,6 @@ public:
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
 
-  vtkSetMacro(Alpha, double);
-  vtkGetMacro(Alpha, double);
-
   vtkSetMacro(PX, double);
   vtkGetMacro(PX, double);
 
@@ -61,23 +58,23 @@ public:
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
 
-  static int
-    buildMesh(std::vector<ttk::trackingTuple> &trackings,
-              std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
-              std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
-              bool useGeometricSpacing,
-              double spacing,
-              bool DoPostProc,
-              std::vector<std::set<int>> &trackingTupleToMerged,
-              vtkPoints *points,
-              vtkUnstructuredGrid *persistenceDiagram,
-              vtkDoubleArray *persistenceScalars,
-              vtkDoubleArray *valueScalars,
-              vtkIntArray *matchingIdScalars,
-              vtkIntArray *lengthScalars,
-              vtkIntArray *timeScalars,
-              vtkIntArray *componentIds,
-              vtkIntArray *pointTypeScalars);
+  static int buildMesh(
+    const std::vector<ttk::trackingTuple> &trackings,
+    const std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
+    const std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
+    const bool useGeometricSpacing,
+    const double spacing,
+    const bool doPostProc,
+    const std::vector<std::set<int>> &trackingTupleToMerged,
+    vtkPoints *points,
+    vtkUnstructuredGrid *persistenceDiagram,
+    vtkDoubleArray *persistenceScalars,
+    vtkDoubleArray *valueScalars,
+    vtkIntArray *matchingIdScalars,
+    vtkIntArray *lengthScalars,
+    vtkIntArray *timeScalars,
+    vtkIntArray *componentIds,
+    vtkIntArray *pointTypeScalars);
 
 protected:
   ttkTrackingFromPersistenceDiagrams();
@@ -92,11 +89,9 @@ protected:
 private:
   // Input bottleneck config.
   bool UseGeometricSpacing{false};
-  bool Is3D{true};
   bool DoPostProc{false};
   double PostProcThresh{0.0};
   double Spacing{1.0};
-  double Alpha{1.0};
   double Tolerance{1.0};
   double PX{1};
   double PY{1};

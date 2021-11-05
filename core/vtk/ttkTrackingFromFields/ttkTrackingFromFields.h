@@ -105,9 +105,6 @@ public:
   vtkGetMacro(PS, double);
   /// @}
 
-  vtkSetMacro(Alpha, double);
-  vtkGetMacro(Alpha, double);
-
   /// @brief Value of the parameter p for the Wp (p-th Wasserstein) distance
   /// computation (type "inf" for the Bottleneck distance).
   /// @{
@@ -182,7 +179,6 @@ private:
   bool DoPostProc{false};
   double PostProcThresh{0.0};
   double Spacing{1.0};
-  double Alpha{1.0};
   std::string DistanceAlgorithm{"ttk"};
   int PVAlgorithm{-1};
   std::string WassersteinMetric{"2"};

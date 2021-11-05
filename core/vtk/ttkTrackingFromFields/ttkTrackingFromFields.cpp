@@ -51,9 +51,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   double spacing = Spacing;
   std::string algorithm = DistanceAlgorithm;
-  double alpha = Alpha;
   double tolerance = Tolerance;
-  bool is3D = true; // Is3D;
   std::string wasserstein = WassersteinMetric;
 
   ttk::TrackingFromPersistenceDiagrams tfp{};
@@ -61,9 +59,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   tfp.performMatchings(
     (int)fieldNumber, persistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
-    wasserstein, tolerance, is3D,
-    alpha, // Blending
-    PX, PY, PZ, PS, PE // Coefficients
+    wasserstein, tolerance, PX, PY, PZ, PS, PE // Coefficients
   );
 
   vtkNew<vtkPoints> points{};

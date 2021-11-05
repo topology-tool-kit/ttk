@@ -32,8 +32,6 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   const std::string &algorithm,
   const std::string &wasserstein,
   double tolerance,
-  bool is3D,
-  double alpha,
   double px,
   double py,
   double pz,
@@ -52,7 +50,7 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
 
   bottleneckDistance_.execute(inputPersistenceDiagrams[i],
                               inputPersistenceDiagrams[i + 1],
-                              outputMatchings[i], false);
+                              outputMatchings[i]);
 
   return 0;
 }
@@ -64,8 +62,6 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
   const std::string &algorithm,
   const std::string &wasserstein,
   double tolerance,
-  bool is3D,
-  double alpha,
   double px,
   double py,
   double pz,
@@ -79,9 +75,7 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
     performSingleMatching(
       i, inputPersistenceDiagrams, outputMatchings,
       algorithm, // Not from paraview, from enclosing tracking plugin
-      wasserstein, tolerance, is3D,
-      alpha, // Blending
-      px, py, pz, ps, pe // Coefficients
+      wasserstein, tolerance, px, py, pz, ps, pe // Coefficients
     );
   }
 
@@ -204,8 +198,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
     double x1, y1, z1, x2, y2, z2;
 
-    const auto point1Type1 = std::get<1>(tuple1);
-    const auto point1Type2 = std::get<3>(tuple1);
+    const auto point1Type1 = tuple1.birth.type;
+    const auto point1Type2 = tuple1.death.type;
     bool t11Min = point1Type1 == CriticalType::Local_minimum;
     bool t11Max = point1Type1 == CriticalType::Local_maximum;
     bool t12Min = point1Type2 == CriticalType::Local_minimum;
@@ -214,12 +208,12 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     bool t1Max = t11Max || t12Max;
     bool t1Min = !t1Max && (t11Min || t12Min);
 
-    x1 = t1Max ? std::get<11>(tuple1) : t1Min ? std::get<7>(tuple1) : 0;
-    y1 = t1Max ? std::get<12>(tuple1) : t1Min ? std::get<8>(tuple1) : 0;
-    z1 = t1Max ? std::get<13>(tuple1) : t1Min ? std::get<9>(tuple1) : 0;
+    x1 = t1Max ? tuple1.death.coords[0] : t1Min ? tuple1.birth.coords[0] : 0;
+    y1 = t1Max ? tuple1.death.coords[1] : t1Min ? tuple1.birth.coords[1] : 0;
+    z1 = t1Max ? tuple1.death.coords[2] : t1Min ? tuple1.birth.coords[2] : 0;
 
-    const auto point2Type1 = std::get<1>(tuple2);
-    const auto point2Type2 = std::get<3>(tuple2);
+    const auto point2Type1 = tuple2.birth.type;
+    const auto point2Type2 = tuple2.death.type;
     bool t21Min = point2Type1 == CriticalType::Local_minimum;
     bool t21Max = point2Type1 == CriticalType::Local_maximum;
     bool t22Min = point2Type2 == CriticalType::Local_minimum;
@@ -229,9 +223,9 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     bool t2Min = !t2Max && (t21Min || t22Min);
 
     // if (bothEx2) {
-    x2 = t2Max ? std::get<11>(tuple2) : t2Min ? std::get<7>(tuple2) : 0;
-    y2 = t2Max ? std::get<12>(tuple2) : t2Min ? std::get<8>(tuple2) : 0;
-    z2 = t2Max ? std::get<13>(tuple2) : t2Min ? std::get<9>(tuple2) : 0;
+    x2 = t2Max ? tuple2.death.coords[0] : t2Min ? tuple2.birth.coords[0] : 0;
+    y2 = t2Max ? tuple2.death.coords[1] : t2Min ? tuple2.birth.coords[1] : 0;
+    z2 = t2Max ? tuple2.death.coords[2] : t2Min ? tuple2.birth.coords[2] : 0;
     // }
     // if (!bothEx1 && !bothEx2)
     //  continue;
@@ -262,8 +256,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         ttk::DiagramType &diagramM = allDiagrams[startM + c];
         const auto &tuple3 = diagramM[n3];
         double x3, y3, z3;
-        const auto point3Type1 = std::get<1>(tuple3);
-        const auto point3Type2 = std::get<3>(tuple3);
+        const auto point3Type1 = tuple3.birth.type;
+        const auto point3Type2 = tuple3.death.type;
         bool t31Min = point3Type1 == CriticalType::Local_minimum;
         bool t31Max = point3Type1 == CriticalType::Local_maximum;
         bool t32Min = point3Type2 == CriticalType::Local_minimum;
@@ -274,9 +268,15 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         bool t3Max = t31Max || t32Max;
         bool t3Min = !t3Max && (t31Min || t32Min);
 
-        x3 = t3Max ? std::get<11>(tuple3) : t3Min ? std::get<7>(tuple3) : 0;
-        y3 = t3Max ? std::get<12>(tuple3) : t3Min ? std::get<8>(tuple3) : 0;
-        z3 = t3Max ? std::get<13>(tuple3) : t3Min ? std::get<9>(tuple3) : 0;
+        x3 = t3Max   ? tuple3.death.coords[0]
+             : t3Min ? tuple3.birth.coords[0]
+                     : 0;
+        y3 = t3Max   ? tuple3.death.coords[1]
+             : t3Min ? tuple3.birth.coords[1]
+                     : 0;
+        z3 = t3Max   ? tuple3.death.coords[2]
+             : t3Min ? tuple3.birth.coords[2]
+                     : 0;
 
         double dist = 0;
         bool hasMatched = false;
