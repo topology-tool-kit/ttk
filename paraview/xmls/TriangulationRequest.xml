@@ -46,16 +46,16 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="SimplexIdentifier"
-        label="Simplex identifier"
+      <StringVectorProperty name="SimplexIdentifier"
+        label="Simplex identifiers"
         command="SetSimplexIdentifier"
         number_of_elements="1"
         default_values="0"
         panel_visibility="default">
         <Documentation>
-          Output simplex identifier.
+          Output simplex identifiers (comma-separated list).
         </Documentation>
-      </IntVectorProperty>
+      </StringVectorProperty>
 
       <IntVectorProperty name="KeepAllDataArrays"
         label="Keep All Data Arrays"

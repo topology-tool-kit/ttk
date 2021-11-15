@@ -48,8 +48,8 @@ public:
     vtkSetMacro(SimplexType, int);
   vtkGetMacro(SimplexType, int);
 
-  vtkSetMacro(SimplexIdentifier, int);
-  vtkGetMacro(SimplexIdentifier, int);
+  vtkSetMacro(SimplexIdentifier, const std::string &);
+  vtkGetMacro(SimplexIdentifier, std::string);
 
   vtkSetMacro(RequestType, int);
   vtkGetMacro(RequestType, int);
@@ -76,7 +76,7 @@ protected:
 
 private:
   int SimplexType{0};
-  int SimplexIdentifier{0};
+  std::string SimplexIdentifier{0};
   int RequestType{0};
   bool KeepAllDataArrays{true};
 };
