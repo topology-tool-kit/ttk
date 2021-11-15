@@ -2,11 +2,13 @@
 #include <ttkTriangulationRequest.h>
 #include <ttkUtils.h>
 
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkTriangulationRequest);
@@ -48,6 +50,12 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
 
   vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> cells{};
+  vtkNew<ttkSimplexIdTypeArray> cellIds{};
+  cellIds->SetNumberOfComponents(1);
+  cellIds->SetName("CellId");
+  vtkNew<vtkSignedCharArray> cellDims{};
+  cellDims->SetNumberOfComponents(1);
+  cellDims->SetName("CellDimension");
 
   using ttk::SimplexId;
 
@@ -90,6 +98,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     }
 
     cells->InsertNextCell(VTK_LINE, 2, pointIds);
+    cellIds->InsertNextTuple1(edgeId);
+    cellDims->InsertNextTuple1(1);
 
     return 0;
   };
@@ -116,6 +126,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     }
 
     cells->InsertNextCell(VTK_TRIANGLE, 3, pointIds);
+    cellIds->InsertNextTuple1(triangleId);
+    cellDims->InsertNextTuple1(2);
 
     return 0;
   };
@@ -139,6 +151,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     }
 
     cells->InsertNextCell(VTK_TETRA, 4, pointIds);
+    cellIds->InsertNextTuple1(tetraId);
+    cellDims->InsertNextTuple1(3);
 
     return 0;
   };
@@ -208,6 +222,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
           case Vertex: {
             const auto vid = addVertex(si);
             cells->InsertNextCell(VTK_VERTEX, 1, &vid);
+            cellIds->InsertNextTuple1(vid);
+            cellDims->InsertNextTuple1(0);
           } break;
 
           case Edge:
@@ -434,6 +450,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   cells->SetPoints(points);
+  cells->GetCellData()->AddArray(cellIds);
+  cells->GetCellData()->AddArray(cellDims);
 
   output->ShallowCopy(cells);
 
