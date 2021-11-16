@@ -52,13 +52,13 @@ namespace ttk {
         {
           if(tt == TreeType::Join || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
+#pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             jt_->build(mesh, tt == TreeType::Contour);
           }
           if(tt == TreeType::Split || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
+#pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             st_->build(mesh, tt == TreeType::Contour);
           }

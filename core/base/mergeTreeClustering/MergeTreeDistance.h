@@ -703,9 +703,9 @@ namespace ttk {
           taskQueue.emplace(nodeT);
         }
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(taskQueue, nodeT)                         \
-  untied shared(treeTable, forestTable, treeBackTable, forestBackTable, \
-                treeChildDone, treeNodeDone) if(isTree1)
+#pragma omp task firstprivate(taskQueue, nodeT) UNTIED()         \
+  shared(treeTable, forestTable, treeBackTable, forestBackTable, \
+         treeChildDone, treeNodeDone) if(isTree1)
         {
 #endif
           ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
@@ -857,9 +857,9 @@ namespace ttk {
         treeQueue.pop();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(nodeT)                                    \
-  untied shared(treeTable, forestTable, treeBackTable, forestBackTable, \
-                treeChildDone, treeNodeDone)
+#pragma omp task firstprivate(nodeT) UNTIED()                    \
+  shared(treeTable, forestTable, treeBackTable, forestBackTable, \
+         treeChildDone, treeNodeDone)
         {
 #endif
           while((int)nodeT != -1) {
@@ -959,7 +959,8 @@ namespace ttk {
           treeQueue.pop();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(nodeT) \
-  untied // shared(treeTable, forestTable)//, treeBackTable, forestBackTable)
+  UNTIED() // shared(treeTable, forestTable)//, treeBackTable,
+           // forestBackTable)
           {
 #endif
             std::stringstream ss;
@@ -1058,7 +1059,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(nodeT) \
-  untied // shared(treeTable, forestTable, treeBackTable, forestBackTable)
+  UNTIED() // shared(treeTable, forestTable, treeBackTable, forestBackTable)
           {
 #endif
             while(static_cast<int>(nodeT) != -1) {

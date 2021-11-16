@@ -825,8 +825,8 @@ namespace ttk {
       std::vector<dataType> &distances) {
       for(unsigned int i = 0; i < trees.size(); ++i)
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(i) \
-  untied shared(baryMergeTree, matchings, distances)
+#pragma omp task firstprivate(i) UNTIED() \
+  shared(baryMergeTree, matchings, distances)
 #endif
         computeOneDistance<dataType>(
           trees[i], baryMergeTree, matchings[i], distances[i]);
