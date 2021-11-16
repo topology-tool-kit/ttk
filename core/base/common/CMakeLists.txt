@@ -15,5 +15,6 @@ ttk_add_base_library(common
         ProgramBase.h
         Shuffle.h
         Timer.h
+        VisitedMask.h
         Wrapper.h
         )
