@@ -93,14 +93,12 @@ namespace ttk {
 
       inline int init(std::vector<LocalFTM> &ftmTree, Params params) {
         idSuperArc nbArcs = 0;
-        idSuperArc nbNodes = 0;
         idSuperArc samplePoints = 0;
         SimplexId nbVerts = 0;
 
         for(auto &t : ftmTree) {
           FTMTree_MT *tree = t.tree.getTree(params.treeType);
           nbArcs += tree->getNumberOfSuperArcs();
-          nbNodes += tree->getNumberOfNodes();
           samplePoints
             += params.samplingLvl >= 0
                  ? tree->getNumberOfNodes() + (nbArcs * params.samplingLvl)
