@@ -5,5 +5,6 @@ SOURCES
 HEADERS
   ttkCompactTriangulationPreconditioning.h
 DEPENDS
+  octree
   compactTriangulationPreconditioning
   ttkAlgorithm

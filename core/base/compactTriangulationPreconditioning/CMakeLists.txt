@@ -3,7 +3,7 @@ ttk_add_base_library(compactTriangulationPreconditioning
     CompactTriangulationPreconditioning.cpp
   HEADERS
     CompactTriangulationPreconditioning.h
-    Octree.h
   DEPENDS
+    octree
     triangulation
 )

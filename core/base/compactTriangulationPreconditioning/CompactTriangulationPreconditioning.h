@@ -20,7 +20,7 @@
 /// Guoxi Liu, Federico Iuricich, Riccardo Fellegara, and Leila De Floriani
 /// IEEE Transactions on Visualization and Computer Graphics, 2021.
 ///
-/// \sa ttk::TopoCluster
+/// \sa ttk::CompactTriangulation
 /// \sa ttkCompactTriangulationPreconditioning.cpp %for a usage example.
 
 #pragma once
@@ -73,12 +73,6 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!triangulation)
           return -1;
-        if(!vertices)
-          return -2;
-        if(!nodes)
-          return -3;
-        if(!cells)
-          return -4;
 #endif
 
         SimplexId vertexNumber = triangulation->getNumberOfVertices();
@@ -99,10 +93,10 @@ namespace ttk {
           return -1;
         }
 
-        preOctree.reindex(vertices, nodes, cells);
+        preOctree.reindex(this->vertices, this->nodes, this->cells);
         this->printMsg({
-          {"Size of vertex vector", std::to_string(vertices->size())},
-          {"Size of cell vector", std::to_string(cells->size())},
+          {"Size of vertex vector", std::to_string(this->vertices.size())},
+          {"Size of cell vector", std::to_string(this->cells.size())},
         });
       }
 
@@ -121,7 +115,7 @@ namespace ttk {
     }
 
   protected:
-    std::vector<SimplexId> *vertices, *nodes, *cells;
+    mutable std::vector<SimplexId> vertices, nodes, cells;
 
   }; // CompactTriangulationPreconditioning class
 

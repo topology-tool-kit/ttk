@@ -17,7 +17,6 @@ vtkStandardNewMacro(ttkCompactTriangulationPreconditioning);
 
 ttkCompactTriangulationPreconditioning::
   ttkCompactTriangulationPreconditioning() {
-  this->setDebugMsgPrefix("ttkCompactTriangulationPreconditioning");
   this->Threshold = 1000;
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
@@ -67,9 +66,6 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
   // this->preconditionTriangulation(triangulation); // implemented in base
   // class
-  this->vertices = new vector<SimplexId>();
-  this->nodes = new vector<SimplexId>();
-  this->cells = new vector<SimplexId>();
 
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
@@ -84,7 +80,7 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   // Get output vtkDataSet (which was already instantiated based on the
   // information provided by FillOutputPortInformation)
   vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 0);
-  vector<SimplexId> vertexMap(this->vertices->size());
+  vector<SimplexId> vertexMap(this->vertices.size());
   vtkUnstructuredGrid *outputMesh
     = vtkUnstructuredGrid::SafeDownCast(outputDataSet);
 
@@ -95,12 +91,12 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   indices->SetName(compactTriangulationIndex);
 
   // insert the vertices in the output mesh
-  for(size_t i = 0; i < this->vertices->size(); i++) {
+  for(size_t i = 0; i < this->vertices.size(); i++) {
     float x, y, z;
-    triangulation->getVertexPoint(this->vertices->at(i), x, y, z);
+    triangulation->getVertexPoint(this->vertices.at(i), x, y, z);
     points->InsertNextPoint(x, y, z);
-    vertexMap[this->vertices->at(i)] = i;
-    indices->InsertNextTuple1(this->nodes->at(i));
+    vertexMap[this->vertices.at(i)] = i;
+    indices->InsertNextTuple1(this->nodes.at(i));
   }
   outputMesh->SetPoints(points);
 
@@ -150,22 +146,22 @@ int ttkCompactTriangulationPreconditioning::RequestData(
     }
 
     newField->DeepCopy(inputArray);
-    for(size_t j = 0; j < this->vertices->size(); j++) {
-      newField->SetTuple(j, inputArray->GetTuple(this->vertices->at(j)));
+    for(size_t j = 0; j < this->vertices.size(); j++) {
+      newField->SetTuple(j, inputArray->GetTuple(this->vertices.at(j)));
     }
 
     pointData->AddArray(newField);
   }
 
   // insert the cells in the output mesh
-  outputMesh->Allocate(this->cells->size());
+  outputMesh->Allocate(this->cells.size());
   int dimension = triangulation->getCellVertexNumber(0);
 
-  for(unsigned int i = 0; i < this->cells->size(); i++) {
-    vtkIdType *cell = new vtkIdType[dimension];
+  for(unsigned int i = 0; i < this->cells.size(); i++) {
+    vtkIdType cell[dimension];
     for(int j = 0; j < dimension; j++) {
       SimplexId vertexId;
-      triangulation->getCellVertex(this->cells->at(i), j, vertexId);
+      triangulation->getCellVertex(this->cells.at(i), j, vertexId);
       cell[j] = vertexMap[vertexId];
     }
     sort(cell, cell + dimension);
