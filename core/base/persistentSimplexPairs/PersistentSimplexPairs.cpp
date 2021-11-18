@@ -78,14 +78,18 @@ int ttk::PersistentSimplexPairs::pairCells(
       pairs.emplace_back(i, -1, 0);
     }
   }
-  for(SimplexId i = 0; i < this->nEdges_; ++i) {
-    if(partners[i + this->nVerts_].id_ == -1) {
-      pairs.emplace_back(i, -1, 1);
+  if(this->nTri_ > 0) {
+    for(SimplexId i = 0; i < this->nEdges_; ++i) {
+      if(partners[i + this->nVerts_].id_ == -1) {
+        pairs.emplace_back(i, -1, 1);
+      }
     }
   }
-  for(SimplexId i = 0; i < this->nTri_; ++i) {
-    if(partners[i + this->nVerts_ + this->nEdges_].id_ == -1) {
-      pairs.emplace_back(i, -1, 2);
+  if(this->nTetra_ > 0) {
+    for(SimplexId i = 0; i < this->nTri_; ++i) {
+      if(partners[i + this->nVerts_ + this->nEdges_].id_ == -1) {
+        pairs.emplace_back(i, -1, 2);
+      }
     }
   }
 
