@@ -156,7 +156,7 @@
          <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
-          <Entry value="2" text="Persistent Simplex"/>
+          <Entry value="2" text="Persistent Simplex (Zomorodian 2010)"/>
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
