@@ -315,7 +315,8 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
     } else if(p.type == 1) {
       CTDiagram.emplace_back(
         p.birth, CriticalType::Saddle1, death,
-        isFinite ? CriticalType::Saddle2 : CriticalType::Local_maximum,
+        (isFinite && dim == 3) ? CriticalType::Saddle2
+                               : CriticalType::Local_maximum,
         inputScalars[death] - inputScalars[p.birth], p.type);
     } else if(p.type == 2) {
       CTDiagram.emplace_back(
