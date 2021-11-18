@@ -875,7 +875,7 @@ int ttk::MorseSmaleComplex3D::getSaddleConnectors(
     const auto &s2{saddles2[i]};
 
     std::set<SimplexId> saddles1{};
-    dcg::VisitedMask mask{isVisited, visitedTriangles};
+    VisitedMask mask{isVisited, visitedTriangles};
     discreteGradient_.getDescendingWall(
       s2, mask, triangulation, nullptr, &saddles1);
 
@@ -962,7 +962,7 @@ int ttk::MorseSmaleComplex3D::getAscendingSeparatrices2(
     const Cell &saddle1 = criticalPoints[saddleIndex];
 
     std::vector<Cell> wall;
-    dcg::VisitedMask mask{isVisited, visitedEdges};
+    VisitedMask mask{isVisited, visitedEdges};
     discreteGradient_.getAscendingWall(
       saddle1, mask, triangulation, &wall, &separatricesSaddles[i]);
 
@@ -1013,7 +1013,7 @@ int ttk::MorseSmaleComplex3D::getDescendingSeparatrices2(
     const Cell &saddle2 = criticalPoints[saddleIndex];
 
     std::vector<Cell> wall;
-    dcg::VisitedMask mask{isVisited, visitedTriangles};
+    VisitedMask mask{isVisited, visitedTriangles};
     discreteGradient_.getDescendingWall(
       saddle2, mask, triangulation, &wall, &separatricesSaddles[i]);
 

@@ -46,6 +46,7 @@
 // base code includes
 #include <DiscreteGradient.h>
 #include <FTMTreePP.h>
+#include <PersistentSimplexPairs.h>
 #include <ProgressiveTopology.h>
 #include <Triangulation.h>
 
@@ -87,7 +88,11 @@ namespace ttk {
   class PersistenceDiagram : virtual public Debug {
 
   public:
-    enum class BACKEND { FTM = 0, PROGRESSIVE_TOPOLOGY = 1 };
+    enum class BACKEND {
+      FTM = 0,
+      PROGRESSIVE_TOPOLOGY = 1,
+      PERSISTENT_SIMPLEX = 2
+    };
 
     PersistenceDiagram();
 
@@ -135,6 +140,12 @@ namespace ttk {
                                    const SimplexId *inputOffsets,
                                    const triangulationType *triangulation);
 
+    template <typename scalarType, class triangulationType>
+    int executePersistentSimplex(std::vector<PersistencePair> &CTDiagram,
+                                 const scalarType *inputScalars,
+                                 const SimplexId *inputOffsets,
+                                 const triangulationType *triangulation);
+
     template <class triangulationType>
     void checkProgressivityRequirement(const triangulationType *triangulation);
 
@@ -142,13 +153,18 @@ namespace ttk {
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
-        contourTree_.setDebugLevel(debugLevel_);
-        contourTree_.setThreadNumber(threadNumber_);
-        contourTree_.preconditionTriangulation(triangulation);
+        if(this->BackEnd == BACKEND::FTM) {
+          contourTree_.setDebugLevel(debugLevel_);
+          contourTree_.setThreadNumber(threadNumber_);
+          contourTree_.preconditionTriangulation(triangulation);
+        }
         if(this->ComputeSaddleConnectors) {
           dcg_.setDebugLevel(debugLevel_);
           dcg_.setThreadNumber(threadNumber_);
           dcg_.preconditionTriangulation(triangulation);
+        }
+        if(this->BackEnd == BACKEND::PERSISTENT_SIMPLEX) {
+          psp_.preconditionTriangulation(triangulation);
         }
       }
     }
@@ -157,6 +173,7 @@ namespace ttk {
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};
+    PersistentSimplexPairs psp_{};
 
     // int BackEnd{0};
     BACKEND BackEnd{BACKEND::FTM};
@@ -218,16 +235,17 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
   checkProgressivityRequirement(triangulation);
 
   switch(BackEnd) {
-
+    case BACKEND::PERSISTENT_SIMPLEX:
+      executePersistentSimplex(
+        CTDiagram, inputScalars, inputOffsets, triangulation);
+      break;
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       executeProgressiveTopology(
         CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
-
     case BACKEND::FTM:
       executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
-
     default:
       printErr("No method was selected");
   }
@@ -237,6 +255,76 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   printMsg(ttk::debug::Separator::L1);
 
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executePersistentSimplex(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const SimplexId *inputOffsets,
+  const triangulationType *triangulation) {
+
+  Timer tm{};
+  const auto dim = triangulation->getDimensionality();
+
+  std::vector<ttk::PersistentSimplexPairs::PersistencePair> pairs{};
+
+  dcg_.setInputOffsets(inputOffsets);
+  psp_.setDebugLevel(this->debugLevel_);
+  psp_.setThreadNumber(this->threadNumber_);
+  psp_.computePersistencePairs(pairs, inputOffsets, *triangulation);
+
+  // convert PersistentSimplex pairs (with critical cells id) to PL
+  // pairs (with vertices id)
+
+  for(auto &p : pairs) {
+    int birthType{};
+    if(dim == 3) {
+      birthType = p.type;
+    } else if(dim == 2) {
+      birthType = (p.type == 0) ? 0 : 1;
+    }
+    if(p.type > 0) {
+      p.birth
+        = dcg_.getCellGreaterVertex(Cell{birthType, p.birth}, *triangulation);
+    }
+    if(p.death != -1) {
+      p.death = dcg_.getCellGreaterVertex(
+        Cell{birthType + 1, p.death}, *triangulation);
+    }
+  }
+
+  CTDiagram.reserve(pairs.size() + 1);
+
+  // find the global maximum
+  const auto nVerts = triangulation->getNumberOfVertices();
+  const auto globmax = std::distance(
+    inputOffsets, std::max_element(inputOffsets, inputOffsets + nVerts));
+
+  // convert pairs to the relevant format
+  for(const auto &p : pairs) {
+    const auto isFinite = (p.death >= 0);
+    const auto death = isFinite ? p.death : globmax;
+    if(p.type == 0) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Local_minimum, death,
+        (isFinite && p.type < dim - 1) ? CriticalType::Saddle1
+                                       : CriticalType::Local_maximum,
+        inputScalars[death] - inputScalars[p.birth], p.type);
+    } else if(p.type == 1) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Saddle1, death,
+        isFinite ? CriticalType::Saddle2 : CriticalType::Local_maximum,
+        inputScalars[death] - inputScalars[p.birth], p.type);
+    } else if(p.type == 2) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Saddle2, death, CriticalType::Local_maximum,
+        inputScalars[death] - inputScalars[p.birth], p.type);
+    }
+  }
+
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
   return 0;
 }
 
@@ -357,13 +445,13 @@ int ttk::PersistenceDiagram::executeFTM(
 template <class triangulationType>
 void ttk::PersistenceDiagram::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
-  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
-    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 
-      printWrn("Explicit triangulation detected.");
-      printWrn("Defaulting to the FTM backend.");
+  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+     && !std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 
-      BackEnd = BACKEND::FTM;
-    }
+    printWrn("Explicit triangulation detected.");
+    printWrn("Defaulting to the FTM backend.");
+
+    BackEnd = BACKEND::FTM;
   }
 }

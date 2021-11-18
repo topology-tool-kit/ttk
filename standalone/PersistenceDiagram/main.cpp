@@ -44,7 +44,9 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("B", &backEnd, "Method (0:FTM, 1: progressive)", true);
+    parser.setArgument("B", &backEnd,
+                       "Method (0: FTM, 1: progressive, 2: persistent simplex)",
+                       true);
     parser.setArgument("S", &startingRL,
                        "Starting Resolution Level for progressive "
                        "multiresolution scheme (-1: finest level)",

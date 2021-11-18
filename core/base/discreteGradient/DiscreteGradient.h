@@ -19,6 +19,7 @@
 #include <FTMTree.h>
 #include <Geometry.h>
 #include <Triangulation.h>
+#include <VisitedMask.h>
 
 #include <algorithm>
 #include <array>
@@ -272,28 +273,6 @@ namespace ttk {
         }
 
         return (vpathId1 < vpathId2);
-      }
-    };
-
-    struct VisitedMask {
-      std::vector<bool> &isVisited_;
-      std::vector<SimplexId> &visitedIds_;
-
-      VisitedMask(std::vector<bool> &isVisited,
-                  std::vector<SimplexId> &visitedIds)
-        : isVisited_{isVisited}, visitedIds_{visitedIds} {
-      }
-      ~VisitedMask() {
-        // use RAII to clean & reset referenced vectors
-        for(const auto id : this->visitedIds_) {
-          this->isVisited_[id] = false;
-        }
-        // set size to 0 but keep allocated memory
-        this->visitedIds_.clear();
-      }
-      void insert(SimplexId id) {
-        this->isVisited_[id] = true;
-        this->visitedIds_.emplace_back(id);
       }
     };
 

@@ -495,7 +495,9 @@ jobs:
 # VTK 9, no rendering
 
 - job:
-  condition: true
+  # disable Windows job as it runs longer than the 1h maximum timeout
+  # (and is redundant with the Windows GitHub Action test CI)
+  condition: false
   displayName: Windows-VTK
   strategy:
     matrix:
