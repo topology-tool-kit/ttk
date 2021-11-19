@@ -2396,12 +2396,13 @@ namespace ttk {
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
-    inline int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
-      SimplexId vertexId[2];
+    inline int getEdgeIncenter(const SimplexId edgeId,
+                               float incenter[3]) const {
+      std::array<SimplexId, 2> vertexId{};
       getEdgeVertex(edgeId, 0, vertexId[0]);
       getEdgeVertex(edgeId, 1, vertexId[1]);
 
-      float p[6];
+      std::array<float, 6> p{};
       getVertexPoint(vertexId[0], p[0], p[1], p[2]);
       getVertexPoint(vertexId[1], p[3], p[4], p[5]);
 
@@ -2415,10 +2416,10 @@ namespace ttk {
     /**
      * Compute the incenter of the points of the given triangle identifier.
      */
-    inline int getTriangleIncenter(SimplexId triangleId,
+    inline int getTriangleIncenter(const SimplexId triangleId,
                                    float incenter[3]) const {
 
-      SimplexId vertexId[3];
+      std::array<SimplexId, 3> vertexId{};
       if(getDimensionality() == 2) {
         getCellVertex(triangleId, 0, vertexId[0]);
         getCellVertex(triangleId, 1, vertexId[1]);
@@ -2429,15 +2430,15 @@ namespace ttk {
         getTriangleVertex(triangleId, 2, vertexId[2]);
       }
 
-      float p[9];
+      std::array<float, 9> p{};
       getVertexPoint(vertexId[0], p[0], p[1], p[2]);
       getVertexPoint(vertexId[1], p[3], p[4], p[5]);
       getVertexPoint(vertexId[2], p[6], p[7], p[8]);
 
-      float d[3];
-      d[0] = Geometry::distance(p + 3, p + 6);
-      d[1] = Geometry::distance(p, p + 6);
-      d[2] = Geometry::distance(p, p + 3);
+      std::array<float, 3> d{};
+      d[0] = Geometry::distance(&p[3], &p[6]);
+      d[1] = Geometry::distance(&p[0], &p[6]);
+      d[2] = Geometry::distance(&p[0], &p[3]);
       const float sum = d[0] + d[1] + d[2];
 
       d[0] = d[0] / sum;
@@ -2455,16 +2456,17 @@ namespace ttk {
      * Compute the barycenter of the incenters of the triangles of the given
        tetra identifier.
      */
-    inline int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
+    inline int getTetraIncenter(const SimplexId tetraId,
+                                float incenter[3]) const {
       incenter[0] = 0.0f;
       incenter[1] = 0.0f;
       incenter[2] = 0.0f;
 
-      float p[3];
+      std::array<float, 3> p{};
       for(int i = 0; i < 4; ++i) {
         SimplexId triangleId;
         getCellTriangle(tetraId, i, triangleId);
-        getTriangleIncenter(triangleId, p);
+        getTriangleIncenter(triangleId, p.data());
         incenter[0] += p[0];
         incenter[1] += p[1];
         incenter[2] += p[2];
@@ -2480,8 +2482,9 @@ namespace ttk {
     /**
      * Compute the geometric barycenter of a given cell.
      */
-    inline int
-      getCellIncenter(SimplexId cellid, int dim, float incenter[3]) const {
+    inline int getCellIncenter(const SimplexId cellid,
+                               const int dim,
+                               float incenter[3]) const {
       switch(dim) {
         case 0:
           getVertexPoint(cellid, incenter[0], incenter[1], incenter[2]);

@@ -62,16 +62,9 @@ public:
 
 protected:
   ttkTrackingFromOverlap() {
-    SetLabelFieldName("RegionId");
-
-    UseAllCores = false;
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-
-  bool UseAllCores;
-  int ThreadNumber;
 
   int reset();
 
@@ -120,7 +113,7 @@ protected:
 
 private:
   int LabelDataType;
-  std::string LabelFieldName;
+  std::string LabelFieldName{"RegionId"};
 
   vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 

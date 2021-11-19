@@ -286,8 +286,12 @@ namespace ttk {
     int flush();
 
     inline const Arc *getArc(const int &arcId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((arcId < 0) || (arcId >= (int)arcList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getArc: element "
+                       + std::to_string(arcId) + " in list of size "
+                       + std::to_string(arcList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(arcList_[arcId]);
     }
 
@@ -299,37 +303,53 @@ namespace ttk {
     }
 
     inline const Node *getNode(const int &nodeId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getNode: element "
+                       + std::to_string(nodeId) + " in list of size "
+                       + std::to_string(nodeList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(nodeList_[nodeId]);
     }
 
     inline const Node *getNodeDownNeighbor(const Node *n,
                                            const int &neighborId) const {
-      if(!n)
-        return NULL;
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(n == nullptr)
+        this->printErr("Nullptr dereference in getNodeDownNeighbor");
+#endif // !TTK_ENABLE_KAMIKAZE
       return getNodeDownNeighbor(n - &(nodeList_[0]), neighborId);
     }
 
     inline const Node *getNodeDownNeighbor(const int &nodeId,
                                            const int &neighborId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getNodeDownNeighbor: element "
+                       + std::to_string(nodeId) + " in list of size "
+                       + std::to_string(nodeList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(nodeList_[arcList_[nodeList_[nodeId].getDownArcId(neighborId)]
                            .getDownNodeId()]);
     }
 
     inline const Node *getNodeUpNeighbor(const Node *n,
                                          const int &neighborId) const {
-      if(!n)
-        return NULL;
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(n == nullptr)
+        this->printErr("Nullptr dereference in getNodeUpNeighbor");
+#endif // !TTK_ENABLE_KAMIKAZE
       return getNodeUpNeighbor(n - &(nodeList_[0]), neighborId);
     }
 
     inline const Node *getNodeUpNeighbor(const int &nodeId,
                                          const int &neighborId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getNodeUpNeighbor: element "
+                       + std::to_string(nodeId) + " in list of size "
+                       + std::to_string(nodeList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(nodeList_[arcList_[nodeList_[nodeId].getUpArcId(neighborId)]
                            .getUpNodeId()]);
     }
@@ -376,8 +396,12 @@ namespace ttk {
       = nullptr) const;
 
     inline const SuperArc *getSuperArc(const int &superArcId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((superArcId < 0) || (superArcId >= (int)superArcList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getSuperArc: element "
+                       + std::to_string(superArcId) + " in list of size "
+                       + std::to_string(superArcList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(superArcList_[superArcId]);
     }
 
@@ -396,17 +420,26 @@ namespace ttk {
     }
 
     inline const SuperArc *getVertexSuperArc(const int &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return NULL;
+        this->printErr("Out-of-bounds access in getVertexSuperArc: element "
+                       + std::to_string(vertexId) + " in list of size "
+                       + std::to_string(vertexNumber_));
       if(vertex2superArc_[vertexId] == -1)
-        return NULL;
+        this->printErr("Invalid super arc id for vertex "
+                       + std::to_string(vertexId));
+#endif // !TTK_ENABLE_KAMIKAZE
 
       return &(superArcList_[vertex2superArc_[vertexId]]);
     }
 
     inline int getVertexSuperArcId(const int &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
+        this->printErr("Out-of-bounds access in getVertexSuperArcId: element "
+                       + std::to_string(vertexId) + " in list of size "
+                       + std::to_string(vertexNumber_));
+#endif // !TTK_ENABLE_KAMIKAZE
       return vertex2superArc_[vertexId];
     }
 

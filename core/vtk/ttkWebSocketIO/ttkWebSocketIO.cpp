@@ -367,8 +367,8 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
       "Serializing vtkDataObject", 0.4, 0, ttk::debug::LineMode::REPLACE);
 
     // send points if last input is a vtkPointSet
-    if(block->IsA("vtkPointSet")) {
-      auto blockAsPS = vtkPointSet::SafeDownCast(block);
+    auto blockAsPS = vtkPointSet::SafeDownCast(block);
+    if(blockAsPS != nullptr) {
       auto points = blockAsPS->GetPoints();
       this->queueMessage(
         "{"
@@ -382,7 +382,7 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
         + ","
           "\"nComponents\": 3"
           "}");
-      if(blockAsPS->GetNumberOfPoints() > 0)
+      if(blockAsPS->GetNumberOfPoints() > 0 && points != nullptr)
         switch(points->GetDataType()) {
           vtkTemplateMacro(this->queueMessage(
             blockAsPS->GetNumberOfPoints() * sizeof(VTK_TT) * 3,

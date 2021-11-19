@@ -477,7 +477,7 @@ int ttk::MeshGraph::execute2(
       IT no1 = n1 * 6;
 
       size_t q2 = q + i * outputPointsSubdivisonOffset;
-      for(float j = 1; j <= nSubdivisions; j++) {
+      for(size_t j = 1; j <= nSubdivisions; j++) {
         computeBezierPoint(no0, no1, q2, j / nSubdivisionsP1);
         computeBezierPoint(no0 + 3, no1 + 3, q2 + 3, j / nSubdivisionsP1);
 

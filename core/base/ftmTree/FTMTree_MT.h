@@ -379,7 +379,6 @@ namespace ttk {
         if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
-          return nullptr;
         }
 #endif
         return &((*mt_data_.superArcs)[i]);
@@ -390,7 +389,6 @@ namespace ttk {
         if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
-          return nullptr;
         }
 #endif
         return &((*mt_data_.superArcs)[i]);

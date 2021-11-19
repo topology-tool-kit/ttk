@@ -158,7 +158,8 @@ namespace ttk {
 
     template <typename Type>
     idSuperArc DynGraphNode<Type>::findRootArc(void) const {
-      return findRoot()->corArc_;
+      const auto root = findRoot();
+      return root != nullptr ? root->corArc_ : -1;
     }
 
     template <typename Type>
