@@ -76,15 +76,15 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     if(vertexId == -1)
       return vtkIdType(-1);
 
-    float p[3];
+    std::array<float, 3> p{};
     triangulation->getVertexPoint(vertexId, p[0], p[1], p[2]);
     vertices.push_back(vertexId);
-    return points->InsertNextPoint(p);
+    return points->InsertNextPoint(p.data());
   };
 
   auto addEdge = [&](const SimplexId edgeId) {
-    vtkIdType pointIds[2];
-    SimplexId vertexIds[2];
+    std::array<vtkIdType, 2> pointIds{};
+    std::array<SimplexId, 2> vertexIds{};
 
     for(int i = 0; i < 2; ++i) {
       triangulation->getEdgeVertex(edgeId, i, vertexIds[i]);
@@ -100,7 +100,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         pointIds[i] = isVisited[vertexId];
     }
 
-    cells->InsertNextCell(VTK_LINE, 2, pointIds);
+    cells->InsertNextCell(VTK_LINE, 2, pointIds.data());
     cellIds->InsertNextTuple1(edgeId);
     cellDims->InsertNextTuple1(1);
 
@@ -108,8 +108,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
   };
 
   auto addTriangle = [&](const SimplexId triangleId) {
-    vtkIdType pointIds[3];
-    SimplexId vertexIds[3];
+    std::array<vtkIdType, 3> pointIds{};
+    std::array<SimplexId, 3> vertexIds{};
 
     for(int i = 0; i < 3; ++i) {
       if(dimensionality == 3)
@@ -128,7 +128,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         pointIds[i] = isVisited[vertexId];
     }
 
-    cells->InsertNextCell(VTK_TRIANGLE, 3, pointIds);
+    cells->InsertNextCell(VTK_TRIANGLE, 3, pointIds.data());
     cellIds->InsertNextTuple1(triangleId);
     cellDims->InsertNextTuple1(2);
 
@@ -136,8 +136,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
   };
 
   auto addTetra = [&](const SimplexId tetraId) {
-    vtkIdType pointIds[4];
-    SimplexId vertexIds[4];
+    std::array<vtkIdType, 4> pointIds{};
+    std::array<SimplexId, 4> vertexIds{};
 
     for(int i = 0; i < 4; ++i) {
       triangulation->getCellVertex(tetraId, i, vertexIds[i]);
@@ -153,7 +153,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         pointIds[i] = isVisited[vertexId];
     }
 
-    cells->InsertNextCell(VTK_TETRA, 4, pointIds);
+    cells->InsertNextCell(VTK_TETRA, 4, pointIds.data());
     cellIds->InsertNextTuple1(tetraId);
     cellDims->InsertNextTuple1(3);
 
