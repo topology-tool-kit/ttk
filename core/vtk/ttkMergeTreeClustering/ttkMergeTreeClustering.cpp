@@ -1,11 +1,11 @@
-#include <ttkMergeTreeClustering.h>
-//#include <ttkUtils.h>
 #include <FTMStructures.h>
 #include <FTMTree.h>
 #include <FTMTreeUtils.h>
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
 #include <ttkFTMTreeUtils.h>
+#include <ttkMacros.h>
+#include <ttkMergeTreeClustering.h>
 #include <ttkMergeTreeVisualization.h>
 
 #include <vtkDataObject.h> // For port information

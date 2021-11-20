@@ -17,6 +17,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+using namespace ttk;
+using namespace ttk::ftm;
+
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
 vtkStandardNewMacro(ttkMergeTreeTemporalReductionEncoding);
@@ -102,7 +105,7 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
-  printMsg("Load blocks", debug::Priority::VERBOSE);
+  printMsg("Load blocks", ttk::debug::Priority::VERBOSE);
   std::vector<vtkMultiBlockDataSet *> inputTrees;
   loadBlocks(inputTrees, blocks);
   printMsg("Load blocks done.", debug::Priority::VERBOSE);
@@ -184,7 +187,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
     for(size_t i = 0; i < images.size(); ++i) {
       auto array = images[i]->GetPointData()->GetArray("Scalars");
       for(vtkIdType j = 0; j < array->GetNumberOfTuples(); ++j)
-        fieldL2_[i].push_back(static_cast<double>(array->GetTuple1(j)));
+        fieldL2_[i].push_back(array->GetTuple1(j));
     }
   }
 

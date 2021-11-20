@@ -22,6 +22,9 @@
 #include "AssignmentSolver.h"
 
 #include <iterator>
+#include <limits>
+#include <map>
+#include <queue>
 #include <set>
 
 namespace ttk {
@@ -105,8 +108,7 @@ namespace ttk {
                 // TODO there is probably be a better way to avoid duplicates
                 std::sort(elemVec.begin() + min_dim, elemVec.end());
                 std::string new_string = vectorToString(elemVec);
-                auto it2 = std::find(
-                  unasgnAdded.begin(), unasgnAdded.end(), new_string);
+                auto it2 = unasgnAdded.find(new_string);
                 if(it2 == unasgnAdded.end()) {
                   unasgnAdded.insert(vectorToString(elemVec));
                   allAsgn.push_back(elemVec);

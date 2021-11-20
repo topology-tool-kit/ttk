@@ -107,19 +107,21 @@ private:
   // Data for visualization
   // ----------------------
   // Trees
-  std::vector<MergeTree<double>> intermediateSTrees, intermediateSTrees2;
+  std::vector<ttk::ftm::MergeTree<double>> intermediateSTrees,
+    intermediateSTrees2;
   std::vector<vtkUnstructuredGrid *> treesNodes, treesNodes2;
   std::vector<vtkUnstructuredGrid *> treesArcs, treesArcs2;
   std::vector<vtkDataSet *> treesSegmentation, treesSegmentation2;
 
   // Matching
-  std::vector<std::tuple<idNode, idNode, double>> outputMatching;
-  std::vector<
-    std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>
+  std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>
+    outputMatching;
+  std::vector<std::vector<
+    std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>
     outputMatchingBarycenter, outputMatchingBarycenter2;
 
   // Barycenter
-  std::vector<MergeTree<double>> barycentersS;
+  std::vector<ttk::ftm::MergeTree<double>> barycentersS;
   std::vector<int> clusteringAssignment;
 
   // Node correspondence
@@ -130,8 +132,8 @@ private:
 
   void setDataVisualization(int numInputs, int numInputs2) {
     // Trees
-    intermediateSTrees = std::vector<MergeTree<double>>(numInputs);
-    intermediateSTrees2 = std::vector<MergeTree<double>>(numInputs2);
+    intermediateSTrees = std::vector<ttk::ftm::MergeTree<double>>(numInputs);
+    intermediateSTrees2 = std::vector<ttk::ftm::MergeTree<double>>(numInputs2);
     treesNodes = std::vector<vtkUnstructuredGrid *>(numInputs);
     treesNodes2 = std::vector<vtkUnstructuredGrid *>(numInputs2);
     treesArcs = std::vector<vtkUnstructuredGrid *>(numInputs);
@@ -140,20 +142,23 @@ private:
     treesSegmentation2 = std::vector<vtkDataSet *>(numInputs2);
 
     // Matching
-    outputMatchingBarycenter = std::vector<
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>(
+    outputMatchingBarycenter = std::vector<std::vector<
+      std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>(
       NumberOfBarycenters,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
+      std::vector<
+        std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs));
 
-    outputMatchingBarycenter2 = std::vector<
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>(
+    outputMatchingBarycenter2 = std::vector<std::vector<
+      std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>(
       NumberOfBarycenters,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
+      std::vector<
+        std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs2));
 
     // Barycenter
-    barycentersS = std::vector<MergeTree<double>>(NumberOfBarycenters);
+    barycentersS
+      = std::vector<ttk::ftm::MergeTree<double>>(NumberOfBarycenters);
     clusteringAssignment = std::vector<int>(numInputs, 0);
   }
 

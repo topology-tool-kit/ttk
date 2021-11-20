@@ -14,9 +14,10 @@
 #ifndef _ASSIGNMENTAUCTION_H
 #define _ASSIGNMENTAUCTION_H
 
-#include <Debug.h>
-
 #include "AssignmentSolver.h"
+
+#include <limits>
+#include <queue>
 
 namespace ttk {
 
@@ -134,7 +135,7 @@ namespace ttk {
 
   template <typename dataType>
   void AssignmentAuction<dataType>::initEpsilon() {
-    if(epsilon == -1) {
+    if(epsilon == -1.0) {
       dataType maxValue
         = getMaxValue<dataType>(this->costMatrix, this->balancedAssignment);
       // int tRowSize = this->balancedAssignment ? this->rowSize :
@@ -142,12 +143,12 @@ namespace ttk {
       // this->balancedAssignment ? this->colSize :
       // (this->rowSize-1)+(this->colSize-1); epsilon = maxValue *
       // std::min(tRowSize, tColSize)/2;
-      epsilon = maxValue / 4;
+      epsilon = maxValue / 4.0;
       // epsilon = std::pow(maxValue, 2)/4;
       // epsilon += *std::max_element(goodPrices.begin(), goodPrices.end());
       // epsilon += getSecondMinValueVector(goodPrices);
-      if(epsilon == 0)
-        epsilon = 1;
+      if(epsilon == 0.0)
+        epsilon = 1.0;
       epsilon
         /= ((epsilonDiviserMultiplier == 0) ? 1 : epsilonDiviserMultiplier * 5);
     }

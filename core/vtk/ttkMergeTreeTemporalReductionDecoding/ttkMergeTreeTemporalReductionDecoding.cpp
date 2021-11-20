@@ -15,6 +15,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+using namespace ttk;
+using namespace ttk::ftm;
+
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
 vtkStandardNewMacro(ttkMergeTreeTemporalReductionDecoding);

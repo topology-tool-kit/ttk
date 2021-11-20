@@ -185,7 +185,7 @@ namespace ttk {
         (*mt_data_.ufs)[v] = new AtomicUF(v);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied OPTIONAL_PRIORITY(isPrior())
+#pragma omp task UNTIED() OPTIONAL_PRIORITY(isPrior())
 #endif
         arcGrowth(mesh, v, n);
       }

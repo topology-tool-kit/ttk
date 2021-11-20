@@ -38,8 +38,8 @@ namespace ttk {
 
     template <class dataType>
     dataType computeDistance(
-      MergeTree<dataType> &mTree1,
-      MergeTree<dataType> &mTree2,
+      ftm::MergeTree<dataType> &mTree1,
+      ftm::MergeTree<dataType> &mTree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching) {
       MergeTreeDistance mergeTreeDistance;
       mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
@@ -72,16 +72,16 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType computeDistance(MergeTree<dataType> &mTree1,
-                             MergeTree<dataType> &mTree2) {
+    dataType computeDistance(ftm::MergeTree<dataType> &mTree1,
+                             ftm::MergeTree<dataType> &mTree2) {
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching;
       return computeDistance<dataType>(mTree1, mTree2, matching);
     }
 
     template <class dataType>
-    MergeTree<dataType> computeBarycenter(MergeTree<dataType> &mTree1,
-                                          MergeTree<dataType> &mTree2,
-                                          double alpha) {
+    ftm::MergeTree<dataType> computeBarycenter(ftm::MergeTree<dataType> &mTree1,
+                                               ftm::MergeTree<dataType> &mTree2,
+                                               double alpha) {
       MergeTreeBarycenter mergeTreeBarycenter;
       mergeTreeBarycenter.setAssignmentSolver(assignmentSolverID_);
       mergeTreeBarycenter.setEpsilonTree1(epsilonTree1_);
@@ -107,12 +107,12 @@ namespace ttk {
       mergeTreeBarycenter.setPostprocess(false);
       // mergeTreeBarycenter.setIsCalled(true);
 
-      std::vector<MergeTree<dataType>> intermediateTrees;
+      std::vector<ftm::MergeTree<dataType>> intermediateTrees;
       intermediateTrees.push_back(mTree1);
       intermediateTrees.push_back(mTree2);
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         outputMatchingBarycenter(2);
-      MergeTree<dataType> barycenter;
+      ftm::MergeTree<dataType> barycenter;
       mergeTreeBarycenter.execute<dataType>(
         intermediateTrees, outputMatchingBarycenter, barycenter);
       return barycenter;
@@ -120,9 +120,9 @@ namespace ttk {
 
     template <class dataType>
     void execute(
-      std::vector<MergeTree<dataType>> &mTrees,
+      std::vector<ftm::MergeTree<dataType>> &mTrees,
       std::vector<std::tuple<double, int, int, int, int>> &coefs,
-      std::vector<MergeTree<dataType>> &allMT,
+      std::vector<ftm::MergeTree<dataType>> &allMT,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &allMatching) {
       Timer t_tempSub;
@@ -145,7 +145,7 @@ namespace ttk {
           double alpha = std::get<0>(coefs[cpt]);
           int index1 = std::get<1>(coefs[cpt]);
           int index2 = std::get<2>(coefs[cpt]);
-          MergeTree<dataType> tree = computeBarycenter<dataType>(
+          ftm::MergeTree<dataType> tree = computeBarycenter<dataType>(
             mTrees[index1], mTrees[index2], alpha);
           allMT.push_back(tree);
           distancesToKeyFrames_[cpt * 2]

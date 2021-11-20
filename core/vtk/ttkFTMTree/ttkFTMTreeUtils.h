@@ -5,9 +5,6 @@
 ///
 /// Utils function for manipulating FTMTree class
 
-#ifndef _TTKFTMTREEUTILS_H
-#define _TTKFTMTREEUTILS_H
-
 #pragma once
 
 #include <FTMTree.h>
@@ -33,9 +30,9 @@ namespace ttk {
       vtkSmartPointer<vtkDataArray> nodesScalar
         = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
       scalars.size = nodesScalar->GetNumberOfTuples();
-      std::vector<dataType> scalarsValues;
+      std::vector<dataType> scalarsValues(nodesScalar->GetNumberOfTuples());
       for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i)
-        scalarsValues.push_back(nodesScalar->GetTuple1(i));
+        scalarsValues[i] = nodesScalar->GetTuple1(i);
       // scalars.values = ttkUtils::GetVoidPointer(nodesScalar);
       scalars.values = (void *)(scalarsValues.data());
 
@@ -86,8 +83,8 @@ namespace ttk {
       return mergeTree;
     }
 
-    void loadBlocks(std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                    vtkMultiBlockDataSet *blocks) {
+    inline void loadBlocks(std::vector<vtkMultiBlockDataSet *> &inputTrees,
+                           vtkMultiBlockDataSet *blocks) {
       if(blocks != nullptr) {
         inputTrees.resize(blocks->GetNumberOfBlocks());
         for(size_t i = 0; i < inputTrees.size(); ++i) {
@@ -131,5 +128,3 @@ namespace ttk {
     }
   } // namespace ftm
 } // namespace ttk
-
-#endif

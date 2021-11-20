@@ -21,6 +21,14 @@
 #include <set>
 #include <tuple>
 
+// untied OpenMP tasks are causing segfaults in MergeTreeClustering when
+// compiled with Clang
+#ifdef __clang__
+#define UNTIED()
+#else
+#define UNTIED() untied
+#endif
+
 namespace ttk {
   namespace ftm {
     // Types

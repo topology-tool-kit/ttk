@@ -157,11 +157,11 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
   vtkUnstructuredGrid *treeNodes,
   vtkUnstructuredGrid *treeArcs,
   vtkUnstructuredGrid *output) {
-  MergeTree<dataType> mergeTree = makeTree<dataType>(treeNodes, treeArcs);
-  FTMTree_MT *tree = &(mergeTree.tree);
+  auto mergeTree = ttk::ftm::makeTree<dataType>(treeNodes, treeArcs);
+  ttk::ftm::FTMTree_MT *tree = &(mergeTree.tree);
   // tree->printTree2();
 
-  computePersistencePairs<dataType>(tree);
+  ttk::ftm::computePersistencePairs<dataType>(tree);
 
   std::vector<std::vector<int>> treeNodeCorrMesh(1);
   treeNodeCorrMesh[0] = std::vector<int>(tree->getNumberOfNodes());
