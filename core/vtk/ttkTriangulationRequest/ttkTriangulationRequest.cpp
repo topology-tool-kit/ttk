@@ -1,4 +1,3 @@
-#include <ttkMacros.h>
 #include <ttkTriangulationRequest.h>
 #include <ttkUtils.h>
 
@@ -12,6 +11,12 @@
 #include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkTriangulationRequest);
+
+ttkTriangulationRequest::ttkTriangulationRequest() {
+  this->setDebugMsgPrefix("TriangulationRequest");
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
 
 int ttkTriangulationRequest::FillInputPortInformation(int port,
                                                       vtkInformation *info) {
@@ -45,8 +50,6 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
 
   const int dimensionality = triangulation->getDimensionality();
-  const Request requestType = static_cast<Request>(RequestType);
-  const Simplex simplexType = static_cast<Simplex>(SimplexType);
 
   vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> cells{};
@@ -176,15 +179,15 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
 
   // do minimum preprocess and put watchdog on SimplexIdentifier
   for(const auto si : ids) {
-    switch(simplexType) {
-      case Vertex:
+    switch(this->SimplexType) {
+      case SIMPLEX::VERTEX:
         if(si < 0 or si >= numberOfVertices) {
           this->printErr("Vertex ID beyond the range.");
           return 0;
         }
         break;
 
-      case Edge:
+      case SIMPLEX::EDGE:
         triangulation->preconditionEdges();
         if(si < 0 or si >= triangulation->getNumberOfEdges()) {
           this->printErr("Edge ID beyond the range.");
@@ -192,7 +195,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         }
         break;
 
-      case Triangle:
+      case SIMPLEX::TRIANGLE:
         if(dimensionality == 2) {
           if(si < 0 or si >= triangulation->getNumberOfCells()) {
             this->printErr("Triangle ID beyond the range.");
@@ -207,7 +210,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         }
         break;
 
-      case Tetra:
+      case SIMPLEX::TETRA:
         if(dimensionality == 3)
           if(si < 0 or si >= triangulation->getNumberOfCells()) {
             this->printErr("Tetrahedron ID beyond the range.");
@@ -216,37 +219,37 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         break;
     }
 
-    switch(requestType) {
-      case ComputeSimplex:
-        switch(simplexType) {
-          case Vertex: {
+    switch(this->RequestType) {
+      case REQUEST::COMPUTE_SIMPLEX:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX: {
             const auto vid = addVertex(si);
             cells->InsertNextCell(VTK_VERTEX, 1, &vid);
             cellIds->InsertNextTuple1(vid);
             cellDims->InsertNextTuple1(0);
           } break;
 
-          case Edge:
+          case SIMPLEX::EDGE:
             addEdge(si);
             break;
 
-          case Triangle:
+          case SIMPLEX::TRIANGLE:
             addTriangle(si);
             break;
 
-          case Tetra:
+          case SIMPLEX::TETRA:
             if(dimensionality == 3)
               addTetra(si);
             break;
         }
         break;
 
-      case ComputeFacet:
-        switch(simplexType) {
-          case Vertex:
+      case REQUEST::COMPUTE_FACET:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
             break;
 
-          case Edge:
+          case SIMPLEX::EDGE:
             for(int i = 0; i < 2; ++i) {
               SimplexId vertexId;
               triangulation->getEdgeVertex(si, i, vertexId);
@@ -254,7 +257,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Triangle:
+          case SIMPLEX::TRIANGLE:
             if(dimensionality == 2) {
               triangulation->preconditionCellEdges();
               for(int i = 0; i < 3; ++i) {
@@ -272,7 +275,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Tetra:
+          case SIMPLEX::TETRA:
             if(dimensionality == 3) {
               triangulation->preconditionCellTriangles();
               for(int i = 0; i < 4; ++i) {
@@ -285,9 +288,9 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         }
         break;
 
-      case ComputeCofacet:
-        switch(simplexType) {
-          case Vertex:
+      case REQUEST::COMPUTE_COFACET:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
             triangulation->preconditionVertexNeighbors();
             triangulation->preconditionVertexEdges();
             {
@@ -301,7 +304,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Edge:
+          case SIMPLEX::EDGE:
             if(dimensionality == 2) {
               triangulation->preconditionEdgeStars();
               const SimplexId starNumber = triangulation->getEdgeStarNumber(si);
@@ -322,7 +325,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Triangle:
+          case SIMPLEX::TRIANGLE:
             if(dimensionality == 3) {
               triangulation->preconditionTriangleStars();
               const SimplexId starNumber
@@ -335,14 +338,14 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Tetra:
+          case SIMPLEX::TETRA:
             break;
         }
         break;
 
-      case ComputeStar:
-        switch(simplexType) {
-          case Vertex:
+      case REQUEST::COMPUTE_STAR:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
             triangulation->preconditionVertexStars();
             {
               const SimplexId starNumber
@@ -355,7 +358,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Edge:
+          case SIMPLEX::EDGE:
             triangulation->preconditionEdgeStars();
             {
               const SimplexId starNumber = triangulation->getEdgeStarNumber(si);
@@ -367,7 +370,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Triangle:
+          case SIMPLEX::TRIANGLE:
             if(dimensionality == 3) {
               triangulation->preconditionTriangleStars();
               const SimplexId starNumber
@@ -380,14 +383,14 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Tetra:
+          case SIMPLEX::TETRA:
             break;
         }
         break;
 
-      case ComputeLink:
-        switch(simplexType) {
-          case Vertex:
+      case REQUEST::COMPUTE_LINK:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
             triangulation->preconditionVertexLinks();
             if(dimensionality == 2) {
               triangulation->preconditionEdges();
@@ -410,7 +413,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Edge:
+          case SIMPLEX::EDGE:
             triangulation->preconditionEdgeLinks();
             if(dimensionality == 2) {
               const SimplexId linkNumber = triangulation->getEdgeLinkNumber(si);
@@ -429,7 +432,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Triangle:
+          case SIMPLEX::TRIANGLE:
             if(dimensionality == 3) {
               triangulation->preconditionTriangleLinks();
               const SimplexId linkNumber
@@ -442,7 +445,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
             }
             break;
 
-          case Tetra:
+          case SIMPLEX::TETRA:
             break;
         }
         break;
