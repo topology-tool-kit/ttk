@@ -26,7 +26,7 @@
             <Group name="filters" />
           </ProxyGroupDomain>
           <DataTypeDomain name="input_type">
-            <DataType value="vtkDataSet" />
+            <DataType value="vtkPointSet" />
           </DataTypeDomain>
           <!-- <InputArrayDomain name="input_array" attribute_type="point"
                 number_of_components="1" />

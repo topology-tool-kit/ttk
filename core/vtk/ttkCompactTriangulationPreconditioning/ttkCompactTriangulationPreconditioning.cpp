@@ -2,10 +2,10 @@
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
+#include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
@@ -29,7 +29,7 @@ ttkCompactTriangulationPreconditioning::
 int ttkCompactTriangulationPreconditioning::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
   }
   return 0;
@@ -50,8 +50,8 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   vtkInformationVector *outputVector) {
 
   // Get input object from input vector
-  // Note: has to be a vtkDataSet as required by FillInputPortInformation
-  vtkDataSet *inputDataSet = vtkDataSet::GetData(inputVector[0]);
+  // Note: has to be a vtkPointSet as required by FillInputPortInformation
+  vtkPointSet *inputDataSet = vtkPointSet::GetData(inputVector[0]);
   if(!inputDataSet)
     return 0;
 
@@ -79,7 +79,7 @@ int ttkCompactTriangulationPreconditioning::RequestData(
 
   // Get output vtkDataSet (which was already instantiated based on the
   // information provided by FillOutputPortInformation)
-  vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 0);
+  vtkPointSet *outputDataSet = vtkPointSet::GetData(outputVector, 0);
   vector<SimplexId> vertexMap(this->vertices.size());
   vtkUnstructuredGrid *outputMesh
     = vtkUnstructuredGrid::SafeDownCast(outputDataSet);
