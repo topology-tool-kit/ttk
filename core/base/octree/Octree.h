@@ -33,8 +33,6 @@ public:
   OctreeNode(uint32_t location) {
     locCode = location;
     childExists = 0;
-    vertexIds = new vector<SimplexId>();
-    cellIds = nullptr;
   }
 
   ~OctreeNode() {
@@ -43,8 +41,8 @@ public:
 protected:
   uint32_t locCode;
   uint8_t childExists;
-  vector<SimplexId> *vertexIds;
-  vector<SimplexId> *cellIds;
+  vector<SimplexId> vertexIds;
+  vector<SimplexId> cellIds;
 
   friend class Octree;
 };
@@ -185,28 +183,27 @@ private:
     if(node == nullptr)
       return;
 
-    if((int)node->vertexIds->size() > capacity) {
+    if((int)node->vertexIds.size() > capacity) {
       uint32_t childCode = 0;
       float ncenter[3] = {0.0}, nsize[3] = {0.0};
 
       computeCenterSize(node->locCode, ncenter, nsize);
 
-      for(int v : *(node->vertexIds)) {
+      for(int v : node->vertexIds) {
         childCode = getChildLocation(node->locCode, v, ncenter);
         OctreeNode *childNode = lookupNode(childCode);
 
         if(childNode == nullptr) {
           OctreeNode newnode(childCode);
-          newnode.vertexIds->push_back(v);
+          newnode.vertexIds.push_back(v);
           allNodes[childCode] = newnode;
           node->childExists |= (1 << (childCode & 7));
         } else {
-          childNode->vertexIds->push_back(v);
+          childNode->vertexIds.push_back(v);
         }
       }
 
-      delete node->vertexIds;
-      node->vertexIds = nullptr;
+      node->vertexIds.clear();
 
       for(uint32_t i = 0; i < 8; i++) {
         if(node->childExists & (1 << i)) {

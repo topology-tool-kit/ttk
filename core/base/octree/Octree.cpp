@@ -42,7 +42,7 @@ Octree::~Octree() {
  */
 bool Octree::empty() {
   OctreeNode *root = lookupNode(1);
-  if(root->vertexIds->size() == 0 && !root->childExists) {
+  if(root->vertexIds.empty() && !root->childExists) {
     return true;
   }
 
@@ -92,14 +92,14 @@ int Octree::verifyTree(SimplexId &vertexNum) {
   int vertexCount = 0;
   unordered_map<uint32_t, OctreeNode>::iterator it;
   for(it = allNodes.begin(); it != allNodes.end(); it++) {
-    if(it->second.childExists && it->second.vertexIds) {
+    if(it->second.childExists && it->second.vertexIds.size() > 0) {
       this->printErr("[Octree] WRONG! The internal node "
                      + to_string(it->second.locCode)
                      + " should not contain any vertices!");
       return -1;
     }
-    if(it->second.vertexIds) {
-      vertexCount += it->second.vertexIds->size();
+    if(it->second.vertexIds.size() > 0) {
+      vertexCount += it->second.vertexIds.size();
     }
   }
   if(vertexCount != vertexNum) {
@@ -132,12 +132,12 @@ int Octree::insertVertex(SimplexId &vertexId) {
 
   if(current == nullptr) {
     OctreeNode newnode(location);
-    newnode.vertexIds = new vector<SimplexId>{vertexId};
+    newnode.vertexIds = vector<SimplexId>{vertexId};
     OctreeNode *parent = lookupNode(location >> 3);
     parent->childExists |= (1 << (location & 7));
     allNodes[location] = newnode;
   } else {
-    current->vertexIds->push_back(vertexId);
+    current->vertexIds.push_back(vertexId);
     subdivide(current);
   }
   return 0;
@@ -173,10 +173,10 @@ int Octree::insertCell(SimplexId &cellId) {
                      + to_string(vertexId) + ") in the tree!");
       return -1;
     } else {
-      if(current->cellIds == nullptr) {
-        current->cellIds = new vector<SimplexId>{cellId};
-      } else if(current->cellIds->back() != cellId) {
-        current->cellIds->push_back(cellId);
+      if(current->cellIds.empty()) {
+        current->cellIds = vector<SimplexId>{cellId};
+      } else if(current->cellIds.back() != cellId) {
+        current->cellIds.push_back(cellId);
       }
     }
   }
@@ -219,13 +219,13 @@ void Octree::reindex(vector<SimplexId> &vertices,
       }
     } else {
       vertices.insert(
-        vertices.end(), topNode->vertexIds->begin(), topNode->vertexIds->end());
-      vector<SimplexId> tmp(topNode->vertexIds->size(), leafCount);
+        vertices.end(), topNode->vertexIds.begin(), topNode->vertexIds.end());
+      vector<SimplexId> tmp(topNode->vertexIds.size(), leafCount);
       nodes.insert(nodes.end(), tmp.begin(), tmp.end());
       leafCount++;
 
-      if(topNode->cellIds) {
-        for(auto it = topNode->cellIds->begin(); it != topNode->cellIds->end();
+      if(topNode->cellIds.size() > 0) {
+        for(auto it = topNode->cellIds.begin(); it != topNode->cellIds.end();
             it++) {
           if(cellMap[*it] == -1) {
             cellMap[*it] = cellCount++;
