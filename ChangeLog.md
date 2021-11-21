@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- PersistentSimplexPairs backend (Zomorodian 2010), slow.
+- Bug fixes
 
 ### 1.0
 - Official integration into ParaView-5.10 \0/ clap! clap! clap! \0/
