@@ -177,11 +177,24 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
+  // remove duplicates and negative values
+  {
+    std::sort(ids.rbegin(), ids.rend()); // decreasing order
+    const auto last = std::unique(ids.begin(), ids.end());
+    ids.erase(last, ids.end());
+
+    // first negative value
+    const auto it = std::find_if(
+      ids.begin(), ids.end(), [](const SimplexId a) { return a < 0; });
+    // remove negative values
+    ids.erase(it, ids.end());
+  }
+
   // do minimum preprocess and put watchdog on SimplexIdentifier
   for(const auto si : ids) {
     switch(this->SimplexType) {
       case SIMPLEX::VERTEX:
-        if(si < 0 or si >= numberOfVertices) {
+        if(si >= numberOfVertices) {
           this->printErr("Vertex ID beyond the range.");
           return 0;
         }
@@ -189,7 +202,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
 
       case SIMPLEX::EDGE:
         triangulation->preconditionEdges();
-        if(si < 0 or si >= triangulation->getNumberOfEdges()) {
+        if(si >= triangulation->getNumberOfEdges()) {
           this->printErr("Edge ID beyond the range.");
           return 0;
         }
@@ -197,13 +210,13 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
 
       case SIMPLEX::TRIANGLE:
         if(dimensionality == 2) {
-          if(si < 0 or si >= triangulation->getNumberOfCells()) {
+          if(si >= triangulation->getNumberOfCells()) {
             this->printErr("Triangle ID beyond the range.");
             return 0;
           }
         } else if(dimensionality == 3) {
           triangulation->preconditionTriangles();
-          if(si < 0 or si >= triangulation->getNumberOfTriangles()) {
+          if(si >= triangulation->getNumberOfTriangles()) {
             this->printErr("Triangle ID beyond the range.");
             return 0;
           }
@@ -212,7 +225,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
 
       case SIMPLEX::TETRA:
         if(dimensionality == 3)
-          if(si < 0 or si >= triangulation->getNumberOfCells()) {
+          if(si >= triangulation->getNumberOfCells()) {
             this->printErr("Tetrahedron ID beyond the range.");
             return 0;
           }
