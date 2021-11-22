@@ -190,48 +190,70 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     ids.erase(it, ids.end());
   }
 
-  // do minimum preprocess and put watchdog on SimplexIdentifier
-  for(const auto si : ids) {
+  const auto detectOutOfBounds = [this, numberOfVertices, dimensionality,
+                                  &triangulation](const SimplexId si) {
     switch(this->SimplexType) {
       case SIMPLEX::VERTEX:
         if(si >= numberOfVertices) {
-          this->printErr("Vertex ID beyond the range.");
-          return 0;
+          this->printWrn("Vertex ID " + std::to_string(si)
+                         + " out of bounds (max. "
+                         + std::to_string(numberOfVertices) + ").");
+          return true;
         }
         break;
 
       case SIMPLEX::EDGE:
         triangulation->preconditionEdges();
         if(si >= triangulation->getNumberOfEdges()) {
-          this->printErr("Edge ID beyond the range.");
-          return 0;
+          this->printWrn(
+            "Edge ID " + std::to_string(si) + " out of bounds (max. "
+            + std::to_string(triangulation->getNumberOfEdges()) + ").");
+          return true;
         }
         break;
 
-      case SIMPLEX::TRIANGLE:
-        if(dimensionality == 2) {
-          if(si >= triangulation->getNumberOfCells()) {
-            this->printErr("Triangle ID beyond the range.");
-            return 0;
-          }
-        } else if(dimensionality == 3) {
+      case SIMPLEX::TRIANGLE: {
+        if(dimensionality == 3) {
           triangulation->preconditionTriangles();
-          if(si >= triangulation->getNumberOfTriangles()) {
-            this->printErr("Triangle ID beyond the range.");
-            return 0;
-          }
         }
-        break;
+        const auto numberOfTriangles
+          = dimensionality == 2 ? triangulation->getNumberOfCells()
+                                : triangulation->getNumberOfTriangles();
+        if(si >= numberOfTriangles) {
+          this->printWrn("Triangle ID " + std::to_string(si)
+                         + " out of bounds (max. "
+                         + std::to_string(numberOfTriangles) + ").");
+          return true;
+        }
+      } break;
 
       case SIMPLEX::TETRA:
         if(dimensionality == 3)
           if(si >= triangulation->getNumberOfCells()) {
-            this->printErr("Tetrahedron ID beyond the range.");
-            return 0;
+            this->printWrn(
+              "Tetrahedron ID " + std::to_string(si) + " out of bounds (max. "
+              + std::to_string(triangulation->getNumberOfCells()) + ").");
+            return true;
           }
         break;
     }
+    return false;
+  };
 
+  // remove out-of-bounds values
+  {
+    const auto last = std::remove_if(ids.begin(), ids.end(), detectOutOfBounds);
+    ids.erase(last, ids.end());
+  }
+
+  // sanity check
+  if(ids.empty()) {
+    this->printErr("Invalid simplex indices");
+    return 0;
+  }
+
+  // do minimum preprocess and put watchdog on SimplexIdentifier
+  for(const auto si : ids) {
     switch(this->RequestType) {
       case REQUEST::COMPUTE_SIMPLEX:
         switch(this->SimplexType) {
