@@ -16,7 +16,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
 
 
 # 3. Continuous integration
-  - TTK uses some basic continuous integration, which consists in testing for build success under Linux, Windows and MacOs (with [Azure](https://azure.microsoft.com/en-us/services/devops/pipelines/)) upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
+  - TTK uses some basic continuous integration, which consists in testing for build success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
   - To make your life easier, we recommend that you sign up for this (free) service and that you connect your TTK github fork to it. This will run the build tests upon each of your commits to your local TTK repository.
 
 
