@@ -2,6 +2,12 @@ Thanks for contributing to TTK!
 
 Please find below a few guidelines that we invite you to consider before making a pull request.
 
+# 0. Getting set up with Github
+Please find below generic recommendations for setting up your fork of TTK's main repository.
+  - Setting up your Github account
+    - Create an account on [Github](https://github.com/).
+    - If applicable, we recommand to upgrade (for free) this account to a Github Pro account, through the [Github education program](https://docs.github.com/en/education/explore-the-benefits-of-teaching-and-learning-with-github-education/use-github-in-your-classroom-and-research/apply-for-an-educator-or-researcher-discount).
+
 # 1. Authorship
   - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
 
@@ -16,8 +22,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
 
 
 # 3. Continuous integration
-  - TTK uses some basic continuous integration, which consists in testing for build success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
-  - To make your life easier, we recommend that you sign up for this (free) service and that you connect your TTK github fork to it. This will run the build tests upon each of your commits to your local TTK repository.
+  - TTK uses some basic continuous integration, which consists in testing for build and run success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
 
 
 # 4. Submitting code
