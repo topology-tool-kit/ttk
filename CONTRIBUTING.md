@@ -8,7 +8,7 @@ Please find below generic recommendations for setting up your fork of TTK's main
     - Create an account on [Github](https://github.com/).
     - If applicable, we recommand to upgrade (for free) this account to a Github Pro account, through the [Github education program](https://docs.github.com/en/education/explore-the-benefits-of-teaching-and-learning-with-github-education/use-github-in-your-classroom-and-research/apply-for-an-educator-or-researcher-discount).
   - Forking TTK's main repository:
-    - Go to [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) and click the "Fork" button (top right corner).
+    - Go to [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) and click on the "Fork" button (top right corner).
     - In the remainder, let us designate by `@PUBLIC` the URL of [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) (i.e. `@PUBLIC = https://github.com/topology-tool-kit/ttk`)
     - Similarly, let us designate by `@FORK` your public fork of TTK's public repository.
   - Creating your private TTK repository:
