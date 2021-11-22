@@ -10,7 +10,7 @@ Please find below generic recommendations for setting up your fork of TTK's main
   - Forking TTK's main repository:
     - Go to [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) and click on the "Fork" button (top right corner).
     - In the remainder, let us designate by `@PUBLIC` the URL of [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) (i.e. `@PUBLIC = https://github.com/topology-tool-kit/ttk`)
-    - Similarly, let us designate by `@FORK` your public fork of TTK's public repository.
+    - Similarly, let us designate by `@FORK` the URL of your public fork of TTK's public repository.
   - Creating your private TTK repository:
     - We recommand to use a private repository for the development of unpublished features.
     - For this, create and setup a *private* repository (e.g. `ttk-yourusername`). Let us call it `@PRIVATE`.
