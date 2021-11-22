@@ -22,7 +22,7 @@ Please find below generic recommendations for setting up your fork of TTK's main
     $ git remote add ttk-fork @FORK
     ```
   - Daily usage:
-    - At this point, you can regularly keep your private repository up-to-date by entering the following command:
+    - At this point, you can regularly keep your private repository up-to-date by entering the following command in it:
     ```
     $ git pull ttk-public dev
     ```
