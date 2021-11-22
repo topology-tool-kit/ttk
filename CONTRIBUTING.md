@@ -4,9 +4,30 @@ Please find below a few guidelines that we invite you to consider before making 
 
 # 0. Getting set up with Github
 Please find below generic recommendations for setting up your fork of TTK's main repository.
-  - Setting up your Github account
+  - Setting up your Github account:
     - Create an account on [Github](https://github.com/).
     - If applicable, we recommand to upgrade (for free) this account to a Github Pro account, through the [Github education program](https://docs.github.com/en/education/explore-the-benefits-of-teaching-and-learning-with-github-education/use-github-in-your-classroom-and-research/apply-for-an-educator-or-researcher-discount).
+  - Forking TTK's main repository:
+    - Go to [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) and click the "Fork" button (top right corner).
+    - In the remainder, let us designate by `@PUBLIC` the URL of [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) (i.e. `@PUBLIC = https://github.com/topology-tool-kit/ttk`)
+    - Similarly, let us designate by `@FORK` your public fork of TTK's public repository.
+  - Creating your private TTK repository:
+    - We recommand to use a private repository for the development of unpublished features.
+    - For this, create and setup a *private* repository (e.g. `ttk-yourusername`). Let us call it `@PRIVATE`.
+    - Clone your `@PRIVATE` repository locally and enter the following commands:
+    ```
+    $ git clone @PRIVATE ttk-yourusername
+    $ cd ttk-yourusername
+    $ git remote add ttk-public @PUBLIC
+    $ git remote add ttk-fork @FORK
+    ```
+  - Daily usage:
+    - At this point, you can regularly keep your private repository up-to-date by entering the following command:
+    ```
+    $ git pull ttk-public dev
+    ```
+    - When developing a new unpublished feature, we recommand to create a new branch on your `@PRIVATE` repository.
+    - When this feature is ready to be made public (e.g. after publication of the corresponding research), push the corresponding branch to your `@FORK`. This will enable you to open a pull-request (PR) to the main TTK repository.
 
 # 1. Authorship
   - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
