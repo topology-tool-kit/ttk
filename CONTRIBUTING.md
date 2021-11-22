@@ -45,12 +45,20 @@ $ clang-format -i -style=file core/\*/\*/\*h core/\*/\*/\*hpp core/\*/\*/\*cpp c
   - To make your life even easier, we recommend that you setup a clang-format pre-commit hook, which will automatically run clang-format on any of your commits to your local repository.
 For this, we recommend to use scripts such as [this one](https://github.com/barisione/clang-format-hooks/).
 
+# 3. Code documentation and examples
+  - TTK uses [Doxygen](https://www.doxygen.nl/index.html) for the automatic generation of online documentation.
+  - Please use Doxygen commands for documenting your header files:
+    - Examples for the base layer:
+      - [Triangulation.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/triangulation/Triangulation.h)
+      - [HelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/helloWorld/HelloWorld.h)
+    - Examples for the VTK layer:
+      - [ttkHelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkHelloWorld/ttkHelloWorld.h)
 
-# 3. Continuous integration
+# 4. Continuous integration
   - TTK uses some basic continuous integration, which consists in testing for build and run success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
 
 
-# 4. Submitting code
+# 5. Submitting code
   - If you plan to submit a **new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). 
   - Prepare your pull-request to the **dev** branch of [TTK](https://github.com/topology-tool-kit/ttk/tree/dev). **Before** submitting it, please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public dev</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree). Please make sure that your new code runs fine with TTK's performance mode turned on <code>TTK\_ENABLE\_KAMIKAZE=ON</code> (OFF by default on the **dev** branch).
   - Please submit a pull-request with an example to the **dev** branch of [ttk-data](https://github.com/topology-tool-kit/ttk-data/tree/dev):
