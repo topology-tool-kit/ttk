@@ -31,7 +31,7 @@ Please find below generic recommendations for setting up your fork of TTK's main
   - Setting up [ttk-data](https://github.com/topology-tool-kit/ttk-data)
     - The repository [ttk-data](https://github.com/topology-tool-kit/ttk-data) hosts data sets and examples.
     - We recommand that you re-iterate the above procedure (with a public fork and a private repository) for this repository as well.
-    - Note that only the features which are covered by examples of [ttk-data](https://github.com/topology-tool-kit/ttk-data) are tested by our continuous integration.
+    - Note that only the features which are covered by examples in [ttk-data](https://github.com/topology-tool-kit/ttk-data) are tested by the continuous integration.
 
 # 1. Authorship
   - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
