@@ -31,6 +31,12 @@
 /// \sa ttkPersistenceDiagram
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceCurve
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+/// example</a>
+///
+
 #ifndef _TTK_PERSISTENCECURVE_H
 #define _TTK_PERSISTENCECURVE_H
 #pragma once

@@ -53,6 +53,11 @@
 ///
 /// \sa ttk::ScalarFieldCriticalPoints
 ///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a>
+///
+///
 #pragma once
 
 // VTK Module

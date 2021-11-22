@@ -1,4 +1,15 @@
+/// \ingroup vtk
+/// \class ttkFTMTree
+/// \author Charles Gueunet <charles.gueunet@kitware.com>
+/// \date June 2017.
+///
+/// \brief TTK VTK-filter for the computation of merge and contour trees.
+///
 /// \sa ttk::ftm::FTMTree
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a>
 
 #pragma once
 
