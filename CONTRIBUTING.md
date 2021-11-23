@@ -80,7 +80,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - a long description of the purpose of the class
       - if the class is a filter (this is the case in general):
         - a description of each input, with the command `\param`, describing:
-          - the input class (e.g. `vtkDataSet`, `vtkPointSet`, etc.)
+          - its class (e.g. `vtkDataSet`, `vtkPointSet`, etc.)
           - the required data arrays if any (type, size, meaning).
         - a description of each output, with the command `\param`, describing:
           - the output class (e.g. `vtkDataSet`, `vtkPointSet`, etc.)
@@ -94,9 +94,14 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - a pointer to the corresponding base code class (if applicable), with the command `\sa`
       - the list of **all** the entries from [TTK's Examples website](https://topology-tool-kit.github.io/examples/) including the filter.
   - Each ParaView XML file should be organized as follows:
-    - a `<Documentation>` section:
-      - this should be a copy of all the information included in the overview description of the corresponding VTK class (see above).
-  should embed the same documentation description as provided in the corresponding VTK layer header file.
+    - an overview `<Documentation>` section, within the main `<SourceProxy>` section:
+      - this should be a copy of the overview description of the corresponding VTK class (see above).
+    - for each `<InputProperty>` section:
+      - include a `<Documentation>` section describing the corresponding input data, by specifying:
+        - its class (e.g. `vtkDataSet`, `vtkPointSet`, etc.)
+        - the required data arrays if any (type, size, meaning).
+    - for each other Property section (`<IntProperty>`, `<StringProperty>`, etc.), specify:
+      - the meaning of the input option and its possible values.
   - Please check out the following examples for inspiration:
     - Examples for the base layer:
       - [Triangulation.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/triangulation/Triangulation.h)
