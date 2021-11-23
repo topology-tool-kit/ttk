@@ -59,7 +59,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
     - Edit the automatically generated (and verbose) script:
       - Insert the following line at the top: `#!/usr/bin/env python`
       - After the line `from paraview.simple import *`, remove all lines until you reach the following comment section:
-        ``` python
+        ```
 # ----------------------------------------------------------------
 # setup the data processing pipelines
 # ----------------------------------------------------------------
