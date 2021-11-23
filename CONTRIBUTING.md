@@ -58,13 +58,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - Once the state file is opened in ParaView, click on `File`, `Save State...` and make sure to select the entry `Python state file (*.py)` from the extension drop down menu.
     - Edit the automatically generated (and verbose) script:
       - Insert the following line at the top: `#!/usr/bin/env python`
-      - After the line `from paraview.simple import *`, remove all lines until you reach the following comment section:
-        ```# ----------------------------------------------------------------
-# setup the data processing pipelines
-# ----------------------------------------------------------------
-this is a test
-
-        ```
+      - After the line `from paraview.simple import *`, remove all lines until you reach the comment section entitled ```setup the data processing pipelines```.
 
 # 4. Code documentation
   -
