@@ -75,7 +75,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - a list of related classes, with the command `\sa`:
         - Other VTK filters commonly used in conjunction with the present filter
       - a pointer to the corresponding base code class (if applicable), with the command `\sa`
-      - the list of *all* the entries from [TTK's Examples website](https://topology-tool-kit.github.io/examples/) including the filter.
+      - the list of **all** the entries from [TTK's Examples website](https://topology-tool-kit.github.io/examples/) including the filter.
   - Each ParaView XML file should embed the same documentation description as provided in the corresponding VTK layer header file.
 
 # 5. Continuous integration
