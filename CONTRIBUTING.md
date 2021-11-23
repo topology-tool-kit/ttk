@@ -62,6 +62,19 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
   - Each VTK layer header file should be organized as follows
     - A overview, including in order:
       - the line `\ingroup vtk`
+      - the name of the class, with the command `\class`
+      - the author of the class, with the command `\author`
+      - the date of creation of the class, with the command `\date`
+      - a one-liner description of the class, with the command `\brief`
+      - a long description of the purpose of the class
+      - if the class is a filter (this is the case in general):
+        - a description of each input, with the command `\param`
+        - a description of each output, with the command `\param`
+        - recall that the class can be used as any other VTK filter
+      - related publications (if applicable)
+      - a list of related classes, with the command `\sa`:
+        - Other VTK filters commonly used in conjunction with the present filter
+      - a pointer to the corresponding base code class (if applicable), with the command `\sa`
   - Each ParaView XML file should embed the same documentation description as provided in the corresponding VTK layer header file.
 
 # 5. Continuous integration
