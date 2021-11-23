@@ -1,15 +1,22 @@
-#include <ttkMacros.h>
 #include <ttkTriangulationRequest.h>
 #include <ttkUtils.h>
 
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkTriangulationRequest);
+
+ttkTriangulationRequest::ttkTriangulationRequest() {
+  this->setDebugMsgPrefix("TriangulationRequest");
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
 
 int ttkTriangulationRequest::FillInputPortInformation(int port,
                                                       vtkInformation *info) {
@@ -43,11 +50,15 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
 
   const int dimensionality = triangulation->getDimensionality();
-  const Request requestType = static_cast<Request>(RequestType);
-  const Simplex simplexType = static_cast<Simplex>(SimplexType);
 
   vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> cells{};
+  vtkNew<ttkSimplexIdTypeArray> cellIds{};
+  cellIds->SetNumberOfComponents(1);
+  cellIds->SetName("CellId");
+  vtkNew<vtkSignedCharArray> cellDims{};
+  cellDims->SetNumberOfComponents(1);
+  cellDims->SetName("CellDimension");
 
   using ttk::SimplexId;
 
@@ -65,15 +76,15 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
     if(vertexId == -1)
       return vtkIdType(-1);
 
-    float p[3];
+    std::array<float, 3> p{};
     triangulation->getVertexPoint(vertexId, p[0], p[1], p[2]);
     vertices.push_back(vertexId);
-    return points->InsertNextPoint(p);
+    return points->InsertNextPoint(p.data());
   };
 
   auto addEdge = [&](const SimplexId edgeId) {
-    vtkIdType pointIds[2];
-    SimplexId vertexIds[2];
+    std::array<vtkIdType, 2> pointIds{};
+    std::array<SimplexId, 2> vertexIds{};
 
     for(int i = 0; i < 2; ++i) {
       triangulation->getEdgeVertex(edgeId, i, vertexIds[i]);
@@ -89,14 +100,16 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         pointIds[i] = isVisited[vertexId];
     }
 
-    cells->InsertNextCell(VTK_LINE, 2, pointIds);
+    cells->InsertNextCell(VTK_LINE, 2, pointIds.data());
+    cellIds->InsertNextTuple1(edgeId);
+    cellDims->InsertNextTuple1(1);
 
     return 0;
   };
 
   auto addTriangle = [&](const SimplexId triangleId) {
-    vtkIdType pointIds[3];
-    SimplexId vertexIds[3];
+    std::array<vtkIdType, 3> pointIds{};
+    std::array<SimplexId, 3> vertexIds{};
 
     for(int i = 0; i < 3; ++i) {
       if(dimensionality == 3)
@@ -115,14 +128,16 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         pointIds[i] = isVisited[vertexId];
     }
 
-    cells->InsertNextCell(VTK_TRIANGLE, 3, pointIds);
+    cells->InsertNextCell(VTK_TRIANGLE, 3, pointIds.data());
+    cellIds->InsertNextTuple1(triangleId);
+    cellDims->InsertNextTuple1(2);
 
     return 0;
   };
 
   auto addTetra = [&](const SimplexId tetraId) {
-    vtkIdType pointIds[4];
-    SimplexId vertexIds[4];
+    std::array<vtkIdType, 4> pointIds{};
+    std::array<SimplexId, 4> vertexIds{};
 
     for(int i = 0; i < 4; ++i) {
       triangulation->getCellVertex(tetraId, i, vertexIds[i]);
@@ -138,7 +153,9 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         pointIds[i] = isVisited[vertexId];
     }
 
-    cells->InsertNextCell(VTK_TETRA, 4, pointIds);
+    cells->InsertNextCell(VTK_TETRA, 4, pointIds.data());
+    cellIds->InsertNextTuple1(tetraId);
+    cellDims->InsertNextTuple1(3);
 
     return 0;
   };
@@ -150,286 +167,329 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
       addTetra(starId);
   };
 
-  // do minimum preprocess and put watchdog on SimplexIdentifier
-  switch(simplexType) {
-    case Vertex:
-      if(SimplexIdentifier < 0 or SimplexIdentifier >= numberOfVertices) {
-        this->printErr("Vertex ID beyond the range.");
-        return 0;
-      }
-      break;
-
-    case Edge:
-      triangulation->preconditionEdges();
-      if(SimplexIdentifier < 0
-         or SimplexIdentifier >= triangulation->getNumberOfEdges()) {
-        this->printErr("Edge ID beyond the range.");
-        return 0;
-      }
-      break;
-
-    case Triangle:
-      if(dimensionality == 2) {
-        if(SimplexIdentifier < 0
-           or SimplexIdentifier >= triangulation->getNumberOfCells()) {
-          this->printErr("Triangle ID beyond the range.");
-          return 0;
-        }
-      } else if(dimensionality == 3) {
-        triangulation->preconditionTriangles();
-        if(SimplexIdentifier < 0
-           or SimplexIdentifier >= triangulation->getNumberOfTriangles()) {
-          this->printErr("Triangle ID beyond the range.");
-          return 0;
-        }
-      }
-      break;
-
-    case Tetra:
-      if(dimensionality == 3)
-        if(SimplexIdentifier < 0
-           or SimplexIdentifier >= triangulation->getNumberOfCells()) {
-          this->printErr("Tetrahedron ID beyond the range.");
-          return 0;
-        }
-      break;
+  // parse SimplexIdentifier into a vector of identifiers
+  std::vector<SimplexId> ids{};
+  std::istringstream iss(this->SimplexIdentifier);
+  for(SimplexId i; iss >> i;) {
+    ids.emplace_back(i);
+    if(iss.peek() == ',') {
+      iss.ignore();
+    }
   }
 
-  switch(requestType) {
-    case ComputeSimplex:
-      switch(simplexType) {
-        case Vertex: {
-          const auto vid = addVertex(SimplexIdentifier);
-          cells->InsertNextCell(VTK_VERTEX, 1, &vid);
-        } break;
+  // remove duplicates and negative values
+  {
+    std::sort(ids.rbegin(), ids.rend()); // decreasing order
+    const auto last = std::unique(ids.begin(), ids.end());
+    ids.erase(last, ids.end());
 
-        case Edge:
-          addEdge(SimplexIdentifier);
-          break;
+    // first negative value
+    const auto it = std::find_if(
+      ids.begin(), ids.end(), [](const SimplexId a) { return a < 0; });
+    // remove negative values
+    ids.erase(it, ids.end());
+  }
 
-        case Triangle:
-          addTriangle(SimplexIdentifier);
-          break;
+  const auto detectOutOfBounds = [this, numberOfVertices, dimensionality,
+                                  &triangulation](const SimplexId si) {
+    switch(this->SimplexType) {
+      case SIMPLEX::VERTEX:
+        if(si >= numberOfVertices) {
+          this->printWrn("Vertex ID " + std::to_string(si)
+                         + " out of bounds (max. "
+                         + std::to_string(numberOfVertices) + ").");
+          return true;
+        }
+        break;
 
-        case Tetra:
-          if(dimensionality == 3)
-            addTetra(SimplexIdentifier);
-          break;
-      }
-      break;
+      case SIMPLEX::EDGE:
+        triangulation->preconditionEdges();
+        if(si >= triangulation->getNumberOfEdges()) {
+          this->printWrn(
+            "Edge ID " + std::to_string(si) + " out of bounds (max. "
+            + std::to_string(triangulation->getNumberOfEdges()) + ").");
+          return true;
+        }
+        break;
 
-    case ComputeFacet:
-      switch(simplexType) {
-        case Vertex:
-          break;
+      case SIMPLEX::TRIANGLE: {
+        if(dimensionality == 3) {
+          triangulation->preconditionTriangles();
+        }
+        const auto numberOfTriangles
+          = dimensionality == 2 ? triangulation->getNumberOfCells()
+                                : triangulation->getNumberOfTriangles();
+        if(si >= numberOfTriangles) {
+          this->printWrn("Triangle ID " + std::to_string(si)
+                         + " out of bounds (max. "
+                         + std::to_string(numberOfTriangles) + ").");
+          return true;
+        }
+      } break;
 
-        case Edge:
-          for(int i = 0; i < 2; ++i) {
-            SimplexId vertexId;
-            triangulation->getEdgeVertex(SimplexIdentifier, i, vertexId);
-            addVertex(vertexId);
+      case SIMPLEX::TETRA:
+        if(dimensionality == 3)
+          if(si >= triangulation->getNumberOfCells()) {
+            this->printWrn(
+              "Tetrahedron ID " + std::to_string(si) + " out of bounds (max. "
+              + std::to_string(triangulation->getNumberOfCells()) + ").");
+            return true;
           }
-          break;
+        break;
+    }
+    return false;
+  };
 
-        case Triangle:
-          if(dimensionality == 2) {
-            triangulation->preconditionCellEdges();
-            for(int i = 0; i < 3; ++i) {
-              SimplexId edgeId;
-              triangulation->getCellEdge(SimplexIdentifier, i, edgeId);
-              addEdge(edgeId);
-            }
-          } else if(dimensionality == 3) {
-            triangulation->preconditionTriangleEdges();
-            for(int i = 0; i < 3; ++i) {
-              SimplexId edgeId;
-              triangulation->getTriangleEdge(SimplexIdentifier, i, edgeId);
-              addEdge(edgeId);
-            }
-          }
-          break;
+  // remove out-of-bounds values
+  {
+    const auto last = std::remove_if(ids.begin(), ids.end(), detectOutOfBounds);
+    ids.erase(last, ids.end());
+  }
 
-        case Tetra:
-          if(dimensionality == 3) {
-            triangulation->preconditionCellTriangles();
-            for(int i = 0; i < 4; ++i) {
-              SimplexId triangleId;
-              triangulation->getCellTriangle(SimplexIdentifier, i, triangleId);
-              addTriangle(triangleId);
-            }
-          }
-          break;
-      }
-      break;
+  // sanity check
+  if(ids.empty()) {
+    this->printErr("Invalid simplex indices");
+    return 0;
+  }
 
-    case ComputeCofacet:
-      switch(simplexType) {
-        case Vertex:
-          triangulation->preconditionVertexNeighbors();
-          triangulation->preconditionVertexEdges();
-          {
-            const SimplexId edgeNumber
-              = triangulation->getVertexEdgeNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < edgeNumber; ++i) {
-              SimplexId edgeId;
-              triangulation->getVertexEdge(SimplexIdentifier, i, edgeId);
-              addEdge(edgeId);
-            }
-          }
-          break;
+  // do minimum preprocess and put watchdog on SimplexIdentifier
+  for(const auto si : ids) {
+    switch(this->RequestType) {
+      case REQUEST::COMPUTE_SIMPLEX:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX: {
+            const auto vid = addVertex(si);
+            cells->InsertNextCell(VTK_VERTEX, 1, &vid);
+            cellIds->InsertNextTuple1(vid);
+            cellDims->InsertNextTuple1(0);
+          } break;
 
-        case Edge:
-          if(dimensionality == 2) {
+          case SIMPLEX::EDGE:
+            addEdge(si);
+            break;
+
+          case SIMPLEX::TRIANGLE:
+            addTriangle(si);
+            break;
+
+          case SIMPLEX::TETRA:
+            if(dimensionality == 3)
+              addTetra(si);
+            break;
+        }
+        break;
+
+      case REQUEST::COMPUTE_FACET:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
+            break;
+
+          case SIMPLEX::EDGE:
+            for(int i = 0; i < 2; ++i) {
+              SimplexId vertexId;
+              triangulation->getEdgeVertex(si, i, vertexId);
+              addVertex(vertexId);
+            }
+            break;
+
+          case SIMPLEX::TRIANGLE:
+            if(dimensionality == 2) {
+              triangulation->preconditionCellEdges();
+              for(int i = 0; i < 3; ++i) {
+                SimplexId edgeId;
+                triangulation->getCellEdge(si, i, edgeId);
+                addEdge(edgeId);
+              }
+            } else if(dimensionality == 3) {
+              triangulation->preconditionTriangleEdges();
+              for(int i = 0; i < 3; ++i) {
+                SimplexId edgeId;
+                triangulation->getTriangleEdge(si, i, edgeId);
+                addEdge(edgeId);
+              }
+            }
+            break;
+
+          case SIMPLEX::TETRA:
+            if(dimensionality == 3) {
+              triangulation->preconditionCellTriangles();
+              for(int i = 0; i < 4; ++i) {
+                SimplexId triangleId;
+                triangulation->getCellTriangle(si, i, triangleId);
+                addTriangle(triangleId);
+              }
+            }
+            break;
+        }
+        break;
+
+      case REQUEST::COMPUTE_COFACET:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
+            triangulation->preconditionVertexNeighbors();
+            triangulation->preconditionVertexEdges();
+            {
+              const SimplexId edgeNumber
+                = triangulation->getVertexEdgeNumber(si);
+              for(SimplexId i = 0; i < edgeNumber; ++i) {
+                SimplexId edgeId;
+                triangulation->getVertexEdge(si, i, edgeId);
+                addEdge(edgeId);
+              }
+            }
+            break;
+
+          case SIMPLEX::EDGE:
+            if(dimensionality == 2) {
+              triangulation->preconditionEdgeStars();
+              const SimplexId starNumber = triangulation->getEdgeStarNumber(si);
+              for(SimplexId i = 0; i < starNumber; ++i) {
+                SimplexId starId;
+                triangulation->getEdgeStar(si, i, starId);
+                addStar(starId);
+              }
+            } else if(dimensionality == 3) {
+              triangulation->preconditionEdgeTriangles();
+              const SimplexId triangleNumber
+                = triangulation->getEdgeTriangleNumber(si);
+              for(SimplexId i = 0; i < triangleNumber; ++i) {
+                SimplexId triangleId;
+                triangulation->getEdgeTriangle(si, i, triangleId);
+                addTriangle(triangleId);
+              }
+            }
+            break;
+
+          case SIMPLEX::TRIANGLE:
+            if(dimensionality == 3) {
+              triangulation->preconditionTriangleStars();
+              const SimplexId starNumber
+                = triangulation->getTriangleStarNumber(si);
+              for(SimplexId i = 0; i < starNumber; ++i) {
+                SimplexId starId;
+                triangulation->getTriangleStar(si, i, starId);
+                addStar(starId);
+              }
+            }
+            break;
+
+          case SIMPLEX::TETRA:
+            break;
+        }
+        break;
+
+      case REQUEST::COMPUTE_STAR:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
+            triangulation->preconditionVertexStars();
+            {
+              const SimplexId starNumber
+                = triangulation->getVertexStarNumber(si);
+              for(SimplexId i = 0; i < starNumber; ++i) {
+                SimplexId starId;
+                triangulation->getVertexStar(si, i, starId);
+                addStar(starId);
+              }
+            }
+            break;
+
+          case SIMPLEX::EDGE:
             triangulation->preconditionEdgeStars();
-            const SimplexId starNumber
-              = triangulation->getEdgeStarNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < starNumber; ++i) {
-              SimplexId starId;
-              triangulation->getEdgeStar(SimplexIdentifier, i, starId);
-              addStar(starId);
+            {
+              const SimplexId starNumber = triangulation->getEdgeStarNumber(si);
+              for(SimplexId i = 0; i < starNumber; ++i) {
+                SimplexId starId;
+                triangulation->getEdgeStar(si, i, starId);
+                addStar(starId);
+              }
             }
-          } else if(dimensionality == 3) {
-            triangulation->preconditionEdgeTriangles();
-            const SimplexId triangleNumber
-              = triangulation->getEdgeTriangleNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < triangleNumber; ++i) {
-              SimplexId triangleId;
-              triangulation->getEdgeTriangle(SimplexIdentifier, i, triangleId);
-              addTriangle(triangleId);
-            }
-          }
-          break;
+            break;
 
-        case Triangle:
-          if(dimensionality == 3) {
-            triangulation->preconditionTriangleStars();
-            const SimplexId starNumber
-              = triangulation->getTriangleStarNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < starNumber; ++i) {
-              SimplexId starId;
-              triangulation->getTriangleStar(SimplexIdentifier, i, starId);
-              addStar(starId);
+          case SIMPLEX::TRIANGLE:
+            if(dimensionality == 3) {
+              triangulation->preconditionTriangleStars();
+              const SimplexId starNumber
+                = triangulation->getTriangleStarNumber(si);
+              for(SimplexId i = 0; i < starNumber; ++i) {
+                SimplexId starId;
+                triangulation->getTriangleStar(si, i, starId);
+                addStar(starId);
+              }
             }
-          }
-          break;
+            break;
 
-        case Tetra:
-          break;
-      }
-      break;
+          case SIMPLEX::TETRA:
+            break;
+        }
+        break;
 
-    case ComputeStar:
-      switch(simplexType) {
-        case Vertex:
-          triangulation->preconditionVertexStars();
-          {
-            const SimplexId starNumber
-              = triangulation->getVertexStarNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < starNumber; ++i) {
-              SimplexId starId;
-              triangulation->getVertexStar(SimplexIdentifier, i, starId);
-              addStar(starId);
+      case REQUEST::COMPUTE_LINK:
+        switch(this->SimplexType) {
+          case SIMPLEX::VERTEX:
+            triangulation->preconditionVertexLinks();
+            if(dimensionality == 2) {
+              triangulation->preconditionEdges();
+              const SimplexId linkNumber
+                = triangulation->getVertexLinkNumber(si);
+              for(SimplexId i = 0; i < linkNumber; ++i) {
+                SimplexId linkId;
+                triangulation->getVertexLink(si, i, linkId);
+                addEdge(linkId);
+              }
+            } else if(dimensionality == 3) {
+              triangulation->preconditionVertexTriangles();
+              const SimplexId linkNumber
+                = triangulation->getVertexLinkNumber(si);
+              for(SimplexId i = 0; i < linkNumber; ++i) {
+                SimplexId linkId;
+                triangulation->getVertexLink(si, i, linkId);
+                addTriangle(linkId);
+              }
             }
-          }
-          break;
+            break;
 
-        case Edge:
-          triangulation->preconditionEdgeStars();
-          {
-            const SimplexId starNumber
-              = triangulation->getEdgeStarNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < starNumber; ++i) {
-              SimplexId starId;
-              triangulation->getEdgeStar(SimplexIdentifier, i, starId);
-              addStar(starId);
+          case SIMPLEX::EDGE:
+            triangulation->preconditionEdgeLinks();
+            if(dimensionality == 2) {
+              const SimplexId linkNumber = triangulation->getEdgeLinkNumber(si);
+              for(SimplexId i = 0; i < linkNumber; ++i) {
+                SimplexId linkId;
+                triangulation->getEdgeLink(si, i, linkId);
+                addVertex(linkId);
+              }
+            } else if(dimensionality == 3) {
+              const SimplexId linkNumber = triangulation->getEdgeLinkNumber(si);
+              for(SimplexId i = 0; i < linkNumber; ++i) {
+                SimplexId linkId;
+                triangulation->getEdgeLink(si, i, linkId);
+                addEdge(linkId);
+              }
             }
-          }
-          break;
+            break;
 
-        case Triangle:
-          if(dimensionality == 3) {
-            triangulation->preconditionTriangleStars();
-            const SimplexId starNumber
-              = triangulation->getTriangleStarNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < starNumber; ++i) {
-              SimplexId starId;
-              triangulation->getTriangleStar(SimplexIdentifier, i, starId);
-              addStar(starId);
+          case SIMPLEX::TRIANGLE:
+            if(dimensionality == 3) {
+              triangulation->preconditionTriangleLinks();
+              const SimplexId linkNumber
+                = triangulation->getTriangleLinkNumber(si);
+              for(SimplexId i = 0; i < linkNumber; ++i) {
+                SimplexId linkId;
+                triangulation->getTriangleLink(si, i, linkId);
+                addVertex(linkId);
+              }
             }
-          }
-          break;
+            break;
 
-        case Tetra:
-          break;
-      }
-      break;
-
-    case ComputeLink:
-      switch(simplexType) {
-        case Vertex:
-          triangulation->preconditionVertexLinks();
-          if(dimensionality == 2) {
-            triangulation->preconditionEdges();
-            const SimplexId linkNumber
-              = triangulation->getVertexLinkNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < linkNumber; ++i) {
-              SimplexId linkId;
-              triangulation->getVertexLink(SimplexIdentifier, i, linkId);
-              addEdge(linkId);
-            }
-          } else if(dimensionality == 3) {
-            triangulation->preconditionVertexTriangles();
-            const SimplexId linkNumber
-              = triangulation->getVertexLinkNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < linkNumber; ++i) {
-              SimplexId linkId;
-              triangulation->getVertexLink(SimplexIdentifier, i, linkId);
-              addTriangle(linkId);
-            }
-          }
-          break;
-
-        case Edge:
-          triangulation->preconditionEdgeLinks();
-          if(dimensionality == 2) {
-            const SimplexId linkNumber
-              = triangulation->getEdgeLinkNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < linkNumber; ++i) {
-              SimplexId linkId;
-              triangulation->getEdgeLink(SimplexIdentifier, i, linkId);
-              addVertex(linkId);
-            }
-          } else if(dimensionality == 3) {
-            const SimplexId linkNumber
-              = triangulation->getEdgeLinkNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < linkNumber; ++i) {
-              SimplexId linkId;
-              triangulation->getEdgeLink(SimplexIdentifier, i, linkId);
-              addEdge(linkId);
-            }
-          }
-          break;
-
-        case Triangle:
-          if(dimensionality == 3) {
-            triangulation->preconditionTriangleLinks();
-            const SimplexId linkNumber
-              = triangulation->getTriangleLinkNumber(SimplexIdentifier);
-            for(SimplexId i = 0; i < linkNumber; ++i) {
-              SimplexId linkId;
-              triangulation->getTriangleLink(SimplexIdentifier, i, linkId);
-              addVertex(linkId);
-            }
-          }
-          break;
-
-        case Tetra:
-          break;
-      }
-      break;
+          case SIMPLEX::TETRA:
+            break;
+        }
+        break;
+    }
   }
 
   cells->SetPoints(points);
+  cells->GetCellData()->AddArray(cellIds);
+  cells->GetCellData()->AddArray(cellDims);
 
   output->ShallowCopy(cells);
 
