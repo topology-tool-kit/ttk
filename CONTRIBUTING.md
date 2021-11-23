@@ -59,6 +59,10 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - [HelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/helloWorld/HelloWorld.h)
     - Examples for the VTK layer:
       - [ttkHelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkHelloWorld/ttkHelloWorld.h)
+  - Each VTK layer header file should be organized as follows
+    - A overview, including in order:
+      - the line `\ingroup vtk`
+  - Each ParaView XML file should embed the same documentation description as provided in the corresponding VTK layer header file.
 
 # 5. Continuous integration
   - TTK uses some basic continuous integration, which consists in testing for build and run success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
