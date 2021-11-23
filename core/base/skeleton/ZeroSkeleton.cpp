@@ -265,17 +265,6 @@ int ZeroSkeleton::buildVertexStars(const SimplexId &vertexNumber,
   printMsg("Built " + std::to_string(vertexNumber) + " vertex stars", 1,
            t.getElapsedTime(), 1);
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
-    for(size_t i = 0; i < vertexStars.subvectorsNumber(); i++) {
-      std::stringstream msg;
-      msg << "Vertex #" << i << " (" << vertexStars.size(i) << " cell(s)): ";
-      for(SimplexId j = 0; j < vertexStars.size(i); j++) {
-        msg << " " << vertexStars.get(i, j);
-      }
-      printMsg(msg.str(), debug::Priority::VERBOSE);
-    }
-  }
-
   // ethaneDiol.vtu, 8.7Mtets, hal9000 (12coresHT)
   // 1 thread: 0.53 s
   // 24 threads: 7.99 s
