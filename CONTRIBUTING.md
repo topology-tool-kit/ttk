@@ -50,7 +50,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
   - Each entry is used to produce a screenshot for the [Gallery page of TTK's website](https://topology-tool-kit.github.io/gallery.html)
   - Each entry serves as a reproducible example with ParaView, as documented on the [Tutorial page of TTK's website](https://topology-tool-kit.github.io/tutorials.html)
   - Each entry is automatically tested by our continuous integration. At the moment, only code features which are used in [ttk-data](https://github.com/topology-tool-kit/ttk-data)'s state files are automatically tested upon pull requests.
-  - Each entry is described in detail in [TTK's Example website](https://topology-tool-kit.github.io/examples), along with a description of a basic Python implementation.
+  - Each entry is described in detail in [TTK's Example website](https://topology-tool-kit.github.io/examples), for novice users who want to get started with TTK and Python.
 
 # 4. Code documentation
   -
