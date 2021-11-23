@@ -62,7 +62,6 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - After the line `from paraview.simple import *`, remove all the lines *before* and *after* the section entitled ```#setup the data processing pipelines``` (see the automatically generated comments). The main idea is to provide a minimalist and simple Python script which only includes the loading of the input data and the key steps of the data analysis pipeline.
       - Insert new lines at the end of the script to store the outputs of the pipeline with `SaveData()`.
   - A MkDocs file (with the same name as the `pvsm` state file and the `py` Python script) in the `doc` directory. Please create a new entry by copying an already existing one. Each new entry should be organized as follows:
-    -
     - Note that the output webpage can be visualized locally by entering the command `mkdocs serve` in the [ttk-data](https://github.com/topology-tool-kit/ttk-data) directory.
   - In the cases (`pvsm` state file, `py` script, MkDocs entry), we invite you to checkout the other examples already included in [ttk-data](https://github.com/topology-tool-kit/ttk-data) for inspiration.
 
