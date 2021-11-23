@@ -46,7 +46,8 @@ $ clang-format -i -style=file core/\*/\*/\*h core/\*/\*/\*hpp core/\*/\*/\*cpp c
 For this, we recommend to use scripts such as [this one](https://github.com/barisione/clang-format-hooks/).
 
 # 3. Examples
-- lkj
+- The repository [ttk-data](https://github.com/topology-tool-kit/ttk-data) hosts data sets and example pipelines. This repository has multiple purposes:
+## a. Images
 
 # 4. Code documentation
   -
