@@ -49,7 +49,6 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
 - The repository [ttk-data](https://github.com/topology-tool-kit/ttk-data) hosts a list of data sets and example pipelines.
 - If you develop some new feature in TTK (either by creating a new module or by extending an existing one), we strongly invite you to produce an entry in the [ttk-data](https://github.com/topology-tool-kit/ttk-data) repository (by pull request).
 - Note that, at the moment, only code features which are used in [ttk-data](https://github.com/topology-tool-kit/ttk-data)'s state files are automatically tested by continuous integration (upon code pull requests). Also, note that only such code features (i.e. automatically tested by continuous integration) are considered for integration in Kitware's ParaView official distribution.
-  - Each entry is described in detail in [TTK's Example website](https://topology-tool-kit.github.io/examples), for novice users who want to get started with TTK and Python.
 - Please checkout [ttk-data](https://github.com/topology-tool-kit/ttk-data)'s [CONTRIBUTOR Guide](https://github.com/topology-tool-kit/ttk-data/blob/dev/CONTRIBUTING.md) for detailed instructions.
 
 # 4. Code documentation
