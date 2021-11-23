@@ -792,7 +792,6 @@ template <typename dataType>
 std::vector<std::vector<matchingTuple>>
   ttk::PDBarycenter<dataType>::executeAuctionBarycenter(
     std::vector<diagramTuple> &barycenter) {
-  double total_time = 0;
 
   std::vector<std::vector<matchingTuple>> previous_matchings;
   dataType min_persistence = 0;
@@ -817,16 +816,12 @@ std::vector<std::vector<matchingTuple>>
     2 * max_persistence, min_persistence, min_diag_price, min_price,
     min_points_to_add, false);
 
-  int n_iterations = 0;
-
   bool converged = false;
   bool finished = false;
   dataType total_cost;
 
   while(!finished) {
     Timer tm;
-
-    n_iterations += 1;
 
     std::pair<std::unique_ptr<KDTree<dataType>>,
               std::vector<KDTree<dataType> *>>
@@ -881,7 +876,6 @@ std::vector<std::vector<matchingTuple>>
 
     previous_matchings = std::move(all_matchings);
     // END OF TIMER
-    total_time += tm.getElapsedTime();
 
     for(unsigned int i = 0; i < barycenter_goods_.size(); ++i) {
       for(int j = 0; j < barycenter_goods_[i].size(); ++j) {

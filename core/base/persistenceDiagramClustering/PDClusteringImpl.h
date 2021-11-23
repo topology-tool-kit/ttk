@@ -1552,7 +1552,6 @@ void ttk::PDClustering<dataType>::acceleratedUpdateClusters() {
                 << std::endl;
       bool idx_acceptable = false;
       int idx = 0;
-      int increment = 0;
 
       // std::cout<< " u_ : [ ";
       // for(int i=0; i<u_.size(); i++){
@@ -1617,7 +1616,6 @@ void ttk::PDClustering<dataType>::acceleratedUpdateClusters() {
           //         }
           //         std::cout<<" ] "<<std::endl;
         }
-        increment += 1;
       }
 
       clustering_[c].push_back(idx);
