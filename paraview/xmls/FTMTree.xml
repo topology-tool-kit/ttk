@@ -34,6 +34,13 @@
               * 2 - (1-saddle,1-saddle),
               * 3 - (2-saddle,2-saddle),
               * 4 - (1-saddle,2-saddle).
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+
             </Documentation>
 
             <InputProperty

@@ -56,14 +56,35 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
   - Please use Doxygen commands for documenting your header files:
     - Examples for the base layer:
       - [Triangulation.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/triangulation/Triangulation.h)
+      - [TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h)
       - [HelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/helloWorld/HelloWorld.h)
     - Examples for the VTK layer:
+      - [ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h)
       - [ttkHelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkHelloWorld/ttkHelloWorld.h)
-  - Each VTK layer header file should be organized as follows
+    - Examples for the ParaView XML layer:
+      - [TopologicalSimplification](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/xmls/TopologicalSimplification.xml)
+  - Each base layer header file should be organized as follows:
+    - A overview, including in order:
+      - the line `\ingroup base`
+      - the name of the class, with the command `\class ttk::`
+      - the author(s) of the class, with the command `\author`
+      - the date of creation of the class, with the command `\date`
+      - a one-liner description of the class, with the command `\brief`
+      - a long description of the purpose of the class
+      - related publications (if applicable)
+      - a list of related classes, with the command `\sa`:
+        - Other base layer modules commonly used in conjunction with the present filter
+      - a pointer to the corresponding VTK layer class (if applicable), with the command `\sa`
+    - Each function should be documented as follows:
+      - a quick description, with preconditions `\pre`, notes `\note` or warnings `\warning` if needed.
+      - a description of each attribute, with the command `\param`
+      - a description of the return code, with the command `\return`
+      - a list of related functions, with the command `\sa`
+  - Each VTK layer header file should be organized as follows:
     - A overview, including in order:
       - the line `\ingroup vtk`
       - the name of the class, with the command `\class`
-      - the author of the class, with the command `\author`
+      - the author(s) of the class, with the command `\author`
       - the date of creation of the class, with the command `\date`
       - a one-liner description of the class, with the command `\brief`
       - a long description of the purpose of the class
@@ -76,7 +97,10 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
         - Other VTK filters commonly used in conjunction with the present filter
       - a pointer to the corresponding base code class (if applicable), with the command `\sa`
       - the list of **all** the entries from [TTK's Examples website](https://topology-tool-kit.github.io/examples/) including the filter.
-  - Each ParaView XML file should embed the same documentation description as provided in the corresponding VTK layer header file.
+  - Each ParaView XML file should be organized as follows:
+    - a `<Documentation>` section:
+      - this should be a copy of all the information included in the overview description of the corresponding VTK class (see above).
+  should embed the same documentation description as provided in the corresponding VTK layer header file.
 
 # 5. Continuous integration
   - TTK uses some basic continuous integration, which consists in testing for build and run success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.

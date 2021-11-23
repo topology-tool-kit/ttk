@@ -62,6 +62,14 @@
 
         See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
         TopologicalSimplification.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+
+
       </Documentation>
 
       <InputProperty

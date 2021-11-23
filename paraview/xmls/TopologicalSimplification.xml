@@ -38,7 +38,14 @@
         Proc. of IEEE VIS 2020.
         IEEE Transactions on Visualization and Computer Graphics
 
-        See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
+        See also ScalarFieldCriticalPoints, IntegralLines, ContourForests,
+Identifiers.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
 
       </Documentation>
 

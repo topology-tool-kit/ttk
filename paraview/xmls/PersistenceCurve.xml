@@ -25,8 +25,15 @@ and only display the "Number of Pairs".
 Such curves provide useful visual clues in order to fine-tune persistence
 simplification thresholds.
 
-See also ContourForests, PersistenceDiagram, ScalarFieldCriticalPoints,
-TopologicalSimplification.
+See also ContourForests, PersistenceDiagram, ScalarFieldCriticalPoints, TopologicalSimplification.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+
+
       </Documentation>
 
       <InputProperty

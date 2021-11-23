@@ -15,6 +15,14 @@
         This filter is a dummy example for the development of TTK packages. It
         smooths an input mesh by average the vertex locations on the link of each
         vertex.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+
+
       </Documentation>
       <InputProperty
         name="Input"
