@@ -73,7 +73,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - a long description of the purpose of the class
       - related publications (if applicable)
       - a list of related classes, with the command `\sa`:
-        - Other base layer modules commonly used in conjunction with the present filter
+        - other base layer modules commonly used in conjunction with the present filter
       - a pointer to the corresponding VTK layer class (if applicable), with the command `\sa`
     - Each function should be documented as follows:
       - a quick description, with preconditions `\pre`, notes `\note` or warnings `\warning` if needed.
@@ -97,7 +97,7 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
         - recall that the class can be used as any other VTK filter
       - related publications (if applicable)
       - a list of related classes, with the command `\sa`:
-        - Other VTK filters commonly used in conjunction with the present filter
+        - other VTK filters commonly used in conjunction with the present filter
       - a pointer to the corresponding base code class (if applicable), with the command `\sa`
       - the list of **all** the entries from [TTK's Examples website](https://topology-tool-kit.github.io/examples/) including the filter.
   - Each ParaView XML file should be organized as follows:
