@@ -53,16 +53,6 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
 
 # 4. Code documentation
   - TTK uses [Doxygen](https://www.doxygen.nl/index.html) for the automatic generation of online documentation.
-  - Please use Doxygen commands for documenting your header files:
-    - Examples for the base layer:
-      - [Triangulation.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/triangulation/Triangulation.h)
-      - [TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h)
-      - [HelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/helloWorld/HelloWorld.h)
-    - Examples for the VTK layer:
-      - [ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h)
-      - [ttkHelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkHelloWorld/ttkHelloWorld.h)
-    - Examples for the ParaView XML layer:
-      - [TopologicalSimplification](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/xmls/TopologicalSimplification.xml)
   - Each base layer header file should be organized as follows:
     - A overview, including in order:
       - the line `\ingroup base`
@@ -107,6 +97,17 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
     - a `<Documentation>` section:
       - this should be a copy of all the information included in the overview description of the corresponding VTK class (see above).
   should embed the same documentation description as provided in the corresponding VTK layer header file.
+  - Please check out the following examples for inspiration:
+    - Examples for the base layer:
+      - [Triangulation.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/triangulation/Triangulation.h)
+      - [TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h)
+      - [HelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/helloWorld/HelloWorld.h)
+    - Examples for the VTK layer:
+      - [ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h)
+      - [ttkHelloWorld.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkHelloWorld/ttkHelloWorld.h)
+    - Examples for the ParaView XML layer:
+      - [TopologicalSimplification](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/xmls/TopologicalSimplification.xml)
+
 
 # 5. Continuous integration
   - TTK uses some basic continuous integration, which consists in testing for build and run success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
