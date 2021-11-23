@@ -91,6 +91,9 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
       - if the class is a filter (this is the case in general):
         - a description of each input, with the command `\param`
         - a description of each output, with the command `\param`
+          - in particular, if new data arrays are created by the filter, for each of these:
+            - describe the format of the array and its meaning
+            - if the output values are integer codes corresponding to a specific classification (for instance, a region type), please clarify the mapping class/integer code (i.e. clarify to what region type corresponds each integer code).
         - recall that the class can be used as any other VTK filter
       - related publications (if applicable)
       - a list of related classes, with the command `\sa`:
