@@ -26,6 +26,10 @@
 /// VTK pipeline.
 ///
 /// \sa ttk::ManifoldCheck
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/manifoldCheck/">Manifold check
+///   example</a> \n
 #pragma once
 
 // VTK includes -- to adapt
