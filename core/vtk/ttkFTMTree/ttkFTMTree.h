@@ -8,6 +8,8 @@
 /// \sa ttk::ftm::FTMTree
 ///
 /// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 ///   example</a>
 

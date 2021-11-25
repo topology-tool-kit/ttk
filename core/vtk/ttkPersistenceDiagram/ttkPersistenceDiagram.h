@@ -39,13 +39,13 @@
 ///
 /// Two backends are available for the computation:
 ///
-///  1) FTM
+///  1) FTM \n
 /// \b Related \b publication \n
 /// "Task-based Augmented Contour Trees with Fibonacci Heaps"
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
 /// IEEE Transactions on Parallel and Distributed Systems, 2019
 ///
-///  2) Progressive Approach
+///  2) Progressive Approach \n
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
@@ -58,6 +58,8 @@
 /// \sa ttk::PersistenceDiagram
 ///
 /// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 /// example</a>
 ///
