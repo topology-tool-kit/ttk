@@ -266,7 +266,7 @@
       </IntVectorProperty>
 
       <StringVectorProperty name="lle_Method"
-        label="Method"
+        label="LLE Method"
         command="Setlle_Method"
         number_of_elements="1"
         default_values="standard"
@@ -477,7 +477,7 @@
       </IntVectorProperty>
 
       <StringVectorProperty name="tsne_Method"
-        label="Method"
+        label="tSNE Method"
         command="Settsne_Method"
         number_of_elements="1"
         default_values="barnes_hut"
