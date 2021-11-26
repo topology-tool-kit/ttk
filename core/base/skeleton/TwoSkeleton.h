@@ -28,22 +28,14 @@ namespace ttk {
 
     /// Compute the list of cell-neighbors of each cell of a 2D triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).
-    /// \param vertexNumber Number of vertices in the triangulation.
     /// \param cellArray Cell container allowing to retrieve the vertices ids
     /// of each cell.
     /// \param cellNeighbors Output neighbor list. The size of this std::vector
     /// will be equal to the number of cells in the mesh. Each entry will be a
     /// std::vector listing the cell identifiers of the entry's cell's
     /// neighbors.
-    /// \param edgeStars Optional list of edge stars (list of
-    /// 2-dimensional cells connected to each edge). If nullptr, the
-    /// function will compute this list anyway and free the related memory
-    /// upon return. If not nullptr but pointing to an empty std::vector, the
-    /// function will fill this empty std::vector (useful if this list needs
-    /// to be used later on by the calling program). If not nullptr but pointing
-    /// to a non-empty std::vector, this function will use this std::vector as
-    /// internal vertex star list. If this std::vector is not empty but
-    /// incorrect, the behavior is unspecified.
+    /// \param edgeStars Array of edge stars (list of 2-dimensional
+    /// cells connected to each edge).
     /// \return Returns 0 upon success, negative values otherwise.
     int buildCellNeighborsFromEdges(const CellArray &cellArray,
                                     FlatJaggedArray &cellNeighbors,
@@ -114,6 +106,8 @@ namespace ttk {
     /// ordered std::vector of the vertex identifiers of the entry's triangle).
     /// \param triangleStars Optional output for triangle tet-adjacency (for
     /// each triangle, list of its adjacent tetrahedra).
+    /// \param cellTriangleList Optional list of triangles per
+    /// tetrahedron cell.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildTriangleList(
       const SimplexId &vertexNumber,
@@ -186,7 +180,7 @@ namespace ttk {
     /// \param triangleList Input triangle list. The number of entries of this
     /// list is equal to the number of triangles in the triangulation. Each
     /// entry lists the vertex identifiers of the corresponding triangle.
-    /// \param triangleStar Input triangle star list. The number of entries of
+    /// \param triangleStars Input triangle star list. The number of entries of
     /// this list is equal to the number of triangles in the triangulation. Each
     /// entry lists the identifiers of the tetrahedra which are the co-faces of
     /// the corresponding triangle.
@@ -198,7 +192,7 @@ namespace ttk {
     /// corresponding triangle.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildTriangleLinks(
-      const std::vector<std::array<SimplexId, 3>> &triangeList,
+      const std::vector<std::array<SimplexId, 3>> &triangleList,
       const FlatJaggedArray &triangleStars,
       const CellArray &cellArray,
       FlatJaggedArray &triangleLinks) const;
@@ -209,7 +203,7 @@ namespace ttk {
     /// \param vertexNumber Number of vertices in the triangulation.
     /// \param triangleList Input triangle list (list of std::vectors of
     /// vertex identifiers).
-    /// \param vertexTriangleList Output vertex triangle list (list of
+    /// \param vertexTriangles Output vertex triangle list (list of
     /// std::vectors of triangle identifiers).
     int buildVertexTriangles(
       const SimplexId &vertexNumber,

@@ -876,7 +876,7 @@ namespace ttk {
     }
 
     /// Compute the barycenter of the points of the given tet identifier.
-    /// \param tetId Input global tet identifier.
+    /// \param tetraId Input global tet identifier.
     /// \param incenter Output barycenter.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getTriangleIncenter()
@@ -2448,6 +2448,8 @@ namespace ttk {
     /// In particular, each point is represented by X-Y-Z coordinates (one
     /// after the other). This corresponds to the default point set
     /// representation in VTK.
+    /// \param doublePrecision Should we use double precision or stay
+    /// with simple?
     /// \return Returns 0 upon success, negative values otherwise.
     ///
     /// \note This function does not need to be called if the current object

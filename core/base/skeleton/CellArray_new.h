@@ -58,7 +58,7 @@ namespace ttk {
 
     /// Get the number of vertices in the cell with the id: cellid
     /// Can deal with heterogeneous meshes
-    /// \param cellid global id of the cell
+    /// \param cellId global id of the cell
     /// \return the offset difference between this cell and next.
     inline SimplexId getCellVertexNumber(const LongSimplexId cellId) const {
 #ifndef TTK_ENABLE_KAMIKAZE

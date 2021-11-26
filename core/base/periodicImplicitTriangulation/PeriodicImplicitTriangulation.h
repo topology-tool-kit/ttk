@@ -698,6 +698,8 @@ namespace ttk {
   };
 } // namespace ttk
 
+/// @cond
+
 inline void
   ttk::PeriodicImplicitTriangulation::vertexToPosition2d(const SimplexId vertex,
                                                          SimplexId p[2]) const {
@@ -3368,5 +3370,7 @@ inline ttk::SimplexId
   }
   return -1;
 }
+
+/// @endcond
 
 #endif // _PERIODICIMPLICITTRIANGULATION_H

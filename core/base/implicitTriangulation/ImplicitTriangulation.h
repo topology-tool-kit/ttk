@@ -958,6 +958,8 @@ namespace ttk {
   };
 } // namespace ttk
 
+/// @cond
+
 inline void
   ttk::ImplicitTriangulation::vertexToPosition2d(const SimplexId vertex,
                                                  SimplexId p[2]) const {
@@ -7203,3 +7205,5 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
   }
   return -1;
 }
+
+/// @endcond
