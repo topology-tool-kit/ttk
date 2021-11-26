@@ -12,6 +12,8 @@
 /// \b Online \b examples: \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 /// example</a>
+///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
+/// Morse molecule example</a> \n
 ///
 
 #pragma once
