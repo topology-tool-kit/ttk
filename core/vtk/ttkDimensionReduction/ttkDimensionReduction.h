@@ -17,6 +17,12 @@
 /// VTK pipeline.
 ///
 /// \sa ttk::DimensionReduction
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+
 #pragma once
 
 // VTK Module

@@ -22,6 +22,13 @@ Related publication:
 Nithin Shivashankar, Vijay Natarajan
 Proc. of EuroVis 2012.
 Computer Graphics Forum, 2012.
+
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
       </Documentation>
       <InputProperty
         name="Input"
