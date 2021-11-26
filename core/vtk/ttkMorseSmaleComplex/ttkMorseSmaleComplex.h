@@ -50,6 +50,13 @@
 ///
 /// \sa ttk::MorseSmaleComplex
 ///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
+/// Morse molecule example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///
 
 #pragma once
 

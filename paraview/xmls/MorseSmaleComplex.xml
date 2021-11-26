@@ -14,14 +14,22 @@
         short_help="TTK morseSmaleComplex plugin.">
         TTK plugin for the computation of Morse-Smale complexes.
 
-          Morse-Smale complexes are useful topological abstractions of scalar
-fields for data segmentation, feature extraction, etc.
+        Morse-Smale complexes are useful topological abstractions of scalar
+        fields for data segmentation, feature extraction, etc.
 
-Related publication:
-"Parallel Computation of 3D Morse-Smale Complexes"
-Nithin Shivashankar, Vijay Natarajan
-Proc. of EuroVis 2012.
-Computer Graphics Forum, 2012.
+        Related publication:
+        "Parallel Computation of 3D Morse-Smale Complexes"
+        Nithin Shivashankar, Vijay Natarajan
+        Proc. of EuroVis 2012.
+        Computer Graphics Forum, 2012.
+
+        Online examples:
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+        - https://topology-tool-kit.github.io/examples/morseMolecule/
+        
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+        
       </Documentation>
       <InputProperty
         name="Input"
