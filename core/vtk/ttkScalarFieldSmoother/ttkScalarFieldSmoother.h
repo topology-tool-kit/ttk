@@ -41,6 +41,11 @@
 ///
 /// \sa vtkGeometrySmoother
 /// \sa ttk::ScalarFieldSmoother
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse Persistence 
+///   example</a> \n
+
 #ifndef _TTK_SCALAR_FIELD_SMOOTHER_H
 #define _TTK_SCALAR_FIELD_SMOOTHER_H
 
