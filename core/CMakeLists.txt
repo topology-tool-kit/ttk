@@ -2,6 +2,10 @@ add_subdirectory(base)
 
 if(TTK_BUILD_DOCUMENTATION)
   if(DOXYGEN_FOUND)
+    set(DOXYGEN_INCLUDE_DIRS)
+    if(TARGET VTK::CommonCore)
+      get_target_property(DOXYGEN_INCLUDE_DIRS VTK::CommonCore INTERFACE_INCLUDE_DIRECTORIES)
+    endif()
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ttk.doxygen
       ${CMAKE_CURRENT_BINARY_DIR}/ttk.doxygen)
     add_custom_target(doc
