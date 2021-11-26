@@ -18,6 +18,15 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
+///
+
 #pragma once
 
 // VTK includes -- to adapt
