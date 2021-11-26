@@ -207,7 +207,7 @@ namespace ttk {
     /// \param nVertices Vector holding n integers representing the number of nodes of the n input trees.
     /// \param nEdges Vector holding n integers representing the number of edges of the n input trees.
     /// \param segmentations Vector holding n arrays representing the segmentation arrays of the n input trees.
-    /// \param segSizes ToDo: This should be reduntant with regionSizes.
+    /// \param segSizes Vector holding the sizes of the corresponding segmentations array. segSizes[i] should be the size of the number of points in the ith scalar field. This should also be the size of segmentations[i].
     /// \param outputVertices Vector for the alignment node scalars that will be filled by this algorithm. outputVertices[i] should be the scalar value of the ith node in the alignment tree.
     /// \param outputFrequencies Vector for the alignment node frequencies that will be filled by this algorithm. outputFrequencies[i] should be the number of original nodes matched the ith node in the alignment tree.
     /// \param outputVertexIds Vector for the alignment node matching that will be filled by this algorithm. outputVertexIds[i*n+j] should be the id of the vertex from the jth input tree matched in the ith node of the alignment tree.
