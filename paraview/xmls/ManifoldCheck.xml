@@ -17,6 +17,10 @@ the number of connected components of link. On a d-dimensional triangulation,
 this number should be equal to 1 for all but (d-1)-simplices, for which
 it can be 1 (boundary simplices) or 2 (interior simplices). Other values
 indicate a non-manifold simplex.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/manifoldCheck/
      </Documentation>
      <InputProperty
         name="Input"
