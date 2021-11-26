@@ -8,7 +8,7 @@
 ///
 /// \param Input Input time-dependent scalar field, either 2D or 3D, regular
 /// grid or triangulation (vtkDataSet); time steps are obtained by
-/// GetPointData()->GetArray(i) in increasing time order. 
+/// GetPointData()->GetArray(i) in increasing time order.
 /// \param Output Output persistence diagram (vtkUnstructuredGrid)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
@@ -68,7 +68,8 @@ public:
   vtkGetMacro(EndTimestep, int);
   /// @}
 
-  /// @brief Discard pairs below this threshold (percentage of the function span).
+  /// @brief Discard pairs below this threshold (percentage of the function
+  /// span).
   /// @{
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
@@ -126,8 +127,8 @@ public:
   /// @}
 
   /// @brief For the translation of the second set of critical points even the
-  /// persistence diagrams are embedded in the original domain. This is useful to
-  /// visualize the matching between the diagrams of two 2D scalar fields.
+  /// persistence diagrams are embedded in the original domain. This is useful
+  /// to visualize the matching between the diagrams of two 2D scalar fields.
   /// @{
   vtkSetMacro(UseGeometricSpacing, bool);
   vtkGetMacro(UseGeometricSpacing, bool);
@@ -146,7 +147,8 @@ public:
   vtkGetMacro(DoPostProc, bool);
   /// @}
 
-  /// @brief Threshold for merging/splitting trajectories in connected components array.
+  /// @brief Threshold for merging/splitting trajectories in connected
+  /// components array.
   /// @{
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
