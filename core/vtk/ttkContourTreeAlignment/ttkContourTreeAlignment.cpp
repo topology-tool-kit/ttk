@@ -231,7 +231,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
 
   this->setArcMatchMode(ArcMatchMode);
   if(MatchTime)
-    this->setAlignmenttreeType(lastMatchedValue);
+    this->setAlignmenttreeType(ttk::cta::lastMatchedValue);
   else
     this->setAlignmenttreeType(AlignmenttreeType);
   this->setWeightArcMatch(WeightArcMatch);
