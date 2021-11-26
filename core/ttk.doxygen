@@ -2000,7 +2000,14 @@ PREDEFINED  = "vtkSetMacro(name,type)= \
                    static int IsTypeOf(const char *type); \
                    virtual int IsA(const char *type); \
                    static thisClass* SafeDownCast(vtkObject *o);" \
-               "VTK_LEGACY(x)= x"
+               "VTK_LEGACY(x)= x" \
+               "vtkSetEnumMacro(name, enumType)= \
+                   virtual void Set##name (enumType);" \
+               "vtkGetEnumMacro(name, enumType)=\
+                   virtual enumType Get##name () const;" \
+               "ttkSetEnumMacro(name, enumType)= \
+                   virtual void Set##name (int _arg); \
+                   virtual void Set##name (enumType);"
 
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
