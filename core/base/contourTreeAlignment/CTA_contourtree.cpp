@@ -59,8 +59,8 @@ ContourTree::ContourTree(float *scalars,
     else {
       std::shared_ptr<ttk::cta::CTEdge> edge = arcs[node->edgeList[0]];
       std::shared_ptr<ttk::cta::CTNode> neighbor = nodes[edge->node1Idx] == node
-                                           ? nodes[edge->node2Idx]
-                                           : nodes[edge->node1Idx];
+                                                     ? nodes[edge->node2Idx]
+                                                     : nodes[edge->node1Idx];
       if(neighbor->scalarValue > node->scalarValue)
         node->type = minNode;
       else
@@ -78,10 +78,10 @@ ContourTree::ContourTree(float *scalars,
 ContourTree::~ContourTree() {
 }
 
-std::shared_ptr<ttk::cta::Tree>
-  ContourTree::computeRootedTree(const std::shared_ptr<ttk::cta::CTNode> &node,
-                                 const std::shared_ptr<ttk::cta::CTEdge> &parent,
-                                 int &id) {
+std::shared_ptr<ttk::cta::Tree> ContourTree::computeRootedTree(
+  const std::shared_ptr<ttk::cta::CTNode> &node,
+  const std::shared_ptr<ttk::cta::CTEdge> &parent,
+  int &id) {
 
   // initialize tree
   std::shared_ptr<Tree> t(new Tree);
@@ -117,8 +117,8 @@ std::shared_ptr<ttk::cta::Tree>
     }
 
     std::shared_ptr<ttk::cta::CTNode> child = nodes[edge->node1Idx] == node
-                                      ? nodes[edge->node2Idx]
-                                      : nodes[edge->node1Idx];
+                                                ? nodes[edge->node2Idx]
+                                                : nodes[edge->node1Idx];
 
     std::shared_ptr<Tree> childTree = computeRootedTree(child, edge, id);
 
@@ -142,10 +142,10 @@ std::shared_ptr<ttk::cta::Tree>
   return t;
 }
 
-std::shared_ptr<ttk::cta::BinaryTree>
-  ContourTree::computeRootedTree_binary(const std::shared_ptr<ttk::cta::CTNode> &node,
-                                        const std::shared_ptr<ttk::cta::CTEdge> &parent,
-                                        int &id) {
+std::shared_ptr<ttk::cta::BinaryTree> ContourTree::computeRootedTree_binary(
+  const std::shared_ptr<ttk::cta::CTNode> &node,
+  const std::shared_ptr<ttk::cta::CTEdge> &parent,
+  int &id) {
 
   // initialize tree
   std::shared_ptr<BinaryTree> t(new BinaryTree);
@@ -186,8 +186,8 @@ std::shared_ptr<ttk::cta::BinaryTree>
     if(edge != parent) {
 
       std::shared_ptr<ttk::cta::CTNode> child = nodes[edge->node1Idx] == node
-                                        ? nodes[edge->node2Idx]
-                                        : nodes[edge->node1Idx];
+                                                  ? nodes[edge->node2Idx]
+                                                  : nodes[edge->node1Idx];
 
       std::shared_ptr<BinaryTree> childTree
         = computeRootedTree_binary(child, edge, id);

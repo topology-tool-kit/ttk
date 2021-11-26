@@ -41,31 +41,32 @@
 #include <memory>
 #include <random>
 
-namespace ttk{
+namespace ttk {
 
-  namespace cta{
+  namespace cta {
 
     enum Type_Alignmenttree { averageValues, medianValues, lastMatchedValue };
     // enum Type_Match { matchNodes, matchArcs };
     enum Mode_ArcMatch { persistence, area, volume, overlap };
 
     /**
-       * \ingroup base
-       * @brief Basic tree data structure for an alignment of two rooted binary trees.
-       *
-       * This structure represents nodes of a rooted alignment tree.
-       * 
-       * It stores the following meta information for the tree structure:
-       * - height of the subtree rooted in this node
-       * - size of the subtree rooted in this node
-       * - two pointers to its child nodes
-       * 
-       * It stores the following alignment node properties:
-       * - pointers to the two matched nodes
-       *
-       * \sa ttk::ContourTreeAlignment
-       * \sa ttk::cta::BinaryTree
-       */
+     * \ingroup base
+     * @brief Basic tree data structure for an alignment of two rooted binary
+     * trees.
+     *
+     * This structure represents nodes of a rooted alignment tree.
+     *
+     * It stores the following meta information for the tree structure:
+     * - height of the subtree rooted in this node
+     * - size of the subtree rooted in this node
+     * - two pointers to its child nodes
+     *
+     * It stores the following alignment node properties:
+     * - pointers to the two matched nodes
+     *
+     * \sa ttk::ContourTreeAlignment
+     * \sa ttk::cta::BinaryTree
+     */
     struct AlignmentTree {
       std::shared_ptr<ttk::cta::AlignmentTree> child1;
       std::shared_ptr<ttk::cta::AlignmentTree> child2;
@@ -79,26 +80,27 @@ namespace ttk{
     struct AlignmentEdge;
 
     /**
-       * \ingroup base
-       * @brief Basic data structure for a node of an unrooted alignment tree.
-       *
-       * This structure represents nodes of an unrooted alignment tree.
-       * 
-       * It stores the following edge properties:
-       * - critical type
-       * - scalar value
-       * - branchID
-       * 
-       * It stores the following information for the tree structure:
-       * - a vector with reference ids to its incident edges.
-       * 
-       * It stores the following alignment information:
-       * - frequency
-       * - references to the ids of the represented nodes of the origial contour trees
-       *
-       * \sa ttk::ContourTreeAlignment
-       * \sa ttk::cta::AlignmentEdge
-       */
+     * \ingroup base
+     * @brief Basic data structure for a node of an unrooted alignment tree.
+     *
+     * This structure represents nodes of an unrooted alignment tree.
+     *
+     * It stores the following edge properties:
+     * - critical type
+     * - scalar value
+     * - branchID
+     *
+     * It stores the following information for the tree structure:
+     * - a vector with reference ids to its incident edges.
+     *
+     * It stores the following alignment information:
+     * - frequency
+     * - references to the ids of the represented nodes of the origial contour
+     * trees
+     *
+     * \sa ttk::ContourTreeAlignment
+     * \sa ttk::cta::AlignmentEdge
+     */
     struct AlignmentNode {
 
       ttk::cta::Type_Node type;
@@ -112,27 +114,28 @@ namespace ttk{
     };
 
     /**
-       * \ingroup base
-       * @brief Basic data structure for an edge of an unrooted alignment tree.
-       *
-       * This structure represents edges of an unrooted alignment tree.
-       * 
-       * It stores the following edge properties:
-       * - persistence
-       * - area
-       * - volume
-       * - the corresponding segment/region.
-       * 
-       * It stores the following information for the tree structure:
-       * - two reference ids to its incident nodes.
-       * 
-       * It stores the following alignment information:
-       * - frequency
-       * - references to the ids of the represented arcs of the origial contour trees
-       *
-       * \sa ttk::ContourTreeAlignment
-       * \sa ttk::cta::AlignmentNode
-       */
+     * \ingroup base
+     * @brief Basic data structure for an edge of an unrooted alignment tree.
+     *
+     * This structure represents edges of an unrooted alignment tree.
+     *
+     * It stores the following edge properties:
+     * - persistence
+     * - area
+     * - volume
+     * - the corresponding segment/region.
+     *
+     * It stores the following information for the tree structure:
+     * - two reference ids to its incident nodes.
+     *
+     * It stores the following alignment information:
+     * - frequency
+     * - references to the ids of the represented arcs of the origial contour
+     * trees
+     *
+     * \sa ttk::ContourTreeAlignment
+     * \sa ttk::cta::AlignmentNode
+     */
     struct AlignmentEdge {
 
       std::weak_ptr<ttk::cta::AlignmentNode> node1;
@@ -146,9 +149,9 @@ namespace ttk{
       std::vector<std::pair<int, int>> arcRefs;
     };
 
-  }
+  } // namespace cta
 
-}
+} // namespace ttk
 
 namespace ttk {
 
@@ -168,54 +171,82 @@ namespace ttk {
     }
 
     /// Setter for the matching mode based on arc properties.
-    /// 
+    ///
     /// \param mode Determines what arc properties should be compared.
     void setArcMatchMode(int mode) {
       arcMatchMode = static_cast<ttk::cta::Mode_ArcMatch>(mode);
     }
     /// Setter for the weight of combinatorial matching.
-    /// 
-    /// \param mode Determines the factor with which the combinatorial distance is weighted.
+    ///
+    /// \param mode Determines the factor with which the combinatorial distance
+    /// is weighted.
     void setWeightCombinatorialMatch(float weight) {
       weightCombinatorialMatch = weight;
     }
     /// Setter for the weight of arc property matching.
-    /// 
-    /// \param mode Determines the factor with which the arc property based distance is weighted.
+    ///
+    /// \param mode Determines the factor with which the arc property based
+    /// distance is weighted.
     void setWeightArcMatch(float weight) {
       weightArcMatch = weight;
     }
     /// Setter for the weight of node matching.
-    /// 
-    /// \param mode Determines the factor with which the scalar value distance is weighted.
+    ///
+    /// \param mode Determines the factor with which the scalar value distance
+    /// is weighted.
     void setWeightScalarValueMatch(float weight) {
       weightScalarValueMatch = weight;
     }
     /// Setter for the type of alignment tree.
-    /// 
-    /// \param mode Determines how the labels of the alignment tree are computed from the matched labels.
+    ///
+    /// \param mode Determines how the labels of the alignment tree are computed
+    /// from the matched labels.
     void setAlignmenttreeType(int type) {
       alignmenttreeType = static_cast<ttk::cta::Type_Alignmenttree>(type);
     }
 
-    /// The actual iterated n-tree-alignment algorithm. Computes the alignment of n input contour trees.
+    /// The actual iterated n-tree-alignment algorithm. Computes the alignment
+    /// of n input contour trees.
     ///
-    /// \param scalarsVP Vector holding n arrays that represent the node scalars of the n input trees. scalarsVP[i][j] should be the scalar value of the jth node in the ith tree.
-    /// \param regionSizes Vector holding n arrays that represent the region sizes of edges of the n input trees. regionSizes[i][j] should be the size of the segment associated with the jth edge in the ith tree.
-    /// \param segmentationIds Vector holding n arrays that represent the segmentation ids of the edges the n input trees. segmentationIds[i][j] should be the segment identifier of the jth node in the ith tree.
-    /// \param topologies Vector holding n arrays that represent the connectivity of the the n input trees.
-    /// \param nVertices Vector holding n integers representing the number of nodes of the n input trees.
-    /// \param nEdges Vector holding n integers representing the number of edges of the n input trees.
-    /// \param segmentations Vector holding n arrays representing the segmentation arrays of the n input trees.
-    /// \param segSizes Vector holding the sizes of the corresponding segmentations array. segSizes[i] should be the size of the number of points in the ith scalar field. This should also be the size of segmentations[i].
-    /// \param outputVertices Vector for the alignment node scalars that will be filled by this algorithm. outputVertices[i] should be the scalar value of the ith node in the alignment tree.
-    /// \param outputFrequencies Vector for the alignment node frequencies that will be filled by this algorithm. outputFrequencies[i] should be the number of original nodes matched the ith node in the alignment tree.
-    /// \param outputVertexIds Vector for the alignment node matching that will be filled by this algorithm. outputVertexIds[i*n+j] should be the id of the vertex from the jth input tree matched in the ith node of the alignment tree.
-    /// \param outputBranchIds Vector for the alignment node branch ids that will be filled by this algorithm. outputBranchIds[i] should be the branch id of the ith node in the alignment tree.
-    /// \param outputSegmentationIds Vector for the alignment edge segmentations that will be filled by this algorithm. outputSegmentationIds[i*n+j] should be the id of the segment from the jth input field associated the ith node of the alignment tree.
-    /// \param outputArcIds Vector for the alignment edge maching that will be filled by this algorithm. outputArcIds[i*n+j] should be the id of the arc from the jth input tree associated the ith node of the alignment tree.
-    /// \param outputEdges Vector for the alignment graph connectivity. The ith edge of the alignment connects the nodes of index outputEdges[2*i] and outputEdges[2*i+1].
-    /// \param seed seed for randomization.
+    /// \param scalarsVP Vector holding n arrays that represent the node scalars
+    /// of the n input trees. scalarsVP[i][j] should be the scalar value of the
+    /// jth node in the ith tree. \param regionSizes Vector holding n arrays
+    /// that represent the region sizes of edges of the n input trees.
+    /// regionSizes[i][j] should be the size of the segment associated with the
+    /// jth edge in the ith tree. \param segmentationIds Vector holding n arrays
+    /// that represent the segmentation ids of the edges the n input trees.
+    /// segmentationIds[i][j] should be the segment identifier of the jth node
+    /// in the ith tree. \param topologies Vector holding n arrays that
+    /// represent the connectivity of the the n input trees. \param nVertices
+    /// Vector holding n integers representing the number of nodes of the n
+    /// input trees. \param nEdges Vector holding n integers representing the
+    /// number of edges of the n input trees. \param segmentations Vector
+    /// holding n arrays representing the segmentation arrays of the n input
+    /// trees. \param segSizes Vector holding the sizes of the corresponding
+    /// segmentations array. segSizes[i] should be the size of the number of
+    /// points in the ith scalar field. This should also be the size of
+    /// segmentations[i]. \param outputVertices Vector for the alignment node
+    /// scalars that will be filled by this algorithm. outputVertices[i] should
+    /// be the scalar value of the ith node in the alignment tree. \param
+    /// outputFrequencies Vector for the alignment node frequencies that will be
+    /// filled by this algorithm. outputFrequencies[i] should be the number of
+    /// original nodes matched the ith node in the alignment tree. \param
+    /// outputVertexIds Vector for the alignment node matching that will be
+    /// filled by this algorithm. outputVertexIds[i*n+j] should be the id of the
+    /// vertex from the jth input tree matched in the ith node of the alignment
+    /// tree. \param outputBranchIds Vector for the alignment node branch ids
+    /// that will be filled by this algorithm. outputBranchIds[i] should be the
+    /// branch id of the ith node in the alignment tree. \param
+    /// outputSegmentationIds Vector for the alignment edge segmentations that
+    /// will be filled by this algorithm. outputSegmentationIds[i*n+j] should be
+    /// the id of the segment from the jth input field associated the ith node
+    /// of the alignment tree. \param outputArcIds Vector for the alignment edge
+    /// maching that will be filled by this algorithm. outputArcIds[i*n+j]
+    /// should be the id of the arc from the jth input tree associated the ith
+    /// node of the alignment tree. \param outputEdges Vector for the alignment
+    /// graph connectivity. The ith edge of the alignment connects the nodes of
+    /// index outputEdges[2*i] and outputEdges[2*i+1]. \param seed seed for
+    /// randomization.
     template <class scalarType>
     int execute(const std::vector<void *> &scalarsVP,
                 const std::vector<int *> &regionSizes,
@@ -242,20 +273,21 @@ namespace ttk {
     /// \param t The input contour tree.
     /// \return Return true if alignment was successful, false otherwise.
     bool alignTree(const std::shared_ptr<ContourTree> &t);
-    /// This function initializes a new alignment graph from a given contour tree.
-    /// \pre The given contour tree needs to be binary.
-    /// \param t The input contour tree.
-    /// \return Return true if initialization was successful, false otherwise.
+    /// This function initializes a new alignment graph from a given contour
+    /// tree. \pre The given contour tree needs to be binary. \param t The input
+    /// contour tree. \return Return true if initialization was successful,
+    /// false otherwise.
     bool initialize(const std::shared_ptr<ContourTree> &t);
-    /// This function aligns a new tree to the current alignment but keeps the old alignment's root.
-    /// \pre The given contour tree needs to be binary.
+    /// This function aligns a new tree to the current alignment but keeps the
+    /// old alignment's root. \pre The given contour tree needs to be binary.
     /// \param t The input contour tree.
     /// \return Return true if alignment was successful, false otherwise.
     bool alignTree_consistentRoot(const std::shared_ptr<ContourTree> &t);
-    /// This function initializes a new alignment graph from a given contour tree and sets the fixed root of the alignment to the given input.
-    /// \pre The given contour tree needs to be binary.
-    /// \param t The input contour tree.
-    /// \return Return true if initialization was successful, false otherwise.
+    /// This function initializes a new alignment graph from a given contour
+    /// tree and sets the fixed root of the alignment to the given input. \pre
+    /// The given contour tree needs to be binary. \param t The input contour
+    /// tree. \return Return true if initialization was successful, false
+    /// otherwise.
     bool initialize_consistentRoot(const std::shared_ptr<ContourTree> &t,
                                    int rootIdx);
 
@@ -265,7 +297,8 @@ namespace ttk {
                           std::vector<std::shared_ptr<ttk::cta::CTEdge>>>>
       getGraphs();
     /// Getter for aligned contour trees
-    /// \return Vector of aligned contour trees as ttk::cta::ContourTree data structures.
+    /// \return Vector of aligned contour trees as ttk::cta::ContourTree data
+    /// structures.
     std::vector<std::shared_ptr<ContourTree>> getContourTrees();
 
     /// Getter for the alignment tree in a graph representation
@@ -274,7 +307,8 @@ namespace ttk {
               std::vector<std::shared_ptr<ttk::cta::AlignmentEdge>>>
       getAlignmentGraph();
     /// Getter for the alignment tree in a rooted tree representation
-    /// \return The alignment tree rooted in the fixed node determined on initialization.
+    /// \return The alignment tree rooted in the fixed node determined on
+    /// initialization.
     std::shared_ptr<ttk::cta::BinaryTree> getAlignmentGraphRooted();
     /// Getter for the fixed root index.
     /// \return The root index.
@@ -283,12 +317,14 @@ namespace ttk {
     /// Function for aligning two arbitrary binary trees.
     /// \param t1 The first binary rooted tree to align.
     /// \param t2 The second binary rooted tree to align.
-    /// \return A pair consisting of the alignment distance and the alignment tree representing the matching between the two trees.
+    /// \return A pair consisting of the alignment distance and the alignment
+    /// tree representing the matching between the two trees.
     std::pair<float, std::shared_ptr<ttk::cta::AlignmentTree>>
       getAlignmentBinary(const std::shared_ptr<ttk::cta::BinaryTree> &t1,
                          const std::shared_ptr<ttk::cta::BinaryTree> &t2);
 
-    /// Function that adds branch decomposition information to the alignment nodes.
+    /// Function that adds branch decomposition information to the alignment
+    /// nodes.
     void computeBranches();
 
   protected:
@@ -334,7 +370,8 @@ namespace ttk {
                            std::vector<std::vector<float>> &memT,
                            std::vector<std::vector<float>> &memF);
     std::shared_ptr<ttk::cta::AlignmentTree>
-      traceNullAlignment(const std::shared_ptr<ttk::cta::BinaryTree> &t, bool first);
+      traceNullAlignment(const std::shared_ptr<ttk::cta::BinaryTree> &t,
+                         bool first);
 
     // function that defines the local editing costs of two nodes
     float editCost(const std::shared_ptr<ttk::cta::BinaryTree> &t1,
@@ -348,9 +385,12 @@ namespace ttk {
       computeRootedTree(const std::shared_ptr<ttk::cta::AlignmentNode> &node,
                         const std::shared_ptr<ttk::cta::AlignmentEdge> &parent,
                         int &id);
-    std::shared_ptr<ttk::cta::BinaryTree> computeRootedDualTree(
-      const std::shared_ptr<ttk::cta::AlignmentEdge> &arc, bool parent1, int &id);
-    void computeNewAlignmenttree(const std::shared_ptr<ttk::cta::AlignmentTree> &res);
+    std::shared_ptr<ttk::cta::BinaryTree>
+      computeRootedDualTree(const std::shared_ptr<ttk::cta::AlignmentEdge> &arc,
+                            bool parent1,
+                            int &id);
+    void computeNewAlignmenttree(
+      const std::shared_ptr<ttk::cta::AlignmentTree> &res);
 
     // helper functions for branch decomposition
     std::pair<float, std::vector<std::shared_ptr<ttk::cta::AlignmentNode>>>
@@ -363,22 +403,23 @@ namespace ttk {
 } // namespace ttk
 
 template <class scalarType>
-int ttk::ContourTreeAlignment::execute(const std::vector<void *> &scalarsVP,
-                                       const std::vector<int *> &regionSizes,
-                                       const std::vector<int *> &segmentationIds,
-                                       const std::vector<long long *> &topologies,
-                                       const std::vector<size_t> &nVertices,
-                                       const std::vector<size_t> &nEdges,
-                                       const std::vector<int *> &segmentations,
-                                       const std::vector<size_t> &segsizes,
-                                       std::vector<float> &outputVertices,
-                                       std::vector<long long> &outputFrequencies,
-                                       std::vector<long long> &outputVertexIds,
-                                       std::vector<long long> &outputBranchIds,
-                                       std::vector<long long> &outputSegmentationIds,
-                                       std::vector<long long> &outputArcIds,
-                                       std::vector<int> &outputEdges,
-                                       int seed) {
+int ttk::ContourTreeAlignment::execute(
+  const std::vector<void *> &scalarsVP,
+  const std::vector<int *> &regionSizes,
+  const std::vector<int *> &segmentationIds,
+  const std::vector<long long *> &topologies,
+  const std::vector<size_t> &nVertices,
+  const std::vector<size_t> &nEdges,
+  const std::vector<int *> &segmentations,
+  const std::vector<size_t> &segsizes,
+  std::vector<float> &outputVertices,
+  std::vector<long long> &outputFrequencies,
+  std::vector<long long> &outputVertexIds,
+  std::vector<long long> &outputBranchIds,
+  std::vector<long long> &outputSegmentationIds,
+  std::vector<long long> &outputArcIds,
+  std::vector<int> &outputEdges,
+  int seed) {
 
   Timer timer;
 
