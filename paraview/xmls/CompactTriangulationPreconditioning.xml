@@ -34,12 +34,27 @@
         </InputProperty>
 
       <!-- INPUT PARAMETER WIDGETS -->
-        <StringVectorProperty name="SelectedFields" command="SetScalarField" element_types="2 0" information_property="CellArrayInfo" label="Fields" number_of_elements="2" number_of_elements_per_command="1" repeat_command="1">
+        <!-- <StringVectorProperty name="SelectedFields" command="SetScalarField" element_types="2 0" information_property="CellArrayInfo" label="Fields" number_of_elements="2" number_of_elements_per_command="1" repeat_command="1">
           <ArrayListDomain name="array_list" attribute_type="Scalars" input_domain_name="inputs_array">
             <RequiredProperties>
               <Property name="Input" function="Input" />
             </RequiredProperties>
           </ArrayListDomain>
+        </StringVectorProperty> -->
+        <StringVectorProperty
+            name="DataArrays"
+            command="GetDataArraySelection"
+            number_of_elements_per_command="1"
+            repeat_command="1"
+            si_class="vtkSIDataArraySelectionProperty">
+          <ArrayListDomain name="array_list" input_domain_name="point_arrays">
+            <RequiredProperties>
+              <Property name="Input" function="Input" />
+            </RequiredProperties>
+          </ArrayListDomain>
+          <Documentation>
+            Select the data arrays to pass through
+          </Documentation>
         </StringVectorProperty>
 
         <IntVectorProperty name="Threshold" label="Bucket threshold" command="SetThreshold" number_of_elements="1" default_values="1000">
@@ -49,7 +64,7 @@
         <!-- Create a UI group that contains all input parameter widgets -->
         <PropertyGroup panel_widget="Line" label="Input Options">
           <Property name="Threshold" />
-          <Property name="SelectedFields" />
+          <Property name="DataArrays" />
         </PropertyGroup>
 
       <!-- OUTPUT PARAMETER WIDGETS -->

@@ -1,15 +1,21 @@
 #include <ttkCompactTriangulationPreconditioning.h>
 
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 #include <vtkCellData.h>
+#include <vtkCommand.h>
 #include <vtkDataArray.h>
+#include <vtkDataSet.h>
 #include <vtkInformation.h>
-#include <vtkInformationVector.h>
+#include <vtkIntArray.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
-#include <ttkMacros.h>
-#include <ttkUtils.h>
+using namespace std;
+using namespace ttk;
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
@@ -20,6 +26,13 @@ ttkCompactTriangulationPreconditioning::
   this->Threshold = 1000;
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
+
+  // ensure that modifying the selection re-triggers the filter
+  // (c.f. vtkPassSelectedArrays.cxx)
+  this->ArraySelection = vtkSmartPointer<vtkDataArraySelection>::New();
+  this->ArraySelection->AddObserver(
+    vtkCommand::ModifiedEvent, this,
+    &ttkCompactTriangulationPreconditioning::Modified);
 }
 
 ttkCompactTriangulationPreconditioning::
@@ -51,15 +64,14 @@ int ttkCompactTriangulationPreconditioning::RequestData(
 
   // Get input object from input vector
   // Note: has to be a vtkPointSet as required by FillInputPortInformation
-  vtkPointSet *inputDataSet = vtkPointSet::GetData(inputVector[0]);
-  if(!inputDataSet)
+  vtkPointSet *inputPointSet = vtkPointSet::GetData(inputVector[0]);
+  if(!inputPointSet)
     return 0;
 
   // If all checks pass then log which array is going to be processed.
   this->printMsg("Starting computation...");
 
-  ttk::Triangulation *triangulation
-    = ttkAlgorithm::GetTriangulation(inputDataSet);
+  Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
   if(!triangulation)
     return 0;
 
@@ -77,9 +89,33 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   if(status != 1)
     return 0;
 
+  // Get input data array selection
+  vector<vtkDataArray *> pointDataArrays{};
+  vector<vtkDataArray *> cellDataArrays{};
+
+  vtkPointData *inPointData = inputPointSet->GetPointData();
+  for(int i = 0; i < inPointData->GetNumberOfArrays(); i++) {
+    vtkDataArray *curArray = inPointData->GetArray(i);
+    if(curArray != nullptr && curArray->GetName() != nullptr
+       && ArraySelection->ArrayIsEnabled(curArray->GetName())) {
+      pointDataArrays.emplace_back(curArray);
+    }
+  }
+
+  vtkCellData *inCellData = inputPointSet->GetCellData();
+  for(int i = 0; i < inCellData->GetNumberOfArrays(); i++) {
+    vtkDataArray *curArray = inCellData->GetArray(i);
+    if(curArray != nullptr && curArray->GetName() != nullptr
+       && ArraySelection->ArrayIsEnabled(curArray->GetName())) {
+      cellDataArrays.emplace_back(curArray);
+    }
+  }
+
   // Get output vtkDataSet (which was already instantiated based on the
   // information provided by FillOutputPortInformation)
   vtkPointSet *outputDataSet = vtkPointSet::GetData(outputVector, 0);
+  outputDataSet->Initialize();
+
   vector<SimplexId> vertexMap(this->vertices.size());
   vtkUnstructuredGrid *outputMesh
     = vtkUnstructuredGrid::SafeDownCast(outputDataSet);
@@ -90,7 +126,7 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   indices->SetNumberOfComponents(1);
   indices->SetName(compactTriangulationIndex);
 
-  // insert the vertices in the output mesh
+  // insert vertices in the output mesh
   for(size_t i = 0; i < this->vertices.size(); i++) {
     float x, y, z;
     triangulation->getVertexPoint(this->vertices.at(i), x, y, z);
@@ -100,60 +136,10 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   }
   outputMesh->SetPoints(points);
 
-  vtkPointData *pointData = outputMesh->GetPointData();
-  pointData->AddArray(indices);
+  // vtkPointData *pointData = outputMesh->GetPointData();
+  outputDataSet->GetPointData()->AddArray(indices);
 
-  std::vector<std::string>::iterator iter = scalarFields.begin();
-  while(iter != scalarFields.end()) {
-    vtkDataArray *inputArray
-      = inputDataSet->GetPointData()->GetArray(iter->data());
-    if(inputArray == nullptr) {
-      iter++;
-      continue;
-    }
-
-    iter = scalarFields.erase(iter);
-    vtkDataArray *newField = nullptr;
-
-    // // To make sure that the selected array can be processed by this filter,
-    // // one should also check that the array association and format is
-    // correct. if(this->GetInputArrayAssociation(0, inputVector) != 0) {
-    //   this->printErr("Input array needs to be a point data array.");
-    //   return 0;
-    // }
-
-    switch(inputArray->GetDataType()) {
-
-      case VTK_CHAR:
-        newField = vtkCharArray::New();
-        break;
-
-      case VTK_DOUBLE:
-        newField = vtkDoubleArray::New();
-        break;
-
-      case VTK_FLOAT:
-        newField = vtkFloatArray::New();
-        break;
-
-      case VTK_INT:
-        newField = vtkIntArray::New();
-        break;
-
-      case VTK_ID_TYPE:
-        newField = vtkIdTypeArray::New();
-        break;
-    }
-
-    newField->DeepCopy(inputArray);
-    for(size_t j = 0; j < this->vertices.size(); j++) {
-      newField->SetTuple(j, inputArray->GetTuple(this->vertices.at(j)));
-    }
-
-    pointData->AddArray(newField);
-  }
-
-  // insert the cells in the output mesh
+  // insert cells in the output mesh
   outputMesh->Allocate(this->cells.size());
   int dimension = triangulation->getCellVertexNumber(0);
 
@@ -176,27 +162,27 @@ int ttkCompactTriangulationPreconditioning::RequestData(
     }
   }
 
-  // the cell is the same order as the input mesh
-  vtkCellData *cellData = outputMesh->GetCellData();
-  iter = scalarFields.begin();
-  while(iter != scalarFields.end()) {
-    vtkDataArray *inputArray
-      = inputDataSet->GetCellData()->GetArray(iter->data());
-    if(inputArray == nullptr) {
-      iter++;
-      continue;
+  // Modify the selected point data arrays with new indices
+  for(vtkDataArray *scalarArray : pointDataArrays) {
+    vtkSmartPointer<vtkDataArray> updatedField(scalarArray->NewInstance());
+    updatedField->SetName(scalarArray->GetName());
+    for(size_t j = 0; j < this->vertices.size(); j++) {
+      updatedField->InsertTuple(j, scalarArray->GetTuple(this->vertices.at(j)));
     }
 
-    iter = scalarFields.erase(iter);
-    cellData->AddArray(inputArray);
+    outputDataSet->GetPointData()->AddArray(updatedField);
   }
 
-  if(!scalarFields.empty()) {
-    this->printErr("Some scalar fields are not processed!");
-    return 0;
-  }
+  // Modify the selected cell data arrays with new indices
+  for(vtkDataArray *scalarArray : cellDataArrays) {
+    vtkSmartPointer<vtkDataArray> updatedField(scalarArray->NewInstance());
+    updatedField->SetName(scalarArray->GetName());
+    for(size_t j = 0; j < this->cells.size(); j++) {
+      updatedField->InsertTuple(j, scalarArray->GetTuple(this->cells.at(j)));
+    }
 
-  // scalarFields.clear();
+    outputDataSet->GetCellData()->AddArray(updatedField);
+  }
 
   // return success
   return 1;

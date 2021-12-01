@@ -89,7 +89,7 @@ namespace ttk {
         }
 
         if(preOctree.verifyTree(vertexNumber)) {
-          cerr << "[PreprocessStellar] The construction of the tree failed!\n";
+          this->printErr("The construction of the tree failed!");
           return -1;
         }
 

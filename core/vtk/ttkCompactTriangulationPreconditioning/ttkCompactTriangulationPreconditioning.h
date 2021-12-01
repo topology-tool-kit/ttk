@@ -39,19 +39,8 @@
 // VTK Includes
 // VTK includes -- to adapt
 #include <ttkAlgorithm.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
+#include <vtkDataArraySelection.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
 #include <CompactTriangulationPreconditioning.h>
@@ -65,23 +54,28 @@ class TTKCOMPACTTRIANGULATIONPRECONDITIONING_EXPORT
 {
 private:
   int Threshold;
-  std::vector<std::string> scalarFields;
+  vtkSmartPointer<vtkDataArraySelection> ArraySelection;
 
 public:
-  vtkSetMacro(Threshold, int);
-  vtkGetMacro(Threshold, int);
-
-  void SetScalarField(string name) {
-    scalarFields.push_back(name);
-    Modified();
-  }
-
   /**
    * This static method and the macro below are VTK conventions on how to
    * instantiate VTK objects. You don't have to modify this.
    */
   static ttkCompactTriangulationPreconditioning *New();
   vtkTypeMacro(ttkCompactTriangulationPreconditioning, ttkAlgorithm);
+
+  vtkSetMacro(Threshold, int);
+  vtkGetMacro(Threshold, int);
+
+  // copy the vtkPassSelectedArray ("PassArrays" filter) API
+  vtkDataArraySelection *GetDataArraySelection() {
+    return this->ArraySelection.GetPointer();
+  }
+
+  void SetDataArraySelection(
+    const vtkSmartPointer<vtkDataArraySelection> &selection) {
+    this->ArraySelection = selection;
+  }
 
 protected:
   ttkCompactTriangulationPreconditioning();

@@ -11,6 +11,7 @@
 // VTK Includes
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
+#include <vtkDataArraySelection.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -22,7 +23,7 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Program variables
   // ---------------------------------------------------------------------------
-  int bucketThreshold = 100;
+  int bucketThreshold = 500;
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
@@ -132,10 +133,10 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Specify which arrays of the input vtkDataObjects will be processed
   // ---------------------------------------------------------------------------
+  vtkNew<vtkDataArraySelection> arraySelection;
   for(size_t i = 0; i < inputArrayNames.size(); i++) {
-    // compactTriangulationPreconditioning->SetInputArrayToProcess(
-    //   i, 0, 0, 0, inputArrayNames[i].data());
-    compactTriangulationPreconditioning->SetScalarField(inputArrayNames[i]);
+    arraySelection->EnableArray(inputArrayNames[i].data());
+    compactTriangulationPreconditioning->SetDataArraySelection(arraySelection);
   }
 
   // ---------------------------------------------------------------------------
