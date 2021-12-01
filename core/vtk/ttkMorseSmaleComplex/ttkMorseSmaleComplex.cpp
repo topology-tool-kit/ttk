@@ -553,18 +553,12 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   morseSmaleManifold->SetNumberOfTuples(numberOfVertices);
   morseSmaleManifold->SetName(ttk::MorseSmaleManifoldName);
 
-  this->setIterationThreshold(IterationThreshold);
-
   this->setComputeAscendingSeparatrices1(ComputeAscendingSeparatrices1);
   this->setComputeDescendingSeparatrices1(ComputeDescendingSeparatrices1);
   this->setComputeSaddleConnectors(ComputeSaddleConnectors);
 
   this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
   this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
-
-  this->setReturnSaddleConnectors(ReturnSaddleConnectors);
-  this->setSaddleConnectorsPersistenceThreshold(
-    SaddleConnectorsPersistenceThreshold);
 
   this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
   this->setInputOffsets(

@@ -116,15 +116,6 @@ namespace ttk {
     virtual ~AbstractMorseSmaleComplex();
 
     /**
-     * Set the threshold for the iterative gradient reversal process.
-     * Disable thresholding with -1 (default).
-     */
-    int setIterationThreshold(const int iterationThreshold) {
-      discreteGradient_.setIterationThreshold(iterationThreshold);
-      return 0;
-    }
-
-    /**
      * Enable/Disable computation of the geometrical embedding of
      * the ascending manifolds of the critical points
      * (disabled by default).
@@ -168,28 +159,6 @@ namespace ttk {
      */
     int setComputeDescendingSeparatrices2(const bool state) {
       ComputeDescendingSeparatrices2 = state;
-      return 0;
-    }
-
-    /**
-     * Enable/Disable post-processing gradient reversal of
-     * the (saddle,...,saddle) vpaths under a given persistence
-     * threshold (disabled by default).
-     */
-    int setReturnSaddleConnectors(const bool state) {
-      ReturnSaddleConnectors = state;
-      discreteGradient_.setReturnSaddleConnectors(state);
-      return 0;
-    }
-
-    /**
-     * Set the threshold value for post-processing of
-     * (saddle,...,saddle) vpaths gradient reversal
-     * (default value is 0.0).
-     */
-    int setSaddleConnectorsPersistenceThreshold(const double threshold) {
-      SaddleConnectorsPersistenceThreshold = threshold;
-      discreteGradient_.setSaddleConnectorsPersistenceThreshold(threshold);
       return 0;
     }
 
@@ -401,15 +370,11 @@ namespace ttk {
                              const triangulationType &triangulation) const;
 
   protected:
-    bool ReverveSaddleMaximumConnection{false};
-    bool ReverveSaddleSaddleConnection{false};
     bool ComputeAscendingSeparatrices1{true};
     bool ComputeDescendingSeparatrices1{true};
     bool ComputeSaddleConnectors{false};
     bool ComputeAscendingSeparatrices2{false};
     bool ComputeDescendingSeparatrices2{false};
-    bool ReturnSaddleConnectors{false};
-    double SaddleConnectorsPersistenceThreshold{};
 
     dcg::DiscreteGradient discreteGradient_{};
 

@@ -106,9 +106,6 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(IterationThreshold, int);
-  vtkGetMacro(IterationThreshold, int);
-
   vtkSetMacro(ComputeCriticalPoints, bool);
   vtkGetMacro(ComputeCriticalPoints, bool);
 
@@ -136,12 +133,6 @@ public:
   vtkSetMacro(ComputeFinalSegmentation, bool);
   vtkGetMacro(ComputeFinalSegmentation, bool);
 
-  vtkSetMacro(ReturnSaddleConnectors, int);
-  vtkGetMacro(ReturnSaddleConnectors, int);
-
-  vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
-  vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
-
 protected:
   template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,
@@ -160,7 +151,6 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField{};
-  int IterationThreshold{-1};
   bool ComputeCriticalPoints{true};
   bool ComputeAscendingSeparatrices1{true};
   bool ComputeDescendingSeparatrices1{true};
@@ -170,8 +160,6 @@ private:
   bool ComputeAscendingSegmentation{true};
   bool ComputeDescendingSegmentation{true};
   bool ComputeFinalSegmentation{true};
-  int ReturnSaddleConnectors{false};
-  double SaddleConnectorsPersistenceThreshold{0.0};
 
   // critical points
   std::vector<std::array<float, 3>> criticalPoints_points{};

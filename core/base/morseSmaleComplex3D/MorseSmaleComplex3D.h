@@ -639,10 +639,6 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
                    this->threadNumber_);
   }
 
-  if(ReturnSaddleConnectors) {
-    discreteGradient_.reverseGradient<dataType>(triangulation);
-  }
-
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
 

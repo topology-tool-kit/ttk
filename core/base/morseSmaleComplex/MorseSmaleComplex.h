@@ -184,16 +184,6 @@ namespace ttk {
     MorseSmaleComplex();
     ~MorseSmaleComplex();
 
-    int setIterationThreshold(const int iterationThreshold) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setIterationThreshold(
-        iterationThreshold);
-    }
-
     int setComputeAscendingSeparatrices1(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -241,25 +231,6 @@ namespace ttk {
 #endif
       return abstractMorseSmaleComplex_->setComputeDescendingSeparatrices2(
         state);
-    }
-
-    int setReturnSaddleConnectors(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setReturnSaddleConnectors(state);
-    }
-
-    int setSaddleConnectorsPersistenceThreshold(const double threshold) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_
-        ->setSaddleConnectorsPersistenceThreshold(threshold);
     }
 
     inline void preconditionTriangulation(AbstractTriangulation *const data) {
