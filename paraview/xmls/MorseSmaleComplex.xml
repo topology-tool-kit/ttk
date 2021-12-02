@@ -29,6 +29,8 @@
         - https://topology-tool-kit.github.io/examples/morseMolecule/
         
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering0/
         
       </Documentation>
       <InputProperty
