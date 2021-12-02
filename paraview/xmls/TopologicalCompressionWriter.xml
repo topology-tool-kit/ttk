@@ -9,6 +9,11 @@
           long_help="TTK topologicalCompressionWriter plugin."
           short_help="TTK topologicalCompressionWriter plugin.">
         TTK topologicalCompression plugin documentation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/
+
       </Documentation>
 
       <InputProperty

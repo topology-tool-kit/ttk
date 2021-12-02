@@ -51,16 +51,26 @@
 /// \sa ttk::MorseSmaleComplex
 ///
 /// \b Online \b examples: \n
-///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
-/// Morse molecule example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
 ///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">Morse
+///   molecule example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 0 example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold Learning</a> \n
+///
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
 ///
 
 #pragma once
