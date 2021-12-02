@@ -27,7 +27,8 @@
 ///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
 /// Morse molecule example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold Learning</a> \n
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning</a> \n
 ///
 
 #pragma once
