@@ -24,7 +24,7 @@
 ///   Digits 64-Dimensions example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
-///   Learning</a> \n
+///   Learning example</a> \n
 
 #pragma once
 

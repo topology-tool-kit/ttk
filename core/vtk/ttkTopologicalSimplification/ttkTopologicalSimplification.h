@@ -73,7 +73,7 @@
 ///   clustering 0 example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
-///   Learning</a> \n
+///   Learning example</a> \n
 ///
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
