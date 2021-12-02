@@ -29,7 +29,15 @@
         - https://topology-tool-kit.github.io/examples/morseMolecule/
         
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering0/
         
+        - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+
       </Documentation>
       <InputProperty
         name="Input"

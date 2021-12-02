@@ -8,6 +8,11 @@
           long_help="TTK topologicalCompressionReader plugin."
           short_help="Read a .ttk file.">
         This plugin specifies the file name for the TTK reader.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/
+
       </Documentation>
       <StringVectorProperty
               name="FileName"
