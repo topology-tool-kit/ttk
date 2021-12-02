@@ -35,8 +35,9 @@
 /// \b Online \b examples: \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 /// example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse Persistence 
-///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
 ///
 
 #ifndef _TTK_PERSISTENCECURVE_H
