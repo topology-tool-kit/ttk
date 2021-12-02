@@ -102,7 +102,6 @@ public:
   }
   /// @}
 
-
   /// @brief control the sampling level of the superarcs
   /// @{
   void SetSampling(int lvl) {
@@ -113,7 +112,6 @@ public:
     return params_.samplingLvl;
   }
   /// @}
-
 
   int getSkeletonNodes(const ttk::ftr::Graph &graph,
                        vtkUnstructuredGrid *outputSkeletonNodes);
