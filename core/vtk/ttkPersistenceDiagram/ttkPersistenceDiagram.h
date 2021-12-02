@@ -77,6 +77,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
 ///
 
 #pragma once

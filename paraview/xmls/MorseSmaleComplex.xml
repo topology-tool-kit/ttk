@@ -37,7 +37,9 @@
         - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
 
         - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
-
+        
+        - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
+        
       </Documentation>
       <InputProperty
         name="Input"
