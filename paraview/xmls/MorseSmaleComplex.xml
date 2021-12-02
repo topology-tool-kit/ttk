@@ -32,6 +32,7 @@
 
         - https://topology-tool-kit.github.io/examples/persistenceClustering0/
         
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
       </Documentation>
       <InputProperty
         name="Input"
