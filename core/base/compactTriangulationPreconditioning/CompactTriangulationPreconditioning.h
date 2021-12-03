@@ -114,6 +114,12 @@ namespace ttk {
       return 1; // return success
     }
 
+    void clear() {
+      this->vertices.clear();
+      this->nodes.clear();
+      this->cells.clear();
+    }
+
   protected:
     mutable std::vector<SimplexId> vertices, nodes, cells;
 

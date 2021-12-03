@@ -62,6 +62,9 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
+  // clear state
+  this->clear();
+
   // Get input object from input vector
   // Note: has to be a vtkPointSet as required by FillInputPortInformation
   vtkPointSet *inputPointSet = vtkPointSet::GetData(inputVector[0]);
