@@ -10,11 +10,11 @@ CompactTriangulation::CompactTriangulation() {
 }
 
 CompactTriangulation::CompactTriangulation(const CompactTriangulation &rhs)
-  : doublePrecision_(rhs.doublePrecision_), maxCellDim_(rhs.maxCellDim_),
-    cellNumber_(rhs.cellNumber_), vertexNumber_(rhs.vertexNumber_),
-    nodeNumber_(rhs.nodeNumber_), pointSet_(rhs.pointSet_),
-    vertexIndices_(rhs.vertexIndices_), vertexIntervals_(rhs.vertexIntervals_),
-    edgeIntervals_(rhs.edgeIntervals_),
+  : AbstractTriangulation(rhs), doublePrecision_(rhs.doublePrecision_),
+    maxCellDim_(rhs.maxCellDim_), cellNumber_(rhs.cellNumber_),
+    vertexNumber_(rhs.vertexNumber_), nodeNumber_(rhs.nodeNumber_),
+    pointSet_(rhs.pointSet_), vertexIndices_(rhs.vertexIndices_),
+    vertexIntervals_(rhs.vertexIntervals_), edgeIntervals_(rhs.edgeIntervals_),
     triangleIntervals_(rhs.triangleIntervals_),
     cellIntervals_(rhs.cellIntervals_), cellArray_(rhs.cellArray_),
     externalCells_(rhs.externalCells_) {
