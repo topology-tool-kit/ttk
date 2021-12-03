@@ -69,9 +69,6 @@ namespace ttk {
   // default name for compact triangulation index
   const char compactTriangulationIndex[] = "ttkCompactTriangulationIndex";
 
-  // different id types for compact triangulation
-  const int EDGE_ID = 1, TRIANGLE_ID = 2;
-
   /// default value for critical index
   enum class CriticalType {
     Local_minimum = 0,

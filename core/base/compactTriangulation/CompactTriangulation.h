@@ -85,6 +85,9 @@ namespace ttk {
 
   class CompactTriangulation final : public AbstractTriangulation {
 
+    // different id types for compact triangulation
+    enum class SIMPLEX_ID { EDGE_ID = 1, TRIANGLE_ID = 2 };
+
   public:
     CompactTriangulation();
     CompactTriangulation(const CompactTriangulation &rhs);
@@ -465,7 +468,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeLinks_.empty()) {
@@ -488,7 +491,7 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeLinks_.empty()) {
@@ -529,7 +532,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeStars_.empty()) {
@@ -551,7 +554,7 @@ namespace ttk {
       if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
         return -1;
 #endif
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       ImplicitCluster *exnode = searchCache(nid);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       if(exnode->edgeStars_.empty()) {
@@ -591,7 +594,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeTriangles_.empty()) {
@@ -614,7 +617,7 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeTriangles_.empty()) {
@@ -655,7 +658,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->internalEdgeList_.empty()) {
@@ -740,7 +743,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleEdges_.empty()) {
@@ -795,7 +798,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleLinks_.empty()) {
@@ -818,7 +821,7 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleLinks_.empty()) {
@@ -861,7 +864,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleStars_.empty()) {
@@ -885,7 +888,7 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleStars_.empty()) {
@@ -925,7 +928,7 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->internalTriangleList_.empty()) {
@@ -1280,7 +1283,7 @@ namespace ttk {
       if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
         return false;
 #endif
-      SimplexId nid = findNodeIndex(edgeId, EDGE_ID);
+      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       SimplexId localedgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       getBoundaryCells(exnode, 1);
@@ -1300,7 +1303,7 @@ namespace ttk {
       if((triangleId < 0) || (triangleId > triangleIntervals_.back()))
         return false;
 #endif
-      SimplexId nid = findNodeIndex(triangleId, TRIANGLE_ID);
+      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
       SimplexId localtriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       getBoundaryCells(exnode);
@@ -1538,12 +1541,12 @@ namespace ttk {
     /**
      * Find the corresponding node index given the id.
      */
-    inline SimplexId findNodeIndex(SimplexId id, int idType) const {
+    inline SimplexId findNodeIndex(SimplexId id, SIMPLEX_ID idType) const {
       const std::vector<SimplexId> *intervals = nullptr;
       // determine which vector to search
-      if(idType == EDGE_ID) {
+      if(idType == SIMPLEX_ID::EDGE_ID) {
         intervals = &edgeIntervals_;
-      } else if(idType == TRIANGLE_ID) {
+      } else if(idType == SIMPLEX_ID::TRIANGLE_ID) {
         intervals = &triangleIntervals_;
       } else {
         return -1;
