@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk:FTMTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///
@@ -517,7 +517,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
   return newNodeId;
 }
 
-idNode FTMTree_MT::makeNode(const Node *const n, SimplexId ttkNotUsed(term)) {
+idNode FTMTree_MT::makeNode(const Node *const n, SimplexId) {
   return makeNode(n->getVertexId());
 }
 
@@ -1021,12 +1021,13 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
   return tot;
 }
 
-ostream &ttk::ftm::operator<<(ostream &o, SuperArc const &a) {
+std::ostream &ttk::ftm::operator<<(std::ostream &o,
+                                   ttk::ftm::SuperArc const &a) {
   o << a.getDownNodeId() << " <>> " << a.getUpNodeId();
   return o;
 }
 
-ostream &ttk::ftm::operator<<(ostream &o, Node const &n) {
+std::ostream &ttk::ftm::operator<<(std::ostream &o, ttk::ftm::Node const &n) {
   o << n.getNumberOfDownSuperArcs() << " .-. " << n.getNumberOfUpSuperArcs();
   return o;
 }

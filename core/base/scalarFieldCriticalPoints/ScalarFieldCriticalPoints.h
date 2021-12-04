@@ -45,7 +45,8 @@ namespace ttk {
 
     /**
      * Execute the package.
-     * \param argment Dummy integer argument.
+     * \param offsets Pointer to order field on vertices
+     * \param triangulation Triangulation
      * \return Returns 0 upon success, negative values otherwise.
      *
      * @pre For this function to behave correctly in the absence of

@@ -194,11 +194,11 @@ int FiberSurface::computeTriangleIntersection(
   const SimplexId &triangleId1,
   const SimplexId &polygonEdgeId0,
   const SimplexId &polygonEdgeId1,
-  const pair<double, double> &intersection,
+  const std::pair<double, double> &intersection,
   SimplexId &newVertexNumber,
   SimplexId &newTriangleNumber,
-  vector<vector<IntersectionTriangle>> &tetIntersections,
-  vector<vector<Vertex>> &tetNewVertices) const {
+  std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
+  std::vector<std::vector<Vertex>> &tetNewVertices) const {
 
   SimplexId commonVertexNumber = getNumberOfCommonVertices(
     tetId, triangleId0, triangleId1, tetIntersections);
@@ -333,14 +333,14 @@ int FiberSurface::computeTriangleIntersection(
   const SimplexId &tetId,
   const SimplexId &triangleId,
   const SimplexId &polygonEdgeId,
-  const pair<double, double> &intersection,
-  const vector<double> &pA,
-  const vector<double> &pB,
+  const std::pair<double, double> &intersection,
+  const std::vector<double> &pA,
+  const std::vector<double> &pB,
   const SimplexId &pivotVertexId,
   SimplexId &newVertexNumber,
   SimplexId &newTriangleNumber,
-  vector<vector<IntersectionTriangle>> &tetIntersections,
-  vector<vector<Vertex>> &tetNewVertices) const {
+  std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
+  std::vector<std::vector<Vertex>> &tetNewVertices) const {
 
   // check if the triangle has already been intersected on that fiber
   if((fabs(tetIntersections[tetId][triangleId].intersection_.first
@@ -642,7 +642,7 @@ int FiberSurface::flipEdges() const {
 }
 
 int FiberSurface::flipEdges(
-  vector<pair<SimplexId, SimplexId>> &triangles) const {
+  std::vector<std::pair<SimplexId, SimplexId>> &triangles) const {
 
   for(SimplexId it = 0; it < (SimplexId)triangles.size(); it++) {
 
@@ -1616,7 +1616,7 @@ int FiberSurface::snapVertexBarycentrics() const {
 
 int FiberSurface::snapVertexBarycentrics(
   const SimplexId &tetId,
-  const vector<pair<SimplexId, SimplexId>> &triangles) const {
+  const std::vector<std::pair<SimplexId, SimplexId>> &triangles) const {
 
   for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
 

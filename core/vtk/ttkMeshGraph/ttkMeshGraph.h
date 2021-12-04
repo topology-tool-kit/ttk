@@ -10,7 +10,7 @@
 /// width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of
 /// a set of either quadratic quads or linear polygons.
 ///
-/// VTK wrapping code for the @MeshGraph package.
+/// VTK wrapping code for the ttk::MeshGraph package.
 ///
 /// \param Input Graph (vtkUnstructuredGrid)
 /// \param Output Graph (vtkUnstructuredGrid)

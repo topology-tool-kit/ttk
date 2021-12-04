@@ -9,7 +9,7 @@
 /// This filter creates a temporary SQLite3 database from the input table,
 /// performs a SQL query, and then returns the result as a vtkTable.
 ///
-/// VTK wrapping code for the @CinemaQuery package.
+/// VTK wrapping code for the ttk::CinemaQuery package.
 ///
 /// \param Input Input table (vtkTable)
 /// \param Output Output table (vtkTable)

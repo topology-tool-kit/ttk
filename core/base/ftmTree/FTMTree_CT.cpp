@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk:FTMTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///

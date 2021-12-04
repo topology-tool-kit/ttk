@@ -6,7 +6,7 @@
  *
  * \brief TTK VTK-filter that wraps the contourAroundPoint processing package.
  *
- * VTK wrapping code for the @ContourAroundPoint package.
+ * VTK wrapping code for the ttk::ContourAroundPoint package.
  *
  * \param Input Input scalar field (vtkDataSet)
  * \param Output Output scalar field (vtkDataSet)

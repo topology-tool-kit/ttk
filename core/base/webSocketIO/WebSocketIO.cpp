@@ -311,14 +311,13 @@ int ttk::WebSocketIO::sendBinary(const size_t &ttkNotUsed(sizeInBytes),
 int ttk::WebSocketIO::sendMessage(const Message &ttkNotUsed(msg)) const {
   return 0;
 }
-int ttk::WebSocketIO::queueMessage(const std::string &ttkNotUsed(msg)) {
+int ttk::WebSocketIO::queueMessage(const std::string &) {
   return 0;
 }
-int ttk::WebSocketIO::queueMessage(const size_t &ttkNotUsed(sizeInBytes),
-                                   const void *ttkNotUsed(data)) {
+int ttk::WebSocketIO::queueMessage(const size_t &, const void *) {
   return 0;
 }
-int ttk::WebSocketIO::queueMessage(const Message &ttkNotUsed(msg)) {
+int ttk::WebSocketIO::queueMessage(const Message &) {
   return 0;
 }
 int ttk::WebSocketIO::clearMessageQueue() {
