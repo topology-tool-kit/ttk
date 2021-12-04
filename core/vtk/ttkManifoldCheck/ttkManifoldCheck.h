@@ -51,11 +51,10 @@ class TTKMANIFOLDCHECK_EXPORT ttkManifoldCheck : public ttkAlgorithm,
 
 public:
   static ttkManifoldCheck *New();
-  vtkTypeMacro(ttkManifoldCheck, ttkAlgorithm)
+  vtkTypeMacro(ttkManifoldCheck, ttkAlgorithm);
 
-    protected :
-
-    ttkManifoldCheck();
+protected:
+  ttkManifoldCheck();
 
   ~ttkManifoldCheck() override{};
 

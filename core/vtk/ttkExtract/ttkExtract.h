@@ -144,9 +144,10 @@ public:
                    const std::vector<double> &indices);
 
   static ttkExtract *New();
-  vtkTypeMacro(ttkExtract, ttkAlgorithm)
+  vtkTypeMacro(ttkExtract, ttkAlgorithm);
 
-    protected : ttkExtract();
+protected:
+  ttkExtract();
   ~ttkExtract();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
