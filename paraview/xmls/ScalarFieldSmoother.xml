@@ -17,6 +17,10 @@
         of each vertex.
 
         See also GeometrySmoother.
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/   
+
       </Documentation>
       <InputProperty
         name="Input"
