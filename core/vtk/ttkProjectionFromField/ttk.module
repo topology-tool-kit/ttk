@@ -6,3 +6,4 @@ HEADERS
   ttkProjectionFromField.h
 DEPENDS
   ttkAlgorithm
+  ttkPersistenceDiagram
