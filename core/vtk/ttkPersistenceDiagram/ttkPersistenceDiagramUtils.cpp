@@ -38,7 +38,6 @@ int VTUToDiagram(ttk::DiagramType &diagram,
     = vtkIntArray::SafeDownCast(cd->GetArray(ttk::PersistencePairTypeName));
   const auto pairPers = cd->GetArray(ttk::PersistenceName);
   const auto birthScalars = cd->GetArray(ttk::PersistenceBirthName);
-  const auto deathScalars = cd->GetArray(ttk::PersistenceDeathName);
   const auto isFinite = cd->GetArray(ttk::PersistenceIsFinite);
 
   // point data
@@ -91,10 +90,6 @@ int VTUToDiagram(ttk::DiagramType &diagram,
     dbg.printErr("Missing Birth cell data array");
     return -10;
   }
-  if(deathScalars == nullptr) {
-    dbg.printErr("Missing Death cell data array");
-    return -11;
-  }
   if(isFinite == nullptr) {
     dbg.printErr("Missing IsFinite cell data array");
     return -12;
@@ -122,7 +117,6 @@ int VTUToDiagram(ttk::DiagramType &diagram,
     const auto pType = pairType->GetValue(i);
     const auto pers = pairPers->GetTuple1(i);
     const auto birth = birthScalars->GetTuple1(i);
-    const auto death = deathScalars->GetTuple1(i);
     const auto isFin = static_cast<bool>(isFinite->GetTuple1(i));
 
     std::array<float, 3> coordsBirth{}, coordsDeath{};
@@ -149,7 +143,8 @@ int VTUToDiagram(ttk::DiagramType &diagram,
     // put pairs in diagram
     diagram[i] = ttk::PersistencePair{
       ttk::CriticalVertex{v0, ct0, birth, coordsBirth},
-      ttk::CriticalVertex{v1, ct1, death, coordsDeath}, pers, pType, isFin};
+      ttk::CriticalVertex{v1, ct1, birth + pers, coordsDeath}, pers, pType,
+      isFin};
   }
 
   return 0;
@@ -218,11 +213,6 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
   birthScalars->SetNumberOfTuples(diagram.size());
   cd->AddArray(birthScalars);
 
-  vtkSmartPointer<vtkDataArray> deathScalars{inputScalars->NewInstance()};
-  deathScalars->SetName(ttk::PersistenceDeathName);
-  deathScalars->SetNumberOfTuples(diagram.size());
-  cd->AddArray(deathScalars);
-
   vtkNew<vtkUnsignedCharArray> isFinite{};
   isFinite->SetName(ttk::PersistenceIsFinite);
   isFinite->SetNumberOfTuples(diagram.size());
@@ -275,7 +265,6 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
     pairsId->SetTuple1(i, i);
     persistence->SetTuple1(i, pair.persistence);
     birthScalars->SetTuple1(i, pair.birth.sfValue);
-    deathScalars->SetTuple1(i, pair.death.sfValue);
     isFinite->SetTuple1(i, pair.isFinite);
     pairsDim->SetTuple1(i, pair.dim == 2 ? dim - 1 : pair.dim);
   }
@@ -301,7 +290,6 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
     persistence->InsertTuple1(diagram.size(), 2 * maxPersistence);
     // birth == death == 0
     birthScalars->InsertTuple1(diagram.size(), 0);
-    deathScalars->InsertTuple1(diagram.size(), 0);
   }
 
   return 0;
