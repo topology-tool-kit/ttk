@@ -2,9 +2,11 @@
 
 #include <BottleneckDistance.h>
 
-constexpr unsigned long long str2int(const char *str, int h = 0) {
-  return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
-}
+namespace ttk {
+  constexpr unsigned long long str2int(const char *str, int h = 0) {
+    return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
+  }
+}; // namespace ttk
 
 template <typename dataType>
 int ttk::BottleneckDistance::execute(const bool usePersistenceMetric) {
