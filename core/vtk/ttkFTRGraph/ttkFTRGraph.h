@@ -66,7 +66,7 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  /// @brief control weather the computation should start from min and max
+  /// @brief control whether the computation should start from min and max
   /// (default) or use a single sweep starting only from the min (may be more
   /// robust)
   /// @{
