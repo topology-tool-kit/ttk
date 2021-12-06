@@ -1,11 +1,14 @@
 #include <ttkMacros.h>
 #include <ttkPersistenceDiagramUtils.h>
+#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkThreshold.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 int VTUToDiagram(ttk::DiagramType &diagram,
                  vtkUnstructuredGrid *vtu,
@@ -300,6 +303,146 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
     birthScalars->InsertTuple1(diagram.size(), 0);
     deathScalars->InsertTuple1(diagram.size(), 0);
   }
+
+  return 0;
+}
+
+int ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
+                               vtkUnstructuredGrid *const outputDiagram,
+                               const ttk::Debug &dbg) {
+
+  ttk::Timer tm{};
+
+  // use vtkThreshold to remove diagonal (PairIdentifier == -1)
+  vtkNew<vtkThreshold> threshold{};
+  threshold->SetInputDataObject(0, inputDiagram);
+  threshold->SetInputArrayToProcess(0, 0, 0,
+                                    vtkDataObject::FIELD_ASSOCIATION_CELLS,
+                                    ttk::PersistencePairIdentifierName);
+  threshold->ThresholdByUpper(0);
+  threshold->Update();
+
+  auto diagonalLess = threshold->GetOutput();
+  auto diagonalLessData = diagonalLess->GetPointData();
+
+  const auto critCoordinates = vtkFloatArray::SafeDownCast(
+    diagonalLessData->GetAbstractArray(ttk::PersistenceCoordinatesName));
+
+  // set new points from Coordinates array
+  vtkNew<vtkFloatArray> coords{};
+  coords->DeepCopy(critCoordinates);
+  coords->SetName("Points");
+  diagonalLess->GetPoints()->SetData(coords);
+  diagonalLessData->RemoveArray(ttk::PersistenceCoordinatesName);
+
+  outputDiagram->ShallowCopy(diagonalLess);
+
+  // don't forget to forward the Field Data
+  outputDiagram->GetFieldData()->ShallowCopy(inputDiagram->GetFieldData());
+
+  dbg.printMsg("Projected Persistence Diagram inside domain", 1.0,
+               tm.getElapsedTime(), dbg.getThreadNumber());
+
+  return 0;
+}
+
+template <typename dataType>
+void getCoords(vtkPoints *points,
+               const dataType *const births,
+               const dataType *const perss,
+               vtkIdType nPoints,
+               const int nThreads) {
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < nPoints / 2; ++i) {
+    std::array<float, 3> pt0{
+      static_cast<float>(births[i]),
+      static_cast<float>(births[i]),
+      0,
+    };
+    std::array<float, 3> pt1{
+      static_cast<float>(births[i]),
+      static_cast<float>(births[i] + perss[i]),
+      0,
+    };
+    points->SetPoint(2 * i + 0, pt0.data());
+    points->SetPoint(2 * i + 1, pt1.data());
+  }
+
+  TTK_FORCE_USE(nThreads);
+}
+
+int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
+                       vtkUnstructuredGrid *const outputDiagram,
+                       const ttk::Debug &dbg) {
+
+  ttk::Timer tm{};
+
+  outputDiagram->ShallowCopy(inputDiagram);
+
+  auto pointData = outputDiagram->GetPointData();
+
+  auto birth = inputDiagram->GetCellData()->GetArray(ttk::PersistenceBirthName);
+  auto pers = inputDiagram->GetCellData()->GetArray(ttk::PersistenceName);
+
+  if(birth == nullptr || pers == nullptr) {
+    dbg.printErr("Missing Birth or Persistence arrays");
+    return 1;
+  }
+
+  // generate a new `Coordinates` pointData array
+  vtkNew<vtkFloatArray> coords{};
+  coords->DeepCopy(inputDiagram->GetPoints()->GetData());
+  coords->SetName(ttk::PersistenceCoordinatesName);
+  pointData->AddArray(coords);
+
+  vtkNew<vtkPoints> points{};
+  const auto nPoints = inputDiagram->GetNumberOfPoints();
+  points->SetNumberOfPoints(nPoints);
+
+  if(birth->GetNumberOfTuples() != nPoints / 2
+     || pers->GetNumberOfTuples() != nPoints / 2) {
+    dbg.printErr("Wrong number of tuples for Birth or Persistence arrays");
+    return 2;
+  }
+
+  switch(birth->GetDataType()) {
+    vtkTemplateMacro(getCoords(points, ttkUtils::GetPointer<VTK_TT>(birth),
+                               ttkUtils::GetPointer<VTK_TT>(pers), nPoints,
+                               dbg.getThreadNumber()));
+  }
+
+  outputDiagram->SetPoints(points);
+
+  // add diagonal(first point -> last birth/penultimate point)
+  std::array<vtkIdType, 2> diag{0, 2 * (outputDiagram->GetNumberOfCells() - 1)};
+  outputDiagram->InsertNextCell(VTK_LINE, 2, diag.data());
+
+  // add diagonal data
+  auto cellData = outputDiagram->GetCellData();
+  auto pairIdentifierScalars = vtkIntArray::SafeDownCast(
+    cellData->GetArray(ttk::PersistencePairIdentifierName));
+  auto extremumIndexScalars = vtkIntArray::SafeDownCast(
+    cellData->GetArray(ttk::PersistencePairTypeName));
+  auto persistenceScalars = cellData->GetArray(ttk::PersistenceName);
+  auto birthScalars = cellData->GetArray(ttk::PersistenceBirthName);
+  auto isFinite = cellData->GetArray(ttk::PersistenceIsFinite);
+
+  pairIdentifierScalars->InsertNextTuple1(-1);
+  extremumIndexScalars->InsertNextTuple1(-1);
+  isFinite->InsertNextTuple1(0);
+  // 2 * persistence of min-max pair
+  persistenceScalars->InsertNextTuple1(2 * persistenceScalars->GetTuple1(0));
+  // birth == death == 0
+  birthScalars->InsertNextTuple1(0);
+
+  // don't forget to forward the Field Data
+  outputDiagram->GetFieldData()->ShallowCopy(inputDiagram->GetFieldData());
+
+  dbg.printMsg("Projected Persistence Diagram back to 2D", 1.0,
+               tm.getElapsedTime(), dbg.getThreadNumber());
 
   return 0;
 }

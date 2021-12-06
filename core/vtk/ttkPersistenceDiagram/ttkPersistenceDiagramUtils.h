@@ -1,7 +1,8 @@
-#include <vtkUnstructuredGrid.h>
-
 #include <Debug.h>
 #include <PersistenceDiagramUtils.h>
+
+class vtkUnstructuredGrid;
+class vtkDataArray;
 
 /**
  * @brief Converts a Persistence Diagram in the VTK Unstructured Grid
@@ -40,3 +41,33 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
                  const ttk::Debug &dbg,
                  const int dim,
                  const bool embedInDomain);
+
+/**
+ * @brief Generate the spatial embedding of a given Persistence Diagram
+ *
+ * Use the pointData array `Coordinates` to project the Diagram
+ *
+ * @param[in] inputDiagram Input diagram in its canonical form
+ * @param[out] outputDiagram Projected diagram inside the input domain
+ * @param[in] dbg Debug instance (for logging and access to threadNumber_)
+ *
+ * @return 0 in case of success
+ */
+int ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
+                               vtkUnstructuredGrid *const outputDiagram,
+                               const ttk::Debug &dbg);
+
+/**
+ * @brief Generate the 2D embedding of a given Persistence Diagram
+ *
+ * Use the cellData arrays `Birth` and `Death` to project the Diagram
+ *
+ * @param[in] inputDiagram Input diagram in its spatial embedding form
+ * @param[out] outputDiagram Projected diagram in its canonical form
+ * @param[in] dbg Debug instance (for logging and access to threadNumber_)
+ *
+ * @return 0 in case of success
+ */
+int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
+                       vtkUnstructuredGrid *const outputDiagram,
+                       const ttk::Debug &dbg);
