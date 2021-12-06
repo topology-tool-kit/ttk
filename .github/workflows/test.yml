@@ -130,6 +130,16 @@ jobs:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
 
+    - name: Run ttk-data Python scripts
+      run: |
+        cd ttk-data
+        python3 -u python/run.py
+        cat python/res.json
+        diff python/hashes/${{ matrix.os }}.json python/res.json
+      env:
+        OMP_NUM_THREADS: 1
+
+
   # -----------------#
   # Test macOS build #
   # -----------------#
@@ -229,6 +239,16 @@ jobs:
       with:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+
+    - name: Run ttk-data Python scripts
+      run: |
+        cd ttk-data
+        python3 -u python/run.py
+        cat python/res.json
+        diff python/hashes/macOS.json python/res.json
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+        OMP_NUM_THREADS: 1
 
 
   # ------------------ #
@@ -349,3 +369,22 @@ jobs:
       run: |
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
+
+    - uses: actions/checkout@v2
+      with:
+        repository: "pierre-guillou/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data Python scripts
+      shell: cmd
+      run: |
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd ttk-data
+        python -u python\run.py
+        type python\res.json
+        FC python\hashes\windows.json python\res.json
+      env:
+        OMP_NUM_THREADS: 1
