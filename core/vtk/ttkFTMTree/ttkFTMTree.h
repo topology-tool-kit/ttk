@@ -11,7 +11,10 @@
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
-///   example</a>
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
 
 #pragma once
 
