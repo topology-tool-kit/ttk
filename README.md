@@ -8,9 +8,11 @@
 An open-source library for efficient, generic and easy topological data 
 analysis and visualization. TTK is written in C++ and comes with a variety of APIs (C++, VTK/C++, Python, PVPython), standalone programs and a ParaView plugin.
 
-[Gallery](https://topology-tool-kit.github.io/gallery.html)
-
 [Installation instructions](https://topology-tool-kit.github.io/installation.html)
+
+[Examples](https://topology-tool-kit.github.io/examples/index.html)
+
+[Gallery](https://topology-tool-kit.github.io/gallery.html)
 
 [Video tutorials](https://topology-tool-kit.github.io/tutorials.html)
 
