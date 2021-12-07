@@ -41,8 +41,11 @@
 /// "Task-based Augmented Reeb Graphs with Dynamic ST-Trees" \n
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// EGPGV19: Eurographics Symposium on Parallel Graphics and Visualization
-
-// TODO: add Harmonic Skeleton example
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
 
 #pragma once
 

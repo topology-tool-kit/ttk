@@ -60,6 +60,9 @@
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 ///   example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
 ///   Processing example</a> \n
 ///   - <a
