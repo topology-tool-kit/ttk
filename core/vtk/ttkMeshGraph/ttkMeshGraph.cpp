@@ -19,76 +19,6 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#define ttkTypeMacroErrorCase(idx, type)                          \
-  default: {                                                      \
-    this->printErr("Unsupported " #idx "-th Template Data Type: " \
-                   + std::to_string(type));                       \
-  } break;
-
-#define ttkTypeMacroCase(enum, type, number, call) \
-  case enum: {                                     \
-    typedef type T##number;                        \
-    call;                                          \
-  } break;
-
-#define ttkTypeMacroR(target, call)                                 \
-  switch(target) {                                                  \
-    ttkTypeMacroCase(VTK_FLOAT, float, 0, call) ttkTypeMacroCase(   \
-      VTK_DOUBLE, double, 0, call) ttkTypeMacroErrorCase(0, target) \
-  }
-
-#define ttkTypeMacroA(target, call)                                        \
-  switch(target) {                                                         \
-    ttkTypeMacroCase(VTK_FLOAT, float, 0, call);                           \
-    ttkTypeMacroCase(VTK_DOUBLE, double, 0, call);                         \
-    ttkTypeMacroCase(VTK_INT, int, 0, call);                               \
-    ttkTypeMacroCase(VTK_UNSIGNED_INT, unsigned int, 0, call);             \
-    ttkTypeMacroCase(VTK_CHAR, char, 0, call);                             \
-    ttkTypeMacroCase(VTK_SIGNED_CHAR, signed char, 0, call);               \
-    ttkTypeMacroCase(VTK_UNSIGNED_CHAR, unsigned char, 0, call);           \
-    ttkTypeMacroCase(VTK_LONG, long, 0, call);                             \
-    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call);                   \
-    ttkTypeMacroCase(VTK_UNSIGNED_LONG, unsigned long, 0, call);           \
-    ttkTypeMacroCase(VTK_UNSIGNED_LONG_LONG, unsigned long long, 0, call); \
-    ttkTypeMacroCase(VTK_ID_TYPE, vtkIdType, 0, call);                     \
-    ttkTypeMacroErrorCase(0, target);                                      \
-  }
-
-#define ttkTypeMacroRR(target0, target1, call)                             \
-  switch(target1) {                                                        \
-    ttkTypeMacroCase(VTK_FLOAT, float, 1, ttkTypeMacroR(target0, call));   \
-    ttkTypeMacroCase(VTK_DOUBLE, double, 1, ttkTypeMacroR(target0, call)); \
-    ttkTypeMacroErrorCase(1, target1);                                     \
-  }
-
-#define ttkTypeMacroRRR(target0, target1, target2, call)              \
-  switch(target2) {                                                   \
-    ttkTypeMacroCase(                                                 \
-      VTK_FLOAT, float, 2, ttkTypeMacroRR(target0, target1, call));   \
-    ttkTypeMacroCase(                                                 \
-      VTK_DOUBLE, double, 2, ttkTypeMacroRR(target0, target1, call)); \
-    ttkTypeMacroErrorCase(2, target2);                                \
-  }
-
-#define ttkTypeMacroRRI(target0, target1, target2, call)                       \
-  switch(target2) {                                                            \
-    ttkTypeMacroCase(VTK_INT, int, 2, ttkTypeMacroRR(target0, target1, call)); \
-    ttkTypeMacroCase(                                                          \
-      VTK_LONG_LONG, long long, 2, ttkTypeMacroRR(target0, target1, call));    \
-    ttkTypeMacroCase(                                                          \
-      VTK_ID_TYPE, vtkIdType, 2, ttkTypeMacroRR(target0, target1, call));      \
-    ttkTypeMacroErrorCase(2, target2);                                         \
-  }
-
-#define ttkTypeMacroAI(target0, target1, call)                                 \
-  switch(target1) {                                                            \
-    ttkTypeMacroCase(VTK_INT, int, 1, ttkTypeMacroA(target0, call));           \
-    ttkTypeMacroCase(                                                          \
-      VTK_LONG_LONG, long long, 1, ttkTypeMacroA(target0, call));              \
-    ttkTypeMacroCase(VTK_ID_TYPE, vtkIdType, 1, ttkTypeMacroA(target0, call)); \
-    ttkTypeMacroErrorCase(1, target1);                                         \
-  }
-
 vtkStandardNewMacro(ttkMeshGraph);
 
 ttkMeshGraph::ttkMeshGraph() {
@@ -178,16 +108,14 @@ int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
       outputConnectivityArray->GetDataType(),
       (status = this->execute<T2, T0, T1>(
          // Output
-         static_cast<T0 *>(ttkUtils::GetVoidPointer(outputPoints)),
-         static_cast<T2 *>(ttkUtils::GetVoidPointer(outputConnectivityArray)),
-         static_cast<T2 *>(ttkUtils::GetVoidPointer(outputOffsetArray)),
+         ttkUtils::GetPointer<T0>(outputPoints->GetData()),
+         ttkUtils::GetPointer<T2>(outputConnectivityArray),
+         ttkUtils::GetPointer<T2>(outputOffsetArray),
 
          // Input
-         static_cast<T0 *>(ttkUtils::GetVoidPointer(inputPoints)),
-         static_cast<T2 *>(
-           ttkUtils::GetVoidPointer(input->GetCells()->GetConnectivityArray())),
-         nInputPoints, nInputCells,
-         static_cast<T1 *>(ttkUtils::GetVoidPointer(inputPointSizes)),
+         ttkUtils::GetPointer<T0>(inputPoints->GetData()),
+         ttkUtils::GetPointer<T2>(input->GetCells()->GetConnectivityArray()),
+         nInputPoints, nInputCells, ttkUtils::GetPointer<T1>(inputPointSizes),
          this->GetSizeScale(), this->GetSizeAxis())));
   } else {
     ttkTypeMacroRRI(
@@ -195,17 +123,16 @@ int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
       outputConnectivityArray->GetDataType(),
       (status = this->execute2<T2, T0, T1>(
          // Output
-         static_cast<T0 *>(ttkUtils::GetVoidPointer(outputPoints)),
-         static_cast<T2 *>(ttkUtils::GetVoidPointer(outputConnectivityArray)),
-         static_cast<T2 *>(ttkUtils::GetVoidPointer(outputOffsetArray)),
+         ttkUtils::GetPointer<T0>(outputPoints->GetData()),
+         ttkUtils::GetPointer<T2>(outputConnectivityArray),
+         ttkUtils::GetPointer<T2>(outputOffsetArray),
 
          // Input
-         static_cast<T0 *>(ttkUtils::GetVoidPointer(inputPoints)),
-         static_cast<T2 *>(
-           ttkUtils::GetVoidPointer(input->GetCells()->GetConnectivityArray())),
+         ttkUtils::GetPointer<T0>(inputPoints->GetData()),
+         ttkUtils::GetPointer<T2>(input->GetCells()->GetConnectivityArray()),
          nInputPoints, nInputCells, this->GetSubdivisions(),
-         static_cast<T1 *>(ttkUtils::GetVoidPointer(inputPointSizes)),
-         this->GetSizeScale(), this->GetSizeAxis())));
+         ttkUtils::GetPointer<T1>(inputPointSizes), this->GetSizeScale(),
+         this->GetSizeAxis())));
   }
   if(!status)
     return 0;
@@ -245,12 +172,12 @@ int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
       ttkTypeMacroAI(
         iArray->GetDataType(), inputConnectivityArray->GetDataType(),
         (status = this->mapInputPointDataToOutputPointData<T0, T1>(
-           static_cast<T0 *>(ttkUtils::GetVoidPointer(oArray)),
+           ttkUtils::GetPointer<T0>(oArray),
 
            nInputPoints, nInputCells,
-           static_cast<T1 *>(ttkUtils::GetVoidPointer(inputConnectivityArray)),
-           static_cast<T0 *>(ttkUtils::GetVoidPointer(iArray)),
-           this->GetUseQuadraticCells(), this->GetSubdivisions())));
+           ttkUtils::GetPointer<T1>(inputConnectivityArray),
+           ttkUtils::GetPointer<T0>(iArray), this->GetUseQuadraticCells(),
+           this->GetSubdivisions())));
 
       if(!status)
         return 0;
@@ -277,9 +204,8 @@ int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
       ttkTypeMacroA(
         iArray->GetDataType(),
         (status = this->mapInputCellDataToOutputCellData<T0>(
-           static_cast<T0 *>(ttkUtils::GetVoidPointer(oArray)), nInputCells,
-           static_cast<T0 *>(ttkUtils::GetVoidPointer(iArray)),
-           this->GetUseQuadraticCells())));
+           ttkUtils::GetPointer<T0>(oArray), nInputCells,
+           ttkUtils::GetPointer<T0>(iArray), this->GetUseQuadraticCells())));
       if(!status)
         return 0;
     }
