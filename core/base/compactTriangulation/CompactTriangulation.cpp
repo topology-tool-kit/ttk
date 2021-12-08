@@ -46,6 +46,7 @@ CompactTriangulation::~CompactTriangulation() {
 
 int CompactTriangulation::reorderVertices(std::vector<SimplexId> &vertexMap) {
   // get the number of nodes (the max value in the array)
+  nodeNumber_ = 0;
   for(SimplexId vid = 0; vid < vertexNumber_; vid++) {
     if(vertexIndices_[vid] > nodeNumber_) {
       nodeNumber_ = vertexIndices_[vid];
@@ -951,7 +952,6 @@ int CompactTriangulation::getClusterEdgeLinks(
     linksCount(localEdgeNum, 0);
 
   if(getDimensionality() == 2) {
-    // std::cout << "node id: " << nodePtr->nid << std::endl;
     if(nodePtr->edgeStars_.empty()) {
       getClusterEdgeStars(nodePtr);
     }
@@ -991,8 +991,6 @@ int CompactTriangulation::getClusterEdgeLinks(
           SimplexId vertexId = cellArray_->getCellVertex(cellId, k);
           if((vertexId != iter->first[0]) && (vertexId != iter->first[1])) {
             SimplexId localEdgeId = iter->second - 1;
-            // std::cout << "local edge id: "<< localEdgeId << ", vertex id: "
-            // << vertexId << std::endl;
             edgeLinkData[offsets[localEdgeId] + linksCount[localEdgeId]]
               = vertexId;
             linksCount[localEdgeId]++;

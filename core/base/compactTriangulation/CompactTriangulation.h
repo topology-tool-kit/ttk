@@ -1413,8 +1413,6 @@ namespace ttk {
         return -4;
 #endif
 
-      std::cout << "The preconditioning for triangles is called" << std::endl;
-
       // build triangle interval list
       if(triangleIntervals_.empty()) {
         Timer t;
