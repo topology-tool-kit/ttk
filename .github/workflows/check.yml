@@ -114,15 +114,17 @@ jobs:
           doxygen \
           $CLANG_TIDY
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-headless-ubuntu-20.04.deb"
+        target: "ttk-paraview-headless.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview-headless-ubuntu-20.04.deb
+        sudo apt install ./ttk-paraview-headless.deb
 
     - name: Create & configure TTK build directory
       run: |
@@ -191,15 +193,17 @@ jobs:
           zlib1g-dev \
           clang-tools-11
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-headless-ubuntu-20.04.deb"
+        target: "ttk-paraview-headless.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview-headless-ubuntu-20.04.deb
+        sudo apt install ./ttk-paraview-headless.deb
 
     - name: Create & configure TTK build directory
       run: |

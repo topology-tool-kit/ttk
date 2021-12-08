@@ -46,16 +46,18 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       name: Fetch TTK-ParaView headless Debian package
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-headless-${{ matrix.os }}.deb"
+        target: "ttk-paraview-headless.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview-headless-${{ matrix.os }}.deb
+        sudo apt install ./ttk-paraview-headless.deb
 
     - name: Create & configure TTK build directory
       run: |
