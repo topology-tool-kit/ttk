@@ -155,7 +155,7 @@ double PersistenceDiagramDistanceMatrix::getMostPersistent(
   return max_persistence;
 }
 
-double PersistenceDiagramDistanceMatrix::computeDistance(
+double PersistenceDiagramDistanceMatrix::computePowerDistance(
   const BidderDiagram<double> &D1, const BidderDiagram<double> &D2) const {
 
   GoodDiagram<double> D2_bis{};
@@ -200,19 +200,19 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
       if(this->do_min_) {
         auto &dimin = diags_min[a];
         auto &djmin = diags_min[b];
-        distance += computeDistance(dimin, djmin);
+        distance += computePowerDistance(dimin, djmin);
       }
       if(this->do_sad_) {
         auto &disad = diags_sad[a];
         auto &djsad = diags_sad[b];
-        distance += computeDistance(disad, djsad);
+        distance += computePowerDistance(disad, djsad);
       }
       if(this->do_max_) {
         auto &dimax = diags_max[a];
         auto &djmax = diags_max[b];
-        distance += computeDistance(dimax, djmax);
+        distance += computePowerDistance(dimax, djmax);
       }
-      return distance;
+      return Geometry::pow(distance, 1.0 / this->Wasserstein);
     };
 
     if(nInputs[1] == 0) {
