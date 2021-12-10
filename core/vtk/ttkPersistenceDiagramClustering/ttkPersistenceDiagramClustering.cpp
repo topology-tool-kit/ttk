@@ -218,25 +218,18 @@ void ttkPersistenceDiagramClustering::VTUToDiagram(
   // cell data
   const auto pairId = vtkIntArray::SafeDownCast(cd->GetArray("PairIdentifier"));
   const auto pairType = vtkIntArray::SafeDownCast(cd->GetArray("PairType"));
-  const auto pairPers
-    = vtkDoubleArray::SafeDownCast(cd->GetArray("Persistence"));
+  const auto pairPers = cd->GetArray("Persistence");
+  const auto birthScalars = cd->GetArray("Birth");
 
   // point data
   const auto vertexId
     = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
   const auto critType = vtkIntArray::SafeDownCast(pd->GetArray("CriticalType"));
-  const auto birthScalars = vtkDoubleArray::SafeDownCast(pd->GetArray("Birth"));
-  const auto deathScalars = vtkDoubleArray::SafeDownCast(pd->GetArray("Death"));
   const auto coords = vtkFloatArray::SafeDownCast(pd->GetArray("Coordinates"));
 
   const auto points = vtu->GetPoints();
 
-  const bool embed = birthScalars != nullptr && deathScalars != nullptr;
-
-  if(!embed && coords == nullptr) {
-    this->printErr("Missing coordinates array on non-embedded diagram");
-    return;
-  }
+  const bool embed = coords == nullptr;
 
   int nPairs = pairId->GetNumberOfTuples();
 
@@ -278,21 +271,18 @@ void ttkPersistenceDiagramClustering::VTUToDiagram(
 
     const int pId = pairId->GetValue(i);
     const int pType = pairType->GetValue(i);
-    const double pers = pairPers->GetValue(i);
+    const auto pers = pairPers->GetTuple1(i);
+    const auto birth = birthScalars->GetTuple1(i);
+    const auto death = birth + pers;
 
     std::array<double, 3> coordsBirth{}, coordsDeath{};
-    double birth, death;
 
     if(embed) {
       points->GetPoint(2 * i + 0, coordsBirth.data());
       points->GetPoint(2 * i + 1, coordsDeath.data());
-      birth = birthScalars->GetValue(2 * i + 0);
-      death = deathScalars->GetValue(2 * i + 1);
     } else {
       coords->GetTuple(2 * i + 0, coordsBirth.data());
       coords->GetTuple(2 * i + 1, coordsDeath.data());
-      birth = points->GetPoint(2 * i + 0)[0];
-      death = points->GetPoint(2 * i + 1)[1];
     }
 
     if(pId != -1 && pId < nPairs) {
