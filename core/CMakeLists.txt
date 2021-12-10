@@ -6,6 +6,10 @@ if(TTK_BUILD_DOCUMENTATION)
     if(TARGET VTK::CommonCore)
       get_target_property(DOXYGEN_INCLUDE_DIRS VTK::CommonCore INTERFACE_INCLUDE_DIRECTORIES)
     endif()
+    # to find welcomeMsg.inl and welcomeLogo.inl
+    list(APPEND DOXYGEN_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/core/base/common")
+    # Doxygen needs space-separated paths
+    string (REPLACE ";" " " DOXYGEN_INCLUDE_DIRS "${DOXYGEN_INCLUDE_DIRS}")
     # to find splash.png
     set(DOXYGEN_IMAGE_PATH "${PROJECT_SOURCE_DIR}/doc/img")
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ttk.doxygen
