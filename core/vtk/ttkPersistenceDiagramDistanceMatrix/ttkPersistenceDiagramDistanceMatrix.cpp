@@ -249,10 +249,10 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
 
       } else {
         diagram[pairIdentifier] = std::make_tuple(
-          vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2,
-          persistence, pairType, birth, coordsBirth[0], coordsBirth[1],
-          coordsBirth[2], death, coordsDeath[0], coordsDeath[1],
-          coordsDeath[2]);
+          vertexId1, static_cast<ttk::CriticalType>(nodeType1), vertexId2,
+          static_cast<ttk::CriticalType>(nodeType2), persistence, pairType,
+          birth, coordsBirth[0], coordsBirth[1], coordsBirth[2], death,
+          coordsDeath[0], coordsDeath[1], coordsDeath[2]);
       }
     }
     if(pairIdentifier >= pairingsSize) {
