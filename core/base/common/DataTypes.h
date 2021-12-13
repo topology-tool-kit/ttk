@@ -66,6 +66,9 @@ namespace ttk {
   const char PersistenceName[] = "Persistence";
   const char PersistencePairTypeName[] = "PairType";
 
+  // default name for compact triangulation index
+  const char compactTriangulationIndex[] = "ttkCompactTriangulationIndex";
+
   /// default value for critical index
   enum class CriticalType {
     Local_minimum = 0,

@@ -5,6 +5,7 @@ ttk_add_base_library(triangulation
     Triangulation.h
   DEPENDS
     abstractTriangulation
+    compactTriangulation
     explicitTriangulation
     implicitTriangulation
     periodicImplicitTriangulation

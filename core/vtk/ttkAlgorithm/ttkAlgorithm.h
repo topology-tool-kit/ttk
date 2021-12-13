@@ -36,6 +36,7 @@ class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
 private:
   int ThreadNumber{1};
   bool UseAllCores{true};
+  float CompactTriangulationCacheSize{0.2f};
 
 public:
   static ttkAlgorithm *New();
@@ -75,6 +76,14 @@ public:
    */
   void SetDebugLevel(int debugLevel) {
     this->setDebugLevel(debugLevel); // from ttk::Debug
+    this->Modified();
+  }
+
+  /**
+   * Set the cache size of the compact triangulation.
+   */
+  void SetCompactTriangulationCacheSize(float cacheSize) {
+    this->CompactTriangulationCacheSize = cacheSize;
     this->Modified();
   }
 
