@@ -1,6 +1,23 @@
+# --- Prerequisites
+
 set(CMAKE_CXX_STANDARD 11)
 
-# --- Options
+# --- Global Options
+
+option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
+cmake_dependent_option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON "TTK_BUILD_VTK_WRAPPERS" OFF)
+option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
+option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
+mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
+
+# This option allows library to be built dynamic
+# like the TopologyToolKit.so file for paraview
+option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
+
+if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
+  message(WARNING "Can't build standalones without the VTK wrappers: disable")
+  set(TTK_BUILD_STANDALONE_APPS OFF CACHE BOOL "Build the cmd and gui commands" FORCE)
+endif()
 
 # Set a default build type if none was specified
 get_property(generator_is_multi_config GLOBAL
@@ -21,7 +38,7 @@ set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
 mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 
-# issue #605 
+# issue #605
 # workaround https://gitlab.kitware.com/paraview/paraview/-/issues/20324
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
@@ -107,18 +124,22 @@ endif()
 list(INSERT CMAKE_MODULE_PATH 0
   "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
+# mandatory packages
+
 find_package(Boost REQUIRED)
 if(Boost_FOUND)
   message(STATUS "Found Boost ${Boost_VERSION} (${Boost_INCLUDE_DIR})")
 endif()
 
+# optional pakages
+
 find_package(ZLIB QUIET)
-if(NOT ZLIB_FOUND)
-  option(TTK_ENABLE_ZLIB "Enable Zlib support" OFF)
-  message(STATUS "Zlib not found, disabling Zlib support in TTK.")
-else()
+if(ZLIB_FOUND)
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
   message(STATUS "Found Zlib ${ZLIB_VERSION_STRING} (${ZLIB_LIBRARIES})")
+else()
+  option(TTK_ENABLE_ZLIB "Enable Zlib support" OFF)
+  message(STATUS "Zlib not found, disabling Zlib support in TTK.")
 endif()
 
 find_package(EMBREE 3.4 QUIET)
@@ -130,7 +151,6 @@ else()
   message(STATUS "EMBREE library not found, disabling embree support in TTK.")
 endif()
 
-# GraphViz
 find_package(Graphviz QUIET)
 if(Graphviz_FOUND)
   option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" ON)
@@ -139,9 +159,7 @@ else()
   option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" OFF)
   message(STATUS "GraphViz not found, disabling GraphViz support in TTK.")
 endif()
-# End GraphViz
 
-# FindSQLite3 supported since CMake 3.14
 find_package(SQLite3 QUIET)
 if(SQLite3_FOUND)
   option(TTK_ENABLE_SQLITE3 "Enable SQLITE3 support" ON)
@@ -245,12 +263,12 @@ endif()
 
 
 find_package(WEBSOCKETPP QUIET)
-if(NOT WEBSOCKETPP_FOUND)
-  option(TTK_ENABLE_WEBSOCKETPP "Enable WebSocketIO module" OFF)
-  message(STATUS "WebSocketPP not found, disabling WebSocketIO module in TTK.")
-else()
+if(WEBSOCKETPP_FOUND)
   option(TTK_ENABLE_WEBSOCKETPP "Enable WebSocketIO module" ON)
   message(STATUS "Found WebSocketPP ${WEBSOCKETPP_VERSION} (${WEBSOCKETPP_INCLUDE_DIR}), enabling WebSocketIO module in TTK.")
+else()
+  option(TTK_ENABLE_WEBSOCKETPP "Enable WebSocketIO module" OFF)
+  message(STATUS "WebSocketPP not found, disabling WebSocketIO module in TTK.")
 endif()
 
 # --- Install path
