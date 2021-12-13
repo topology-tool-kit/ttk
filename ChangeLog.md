@@ -1,6 +1,7 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Compact triangulations (IEEE TVCG 2021)
 - PersistentSimplexPairs backend (Zomorodian 2010), slow.
 - Bug fixes
 
