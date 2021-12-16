@@ -61,6 +61,8 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                             ttk::ImplicitTriangulation, call);            \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
                             ttk::PeriodicImplicitTriangulation, call);    \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::COMPACT,  \
+                            ttk::CompactTriangulation, call);             \
   }
 
 #define ttkTemplate2IdMacro(call)                                           \

@@ -63,6 +63,9 @@
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 ///   example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
 ///   Processing example</a> \n
 ///   - <a
@@ -77,7 +80,7 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
 ///   Learning example</a> \n
-///
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
 ///   - <a
@@ -86,6 +89,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
 ///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
 ///
 
 #pragma once

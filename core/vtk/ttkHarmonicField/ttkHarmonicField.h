@@ -30,6 +30,11 @@
 /// \sa ttkFTMTree
 /// \sa ttkIdentifiers
 /// \sa ttk::HarmonicField
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
 
 #pragma once
 

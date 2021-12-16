@@ -28,6 +28,11 @@
 ///
 /// \sa ttk::MergeTreeClustering
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
 
 #pragma once
 

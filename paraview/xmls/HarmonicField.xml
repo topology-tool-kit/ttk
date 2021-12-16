@@ -15,6 +15,10 @@
         "Dynamic harmonic fields for surface processing"
         Kai Xu, Hao Zhang, Daniel Cohen-Or, Yueshan Xiong
         Computers and Graphics 2009.
+
+        Online Examples:
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
       </Documentation>
 
       <InputProperty

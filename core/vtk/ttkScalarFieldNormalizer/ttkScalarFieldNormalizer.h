@@ -28,6 +28,9 @@
 ///
 /// \b Online \b examples: \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
 ///   Quadrangulation example</a> \n
 ///
