@@ -18,6 +18,10 @@
           Gueunet C., Fortin P., Jomier J., Tierny J.:
           "Task-based Augmented Reeb Graphs with Dynamic ST-Trees"
           EGPGV 2019
+
+          Online Examples:
+
+          - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
         </Documentation>
         <InputProperty
            name="Input"

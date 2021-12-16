@@ -20,6 +20,9 @@ Related publication:
 Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
 Proc. of IEEE VIS 2021.
 IEEE Transactions on Visualization and Computer Graphics, 2021
+
+Online examples:
+- https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
       </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
