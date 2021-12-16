@@ -43,6 +43,10 @@ Identifiers.
 
         Online examples:
 
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+        
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/ 
+        
         - https://topology-tool-kit.github.io/examples/ctBones/
 
         - https://topology-tool-kit.github.io/examples/dragon/
@@ -56,13 +60,11 @@ Identifiers.
         - https://topology-tool-kit.github.io/examples/persistenceClustering0/
 
         - https://topology-tool-kit.github.io/examples/morsePersistence/
-
-        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
         
         - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
 
         - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
-
+        
         - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
 
       </Documentation>
