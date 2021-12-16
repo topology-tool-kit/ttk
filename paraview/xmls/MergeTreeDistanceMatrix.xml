@@ -8,7 +8,9 @@
     <ProxyGroup name="filters">
         <SourceProxy name="MergeTreeDistanceMatrix" class="ttkMergeTreeDistanceMatrix" label="TTK MergeTreeDistanceMatrix">
            <Documentation long_help="MergeTreeDistanceMatrix Long" short_help="MergeTreeDistanceMatrix Short">
-               
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeClustering/
            </Documentation>
 
             <!-- INPUT -->

@@ -13,6 +13,15 @@
         long_help="TTK dimensionReduction plugin."
         short_help="TTK dimensionReduction plugin.">
         TTK dimensionReduction plugin documentation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+        
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+        
+        - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
       </Documentation>
       <InputProperty
         name="Input"

@@ -37,6 +37,7 @@
 
 // base code includes
 #include <AbstractTriangulation.h>
+#include <CompactTriangulation.h>
 #include <ExplicitTriangulation.h>
 #include <ImplicitTriangulation.h>
 #include <PeriodicImplicitTriangulation.h>
@@ -55,7 +56,7 @@ namespace ttk {
     Triangulation &operator=(Triangulation &&) noexcept;
     ~Triangulation();
 
-    enum class Type { EXPLICIT, IMPLICIT, PERIODIC };
+    enum class Type { EXPLICIT, IMPLICIT, PERIODIC, COMPACT };
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -1226,6 +1227,8 @@ namespace ttk {
         return Triangulation::Type::EXPLICIT;
       else if(abstractTriangulation_ == &implicitTriangulation_)
         return Triangulation::Type::IMPLICIT;
+      else if(abstractTriangulation_ == &compactTriangulation_)
+        return Triangulation::Type::COMPACT;
       else
         return Triangulation::Type::PERIODIC;
     }
@@ -2280,6 +2283,14 @@ namespace ttk {
       return 0;
     }
 
+    // Set the cache size
+    inline int setCacheSize(const float &ratio) {
+      if(abstractTriangulation_ == &compactTriangulation_) {
+        compactTriangulation_.initCache(ratio);
+      }
+      return 0;
+    }
+
 #ifdef TTK_CELL_ARRAY_NEW
     /// Here the notion of cell refers to the simplicices of maximal
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
@@ -2308,6 +2319,15 @@ namespace ttk {
       return explicitTriangulation_.setInputCells(
         cellNumber, connectivity, offset);
     }
+
+    inline int setStellarInputCells(const SimplexId &cellNumber,
+                                    const LongSimplexId *connectivity,
+                                    const LongSimplexId *offset) {
+      abstractTriangulation_ = &compactTriangulation_;
+      gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
+      return compactTriangulation_.setInputCells(
+        cellNumber, connectivity, offset);
+    }
 #else
     /// Set the input cells for the triangulation.
     ///
@@ -2334,6 +2354,15 @@ namespace ttk {
       abstractTriangulation_ = &explicitTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
       return explicitTriangulation_.setInputCells(cellNumber, cellArray);
+    }
+
+    inline int setStellarInputCells(const SimplexId &cellNumber,
+                                    const LongSimplexId *cellArray) {
+
+      abstractTriangulation_ = &compactTriangulation_;
+      gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
+
+      return compactTriangulation_.setInputCells(cellNumber, cellArray);
     }
 #endif
     /// Set the specifications of the input grid to implicitly represent as a
@@ -2438,11 +2467,23 @@ namespace ttk {
         pointNumber, pointSet, doublePrecision);
     }
 
+    inline int setStellarInputPoints(const SimplexId &pointNumber,
+                                     const void *pointSet,
+                                     const int *indexArray,
+                                     const bool &doublePrecision = false) {
+
+      abstractTriangulation_ = &compactTriangulation_;
+      gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
+      return compactTriangulation_.setInputPoints(
+        pointNumber, pointSet, indexArray, doublePrecision);
+    }
+
     /// Tune the number of active threads (default: number of logical cores)
     inline int setThreadNumber(const ThreadId threadNumber) {
       explicitTriangulation_.setThreadNumber(threadNumber);
       implicitTriangulation_.setThreadNumber(threadNumber);
       periodicImplicitTriangulation_.setThreadNumber(threadNumber);
+      compactTriangulation_.setThreadNumber(threadNumber);
       threadNumber_ = threadNumber;
       return 0;
     }
@@ -2453,6 +2494,7 @@ namespace ttk {
       explicitTriangulation_.setWrapper(wrapper);
       implicitTriangulation_.setWrapper(wrapper);
       periodicImplicitTriangulation_.setWrapper(wrapper);
+      compactTriangulation_.setWrapper(wrapper);
       return 0;
     }
 
@@ -2469,6 +2511,7 @@ namespace ttk {
     ExplicitTriangulation explicitTriangulation_;
     ImplicitTriangulation implicitTriangulation_;
     PeriodicImplicitTriangulation periodicImplicitTriangulation_;
+    CompactTriangulation compactTriangulation_;
   };
 } // namespace ttk
 

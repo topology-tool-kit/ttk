@@ -14,6 +14,13 @@
         short_help="TTK identifierRandomizer plugin.">
        TTK filter to shuflle ids randomly. Useful to reduce the number of neighbor
        regions with close ids.
+
+       Online examples:
+
+       - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+
      </Documentation>
      <InputProperty
         name="Input"

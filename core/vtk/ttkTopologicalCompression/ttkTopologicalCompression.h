@@ -26,6 +26,12 @@
 /// within a VTK pipeline.
 ///
 /// \sa ttk::TopologicalCompression
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/">Persistence-Driven
+///   Compression example</a> \n
+///
 
 #pragma once
 

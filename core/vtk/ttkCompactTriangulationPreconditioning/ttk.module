@@ -1,0 +1,10 @@
+NAME
+  ttkCompactTriangulationPreconditioning
+SOURCES
+  ttkCompactTriangulationPreconditioning.cpp
+HEADERS
+  ttkCompactTriangulationPreconditioning.h
+DEPENDS
+  octree
+  compactTriangulationPreconditioning
+  ttkAlgorithm

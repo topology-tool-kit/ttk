@@ -22,6 +22,12 @@
 /// \sa ttkFTMTree
 /// \sa ttkIdentifiers
 /// \sa ttk::MorseSmaleQuadrangulation
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///
 
 #pragma once
 
