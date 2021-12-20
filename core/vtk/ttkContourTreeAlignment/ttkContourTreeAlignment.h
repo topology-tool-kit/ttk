@@ -48,6 +48,11 @@
 /// Christoph Garth. Comput. Graph. Forum, 39(3):343-355, 2020.
 ///
 /// \sa ttk::ContourTreeAlignment
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">
+///   Contour Tree Alignment example</a> \n
 
 #pragma once
 
