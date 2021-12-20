@@ -35,13 +35,17 @@
               * 3 - (2-saddle,2-saddle),
               * 4 - (1-saddle,2-saddle).
 
-        Online examples:
+              Online examples:
 
-        - https://topology-tool-kit.github.io/examples/ctBones/
+              - https://topology-tool-kit.github.io/examples/ctBones/
 
-        - https://topology-tool-kit.github.io/examples/dragon/
+              - https://topology-tool-kit.github.io/examples/dragon/
 
         - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+        - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+        
+        - https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
 
             </Documentation>
 

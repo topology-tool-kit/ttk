@@ -22,8 +22,20 @@
 /// \sa ttk::ScalarFieldSmoother
 ///
 /// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 /// example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
 /// Morse molecule example</a> \n
 ///

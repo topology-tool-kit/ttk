@@ -1,0 +1,4 @@
+NAME
+  ttkCompactTriangulationPreconditioning
+DEPENDS
+  ttkAlgorithm

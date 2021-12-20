@@ -9,6 +9,11 @@
           short_help="TTK plugin for surface quadrangulation.">
         This plugin outputs a very raw quadrangulation from a
         Morse-Smale Complex of a triangular surfacic mesh.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
       </Documentation>
 
       <InputProperty
