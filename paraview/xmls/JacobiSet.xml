@@ -24,6 +24,11 @@ Related publication:
 "Jacobi sets of multiple Morse functions"
 Herbert Edelsbrunner, John Harer
 Foundations of Computational Mathematics. Cambridge University Press, 2002.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
      </Documentation>
      <InputProperty
         name="Input"
