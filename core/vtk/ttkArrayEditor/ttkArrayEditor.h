@@ -9,6 +9,10 @@
 /// target) based on a string or point/cell/field data of an optional second
 /// 'vtkDataObject' (called source). This filter can also be used to directly
 /// edit an array (including renaming, type conversion, and reindexing).
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema IO 
+///   example</a> \n
 
 #pragma once
 

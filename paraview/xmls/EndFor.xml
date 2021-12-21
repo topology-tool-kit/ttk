@@ -2,7 +2,16 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkEndFor" class="ttkEndFor" label="TTK EndFor">
-            <Documentation long_help="TTK EndFor" short_help="TTK EndFor">This filter requests more data as long as the maximum number of elements is not reached. This filter works in conjunction with the ttkForEachRow filter.</Documentation>
+            <Documentation 
+            long_help="TTK EndFor" 
+            short_help="TTK EndFor">
+                This filter requests more data as long as the maximum number of elements is not reached. This filter works in conjunction with the ttkForEach filter.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+
+            </Documentation>
 
             <InputProperty name="Data" port_index="0" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

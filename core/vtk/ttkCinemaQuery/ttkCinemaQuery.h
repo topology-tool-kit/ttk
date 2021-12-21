@@ -15,6 +15,11 @@
 /// \param Output Output table (vtkTable)
 ///
 /// sa ttk::CinemaQuery
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema IO 
+///   example</a> \n
+
 
 #pragma once
 

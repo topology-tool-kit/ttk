@@ -11,6 +11,10 @@
 /// \param Output content of the data.csv file of the database in form of a
 /// vtkTable
 
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema IO 
+///   example</a> \n
+
 #pragma once
 
 // Module include

@@ -2,7 +2,16 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkForEach" class="ttkForEach" label="TTK ForEach">
-            <Documentation long_help="TTK ForEach" short_help="TTK ForEach">This filter works in conjunction with the ttkEndFor filter to iterate over blocks, rows, array values, and arrays.</Documentation>
+            <Documentation 
+            long_help="TTK ForEach" 
+            short_help="TTK ForEach">
+                This filter works in conjunction with the ttkEndFor filter to iterate over blocks, rows, array values, and arrays.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+                
+            </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

@@ -10,6 +10,10 @@
 ///
 /// \param Input vtkDataObject that will be passed through after all iterations.
 /// \param Output vtkDataObject Shallow copy of the input
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema IO 
+///   example</a> \n
 
 #pragma once
 
