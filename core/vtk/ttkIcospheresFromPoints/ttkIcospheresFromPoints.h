@@ -17,7 +17,8 @@
 ///   Harmonic Skeleton example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
 /// Morse molecule example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
 ///
 

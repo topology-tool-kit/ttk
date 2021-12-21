@@ -63,7 +63,8 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
 ///   Tree Temporal Reduction</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
 
 #pragma once
