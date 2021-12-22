@@ -2,17 +2,24 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkCinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
-            <Documentation long_help="ttkCinemaWriter" short_help="ttkCinemaWriter">
-This filter stores a data product in a Cinema database, and then returns the unmodified input as output.
+            <Documentation 
+            long_help="ttkCinemaWriter" 
+            short_help="ttkCinemaWriter">
+                This filter stores a data product in a Cinema database, and then returns the unmodified input as output.
 
-The field data arrays of the input are used to derive a unique key that identifies the data product in the Cinema database. If another product with the same key already exists then the filter will replace the existing data product, otherwise the data product is simply appended to the database. The data product itself is either stored in a VTK file format <em>(e.g., vtkUnstructuredGrid, vtkPolyData, vtkMultiBlockDataSet, vtkImageData, ...)</em> or in the PNG image file format (if conversion is possible and explicitly requested by the user).
+                The field data arrays of the input are used to derive a unique key that identifies the data product in the Cinema database. If another product with the same key already exists then the filter will replace the existing data product, otherwise the data product is simply appended to the database. The data product itself is either stored in a VTK file format <em>(e.g., vtkUnstructuredGrid, vtkPolyData, vtkMultiBlockDataSet, vtkImageData, ...)</em> or in the PNG image file format (if conversion is possible and explicitly requested by the user).
 
-NOTE:
+                NOTE:
 
-1) Field data arrays whose names start with "_ttk" are ignored during key generation.
+                1) Field data arrays whose names start with "_ttk" are ignored during key generation.
 
-2) To add/remove field data arrays (product keys) run the "ttkArrayEditor" prior to the "ttkCinemaWriter" filter.
-</Documentation>
+                2) To add/remove field data arrays (product keys) run the "ttkArrayEditor" prior to the "ttkCinemaWriter" filter.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+                
+            </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
