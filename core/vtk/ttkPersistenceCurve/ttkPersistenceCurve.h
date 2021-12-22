@@ -38,6 +38,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
 ///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
 ///
 
 #ifndef _TTK_PERSISTENCECURVE_H

@@ -20,6 +20,11 @@ point data.
 Related publication: 'Continuous Scatterplots', Sven Bachthaler,
 Daniel Weiskopf, Proc. of IEEE VIS 2008, IEEE Transactions on Visualization and
 Computer Graphics, 2008.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
       </Documentation>
 
       <InputProperty

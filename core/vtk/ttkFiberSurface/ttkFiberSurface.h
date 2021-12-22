@@ -37,6 +37,10 @@
 ///
 /// \sa ttk::FiberSurface
 /// \sa vtkRangePolygon
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
 
 #pragma once
 
