@@ -38,6 +38,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 </ProxyGroupDomain>
                 <DataTypeDomain name="input_type">
                     <DataType value="vtkUnstructuredGrid" />
+                    <DataType value="vtkPolyData" />
                 </DataTypeDomain>
                 <InputArrayDomain name="input_array" attribute_type="point" />
                 <Documentation>Graph.</Documentation>
@@ -68,7 +69,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 <BooleanDomain name="bool" />
                 <Documentation>Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).</Documentation>
             </IntVectorProperty>
-            
+
             <StringVectorProperty name="SequenceArray" label="Sequence Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
                 <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
@@ -95,7 +96,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 <BooleanDomain name="bool" />
                 <Documentation>Points cover space on the y-axis based on their size.</Documentation>
             </IntVectorProperty>
-            
+
             <StringVectorProperty name="SizeArray" label="Size Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
                 <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
@@ -122,7 +123,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 <BooleanDomain name="bool" />
                 <Documentation>Points with the same branch label are positioned on straight lines.</Documentation>
             </IntVectorProperty>
-            
+
             <StringVectorProperty name="BranchArray" label="Branch Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="2">
                 <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
@@ -149,7 +150,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                 <BooleanDomain name="bool" />
                 <Documentation>The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy.</Documentation>
             </IntVectorProperty>
-            
+
             <StringVectorProperty name="LevelArray" label="Level Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="3">
                 <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
@@ -157,7 +158,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseLevels" value="1" 
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseLevels" value="1"
                     />
                     <PropertyWidgetDecorator type="GenericDecorator"
                                              mode="visibility"
