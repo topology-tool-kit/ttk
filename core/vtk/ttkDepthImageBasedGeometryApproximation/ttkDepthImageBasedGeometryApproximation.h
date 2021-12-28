@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that approximates the geomerty that is depicted by a
 /// set of depth images.
 ///
-/// VTK wrapping code for the @DepthImageBasedGeometryApproximation package.
+/// VTK wrapping code for the ttk::DepthImageBasedGeometryApproximation package.
 ///
 /// This filter approximates the geometry that is depicted by a set of depth
 /// images.

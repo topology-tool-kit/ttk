@@ -144,8 +144,8 @@ namespace ttk {
         return roots;
       }
 
-      /// \ret true if we have merged two tree, false if it was just an intern
-      /// operation
+      /// @return true if we have merged two tree, false if it was just an
+      /// intern operation
       bool insertEdge(DynGraphNode<Type> *const n1,
                       DynGraphNode<Type> *const n2,
                       const Type w,
@@ -172,12 +172,12 @@ namespace ttk {
       }
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(DynGraphNode<Type> *const n1,
                      DynGraphNode<Type> *const n2);
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(const std::size_t nid1, const std::size_t nid2) {
         return removeEdge(getNode(nid1), getNode(nid2));
       }
@@ -225,8 +225,8 @@ namespace ttk {
         nbCC_ = this->nodes_.size();
       }
 
-      /// \ret true if we have merged two tree, false if it was just an intern
-      /// operation
+      /// @return true if we have merged two tree, false if it was just an
+      /// intern operation
       bool insertEdge(DynGraphNode<Type> *const n1,
                       DynGraphNode<Type> *const n2,
                       const Type w,
@@ -261,7 +261,7 @@ namespace ttk {
       }
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(DynGraphNode<Type> *const n1,
                      DynGraphNode<Type> *const n2) {
         int ret = super::removeEdge(n1, n2);
@@ -271,7 +271,7 @@ namespace ttk {
       }
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(const std::size_t nid1, const std::size_t nid2) {
         int ret = super::removeEdge(nid1, nid2);
         if(ret)
@@ -349,13 +349,13 @@ namespace ttk {
 
       /// Get representative node and kepp track of
       /// the node with the min weight on the path
-      /// \ret tuple<root, node with min weight>
+      /// @return tuple<root, node with min weight>
       std::tuple<DynGraphNode<Type> *, DynGraphNode<Type> *>
         findMinWeightRoot() const;
 
       /// Create a new edge between this node and the node n
-      /// \ret true if we have merged two tree, false if it was just an intern
-      /// operation
+      /// @return true if we have merged two tree, false if it was just an
+      /// intern operation
       bool insertEdge(DynGraphNode *const n,
                       const Type weight,
                       const idSuperArc corArc);

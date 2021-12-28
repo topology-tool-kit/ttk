@@ -217,8 +217,7 @@ namespace ttk {
                            int wasserstein);
   };
 
-// Include in namespace ttk
+} // namespace ttk
+
 #include <BottleneckDistanceImpl.h>
 #include <BottleneckDistanceMainImpl.h>
-
-} // namespace ttk

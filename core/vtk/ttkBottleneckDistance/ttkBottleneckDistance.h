@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the bottleneckDistance processing package.
 ///
-/// VTK wrapping code for the @BottleneckDistance package.
+/// VTK wrapping code for the ttk::BottleneckDistance package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)

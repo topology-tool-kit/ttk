@@ -11,7 +11,7 @@
 /// have vtkDoubleArrays to override the  rendering parameters, i.e, the
 /// resolution, focus, clipping planes, and viewport height.
 ///
-/// VTK wrapping code for the @CinemaImaging package.
+/// VTK wrapping code for the ttk::CinemaImaging package.
 ///
 /// \param Input vtkDataObject that will be depicted (vtkDataObject)
 /// \param Input vtkPointSet that records the camera sampling locations

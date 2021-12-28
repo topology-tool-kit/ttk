@@ -532,7 +532,7 @@ namespace ttk {
 
     /// Set the position (x,y,z) of the i-th point
     /// \param i Index of the vertex
-    /// \param point[3] Position (x,y,z)
+    /// \param point Position (x,y,z) (buffer of 3 doubles)
     /// \return Returns 0 upon success, negative values otherwise.
     inline int setVertexPosition(const int &i, const double point[3]) {
       if((int)vertexPositions_.size() != vertexNumber_)

@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that computes the overlap between labeled
 /// vtkPointSets.
 ///
-/// VTK wrapping code for the @TrackingFromOverlap package.
+/// VTK wrapping code for the ttk::TrackingFromOverlap package.
 ///
 /// This filter identifies and tracks labled vtkPointSets across time (and
 /// optionally levels) based on spatial overlap, where two points overlap iff

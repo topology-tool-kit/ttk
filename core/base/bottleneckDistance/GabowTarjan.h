@@ -1,12 +1,17 @@
 #pragma once
 
-#include "MatchingGraph.h"
 #include <Debug.h>
+#include <MatchingGraph.h>
+
 #include <algorithm>
 #include <iostream>
 #include <map>
 #include <queue>
 #include <vector>
+
+#ifndef matchingTuple
+#define matchingTuple std::tuple<int, int, dataType>
+#endif
 
 namespace ttk {
 
@@ -134,7 +139,6 @@ namespace ttk {
     void HopcroftKarp(unsigned int &matching);
   };
 
-// Namespace ttk
-#include <GabowTarjanImpl.h>
-
 } // namespace ttk
+
+#include <GabowTarjanImpl.h>

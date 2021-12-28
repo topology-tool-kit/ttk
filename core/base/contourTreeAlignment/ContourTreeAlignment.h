@@ -9,7 +9,7 @@
 /// for n contour trees. To compute the alignment, use the execute function.
 /// Each contour tree is represented by an integer array for the topology,  an
 /// integer array for each of the edge scalars "regionSize" and
-/// segementationId", a <scalarType> array for the vertex scalars and two
+/// segementationId", a `<scalarType>` array for the vertex scalars and two
 /// integers for the number of edges and vertices. These properties are passed
 /// as vectors of arrays, where the i-th array in a vector represents the
 /// corresponding array for the i-th tree. The alignment tree is written to the

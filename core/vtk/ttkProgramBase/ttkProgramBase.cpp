@@ -18,7 +18,7 @@ int ttkProgramBase::execute() {
   return 0;
 }
 
-int ttkProgramBase::load(const vector<string> &inputPaths) {
+int ttkProgramBase::load(const std::vector<std::string> &inputPaths) {
 
   int ret = -1;
 

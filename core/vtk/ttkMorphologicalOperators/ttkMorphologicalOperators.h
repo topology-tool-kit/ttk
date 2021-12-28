@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that dilates or erodes a specified vertex label.
 ///
-/// VTK wrapping code for the @MorphologicalOperators package.
+/// VTK wrapping code for the ttk::MorphologicalOperators package.
 ///
 /// This filter either a) dilates a specified label by assigning the label of a
 /// corresponding vertex to all its neighbors, or b) erodes a specified label by

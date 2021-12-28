@@ -2,7 +2,6 @@
 /// \brief The Topology ToolKit - VTK wrapping code for the processing
 /// packages.
 /// @{
-/// \ingroup vtk
 /// \class ttkAlgorithm
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2019.

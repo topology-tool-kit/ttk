@@ -83,8 +83,9 @@ jobs:
     strategy:
       matrix:
         config:
-          - {tidy: true, sa: false}
-          - {tidy: false, sa: true}
+          - {tidy: true, sa: false, dox: false}
+          - {tidy: false, sa: true, dox: false}
+          - {tidy: false, sa: false, dox: true}
 
     steps:
     - uses: actions/checkout@v2
@@ -104,6 +105,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
+          doxygen \
           $CLANG_TIDY
 
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
@@ -126,6 +128,7 @@ jobs:
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_OPENMP=FALSE \
+          -DTTK_BUILD_DOCUMENTATION=TRUE \
           $GITHUB_WORKSPACE
 
     - name: Use clang-tidy to lint code [NOT ENFORCED]
@@ -143,6 +146,12 @@ jobs:
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
         | xargs -n1 -P2 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" 2> /dev/null
+
+    - name: Check Doxygen documentation warnings
+      if: matrix.config.dox
+      run: |
+        cd build
+        ! cmake --build . --target doc | grep warning
 
 
   # ----------------------- #

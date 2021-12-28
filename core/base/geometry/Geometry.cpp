@@ -348,7 +348,7 @@ T Geometry::dotProduct(const T *vA, const T *vB) {
 
 template <typename T>
 int Geometry::getBoundingBox(const vector<vector<float>> &points,
-                             vector<pair<T, T>> &bBox) {
+                             vector<std::pair<T, T>> &bBox) {
 
   if(points.empty()) {
     return -1;

@@ -46,8 +46,11 @@ namespace ttk {
     /// should be equal to the number of vertices in the triangulation. Each
     /// entry is a std::vector listing the identifiers of triangles.
     /// \param cellEdges List of cell edges. The size of this std::vector
-    /// should be equal to the number of triangles. Each entry is a std::vector
+    /// should be equal to the number of triangles. Each entry is a std::array
     /// of identifiers of edges.
+    /// \param edgeList List of edges. The size of this std::vector
+    /// should be equal to the number of edges. Each entry is a std::array
+    /// of vertex identifiers per edge.
     /// \param vertexLinks Output vertex links. The size of this std::vector
     /// will be equal to the number of vertices in the triangulation. Each
     /// entry will be a std::vector listing the edges in the link of the
@@ -68,6 +71,8 @@ namespace ttk {
     /// should be equal to the number of tetrahedra. Each entry is a
     /// std::vector
     /// of identifiers of triangles.
+    /// \param triangleList List of triangles. For each triangle, a
+    /// std::array identifying its three vertices.
     /// \param vertexLinks Output vertex links. The size of this std::vector
     /// will be equal to the number of vertices in the triangulation. Each
     /// entry will be a std::vector listing the triangles in the link of the
@@ -82,8 +87,6 @@ namespace ttk {
     /// Compute the list of neighbors of each vertex of a triangulation.
     /// Unspecified behavior if the input mesh is not a valid triangulation).
     /// \param vertexNumber Number of vertices in the triangulation.
-    /// \param cellArray Cell container allowing to retrieve the vertices ids
-    /// of each cell.
     /// \param vertexNeighbors Output neighbor list. The size of this
     /// std::vector will be equal to the number of vertices in the mesh. Each
     /// entry will be std::vector listing the vertex identifiers of the entry's

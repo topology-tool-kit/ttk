@@ -1,11 +1,13 @@
 /// \ingroup base
 /// \class ttk::DynamicTree
 /// \author Gueunet Charles <charles.gueunet+ttk@gmail.com>
-/// \adapted by Jules Vidal <jules.vidal@lip6.fr> from the DynamicGraph class in
-/// FTRGraph.h \date 2019-09-15
+/// \author Jules Vidal <jules.vidal@lip6.fr>
+/// \date 2019-09-15
 ///
 /// \brief Implements the Dynamic Tree data-structure (or ST-Tree)
-/// Previously implemented in ftrGraph
+///
+/// Adapted by Jules Vidal from the ttk::ftr::DynamicGraph class from
+/// FTRGraph.h
 ///
 /// \sa ttk::FTRGraph
 
@@ -41,7 +43,7 @@ namespace ttk {
     DynTreeNode *findRoot(void) const;
 
     /// Create a new edge between this node and the node n
-    /// \ret true if we have merged two tree, false if it was just an intern
+    /// @return true if we have merged two tree, false if it was just an intern
     /// operation
     bool insertEdge(DynTreeNode *const n);
 
@@ -86,7 +88,7 @@ namespace ttk {
       return node - &nodes_[0];
     }
 
-    /// \ret true if we have merged two tree, false if it was just an intern
+    /// @return true if we have merged two tree, false if it was just an intern
     /// operation
     bool insertEdge(DynTreeNode *const n1, DynTreeNode *const n2) {
       return n1->insertEdge(n2);
@@ -108,7 +110,7 @@ namespace ttk {
     }
 
     /// remove the edge btwn n1 and n2
-    /// \ret 0 if not an edge
+    /// @return 0 if not an edge
     int removeEdge(DynTreeNode *const n1, DynTreeNode *const n2) {
       if(n1->parent_ == n2) {
         n1->removeEdge();
@@ -122,7 +124,7 @@ namespace ttk {
     }
 
     /// remove the edge btwn n1 and n2
-    /// \ret 0 if not an edge
+    /// @return 0 if not an edge
     inline int removeEdge(const std::size_t nid1, const std::size_t nid2) {
       return removeEdge(getNode(nid1), getNode(nid2));
     }

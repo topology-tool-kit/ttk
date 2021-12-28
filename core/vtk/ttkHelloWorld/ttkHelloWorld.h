@@ -4,7 +4,7 @@
 ///
 /// \ingroup vtk
 /// \class ttkHelloWorld
-/// \author Your Name Here <Your Email Address Here>
+/// \author Your Name Here <your.email@address.here>
 /// \date The Date Here.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::HelloWorld module.

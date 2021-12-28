@@ -1,5 +1,4 @@
 /// \ingroup base
-//
 /// \class ttk::ftr::Segment
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2018-08-02

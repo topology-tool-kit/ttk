@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that computes a planar graph layout.
 ///
-/// VTK wrapping code for the @PlanarGraphLayout package.
+/// VTK wrapping code for the ttk::PlanarGraphLayout package.
 ///
 /// This filter computes a planar graph layout of a \b vtkUnstructuredGrid. To
 /// improve the quality of the layout it is possible to pass additional field

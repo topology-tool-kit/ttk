@@ -1,11 +1,13 @@
 #pragma once
 
-#include "MatchingGraph.h"
+#include <GabowTarjan.h>
+
 #include <iostream>
+#include <queue>
 #include <vector>
 
 template <typename dataType>
-bool GabowTarjan::DFS(int v) {
+bool ttk::GabowTarjan::DFS(int v) {
   if(v < 0)
     return true;
 
@@ -27,7 +29,7 @@ bool GabowTarjan::DFS(int v) {
 }
 
 template <typename dataType>
-bool GabowTarjan::BFS() {
+bool ttk::GabowTarjan::BFS() {
   std::queue<int> vertexQueue;
 
   // For every vertex v given by PersistencePairs1
@@ -70,7 +72,7 @@ bool GabowTarjan::BFS() {
 }
 
 template <typename dataType>
-void GabowTarjan::HopcroftKarp(unsigned int &matching) {
+void ttk::GabowTarjan::HopcroftKarp(unsigned int &matching) {
   while(BFS<dataType>())
     for(unsigned int vertex = 0; vertex < MaxSize; ++vertex) {
       if(Pair[vertex] == -1) {
@@ -81,7 +83,7 @@ void GabowTarjan::HopcroftKarp(unsigned int &matching) {
 }
 
 template <typename dataType>
-dataType GabowTarjan::Distance(dataType ttkNotUsed(maxLevel)) {
+dataType ttk::GabowTarjan::Distance(dataType ttkNotUsed(maxLevel)) {
   // Clear the pairing
   Pair.clear();
   Pair.assign(2 * MaxSize, -1);
@@ -203,7 +205,7 @@ dataType GabowTarjan::Distance(dataType ttkNotUsed(maxLevel)) {
 }
 
 template <typename dataType>
-void GabowTarjan::printCurrentMatching() {
+void ttk::GabowTarjan::printCurrentMatching() {
   int size = 2 * MaxSize;
   std::vector<int> missedPlaces;
 
@@ -236,7 +238,7 @@ void GabowTarjan::printCurrentMatching() {
 }
 
 template <typename dataType>
-int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
+int ttk::GabowTarjan::run(std::vector<matchingTuple> &matchings) {
   // Compute distance.
   double dist = Distance<dataType>(1);
   this->printMsg("Computed distance " + std::to_string(dist));

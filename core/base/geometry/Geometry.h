@@ -1,13 +1,11 @@
 /// \ingroup base
-/// \class ttk::Geometry
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2016.
 ///
-/// \brief Minimalist class that handles simple geometric computations
+/// \brief Minimalist namespace that handles simple geometric computations
 /// (operations on std::vectors, barycentric coordinates, etc.).
-///
-#ifndef _GEOMETRY_H
-#define _GEOMETRY_H
+
+#pragma once
 
 #include <Debug.h>
 
@@ -30,6 +28,7 @@ namespace ttk {
     /// \param vB1 xyz coordinates of vB's destination
     /// \param coefficients Optional output std::vector of colinearity
     /// coefficients.
+    /// \param tolerance Optional tolerance value (default: PREC_FLT)
     /// \returns Returns true if the std::vectors are colinear, false
     /// otherwise.
     template <typename T>
@@ -157,8 +156,8 @@ namespace ttk {
     T dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
 
     /// Compute the dot product of two 3D std::vectors
-    /// \param vA0 xyz coordinates of vA std::vector
-    /// \param vB0 xyz coordinates of vB std::vector
+    /// \param vA xyz coordinates of vA std::vector
+    /// \param vB xyz coordinates of vB std::vector
     /// \return Returns Output dot product
     template <typename T>
     T dotProduct(const T *vA, const T *vB);
@@ -219,6 +218,7 @@ namespace ttk {
     /// \param p0 xyz coordinates of the first vertex of the triangle.
     /// \param p1 xyz coordinates of the second vertex of the triangle.
     /// \param p2 xyz coordinates of the third vertex of the triangle.
+    /// \param tolerance Optional tolerance value (default: PREC_FLT)
     /// \return Returns true if all the edges are colinear (false otherwise).
     template <typename T>
     bool isTriangleColinear(const T *p0,
@@ -296,5 +296,3 @@ namespace ttk {
 
   } // namespace Geometry
 } // namespace ttk
-
-#endif

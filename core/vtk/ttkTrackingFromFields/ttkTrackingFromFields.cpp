@@ -7,10 +7,6 @@
 
 vtkStandardNewMacro(ttkTrackingFromFields);
 
-constexpr unsigned long long str2int(const char *str, int h = 0) {
-  return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
-}
-
 ttkTrackingFromFields::ttkTrackingFromFields() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
@@ -202,6 +198,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
         break;
     }
   } else {
+    using ttk::str2int;
     switch(str2int(algorithm.c_str())) {
       case str2int("0"):
       case str2int("ttk"):

@@ -24,7 +24,7 @@
 /// \warning This feature will only work properly with the TTK-branded ParaView
 /// (ParaView sources need to be patched with TTK fixes, see the documentation)
 ///
-/// -
+/// .
 ///
 /// \param Input Input 2D selection, typically "Extract Selection" in ParaView
 /// (vtkUnstructuredGrid)

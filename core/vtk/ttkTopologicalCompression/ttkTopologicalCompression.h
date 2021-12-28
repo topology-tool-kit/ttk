@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that wraps the topologicalCompression processing
 /// package.
 ///
-/// VTK wrapping code for the @TopologicalCompression package.
+/// VTK wrapping code for the ttk::TopologicalCompression package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)

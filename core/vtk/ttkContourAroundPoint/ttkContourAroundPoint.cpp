@@ -27,11 +27,10 @@
 
 vtkStandardNewMacro(ttkContourAroundPoint);
 
-using Class = ttkContourAroundPoint;
-
 //----------------------------------------------------------------------------//
 
-int Class::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkContourAroundPoint::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
   switch(port) {
     case 0:
       info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
@@ -45,7 +44,8 @@ int Class::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int Class::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkContourAroundPoint::FillOutputPortInformation(int port,
+                                                     vtkInformation *info) {
   switch(port) {
     case 0:
     case 1:
@@ -57,9 +57,9 @@ int Class::FillOutputPortInformation(int port, vtkInformation *info) {
 
 //----------------------------------------------------------------------------//
 
-int Class::RequestData(vtkInformation *ttkNotUsed(request),
-                       vtkInformationVector **iVec,
-                       vtkInformationVector *oVec) {
+int ttkContourAroundPoint::RequestData(vtkInformation *ttkNotUsed(request),
+                                       vtkInformationVector **iVec,
+                                       vtkInformationVector *oVec) {
 
   _outFld = vtkUnstructuredGrid::GetData(oVec, 0);
   _outPts = vtkUnstructuredGrid::GetData(oVec, 1);
@@ -79,7 +79,7 @@ int Class::RequestData(vtkInformation *ttkNotUsed(request),
 
 //----------------------------------------------------------------------------//
 
-bool Class::preprocessFld(vtkDataSet *dataset) {
+bool ttkContourAroundPoint::preprocessFld(vtkDataSet *dataset) {
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(dataset);
   if(!triangulation)
     return false;
@@ -112,8 +112,8 @@ bool Class::preprocessFld(vtkDataSet *dataset) {
 
 //----------------------------------------------------------------------------//
 
-bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
-                          vtkUnstructuredGrid *arcs) {
+bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
+                                          vtkUnstructuredGrid *arcs) {
   // ---- Point data ---- //
 
   auto points = nodes->GetPoints();
@@ -211,7 +211,7 @@ bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
 
 //----------------------------------------------------------------------------//
 
-bool Class::process() {
+bool ttkContourAroundPoint::process() {
   int errorCode = 0;
   switch(_scalarTypeCode) {
     vtkTemplateMacro((errorCode = this->execute<VTK_TT>()));
@@ -229,7 +229,7 @@ bool Class::process() {
 
 //----------------------------------------------------------------------------//
 
-bool Class::postprocess() {
+bool ttkContourAroundPoint::postprocess() {
   ttk::SimplexId *cinfosBuf;
   ttk::SimplexId nc;
   float *coordsBuf;

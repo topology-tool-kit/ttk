@@ -1,5 +1,6 @@
-#ifndef _BUILDWEIGHTS_H
-#define _BUILDWEIGHTS_H
+#pragma once
+
+#include <KDTree.h>
 
 namespace ttk {
   template <typename dataType>
@@ -76,9 +77,10 @@ namespace ttk {
     const int &ptNumber,
     const int &dimension,
     KDTree<dataType> *parent,
-    std::vector<KDTree<dataType> *> &correspondance_map,
+    KDTreeMap &correspondance_map,
     std::vector<std::vector<dataType>> &weights,
     const int weight_number) {
+
     // First, perform a argsort on the data
     sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {
       return data[dimension * i1 + coords_number_]
@@ -148,5 +150,3 @@ namespace ttk {
     return;
   }
 } // namespace ttk
-
-#endif

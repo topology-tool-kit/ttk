@@ -1,12 +1,12 @@
 /// \ingroup vtk
 /// \class ttkBarycentricSubdivision
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \date July 2019.
 ///
-/// \brief TTK VTK-filter that wraps the barycentricSubdivision processing
-/// package.
+/// \brief TTK VTK-filter that wraps the ttk::BarycentricSubdivision
+/// processing package.
 ///
-/// VTK wrapping code for the @BarycentricSubdivision package.
+/// VTK wrapping code for the ttk::BarycentricSubdivision package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)

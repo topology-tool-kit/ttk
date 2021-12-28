@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the triangulation processing package.
 ///
-/// VTK wrapping code for the @Triangulation package.
+/// VTK wrapping code for the ttk::Triangulation package.
 ///
 /// \param Input Geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet)

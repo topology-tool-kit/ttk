@@ -49,10 +49,10 @@
 /**
  * @brief Force the compiler to use the function/method parameter.
  *
- * Some function/method parameters are used under some #ifdef
+ * Some function/method parameters are used under some `#ifdef`
  * preprocessor conditions. This macro introduce a no-op statement
  * that uses those parameters, to silence compiler warnings in the
- * #else blocks. It can be inserted anywhere in the function body.
+ * `#else` blocks. It can be inserted anywhere in the function body.
  */
 #define TTK_FORCE_USE(x) (void)(x)
 

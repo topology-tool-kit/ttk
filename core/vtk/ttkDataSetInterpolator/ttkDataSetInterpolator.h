@@ -1,11 +1,11 @@
 /// \ingroup vtk
 /// \class ttkDataSetInterpolator
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Guillaume Favelier <guillaume.favelier@gmail.com>
+/// \date September 2018.
 ///
 /// \brief TTK VTK-filter that wraps the dataSetInterpolator processing package.
 ///
-/// VTK wrapping code for the @DataSetInterpolator package.
+/// VTK wrapping code for the ttk::DataSetInterpolator package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
