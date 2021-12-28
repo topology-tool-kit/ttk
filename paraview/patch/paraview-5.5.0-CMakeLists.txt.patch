@@ -5,10 +5,10 @@
 
  if (PARAVIEW_VERSION_NICKNAME)
 -  set(title "ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
-+  set(title "TTK 1.0 - ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
++  set(title "TTK 1.1 - ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
  else()
 -  set(title "ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
-+  set(title "TTK 1.0 - ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
++  set(title "TTK 1.1 - ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
  endif()
 
  #------------------------------------------------------------------------------

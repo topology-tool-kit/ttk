@@ -7,10 +7,10 @@ index d4597ab..a290a1a 100644
 
  if (DEFINED PARAVIEW_VERSION_NICKNAME)
 -  set(paraview_version "${PARAVIEW_VERSION_NICKNAME}")
-+  set(paraview_version "[TTK 1.0] ${PARAVIEW_VERSION_NICKNAME}")
++  set(paraview_version "[TTK 1.1] ${PARAVIEW_VERSION_NICKNAME}")
  else ()
 -  set(paraview_version "${PARAVIEW_VERSION_FULL}")
-+  set(paraview_version "[TTK 1.0] ${PARAVIEW_VERSION_FULL}")
++  set(paraview_version "[TTK 1.1] ${PARAVIEW_VERSION_FULL}")
  endif ()
  set(paraview_title "")
 

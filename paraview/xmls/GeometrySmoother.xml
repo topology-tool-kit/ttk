@@ -18,6 +18,12 @@
 
         Online examples:
 
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+        
+        - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
+
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/
+        
         - https://topology-tool-kit.github.io/examples/dragon/
 
         - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
@@ -25,8 +31,9 @@
         - https://topology-tool-kit.github.io/examples/morsePersistence/
         
         - https://topology-tool-kit.github.io/examples/morseMolecule/
+        
+        - https://topology-tool-kit.github.io/examples/interactionSites/
 
-        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
 
       </Documentation>
       <InputProperty

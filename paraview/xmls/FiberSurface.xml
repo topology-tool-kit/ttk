@@ -30,6 +30,11 @@ Related publication:
 "Fast and Exact Fiber Surface Extraction for Tetrahedral Meshes",
 Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng
 IEEE Transactions on Visualization and Computer Graphics, 2016.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
      </Documentation>
      <InputProperty
         name="Input Domain"

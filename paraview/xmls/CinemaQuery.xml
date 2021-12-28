@@ -2,7 +2,16 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkCinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
-            <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter evaluates a SQL statement on multiple InputTables.</Documentation>
+            <Documentation 
+                long_help="TTK CinemaQuery" 
+                short_help="TTK CinemaQuery">
+                This filter evaluates a SQL statement on multiple InputTables.
+                
+                Online examples:
+                    
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+            
+            </Documentation>
 
             <InputProperty clean_command="RemoveAllInputs" name="InputTable" command="AddInputConnection" multiple_input="1">
                 <ProxyGroupDomain name="groups">

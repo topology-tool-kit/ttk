@@ -13,6 +13,10 @@
 /// \param Input vtkTable that contains data product references (vtkTable)
 /// \param Output vtkMultiBlockDataSet where each block is a referenced product
 /// of an input table row (vtkMultiBlockDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
 
 #pragma once
 

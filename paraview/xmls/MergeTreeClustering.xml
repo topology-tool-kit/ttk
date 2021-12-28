@@ -44,6 +44,10 @@ These parameters can be configured manually by selecting the Custom backend.
 The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
 
 When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
+
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeClustering/
            </Documentation>
 
             <!-- INPUT -->

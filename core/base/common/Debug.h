@@ -1,6 +1,6 @@
 /// \namespace ttk The Topology ToolKit
 
-/// \mainpage TTK 1.0 Documentation
+/// \mainpage TTK 1.1 Documentation
 /// \image html "splash.png"
 /// Useful links:
 ///   - TTK Home:
