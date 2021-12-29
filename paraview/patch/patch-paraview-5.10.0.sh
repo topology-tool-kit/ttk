@@ -30,10 +30,6 @@ $PATCH_BIN VTK/IO/Export/vtkVRMLExporter.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkVRMLExporter.cxx.patch"
 $PATCH_BIN VTK/Filters/Extraction/vtkExtractSelectedIds.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkExtractSelectedIds.cxx.patch"
-$PATCH_BIN VTKExtensions/Extraction/vtkPVSelectionSource.cxx \
-  < "${PATCH_DIR}/vtkPVSelectionSource-5.8.cxx.patch"
-$PATCH_BIN VTK/Filters/Sources/vtkSelectionSource.cxx \
-  < "${PATCH_DIR}/vtkSelectionSource.cxx.patch"
 
 cp "${PATCH_DIR}/splash.png"  Clients/ParaView/PVSplashScreen.png
 cp "${PATCH_DIR}/icon128.png" Clients/ParaView/pvIcon.png
