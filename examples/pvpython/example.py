@@ -42,12 +42,16 @@ persistenceDiagram.ScalarField = ['POINTS', 'data']
 # 4. selecting the critical point pairs
 criticalPointPairs = Threshold(persistenceDiagram)
 criticalPointPairs.Scalars = ['CELLS', 'PairIdentifier']
-criticalPointPairs.ThresholdRange = [-0.1, 999999]
+# paraview 5.9 VS paraview 5.10
+try: criticalPointPairs.ThresholdRange = [-0.1, 999999]
+except: criticalPointPairs.ThresholdMethod = "Above Upper Threshold"; criticalPointPairs.UpperThreshold = -0.1
 
 # 5. selecting the most persistent pairs
 persistentPairs = Threshold(criticalPointPairs)
 persistentPairs.Scalars = ['CELLS', 'Persistence']
-persistentPairs.ThresholdRange = [0.05, 999999]
+# paraview 5.9 VS paraview 5.10
+try: persistentPairs.ThresholdRange = [0.05, 999999]
+except: persistentPairs.ThresholdMethod = "Above Upper Threshold"; persistentPairs.UpperThreshold = 0.05
 
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = TTKTopologicalSimplification(
