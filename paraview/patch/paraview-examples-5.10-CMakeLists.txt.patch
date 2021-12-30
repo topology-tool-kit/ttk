@@ -1,0 +1,20 @@
+--- a/CMakeLists.txt	2016-07-26 21:52:16.000000000 +0200
++++ b/CMakeLists.txt	2016-09-23 01:43:48.198268659 +0200
+@@ -939,3 +939,17 @@
+       "paraview-source-${format}")
+   endforeach ()
+ endif ()
++
++#-----------------------------------------------------------------------------
++# Install TTK example data
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example1.vti
++  DESTINATION share/paraview-5.10/examples/
++  COMPONENT development)
++
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example2.vti
++  DESTINATION share/paraview-5.10/examples/
++  COMPONENT development)
++
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example3.vti
++  DESTINATION share/paraview-5.10/examples/
++  COMPONENT development)
