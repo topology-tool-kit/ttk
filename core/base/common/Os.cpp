@@ -63,7 +63,7 @@ namespace ttk {
 
   int OsCall::getNumberOfCores() {
 #ifdef TTK_ENABLE_OPENMP
-    return omp_get_num_procs();
+    return omp_get_max_threads();
 #endif
     return 1;
   }
