@@ -19,15 +19,17 @@
 
 from paraview.simple import *
 
-# paraview 5.9 VS 5.10 compatibility
-def ThresholdAbove(threshold, value):
+# paraview 5.9 VS 5.10 compatibility ===========================================
+def ThresholdBetween(threshold, lower, upper):
     try:
         # paraview 5.9
-        threshold.ThresholdRange = [value, 9999999]
+        threshold.ThresholdRange = [lower, upper]
     except:
         # paraview 5.10
-        threshold.ThresholdMethod = "Above Upper Threshold"
-        threshold.UpperThreshold = value
+        threshold.ThresholdMethod = "Between"
+        threshold.LowerThreshold = lower
+        threshold.UpperThreshold = upper
+# end of comphatibility ========================================================
 
 if len(sys.argv) == 2:
     inputFilePath = sys.argv[1]
@@ -51,12 +53,12 @@ persistenceDiagram.ScalarField = ['POINTS', 'data']
 # 4. selecting the critical point pairs
 criticalPointPairs = Threshold(persistenceDiagram)
 criticalPointPairs.Scalars = ['CELLS', 'PairIdentifier']
-ThresholdAbove(criticalPointPairs, -0.1)
+ThresholdBetween(criticalPointPairs, -0.1, 999999999)
 
 # 5. selecting the most persistent pairs
 persistentPairs = Threshold(criticalPointPairs)
 persistentPairs.Scalars = ['CELLS', 'Persistence']
-ThresholdAbove(persistentPairs, 0.05)
+ThresholdBetween(persistentPairs, 0.05, 999999999)
 
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = TTKTopologicalSimplification(
