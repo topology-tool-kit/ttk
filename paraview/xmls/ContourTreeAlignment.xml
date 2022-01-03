@@ -2,9 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ContourTreeAlignment" class="ttkContourTreeAlignment" label="TTK ContourTreeAlignment">
-            <Documentation long_help="TTK contourTreeAlignment" short_help="TTK contourTreeAlignment">
-
-                long_help="TTK plugin for computing an alignment of a multiblock of contour trees, given as unstructured grids."
+            <Documentation long_help="TTK plugin for computing an alignment of a multiblock of contour trees, given as unstructured grids."
                 short_help="TTK plugin for computing an alignment of contour trees.">
 
                 Given a multiblock of unstructured grids representing contour trees, this plugin comutes an alignment of the trees.
@@ -17,6 +15,10 @@
                 'Fuzzy contour trees: Alignment and joint layout of multiple contour trees'
                 Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and Christoph Garth.
                 Comput. Graph. Forum, 39(3):343-355, 2020.
+
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
 
             </Documentation>
 
