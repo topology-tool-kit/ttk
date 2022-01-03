@@ -79,7 +79,7 @@ jobs:
   lint-code:
     runs-on: ubuntu-20.04
     env:
-      CLANG_TIDY: clang-tidy-11
+      CLANG_TIDY: clang-tidy-12
     strategy:
       matrix:
         config:
