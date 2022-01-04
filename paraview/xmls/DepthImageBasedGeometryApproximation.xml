@@ -2,11 +2,16 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkDepthImageBasedGeometryApproximation" class="ttkDepthImageBasedGeometryApproximation" label="TTK DepthImageBasedGeometryApproximation">
-            <Documentation long_help="TTK depthImageBasedGeometryApproximation" short_help="TTK depthImageBasedGeometryApproximation">This filter approximates the geometry that is depicted by a set of depth images.
+            <Documentation long_help="TTK depthImageBasedGeometryApproximation" short_help="TTK depthImageBasedGeometryApproximation">
+                This filter approximates the geometry that is depicted by a set of depth images.
 
                 Related publication:
 
                 'VOIDGA: A View-Approximation Oriented Image Database Generation Approach', Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth. IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
+                
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/geometryApproximation/
 
             </Documentation>
 
