@@ -17,6 +17,11 @@
 /// \param Input vtkPointSet that records the camera sampling locations
 /// (vtkPointSet) \param Output vtkMultiBlockDataSet that represents a list of
 /// images (vtkMultiBlockDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/geometryApproximation/">Geometry
+///   Approximation example</a> \n
 
 #pragma once
 

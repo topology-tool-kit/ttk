@@ -8,6 +8,11 @@
 ///
 /// \sa ttk::IcoSphere
 /// \sa ttk::ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/geometryApproximation/">Geometry
+///   Approximation example</a> \n
 
 #pragma once
 
