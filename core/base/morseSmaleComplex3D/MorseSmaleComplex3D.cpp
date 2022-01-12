@@ -1,5 +1,4 @@
 #include <MorseSmaleComplex3D.h>
-#include <iterator>
 
 ttk::MorseSmaleComplex3D::MorseSmaleComplex3D() : AbstractMorseSmaleComplex() {
   this->setDebugMsgPrefix("MorseSmaleComplex3D");

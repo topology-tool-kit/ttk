@@ -324,6 +324,17 @@ namespace ttk {
       const triangulationType &triangulation) const;
 
     /**
+     * Compute the ascending 1-separatrices by reading into the discrete
+     * gradient.
+     */
+    template <typename triangulationType>
+    int getAscendingSeparatrices1(
+      const std::vector<dcg::Cell> &criticalPoints,
+      std::vector<Separatrix> &separatrices,
+      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
+      const triangulationType &triangulation) const;
+
+    /**
      * Compute the geometrical embedding of the 1-separatrices. This
      * function needs the following internal pointers to be set:
      * outputSeparatrices1_numberOfPoints_
@@ -670,6 +681,71 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   // update pointers
   *outputSeparatrices1_numberOfPoints_ = npoints;
   *outputSeparatrices1_numberOfCells_ = ncells;
+
+  return 0;
+}
+
+template <typename triangulationType>
+int ttk::AbstractMorseSmaleComplex::getAscendingSeparatrices1(
+  const std::vector<Cell> &criticalPoints,
+  std::vector<Separatrix> &separatrices,
+  std::vector<std::vector<Cell>> &separatricesGeometry,
+  const triangulationType &triangulation) const {
+
+  const auto dim{triangulation.getDimensionality()};
+
+  // Triangulation method pointers for 3D
+  auto getFaceStarNumber = &triangulationType::getTriangleStarNumber;
+  auto getFaceStar = &triangulationType::getTriangleStar;
+  if(dim == 2) {
+    // Triangulation method pointers for 2D
+    getFaceStarNumber = &triangulationType::getEdgeStarNumber;
+    getFaceStar = &triangulationType::getEdgeStar;
+  }
+
+  std::vector<SimplexId> saddleIndexes;
+  const SimplexId numberOfCriticalPoints = criticalPoints.size();
+  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+    const Cell &criticalPoint = criticalPoints[i];
+
+    if(criticalPoint.dim_ == dim - 1)
+      saddleIndexes.push_back(i);
+  }
+  const SimplexId numberOfSaddles = saddleIndexes.size();
+
+  // estimation of the number of separatrices, apriori :
+  // numberOfAscendingPaths=2, numberOfDescendingPaths=2
+  const SimplexId numberOfSeparatrices = 4 * numberOfSaddles;
+  separatrices.resize(numberOfSeparatrices);
+  separatricesGeometry.resize(numberOfSeparatrices);
+
+  // apriori: by default construction, the separatrices are not valid
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(SimplexId i = 0; i < numberOfSaddles; ++i) {
+    const SimplexId saddleIndex = saddleIndexes[i];
+    const Cell &saddle = criticalPoints[saddleIndex];
+
+    // add ascending vpaths
+    const auto starNumber{(triangulation.*getFaceStarNumber)(saddle.id_)};
+    for(SimplexId j = 0; j < starNumber; ++j) {
+
+      SimplexId sId{};
+      (triangulation.*getFaceStar)(saddle.id_, j, sId);
+
+      std::vector<Cell> vpath{saddle};
+      discreteGradient_.getAscendingPath(Cell(dim, sId), vpath, triangulation);
+
+      const Cell &lastCell = vpath.back();
+      if(lastCell.dim_ == dim and discreteGradient_.isCellCritical(lastCell)) {
+        const SimplexId separatrixIndex = 4 * i + j;
+        separatricesGeometry[separatrixIndex] = std::move(vpath);
+        separatrices[separatrixIndex]
+          = Separatrix(true, saddle, lastCell, false, separatrixIndex);
+      }
+    }
+  }
 
   return 0;
 }

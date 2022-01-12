@@ -33,17 +33,6 @@ namespace ttk {
      */
     template <typename triangulationType>
     int execute(const triangulationType &triangulation);
-
-    /**
-     * Compute the descending 1-separatrices by reading into the discrete
-     * gradient.
-     */
-    template <typename triangulationType>
-    int getAscendingSeparatrices1(
-      const std::vector<dcg::Cell> &criticalPoints,
-      std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
-      const triangulationType &triangulation) const;
   };
 } // namespace ttk
 
@@ -155,66 +144,6 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
                    + std::to_string(triangulation.getNumberOfVertices())
                    + " points) processed",
                  1.0, t.getElapsedTime(), this->threadNumber_);
-
-  return 0;
-}
-
-template <typename triangulationType>
-int ttk::MorseSmaleComplex2D::getAscendingSeparatrices1(
-  const std::vector<Cell> &criticalPoints,
-  std::vector<Separatrix> &separatrices,
-  std::vector<std::vector<Cell>> &separatricesGeometry,
-  const triangulationType &triangulation) const {
-
-  std::vector<SimplexId> saddleIndexes;
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
-    const Cell &criticalPoint = criticalPoints[i];
-
-    if(criticalPoint.dim_ == 1)
-      saddleIndexes.push_back(i);
-  }
-  const SimplexId numberOfSaddles = saddleIndexes.size();
-
-  // estimation of the number of separatrices, apriori :
-  // numberOfAscendingPaths=2, numberOfDescendingPaths=2
-  const SimplexId numberOfSeparatrices = 4 * numberOfSaddles;
-  separatrices.resize(numberOfSeparatrices);
-  separatricesGeometry.resize(numberOfSeparatrices);
-
-  // apriori: by default construction, the separatrices are not valid
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < numberOfSaddles; ++i) {
-    const SimplexId saddleIndex = saddleIndexes[i];
-    const Cell &saddle = criticalPoints[saddleIndex];
-
-    // add ascending vpaths
-    {
-      const SimplexId starNumber = triangulation.getEdgeStarNumber(saddle.id_);
-      for(SimplexId j = 0; j < starNumber; ++j) {
-        const SimplexId shift = j;
-
-        SimplexId triangleId;
-        triangulation.getEdgeStar(saddle.id_, j, triangleId);
-
-        std::vector<Cell> vpath;
-        vpath.push_back(saddle);
-        discreteGradient_.getAscendingPath(
-          Cell(2, triangleId), vpath, triangulation);
-
-        const Cell &lastCell = vpath.back();
-        if(lastCell.dim_ == 2 and discreteGradient_.isCellCritical(lastCell)) {
-          const SimplexId separatrixIndex = 4 * i + shift;
-
-          separatricesGeometry[separatrixIndex] = std::move(vpath);
-          separatrices[separatrixIndex]
-            = Separatrix(true, saddle, lastCell, false, separatrixIndex);
-        }
-      }
-    }
-  }
 
   return 0;
 }
