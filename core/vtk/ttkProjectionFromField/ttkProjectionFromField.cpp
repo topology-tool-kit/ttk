@@ -234,20 +234,29 @@ int ttkProjectionFromField::RequestData(vtkInformation *ttkNotUsed(request),
 
   output->ShallowCopy(input);
 
-  vtkDataArray *inputScalarFieldU = nullptr;
-  vtkDataArray *inputScalarFieldV = nullptr;
-  vtkDataArray *textureCoordinates = nullptr;
-  vtkDataArray *inputCoordsArray{};
+  vtkNew<vtkPoints> pointSet{};
+  pointSet->SetNumberOfPoints(input->GetNumberOfPoints());
 
   if(UseTextureCoordinates) {
-    textureCoordinates = input->GetPointData()->GetTCoords();
 
-    if(!textureCoordinates)
-      return -3;
-
+    const auto textureCoordinates = input->GetPointData()->GetTCoords();
+    if(textureCoordinates == nullptr) {
+      return 0;
+    }
     printMsg("Starting computation with texture coordinates...");
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      std::array<double, 3> pt{};
+      textureCoordinates->GetTuple(i, pt.data());
+      pointSet->SetPoint(i, pt[0], pt[1], pt[2]);
+    }
+
   } else if(this->Use3DCoordinatesArray) {
-    inputCoordsArray = this->GetInputArrayToProcess(2, inputVector);
+
+    const auto inputCoordsArray = this->GetInputArrayToProcess(2, inputVector);
     if(inputCoordsArray == nullptr) {
       return 0;
     }
@@ -255,42 +264,35 @@ int ttkProjectionFromField::RequestData(vtkInformation *ttkNotUsed(request),
     printMsg(std::vector<std::vector<std::string>>{
       {"  Coordinates Array", inputCoordsArray->GetName()}});
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      std::array<double, 3> pt{};
+      inputCoordsArray->GetTuple(i, pt.data());
+      pointSet->SetPoint(i, pt[0], pt[1], pt[2]);
+    }
+
   } else {
 
-    inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
-    inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
+    const auto inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
+    const auto inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
 
-    if(!inputScalarFieldU)
-      return -1;
-
-    if(!inputScalarFieldV)
-      return -2;
+    if(inputScalarFieldU == nullptr || inputScalarFieldV == nullptr) {
+      return 0;
+    }
 
     printMsg("Starting computation...");
     printMsg({{"  U-component", inputScalarFieldU->GetName()},
               {"  V-component", inputScalarFieldV->GetName()}});
-  }
-
-  vtkNew<vtkPoints> pointSet{};
-  pointSet->SetNumberOfPoints(input->GetNumberOfPoints());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < input->GetNumberOfPoints(); i++) {
-
-    std::array<double, 3> pt{};
-
-    if(UseTextureCoordinates) {
-      textureCoordinates->GetTuple(i, pt.data());
-    } else if(this->Use3DCoordinatesArray) {
-      inputCoordsArray->GetTuple(i, pt.data());
-    } else {
-      pt[0] = inputScalarFieldU->GetComponent(i, 0);
-      pt[1] = inputScalarFieldV->GetComponent(i, 0);
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      pointSet->SetPoint(i, inputScalarFieldU->GetComponent(i, 0),
+                         inputScalarFieldV->GetComponent(i, 0), 0);
     }
-
-    pointSet->SetPoint(i, pt[0], pt[1], pt[2]);
   }
 
   output->SetPoints(pointSet);
