@@ -12,19 +12,12 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PDBARYCENTER_H
-#define _PDBARYCENTER_H
+#pragma once
 
-#include <PersistenceDiagramAuction.h>
-//
 #include <KDTree.h>
-//
-#include <limits>
-//
-#include <PersistenceDiagramBarycenter.h>
+#include <PersistenceDiagramAuction.h>
 
-using namespace std;
-using namespace ttk;
+#include <limits>
 
 namespace ttk {
   template <typename dataType>
@@ -265,4 +258,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <PDBarycenterImpl.h>
-#endif

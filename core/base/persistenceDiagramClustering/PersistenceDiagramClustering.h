@@ -34,20 +34,8 @@
 #endif
 
 // base code includes
-//
-// #include <Wrapper.h>
-//
-// #include <PersistenceDiagram.h>
-//
-#include <PersistenceDiagramBarycenter.h>
-//
-// #include <limits>
-//
 #include <PDClustering.h>
-//
-
-using namespace std;
-using namespace ttk;
+#include <PersistenceDiagramBarycenter.h>
 
 namespace ttk {
 
@@ -200,7 +188,7 @@ namespace ttk {
       printMsg(msg.str());
     }
 
-    vector<vector<vector<vector<matchingTuple>>>>
+    std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
       all_matchings_per_type_and_cluster;
     PDClustering<dataType> KMeans = PDClustering<dataType>();
     KMeans.setNumberOfInputs(numberOfInputs_);
@@ -223,7 +211,8 @@ namespace ttk {
     KMeans.setDos(do_min, do_sad, do_max);
     inv_clustering
       = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
-    vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
+    std::vector<std::vector<int>> centroids_sizes
+      = KMeans.get_centroids_sizes();
 
     this->distances = KMeans.getDistances();
 

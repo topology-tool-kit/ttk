@@ -178,28 +178,28 @@ namespace ttk {
     }
     /// Setter for the weight of combinatorial matching.
     ///
-    /// \param mode Determines the factor with which the combinatorial distance
-    /// is weighted.
+    /// \param weight Determines the factor with which the combinatorial
+    /// distance is weighted.
     void setWeightCombinatorialMatch(float weight) {
       weightCombinatorialMatch = weight;
     }
     /// Setter for the weight of arc property matching.
     ///
-    /// \param mode Determines the factor with which the arc property based
+    /// \param weight Determines the factor with which the arc property based
     /// distance is weighted.
     void setWeightArcMatch(float weight) {
       weightArcMatch = weight;
     }
     /// Setter for the weight of node matching.
     ///
-    /// \param mode Determines the factor with which the scalar value distance
+    /// \param weight Determines the factor with which the scalar value distance
     /// is weighted.
     void setWeightScalarValueMatch(float weight) {
       weightScalarValueMatch = weight;
     }
     /// Setter for the type of alignment tree.
     ///
-    /// \param mode Determines how the labels of the alignment tree are computed
+    /// \param type Determines how the labels of the alignment tree are computed
     /// from the matched labels.
     void setAlignmenttreeType(int type) {
       alignmenttreeType = static_cast<ttk::cta::Type_Alignmenttree>(type);
@@ -222,7 +222,7 @@ namespace ttk {
     /// input trees. \param nEdges Vector holding n integers representing the
     /// number of edges of the n input trees. \param segmentations Vector
     /// holding n arrays representing the segmentation arrays of the n input
-    /// trees. \param segSizes Vector holding the sizes of the corresponding
+    /// trees. \param segsizes Vector holding the sizes of the corresponding
     /// segmentations array. segSizes[i] should be the size of the number of
     /// points in the ith scalar field. This should also be the size of
     /// segmentations[i]. \param outputVertices Vector for the alignment node
@@ -286,8 +286,8 @@ namespace ttk {
     /// This function initializes a new alignment graph from a given contour
     /// tree and sets the fixed root of the alignment to the given input. \pre
     /// The given contour tree needs to be binary. \param t The input contour
-    /// tree. \return Return true if initialization was successful, false
-    /// otherwise.
+    /// tree. \param rootIdx \return Return true if initialization was
+    /// successful, false otherwise.
     bool initialize_consistentRoot(const std::shared_ptr<ContourTree> &t,
                                    int rootIdx);
 
