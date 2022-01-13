@@ -814,7 +814,8 @@ namespace ttk {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
           orig, term,
-          fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)));
+          std::abs(static_cast<double>(getValue<scalarType>(orig)
+                                       - getValue<scalarType>(term))));
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
         mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
