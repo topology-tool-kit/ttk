@@ -199,7 +199,7 @@ namespace ttk {
       /// Constructor for internal contour tree class. Constructs graph from vtk
       /// style array input.
       ///
-      /// \param scalar Scalar values of the contour tree nodes. scalars[i] is
+      /// \param scalars Scalar values of the contour tree nodes. scalars[i] is
       /// scalar values of the node of index i. \param regionSizes Region size
       /// values of the contour tree edges. regionSizes[i] is the number of
       /// vertices in the segment associated with the edge of index i. \param
