@@ -35,11 +35,12 @@
 </IntVectorProperty>
 
 <DoubleVectorProperty
-    name="CompactTriangulationCacheSize"
-    label="Compact Triangulation Cache Size"
-    command="SetCompactTriangulationCacheSize"
-    number_of_elements="1"
-    default_values="0.2">
+                   name="CompactTriangulationCacheSize"
+                   label="Compact Triangulation Cache Size"
+                   command="SetCompactTriangulationCacheSize"
+                   panel_visibility='advanced'
+                   number_of_elements="1"
+                   default_values="0.2">
   <DoubleRangeDomain name="range" min="0.0" max="1.0" />
     <Documentation>
       Set the cache size for the compact triangulation as a 
