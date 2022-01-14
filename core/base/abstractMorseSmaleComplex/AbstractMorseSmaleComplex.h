@@ -120,9 +120,8 @@ namespace ttk {
      * the ascending manifolds of the critical points
      * (disabled by default).
      */
-    int setComputeAscendingSeparatrices1(const bool state) {
+    inline void setComputeAscendingSeparatrices1(const bool state) {
       ComputeAscendingSeparatrices1 = state;
-      return 0;
     }
 
     /**
@@ -130,36 +129,32 @@ namespace ttk {
      * the descending manifolds of the critical points
      * (disabled by default).
      */
-    int setComputeDescendingSeparatrices1(const bool state) {
+    inline void setComputeDescendingSeparatrices1(const bool state) {
       ComputeDescendingSeparatrices1 = state;
-      return 0;
     }
 
     /**
      * Enable/Disable computation of the geometrical embedding of
      * the visible saddle-connectors (disabled by default).
      */
-    int setComputeSaddleConnectors(const bool state) {
+    inline void setComputeSaddleConnectors(const bool state) {
       ComputeSaddleConnectors = state;
-      return 0;
     }
 
     /**
      * Enable/Disable computation of the geometrical embedding of
      * the ascending 2-separatrices (disabled by default).
      */
-    int setComputeAscendingSeparatrices2(const bool state) {
+    inline void setComputeAscendingSeparatrices2(const bool state) {
       ComputeAscendingSeparatrices2 = state;
-      return 0;
     }
 
     /**
      * Enable/Disable computation of the geometrical embedding of
      * the descending 2-separatrices (disabled by default).
      */
-    int setComputeDescendingSeparatrices2(const bool state) {
+    inline void setComputeDescendingSeparatrices2(const bool state) {
       ComputeDescendingSeparatrices2 = state;
-      return 0;
     }
 
     /**
@@ -175,10 +170,9 @@ namespace ttk {
     /**
      * Set the input scalar field associated on the points of the data set.
      */
-    inline int setInputScalarField(const void *const data) {
+    inline void setInputScalarField(const void *const data) {
       inputScalarField_ = data;
       discreteGradient_.setInputScalarField(inputScalarField_);
-      return 0;
     }
 
     /**
@@ -192,16 +186,15 @@ namespace ttk {
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
-    inline int setInputOffsets(const SimplexId *const data) {
+    inline void setInputOffsets(const SimplexId *const data) {
       inputOffsets_ = data;
       discreteGradient_.setInputOffsets(inputOffsets_);
-      return 0;
     }
 
     /**
      * Set the output critical points data pointers.
      */
-    inline int setOutputCriticalPoints(
+    inline void setOutputCriticalPoints(
       std::vector<std::array<float, 3>> *const criticalPoints_points,
       std::vector<char> *const criticalPoints_points_cellDimensons,
       std::vector<SimplexId> *const criticalPoints_points_cellIds,
@@ -218,13 +211,12 @@ namespace ttk {
         = criticalPoints_points_PLVertexIdentifiers;
       outputCriticalPoints_points_manifoldSize_
         = criticalPoints_points_manifoldSize;
-      return 0;
     }
 
     /**
      * Set the data pointers to the output 1-separatrices.
      */
-    inline int setOutputSeparatrices1(
+    inline void setOutputSeparatrices1(
       SimplexId *const separatrices1_numberOfPoints,
       std::vector<float> *const separatrices1_points,
       std::vector<char> *const separatrices1_points_smoothingMask,
@@ -262,13 +254,12 @@ namespace ttk {
         = s1_cells_separatrixFunctionMinimaId;
       outputSeparatrices1_cells_isOnBoundary_
         = separatrices1_cells_isOnBoundary;
-      return 0;
     }
 
     /**
      * Set the data pointers to the output 2-separatrices.
      */
-    inline int setOutputSeparatrices2(
+    inline void setOutputSeparatrices2(
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
@@ -297,21 +288,20 @@ namespace ttk {
         = s2_cells_separatrixFunctionMinimaId;
       outputSeparatrices2_cells_isOnBoundary_
         = separatrices2_cells_isOnBoundary;
-      return 0;
     }
 
     /**
      * Set the data pointers to the output segmentation scalar fields.
      */
-    inline int setOutputMorseComplexes(void *const ascendingManifold,
-                                       void *const descendingManifold,
-                                       void *const morseSmaleManifold) {
+    inline void setOutputMorseComplexes(void *const ascendingManifold,
+                                        void *const descendingManifold,
+                                        void *const morseSmaleManifold) {
       outputAscendingManifold_ = ascendingManifold;
       outputDescendingManifold_ = descendingManifold;
       outputMorseSmaleManifold_ = morseSmaleManifold;
-      return 0;
     }
 
+  protected:
     /**
      * Compute the descending 1-separatrices by reading into the discrete
      * gradient.

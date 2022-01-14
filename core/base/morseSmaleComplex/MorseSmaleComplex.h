@@ -184,53 +184,54 @@ namespace ttk {
     MorseSmaleComplex();
     ~MorseSmaleComplex();
 
-    int setComputeAscendingSeparatrices1(const bool state) {
+    inline int setComputeAscendingSeparatrices1(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
       }
 #endif
-      return abstractMorseSmaleComplex_->setComputeAscendingSeparatrices1(
-        state);
+      abstractMorseSmaleComplex_->setComputeAscendingSeparatrices1(state);
+      return 0;
     }
 
-    int setComputeDescendingSeparatrices1(const bool state) {
+    inline int setComputeDescendingSeparatrices1(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
       }
 #endif
-      return abstractMorseSmaleComplex_->setComputeDescendingSeparatrices1(
-        state);
+      abstractMorseSmaleComplex_->setComputeDescendingSeparatrices1(state);
+      return 0;
     }
 
-    int setComputeSaddleConnectors(const bool state) {
+    inline int setComputeSaddleConnectors(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
       }
 #endif
-      return abstractMorseSmaleComplex_->setComputeSaddleConnectors(state);
+      abstractMorseSmaleComplex_->setComputeSaddleConnectors(state);
+      return 0;
     }
 
-    int setComputeAscendingSeparatrices2(const bool state) {
+    inline int setComputeAscendingSeparatrices2(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
       }
 #endif
-      return abstractMorseSmaleComplex_->setComputeAscendingSeparatrices2(
-        state);
+      abstractMorseSmaleComplex_->setComputeAscendingSeparatrices2(state);
+      return 0;
     }
 
-    int setComputeDescendingSeparatrices2(const bool state) {
+    inline int setComputeDescendingSeparatrices2(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
       }
 #endif
-      return abstractMorseSmaleComplex_->setComputeDescendingSeparatrices2(
-        state);
+      abstractMorseSmaleComplex_->setComputeDescendingSeparatrices2(state);
+      return 0;
     }
 
     inline void preconditionTriangulation(AbstractTriangulation *const data) {
