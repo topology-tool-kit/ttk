@@ -21,7 +21,7 @@ namespace ttk {
    * that contains the visited nodes indices. Using RAII, the boolean
    * vector is cleaned using the indices vector when this structure
    * goes out of scope. See @ref
-   * ttk::MorseSmaleComplex3D::getSaddleConnectors for an example use.
+   * ttk::MorseSmaleComplex::getSaddleConnectors for an example use.
    *
    */
   struct VisitedMask {
