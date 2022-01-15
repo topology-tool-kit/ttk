@@ -273,9 +273,9 @@ namespace ttk {
     /**
      * Set the data pointers to the output segmentation scalar fields.
      */
-    inline void setOutputMorseComplexes(void *const ascendingManifold,
-                                        void *const descendingManifold,
-                                        void *const morseSmaleManifold) {
+    inline void setOutputMorseComplexes(SimplexId *const ascendingManifold,
+                                        SimplexId *const descendingManifold,
+                                        SimplexId *const morseSmaleManifold) {
       outputAscendingManifold_ = ascendingManifold;
       outputDescendingManifold_ = descendingManifold;
       outputMorseSmaleManifold_ = morseSmaleManifold;
@@ -538,9 +538,9 @@ namespace ttk {
     std::vector<SimplexId> separatrices2_cells_sepFuncMaxId_{};
     std::vector<SimplexId> separatrices2_cells_sepFuncMinId_{};
 
-    void *outputAscendingManifold_{};
-    void *outputDescendingManifold_{};
-    void *outputMorseSmaleManifold_{};
+    SimplexId *outputAscendingManifold_{};
+    SimplexId *outputDescendingManifold_{};
+    SimplexId *outputMorseSmaleManifold_{};
   };
 } // namespace ttk
 
@@ -1051,15 +1051,6 @@ int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
 #endif
   Timer t;
 
-  // nullptr_t is implicitly convertible and comparable to any pointer type
-  // or pointer-to-member type.
-  SimplexId *ascendingManifold
-    = static_cast<SimplexId *>(outputAscendingManifold_);
-  SimplexId *descendingManifold
-    = static_cast<SimplexId *>(outputDescendingManifold_);
-  SimplexId *morseSmaleManifold
-    = static_cast<SimplexId *>(outputMorseSmaleManifold_);
-
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setDebugLevel(debugLevel_);
   {
@@ -1101,29 +1092,31 @@ int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
   }
 
   std::vector<SimplexId> maxSeeds;
-  {
+  if(outputAscendingManifold_ != nullptr
+     || outputDescendingManifold_ != nullptr) {
     Timer tmp;
 
     SimplexId numberOfMaxima{};
     SimplexId numberOfMinima{};
 
-    if(ascendingManifold)
-      setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold,
-                               numberOfMaxima, triangulation);
+    if(outputAscendingManifold_ != nullptr)
+      setAscendingSegmentation(criticalPoints, maxSeeds,
+                               outputAscendingManifold_, numberOfMaxima,
+                               triangulation);
 
-    if(descendingManifold)
-      setDescendingSegmentation(
-        criticalPoints, descendingManifold, numberOfMinima, triangulation);
+    if(outputDescendingManifold_ != nullptr)
+      setDescendingSegmentation(criticalPoints, outputDescendingManifold_,
+                                numberOfMinima, triangulation);
 
-    if(ascendingManifold and descendingManifold and morseSmaleManifold)
-      setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold,
-                           descendingManifold, morseSmaleManifold,
-                           triangulation);
+    if(outputAscendingManifold_ != nullptr
+       && outputDescendingManifold_ != nullptr
+       && outputMorseSmaleManifold_ != nullptr)
+      setFinalSegmentation(numberOfMaxima, numberOfMinima,
+                           outputAscendingManifold_, outputDescendingManifold_,
+                           outputMorseSmaleManifold_, triangulation);
 
-    if(ascendingManifold or descendingManifold) {
-      this->printMsg("Segmentation computed", 1.0, tmp.getElapsedTime(),
-                     this->threadNumber_);
-    }
+    this->printMsg(
+      "Segmentation computed", 1.0, tmp.getElapsedTime(), this->threadNumber_);
   }
 
   std::vector<size_t> nCriticalPointsByDim{};
@@ -1133,10 +1126,11 @@ int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
     criticalPoints_points_isOnBoundary_,
     criticalPoints_points_PLVertexIdentifiers_, triangulation);
 
-  if(ascendingManifold and descendingManifold) {
+  if(outputAscendingManifold_ != nullptr
+     && outputDescendingManifold_ != nullptr) {
     discreteGradient_.setManifoldSize(
-      criticalPoints, nCriticalPointsByDim, maxSeeds, ascendingManifold,
-      descendingManifold, criticalPoints_points_manifoldSize_);
+      criticalPoints, nCriticalPointsByDim, maxSeeds, outputAscendingManifold_,
+      outputDescendingManifold_, criticalPoints_points_manifoldSize_);
   }
 
   this->printMsg("Data-set ("
@@ -1167,15 +1161,6 @@ int ttk::MorseSmaleComplex::execute3D(const dataType *const scalars,
   }
 #endif
   Timer t;
-
-  // nullptr_t is implicitly convertible and comparable to any pointer type
-  // or pointer-to-member type.
-  SimplexId *ascendingManifold
-    = static_cast<SimplexId *>(outputAscendingManifold_);
-  SimplexId *descendingManifold
-    = static_cast<SimplexId *>(outputDescendingManifold_);
-  SimplexId *morseSmaleManifold
-    = static_cast<SimplexId *>(outputMorseSmaleManifold_);
 
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setDebugLevel(debugLevel_);
@@ -1275,29 +1260,31 @@ int ttk::MorseSmaleComplex::execute3D(const dataType *const scalars,
   }
 
   std::vector<SimplexId> maxSeeds;
-  {
+  if(outputAscendingManifold_ != nullptr
+     || outputDescendingManifold_ != nullptr) {
     Timer tmp;
 
     SimplexId numberOfMaxima{};
     SimplexId numberOfMinima{};
 
-    if(ascendingManifold)
-      setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold,
-                               numberOfMaxima, triangulation);
+    if(outputAscendingManifold_ != nullptr)
+      setAscendingSegmentation(criticalPoints, maxSeeds,
+                               outputAscendingManifold_, numberOfMaxima,
+                               triangulation);
 
-    if(descendingManifold)
-      setDescendingSegmentation(
-        criticalPoints, descendingManifold, numberOfMinima, triangulation);
+    if(outputDescendingManifold_ != nullptr)
+      setDescendingSegmentation(criticalPoints, outputDescendingManifold_,
+                                numberOfMinima, triangulation);
 
-    if(ascendingManifold and descendingManifold and morseSmaleManifold)
-      setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold,
-                           descendingManifold, morseSmaleManifold,
-                           triangulation);
+    if(outputAscendingManifold_ != nullptr
+       && outputDescendingManifold_ != nullptr
+       && outputMorseSmaleManifold_ != nullptr)
+      setFinalSegmentation(numberOfMaxima, numberOfMinima,
+                           outputAscendingManifold_, outputDescendingManifold_,
+                           outputMorseSmaleManifold_, triangulation);
 
-    if(ascendingManifold or descendingManifold) {
-      this->printMsg("Segmentation computed", 1.0, tmp.getElapsedTime(),
-                     this->threadNumber_);
-    }
+    this->printMsg(
+      "Segmentation computed", 1.0, tmp.getElapsedTime(), this->threadNumber_);
   }
 
   std::vector<size_t> nCriticalPointsByDim;
@@ -1307,10 +1294,10 @@ int ttk::MorseSmaleComplex::execute3D(const dataType *const scalars,
     criticalPoints_points_isOnBoundary_,
     criticalPoints_points_PLVertexIdentifiers_, triangulation);
 
-  if(ascendingManifold and descendingManifold) {
+  if(outputAscendingManifold_ and outputDescendingManifold_) {
     discreteGradient_.setManifoldSize(
-      criticalPoints, nCriticalPointsByDim, maxSeeds, ascendingManifold,
-      descendingManifold, criticalPoints_points_manifoldSize_);
+      criticalPoints, nCriticalPointsByDim, maxSeeds, outputAscendingManifold_,
+      outputDescendingManifold_, criticalPoints_points_manifoldSize_);
   }
 
   this->printMsg("Data-set ("

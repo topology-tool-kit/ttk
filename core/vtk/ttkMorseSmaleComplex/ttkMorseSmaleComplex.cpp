@@ -496,19 +496,16 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
   this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
 
-  void *ascendingManifoldPtr = nullptr;
-  void *descendingManifoldPtr = nullptr;
-  void *morseSmaleManifoldPtr = nullptr;
-  if(ComputeAscendingSegmentation)
-    ascendingManifoldPtr = ttkUtils::GetVoidPointer(ascendingManifold);
-  if(ComputeDescendingSegmentation)
-    descendingManifoldPtr = ttkUtils::GetVoidPointer(descendingManifold);
-  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
-     and ComputeFinalSegmentation)
-    morseSmaleManifoldPtr = ttkUtils::GetVoidPointer(morseSmaleManifold);
-
   this->setOutputMorseComplexes(
-    ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
+    ComputeAscendingSegmentation
+      ? ttkUtils::GetPointer<SimplexId>(ascendingManifold)
+      : nullptr,
+    ComputeDescendingSegmentation
+      ? ttkUtils::GetPointer<SimplexId>(descendingManifold)
+      : nullptr,
+    ComputeFinalSegmentation
+      ? ttkUtils::GetPointer<SimplexId>(morseSmaleManifold)
+      : nullptr);
 
   int ret{};
 
