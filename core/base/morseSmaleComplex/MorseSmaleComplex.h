@@ -1492,6 +1492,11 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
     getCellFace = &triangulationType::getCellEdge;
     getFaceStarNumber = &triangulationType::getEdgeStarNumber;
     getFaceStar = &triangulationType::getEdgeStar;
+  } else if(cellDim == 1) {
+    // Triangulation method pointers for 1D
+    getCellFace = &triangulationType::getEdgeVertex;
+    getFaceStarNumber = &triangulationType::getVertexStarNumber;
+    getFaceStar = &triangulationType::getVertexStar;
   }
 
 #ifdef TTK_ENABLE_OPENMP
