@@ -183,6 +183,70 @@ namespace ttk {
   public:
     MorseSmaleComplex();
 
+    struct OutputCriticalPoints {
+      // point data arrays
+      std::vector<std::array<float, 3>> points_{};
+      std::vector<char> cellDimensions_{};
+      std::vector<SimplexId> cellIds_{};
+      std::vector<char> isOnBoundary_{};
+      std::vector<SimplexId> PLVertexIdentifiers_{};
+      std::vector<SimplexId> manifoldSize_{};
+      void clear() {
+        *this = {};
+      };
+    };
+
+    struct Output1Separatrices {
+      struct {
+        SimplexId numberOfPoints_{};
+        std::vector<float> points_{};
+        std::vector<char> smoothingMask_{};
+        std::vector<char> cellDimensions_{};
+        std::vector<ttk::SimplexId> cellIds_{};
+      } pt{}; // point data arrays
+      struct {
+        SimplexId numberOfCells_{};
+        std::vector<ttk::SimplexId> connectivity_{};
+        std::vector<ttk::SimplexId> sourceIds_{};
+        std::vector<ttk::SimplexId> destinationIds_{};
+        std::vector<ttk::SimplexId> separatrixIds_{};
+        std::vector<char> separatrixTypes_{};
+        std::vector<char> isOnBoundary_{};
+        std::vector<SimplexId> sepFuncMaxId_{};
+        std::vector<SimplexId> sepFuncMinId_{};
+      } cl{}; // cell data arrays
+      void clear() {
+        *this = {};
+      };
+    };
+
+    struct Output2Separatrices {
+      struct {
+        SimplexId numberOfPoints_{};
+        std::vector<float> points_{};
+      } pt{}; // point data arrays
+      struct {
+        SimplexId numberOfCells_{};
+        std::vector<ttk::SimplexId> offsets_{};
+        std::vector<ttk::SimplexId> connectivity_{};
+        std::vector<ttk::SimplexId> sourceIds_{};
+        std::vector<ttk::SimplexId> separatrixIds_{};
+        std::vector<char> separatrixTypes_{};
+        std::vector<char> isOnBoundary_{};
+        std::vector<SimplexId> sepFuncMaxId_{};
+        std::vector<SimplexId> sepFuncMinId_{};
+      } cl{}; // cell data arrays
+      void clear() {
+        *this = {};
+      };
+    };
+
+    struct OutputManifold {
+      SimplexId *ascending_;
+      SimplexId *descending_;
+      SimplexId *morseSmale_;
+    };
+
     /**
      * Main function for computing the Morse-Smale complex.
      */
