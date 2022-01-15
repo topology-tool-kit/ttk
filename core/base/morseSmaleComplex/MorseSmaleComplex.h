@@ -264,66 +264,38 @@ namespace ttk {
      * the critical points.
      */
     inline void setComputeCriticalPoints(const bool state) {
-      ComputeCriticalPoints = state;
+      this->ComputeCriticalPoints = state;
     }
     /**
      * Enable/Disable computation of the geometrical embedding of
-     * the ascending 1-separatrices.
+     * the 1-separatrices.
      */
-    inline void setComputeAscendingSeparatrices1(const bool state) {
-      ComputeAscendingSeparatrices1 = state;
+    inline void setComputeSeparatrices1(const bool doAscending,
+                                        const bool doDescending,
+                                        const bool doSaddleConnectors) {
+      this->ComputeAscendingSeparatrices1 = doAscending;
+      this->ComputeDescendingSeparatrices1 = doDescending;
+      this->ComputeSaddleConnectors = doSaddleConnectors;
     }
     /**
      * Enable/Disable computation of the geometrical embedding of
-     * the descending 1-separatrices.
+     * the 2-separatrices (disabled by default).
      */
-    inline void setComputeDescendingSeparatrices1(const bool state) {
-      ComputeDescendingSeparatrices1 = state;
+    inline void setComputeSeparatrices2(const bool doAscending,
+                                        const bool doDescending) {
+      this->ComputeAscendingSeparatrices2 = doAscending;
+      this->ComputeDescendingSeparatrices2 = doDescending;
     }
     /**
-     * Enable/Disable computation of the geometrical embedding of
-     * the visible saddle-connectors.
+     * Enable/Disable computation of the geometrical embedding of the
+     * manifolds of the critical points.
      */
-    inline void setComputeSaddleConnectors(const bool state) {
-      ComputeSaddleConnectors = state;
-    }
-    /**
-     * Enable/Disable computation of the geometrical embedding of
-     * the ascending 2-separatrices (disabled by default).
-     */
-    inline void setComputeAscendingSeparatrices2(const bool state) {
-      ComputeAscendingSeparatrices2 = state;
-    }
-    /**
-     * Enable/Disable computation of the geometrical embedding of
-     * the descending 2-separatrices (disabled by default).
-     */
-    inline void setComputeDescendingSeparatrices2(const bool state) {
-      ComputeDescendingSeparatrices2 = state;
-    }
-    /**
-     * Enable/Disable computation of the geometrical embedding of
-     * the ascending manifolds of the critical points
-     * (disabled by default).
-     */
-    inline void setComputeAscendingSegmentation(const bool state) {
-      ComputeAscendingSegmentation = state;
-    }
-    /**
-     * Enable/Disable computation of the geometrical embedding of
-     * the descending manifolds of the critical points
-     * (disabled by default).
-     */
-    inline void setComputeDescendingSegmentation(const bool state) {
-      ComputeDescendingSegmentation = state;
-    }
-    /**
-     * Enable/Disable computation of the geometrical embedding of
-     * the Morse-Smale manifolds of the critical points
-     * (disabled by default).
-     */
-    inline void setComputeFinalSegmentation(const bool state) {
-      ComputeFinalSegmentation = state;
+    inline void setComputeSegmentation(const bool doAscending,
+                                       const bool doDescending,
+                                       const bool doMorseSmale) {
+      this->ComputeAscendingSegmentation = doAscending;
+      this->ComputeDescendingSegmentation = doDescending;
+      this->ComputeFinalSegmentation = doMorseSmale;
     }
 
     /**
@@ -331,7 +303,7 @@ namespace ttk {
      * mesh traversal queries.
      */
     inline void preconditionTriangulation(AbstractTriangulation *const data) {
-      discreteGradient_.preconditionTriangulation(data);
+      this->discreteGradient_.preconditionTriangulation(data);
       data->preconditionCellEdges();
       data->preconditionCellNeighbors();
     }
