@@ -288,9 +288,7 @@ namespace ttk {
      */
     struct Separatrix {
       // default :
-      explicit Separatrix()
-        : isValid_{}, source_{}, destination_{}, isReversed_{}, geometry_{} {
-      }
+      explicit Separatrix() = default;
 
       // initialization with one segment :
       explicit Separatrix(const bool isValid,
@@ -303,60 +301,17 @@ namespace ttk {
         geometry_.push_back(segmentGeometry);
       }
 
-      // initialization with multiple segments :
-      explicit Separatrix(const bool isValid,
-                          const dcg::Cell &saddle,
-                          const dcg::Cell &extremum,
-                          const std::vector<char> &isReversed,
-                          const std::vector<SimplexId> &geometry)
-        : isValid_{isValid}, source_{saddle}, destination_{extremum},
-          isReversed_{isReversed}, geometry_{geometry} {
-      }
-
-      explicit Separatrix(const Separatrix &separatrix)
-        : isValid_{separatrix.isValid_}, source_{separatrix.source_},
-          destination_{separatrix.destination_},
-          isReversed_{separatrix.isReversed_}, geometry_{separatrix.geometry_} {
-      }
-
-      explicit Separatrix(Separatrix &&separatrix) noexcept
-        : isValid_{separatrix.isValid_}, source_{separatrix.source_},
-          destination_{separatrix.destination_}, isReversed_{std::move(
-                                                   separatrix.isReversed_)},
-          geometry_{std::move(separatrix.geometry_)} {
-      }
-
-      Separatrix &operator=(Separatrix &&separatrix) noexcept {
-        isValid_ = separatrix.isValid_;
-        source_ = separatrix.source_;
-        destination_ = separatrix.destination_;
-        isReversed_ = std::move(separatrix.isReversed_);
-        geometry_ = std::move(separatrix.geometry_);
-
-        return *this;
-      }
-
-      /**
-       * Flag indicating if this separatrix can be processed.
-       */
+      /** Flag indicating if this separatrix can be processed. */
       bool isValid_;
-
-      /**
-       * Source cell of the separatrix.
-       */
+      /** Source cell of the separatrix. */
       dcg::Cell source_;
-
-      /**
-       * Destination cell of the separatrix.
-       */
+      /** Destination cell of the separatrix. */
       dcg::Cell destination_;
-
       /**
        * Container of flags, isReversed[i] indicates if the
        * element stored at id=geometry_[i] can be reversed.
        */
       std::vector<char> isReversed_;
-
       /**
        * Container of ids. Each id addresses a separate
        * container corresponding to a dense representation
