@@ -152,4 +152,8 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField{};
+  OutputCriticalPoints criticalPoints_{};
+  Output1Separatrices separatrices1_{};
+  Output2Separatrices separatrices2_{};
+  OutputManifold segmentations_{};
 };
