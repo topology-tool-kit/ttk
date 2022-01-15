@@ -55,13 +55,13 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
                                    vtkPolyData *const outputCriticalPoints,
                                    vtkPolyData *const outputSeparatrices1,
                                    vtkPolyData *const outputSeparatrices2,
+                                   const SimplexId *const inputOffsets,
                                    const triangulationType &triangulation) {
 
-  const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
-  const auto scalars
-    = static_cast<scalarType *>(ttkUtils::GetVoidPointer(inputScalars));
+  const int dimensionality = triangulation.getDimensionality();
+  const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
 
-  const int ret = this->execute<scalarType, triangulationType>(triangulation);
+  const int ret = this->execute(scalars, inputOffsets, triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -496,10 +496,6 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
   this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
 
-  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
-  this->setInputOffsets(
-    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
-
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
   void *morseSmaleManifoldPtr = nullptr;
@@ -520,7 +516,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
     inputScalars->GetDataType(), triangulation->getType(),
     (ret = dispatch<VTK_TT, TTK_TT>(
        inputScalars, outputCriticalPoints, outputSeparatrices1,
-       outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
+       outputSeparatrices2, ttkUtils::GetPointer<SimplexId>(inputOffsets),
+       *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
     return -1;

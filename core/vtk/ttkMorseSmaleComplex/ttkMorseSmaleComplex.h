@@ -139,6 +139,7 @@ protected:
                vtkPolyData *const outputCriticalPoints,
                vtkPolyData *const outputSeparatrices1,
                vtkPolyData *const outputSeparatrices2,
+               const SimplexId *const inputOffsets,
                const triangulationType &triangulation);
 
   ttkMorseSmaleComplex();

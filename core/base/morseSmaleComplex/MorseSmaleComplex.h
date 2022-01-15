@@ -187,14 +187,18 @@ namespace ttk {
      * Main function for computing the Morse-Smale complex.
      */
     template <typename dataType, typename triangulationType>
-    inline int execute(const triangulationType &triangulation) {
+    inline int execute(const dataType *const scalars,
+                       const SimplexId *const offsets,
+                       const triangulationType &triangulation) {
       this->clear();
+      this->discreteGradient_.setInputScalarField(scalars);
+      this->discreteGradient_.setInputOffsets(offsets);
       switch(triangulation.getDimensionality()) {
         case 1:
         case 2:
-          return this->execute2D(triangulation);
+          return this->execute2D(offsets, triangulation);
         case 3:
-          return this->execute3D<dataType>(triangulation);
+          return this->execute3D(scalars, offsets, triangulation);
       }
       return 0;
     }
@@ -203,13 +207,16 @@ namespace ttk {
      * Main function for computing the Morse-Smale complex on 2D triangulations.
      */
     template <typename triangulationType>
-    int execute2D(const triangulationType &triangulation);
+    int execute2D(const SimplexId *const offsets,
+                  const triangulationType &triangulation);
 
     /**
      * Main function for computing the Morse-Smale complex on 3D triangulations.
      */
     template <typename dataType, typename triangulationType>
-    int execute3D(const triangulationType &triangulation);
+    int execute3D(const dataType *const scalars,
+                  const SimplexId *const offsets,
+                  const triangulationType &triangulation);
 
     /**
      * Enable/Disable computation of the geometrical embedding of
@@ -261,30 +268,6 @@ namespace ttk {
       discreteGradient_.preconditionTriangulation(data);
       data->preconditionCellEdges();
       data->preconditionCellNeighbors();
-    }
-
-    /**
-     * Set the input scalar field associated on the points of the data set.
-     */
-    inline void setInputScalarField(const void *const data) {
-      inputScalarField_ = data;
-      discreteGradient_.setInputScalarField(inputScalarField_);
-    }
-
-    /**
-     * Set the input offset field associated on the points of the data set
-     * (if none, identifiers are used instead).
-     *
-     * @pre For this function to behave correctly in the absence of
-     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
-     * called to fill the @p data buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
-     * automatically generate such a preconditioned buffer).
-     * @see examples/c++/main.cpp for an example use.
-     */
-    inline void setInputOffsets(const SimplexId *const data) {
-      inputOffsets_ = data;
-      discreteGradient_.setInputOffsets(inputOffsets_);
     }
 
     /**
@@ -417,6 +400,7 @@ namespace ttk {
     int setSeparatrices1(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
+      const SimplexId *const offsets,
       const triangulationType &triangulation);
 
     /**
@@ -488,6 +472,7 @@ namespace ttk {
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       const std::vector<std::set<SimplexId>> &separatricesSaddles,
+      const SimplexId *const offsets,
       const triangulationType &triangulation);
 
     /**
@@ -536,6 +521,7 @@ namespace ttk {
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       const std::vector<std::set<SimplexId>> &separatricesSaddles,
+      const SimplexId *const offsets,
       const triangulationType &triangulation);
 
     /**
@@ -559,9 +545,6 @@ namespace ttk {
     bool ComputeDescendingSeparatrices2{false};
 
     dcg::DiscreteGradient discreteGradient_{};
-
-    const void *inputScalarField_{};
-    const SimplexId *inputOffsets_{};
 
     // critical points
     std::vector<std::array<float, 3>> criticalPoints_points_{};
@@ -671,6 +654,7 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::setSeparatrices1(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) {
 
   auto &separatrixFunctionMaxima = separatrices1_cells_sepFuncMaxId_;
@@ -751,8 +735,8 @@ int ttk::MorseSmaleComplex::setSeparatrices1(
       = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const auto vertsOrder = [this](const SimplexId a, const SimplexId b) {
-      return this->inputOffsets_[a] < this->inputOffsets_[b];
+    const auto vertsOrder = [offsets](const SimplexId a, const SimplexId b) {
+      return offsets[a] < offsets[b];
     };
     const std::array<SimplexId, 2> gVerts{
       discreteGradient_.getCellGreaterVertex(src, triangulation),
@@ -1102,14 +1086,10 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
 // ----------------------- //
 
 template <typename triangulationType>
-int ttk::MorseSmaleComplex::execute2D(const triangulationType &triangulation) {
+int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
+                                      const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField_) {
-    this->printErr("Input scalar field pointer is null.");
-    return -1;
-  }
-
-  if(!inputOffsets_) {
+  if(offsets == nullptr) {
     this->printErr("Input offset field pointer is null.");
     return -1;
   }
@@ -1145,7 +1125,8 @@ int ttk::MorseSmaleComplex::execute2D(const triangulationType &triangulation) {
     std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getDescendingSeparatrices1(
       criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1(separatrices, separatricesGeometry, triangulation);
+    setSeparatrices1(
+      separatrices, separatricesGeometry, offsets, triangulation);
 
     this->printMsg("Descending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
@@ -1157,7 +1138,8 @@ int ttk::MorseSmaleComplex::execute2D(const triangulationType &triangulation) {
     std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getAscendingSeparatrices1(
       criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1(separatrices, separatricesGeometry, triangulation);
+    setSeparatrices1(
+      separatrices, separatricesGeometry, offsets, triangulation);
 
     this->printMsg("Ascending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
@@ -1215,14 +1197,16 @@ int ttk::MorseSmaleComplex::execute2D(const triangulationType &triangulation) {
 // ----------------------- //
 
 template <typename dataType, typename triangulationType>
-int ttk::MorseSmaleComplex::execute3D(const triangulationType &triangulation) {
+int ttk::MorseSmaleComplex::execute3D(const dataType *const scalars,
+                                      const SimplexId *const offsets,
+                                      const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField_) {
+  if(scalars == nullptr) {
     this->printErr("Input scalar field pointer is null.");
     return -1;
   }
 
-  if(!inputOffsets_) {
+  if(offsets == nullptr) {
     this->printErr("Input offset field pointer is null.");
     return -1;
   }
@@ -1297,7 +1281,8 @@ int ttk::MorseSmaleComplex::execute3D(const triangulationType &triangulation) {
     Timer tmp{};
 
     flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
-    setSeparatrices1(separatrices1[0], separatricesGeometry1[0], triangulation);
+    setSeparatrices1(
+      separatrices1[0], separatricesGeometry1[0], offsets, triangulation);
 
     this->printMsg(
       "1-separatrices set", 1.0, tmp.getElapsedTime(), this->threadNumber_);
@@ -1312,8 +1297,8 @@ int ttk::MorseSmaleComplex::execute3D(const triangulationType &triangulation) {
     getDescendingSeparatrices2(criticalPoints, separatrices,
                                separatricesGeometry, separatricesSaddles,
                                triangulation);
-    setDescendingSeparatrices2(
-      separatrices, separatricesGeometry, separatricesSaddles, triangulation);
+    setDescendingSeparatrices2(separatrices, separatricesGeometry,
+                               separatricesSaddles, offsets, triangulation);
 
     this->printMsg("Descending 2-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
@@ -1327,8 +1312,8 @@ int ttk::MorseSmaleComplex::execute3D(const triangulationType &triangulation) {
     getAscendingSeparatrices2(criticalPoints, separatrices,
                               separatricesGeometry, separatricesSaddles,
                               triangulation);
-    setAscendingSeparatrices2(
-      separatrices, separatricesGeometry, separatricesSaddles, triangulation);
+    setAscendingSeparatrices2(separatrices, separatricesGeometry,
+                              separatricesSaddles, offsets, triangulation);
 
     this->printMsg("Ascending 2-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
@@ -1619,9 +1604,9 @@ int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
   const std::vector<std::set<SimplexId>> &separatricesSaddles,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) {
 
-  const auto offsets = inputOffsets_;
   auto &separatrixFunctionMaxima = separatrices2_cells_sepFuncMaxId_;
   auto &separatrixFunctionMinima = separatrices2_cells_sepFuncMinId_;
 
@@ -1832,9 +1817,9 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
   const std::vector<std::set<SimplexId>> &separatricesSaddles,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) {
 
-  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = separatrices2_cells_sepFuncMaxId_;
   auto separatrixFunctionMinima = separatrices2_cells_sepFuncMinId_;
 
