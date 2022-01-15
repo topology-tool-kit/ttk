@@ -152,13 +152,4 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField{};
-  bool ComputeCriticalPoints{true};
-  bool ComputeAscendingSeparatrices1{true};
-  bool ComputeDescendingSeparatrices1{true};
-  bool ComputeSaddleConnectors{true};
-  bool ComputeAscendingSeparatrices2{false};
-  bool ComputeDescendingSeparatrices2{false};
-  bool ComputeAscendingSegmentation{true};
-  bool ComputeDescendingSegmentation{true};
-  bool ComputeFinalSegmentation{true};
 };

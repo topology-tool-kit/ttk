@@ -489,23 +489,10 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   morseSmaleManifold->SetNumberOfTuples(numberOfVertices);
   morseSmaleManifold->SetName(ttk::MorseSmaleManifoldName);
 
-  this->setComputeAscendingSeparatrices1(ComputeAscendingSeparatrices1);
-  this->setComputeDescendingSeparatrices1(ComputeDescendingSeparatrices1);
-  this->setComputeSaddleConnectors(ComputeSaddleConnectors);
-
-  this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
-  this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
-
   this->setOutputMorseComplexes(
-    ComputeAscendingSegmentation
-      ? ttkUtils::GetPointer<SimplexId>(ascendingManifold)
-      : nullptr,
-    ComputeDescendingSegmentation
-      ? ttkUtils::GetPointer<SimplexId>(descendingManifold)
-      : nullptr,
-    ComputeFinalSegmentation
-      ? ttkUtils::GetPointer<SimplexId>(morseSmaleManifold)
-      : nullptr);
+    ttkUtils::GetPointer<SimplexId>(ascendingManifold),
+    ttkUtils::GetPointer<SimplexId>(descendingManifold),
+    ttkUtils::GetPointer<SimplexId>(morseSmaleManifold));
 
   int ret{};
 

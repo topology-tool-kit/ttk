@@ -193,30 +193,32 @@ namespace ttk {
 
     /**
      * Enable/Disable computation of the geometrical embedding of
-     * the ascending manifolds of the critical points
-     * (disabled by default).
+     * the critical points.
+     */
+    inline void setComputeCriticalPoints(const bool state) {
+      ComputeCriticalPoints = state;
+    }
+    /**
+     * Enable/Disable computation of the geometrical embedding of
+     * the ascending 1-separatrices.
      */
     inline void setComputeAscendingSeparatrices1(const bool state) {
       ComputeAscendingSeparatrices1 = state;
     }
-
     /**
      * Enable/Disable computation of the geometrical embedding of
-     * the descending manifolds of the critical points
-     * (disabled by default).
+     * the descending 1-separatrices.
      */
     inline void setComputeDescendingSeparatrices1(const bool state) {
       ComputeDescendingSeparatrices1 = state;
     }
-
     /**
      * Enable/Disable computation of the geometrical embedding of
-     * the visible saddle-connectors (disabled by default).
+     * the visible saddle-connectors.
      */
     inline void setComputeSaddleConnectors(const bool state) {
       ComputeSaddleConnectors = state;
     }
-
     /**
      * Enable/Disable computation of the geometrical embedding of
      * the ascending 2-separatrices (disabled by default).
@@ -224,13 +226,36 @@ namespace ttk {
     inline void setComputeAscendingSeparatrices2(const bool state) {
       ComputeAscendingSeparatrices2 = state;
     }
-
     /**
      * Enable/Disable computation of the geometrical embedding of
      * the descending 2-separatrices (disabled by default).
      */
     inline void setComputeDescendingSeparatrices2(const bool state) {
       ComputeDescendingSeparatrices2 = state;
+    }
+    /**
+     * Enable/Disable computation of the geometrical embedding of
+     * the ascending manifolds of the critical points
+     * (disabled by default).
+     */
+    inline void setComputeAscendingSegmentation(const bool state) {
+      ComputeAscendingSegmentation = state;
+    }
+    /**
+     * Enable/Disable computation of the geometrical embedding of
+     * the descending manifolds of the critical points
+     * (disabled by default).
+     */
+    inline void setComputeDescendingSegmentation(const bool state) {
+      ComputeDescendingSegmentation = state;
+    }
+    /**
+     * Enable/Disable computation of the geometrical embedding of
+     * the Morse-Smale manifolds of the critical points
+     * (disabled by default).
+     */
+    inline void setComputeFinalSegmentation(const bool state) {
+      ComputeFinalSegmentation = state;
     }
 
     /**
@@ -466,11 +491,15 @@ namespace ttk {
     void clear();
 
   protected:
+    bool ComputeCriticalPoints{true};
     bool ComputeAscendingSeparatrices1{true};
     bool ComputeDescendingSeparatrices1{true};
-    bool ComputeSaddleConnectors{false};
+    bool ComputeSaddleConnectors{true};
     bool ComputeAscendingSeparatrices2{false};
     bool ComputeDescendingSeparatrices2{false};
+    bool ComputeAscendingSegmentation{true};
+    bool ComputeDescendingSegmentation{true};
+    bool ComputeFinalSegmentation{true};
 
     dcg::DiscreteGradient discreteGradient_{};
 
@@ -642,45 +671,46 @@ int ttk::MorseSmaleComplex::execute(const dataType *const scalars,
   }
 
   std::vector<SimplexId> maxSeeds{};
-  if(outputAscendingManifold_ != nullptr
-     || outputDescendingManifold_ != nullptr) {
+  if(ComputeAscendingSegmentation || ComputeDescendingSegmentation) {
     Timer tmp;
 
     SimplexId numberOfMaxima{};
     SimplexId numberOfMinima{};
 
-    if(outputAscendingManifold_ != nullptr)
+    if(ComputeAscendingSegmentation) {
       setAscendingSegmentation(criticalPoints, maxSeeds,
                                outputAscendingManifold_, numberOfMaxima,
                                triangulation);
-
-    if(outputDescendingManifold_ != nullptr)
+    }
+    if(ComputeDescendingSegmentation) {
       setDescendingSegmentation(criticalPoints, outputDescendingManifold_,
                                 numberOfMinima, triangulation);
-
-    if(outputAscendingManifold_ != nullptr
-       && outputDescendingManifold_ != nullptr
-       && outputMorseSmaleManifold_ != nullptr)
+    }
+    if(ComputeAscendingSegmentation && ComputeDescendingSegmentation
+       && ComputeFinalSegmentation) {
       setFinalSegmentation(numberOfMaxima, numberOfMinima,
                            outputAscendingManifold_, outputDescendingManifold_,
                            outputMorseSmaleManifold_, triangulation);
+    }
 
     this->printMsg(
       "Segmentation computed", 1.0, tmp.getElapsedTime(), this->threadNumber_);
   }
 
-  std::vector<size_t> nCriticalPointsByDim{};
-  discreteGradient_.setCriticalPoints(
-    criticalPoints, nCriticalPointsByDim, criticalPoints_points_,
-    criticalPoints_points_cellDimensions_, criticalPoints_points_cellIds_,
-    criticalPoints_points_isOnBoundary_,
-    criticalPoints_points_PLVertexIdentifiers_, triangulation);
+  if(ComputeCriticalPoints) {
+    std::vector<size_t> nCriticalPointsByDim{};
+    discreteGradient_.setCriticalPoints(
+      criticalPoints, nCriticalPointsByDim, criticalPoints_points_,
+      criticalPoints_points_cellDimensions_, criticalPoints_points_cellIds_,
+      criticalPoints_points_isOnBoundary_,
+      criticalPoints_points_PLVertexIdentifiers_, triangulation);
 
-  if(outputAscendingManifold_ != nullptr
-     && outputDescendingManifold_ != nullptr) {
-    discreteGradient_.setManifoldSize(
-      criticalPoints, nCriticalPointsByDim, maxSeeds, outputAscendingManifold_,
-      outputDescendingManifold_, criticalPoints_points_manifoldSize_);
+    if(ComputeAscendingSegmentation && ComputeDescendingSegmentation) {
+      discreteGradient_.setManifoldSize(criticalPoints, nCriticalPointsByDim,
+                                        maxSeeds, outputAscendingManifold_,
+                                        outputDescendingManifold_,
+                                        criticalPoints_points_manifoldSize_);
+    }
   }
 
   this->printMsg("Data-set ("
