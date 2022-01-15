@@ -189,34 +189,7 @@ namespace ttk {
     template <typename dataType, typename triangulationType>
     inline int execute(const dataType *const scalars,
                        const SimplexId *const offsets,
-                       const triangulationType &triangulation) {
-      this->clear();
-      this->discreteGradient_.setInputScalarField(scalars);
-      this->discreteGradient_.setInputOffsets(offsets);
-      switch(triangulation.getDimensionality()) {
-        case 1:
-        case 2:
-          return this->execute2D(offsets, triangulation);
-        case 3:
-          return this->execute3D(scalars, offsets, triangulation);
-      }
-      return 0;
-    }
-
-    /**
-     * Main function for computing the Morse-Smale complex on 2D triangulations.
-     */
-    template <typename triangulationType>
-    int execute2D(const SimplexId *const offsets,
-                  const triangulationType &triangulation);
-
-    /**
-     * Main function for computing the Morse-Smale complex on 3D triangulations.
-     */
-    template <typename dataType, typename triangulationType>
-    int execute3D(const dataType *const scalars,
-                  const SimplexId *const offsets,
-                  const triangulationType &triangulation);
+                       const triangulationType &triangulation);
 
     /**
      * Enable/Disable computation of the geometrical embedding of
@@ -1036,14 +1009,16 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
   return 0;
 }
 
-// ----------------------- //
-//       2D Methods        //
-// ----------------------- //
-
-template <typename triangulationType>
-int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
-                                      const triangulationType &triangulation) {
+template <typename dataType, typename triangulationType>
+int ttk::MorseSmaleComplex::execute(const dataType *const scalars,
+                                    const SimplexId *const offsets,
+                                    const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(scalars == nullptr) {
+    this->printErr("Input scalar field pointer is null.");
+    return -1;
+  }
+
   if(offsets == nullptr) {
     this->printErr("Input offset field pointer is null.");
     return -1;
@@ -1051,8 +1026,13 @@ int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
 #endif
   Timer t;
 
-  discreteGradient_.setThreadNumber(threadNumber_);
-  discreteGradient_.setDebugLevel(debugLevel_);
+  this->clear();
+  const auto dim = triangulation.getDimensionality();
+
+  this->discreteGradient_.setThreadNumber(threadNumber_);
+  this->discreteGradient_.setDebugLevel(debugLevel_);
+  this->discreteGradient_.setInputScalarField(scalars);
+  this->discreteGradient_.setInputOffsets(offsets);
   {
     Timer tmp;
     discreteGradient_.buildGradient<triangulationType>(triangulation);
@@ -1061,37 +1041,95 @@ int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
                    this->threadNumber_);
   }
 
-  std::vector<dcg::Cell> criticalPoints;
+  std::vector<dcg::Cell> criticalPoints{};
   discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
 
+  std::vector<std::vector<Separatrix>> separatrices1{};
+  std::vector<std::vector<std::vector<dcg::Cell>>> separatricesGeometry1;
+
   // 1-separatrices
-  if(ComputeDescendingSeparatrices1) {
+  if(dim > 1 && ComputeDescendingSeparatrices1) {
     Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
-    getDescendingSeparatrices1(
-      criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1(
-      separatrices, separatricesGeometry, offsets, triangulation);
+    separatrices1.emplace_back();
+    separatricesGeometry1.emplace_back();
+
+    getDescendingSeparatrices1(criticalPoints, separatrices1.back(),
+                               separatricesGeometry1.back(), triangulation);
 
     this->printMsg("Descending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
   }
 
-  if(ComputeAscendingSeparatrices1) {
+  if(dim > 1 && ComputeAscendingSeparatrices1) {
     Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
-    getAscendingSeparatrices1(
-      criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1(
-      separatrices, separatricesGeometry, offsets, triangulation);
+    separatrices1.emplace_back();
+    separatricesGeometry1.emplace_back();
+
+    getAscendingSeparatrices1(criticalPoints, separatrices1.back(),
+                              separatricesGeometry1.back(), triangulation);
 
     this->printMsg("Ascending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
   }
 
-  std::vector<SimplexId> maxSeeds;
+  // saddle-connectors
+  if(dim == 3 && ComputeSaddleConnectors) {
+    Timer tmp;
+    separatrices1.emplace_back();
+    separatricesGeometry1.emplace_back();
+
+    getSaddleConnectors(criticalPoints, separatrices1.back(),
+                        separatricesGeometry1.back(), triangulation);
+
+    this->printMsg("Saddle connectors computed", 1.0, tmp.getElapsedTime(),
+                   this->threadNumber_);
+  }
+
+  if(dim > 1
+     && (ComputeDescendingSeparatrices1 || ComputeAscendingSeparatrices1
+         || ComputeSaddleConnectors)) {
+    Timer tmp{};
+
+    flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
+    setSeparatrices1(
+      separatrices1[0], separatricesGeometry1[0], offsets, triangulation);
+
+    this->printMsg(
+      "1-separatrices set", 1.0, tmp.getElapsedTime(), this->threadNumber_);
+  }
+
+  // 2-separatrices
+  if(dim == 3 && ComputeDescendingSeparatrices2) {
+    Timer tmp;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
+    std::vector<std::set<SimplexId>> separatricesSaddles;
+    getDescendingSeparatrices2(criticalPoints, separatrices,
+                               separatricesGeometry, separatricesSaddles,
+                               triangulation);
+    setDescendingSeparatrices2(separatrices, separatricesGeometry,
+                               separatricesSaddles, offsets, triangulation);
+
+    this->printMsg("Descending 2-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_);
+  }
+
+  if(dim == 3 && ComputeAscendingSeparatrices2) {
+    Timer tmp;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
+    std::vector<std::set<SimplexId>> separatricesSaddles;
+    getAscendingSeparatrices2(criticalPoints, separatrices,
+                              separatricesGeometry, separatricesSaddles,
+                              triangulation);
+    setAscendingSeparatrices2(separatrices, separatricesGeometry,
+                              separatricesSaddles, offsets, triangulation);
+
+    this->printMsg("Ascending 2-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_);
+  }
+
+  std::vector<SimplexId> maxSeeds{};
   if(outputAscendingManifold_ != nullptr
      || outputDescendingManifold_ != nullptr) {
     Timer tmp;
@@ -1128,173 +1166,6 @@ int ttk::MorseSmaleComplex::execute2D(const SimplexId *const offsets,
 
   if(outputAscendingManifold_ != nullptr
      && outputDescendingManifold_ != nullptr) {
-    discreteGradient_.setManifoldSize(
-      criticalPoints, nCriticalPointsByDim, maxSeeds, outputAscendingManifold_,
-      outputDescendingManifold_, criticalPoints_points_manifoldSize_);
-  }
-
-  this->printMsg("Data-set ("
-                   + std::to_string(triangulation.getNumberOfVertices())
-                   + " points) processed",
-                 1.0, t.getElapsedTime(), this->threadNumber_);
-
-  return 0;
-}
-
-// ----------------------- //
-//       3D Methods        //
-// ----------------------- //
-
-template <typename dataType, typename triangulationType>
-int ttk::MorseSmaleComplex::execute3D(const dataType *const scalars,
-                                      const SimplexId *const offsets,
-                                      const triangulationType &triangulation) {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(scalars == nullptr) {
-    this->printErr("Input scalar field pointer is null.");
-    return -1;
-  }
-
-  if(offsets == nullptr) {
-    this->printErr("Input offset field pointer is null.");
-    return -1;
-  }
-#endif
-  Timer t;
-
-  discreteGradient_.setThreadNumber(threadNumber_);
-  discreteGradient_.setDebugLevel(debugLevel_);
-  {
-    Timer tmp;
-    discreteGradient_.buildGradient<triangulationType>(triangulation);
-
-    this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
-                   this->threadNumber_);
-  }
-
-  std::vector<dcg::Cell> criticalPoints;
-  discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
-
-  std::vector<std::vector<Separatrix>> separatrices1{};
-  std::vector<std::vector<std::vector<dcg::Cell>>> separatricesGeometry1;
-
-  // 1-separatrices
-  if(ComputeDescendingSeparatrices1) {
-    Timer tmp;
-    separatrices1.emplace_back();
-    separatricesGeometry1.emplace_back();
-
-    getDescendingSeparatrices1(criticalPoints, separatrices1.back(),
-                               separatricesGeometry1.back(), triangulation);
-
-    this->printMsg("Descending 1-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
-  }
-
-  if(ComputeAscendingSeparatrices1) {
-    Timer tmp;
-    separatrices1.emplace_back();
-    separatricesGeometry1.emplace_back();
-
-    getAscendingSeparatrices1(criticalPoints, separatrices1.back(),
-                              separatricesGeometry1.back(), triangulation);
-
-    this->printMsg("Ascending 1-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
-  }
-
-  // saddle-connectors
-  if(ComputeSaddleConnectors) {
-    Timer tmp;
-    separatrices1.emplace_back();
-    separatricesGeometry1.emplace_back();
-
-    getSaddleConnectors(criticalPoints, separatrices1.back(),
-                        separatricesGeometry1.back(), triangulation);
-
-    this->printMsg("Saddle connectors computed", 1.0, tmp.getElapsedTime(),
-                   this->threadNumber_);
-  }
-
-  if(ComputeDescendingSeparatrices1 || ComputeAscendingSeparatrices1
-     || ComputeSaddleConnectors) {
-    Timer tmp{};
-
-    flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
-    setSeparatrices1(
-      separatrices1[0], separatricesGeometry1[0], offsets, triangulation);
-
-    this->printMsg(
-      "1-separatrices set", 1.0, tmp.getElapsedTime(), this->threadNumber_);
-  }
-
-  // 2-separatrices
-  if(ComputeDescendingSeparatrices2) {
-    Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
-    std::vector<std::set<SimplexId>> separatricesSaddles;
-    getDescendingSeparatrices2(criticalPoints, separatrices,
-                               separatricesGeometry, separatricesSaddles,
-                               triangulation);
-    setDescendingSeparatrices2(separatrices, separatricesGeometry,
-                               separatricesSaddles, offsets, triangulation);
-
-    this->printMsg("Descending 2-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
-  }
-
-  if(ComputeAscendingSeparatrices2) {
-    Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
-    std::vector<std::set<SimplexId>> separatricesSaddles;
-    getAscendingSeparatrices2(criticalPoints, separatrices,
-                              separatricesGeometry, separatricesSaddles,
-                              triangulation);
-    setAscendingSeparatrices2(separatrices, separatricesGeometry,
-                              separatricesSaddles, offsets, triangulation);
-
-    this->printMsg("Ascending 2-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
-  }
-
-  std::vector<SimplexId> maxSeeds;
-  if(outputAscendingManifold_ != nullptr
-     || outputDescendingManifold_ != nullptr) {
-    Timer tmp;
-
-    SimplexId numberOfMaxima{};
-    SimplexId numberOfMinima{};
-
-    if(outputAscendingManifold_ != nullptr)
-      setAscendingSegmentation(criticalPoints, maxSeeds,
-                               outputAscendingManifold_, numberOfMaxima,
-                               triangulation);
-
-    if(outputDescendingManifold_ != nullptr)
-      setDescendingSegmentation(criticalPoints, outputDescendingManifold_,
-                                numberOfMinima, triangulation);
-
-    if(outputAscendingManifold_ != nullptr
-       && outputDescendingManifold_ != nullptr
-       && outputMorseSmaleManifold_ != nullptr)
-      setFinalSegmentation(numberOfMaxima, numberOfMinima,
-                           outputAscendingManifold_, outputDescendingManifold_,
-                           outputMorseSmaleManifold_, triangulation);
-
-    this->printMsg(
-      "Segmentation computed", 1.0, tmp.getElapsedTime(), this->threadNumber_);
-  }
-
-  std::vector<size_t> nCriticalPointsByDim;
-  discreteGradient_.setCriticalPoints(
-    criticalPoints, nCriticalPointsByDim, criticalPoints_points_,
-    criticalPoints_points_cellDimensions_, criticalPoints_points_cellIds_,
-    criticalPoints_points_isOnBoundary_,
-    criticalPoints_points_PLVertexIdentifiers_, triangulation);
-
-  if(outputAscendingManifold_ and outputDescendingManifold_) {
     discreteGradient_.setManifoldSize(
       criticalPoints, nCriticalPointsByDim, maxSeeds, outputAscendingManifold_,
       outputDescendingManifold_, criticalPoints_points_manifoldSize_);
