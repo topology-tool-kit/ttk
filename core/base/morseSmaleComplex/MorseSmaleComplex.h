@@ -106,12 +106,11 @@ namespace ttk {
      * @pre MorseSmaleComplex::preconditionTriangulation must be
      * called prior to this.
      */
-    template <typename dataType, typename triangulationType>
+    template <typename triangulationType>
     inline int execute(OutputCriticalPoints &outCP,
                        Output1Separatrices &outSeps1,
                        Output2Separatrices &outSeps2,
                        OutputManifold &outManifold,
-                       const dataType *const scalars,
                        const SimplexId *const offsets,
                        const triangulationType &triangulation);
 
@@ -373,20 +372,14 @@ namespace ttk {
 //  Execute method  //
 // ---------------- //
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                                     Output1Separatrices &outSeps1,
                                     Output2Separatrices &outSeps2,
                                     OutputManifold &outManifold,
-                                    const dataType *const scalars,
                                     const SimplexId *const offsets,
                                     const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(scalars == nullptr) {
-    this->printErr("Input scalar field pointer is null.");
-    return -1;
-  }
-
   if(offsets == nullptr) {
     this->printErr("Input offset field pointer is null.");
     return -1;
@@ -401,11 +394,10 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
 
   this->discreteGradient_.setThreadNumber(threadNumber_);
   this->discreteGradient_.setDebugLevel(debugLevel_);
-  this->discreteGradient_.setInputScalarField(scalars);
   this->discreteGradient_.setInputOffsets(offsets);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<triangulationType>(triangulation);
+    this->discreteGradient_.buildGradient(triangulation);
 
     this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_);

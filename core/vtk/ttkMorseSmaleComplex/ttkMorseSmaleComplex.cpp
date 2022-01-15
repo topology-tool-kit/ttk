@@ -61,9 +61,8 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
   const int dimensionality = triangulation.getDimensionality();
   const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
 
-  const int ret
-    = this->execute(criticalPoints_, separatrices1_, separatrices2_,
-                    segmentations_, scalars, inputOffsets, triangulation);
+  const int ret = this->execute(criticalPoints_, separatrices1_, separatrices2_,
+                                segmentations_, inputOffsets, triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
