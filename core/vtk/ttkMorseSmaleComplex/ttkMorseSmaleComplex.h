@@ -133,6 +133,15 @@ public:
   vtkSetMacro(ComputeFinalSegmentation, bool);
   vtkGetMacro(ComputeFinalSegmentation, bool);
 
+  vtkSetMacro(IterationThreshold, int);
+  vtkGetMacro(IterationThreshold, int);
+
+  vtkSetMacro(ReturnSaddleConnectors, int);
+  vtkGetMacro(ReturnSaddleConnectors, int);
+
+  vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
+  vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
+
 protected:
   template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,
@@ -152,6 +161,7 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField{};
+  int IterationThreshold{-1};
   OutputCriticalPoints criticalPoints_{};
   Output1Separatrices separatrices1_{};
   Output2Separatrices separatrices2_{};

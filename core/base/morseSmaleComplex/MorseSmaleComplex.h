@@ -106,11 +106,12 @@ namespace ttk {
      * @pre MorseSmaleComplex::preconditionTriangulation must be
      * called prior to this.
      */
-    template <typename triangulationType>
+    template <typename dataType, typename triangulationType>
     inline int execute(OutputCriticalPoints &outCP,
                        Output1Separatrices &outSeps1,
                        Output2Separatrices &outSeps2,
                        OutputManifold &outManifold,
+                       const dataType *const scalars,
                        const SimplexId *const offsets,
                        const triangulationType &triangulation);
 
@@ -151,6 +152,37 @@ namespace ttk {
       this->ComputeAscendingSegmentation = doAscending;
       this->ComputeDescendingSegmentation = doDescending;
       this->ComputeFinalSegmentation = doMorseSmale;
+    }
+
+    /**
+     * Set the threshold for the iterative gradient reversal process.
+     * Disable thresholding with -1 (default).
+     */
+    int setIterationThreshold(const int iterationThreshold) {
+      discreteGradient_.setIterationThreshold(iterationThreshold);
+      return 0;
+    }
+
+    /**
+     * Enable/Disable post-processing gradient reversal of
+     * the (saddle,...,saddle) vpaths under a given persistence
+     * threshold (disabled by default).
+     */
+    int setReturnSaddleConnectors(const bool state) {
+      ReturnSaddleConnectors = state;
+      discreteGradient_.setReturnSaddleConnectors(state);
+      return 0;
+    }
+
+    /**
+     * Set the threshold value for post-processing of
+     * (saddle,...,saddle) vpaths gradient reversal
+     * (default value is 0.0).
+     */
+    int setSaddleConnectorsPersistenceThreshold(const double threshold) {
+      SaddleConnectorsPersistenceThreshold = threshold;
+      discreteGradient_.setSaddleConnectorsPersistenceThreshold(threshold);
+      return 0;
     }
 
     /**
@@ -365,6 +397,9 @@ namespace ttk {
     bool ComputeAscendingSegmentation{true};
     bool ComputeDescendingSegmentation{true};
     bool ComputeFinalSegmentation{true};
+
+    bool ReturnSaddleConnectors{false};
+    double SaddleConnectorsPersistenceThreshold{};
   };
 } // namespace ttk
 
@@ -372,14 +407,20 @@ namespace ttk {
 //  Execute method  //
 // ---------------- //
 
-template <typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                                     Output1Separatrices &outSeps1,
                                     Output2Separatrices &outSeps2,
                                     OutputManifold &outManifold,
+                                    const dataType *const scalars,
                                     const SimplexId *const offsets,
                                     const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(scalars == nullptr) {
+    this->printErr("Input scalar field pointer is null.");
+    return -1;
+  }
+
   if(offsets == nullptr) {
     this->printErr("Input offset field pointer is null.");
     return -1;
@@ -394,8 +435,13 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
 
   this->discreteGradient_.setThreadNumber(threadNumber_);
   this->discreteGradient_.setDebugLevel(debugLevel_);
+  this->discreteGradient_.setInputScalarField(scalars);
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.buildGradient(triangulation);
+
+  if(dim == 3 && ReturnSaddleConnectors) {
+    discreteGradient_.reverseGradient<dataType>(triangulation);
+  }
 
   std::vector<dcg::Cell> criticalPoints{};
   discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
