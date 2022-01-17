@@ -226,55 +226,24 @@ int main(int argc, char **argv) {
   // 7. computing the Morse-Smale complex
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
-  std::vector<std::array<float, 3>> criticalPoints_points;
-  std::vector<char> criticalPoints_points_cellDimensions;
-  std::vector<ttk::SimplexId> criticalPoints_points_cellIds;
-  std::vector<char> criticalPoints_points_isOnBoundary;
-  std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize;
+  ttk::MorseSmaleComplex::OutputCriticalPoints outCriticalPoints{};
   // 1-separatrices
-  ttk::SimplexId separatrices1_numberOfPoints{};
-  std::vector<float> separatrices1_points;
-  std::vector<char> separatrices1_points_smoothingMask;
-  std::vector<char> separatrices1_points_cellDimensions;
-  std::vector<ttk::SimplexId> separatrices1_points_cellIds;
-  ttk::SimplexId separatrices1_numberOfCells{};
-  std::vector<ttk::SimplexId> separatrices1_cells_connectivity;
-  std::vector<ttk::SimplexId> separatrices1_cells_sourceIds;
-  std::vector<ttk::SimplexId> separatrices1_cells_destinationIds;
-  std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds;
-  std::vector<char> separatrices1_cells_separatrixTypes;
-  std::vector<char> separatrices1_cells_isOnBoundary;
-  std::vector<ttk::SimplexId> separatrices1_cells_separatrixFunctionMaxima;
-  std::vector<ttk::SimplexId> separatrices1_cells_separatrixFunctionMinima;
+  ttk::MorseSmaleComplex::Output1Separatrices out1Separatrices{};
+  // 2-separatrices
+  ttk::MorseSmaleComplex::Output2Separatrices out2Separatrices{};
   // segmentation
   std::vector<ttk::SimplexId> ascendingSegmentation(
     triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1),
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
-  morseSmaleComplex.preconditionTriangulation(&triangulation);
-  morseSmaleComplex.setInputScalarField(simplifiedHeight.data());
-  morseSmaleComplex.setInputOffsets(simplifiedOrder.data());
-  morseSmaleComplex.setOutputMorseComplexes(ascendingSegmentation.data(),
-                                            descendingSegmentation.data(),
-                                            mscSegmentation.data());
-  morseSmaleComplex.setOutputCriticalPoints(
-    &criticalPoints_points, &criticalPoints_points_cellDimensions,
-    &criticalPoints_points_cellIds, &criticalPoints_points_isOnBoundary,
-    &criticalPoints_points_PLVertexIdentifiers,
-    &criticalPoints_points_manifoldSize);
-  morseSmaleComplex.setOutputSeparatrices1(
-    &separatrices1_numberOfPoints, &separatrices1_points,
-    &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
-    &separatrices1_points_cellIds, &separatrices1_numberOfCells,
-    &separatrices1_cells_connectivity, &separatrices1_cells_sourceIds,
-    &separatrices1_cells_destinationIds, &separatrices1_cells_separatrixIds,
-    &separatrices1_cells_separatrixTypes,
-    &separatrices1_cells_separatrixFunctionMaxima,
-    &separatrices1_cells_separatrixFunctionMinima,
-    &separatrices1_cells_isOnBoundary);
+  ttk::MorseSmaleComplex::OutputManifold outSegmentation{
+    ascendingSegmentation.data(), descendingSegmentation.data(),
+    mscSegmentation.data()};
 
-  morseSmaleComplex.execute<float>(triangulation);
+  morseSmaleComplex.preconditionTriangulation(&triangulation);
+  morseSmaleComplex.execute(
+    outCriticalPoints, out1Separatrices, out2Separatrices, outSegmentation,
+    simplifiedHeight.data(), simplifiedOrder.data(), triangulation);
 
   // save the output
   save(pointSet, triangleSetCo, triangleSetOff, "output.off");
