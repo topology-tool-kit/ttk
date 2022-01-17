@@ -1457,6 +1457,11 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
   SimplexId &numberOfMaxima,
   const triangulationType &triangulation) const {
 
+  if(morseSmaleManifold == nullptr) {
+    this->printErr("Could not compute ascending segmentation");
+    return 1;
+  }
+
   const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
   std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
 
@@ -1555,6 +1560,11 @@ int ttk::MorseSmaleComplex::setDescendingSegmentation(
   SimplexId &numberOfMinima,
   const triangulationType &triangulation) const {
 
+  if(morseSmaleManifold == nullptr) {
+    this->printErr("Could not compute descending segmentation");
+    return 1;
+  }
+
   const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
   std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
 
@@ -1626,6 +1636,12 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
   const SimplexId *const descendingManifold,
   SimplexId *const morseSmaleManifold,
   const triangulationType &triangulation) const {
+
+  if(ascendingManifold == nullptr || descendingManifold == nullptr
+     || morseSmaleManifold == nullptr) {
+    this->printErr("Could not compute final segmentation");
+    return 1;
+  }
 
   const size_t nVerts = triangulation.getNumberOfVertices();
 
