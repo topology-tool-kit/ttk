@@ -395,13 +395,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setThreadNumber(threadNumber_);
   this->discreteGradient_.setDebugLevel(debugLevel_);
   this->discreteGradient_.setInputOffsets(offsets);
-  {
-    Timer tmp;
-    this->discreteGradient_.buildGradient(triangulation);
-
-    this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
-                   this->threadNumber_);
-  }
+  this->discreteGradient_.buildGradient(triangulation);
 
   std::vector<dcg::Cell> criticalPoints{};
   discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
@@ -410,6 +404,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   std::vector<std::vector<std::vector<dcg::Cell>>> separatricesGeometry1;
 
   // 1-separatrices
+  Timer tm1sep{};
+
   if(dim > 1 && ComputeDescendingSeparatrices1) {
     Timer tmp;
     separatrices1.emplace_back();
@@ -418,8 +414,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     getDescendingSeparatrices1(criticalPoints, separatrices1.back(),
                                separatricesGeometry1.back(), triangulation);
 
-    this->printMsg("Descending 1-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
+    this->printMsg("  Descending 1-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
   if(dim > 1 && ComputeAscendingSeparatrices1) {
@@ -430,8 +427,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     getAscendingSeparatrices1(criticalPoints, separatrices1.back(),
                               separatricesGeometry1.back(), triangulation);
 
-    this->printMsg("Ascending 1-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
+    this->printMsg("  Ascending 1-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
   // saddle-connectors
@@ -443,8 +441,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     getSaddleConnectors(criticalPoints, separatrices1.back(),
                         separatricesGeometry1.back(), triangulation);
 
-    this->printMsg("Saddle connectors computed", 1.0, tmp.getElapsedTime(),
-                   this->threadNumber_);
+    this->printMsg("  Saddle connectors computed", 1.0, tmp.getElapsedTime(),
+                   this->threadNumber_, debug::LineMode::NEW,
+                   debug::Priority::DETAIL);
   }
 
   if(dim > 1
@@ -456,11 +455,17 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     setSeparatrices1(outSeps1, separatrices1[0], separatricesGeometry1[0],
                      offsets, triangulation);
 
-    this->printMsg(
-      "1-separatrices set", 1.0, tmp.getElapsedTime(), this->threadNumber_);
+    this->printMsg("  1-separatrices set", 1.0, tmp.getElapsedTime(),
+                   this->threadNumber_, debug::LineMode::NEW,
+                   debug::Priority::DETAIL);
+
+    this->printMsg("1-separatrices computed", 1.0, tm1sep.getElapsedTime(),
+                   this->threadNumber_);
   }
 
   // 2-separatrices
+  Timer tm2sep{};
+
   if(dim == 3 && ComputeDescendingSeparatrices2) {
     Timer tmp;
     std::vector<Separatrix> separatrices;
@@ -472,8 +477,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     setDescendingSeparatrices2(outSeps2, separatrices, separatricesGeometry,
                                separatricesSaddles, offsets, triangulation);
 
-    this->printMsg("Descending 2-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
+    this->printMsg("  Descending 2-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
   if(dim == 3 && ComputeAscendingSeparatrices2) {
@@ -487,9 +493,13 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     setAscendingSeparatrices2(outSeps2, separatrices, separatricesGeometry,
                               separatricesSaddles, offsets, triangulation);
 
-    this->printMsg("Ascending 2-separatrices computed", 1.0,
-                   tmp.getElapsedTime(), this->threadNumber_);
+    this->printMsg("  Ascending 2-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
   }
+
+  this->printMsg("2-separatrices computed", 1.0, tm2sep.getElapsedTime(),
+                 this->threadNumber_);
 
   std::vector<SimplexId> maxSeeds{};
   if(ComputeAscendingSegmentation || ComputeDescendingSegmentation) {
@@ -1462,6 +1472,8 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
     return 1;
   }
 
+  Timer tm{};
+
   const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
   std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
 
@@ -1550,6 +1562,10 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
     morseSmaleManifold[i] = morseSmaleManifoldOnCells[starId];
   }
 
+  this->printMsg("  Ascending segmentation computed", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
+
   return 0;
 }
 
@@ -1564,6 +1580,8 @@ int ttk::MorseSmaleComplex::setDescendingSegmentation(
     this->printErr("Could not compute descending segmentation");
     return 1;
   }
+
+  Timer tm{};
 
   const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
   std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
@@ -1625,6 +1643,10 @@ int ttk::MorseSmaleComplex::setDescendingSegmentation(
     }
   }
 
+  this->printMsg("  Descending segmentation computed", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
+
   return 0;
 }
 
@@ -1642,6 +1664,8 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
     this->printErr("Could not compute final segmentation");
     return 1;
   }
+
+  Timer tm{};
 
   const size_t nVerts = triangulation.getNumberOfVertices();
 
@@ -1684,6 +1708,10 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
   for(size_t i = 0; i < nVerts; ++i) {
     morseSmaleManifold[i] = sparseToDenseRegionId[morseSmaleManifold[i]];
   }
+
+  this->printMsg("  Final segmentation computed", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 
   return 0;
 }
