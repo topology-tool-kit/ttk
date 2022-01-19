@@ -47,6 +47,12 @@ public:
   vtkSetMacro(InputIsADistanceMatrix, bool);
   vtkGetMacro(InputIsADistanceMatrix, bool);
 
+  vtkSetMacro(OutputDimension, int);
+  vtkGetMacro(OutputDimension, int);
+
+  vtkSetMacro(Epsilon, double);
+  vtkGetMacro(Epsilon, double);
+
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
@@ -55,6 +61,15 @@ public:
 
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
+
+  vtkSetMacro(XColumn, const std::string &);
+  vtkGetMacro(XColumn, std::string);
+
+  vtkSetMacro(YColumn, const std::string &);
+  vtkGetMacro(YColumn, std::string);
+
+  vtkSetMacro(ZColumn, const std::string &);
+  vtkGetMacro(ZColumn, std::string);
 
 protected:
   ttkRipsComplex();
@@ -71,4 +86,7 @@ private:
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
   std::vector<std::string> ScalarFields{};
+  std::string XColumn{};
+  std::string YColumn{};
+  std::string ZColumn{};
 };

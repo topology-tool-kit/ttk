@@ -24,7 +24,15 @@ namespace ttk {
   class RipsComplex : virtual public Debug {
   public:
     RipsComplex();
-    int execute() const;
+
+    int execute(std::vector<LongSimplexId> &connectivity,
+                const std::vector<std::vector<double>> &inputMatrix) const;
+
+  protected:
+    /** Dimension of the generated complex */
+    int OutputDimension{2};
+    /** Distance threshold */
+    double Epsilon{1.0};
   };
 
 } // namespace ttk

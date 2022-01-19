@@ -85,6 +85,77 @@
       </StringVectorProperty>
 
       <IntVectorProperty
+        name="OutputDimension"
+        label="Output Dimension"
+        command="SetOutputDimension"
+        number_of_elements="1"
+        default_values="2">
+        <Documentation>
+          Cell dimension of the generated Rips complex.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="Epsilon"
+          label="Diameter (epsilon)"
+          command="SetEpsilon"
+          number_of_elements="1"
+          default_values="1.0"
+          >
+        <Documentation>
+          Distance threshold above with no cell should be generated.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty command="SetXColumn"
+                            name="XColumn"
+                            number_of_elements="1"
+                            default_values="Component_0"
+                            panel_visibility="default">
+        <ArrayListDomain name="array_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>This property specifies which data array is going to be
+        used as the X coordinate in the generated polydata
+        dataset.</Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty command="SetYColumn"
+                            name="YColumn"
+                            number_of_elements="1"
+                            default_values="Component_1"
+                            panel_visibility="default">
+        <ArrayListDomain name="array_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>This property specifies which data array is going to be
+        used as the Y coordinate in the generated polydata
+        dataset.</Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty command="SetZColumn"
+                            name="ZColumn"
+                            number_of_elements="1"
+                            default_values="Component_2"
+                            panel_visibility="default">
+        <ArrayListDomain name="array_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>This property specifies which data array is going to be
+        used as the Z coordinate in the generated polydata
+        dataset.</Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
         name="KeepAllDataArrays"
         label="Keep All Data Arrays"
         command="SetKeepAllDataArrays"
@@ -102,24 +173,8 @@
         number_of_elements="1"
         default_values="0">
         <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="CompositeDecorator">
-            <Expression type="or">
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="Method"
-                                       value="0" />
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="Method"
-                                       value="2" />
-            </Expression>
-          </PropertyWidgetDecorator>
-        </Hints>
         <Documentation>
-          The Spectral Embedding and MDS methods can be fed directly
-          with dissimilarity (distance) matrices instead of raw point
-          clouds.
+          The RipsComplex filter can be fed directly with Distance Matrices.
         </Documentation>
       </IntVectorProperty>
 
@@ -129,9 +184,11 @@
         <Property name="SelectFieldsWithRegexp" />
         <Property name="ScalarFields" />
         <Property name="Regexp" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="OutputDimension" />
+        <Property name="Epsilon" />
+        <Property name="XColumn" />
+        <Property name="YColumn" />
+        <Property name="ZColumn" />
         <Property name="KeepAllDataArrays" />
         <Property name="InputDistanceMatrix" />
       </PropertyGroup>
