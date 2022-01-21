@@ -25,7 +25,7 @@ namespace ttk {
                                              const size_t nPoints) const;
 
   protected:
-    std::string DistanceType{};
+    std::string DistanceType{"2"};
   };
 } // namespace ttk
 
