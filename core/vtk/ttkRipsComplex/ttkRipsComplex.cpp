@@ -2,6 +2,7 @@
 #include <ttkUtils.h>
 
 #include <vtkAbstractArray.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
@@ -113,8 +114,9 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   std::vector<ttk::LongSimplexId> vec_connectivity{};
+  std::vector<double> diameters{};
 
-  this->execute(vec_connectivity, inputMatrix);
+  this->execute(vec_connectivity, diameters, inputMatrix);
 
   const auto nCells = vec_connectivity.size() / (this->OutputDimension + 1);
   vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
@@ -154,6 +156,20 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
 
   output->SetPoints(points);
   output->SetCells(getCellType(this->OutputDimension), cells);
+
+  // compute cell diameters
+  vtkNew<vtkDoubleArray> cellDiameters{};
+  cellDiameters->SetNumberOfTuples(nCells);
+  cellDiameters->SetName("Diameter");
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nCells; ++i) {
+    cellDiameters->SetTuple1(i, diameters[i]);
+  }
+
+  output->GetCellData()->AddArray(cellDiameters);
 
   if(this->KeepAllDataArrays) {
     auto pd = output->GetPointData();
