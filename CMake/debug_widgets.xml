@@ -36,7 +36,7 @@
 
 <DoubleVectorProperty
                    name="CompactTriangulationCacheSize"
-                   label="Compact Triangulation Cache Size"
+                   label="Cache"
                    command="SetCompactTriangulationCacheSize"
                    panel_visibility='advanced'
                    number_of_elements="1"
