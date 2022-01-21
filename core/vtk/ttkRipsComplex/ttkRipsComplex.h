@@ -81,7 +81,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool InputIsADistanceMatrix{true};
   bool KeepAllDataArrays{true};
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};

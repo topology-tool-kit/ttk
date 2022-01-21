@@ -103,7 +103,7 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
     arrays.push_back(input->GetColumnByName(s.data()));
   }
 
-  std::vector<std::vector<double>> inputMatrix(arrays.size());
+  std::vector<std::vector<double>> inputMatrix(numberOfRows);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP

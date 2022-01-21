@@ -5,4 +5,5 @@ ttk_add_base_library(ripsComplex
     RipsComplex.h
   DEPENDS
     common
+    lDistanceMatrix
   )

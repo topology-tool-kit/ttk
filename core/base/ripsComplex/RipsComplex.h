@@ -30,10 +30,16 @@ namespace ttk {
                 const std::vector<std::vector<double>> &inputMatrix) const;
 
   protected:
+    int computeDistanceMatrix(
+      std::vector<std::vector<double>> &distanceMatrix,
+      const std::vector<std::vector<double>> &inputMatrix) const;
+
     /** Dimension of the generated complex */
     int OutputDimension{2};
     /** Distance threshold */
     double Epsilon{1.0};
+    /** If input matrix is a distance matrix (compute it otherwise) */
+    bool InputIsADistanceMatrix{false};
   };
 
 } // namespace ttk
