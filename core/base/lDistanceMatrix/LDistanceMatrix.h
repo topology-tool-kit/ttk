@@ -21,8 +21,9 @@ namespace ttk {
     }
 
     template <typename T>
-    std::vector<std::vector<double>> execute(const std::vector<void *> &inputs,
-                                             const size_t nPoints) const;
+    int execute(std::vector<std::vector<double>> &output,
+                const std::vector<const T *> &inputs,
+                const size_t nPoints) const;
 
   protected:
     std::string DistanceType{"2"};
@@ -30,12 +31,12 @@ namespace ttk {
 } // namespace ttk
 
 template <typename T>
-std::vector<std::vector<double>>
-  ttk::LDistanceMatrix::execute(const std::vector<void *> &inputs,
-                                const size_t nPoints) const {
+int ttk::LDistanceMatrix::execute(std::vector<std::vector<double>> &output,
+                                  const std::vector<const T *> &inputs,
+                                  const size_t nPoints) const {
 
   const auto nInputs = inputs.size();
-  std::vector<std::vector<double>> distMatrix(nInputs);
+  output.resize(nInputs);
 
   LDistance worker{};
   worker.setThreadNumber(this->threadNumber_);
@@ -43,20 +44,13 @@ std::vector<std::vector<double>>
   // compute matrix upper triangle
   // (some parallelism inside the LDistance computation)
   for(size_t i = 0; i < nInputs; ++i) {
-    auto &distCol = distMatrix[i];
+    auto &distCol = output[i];
     distCol.resize(nInputs);
-    // get pointer to scalar field of input i
-    const auto inputDataPtr1{static_cast<T *>(inputs[i])};
     for(size_t j = i + 1; j < nInputs; ++j) {
-      // get pointer to scalar field of input jc
-      const auto inputDataPtr2{static_cast<T *>(inputs[j])};
-      // empty output
-      T *outputPtr{};
-      // call execute
-      worker.execute(
-        inputDataPtr1, inputDataPtr2, outputPtr, this->DistanceType, nPoints);
+      // call execute with nullptr output
+      worker.execute(inputs[i], inputs[j], {}, this->DistanceType, nPoints);
       // store result
-      distMatrix[i][j] = worker.getResult();
+      output[i][j] = worker.getResult();
     }
   }
 
@@ -66,9 +60,9 @@ std::vector<std::vector<double>>
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; ++i) {
     for(size_t j = i + 1; j < nInputs; ++j) {
-      distMatrix[j][i] = distMatrix[i][j];
+      output[j][i] = output[i][j];
     }
   }
 
-  return distMatrix;
+  return 0;
 }
