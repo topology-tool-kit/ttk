@@ -56,16 +56,7 @@ int ttk::LDistanceMatrix::execute(std::vector<std::vector<double>> &output,
       worker.execute(inputs[i], inputs[j], {}, this->DistanceType, nPoints);
       // store result
       output[i][j] = worker.getResult();
-    }
-  }
-
-  // distance matrix is symmetric
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nInputs; ++i) {
-    for(size_t j = i + 1; j < nInputs; ++j) {
-      output[j][i] = output[i][j];
+      output[j][i] = worker.getResult();
     }
   }
 
