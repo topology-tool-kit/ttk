@@ -160,7 +160,7 @@ namespace ttk {
       return &currentData_.tet2sheet3_;
     }
 
-    const std::vector<SimplexId> *getEdgeTypes() const {
+    const std::vector<char> *getEdgeTypes() const {
       return &currentData_.edgeTypes_;
     }
 
@@ -282,7 +282,7 @@ namespace ttk {
       double simplificationThreshold_{};
 
       std::vector<SimplexId> edge2sheet1_{};
-      std::vector<SimplexId> edgeTypes_{};
+      std::vector<char> edgeTypes_{};
       std::vector<SimplexId> tet2sheet3_{};
       std::vector<SimplexId> vertex2sheet0_{};
       std::vector<SimplexId> vertex2sheet3_{};

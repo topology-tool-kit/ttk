@@ -1280,16 +1280,12 @@ int SubLevelSetTree::getPersistenceDiagram(
   diagram.resize(pairs->size());
 
   for(int i = 0; i < (int)pairs->size(); i++) {
-    if((minimumList_) && (!maximumList_)) {
-      // join tree
-      diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
-      diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
-    } else if((maximumList_) && (!minimumList_)) {
+    if((maximumList_) && (!minimumList_)) {
       // split tree
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.second];
     } else {
-      // contour tree
+      // join tree or contour tree
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
     }
@@ -2893,16 +2889,12 @@ int ContourTree::getPersistenceDiagram(
   diagram.resize(pairs->size());
 
   for(int i = 0; i < (int)pairs->size(); i++) {
-    if((minimumList_) && (!maximumList_)) {
-      // join tree
-      diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
-      diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
-    } else if((maximumList_) && (!minimumList_)) {
+    if((maximumList_) && (!minimumList_)) {
       // split tree
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.second];
     } else {
-      // contour tree
+      // join tree or contour tree
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
     }

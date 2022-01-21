@@ -25,6 +25,11 @@ namespace ttk {
 
     virtual ~ExplicitTriangulation();
 
+    ExplicitTriangulation(const ExplicitTriangulation &) = default;
+    ExplicitTriangulation(ExplicitTriangulation &&) = default;
+    ExplicitTriangulation &operator=(const ExplicitTriangulation &) = default;
+    ExplicitTriangulation &operator=(ExplicitTriangulation &&) = default;
+
     int clear();
 
     size_t footprint(size_t size = 0) const;

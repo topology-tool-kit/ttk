@@ -85,7 +85,7 @@ jobs:
   lint-code:
     runs-on: ubuntu-20.04
     env:
-      CLANG_TIDY: clang-tidy-11
+      CLANG_TIDY: clang-tidy-12
     strategy:
       matrix:
         config:
@@ -137,13 +137,13 @@ jobs:
           -DTTK_BUILD_DOCUMENTATION=TRUE \
           $GITHUB_WORKSPACE
 
-    - name: Use clang-tidy to lint code [NOT ENFORCED]
+    - name: Use clang-tidy to lint code
       if: matrix.config.tidy
       run: |
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 $CLANG_TIDY -p build 2> /dev/null
+        | xargs -n1 $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
 
     - name: Use Clang static analyzer
       if: matrix.config.sa

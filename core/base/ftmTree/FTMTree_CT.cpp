@@ -181,9 +181,8 @@ int FTMTree_CT::combine() {
         node1 = makeNode(currentNode);
 
         // check if leaf
-        if(!currentNode->getNumberOfDownSuperArcs())
-          mt_data_.leaves->emplace_back(node1);
-        else if(!currentNode->getNumberOfUpSuperArcs())
+        if(!currentNode->getNumberOfDownSuperArcs()
+           || !currentNode->getNumberOfUpSuperArcs())
           mt_data_.leaves->emplace_back(node1);
       }
 

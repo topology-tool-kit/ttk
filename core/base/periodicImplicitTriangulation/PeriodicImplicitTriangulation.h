@@ -26,6 +26,15 @@ namespace ttk {
     PeriodicImplicitTriangulation();
     ~PeriodicImplicitTriangulation();
 
+    PeriodicImplicitTriangulation(const PeriodicImplicitTriangulation &)
+      = default;
+    PeriodicImplicitTriangulation(PeriodicImplicitTriangulation &&) = default;
+    PeriodicImplicitTriangulation &
+      operator=(const PeriodicImplicitTriangulation &)
+      = default;
+    PeriodicImplicitTriangulation &operator=(PeriodicImplicitTriangulation &&)
+      = default;
+
     int getCellEdgeInternal(const SimplexId &cellId,
                             const int &id,
                             SimplexId &edgeId) const override;

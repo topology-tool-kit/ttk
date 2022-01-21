@@ -80,8 +80,10 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
       }
     }
   } else
-    for(vtkIdType i = 0; i < N * n; ++i)
+    for(vtkIdType i = 0; i < N * n; ++i) {
+      // NOLINTNEXTLINE (bugprone-signed-char-misuse)
       output_ptr[i] = (OutputFieldType)input_ptr[i];
+    }
 
   output->GetPointData()->AddArray(outputData);
 

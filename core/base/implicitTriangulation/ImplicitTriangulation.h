@@ -23,6 +23,11 @@ namespace ttk {
     ImplicitTriangulation();
     ~ImplicitTriangulation();
 
+    ImplicitTriangulation(const ImplicitTriangulation &) = default;
+    ImplicitTriangulation(ImplicitTriangulation &&) = default;
+    ImplicitTriangulation &operator=(const ImplicitTriangulation &) = default;
+    ImplicitTriangulation &operator=(ImplicitTriangulation &&) = default;
+
     int getGridDimensions(std::vector<int> &dimensions) override {
 
       dimensions.resize(3);
