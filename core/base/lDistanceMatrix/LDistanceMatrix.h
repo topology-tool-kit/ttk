@@ -40,6 +40,7 @@ int ttk::LDistanceMatrix::execute(std::vector<std::vector<double>> &output,
 
   LDistance worker{};
   worker.setThreadNumber(1);
+  worker.setPrintRes(false);
 
   for(size_t i = 0; i < nInputs; ++i) {
     output[i].resize(nInputs);
