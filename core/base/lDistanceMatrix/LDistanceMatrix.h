@@ -39,13 +39,18 @@ int ttk::LDistanceMatrix::execute(std::vector<std::vector<double>> &output,
   output.resize(nInputs);
 
   LDistance worker{};
-  worker.setThreadNumber(this->threadNumber_);
+  worker.setThreadNumber(1);
+
+  for(size_t i = 0; i < nInputs; ++i) {
+    output[i].resize(nInputs);
+  }
 
   // compute matrix upper triangle
-  // (some parallelism inside the LDistance computation)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_) collapse(2) \
+  firstprivate(worker)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; ++i) {
-    auto &distCol = output[i];
-    distCol.resize(nInputs);
     for(size_t j = i + 1; j < nInputs; ++j) {
       // call execute with nullptr output
       worker.execute(inputs[i], inputs[j], {}, this->DistanceType, nPoints);
