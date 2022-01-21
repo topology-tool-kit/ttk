@@ -113,7 +113,7 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
-  std::vector<ttk::LongSimplexId> vec_connectivity{};
+  std::vector<ttk::SimplexId> vec_connectivity{};
   std::vector<double> diameters{};
 
   this->execute(vec_connectivity, diameters, inputMatrix);

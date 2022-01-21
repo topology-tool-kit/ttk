@@ -27,7 +27,7 @@ int ttk::RipsComplex::computeDistanceMatrix(
   return 0;
 }
 
-void computeEdges(std::vector<ttk::LongSimplexId> &connectivity,
+void computeEdges(std::vector<ttk::SimplexId> &connectivity,
                   std::vector<double> &diameters,
                   const double epsilon,
                   const std::vector<std::vector<double>> &distanceMatrix) {
@@ -42,14 +42,15 @@ void computeEdges(std::vector<ttk::LongSimplexId> &connectivity,
   }
 }
 
-void computeTriangles(std::vector<ttk::LongSimplexId> &connectivity,
+void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
                       std::vector<double> &diameters,
                       const double epsilon,
                       const std::vector<std::vector<double>> &distanceMatrix) {
-  using ttk::LongSimplexId;
+
+  std::vector<std::array<ttk::SimplexId, 3>> triangles{};
 
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {
-    std::vector<size_t> candidates{};
+    std::vector<ttk::SimplexId> candidates{};
     for(size_t j = i + 1; j < distanceMatrix.size(); ++j) {
       if(distanceMatrix[i][j] < epsilon) {
         candidates.emplace_back(j);
@@ -58,15 +59,17 @@ void computeTriangles(std::vector<ttk::LongSimplexId> &connectivity,
     if(candidates.size() < 2) {
       continue;
     }
-    std::array<LongSimplexId, 3> verts{static_cast<LongSimplexId>(i), -1, -1};
     for(size_t j = 0; j < candidates.size(); ++j) {
-      verts[1] = candidates[j];
-      double diam = distanceMatrix[verts[0]][verts[1]];
+      double diam = distanceMatrix[i][candidates[j]];
       for(size_t k = j + 1; k < candidates.size(); ++k) {
-        verts[2] = candidates[k];
-        diam = std::max(diam, distanceMatrix[verts[1]][verts[2]]);
+        const auto jkd{distanceMatrix[candidates[j]][candidates[k]]};
+        if(diam < jkd) {
+          diam = jkd;
+        }
         if(diam < epsilon) {
-          connectivity.insert(connectivity.end(), verts.begin(), verts.end());
+          connectivity.emplace_back(static_cast<ttk::SimplexId>(i));
+          connectivity.emplace_back(candidates[j]);
+          connectivity.emplace_back(candidates[k]);
           diameters.emplace_back(diam);
         }
       }
@@ -74,14 +77,15 @@ void computeTriangles(std::vector<ttk::LongSimplexId> &connectivity,
   }
 }
 
-void computeTetras(std::vector<ttk::LongSimplexId> &connectivity,
+void computeTetras(std::vector<ttk::SimplexId> &connectivity,
                    std::vector<double> &diameters,
                    const double epsilon,
                    const std::vector<std::vector<double>> &distanceMatrix) {
-  using ttk::LongSimplexId;
+
+  std::vector<std::array<ttk::SimplexId, 4>> tetras{};
 
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {
-    std::vector<size_t> candidates{};
+    std::vector<ttk::SimplexId> candidates{};
     for(size_t j = i + 1; j < distanceMatrix.size(); ++j) {
       if(distanceMatrix[i][j] < epsilon) {
         candidates.emplace_back(j);
@@ -90,26 +94,32 @@ void computeTetras(std::vector<ttk::LongSimplexId> &connectivity,
     if(candidates.size() < 3) {
       continue;
     }
-    std::array<LongSimplexId, 4> verts{
-      static_cast<LongSimplexId>(i), -1, -1, -1};
     for(size_t j = 0; j < candidates.size(); ++j) {
-      verts[1] = candidates[j];
-      double diam = distanceMatrix[verts[0]][verts[1]];
+      double diam = distanceMatrix[i][candidates[j]];
       for(size_t k = j + 1; k < candidates.size(); ++k) {
-        verts[2] = candidates[k];
-        diam = std::max(diam, distanceMatrix[verts[1]][verts[2]]);
+        const auto jkd{distanceMatrix[candidates[j]][candidates[k]]};
+        if(diam < jkd) {
+          diam = jkd;
+        }
         if(diam > epsilon) {
           continue;
         }
         for(size_t l = k + 1; l < candidates.size(); ++l) {
-          verts[3] = candidates[l];
-          diam = std::max(diam, distanceMatrix[verts[0]][verts[3]]);
-          diam = std::max(diam, distanceMatrix[verts[1]][verts[3]]);
-          diam = std::max(diam, distanceMatrix[verts[2]][verts[3]]);
+          const auto jld{distanceMatrix[candidates[j]][candidates[l]]};
+          if(diam < jld) {
+            diam = jld;
+          }
+          const auto kld{distanceMatrix[candidates[k]][candidates[l]]};
+          if(diam < kld) {
+            diam = kld;
+          }
           if(diam > epsilon) {
             continue;
           }
-          connectivity.insert(connectivity.end(), verts.begin(), verts.end());
+          connectivity.emplace_back(static_cast<ttk::SimplexId>(i));
+          connectivity.emplace_back(candidates[j]);
+          connectivity.emplace_back(candidates[k]);
+          connectivity.emplace_back(candidates[l]);
           diameters.emplace_back(diam);
         }
       }
@@ -118,7 +128,7 @@ void computeTetras(std::vector<ttk::LongSimplexId> &connectivity,
 }
 
 int ttk::RipsComplex::execute(
-  std::vector<LongSimplexId> &connectivity,
+  std::vector<SimplexId> &connectivity,
   std::vector<double> &diameters,
   const std::vector<std::vector<double>> &inputMatrix) const {
 

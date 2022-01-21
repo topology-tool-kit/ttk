@@ -25,7 +25,7 @@ namespace ttk {
   public:
     RipsComplex();
 
-    int execute(std::vector<LongSimplexId> &connectivity,
+    int execute(std::vector<SimplexId> &connectivity,
                 std::vector<double> &diameters,
                 const std::vector<std::vector<double>> &inputMatrix) const;
 
