@@ -25,6 +25,15 @@ namespace ttk {
   public:
     RipsComplex();
 
+    /**
+     * @brief Main entry point
+     *
+     * @param[out] connectivity Cell connectivity array (VTK format)
+     * @param[out] diameters Cell diameters
+     * @param[out] diamStats Min, mean and max cell diameters around point
+     * @param[in] inputMatrix Either coordinates array or distance matrix
+     * @param[out] density Gaussian density array on points
+     */
     int execute(std::vector<SimplexId> &connectivity,
                 std::vector<double> &diameters,
                 std::array<double *const, 3> diamStats,
@@ -32,15 +41,35 @@ namespace ttk {
                 double *const density = nullptr) const;
 
   protected:
+    /**
+     * @brief Compute distance matrix from coordinates matrix
+     *
+     * @param[out] distanceMatrix Output distance matrix
+     * @param[in] inputMatrix Input coordinates matrix
+     */
     int computeDistanceMatrix(
       std::vector<std::vector<double>> &distanceMatrix,
       const std::vector<std::vector<double>> &inputMatrix) const;
 
+    /**
+     * @brief Compute diameter statistics on points
+     *
+     * @param[in] nPoints Number of input points
+     * @param[out] diamStats Min, mean and max cell diameters around point
+     * @param[in] connectivity Cell connectivity array (pre-filled)
+     * @param[in] cellDiameters Cell diameters
+     */
     int computeDiameterStats(const SimplexId nPoints,
                              std::array<double *const, 3> diamStats,
                              const std::vector<SimplexId> &connectivity,
                              const std::vector<double> &cellDiameters) const;
 
+    /**
+     * @brief Compute Gaussian density on points
+     *
+     * @param[out] density Gaussian density array on points
+     * @param[in] distanceMatrix Distance matrix between points
+     */
     int computeGaussianDensity(
       double *const density,
       const std::vector<std::vector<double>> &distanceMatrix) const;
