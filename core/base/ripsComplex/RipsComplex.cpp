@@ -24,8 +24,9 @@ int ttk::RipsComplex::computeDistanceMatrix(
   worker.setDebugLevel(this->debugLevel_);
   worker.execute(distanceMatrix, inputPtrs, inputMatrix[0].size());
 
-  this->printMsg(
-    "Computed distance matrix", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Computed distance matrix", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
   return 0;
 }
 
@@ -223,6 +224,8 @@ int ttk::RipsComplex::execute(
     return 1;
   }
 
+  Timer tm_rips{};
+
   if(this->OutputDimension == 1) {
     computeEdges(connectivity, diameters, this->Epsilon, distanceMatrix);
   } else if(this->OutputDimension == 2) {
@@ -231,6 +234,10 @@ int ttk::RipsComplex::execute(
     computeTetras(connectivity, diameters, this->Epsilon, distanceMatrix);
   }
 
+  this->printMsg("Generated Rips complex from distance matrix", 1.0,
+                 tm_rips.getElapsedTime(), this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
+
   this->computeDiameterStats(
     distanceMatrix.size(), diamStats, connectivity, diameters);
 
@@ -238,6 +245,6 @@ int ttk::RipsComplex::execute(
     this->computeGaussianDensity(density, distanceMatrix);
   }
 
-  this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
   return 0;
 }
