@@ -115,8 +115,25 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
 
   std::vector<ttk::SimplexId> vec_connectivity{};
   std::vector<double> diameters{};
+  // PointData diameter statistics (min, mean, max)
+  vtkNew<vtkDoubleArray> diamMin{}, diamMean{}, diamMax{};
+  diamMin->SetName("MinDiameter");
+  diamMean->SetName("MeanDiameter");
+  diamMax->SetName("MaxDiameter");
+  diamMin->SetNumberOfTuples(numberOfRows);
+  diamMean->SetNumberOfTuples(numberOfRows);
+  diamMax->SetNumberOfTuples(numberOfRows);
+  vtkNew<vtkDoubleArray> gaussianDensity{};
+  gaussianDensity->SetName("GaussianDensity");
+  gaussianDensity->SetNumberOfTuples(numberOfRows);
 
-  this->execute(vec_connectivity, diameters, inputMatrix);
+  this->execute(vec_connectivity, diameters,
+                std::array<double *const, 3>{
+                  ttkUtils::GetPointer<double>(diamMin),
+                  ttkUtils::GetPointer<double>(diamMean),
+                  ttkUtils::GetPointer<double>(diamMax),
+                },
+                inputMatrix, ttkUtils::GetPointer<double>(gaussianDensity));
 
   const auto nCells = vec_connectivity.size() / (this->OutputDimension + 1);
   vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
@@ -169,6 +186,12 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
     cellDiameters->SetTuple1(i, diameters[i]);
   }
 
+  output->GetPointData()->AddArray(diamMin);
+  output->GetPointData()->AddArray(diamMean);
+  output->GetPointData()->AddArray(diamMax);
+  if(this->ComputeGaussianDensity) {
+    output->GetPointData()->AddArray(gaussianDensity);
+  }
   output->GetCellData()->AddArray(cellDiameters);
 
   if(this->KeepAllDataArrays) {

@@ -59,6 +59,12 @@ public:
   vtkSetMacro(SelectFieldsWithRegexp, bool);
   vtkGetMacro(SelectFieldsWithRegexp, bool);
 
+  vtkSetMacro(StdDev, double);
+  vtkGetMacro(StdDev, double);
+
+  vtkSetMacro(ComputeGaussianDensity, bool);
+  vtkGetMacro(ComputeGaussianDensity, bool);
+
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 

@@ -178,6 +178,36 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name="ComputeGaussianDensity"
+        label="Compute Gaussian Density"
+        command="SetComputeGaussianDensity"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Should Gaussian density be computed on every vertex?
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="StdDev"
+          label="Standard Deviation"
+          command="SetStdDev"
+          number_of_elements="1"
+          default_values="1.0"
+          >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ComputeGaussianDensity"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Gaussian density standard deviation
+        </Documentation>
+      </DoubleVectorProperty>
+
+
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
@@ -191,6 +221,8 @@
         <Property name="ZColumn" />
         <Property name="KeepAllDataArrays" />
         <Property name="InputDistanceMatrix" />
+        <Property name="ComputeGaussianDensity" />
+        <Property name="StdDev" />
       </PropertyGroup>
 
       <Hints>

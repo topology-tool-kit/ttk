@@ -1,6 +1,8 @@
 #include <LDistanceMatrix.h>
 #include <RipsComplex.h>
 
+#include <limits>
+
 ttk::RipsComplex::RipsComplex() {
   this->setDebugMsgPrefix("RipsComplex");
 }
@@ -127,10 +129,84 @@ void computeTetras(std::vector<ttk::SimplexId> &connectivity,
   }
 }
 
+int ttk::RipsComplex::computeGaussianDensity(
+  double *const density,
+  const std::vector<std::vector<double>> &distanceMatrix) const {
+
+  const auto sq = [](const double a) -> double { return a * a; };
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < distanceMatrix.size(); ++i) {
+    density[i] = 0.0;
+    for(size_t j = 0; j < distanceMatrix.size(); ++j) {
+      if(i == j) {
+        density[i] += 1.0;
+      }
+      density[i]
+        += std::exp(-sq(distanceMatrix[i][j]) / (2.0 * sq(this->StdDev)));
+    }
+  }
+
+  return 0;
+}
+
+int ttk::RipsComplex::computeDiameterStats(
+  const SimplexId nPoints,
+  std::array<double *const, 3> diamStats,
+  const std::vector<SimplexId> &connectivity,
+  const std::vector<double> &cellDiameters) const {
+
+  const auto nCells{cellDiameters.size()};
+  if(nCells != connectivity.size() / (this->OutputDimension + 1)) {
+    this->printErr("Cell number mismatch");
+    return -1;
+  }
+
+  std::vector<size_t> nCellsAroundVert(nPoints, 0);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < nPoints; ++i) {
+    diamStats[0][i] = this->Epsilon; // min
+    diamStats[1][i] = 0.0; // mean
+    diamStats[2][i] = 0.0; // max
+  }
+
+  for(size_t i = 0; i < nCells; ++i) {
+    for(int j = 0; j < this->OutputDimension + 1; ++j) {
+      const auto p{connectivity[i * (this->OutputDimension + 1) + j]};
+      nCellsAroundVert[p]++;
+      diamStats[0][p] = std::min(diamStats[0][p], cellDiameters[i]);
+      diamStats[1][p] += cellDiameters[i];
+      diamStats[2][p] = std::max(diamStats[2][p], cellDiameters[i]);
+    }
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < nPoints; ++i) {
+    if(nCellsAroundVert[i] == 0) {
+      diamStats[0][i] = 0.0; // min
+      diamStats[1][i] = 0.0; // mean
+      diamStats[2][i] = 0.0; // max
+    } else {
+      diamStats[1][i] /= nCellsAroundVert[i];
+    }
+  }
+
+  return 0;
+}
+
 int ttk::RipsComplex::execute(
   std::vector<SimplexId> &connectivity,
   std::vector<double> &diameters,
-  const std::vector<std::vector<double>> &inputMatrix) const {
+  std::array<double *const, 3> diamStats,
+  const std::vector<std::vector<double>> &inputMatrix,
+  double *const density) const {
 
   Timer tm{};
 
@@ -147,6 +223,13 @@ int ttk::RipsComplex::execute(
     computeTriangles(connectivity, diameters, this->Epsilon, distanceMatrix);
   } else if(this->OutputDimension == 3) {
     computeTetras(connectivity, diameters, this->Epsilon, distanceMatrix);
+  }
+
+  this->computeDiameterStats(
+    distanceMatrix.size(), diamStats, connectivity, diameters);
+
+  if(this->ComputeGaussianDensity) {
+    this->computeGaussianDensity(density, distanceMatrix);
   }
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
