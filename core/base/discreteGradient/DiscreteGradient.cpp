@@ -205,61 +205,45 @@ int DiscreteGradient::getCriticalPointMap(
 }
 
 int DiscreteGradient::setManifoldSize(
-  const std::vector<Cell> &criticalPoints,
+  const size_t nCritPoints,
   const std::vector<size_t> &nCriticalPointsByDim,
-  const std::vector<SimplexId> &maxSeeds,
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   std::vector<SimplexId> &manifoldSize) const {
 
-  const auto nCritPoints = criticalPoints.size();
-  const auto nDimensions = getNumberOfDimensions();
+  // in the manifoldSize vector, critical points are sorted first by
+  // dim then by index
+
+  // ascendingManifold (resp. descendingManifold) region indices are
+  // numbered from 0 to #maxima == nCriticalPointsByDim.back()
+  // (resp. #minina == nCriticalPointsByDim[0])
+
+  if(nCritPoints == 0
+     || (nCriticalPointsByDim[0] == 0 && nCriticalPointsByDim.back() == 0)) {
+    // no critical points || no extrema
+    return 0;
+  }
 
   manifoldSize.resize(nCritPoints, 0);
 
-  // pre-compute size of descending manifold cells
-  std::map<SimplexId, size_t> descendingCellsSize{};
-  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-    descendingCellsSize[descendingManifold[i]]++;
+  // descending manifold cells size
+  if(nCriticalPointsByDim[0] > 0) {
+    for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+      if(descendingManifold[i] != -1) {
+        manifoldSize[descendingManifold[i]]++;
+      }
+    }
   }
 
-  // minima
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
-    const Cell &cell = criticalPoints[i];
-    const SimplexId seedId = descendingManifold[cell.id_];
-    manifoldSize[i] = descendingCellsSize[seedId];
-  }
+  if(nCriticalPointsByDim.back() > 0) {
+    // index of first maximum in critical points array
+    const auto nFirstMaximum{nCritPoints - nCriticalPointsByDim.back()};
 
-  // index of first maximum in critical points array
-  size_t nFirstMaximum{};
-  for(int i = 0; i < nDimensions - 1; ++i) {
-    nFirstMaximum += nCriticalPointsByDim[i];
-  }
-
-  // pre-compute size of ascending manifold cells
-  std::map<SimplexId, size_t> ascendingCellsSize{};
-  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-    ascendingCellsSize[ascendingManifold[i]]++;
-  }
-
-  // pre-compute maximum SimplexId -> index in maxSeeds
-  std::map<SimplexId, size_t> seedsPos{};
-  for(size_t i = 0; i < maxSeeds.size(); ++i) {
-    seedsPos[maxSeeds[i]] = i;
-  }
-
-  // maxima
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = nFirstMaximum; i < nCritPoints; ++i) {
-    const Cell &cell = criticalPoints[i];
-    if(seedsPos.find(cell.id_) != seedsPos.end()) {
-      const auto seedId = seedsPos[cell.id_];
-      manifoldSize[i] = ascendingCellsSize[seedId];
+    // ascending manifold cells size
+    for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+      if(ascendingManifold[i] != -1) {
+        manifoldSize[ascendingManifold[i] + nFirstMaximum]++;
+      }
     }
   }
 

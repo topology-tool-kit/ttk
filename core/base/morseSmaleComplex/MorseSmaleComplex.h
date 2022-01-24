@@ -547,7 +547,6 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->printMsg("2-separatrices computed", 1.0, tm2sep.getElapsedTime(),
                  this->threadNumber_);
 
-  std::vector<SimplexId> maxSeeds{};
   if(ComputeAscendingSegmentation || ComputeDescendingSegmentation) {
     Timer tmp;
 
@@ -555,6 +554,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     SimplexId numberOfMinima{};
 
     if(ComputeAscendingSegmentation) {
+      std::vector<SimplexId> maxSeeds{};
       setAscendingSegmentation(criticalPoints, maxSeeds, outManifold.ascending_,
                                numberOfMaxima, triangulation);
     }
@@ -576,14 +576,13 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(ComputeCriticalPoints) {
     std::vector<size_t> nCriticalPointsByDim{};
     discreteGradient_.setCriticalPoints(
-
       criticalPoints, nCriticalPointsByDim, outCP.points_,
       outCP.cellDimensions_, outCP.cellIds_, outCP.isOnBoundary_,
       outCP.PLVertexIdentifiers_, triangulation);
 
     if(ComputeAscendingSegmentation && ComputeDescendingSegmentation) {
       discreteGradient_.setManifoldSize(
-        criticalPoints, nCriticalPointsByDim, maxSeeds, outManifold.ascending_,
+        criticalPoints.size(), nCriticalPointsByDim, outManifold.ascending_,
         outManifold.descending_, outCP.manifoldSize_);
     }
   }
