@@ -127,13 +127,18 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
   gaussianDensity->SetName("GaussianDensity");
   gaussianDensity->SetNumberOfTuples(numberOfRows);
 
-  this->execute(vec_connectivity, diameters,
-                std::array<double *const, 3>{
-                  ttkUtils::GetPointer<double>(diamMin),
-                  ttkUtils::GetPointer<double>(diamMean),
-                  ttkUtils::GetPointer<double>(diamMax),
-                },
-                inputMatrix, ttkUtils::GetPointer<double>(gaussianDensity));
+  const auto ret
+    = this->execute(vec_connectivity, diameters,
+                    std::array<double *const, 3>{
+                      ttkUtils::GetPointer<double>(diamMin),
+                      ttkUtils::GetPointer<double>(diamMean),
+                      ttkUtils::GetPointer<double>(diamMax),
+                    },
+                    inputMatrix, ttkUtils::GetPointer<double>(gaussianDensity));
+
+  if(ret != 0) {
+    return 0;
+  }
 
   const auto nCells = vec_connectivity.size() / (this->OutputDimension + 1);
   vtkNew<vtkIdTypeArray> offsets{}, connectivity{};

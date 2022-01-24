@@ -217,6 +217,12 @@ int ttk::RipsComplex::execute(
   const auto &distanceMatrix
     = this->InputIsADistanceMatrix ? inputMatrix : distanceMatrix_;
 
+  if(distanceMatrix.empty()
+     || distanceMatrix.size() != distanceMatrix[0].size()) {
+    this->printErr("Invalid distance matrix");
+    return 1;
+  }
+
   if(this->OutputDimension == 1) {
     computeEdges(connectivity, diameters, this->Epsilon, distanceMatrix);
   } else if(this->OutputDimension == 2) {
