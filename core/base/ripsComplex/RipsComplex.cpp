@@ -30,17 +30,50 @@ int ttk::RipsComplex::computeDistanceMatrix(
   return 0;
 }
 
+template <size_t n>
+struct LocCell {
+  double diam;
+  std::array<ttk::SimplexId, n> verts;
+};
+
 void computeEdges(std::vector<ttk::SimplexId> &connectivity,
                   std::vector<double> &diameters,
                   const double epsilon,
-                  const std::vector<std::vector<double>> &distanceMatrix) {
+                  const std::vector<std::vector<double>> &distanceMatrix,
+                  const int nThreads) {
+
+  std::vector<std::vector<LocCell<1>>> edges(distanceMatrix.size());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {
     for(size_t j = i + 1; j < distanceMatrix.size(); ++j) {
       if(distanceMatrix[i][j] < epsilon) {
-        connectivity.emplace_back(i);
-        connectivity.emplace_back(j);
-        diameters.emplace_back(distanceMatrix[i][j]);
+        edges[i].emplace_back(LocCell<1>{
+          distanceMatrix[i][j],
+          std::array<ttk::SimplexId, 1>{static_cast<ttk::SimplexId>(j)}});
       }
+    }
+  }
+
+  std::vector<size_t> psum(edges.size() + 1);
+  for(size_t i = 0; i < edges.size(); ++i) {
+    psum[i + 1] = psum[i] + edges[i].size();
+  }
+
+  const auto nCells{psum.back()};
+  diameters.resize(nCells);
+  connectivity.resize(2 * nCells);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < edges.size(); ++i) {
+    for(size_t j = 0; j < edges[i].size(); ++j) {
+      connectivity[2 * (psum[i] + j) + 0] = static_cast<ttk::SimplexId>(i);
+      connectivity[2 * (psum[i] + j) + 1] = edges[i][j].verts[0];
+      diameters[psum[i] + j] = edges[i][j].diam;
     }
   }
 }
@@ -48,34 +81,57 @@ void computeEdges(std::vector<ttk::SimplexId> &connectivity,
 void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
                       std::vector<double> &diameters,
                       const double epsilon,
-                      const std::vector<std::vector<double>> &distanceMatrix) {
+                      const std::vector<std::vector<double>> &distanceMatrix,
+                      const int nThreads) {
 
-  std::vector<std::array<ttk::SimplexId, 3>> triangles{};
+  std::vector<std::vector<LocCell<2>>> triangles(distanceMatrix.size());
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {
-    std::vector<ttk::SimplexId> candidates{};
     for(size_t j = i + 1; j < distanceMatrix.size(); ++j) {
-      if(distanceMatrix[i][j] < epsilon) {
-        candidates.emplace_back(j);
+      if(distanceMatrix[i][j] > epsilon) {
+        continue;
+      }
+      for(size_t k = j + 1; k < distanceMatrix.size(); ++k) {
+        if(distanceMatrix[i][k] > epsilon || distanceMatrix[j][k] > epsilon) {
+          continue;
+        }
+        auto diam{distanceMatrix[i][j]};
+        if(diam < distanceMatrix[i][k]) {
+          diam = distanceMatrix[i][k];
+        }
+        if(diam < distanceMatrix[j][k]) {
+          diam = distanceMatrix[j][k];
+        }
+        triangles[i].emplace_back(
+          LocCell<2>{diam, std::array<ttk::SimplexId, 2>{
+                             static_cast<ttk::SimplexId>(j),
+                             static_cast<ttk::SimplexId>(k),
+                           }});
       }
     }
-    if(candidates.size() < 2) {
-      continue;
-    }
-    for(size_t j = 0; j < candidates.size(); ++j) {
-      double diam = distanceMatrix[i][candidates[j]];
-      for(size_t k = j + 1; k < candidates.size(); ++k) {
-        const auto jkd{distanceMatrix[candidates[j]][candidates[k]]};
-        if(diam < jkd) {
-          diam = jkd;
-        }
-        if(diam < epsilon) {
-          connectivity.emplace_back(static_cast<ttk::SimplexId>(i));
-          connectivity.emplace_back(candidates[j]);
-          connectivity.emplace_back(candidates[k]);
-          diameters.emplace_back(diam);
-        }
-      }
+  }
+
+  std::vector<size_t> psum(triangles.size() + 1);
+  for(size_t i = 0; i < triangles.size(); ++i) {
+    psum[i + 1] = psum[i] + triangles[i].size();
+  }
+
+  const auto nCells{psum.back()};
+  diameters.resize(nCells);
+  connectivity.resize(3 * nCells);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < triangles.size(); ++i) {
+    for(size_t j = 0; j < triangles[i].size(); ++j) {
+      connectivity[3 * (psum[i] + j) + 0] = static_cast<ttk::SimplexId>(i);
+      connectivity[3 * (psum[i] + j) + 1] = triangles[i][j].verts[0];
+      connectivity[3 * (psum[i] + j) + 2] = triangles[i][j].verts[1];
+      diameters[psum[i] + j] = triangles[i][j].diam;
     }
   }
 }
@@ -83,49 +139,74 @@ void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
 void computeTetras(std::vector<ttk::SimplexId> &connectivity,
                    std::vector<double> &diameters,
                    const double epsilon,
-                   const std::vector<std::vector<double>> &distanceMatrix) {
+                   const std::vector<std::vector<double>> &distanceMatrix,
+                   const int nThreads) {
 
-  std::vector<std::array<ttk::SimplexId, 4>> tetras{};
+  std::vector<std::vector<LocCell<3>>> tetras(distanceMatrix.size());
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {
-    std::vector<ttk::SimplexId> candidates{};
     for(size_t j = i + 1; j < distanceMatrix.size(); ++j) {
-      if(distanceMatrix[i][j] < epsilon) {
-        candidates.emplace_back(j);
+      if(distanceMatrix[i][j] > epsilon) {
+        continue;
       }
-    }
-    if(candidates.size() < 3) {
-      continue;
-    }
-    for(size_t j = 0; j < candidates.size(); ++j) {
-      double diam = distanceMatrix[i][candidates[j]];
-      for(size_t k = j + 1; k < candidates.size(); ++k) {
-        const auto jkd{distanceMatrix[candidates[j]][candidates[k]]};
-        if(diam < jkd) {
-          diam = jkd;
-        }
-        if(diam > epsilon) {
+      for(size_t k = j + 1; k < distanceMatrix.size(); ++k) {
+        if(distanceMatrix[i][k] > epsilon || distanceMatrix[j][k] > epsilon) {
           continue;
         }
-        for(size_t l = k + 1; l < candidates.size(); ++l) {
-          const auto jld{distanceMatrix[candidates[j]][candidates[l]]};
-          if(diam < jld) {
-            diam = jld;
-          }
-          const auto kld{distanceMatrix[candidates[k]][candidates[l]]};
-          if(diam < kld) {
-            diam = kld;
-          }
-          if(diam > epsilon) {
+        for(size_t l = k + 1; l < distanceMatrix.size(); ++l) {
+          if(distanceMatrix[i][l] > epsilon || distanceMatrix[j][l] > epsilon
+             || distanceMatrix[k][l] > epsilon) {
             continue;
           }
-          connectivity.emplace_back(static_cast<ttk::SimplexId>(i));
-          connectivity.emplace_back(candidates[j]);
-          connectivity.emplace_back(candidates[k]);
-          connectivity.emplace_back(candidates[l]);
-          diameters.emplace_back(diam);
+          auto diam{distanceMatrix[i][j]};
+          if(diam < distanceMatrix[i][k]) {
+            diam = distanceMatrix[i][k];
+          }
+          if(diam < distanceMatrix[i][l]) {
+            diam = distanceMatrix[i][l];
+          }
+          if(diam < distanceMatrix[j][k]) {
+            diam = distanceMatrix[j][k];
+          }
+          if(diam < distanceMatrix[j][l]) {
+            diam = distanceMatrix[j][l];
+          }
+          if(diam < distanceMatrix[k][l]) {
+            diam = distanceMatrix[k][l];
+          }
+          tetras[i].emplace_back(
+            LocCell<3>{diam, std::array<ttk::SimplexId, 3>{
+                               static_cast<ttk::SimplexId>(j),
+                               static_cast<ttk::SimplexId>(k),
+                               static_cast<ttk::SimplexId>(l),
+                             }});
         }
       }
+    }
+  }
+
+  std::vector<size_t> psum(tetras.size() + 1);
+  for(size_t i = 0; i < tetras.size(); ++i) {
+    psum[i + 1] = psum[i] + tetras[i].size();
+  }
+
+  const auto nCells{psum.back()};
+  diameters.resize(nCells);
+  connectivity.resize(4 * nCells);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < tetras.size(); ++i) {
+    for(size_t j = 0; j < tetras[i].size(); ++j) {
+      connectivity[4 * (psum[i] + j) + 0] = static_cast<ttk::SimplexId>(i);
+      connectivity[4 * (psum[i] + j) + 1] = tetras[i][j].verts[0];
+      connectivity[4 * (psum[i] + j) + 2] = tetras[i][j].verts[1];
+      connectivity[4 * (psum[i] + j) + 3] = tetras[i][j].verts[2];
+      diameters[psum[i] + j] = tetras[i][j].diam;
     }
   }
 }
@@ -227,11 +308,14 @@ int ttk::RipsComplex::execute(
   Timer tm_rips{};
 
   if(this->OutputDimension == 1) {
-    computeEdges(connectivity, diameters, this->Epsilon, distanceMatrix);
+    computeEdges(connectivity, diameters, this->Epsilon, distanceMatrix,
+                 this->threadNumber_);
   } else if(this->OutputDimension == 2) {
-    computeTriangles(connectivity, diameters, this->Epsilon, distanceMatrix);
+    computeTriangles(connectivity, diameters, this->Epsilon, distanceMatrix,
+                     this->threadNumber_);
   } else if(this->OutputDimension == 3) {
-    computeTetras(connectivity, diameters, this->Epsilon, distanceMatrix);
+    computeTetras(connectivity, diameters, this->Epsilon, distanceMatrix,
+                  this->threadNumber_);
   }
 
   this->printMsg("Generated Rips complex from distance matrix", 1.0,
