@@ -173,6 +173,10 @@
                                        mode="visibility"
                                        property="Method"
                                        value="3" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="4" />
             </Expression>
           </PropertyWidgetDecorator>
         </Hints>
@@ -581,6 +585,16 @@
         <Documentation>
         </Documentation>
       </StringVectorProperty>
+      
+      <StringVectorProperty name="iso_Metric"
+        label="Metric"
+        command="Setiso_Metric"
+        number_of_elements="1"
+        default_values="euclidean"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
 
       <IntVectorProperty name="pca_Copy"
         label="Copy"
@@ -776,6 +790,7 @@
         <Property name="iso_MaxIteration" />
         <Property name="iso_PathMethod" />
         <Property name="iso_NeighborsAlgorithm" />
+        <Property name="iso_Metric" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"
