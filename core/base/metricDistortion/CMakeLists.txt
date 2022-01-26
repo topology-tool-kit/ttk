@@ -1,0 +1,8 @@
+ttk_add_base_library(metricDistortion
+  SOURCES
+    MetricDistortion.cpp
+  HEADERS
+    MetricDistortion.h
+  DEPENDS
+    triangulation
+)

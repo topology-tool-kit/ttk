@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMetricDistortion" class="ttkMetricDistortion" label="TTK MetricDistortion">
+      <Documentation long_help="MetricDistortion Long" short_help="MetricDistortion Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="Surface"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Distance Matrix"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="InputArray" />
+      </PropertyGroup>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+
+      <!-- Create a UI group that contains all output parameter widgets (here only one) -->
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        <Property name="OutputArrayName" />
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
