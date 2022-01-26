@@ -85,6 +85,7 @@ public:
     if(b) {
       this->mds_Dissimilarity = "precomputed";
       this->se_Affinity = "precomputed";
+      this->tsne_Metric = "precomputed";
     }
     Modified();
   }

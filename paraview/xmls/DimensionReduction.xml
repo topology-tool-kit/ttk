@@ -169,6 +169,10 @@
                                        mode="visibility"
                                        property="Method"
                                        value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="3" />
             </Expression>
           </PropertyWidgetDecorator>
         </Hints>
