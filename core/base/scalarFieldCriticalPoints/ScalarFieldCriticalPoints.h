@@ -494,12 +494,12 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
     return (char)(CriticalType::Local_maximum);
   } else if(lowerComponentNumber == 1 && upperComponentNumber == 1) {
 
-    if(dimension_ == 3) {
+    if((dimension_ == 3) && (triangulation->isVertexOnBoundary(vertexId))) {
       // special case of boundary saddles
       if((isUpperOnBoundary) && (!isLowerOnBoundary))
+        return (char)(CriticalType::Saddle1);
+      if((!isUpperOnBoundary) && (isLowerOnBoundary))
         return (char)(CriticalType::Saddle2);
-      //       if((!isUpperOnBoundary)&&(isLowerOnBoundary))
-      //         return (char)(CriticalType::Saddle1);
     }
 
     // regular point
