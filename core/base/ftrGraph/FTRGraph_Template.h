@@ -208,9 +208,10 @@ namespace ttk {
 
           // each task uses its local forests
           for(idVertex v = lowerBound; v < upperBound; ++v) {
+            bool lBoundary = false, uBoundary = false;
             critPoints.getNumberOfLowerUpperComponents(
               v, scalars_.getOffsets(), mesh_.getTriangulation(),
-              valences_.lower[v], valences_.upper[v]);
+              valences_.lower[v], valences_.upper[v], lBoundary, uBoundary);
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {
