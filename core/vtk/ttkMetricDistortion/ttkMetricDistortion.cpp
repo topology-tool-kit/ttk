@@ -101,10 +101,30 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   vtkPolyData *inputSurface = vtkPolyData::GetData(inputVector[0]);
   if(!inputSurface)
     return 0;
-  vtkTable *distanceMatrix = vtkTable::GetData(inputVector[1]);
-
+  auto noPoints = inputSurface->GetNumberOfPoints();
+  std::vector<std::vector<double>> surfacePoints(noPoints, std::vector<double>(3));
+  for(unsigned int i = 0; i < noPoints; ++i) {
+    double point[3];
+    inputSurface->GetPoints()->GetPoint(i, point);
+    for(unsigned int j = 0; j < 3; ++j)
+      surfacePoints[i][j] = point[j];
+  }
+  
+  vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
+  std::vector<std::vector<double>> distanceMatrix;
+  if(distanceMatrixVTK) {
+    auto noRows = distanceMatrixVTK->GetNumberOfRows();
+    auto noCols = distanceMatrixVTK->GetNumberOfColumns();
+    distanceMatrix = std::vector<std::vector<double>>(noRows, std::vector<double>(noCols, 0.0));
+    for(unsigned int i = 0; i < noRows; ++i) 
+      for(unsigned int j = 0; j < noCols; ++j) 
+        distanceMatrix[i][j] = distanceMatrixVTK->GetColumn(j)
+                        ->GetVariantValue(i)
+                        .ToDouble();
+  }
+  
   // Get output object
-  auto outputSurface = vtkPolyData::GetData(outputVector, 0);
+  //auto outputSurface = vtkPolyData::GetData(outputVector, 0);
 
   // return success
   return 1;
