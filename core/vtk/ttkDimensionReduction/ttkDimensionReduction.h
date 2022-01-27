@@ -85,6 +85,8 @@ public:
     if(b) {
       this->mds_Dissimilarity = "precomputed";
       this->se_Affinity = "precomputed";
+      this->tsne_Metric = "precomputed";
+      this->iso_Metric = "precomputed";
     }
     Modified();
   }
@@ -190,6 +192,9 @@ public:
 
   vtkSetMacro(iso_NeighborsAlgorithm, const std::string &);
   vtkGetMacro(iso_NeighborsAlgorithm, std::string);
+
+  vtkSetMacro(iso_Metric, const std::string &);
+  vtkGetMacro(iso_Metric, std::string);
 
   // PCA
   vtkSetMacro(pca_Copy, bool);
