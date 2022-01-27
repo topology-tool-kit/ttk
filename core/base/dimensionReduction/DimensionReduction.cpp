@@ -277,6 +277,7 @@ int DimensionReduction::execute() const {
   PyList_Append(pISOParams, PyUnicode_FromString(iso_PathMethod.data()));
   PyList_Append(
     pISOParams, PyUnicode_FromString(iso_NeighborsAlgorithm.data()));
+  PyList_Append(pISOParams, PyUnicode_FromString(iso_Metric.data()));
 
   pPCAParams = PyList_New(0);
   PyList_Append(pPCAParams, PyBool_FromLong(pca_Copy));
