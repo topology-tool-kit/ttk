@@ -50,16 +50,10 @@
       <!-- INPUT PARAMETER WIDGETS -->
 
       <!-- Create a UI group that contains all input parameter widgets (here only one) -->
-      <PropertyGroup panel_widget="Line" label="Input Options">
-        <Property name="InputArray" />
-      </PropertyGroup>
 
       <!-- OUTPUT PARAMETER WIDGETS -->
 
       <!-- Create a UI group that contains all output parameter widgets (here only one) -->
-      <PropertyGroup panel_widget="Line" label="Output Options">
-        <Property name="OutputArrayName" />
-      </PropertyGroup>
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}

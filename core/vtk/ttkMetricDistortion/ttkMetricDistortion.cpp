@@ -2,8 +2,10 @@
 
 #include <vtkInformation.h>
 
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -97,34 +99,124 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 
+  // --------------------------------------------------------------------------
   // Get input object from input vector
+  // --------------------------------------------------------------------------
+  // Load Surface
   vtkPolyData *inputSurface = vtkPolyData::GetData(inputVector[0]);
   if(!inputSurface)
     return 0;
   auto noPoints = inputSurface->GetNumberOfPoints();
-  std::vector<std::vector<double>> surfacePoints(noPoints, std::vector<double>(3));
+  std::vector<std::vector<double>> surfacePoints(
+    noPoints, std::vector<double>(3));
   for(unsigned int i = 0; i < noPoints; ++i) {
     double point[3];
     inputSurface->GetPoints()->GetPoint(i, point);
     for(unsigned int j = 0; j < 3; ++j)
       surfacePoints[i][j] = point[j];
   }
-  
+  auto noCells = inputSurface->GetNumberOfCells();
+  std::vector<std::vector<int>> surfaceCells(noCells);
+  for(unsigned int i = 0; i < noCells; ++i) {
+    auto noCellPoints = inputSurface->GetCell(i)->GetNumberOfPoints();
+    surfaceCells[i] = std::vector<int>(noCellPoints);
+    for(unsigned int j = 0; j < noCellPoints; ++i)
+      surfaceCells[i][j] = inputSurface->GetCell(i)->GetPointId(j);
+  }
+
+  // Load Table
   vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
   std::vector<std::vector<double>> distanceMatrix;
   if(distanceMatrixVTK) {
     auto noRows = distanceMatrixVTK->GetNumberOfRows();
     auto noCols = distanceMatrixVTK->GetNumberOfColumns();
-    distanceMatrix = std::vector<std::vector<double>>(noRows, std::vector<double>(noCols, 0.0));
-    for(unsigned int i = 0; i < noRows; ++i) 
-      for(unsigned int j = 0; j < noCols; ++j) 
-        distanceMatrix[i][j] = distanceMatrixVTK->GetColumn(j)
-                        ->GetVariantValue(i)
-                        .ToDouble();
+    distanceMatrix = std::vector<std::vector<double>>(
+      noRows, std::vector<double>(noCols, 0.0));
+    for(unsigned int i = 0; i < noRows; ++i)
+      for(unsigned int j = 0; j < noCols; ++j)
+        distanceMatrix[i][j]
+          = distanceMatrixVTK->GetColumn(j)->GetVariantValue(i).ToDouble();
   }
-  
+
+  // --------------------------------------------------------------------------
+  // Call base
+  // --------------------------------------------------------------------------
+  std::vector<double> surfaceArea, metricArea, ratioArea;
+  computeSurfaceArea(surfacePoints, surfaceCells, distanceMatrix, surfaceArea,
+                     metricArea, ratioArea);
+
+  std::vector<double> surfaceDistance, metricDistance, ratioDistance;
+  computeSurfaceDistance(surfacePoints, surfaceCells, distanceMatrix,
+                         surfaceDistance, metricDistance, ratioDistance);
+
+  std::vector<double> surfaceCurvature, metricCurvature, ratioCurvature;
+  computeSurfaceCurvature(surfacePoints, surfaceCells, distanceMatrix,
+                          surfaceCurvature, metricCurvature, ratioCurvature);
+  // --------------------------------------------------------------------------
   // Get output object
-  //auto outputSurface = vtkPolyData::GetData(outputVector, 0);
+  // --------------------------------------------------------------------------
+  auto outputSurface = vtkPolyData::GetData(outputVector, 0);
+  outputSurface->DeepCopy(inputSurface);
+
+  vtkNew<vtkDoubleArray> surfaceCurvatureArray{};
+  surfaceCurvatureArray->SetName("SurfaceCurvature");
+  surfaceCurvatureArray->SetNumberOfTuples(noPoints);
+  vtkNew<vtkDoubleArray> metricCurvatureArray{};
+  metricCurvatureArray->SetName("MetricCurvature");
+  metricCurvatureArray->SetNumberOfTuples(noPoints);
+  vtkNew<vtkDoubleArray> ratioCurvatureArray{};
+  ratioCurvatureArray->SetName("RatioCurvautre");
+  ratioCurvatureArray->SetNumberOfTuples(noPoints);
+
+  for(unsigned int i = 0; i < noPoints; ++i) {
+    surfaceCurvatureArray->SetTuple1(i, surfaceCurvature[i]);
+    metricCurvatureArray->SetTuple1(i, metricCurvature[i]);
+    ratioCurvatureArray->SetTuple1(i, ratioCurvature[i]);
+  }
+
+  outputSurface->GetPointData()->AddArray(surfaceCurvatureArray);
+  if(distanceMatrix.size() != 0) {
+    outputSurface->GetPointData()->AddArray(metricCurvatureArray);
+    outputSurface->GetPointData()->AddArray(ratioCurvatureArray);
+  }
+
+  vtkNew<vtkDoubleArray> surfaceAreaArray{};
+  surfaceAreaArray->SetName("SurfaceArea");
+  surfaceAreaArray->SetNumberOfTuples(noCells);
+  vtkNew<vtkDoubleArray> metricAreaArray{};
+  metricAreaArray->SetName("MetricArea");
+  metricAreaArray->SetNumberOfTuples(noCells);
+  vtkNew<vtkDoubleArray> ratioAreaArray{};
+  ratioAreaArray->SetName("RatioArea");
+  ratioAreaArray->SetNumberOfTuples(noCells);
+
+  vtkNew<vtkDoubleArray> surfaceDistanceArray{};
+  surfaceDistanceArray->SetName("SurfaceDistance");
+  surfaceDistanceArray->SetNumberOfTuples(noCells);
+  vtkNew<vtkDoubleArray> metricDistanceArray{};
+  metricDistanceArray->SetName("MetricDistance");
+  metricDistanceArray->SetNumberOfTuples(noCells);
+  vtkNew<vtkDoubleArray> ratioDistanceArray{};
+  ratioDistanceArray->SetName("RatioDistance");
+  ratioDistanceArray->SetNumberOfTuples(noCells);
+
+  for(unsigned int i = 0; i < noPoints; ++i) {
+    surfaceAreaArray->SetTuple1(i, surfaceArea[i]);
+    metricAreaArray->SetTuple1(i, metricArea[i]);
+    ratioAreaArray->SetTuple1(i, ratioArea[i]);
+    surfaceDistanceArray->SetTuple1(i, surfaceDistance[i]);
+    metricDistanceArray->SetTuple1(i, metricDistance[i]);
+    ratioDistanceArray->SetTuple1(i, ratioDistance[i]);
+  }
+
+  outputSurface->GetCellData()->AddArray(surfaceAreaArray);
+  outputSurface->GetCellData()->AddArray(surfaceDistanceArray);
+  if(distanceMatrix.size() != 0) {
+    outputSurface->GetCellData()->AddArray(metricAreaArray);
+    outputSurface->GetCellData()->AddArray(ratioAreaArray);
+    outputSurface->GetCellData()->AddArray(metricDistanceArray);
+    outputSurface->GetCellData()->AddArray(ratioDistanceArray);
+  }
 
   // return success
   return 1;
