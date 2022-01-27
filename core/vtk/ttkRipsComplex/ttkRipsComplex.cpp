@@ -1,3 +1,4 @@
+#include <ttkMacros.h>
 #include <ttkRipsComplex.h>
 #include <ttkUtils.h>
 
@@ -141,7 +142,7 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   const auto nCells = vec_connectivity.size() / (this->OutputDimension + 1);
-  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+  vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
   offsets->SetNumberOfComponents(1);
   offsets->SetNumberOfTuples(nCells + 1);
   connectivity->SetNumberOfComponents(1);
@@ -161,8 +162,11 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
     connectivity->SetTuple1(i, vec_connectivity[i]);
   }
 
-  // gather arrays to make the PolyData
+  // gather arrays to make the UnstructuredGrid
   vtkNew<vtkCellArray> cells{};
+#ifndef TTK_ENABLE_64BIT_IDS
+  cells->Use32BitStorage();
+#endif // TTK_ENABLE_64BIT_IDS
   cells->SetData(offsets, connectivity);
 
   const auto getCellType = [](const SimplexId dim) -> int {
