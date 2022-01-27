@@ -3,7 +3,10 @@
 /// \author Mathieu Pont <mathieu.pont@lip6.fr>
 /// \date 2022.
 ///
-/// This module defines the %MetricDistortion class that computes TODO
+/// This module defines the %MetricDistortion class that computes distance,
+/// area and curvature information about a surface and an optionnal distance
+/// matrix (giving the distance between the points of the surface in a metric
+/// space).
 ///
 
 #pragma once
@@ -15,7 +18,10 @@
 namespace ttk {
 
   /**
-   * The MetricDistortion class provides methods to compute TODO
+   * The MetricDistortion class provides methods to compute distance,
+   * area and curvature information about a surface and an optionnal distance
+   * matrix (giving the distance between the points of the surface in a metric
+   * space).
    */
   class MetricDistortion : virtual public Debug {
 

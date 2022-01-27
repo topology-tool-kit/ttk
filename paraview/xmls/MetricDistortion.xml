@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
 <!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
 <!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
 <!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMetricDistortion" class="ttkMetricDistortion" label="TTK MetricDistortion">
-      <Documentation long_help="MetricDistortion Long" short_help="MetricDistortion Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+      <Documentation long_help="MetricDistortion Long" short_help="MetricDistortion Short">This filter computes distance, area and curvature information about a surface and an optionnal distance matrix (giving the distance between the points of the surface in a metric space).</Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty

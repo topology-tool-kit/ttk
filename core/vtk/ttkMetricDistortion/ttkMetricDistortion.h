@@ -5,9 +5,10 @@
 ///
 /// \brief TTK VTK-filter that wraps the ttk::MetricDistortion module.
 ///
-/// This VTK filter uses the ttk::MetricDistortion module to compute an
-/// averaging of the data values of an input point data array defined on the
-/// input vtkDataSet.
+/// This VTK filter uses the ttk::MetricDistortion module to compute distance,
+/// area and curvature information about a surface and an optionnal distance
+/// matrix (giving the distance between the points of the surface in a metric
+/// space).
 ///
 /// \param Input vtkPolyData.
 /// \param Input vtkTable (optionnal)

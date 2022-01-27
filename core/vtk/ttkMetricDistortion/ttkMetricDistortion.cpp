@@ -165,7 +165,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   metricCurvatureArray->SetName("MetricCurvature");
   metricCurvatureArray->SetNumberOfTuples(noPoints);
   vtkNew<vtkDoubleArray> ratioCurvatureArray{};
-  ratioCurvatureArray->SetName("RatioCurvautre");
+  ratioCurvatureArray->SetName("RatioCurvature");
   ratioCurvatureArray->SetNumberOfTuples(noPoints);
 
   for(unsigned int i = 0; i < noPoints; ++i) {
