@@ -50,7 +50,7 @@ int ttk::GaussianPointCloud::castSample(const int &dimension,
   v = (dimension >= 2 ? uniformDistribution(gen) : 0);
   w = (dimension == 3 ? uniformDistribution(gen) : 0);
 
-  dataType norm = sqrt(u * u + v * v + w * w);
+  dataType norm = std::sqrt(u * u + v * v + w * w);
 
   std::normal_distribution<dataType> normalDistribution{0, 1};
 

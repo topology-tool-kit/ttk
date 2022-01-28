@@ -103,7 +103,7 @@ namespace ttk {
                  IT &vertexIndex) const {
       IT cIndex = vertexIndex * 3;
 
-      DT length = sqrt(x * x + y * y + z * z);
+      DT length = std::sqrt(x * x + y * y + z * z);
       vertexCoords[cIndex] = x / length;
       vertexCoords[cIndex + 1] = y / length;
       vertexCoords[cIndex + 2] = z / length;
