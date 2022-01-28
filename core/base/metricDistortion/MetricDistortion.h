@@ -32,6 +32,7 @@ namespace ttk {
       computeSurfaceCurvature(std::vector<std::vector<double>> &surfacePoints,
                               std::vector<std::vector<int>> &surfaceCells,
                               std::vector<std::vector<double>> &distanceMatrix,
+                              std::vector<bool> &isPointBoundary,
                               std::vector<double> &surfaceCurvature,
                               std::vector<double> &metricCurvature,
                               std::vector<double> &diffCurvature) {
@@ -41,19 +42,20 @@ namespace ttk {
       diffCurvature = std::vector<double>(dim, std::nan(""));
 
       std::vector<std::vector<std::tuple<int, int>>> point2CellPoints(dim);
+      unsigned int noTriangle = 0, noQuad = 0;
       for(unsigned int i = 0; i < surfaceCells.size(); ++i) {
-        if(surfaceCells[i].size() < 3 or surfaceCells[i].size() > 4)
-          continue;
         auto cellNoPoints = surfaceCells[i].size();
+        if(cellNoPoints < 3 or cellNoPoints > 4)
+          continue;
         for(unsigned int j = 0; j < cellNoPoints; ++j) {
-          auto first = (cellNoPoints == 3 ? (j + 1) % cellNoPoints
-                                          : (j != 3 ? j + 1 : j - 2));
-          auto second = (cellNoPoints == 3 ? (j + 2) % cellNoPoints
-                                           : (j != 0 ? j - 1 : j + 2));
+          auto first = (j + 1) % cellNoPoints;
+          auto second = (j + (cellNoPoints - 1)) % cellNoPoints;
           std::tuple<int, int> tup
             = std::make_tuple(surfaceCells[i][first], surfaceCells[i][second]);
           point2CellPoints[surfaceCells[i][j]].push_back(tup);
         }
+        noTriangle += (cellNoPoints == 3);
+        noQuad += (cellNoPoints == 4);
       }
 
       for(unsigned int i = 0; i < dim; ++i) {
@@ -75,12 +77,16 @@ namespace ttk {
                            distanceMatrix[i0][i1]);
         }
 
-        surfaceCurvature[i] = 2 * M_PI - sumAngleSurface;
-        // surfaceCurvature[i] /= point2CellPoints[i].size();
+        unsigned int cornerNoCell = (noTriangle > noQuad ? 2 : 1);
+        double coef = (point2CellPoints[i].size() <= cornerNoCell
+                         ? 0.5
+                         : (isPointBoundary[i] ? 1 : 2));
+        surfaceCurvature[i] = coef * M_PI - sumAngleSurface;
+        // surfaceCurvature[i] *= std::pow(coef, -1);
 
         if(distanceMatrix.size() != 0) {
-          metricCurvature[i] = 2 * M_PI - sumAngleMetric;
-          // metricCurvature[i] /= point2CellPoints[i].size();
+          metricCurvature[i] = coef * M_PI - sumAngleMetric;
+          // metricCurvature[i] *= std::pow(coef, -1);
           diffCurvature[i] = metricCurvature[i] - surfaceCurvature[i];
         }
       }
