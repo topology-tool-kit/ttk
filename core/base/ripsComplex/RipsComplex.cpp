@@ -1,6 +1,7 @@
 #include <LDistanceMatrix.h>
 #include <RipsComplex.h>
 
+#include <array>
 #include <limits>
 
 ttk::RipsComplex::RipsComplex() {

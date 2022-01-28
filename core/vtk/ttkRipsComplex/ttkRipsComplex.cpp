@@ -14,6 +14,7 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <array>
 #include <regex>
 
 vtkStandardNewMacro(ttkRipsComplex);
