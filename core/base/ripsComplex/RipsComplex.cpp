@@ -42,6 +42,8 @@ void computeEdges(std::vector<ttk::SimplexId> &connectivity,
                   const std::vector<std::vector<double>> &distanceMatrix,
                   const int nThreads) {
 
+  TTK_FORCE_USE(nThreads);
+
   std::vector<std::vector<LocCell<1>>> edges(distanceMatrix.size());
 
 #ifdef TTK_ENABLE_OPENMP
@@ -89,6 +91,8 @@ void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
                       const double epsilon,
                       const std::vector<std::vector<double>> &distanceMatrix,
                       const int nThreads) {
+
+  TTK_FORCE_USE(nThreads);
 
   std::vector<std::vector<LocCell<2>>> triangles(distanceMatrix.size());
 
@@ -143,6 +147,8 @@ void computeTetras(std::vector<ttk::SimplexId> &connectivity,
                    const double epsilon,
                    const std::vector<std::vector<double>> &distanceMatrix,
                    const int nThreads) {
+
+  TTK_FORCE_USE(nThreads);
 
   std::vector<std::vector<LocCell<3>>> tetras(distanceMatrix.size());
 
