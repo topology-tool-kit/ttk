@@ -78,6 +78,12 @@ void computeEdges(std::vector<ttk::SimplexId> &connectivity,
   }
 }
 
+static inline void maxAssign(double &a, const double b) {
+  if(a < b) {
+    a = b;
+  }
+}
+
 void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
                       std::vector<double> &diameters,
                       const double epsilon,
@@ -99,12 +105,8 @@ void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
           continue;
         }
         auto diam{distanceMatrix[i][j]};
-        if(diam < distanceMatrix[i][k]) {
-          diam = distanceMatrix[i][k];
-        }
-        if(diam < distanceMatrix[j][k]) {
-          diam = distanceMatrix[j][k];
-        }
+        maxAssign(diam, distanceMatrix[i][k]);
+        maxAssign(diam, distanceMatrix[j][k]);
         triangles[i].emplace_back(
           LocCell<2>{diam, std::array<ttk::SimplexId, 2>{
                              static_cast<ttk::SimplexId>(j),
@@ -162,21 +164,11 @@ void computeTetras(std::vector<ttk::SimplexId> &connectivity,
             continue;
           }
           auto diam{distanceMatrix[i][j]};
-          if(diam < distanceMatrix[i][k]) {
-            diam = distanceMatrix[i][k];
-          }
-          if(diam < distanceMatrix[i][l]) {
-            diam = distanceMatrix[i][l];
-          }
-          if(diam < distanceMatrix[j][k]) {
-            diam = distanceMatrix[j][k];
-          }
-          if(diam < distanceMatrix[j][l]) {
-            diam = distanceMatrix[j][l];
-          }
-          if(diam < distanceMatrix[k][l]) {
-            diam = distanceMatrix[k][l];
-          }
+          maxAssign(diam, distanceMatrix[i][k]);
+          maxAssign(diam, distanceMatrix[i][l]);
+          maxAssign(diam, distanceMatrix[j][k]);
+          maxAssign(diam, distanceMatrix[j][l]);
+          maxAssign(diam, distanceMatrix[k][l]);
           tetras[i].emplace_back(
             LocCell<3>{diam, std::array<ttk::SimplexId, 3>{
                                static_cast<ttk::SimplexId>(j),
