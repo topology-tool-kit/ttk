@@ -18,7 +18,7 @@ on:
 
 env:
   PV_REPO: topology-tool-kit/ttk-paraview
-  PV_TAG: v5.9.1-headless
+  PV_TAG: v5.10.0-headless
 
 
 jobs:
