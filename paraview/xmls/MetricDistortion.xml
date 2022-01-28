@@ -18,11 +18,8 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkUnstructuredGrid"/>
+          <DataType value="vtkPolyData"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Input" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           
         </Documentation>
@@ -39,9 +36,6 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkTable"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Input" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           
         </Documentation>
@@ -55,6 +49,9 @@
 
       <!-- Create a UI group that contains all output parameter widgets (here only one) -->
 
+      <!-- Output -->
+      <OutputPort name="Output Surface" index="0" id="port0" />
+      
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}
 

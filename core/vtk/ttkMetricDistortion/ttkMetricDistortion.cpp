@@ -120,7 +120,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   for(unsigned int i = 0; i < noCells; ++i) {
     auto noCellPoints = inputSurface->GetCell(i)->GetNumberOfPoints();
     surfaceCells[i] = std::vector<int>(noCellPoints);
-    for(unsigned int j = 0; j < noCellPoints; ++i)
+    for(unsigned int j = 0; j < noCellPoints; ++j)
       surfaceCells[i][j] = inputSurface->GetCell(i)->GetPointId(j);
   }
 
@@ -149,9 +149,10 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   computeSurfaceDistance(surfacePoints, surfaceCells, distanceMatrix,
                          surfaceDistance, metricDistance, ratioDistance);
 
-  std::vector<double> surfaceCurvature, metricCurvature, ratioCurvature;
+  std::vector<double> surfaceCurvature, metricCurvature, diffCurvature;
   computeSurfaceCurvature(surfacePoints, surfaceCells, distanceMatrix,
-                          surfaceCurvature, metricCurvature, ratioCurvature);
+                          surfaceCurvature, metricCurvature, diffCurvature);
+
   // --------------------------------------------------------------------------
   // Get output object
   // --------------------------------------------------------------------------
@@ -159,19 +160,19 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   outputSurface->DeepCopy(inputSurface);
 
   vtkNew<vtkDoubleArray> surfaceCurvatureArray{};
-  surfaceCurvatureArray->SetName("SurfaceCurvature");
+  surfaceCurvatureArray->SetName("CurvatureSurface");
   surfaceCurvatureArray->SetNumberOfTuples(noPoints);
   vtkNew<vtkDoubleArray> metricCurvatureArray{};
-  metricCurvatureArray->SetName("MetricCurvature");
+  metricCurvatureArray->SetName("CurvatureMetric");
   metricCurvatureArray->SetNumberOfTuples(noPoints);
   vtkNew<vtkDoubleArray> ratioCurvatureArray{};
-  ratioCurvatureArray->SetName("RatioCurvature");
+  ratioCurvatureArray->SetName("CurvatureDiff");
   ratioCurvatureArray->SetNumberOfTuples(noPoints);
 
   for(unsigned int i = 0; i < noPoints; ++i) {
     surfaceCurvatureArray->SetTuple1(i, surfaceCurvature[i]);
     metricCurvatureArray->SetTuple1(i, metricCurvature[i]);
-    ratioCurvatureArray->SetTuple1(i, ratioCurvature[i]);
+    ratioCurvatureArray->SetTuple1(i, diffCurvature[i]);
   }
 
   outputSurface->GetPointData()->AddArray(surfaceCurvatureArray);
@@ -181,26 +182,26 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   vtkNew<vtkDoubleArray> surfaceAreaArray{};
-  surfaceAreaArray->SetName("SurfaceArea");
+  surfaceAreaArray->SetName("AreaSurface");
   surfaceAreaArray->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> metricAreaArray{};
-  metricAreaArray->SetName("MetricArea");
+  metricAreaArray->SetName("AreaMetric");
   metricAreaArray->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> ratioAreaArray{};
-  ratioAreaArray->SetName("RatioArea");
+  ratioAreaArray->SetName("AreaRatio");
   ratioAreaArray->SetNumberOfTuples(noCells);
 
   vtkNew<vtkDoubleArray> surfaceDistanceArray{};
-  surfaceDistanceArray->SetName("SurfaceDistance");
+  surfaceDistanceArray->SetName("DistanceSurface");
   surfaceDistanceArray->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> metricDistanceArray{};
-  metricDistanceArray->SetName("MetricDistance");
+  metricDistanceArray->SetName("DistanceMetric");
   metricDistanceArray->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> ratioDistanceArray{};
-  ratioDistanceArray->SetName("RatioDistance");
+  ratioDistanceArray->SetName("DistanceRatio");
   ratioDistanceArray->SetNumberOfTuples(noCells);
 
-  for(unsigned int i = 0; i < noPoints; ++i) {
+  for(unsigned int i = 0; i < noCells; ++i) {
     surfaceAreaArray->SetTuple1(i, surfaceArea[i]);
     metricAreaArray->SetTuple1(i, metricArea[i]);
     ratioAreaArray->SetTuple1(i, ratioArea[i]);

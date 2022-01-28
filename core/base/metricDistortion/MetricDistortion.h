@@ -34,11 +34,11 @@ namespace ttk {
                               std::vector<std::vector<double>> &distanceMatrix,
                               std::vector<double> &surfaceCurvature,
                               std::vector<double> &metricCurvature,
-                              std::vector<double> &ratioCurvature) {
+                              std::vector<double> &diffCurvature) {
       unsigned int dim = surfacePoints.size();
       surfaceCurvature = std::vector<double>(dim, std::nan(""));
       metricCurvature = std::vector<double>(dim, std::nan(""));
-      ratioCurvature = std::vector<double>(dim, std::nan(""));
+      diffCurvature = std::vector<double>(dim, std::nan(""));
 
       std::vector<std::vector<std::tuple<int, int>>> point2CellPoints(dim);
       for(unsigned int i = 0; i < surfaceCells.size(); ++i) {
@@ -46,11 +46,12 @@ namespace ttk {
           continue;
         auto cellNoPoints = surfaceCells[i].size();
         for(unsigned int j = 0; j < cellNoPoints; ++j) {
+          auto first = (cellNoPoints == 3 ? (j + 1) % cellNoPoints
+                                          : (j != 3 ? j + 1 : j - 2));
+          auto second = (cellNoPoints == 3 ? (j + 2) % cellNoPoints
+                                           : (j != 0 ? j - 1 : j + 2));
           std::tuple<int, int> tup
-            = std::make_tuple((j + 1) % cellNoPoints, (j + 2) % cellNoPoints);
-          if(cellNoPoints == 4)
-            tup = std::make_tuple(
-              (j != 3 ? j + 1 : j - 2), (j != 0 ? j - 1 : j + 2));
+            = std::make_tuple(surfaceCells[i][first], surfaceCells[i][second]);
           point2CellPoints[surfaceCells[i][j]].push_back(tup);
         }
       }
@@ -75,10 +76,12 @@ namespace ttk {
         }
 
         surfaceCurvature[i] = 2 * M_PI - sumAngleSurface;
+        // surfaceCurvature[i] /= point2CellPoints[i].size();
 
         if(distanceMatrix.size() != 0) {
           metricCurvature[i] = 2 * M_PI - sumAngleMetric;
-          ratioCurvature[i] = metricCurvature[i] / surfaceCurvature[i];
+          // metricCurvature[i] /= point2CellPoints[i].size();
+          diffCurvature[i] = metricCurvature[i] - surfaceCurvature[i];
         }
       }
     }
@@ -134,7 +137,7 @@ namespace ttk {
         if(distanceMatrix.size() != 0)
           metricArea[i] = triangleAreaFromSides(distanceMatrix[i0][i1],
                                                 distanceMatrix[i1][i2],
-                                                distanceMatrix[i2][i1]);
+                                                distanceMatrix[i2][i0]);
 
         if(surfaceCells[i].size() == 4) {
           int i3 = surfaceCells[i][3];
