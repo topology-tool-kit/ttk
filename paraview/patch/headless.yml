@@ -138,33 +138,35 @@ jobs:
       shell: cmd
       run: |
         call "%VCVARS%"
-        mkdir build
-        cd build
+        cd ..
+        mkdir b
+        cd b
         cmake ^
           -DPARAVIEW_USE_QT=OFF ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DCMAKE_BUILD_TYPE=Release ^
           -GNinja ^
-          ..
+          %GITHUB_WORKSPACE%
 
     - name: Build ParaView
       shell: cmd
       run: |
         call "%VCVARS%"
-        cd build
+        cd ..\b
         cmake --build . --config Release --parallel
 
     - name: Create ParaView package
       shell: bash
       run: |
-        cd build
+        cd ../b
         cpack -G NSIS64
+        mv ttk-paraview.exe $GITHUB_WORKSPACE
 
     - name: Upload install executable
       uses: actions/upload-artifact@v2
       with:
         name: ttk-paraview-headless-windows
-        path: build/ttk-paraview.exe
+        path: ttk-paraview.exe
 
 
   # --------------------- #
