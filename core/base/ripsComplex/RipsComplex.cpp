@@ -1,4 +1,3 @@
-#include <LDistanceMatrix.h>
 #include <RipsComplex.h>
 
 #include <array>
@@ -6,29 +5,6 @@
 
 ttk::RipsComplex::RipsComplex() {
   this->setDebugMsgPrefix("RipsComplex");
-}
-
-int ttk::RipsComplex::computeDistanceMatrix(
-  std::vector<std::vector<double>> &distanceMatrix,
-  const std::vector<std::vector<double>> &inputMatrix) const {
-
-  Timer tm{};
-
-  std::vector<const double *> inputPtrs(inputMatrix.size());
-  for(size_t i = 0; i < inputMatrix.size(); ++i) {
-    const auto &vec{inputMatrix[i]};
-    inputPtrs[i] = vec.data();
-  }
-
-  ttk::LDistanceMatrix worker{};
-  worker.setThreadNumber(this->threadNumber_);
-  worker.setDebugLevel(this->debugLevel_);
-  worker.execute(distanceMatrix, inputPtrs, inputMatrix[0].size());
-
-  this->printMsg("Computed distance matrix", 1.0, tm.getElapsedTime(),
-                 this->threadNumber_, debug::LineMode::NEW,
-                 debug::Priority::DETAIL);
-  return 0;
 }
 
 template <size_t n>
@@ -286,17 +262,10 @@ int ttk::RipsComplex::execute(
   std::vector<SimplexId> &connectivity,
   std::vector<double> &diameters,
   std::array<double *const, 3> diamStats,
-  const std::vector<std::vector<double>> &inputMatrix,
+  const std::vector<std::vector<double>> &distanceMatrix,
   double *const density) const {
 
   Timer tm{};
-
-  std::vector<std::vector<double>> distanceMatrix_{};
-  if(!this->InputIsADistanceMatrix) {
-    computeDistanceMatrix(distanceMatrix_, inputMatrix);
-  }
-  const auto &distanceMatrix
-    = this->InputIsADistanceMatrix ? inputMatrix : distanceMatrix_;
 
   if(distanceMatrix.empty()
      || distanceMatrix.size() != distanceMatrix[0].size()) {

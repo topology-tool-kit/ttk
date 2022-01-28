@@ -167,17 +167,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="InputDistanceMatrix"
-        label="Input Is a Distance Matrix"
-        command="SetInputIsADistanceMatrix"
-        number_of_elements="1"
-        default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          The RipsComplex filter can be fed directly with Distance Matrices.
-        </Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="ComputeGaussianDensity"
         label="Compute Gaussian Density"
         command="SetComputeGaussianDensity"
@@ -220,7 +209,6 @@
         <Property name="YColumn" />
         <Property name="ZColumn" />
         <Property name="KeepAllDataArrays" />
-        <Property name="InputDistanceMatrix" />
         <Property name="ComputeGaussianDensity" />
         <Property name="StdDev" />
       </PropertyGroup>

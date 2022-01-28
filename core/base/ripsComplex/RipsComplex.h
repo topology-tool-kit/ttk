@@ -31,26 +31,16 @@ namespace ttk {
      * @param[out] connectivity Cell connectivity array (VTK format)
      * @param[out] diameters Cell diameters
      * @param[out] diamStats Min, mean and max cell diameters around point
-     * @param[in] inputMatrix Either coordinates array or distance matrix
+     * @param[in] distanceMatrix Input distance matrix
      * @param[out] density Gaussian density array on points
      */
     int execute(std::vector<SimplexId> &connectivity,
                 std::vector<double> &diameters,
                 std::array<double *const, 3> diamStats,
-                const std::vector<std::vector<double>> &inputMatrix,
+                const std::vector<std::vector<double>> &distanceMatrix,
                 double *const density = nullptr) const;
 
   protected:
-    /**
-     * @brief Compute distance matrix from coordinates matrix
-     *
-     * @param[out] distanceMatrix Output distance matrix
-     * @param[in] inputMatrix Input coordinates matrix
-     */
-    int computeDistanceMatrix(
-      std::vector<std::vector<double>> &distanceMatrix,
-      const std::vector<std::vector<double>> &inputMatrix) const;
-
     /**
      * @brief Compute diameter statistics on points
      *
@@ -82,8 +72,6 @@ namespace ttk {
     double StdDev{1.0};
     /** Compute the Gaussian density from the distance matrix */
     bool ComputeGaussianDensity{false};
-    /** If input matrix is a distance matrix (compute it otherwise) */
-    bool InputIsADistanceMatrix{false};
   };
 
 } // namespace ttk
