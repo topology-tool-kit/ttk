@@ -142,7 +142,7 @@ namespace ttk {
     bool forceNonManifoldCheck{false};
 
     // progressive
-    BACKEND BackEnd{BACKEND::PROGRESSIVE_TOPOLOGY};
+    BACKEND BackEnd{BACKEND::GENERIC};
     ProgressiveTopology progT_{};
     int StartingResolutionLevel{0};
     int StoppingResolutionLevel{-1};
