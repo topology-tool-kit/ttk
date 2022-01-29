@@ -44,8 +44,6 @@ public:
     ScalarFields.clear();
     Modified();
   }
-  vtkSetMacro(InputIsADistanceMatrix, bool);
-  vtkGetMacro(InputIsADistanceMatrix, bool);
 
   vtkSetMacro(OutputDimension, int);
   vtkGetMacro(OutputDimension, int);

@@ -72,6 +72,13 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
+  if(numberOfColumns != numberOfRows) {
+    this->printErr("Input distance matrix is not square (rows: "
+                   + std::to_string(numberOfRows)
+                   + ", columns: " + std::to_string(numberOfColumns) + ")");
+    return 0;
+  }
+
   std::array<vtkAbstractArray *, 3> components{
     input->GetColumnByName(this->XColumn.data()),
     input->GetColumnByName(this->YColumn.data()),
