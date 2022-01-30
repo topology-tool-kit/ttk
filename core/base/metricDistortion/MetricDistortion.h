@@ -72,11 +72,17 @@ namespace ttk {
           auto dist_i_i0 = Geometry::distance(&p_i[0], &p_i0[0]);
           auto dist_i_i1 = Geometry::distance(&p_i[0], &p_i1[0]);
           auto dist_i0_i1 = Geometry::distance(&p_i0[0], &p_i1[0]);
-          sumAngleSurface += cosineLaw(dist_i_i0, dist_i_i1, dist_i0_i1);
-          if(distanceMatrix.size() != 0)
-            sumAngleMetric
-              += cosineLaw(distanceMatrix[i][i0], distanceMatrix[i][i1],
-                           distanceMatrix[i0][i1]);
+          double angleSurface;
+          Geometry::computeTriangleAngleFromSides(
+            dist_i_i0, dist_i_i1, dist_i0_i1, angleSurface);
+          sumAngleSurface += angleSurface;
+          if(distanceMatrix.size() != 0) {
+            double angleMetric;
+            Geometry::computeTriangleAngleFromSides(
+              distanceMatrix[i][i0], distanceMatrix[i][i1],
+              distanceMatrix[i0][i1], angleMetric);
+            sumAngleMetric += angleMetric;
+          }
         }
 
         unsigned int cornerNoCell = (noTriangle > noQuad ? 2 : 1);
@@ -152,18 +158,18 @@ namespace ttk {
 
         if(surfaceCells[i].size() == 4) {
           int i3 = surfaceCells[i][3];
-          double temp;
+          double areaSurface;
           Geometry::computeTriangleArea(&surfacePoints[i1][0],
                                         &surfacePoints[i2][0],
-                                        &surfacePoints[i3][0], temp);
-          surfaceArea[i] += temp;
+                                        &surfacePoints[i3][0], areaSurface);
+          surfaceArea[i] += areaSurface;
 
           if(distanceMatrix.size() != 0) {
-            double tempMetric;
+            double areaMetric;
             Geometry::computeTriangleAreaFromSides(
               distanceMatrix[i1][i2], distanceMatrix[i2][i3],
-              distanceMatrix[i3][i1], tempMetric);
-            metricArea[i] += tempMetric;
+              distanceMatrix[i3][i1], areaMetric);
+            metricArea[i] += areaMetric;
           }
         }
 
@@ -172,13 +178,6 @@ namespace ttk {
       }
     }
 
-    //-------------------------------------------------------------------------
-    // Utils
-    //-------------------------------------------------------------------------
-    double cosineLaw(double a, double b, double c) {
-      // Get the angle opposite to edge c
-      return std::acos((a * a + b * b - c * c) / (2.0 * a * b));
-    }
   }; // MetricDistortion class
 
 } // namespace ttk

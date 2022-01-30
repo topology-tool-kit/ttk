@@ -276,6 +276,7 @@ int Geometry::computeTriangleAreaFromSides(const T s0,
                                            const T s1,
                                            const T s2,
                                            T &area) {
+
   double s = (s0 + s1 + s2) / 2.0;
   area = std::sqrt(s * (s - s0) * (s - s1) * (s - s2));
 
@@ -293,6 +294,17 @@ int Geometry::computeTriangleAngles(const T *p0,
   angles[0] = angle(p0, p1, p1, p2);
   angles[1] = angle(p1, p2, p2, p0);
   angles[2] = angle(p2, p0, p0, p1);
+
+  return 0;
+}
+
+template <typename T>
+int Geometry::computeTriangleAngleFromSides(const T s0,
+                                            const T s1,
+                                            const T s2,
+                                            T &angle) {
+
+  angle = std::acos((s0 * s0 + s1 * s1 - s2 * s2) / (2.0 * s0 * s1));
 
   return 0;
 }
@@ -538,6 +550,8 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
     TYPE const &, TYPE const &, TYPE const &, TYPE &, TYPE &);                \
   template int Geometry::computeTriangleAngles<TYPE>(                         \
     TYPE const *, TYPE const *, TYPE const *, std::vector<TYPE> &);           \
+  template int Geometry::computeTriangleAngleFromSides<TYPE>(                 \
+    TYPE const, TYPE const, TYPE const, TYPE &);                              \
   template int Geometry::computeTriangleArea<TYPE>(                           \
     TYPE const *, TYPE const *, TYPE const *, TYPE &);                        \
   template int Geometry::computeTriangleAreaFromSides<TYPE>(                  \
