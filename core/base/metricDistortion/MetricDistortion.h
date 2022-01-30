@@ -13,6 +13,7 @@
 
 // ttk common includes
 #include <Debug.h>
+#include <Geometry.h>
 #include <Triangulation.h>
 
 namespace ttk {
@@ -68,9 +69,10 @@ namespace ttk {
           auto p_i0 = surfacePoints[i0];
           auto p_i1 = surfacePoints[i1];
           auto p_i = surfacePoints[i];
-          sumAngleSurface
-            += cosineLaw(l2Distance(p_i, p_i0), l2Distance(p_i, p_i1),
-                         l2Distance(p_i0, p_i1));
+          auto dist_i_i0 = Geometry::distance(&p_i[0], &p_i0[0]);
+          auto dist_i_i1 = Geometry::distance(&p_i[0], &p_i1[0]);
+          auto dist_i0_i1 = Geometry::distance(&p_i0[0], &p_i1[0]);
+          sumAngleSurface += cosineLaw(dist_i_i0, dist_i_i1, dist_i0_i1);
           if(distanceMatrix.size() != 0)
             sumAngleMetric
               += cosineLaw(distanceMatrix[i][i0], distanceMatrix[i][i1],
@@ -110,7 +112,8 @@ namespace ttk {
         int i0 = surfaceCells[i][0];
         int i1 = surfaceCells[i][1];
 
-        surfaceDistance[i] = l2Distance(surfacePoints[i0], surfacePoints[i1]);
+        surfaceDistance[i]
+          = Geometry::distance(&surfacePoints[i0][0], &surfacePoints[i1][0]);
 
         if(distanceMatrix.size() != 0) {
           metricDistance[i] = distanceMatrix[i0][i1];
@@ -137,22 +140,31 @@ namespace ttk {
         int i1 = surfaceCells[i][1];
         int i2 = surfaceCells[i][2];
 
-        surfaceArea[i] = triangleArea3D(
-          surfacePoints[i0], surfacePoints[i1], surfacePoints[i2]);
+        Geometry::computeTriangleArea(&surfacePoints[i0][0],
+                                      &surfacePoints[i1][0],
+                                      &surfacePoints[i2][0], surfaceArea[i]);
 
-        if(distanceMatrix.size() != 0)
-          metricArea[i] = triangleAreaFromSides(distanceMatrix[i0][i1],
-                                                distanceMatrix[i1][i2],
-                                                distanceMatrix[i2][i0]);
+        if(distanceMatrix.size() != 0) {
+          Geometry::computeTriangleAreaFromSides(
+            distanceMatrix[i0][i1], distanceMatrix[i1][i2],
+            distanceMatrix[i2][i0], metricArea[i]);
+        }
 
         if(surfaceCells[i].size() == 4) {
           int i3 = surfaceCells[i][3];
-          surfaceArea[i] += triangleArea3D(
-            surfacePoints[i1], surfacePoints[i2], surfacePoints[i3]);
-          if(distanceMatrix.size() != 0)
-            metricArea[i] += triangleAreaFromSides(distanceMatrix[i1][i2],
-                                                   distanceMatrix[i2][i3],
-                                                   distanceMatrix[i3][i1]);
+          double temp;
+          Geometry::computeTriangleArea(&surfacePoints[i1][0],
+                                        &surfacePoints[i2][0],
+                                        &surfacePoints[i3][0], temp);
+          surfaceArea[i] += temp;
+
+          if(distanceMatrix.size() != 0) {
+            double tempMetric;
+            Geometry::computeTriangleAreaFromSides(
+              distanceMatrix[i1][i2], distanceMatrix[i2][i3],
+              distanceMatrix[i3][i1], tempMetric);
+            metricArea[i] += tempMetric;
+          }
         }
 
         if(distanceMatrix.size() != 0)
@@ -166,32 +178,6 @@ namespace ttk {
     double cosineLaw(double a, double b, double c) {
       // Get the angle opposite to edge c
       return std::acos((a * a + b * b - c * c) / (2.0 * a * b));
-    }
-
-    double l2Distance(std::vector<double> &p1, std::vector<double> &p2) {
-      double distance = 0.0;
-      for(unsigned int i = 0; i < p1.size(); ++i)
-        distance += std::pow(p1[i] - p2[i], 2);
-      return std::sqrt(distance);
-    }
-
-    double triangleArea3D(std::vector<double> &x1,
-                          std::vector<double> &x2,
-                          std::vector<double> &x3) {
-      std::vector<double> AB(3), AC(3);
-      for(unsigned int i = 0; i < 3; ++i) {
-        AB[i] = x2[i] - x1[i];
-        AC[i] = x3[i] - x1[i];
-      }
-      return std::sqrt(std::pow(AB[1] * AC[2] - AB[2] * AC[1], 2)
-                       + std::pow(AB[2] * AC[0] - AB[0] * AC[2], 2)
-                       + std::pow(AB[0] * AC[1] - AB[1] * AC[0], 2))
-             / 2.0;
-    }
-
-    double triangleAreaFromSides(double a, double b, double c) {
-      double s = (a + b + c) / 2.0;
-      return std::sqrt(s * (s - a) * (s - b) * (s - c));
     }
   }; // MetricDistortion class
 

@@ -116,6 +116,16 @@ namespace ttk {
     template <typename T>
     int computeTriangleArea(const T *p0, const T *p1, const T *p2, T &area);
 
+    /// Compute the area of a triangle given length of its sides.
+    /// \param s0 length of the first side of the triangle
+    /// \param s1 length of the first side of the triangle
+    /// \param s2 length of the first side of the triangle
+    /// \param area Output area.
+    /// \return Returns 0 upon success, negative values otherwise.
+    template <typename T>
+    int
+      computeTriangleAreaFromSides(const T s0, const T s1, const T s2, T &area);
+
     /// Compute the cross product of two 3D std::vectors
     /// \param vA0 xyz coordinates of vA's origin
     /// \param vA1 xyz coordinates of vA's destination
