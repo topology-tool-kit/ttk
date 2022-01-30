@@ -2,8 +2,10 @@
 =
 ### ttk.git
 - Compact triangulations (IEEE TVCG 2021)
+- Rips complex
 - PersistentSimplexPairs backend (Zomorodian 2010), slow.
 - Bug fixes
+- Documentation improvements
 
 ### 1.0
 - Official integration into ParaView-5.10 \0/ clap! clap! clap! \0/

@@ -51,6 +51,10 @@ namespace ttk {
       return result;
     }
 
+    inline void setPrintRes(const bool data) {
+      this->printRes = data;
+    }
+
     template <typename type>
     static type abs_diff(const type var1, const type var2) {
       return (var1 > var2) ? var1 - var2 : var2 - var1;
@@ -58,6 +62,7 @@ namespace ttk {
 
   protected:
     double result{};
+    bool printRes{true};
   };
 } // namespace ttk
 
@@ -89,8 +94,10 @@ int ttk::LDistance::execute(const dataType *const inputData1,
     status = computeLn(inputData1, inputData2, outputData, n, vertexNumber);
   }
 
-  this->printMsg(
-    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
+  if(this->printRes) {
+    this->printMsg(
+      "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
+  }
 
   return status;
 }
@@ -124,8 +131,10 @@ int ttk::LDistance::computeLn(const dataType *const input1,
 
   // Affect result.
   result = (double)sum;
-  this->printMsg("L" + std::to_string(n)
-                 + "-distance: " + std::to_string(result));
+  if(this->printRes) {
+    this->printMsg("L" + std::to_string(n)
+                   + "-distance: " + std::to_string(result));
+  }
 
   return 0;
 }
@@ -156,7 +165,9 @@ int ttk::LDistance::computeLinf(const dataType *const input1,
 
   // Affect result.
   result = (double)maxValue;
-  this->printMsg("Linf-distance: " + std::to_string(result));
+  if(this->printRes) {
+    this->printMsg("Linf-distance: " + std::to_string(result));
+  }
 
   return 0;
 }

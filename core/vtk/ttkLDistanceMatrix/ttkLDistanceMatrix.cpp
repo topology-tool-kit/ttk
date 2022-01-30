@@ -39,7 +39,20 @@ int ttkLDistanceMatrix::FillOutputPortInformation(int port,
   return 0;
 }
 
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
+template <typename T>
+int ttkLDistanceMatrix::dispatch(
+  std::vector<std::vector<double>> &distanceMatrix,
+  const std::vector<vtkDataSet *> &inputData,
+  const size_t nPoints) {
+
+  std::vector<const T *> inputPtrs(inputData.size());
+  for(size_t i = 0; i < inputData.size(); ++i) {
+    inputPtrs[i]
+      = ttkUtils::GetPointer<T>(this->GetInputArrayToProcess(0, inputData[i]));
+  }
+  return this->execute(distanceMatrix, inputPtrs, nPoints);
+}
+
 int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
@@ -81,18 +94,12 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
 
   std::vector<std::vector<double>> distMatrix{};
 
-  std::vector<void *> inputPtrs(nInputs);
-  for(size_t i = 0; i < nInputs; ++i) {
-    inputPtrs[i]
-      = ttkUtils::GetVoidPointer(this->GetInputArrayToProcess(0, inputData[i]));
-  }
-
   const auto firstField = this->GetInputArrayToProcess(0, inputData[0]);
   const auto dataType = firstField->GetDataType();
   const size_t nPoints = firstField->GetNumberOfTuples();
 
   switch(dataType) {
-    vtkTemplateMacro(distMatrix = this->execute<VTK_TT>(inputPtrs, nPoints));
+    vtkTemplateMacro(this->dispatch<VTK_TT>(distMatrix, inputData, nPoints));
   }
 
   // zero-padd column name to keep Row Data columns ordered

@@ -1,0 +1,221 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkRipsComplex"
+      class="ttkRipsComplex"
+      label="TTK RipsComplex">
+      <Documentation
+        long_help="TTK ripsComplex plugin."
+        short_help="TTK ripsComplex plugin.">
+        TTK ripsComplex plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="SelectFieldsWithRegexp"
+        label="Select Fields with a Regexp"
+        command="SetSelectFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetScalarFields"
+        clean_command="ClearScalarFields"
+        label="Input Columns"
+        name="ScalarFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="OutputDimension"
+        label="Output Dimension"
+        command="SetOutputDimension"
+        number_of_elements="1"
+        default_values="2">
+        <Documentation>
+          Cell dimension of the generated Rips complex.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="Epsilon"
+          label="Diameter (epsilon)"
+          command="SetEpsilon"
+          number_of_elements="1"
+          default_values="1.0"
+          >
+        <Documentation>
+          Distance threshold above with no cell should be generated.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty command="SetXColumn"
+                            name="XColumn"
+                            number_of_elements="1"
+                            default_values="Component_0"
+                            panel_visibility="default">
+        <ArrayListDomain name="array_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>This property specifies which data array is going to be
+        used as the X coordinate in the generated polydata
+        dataset.</Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty command="SetYColumn"
+                            name="YColumn"
+                            number_of_elements="1"
+                            default_values="Component_1"
+                            panel_visibility="default">
+        <ArrayListDomain name="array_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>This property specifies which data array is going to be
+        used as the Y coordinate in the generated polydata
+        dataset.</Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty command="SetZColumn"
+                            name="ZColumn"
+                            number_of_elements="1"
+                            default_values="Component_2"
+                            panel_visibility="default">
+        <ArrayListDomain name="array_list">
+          <RequiredProperties>
+            <Property function="Input"
+                      name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>This property specifies which data array is going to be
+        used as the Z coordinate in the generated polydata
+        dataset.</Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="KeepAllDataArrays"
+        label="Keep All Data Arrays"
+        command="SetKeepAllDataArrays"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Keep all data arrays.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ComputeGaussianDensity"
+        label="Compute Gaussian Density"
+        command="SetComputeGaussianDensity"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Should Gaussian density be computed on every vertex?
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="StdDev"
+          label="Standard Deviation"
+          command="SetStdDev"
+          number_of_elements="1"
+          default_values="1.0"
+          >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ComputeGaussianDensity"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Gaussian density standard deviation
+        </Documentation>
+      </DoubleVectorProperty>
+
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SelectFieldsWithRegexp" />
+        <Property name="ScalarFields" />
+        <Property name="Regexp" />
+        <Property name="OutputDimension" />
+        <Property name="Epsilon" />
+        <Property name="XColumn" />
+        <Property name="YColumn" />
+        <Property name="ZColumn" />
+        <Property name="KeepAllDataArrays" />
+        <Property name="ComputeGaussianDensity" />
+        <Property name="StdDev" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
