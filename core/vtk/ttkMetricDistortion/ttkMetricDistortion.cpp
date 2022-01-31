@@ -110,49 +110,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   auto triangulation = ttkAlgorithm::GetTriangulation(inputSurface);
   if(!triangulation)
     return -1;
-
-  auto noPoints = inputSurface->GetNumberOfPoints();
-  std::vector<std::vector<double>> surfacePoints(
-    noPoints, std::vector<double>(3));
-  for(unsigned int i = 0; i < noPoints; ++i) {
-    double point[3];
-    inputSurface->GetPoints()->GetPoint(i, point);
-    for(unsigned int j = 0; j < 3; ++j)
-      surfacePoints[i][j] = point[j];
-  }
-  auto noCells = inputSurface->GetNumberOfCells();
-  std::vector<std::vector<int>> surfaceCells(noCells);
-  for(unsigned int i = 0; i < noCells; ++i) {
-    auto noCellPoints = inputSurface->GetCell(i)->GetNumberOfPoints();
-    surfaceCells[i] = std::vector<int>(noCellPoints);
-    for(unsigned int j = 0; j < noCellPoints; ++j)
-      surfaceCells[i][j] = inputSurface->GetCell(i)->GetPointId(j);
-  }
-
-  // Detect boundary
-  std::vector<std::vector<int>> edgeBelonging(
-    noPoints, std::vector<int>(noPoints, 0));
-  for(unsigned int i = 0; i < noCells; ++i) {
-    auto noCellPoints = inputSurface->GetCell(i)->GetNumberOfPoints();
-    if(noCellPoints < 3 or noCellPoints > 4)
-      continue;
-    unsigned int noCellEdges = inputSurface->GetCell(i)->GetNumberOfEdges();
-    for(unsigned int j = 0; j < noCellEdges; ++j) {
-      auto p0 = inputSurface->GetCell(i)->GetEdge(j)->GetPointId(0);
-      auto p1 = inputSurface->GetCell(i)->GetEdge(j)->GetPointId(1);
-      ++edgeBelonging[p0][p1];
-      ++edgeBelonging[p1][p0];
-    }
-  }
-  std::vector<bool> isPointBoundary(noPoints, false);
-  for(unsigned int i = 0; i < edgeBelonging.size(); ++i) {
-    for(unsigned int j = 0; j < edgeBelonging[i].size(); ++j) {
-      if(edgeBelonging[i][j] == 1) {
-        isPointBoundary[i] = true;
-        isPointBoundary[j] = true;
-      }
-    }
-  }
+  this->preconditionTriangulation(triangulation);
 
   // Load Table
   vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
@@ -181,14 +139,16 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
 
   std::vector<double> surfaceCurvature, metricCurvature, diffCurvature;
   computeSurfaceCurvature(triangulation->getData(), distanceMatrix,
-                          isPointBoundary, surfaceCurvature, metricCurvature,
-                          diffCurvature);
+                          surfaceCurvature, metricCurvature, diffCurvature);
 
   // --------------------------------------------------------------------------
   // Get output object
   // --------------------------------------------------------------------------
   auto outputSurface = vtkPolyData::GetData(outputVector, 0);
   outputSurface->DeepCopy(inputSurface);
+  
+  auto noPoints = inputSurface->GetNumberOfPoints();
+  auto noCells = inputSurface->GetNumberOfCells();
 
   vtkNew<vtkDoubleArray> surfaceCurvatureArray{};
   surfaceCurvatureArray->SetName("CurvatureSurface");

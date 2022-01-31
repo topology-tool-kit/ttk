@@ -28,12 +28,20 @@ namespace ttk {
 
   public:
     MetricDistortion();
+    
+    int preconditionTriangulation(AbstractTriangulation *triangulation) {
+      // Pre-condition functions.
+      if(triangulation) {
+        triangulation->preconditionBoundaryVertices();
+      }
+
+      return 0;
+    }
 
     template <class triangulationType>
     void
       computeSurfaceCurvature(const triangulationType *triangulation,
                               std::vector<std::vector<double>> &distanceMatrix,
-                              std::vector<bool> &isPointBoundary,
                               std::vector<double> &surfaceCurvature,
                               std::vector<double> &metricCurvature,
                               std::vector<double> &diffCurvature) {
@@ -94,11 +102,11 @@ namespace ttk {
             sumAngleMetric += angleMetric;
           }
         }
-
+        
         unsigned int cornerNoCell = (noTriangle > noQuad ? 2 : 1);
         double coef = (point2CellPoints[i].size() <= cornerNoCell
                          ? 0.5
-                         : (isPointBoundary[i] ? 1 : 2));
+                         : (triangulation->isVertexOnBoundary(i) ? 1 : 2));
         surfaceCurvature[i] = coef * M_PI - sumAngleSurface;
         // surfaceCurvature[i] *= std::pow(coef, -1);
 
