@@ -33,8 +33,8 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
+        triangulation->preconditionVertexNeighbors();
       }
-
       return 0;
     }
 
@@ -119,12 +119,29 @@ namespace ttk {
       }
     }
 
+    void initIndicators(double &min, double &max, double &avg) {
+      min = std::numeric_limits<double>::max();
+      max = std::numeric_limits<double>::lowest();
+      avg = 0.0;
+    }
+
+    void updateIndicators(
+      double &min, double &max, double &avg, double value, int noValue) {
+      min = std::min(min, value);
+      max = std::max(max, value);
+      avg += value / noValue;
+    }
+
     template <class triangulationType, class tableDataType>
-    void computeSurfaceDistance(const triangulationType *triangulation,
-                                std::vector<tableDataType *> &distanceMatrix,
-                                std::vector<double> &surfaceDistance,
-                                std::vector<double> &metricDistance,
-                                std::vector<double> &ratioDistance) {
+    void computeSurfaceDistance(
+      const triangulationType *triangulation,
+      std::vector<tableDataType *> &distanceMatrix,
+      std::vector<double> &surfaceDistance,
+      std::vector<double> &metricDistance,
+      std::vector<double> &ratioDistance,
+      std::vector<std::array<double, 3>> &surfacePointDistance,
+      std::vector<std::array<double, 3>> &metricPointDistance,
+      std::vector<std::array<double, 3>> &ratioPointDistance) {
       unsigned int dim = triangulation->getNumberOfCells();
       surfaceDistance = std::vector<double>(dim, std::nan(""));
       metricDistance = std::vector<double>(dim, std::nan(""));
@@ -146,6 +163,48 @@ namespace ttk {
         if(distanceMatrix.size() != 0) {
           metricDistance[i] = distanceMatrix[i0][i1];
           ratioDistance[i] = metricDistance[i] / surfaceDistance[i];
+        }
+      }
+
+      dim = triangulation->getNumberOfVertices();
+      surfacePointDistance = std::vector<std::array<double, 3>>(dim);
+      metricPointDistance = std::vector<std::array<double, 3>>(dim);
+      ratioPointDistance = std::vector<std::array<double, 3>>(dim);
+      for(unsigned int i = 0; i < dim; ++i) {
+        double minDistanceS, maxDistanceS, avgDistanceS;
+        initIndicators(minDistanceS, maxDistanceS, avgDistanceS);
+        double minDistanceM, maxDistanceM, avgDistanceM;
+        initIndicators(minDistanceM, maxDistanceM, avgDistanceM);
+
+        auto neighborNum = triangulation->getVertexNeighborNumber(i);
+        for(int j = 0; j < neighborNum; ++j) {
+          SimplexId neighbor;
+          triangulation->getVertexNeighbor(i, j, neighbor);
+
+          float p0[3], p1[3];
+          triangulation->getVertexPoint(i, p0[0], p0[1], p0[2]);
+          triangulation->getVertexPoint(neighbor, p1[0], p1[1], p1[2]);
+
+          double distance = Geometry::distance(&p0[0], &p1[0]);
+          updateIndicators(
+            minDistanceS, maxDistanceS, avgDistanceS, distance, neighborNum);
+
+          if(distanceMatrix.size() != 0) {
+            double distanceM = distanceMatrix[i][neighbor];
+            updateIndicators(
+              minDistanceM, maxDistanceM, avgDistanceM, distanceM, neighborNum);
+          }
+        }
+        surfacePointDistance[i][0] = minDistanceS;
+        surfacePointDistance[i][1] = maxDistanceS;
+        surfacePointDistance[i][2] = avgDistanceS;
+        if(distanceMatrix.size() != 0) {
+          metricPointDistance[i][0] = minDistanceM;
+          metricPointDistance[i][1] = maxDistanceM;
+          metricPointDistance[i][2] = avgDistanceM;
+          for(unsigned int j = 0; j < 3; ++j)
+            ratioPointDistance[i][j]
+              = metricPointDistance[i][j] / surfacePointDistance[i][j];
         }
       }
     }

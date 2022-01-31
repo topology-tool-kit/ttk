@@ -129,7 +129,9 @@ int ttkMetricDistortion::run(vtkInformationVector **inputVector) {
                      metricArea, ratioArea);
 
   computeSurfaceDistance(triangulation->getData(), distanceMatrix,
-                         surfaceDistance, metricDistance, ratioDistance);
+                         surfaceDistance, metricDistance, ratioDistance,
+                         surfacePointDistance, metricPointDistance,
+                         ratioPointDistance);
 
   computeSurfaceCurvature(triangulation->getData(), distanceMatrix,
                           surfaceCurvature, metricCurvature, diffCurvature);
@@ -176,6 +178,9 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   surfaceDistance.clear();
   metricDistance.clear();
   ratioDistance.clear();
+  surfacePointDistance.clear();
+  metricPointDistance.clear();
+  ratioPointDistance.clear();
   surfaceCurvature.clear();
   metricCurvature.clear();
   diffCurvature.clear();
@@ -189,6 +194,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   // --------------------------------------------------------------------------
   // Get output object
   // --------------------------------------------------------------------------
+  // --- Point Data
   auto outputSurface = vtkPointSet::GetData(outputVector, 0);
   outputSurface->DeepCopy(inputSurface);
 
@@ -214,6 +220,30 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
     outputSurface->GetPointData()->AddArray(ratioCurvatureArray);
   }
 
+  for(unsigned int i = 0; i < 3; ++i) {
+    std::string type{(i == 0 ? "Min" : (i == 1) ? "Max" : "Avg")};
+    vtkNew<vtkDoubleArray> surfaceIDistanceArray{};
+    surfaceIDistanceArray->SetName((type + "DistanceSurface").c_str());
+    surfaceIDistanceArray->SetNumberOfTuples(noPoints);
+    vtkNew<vtkDoubleArray> metricIDistanceArray{};
+    metricIDistanceArray->SetName((type + "DistanceMetric").c_str());
+    metricIDistanceArray->SetNumberOfTuples(noPoints);
+    vtkNew<vtkDoubleArray> ratioIDistanceArray{};
+    ratioIDistanceArray->SetName((type + "DistanceRatio").c_str());
+    ratioIDistanceArray->SetNumberOfTuples(noPoints);
+    for(unsigned int j = 0; j < noPoints; ++j) {
+      surfaceIDistanceArray->SetTuple1(j, surfacePointDistance[j][i]);
+      metricIDistanceArray->SetTuple1(j, metricPointDistance[j][i]);
+      ratioIDistanceArray->SetTuple1(j, ratioPointDistance[j][i]);
+    }
+    outputSurface->GetPointData()->AddArray(surfaceIDistanceArray);
+    if(validDistanceMatrix) {
+      outputSurface->GetPointData()->AddArray(metricIDistanceArray);
+      outputSurface->GetPointData()->AddArray(ratioIDistanceArray);
+    }
+  }
+
+  // --- Cell Data
   vtkNew<vtkDoubleArray> surfaceAreaArray{};
   surfaceAreaArray->SetName("AreaSurface");
   surfaceAreaArray->SetNumberOfTuples(noCells);
@@ -234,6 +264,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   ratioDistanceArray->SetName("DistanceRatio");
   ratioDistanceArray->SetNumberOfTuples(noCells);
 
+  bool distanceAllNan = true;
   for(unsigned int i = 0; i < noCells; ++i) {
     surfaceAreaArray->SetTuple1(i, surfaceArea[i]);
     metricAreaArray->SetTuple1(i, metricArea[i]);
@@ -241,15 +272,21 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
     surfaceDistanceArray->SetTuple1(i, surfaceDistance[i]);
     metricDistanceArray->SetTuple1(i, metricDistance[i]);
     ratioDistanceArray->SetTuple1(i, ratioDistance[i]);
+    if(surfaceDistance[i] == surfaceDistance[i]) // detect NaN
+      distanceAllNan = false;
   }
 
   outputSurface->GetCellData()->AddArray(surfaceAreaArray);
-  outputSurface->GetCellData()->AddArray(surfaceDistanceArray);
   if(validDistanceMatrix) {
     outputSurface->GetCellData()->AddArray(metricAreaArray);
     outputSurface->GetCellData()->AddArray(ratioAreaArray);
-    outputSurface->GetCellData()->AddArray(metricDistanceArray);
-    outputSurface->GetCellData()->AddArray(ratioDistanceArray);
+  }
+  if(not distanceAllNan) {
+    outputSurface->GetCellData()->AddArray(surfaceDistanceArray);
+    if(validDistanceMatrix) {
+      outputSurface->GetCellData()->AddArray(metricDistanceArray);
+      outputSurface->GetCellData()->AddArray(ratioDistanceArray);
+    }
   }
 
   // return success
