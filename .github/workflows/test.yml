@@ -130,7 +130,8 @@ jobs:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
 
-    - name: Run ttk-data Python scripts
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
       run: |
         cd ttk-data
         python3 -u python/run.py
@@ -240,7 +241,8 @@ jobs:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
 
-    - name: Run ttk-data Python scripts
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
       run: |
         cd ttk-data
         python3 -u python/run.py
@@ -377,7 +379,8 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
