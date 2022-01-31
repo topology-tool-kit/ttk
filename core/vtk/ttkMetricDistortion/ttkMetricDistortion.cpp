@@ -49,7 +49,7 @@ ttkMetricDistortion::~ttkMetricDistortion() {
 int ttkMetricDistortion::FillInputPortInformation(int port,
                                                   vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
   } else if(port == 1) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);

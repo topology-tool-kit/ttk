@@ -18,7 +18,7 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkPolyData"/>
+          <DataType value="vtkPointSet"/>
         </DataTypeDomain>
         <Documentation>
           
@@ -54,7 +54,7 @@
 
       <!-- MENU CATEGORY -->
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
