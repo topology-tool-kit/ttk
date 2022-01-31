@@ -28,7 +28,7 @@ namespace ttk {
 
   public:
     MetricDistortion();
-    
+
     int preconditionTriangulation(AbstractTriangulation *triangulation) {
       // Pre-condition functions.
       if(triangulation) {
@@ -38,13 +38,12 @@ namespace ttk {
       return 0;
     }
 
-    template <class triangulationType>
-    void
-      computeSurfaceCurvature(const triangulationType *triangulation,
-                              std::vector<std::vector<double>> &distanceMatrix,
-                              std::vector<double> &surfaceCurvature,
-                              std::vector<double> &metricCurvature,
-                              std::vector<double> &diffCurvature) {
+    template <class triangulationType, class tableDataType>
+    void computeSurfaceCurvature(const triangulationType *triangulation,
+                                 std::vector<tableDataType *> &distanceMatrix,
+                                 std::vector<double> &surfaceCurvature,
+                                 std::vector<double> &metricCurvature,
+                                 std::vector<double> &diffCurvature) {
       unsigned int dim = triangulation->getNumberOfVertices();
       surfaceCurvature = std::vector<double>(dim, std::nan(""));
       metricCurvature = std::vector<double>(dim, std::nan(""));
@@ -96,13 +95,15 @@ namespace ttk {
           sumAngleSurface += angleSurface;
           if(distanceMatrix.size() != 0) {
             double angleMetric;
+            double distMat_i_i0 = distanceMatrix[i][i0];
+            double distMat_i_i1 = distanceMatrix[i][i1];
+            double distMat_i0_i1 = distanceMatrix[i0][i1];
             Geometry::computeTriangleAngleFromSides(
-              distanceMatrix[i][i0], distanceMatrix[i][i1],
-              distanceMatrix[i0][i1], angleMetric);
+              distMat_i_i0, distMat_i_i1, distMat_i0_i1, angleMetric);
             sumAngleMetric += angleMetric;
           }
         }
-        
+
         unsigned int cornerNoCell = (noTriangle > noQuad ? 2 : 1);
         double coef = (point2CellPoints[i].size() <= cornerNoCell
                          ? 0.5
@@ -118,13 +119,12 @@ namespace ttk {
       }
     }
 
-    template <class triangulationType>
-    void
-      computeSurfaceDistance(const triangulationType *triangulation,
-                             std::vector<std::vector<double>> &distanceMatrix,
-                             std::vector<double> &surfaceDistance,
-                             std::vector<double> &metricDistance,
-                             std::vector<double> &ratioDistance) {
+    template <class triangulationType, class tableDataType>
+    void computeSurfaceDistance(const triangulationType *triangulation,
+                                std::vector<tableDataType *> &distanceMatrix,
+                                std::vector<double> &surfaceDistance,
+                                std::vector<double> &metricDistance,
+                                std::vector<double> &ratioDistance) {
       unsigned int dim = triangulation->getNumberOfCells();
       surfaceDistance = std::vector<double>(dim, std::nan(""));
       metricDistance = std::vector<double>(dim, std::nan(""));
@@ -150,9 +150,9 @@ namespace ttk {
       }
     }
 
-    template <class triangulationType>
+    template <class triangulationType, class tableDataType>
     void computeSurfaceArea(const triangulationType *triangulation,
-                            std::vector<std::vector<double>> &distanceMatrix,
+                            std::vector<tableDataType *> &distanceMatrix,
                             std::vector<double> &surfaceArea,
                             std::vector<double> &metricArea,
                             std::vector<double> &ratioArea) {
@@ -180,9 +180,13 @@ namespace ttk {
         surfaceArea[i] = area;
 
         if(distanceMatrix.size() != 0) {
+          double areaMetric;
+          double distMat_i0_i1 = distanceMatrix[i0][i1];
+          double distMat_i1_i2 = distanceMatrix[i1][i2];
+          double distMat_i2_i0 = distanceMatrix[i2][i0];
           Geometry::computeTriangleAreaFromSides(
-            distanceMatrix[i0][i1], distanceMatrix[i1][i2],
-            distanceMatrix[i2][i0], metricArea[i]);
+            distMat_i0_i1, distMat_i1_i2, distMat_i2_i0, areaMetric);
+          metricArea[i] = areaMetric;
         }
 
         if(cellNoPoints == 4) {
@@ -197,9 +201,11 @@ namespace ttk {
 
           if(distanceMatrix.size() != 0) {
             double areaMetric;
+            double distMat_i1_i2 = distanceMatrix[i1][i2];
+            double distMat_i2_i3 = distanceMatrix[i2][i3];
+            double distMat_i3_i1 = distanceMatrix[i3][i1];
             Geometry::computeTriangleAreaFromSides(
-              distanceMatrix[i1][i2], distanceMatrix[i2][i3],
-              distanceMatrix[i3][i1], areaMetric);
+              distMat_i1_i2, distMat_i2_i3, distMat_i3_i1, areaMetric);
             metricArea[i] += areaMetric;
           }
         }

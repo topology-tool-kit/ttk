@@ -65,6 +65,11 @@ class TTKMETRICDISTORTION_EXPORT ttkMetricDistortion
     protected ttk::MetricDistortion // and we inherit from the base class
 {
 private:
+  // Filled by the algorithm
+  std::vector<double> surfaceArea, metricArea, ratioArea;
+  std::vector<double> surfaceDistance, metricDistance, ratioDistance;
+  std::vector<double> surfaceCurvature, metricCurvature, diffCurvature;
+
   /**
    * Add all filter parameters only as private member variables and
    * initialize them here.
@@ -110,4 +115,7 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+
+  template <class tableDataType>
+  int run(vtkInformationVector **inputVector);
 };

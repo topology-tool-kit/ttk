@@ -8,7 +8,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkPolyData.h>
+#include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
@@ -95,6 +95,48 @@ int ttkMetricDistortion::FillOutputPortInformation(int port,
  *     2) The output objects are already initialized based on the information
  *        provided by the FillOutputPortInformation method.
  */
+template <class tableDataType>
+int ttkMetricDistortion::run(vtkInformationVector **inputVector) {
+  vtkPointSet *inputSurface = vtkPointSet::GetData(inputVector[0]);
+  auto triangulation = ttkAlgorithm::GetTriangulation(inputSurface);
+  if(!triangulation) {
+    printErr("Unable to load triangulation.");
+    return -4;
+  }
+  this->preconditionTriangulation(triangulation);
+
+  // Load Table
+  vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
+  std::vector<tableDataType *> distanceMatrix;
+  if(distanceMatrixVTK) {
+    auto noRows = distanceMatrixVTK->GetNumberOfRows();
+    distanceMatrix = std::vector<tableDataType *>(noRows);
+    for(unsigned int i = 0; i < noRows; ++i) {
+      auto row = vtkDataArray::SafeDownCast(distanceMatrixVTK->GetColumn(i));
+      if(!row) {
+        printErr("Unable to load column " + std::to_string(i)
+                 + " in the distance matrix.");
+        return -5;
+      }
+      distanceMatrix[i] = ttkUtils::GetPointer<tableDataType>(row);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Call base
+  // --------------------------------------------------------------------------
+  computeSurfaceArea(triangulation->getData(), distanceMatrix, surfaceArea,
+                     metricArea, ratioArea);
+
+  computeSurfaceDistance(triangulation->getData(), distanceMatrix,
+                         surfaceDistance, metricDistance, ratioDistance);
+
+  computeSurfaceCurvature(triangulation->getData(), distanceMatrix,
+                          surfaceCurvature, metricCurvature, diffCurvature);
+
+  return 1;
+}
+
 int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
@@ -103,52 +145,52 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   // Get input object from input vector
   // --------------------------------------------------------------------------
   // Load Surface
-  vtkPolyData *inputSurface = vtkPolyData::GetData(inputVector[0]);
-  if(!inputSurface)
+  vtkPointSet *inputSurface = vtkPointSet::GetData(inputVector[0]);
+  if(!inputSurface) {
+    printErr("Unable to load input surface.");
     return 0;
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(inputSurface);
-  if(!triangulation)
-    return -1;
-  this->preconditionTriangulation(triangulation);
-
-  // Load Table
-  vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
-  std::vector<std::vector<double>> distanceMatrix;
-  if(distanceMatrixVTK) {
-    auto noRows = distanceMatrixVTK->GetNumberOfRows();
-    auto noCols = distanceMatrixVTK->GetNumberOfColumns();
-    distanceMatrix = std::vector<std::vector<double>>(
-      noRows, std::vector<double>(noCols, 0.0));
-    for(unsigned int i = 0; i < noRows; ++i)
-      for(unsigned int j = 0; j < noCols; ++j)
-        distanceMatrix[i][j]
-          = distanceMatrixVTK->GetColumn(j)->GetVariantValue(i).ToDouble();
   }
+  auto noPoints = inputSurface->GetNumberOfPoints();
+  if(noPoints == 0) {
+    printErr("Input surface should not have 0 points.");
+    return -1;
+  }
+  auto noCells = inputSurface->GetNumberOfCells();
 
-  // --------------------------------------------------------------------------
-  // Call base
-  // --------------------------------------------------------------------------
-  std::vector<double> surfaceArea, metricArea, ratioArea;
-  computeSurfaceArea(triangulation->getData(), distanceMatrix, surfaceArea,
-                     metricArea, ratioArea);
+  vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
+  bool validDistanceMatrix
+    = (distanceMatrixVTK
+       and distanceMatrixVTK->GetNumberOfColumns() == noPoints);
+  if(distanceMatrixVTK and not validDistanceMatrix) {
+    printErr("Distance matrix should have the same number of rows/columns than "
+             "the surface's number of points.");
+    return -2;
+  }
+  int tableDataType
+    = (validDistanceMatrix ? distanceMatrixVTK->GetColumn(0)->GetDataType()
+                           : VTK_DOUBLE);
 
-  std::vector<double> surfaceDistance, metricDistance, ratioDistance;
-  computeSurfaceDistance(triangulation->getData(), distanceMatrix,
-                         surfaceDistance, metricDistance, ratioDistance);
-
-  std::vector<double> surfaceCurvature, metricCurvature, diffCurvature;
-  computeSurfaceCurvature(triangulation->getData(), distanceMatrix,
-                          surfaceCurvature, metricCurvature, diffCurvature);
+  surfaceArea.clear();
+  metricArea.clear();
+  ratioArea.clear();
+  surfaceDistance.clear();
+  metricDistance.clear();
+  ratioDistance.clear();
+  surfaceCurvature.clear();
+  metricCurvature.clear();
+  diffCurvature.clear();
+  int res = 1;
+  switch(tableDataType) {
+    vtkTemplateMacro(res = this->run<VTK_TT>(inputVector));
+  }
+  if(res != 1)
+    return res;
 
   // --------------------------------------------------------------------------
   // Get output object
   // --------------------------------------------------------------------------
-  auto outputSurface = vtkPolyData::GetData(outputVector, 0);
+  auto outputSurface = vtkPointSet::GetData(outputVector, 0);
   outputSurface->DeepCopy(inputSurface);
-  
-  auto noPoints = inputSurface->GetNumberOfPoints();
-  auto noCells = inputSurface->GetNumberOfCells();
 
   vtkNew<vtkDoubleArray> surfaceCurvatureArray{};
   surfaceCurvatureArray->SetName("CurvatureSurface");
@@ -167,7 +209,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   outputSurface->GetPointData()->AddArray(surfaceCurvatureArray);
-  if(distanceMatrix.size() != 0) {
+  if(validDistanceMatrix) {
     outputSurface->GetPointData()->AddArray(metricCurvatureArray);
     outputSurface->GetPointData()->AddArray(ratioCurvatureArray);
   }
@@ -203,7 +245,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
 
   outputSurface->GetCellData()->AddArray(surfaceAreaArray);
   outputSurface->GetCellData()->AddArray(surfaceDistanceArray);
-  if(distanceMatrix.size() != 0) {
+  if(validDistanceMatrix) {
     outputSurface->GetCellData()->AddArray(metricAreaArray);
     outputSurface->GetCellData()->AddArray(ratioAreaArray);
     outputSurface->GetCellData()->AddArray(metricDistanceArray);
