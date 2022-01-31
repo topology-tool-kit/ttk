@@ -59,13 +59,13 @@ namespace ttk {
           auto first = (j + 1) % cellNoPoints;
           auto second = (j + (cellNoPoints - 1)) % cellNoPoints;
 
-          int i0, i1;
+          SimplexId i0, i1;
           triangulation->getCellVertex(i, first, i0);
           triangulation->getCellVertex(i, second, i1);
 
           std::tuple<int, int> tup = std::make_tuple(i0, i1);
 
-          int ij;
+          SimplexId ij;
           triangulation->getCellVertex(i, j, ij);
           point2CellPoints[ij].push_back(tup);
         }
@@ -133,7 +133,7 @@ namespace ttk {
         if(triangulation->getCellVertexNumber(i) != 2)
           continue;
 
-        int i0, i1;
+        SimplexId i0, i1;
         triangulation->getCellVertex(i, 0, i0);
         triangulation->getCellVertex(i, 1, i1);
 
@@ -165,7 +165,7 @@ namespace ttk {
         if(cellNoPoints < 3 or cellNoPoints > 4)
           continue;
 
-        int i0, i1, i2;
+        SimplexId i0, i1, i2;
         triangulation->getCellVertex(i, 0, i0);
         triangulation->getCellVertex(i, 1, i1);
         triangulation->getCellVertex(i, 2, i2);
@@ -190,7 +190,7 @@ namespace ttk {
         }
 
         if(cellNoPoints == 4) {
-          int i3;
+          SimplexId i3;
           triangulation->getCellVertex(i, 3, i3);
           float p3[3];
           triangulation->getVertexPoint(i3, p3[0], p3[1], p3[2]);
