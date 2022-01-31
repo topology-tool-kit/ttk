@@ -29,31 +29,38 @@ namespace ttk {
   public:
     MetricDistortion();
 
+    template <class triangulationType>
     void
-      computeSurfaceCurvature(std::vector<std::vector<double>> &surfacePoints,
-                              std::vector<std::vector<int>> &surfaceCells,
+      computeSurfaceCurvature(const triangulationType *triangulation,
                               std::vector<std::vector<double>> &distanceMatrix,
                               std::vector<bool> &isPointBoundary,
                               std::vector<double> &surfaceCurvature,
                               std::vector<double> &metricCurvature,
                               std::vector<double> &diffCurvature) {
-      unsigned int dim = surfacePoints.size();
+      unsigned int dim = triangulation->getNumberOfVertices();
       surfaceCurvature = std::vector<double>(dim, std::nan(""));
       metricCurvature = std::vector<double>(dim, std::nan(""));
       diffCurvature = std::vector<double>(dim, std::nan(""));
 
       std::vector<std::vector<std::tuple<int, int>>> point2CellPoints(dim);
       unsigned int noTriangle = 0, noQuad = 0;
-      for(unsigned int i = 0; i < surfaceCells.size(); ++i) {
-        auto cellNoPoints = surfaceCells[i].size();
+      for(int i = 0; i < triangulation->getNumberOfCells(); ++i) {
+        auto cellNoPoints = triangulation->getCellVertexNumber(i);
         if(cellNoPoints < 3 or cellNoPoints > 4)
           continue;
-        for(unsigned int j = 0; j < cellNoPoints; ++j) {
+        for(int j = 0; j < cellNoPoints; ++j) {
           auto first = (j + 1) % cellNoPoints;
           auto second = (j + (cellNoPoints - 1)) % cellNoPoints;
-          std::tuple<int, int> tup
-            = std::make_tuple(surfaceCells[i][first], surfaceCells[i][second]);
-          point2CellPoints[surfaceCells[i][j]].push_back(tup);
+
+          int i0, i1;
+          triangulation->getCellVertex(i, first, i0);
+          triangulation->getCellVertex(i, second, i1);
+
+          std::tuple<int, int> tup = std::make_tuple(i0, i1);
+
+          int ij;
+          triangulation->getCellVertex(i, j, ij);
+          point2CellPoints[ij].push_back(tup);
         }
         noTriangle += (cellNoPoints == 3);
         noQuad += (cellNoPoints == 4);
@@ -66,12 +73,15 @@ namespace ttk {
           auto tup = point2CellPoints[i][j];
           int i0 = std::get<0>(tup);
           int i1 = std::get<1>(tup);
-          auto p_i0 = surfacePoints[i0];
-          auto p_i1 = surfacePoints[i1];
-          auto p_i = surfacePoints[i];
-          auto dist_i_i0 = Geometry::distance(&p_i[0], &p_i0[0]);
-          auto dist_i_i1 = Geometry::distance(&p_i[0], &p_i1[0]);
-          auto dist_i0_i1 = Geometry::distance(&p_i0[0], &p_i1[0]);
+
+          float p_i0[3], p_i1[3], p_i[3];
+          triangulation->getVertexPoint(i0, p_i0[0], p_i0[1], p_i0[2]);
+          triangulation->getVertexPoint(i1, p_i1[0], p_i1[1], p_i1[2]);
+          triangulation->getVertexPoint(i, p_i[0], p_i[1], p_i[2]);
+
+          double dist_i_i0 = Geometry::distance(&p_i[0], &p_i0[0]);
+          double dist_i_i1 = Geometry::distance(&p_i[0], &p_i1[0]);
+          double dist_i0_i1 = Geometry::distance(&p_i0[0], &p_i1[0]);
           double angleSurface;
           Geometry::computeTriangleAngleFromSides(
             dist_i_i0, dist_i_i1, dist_i0_i1, angleSurface);
@@ -100,26 +110,30 @@ namespace ttk {
       }
     }
 
+    template <class triangulationType>
     void
-      computeSurfaceDistance(std::vector<std::vector<double>> &surfacePoints,
-                             std::vector<std::vector<int>> &surfaceCells,
+      computeSurfaceDistance(const triangulationType *triangulation,
                              std::vector<std::vector<double>> &distanceMatrix,
                              std::vector<double> &surfaceDistance,
                              std::vector<double> &metricDistance,
                              std::vector<double> &ratioDistance) {
-      unsigned int dim = surfaceCells.size();
+      unsigned int dim = triangulation->getNumberOfCells();
       surfaceDistance = std::vector<double>(dim, std::nan(""));
       metricDistance = std::vector<double>(dim, std::nan(""));
       ratioDistance = std::vector<double>(dim, std::nan(""));
       for(unsigned int i = 0; i < dim; ++i) {
-        if(surfaceCells[i].size() != 2)
+        if(triangulation->getCellVertexNumber(i) != 2)
           continue;
 
-        int i0 = surfaceCells[i][0];
-        int i1 = surfaceCells[i][1];
+        int i0, i1;
+        triangulation->getCellVertex(i, 0, i0);
+        triangulation->getCellVertex(i, 1, i1);
 
-        surfaceDistance[i]
-          = Geometry::distance(&surfacePoints[i0][0], &surfacePoints[i1][0]);
+        float p0[3], p1[3];
+        triangulation->getVertexPoint(i0, p0[0], p0[1], p0[2]);
+        triangulation->getVertexPoint(i1, p1[0], p1[1], p1[2]);
+
+        surfaceDistance[i] = Geometry::distance(&p0[0], &p1[0]);
 
         if(distanceMatrix.size() != 0) {
           metricDistance[i] = distanceMatrix[i0][i1];
@@ -128,27 +142,34 @@ namespace ttk {
       }
     }
 
-    void computeSurfaceArea(std::vector<std::vector<double>> &surfacePoints,
-                            std::vector<std::vector<int>> &surfaceCells,
+    template <class triangulationType>
+    void computeSurfaceArea(const triangulationType *triangulation,
                             std::vector<std::vector<double>> &distanceMatrix,
                             std::vector<double> &surfaceArea,
                             std::vector<double> &metricArea,
                             std::vector<double> &ratioArea) {
-      unsigned int dim = surfaceCells.size();
+      unsigned int dim = triangulation->getNumberOfCells();
       surfaceArea = std::vector<double>(dim, std::nan(""));
       metricArea = std::vector<double>(dim, std::nan(""));
       ratioArea = std::vector<double>(dim, std::nan(""));
       for(unsigned int i = 0; i < dim; ++i) {
-        if(surfaceCells[i].size() < 3 or surfaceCells[i].size() > 4)
+        auto cellNoPoints = triangulation->getCellVertexNumber(i);
+        if(cellNoPoints < 3 or cellNoPoints > 4)
           continue;
 
-        int i0 = surfaceCells[i][0];
-        int i1 = surfaceCells[i][1];
-        int i2 = surfaceCells[i][2];
+        int i0, i1, i2;
+        triangulation->getCellVertex(i, 0, i0);
+        triangulation->getCellVertex(i, 1, i1);
+        triangulation->getCellVertex(i, 2, i2);
 
-        Geometry::computeTriangleArea(&surfacePoints[i0][0],
-                                      &surfacePoints[i1][0],
-                                      &surfacePoints[i2][0], surfaceArea[i]);
+        float p0[3], p1[3], p2[3];
+        triangulation->getVertexPoint(i0, p0[0], p0[1], p0[2]);
+        triangulation->getVertexPoint(i1, p1[0], p1[1], p1[2]);
+        triangulation->getVertexPoint(i2, p2[0], p2[1], p2[2]);
+
+        float area;
+        Geometry::computeTriangleArea(&p0[0], &p1[0], &p2[0], area);
+        surfaceArea[i] = area;
 
         if(distanceMatrix.size() != 0) {
           Geometry::computeTriangleAreaFromSides(
@@ -156,12 +177,14 @@ namespace ttk {
             distanceMatrix[i2][i0], metricArea[i]);
         }
 
-        if(surfaceCells[i].size() == 4) {
-          int i3 = surfaceCells[i][3];
-          double areaSurface;
-          Geometry::computeTriangleArea(&surfacePoints[i1][0],
-                                        &surfacePoints[i2][0],
-                                        &surfacePoints[i3][0], areaSurface);
+        if(cellNoPoints == 4) {
+          int i3;
+          triangulation->getCellVertex(i, 3, i3);
+          float p3[3];
+          triangulation->getVertexPoint(i3, p3[0], p3[1], p3[2]);
+
+          float areaSurface;
+          Geometry::computeTriangleArea(&p1[0], &p2[0], &p3[0], areaSurface);
           surfaceArea[i] += areaSurface;
 
           if(distanceMatrix.size() != 0) {

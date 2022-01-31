@@ -106,6 +106,11 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   vtkPolyData *inputSurface = vtkPolyData::GetData(inputVector[0]);
   if(!inputSurface)
     return 0;
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(inputSurface);
+  if(!triangulation)
+    return -1;
+
   auto noPoints = inputSurface->GetNumberOfPoints();
   std::vector<std::vector<double>> surfacePoints(
     noPoints, std::vector<double>(3));
@@ -167,15 +172,15 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   // Call base
   // --------------------------------------------------------------------------
   std::vector<double> surfaceArea, metricArea, ratioArea;
-  computeSurfaceArea(surfacePoints, surfaceCells, distanceMatrix, surfaceArea,
+  computeSurfaceArea(triangulation->getData(), distanceMatrix, surfaceArea,
                      metricArea, ratioArea);
 
   std::vector<double> surfaceDistance, metricDistance, ratioDistance;
-  computeSurfaceDistance(surfacePoints, surfaceCells, distanceMatrix,
+  computeSurfaceDistance(triangulation->getData(), distanceMatrix,
                          surfaceDistance, metricDistance, ratioDistance);
 
   std::vector<double> surfaceCurvature, metricCurvature, diffCurvature;
-  computeSurfaceCurvature(surfacePoints, surfaceCells, distanceMatrix,
+  computeSurfaceCurvature(triangulation->getData(), distanceMatrix,
                           isPointBoundary, surfaceCurvature, metricCurvature,
                           diffCurvature);
 
