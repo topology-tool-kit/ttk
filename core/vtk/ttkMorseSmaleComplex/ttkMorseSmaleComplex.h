@@ -106,9 +106,6 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(IterationThreshold, int);
-  vtkGetMacro(IterationThreshold, int);
-
   vtkSetMacro(ComputeCriticalPoints, bool);
   vtkGetMacro(ComputeCriticalPoints, bool);
 
@@ -136,6 +133,9 @@ public:
   vtkSetMacro(ComputeFinalSegmentation, bool);
   vtkGetMacro(ComputeFinalSegmentation, bool);
 
+  vtkSetMacro(IterationThreshold, int);
+  vtkGetMacro(IterationThreshold, int);
+
   vtkSetMacro(ReturnSaddleConnectors, int);
   vtkGetMacro(ReturnSaddleConnectors, int);
 
@@ -148,6 +148,7 @@ protected:
                vtkPolyData *const outputCriticalPoints,
                vtkPolyData *const outputSeparatrices1,
                vtkPolyData *const outputSeparatrices2,
+               const SimplexId *const inputOffsets,
                const triangulationType &triangulation);
 
   ttkMorseSmaleComplex();
@@ -161,44 +162,8 @@ protected:
 private:
   bool ForceInputOffsetScalarField{};
   int IterationThreshold{-1};
-  bool ComputeCriticalPoints{true};
-  bool ComputeAscendingSeparatrices1{true};
-  bool ComputeDescendingSeparatrices1{true};
-  bool ComputeSaddleConnectors{true};
-  bool ComputeAscendingSeparatrices2{false};
-  bool ComputeDescendingSeparatrices2{false};
-  bool ComputeAscendingSegmentation{true};
-  bool ComputeDescendingSegmentation{true};
-  bool ComputeFinalSegmentation{true};
-  int ReturnSaddleConnectors{false};
-  double SaddleConnectorsPersistenceThreshold{0.0};
-
-  // critical points
-  std::vector<std::array<float, 3>> criticalPoints_points{};
-  std::vector<char> criticalPoints_points_cellDimensions{};
-  std::vector<ttk::SimplexId> criticalPoints_points_cellIds{};
-  std::vector<char> criticalPoints_points_isOnBoundary{};
-  std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers{};
-  std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize{};
-
-  // 1-separatrices data
-  std::vector<float> separatrices1_points{};
-  std::vector<char> separatrices1_points_smoothingMask{};
-  std::vector<char> separatrices1_points_cellDimensions{};
-  std::vector<ttk::SimplexId> separatrices1_points_cellIds{};
-  std::vector<ttk::SimplexId> separatrices1_cells_connectivity{};
-  std::vector<ttk::SimplexId> separatrices1_cells_sourceIds{};
-  std::vector<ttk::SimplexId> separatrices1_cells_destinationIds{};
-  std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds{};
-  std::vector<char> separatrices1_cells_separatrixTypes{};
-  std::vector<char> separatrices1_cells_isOnBoundary{};
-
-  // 2-separatrices data
-  std::vector<float> separatrices2_points{};
-  std::vector<ttk::SimplexId> separatrices2_cells_offsets{};
-  std::vector<ttk::SimplexId> separatrices2_cells_connectivity{};
-  std::vector<ttk::SimplexId> separatrices2_cells_sourceIds{};
-  std::vector<ttk::SimplexId> separatrices2_cells_separatrixIds{};
-  std::vector<char> separatrices2_cells_separatrixTypes{};
-  std::vector<char> separatrices2_cells_isOnBoundary{};
+  OutputCriticalPoints criticalPoints_{};
+  Output1Separatrices separatrices1_{};
+  Output2Separatrices separatrices2_{};
+  OutputManifold segmentations_{};
 };
