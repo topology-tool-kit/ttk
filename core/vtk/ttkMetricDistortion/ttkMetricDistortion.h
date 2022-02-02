@@ -67,13 +67,13 @@ class TTKMETRICDISTORTION_EXPORT ttkMetricDistortion
 private:
   // Filled by the algorithm
   // Area
-  std::vector<double> surfaceArea, metricArea, ratioArea;
+  std::vector<double> surfaceArea_, metricArea_, ratioArea_;
   // Distance
-  std::vector<double> surfaceDistance, metricDistance, ratioDistance;
-  std::vector<std::array<double, 3>> surfacePointDistance, metricPointDistance,
-    ratioPointDistance;
+  std::vector<double> surfaceDistance_, metricDistance_, ratioDistance_;
+  std::vector<std::array<double, 3>> surfacePointDistance_,
+    metricPointDistance_, ratioPointDistance_;
   // Curvature
-  std::vector<double> surfaceCurvature, metricCurvature, diffCurvature;
+  std::vector<double> surfaceCurvature_, metricCurvature_, diffCurvature_;
 
   /**
    * Add all filter parameters only as private member variables and
