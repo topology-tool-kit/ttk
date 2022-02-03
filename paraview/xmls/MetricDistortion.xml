@@ -26,7 +26,8 @@
       </InputProperty>
       
       <InputProperty
-        name="TableDistance"
+        name="TableDistanceMatrix"
+        label="Distance Matrix (optional)"
         port_index="1"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
