@@ -595,9 +595,8 @@ in the gradient.
       /**
        * Compute manifold size for critical extrema
        */
-      int setManifoldSize(const std::vector<Cell> &criticalPoints,
+      int setManifoldSize(const size_t nCritPoints,
                           const std::vector<size_t> &nCriticalPointsByDim,
-                          const std::vector<SimplexId> &maxSeeds,
                           const SimplexId *const ascendingManifold,
                           const SimplexId *const descendingManifold,
                           std::vector<SimplexId> &manifoldSize) const;
