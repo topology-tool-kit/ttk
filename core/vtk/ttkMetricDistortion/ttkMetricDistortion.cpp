@@ -205,10 +205,10 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   outputSurface->DeepCopy(inputSurface);
 
   vtkNew<vtkDoubleArray> surfaceCurvature_Array{};
-  surfaceCurvature_Array->SetName("CurvatureSurface");
+  surfaceCurvature_Array->SetName("SurfaceCurvature");
   surfaceCurvature_Array->SetNumberOfTuples(noPoints);
   vtkNew<vtkDoubleArray> metricCurvature_Array{};
-  metricCurvature_Array->SetName("CurvatureMetric");
+  metricCurvature_Array->SetName("MetricCurvature");
   metricCurvature_Array->SetNumberOfTuples(noPoints);
   vtkNew<vtkDoubleArray> ratioCurvatureArray{};
   ratioCurvatureArray->SetName("CurvatureDiff");
@@ -229,13 +229,13 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   for(unsigned int i = 0; i < 3; ++i) {
     std::string type{(i == 0 ? "Min" : (i == 1) ? "Max" : "Avg")};
     vtkNew<vtkDoubleArray> surfaceIDistanceArray{};
-    surfaceIDistanceArray->SetName((type + "DistanceSurface").c_str());
+    surfaceIDistanceArray->SetName((type + "SurfaceEdgeLength").c_str());
     surfaceIDistanceArray->SetNumberOfTuples(noPoints);
     vtkNew<vtkDoubleArray> metricIDistanceArray{};
-    metricIDistanceArray->SetName((type + "DistanceMetric").c_str());
+    metricIDistanceArray->SetName((type + "MetricEdgeLength").c_str());
     metricIDistanceArray->SetNumberOfTuples(noPoints);
     vtkNew<vtkDoubleArray> ratioIDistanceArray{};
-    ratioIDistanceArray->SetName((type + "DistanceRatio").c_str());
+    ratioIDistanceArray->SetName((type + "EdgeLengthRatio").c_str());
     ratioIDistanceArray->SetNumberOfTuples(noPoints);
     for(unsigned int j = 0; j < noPoints; ++j) {
       surfaceIDistanceArray->SetTuple1(j, surfacePointDistance_[j][i]);
@@ -251,23 +251,23 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
 
   // --- Cell Data
   vtkNew<vtkDoubleArray> surfaceArea_Array{};
-  surfaceArea_Array->SetName("AreaSurface");
+  surfaceArea_Array->SetName("SurfaceArea");
   surfaceArea_Array->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> metricArea_Array{};
-  metricArea_Array->SetName("AreaMetric");
+  metricArea_Array->SetName("MetricArea");
   metricArea_Array->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> ratioArea_Array{};
   ratioArea_Array->SetName("AreaRatio");
   ratioArea_Array->SetNumberOfTuples(noCells);
 
   vtkNew<vtkDoubleArray> surfaceDistance_Array{};
-  surfaceDistance_Array->SetName("DistanceSurface");
+  surfaceDistance_Array->SetName("SurfaceEdgeLength");
   surfaceDistance_Array->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> metricDistance_Array{};
-  metricDistance_Array->SetName("DistanceMetric");
+  metricDistance_Array->SetName("MetricEdgeLength");
   metricDistance_Array->SetNumberOfTuples(noCells);
   vtkNew<vtkDoubleArray> ratioDistance_Array{};
-  ratioDistance_Array->SetName("DistanceRatio");
+  ratioDistance_Array->SetName("EdgeLengthRatio");
   ratioDistance_Array->SetNumberOfTuples(noCells);
 
   bool distanceAllNan = true;
