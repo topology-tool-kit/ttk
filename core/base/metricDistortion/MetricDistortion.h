@@ -73,6 +73,9 @@ namespace ttk {
         noQuad += (cellNoPoints == 4);
       }
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
       for(unsigned int i = 0; i < dim; ++i) {
         double sumAngleSurface = 0.0, sumAngleMetric = 0.0;
 
@@ -146,6 +149,9 @@ namespace ttk {
       surfaceDistance = std::vector<double>(dim, std::nan(""));
       metricDistance = std::vector<double>(dim, std::nan(""));
       ratioDistance = std::vector<double>(dim, std::nan(""));
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
       for(unsigned int i = 0; i < dim; ++i) {
         if(triangulation->getCellVertexNumber(i) != 2)
           continue;
@@ -170,6 +176,9 @@ namespace ttk {
       surfacePointDistance = std::vector<std::array<double, 3>>(dim);
       metricPointDistance = std::vector<std::array<double, 3>>(dim);
       ratioPointDistance = std::vector<std::array<double, 3>>(dim);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
       for(unsigned int i = 0; i < dim; ++i) {
         double minDistanceS, maxDistanceS, avgDistanceS;
         initIndicators(minDistanceS, maxDistanceS, avgDistanceS);
@@ -219,6 +228,9 @@ namespace ttk {
       surfaceArea = std::vector<double>(dim, std::nan(""));
       metricArea = std::vector<double>(dim, std::nan(""));
       ratioArea = std::vector<double>(dim, std::nan(""));
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
       for(unsigned int i = 0; i < dim; ++i) {
         auto cellNoPoints = triangulation->getCellVertexNumber(i);
         if(cellNoPoints < 3 or cellNoPoints > 4)
