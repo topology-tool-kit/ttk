@@ -60,14 +60,6 @@ int DiscreteGradient::setCriticalPoints(
   std::vector<SimplexId> &PLVertexIdentifiers,
   const triangulationType &triangulation) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField_) {
-    this->printErr(
-      "Critical points' pointer to the input scalar field is null.");
-    return -1;
-  }
-#endif
-
   const auto nCritPoints = criticalPoints.size();
 
   const int numberOfDimensions = getNumberOfDimensions();
