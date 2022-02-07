@@ -1334,8 +1334,8 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
-  auto separatrixFunctionMaxima = outSeps2.cl.sepFuncMaxId_;
-  auto separatrixFunctionMinima = outSeps2.cl.sepFuncMinId_;
+  auto &separatrixFunctionMaxima = outSeps2.cl.sepFuncMaxId_;
+  auto &separatrixFunctionMinima = outSeps2.cl.sepFuncMinId_;
 
   // max existing separatrix id + 1 or 0 if no previous separatrices
   const SimplexId separatrixId
