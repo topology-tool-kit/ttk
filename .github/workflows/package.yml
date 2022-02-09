@@ -49,16 +49,18 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       name: Fetch TTK-ParaView package
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb"
+        target: "ttk-paraview.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb
+        sudo apt install ./ttk-paraview.deb
 
     - name: Create & configure TTK build directory
       run: |
@@ -111,12 +113,14 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       name: Fetch TTK-ParaView package
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb"
+        target: "ttk-paraview.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Fetch TTK .deb artifact
       uses: actions/download-artifact@v2
@@ -126,7 +130,7 @@ jobs:
     - name: Install generated .deb packages
       run: |
         sudo apt update
-        sudo apt install ./ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb
+        sudo apt install ./ttk-paraview.deb
         sudo apt install ./ttk-ubuntu-20.04.deb
 
     - name: Run TTK tests
@@ -278,7 +282,8 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge qt boost eigen spectralib zfp scikit-learn openmp graphviz
+        conda install -c conda-forge qt boost eigen spectralib zfp \
+          scikit-learn openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
       shell: bash
@@ -314,6 +319,11 @@ jobs:
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
+          -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
+          -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
+          -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
+          -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
           -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
@@ -359,7 +369,8 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge qt boost eigen spectralib zfp scikit-learn openmp graphviz
+        conda install -c conda-forge qt boost eigen spectralib zfp \
+          scikit-learn openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
       shell: bash

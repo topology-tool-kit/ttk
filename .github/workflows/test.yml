@@ -55,28 +55,32 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       name: Fetch archived ccache
       with:
         repo: "topology-tool-kit/ttk"
         version: "tags/ccache"
         file: "ttk-ccache-${{ matrix.os }}.tar.gz"
+        target: "ttk-ccache.tar.gz"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Decompress ccache archive
       run: |
-        tar xzf ttk-ccache-${{ matrix.os }}.tar.gz
+        tar xzf ttk-ccache.tar.gz
         mv .ccache /home/runner/
 
-    - uses: dsaltares/fetch-gh-release-asset@0.0.5
+    - uses: dsaltares/fetch-gh-release-asset@master
       name: Fetch TTK-ParaView headless Debian package
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
         file: "ttk-paraview-headless-${{ matrix.os }}.deb"
+        target: "ttk-paraview-headless.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview-headless-${{ matrix.os }}.deb
+        sudo apt install ./ttk-paraview-headless.deb
 
     - name: Create & configure TTK build directory
       run: |
@@ -125,6 +129,17 @@ jobs:
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        python3 -u python/run.py
+        cat python/res.json
+        diff python/hashes/${{ matrix.os }}.json python/res.json
+      env:
+        OMP_NUM_THREADS: 1
+
 
   # -----------------#
   # Test macOS build #
@@ -201,6 +216,43 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
+    - uses: actions/checkout@v2
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data states [NOT ENFORCED]
+      if: false
+      id: validate
+      continue-on-error: true
+      run: |
+        cd ttk-data/tests
+        mkdir output_screenshots
+        python3 -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+
+    - name: Upload result screenshots
+      if: steps.validate.outcome == 'failure'
+      uses: actions/upload-artifact@v2
+      with:
+        name: screenshots-macOS.tar.gz
+        path: ttk-data/tests/screenshots.tar.gz
+
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        python3 -u python/run.py
+        cat python/res.json
+        diff python/hashes/macOS.json python/res.json
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+        OMP_NUM_THREADS: 1
+
+
   # ------------------ #
   # Test Windows build #
   # ------------------ #
@@ -220,7 +272,8 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge boost glew eigen spectralib zfp scikit-learn openmp graphviz
+        conda install -c conda-forge boost glew eigen spectralib zfp \
+          scikit-learn openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
       shell: bash
@@ -249,6 +302,11 @@ jobs:
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
+          -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
+          -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
+          -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
+          -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
           -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
@@ -313,3 +371,23 @@ jobs:
       run: |
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
+
+    - uses: actions/checkout@v2
+      with:
+        repository: "pierre-guillou/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
+      shell: cmd
+      run: |
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd ttk-data
+        python -u python\run.py
+        type python\res.json
+        FC python\hashes\windows.json python\res.json
+      env:
+        OMP_NUM_THREADS: 1
