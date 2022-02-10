@@ -19,7 +19,7 @@
 
        - https://topology-tool-kit.github.io/examples/imageProcessing/
 
-        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+       - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
 
      </Documentation>
      <InputProperty
@@ -63,9 +63,21 @@
                          default_values="0">
       </IntVectorProperty>
 
+      <IntVectorProperty name="CompactRange"
+        label="Compact Range"
+        command="SetCompactRange"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Force the output values to be in the [0, #values - 1] integer range.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFieldNew" />
         <Property name="Seed" />
+        <Property name="CompactRange" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}
