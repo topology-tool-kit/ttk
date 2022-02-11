@@ -57,6 +57,64 @@ namespace ttk {
       return this->offsets_[id];
     }
 
+    struct Slice {
+      const SimplexId *const ptr;
+      const SimplexId len;
+      inline SimplexId operator[](const SimplexId id) {
+#ifndef TTK_ENABLE_KAMIKAZE
+        if(id < 0 || id >= len) {
+          return -1;
+        }
+#endif
+        return ptr[id];
+      }
+      inline const SimplexId *data() const {
+        return ptr;
+      }
+      inline const SimplexId *begin() const {
+        return ptr;
+      }
+      inline const SimplexId *end() const {
+        return ptr + len;
+      }
+      inline SimplexId size() const {
+        return this->len;
+      }
+    };
+
+    struct Iterator {
+      size_t id;
+      const FlatJaggedArray &parent;
+      inline void operator++() {
+        this->id++;
+      }
+      inline Slice operator*() const {
+        return parent[id];
+      }
+      inline bool operator!=(const Iterator &other) const {
+        return this->id != other.id;
+      }
+    };
+
+    inline Iterator begin() const {
+      return {0, *this};
+    }
+    inline Iterator end() const {
+      if(this->empty()) {
+        return {0, *this};
+      }
+      return {this->subvectorsNumber(), *this};
+    }
+
+    inline Slice operator[](const SimplexId id) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(id < 0 || id >= (SimplexId)offsets_.size()) {
+        return {nullptr, 0};
+      }
+#endif
+      return {this->get_ptr(id, 0), this->size(id)};
+    }
+
     /**
      * @brief Returns the data inside the sub-vectors
      */
