@@ -111,6 +111,23 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
         }
       }
 
+      // exclude columns with a space in their name
+      {
+        const auto oldSize{includeColumns.size()};
+        includeColumns.erase(
+          std::remove_if(includeColumns.begin(), includeColumns.end(),
+                         [inTable](const size_t a) {
+                           const std::string colName{inTable->GetColumnName(a)};
+                           return colName.find(' ') != std::string::npos;
+                         }),
+          includeColumns.end());
+        if(includeColumns.size() < oldSize) {
+          this->printWrn("Removed "
+                         + std::to_string(oldSize - includeColumns.size())
+                         + " columns with a space in their name");
+        }
+      }
+
       if(includeColumns.empty()) {
         this->printWrn("No columns to process!");
         return 1;
