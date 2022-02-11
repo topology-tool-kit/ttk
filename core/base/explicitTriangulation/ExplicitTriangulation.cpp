@@ -71,7 +71,7 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
   if(getDimensionality() == 2) {
     preconditionEdgeStarsInternal();
     for(SimplexId i = 0; i < (SimplexId)edgeStarData_.subvectorsNumber(); i++) {
-      if(edgeStarData_.size(i) == 1) {
+      if(edgeStarData_[i].size() == 1) {
         boundaryEdges_[i] = true;
       }
     }
@@ -80,7 +80,7 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     preconditionTriangleEdgesInternal();
 
     for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
-      if(triangleStarData_.size(i) == 1) {
+      if(triangleStarData_[i].size() == 1) {
         for(int j = 0; j < 3; j++) {
           boundaryEdges_[triangleEdgeList_[i][j]] = true;
         }
@@ -121,7 +121,7 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     preconditionTriangleStarsInternal();
 
     for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
-      if(triangleStarData_.size(i) == 1) {
+      if(triangleStarData_[i].size() == 1) {
         boundaryTriangles_[i] = true;
       }
     }
@@ -157,7 +157,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
   if(getDimensionality() == 1) {
     preconditionVertexStarsInternal();
     for(size_t i = 0; i < vertexStarData_.subvectorsNumber(); i++) {
-      if(vertexStarData_.size(i) == 1) {
+      if(vertexStarData_[i].size() == 1) {
         boundaryVertices_[i] = true;
       }
     }
@@ -166,7 +166,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     preconditionEdgeStarsInternal();
 
     for(SimplexId i = 0; i < (SimplexId)edgeStarData_.subvectorsNumber(); i++) {
-      if(edgeStarData_.size(i) == 1) {
+      if(edgeStarData_[i].size() == 1) {
         boundaryVertices_[edgeList_[i][0]] = true;
         boundaryVertices_[edgeList_[i][1]] = true;
       }
@@ -176,7 +176,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     preconditionTriangleStarsInternal();
 
     for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
-      if(triangleStarData_.size(i) == 1) {
+      if(triangleStarData_[i].size() == 1) {
         boundaryVertices_[triangleList_[i][0]] = true;
         boundaryVertices_[triangleList_[i][1]] = true;
         boundaryVertices_[triangleList_[i][2]] = true;
