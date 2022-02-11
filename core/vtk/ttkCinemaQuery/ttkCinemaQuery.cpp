@@ -94,6 +94,23 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
         }
       }
 
+      // exclude non-scalar columnns
+      {
+        const auto oldSize{includeColumns.size()};
+        includeColumns.erase(
+          std::remove_if(includeColumns.begin(), includeColumns.end(),
+                         [inTable](const size_t a) {
+                           const auto col{inTable->GetColumn(a)};
+                           return col->GetNumberOfComponents() != 1;
+                         }),
+          includeColumns.end());
+        if(includeColumns.size() < oldSize) {
+          this->printWrn("Removed "
+                         + std::to_string(oldSize - includeColumns.size())
+                         + " non-scalar columns");
+        }
+      }
+
       if(includeColumns.empty()) {
         this->printWrn("No columns to process!");
         return 1;
