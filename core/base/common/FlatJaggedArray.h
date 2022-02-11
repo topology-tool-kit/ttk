@@ -29,6 +29,14 @@ namespace ttk {
       this->offsets_ = std::move(offsets);
     }
 
+    /**
+     * @brief Clear the underlaying vectors
+     */
+    inline void clear() {
+      this->data_.clear();
+      this->offsets_.clear();
+    }
+
     // ############################## //
     // Mimic the vector of vector API //
     // ############################## //
@@ -100,9 +108,6 @@ namespace ttk {
       return {0, *this};
     }
     inline Iterator end() const {
-      if(this->empty()) {
-        return {0, *this};
-      }
       return {this->subvectorsNumber(), *this};
     }
 
@@ -156,6 +161,9 @@ namespace ttk {
      * @brief Returns the number of sub-vectors
      */
     inline size_t subvectorsNumber() const {
+      if(this->empty()) {
+        return 0;
+      }
       return this->offsets_.size() - 1;
     }
 
@@ -214,14 +222,14 @@ namespace ttk {
                 int threadNumber = 1) const {
       dst.resize(this->subvectorsNumber());
       for(size_t i = 0; i < this->subvectorsNumber(); ++i) {
-        dst[i].resize(this->size(i));
+        dst[i].resize((*this)[i].size());
       }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber)
 #endif // TTK_ENABLE_OPENMP
       for(size_t i = 0; i < this->subvectorsNumber(); ++i) {
         for(size_t j = 0; j < dst[i].size(); ++j) {
-          dst[i][j] = this->get(i, j);
+          dst[i][j] = (*this)[i][j];
         }
       }
       TTK_FORCE_USE(threadNumber);
@@ -236,9 +244,9 @@ namespace ttk {
      */
     inline void writeToFile(const std::string &fName) const {
       std::ofstream out(fName);
-      for(size_t i = 0; i < this->subvectorsNumber(); ++i) {
-        for(SimplexId j = 0; j < this->size(i); ++j) {
-          out << this->get(i, j) << " ";
+      for(const auto &slice : *this) {
+        for(const auto el : slice) {
+          out << el << " ";
         }
         out << '\n';
       }
