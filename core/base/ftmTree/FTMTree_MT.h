@@ -17,26 +17,10 @@
 
 #include <functional>
 #include <map>
+#include <numeric>
 #include <queue>
 #include <set>
 #include <vector>
-
-#ifdef __APPLE__
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef __clang__
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-#endif
-#endif
 
 #include <Geometry.h>
 #include <Triangulation.h>

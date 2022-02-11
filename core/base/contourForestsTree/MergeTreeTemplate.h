@@ -117,17 +117,10 @@ namespace ttk {
 
       std::vector<idNode> sortedNodes(nbNode);
       iota(sortedNodes.begin(), sortedNodes.end(), 0);
-// Sort nodes by vertex scalar
-//{
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-      __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
-#else
-      sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
-#endif
-#else
-      sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
-#endif
+      // Sort nodes by vertex scalar
+      //{
+      PSORT(this->threadNumber_)
+      (sortedNodes.begin(), sortedNodes.end(), isLowerComp);
       //}
 
       //}
@@ -167,16 +160,8 @@ namespace ttk {
       // Sort pairs by persistence
       //{
       // IS SET STILL BETTER ? (parallel sort) TODO
-
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-      __gnu_parallel::sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
-#else
-      sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
-#endif
-#else
-      sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
-#endif
+      PSORT(this->threadNumber_)
+      (sortedPairs.begin(), sortedPairs.end(), pairComp);
 
       auto last = unique(sortedPairs.begin(), sortedPairs.end());
       sortedPairs.erase(last, sortedPairs.end());

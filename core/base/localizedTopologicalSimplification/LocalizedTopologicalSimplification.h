@@ -19,11 +19,6 @@
 
 #pragma once
 
-// for parallel sort
-#if(defined(__GNUC__) && !defined(__clang__))
-#include <parallel/algorithm>
-#endif
-
 // for numerical perturbation
 #include <boost/math/special_functions/next.hpp>
 
@@ -1066,18 +1061,7 @@ namespace ttk {
         this->printMsg("Computing Global Order", 0.2, timer.getElapsedTime(),
                        this->threadNumber_, debug::LineMode::REPLACE);
 
-#ifdef TTK_ENABLE_OPENMP
-#ifdef __clang__
-        this->printWrn("Caution, outside GCC, sequential sort");
-        std::sort(sortedIndices.begin(), sortedIndices.end());
-#else
-        omp_set_num_threads(this->threadNumber_);
-        __gnu_parallel::sort(sortedIndices.begin(), sortedIndices.end());
-#endif
-#else
-        this->printWrn("Caution, outside GCC, sequential sort");
-        std::sort(sortedIndices.begin(), sortedIndices.end());
-#endif
+        PSORT(this->threadNumber_)(sortedIndices.begin(), sortedIndices.end());
 
         this->printMsg("Computing Global Order", 0.8, timer.getElapsedTime(),
                        this->threadNumber_, debug::LineMode::REPLACE);

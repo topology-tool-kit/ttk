@@ -11,14 +11,8 @@
 
 #include <Debug.h>
 
-#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 namespace ttk {
@@ -76,36 +70,5 @@ namespace ttk {
       virtual void init() = 0;
     };
 
-    template <typename Iterator>
-    void parallel_sort(Iterator begin, Iterator end) {
-      // Sort the vertices array
-#if defined(TTK_ENABLE_OPENMP) && defined(_GLIBCXX_PARALLEL_FEATURES_H)
-      ::__gnu_parallel::sort(begin, end);
-#else
-      ::std::sort(begin, end);
-#endif
-    }
-
-    template <typename Iterator, typename el>
-    void parallel_sort(Iterator begin,
-                       Iterator end,
-                       std::function<bool(el, el)> comp) {
-      // Sort the vertices array
-#if defined(TTK_ENABLE_OPENMP) && defined(_GLIBCXX_PARALLEL_FEATURES_H)
-      ::__gnu_parallel::sort(begin, end, comp);
-#else
-      ::std::sort(begin, end, comp);
-#endif
-    }
-
-    template <typename Iterator>
-    void sort(Iterator begin, Iterator end) {
-      ::std::sort(begin, end);
-    }
-
-    template <typename Iterator, typename el>
-    void sort(Iterator begin, Iterator end, std::function<bool(el, el)> comp) {
-      ::std::sort(begin, end, comp);
-    }
   } // namespace ftr
 } // namespace ttk

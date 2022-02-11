@@ -308,13 +308,10 @@ namespace ttk {
               return s->isLower(std::get<0>(a), std::get<0>(b));
             };
         if(parallel) {
-          ::ttk::ftr::parallel_sort<decltype(leaves_.begin()),
-                                    std::tuple<idVertex, bool>>(
-            leaves_.begin(), leaves_.end(), compare_fun);
+          PSORT(this->threadNumber_)
+          (leaves_.begin(), leaves_.end(), compare_fun);
         } else {
-          ::ttk::ftr::sort<decltype(leaves_.begin()),
-                           std::tuple<idVertex, bool>>(
-            leaves_.begin(), leaves_.end(), compare_fun);
+          std::sort(leaves_.begin(), leaves_.end(), compare_fun);
         }
       }
 
