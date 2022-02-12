@@ -1073,7 +1073,6 @@ namespace ttk {
 #else
         omp_set_num_threads(this->threadNumber_);
         __gnu_parallel::sort(sortedIndices.begin(), sortedIndices.end());
-        omp_set_num_threads(1);
 #endif
 #else
         this->printWrn("Caution, outside GCC, sequential sort");
