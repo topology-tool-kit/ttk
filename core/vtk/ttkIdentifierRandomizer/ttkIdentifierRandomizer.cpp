@@ -12,6 +12,7 @@
 #include <ttkUtils.h>
 
 #include <map>
+#include <numeric>
 #include <random>
 
 vtkStandardNewMacro(ttkIdentifierRandomizer);
@@ -47,6 +48,7 @@ int shuffleScalarFieldValues(const T *const inputField,
                              T *const outputField,
                              const int nValues,
                              const int seed,
+                             const bool compactRange,
                              const int nThreads = 1) {
 
   // copy input field into vector
@@ -58,7 +60,12 @@ int shuffleScalarFieldValues(const T *const inputField,
   inputValues.erase(last, inputValues.end());
 
   // copy the range of values
-  std::vector<T> shuffledValues(inputValues);
+  std::vector<T> shuffledValues(inputValues.size());
+  if(compactRange) {
+    std::iota(shuffledValues.begin(), shuffledValues.end(), T{});
+  } else {
+    std::copy(inputValues.begin(), inputValues.end(), shuffledValues.begin());
+  }
 
   // shuffle them using the seed
   std::mt19937 random_engine{};
@@ -131,7 +138,8 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *ttkNotUsed(request),
     vtkTemplateMacro(shuffleScalarFieldValues(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputArray)),
-      outputArray->GetNumberOfTuples(), this->RandomSeed, this->threadNumber_));
+      outputArray->GetNumberOfTuples(), this->RandomSeed, this->CompactRange,
+      this->threadNumber_));
   }
 
   if(isPointData)
