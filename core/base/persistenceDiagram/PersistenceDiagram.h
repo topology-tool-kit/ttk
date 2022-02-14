@@ -25,7 +25,7 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-///  Two backends can be chosen for the computation:
+/// Four backends can be chosen for the computation:
 ///
 ///  1) FTM
 /// \b Related \b publication \n
@@ -39,11 +39,24 @@
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 ///
+/// 3) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+///
+/// 4) Approximate Approach \n
+/// \b Related \b publication \n
+/// "Fast Approximation of Persistence Diagrams with Guarantees" \n
+/// Jules Vidal, Julien Tierny\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021\n
+///
+///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
 #pragma once
 
 // base code includes
+#include <ApproximateTopology.h>
 #include <DiscreteGradient.h>
 #include <FTMTreePP.h>
 #include <PersistentSimplexPairs.h>
@@ -91,7 +104,8 @@ namespace ttk {
     enum class BACKEND {
       FTM = 0,
       PROGRESSIVE_TOPOLOGY = 1,
-      PERSISTENT_SIMPLEX = 2
+      PERSISTENT_SIMPLEX = 2,
+      APPROXIMATE_TOPOLOGY = 3
     };
 
     PersistenceDiagram();
@@ -139,6 +153,10 @@ namespace ttk {
                                    const scalarType *inputScalars,
                                    const SimplexId *inputOffsets,
                                    const triangulationType *triangulation);
+    template <typename scalarType, class triangulationType>
+    int executeApproximateTopology(std::vector<PersistencePair> &CTDiagram,
+                                   const scalarType *inputScalars,
+                                   const triangulationType *triangulation);
 
     template <typename scalarType, class triangulationType>
     int executePersistentSimplex(std::vector<PersistencePair> &CTDiagram,
@@ -169,6 +187,19 @@ namespace ttk {
       }
     }
 
+    inline void setOutputMonotonyOffsets(void *data) {
+      outputMonotonyOffsets_ = data;
+    }
+    inline void setOutputOffsets(void *data) {
+      outputOffsets_ = data;
+    }
+    inline void setOutputScalars(void *data) {
+      outputScalars_ = data;
+    }
+    inline void setDeltaApproximate(double data) {
+      approxT_.setDelta(data);
+    }
+
   protected:
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
@@ -179,11 +210,18 @@ namespace ttk {
     BACKEND BackEnd{BACKEND::FTM};
     // progressivity
     ttk::ProgressiveTopology progT_{};
+    ttk::ApproximateTopology approxT_{};
 
     int StartingResolutionLevel{0};
     int StoppingResolutionLevel{-1};
     bool IsResumable{false};
     double TimeLimit{};
+
+    // Approximation
+    void *outputScalars_{};
+    void *outputOffsets_{};
+    void *outputMonotonyOffsets_{};
+    double Epsilon;
   };
 } // namespace ttk
 
@@ -243,6 +281,10 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
       executeProgressiveTopology(
         CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
+    case BACKEND::APPROXIMATE_TOPOLOGY:
+      executeApproximateTopology(CTDiagram, inputScalars, triangulation);
+      break;
+
     case BACKEND::FTM:
       executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
@@ -326,6 +368,47 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   }
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executeApproximateTopology(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const triangulationType *triangulation) {
+
+  approxT_.setDebugLevel(debugLevel_);
+  approxT_.setThreadNumber(threadNumber_);
+  approxT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  approxT_.setStartingResolutionLevel(StartingResolutionLevel);
+  approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
+  approxT_.setPreallocateMemory(true);
+  approxT_.setEpsilon(Epsilon);
+
+  std::vector<ApproximateTopology::PersistencePair> resultDiagram{};
+
+  approxT_.computeApproximatePD(
+    resultDiagram, inputScalars, (scalarType *)outputScalars_,
+    (SimplexId *)outputOffsets_, (int *)outputMonotonyOffsets_);
+
+  // create the final diagram
+  for(const auto &p : resultDiagram) {
+    if(p.pairType == 0) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Local_minimum, p.death, CriticalType::Saddle1,
+        inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+    } else if(p.pairType == 2) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Saddle2, p.death, CriticalType::Local_maximum,
+        inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+    } else if(p.pairType == -1) {
+      CTDiagram.emplace_back(p.birth, CriticalType::Local_minimum, p.death,
+                             CriticalType::Local_maximum,
+                             inputScalars[p.death] - inputScalars[p.birth],
+                             p.pairType);
+    }
+  }
+
   return 0;
 }
 
@@ -447,7 +530,8 @@ template <class triangulationType>
 void ttk::PersistenceDiagram::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
 
-  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+  if((BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+      || BackEnd == BACKEND::APPROXIMATE_TOPOLOGY)
      && !std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 
     printWrn("Explicit triangulation detected.");

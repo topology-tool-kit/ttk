@@ -1,0 +1,11 @@
+ttk_add_base_library(approximateTopology
+  SOURCES
+    ApproximateTopology.cpp
+  HEADERS
+    ApproximateTopology.h
+  DEPENDS
+    multiresTriangulation
+    triangulation
+    dynamicTree
+    progressiveTopology
+    )

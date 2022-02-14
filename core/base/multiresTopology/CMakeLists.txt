@@ -1,0 +1,10 @@
+ttk_add_base_library(multiresTopology
+  SOURCES
+  MultiresTopology.cpp
+  HEADERS
+  MultiresTopology.h
+  DEPENDS
+    multiresTriangulation
+    triangulation
+    dynamicTree
+    )

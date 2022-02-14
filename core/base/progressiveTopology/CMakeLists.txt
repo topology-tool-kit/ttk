@@ -7,4 +7,5 @@ ttk_add_base_library(progressiveTopology
     multiresTriangulation
     triangulation
     dynamicTree
+    multiresTopology
     )

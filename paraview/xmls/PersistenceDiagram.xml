@@ -31,7 +31,7 @@
         thresholds for topological simplification or for fast similarity
         estimations for instance.
 
-        Three backends are available for the computation of the persistence diagram:
+        Four backends are available for the computation of the persistence diagram:
 
         1) FTM
 
@@ -59,6 +59,24 @@
         "Algorithm and Theory of Computation Handbook (Second Edition)
         - Special Topics and Techniques" by Atallah and Blanton on
         page 97.
+
+        4) Approximate Approach
+
+        Related publication
+        "Fast Approximation of Persistence Diagrams with Guarantees"
+        Jules Vidal, Julien Tierny
+        IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021.
+
+        This approach computes an approximation of the persistence diagram of the extremum-saddle pairs
+        of an input scalar field. It necessitates the input data to be defined on an implicit regular grid.
+
+        The approximation comes with a user-controlled error on the Bottleneck distance to the exact diagram.
+        The tolerance on the relative Bottleneck error is set using the parameter epsilon.
+        Epsilon = 0.05 corresponds to a maximal relative Bottleneck error of 5%.
+
+        See ttkPersistenceDiagramApproximation for more outputs, such as the approximated scalar field and visual cues
+        about the diagram approximation.
+
 
         See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
         TopologicalSimplification.
@@ -197,10 +215,11 @@
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
           <Entry value="2" text="Persistent Simplex (Zomorodian 2010)"/>
+          <Entry value="3" text="Approximate Approach (IEEE LDAV 2021)"/>
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
-            The progressive approach only allows the computation of saddle-extremum pairs.
+            The progressive and approximate approaches only allow the computation of saddle-extremum pairs on regular grids.
         </Documentation>
       </IntVectorProperty>
 
@@ -213,10 +232,7 @@
          panel_visibility="advanced" >
         <IntRangeDomain name="range" min="-1" max="100" />
         <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="BackEnd"
-            value="1" />
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="1" />
         </Hints>
         <Documentation>
              Set the starting level of resolution for the progressive approach.
@@ -233,10 +249,7 @@
          panel_visibility="advanced" >
         <IntRangeDomain name="range" min="-1" max="100" />
         <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="BackEnd"
-            value="1" />
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="1" />
         </Hints>
         <Documentation>
              Set the ending level of resolution for the progressive approach.
@@ -262,6 +275,25 @@
           Allow resuming computation from a lower resolution
         </Documentation>
       </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="Epsilon"
+          label="Error (ε)"
+          command="SetEpsilon"
+          number_of_elements="1"
+          default_values="0.05"
+         panel_visibility="advanced" >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="3" />
+        </Hints>
+        <Documentation>
+            Tolerance on the maximal relative Bottleneck error.
+            A value of 0.05 denotes a maximal error of 5%. 
+        </Documentation>
+      </DoubleVectorProperty>
 
       <DoubleVectorProperty
           name="TimeLimit"
@@ -321,6 +353,7 @@
         <Property name="StoppingResolutionLevel" />
         <Property name="IsResumable" />
         <Property name="TimeLimit" />
+        <Property name="Epsilon" />
         <Property name="ScalarFieldNew" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldNameNew"/>

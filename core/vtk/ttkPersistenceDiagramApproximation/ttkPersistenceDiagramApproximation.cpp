@@ -9,18 +9,18 @@
 #include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
-#include <ttkPersistenceDiagram.h>
+#include <ttkPersistenceDiagramApproximation.h>
 #include <ttkUtils.h>
 
-vtkStandardNewMacro(ttkPersistenceDiagram);
+vtkStandardNewMacro(ttkPersistenceDiagramApproximation);
 
-ttkPersistenceDiagram::ttkPersistenceDiagram() {
+ttkPersistenceDiagramApproximation::ttkPersistenceDiagramApproximation() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(1);
+  SetNumberOfOutputPorts(3);
 }
 
-int ttkPersistenceDiagram::FillInputPortInformation(int port,
-                                                    vtkInformation *info) {
+int ttkPersistenceDiagramApproximation::FillInputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -28,8 +28,8 @@ int ttkPersistenceDiagram::FillInputPortInformation(int port,
   return 0;
 }
 
-int ttkPersistenceDiagram::FillOutputPortInformation(int port,
-                                                     vtkInformation *info) {
+int ttkPersistenceDiagramApproximation::FillOutputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
@@ -44,7 +44,7 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkPersistenceDiagram::setPersistenceDiagram(
+int ttkPersistenceDiagramApproximation::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
   const std::vector<ttk::PersistencePair> &diagram,
   vtkDataArray *inputScalarsArray,
@@ -214,11 +214,11 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkPersistenceDiagram::dispatch(
+int ttkPersistenceDiagramApproximation::dispatch(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
+  vtkUnstructuredGrid *outputBounds,
   vtkDataArray *const inputScalarsArray,
   const scalarType *const inputScalars,
-  vtkDataArray *const outputScalarsArray,
   scalarType *outputScalars,
   SimplexId *outputOffsets,
   int *outputMonotonyOffsets,
@@ -228,14 +228,13 @@ int ttkPersistenceDiagram::dispatch(
   int status{};
   std::vector<ttk::PersistencePair> CTDiagram{};
 
-  if(BackEnd == BACKEND::APPROXIMATE_TOPOLOGY) {
-    std::cout << "Chosen approx" << std::endl;
-    double *range = inputScalarsArray->GetRange(0);
-    this->setDeltaApproximate(range[1] - range[0]);
-    this->setOutputScalars(outputScalars);
-    this->setOutputOffsets(outputOffsets);
-    this->setOutputMonotonyOffsets(outputMonotonyOffsets);
-  }
+  BackEnd = BACKEND::APPROXIMATE_TOPOLOGY;
+
+  double *range = inputScalarsArray->GetRange(0);
+  this->setDeltaApproximate(range[1] - range[0]);
+  this->setOutputScalars(outputScalars);
+  this->setOutputOffsets(outputOffsets);
+  this->setOutputMonotonyOffsets(outputMonotonyOffsets);
 
   status = this->execute(CTDiagram, inputScalars, inputOrder, triangulation);
 
@@ -249,15 +248,18 @@ int ttkPersistenceDiagram::dispatch(
   setPersistenceDiagram(outputCTPersistenceDiagram, CTDiagram,
                         inputScalarsArray, outputScalars, triangulation);
 
-  // drawBottleneckBounds(outputBounds, CTDiagram, inputScalarsArray,
-  //                      outputScalars, inputScalars, triangulation);
+  if(BackEnd == BACKEND::APPROXIMATE_TOPOLOGY) {
+    drawBottleneckBounds(outputBounds, CTDiagram, inputScalarsArray,
+                         outputScalars, inputScalars, triangulation);
+  }
 
   return 1;
 }
 
-int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
-                                       vtkInformationVector **inputVector,
-                                       vtkInformationVector *outputVector) {
+int ttkPersistenceDiagramApproximation::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *outputCTPersistenceDiagram
@@ -315,15 +317,17 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   outputScalars->SetNumberOfComponents(1);
   outputScalars->SetNumberOfTuples(inputScalars->GetNumberOfTuples());
   outputScalars->DeepCopy(inputScalars);
-  outputScalars->SetName("Cropped");
+
+  std::stringstream ss;
+  ss << inputScalars->GetName() << "_approximated";
+  outputScalars->SetName(ss.str().c_str());
 
   int status{};
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
     status = this->dispatch(
-      outputCTPersistenceDiagram, inputScalars,
+      outputCTPersistenceDiagram, outputBounds, inputScalars,
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-      outputScalars,
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
       static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
       static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputMonotonyOffsets)),
@@ -334,16 +338,21 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
     input->GetFieldData());
 
-  // outputField->ShallowCopy(input);
-  // outputField->GetPointData()->AddArray(outputScalars);
-  // outputField->GetPointData()->AddArray(outputOffsets);
-  // outputField->GetPointData()->AddArray(outputMonotonyOffsets);
+  if(BackEnd == BACKEND::APPROXIMATE_TOPOLOGY) {
+    outputField->ShallowCopy(input);
+    outputField->GetPointData()->AddArray(outputScalars);
+    outputField->GetPointData()->AddArray(outputOffsets);
+    outputField->GetPointData()->AddArray(outputMonotonyOffsets);
+  } else {
+    printWrn("The exact Persistence Diagram was computed");
+    printWrn("Other outputs are empty");
+  }
 
   return status;
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkPersistenceDiagram::drawBottleneckBounds(
+int ttkPersistenceDiagramApproximation::drawBottleneckBounds(
   vtkUnstructuredGrid *outputBounds,
   const std::vector<ttk::PersistencePair> &diagram,
   vtkDataArray *inputScalarsArray,
@@ -393,8 +402,6 @@ int ttkPersistenceDiagram::drawBottleneckBounds(
   for(size_t i = 0; i < diagram.size(); ++i) {
     const auto a = diagram[i].birth;
     const auto b = diagram[i].death;
-    const auto ta = diagram[i].birthType;
-    const auto tb = diagram[i].deathType;
 
     const auto sa = outputScalars[a];
     const auto sb = outputScalars[b];

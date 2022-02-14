@@ -9,4 +9,5 @@ ttk_add_base_library(persistenceDiagram
     ftmTreePP
     persistentSimplexPairs
     progressiveTopology
+    approximateTopology
     )

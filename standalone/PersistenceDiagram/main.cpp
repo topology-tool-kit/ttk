@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
   int startingRL = 0;
   int stoppingRL = -1;
   double tl = 0.0;
+  double epsilon = 0.0;
   bool listArrays{false};
 
   // ---------------------------------------------------------------------------
@@ -45,7 +46,8 @@ int main(int argc, char **argv) {
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
     parser.setArgument("B", &backEnd,
-                       "Method (0: FTM, 1: progressive, 2: persistent simplex)",
+                       "Method (0: FTM, 1: progressive, 2: persistent simplex, "
+                       "3: approximation)",
                        true);
     parser.setArgument("S", &startingRL,
                        "Starting Resolution Level for progressive "
@@ -56,6 +58,8 @@ int main(int argc, char **argv) {
                        "multiresolution scheme (-1: finest level)",
                        true);
     parser.setArgument("T", &tl, "Time limit for progressive method", true);
+    parser.setArgument(
+      "e", &epsilon, "% error (for approximate approach)", true);
     parser.setOption("l", &listArrays, "List available arrays");
     parser.parse(argc, argv);
   }
@@ -146,6 +150,7 @@ int main(int argc, char **argv) {
   persistenceDiagram->SetTimeLimit(tl);
   persistenceDiagram->SetStartingResolutionLevel(startingRL);
   persistenceDiagram->SetStoppingResolutionLevel(stoppingRL);
+  persistenceDiagram->SetEpsilon(epsilon);
   persistenceDiagram->Update();
 
   // ---------------------------------------------------------------------------
