@@ -27,6 +27,7 @@
 #include <OpenMPLock.h>
 
 #include <limits>
+#include <numeric>
 #include <tuple>
 
 namespace ttk {
