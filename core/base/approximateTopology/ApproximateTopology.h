@@ -164,15 +164,11 @@ namespace ttk {
 
     template <typename scalarType>
     int sortPersistenceDiagramApproximate(std::vector<PersistencePair> &diagram,
-                                          const scalarType *const scalars,
                                           scalarType *fakeScalars,
                                           const SimplexId *const offsets,
                                           int *monotonyOffsets) const;
 
   protected:
-    void sortPersistenceDiagram2(std::vector<PersistencePair> &diagram,
-                                 const SimplexId *const offsets) const;
-
     // maximum link size in 3D
     static const size_t nLink_ = 27;
     using VLBoundaryType
@@ -313,11 +309,13 @@ int ttk::ApproximateTopology::executeApproximateTopology(
 
   SimplexId *const vertsOrder = static_cast<SimplexId *>(outputOffsets);
 
+  (void)scalars; // silence warning
+
   decimationLevel_ = startingDecimationLevel_;
   multiresTriangulation_.setTriangulation(triangulation_);
   const SimplexId vertexNumber = multiresTriangulation_.getVertexNumber();
 
-  int *monotonyOffsets = static_cast<SimplexId *>(outputMonotonyOffsets);
+  int *monotonyOffsets = outputMonotonyOffsets;
 
 #ifdef TTK_ENABLE_KAMIKAZE
   if(vertexNumber == 0) {
@@ -453,7 +451,7 @@ int ttk::ApproximateTopology::executeApproximateTopology(
   // finally sort the diagram
   // std::cout << "SORTING" << std::endl;
   sortPersistenceDiagramApproximate(
-    CTDiagram_, scalars, fakeScalars, offsets, monotonyOffsets);
+    CTDiagram_, fakeScalars, offsets, monotonyOffsets);
   // std::cout << "Final epsilon " << epsilon_ << std::endl;
 
   // sort vertices to generate correct output offset order
@@ -531,10 +529,6 @@ void ttk::ApproximateTopology::sortTriplets(std::vector<triplet> &triplets,
   if(triplets.empty())
     return;
 
-  // const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
-  //   return (scalars[a] < scalars[b])
-  //          || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
-  // };
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return ((fakeScalars[a] < fakeScalars[b])
             || (fakeScalars[a] == fakeScalars[b]
@@ -727,13 +721,13 @@ int ttk::ApproximateTopology::getMonotonyChangeByOldPointCPApproximate(
         = (0.5 * (double)fakeScalars[oldNeighbor]
            + .5 * (double)fakeScalars[vertexId]); // depends on epsilon
       double deltaDynamic
-        = abs((double)fakeScalars[neighborId] - replacementValueDynamic);
+        = fabs((double)fakeScalars[neighborId] - replacementValueDynamic);
 
       //=====================
       SimplexId oldNeighNumber = 0;
       SimplexId nnumber
         = multiresTriangulation_.getVertexNeighborNumber(neighborId);
-      for(int iii = 0; iii < nnumber; iii++) {
+      for(SimplexId iii = 0; iii < nnumber; iii++) {
         SimplexId neighborId2 = -1;
         multiresTriangulation_.getVertexNeighbor(neighborId, iii, neighborId2);
         if(!isNew[neighborId2]) {
@@ -1100,7 +1094,7 @@ bool ttk::ApproximateTopology::printPolarity(
     }
     return false;
   }
-  for(size_t i = 0;
+  for(SimplexId i = 0;
       i < multiresTriangulation_.getVertexNeighborNumber(vertexId); i++) {
     SimplexId nId = -1;
     multiresTriangulation_.getVertexNeighbor(vertexId, i, nId);
@@ -1109,8 +1103,8 @@ bool ttk::ApproximateTopology::printPolarity(
     bool init = false;
     polarity rpol;
     if(!vlp2.empty()) {
-      for(size_t j = 0; j < multiresTriangulation_.getVertexNeighborNumber(nId);
-          j++) {
+      for(SimplexId j = 0;
+          j < multiresTriangulation_.getVertexNeighborNumber(nId); j++) {
         SimplexId nId2 = -1;
         multiresTriangulation_.getVertexNeighbor(nId, j, nId2);
         if(nId2 == vertexId) {
@@ -1307,11 +1301,10 @@ void ttk::ApproximateTopology::computeCriticalPoints(
 template <typename scalarType>
 int ttk::ApproximateTopology::sortPersistenceDiagramApproximate(
   std::vector<PersistencePair> &diagram,
-  const scalarType *const scalars,
   scalarType *fakeScalars,
   const SimplexId *const offsets,
   int *monotonyOffsets) const {
-  auto cmp = [scalars, fakeScalars, offsets, monotonyOffsets](
+  auto cmp = [fakeScalars, offsets, monotonyOffsets](
                const PersistencePair &pA, const PersistencePair &pB) {
     const ttk::SimplexId a = pA.birth;
     const ttk::SimplexId b = pB.birth;

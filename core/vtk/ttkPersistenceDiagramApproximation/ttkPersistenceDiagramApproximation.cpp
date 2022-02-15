@@ -330,7 +330,7 @@ int ttkPersistenceDiagramApproximation::RequestData(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
       static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-      static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputMonotonyOffsets)),
+      static_cast<int *>(ttkUtils::GetVoidPointer(outputMonotonyOffsets)),
       static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
       static_cast<TTK_TT *>(triangulation->getData())));
 

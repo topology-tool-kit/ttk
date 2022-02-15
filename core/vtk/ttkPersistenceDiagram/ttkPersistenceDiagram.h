@@ -183,7 +183,6 @@ private:
   int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
                vtkDataArray *const inputScalarsArray,
                const scalarType *const inputScalars,
-               vtkDataArray *const outputScalarsArray,
                scalarType *outputScalars,
                SimplexId *outputOffsets,
                int *outputMonotonyOffsets,
@@ -196,14 +195,6 @@ private:
                             vtkDataArray *inputScalarsArray,
                             const scalarType *const inputScalars,
                             const triangulationType *triangulation) const;
-
-  template <typename scalarType, typename triangulationType>
-  int drawBottleneckBounds(vtkUnstructuredGrid *outputBounds,
-                           const std::vector<ttk::PersistencePair> &diagram,
-                           vtkDataArray *inputScalarsArray,
-                           const scalarType *const outputScalars,
-                           const scalarType *const inputScalars,
-                           const triangulationType *triangulation) const;
 
   bool ForceInputOffsetScalarField{false};
   bool ShowInsideDomain{false};
