@@ -17,13 +17,13 @@ int OneSkeleton::buildEdgeLinks(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
     return -1;
-  if(edgeStars.subvectorsNumber() != edgeList.size())
+  if(edgeStars.size() != edgeList.size())
     return -2;
 #endif
 
   Timer t;
 
-  const SimplexId edgeNumber = edgeStars.subvectorsNumber();
+  const SimplexId edgeNumber = edgeStars.size();
   std::vector<SimplexId> offsets(edgeNumber + 1);
   // one vertex per star
   std::vector<SimplexId> links(edgeStars.dataSize());
@@ -72,7 +72,7 @@ int OneSkeleton::buildEdgeLinks(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
     return -1;
-  if((edgeStars.empty()) || (edgeStars.subvectorsNumber() != edgeList.size()))
+  if((edgeStars.empty()) || (edgeStars.size() != edgeList.size()))
     return -2;
   if(cellEdges.empty())
     return -3;
@@ -80,7 +80,7 @@ int OneSkeleton::buildEdgeLinks(
 
   Timer t;
 
-  const SimplexId edgeNumber = edgeStars.subvectorsNumber();
+  const SimplexId edgeNumber = edgeStars.size();
   std::vector<SimplexId> offsets(edgeNumber + 1);
   // one edge per star
   std::vector<SimplexId> links(edgeStars.dataSize());

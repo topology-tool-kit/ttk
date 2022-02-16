@@ -108,7 +108,7 @@ namespace ttk {
       return {0, *this};
     }
     inline Iterator end() const {
-      return {this->subvectorsNumber(), *this};
+      return {this->size(), *this};
     }
 
     inline Slice operator[](const SimplexId id) const {
@@ -160,7 +160,7 @@ namespace ttk {
     /**
      * @brief Returns the number of sub-vectors
      */
-    inline size_t subvectorsNumber() const {
+    inline size_t size() const {
       if(this->empty()) {
         return 0;
       }
@@ -220,14 +220,14 @@ namespace ttk {
      */
     void copyTo(std::vector<std::vector<SimplexId>> &dst,
                 int threadNumber = 1) const {
-      dst.resize(this->subvectorsNumber());
-      for(size_t i = 0; i < this->subvectorsNumber(); ++i) {
+      dst.resize(this->size());
+      for(size_t i = 0; i < this->size(); ++i) {
         dst[i].resize((*this)[i].size());
       }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber)
 #endif // TTK_ENABLE_OPENMP
-      for(size_t i = 0; i < this->subvectorsNumber(); ++i) {
+      for(size_t i = 0; i < this->size(); ++i) {
         for(size_t j = 0; j < dst[i].size(); ++j) {
           dst[i][j] = (*this)[i][j];
         }
