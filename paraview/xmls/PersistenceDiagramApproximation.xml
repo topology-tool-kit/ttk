@@ -18,8 +18,8 @@
         This approach necessitates the input data to be defined on an implicit regular grid.
 
         The approximation comes with a user-controlled error on the Bottleneck distance to the exact diagram.
-        The tolerance on the relative Bottleneck error is set using the parameter epsilon.
-        Epsilon = 0.05 corresponds to a maximal relative Bottleneck error of 5%.
+        The tolerance on the relative Bottleneck error is set using the parameter "Error".
+        An error of 0.05 corresponds to a maximal relative Bottleneck error of 5%.
 
         This plugins produces three outputs:
         1 - The approximate persistence diagram
@@ -119,13 +119,14 @@
 
       <DoubleVectorProperty
           name="Epsilon"
-          label="Error (ε)"
+          label="Error"
           command="SetEpsilon"
           number_of_elements="1"
         default_values="0.05">
         <Documentation>
             Tolerance on the maximal relative Bottleneck error.
-            A value of 0.05 denotes a maximal error of 5%. 
+            It corresponds to the parameter Epsilon in the publication.
+            A value of 0.05 denotes a maximal relative error of 5%. 
         </Documentation>
       </DoubleVectorProperty>
 

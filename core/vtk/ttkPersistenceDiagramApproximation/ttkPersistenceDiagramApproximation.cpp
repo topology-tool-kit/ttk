@@ -319,7 +319,7 @@ int ttkPersistenceDiagramApproximation::RequestData(
   outputScalars->DeepCopy(inputScalars);
 
   std::stringstream ss;
-  ss << inputScalars->GetName() << "_approximated";
+  ss << inputScalars->GetName() << "_Approximated";
   outputScalars->SetName(ss.str().c_str());
 
   int status{};

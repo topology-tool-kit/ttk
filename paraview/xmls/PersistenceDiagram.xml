@@ -71,8 +71,8 @@
         of an input scalar field. It necessitates the input data to be defined on an implicit regular grid.
 
         The approximation comes with a user-controlled error on the Bottleneck distance to the exact diagram.
-        The tolerance on the relative Bottleneck error is set using the parameter epsilon.
-        Epsilon = 0.05 corresponds to a maximal relative Bottleneck error of 5%.
+        The tolerance on the relative Bottleneck error is set using the parameter "Error".
+        An error of 0.05 corresponds to a maximal relative Bottleneck error of 5%.
 
         See ttkPersistenceDiagramApproximation for more outputs, such as the approximated scalar field and visual cues
         about the diagram approximation.
@@ -215,7 +215,7 @@
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
           <Entry value="2" text="Persistent Simplex (Zomorodian 2010)"/>
-          <Entry value="3" text="Approximate Approach (IEEE LDAV 2021)"/>
+          <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
@@ -278,7 +278,7 @@
 
       <DoubleVectorProperty
           name="Epsilon"
-          label="Error (ε)"
+          label="Error"
           command="SetEpsilon"
           number_of_elements="1"
           default_values="0.05"
@@ -291,7 +291,8 @@
         </Hints>
         <Documentation>
             Tolerance on the maximal relative Bottleneck error.
-            A value of 0.05 denotes a maximal error of 5%. 
+            Corresponds to the parameter Epsilon in the publication.
+            An error of 0.05 denotes a maximal relative error of 5%. 
         </Documentation>
       </DoubleVectorProperty>
 
