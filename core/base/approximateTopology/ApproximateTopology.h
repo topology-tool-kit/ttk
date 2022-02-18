@@ -299,7 +299,7 @@ namespace ttk {
 
 template <typename scalarType>
 int ttk::ApproximateTopology::executeApproximateTopology(
-  const scalarType *scalars,
+  const scalarType *ttkNotUsed(scalars),
   scalarType *fakeScalars,
   SimplexId *outputOffsets,
   int *outputMonotonyOffsets) {
@@ -307,8 +307,6 @@ int ttk::ApproximateTopology::executeApproximateTopology(
   Timer timer;
 
   SimplexId *const vertsOrder = static_cast<SimplexId *>(outputOffsets);
-
-  (void)scalars; // silence warning
 
   decimationLevel_ = startingDecimationLevel_;
   multiresTriangulation_.setTriangulation(triangulation_);
