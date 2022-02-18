@@ -8,6 +8,26 @@
 #include <parallel/algorithm>
 #endif
 
+#ifdef TTK_ENABLE_OPENMP
+namespace ttk {
+  /**
+   * @brief RAII wrapper to preserve the OpenMP runtime thread number
+   */
+  class ParallelGuard {
+    int oldThreadNumber_;
+
+  public:
+    ParallelGuard(const int nThreads)
+      : oldThreadNumber_{omp_get_num_threads()} {
+      omp_set_num_threads(nThreads);
+    }
+    ~ParallelGuard() {
+      omp_set_num_threads(oldThreadNumber_);
+    }
+  };
+} // namespace ttk
+#endif // TTK_ENABLE_OPENMP
+
 /**
  * @brief Parallel sort macro
  *
@@ -17,12 +37,10 @@
  * `TTK_PSORT(nthreads, container.begin(), container.end(), cmp)`.
  */
 #if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define TTK_PSORT(NTHREADS, ...)                       \
-  {                                                    \
-    const auto oldThreadNumber{omp_get_num_threads()}; \
-    omp_set_num_threads(NTHREADS);                     \
-    __gnu_parallel::sort(__VA_ARGS__);                 \
-    omp_set_num_threads(oldThreadNumber);              \
+#define TTK_PSORT(NTHREADS, ...)       \
+  {                                    \
+    ttk::ParallelGuard pg{NTHREADS};   \
+    __gnu_parallel::sort(__VA_ARGS__); \
   }
 #else
 #define TTK_PSORT(NTHREADS, ...) std::sort(__VA_ARGS__);
