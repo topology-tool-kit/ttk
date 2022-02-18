@@ -33,8 +33,6 @@ namespace ttk {
     using idCell = SimplexId;
     /// \brief for task identifiers
     using idPropagation = idNode;
-    /// \brief for threads identifiers
-    using idThread = idNode;
     /// \brief for vertex up/down valence
     using valence = SimplexId;
     /// \brief retains history

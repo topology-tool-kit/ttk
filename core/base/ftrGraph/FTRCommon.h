@@ -25,7 +25,7 @@ namespace ttk {
       bool advStats = true;
       int samplingLvl = 0;
 
-      idThread threadNumber = 1;
+      int threadNumber = 1;
       int debugLevel = 1;
 
       void printSelf() {
