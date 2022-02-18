@@ -1,0 +1,170 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistenceDiagramApproximation"
+        class="ttkPersistenceDiagramApproximation"
+        label="TTK PersistenceDiagramApproximation">
+      <Documentation
+          long_help="TTK plugin for the computation of persistence diagrams."
+          short_help="TTK plugin for the computation of persistence diagrams.">
+        TTK plugin for the computation of apprroximations of persistence diagrams.
+
+        This plugin computes an approximation of the persistence diagram of the extremum-saddle pairs
+        of an input scalar field.
+        This approach necessitates the input data to be defined on an implicit regular grid.
+
+        The approximation comes with a user-controlled error on the Bottleneck distance to the exact diagram.
+        The tolerance on the relative Bottleneck error is set using the parameter "Error".
+        An error of 0.05 corresponds to a maximal relative Bottleneck error of 5%.
+
+        This plugins produces three outputs:
+        1 - The approximate persistence diagram
+        2 - The corresponding approximation of the field (labelled "_approximated"), defined on the input domain.
+        3 - Representations of the uncertainty on the approximation.
+
+        Related publication
+        "Fast Approximation of Persistence Diagrams with Guarantees"
+        Jules Vidal, Julien Tierny
+        IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021
+
+        Online examples:
+
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+          Input should be a regular grid (.vti), otherwise FTM will be used
+          to compute the persistence diagram, and other fields will be empty.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="ScalarFieldNew"
+          label="Scalar Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="ForceInputOffsetScalarField"
+          command="SetForceInputOffsetScalarField"
+          label="Force Input Offset Field"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="InputOffsetScalarFieldNameNew"
+          label="Input Offset Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="1"
+            >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ForceInputOffsetScalarField"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+          name="Epsilon"
+          label="Error"
+          command="SetEpsilon"
+          number_of_elements="1"
+        default_values="0.05">
+        <Documentation>
+            Tolerance on the maximal relative Bottleneck error.
+            It corresponds to the parameter Epsilon in the publication.
+            A value of 0.05 denotes a maximal relative error of 5%. 
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="ShowInsideDomain"
+                         label="Embed in Domain"
+                         command="SetShowInsideDomain"
+                         number_of_elements="1"
+                         default_values="0"
+                         panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Embed the persistence pairs in the domain.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+          <Property name="ScalarFieldNew" />
+          <Property name="ForceInputOffsetScalarField"/>
+          <Property name="InputOffsetScalarFieldNameNew"/>
+        <Property name="Epsilon" />
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="ShowInsideDomain" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="Persistence Diagram" index="0" id="port0" />
+      <OutputPort name="Approximate Field" index="1" id="port1" />
+      <OutputPort name="Uncertainty Bounds" index="2" id="port2"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

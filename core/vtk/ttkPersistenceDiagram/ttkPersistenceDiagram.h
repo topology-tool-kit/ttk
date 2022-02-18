@@ -37,7 +37,7 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-/// Two backends are available for the computation:
+/// Four backends are available for the computation:
 ///
 ///  1) FTM \n
 /// \b Related \b publication \n
@@ -50,6 +50,17 @@
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// 3) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+///
+/// 4) Approximate Approach \n
+/// \b Related \b publication \n
+/// "Fast Approximation of Persistence Diagrams with Guarantees" \n
+/// Jules Vidal, Julien Tierny\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021\n
 ///
 /// \sa ttkFTMTreePP
 /// \sa ttkPersistenceCurve
@@ -154,6 +165,9 @@ public:
   vtkGetMacro(TimeLimit, double);
   vtkSetMacro(TimeLimit, double);
 
+  vtkGetMacro(Epsilon, double);
+  vtkSetMacro(Epsilon, double);
+
 protected:
   ttkPersistenceDiagram();
 
@@ -169,6 +183,9 @@ private:
   int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
                vtkDataArray *const inputScalarsArray,
                const scalarType *const inputScalars,
+               scalarType *outputScalars,
+               SimplexId *outputOffsets,
+               int *outputMonotonyOffsets,
                const SimplexId *const inputOrder,
                const triangulationType *triangulation);
 

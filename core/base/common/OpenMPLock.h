@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
 #endif // TTK_ENABLE_OPENMP

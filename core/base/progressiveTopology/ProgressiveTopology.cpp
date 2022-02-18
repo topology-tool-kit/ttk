@@ -970,76 +970,6 @@ void ttk::ProgressiveTopology::updateLinkPolarity(
   }
 }
 
-void ttk::ProgressiveTopology::getValencesFromLink(
-  const SimplexId vertexId,
-  const std::vector<std::pair<polarity, polarity>> &vlp,
-  DynamicTree &link,
-  std::vector<polarity> &toPropageMin,
-  std::vector<polarity> &toPropageMax,
-  std::vector<std::vector<SimplexId>> &saddleCCMin,
-  std::vector<std::vector<SimplexId>> &saddleCCMax) const {
-
-  const auto nbCC = link.getNbCC();
-
-  SimplexId downValence = 0, upValence = 0;
-  saddleCCMin[vertexId].clear();
-  saddleCCMax[vertexId].clear();
-
-  if(nbCC > 2) {
-    std::vector<size_t> CCIds;
-    CCIds.reserve(nbCC);
-    link.retrieveNbCC(CCIds);
-    for(size_t i = 0; i < CCIds.size(); i++) {
-      const SimplexId neighbor = CCIds[i];
-      const polarity isUpper = vlp[neighbor].first;
-      if(isUpper) {
-        saddleCCMax[vertexId].emplace_back(neighbor);
-        upValence++;
-      } else {
-        saddleCCMin[vertexId].emplace_back(neighbor);
-        downValence++;
-      }
-    }
-
-    if(downValence > 1) {
-      toPropageMin[vertexId] = 255;
-    } else {
-      saddleCCMin[vertexId].clear();
-      toPropageMin[vertexId] = 0;
-    }
-    if(upValence > 1) {
-      toPropageMax[vertexId] = 255;
-    } else {
-      saddleCCMax[vertexId].clear();
-      toPropageMax[vertexId] = 0;
-    }
-
-  } else { // not a saddle
-    toPropageMax[vertexId] = 0;
-    toPropageMin[vertexId] = 0;
-  }
-}
-
-void ttk::ProgressiveTopology::buildVertexLinkByBoundary(
-  const SimplexId vertexId, VLBoundaryType &vlbt) const {
-
-  const auto bid = multiresTriangulation_.getVertexBoundaryIndex(vertexId);
-  const auto nneigh = multiresTriangulation_.getVertexNeighborNumber(vertexId);
-  vlbt[bid].reserve(nneigh);
-
-  for(SimplexId i = 0; i < nneigh; i++) {
-    SimplexId n0 = 0;
-    multiresTriangulation_.getVertexNeighbor(vertexId, i, n0);
-    for(SimplexId j = i + 1; j < nneigh; j++) {
-      SimplexId n1 = 0;
-      multiresTriangulation_.getVertexNeighbor(vertexId, j, n1);
-      if(multiresTriangulation_.areVerticesNeighbors(n0, n1)) {
-        vlbt[bid].emplace_back(i, j);
-      }
-    }
-  }
-}
-
 void ttk::ProgressiveTopology::updateDynamicLink(
   DynamicTree &link,
   std::vector<std::pair<polarity, polarity>> &vlp,
@@ -1109,31 +1039,6 @@ void ttk::ProgressiveTopology::updateDynamicLink(
     for(const auto &edge : edgesToInsertLater[brokenNode]) {
       link.insertEdge(edge.first, edge.second);
     }
-  }
-}
-
-void ttk::ProgressiveTopology::getTripletsFromSaddles(
-  const SimplexId vertexId,
-  std::vector<triplet> &triplets,
-  const std::vector<std::vector<SimplexId>> &vertexReps) const {
-
-  const auto &reps = vertexReps[vertexId];
-  const SimplexId m = reps[0];
-#ifndef TTK_ENABLE_KAMIKAZE
-  const auto &repsm = vertexReps[m];
-  if(m == -1 || repsm.empty() || repsm[0] != m) {
-    this->printErr("HERE PROBLEM");
-  }
-#endif // TTK_ENABLE_KAMIKAZE
-  for(size_t i = 1; i < reps.size(); i++) {
-    const SimplexId n = reps[i];
-#ifndef TTK_ENABLE_KAMIKAZE
-    const auto &repsn = vertexReps[n];
-    if(n == -1 || repsn.empty() || repsn[0] != n) {
-      this->printErr("HERE2 PROBLEM");
-    }
-#endif // TTK_ENABLE_KAMIKAZE
-    triplets.emplace_back(vertexId, m, n);
   }
 }
 
@@ -1266,14 +1171,4 @@ int ttk::ProgressiveTopology::computeProgressiveCP(
     }
   }
   return ret;
-}
-
-std::string ttk::ProgressiveTopology::resolutionInfoString() {
-  std::stringstream res;
-  res << "Resolution level "
-      << multiresTriangulation_.DL_to_RL(decimationLevel_);
-  if(decimationLevel_ == 0) {
-    res << " (final)";
-  }
-  return res.str();
 }
