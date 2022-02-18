@@ -55,7 +55,7 @@ int shuffleScalarFieldValues(const T *const inputField,
   std::vector<T> inputValues(inputField, inputField + nValues);
 
   // reduce the copy
-  TTK_PSORT(nThreads)(inputValues.begin(), inputValues.end());
+  TTK_PSORT(nThreads, inputValues.begin(), inputValues.end());
   const auto last = std::unique(inputValues.begin(), inputValues.end());
   inputValues.erase(last, inputValues.end());
 

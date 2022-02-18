@@ -119,8 +119,8 @@ namespace ttk {
       iota(sortedNodes.begin(), sortedNodes.end(), 0);
       // Sort nodes by vertex scalar
       //{
-      TTK_PSORT(this->threadNumber_)
-      (sortedNodes.begin(), sortedNodes.end(), isLowerComp);
+      TTK_PSORT(this->threadNumber_, sortedNodes.begin(), sortedNodes.end(),
+                isLowerComp);
       //}
 
       //}
@@ -160,8 +160,8 @@ namespace ttk {
       // Sort pairs by persistence
       //{
       // IS SET STILL BETTER ? (parallel sort) TODO
-      TTK_PSORT(this->threadNumber_)
-      (sortedPairs.begin(), sortedPairs.end(), pairComp);
+      TTK_PSORT(
+        this->threadNumber_, sortedPairs.begin(), sortedPairs.end(), pairComp);
 
       auto last = unique(sortedPairs.begin(), sortedPairs.end());
       sortedPairs.erase(last, sortedPairs.end());

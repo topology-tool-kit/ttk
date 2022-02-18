@@ -1061,8 +1061,8 @@ namespace ttk {
         this->printMsg("Computing Global Order", 0.2, timer.getElapsedTime(),
                        this->threadNumber_, debug::LineMode::REPLACE);
 
-        TTK_PSORT(this->threadNumber_)
-        (sortedIndices.begin(), sortedIndices.end());
+        TTK_PSORT(
+          this->threadNumber_, sortedIndices.begin(), sortedIndices.end());
 
         this->printMsg("Computing Global Order", 0.8, timer.getElapsedTime(),
                        this->threadNumber_, debug::LineMode::REPLACE);

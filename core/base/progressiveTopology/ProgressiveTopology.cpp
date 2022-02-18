@@ -379,7 +379,7 @@ void ttk::ProgressiveTopology::sortTriplets(std::vector<triplet> &triplets,
       return lt(m1, m2) == splitTree;
   };
 
-  TTK_PSORT(this->threadNumber_)(triplets.begin(), triplets.end(), cmp);
+  TTK_PSORT(this->threadNumber_, triplets.begin(), triplets.end(), cmp);
 }
 
 void ttk::ProgressiveTopology::tripletsToPersistencePairs(

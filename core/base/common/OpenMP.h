@@ -12,14 +12,20 @@
  * @brief Parallel sort macro
  *
  * Example use:
- * `TTK_PSORT(nthreads)(container.begin(), container.end())`
+ * `TTK_PSORT(nthreads, container.begin(), container.end())`
+ * or
+ * `TTK_PSORT(nthreads, container.begin(), container.end(), cmp)`.
  */
 #if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define TTK_PSORT(NTHREADS)      \
-  omp_set_num_threads(NTHREADS); \
-  __gnu_parallel::sort
+#define TTK_PSORT(NTHREADS, ...)                       \
+  {                                                    \
+    const auto oldThreadNumber{omp_get_num_threads()}; \
+    omp_set_num_threads(NTHREADS);                     \
+    __gnu_parallel::sort(__VA_ARGS__);                 \
+    omp_set_num_threads(oldThreadNumber);              \
+  }
 #else
-#define TTK_PSORT(NTHREADS) std::sort
+#define TTK_PSORT(NTHREADS, ...) std::sort(__VA_ARGS__);
 #endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
 namespace ttk {

@@ -36,19 +36,18 @@ namespace ttk {
     }
 
     if(offsets != nullptr) {
-      TTK_PSORT(nThreads)
-      (sortedVertices.begin(), sortedVertices.end(),
-       [&](const SimplexId a, const SimplexId b) {
-         return (scalars[a] < scalars[b])
-                || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
-       });
+      TTK_PSORT(
+        nThreads, sortedVertices.begin(), sortedVertices.end(),
+        [&](const SimplexId a, const SimplexId b) {
+          return (scalars[a] < scalars[b])
+                 || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
+        });
     } else {
-      TTK_PSORT(nThreads)
-      (sortedVertices.begin(), sortedVertices.end(),
-       [&](const SimplexId a, const SimplexId b) {
-         return (scalars[a] < scalars[b])
-                || (scalars[a] == scalars[b] && a < b);
-       });
+      TTK_PSORT(nThreads, sortedVertices.begin(), sortedVertices.end(),
+                [&](const SimplexId a, const SimplexId b) {
+                  return (scalars[a] < scalars[b])
+                         || (scalars[a] == scalars[b] && a < b);
+                });
     }
 
 #ifdef TTK_ENABLE_OPENMP

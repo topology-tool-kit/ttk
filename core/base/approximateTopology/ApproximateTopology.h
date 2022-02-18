@@ -548,7 +548,7 @@ void ttk::ApproximateTopology::sortTriplets(std::vector<triplet> &triplets,
       return lt(m1, m2) == splitTree;
   };
 
-  TTK_PSORT(this->threadNumber_)(triplets.begin(), triplets.end(), cmp);
+  TTK_PSORT(this->threadNumber_, triplets.begin(), triplets.end(), cmp);
 }
 
 template <typename scalarType, typename offsetType>
@@ -653,15 +653,14 @@ void ttk::ApproximateTopology::sortVertices(
   std::iota(sortedVertices.begin(), sortedVertices.end(), 0);
 
   // sort vertices in ascending order following scalarfield / offsets
-  TTK_PSORT(this->threadNumber_)
-  (sortedVertices.begin(), sortedVertices.end(),
-   [&](const SimplexId a, const SimplexId b) {
-     return ((fakeScalars[a] < fakeScalars[b])
-             || (fakeScalars[a] == fakeScalars[b]
-                 && ((monotonyOffsets[a] < monotonyOffsets[b])
-                     || (monotonyOffsets[a] == monotonyOffsets[b]
-                         && offsets[a] < offsets[b]))));
-   });
+  TTK_PSORT(this->threadNumber_, sortedVertices.begin(), sortedVertices.end(),
+            [&](const SimplexId a, const SimplexId b) {
+              return ((fakeScalars[a] < fakeScalars[b])
+                      || (fakeScalars[a] == fakeScalars[b]
+                          && ((monotonyOffsets[a] < monotonyOffsets[b])
+                              || (monotonyOffsets[a] == monotonyOffsets[b]
+                                  && offsets[a] < offsets[b]))));
+            });
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)

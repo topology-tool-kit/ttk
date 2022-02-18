@@ -308,8 +308,8 @@ namespace ttk {
               return s->isLower(std::get<0>(a), std::get<0>(b));
             };
         if(parallel) {
-          TTK_PSORT(this->threadNumber_)
-          (leaves_.begin(), leaves_.end(), compare_fun);
+          TTK_PSORT(
+            this->threadNumber_, leaves_.begin(), leaves_.end(), compare_fun);
         } else {
           std::sort(leaves_.begin(), leaves_.end(), compare_fun);
         }
