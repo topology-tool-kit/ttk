@@ -505,7 +505,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
   if(this->threadNumber_ > 1) {
     // sort quadSeps_ according to cellIds_ to get a deterministic
     // output when filled in parallel
-    PSORT(this->threadNumber_)(quadSeps_.begin(), quadSeps_.end());
+    TTK_PSORT(this->threadNumber_)(quadSeps_.begin(), quadSeps_.end());
     // (by default, pairs are sorted by their first element)
   }
 

@@ -275,7 +275,7 @@ std::vector<ttk::PersistentSimplexPairs::Simplex>
     res[o].fillTetra(i, o, offset, triangulation);
   }
 
-  PSORT(this->threadNumber_)(res.begin(), res.end());
+  TTK_PSORT(this->threadNumber_)(res.begin(), res.end());
 
   this->printMsg(
     "Computed filtration order", 1.0, tm.getElapsedTime(), this->threadNumber_);

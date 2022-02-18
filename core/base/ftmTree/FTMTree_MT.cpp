@@ -805,7 +805,7 @@ void FTMTree_MT::sortLeaves(const bool para) {
   };
 
   if(para) {
-    PSORT(this->threadNumber_)
+    TTK_PSORT(this->threadNumber_)
     (mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
   } else {
     std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
@@ -822,7 +822,7 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para) {
   };
 
   if(para) {
-    PSORT(this->threadNumber_)
+    TTK_PSORT(this->threadNumber_)
     (sortedNodes.begin(), sortedNodes.end(), indirect_sort);
   } else {
 #ifdef TTK_ENABLE_OPENMP

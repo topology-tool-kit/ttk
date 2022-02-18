@@ -40,22 +40,22 @@ namespace ttk {
     }
 
 #if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT(NTHREADS)          \
+#define TTK_PSORT(NTHREADS)      \
   omp_set_num_threads(NTHREADS); \
   __gnu_parallel::sort
 #else
-#define PSORT(NTHREADS) std::sort
+#define TTK_PSORT(NTHREADS) std::sort
 #endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
     if(offsets != nullptr) {
-      PSORT(nThreads)
+      TTK_PSORT(nThreads)
       (sortedVertices.begin(), sortedVertices.end(),
        [&](const SimplexId a, const SimplexId b) {
          return (scalars[a] < scalars[b])
                 || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
        });
     } else {
-      PSORT(nThreads)
+      TTK_PSORT(nThreads)
       (sortedVertices.begin(), sortedVertices.end(),
        [&](const SimplexId a, const SimplexId b) {
          return (scalars[a] < scalars[b])
