@@ -24,7 +24,6 @@
 #include <ImplicitTriangulation.h>
 #include <MultiresTopology.h>
 #include <MultiresTriangulation.h>
-#include <OpenMPLock.h>
 
 #include <limits>
 #include <numeric>

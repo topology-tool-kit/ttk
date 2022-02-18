@@ -24,7 +24,6 @@
 // base code includes
 #include <DynamicTree.h>
 #include <MultiresTopology.h>
-#include <OpenMPLock.h>
 
 #include <limits>
 #include <tuple>
