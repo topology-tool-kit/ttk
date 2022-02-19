@@ -28,13 +28,6 @@
 #pragma once
 
 // standard includes
-#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-
 #include <array>
 #include <queue>
 

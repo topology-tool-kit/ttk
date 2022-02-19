@@ -24,7 +24,6 @@
 #include <ImplicitTriangulation.h>
 #include <MultiresTopology.h>
 #include <MultiresTriangulation.h>
-#include <OpenMPLock.h>
 
 #include <limits>
 #include <numeric>
@@ -300,7 +299,7 @@ namespace ttk {
 
 template <typename scalarType>
 int ttk::ApproximateTopology::executeApproximateTopology(
-  const scalarType *scalars,
+  const scalarType *ttkNotUsed(scalars),
   scalarType *fakeScalars,
   SimplexId *outputOffsets,
   int *outputMonotonyOffsets) {
@@ -308,8 +307,6 @@ int ttk::ApproximateTopology::executeApproximateTopology(
   Timer timer;
 
   SimplexId *const vertsOrder = static_cast<SimplexId *>(outputOffsets);
-
-  (void)scalars; // silence warning
 
   decimationLevel_ = startingDecimationLevel_;
   multiresTriangulation_.setTriangulation(triangulation_);
@@ -549,7 +546,7 @@ void ttk::ApproximateTopology::sortTriplets(std::vector<triplet> &triplets,
       return lt(m1, m2) == splitTree;
   };
 
-  PSORT(this->threadNumber_)(triplets.begin(), triplets.end(), cmp);
+  TTK_PSORT(this->threadNumber_, triplets.begin(), triplets.end(), cmp);
 }
 
 template <typename scalarType, typename offsetType>
@@ -654,15 +651,14 @@ void ttk::ApproximateTopology::sortVertices(
   std::iota(sortedVertices.begin(), sortedVertices.end(), 0);
 
   // sort vertices in ascending order following scalarfield / offsets
-  PSORT(this->threadNumber_)
-  (sortedVertices.begin(), sortedVertices.end(),
-   [&](const SimplexId a, const SimplexId b) {
-     return ((fakeScalars[a] < fakeScalars[b])
-             || (fakeScalars[a] == fakeScalars[b]
-                 && ((monotonyOffsets[a] < monotonyOffsets[b])
-                     || (monotonyOffsets[a] == monotonyOffsets[b]
-                         && offsets[a] < offsets[b]))));
-   });
+  TTK_PSORT(this->threadNumber_, sortedVertices.begin(), sortedVertices.end(),
+            [&](const SimplexId a, const SimplexId b) {
+              return ((fakeScalars[a] < fakeScalars[b])
+                      || (fakeScalars[a] == fakeScalars[b]
+                          && ((monotonyOffsets[a] < monotonyOffsets[b])
+                              || (monotonyOffsets[a] == monotonyOffsets[b]
+                                  && offsets[a] < offsets[b]))));
+            });
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)

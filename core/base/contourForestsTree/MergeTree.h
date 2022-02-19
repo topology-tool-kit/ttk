@@ -19,15 +19,9 @@
 #pragma once
 
 #include <map>
+#include <numeric>
 #include <queue>
 #include <vector>
-
-#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
 
 #include <Geometry.h>
 #include <Triangulation.h>

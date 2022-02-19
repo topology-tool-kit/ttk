@@ -127,6 +127,9 @@ int Octree::insertVertex(SimplexId &vertexId) {
   }
 
   OctreeNode *current = lookupNode(1);
+  if(current == nullptr) {
+    return -2;
+  }
   uint32_t location = current->locCode_;
   std::array<float, 3> ncenter{}, nsize{};
 
@@ -159,16 +162,15 @@ int Octree::insertCell(SimplexId &cellId) {
   }
 
   int dim = triangulation_->getCellVertexNumber(cellId);
-  uint32_t location{};
   std::array<float, 3> ncenter{}, nsize{};
   for(int i = 0; i < dim; i++) {
     SimplexId vertexId{};
     OctreeNode *current = lookupNode(1);
 
-    location = current->locCode_;
     triangulation_->getCellVertex(cellId, i, vertexId);
 
     while(current != nullptr && current->childExists_ != 0) {
+      auto location = current->locCode_;
       computeCenterSize(location, ncenter, nsize);
       location = getChildLocation(location, vertexId, ncenter);
       current = lookupNode(location);

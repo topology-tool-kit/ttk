@@ -805,20 +805,8 @@ void FTMTree_MT::sortLeaves(const bool para) {
   };
 
   if(para) {
-#ifdef __clang__
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#else
-#ifndef _MSC_VER
-#ifdef TTK_ENABLE_OPENMP
-    __gnu_parallel::sort(
-      mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#else
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#endif
-#else
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#endif
-#endif
+    TTK_PSORT(this->threadNumber_, mt_data_.leaves->begin(),
+              mt_data_.leaves->end(), indirect_sort);
   } else {
     std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
   }
@@ -834,19 +822,8 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para) {
   };
 
   if(para) {
-#ifdef __clang__
-    std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#else
-#ifndef _MSC_VER
-#ifdef TTK_ENABLE_OPENMP
-    __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#else
-    std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#endif
-#else
-    std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#endif
-#endif
+    TTK_PSORT(this->threadNumber_, sortedNodes.begin(), sortedNodes.end(),
+              indirect_sort);
   } else {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp single

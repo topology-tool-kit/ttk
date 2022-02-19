@@ -33,7 +33,7 @@ namespace ttk {
     int ContourForests::build(const triangulationType &mesh) {
 
 #ifdef TTK_ENABLE_OPENMP
-      omp_set_num_threads(parallelParams_.nbThreads);
+      ParallelGuard pg{parallelParams_.nbThreads};
 #endif
 
       DebugTimer timerTOTAL;

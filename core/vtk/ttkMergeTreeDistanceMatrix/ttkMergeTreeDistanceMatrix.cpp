@@ -1,4 +1,5 @@
 #include <ttkFTMTreeUtils.h>
+#include <ttkMacros.h>
 #include <ttkMergeTreeDistanceMatrix.h>
 #include <ttkUtils.h>
 

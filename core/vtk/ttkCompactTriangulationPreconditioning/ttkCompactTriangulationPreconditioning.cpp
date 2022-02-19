@@ -147,19 +147,19 @@ int ttkCompactTriangulationPreconditioning::RequestData(
   int dimension = triangulation->getCellVertexNumber(0);
 
   for(unsigned int i = 0; i < this->cells.size(); i++) {
-    vtkIdType cell[dimension];
+    std::array<vtkIdType, 4> cell{};
     for(int j = 0; j < dimension; j++) {
       SimplexId vertexId;
       triangulation->getCellVertex(this->cells.at(i), j, vertexId);
       cell[j] = vertexMap[vertexId];
     }
-    sort(cell, cell + dimension);
+    std::sort(cell.begin(), cell.begin() + dimension);
     if(dimension == 2) {
-      outputMesh->InsertNextCell(VTK_LINE, 2, cell);
+      outputMesh->InsertNextCell(VTK_LINE, 2, cell.data());
     } else if(dimension == 3) {
-      outputMesh->InsertNextCell(VTK_TRIANGLE, 3, cell);
+      outputMesh->InsertNextCell(VTK_TRIANGLE, 3, cell.data());
     } else if(dimension == 4) {
-      outputMesh->InsertNextCell(VTK_TETRA, 4, cell);
+      outputMesh->InsertNextCell(VTK_TETRA, 4, cell.data());
     } else {
       this->printErr("Should not get here!");
     }
