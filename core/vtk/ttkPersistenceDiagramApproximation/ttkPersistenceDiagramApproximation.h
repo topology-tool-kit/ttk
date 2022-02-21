@@ -58,9 +58,6 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(ComputeSaddleConnectors, bool);
-  vtkGetMacro(ComputeSaddleConnectors, bool);
-
   vtkSetMacro(ShowInsideDomain, bool);
   vtkGetMacro(ShowInsideDomain, bool);
 
@@ -100,13 +97,6 @@ private:
                int *outputMonotonyOffsets,
                const SimplexId *const inputOrder,
                const triangulationType *triangulation);
-
-  template <typename scalarType, typename triangulationType>
-  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-                            const std::vector<ttk::PersistencePair> &diagram,
-                            vtkDataArray *inputScalarsArray,
-                            const scalarType *const inputScalars,
-                            const triangulationType *triangulation) const;
 
   template <typename scalarType, typename triangulationType>
   int drawBottleneckBounds(vtkUnstructuredGrid *outputBounds,
