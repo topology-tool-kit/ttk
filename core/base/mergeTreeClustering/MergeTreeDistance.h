@@ -334,9 +334,6 @@ namespace ttk {
       Memory m;
       Timer t_total;
 
-      ftm::FTMTree_MT *tree1 = &(mTree1.tree);
-      ftm::FTMTree_MT *tree2 = &(mTree2.tree);
-
       // ---------------------
       // ----- Testing
       // --------------------
@@ -345,14 +342,16 @@ namespace ttk {
       // ---------------------
       // ----- Preprocessing
       // --------------------
-      ftm::MergeTree<dataType> tree1Ori = mTree1;
-      ftm::MergeTree<dataType> tree2Ori = mTree2;
+      ftm::MergeTree<dataType> mTree1Copy;
+      ftm::MergeTree<dataType> mTree2Copy;
       if(saveTree_) {
-        mTree1 = ftm::copyMergeTree<dataType>(mTree1);
-        mTree2 = ftm::copyMergeTree<dataType>(mTree2);
-        tree1 = &(mTree1.tree);
-        tree2 = &(mTree2.tree);
+        mTree1Copy = ftm::copyMergeTree<dataType>(mTree1);
+        mTree2Copy = ftm::copyMergeTree<dataType>(mTree2);
       }
+      ftm::MergeTree<dataType> &mTree1Int = (saveTree_ ? mTree1Copy : mTree1);
+      ftm::MergeTree<dataType> &mTree2Int = (saveTree_ ? mTree2Copy : mTree2);
+      ftm::FTMTree_MT *tree1 = &(mTree1Int.tree);
+      ftm::FTMTree_MT *tree2 = &(mTree2Int.tree);
       if(not isCalled_) {
         verifyMergeTreeStructure<dataType>(tree1);
         verifyMergeTreeStructure<dataType>(tree2);
@@ -360,14 +359,14 @@ namespace ttk {
       if(preprocess_) {
         treesNodeCorr_ = std::vector<std::vector<int>>(2);
         preprocessingPipeline<dataType>(
-          mTree1, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_,
+          mTree1Int, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_,
           branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[0]);
         preprocessingPipeline<dataType>(
-          mTree2, epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
+          mTree2Int, epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
           branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[1]);
       }
-      tree1 = &(mTree1.tree);
-      tree2 = &(mTree2.tree);
+      tree1 = &(mTree1Int.tree);
+      tree2 = &(mTree2Int.tree);
 
       // ---------------------
       // ----- Compute Distance
@@ -401,11 +400,6 @@ namespace ttk {
       ss4 << "MEMORY          = " << m.getElapsedUsage();
       printMsg(ss4.str());
       printMsg(debug::Separator::L2);
-
-      if(saveTree_) {
-        mTree1 = tree1Ori;
-        mTree2 = tree2Ori;
-      }
 
       return distance;
     }

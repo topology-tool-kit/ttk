@@ -62,7 +62,7 @@ namespace ttk {
                          std::vector<std::vector<double>> &distanceMatrix) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(i) UNTIED() shared(distanceMatrix)
+#pragma omp task firstprivate(i) UNTIED() shared(distanceMatrix, trees)
         {
 #endif
           std::stringstream stream;
