@@ -1,0 +1,4 @@
+NAME
+  ttkConnectedComponents
+DEPENDS
+  ttkAlgorithm

@@ -109,7 +109,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 #define ttkTypeMacroErrorCase(idx, type)                          \
   default: {                                                      \
     this->printErr("Unsupported " #idx "-th Template Data Type: " \
-                   + std::to_string(type));                       \
+                   + std::to_string(static_cast<int>(type)));     \
   } break;
 
 #define ttkTypeMacroCase(enum, type, number, call) \
