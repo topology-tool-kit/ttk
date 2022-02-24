@@ -257,7 +257,7 @@ jobs:
   # Test Windows build #
   # ------------------ #
   test-build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     env:
       VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat
       PV_DIR: C:\Program Files\TTK-ParaView

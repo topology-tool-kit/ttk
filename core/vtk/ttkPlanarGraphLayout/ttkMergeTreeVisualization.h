@@ -496,6 +496,8 @@ public:
     isImportantPairsNode->SetName("isImportantPair");
     vtkNew<vtkIntArray> nodeID{};
     nodeID->SetName("NodeId");
+    vtkNew<vtkIntArray> vertexID{};
+    vertexID->SetName("VertexId");
 
     vtkNew<vtkIntArray> treeIDNode{};
     treeIDNode->SetName("TreeID");
@@ -914,6 +916,16 @@ public:
             // Add node id
             nodeID->InsertNextTuple1(treeSimplexId[node]);
 
+            // Add VertexId
+            int nodeVertexId = -1;
+            if(i < int(treesNodes.size())) {
+              auto vertexIdArray
+                = treesNodes[i]->GetPointData()->GetArray("VertexId");
+              if(vertexIdArray and nodeMesh != -1)
+                nodeVertexId = vertexIdArray->GetTuple1(nodeMesh);
+            }
+            vertexID->InsertNextTuple1(nodeVertexId);
+
             // Add node scalar
             scalar->InsertNextTuple1(trees[i]->getValue<dataType>(node));
 
@@ -1041,6 +1053,7 @@ public:
     vtkOutputNode->GetPointData()->AddArray(isDummyNode);
     vtkOutputNode->GetPointData()->AddArray(branchNodeID);
     vtkOutputNode->GetPointData()->AddArray(nodeID);
+    vtkOutputNode->GetPointData()->AddArray(vertexID);
     vtkOutputNode->GetPointData()->AddArray(isImportantPairsNode);
     if(not branchDecompositionPlanarLayout_)
       vtkOutputNode->GetPointData()->AddArray(scalar);
