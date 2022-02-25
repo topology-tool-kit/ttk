@@ -119,8 +119,15 @@ namespace ttk {
     void updateClusters();
     void invertClusters();
     void invertInverseClusters();
-    void computeBarycenterForTwo(
+    void computeBarycenterForTwoGlobal(
       std::vector<std::vector<std::vector<std::vector<matchingTuple>>>> &);
+
+    void computeBarycenterForTwo(
+      std::vector<std::vector<matchingTuple>> &matchings,
+      std::vector<std::vector<int>> &bidders_ids,
+      std::vector<BidderDiagram<dataType>> &current_bidder_diagrams,
+      std::vector<BidderDiagram<dataType>> &bidder_diagrams,
+      GoodDiagram<dataType> &barycenter);
 
     void acceleratedUpdateClusters();
     std::vector<dataType> updateCentroidsPosition(
