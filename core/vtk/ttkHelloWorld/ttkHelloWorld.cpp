@@ -32,9 +32,6 @@ ttkHelloWorld::ttkHelloWorld() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkHelloWorld::~ttkHelloWorld() {
-}
-
 /**
  * TODO 8: Specify the required input data type of each input port
  *
