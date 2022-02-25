@@ -29,9 +29,12 @@
         </ArrayListDomain>
         <Documentation>Feature Mask where values smaller equal than zero correspond to the background.</Documentation>
       </StringVectorProperty>
-      <IntVectorProperty name="UseSeedIdAsComponentId" command="SetUseSeedIdAsComponentId" number_of_elements="1" default_values="1">
-          <BooleanDomain name="bool" />
-          <Documentation>This flag controls if the resulting segmentation is either labeled by the index of the component, or by its seed location (which can be used as a deterministic feature label).</Documentation>
+      <DoubleVectorProperty name="BackgroundThreshold" command="SetBackgroundThreshold" number_of_elements="1" default_values="0">
+        <Documentation>Values of the mask smaller or equal to this threshold are considered background.</Documentation>
+      </DoubleVectorProperty>
+      <IntVectorProperty name="SegmentationSize" command="SetAugmentSegmentationWithComponentSize" number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool" />
+        <Documentation>If yes the segmentation will have an additional point data array that records for each vertex the size of its corresponding component.</Documentation>
       </IntVectorProperty>
 
       ${DEBUG_WIDGETS}
