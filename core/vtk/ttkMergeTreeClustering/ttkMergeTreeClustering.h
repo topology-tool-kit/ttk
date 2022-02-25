@@ -243,6 +243,8 @@ public:
 
   void SetAlpha(double alpha) {
     Alpha = 1 - alpha;
+    Alpha = std::min(1 - 1e-6, Alpha);
+    Alpha = std::max(1e-6, Alpha);
     Modified();
     resetDataVisualization();
   }
