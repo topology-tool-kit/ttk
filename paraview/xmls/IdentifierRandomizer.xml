@@ -76,6 +76,9 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFieldNew" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="Seed" />
         <Property name="CompactRange" />
       </PropertyGroup>
