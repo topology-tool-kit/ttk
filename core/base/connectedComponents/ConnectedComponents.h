@@ -33,7 +33,7 @@ namespace ttk {
 
   public:
     struct Component {
-      int seed = -1;
+      int id = -1;
       float center[3]{0, 0, 0};
       float size{0};
     };
@@ -60,6 +60,7 @@ namespace ttk {
       std::stack<TID> stack;
       stack.push(seed);
       labels[seed] = componentId;
+      TID id = seed;
 
       float size = 0;
       float x, y, z;
@@ -68,6 +69,8 @@ namespace ttk {
       while(!stack.empty()) {
         const auto cIndex = stack.top();
         stack.pop();
+
+        id = std::max(cIndex, id);
 
         // update node data
         triangulation->getVertexPoint(cIndex, x, y, z);
@@ -95,25 +98,31 @@ namespace ttk {
       components.resize(componentId + 1);
       auto &c = components[componentId];
       std::copy(center, center + 3, c.center);
+      c.id = id;
       c.size = size;
-      c.seed = seed;
 
       return 1;
     }
 
     template <typename DT>
-    int initializeOutputLabels(int *labels,
+    int initializeComponentIds(int *componentIds,
                                const TID nVertices,
-                               const DT *featureMask = nullptr) const {
+                               const DT *featureMask = nullptr,
+                               const DT backgroundThreshold = 0) const {
       Timer timer;
       std::string msg
-        = "Initializing IDs" + std::string(featureMask ? " via Mask" : "");
+        = "Initializing IDs"
+          + std::string(featureMask
+                          ? (" with BT: " + std::to_string(backgroundThreshold))
+                          : "");
       this->printMsg(msg, 0, 0, 1, ttk::debug::LineMode::REPLACE);
       if(featureMask) {
         for(TID i = 0; i < nVertices; i++)
-          labels[i] = featureMask[i] > 0 ? this->UNLABELED : this->IGNORE;
+          componentIds[i] = featureMask[i] > backgroundThreshold
+                              ? this->UNLABELED
+                              : this->IGNORE;
       } else {
-        std::fill(labels, labels + nVertices, this->UNLABELED);
+        std::fill(componentIds, componentIds + nVertices, this->UNLABELED);
       }
       this->printMsg(msg, 1, timer.getElapsedTime(), 1);
 
@@ -122,40 +131,33 @@ namespace ttk {
 
     template <typename TT = ttk::AbstractTriangulation>
     int computeConnectedComponents(std::vector<Component> &components,
-                                   int *outputLabels,
-                                   const TT *triangulation,
-                                   const bool useSeedAsComponentId
-                                   = false) const {
+                                   int *componentIds,
+                                   const TT *triangulation) const {
 
       TID nVertices = triangulation->getNumberOfVertices();
 
-      {
-        Timer timer;
-        const std::string msg = "Computing Connected Components";
-        this->printMsg(msg, 0, 0, 1, ttk::debug::LineMode::REPLACE);
+      Timer timer;
+      const std::string msg = "Computing Connected Components";
+      this->printMsg(msg, 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
-        for(TID i = 0; i < nVertices; i++)
-          if(outputLabels[i] == this->UNLABELED)
-            this->computeFloodFill<TT>(
-              outputLabels, components, triangulation, i);
+      for(TID i = 0; i < nVertices; i++)
+        if(componentIds[i] == this->UNLABELED)
+          this->computeFloodFill<TT>(
+            componentIds, components, triangulation, i);
 
-        this->printMsg(msg, 1, timer.getElapsedTime(), 1);
-      }
+      this->printMsg(msg, 1, timer.getElapsedTime(), 1);
 
-      if(useSeedAsComponentId) {
-        Timer timer;
-        const std::string msg = "Labeling Components by Seed Id";
-        this->printMsg(msg, 0, 0, 1, ttk::debug::LineMode::REPLACE);
+      return 1;
+    }
 
-        for(TID i = 0; i < nVertices; i++) {
-          auto &cid = outputLabels[i];
-          if(cid >= 0)
-            cid = components[cid].seed;
-        }
-
-        this->printMsg(msg, 1, timer.getElapsedTime(), 1);
-      }
-
+    template <typename F, typename DT>
+    int mapData(std::vector<Component> &components,
+                const int *componentIds,
+                const int nVertices,
+                const F f,
+                DT *out) const {
+      for(TID i = 0; i < nVertices; i++)
+        out[i] = f(components, componentIds[i]);
       return 1;
     }
   };

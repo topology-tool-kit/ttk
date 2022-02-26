@@ -68,29 +68,61 @@ int ttkConnectedComponents::RequestData(vtkInformation *,
     return 0;
 
   // Allocate Output Label Data
-  auto outputArray = vtkSmartPointer<vtkIntArray>::New();
-  outputArray->SetName("ComponentId");
-  outputArray->SetNumberOfTuples(nPoints);
+  auto componentIds = vtkSmartPointer<vtkIntArray>::New();
+  componentIds->SetName("ComponentId");
+  componentIds->SetNumberOfTuples(nPoints);
+
+  auto componentSize = vtkSmartPointer<vtkFloatArray>::New();
+  componentSize->SetName("ComponentSize");
+  if(this->AugmentSegmentationWithComponentSize)
+    componentSize->SetNumberOfTuples(nPoints);
 
   // Compute Connected Components
   std::vector<ttk::ConnectedComponents::Component> components;
   {
     int status = 0;
 
+    // initialize component ids
     ttkTypeMacroA(featureMask ? featureMask->GetDataType() : VTK_INT,
-                  (status = this->initializeOutputLabels<T0>(
-                     ttkUtils::GetPointer<int>(outputArray), nPoints,
-                     ttkUtils::GetPointer<const T0>(featureMask))));
-    if(status != 1)
+                  (status = this->initializeComponentIds<T0>(
+                     ttkUtils::GetPointer<int>(componentIds), nPoints,
+                     ttkUtils::GetPointer<const T0>(featureMask),
+                     this->BackgroundThreshold)));
+    if(!status)
       return 0;
 
+    // compute connected components (componentIds now store component idx)
     this->preconditionTriangulation(triangulation);
     ttkTypeMacroT(triangulation->getType(),
                   (status = this->computeConnectedComponents<T0>(
-                     components, ttkUtils::GetPointer<int>(outputArray),
-                     static_cast<const T0 *>(triangulation->getData()),
-                     this->UseSeedIdAsComponentId)));
-    if(status != 1)
+                     components, ttkUtils::GetPointer<int>(componentIds),
+                     static_cast<const T0 *>(triangulation->getData()))));
+    if(!status)
+      return 0;
+  }
+
+  // Augment Segmentation
+  {
+    int status = 0;
+
+    // map component size to segmentation
+    if(this->AugmentSegmentationWithComponentSize) {
+      status = this->mapData(
+        components, ttkUtils::GetPointer<int>(componentIds), nPoints,
+        [](const std::vector<ttk::ConnectedComponents::Component> &components_,
+           const int cIdx) { return cIdx < 0 ? 0.0 : components_[cIdx].size; },
+        ttkUtils::GetPointer<float>(componentSize));
+      if(!status)
+        return 0;
+    }
+
+    // map component idx to component id
+    status = this->mapData(
+      components, ttkUtils::GetPointer<int>(componentIds), nPoints,
+      [](const std::vector<ttk::ConnectedComponents::Component> &components_,
+         const int cIdx) { return cIdx < 0 ? -1 : components_[cIdx].id; },
+      ttkUtils::GetPointer<int>(componentIds));
+    if(!status)
       return 0;
   }
 
@@ -98,7 +130,9 @@ int ttkConnectedComponents::RequestData(vtkInformation *,
   {
     auto outputDataSet = vtkDataSet::GetData(outputVector, 0);
     outputDataSet->ShallowCopy(inputDataSet);
-    outputDataSet->GetPointData()->AddArray(outputArray);
+    outputDataSet->GetPointData()->AddArray(componentIds);
+    if(this->AugmentSegmentationWithComponentSize)
+      outputDataSet->GetPointData()->AddArray(componentSize);
   }
 
   // Components Output
@@ -129,7 +163,7 @@ int ttkConnectedComponents::RequestData(vtkInformation *,
         pointsData[j++] = c.center[2];
 
         sizeArrayData[i] = c.size;
-        idArrayData[i] = this->UseSeedIdAsComponentId ? c.seed : i;
+        idArrayData[i] = c.id;
       }
 
       outputComponents->SetPoints(points);
