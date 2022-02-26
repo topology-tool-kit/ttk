@@ -37,6 +37,15 @@
         <Documentation>If yes the segmentation will have an additional point data array that records for each vertex the size of its corresponding component.</Documentation>
       </IntVectorProperty>
 
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="FeatureMask" />
+        <Property name="BackgroundThreshold" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        <Property name="SegmentationSize" />
+      </PropertyGroup>
+
       ${DEBUG_WIDGETS}
 
       <Hints>
