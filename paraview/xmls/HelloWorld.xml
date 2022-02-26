@@ -35,7 +35,7 @@
       </StringVectorProperty>
 
       <!-- Create a UI group that contains all input parameter widgets (here only one) -->
-      <PropertyGroup panel_widget="Line" label="Input Options">
+      <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="InputArray" />
       </PropertyGroup>
 
@@ -45,7 +45,7 @@
       <StringVectorProperty name="OutputArrayName" label="Output Array Name" command="SetOutputArrayName" number_of_elements="1" default_values="AveragedScalarField" />
 
       <!-- Create a UI group that contains all output parameter widgets (here only one) -->
-      <PropertyGroup panel_widget="Line" label="Output Options">
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="OutputArrayName" />
       </PropertyGroup>
 
