@@ -15,7 +15,6 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
-#include <vtkGeometryFilter.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
