@@ -137,9 +137,15 @@ namespace ttk {
         // if (abs<dataType>(dt) < zeroThresh) continue;
         if(dt > 0) {
           if(nt1 == BLocalMin && nt2 == BLocalMax) {
-            data_max[i].push_back(t);
-            data_max_idx[i].push_back(j);
-            do_max = true;
+            if(PairTypeClustering == 2) {
+              data_max[i].push_back(t);
+              data_max_idx[i].push_back(j);
+              do_max = true;
+            } else {
+              data_min[i].push_back(t);
+              data_min_idx[i].push_back(j);
+              do_min = true;
+            }
           } else {
             if(nt1 == BLocalMax || nt2 == BLocalMax) {
               data_max[i].push_back(t);

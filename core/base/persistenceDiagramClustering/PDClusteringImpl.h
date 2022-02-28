@@ -524,10 +524,13 @@ std::vector<int> ttk::PDClustering<dataType>::execute(
     // if NumberOfClusters > 1, the global pair was duplicated
     // and needs to be removed from the min-saddle problem
     // It is the first pair.
-    int removeFirstPair
+    int removeFirstPairMin
       = (k_ > 1 and original_dos[0] and original_dos[2]) ? 1 : 0;
-    if(do_max_ and removeFirstPair) {
-      // min-max Pair
+    int addedFirstPairMax = 0;
+    int addedFirstPairMin = removeFirstPairMin;
+
+    // min-max Pair
+    if(removeFirstPairMin or (!do_min_ and do_max_)) {
       Good<dataType> &g = centroids_max_[c].get(0);
       std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
       float x = std::get<0>(critCoords);
@@ -538,10 +541,23 @@ std::vector<int> ttk::PDClustering<dataType>::execute(
                           ttk::CriticalType::Local_maximum, g.getPersistence(),
                           -1, g.x_, x, y, z, g.y_, x, y, z);
       final_centroids[c].push_back(t);
+      addedFirstPairMax = 1;
+    } else if(do_min_) {
+      Good<dataType> &g = centroids_min_[c].get(0);
+      std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
+      float x = std::get<0>(critCoords);
+      float y = std::get<1>(critCoords);
+      float z = std::get<2>(critCoords);
+      diagramTuple t
+        = std::make_tuple(0, ttk::CriticalType::Local_minimum, 0,
+                          ttk::CriticalType::Local_maximum, g.getPersistence(),
+                          -1, g.x_, x, y, z, g.y_, x, y, z);
+      final_centroids[c].push_back(t);
+      addedFirstPairMin = 1;
     }
 
     if(do_min_) {
-      for(int i = removeFirstPair; i < centroids_min_[c].size(); ++i) {
+      for(int i = addedFirstPairMin; i < centroids_min_[c].size(); ++i) {
         Good<dataType> &g = centroids_min_[c].get(i);
         std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
         float x = std::get<0>(critCoords);
@@ -588,7 +604,7 @@ std::vector<int> ttk::PDClustering<dataType>::execute(
       //   y0, z0, g0.y_, x0, y0, z0);
       // final_centroids[c].push_back(t0);
 
-      for(int i = removeFirstPair; i < centroids_max_[c].size(); ++i) {
+      for(int i = addedFirstPairMax; i < centroids_max_[c].size(); ++i) {
         Good<dataType> &g = centroids_max_[c].get(i);
         std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
         float y = std::get<1>(critCoords);
@@ -628,7 +644,6 @@ template <typename dataType>
 void ttk::PDClustering<dataType>::correctMatchings(
   std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
     &previous_matchings) {
-  printMsg("Correct matchings");
   for(int c = 0; c < k_; c++) {
     for(unsigned int i = 0; i < clustering_[c].size(); i++) {
       int diagram_id = clustering_[c][i];
@@ -742,7 +757,6 @@ void ttk::PDClustering<dataType>::correctMatchings(
       }
     }
   }
-  printMsg("Correct matchings done");
 }
 
 template <typename dataType>
