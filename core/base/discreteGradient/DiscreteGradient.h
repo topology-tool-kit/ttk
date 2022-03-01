@@ -307,6 +307,18 @@ namespace ttk {
         this->setDebugMsgPrefix("DiscreteGradient");
       }
 
+      ~DiscreteGradient() override {
+        if(this->cacheHandler_ != nullptr
+           && this->inputScalarField_ != nullptr) {
+          auto pos = this->cacheHandler_->find(this->inputScalarField_);
+          if(pos != this->cacheHandler_->end()
+             && pos->second == &this->gradient_) {
+            // avoid dangling pointers
+            this->cacheHandler_->erase(pos);
+          }
+        }
+      }
+
       /**
        * Impose a threshold on the number of simplification passes.
        */
@@ -413,7 +425,7 @@ according to them.
             // for filterSaddleConnectors
             contourTree_.preconditionTriangulation(data);
           }
-          this->initMemory(*data);
+          this->cacheHandler_ = data->getGradientCacheHandler();
         }
       }
 
@@ -926,6 +938,7 @@ gradient, false otherwise.
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
       gradientType gradient_{};
+      AbstractTriangulation::gradientCacheType *cacheHandler_{};
       std::vector<SimplexId> dmtMax2PL_{};
       std::vector<SimplexId> dmt1Saddle2PL_{};
       std::vector<SimplexId> dmt2Saddle2PL_{};

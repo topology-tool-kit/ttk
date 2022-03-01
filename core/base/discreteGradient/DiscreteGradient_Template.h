@@ -40,11 +40,55 @@ template <typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 
-  // compute gradient pairs
-  processLowerStars(this->inputOffsets_, triangulation);
+  const auto findGradient = [this]() -> gradientType * {
+    if(this->cacheHandler_ == nullptr || this->inputScalarField_ == nullptr) {
+      return {};
+    }
+    const auto pos = this->cacheHandler_->find(this->inputScalarField_);
+    if(pos != this->cacheHandler_->end()) {
+      return pos->second;
+    }
+    return {};
+  };
 
-  this->printMsg(
-    "Built discrete gradient", 1.0, t.getElapsedTime(), this->threadNumber_);
+  const auto cachedGradient = findGradient();
+  if(cachedGradient == nullptr) {
+    // compute gradient pairs
+    this->initMemory(triangulation);
+    this->processLowerStars(this->inputOffsets_, triangulation);
+
+    this->printMsg(
+      "Built discrete gradient", 1.0, t.getElapsedTime(), this->threadNumber_);
+
+  } else {
+    if(cachedGradient != &this->gradient_) {
+      // restore gradient from cache
+      this->gradient_ = std::move(*cachedGradient);
+    }
+
+    this->printMsg(
+      "Fetched cached discrete gradient", 1.0, t.getElapsedTime(), 1);
+  }
+
+  const auto storeGradient = [this]() -> bool {
+    if(this->cacheHandler_ == nullptr || this->inputScalarField_ == nullptr) {
+      return false;
+    }
+    // ensure only one cache entry points to the current instance
+    for(auto it = this->cacheHandler_->begin();
+        it != this->cacheHandler_->end();) {
+      if(it->second == &this->gradient_) {
+        this->cacheHandler_->erase(it++);
+      } else {
+        ++it;
+      }
+    }
+    (*this->cacheHandler_)[this->inputScalarField_] = &this->gradient_;
+    return true;
+  };
+
+  // cache the current discrete gradient instance
+  storeGradient();
 
   return 0;
 }
