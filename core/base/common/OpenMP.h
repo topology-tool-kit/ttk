@@ -18,7 +18,7 @@ namespace ttk {
 
   public:
     ParallelGuard(const int nThreads)
-      : oldThreadNumber_{omp_get_num_threads()} {
+      : oldThreadNumber_{omp_get_max_threads()} {
       omp_set_num_threads(nThreads);
     }
     ~ParallelGuard() {
