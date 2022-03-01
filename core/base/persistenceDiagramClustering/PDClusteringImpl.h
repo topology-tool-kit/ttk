@@ -503,7 +503,7 @@ std::vector<int> ttk::PDClustering<dataType>::execute(
   // }
   // printMatchings(all_matchings_per_type_and_cluster[0]);
   if(matchings_only) {
-    computeBarycenterForTwo(all_matchings_per_type_and_cluster);
+    computeBarycenterForTwoGlobal(all_matchings_per_type_and_cluster);
   }
   correctMatchings(all_matchings_per_type_and_cluster);
   // Filling the final centroids for output
@@ -521,8 +521,43 @@ std::vector<int> ttk::PDClustering<dataType>::execute(
   }
 
   for(int c = 0; c < k_; ++c) {
+    // if NumberOfClusters > 1, the global pair was duplicated
+    // and needs to be removed from the min-saddle problem
+    // It is the first pair.
+    int removeFirstPairMin
+      = (k_ > 1 and original_dos[0] and original_dos[2]) ? 1 : 0;
+    int addedFirstPairMax = 0;
+    int addedFirstPairMin = removeFirstPairMin;
+
+    // min-max Pair
+    if(removeFirstPairMin or (!do_min_ and do_max_)) {
+      Good<dataType> &g = centroids_max_[c].get(0);
+      std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
+      float x = std::get<0>(critCoords);
+      float y = std::get<1>(critCoords);
+      float z = std::get<2>(critCoords);
+      diagramTuple t
+        = std::make_tuple(0, ttk::CriticalType::Local_minimum, 0,
+                          ttk::CriticalType::Local_maximum, g.getPersistence(),
+                          -1, g.x_, x, y, z, g.y_, x, y, z);
+      final_centroids[c].push_back(t);
+      addedFirstPairMax = 1;
+    } else if(do_min_) {
+      Good<dataType> &g = centroids_min_[c].get(0);
+      std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
+      float x = std::get<0>(critCoords);
+      float y = std::get<1>(critCoords);
+      float z = std::get<2>(critCoords);
+      diagramTuple t
+        = std::make_tuple(0, ttk::CriticalType::Local_minimum, 0,
+                          ttk::CriticalType::Local_maximum, g.getPersistence(),
+                          -1, g.x_, x, y, z, g.y_, x, y, z);
+      final_centroids[c].push_back(t);
+      addedFirstPairMin = 1;
+    }
+
     if(do_min_) {
-      for(int i = 0; i < centroids_min_[c].size(); ++i) {
+      for(int i = addedFirstPairMin; i < centroids_min_[c].size(); ++i) {
         Good<dataType> &g = centroids_min_[c].get(i);
         std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
         float x = std::get<0>(critCoords);
@@ -558,7 +593,18 @@ std::vector<int> ttk::PDClustering<dataType>::execute(
     }
 
     if(do_max_) {
-      for(int i = 0; i < centroids_max_[c].size(); ++i) {
+      // min-max Pair
+      // Good<dataType> &g0 = centroids_max_[c].get(0);
+      // std::tuple<float, float, float> critCoords0 =
+      // g0.GetCriticalCoordinates(); float x0 = std::get<0>(critCoords0); float
+      // y0 = std::get<1>(critCoords0); float z0 = std::get<2>(critCoords0);
+      // diagramTuple t0 = std::make_tuple(
+      //   0, ttk::CriticalType::Local_minimum, 0,
+      //   ttk::CriticalType::Local_maximum, g0.getPersistence(), -1, g0.x_, x0,
+      //   y0, z0, g0.y_, x0, y0, z0);
+      // final_centroids[c].push_back(t0);
+
+      for(int i = addedFirstPairMax; i < centroids_max_[c].size(); ++i) {
         Good<dataType> &g = centroids_max_[c].get(i);
         std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
         float y = std::get<1>(critCoords);
@@ -624,6 +670,10 @@ void ttk::PDClustering<dataType>::correctMatchings(
           if(new_id >= 0 && std::get<1>(m) >= 0) {
             std::get<0>(m) = new_to_old_id[new_id];
             matchings_diagram_i.push_back(m);
+          } else if(std::get<1>(m)
+                    >= 0) { // new_id < 0 corresponds to a diagonal matching
+            std::get<0>(m) = -1;
+            matchings_diagram_i.push_back(m);
           }
         }
         previous_matchings[c][0][i].resize(matchings_diagram_i.size());
@@ -658,6 +708,10 @@ void ttk::PDClustering<dataType>::correctMatchings(
                 matchings_diagram_i.push_back(m);
               }
             }
+          } else if(std::get<1>(m)
+                    >= 0) { // new_id < 0 corresponds to a diagonal matching
+            std::get<0>(m) = -1;
+            matchings_diagram_i.push_back(m);
           }
         }
         previous_matchings[c][1][i].resize(matchings_diagram_i.size());
@@ -692,6 +746,10 @@ void ttk::PDClustering<dataType>::correctMatchings(
                 matchings_diagram_i.push_back(m);
               }
             }
+          } else if(std::get<1>(m)
+                    >= 0) { // new_id < 0 corresponds to a diagonal matching
+            std::get<0>(m) = -1;
+            matchings_diagram_i.push_back(m);
           }
         }
         previous_matchings[c][2][i].resize(matchings_diagram_i.size());
@@ -2971,175 +3029,137 @@ dataType ttk::PDClustering<dataType>::computeRealCost() {
 }
 
 template <typename dataType>
-void ttk::PDClustering<dataType>::computeBarycenterForTwo(
+void ttk::PDClustering<dataType>::computeBarycenterForTwoGlobal(
   std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
     &all_matchings_per_type_and_cluster) {
 
   if(do_min_) {
-    std::vector<int> new_to_old_id(current_bidder_diagrams_min_[1].size());
-    // 1. Invert the current_bidder_ids_ vector
-    for(unsigned int j = 0; j < current_bidder_ids_min_[1].size(); j++) {
-      int new_id = current_bidder_ids_min_[1][j];
-      if(new_id >= 0) {
-        new_to_old_id[new_id] = j;
-      }
-    }
-    std::vector<matchingTuple> matching_to_add(0);
-    for(unsigned int i = 0;
-        i < all_matchings_per_type_and_cluster[0][0][1].size(); i++) {
-      matchingTuple t = all_matchings_per_type_and_cluster[0][0][1][i];
-      int bidderId = std::get<0>(t);
-      int goodId = std::get<1>(t);
-      if(bidderId >= 0) {
-        Bidder<dataType> b
-          = bidder_diagrams_min_[1].get(new_to_old_id[bidderId]);
-        dataType bx = b.x_;
-        dataType by = b.y_;
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_min_[0].get(goodId);
-          dataType gx = g.x_;
-          dataType gy = g.y_;
-          centroids_min_[0].get(goodId).x_ = (bx + gx) / 2;
-          centroids_min_[0].get(goodId).y_ = (by + gy) / 2;
-        } else {
-          dataType gx = (bx + by) / 2;
-          dataType gy = (bx + by) / 2;
-          gx = (gx + bx) / 2;
-          gy = (gy + by) / 2;
-          dataType cost = Geometry::pow((gx - bx), wasserstein_)
-                          + Geometry::pow((gy - by), wasserstein_);
-          Good<dataType> g
-            = Good<dataType>(gx, gy, false, centroids_min_[0].size());
-          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-          matchingTuple t2
-            = std::make_tuple(bidderId, centroids_min_[0].size(), cost);
-          centroids_min_[0].addGood(g);
-          matching_to_add.push_back(t2);
-        }
-      } else {
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_min_[0].get(goodId);
-          dataType gx = (g.x_ + g.y_) / 2;
-          dataType gy = (g.x_ + g.y_) / 2;
-          centroids_min_[0].get(goodId).x_ = (gx + g.x_) / 2;
-          centroids_min_[0].get(goodId).y_ = (gy + g.y_) / 2;
-        }
-      }
-    }
-    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
-      all_matchings_per_type_and_cluster[0][0][1].push_back(matching_to_add[j]);
-    }
+    computeBarycenterForTwo(
+      all_matchings_per_type_and_cluster[0][0], current_bidder_ids_min_,
+      current_bidder_diagrams_min_, bidder_diagrams_min_, centroids_min_[0]);
   }
-
   if(do_sad_) {
-    std::vector<int> new_to_old_id(current_bidder_diagrams_saddle_[1].size());
-    // 1. Invert the current_bidder_ids_ vector
-    for(unsigned int j = 0; j < current_bidder_ids_sad_[1].size(); j++) {
-      int new_id = current_bidder_ids_sad_[1][j];
-      if(new_id >= 0) {
-        new_to_old_id[new_id] = j;
-      }
-    }
-    std::vector<matchingTuple> matching_to_add(0);
-    for(unsigned int i = 0;
-        i < all_matchings_per_type_and_cluster[0][1][1].size(); i++) {
-      matchingTuple t = all_matchings_per_type_and_cluster[0][1][1][i];
-      int bidderId = std::get<0>(t);
-      int goodId = std::get<1>(t);
-      if(bidderId >= 0) {
-        Bidder<dataType> b
-          = bidder_diagrams_saddle_[1].get(new_to_old_id[bidderId]);
-        dataType bx = b.x_;
-        dataType by = b.y_;
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_saddle_[0].get(goodId);
-          dataType gx = g.x_;
-          dataType gy = g.y_;
-          centroids_saddle_[0].get(goodId).x_ = (bx + gx) / 2;
-          centroids_saddle_[0].get(goodId).y_ = (by + gy) / 2;
-        } else {
-          dataType gx = (bx + by) / 2;
-          dataType gy = (bx + by) / 2;
-          gx = (gx + bx) / 2;
-          gy = (gy + by) / 2;
-          dataType cost = Geometry::pow((gx - bx), wasserstein_)
-                          + Geometry::pow((gy - by), wasserstein_);
-          matchingTuple t2
-            = std::make_tuple(bidderId, centroids_saddle_[0].size(), cost);
-          Good<dataType> g
-            = Good<dataType>(gx, gy, false, centroids_saddle_[0].size());
-          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-          centroids_saddle_[0].addGood(g);
-          matching_to_add.push_back(t2);
-        }
-      } else {
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_saddle_[0].get(goodId);
-          dataType gx = (g.x_ + g.y_) / 2;
-          dataType gy = (g.x_ + g.y_) / 2;
-          centroids_saddle_[0].get(goodId).x_ = (gx + g.x_) / 2;
-          centroids_saddle_[0].get(goodId).y_ = (gy + g.y_) / 2;
-        }
-      }
-    }
-    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
-      all_matchings_per_type_and_cluster[0][1][1].push_back(matching_to_add[j]);
+    computeBarycenterForTwo(all_matchings_per_type_and_cluster[0][1],
+                            current_bidder_ids_sad_,
+                            current_bidder_diagrams_saddle_,
+                            bidder_diagrams_saddle_, centroids_saddle_[0]);
+  }
+  if(do_max_) {
+    computeBarycenterForTwo(
+      all_matchings_per_type_and_cluster[0][2], current_bidder_ids_max_,
+      current_bidder_diagrams_max_, bidder_diagrams_max_, centroids_max_[0]);
+  }
+}
+
+template <typename dataType>
+void ttk::PDClustering<dataType>::computeBarycenterForTwo(
+  std::vector<std::vector<matchingTuple>> &matchings,
+  std::vector<std::vector<int>> &bidders_ids,
+  std::vector<BidderDiagram<dataType>> &current_bidder_diagrams,
+  std::vector<BidderDiagram<dataType>> &bidder_diagrams,
+  GoodDiagram<dataType> &barycenter) {
+
+  auto &matchings0 = matchings[0];
+  auto &diagram0 = bidder_diagrams[0];
+  auto &current_diagram0 = current_bidder_diagrams[0];
+  auto &ids0 = bidders_ids[0];
+
+  auto &matchings1 = matchings[1];
+  auto &diagram1 = bidder_diagrams[1];
+  auto &current_diagram1 = current_bidder_diagrams[1];
+  auto &ids1 = bidders_ids[1];
+
+  std::vector<int> new_to_old_id(current_diagram1.size());
+  // 1. Invert the current_bidder_ids_ vector
+  for(unsigned int j = 0; j < ids1.size(); j++) {
+    int new_id = ids1[j];
+    if(new_id >= 0) {
+      new_to_old_id[new_id] = j;
     }
   }
 
-  if(do_max_) {
-    std::vector<int> new_to_old_id(current_bidder_diagrams_max_[1].size());
-    // 1. Invert the current_bidder_ids_ vector
-    for(unsigned int j = 0; j < current_bidder_ids_max_[1].size(); j++) {
-      int new_id = current_bidder_ids_max_[1][j];
-      if(new_id >= 0) {
-        new_to_old_id[new_id] = j;
-      }
-    }
-    std::vector<matchingTuple> matching_to_add(0);
-    for(unsigned int i = 0;
-        i < all_matchings_per_type_and_cluster[0][2][1].size(); i++) {
-      matchingTuple t = all_matchings_per_type_and_cluster[0][2][1][i];
-      int bidderId = std::get<0>(t);
-      int goodId = std::get<1>(t);
-      if(bidderId >= 0) {
-        Bidder<dataType> b
-          = bidder_diagrams_max_[1].get(new_to_old_id[bidderId]);
-        dataType bx = b.x_;
-        dataType by = b.y_;
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_max_[0].get(goodId);
-          dataType gx = g.x_;
-          dataType gy = g.y_;
-          centroids_max_[0].get(goodId).x_ = (bx + gx) / 2;
-          centroids_max_[0].get(goodId).y_ = (by + gy) / 2;
-        } else {
-          dataType gx = (bx + by) / 2;
-          dataType gy = (bx + by) / 2;
-          gx = (gx + bx) / 2;
-          gy = (gy + by) / 2;
-          dataType cost = Geometry::pow((gx - bx), wasserstein_)
-                          + Geometry::pow((gy - by), wasserstein_);
-          matchingTuple t2
-            = std::make_tuple(bidderId, centroids_max_[0].size(), cost);
-          Good<dataType> g
-            = Good<dataType>(gx, gy, false, centroids_max_[0].size());
-          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-          centroids_max_[0].addGood(g);
-          matching_to_add.push_back(t2);
-        }
+  std::vector<matchingTuple> matching_to_add(0);
+  std::vector<matchingTuple> matching_to_add2(0);
+
+  for(unsigned int i = 0; i < matchings1.size(); i++) {
+    matchingTuple &t = matchings1[i];
+    int bidderId = std::get<0>(t);
+    int goodId = std::get<1>(t);
+
+    if(bidderId >= 0) {
+      Bidder<dataType> b = diagram1.get(new_to_old_id[bidderId]);
+      dataType bx = b.x_;
+      dataType by = b.y_;
+      if(goodId >= 0) {
+        Good<dataType> g = barycenter.get(goodId);
+        dataType gx = g.x_;
+        dataType gy = g.y_;
+        barycenter.get(goodId).x_ = (bx + gx) / 2;
+        barycenter.get(goodId).y_ = (by + gy) / 2;
+        // divide by 4 in order to display the cost of the half matching
+        // i.e. the cost of matching to the barycenter
+        std::get<2>(t) /= 4;
+
       } else {
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_max_[0].get(goodId);
-          dataType gx = (g.x_ + g.y_) / 2;
-          dataType gy = (g.x_ + g.y_) / 2;
-          centroids_max_[0].get(goodId).x_ = (gx + g.x_) / 2;
-          centroids_max_[0].get(goodId).y_ = (gy + g.y_) / 2;
-        }
+        dataType gx = (bx + by) / 2;
+        dataType gy = (bx + by) / 2;
+        gx = (gx + bx) / 2;
+        gy = (gy + by) / 2;
+        dataType cost = Geometry::pow((gx - bx), wasserstein_)
+                        + Geometry::pow((gy - by), wasserstein_);
+        matchingTuple t2 = std::make_tuple(bidderId, barycenter.size(), cost);
+        matchingTuple t3 = std::make_tuple(-1, barycenter.size(), cost);
+        Good<dataType> g = Good<dataType>(gx, gy, false, barycenter.size());
+        // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
+        barycenter.addGood(g);
+        matching_to_add.push_back(t2);
+        matching_to_add2.push_back(t3);
+      }
+    } else {
+      if(goodId >= 0) {
+        Good<dataType> g = barycenter.get(goodId);
+        dataType gx = (g.x_ + g.y_) / 2;
+        dataType gy = (g.x_ + g.y_) / 2;
+        barycenter.get(goodId).x_ = (gx + g.x_) / 2;
+        barycenter.get(goodId).y_ = (gy + g.y_) / 2;
+        std::get<2>(t) /= 4;
       }
     }
-    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
-      all_matchings_per_type_and_cluster[0][2][1].push_back(matching_to_add[j]);
+  }
+  for(unsigned int j = 0; j < matching_to_add.size(); j++) {
+    matchings1.push_back(matching_to_add[j]);
+  }
+  for(unsigned int j = 0; j < matching_to_add2.size(); j++) {
+    matchings0.push_back(matching_to_add2[j]);
+  }
+
+  // correct the costs of matchings in diagram 0
+  // costs are initially allzeros because the barycenter is identical
+  // to diagram 0
+  std::vector<int> new_to_old_id2(current_diagram0.size());
+  // 1. Invert the current_bidder_ids_ vector
+  for(unsigned int j = 0; j < ids0.size(); j++) {
+    int new_id = ids0[j];
+    if(new_id >= 0) {
+      new_to_old_id2[new_id] = j;
+    }
+  }
+
+  for(unsigned int i = 0; i < matchings0.size(); i++) {
+    matchingTuple &t = matchings0[i];
+    int bidderId = std::get<0>(t);
+    int goodId = std::get<1>(t);
+
+    if(bidderId >= 0 and goodId >= 0) {
+      Bidder<dataType> b = diagram0.get(new_to_old_id2[bidderId]);
+      dataType bx = b.x_;
+      dataType by = b.y_;
+      Good<dataType> g = barycenter.get(goodId);
+      dataType gx = g.x_;
+      dataType gy = g.y_;
+      dataType cost = Geometry::pow((gx - bx), wasserstein_)
+                      + Geometry::pow((gy - by), wasserstein_);
+      std::get<2>(t) = cost;
     }
   }
 }
