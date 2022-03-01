@@ -99,6 +99,7 @@ jobs:
           -GNinja \
           $GITHUB_WORKSPACE
 
+    - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
       run: |
         cd build
@@ -267,6 +268,7 @@ jobs:
           -GNinja \
           $GITHUB_WORKSPACE
 
+    - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
       run: |
         cd build
