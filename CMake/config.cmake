@@ -107,6 +107,9 @@ mark_as_advanced(TTK_ENABLE_CPU_OPTIMIZATION)
 option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
 mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 
+option(TTK_REDUCE_TEMPLATE_INSTANTIATIONS "Use a reduced list of template instatiations to fasten build times" OFF)
+mark_as_advanced(TTK_REDUCE_TEMPLATE_INSTANTIATIONS)
+
 option(TTK_ENABLE_SHARED_BASE_LIBRARIES "Generate shared base libraries instead of static ones" ON)
 mark_as_advanced(TTK_ENABLE_SHARED_BASE_LIBRARIES)
 if(TTK_ENABLE_SHARED_BASE_LIBRARIES AND MSVC)

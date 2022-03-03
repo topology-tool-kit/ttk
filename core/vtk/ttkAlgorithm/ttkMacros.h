@@ -46,6 +46,19 @@ using ttkSimplexIdTypeArray = vtkIntArray;
   }                                                       \
   vtkSetEnumMacro(name, enumType);
 
+#ifdef TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+// reduced list of template instantiations by redefining vtkTemplateMacro
+#include <vtkSetGet.h>
+#ifdef vtkTemplateMacro
+#undef vtkTemplateMacro
+#define vtkTemplateMacro(call)                    \
+  vtkTemplateMacroCase(VTK_DOUBLE, double, call); \
+  vtkTemplateMacroCase(VTK_FLOAT, float, call);   \
+  vtkTemplateMacroCase(VTK_INT, int, call);       \
+  vtkTemplateMacroCase(VTK_LONG_LONG, long long, call);
+#endif // vtkTemplateMacro
+#endif // TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+
 #define ttkVtkTemplateMacroCase(                         \
   dataType, triangulationType, triangulationClass, call) \
   case triangulationType: {                              \
