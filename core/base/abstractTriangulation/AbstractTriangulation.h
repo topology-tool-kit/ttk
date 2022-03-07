@@ -59,7 +59,8 @@ namespace ttk {
     AbstractTriangulation &operator=(AbstractTriangulation &&) = default;
 
     using gradientType = std::array<std::vector<SimplexId>, 6>;
-    using gradientCacheType = std::map<const void *const, gradientType *>;
+    using gradientKeyType = std::pair<const void *, size_t>;
+    using gradientCacheType = std::map<gradientKeyType, gradientType *>;
     inline gradientCacheType *getGradientCacheHandler() {
       return &this->gradientCache_;
     }

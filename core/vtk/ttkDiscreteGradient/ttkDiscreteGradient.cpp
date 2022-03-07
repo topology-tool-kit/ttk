@@ -268,7 +268,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 
   // baseCode processing
-  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
+  this->setInputScalarField(
+    ttkUtils::GetVoidPointer(inputScalars), inputScalars->GetMTime());
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 

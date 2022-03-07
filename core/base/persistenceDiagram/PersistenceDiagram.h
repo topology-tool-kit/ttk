@@ -139,12 +139,14 @@ namespace ttk {
     template <typename scalarType, class triangulationType>
     int execute(std::vector<PersistencePair> &CTDiagram,
                 const scalarType *inputScalars,
+                const size_t scalarsMTime,
                 const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
     template <typename scalarType, class triangulationType>
     int executeFTM(std::vector<PersistencePair> &CTDiagram,
                    const scalarType *inputScalars,
+                   const size_t scalarsMTime,
                    const SimplexId *inputOffsets,
                    const triangulationType *triangulation);
 
@@ -265,6 +267,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
 template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
                                      const scalarType *inputScalars,
+                                     const size_t scalarsMTime,
                                      const SimplexId *inputOffsets,
                                      const triangulationType *triangulation) {
 
@@ -286,7 +289,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
       break;
 
     case BACKEND::FTM:
-      executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
+      executeFTM(
+        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
       break;
     default:
       printErr("No method was selected");
@@ -457,6 +461,7 @@ template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::executeFTM(
   std::vector<PersistencePair> &CTDiagram,
   const scalarType *inputScalars,
+  const size_t scalarsMTime,
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
@@ -508,7 +513,7 @@ int ttk::PersistenceDiagram::executeFTM(
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
     pl_saddleSaddlePairs;
   if(triangulation->getDimensionality() == 3 and ComputeSaddleConnectors) {
-    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputScalarField(inputScalars, scalarsMTime);
     dcg_.setInputOffsets(inputOffsets);
     dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);

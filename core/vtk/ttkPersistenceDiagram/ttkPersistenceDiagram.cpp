@@ -230,7 +230,8 @@ int ttkPersistenceDiagram::dispatch(
     this->setOutputMonotonyOffsets(outputMonotonyOffsets);
   }
 
-  status = this->execute(CTDiagram, inputScalars, inputOrder, triangulation);
+  status = this->execute(CTDiagram, inputScalars, inputScalarsArray->GetMTime(),
+                         inputOrder, triangulation);
 
   // something wrong in baseCode
   if(status != 0) {

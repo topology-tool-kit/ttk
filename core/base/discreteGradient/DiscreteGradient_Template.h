@@ -41,7 +41,8 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 
   const auto findGradient = [this]() -> gradientType * {
-    if(this->cacheHandler_ == nullptr || this->inputScalarField_ == nullptr) {
+    if(this->cacheHandler_ == nullptr
+       || this->inputScalarField_.first == nullptr) {
       return {};
     }
     const auto pos = this->cacheHandler_->find(this->inputScalarField_);
@@ -71,7 +72,8 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   }
 
   const auto storeGradient = [this]() -> bool {
-    if(this->cacheHandler_ == nullptr || this->inputScalarField_ == nullptr) {
+    if(this->cacheHandler_ == nullptr
+       || this->inputScalarField_.first == nullptr) {
       return false;
     }
     // ensure only one cache entry points to the current instance
@@ -394,7 +396,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   const triangulationType &triangulation) const {
   Timer t;
 
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const scalars
+    = static_cast<const dataType *>(inputScalarField_.first);
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -557,7 +560,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   const triangulationType &triangulation) {
   Timer t;
 
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const scalars
+    = static_cast<const dataType *>(inputScalarField_.first);
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -988,7 +992,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   const triangulationType &triangulation) const {
   Timer t;
 
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const scalars
+    = static_cast<const dataType *>(inputScalarField_.first);
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -1153,7 +1158,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
   this->printMsg("Saddle connector persistence threshold: "
                  + std::to_string(this->SaddleConnectorsPersistenceThreshold));
 
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const scalars
+    = static_cast<const dataType *>(inputScalarField_.first);
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -1605,7 +1611,8 @@ int DiscreteGradient::filterSaddleConnectors(
 
   std::vector<std::pair<SimplexId, char>> cpset;
 
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const scalars
+    = static_cast<const dataType *>(inputScalarField_.first);
   const auto *const offsets = inputOffsets_;
 
   contourTree_.setDebugLevel(debugLevel_);
@@ -1723,7 +1730,8 @@ void DiscreteGradient::computeSaddleSaddlePersistencePairs(
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &pl_saddleSaddlePairs,
   const triangulationType &triangulation) {
 
-  const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
+  const dataType *scalars
+    = static_cast<const dataType *>(inputScalarField_.first);
 
   std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
   {

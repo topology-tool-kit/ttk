@@ -309,7 +309,7 @@ namespace ttk {
 
       ~DiscreteGradient() override {
         if(this->cacheHandler_ != nullptr
-           && this->inputScalarField_ != nullptr) {
+           && this->inputScalarField_.first != nullptr) {
           auto pos = this->cacheHandler_->find(this->inputScalarField_);
           if(pos != this->cacheHandler_->end()
              && pos->second == &this->gradient_) {
@@ -390,9 +390,15 @@ according to them.
 
       /**
        * Set the input scalar function.
+       *
+       * The first parameter is a pointer to the scalar field buffer
+       * (often provided by ttkUtils::GetVoidPointer()), the second
+       * one is a timestamp representing the last modification time of
+       * the scalar field (often provided by vtkObject::GetMTime()).
        */
-      inline void setInputScalarField(const void *const data) {
-        inputScalarField_ = data;
+      inline void setInputScalarField(const void *const data,
+                                      const size_t mTime) {
+        inputScalarField_ = std::make_pair(data, mTime);
       }
 
       /**
@@ -944,7 +950,7 @@ gradient, false otherwise.
       std::vector<SimplexId> dmt2Saddle2PL_{};
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 
-      const void *inputScalarField_{};
+      AbstractTriangulation::gradientKeyType inputScalarField_{};
       const SimplexId *inputOffsets_{};
     };
 
