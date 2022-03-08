@@ -77,8 +77,8 @@ namespace ttk {
      */
     using gradientType = std::array<std::vector<gradIdType>, 6>;
     using gradientKeyType = std::pair<const void *, size_t>;
-    using gradientCacheType = std::map<gradientKeyType, gradientType *>;
-    inline gradientCacheType *getGradientCacheHandler() {
+    using gradientCacheType = std::map<gradientKeyType, gradientType>;
+    inline gradientCacheType *getGradientCacheHandler() const {
       return &this->gradientCache_;
     }
 
@@ -3271,7 +3271,7 @@ namespace ttk {
 
     // store, for each triangulation object and per offset field, a
     // reference to the discrete gradient internal structure
-    gradientCacheType gradientCache_{};
+    mutable gradientCacheType gradientCache_{};
   };
 } // namespace ttk
 
