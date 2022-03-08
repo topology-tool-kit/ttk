@@ -40,7 +40,7 @@ template <typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 
-  const auto findGradient = [this]() -> gradientType * {
+  const auto findGradient = [this]() -> AbstractTriangulation::gradientType * {
     if(this->cacheHandler_ == nullptr
        || this->inputScalarField_.first == nullptr) {
       return {};

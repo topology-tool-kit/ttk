@@ -58,7 +58,24 @@ namespace ttk {
     AbstractTriangulation &operator=(const AbstractTriangulation &) = default;
     AbstractTriangulation &operator=(AbstractTriangulation &&) = default;
 
-    using gradientType = std::array<std::vector<SimplexId>, 6>;
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    using gradIdType = char;
+#else
+    using gradIdType = SimplexId;
+#endif
+
+    /**
+     * @brief Discrete gradient internal struct
+     *
+     * 0: paired edge id per vertex
+     * 1: paired vertex id per edge
+     * 2: paired triangle id per edge
+     * 3: paired edge id per triangle
+     * 4: paired tetra id per triangle
+     * 5: paired triangle id per tetra
+     * -1 if critical or paired to a cell of another dimension
+     */
+    using gradientType = std::array<std::vector<gradIdType>, 6>;
     using gradientKeyType = std::pair<const void *, size_t>;
     using gradientCacheType = std::map<gradientKeyType, gradientType *>;
     inline gradientCacheType *getGradientCacheHandler() {
