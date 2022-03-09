@@ -11,10 +11,10 @@ install(
   FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/dimensionReduction.py
   DESTINATION
-    scripts/ttk
+    ${TTK_SCRIPTS_PATH}
   )
 
-target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_PREFIX}/scripts/ttk)
+target_compile_definitions(dimensionReduction PUBLIC TTK_SCRIPTS_PATH=${TTK_SCRIPTS_PATH})
 
 if(TTK_ENABLE_SCIKIT_LEARN)
   target_compile_definitions(dimensionReduction PRIVATE TTK_ENABLE_SCIKIT_LEARN)
