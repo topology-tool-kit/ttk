@@ -28,8 +28,8 @@ namespace ttk {
     using TID = ttk::SimplexId;
 
   private:
-    static const int UNLABELED{-2};
-    static const int IGNORE{-1};
+    const int UNLABELED{-2};
+    const int IGNORE{-1};
 
   public:
     struct Component {
