@@ -9,8 +9,7 @@
 ///
 /// \sa Triangulation
 
-#ifndef _ABSTRACTTRIANGULATION_H
-#define _ABSTRACTTRIANGULATION_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
@@ -3306,8 +3305,3 @@ namespace ttk {
     mutable gradientCacheType gradientCache_{};
   };
 } // namespace ttk
-
-// if the package is not a template, comment the following line
-// #include                  <AbstractTriangulation.cpp>
-
-#endif // _ABSTRACTTRIANGULATION_H
