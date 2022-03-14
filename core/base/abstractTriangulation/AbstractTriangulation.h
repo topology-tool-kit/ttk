@@ -73,11 +73,33 @@ namespace ttk {
      * 3: paired edge id per triangle
      * 4: paired tetra id per triangle
      * 5: paired triangle id per tetra
-     * -1 if critical or paired to a cell of another dimension
+     * Values: -1 if critical or paired to a cell of another dimension
+     *
+     * Is used as a value type for \ref gradientCacheType.
      */
     using gradientType = std::array<std::vector<gradIdType>, 6>;
+    /**
+     * @brief Key type for \ref gradientCacheType.
+     *
+     * The key type models a scalar field buffer. The first element is
+     * a const void pointer to the beginning of the buffer and the
+     * second stores the timestamp of the last modification of the
+     * scalar field.
+     */
     using gradientKeyType = std::pair<const void *, size_t>;
+    /*
+     * @brief Type for caching Discrete Gradient internal data structure.
+     *
+     * Uses a std::map with \ref gradientKeytype as key and \ref
+     * gradientType as value types.
+     */
     using gradientCacheType = std::map<gradientKeyType, gradientType>;
+    /*
+     * @brief Access to the gradientCache_ mutable member variable
+     *
+     * \warning This should only be used by the
+     * ttk::dcg::DiscreteGradient class.
+     */
     inline gradientCacheType *getGradientCacheHandler() const {
       return &this->gradientCache_;
     }
