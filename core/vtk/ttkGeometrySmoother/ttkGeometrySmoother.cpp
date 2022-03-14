@@ -66,7 +66,7 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
   this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputPoints));
 
   if(inputMaskField) {
-    this->setMaskDataPointer(ttkUtils::GetVoidPointer(inputMaskField));
+    this->setMaskDataPointer(ttkUtils::GetPointer<char>(inputMaskField));
   }
 
   switch(outputPoints->GetDataType()) {
