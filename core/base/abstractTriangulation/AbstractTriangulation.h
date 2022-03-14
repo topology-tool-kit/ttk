@@ -46,6 +46,13 @@
 
 namespace ttk {
 
+  // forward declaration of the ttk::dcg::DiscreteGradient class to
+  // give it access to the gradient cache (with a `friend`
+  // declaration)
+  namespace dcg {
+    class DiscreteGradient;
+  }
+
   class AbstractTriangulation : public Wrapper {
 
   public:
@@ -57,52 +64,6 @@ namespace ttk {
     AbstractTriangulation(AbstractTriangulation &&) = default;
     AbstractTriangulation &operator=(const AbstractTriangulation &) = default;
     AbstractTriangulation &operator=(AbstractTriangulation &&) = default;
-
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-    using gradIdType = char;
-#else
-    using gradIdType = SimplexId;
-#endif
-
-    /**
-     * @brief Discrete gradient internal struct
-     *
-     * 0: paired edge id per vertex
-     * 1: paired vertex id per edge
-     * 2: paired triangle id per edge
-     * 3: paired edge id per triangle
-     * 4: paired tetra id per triangle
-     * 5: paired triangle id per tetra
-     * Values: -1 if critical or paired to a cell of another dimension
-     *
-     * Is used as a value type for \ref gradientCacheType.
-     */
-    using gradientType = std::array<std::vector<gradIdType>, 6>;
-    /**
-     * @brief Key type for \ref gradientCacheType.
-     *
-     * The key type models a scalar field buffer. The first element is
-     * a const void pointer to the beginning of the buffer and the
-     * second stores the timestamp of the last modification of the
-     * scalar field.
-     */
-    using gradientKeyType = std::pair<const void *, size_t>;
-    /*
-     * @brief Type for caching Discrete Gradient internal data structure.
-     *
-     * Uses a std::map with \ref gradientKeytype as key and \ref
-     * gradientType as value types.
-     */
-    using gradientCacheType = std::map<gradientKeyType, gradientType>;
-    /*
-     * @brief Access to the gradientCache_ mutable member variable
-     *
-     * \warning This should only be used by the
-     * ttk::dcg::DiscreteGradient class.
-     */
-    inline gradientCacheType *getGradientCacheHandler() const {
-      return &this->gradientCache_;
-    }
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -3290,6 +3251,55 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> cellEdgeVector_{};
     std::vector<std::vector<SimplexId>> cellTriangleVector_{};
     std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
+
+    // only ttk::dcg::DiscreteGradient should use what's defined below.
+    friend class ttk::dcg::DiscreteGradient;
+
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    using gradIdType = char;
+#else
+    using gradIdType = SimplexId;
+#endif
+
+    /**
+     * @brief Discrete gradient internal struct
+     *
+     * 0: paired edge id per vertex
+     * 1: paired vertex id per edge
+     * 2: paired triangle id per edge
+     * 3: paired edge id per triangle
+     * 4: paired tetra id per triangle
+     * 5: paired triangle id per tetra
+     * Values: -1 if critical or paired to a cell of another dimension
+     *
+     * Is used as a value type for \ref gradientCacheType.
+     */
+    using gradientType = std::array<std::vector<gradIdType>, 6>;
+    /**
+     * @brief Key type for \ref gradientCacheType.
+     *
+     * The key type models a scalar field buffer. The first element is
+     * a const void pointer to the beginning of the buffer and the
+     * second stores the timestamp of the last modification of the
+     * scalar field.
+     */
+    using gradientKeyType = std::pair<const void *, size_t>;
+    /*
+     * @brief Type for caching Discrete Gradient internal data structure.
+     *
+     * Uses a std::map with \ref gradientKeytype as key and \ref
+     * gradientType as value types.
+     */
+    using gradientCacheType = std::map<gradientKeyType, gradientType>;
+    /*
+     * @brief Access to the gradientCache_ mutable member variable
+     *
+     * \warning This should only be used by the
+     * ttk::dcg::DiscreteGradient class.
+     */
+    inline gradientCacheType *getGradientCacheHandler() const {
+      return &this->gradientCache_;
+    }
 
     // store, for each triangulation object and per offset field, a
     // reference to the discrete gradient internal structure
