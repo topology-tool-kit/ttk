@@ -21,6 +21,7 @@ class vtkDoubleArray;
 class vtkPoints;
 class vtkAbstractArray;
 class vtkCellArray;
+class vtkDataSet;
 
 template <typename T>
 class vtkSmartPointer;
@@ -82,4 +83,19 @@ public:
                                     vtkIdType const *cells_off,
                                     vtkIdType ncells,
                                     vtkCellArray *cellArray);
+
+  /*
+   * @brief Fills an UnstructuredGrid or a PolyData dataset with
+   * vertices
+   *
+   * @param[out] dataSet Dataset to fill (either UnstructuredGrid or
+   * PolyData)
+   * @param[in] points Input points
+   * @param[in] nThreads Number of threads
+   *
+   * @return 1 if success, 0 otherwise
+   */
+  static int CellVertexFromPoints(vtkDataSet *const dataSet,
+                                  vtkPoints *const points,
+                                  const int nThreads);
 };

@@ -1,14 +1,19 @@
+#include <BaseClass.h>
 #include <ttkUtils.h>
 
 #include <limits>
-#include <vtkStringArray.h>
 
 #include <vtkAbstractArray.h>
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkIdTypeArray.h>
+#include <vtkNew.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
+#include <vtkUnstructuredGrid.h>
 
 int ttkUtils::replaceVariable(const std::string &iString,
                               vtkFieldData *fieldData,
@@ -317,4 +322,55 @@ void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
     }
     cellArray->InsertNextCell(verts);
   }
+}
+
+int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
+                                   vtkPoints *const points,
+                                   const int nThreads = 1) {
+
+  if(dataSet == nullptr || points == nullptr) {
+    return 0;
+  }
+
+  if(!dataSet->IsA("vtkUnstructuredGrid") && !dataSet->IsA("vtkPolyData")) {
+    return 0;
+  }
+
+  const size_t nPoints = points->GetNumberOfPoints();
+  if(nPoints == 0) {
+    return 0;
+  }
+
+  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+  offsets->SetNumberOfComponents(1);
+  offsets->SetNumberOfTuples(nPoints + 1);
+  connectivity->SetNumberOfComponents(1);
+  connectivity->SetNumberOfTuples(nPoints);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nPoints; ++i) {
+    offsets->SetTuple1(i, i);
+    connectivity->SetTuple1(i, i);
+  }
+  offsets->SetTuple1(nPoints, nPoints);
+  vtkNew<vtkCellArray> cells{};
+  cells->SetData(offsets, connectivity);
+
+  if(dataSet->IsA("vtkUnstructuredGrid")) {
+    const auto vtu{vtkUnstructuredGrid::SafeDownCast(dataSet)};
+    if(vtu != nullptr) {
+      vtu->SetPoints(points);
+      vtu->SetCells(VTK_VERTEX, cells);
+    }
+  } else if(dataSet->IsA("vtkPolyData")) {
+    const auto vtp{vtkPolyData::SafeDownCast(dataSet)};
+    if(vtp != nullptr) {
+      vtp->SetPoints(points);
+      vtp->SetVerts(cells);
+    }
+  }
+
+  TTK_FORCE_USE(nThreads);
+  return 1;
 }
