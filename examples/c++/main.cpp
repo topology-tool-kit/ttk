@@ -191,13 +191,14 @@ int main(int argc, char **argv) {
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
   curve.preconditionTriangulation(&triangulation);
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float>(height.data(), order.data(), &triangulation);
+  curve.execute<float>(height.data(), 0, order.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<ttk::PersistencePair> diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
-  diagram.execute(diagramOutput, height.data(), order.data(), &triangulation);
+  diagram.execute(
+    diagramOutput, height.data(), 0, order.data(), &triangulation);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
@@ -243,7 +244,7 @@ int main(int argc, char **argv) {
   morseSmaleComplex.preconditionTriangulation(&triangulation);
   morseSmaleComplex.execute(
     outCriticalPoints, out1Separatrices, out2Separatrices, outSegmentation,
-    simplifiedHeight.data(), simplifiedOrder.data(), triangulation);
+    simplifiedHeight.data(), 0, simplifiedOrder.data(), triangulation);
 
   // save the output
   save(pointSet, triangleSetCo, triangleSetOff, "output.off");

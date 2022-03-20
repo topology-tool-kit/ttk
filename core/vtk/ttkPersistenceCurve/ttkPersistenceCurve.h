@@ -114,6 +114,7 @@ private:
                vtkTable *outputSTPersistenceCurve,
                vtkTable *outputCTPersistenceCurve,
                const VTK_TT *inputScalars,
+               const size_t scalarsMTime,
                const void *inputOffsets,
                const TTK_TT *triangulation);
 };

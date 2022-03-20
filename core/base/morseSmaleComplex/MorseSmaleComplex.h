@@ -112,6 +112,7 @@ namespace ttk {
                        Output2Separatrices &outSeps2,
                        OutputManifold &outManifold,
                        const dataType *const scalars,
+                       const size_t scalarsMTime,
                        const SimplexId *const offsets,
                        const triangulationType &triangulation);
 
@@ -413,6 +414,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                                     Output2Separatrices &outSeps2,
                                     OutputManifold &outManifold,
                                     const dataType *const scalars,
+                                    const size_t scalarsMTime,
                                     const SimplexId *const offsets,
                                     const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -435,7 +437,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
 
   this->discreteGradient_.setThreadNumber(threadNumber_);
   this->discreteGradient_.setDebugLevel(debugLevel_);
-  this->discreteGradient_.setInputScalarField(scalars);
+  this->discreteGradient_.setInputScalarField(scalars, scalarsMTime);
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.buildGradient(triangulation);
 
