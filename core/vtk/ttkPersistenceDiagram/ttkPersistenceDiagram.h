@@ -189,13 +189,6 @@ private:
                const SimplexId *const inputOrder,
                const triangulationType *triangulation);
 
-  template <typename scalarType, typename triangulationType>
-  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-                            const std::vector<ttk::PersistencePair> &diagram,
-                            vtkDataArray *inputScalarsArray,
-                            const scalarType *const inputScalars,
-                            const triangulationType *triangulation) const;
-
   bool ForceInputOffsetScalarField{false};
   bool ShowInsideDomain{false};
 };

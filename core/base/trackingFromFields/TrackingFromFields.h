@@ -99,7 +99,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
     // persistenceDiagram.setInputScalars(inputData_[i]);
     // persistenceDiagram.setInputOffsets(inputOffsets_);
     persistenceDiagram.setComputeSaddleConnectors(false);
-    std::vector<PersistencePair> CTDiagram{};
+    ttk::DiagramType CTDiagram{};
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
     persistenceDiagram.execute<dataType, triangulationType>(
@@ -107,24 +107,22 @@ int ttk::TrackingFromFields::performDiagramComputation(
       triangulation);
 
     // Copy diagram into augmented diagram.
-    persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());
+    persistenceDiagrams[i].resize(CTDiagram.size());
 
     for(int j = 0; j < (int)CTDiagram.size(); ++j) {
-      float p[3];
-      float q[3];
+      std::array<float, 3> p{};
+      std::array<float, 3> q{};
       auto currentTuple = CTDiagram[j];
-      const int a = currentTuple.birth;
-      const int b = currentTuple.death;
+      const int a = currentTuple.birth.id;
+      const int b = currentTuple.death.id;
       triangulation->getVertexPoint(a, p[0], p[1], p[2]);
       triangulation->getVertexPoint(b, q[0], q[1], q[2]);
       const double sa = ((double *)inputData_[i])[a];
       const double sb = ((double *)inputData_[i])[b];
-      diagramTuple dt = std::make_tuple(
-        currentTuple.birth, currentTuple.birthType, currentTuple.death,
-        currentTuple.deathType, currentTuple.persistence, currentTuple.pairType,
-        sa, p[0], p[1], p[2], sb, q[0], q[1], q[2]);
-
-      persistenceDiagrams[i][j] = dt;
+      persistenceDiagrams[i][j] = std::make_tuple(
+        currentTuple.birth.id, currentTuple.birth.type, currentTuple.death.id,
+        currentTuple.death.type, currentTuple.persistence, currentTuple.dim, sa,
+        p[0], p[1], p[2], sb, q[0], q[1], q[2]);
     }
   }
 

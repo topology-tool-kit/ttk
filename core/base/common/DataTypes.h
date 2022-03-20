@@ -65,6 +65,7 @@ namespace ttk {
   const char PersistencePairIdentifierName[] = "PairIdentifier";
   const char PersistenceName[] = "Persistence";
   const char PersistencePairTypeName[] = "PairType";
+  const char PersistenceIsFinite[] = "IsFinite";
 
   // default name for compact triangulation index
   const char compactTriangulationIndex[] = "ttkCompactTriangulationIndex";

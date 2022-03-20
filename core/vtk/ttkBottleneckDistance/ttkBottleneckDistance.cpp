@@ -156,14 +156,13 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   auto extremumIndexScalars
     = vtkIntArray::SafeDownCast(cellData->GetArray("PairType"));
 
-  auto persistenceScalars
-    = vtkDoubleArray::SafeDownCast(cellData->GetArray("Persistence"));
+  auto persistenceScalars = cellData->GetArray("Persistence");
 
-  auto birthScalars
-    = vtkDoubleArray::SafeDownCast(pointData->GetArray("Birth"));
+  auto birthScalars = cellData->GetArray("Birth");
 
-  auto deathScalars
-    = vtkDoubleArray::SafeDownCast(pointData->GetArray("Death"));
+  const auto coords = vtkFloatArray::SafeDownCast(
+    CTPersistenceDiagram_->GetPointData()->GetArray(
+      ttk::PersistenceCoordinatesName));
 
   vtkPoints *points = CTPersistenceDiagram_->GetPoints();
   if(!pairIdentifierScalars)
@@ -180,9 +179,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
   float s{0.0};
 
-  if(!deathScalars != !birthScalars)
-    return -2;
-  bool is2D = !deathScalars && !birthScalars;
+  bool is2D = coords != nullptr;
   bool is3D = !is2D;
   if(Is3D && !is3D)
     Is3D = false;
@@ -205,7 +202,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
     int pairIdentifier = pairIdentifierScalars->GetValue(i);
     int pairType = extremumIndexScalars->GetValue(i);
-    double persistence = persistenceScalars->GetValue(i);
+    double persistence = persistenceScalars->GetTuple1(i);
 
     int index1 = 2 * i;
     double *coords1 = points->GetPoint(index1);
@@ -219,11 +216,8 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     auto y2 = (float)coords2[1];
     auto z2 = (float)coords2[2];
 
-    dataType value1 = (!birthScalars) ? (dataType)x1
-                                      : (dataType)birthScalars->GetValue(2 * i);
-    dataType value2 = (!deathScalars)
-                        ? (dataType)y2
-                        : (dataType)deathScalars->GetValue(2 * i + 1);
+    dataType value1 = birthScalars->GetTuple1(i);
+    dataType value2 = value1 + persistence;
 
     if(pairIdentifier != -1 && pairIdentifier < pairingsSize)
       diagram.at(pairIdentifier)
