@@ -1,6 +1,7 @@
 #include <ttkMacros.h>
 #include <ttkPersistenceDiagramClustering.h>
 #include <ttkUtils.h>
+
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
@@ -13,6 +14,7 @@
 #include <vtkPointData.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 using namespace ttk;
@@ -392,6 +394,16 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
   pairPers->SetNumberOfTuples(diagram.size() + 1);
   output->GetCellData()->AddArray(pairPers);
 
+  vtkNew<vtkDoubleArray> birthScalars{};
+  birthScalars->SetName(ttk::PersistenceBirthName);
+  birthScalars->SetNumberOfTuples(diagram.size() + 1);
+  output->GetCellData()->AddArray(birthScalars);
+
+  vtkNew<vtkUnsignedCharArray> isFinite{};
+  isFinite->SetName(ttk::PersistenceIsFinite);
+  isFinite->SetNumberOfTuples(diagram.size() + 1);
+  output->GetCellData()->AddArray(isFinite);
+
   for(size_t j = 0; j < diagram.size(); ++j) {
     const auto &pair{diagram[j]};
     const auto birth{std::get<6>(pair)};
@@ -410,6 +422,8 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     pairId->SetTuple1(j, j);
     pairType->SetTuple1(j, pType);
     pairPers->SetTuple1(j, death - birth);
+    birthScalars->SetTuple1(j, birth);
+    isFinite->SetTuple1(j, j == 0 ? 0 : 1);
 
     // point data
     coords->SetTuple(2 * j + 0, coordsBirth.data());
@@ -445,6 +459,8 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
   pairType->SetTuple1(diagram.size(), -1);
   // use twice the max persistence of all input diagrams...
   pairPers->SetTuple1(diagram.size(), 2.0 * max_persistence);
+  birthScalars->SetTuple1(diagram.size(), std::get<6>(*minmax_birth.first));
+  isFinite->SetTuple1(diagram.size(), 0);
 }
 
 void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
