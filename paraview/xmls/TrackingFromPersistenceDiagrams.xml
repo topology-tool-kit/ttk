@@ -27,6 +27,7 @@ by a list of scalar fields) and which computes a tracking mesh."
       <InputProperty
       name="Input"
       command="AddInputConnection"
+      clean_command="RemoveAllInputs"
       multiple_input="1">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>

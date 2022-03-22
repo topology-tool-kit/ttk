@@ -31,7 +31,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
             </Documentation>
 
             <!-- Inputs -->
-            <InputProperty name="Input" command="AddInputConnection" multiple_input="1">
+            <InputProperty name="Input" command="AddInputConnection" clean_command="RemoveAllInputs" multiple_input="1">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
