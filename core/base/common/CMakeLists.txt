@@ -5,6 +5,7 @@ ttk_add_base_library(common
         Os.cpp
     HEADERS
         BaseClass.h
+        Cache.h
         CommandLineParser.h
         Debug.h
         DataTypes.h
