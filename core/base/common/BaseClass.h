@@ -5,8 +5,7 @@
 ///
 ///\brief TTK base package.
 
-#ifndef _BASECLASS_H
-#define _BASECLASS_H
+#pragma once
 
 #ifdef _WIN32
 // enable the `and` and `or` keywords on MSVC
@@ -89,5 +88,3 @@ namespace ttk {
     Wrapper *wrapper_;
   };
 } // namespace ttk
-
-#endif // _BASECLASS_H

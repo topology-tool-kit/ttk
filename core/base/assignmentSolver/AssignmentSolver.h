@@ -11,8 +11,7 @@
 ///   - the mth column is the same but with jobs
 ///   - the last cell (costMatrix[n][m]) is not used
 
-#ifndef _ASSIGNMENTSOLVER_H
-#define _ASSIGNMENTSOLVER_H
+#pragma once
 
 #define asgnMatchingTuple std::tuple<int, int, double>
 
@@ -85,5 +84,3 @@ namespace ttk {
     bool balancedAssignment;
   };
 } // namespace ttk
-
-#endif

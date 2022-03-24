@@ -14,12 +14,10 @@
 /// An exhaustive search for the assignment problem has an exponential
 /// complexity Use this algorithm only for small assigment problem
 
-#ifndef _ASSIGNMENTEXHAUSTIVE_H
-#define _ASSIGNMENTEXHAUSTIVE_H
+#pragma once
 
+#include <AssignmentSolver.h>
 #include <Debug.h>
-
-#include "AssignmentSolver.h"
 
 #include <iterator>
 #include <limits>
@@ -364,5 +362,3 @@ namespace ttk {
   }
 
 } // namespace ttk
-
-#endif

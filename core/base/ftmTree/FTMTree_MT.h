@@ -12,8 +12,7 @@
 /// etc.).
 ///
 
-#ifndef FTMTREE_MT_H
-#define FTMTREE_MT_H
+#pragma once
 
 #include <functional>
 #include <map>
@@ -942,5 +941,3 @@ namespace ttk {
 
 #include <FTMTreeUtils_Template.h>
 #include <FTMTree_MT_Template.h>
-
-#endif /* end of include guard: MERGETREE_H */

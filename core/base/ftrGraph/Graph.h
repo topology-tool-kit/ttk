@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef GRAPH_H
-#define GRAPH_H
+#pragma once
 
 #include "FTRAtomicVector.h"
 #include "FTRCommon.h"
@@ -370,5 +369,3 @@ namespace ttk {
 } // namespace ttk
 
 #include "Graph_Template.h"
-
-#endif /* end of include guard: GRAPH_H */

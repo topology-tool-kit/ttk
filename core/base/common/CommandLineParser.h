@@ -5,8 +5,7 @@
 ///
 /// \brief Basic command line parsing.
 
-#ifndef _COMMAND_LINE_PARSER_H
-#define _COMMAND_LINE_PARSER_H
+#pragma once
 
 #include <Debug.h>
 
@@ -423,5 +422,3 @@ namespace ttk {
     std::vector<CommandLineArgument> arguments_;
   };
 } // namespace ttk
-
-#endif

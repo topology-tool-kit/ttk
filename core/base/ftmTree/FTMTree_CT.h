@@ -12,8 +12,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef FTMTREE_CT_H
-#define FTMTREE_CT_H
+#pragma once
 
 #include <queue>
 #include <set>
@@ -117,5 +116,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <FTMTree_CT_Template.h>
-
-#endif // CONTOURTREE_H

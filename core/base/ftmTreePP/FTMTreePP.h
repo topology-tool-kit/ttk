@@ -11,8 +11,7 @@
 ///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
-#ifndef FTMTREE_PP_H
-#define FTMTREE_PP_H
+#pragma once
 
 #include "FTMTree.h"
 
@@ -210,5 +209,3 @@ void ttk::ftm::FTMTreePP::sortPairs(
 
   sort(pairs.begin(), pairs.end(), comp);
 }
-
-#endif // FTMTREE_PP_H

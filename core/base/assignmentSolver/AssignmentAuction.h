@@ -11,10 +11,9 @@
 ///   - the mth column is the same but with jobs
 ///   - the last cell (costMatrix[n][m]) is not used
 
-#ifndef _ASSIGNMENTAUCTION_H
-#define _ASSIGNMENTAUCTION_H
+#pragma once
 
-#include "AssignmentSolver.h"
+#include <AssignmentSolver.h>
 
 #include <limits>
 #include <queue>
@@ -353,5 +352,3 @@ namespace ttk {
   }
 
 } // namespace ttk
-
-#endif

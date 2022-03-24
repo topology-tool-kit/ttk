@@ -1,5 +1,4 @@
-#ifndef _PERSISTENCEDIAGRAMAUCTIONACTOR_H
-#define _PERSISTENCEDIAGRAMAUCTIONACTOR_H
+#pragma once
 
 #include <Debug.h>
 #include <KDTree.h>
@@ -935,5 +934,3 @@ namespace ttk {
   };
 
 } // namespace ttk
-
-#endif

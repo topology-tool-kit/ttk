@@ -13,8 +13,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef FTMTREE_MT_TPL_H
-#define FTMTREE_MT_TPL_H
+#pragma once
 
 #include <functional>
 
@@ -526,5 +525,3 @@ namespace ttk {
   } // namespace ftm
 } // namespace ttk
 // Process
-
-#endif /* end of include guard: FTMTREE_MT_TPL_H */

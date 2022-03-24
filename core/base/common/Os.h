@@ -5,8 +5,7 @@
 ///
 /// \brief Os-specifics.
 
-#ifndef _OS_H
-#define _OS_H
+#pragma once
 
 #ifdef _WIN32
 #ifndef _USE_MATH_DEFINES
@@ -117,5 +116,3 @@ namespace ttk {
   };
 
 } // namespace ttk
-
-#endif

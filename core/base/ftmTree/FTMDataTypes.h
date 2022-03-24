@@ -12,8 +12,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef DATATYPES_FTM_H
-#define DATATYPES_FTM_H
+#pragma once
 
 #include <DataTypes.h>
 #include <functional>
@@ -119,5 +118,3 @@ namespace ttk {
 // #define withStatsTime 1
 
 // #define withProcessSpeed 1
-
-#endif /* end of include guard: DATATYPES_H */

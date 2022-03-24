@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURTREE_H
-#define _CONTOURTREE_H
+#pragma once
 
 #include <queue>
 #include <set>
@@ -116,5 +115,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif // CONTOURTREE_H

@@ -15,8 +15,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef SUPERARC_H
-#define SUPERARC_H
+#pragma once
 
 #include <list>
 #include <vector>
@@ -405,5 +404,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: SUPERARC_H */

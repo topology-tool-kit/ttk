@@ -9,8 +9,7 @@
 ///
 /// \sa ftrGraph
 
-#ifndef ATOMICUFFTR_H
-#define ATOMICUFFTR_H
+#pragma once
 
 // c++ includes
 #include <memory>
@@ -126,5 +125,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: ATOMICUFFTR_H */

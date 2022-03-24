@@ -6,8 +6,7 @@
 ///\brief TTK processing package that manage a paralle version of vector *Same
 /// as in FTM: Common ?*
 
-#ifndef FTRATOMICVECTOR_H
-#define FTRATOMICVECTOR_H
+#pragma once
 
 #include "BaseClass.h"
 
@@ -201,5 +200,3 @@ namespace ttk {
     }
   };
 } // namespace ttk
-
-#endif /* end of include guard: FTRATOMICVECTOR_H */

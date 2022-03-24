@@ -32,8 +32,7 @@
 /// down.
 /// \sa ttkTriangulation
 
-#ifndef _TRIANGULATION_H
-#define _TRIANGULATION_H
+#pragma once
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -2628,8 +2627,3 @@ namespace ttk {
     CompactTriangulation compactTriangulation_;
   };
 } // namespace ttk
-
-// if the package is not a template, comment the following line
-// #include                  <Triangulation.cpp>
-
-#endif // _TRIANGULATION_H

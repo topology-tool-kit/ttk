@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef PROPAGATION_H
-#define PROPAGATION_H
+#pragma once
 
 // local include
 #include "FTRAtomicUF.h"
@@ -188,5 +187,3 @@ namespace ttk {
     };
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: PROPAGATION_H */

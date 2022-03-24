@@ -5,8 +5,7 @@
 ///
 ///\brief TTK processing package that manage a paralle vecrion of vector
 
-#ifndef FTMATOMICVECTOR_H
-#define FTMATOMICVECTOR_H
+#pragma once
 
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
@@ -164,5 +163,3 @@ namespace ttk {
     }
   };
 } // namespace ttk
-
-#endif /* end of include guard: FTMATOMICVECTOR_H */

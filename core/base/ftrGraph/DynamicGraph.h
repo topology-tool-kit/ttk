@@ -11,8 +11,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef DYNAMICGRAPH_H
-#define DYNAMICGRAPH_H
+#pragma once
 
 #include "FTRCommon.h"
 
@@ -368,5 +367,3 @@ namespace ttk {
 } // namespace ttk
 
 #include "DynamicGraph_Template.h"
-
-#endif /* end of include guard: DYNAMICGRAPH_H */

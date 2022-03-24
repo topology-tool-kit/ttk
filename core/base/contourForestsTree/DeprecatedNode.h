@@ -13,8 +13,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include <vector>
 
@@ -284,4 +283,3 @@ namespace ttk {
 
   } // namespace cf
 } // namespace ttk
-#endif /* end of include guard: NODE_H */

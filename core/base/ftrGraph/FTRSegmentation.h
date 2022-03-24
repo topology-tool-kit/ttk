@@ -8,8 +8,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef FTR_SEGMENTATION_H_
-#define FTR_SEGMENTATION_H_
+#pragma once
 
 #include "FTRDataTypes.h"
 #include "FTRScalars.h"
@@ -52,5 +51,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTR_SEGMENTATION_H_ */

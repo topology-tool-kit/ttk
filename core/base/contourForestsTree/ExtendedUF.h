@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef EXTENDEDUF_H
-#define EXTENDEDUF_H
+#pragma once
 
 #include <vector>
 
@@ -132,5 +131,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: EXTENDEDUF_H */
