@@ -112,7 +112,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
     vertexTypes->SetTuple1(i, (float)criticalPoints_[i].second);
   }
 
-  ttkUtils::CellVertexFromPoints(output, pointSet, this->threadNumber_);
+  ttkUtils::CellVertexFromPoints(output, pointSet);
   output->GetPointData()->AddArray(vertexTypes);
 
   if(VertexBoundary) {

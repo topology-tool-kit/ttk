@@ -325,8 +325,7 @@ void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
 }
 
 int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
-                                   vtkPoints *const points,
-                                   const int nThreads = 1) {
+                                   vtkPoints *const points) {
 
   if(dataSet == nullptr || points == nullptr) {
     return 0;
@@ -361,6 +360,5 @@ int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
     }
   }
 
-  TTK_FORCE_USE(nThreads);
   return 1;
 }

@@ -583,7 +583,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
     }
   }
 
-  ttkUtils::CellVertexFromPoints(skeletonNodes, points, this->threadNumber_);
+  ttkUtils::CellVertexFromPoints(skeletonNodes, points);
 
   vtkPointData *pointData = skeletonNodes->GetPointData();
   nodeData.addArray(pointData, params_);

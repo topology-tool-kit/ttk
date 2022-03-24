@@ -104,8 +104,7 @@ int ttkDiscreteGradient::fillCriticalPoints(
     PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
   }
 
-  ttkUtils::CellVertexFromPoints(
-    outputCriticalPoints, points, this->threadNumber_);
+  ttkUtils::CellVertexFromPoints(outputCriticalPoints, points);
 
   vtkPointData *pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE

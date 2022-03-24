@@ -91,11 +91,9 @@ public:
    * @param[out] dataSet Dataset to fill (either UnstructuredGrid or
    * PolyData)
    * @param[in] points Input points
-   * @param[in] nThreads Number of threads
    *
    * @return 1 if success, 0 otherwise
    */
   static int CellVertexFromPoints(vtkDataSet *const dataSet,
-                                  vtkPoints *const points,
-                                  const int nThreads);
+                                  vtkPoints *const points);
 };

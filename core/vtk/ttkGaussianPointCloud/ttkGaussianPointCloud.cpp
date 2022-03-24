@@ -42,7 +42,7 @@ int ttkGaussianPointCloud::RequestData(
       static_cast<double *>(ttkUtils::GetVoidPointer(points)));
   }
 
-  ttkUtils::CellVertexFromPoints(domain, points, this->threadNumber_);
+  ttkUtils::CellVertexFromPoints(domain, points);
 
   return 1;
 }

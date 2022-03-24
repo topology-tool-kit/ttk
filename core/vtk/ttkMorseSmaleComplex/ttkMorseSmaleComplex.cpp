@@ -130,8 +130,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     }
     setArray(manifoldSizeScalars, criticalPoints_.manifoldSize_);
 
-    ttkUtils::CellVertexFromPoints(
-      outputCriticalPoints, points, this->threadNumber_);
+    ttkUtils::CellVertexFromPoints(outputCriticalPoints, points);
 
     auto pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
