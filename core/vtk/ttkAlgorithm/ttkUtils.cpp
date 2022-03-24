@@ -361,7 +361,7 @@ int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
     const auto vtu{vtkUnstructuredGrid::SafeDownCast(dataSet)};
     if(vtu != nullptr) {
       vtu->SetPoints(points);
-      vtu->SetCells(VTK_VERTEX, cells);
+      vtu->SetCells(VTK_POLY_VERTEX, cells);
     }
   } else if(dataSet->IsA("vtkPolyData")) {
     const auto vtp{vtkPolyData::SafeDownCast(dataSet)};
