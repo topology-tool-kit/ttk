@@ -92,12 +92,6 @@ int ttkDiscreteGradient::fillCriticalPoints(
   PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
   PLVertexIdentifiers->SetNumberOfTuples(nPoints);
 
-  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-  offsets->SetNumberOfComponents(1);
-  offsets->SetNumberOfTuples(nPoints + 1);
-  connectivity->SetNumberOfComponents(1);
-  connectivity->SetNumberOfTuples(nPoints);
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -108,15 +102,9 @@ int ttkDiscreteGradient::fillCriticalPoints(
     cellScalars->SetTuple1(i, scalars[critPoints_PLVertexIdentifiers[i]]);
     isOnBoundary->SetTuple1(i, critPoints_isOnBoundary[i]);
     PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
-    offsets->SetTuple1(i, i);
-    connectivity->SetTuple1(i, i);
   }
-  offsets->SetTuple1(nPoints, nPoints);
 
-  vtkNew<vtkCellArray> cells{};
-  cells->SetData(offsets, connectivity);
-  outputCriticalPoints->SetPoints(points);
-  outputCriticalPoints->SetVerts(cells);
+  ttkUtils::CellVertexFromPoints(outputCriticalPoints, points);
 
   vtkPointData *pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE

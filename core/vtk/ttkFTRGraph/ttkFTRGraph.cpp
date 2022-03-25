@@ -433,7 +433,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
     nodeData.addNode(graph, nodeId, scalar);
   }
 
-  nodes->SetPoints(points);
+  ttkUtils::CellVertexFromPoints(nodes, points);
   nodeData.addArrays(nodes->GetPointData(), params_);
 
   outputSkeletonNodes->ShallowCopy(nodes);
