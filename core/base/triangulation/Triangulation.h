@@ -2515,7 +2515,7 @@ namespace ttk {
 
     AbstractTriangulation *abstractTriangulation_;
     ExplicitTriangulation explicitTriangulation_;
-    ImplicitTriangulation implicitTriangulation_;
+    ImplicitNoPreconditions implicitTriangulation_;
     PeriodicImplicitTriangulation periodicImplicitTriangulation_;
     CompactTriangulation compactTriangulation_;
   };
