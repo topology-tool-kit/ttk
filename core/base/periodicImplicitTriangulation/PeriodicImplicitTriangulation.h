@@ -310,6 +310,15 @@ namespace ttk {
       return 0;
     }
 
+    inline int preconditionVerticesAndCells() {
+      if(!this->hasPreconditionedVerticesAndCells_) {
+        this->preconditionVerticesInternal();
+        this->preconditionCellsInternal();
+        this->hasPreconditionedVerticesAndCells_ = true;
+      }
+      return 0;
+    }
+
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
@@ -547,6 +556,8 @@ namespace ttk {
 
     // cache some edge vertex computation wrt acceleration
     std::vector<SimplexId> edgeVertexAccelerated_{};
+
+    bool hasPreconditionedVerticesAndCells_{false};
 
     // acceleration functions
     int checkAcceleration();

@@ -2408,9 +2408,11 @@ namespace ttk {
 
       if(hasPeriodicBoundaries_) {
         abstractTriangulation_ = &periodicImplicitTriangulation_;
+        periodicImplicitTriangulation_.preconditionVerticesAndCells();
         return retPeriodic;
       } else {
         abstractTriangulation_ = &implicitTriangulation_;
+        implicitTriangulation_.preconditionVerticesAndCells();
         return ret;
       }
       return 0;
@@ -2430,8 +2432,10 @@ namespace ttk {
         }
         if(usePeriodicBoundaries) {
           abstractTriangulation_ = &periodicImplicitTriangulation_;
+          periodicImplicitTriangulation_.preconditionVerticesAndCells();
         } else {
           abstractTriangulation_ = &implicitTriangulation_;
+          implicitTriangulation_.preconditionVerticesAndCells();
         }
 
         // reset hasPreconditioned boolean

@@ -373,6 +373,15 @@ namespace ttk {
       return 0;
     }
 
+    inline int preconditionVerticesAndCells() {
+      if(!this->hasPreconditionedVerticesAndCells_) {
+        this->preconditionVerticesInternal();
+        this->preconditionCellsInternal();
+        this->hasPreconditionedVerticesAndCells_ = true;
+      }
+      return 0;
+    }
+
   protected:
     enum class VertexPosition : char {
       // a--------b
@@ -598,6 +607,8 @@ namespace ttk {
 
     // for every tetrahedron, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
+
+    bool hasPreconditionedVerticesAndCells_{false};
 
     int dimensionality_; //
     float origin_[3]; //
