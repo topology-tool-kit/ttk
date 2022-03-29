@@ -20,7 +20,7 @@
 
 namespace ttk {
 
-  class PeriodicImplicitTriangulation final : public AbstractTriangulation {
+  class PeriodicImplicitTriangulation : public AbstractTriangulation {
 
   public:
     PeriodicImplicitTriangulation();
@@ -295,10 +295,10 @@ namespace ttk {
                      const int &yDim,
                      const int &zDim);
 
-    int preconditionVerticesInternal();
-    int preconditionEdgesInternal() override;
-    int preconditionTrianglesInternal() override;
-    int preconditionTetrahedronsInternal();
+    virtual int preconditionVerticesInternal() = 0;
+    int preconditionEdgesInternal() override = 0;
+    int preconditionTrianglesInternal() override = 0;
+    virtual int preconditionTetrahedronsInternal() = 0;
 
     inline int preconditionCellsInternal() {
       if(dimensionality_ == 3) {
@@ -331,8 +331,8 @@ namespace ttk {
       getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
       getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
 
-      const auto &ind0 = vertexCoords_[v0];
-      const auto &ind1 = vertexCoords_[v1];
+      const auto &ind0 = this->getVertexCoords(v0);
+      const auto &ind1 = this->getVertexCoords(v1);
 
       for(int i = 0; i < dimensionality_; ++i) {
         if(ind1[i] == nbvoxels_[i]) {
@@ -366,9 +366,9 @@ namespace ttk {
       getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
       getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
 
-      const auto &ind0 = vertexCoords_[v0];
-      const auto &ind1 = vertexCoords_[v1];
-      const auto &ind2 = vertexCoords_[v2];
+      const auto &ind0 = this->getVertexCoords(v0);
+      const auto &ind1 = this->getVertexCoords(v1);
+      const auto &ind2 = this->getVertexCoords(v2);
 
       for(int i = 0; i < dimensionality_; ++i) {
         if(ind0[i] == nbvoxels_[i]) {
@@ -412,10 +412,10 @@ namespace ttk {
       getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
       getVertexPointInternal(v3, p3[0], p3[1], p3[2]);
 
-      const auto &ind0 = vertexCoords_[v0];
-      const auto &ind1 = vertexCoords_[v1];
-      const auto &ind2 = vertexCoords_[v2];
-      const auto &ind3 = vertexCoords_[v3];
+      const auto &ind0 = this->getVertexCoords(v0);
+      const auto &ind1 = this->getVertexCoords(v1);
+      const auto &ind2 = this->getVertexCoords(v2);
+      const auto &ind3 = this->getVertexCoords(v3);
 
       for(int i = 0; i < dimensionality_; ++i) {
         if(ind0[i] == nbvoxels_[i]) {
@@ -482,15 +482,6 @@ namespace ttk {
     SimplexId mod_[2];
     SimplexId div_[2];
 
-    // for  every vertex, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
-    // for every edge, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
-    // for every triangle, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
-    // for every tetrahedron, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
-
     enum class EdgePosition : char {
       //    e--------f
       //   /|       /|
@@ -549,19 +540,22 @@ namespace ttk {
       BOTTOM_2D, // bcd
     };
 
-    // for every edge, its position on the grid
-    std::vector<EdgePosition> edgePositions_{};
-    // for every triangle, its position on the grid
-    std::vector<TrianglePosition> trianglePositions_{};
-
-    // cache some edge vertex computation wrt acceleration
-    std::vector<SimplexId> edgeVertexAccelerated_{};
-
     bool hasPreconditionedVerticesAndCells_{false};
 
     // acceleration functions
     int checkAcceleration();
     bool isPowerOfTwo(unsigned long long int v, unsigned long long int &r);
+
+    virtual std::array<SimplexId, 3>
+      getVertexCoords(const SimplexId v) const = 0;
+    virtual EdgePosition getEdgePosition(const SimplexId e) const = 0;
+    virtual std::array<SimplexId, 3> getEdgeCoords(const SimplexId e) const = 0;
+    virtual TrianglePosition getTrianglePosition(const SimplexId t) const = 0;
+    virtual std::array<SimplexId, 3>
+      getTriangleCoords(const SimplexId t) const = 0;
+    virtual std::array<SimplexId, 3>
+      getTetrahedronCoords(const SimplexId t) const = 0;
+    virtual SimplexId getEdgeVertexAccelerated(const SimplexId e) const = 0;
 
     //\cond
     // 2D //
@@ -3390,6 +3384,8 @@ inline ttk::SimplexId
   }
   return -1;
 }
+
+#include <PeriodicPreconditions.h>
 
 /// @endcond
 
