@@ -71,9 +71,15 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
                             ttk::ExplicitTriangulation, call);            \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
-                            ttk::ImplicitTriangulation, call);            \
+                            ttk::ImplicitNoPreconditions, call);          \
+    ttkVtkTemplateMacroCase(dataType,                                     \
+                            ttk::Triangulation::Type::HYBRID_IMPLICIT,    \
+                            ttk::ImplicitWithPreconditions, call);        \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
-                            ttk::PeriodicImplicitTriangulation, call);    \
+                            ttk::PeriodicNoPreconditions, call);          \
+    ttkVtkTemplateMacroCase(dataType,                                     \
+                            ttk::Triangulation::Type::HYBRID_PERIODIC,    \
+                            ttk::PeriodicWithPreconditions, call);        \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::COMPACT,  \
                             ttk::CompactTriangulation, call);             \
   }

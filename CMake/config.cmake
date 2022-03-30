@@ -104,6 +104,10 @@ mark_as_advanced(TTK_ENABLE_KAMIKAZE)
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
 mark_as_advanced(TTK_ENABLE_CPU_OPTIMIZATION)
 
+set(TTK_IMPLICIT_PRECONDITIONS_THRESHOLD "256" CACHE STRING
+  "Disable implicit triangulation preconditions above this grid dimension" )
+mark_as_advanced(TTK_IMPLICIT_PRECONDITIONS_THRESHOLD)
+
 option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
 mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 

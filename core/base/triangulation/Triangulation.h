@@ -56,7 +56,27 @@ namespace ttk {
     Triangulation &operator=(Triangulation &&) noexcept;
     ~Triangulation();
 
-    enum class Type { EXPLICIT, IMPLICIT, PERIODIC, COMPACT };
+    enum class Type {
+      EXPLICIT,
+      IMPLICIT,
+      HYBRID_IMPLICIT,
+      PERIODIC,
+      HYBRID_PERIODIC,
+      COMPACT
+    };
+
+    /**
+     * Strategies for implicit & periodic triangulations preconditioning
+     */
+    enum class STRATEGY {
+      /** No preconditions above a grid dimension threshold (given by
+          TTK_IMPLICIT_PRECONDITIONS_THRESHOLD, default  to 256) */
+      DEFAULT = 0,
+      /** Always precondition implicit & periodic triangulations */
+      WITH_PRECONDITIONS = 1,
+      /** Never precondition implicit & periodic triangulations */
+      NO_PRECONDITIONS = 2,
+    };
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -1227,10 +1247,14 @@ namespace ttk {
         return Triangulation::Type::EXPLICIT;
       else if(abstractTriangulation_ == &implicitTriangulation_)
         return Triangulation::Type::IMPLICIT;
+      else if(abstractTriangulation_ == &implicitPreconditionsTriangulation_)
+        return Triangulation::Type::HYBRID_IMPLICIT;
       else if(abstractTriangulation_ == &compactTriangulation_)
         return Triangulation::Type::COMPACT;
-      else
+      else if(abstractTriangulation_ == &periodicImplicitTriangulation_)
         return Triangulation::Type::PERIODIC;
+      else
+        return Triangulation::Type::HYBRID_PERIODIC;
     }
 
     /// Get the \p localEdgeId-th edge identifier connected to the
@@ -2278,7 +2302,9 @@ namespace ttk {
     inline int setDebugLevel(const int &debugLevel) {
       explicitTriangulation_.setDebugLevel(debugLevel);
       implicitTriangulation_.setDebugLevel(debugLevel);
+      implicitPreconditionsTriangulation_.setDebugLevel(debugLevel);
       periodicImplicitTriangulation_.setDebugLevel(debugLevel);
+      periodicPreconditionsTriangulation_.setDebugLevel(debugLevel);
       debugLevel_ = debugLevel;
       return 0;
     }
@@ -2399,23 +2425,26 @@ namespace ttk {
       gridDimensions_[1] = yDim;
       gridDimensions_[2] = zDim;
 
-      int retPeriodic = periodicImplicitTriangulation_.setInputGrid(
+      int ret{};
+
+      ret |= periodicImplicitTriangulation_.setInputGrid(
         xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
         zDim);
-      int ret = implicitTriangulation_.setInputGrid(xOrigin, yOrigin, zOrigin,
-                                                    xSpacing, ySpacing,
-                                                    zSpacing, xDim, yDim, zDim);
+      ret |= periodicPreconditionsTriangulation_.setInputGrid(
+        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+        zDim);
+      ret |= implicitTriangulation_.setInputGrid(xOrigin, yOrigin, zOrigin,
+                                                 xSpacing, ySpacing, zSpacing,
+                                                 xDim, yDim, zDim);
+      ret |= implicitPreconditionsTriangulation_.setInputGrid(
+        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+        zDim);
 
-      if(hasPeriodicBoundaries_) {
-        abstractTriangulation_ = &periodicImplicitTriangulation_;
-        periodicImplicitTriangulation_.preconditionVerticesAndCells();
-        return retPeriodic;
-      } else {
-        abstractTriangulation_ = &implicitTriangulation_;
-        implicitTriangulation_.preconditionVerticesAndCells();
-        return ret;
-      }
-      return 0;
+      const auto useImplicitPreconditions = this->processImplicitStrategy();
+
+      this->switchGrid(this->hasPeriodicBoundaries_, useImplicitPreconditions);
+
+      return ret;
     }
 
     /// Set the input grid to use period boundary conditions.
@@ -2425,23 +2454,48 @@ namespace ttk {
     inline void
       setPeriodicBoundaryConditions(const bool &usePeriodicBoundaries) {
 
-      if((abstractTriangulation_ == &implicitTriangulation_)
-         || (abstractTriangulation_ == &periodicImplicitTriangulation_)) {
+      if(abstractTriangulation_ == &implicitTriangulation_
+         || abstractTriangulation_ == &periodicImplicitTriangulation_
+         || abstractTriangulation_ == &implicitPreconditionsTriangulation_
+         || abstractTriangulation_ == &periodicPreconditionsTriangulation_) {
         if(usePeriodicBoundaries == hasPeriodicBoundaries_) {
           return;
         }
-        if(usePeriodicBoundaries) {
-          abstractTriangulation_ = &periodicImplicitTriangulation_;
-          periodicImplicitTriangulation_.preconditionVerticesAndCells();
-        } else {
-          abstractTriangulation_ = &implicitTriangulation_;
-          implicitTriangulation_.preconditionVerticesAndCells();
-        }
+        const auto hasPreconditions{this->hasImplicitPreconditions()};
+
+        this->switchGrid(usePeriodicBoundaries, hasPreconditions);
 
         // reset hasPreconditioned boolean
-        this->clear();
+        AbstractTriangulation::clear();
         // but don't forget to set hasPeriodicBoundaries_
         hasPeriodicBoundaries_ = usePeriodicBoundaries;
+      }
+    }
+
+    /**
+     * @brief Set the input grid preconditioning strategy.
+     * @param[in] strategy Strategy to implement.
+     */
+    inline void setImplicitPreconditions(const STRATEGY strategy) {
+      if(abstractTriangulation_ == &implicitTriangulation_
+         || abstractTriangulation_ == &periodicImplicitTriangulation_
+         || abstractTriangulation_ == &implicitPreconditionsTriangulation_
+         || abstractTriangulation_ == &periodicPreconditionsTriangulation_) {
+
+        const auto useImplicitPreconditions
+          = this->processImplicitStrategy(strategy);
+
+        if(useImplicitPreconditions == this->hasImplicitPreconditions()) {
+          return;
+        }
+        const auto isPeriodic{this->hasPeriodicBoundaries_};
+
+        this->switchGrid(isPeriodic, useImplicitPreconditions);
+
+        // reset hasPreconditioned boolean
+        AbstractTriangulation::clear();
+        // but don't forget to set hasImplicitPreconditions_
+        hasPeriodicBoundaries_ = isPeriodic;
       }
     }
 
@@ -2488,7 +2542,9 @@ namespace ttk {
     inline int setThreadNumber(const ThreadId threadNumber) {
       explicitTriangulation_.setThreadNumber(threadNumber);
       implicitTriangulation_.setThreadNumber(threadNumber);
+      implicitPreconditionsTriangulation_.setThreadNumber(threadNumber);
       periodicImplicitTriangulation_.setThreadNumber(threadNumber);
+      periodicPreconditionsTriangulation_.setThreadNumber(threadNumber);
       compactTriangulation_.setThreadNumber(threadNumber);
       threadNumber_ = threadNumber;
       return 0;
@@ -2499,9 +2555,17 @@ namespace ttk {
     inline int setWrapper(const Wrapper *wrapper) {
       explicitTriangulation_.setWrapper(wrapper);
       implicitTriangulation_.setWrapper(wrapper);
+      implicitPreconditionsTriangulation_.setWrapper(wrapper);
       periodicImplicitTriangulation_.setWrapper(wrapper);
+      periodicPreconditionsTriangulation_.setWrapper(wrapper);
       compactTriangulation_.setWrapper(wrapper);
       return 0;
+    }
+
+    /// Returns true if the grid uses preconditions.
+    inline bool hasImplicitPreconditions() const {
+      return abstractTriangulation_ == &implicitPreconditionsTriangulation_
+             || abstractTriangulation_ == &periodicPreconditionsTriangulation_;
     }
 
   protected:
@@ -2513,10 +2577,29 @@ namespace ttk {
       return false;
     }
 
+    /**
+     * @brief Should we precondition the implicit/periodic triangulations?
+     *
+     * @param[in] strategy The strategy to follow
+     * @return True to perform preconditioning.
+     */
+    bool processImplicitStrategy(const STRATEGY strategy
+                                 = STRATEGY::DEFAULT) const;
+
+    /**
+     * @brief Switch regular grid triangulation type
+     *
+     * @param[in] usePeriodic Use a periodic triangulation
+     * @param[in] usePreconditions Perform triangulation preconditions
+     */
+    void switchGrid(const bool usePeriodic, const bool usePreconditions);
+
     AbstractTriangulation *abstractTriangulation_;
     ExplicitTriangulation explicitTriangulation_;
     ImplicitNoPreconditions implicitTriangulation_;
+    ImplicitWithPreconditions implicitPreconditionsTriangulation_;
     PeriodicNoPreconditions periodicImplicitTriangulation_;
+    PeriodicWithPreconditions periodicPreconditionsTriangulation_;
     CompactTriangulation compactTriangulation_;
   };
 } // namespace ttk
