@@ -145,7 +145,9 @@ namespace ttk {
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
-        if(this->BackEnd == BACKEND::FTM) {
+        if(this->BackEnd == BACKEND::FTM
+           || this->BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+           || this->BackEnd == BACKEND::APPROXIMATE_TOPOLOGY) {
           contourTree_.setDebugLevel(debugLevel_);
           contourTree_.setThreadNumber(threadNumber_);
           contourTree_.preconditionTriangulation(triangulation);
@@ -534,7 +536,8 @@ void ttk::PersistenceDiagram::checkProgressivityRequirement(
 
   if((BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
       || BackEnd == BACKEND::APPROXIMATE_TOPOLOGY)
-     && !std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
+     && !std::is_base_of<ttk::ImplicitTriangulation,
+                         triangulationType>::value) {
 
     printWrn("Explicit triangulation detected.");
     printWrn("Defaulting to the FTM backend.");

@@ -21,7 +21,6 @@
 
 // base code includes
 #include <DynamicTree.h>
-#include <ImplicitTriangulation.h>
 #include <MultiresTopology.h>
 #include <MultiresTriangulation.h>
 
