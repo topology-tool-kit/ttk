@@ -81,7 +81,6 @@ namespace ttk {
       startingDecimationLevel_ = std::max(data, 0);
     }
     void setStoppingDecimationLevel(int data) {
-      std::cout << "Stopping DL from progressive topo" << std::endl;
       if(data >= stoppingDecimationLevel_) {
         resumeProgressive_ = false;
       }
@@ -126,6 +125,7 @@ namespace ttk {
                          std::vector<std::vector<std::pair<polarity, polarity>>>
                            &vertexLinkPolarity,
                          std::vector<polarity> &toProcess,
+                         std::vector<polarity> &toReprocess,
                          std::vector<DynamicTree> &link,
                          std::vector<uint8_t> &vertexLink,
                          VLBoundaryType &vertexLinkByBoundaryType,
@@ -195,8 +195,10 @@ namespace ttk {
                          const SimplexId *const offsets) const;
 
     char getCriticalTypeFromLink(
+      const SimplexId globalId,
       const std::vector<std::pair<polarity, polarity>> &vlp,
-      DynamicTree &link) const;
+      DynamicTree &link,
+      polarity &reprocess) const;
 
     void
       updateDynamicLink(DynamicTree &link,

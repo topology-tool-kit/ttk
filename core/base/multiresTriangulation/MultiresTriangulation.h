@@ -925,7 +925,7 @@ namespace ttk {
       return dimensions;
     }
 
-    ImplicitTriangulation *getTriangulation() {
+    ImplicitTriangulation *getTriangulation() const {
       return triangulation_;
     }
 
