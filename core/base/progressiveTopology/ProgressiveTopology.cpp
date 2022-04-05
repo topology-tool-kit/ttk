@@ -1,3 +1,5 @@
+#include "DataTypes.h"
+#include "MultiresTopology.h"
 #include <ProgressiveTopology.h>
 
 int ttk::ProgressiveTopology::computeProgressivePD(
@@ -45,8 +47,8 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   std::vector<std::vector<SimplexId>> saddleCCMin{}, saddleCCMax{};
   std::vector<std::vector<SimplexId>> vertexRepresentativesMin{},
     vertexRepresentativesMax{};
-  std::vector<polarity> toPropageMin{}, toPropageMax{};
   std::vector<polarity> isUpToDateMin{}, isUpToDateMax{};
+  std::vector<polarity> toPropageMin{}, toPropageMax{};
   std::vector<char> vertexTypes{};
 
   if(computePersistenceDiagram) {
@@ -128,8 +130,9 @@ int ttk::ProgressiveTopology::executeCPProgressive(
       CTDiagram_, offsets, vertexRepresentativesMin, vertexRepresentativesMax,
       toPropageMin, toPropageMax);
   } else {
-    initCriticalPoints(isNew, vertexLinkPolarity, toProcess, link, vertexLink,
-                       vertexLinkByBoundaryType, vertexTypes, offsets);
+    initCriticalPoints(isNew, vertexLinkPolarity, toProcess, toReprocess, link,
+                       vertexLink, vertexLinkByBoundaryType, vertexTypes,
+                       offsets);
   }
 
   printMsg(this->resolutionInfoString(), 1,
@@ -539,8 +542,9 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
         initDynamicLink(globalId, vertexLinkPolarity[globalId],
                         vertexLink[globalId], link[globalId],
                         vertexLinkByBoundaryType, offsets);
-        vertexTypes[globalId] = getCriticalTypeFromLink(
-          vertexLinkPolarity[globalId], link[globalId]);
+        vertexTypes[globalId]
+          = getCriticalTypeFromLink(globalId, vertexLinkPolarity[globalId],
+                                    link[globalId], toReprocess[globalId]);
       }
       isNew[globalId] = false;
 
@@ -556,8 +560,9 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
                           vertexLinkByBoundaryType, offsets);
           toProcess[globalId] = 255; // mark as processed
         }
-        vertexTypes[globalId] = getCriticalTypeFromLink(
-          vertexLinkPolarity[globalId], link[globalId]);
+        vertexTypes[globalId]
+          = getCriticalTypeFromLink(globalId, vertexLinkPolarity[globalId],
+                                    link[globalId], toReprocess[globalId]);
         toReprocess[globalId] = 0;
       }
     }
@@ -792,6 +797,7 @@ void ttk::ProgressiveTopology::initCriticalPoints(
   std::vector<polarity> &isNew,
   std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
   std::vector<polarity> &toProcess,
+  std::vector<polarity> &toReprocess,
   std::vector<DynamicTree> &link,
   std::vector<uint8_t> &vertexLink,
   VLBoundaryType &vertexLinkByBoundaryType,
@@ -812,7 +818,8 @@ void ttk::ProgressiveTopology::initCriticalPoints(
                     vertexLink[globalId], link[globalId],
                     vertexLinkByBoundaryType, offsets);
     vertexTypes[globalId]
-      = getCriticalTypeFromLink(vertexLinkPolarity[globalId], link[globalId]);
+      = getCriticalTypeFromLink(globalId, vertexLinkPolarity[globalId],
+                                link[globalId], toReprocess[globalId]);
     toProcess[globalId] = 255;
     isNew[globalId] = 0;
   }
@@ -1081,10 +1088,15 @@ void ttk::ProgressiveTopology::clearResumableState() {
 }
 
 char ttk::ProgressiveTopology::getCriticalTypeFromLink(
+  const SimplexId globalId,
   const std::vector<std::pair<polarity, polarity>> &vlp,
-  DynamicTree &link) const {
+  DynamicTree &link,
+  polarity &reprocess) const {
 
   const auto nbCC = link.getNbCC();
+
+  bool isVertexOnBoundary
+    = multiresTriangulation_.getTriangulation()->isVertexOnBoundary(globalId);
 
   int dimensionality = multiresTriangulation_.getDimensionality();
   SimplexId downValence = 0, upValence = 0;
@@ -1109,8 +1121,38 @@ char ttk::ProgressiveTopology::getCriticalTypeFromLink(
   } else if(downValence == 1 && upValence == 0) {
     return static_cast<char>(CriticalType::Local_maximum);
   } else if(downValence == 1 && upValence == 1) {
+
+    // special case of boundary saddles
+    if(dimensionality == 3 && isVertexOnBoundary) {
+      reprocess = 255; // need to reprocess at finer resolutions
+
+      // find whether the upper and lower links touch the boundary
+      bool isUpperOnBoundary = false, isLowerOnBoundary = false;
+      const SimplexId neighborNumber = vlp.size();
+      SimplexId neighborId = -1;
+      for(int ineigh = 0; ineigh < neighborNumber; ineigh++) {
+        multiresTriangulation_.getVertexNeighbor(globalId, ineigh, neighborId);
+        if(multiresTriangulation_.getTriangulation()->isVertexOnBoundary(
+             neighborId)) {
+          if(vlp[ineigh].first) {
+            isUpperOnBoundary = true;
+          } else {
+            isLowerOnBoundary = true;
+          }
+        }
+      }
+
+      if((isUpperOnBoundary) && (!isLowerOnBoundary)) {
+        return (char)(CriticalType::Saddle1);
+      }
+      if((!isUpperOnBoundary) && (isLowerOnBoundary)) {
+        return (char)(CriticalType::Saddle2);
+      }
+    }
+
     // regular point
     return static_cast<char>(CriticalType::Regular);
+
   } else {
     // saddles
     if(dimensionality == 2) {
