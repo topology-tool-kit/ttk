@@ -526,7 +526,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     }
 
     // compute barycentric coords of projection
-    std::vector<float> baryCoords;
+    std::array<float, 3> baryCoords{};
     Geometry::computeBarycentricCoordinates(
       &pm.x, &pn.x, &po.x, &res.x, baryCoords);
 
