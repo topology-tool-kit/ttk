@@ -1,0 +1,9 @@
+NAME
+  ttkSurfaceGeometrySmoother
+SOURCES
+  ttkSurfaceGeometrySmoother.cpp
+HEADERS
+  ttkSurfaceGeometrySmoother.h
+DEPENDS
+  surfaceGeometrySmoother
+  ttkAlgorithm

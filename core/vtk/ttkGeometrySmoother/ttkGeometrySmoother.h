@@ -55,12 +55,16 @@ class TTKGEOMETRYSMOOTHER_EXPORT ttkGeometrySmoother
 
 private:
   int NumberOfIterations{1};
+  bool UseMaskScalarField{true};
   int MaskIdentifier{0};
   bool ForceInputMaskScalarField{false};
 
 public:
   vtkSetMacro(NumberOfIterations, int);
   vtkGetMacro(NumberOfIterations, int);
+
+  vtkSetMacro(UseMaskScalarField, bool);
+  vtkGetMacro(UseMaskScalarField, bool);
 
   vtkSetMacro(MaskIdentifier, int);
   vtkGetMacro(MaskIdentifier, int);

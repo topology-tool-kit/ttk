@@ -613,7 +613,7 @@ inline int ttk::FiberSurface::computeBaseTriangle(
         break;
     }
 
-    std::vector<double> baryCentrics;
+    std::array<double, 2> baryCentrics{};
     std::vector<double> p0(2), p1(2), p(2);
     p0[0] = ((dataTypeU *)uField_)[vertexId0];
     p0[1] = ((dataTypeV *)vField_)[vertexId0];
@@ -757,7 +757,7 @@ inline int ttk::FiberSurface::computeCase0(
         break;
     }
 
-    std::vector<double> baryCentrics;
+    std::array<double, 2> baryCentrics{};
     std::vector<double> p0(2), p1(2), p(2);
     p0[0] = ((dataTypeU *)uField_)[vertexId0];
     p0[1] = ((dataTypeV *)vField_)[vertexId0];

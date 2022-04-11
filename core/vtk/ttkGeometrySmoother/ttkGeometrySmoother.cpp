@@ -65,9 +65,9 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInputDataPointer(ttkUtils::GetVoidPointer(inputPoints));
   this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputPoints));
 
-  if(inputMaskField) {
-    this->setMaskDataPointer(ttkUtils::GetVoidPointer(inputMaskField));
-  }
+  const auto hasMask{this->UseMaskScalarField && inputMaskField != nullptr};
+  this->setMaskDataPointer(hasMask ? ttkUtils::GetPointer<char>(inputMaskField)
+                                   : nullptr);
 
   switch(outputPoints->GetDataType()) {
     vtkTemplateMacro(
