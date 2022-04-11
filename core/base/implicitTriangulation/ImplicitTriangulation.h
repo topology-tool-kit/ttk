@@ -17,7 +17,7 @@
 
 namespace ttk {
 
-  class ImplicitTriangulation final : public AbstractTriangulation {
+  class ImplicitTriangulation : public AbstractTriangulation {
 
   public:
     ImplicitTriangulation();
@@ -251,7 +251,7 @@ namespace ttk {
         return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-      switch(vertexPositions_[vertexId]) {
+      switch(this->getVertexPosition(vertexId)) {
         case VertexPosition::CENTER_3D:
           return 14;
         case VertexPosition::FRONT_FACE_3D:
@@ -357,11 +357,11 @@ namespace ttk {
                      const SimplexId &yDim,
                      const SimplexId &zDim);
 
-    int preconditionVerticesInternal();
+    virtual int preconditionVerticesInternal() = 0;
     int preconditionVertexNeighborsInternal() override;
-    int preconditionEdgesInternal() override;
-    int preconditionTrianglesInternal() override;
-    int preconditionTetrahedronsInternal();
+    int preconditionEdgesInternal() override = 0;
+    int preconditionTrianglesInternal() override = 0;
+    virtual int preconditionTetrahedronsInternal() = 0;
 
     inline int preconditionCellsInternal() {
       if(dimensionality_ == 3) {
@@ -369,6 +369,15 @@ namespace ttk {
       } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
         hasPreconditionedTriangles_ = true;
         return this->preconditionTrianglesInternal();
+      }
+      return 0;
+    }
+
+    inline int preconditionVerticesAndCells() {
+      if(!this->hasPreconditionedVerticesAndCells_) {
+        this->preconditionVerticesInternal();
+        this->preconditionCellsInternal();
+        this->hasPreconditionedVerticesAndCells_ = true;
       }
       return 0;
     }
@@ -599,6 +608,8 @@ namespace ttk {
     // for every tetrahedron, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
 
+    bool hasPreconditionedVerticesAndCells_{false};
+
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
@@ -639,6 +650,17 @@ namespace ttk {
     // acceleration functions
     int checkAcceleration();
     bool isPowerOfTwo(unsigned long long int v, unsigned long long int &r);
+
+    virtual VertexPosition getVertexPosition(const SimplexId v) const = 0;
+    virtual std::array<SimplexId, 3>
+      getVertexCoords(const SimplexId v) const = 0;
+    virtual EdgePosition getEdgePosition(const SimplexId e) const = 0;
+    virtual std::array<SimplexId, 3> getEdgeCoords(const SimplexId e) const = 0;
+    virtual TrianglePosition getTrianglePosition(const SimplexId t) const = 0;
+    virtual std::array<SimplexId, 3>
+      getTriangleCoords(const SimplexId t) const = 0;
+    virtual std::array<SimplexId, 3>
+      getTetrahedronCoords(const SimplexId t) const = 0;
 
     //\cond
     // 2D //
@@ -7210,5 +7232,7 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
   }
   return -1;
 }
+
+#include <ImplicitPreconditions.h>
 
 /// @endcond

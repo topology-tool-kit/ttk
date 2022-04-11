@@ -31,16 +31,20 @@
     call;                                                                 \
   }; break
 
-#define ttkTemplateMacro(triangulationType, call)                            \
-  switch(triangulationType) {                                                \
-    ttkTemplateMacroCase(                                                    \
-      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation, call); \
-    ttkTemplateMacroCase(                                                    \
-      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation, call); \
-    ttkTemplateMacroCase(ttk::Triangulation::Type::PERIODIC,                 \
-                         ttk::PeriodicImplicitTriangulation, call);          \
-    ttkTemplateMacroCase(                                                    \
-      ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation, call);   \
+#define ttkTemplateMacro(triangulationType, call)                              \
+  switch(triangulationType) {                                                  \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation, call);   \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitNoPreconditions, call); \
+    ttkTemplateMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT,            \
+                         ttk::ImplicitWithPreconditions, call);                \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::PERIODIC, ttk::PeriodicNoPreconditions, call); \
+    ttkTemplateMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC,            \
+                         ttk::PeriodicWithPreconditions, call);                \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation, call);     \
   }
 
 namespace ttk {

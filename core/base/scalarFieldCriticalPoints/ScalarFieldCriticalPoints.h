@@ -547,8 +547,8 @@ void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
       printWrn("Defaulting to the generic backend.");
 
       BackEnd = BACKEND::GENERIC;
-    } else if(!std::is_same<triangulationType,
-                            ttk::ImplicitTriangulation>::value) {
+    } else if(!std::is_base_of<ttk::ImplicitTriangulation,
+                               triangulationType>::value) {
 
       printWrn("Explicit triangulation detected.");
       printWrn("Defaulting to the generic backend.");

@@ -120,6 +120,16 @@ namespace ttk {
       this->cells.clear();
     }
 
+    const std::vector<SimplexId> &getVertices() const {
+      return this->vertices;
+    }
+    const std::vector<SimplexId> &getNodes() const {
+      return this->nodes;
+    }
+    const std::vector<SimplexId> &getCells() const {
+      return this->cells;
+    }
+
   protected:
     mutable std::vector<SimplexId> vertices, nodes, cells;
 
