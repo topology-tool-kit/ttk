@@ -30,7 +30,7 @@ class TTKTRIANGULATIONMANAGER_EXPORT ttkTriangulationManager
   : public ttkAlgorithm {
 
   using STRATEGY = typename ttk::Triangulation::STRATEGY;
-  bool Periodicity{true};
+  bool Periodicity{false};
   STRATEGY PreconditioningStrategy{STRATEGY::DEFAULT};
   int Threshold{1000};
   vtkSmartPointer<vtkDataArraySelection> ArraySelection{};

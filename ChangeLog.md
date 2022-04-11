@@ -4,6 +4,7 @@
 - Persistence diagram approximation (IEEE LDAV 2021)
 - Compact triangulations (IEEE TVCG 2021)
 - Rips complex
+- Triangulation manager
 - PersistentSimplexPairs backend (Zomorodian 2010), slow.
 - Bug fixes
 - Documentation improvements

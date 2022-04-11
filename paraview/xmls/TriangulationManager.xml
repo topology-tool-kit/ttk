@@ -42,7 +42,7 @@
           label="Periodicity in All Dimensions"
           command="SetPeriodicity"
           number_of_elements="1"
-          default_values="1">
+          default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Set the periodicity ON or OFF.
@@ -98,7 +98,7 @@
 
       ${DEBUG_WIDGETS}
 
-      <PropertyGroup panel_widget="Line" label="Implicit Grids Options">
+      <PropertyGroup panel_widget="Line" label="Implicit Triangulation Options">
         <Property name="SetPeriodicity" />
         <Property name="SetPreconditioning" />
       </PropertyGroup>
