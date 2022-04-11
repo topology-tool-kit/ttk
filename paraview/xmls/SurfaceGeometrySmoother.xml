@@ -187,7 +187,7 @@
       ${DEBUG_WIDGETS}
 
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
 
     </SourceProxy>
