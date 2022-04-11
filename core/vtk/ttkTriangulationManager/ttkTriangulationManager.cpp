@@ -69,10 +69,13 @@ void ttkTriangulationManager::processImplicit(
   }
 
   triangulation.setImplicitPreconditions(this->PreconditioningStrategy);
-  printMsg("Switching regular grid preconditions from "
-           + (prevPreconditions ? std::string("ON") : std::string("OFF"))
-           + " to "
-           + (!prevPreconditions ? std::string("ON") : std::string("OFF")));
+  const auto newPreconditions = triangulation.hasImplicitPreconditions();
+  if(prevPreconditions != newPreconditions) {
+    printMsg("Switching regular grid preconditions from "
+             + (prevPreconditions ? std::string("ON") : std::string("OFF"))
+             + " to "
+             + (newPreconditions ? std::string("ON") : std::string("OFF")));
+  }
 }
 
 int ttkTriangulationManager::processExplicit(
