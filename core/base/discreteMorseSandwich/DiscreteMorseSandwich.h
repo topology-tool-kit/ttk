@@ -47,9 +47,14 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    inline int buildGradient(const SimplexId *const offsets,
+    inline int buildGradient(const void *const scalars,
+                             const size_t scalarsMTime,
+                             const SimplexId *const offsets,
                              const triangulationType &triangulation) {
+      this->dg_.setDebugLevel(this->debugLevel_);
+      this->dg_.setThreadNumber(this->threadNumber_);
       this->dg_.setInputOffsets(offsets);
+      this->dg_.setInputScalarField(scalars, scalarsMTime);
       return this->dg_.buildGradient(triangulation);
     }
 

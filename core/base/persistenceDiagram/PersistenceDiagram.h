@@ -142,6 +142,7 @@ namespace ttk {
     template <typename scalarType, class triangulationType>
     int executeDiscreteMorseSandwich(std::vector<PersistencePair> &CTDiagram,
                                      const scalarType *inputScalars,
+                                     const size_t scalarsMTime,
                                      const SimplexId *inputOffsets,
                                      const triangulationType *triangulation);
 
@@ -276,7 +277,7 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
       break;
     case BACKEND::DISCRETE_MORSE_SANDWICH:
       executeDiscreteMorseSandwich(
-        CTDiagram, inputScalars, inputOffsets, triangulation);
+        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
       break;
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       executeProgressiveTopology(
@@ -384,13 +385,14 @@ template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::executeDiscreteMorseSandwich(
   std::vector<PersistencePair> &CTDiagram,
   const scalarType *inputScalars,
+  const size_t scalarsMTime,
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
   Timer tm{};
   const auto dim = triangulation->getDimensionality();
 
-  dms_.buildGradient(inputOffsets, *triangulation);
+  dms_.buildGradient(inputScalars, scalarsMTime, inputOffsets, *triangulation);
   std::vector<DiscreteMorseSandwich::PersistencePair> dms_pairs{};
   dms_.computePersistencePairs(
     dms_pairs, inputOffsets, *triangulation, this->IgnoreBoundary);
