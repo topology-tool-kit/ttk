@@ -138,7 +138,8 @@ public:
                           const std::string &arrayName,
                           vtkDataSet *const inputData,
                           std::vector<ttk::SimplexId> &spareStorage,
-                          const int inputPort = 0);
+                          const int inputPort = 0,
+                          const bool printErr = true);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
