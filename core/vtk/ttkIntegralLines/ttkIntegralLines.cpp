@@ -2,9 +2,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
@@ -12,12 +12,11 @@
 #include <vtkPointSet.h>
 #include <vtkUnstructuredGrid.h>
 
-using namespace std;
-using namespace ttk;
+#include <array>
 
-vtkStandardNewMacro(ttkIntegralLines)
+vtkStandardNewMacro(ttkIntegralLines);
 
-  ttkIntegralLines::ttkIntegralLines() {
+ttkIntegralLines::ttkIntegralLines() {
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
@@ -41,80 +40,90 @@ int ttkIntegralLines::FillOutputPortInformation(int port,
   return 1;
 }
 
-int ttkIntegralLines::getTrajectories(vtkDataSet *input,
-                                      ttk::Triangulation *triangulation,
-                                      vector<vector<SimplexId>> &trajectories,
-                                      vtkUnstructuredGrid *output) {
-  vtkSmartPointer<vtkUnstructuredGrid> ug
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  vtkSmartPointer<vtkPoints> pts = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkFloatArray> dist = vtkSmartPointer<vtkFloatArray>::New();
+int ttkIntegralLines::getTrajectories(
+  vtkDataSet *input,
+  ttk::Triangulation *triangulation,
+  std::vector<std::vector<ttk::SimplexId>> &trajectories,
+  vtkUnstructuredGrid *output) {
+
+  if(input == nullptr || output == nullptr
+     || input->GetPointData() == nullptr) {
+    this->printErr("Null pointers in getTrajectories parameters");
+    return 0;
+  }
+
+  vtkNew<vtkUnstructuredGrid> ug{};
+  vtkNew<vtkPoints> pts{};
+
+  vtkNew<vtkFloatArray> dist{};
   dist->SetNumberOfComponents(1);
   dist->SetName("DistanceFromSeed");
 
-  // here, copy the original scalars
-  int numberOfArrays = input->GetPointData()->GetNumberOfArrays();
+  const auto numberOfArrays = input->GetPointData()->GetNumberOfArrays();
 
-  vector<vtkDataArray *> scalarArrays;
+  std::vector<vtkDataArray *> scalarArrays{};
+  scalarArrays.reserve(numberOfArrays);
   for(int k = 0; k < numberOfArrays; ++k) {
-    auto a = input->GetPointData()->GetArray(k);
-
-    if(a->GetNumberOfComponents() == 1)
+    const auto a = input->GetPointData()->GetArray(k);
+    if(a->GetNumberOfComponents() == 1) {
+      // only keep scalar arrays
       scalarArrays.push_back(a);
+    }
   }
-  // not efficient, implicit conversion to double
-  vector<vtkSmartPointer<vtkDoubleArray>> inputScalars(scalarArrays.size());
-  for(unsigned int k = 0; k < scalarArrays.size(); ++k) {
-    inputScalars[k] = vtkSmartPointer<vtkDoubleArray>::New();
+
+  std::vector<vtkSmartPointer<vtkDataArray>> inputScalars(scalarArrays.size());
+  for(size_t k = 0; k < scalarArrays.size(); ++k) {
+    inputScalars[k]
+      = vtkSmartPointer<vtkDataArray>::Take(scalarArrays[k]->NewInstance());
     inputScalars[k]->SetNumberOfComponents(1);
     inputScalars[k]->SetName(scalarArrays[k]->GetName());
   }
 
-  float p0[3];
-  float p1[3];
-  vtkIdType ids[2];
-  for(SimplexId i = 0; i < (SimplexId)trajectories.size(); ++i) {
-    if(trajectories[i].size()) {
-      SimplexId vertex = trajectories[i][0];
+  std::array<float, 3> p0{}, p1{};
+  std::array<vtkIdType, 2> ids{};
+  for(size_t i = 0; i < trajectories.size(); ++i) {
+    if(!trajectories[i].empty()) {
+      auto vertex = trajectories[i][0];
       // init
       triangulation->getVertexPoint(vertex, p0[0], p0[1], p0[2]);
-      ids[0] = pts->InsertNextPoint(p0);
+      ids[0] = pts->InsertNextPoint(p0.data());
       // distanceScalars
       float distanceFromSeed{};
       dist->InsertNextTuple1(distanceFromSeed);
       // inputScalars
-      for(unsigned int k = 0; k < scalarArrays.size(); ++k)
+      for(size_t k = 0; k < scalarArrays.size(); ++k) {
         inputScalars[k]->InsertNextTuple1(scalarArrays[k]->GetTuple1(vertex));
+      }
 
-      for(SimplexId j = 1; j < (SimplexId)trajectories[i].size(); ++j) {
+      for(size_t j = 1; j < trajectories[i].size(); ++j) {
         vertex = trajectories[i][j];
         triangulation->getVertexPoint(vertex, p1[0], p1[1], p1[2]);
-        ids[1] = pts->InsertNextPoint(p1);
+        ids[1] = pts->InsertNextPoint(p1.data());
         // distanceScalars
-        distanceFromSeed += Geometry::distance(p0, p1, 3);
+        distanceFromSeed += ttk::Geometry::distance(p0.data(), p1.data(), 3);
         dist->InsertNextTuple1(distanceFromSeed);
         // inputScalars
-        for(unsigned int k = 0; k < scalarArrays.size(); ++k)
+        for(size_t k = 0; k < scalarArrays.size(); ++k) {
           inputScalars[k]->InsertNextTuple1(scalarArrays[k]->GetTuple1(vertex));
+        }
 
-        ug->InsertNextCell(VTK_LINE, 2, ids);
+        ug->InsertNextCell(VTK_LINE, 2, ids.data());
 
         // iteration
         ids[0] = ids[1];
-        p0[0] = p1[0];
-        p0[1] = p1[1];
-        p0[2] = p1[2];
+        p0 = p1;
       }
     }
   }
   ug->SetPoints(pts);
   ug->GetPointData()->AddArray(dist);
-  for(unsigned int k = 0; k < scalarArrays.size(); ++k)
+  for(size_t k = 0; k < scalarArrays.size(); ++k) {
     ug->GetPointData()->AddArray(inputScalars[k]);
+  }
 
   output->ShallowCopy(ug);
 
-  return 0;
+  return 1;
 }
 
 int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
@@ -130,13 +139,13 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataArray *inputOffsets
     = this->GetOrderArray(domain, 0, 1, ForceInputOffsetScalarField);
 
-  std::vector<SimplexId> idSpareStorage{};
+  std::vector<ttk::SimplexId> idSpareStorage{};
   auto *inputIdentifiers = this->GetIdentifierArrayPtr(
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
     idSpareStorage);
 
-  const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
-  const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
+  const auto numberOfPointsInDomain = domain->GetNumberOfPoints();
+  const auto numberOfPointsInSeeds = seeds->GetNumberOfPoints();
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // triangulation problem
@@ -172,15 +181,13 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  vector<vector<SimplexId>> trajectories;
+  std::vector<std::vector<ttk::SimplexId>> trajectories{};
 
   this->setVertexNumber(numberOfPointsInDomain);
   this->setSeedNumber(numberOfPointsInSeeds);
   this->setDirection(Direction);
   this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(
-    static_cast<SimplexId *>(inputOffsets->GetVoidPointer(0)));
-
+  this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
   this->setVertexIdentifierScalarField(inputIdentifiers);
   this->setOutputTrajectories(&trajectories);
 
@@ -192,16 +199,14 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                          static_cast<TTK_TT *>(triangulation->getData()))));
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
-  if(status) {
-    std::stringstream msg;
-    msg << "IntegralLines.execute() error code : " << status;
-    this->printErr(msg.str());
-    return -1;
+  if(status != 0) {
+    this->printErr("IntegralLines.execute() error code : "
+                   + std::to_string(status));
+    return 0;
   }
 #endif
 
   // make the vtk trajectories
-  getTrajectories(domain, triangulation, trajectories, output);
-
-  return (int)(status == 0);
+  status = getTrajectories(domain, triangulation, trajectories, output);
+  return status;
 }
