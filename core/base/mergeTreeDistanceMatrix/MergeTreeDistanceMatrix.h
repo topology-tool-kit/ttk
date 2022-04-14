@@ -65,9 +65,11 @@ namespace ttk {
 #pragma omp task firstprivate(i) UNTIED() shared(distanceMatrix, trees)
         {
 #endif
-          std::stringstream stream;
-          stream << i << " / " << distanceMatrix.size();
-          printMsg(stream.str());
+          if(i % (distanceMatrix.size() / 10) == 0) {
+            std::stringstream stream;
+            stream << i << " / " << distanceMatrix.size();
+            printMsg(stream.str());
+          }
 
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
@@ -97,6 +99,7 @@ namespace ttk {
             mergeTreeDistance.setSaveTree(true);
             mergeTreeDistance.setCleanTree(true);
             mergeTreeDistance.setIsCalled(true);
+            mergeTreeDistance.setPostprocess(false);
             std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
             distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
               trees[i], trees[j], outputMatching);
