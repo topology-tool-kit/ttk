@@ -84,7 +84,7 @@ namespace ttk {
     // Get
     // --------------------
     template <class dataType>
-    int FTMTree_MT::getMergedRootOrigin() {
+    idNode FTMTree_MT::getMergedRootOrigin() {
       dataType maxPers = std::numeric_limits<dataType>::lowest();
       int maxIndex = -1;
       auto root = this->getRoot();

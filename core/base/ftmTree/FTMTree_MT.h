@@ -629,7 +629,7 @@ namespace ttk {
       int getRealNumberOfNodes();
 
       template <class dataType>
-      int getMergedRootOrigin();
+      idNode getMergedRootOrigin();
 
       void getBranchOriginsFromThisBranch(
         idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res);

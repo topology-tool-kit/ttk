@@ -71,10 +71,11 @@ namespace ttk {
       std::vector<std::vector<MergeTree<dataType>>> &mts,
       std::vector<std::vector<MergeTree<double>>> &newMts) {
       newMts.clear();
+      newMts.reserve(mts.size());
       for(auto &mt : mts) {
         std::vector<MergeTree<double>> newMt;
         mergeTreesTemplateToDouble<dataType>(mt, newMt);
-        newMts.push_back(newMt);
+        newMts.emplace_back(newMt);
       }
     }
 
@@ -104,10 +105,11 @@ namespace ttk {
       std::vector<std::vector<MergeTree<double>>> &mts,
       std::vector<std::vector<MergeTree<dataType>>> &newMts) {
       newMts.clear();
+      newMts.reserve(mts.size());
       for(auto &mt : mts) {
         std::vector<MergeTree<dataType>> newMt;
         mergeTreesDoubleToTemplate<dataType>(mt, newMt);
-        newMts.push_back(newMt);
+        newMts.emplace_back(newMt);
       }
     }
 
