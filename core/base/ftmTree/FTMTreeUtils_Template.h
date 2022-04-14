@@ -36,8 +36,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    bool FTMTree_MT::isImportantPair(idNode nodeId,
-                                     double threshold) {
+    bool FTMTree_MT::isImportantPair(idNode nodeId, double threshold) {
       dataType rootPers = this->getNodePersistence<dataType>(this->getRoot());
       if(threshold > 1)
         threshold /= 100.0;
