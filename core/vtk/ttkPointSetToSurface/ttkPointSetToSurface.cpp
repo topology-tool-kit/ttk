@@ -6,6 +6,8 @@
 
 #include <ttkUtils.h>
 
+#include <array>
+
 vtkStandardNewMacro(ttkPointSetToSurface);
 
 ttkPointSetToSurface::ttkPointSetToSurface() {
