@@ -1,19 +1,10 @@
 #include <ttkPointSetToSurface.h>
 
 #include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
 #include <vtkUnstructuredGrid.h>
-
 #include <vtkInformation.h>
-#include <vtkInformationVector.h>
 
-#include <ttkMacros.h>
 #include <ttkUtils.h>
-
-#include <array>
-#include <map>
-#include <set>
 
 vtkStandardNewMacro(ttkPointSetToSurface);
 
