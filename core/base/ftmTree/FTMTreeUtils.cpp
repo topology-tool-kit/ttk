@@ -462,13 +462,15 @@ namespace ttk {
       return ss;
     }
 
-    void FTMTree_MT::printTreeStats() {
+    std::stringstream FTMTree_MT::printTreeStats(bool doPrint) {
       auto noNodesT = this->getNumberOfNodes();
       auto noNodes = this->getRealNumberOfNodes();
       std::stringstream ss;
       ss << "tree [node: " << noNodes << " / " << noNodesT;
       ss << ", depth: " << this->getTreeDepth() << "]";
-      printMsg(ss.str());
+      if(doPrint)
+        printMsg(ss.str());
+      return ss;
     }
 
     std::stringstream

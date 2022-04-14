@@ -67,6 +67,18 @@ namespace ttk {
     }
 
     template <class dataType>
+    void mergeTreesTemplateToDouble(
+      std::vector<std::vector<MergeTree<dataType>>> &mts,
+      std::vector<std::vector<MergeTree<double>>> &newMts) {
+      newMts.clear();
+      for(auto &mt : mts) {
+        std::vector<MergeTree<double>> newMt;
+        mergeTreesTemplateToDouble<dataType>(mt, newMt);
+        newMts.push_back(newMt);
+      }
+    }
+
+    template <class dataType>
     void mergeTreeDoubleToTemplate(MergeTree<double> &mt,
                                    MergeTree<dataType> &newMt) {
       std::vector<dataType> newScalarsValues;
@@ -83,6 +95,18 @@ namespace ttk {
       for(auto &mt : mts) {
         MergeTree<dataType> newMt;
         mergeTreeDoubleToTemplate<dataType>(mt, newMt);
+        newMts.push_back(newMt);
+      }
+    }
+
+    template <class dataType>
+    void mergeTreesDoubleToTemplate(
+      std::vector<std::vector<MergeTree<double>>> &mts,
+      std::vector<std::vector<MergeTree<dataType>>> &newMts) {
+      newMts.clear();
+      for(auto &mt : mts) {
+        std::vector<MergeTree<dataType>> newMt;
+        mergeTreesDoubleToTemplate<dataType>(mt, newMt);
         newMts.push_back(newMt);
       }
     }
@@ -208,6 +232,8 @@ namespace ttk {
         ftm::idNode node = queue.front();
         queue.pop();
         ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
+        if(tree->isRoot(node) and tree->isFullMerge())
+          nodeOrigin = tree->getMergedRootOrigin<dataType>();
 
         if(useBD) {
           int nodeOriginIndex = treeNew->getNumberOfNodes();
@@ -264,17 +290,18 @@ namespace ttk {
         }
       }
 
-      // Set new scalars
-      setTreeScalars<dataType>(mTreeNew, newScalarsVector);
-
       // Manage full merge
       auto treeRoot = tree->getRoot();
       if(tree->getNode(treeRoot)->getOrigin() == (int)treeRoot) {
         auto treeNewRoot = treeNew->getRoot();
-        // auto treeNewRootOrigin = tree->getNode(treeNewRoot)->getOrigin();
-        // treeNew->getNode(treeNewRootOrigin)->setOrigin(treeNewRootOrigin);
+        auto treeNewRootOrigin = treeNew->getNode(treeNewRoot)->getOrigin();
+        newScalarsVector[treeNewRootOrigin]
+          = tree->getValue<dataType>(tree->getMergedRootOrigin<dataType>());
         treeNew->getNode(treeNewRoot)->setOrigin(treeNewRoot);
       }
+
+      // Set new scalars
+      setTreeScalars<dataType>(mTreeNew, newScalarsVector);
 
       // Return new tree
       return mTreeNew;
