@@ -12,8 +12,12 @@ if (NOT MSVC) # GCC and Clang
 
   # performance and debug flags
   if(TTK_ENABLE_CPU_OPTIMIZATION AND CMAKE_BUILD_TYPE MATCHES Release)
+    if (CMAKE_OSX_ARCHITECTURES MATCHES arm64) # Apple Silicon
+      list(APPEND TTK_COMPILER_FLAGS -mcpu=apple-m1 -Wfatal-errors)
+    else()
     # -O3 already enabled by CMake's Release configuration
-    list(APPEND TTK_COMPILER_FLAGS -march=native -Wfatal-errors)
+      list(APPEND TTK_COMPILER_FLAGS -march=native -Wfatal-errors)
+    endif()
   endif()
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
