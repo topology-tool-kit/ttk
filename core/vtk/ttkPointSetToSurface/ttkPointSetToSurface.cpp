@@ -1,8 +1,8 @@
 #include <ttkPointSetToSurface.h>
 
 #include <vtkCellData.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkInformation.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ttkUtils.h>
 
