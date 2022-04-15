@@ -164,7 +164,7 @@ namespace ttk {
       }
 
       /// Control the verbosity of the base code
-      virtual int setDebugLevel(const int &lvl) override {
+      int setDebugLevel(const int &lvl) override {
         params_.debugLevel = lvl;
         return Debug::setDebugLevel(lvl);
       }

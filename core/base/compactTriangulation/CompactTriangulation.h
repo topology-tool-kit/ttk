@@ -92,7 +92,7 @@ namespace ttk {
     CompactTriangulation();
     CompactTriangulation(const CompactTriangulation &rhs);
     CompactTriangulation &operator=(const CompactTriangulation &rhs);
-    ~CompactTriangulation();
+    ~CompactTriangulation() override;
     CompactTriangulation(CompactTriangulation &&rhs) = default;
     CompactTriangulation &operator=(CompactTriangulation &&rhs) = default;
 

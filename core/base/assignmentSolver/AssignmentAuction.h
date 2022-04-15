@@ -28,9 +28,9 @@ namespace ttk {
   public:
     AssignmentAuction() = default;
 
-    ~AssignmentAuction() = default;
+    ~AssignmentAuction() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<asgnMatchingTuple> &matchings) override;
     void runAuctionRound(std::vector<std::vector<dataType>> &cMatrix);
 
     void initFirstRound();
@@ -43,7 +43,7 @@ namespace ttk {
     dataType getRelativePrecision(std::vector<std::vector<dataType>> &cMatrix);
     dataType getMatchingDistance(std::vector<std::vector<dataType>> &cMatrix);
 
-    inline void setBalanced(bool balanced) {
+    inline void setBalanced(bool balanced) override {
       AssignmentSolver<dataType>::setBalanced(balanced);
       if(this->balancedAssignment)
         goodPrices.resize(this->colSize, 0);

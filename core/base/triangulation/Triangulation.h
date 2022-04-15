@@ -54,7 +54,7 @@ namespace ttk {
     Triangulation(Triangulation &&) noexcept;
     Triangulation &operator=(const Triangulation &);
     Triangulation &operator=(Triangulation &&) noexcept;
-    ~Triangulation();
+    ~Triangulation() override;
 
     enum class Type {
       EXPLICIT,

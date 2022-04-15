@@ -41,7 +41,7 @@ namespace ttk {
     ConnectedComponents() {
       this->setDebugMsgPrefix("ConnectedComponents");
     };
-    virtual ~ConnectedComponents() = default;
+    ~ConnectedComponents() override = default;
 
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {

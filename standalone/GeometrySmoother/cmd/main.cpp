@@ -17,7 +17,7 @@ template <class ttkModule>
 class ExampleProgram : public Program<ttkModule> {
 
 public:
-  int execute() {
+  int execute() override {
 
     ScalarFieldSmoother *smoother
       = dynamic_cast<ScalarFieldSmoother *>(Program<ttkModule>::ttkModule_);
@@ -38,7 +38,7 @@ public:
     return 0;
   }
 
-  int load(const vector<string> &inputPaths) {
+  int load(const vector<string> &inputPaths) override {
 
     if(inputPaths.empty())
       return -1;
@@ -122,7 +122,7 @@ public:
     return 0;
   }
 
-  int save() const {
+  int save() const override {
 
     string fileName(Program<ttkModule>::outputPath_ + ".off");
 

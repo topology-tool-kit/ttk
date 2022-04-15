@@ -66,7 +66,7 @@ namespace ttk {
       omp_set_nested(1);
 #endif
     }
-    ~MergeTreeDistance() = default;
+    ~MergeTreeDistance() override = default;
 
     void setIsCalled(bool ic) {
       isCalled_ = ic;

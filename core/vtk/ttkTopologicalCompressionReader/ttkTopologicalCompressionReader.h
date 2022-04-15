@@ -48,9 +48,9 @@ protected:
   int RequestData(vtkInformation *,
                   vtkInformationVector **,
                   vtkInformationVector *) override;
-  virtual int RequestInformation(vtkInformation *request,
-                                 vtkInformationVector **inputVector,
-                                 vtkInformationVector *outputVector) override;
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
 
   // TTK management.
   void BuildMesh(vtkImageData *mesh) const;

@@ -59,7 +59,7 @@ namespace ttk {
       omp_set_nested(1);
 #endif
     }
-    ~MergeTreeBarycenter() = default;
+    ~MergeTreeBarycenter() override = default;
 
     void setTol(double tolT) {
       tol_ = tolT;

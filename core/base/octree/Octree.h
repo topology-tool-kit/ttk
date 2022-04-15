@@ -49,7 +49,7 @@ class Octree : public virtual ttk::Debug {
 public:
   Octree(const ttk::AbstractTriangulation *t);
   Octree(const ttk::AbstractTriangulation *t, const int k);
-  ~Octree();
+  ~Octree() override;
   void initialize(const ttk::AbstractTriangulation *t, const int k);
 
   bool empty();

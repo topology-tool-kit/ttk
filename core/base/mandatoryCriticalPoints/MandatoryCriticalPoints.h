@@ -444,7 +444,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setDebugLevel(const int &debugLevel) {
+    inline int setDebugLevel(const int &debugLevel) override {
       Debug::setDebugLevel(debugLevel);
       upperJoinTree_.setDebugLevel(debugLevel);
       lowerJoinTree_.setDebugLevel(debugLevel);

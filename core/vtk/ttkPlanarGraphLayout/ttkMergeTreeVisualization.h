@@ -87,7 +87,7 @@ private:
 
 public:
   ttkMergeTreeVisualization(){};
-  ~ttkMergeTreeVisualization(){};
+  ~ttkMergeTreeVisualization() override{};
 
   // ==========================================================================
   // Getter / Setter

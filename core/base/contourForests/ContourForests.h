@@ -125,12 +125,12 @@ namespace ttk {
     public:
       ContourForests();
 
-      virtual ~ContourForests();
+      ~ContourForests() override;
 
       // Getters & Setters
       // {
 
-      inline int setThreadNumber(const int nbThread) {
+      inline int setThreadNumber(const int nbThread) override {
         if(nbThread) {
           parallelParams_.nbThreads = nbThread;
         } else {

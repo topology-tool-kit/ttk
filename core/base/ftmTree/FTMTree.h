@@ -37,7 +37,7 @@ namespace ttk {
       // -----------------
 
       FTMTree();
-      virtual ~FTMTree();
+      ~FTMTree() override;
 
       // -------
       // PROCESS

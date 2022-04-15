@@ -11,7 +11,7 @@ Checks: >-
   misc-*,
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
-  -modernize-*,
+  modernize-use-override,
   openmp-*,
   -openmp-use-default-none,
   performance-*,

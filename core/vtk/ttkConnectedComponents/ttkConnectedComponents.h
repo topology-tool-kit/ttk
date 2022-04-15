@@ -56,7 +56,7 @@ public:
 
 protected:
   ttkConnectedComponents();
-  virtual ~ttkConnectedComponents() override = default;
+  ~ttkConnectedComponents() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

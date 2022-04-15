@@ -41,7 +41,7 @@ public:
 
 protected:
   ttkComponentSize();
-  ~ttkComponentSize();
+  ~ttkComponentSize() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

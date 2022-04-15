@@ -35,7 +35,7 @@ namespace ttk {
 
     public:
       FTMTreePP();
-      virtual ~FTMTreePP();
+      ~FTMTreePP() override;
 
       template <typename scalarType>
       void computePersistencePairs(

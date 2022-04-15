@@ -24,7 +24,7 @@ namespace ttk {
 
   public:
     PeriodicImplicitTriangulation();
-    ~PeriodicImplicitTriangulation();
+    ~PeriodicImplicitTriangulation() override;
 
     PeriodicImplicitTriangulation(const PeriodicImplicitTriangulation &)
       = default;

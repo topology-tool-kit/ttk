@@ -27,7 +27,7 @@ namespace ttk {
       this->setDebugMsgPrefix("MorphologicalOperators");
     }
 
-    ~MorphologicalOperators() {
+    ~MorphologicalOperators() override {
     }
 
     int preconditionTriangulation(

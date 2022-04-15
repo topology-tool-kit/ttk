@@ -30,7 +30,7 @@ namespace ttk {
       this->setDebugMsgPrefix("ContourAroundPoint");
     }
 
-    ~ContourAroundPoint() {
+    ~ContourAroundPoint() override {
     }
 
     /**

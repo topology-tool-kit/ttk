@@ -55,7 +55,7 @@ namespace ttk {
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     }
 
-    ~PersistenceDiagramBarycenter() = default;
+    ~PersistenceDiagramBarycenter() override = default;
 
     void execute(
       std::vector<std::vector<diagramTuple>> &intermediateDiagrams,

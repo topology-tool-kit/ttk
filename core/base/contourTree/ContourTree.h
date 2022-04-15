@@ -595,7 +595,7 @@ namespace ttk {
       std::vector<std::pair<std::pair<int, int>, double>> &pairs,
       std::vector<std::pair<std::pair<int, int>, double>> *mergePairs = nullptr,
       std::vector<std::pair<std::pair<int, int>, double>> *splitPairs
-      = nullptr) const;
+      = nullptr) const override;
 
     int getPersistencePlot(
       std::vector<std::pair<double, int>> &plot,
@@ -615,7 +615,7 @@ namespace ttk {
       return &splitTree_;
     }
 
-    inline int maintainRegularVertices(const bool &onOff) {
+    inline int maintainRegularVertices(const bool &onOff) override {
       mergeTree_.maintainRegularVertices(onOff);
       splitTree_.maintainRegularVertices(onOff);
       return 0;
@@ -627,12 +627,12 @@ namespace ttk {
     int setVertexNeighbors(const int &vertexId,
                            const std::vector<int> &neighborList);
 
-    int computeSkeleton(unsigned int arcResolution = 3);
-    int smoothSkeleton(unsigned int skeletonSmoothing);
-    int clearSkeleton();
+    int computeSkeleton(unsigned int arcResolution = 3) override;
+    int smoothSkeleton(unsigned int skeletonSmoothing) override;
+    int clearSkeleton() override;
 
     int simplify(const double &simplificationThreshold,
-                 ContourTreeSimplificationMetric *metric = NULL);
+                 ContourTreeSimplificationMetric *metric = NULL) override;
 
   protected:
     int combineTrees();

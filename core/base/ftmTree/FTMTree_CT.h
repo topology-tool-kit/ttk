@@ -38,7 +38,7 @@ namespace ttk {
       // -----------------
 
       FTMTree_CT(Params *const params, Scalars *const scalars);
-      virtual ~FTMTree_CT();
+      ~FTMTree_CT() override;
 
       // -----------------
       // ACCESSOR
@@ -76,14 +76,14 @@ namespace ttk {
         st_->preconditionTriangulation(tri, false);
       }
 
-      inline int setDebugLevel(const int &d) {
+      inline int setDebugLevel(const int &d) override {
         Debug::setDebugLevel(d);
         jt_->setDebugLevel(d);
         st_->setDebugLevel(d);
         return 0;
       }
 
-      inline int setThreadNumber(const int n) {
+      inline int setThreadNumber(const int n) override {
         Debug::setThreadNumber(n);
         jt_->setThreadNumber(n);
         st_->setThreadNumber(n);

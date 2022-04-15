@@ -58,7 +58,7 @@ namespace ttk {
       Graph();
       Graph(Graph &&other) noexcept = default;
       Graph(const Graph &other) = delete;
-      virtual ~Graph();
+      ~Graph() override;
 
       Graph &operator=(Graph &&other) noexcept {
         if(this != &other) {

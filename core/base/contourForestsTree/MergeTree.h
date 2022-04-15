@@ -57,7 +57,7 @@ namespace ttk {
                 TreeType type,
                 idPartition part = nullPartition);
 
-      virtual ~MergeTree();
+      ~MergeTree() override;
 
       //}
       // --------------------
@@ -103,7 +103,7 @@ namespace ttk {
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline int setDebugLevel(const int &local_debugLevel) {
+      inline int setDebugLevel(const int &local_debugLevel) override {
         Debug::setDebugLevel(local_debugLevel);
         params_->debugLevel = local_debugLevel;
         return 0;

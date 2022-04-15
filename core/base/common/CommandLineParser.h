@@ -118,7 +118,7 @@ namespace ttk {
       setDebugMsgPrefix("CMD");
     }
 
-    ~CommandLineParser() = default;
+    ~CommandLineParser() override = default;
 
     // 2) functions
     int parse(int argc, char **argv) {

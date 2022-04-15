@@ -34,7 +34,7 @@ namespace ttk {
 
     public:
       DynamicGraph();
-      virtual ~DynamicGraph();
+      ~DynamicGraph() override;
 
       // Initialize functions
       // --------------------

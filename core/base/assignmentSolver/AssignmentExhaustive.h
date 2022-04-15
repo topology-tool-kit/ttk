@@ -36,9 +36,9 @@ namespace ttk {
   public:
     AssignmentExhaustive() = default;
 
-    ~AssignmentExhaustive() = default;
+    ~AssignmentExhaustive() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<asgnMatchingTuple> &matchings) override;
 
     dataType tryAssignment(std::vector<int> &asgn,
                            std::vector<asgnMatchingTuple> &matchings);

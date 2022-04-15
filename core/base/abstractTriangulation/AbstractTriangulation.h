@@ -61,7 +61,7 @@ namespace ttk {
   public:
     AbstractTriangulation();
 
-    virtual ~AbstractTriangulation();
+    ~AbstractTriangulation() override;
 
     AbstractTriangulation(const AbstractTriangulation &) = default;
     AbstractTriangulation(AbstractTriangulation &&) = default;
@@ -3114,7 +3114,7 @@ namespace ttk {
     }
 
     // empty wrapping to VTK for now
-    bool needsToAbort() {
+    bool needsToAbort() override {
       return false;
     }
 
@@ -3214,7 +3214,7 @@ namespace ttk {
                                const std::string &tableName = "",
                                std::ostream &stream = std::cout) const;
 
-    int updateProgress(const float &ttkNotUsed(progress)) {
+    int updateProgress(const float &ttkNotUsed(progress)) override {
       return 0;
     }
 

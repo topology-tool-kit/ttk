@@ -103,7 +103,7 @@ namespace ttk {
       // Tree with global data and partition number
       FTMTree_MT(Params *const params, Scalars *const scalars, TreeType type);
 
-      virtual ~FTMTree_MT();
+      ~FTMTree_MT() override;
 
       // --------------------
       // Init

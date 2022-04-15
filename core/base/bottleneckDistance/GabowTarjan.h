@@ -22,7 +22,7 @@ namespace ttk {
       this->setDebugMsgPrefix("Gabow-Tarjan");
     }
 
-    ~GabowTarjan() {
+    ~GabowTarjan() override {
     }
 
     template <typename dataType>

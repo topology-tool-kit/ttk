@@ -49,7 +49,7 @@ namespace ttk {
       ContourForestsTree(Params *const params,
                          Scalars *const scalars,
                          idPartition part = nullPartition);
-      virtual ~ContourForestsTree();
+      ~ContourForestsTree() override;
 
       // }
       // -----------------

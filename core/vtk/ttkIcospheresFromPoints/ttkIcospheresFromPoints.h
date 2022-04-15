@@ -45,7 +45,7 @@ public:
 
 protected:
   ttkIcospheresFromPoints();
-  ~ttkIcospheresFromPoints();
+  ~ttkIcospheresFromPoints() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

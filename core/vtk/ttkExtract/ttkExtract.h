@@ -148,7 +148,7 @@ public:
 
 protected:
   ttkExtract();
-  ~ttkExtract();
+  ~ttkExtract() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

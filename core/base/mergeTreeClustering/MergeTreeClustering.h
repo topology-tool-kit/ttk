@@ -66,7 +66,7 @@ namespace ttk {
         "MergeTreeClustering"); // inherited from Debug: prefix will be printed
                                 // at the beginning of every msg
     }
-    ~MergeTreeClustering() = default;
+    ~MergeTreeClustering() override = default;
 
     void setNoCentroids(unsigned int noCentroidsT) {
       noCentroids_ = noCentroidsT;

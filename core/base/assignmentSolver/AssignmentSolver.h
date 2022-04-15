@@ -26,7 +26,7 @@ namespace ttk {
   public:
     AssignmentSolver() = default;
 
-    virtual ~AssignmentSolver() = default;
+    ~AssignmentSolver() override = default;
 
     virtual int run(std::vector<asgnMatchingTuple> &matchings) = 0;
 

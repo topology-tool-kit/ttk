@@ -26,7 +26,7 @@ namespace ttk {
 
   public:
     MergeTreeVisualization() = default;
-    virtual ~MergeTreeVisualization() = default;
+    ~MergeTreeVisualization() override = default;
 
     // ==========================================================================
     // Getter / Setter

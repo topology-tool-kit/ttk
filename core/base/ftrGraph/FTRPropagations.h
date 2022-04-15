@@ -36,7 +36,7 @@ namespace ttk {
       Visits visits_;
 
     public:
-      virtual ~Propagations() {
+      ~Propagations() override {
         for(Propagation *p : propagations_) {
           delete p;
         }
