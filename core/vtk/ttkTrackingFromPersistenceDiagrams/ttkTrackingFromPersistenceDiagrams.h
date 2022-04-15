@@ -247,7 +247,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       int cid = k;
       bool hasMergedFirst = false;
       // if(DoPostProc) {
-      if(0) {
+      if(false) {
         std::set<int> &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());

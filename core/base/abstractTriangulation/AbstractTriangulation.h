@@ -2824,17 +2824,17 @@ namespace ttk {
 
     virtual inline bool
       isEdgeOnBoundaryInternal(const SimplexId &ttkNotUsed(edgeId)) const {
-      return 0;
+      return false;
     }
 
     virtual inline bool isTriangleOnBoundaryInternal(
       const SimplexId &ttkNotUsed(triangleId)) const {
-      return 0;
+      return false;
     }
 
     virtual inline bool
       isVertexOnBoundaryInternal(const SimplexId &ttkNotUsed(vertexId)) const {
-      return 0;
+      return false;
     }
 
     inline bool hasPreconditionedBoundaryEdges() const {

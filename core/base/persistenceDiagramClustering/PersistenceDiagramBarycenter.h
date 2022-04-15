@@ -48,10 +48,10 @@ namespace ttk {
       numberOfInputs_ = 0;
       threadNumber_ = 1;
       time_limit_ = 1;
-      deterministic_ = 1;
-      reinit_prices_ = 1;
-      epsilon_decreases_ = 1;
-      use_progressive_ = 1;
+      deterministic_ = true;
+      reinit_prices_ = true;
+      epsilon_decreases_ = true;
+      use_progressive_ = true;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     }
 

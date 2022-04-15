@@ -132,7 +132,7 @@ void ArcRegion::createSegmentation(const idSuperArc &thisArc) {
       while(head != end && head->ctArc != thisArc)
         ++head;
 
-      if(!added || 1) {
+      if(!added || true) {
       } // isLower than actual
       throw "Not finished yet";
     }
