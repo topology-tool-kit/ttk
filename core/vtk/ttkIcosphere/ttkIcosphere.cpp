@@ -83,7 +83,7 @@ int ttkIcosphere::RequestData(vtkInformation *ttkNotUsed(request),
 
   int status = 0;
   if(useDoublePrecision) {
-    typedef double DT;
+    using DT = double;
     status = this->computeIcospheres<DT, vtkIdType>(
       ttkUtils::GetPointer<DT>(points->GetData()),
       ttkUtils::GetPointer<vtkIdType>(connectivity),
@@ -92,7 +92,7 @@ int ttkIcosphere::RequestData(vtkInformation *ttkNotUsed(request),
       this->Centers ? ttkUtils::GetPointer<DT>(this->Centers) : this->Center,
       this->ComputeNormals ? ttkUtils::GetPointer<DT>(normals) : nullptr);
   } else {
-    typedef float DT;
+    using DT = float;
     DT centerFloat[3]{
       (DT)this->Center[0], (DT)this->Center[1], (DT)this->Center[2]};
     status = this->computeIcospheres<DT, vtkIdType>(
