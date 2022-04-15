@@ -107,7 +107,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet0List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet0List_[sheetId]);
@@ -117,7 +117,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet1List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet1List_[sheetId]);
@@ -128,7 +128,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)originalData_.sheet2List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(originalData_.sheet2List_[sheetId]);
@@ -138,7 +138,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet3List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet3List_[sheetId]);

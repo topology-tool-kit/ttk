@@ -157,7 +157,7 @@ namespace ttk {
       dbg.printErr(msg);
     } else {
       struct dirent *dirEntry;
-      while((dirEntry = readdir(d)) != NULL) {
+      while((dirEntry = readdir(d)) != nullptr) {
         if(extension.size()) {
           std::string entryExtension(dirEntry->d_name);
           entryExtension

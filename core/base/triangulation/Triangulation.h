@@ -191,7 +191,7 @@ namespace ttk {
     inline const std::vector<std::vector<SimplexId>> *getCellEdges() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getCellEdges();
     }
@@ -291,7 +291,7 @@ namespace ttk {
       getCellNeighbors() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getCellNeighbors();
     }
@@ -394,7 +394,7 @@ namespace ttk {
       getCellTriangles() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getCellTriangles();
     }
@@ -480,7 +480,7 @@ namespace ttk {
     inline const std::vector<std::array<SimplexId, 2>> *getEdges() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getEdges();
     }
@@ -604,7 +604,7 @@ namespace ttk {
     inline const std::vector<std::vector<SimplexId>> *getEdgeLinks() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getEdgeLinks();
     }
@@ -700,7 +700,7 @@ namespace ttk {
     inline const std::vector<std::vector<SimplexId>> *getEdgeStars() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getEdgeStars();
     }
@@ -791,7 +791,7 @@ namespace ttk {
       getEdgeTriangles() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getEdgeTriangles();
     }
@@ -944,7 +944,7 @@ namespace ttk {
       getTriangles() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getTriangles();
     }
@@ -1033,7 +1033,7 @@ namespace ttk {
       getTriangleEdges() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getTriangleEdges();
     }
@@ -1123,7 +1123,7 @@ namespace ttk {
       getTriangleLinks() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getTriangleLinks();
     }
@@ -1214,7 +1214,7 @@ namespace ttk {
       getTriangleStars() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getTriangleStars();
     }
@@ -1359,7 +1359,7 @@ namespace ttk {
       getVertexEdges() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 1)
         return abstractTriangulation_->getVertexStars();
@@ -1454,7 +1454,7 @@ namespace ttk {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getVertexLinks();
     }
@@ -1538,7 +1538,7 @@ namespace ttk {
       getVertexNeighbors() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getVertexNeighbors();
     }
@@ -1653,7 +1653,7 @@ namespace ttk {
       getVertexStars() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getVertexStars();
     }
@@ -1747,7 +1747,7 @@ namespace ttk {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
+        return nullptr;
 #endif
       return abstractTriangulation_->getVertexTriangles();
     }

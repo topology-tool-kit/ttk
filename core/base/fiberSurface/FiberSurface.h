@@ -80,7 +80,7 @@ namespace ttk {
       const std::vector<std::pair<std::pair<double, double>,
                                   std::pair<double, double>>> &edgeList,
       const std::vector<SimplexId> &seedTetList,
-      const std::vector<SimplexId> *edgeIdList = NULL) const;
+      const std::vector<SimplexId> *edgeIdList = nullptr) const;
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int computeSurface(const std::pair<double, double> &rangePoint0,
@@ -161,8 +161,8 @@ namespace ttk {
 
     inline int setPolygonEdgeNumber(const SimplexId &polygonEdgeNumber) {
       polygonEdgeNumber_ = polygonEdgeNumber;
-      polygonEdgeVertexLists_.resize(polygonEdgeNumber, NULL);
-      polygonEdgeTriangleLists_.resize(polygonEdgeNumber, NULL);
+      polygonEdgeVertexLists_.resize(polygonEdgeNumber, nullptr);
+      polygonEdgeTriangleLists_.resize(polygonEdgeNumber, nullptr);
       return 0;
     }
 
@@ -378,7 +378,7 @@ namespace ttk {
       const std::vector<std::vector<Vertex>> &tetNewVertices,
       SimplexId &newTriangleNumber,
       std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
-      const std::pair<double, double> *intersection = NULL) const;
+      const std::pair<double, double> *intersection = nullptr) const;
 
     int flipEdges() const;
 

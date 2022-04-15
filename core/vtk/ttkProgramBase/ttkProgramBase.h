@@ -34,7 +34,7 @@ class TTKPROGRAMBASE_EXPORT ttkProgramBase : public ttk::ProgramBase {
 public:
   ttkProgramBase() {
 
-    vtkWrapper_ = NULL;
+    vtkWrapper_ = nullptr;
   };
 
   ~ttkProgramBase() override{};
@@ -44,7 +44,7 @@ public:
 
   vtkDataSet *getInput(const int &inputId) {
     if((inputId < 0) || (inputId >= (int)inputs_.size()))
-      return NULL;
+      return nullptr;
     return inputs_[inputId];
   }
 

@@ -500,7 +500,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setSoSoffsets(int *offsets = NULL) {
+    inline int setSoSoffsets(int *offsets = nullptr) {
       if((int)vertexSoSoffsets_.size() != vertexNumber_)
         vertexSoSoffsets_.resize(vertexNumber_);
       if(offsets) {

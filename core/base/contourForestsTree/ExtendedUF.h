@@ -108,10 +108,10 @@ namespace ttk {
 
       static inline ExtendedUnionFind *
         makeUnion(std::vector<ExtendedUnionFind *> &sets) {
-        ExtendedUnionFind *n = NULL;
+        ExtendedUnionFind *n = nullptr;
 
         if(!sets.size())
-          return NULL;
+          return nullptr;
 
         if(sets.size() == 1)
           return sets[0];

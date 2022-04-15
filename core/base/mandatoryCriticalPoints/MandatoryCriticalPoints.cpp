@@ -11,12 +11,12 @@ MandatoryCriticalPoints::MandatoryCriticalPoints() {
 }
 
 void MandatoryCriticalPoints::flush() {
-  inputUpperBoundField_ = NULL;
-  inputLowerBoundField_ = NULL;
-  outputMandatoryMinimum_ = NULL;
-  outputMandatoryJoinSaddle_ = NULL;
-  outputMandatorySplitSaddle_ = NULL;
-  outputMandatoryMaximum_ = NULL;
+  inputUpperBoundField_ = nullptr;
+  inputLowerBoundField_ = nullptr;
+  outputMandatoryMinimum_ = nullptr;
+  outputMandatoryJoinSaddle_ = nullptr;
+  outputMandatorySplitSaddle_ = nullptr;
+  outputMandatoryMaximum_ = nullptr;
   vertexNumber_ = 0;
   upperJoinTree_.flush();
   lowerJoinTree_.flush();

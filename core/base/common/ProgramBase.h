@@ -23,7 +23,7 @@ namespace ttk {
       ttk::globalDebugLevel_ = 3;
 
       outputPath_ = "output";
-      ttkModule_ = NULL;
+      ttkModule_ = nullptr;
     }
 
     ~ProgramBase() override = default;

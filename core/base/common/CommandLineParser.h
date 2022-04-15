@@ -20,13 +20,13 @@ namespace ttk {
 
     public:
       CommandLineArgument() {
-        boolValue_ = NULL;
-        intValue_ = NULL;
-        intValueList_ = NULL;
-        doubleValue_ = NULL;
-        doubleValueList_ = NULL;
-        stringValue_ = NULL;
-        stringValueList_ = NULL;
+        boolValue_ = nullptr;
+        intValue_ = nullptr;
+        intValueList_ = nullptr;
+        doubleValue_ = nullptr;
+        doubleValueList_ = nullptr;
+        stringValue_ = nullptr;
+        stringValueList_ = nullptr;
         isSet_ = false;
 
         setDebugMsgPrefix("CMD");

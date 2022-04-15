@@ -98,7 +98,7 @@ int DimensionReduction::execute() const {
 
   string modulePath;
 
-  if(PyArray_API == NULL) {
+  if(PyArray_API == nullptr) {
 #ifndef __clang_analyzer__
     import_array1(-1);
 #endif // __clang_analyzer__

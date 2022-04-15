@@ -92,7 +92,7 @@ namespace ttk {
                const ComponentState &state = ComponentState::Visible)
         : downNodeId_(d), upNodeId_(u), downCT_(ctd), upCT_(ctu),
           overlapBelow_(overB), overlapAbove_(overA), lastVisited_(nullVertex),
-          state_(state), replacantId_(nullSuperArc), vertList_(NULL),
+          state_(state), replacantId_(nullSuperArc), vertList_(nullptr),
           sizeVertList_(-1) {
         vertices_.reserve(resv);
       }

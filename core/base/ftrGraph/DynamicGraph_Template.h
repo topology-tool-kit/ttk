@@ -215,7 +215,7 @@ namespace ttk {
         // corArc_ = corArc;
 
         // remove old
-        std::get<1>(nNodes)->parent_ = 0;
+        std::get<1>(nNodes)->parent_ = nullptr;
         std::get<1>(nNodes)->corArc_ = corArc;
       } else {
         corArc_ = corArc;

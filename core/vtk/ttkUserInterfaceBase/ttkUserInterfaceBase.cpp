@@ -64,8 +64,8 @@ void ttkCustomInteractor::OnKeyPress() {
 
 ttkUserInterfaceBase::ttkUserInterfaceBase() {
 
-  keyHandler_ = NULL;
-  vtkWrapper_ = NULL;
+  keyHandler_ = nullptr;
+  vtkWrapper_ = nullptr;
   isUp_ = false;
   repeat_ = false;
   transparency_ = false;
@@ -128,7 +128,7 @@ int ttkUserInterfaceBase::refresh() {
   }
 
   if((int)surfaces_.size() != outputPortNumber) {
-    surfaces_.resize(outputPortNumber, NULL);
+    surfaces_.resize(outputPortNumber, nullptr);
     mainActors_.resize(outputPortNumber);
     boundaryFilters_.resize(outputPortNumber);
     boundaryMappers_.resize(outputPortNumber);
@@ -147,7 +147,7 @@ int ttkUserInterfaceBase::refresh() {
     if(visibleOutputs_[i]) {
 
       if(hasTexture_) {
-        vtkWrapper_->GetOutput(i)->GetPointData()->SetActiveScalars(NULL);
+        vtkWrapper_->GetOutput(i)->GetPointData()->SetActiveScalars(nullptr);
       }
 
       if((repeat_) && (i < vtkWrapper_->GetNumberOfInputPorts())) {
@@ -168,7 +168,7 @@ int ttkUserInterfaceBase::refresh() {
     if(visibleOutputs_[i]) {
       mainActors_[i]->SetMapper(boundaryMappers_[i]);
     } else {
-      mainActors_[i]->SetMapper(NULL);
+      mainActors_[i]->SetMapper(nullptr);
     }
     if(transparency_) {
       mainActors_[i]->GetProperty()->SetOpacity(0.3);

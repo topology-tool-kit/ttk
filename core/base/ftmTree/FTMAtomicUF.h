@@ -162,10 +162,10 @@ namespace ttk {
       }
 
       static inline AtomicUF *makeUnion(std::vector<AtomicUF *> &sets) {
-        AtomicUF *n = NULL;
+        AtomicUF *n = nullptr;
 
         if(!sets.size())
-          return NULL;
+          return nullptr;
 
         if(sets.size() == 1)
           return sets[0];
