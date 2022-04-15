@@ -1,7 +1,7 @@
 #include <CTA_contourtree.h>
 #include <algorithm>
+#include <cfloat>
 #include <cmath>
-#include <float.h>
 
 using ttk::cta::ContourTree;
 

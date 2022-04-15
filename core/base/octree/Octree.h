@@ -16,7 +16,7 @@
 #pragma once
 
 #include <Triangulation.h>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <stack>
 #include <unordered_map>

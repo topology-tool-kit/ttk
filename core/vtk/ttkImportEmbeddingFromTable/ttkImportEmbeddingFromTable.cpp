@@ -1,4 +1,3 @@
-#include <iso646.h>
 #include <regex>
 #include <ttkImportEmbeddingFromTable.h>
 

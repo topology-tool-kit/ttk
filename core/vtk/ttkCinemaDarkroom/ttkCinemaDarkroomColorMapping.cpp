@@ -10,7 +10,7 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <math.h>
+#include <cmath>
 
 vtkStandardNewMacro(ttkCinemaDarkroomColorMapping);
 
@@ -40,7 +40,7 @@ int mapScalarsToColor(unsigned char *color,
   for(size_t i = 0; i < nPixels; i++) {
 
     const double value = (double)array[i];
-    if(isnan(value)) {
+    if(std::isnan(value)) {
       size_t idx = i * 3;
       color[idx + 0] = 255.0 * nanColor[0];
       color[idx + 1] = 255.0 * nanColor[1];
