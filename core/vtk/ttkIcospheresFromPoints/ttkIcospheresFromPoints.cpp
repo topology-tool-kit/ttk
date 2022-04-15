@@ -14,8 +14,7 @@ ttkIcospheresFromPoints::ttkIcospheresFromPoints() : ttkIcosphere() {
   this->setDebugMsgPrefix("IcospheresFromPoints");
   this->SetNumberOfInputPorts(1);
 }
-ttkIcospheresFromPoints::~ttkIcospheresFromPoints() {
-}
+ttkIcospheresFromPoints::~ttkIcospheresFromPoints() = default;
 
 int ttkIcospheresFromPoints::FillInputPortInformation(int port,
                                                       vtkInformation *info) {

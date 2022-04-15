@@ -27,10 +27,8 @@ vtkInformationKeyMacro(ttkAlgorithm, SAME_DATA_TYPE_AS_INPUT_PORT, Integer);
 
 // Constructor / Destructor
 vtkStandardNewMacro(ttkAlgorithm);
-ttkAlgorithm::ttkAlgorithm() {
-}
-ttkAlgorithm::~ttkAlgorithm() {
-}
+ttkAlgorithm::ttkAlgorithm() = default;
+ttkAlgorithm::~ttkAlgorithm() = default;
 
 ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 

@@ -11,8 +11,7 @@ Octree::Octree(const AbstractTriangulation *t, const int k) {
   initialize(t, k);
 }
 
-Octree::~Octree() {
-}
+Octree::~Octree() = default;
 
 // Initialize the octree with the given triangulation and bucket threshold.
 void Octree::initialize(const AbstractTriangulation *t, const int k) {

@@ -11,5 +11,4 @@ ManifoldCheck::ManifoldCheck() {
   this->setDebugMsgPrefix("ManifoldCheck");
 }
 
-ManifoldCheck::~ManifoldCheck() {
-}
+ManifoldCheck::~ManifoldCheck() = default;

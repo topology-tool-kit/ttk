@@ -36,7 +36,8 @@ public:
     vtkWrapper_ = nullptr;
   };
 
-  ~ttkProgramBase() override{};
+  ~ttkProgramBase() override = default;
+  ;
 
   /// Set the arguments of your ttk module and execute it here.
   int execute() override;

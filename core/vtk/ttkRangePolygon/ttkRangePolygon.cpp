@@ -27,8 +27,7 @@ ttkRangePolygon::ttkRangePolygon() {
                   "`Poly Line Source' followed by `Resample With Dataset'.");
 }
 
-ttkRangePolygon::~ttkRangePolygon() {
-}
+ttkRangePolygon::~ttkRangePolygon() = default;
 
 int ttkRangePolygon::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0)

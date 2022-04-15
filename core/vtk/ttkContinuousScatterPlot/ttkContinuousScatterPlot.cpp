@@ -20,8 +20,7 @@ ttkContinuousScatterPlot::ttkContinuousScatterPlot() {
   SetNumberOfOutputPorts(1);
 }
 
-ttkContinuousScatterPlot::~ttkContinuousScatterPlot() {
-}
+ttkContinuousScatterPlot::~ttkContinuousScatterPlot() = default;
 
 int ttkContinuousScatterPlot::FillInputPortInformation(int port,
                                                        vtkInformation *info) {

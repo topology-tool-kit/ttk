@@ -12,8 +12,7 @@ MultiresTriangulation::MultiresTriangulation() {
   this->setDebugMsgPrefix("MultiresTriangulation");
 }
 
-MultiresTriangulation::~MultiresTriangulation() {
-}
+MultiresTriangulation::~MultiresTriangulation() = default;
 
 int ttk::MultiresTriangulation::preconditionVerticesInternal() {
   vertexPositions_.resize(vertexNumber_);

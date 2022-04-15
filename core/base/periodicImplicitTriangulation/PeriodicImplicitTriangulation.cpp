@@ -10,8 +10,7 @@ PeriodicImplicitTriangulation::PeriodicImplicitTriangulation()
   hasPeriodicBoundaries_ = true;
 }
 
-PeriodicImplicitTriangulation::~PeriodicImplicitTriangulation() {
-}
+PeriodicImplicitTriangulation::~PeriodicImplicitTriangulation() = default;
 
 int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
                                                 const float &yOrigin,

@@ -40,8 +40,7 @@ ttkCinemaDarkroomShader::ttkCinemaDarkroomShader() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaDarkroomShader::~ttkCinemaDarkroomShader() {
-}
+ttkCinemaDarkroomShader::~ttkCinemaDarkroomShader() = default;
 
 int ttkCinemaDarkroomShader::FillInputPortInformation(int port,
                                                       vtkInformation *info) {

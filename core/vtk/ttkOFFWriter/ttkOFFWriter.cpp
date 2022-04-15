@@ -27,8 +27,7 @@ ttkOFFWriter::ttkOFFWriter() {
   this->setDebugMsgPrefix("OFFWriter");
 }
 
-ttkOFFWriter::~ttkOFFWriter() {
-}
+ttkOFFWriter::~ttkOFFWriter() = default;
 
 int ttkOFFWriter::OpenFile() {
 

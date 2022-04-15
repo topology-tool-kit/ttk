@@ -86,8 +86,7 @@ ttkUserInterfaceBase::ttkUserInterfaceBase() {
                   && (pngReader_->GetOutput()->GetNumberOfCells() == 1));
 }
 
-ttkUserInterfaceBase::~ttkUserInterfaceBase() {
-}
+ttkUserInterfaceBase::~ttkUserInterfaceBase() = default;
 
 int ttkUserInterfaceBase::exportScene(const string &fileName) const {
 

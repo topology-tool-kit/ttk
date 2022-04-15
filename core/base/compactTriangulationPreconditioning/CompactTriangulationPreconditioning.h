@@ -45,7 +45,8 @@ namespace ttk {
                                                 // will be printed at the
       // beginning of every msg
     };
-    ~CompactTriangulationPreconditioning() override{};
+    ~CompactTriangulationPreconditioning() override = default;
+    ;
 
     template <class triangulationType = ttk::AbstractTriangulation>
     int execute(const triangulationType *triangulation,

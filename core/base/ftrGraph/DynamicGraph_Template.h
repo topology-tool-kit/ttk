@@ -10,12 +10,10 @@ namespace ttk {
     // DynamicGraph ----------------------------------
 
     template <typename Type>
-    DynamicGraph<Type>::DynamicGraph() {
-    }
+    DynamicGraph<Type>::DynamicGraph() = default;
 
     template <typename Type>
-    DynamicGraph<Type>::~DynamicGraph() {
-    }
+    DynamicGraph<Type>::~DynamicGraph() = default;
 
     template <typename Type>
     void DynamicGraph<Type>::alloc() {

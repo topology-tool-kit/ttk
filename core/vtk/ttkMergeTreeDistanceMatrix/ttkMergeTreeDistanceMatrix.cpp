@@ -34,8 +34,7 @@ ttkMergeTreeDistanceMatrix::ttkMergeTreeDistanceMatrix() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkMergeTreeDistanceMatrix::~ttkMergeTreeDistanceMatrix() {
-}
+ttkMergeTreeDistanceMatrix::~ttkMergeTreeDistanceMatrix() = default;
 
 /**
  * Specify the required input data type of each input port

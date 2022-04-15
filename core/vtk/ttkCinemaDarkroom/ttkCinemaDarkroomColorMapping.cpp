@@ -21,8 +21,7 @@ ttkCinemaDarkroomColorMapping::ttkCinemaDarkroomColorMapping() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaDarkroomColorMapping::~ttkCinemaDarkroomColorMapping() {
-}
+ttkCinemaDarkroomColorMapping::~ttkCinemaDarkroomColorMapping() = default;
 
 template <typename DT>
 int mapScalarsToColor(unsigned char *color,

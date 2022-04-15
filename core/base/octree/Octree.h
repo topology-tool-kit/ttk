@@ -33,8 +33,7 @@ public:
     childExists_ = 0;
   }
 
-  ~OctreeNode() {
-  }
+  ~OctreeNode() = default;
 
 protected:
   uint32_t locCode_;

@@ -30,8 +30,7 @@ namespace ttk {
       this->setDebugMsgPrefix("ContourAroundPoint");
     }
 
-    ~ContourAroundPoint() override {
-    }
+    ~ContourAroundPoint() override = default;
 
     /**
      * Setup a (valid) triangulation object for this TTK base object.

@@ -14,8 +14,7 @@ ExplicitTriangulation::ExplicitTriangulation() {
   clear();
 }
 
-ExplicitTriangulation::~ExplicitTriangulation() {
-}
+ExplicitTriangulation::~ExplicitTriangulation() = default;
 
 int ExplicitTriangulation::clear() {
   vertexNumber_ = 0;

@@ -3,8 +3,7 @@
 ttk::CinemaImagingEmbree::CinemaImagingEmbree() {
   this->setDebugMsgPrefix("CinemaImaging(Embree)");
 }
-ttk::CinemaImagingEmbree::~CinemaImagingEmbree() {
-}
+ttk::CinemaImagingEmbree::~CinemaImagingEmbree() = default;
 
 #if TTK_ENABLE_EMBREE
 

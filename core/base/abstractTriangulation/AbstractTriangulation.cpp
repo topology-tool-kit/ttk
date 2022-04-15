@@ -10,8 +10,7 @@ AbstractTriangulation::AbstractTriangulation() {
   clear();
 }
 
-AbstractTriangulation::~AbstractTriangulation() {
-}
+AbstractTriangulation::~AbstractTriangulation() = default;
 
 int AbstractTriangulation::clear() {
 

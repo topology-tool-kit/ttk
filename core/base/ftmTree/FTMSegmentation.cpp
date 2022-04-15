@@ -100,8 +100,7 @@ void Segment::sort(const Scalars *s) {
 // Segments
 // --------
 
-Segments::Segments() {
-}
+Segments::Segments() = default;
 
 void Segments::clear(void) {
   segments_.clear();

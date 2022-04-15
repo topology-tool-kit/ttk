@@ -26,8 +26,7 @@ using namespace ftr;
 Segment::Segment(idVertex size) : vertices_(size, nullVertex) {
 }
 
-Segment::Segment() {
-}
+Segment::Segment() = default;
 
 segm_const_it Segment::begin(void) const {
   return vertices_.begin();

@@ -77,7 +77,8 @@ protected:
     RangeId[1] = std::numeric_limits<int>::max();
   }
 
-  ~ttkTableDataSelector() override{};
+  ~ttkTableDataSelector() override = default;
+  ;
 
   int RequestInformation(vtkInformation *request,
                          vtkInformationVector **inputVector,

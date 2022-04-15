@@ -415,8 +415,7 @@ namespace ttk {
       diagonal_price_ = 0;
     }
 
-    ~Bidder() override {
-    }
+    ~Bidder() override = default;
 
     // Off-diagonal Bidding (with or without the use of a KD-Tree
     int runBidding(GoodDiagram<dataType> *goods,

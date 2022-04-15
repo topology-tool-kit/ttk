@@ -73,12 +73,10 @@ namespace ttk {
     std::vector<std::array<SimplexId, 4>> tetraTriangles_;
 
   public:
-    ImplicitCluster() {
-    }
+    ImplicitCluster() = default;
     ImplicitCluster(SimplexId id) : nid(id) {
     }
-    ~ImplicitCluster() {
-    }
+    ~ImplicitCluster() = default;
 
     friend class CompactTriangulation;
   };

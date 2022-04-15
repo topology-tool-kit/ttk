@@ -8,8 +8,7 @@
 ttk::CinemaQuery::CinemaQuery() {
   this->setDebugMsgPrefix("CinemaQuery");
 }
-ttk::CinemaQuery::~CinemaQuery() {
-}
+ttk::CinemaQuery::~CinemaQuery() = default;
 
 int ttk::CinemaQuery::execute(
   const std::vector<std::string> &sqlTableDefinitions,

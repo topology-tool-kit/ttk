@@ -19,8 +19,7 @@ ttk::ttkCinemaImagingNative::ttkCinemaImagingNative() {
   this->setDebugMsgPrefix("CinemaImaging(Native)");
 };
 
-ttk::ttkCinemaImagingNative::~ttkCinemaImagingNative() {
-}
+ttk::ttkCinemaImagingNative::~ttkCinemaImagingNative() = default;
 
 int ttk::ttkCinemaImagingNative::RenderVTKObject(
   vtkMultiBlockDataSet *outputImages,

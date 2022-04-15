@@ -27,8 +27,7 @@ namespace ttk {
       this->setDebugMsgPrefix("MorphologicalOperators");
     }
 
-    ~MorphologicalOperators() override {
-    }
+    ~MorphologicalOperators() override = default;
 
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {

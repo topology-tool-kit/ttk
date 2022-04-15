@@ -16,8 +16,7 @@ ttkDataSetToTable::ttkDataSetToTable() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkDataSetToTable::~ttkDataSetToTable() {
-}
+ttkDataSetToTable::~ttkDataSetToTable() = default;
 
 int ttkDataSetToTable::FillInputPortInformation(int port,
                                                 vtkInformation *info) {

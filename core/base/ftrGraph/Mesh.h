@@ -46,8 +46,7 @@ namespace ttk {
     struct triScheme {
       unsigned int scheme : 3;
 
-      triScheme() {
-      }
+      triScheme() = default;
 
       triScheme(const char u) : scheme(u) {
       }
@@ -73,8 +72,7 @@ namespace ttk {
       explicit Mesh(triangulationType *tri) : tri_{tri} {
       }
 
-      Mesh() {
-      }
+      Mesh() = default;
 
       void setTriangulation(triangulationType *tri) {
         tri_ = tri;

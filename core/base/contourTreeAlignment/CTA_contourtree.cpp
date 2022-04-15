@@ -75,8 +75,7 @@ ContourTree::ContourTree(float *scalars,
   }
 }
 
-ContourTree::~ContourTree() {
-}
+ContourTree::~ContourTree() = default;
 
 std::shared_ptr<ttk::cta::Tree> ContourTree::computeRootedTree(
   const std::shared_ptr<ttk::cta::CTNode> &node,

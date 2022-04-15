@@ -16,8 +16,7 @@
 ttk::ttkCinemaImagingEmbree::ttkCinemaImagingEmbree() {
   this->setDebugMsgPrefix("CinemaImaging(Embree)");
 };
-ttk::ttkCinemaImagingEmbree::~ttkCinemaImagingEmbree() {
-}
+ttk::ttkCinemaImagingEmbree::~ttkCinemaImagingEmbree() = default;
 
 int ttk::ttkCinemaImagingEmbree::RenderVTKObject(
   vtkMultiBlockDataSet *outputImages,

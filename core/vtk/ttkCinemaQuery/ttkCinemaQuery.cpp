@@ -23,8 +23,7 @@ ttkCinemaQuery::ttkCinemaQuery() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
-ttkCinemaQuery::~ttkCinemaQuery() {
-}
+ttkCinemaQuery::~ttkCinemaQuery() = default;
 
 int ttkCinemaQuery::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

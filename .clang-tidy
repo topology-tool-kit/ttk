@@ -12,6 +12,7 @@ Checks: >-
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
   modernize-use-emplace,
+  modernize-use-equals-default,
   modernize-use-nullptr,
   modernize-use-override,
   modernize-use-using,

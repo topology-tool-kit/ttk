@@ -23,8 +23,7 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
   setDebugMsgPrefix("ScalarFieldNormalizer");
 }
 
-ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() {
-}
+ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() = default;
 
 int ttkScalarFieldNormalizer::FillInputPortInformation(int port,
                                                        vtkInformation *info) {

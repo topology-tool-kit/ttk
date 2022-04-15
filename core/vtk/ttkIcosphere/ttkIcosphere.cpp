@@ -19,8 +19,7 @@ ttkIcosphere::ttkIcosphere() {
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
 }
-ttkIcosphere::~ttkIcosphere() {
-}
+ttkIcosphere::~ttkIcosphere() = default;
 
 int ttkIcosphere::FillInputPortInformation(int ttkNotUsed(port),
                                            vtkInformation *ttkNotUsed(info)) {

@@ -28,8 +28,7 @@ namespace ttk {
       std::vector<Vert<ScalarType>> vertices_{};
 
     public:
-      Scalars() {
-      }
+      Scalars() = default;
 
       // Heavy, prevent using it
       Scalars(const Scalars &o) = delete;
