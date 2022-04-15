@@ -148,15 +148,15 @@ bool Triangulation::processImplicitStrategy(const STRATEGY strategy) const {
   if(strategy == STRATEGY::DEFAULT) {
 
 #ifndef TTK_IMPLICIT_PRECONDITIONS_THRESHOLD
-#define TTK_IMPLICIT_PRECONDITIONS_THRESHOLD 256
+#define TTK_IMPLICIT_PRECONDITIONS_THRESHOLD 256 * 256 * 256
 #endif // TTK_IMPLICIT_PRECONDITIONS_THRESHOLD
 
-    const size_t threshold{TTK_IMPLICIT_PRECONDITIONS_THRESHOLD};
-    const size_t nVerts
+    const uint64_t threshold{TTK_IMPLICIT_PRECONDITIONS_THRESHOLD};
+    const uint64_t nVerts
       = gridDimensions_[0] * gridDimensions_[1] * gridDimensions_[2];
 
     // disable preconditioning above TTK_IMPLICIT_PRECONDITIONS_THRESHOLD
-    const auto doPreconditioning = nVerts <= threshold * threshold * threshold;
+    const auto doPreconditioning = nVerts <= threshold;
 
     if(!doPreconditioning) {
 
@@ -166,17 +166,8 @@ bool Triangulation::processImplicitStrategy(const STRATEGY strategy) const {
         prevDebugLevel = this->debugLevel_;
         this->debugLevel_ = 2;
       }
-      if(gridDimensions_[0] > 1 && gridDimensions_[1] > 1
-         && gridDimensions_[2] > 1) {
-        // 3D data-set: breakdown by grid edge dimension
-        const auto thr{std::to_string(threshold)};
-        this->printWrn("Large grid detected (> " + thr + "x" + thr + "x" + thr
-                       + ")");
-      } else {
-        // other dimensions: print number of vertices
-        const auto thr{std::to_string(threshold * threshold * threshold)};
-        this->printWrn("Large grid detected (>" + thr + " vertices)");
-      }
+      this->printWrn("Large grid detected (> " + std::to_string(threshold)
+                     + " vertices)");
       this->printWrn("Defaulting to the fully implicit triangulation");
       if(prevDebugLevel != -1) {
         this->debugLevel_ = prevDebugLevel;
