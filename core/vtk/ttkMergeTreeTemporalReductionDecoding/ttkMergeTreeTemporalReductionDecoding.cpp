@@ -145,7 +145,7 @@ int ttkMergeTreeTemporalReductionDecoding::RequestData(
     int index2 = vtkDataArray::SafeDownCast(table->GetColumnByName("Index2"))
                    ->GetTuple1(i);
 
-    coefs.push_back(std::make_tuple(alpha, index1R, index2R, index1, index2));
+    coefs.emplace_back(alpha, index1R, index2R, index1, index2);
     for(int j = index1 + 1; j < index2; ++j)
       interpolatedTrees[j] = true;
   }
@@ -233,7 +233,7 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
       treesNodesT.push_back(nullptr);
       treesArcsT.push_back(nullptr);
       treesSegmentationT.push_back(nullptr);
-      treesNodeCorrMeshT.push_back(std::vector<int>());
+      treesNodeCorrMeshT.emplace_back();
       inputTreesT.push_back(nullptr);
       ++cpt;
     }

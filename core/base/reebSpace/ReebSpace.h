@@ -905,8 +905,7 @@ int ttk::ReebSpace::compute1sheetsOnly(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           originalData_.sheet1List_.back().edgeList_.push_back(edgeId);
           originalData_.edge2sheet1_[edgeId] = sheet1Id;
@@ -1047,8 +1046,7 @@ int ttk::ReebSpace::compute1sheets(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           if(originalData_.edgeTypes_[edgeId] == 1) {
             // saddle edge

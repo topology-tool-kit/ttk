@@ -206,7 +206,7 @@ bool ttk::ContourTreeAlignment::initialize(
   currNode->scalarValue = t->scalarValue;
 
   currNode->nodeRefs = std::vector<std::pair<int, int>>();
-  currNode->nodeRefs.push_back(std::make_pair(0, t->nodeRefs[0].second));
+  currNode->nodeRefs.emplace_back(0, t->nodeRefs[0].second);
 
   nodes.push_back(currNode);
 
@@ -228,8 +228,7 @@ bool ttk::ContourTreeAlignment::initialize(
       childNode->scalarValue = currTree->child1->scalarValue;
 
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
-      childNode->nodeRefs.push_back(
-        std::make_pair(0, currTree->child1->nodeRefs[0].second));
+      childNode->nodeRefs.emplace_back(0, currTree->child1->nodeRefs[0].second);
 
       std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
         new ttk::cta::AlignmentEdge());
@@ -258,8 +257,7 @@ bool ttk::ContourTreeAlignment::initialize(
       childNode->scalarValue = currTree->child2->scalarValue;
 
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
-      childNode->nodeRefs.push_back(
-        std::make_pair(0, currTree->child2->nodeRefs[0].second));
+      childNode->nodeRefs.emplace_back(0, currTree->child2->nodeRefs[0].second);
 
       std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
         new ttk::cta::AlignmentEdge());
@@ -309,7 +307,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
   currNode->scalarValue = t->scalarValue;
 
   currNode->nodeRefs = std::vector<std::pair<int, int>>();
-  currNode->nodeRefs.push_back(std::make_pair(0, t->nodeRefs[0].second));
+  currNode->nodeRefs.emplace_back(0, t->nodeRefs[0].second);
 
   nodes.push_back(currNode);
 
@@ -331,8 +329,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       childNode->scalarValue = currTree->child1->scalarValue;
 
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
-      childNode->nodeRefs.push_back(
-        std::make_pair(0, currTree->child1->nodeRefs[0].second));
+      childNode->nodeRefs.emplace_back(0, currTree->child1->nodeRefs[0].second);
 
       std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
         new ttk::cta::AlignmentEdge());
@@ -344,8 +341,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       childEdge->node2 = childNode;
 
       childEdge->arcRefs = std::vector<std::pair<int, int>>();
-      childEdge->arcRefs.push_back(
-        std::make_pair(0, currTree->child1->arcRefs[0].second));
+      childEdge->arcRefs.emplace_back(0, currTree->child1->arcRefs[0].second);
 
       childNode->edgeList.push_back(childEdge);
       currNode->edgeList.push_back(childEdge);
@@ -366,8 +362,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       childNode->scalarValue = currTree->child2->scalarValue;
 
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
-      childNode->nodeRefs.push_back(
-        std::make_pair(0, currTree->child2->nodeRefs[0].second));
+      childNode->nodeRefs.emplace_back(0, currTree->child2->nodeRefs[0].second);
 
       std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
         new ttk::cta::AlignmentEdge());
@@ -379,8 +374,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       childEdge->node2 = childNode;
 
       childEdge->arcRefs = std::vector<std::pair<int, int>>();
-      childEdge->arcRefs.push_back(
-        std::make_pair(0, currTree->child2->arcRefs[0].second));
+      childEdge->arcRefs.emplace_back(0, currTree->child2->arcRefs[0].second);
 
       childNode->edgeList.push_back(childEdge);
       currNode->edgeList.push_back(childEdge);
@@ -562,8 +556,8 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
                                 res->node1->nodeRefs.begin(),
                                 res->node1->nodeRefs.end());
     if(res->node2 != nullptr)
-      currNode->nodeRefs.push_back(std::make_pair(
-        (int)contourtrees.size() - 1, res->node2->nodeRefs[0].second));
+      currNode->nodeRefs.emplace_back(
+        (int)contourtrees.size() - 1, res->node2->nodeRefs[0].second);
 
   } else if(alignmenttreeType == ttk::cta::averageValues) {
 
@@ -599,8 +593,8 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
                               res->node1->nodeRefs.begin(),
                               res->node1->nodeRefs.end());
   if(res->node2 != nullptr)
-    currNode->nodeRefs.push_back(std::make_pair(
-      (int)contourtrees.size() - 1, res->node2->nodeRefs[0].second));
+    currNode->nodeRefs.emplace_back(
+      (int)contourtrees.size() - 1, res->node2->nodeRefs[0].second);
 
   nodes.push_back(currNode);
 
@@ -684,9 +678,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
                                    currTree->child1->node1->nodeRefs.begin(),
                                    currTree->child1->node1->nodeRefs.end());
       if(currTree->child1->node2 != nullptr)
-        childNode->nodeRefs.push_back(
-          std::make_pair((int)contourtrees.size() - 1,
-                         currTree->child1->node2->nodeRefs[0].second));
+        childNode->nodeRefs.emplace_back(
+          (int)contourtrees.size() - 1,
+          currTree->child1->node2->nodeRefs[0].second);
 
       std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
         new ttk::cta::AlignmentEdge());
@@ -775,14 +769,13 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
         openEdgesOld1.push_back(childEdge);
       if(currTree->child1->node2 != nullptr) {
         for(const auto &e : openEdgesNew1) {
-          e->arcRefs.push_back(
-            std::make_pair((int)contourtrees.size() - 1,
-                           currTree->child1->node2->arcRefs[0].second));
+          e->arcRefs.emplace_back((int)contourtrees.size() - 1,
+                                  currTree->child1->node2->arcRefs[0].second);
         }
         openEdgesNew1.clear();
-        childEdge->arcRefs.push_back(
-          std::make_pair((int)contourtrees.size() - 1,
-                         currTree->child1->node2->arcRefs[0].second));
+        childEdge->arcRefs.emplace_back(
+          (int)contourtrees.size() - 1,
+          currTree->child1->node2->arcRefs[0].second);
       } else
         openEdgesNew1.push_back(childEdge);
 
@@ -865,9 +858,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
                                    currTree->child2->node1->nodeRefs.begin(),
                                    currTree->child2->node1->nodeRefs.end());
       if(currTree->child2->node2 != nullptr)
-        childNode->nodeRefs.push_back(
-          std::make_pair((int)contourtrees.size() - 1,
-                         currTree->child2->node2->nodeRefs[0].second));
+        childNode->nodeRefs.emplace_back(
+          (int)contourtrees.size() - 1,
+          currTree->child2->node2->nodeRefs[0].second);
 
       std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
         new ttk::cta::AlignmentEdge());
@@ -956,14 +949,13 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
         openEdgesOld2.push_back(childEdge);
       if(currTree->child2->node2 != nullptr) {
         for(const auto &e : openEdgesNew1) {
-          e->arcRefs.push_back(
-            std::make_pair((int)contourtrees.size() - 1,
-                           currTree->child2->node2->arcRefs[0].second));
+          e->arcRefs.emplace_back((int)contourtrees.size() - 1,
+                                  currTree->child2->node2->arcRefs[0].second);
         }
         openEdgesNew2.clear();
-        childEdge->arcRefs.push_back(
-          std::make_pair((int)contourtrees.size() - 1,
-                         currTree->child2->node2->arcRefs[0].second));
+        childEdge->arcRefs.emplace_back(
+          (int)contourtrees.size() - 1,
+          currTree->child2->node2->arcRefs[0].second);
       } else
         openEdgesNew2.push_back(childEdge);
 

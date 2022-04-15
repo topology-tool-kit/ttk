@@ -217,7 +217,7 @@ namespace ttk {
       }
 
       for(unsigned int i = 0; i < bestCentroidT.size(); ++i)
-        assignmentC.push_back(std::make_tuple(bestCentroidT[i], i));
+        assignmentC.emplace_back(bestCentroidT[i], i);
     }
 
     template <class dataType>
@@ -414,7 +414,7 @@ namespace ttk {
       for(unsigned int i = 0; i < bestDistance_.size(); ++i)
         bestDistanceT[i] = bestDistance_[i];
       for(unsigned int i = 0; i < bestCentroid_.size(); ++i)
-        assignmentC.push_back(std::make_tuple(bestCentroid_[i], i));
+        assignmentC.emplace_back(bestCentroid_[i], i);
     }
 
     template <class dataType>
@@ -488,8 +488,8 @@ namespace ttk {
       for(int i : assignedTreesIndex) {
         std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> newMatching;
         for(auto tup : matchingT[i])
-          newMatching.push_back(std::make_tuple(
-            nodeCorr[std::get<0>(tup)], std::get<1>(tup), std::get<2>(tup)));
+          newMatching.emplace_back(
+            nodeCorr[std::get<0>(tup)], std::get<1>(tup), std::get<2>(tup));
         matchingT[i] = newMatching;
       }
     }
@@ -876,7 +876,7 @@ namespace ttk {
         newScalarsVector[root2] = newMax;
         newScalarsVector.push_back(newMin);
         std::vector<std::tuple<ftm::idNode, bool>> origins;
-        origins.push_back(std::make_tuple(root2, true));
+        origins.emplace_back(root2, true);
         updateNodesAndScalars<dataType>(
           centroids2[i], newScalarsVector, origins);
       }

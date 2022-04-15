@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   if(!inputArrayNames.size()) {
     if(defaultArray)
-      inputArrayNames.push_back(defaultArray->GetName());
+      inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
     js->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());

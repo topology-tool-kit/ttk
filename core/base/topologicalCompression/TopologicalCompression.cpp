@@ -364,8 +364,8 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
     numberOfBytesRead += sizeof(double);
     value = Read<double>(fm);
 
-    mappings.push_back(std::make_tuple(value, idv));
-    mappingsSortedPerValue.push_back(std::make_tuple(value, idv));
+    mappings.emplace_back(value, idv);
+    mappingsSortedPerValue.emplace_back(value, idv);
   }
 
   // Sort mapping.
@@ -400,7 +400,7 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
     if(value > max)
       max = value;
 
-    constraints.push_back(std::make_tuple(idVertex, value, vertexType));
+    constraints.emplace_back(idVertex, value, vertexType);
   }
 
   return numberOfBytesRead;

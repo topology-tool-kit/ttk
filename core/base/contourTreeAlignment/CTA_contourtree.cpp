@@ -159,7 +159,7 @@ std::shared_ptr<ttk::cta::BinaryTree> ContourTree::computeRootedTree_binary(
   std::shared_ptr<ttk::cta::CTEdge> edge = arcs[node->edgeList[0]];
   int nodeIdx = nodes[edge->node1Idx] == node ? edge->node1Idx : edge->node2Idx;
   t->nodeRefs = std::vector<std::pair<int, int>>();
-  t->nodeRefs.push_back(std::make_pair(-1, nodeIdx));
+  t->nodeRefs.emplace_back(-1, nodeIdx);
   t->arcRefs = std::vector<std::pair<int, int>>();
   // if(parent != nullptr)
   // t->arcRefs.push_back(std::make_pair(-1,parent->segId));
@@ -167,7 +167,7 @@ std::shared_ptr<ttk::cta::BinaryTree> ContourTree::computeRootedTree_binary(
     int arcRef = arcs[node->edgeList[0]] == parent   ? node->edgeList[0]
                  : arcs[node->edgeList[1]] == parent ? node->edgeList[1]
                                                      : node->edgeList[2];
-    t->arcRefs.push_back(std::make_pair(-1, arcRef));
+    t->arcRefs.emplace_back(-1, arcRef);
   }
 
   // set height and size to 0/1. For inner nodes this will be updated while
