@@ -55,11 +55,11 @@ namespace ttk {
         origin_ = origin;
       }
 
-      inline const ufDataType &getData(void) const {
+      inline const ufDataType &getData() const {
         return data_;
       }
 
-      inline const SimplexId &getOrigin(void) const {
+      inline const SimplexId &getOrigin() const {
         return origin_;
       }
 

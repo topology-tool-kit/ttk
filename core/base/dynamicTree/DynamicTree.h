@@ -28,7 +28,7 @@ namespace ttk {
     // Accessor functions
     // ------------------
 
-    inline bool hasParent(void) const {
+    inline bool hasParent() const {
       return parent_ != nullptr;
     }
 
@@ -37,10 +37,10 @@ namespace ttk {
 
     /// Make this node the root of its tree
     // Various way to do that, test perfs ?
-    void evert(void);
+    void evert();
 
     /// Get representative node
-    DynTreeNode *findRoot(void) const;
+    DynTreeNode *findRoot() const;
 
     /// Create a new edge between this node and the node n
     /// @return true if we have merged two tree, false if it was just an intern
@@ -49,7 +49,7 @@ namespace ttk {
 
     /// Remove the link between this node and its parent, thus makeing a new
     /// root
-    inline void removeEdge(void) {
+    inline void removeEdge() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!parent_) {
         std::cerr << "[DynamicTree]: DynTree remove edge in root node"
@@ -146,8 +146,8 @@ namespace ttk {
 
     // Debug
 
-    std::string print(void) const;
-    std::string printNbCC(void) const;
+    std::string print() const;
+    std::string printNbCC() const;
   };
 
 } // namespace ttk

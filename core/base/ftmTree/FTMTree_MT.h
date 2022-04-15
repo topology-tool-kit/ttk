@@ -113,7 +113,7 @@ namespace ttk {
         scalars_->size = triangulation->getNumberOfVertices();
       }
 
-      void initComp(void) {
+      void initComp() {
         if(isST()) {
           comp_.vertLower
             = [this](const SimplexId a, const SimplexId b) -> bool {
@@ -141,10 +141,10 @@ namespace ttk {
 
       /// \brief if sortedVertices_ is null, define and fill it
       template <typename scalarType>
-      void sortInput(void);
+      void sortInput();
 
       /// \brief clear local data for new computation
-      void makeAlloc(void) {
+      void makeAlloc() {
         createAtomicVector<SuperArc>(mt_data_.superArcs);
 
         // Stats alloc
@@ -183,7 +183,7 @@ namespace ttk {
         mt_data_.segments_.clear();
       }
 
-      void makeInit(void) {
+      void makeInit() {
         initVector<idCorresp>(mt_data_.vert2tree, nullCorresp);
         initVector<SimplexId>(mt_data_.visitOrder, nullVertex);
         initVector<UF>(mt_data_.ufs, nullptr);
@@ -259,7 +259,7 @@ namespace ttk {
       void buildSegmentation();
 
       // Create the segmentation of all arcs by operating the pending operations
-      void finalizeSegmentation(void);
+      void finalizeSegmentation();
 
       void normalizeIds();
 
@@ -279,11 +279,11 @@ namespace ttk {
         return getSuperArc(arcId)->size();
       }
 
-      inline bool isJT(void) const {
+      inline bool isJT() const {
         return mt_data_.treeType == TreeType::Join;
       }
 
-      inline bool isST(void) const {
+      inline bool isST() const {
         return mt_data_.treeType == TreeType::Split;
       }
 
@@ -353,7 +353,7 @@ namespace ttk {
 
       // arcs
 
-      inline idSuperArc getNumberOfSuperArcs(void) const {
+      inline idSuperArc getNumberOfSuperArcs() const {
         return mt_data_.superArcs->size();
       }
 
@@ -379,7 +379,7 @@ namespace ttk {
 
       // nodes
 
-      inline idNode getNumberOfNodes(void) const {
+      inline idNode getNumberOfNodes() const {
         return mt_data_.nodes->size();
       }
 
@@ -393,11 +393,11 @@ namespace ttk {
 
       // leaves / root
 
-      inline idNode getNumberOfLeaves(void) const {
+      inline idNode getNumberOfLeaves() const {
         return mt_data_.leaves->size();
       }
 
-      inline const std::vector<idNode> &getLeaves(void) const {
+      inline const std::vector<idNode> &getLeaves() const {
         // break encapsulation...
         return (*mt_data_.leaves);
       }
@@ -412,14 +412,14 @@ namespace ttk {
         return (*mt_data_.leaves)[id];
       }
 
-      inline const std::vector<idNode> &getRoots(void) const {
+      inline const std::vector<idNode> &getRoots() const {
         // break encapsulation...
         return (*mt_data_.roots);
       }
 
       // vertices
 
-      inline SimplexId getNumberOfVertices(void) const {
+      inline SimplexId getNumberOfVertices() const {
         return scalars_->size;
       }
 
@@ -558,9 +558,9 @@ namespace ttk {
 
       std::string printNode(idNode n);
 
-      void printTree2(void);
+      void printTree2();
 
-      void printParams(void) const;
+      void printParams() const;
 
       int printTime(Timer &t,
                     const std::string &s,

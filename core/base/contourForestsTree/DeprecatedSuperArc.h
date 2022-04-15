@@ -105,11 +105,11 @@ namespace ttk {
       // node
       // .................................{
 
-      inline const idNode &getUpNodeId(void) const {
+      inline const idNode &getUpNodeId() const {
         return upNodeId_;
       }
 
-      inline const idNode &getDownNodeId(void) const {
+      inline const idNode &getDownNodeId() const {
         return downNodeId_;
       }
 
@@ -126,11 +126,11 @@ namespace ttk {
       // .................................{
       //
       // idPartition u_char so lighter than a ref
-      inline idPartition getDownCT(void) const {
+      inline idPartition getDownCT() const {
         return downCT_;
       }
 
-      inline idPartition getUpCT(void) const {
+      inline idPartition getUpCT() const {
         return upCT_;
       }
 
@@ -142,15 +142,15 @@ namespace ttk {
       // overlap
       // .................................{
 
-      inline bool getOverlapAbove(void) const {
+      inline bool getOverlapAbove() const {
         return overlapAbove_;
       }
 
-      inline bool getOverlapBelow(void) const {
+      inline bool getOverlapBelow() const {
         return overlapBelow_;
       }
 
-      inline bool isCrossing(void) const {
+      inline bool isCrossing() const {
         return overlapBelow_ || overlapAbove_;
       }
 
@@ -166,7 +166,7 @@ namespace ttk {
       // last vertex seen
       // .................................{
 
-      inline const SimplexId &getLastVisited(void) const {
+      inline const SimplexId &getLastVisited() const {
         return lastVisited_;
       }
 
@@ -179,27 +179,27 @@ namespace ttk {
       // state
       // .................................{
 
-      inline bool isHidden(void) const {
+      inline bool isHidden() const {
         return state_ == ComponentState::Hidden;
       }
 
-      inline bool isPruned(void) const {
+      inline bool isPruned() const {
         return state_ == ComponentState::Merged;
       }
 
-      inline bool isMerged(void) const {
+      inline bool isMerged() const {
         return state_ == ComponentState::Merged;
       }
 
-      inline bool isExternal(void) const {
+      inline bool isExternal() const {
         return downCT_ != upCT_;
       }
 
-      inline bool isVisible(void) const {
+      inline bool isVisible() const {
         return state_ == ComponentState::Visible;
       }
 
-      inline void hide(void) {
+      inline void hide() {
         state_ = ComponentState::Hidden;
       }
 
@@ -213,11 +213,11 @@ namespace ttk {
       // replacant arc/tree (merge)
       // .................................{
 
-      inline const idSuperArc &getReplacantArcId(void) const {
+      inline const idSuperArc &getReplacantArcId() const {
         return replacantId_;
       }
 
-      inline idPartition getReplacantCT(void) const {
+      inline idPartition getReplacantCT() const {
         return replacantCT_;
       }
 
@@ -225,7 +225,7 @@ namespace ttk {
       // regular nodes (segmentation)
       // .................................{
 
-      inline SimplexId getNumberOfRegularNodes(void) {
+      inline SimplexId getNumberOfRegularNodes() {
         return getVertSize();
       }
 
@@ -239,12 +239,12 @@ namespace ttk {
 
       // The std::vector
 
-      inline SimplexId getSegmentationSize(void) const {
+      inline SimplexId getSegmentationSize() const {
         return vertices_.size();
       }
 
       // not const for sort in simplify
-      inline std::vector<std::pair<SimplexId, bool>> &getSegmentation(void) {
+      inline std::vector<std::pair<SimplexId, bool>> &getSegmentation() {
         return vertices_;
       }
 
@@ -392,7 +392,7 @@ namespace ttk {
       }
 
       // Real reserve
-      inline void makeReserve(void) {
+      inline void makeReserve() {
         if(sizeVertList_ != -1) {
           // We have an offset of -1 due to the initial value of sizeVertList_
           vertices_.reserve(sizeVertList_ + 1);

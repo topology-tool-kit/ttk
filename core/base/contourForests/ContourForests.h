@@ -41,22 +41,22 @@ namespace ttk {
       // Getter & Setter
       // {
 
-      inline const SimplexId &getSeed(void) const {
+      inline const SimplexId &getSeed() const {
         return seed_;
       }
 
-      inline std::vector<SimplexId> &getUpper(void) {
+      inline std::vector<SimplexId> &getUpper() {
         return upperOverlap_;
       }
 
-      inline std::vector<SimplexId> &getLower(void) {
+      inline std::vector<SimplexId> &getLower() {
         return lowerOverlap_;
       }
-      inline SimplexId getNbUpper(void) const {
+      inline SimplexId getNbUpper() const {
         return upperOverlap_.size();
       }
 
-      inline SimplexId getNbLower(void) const {
+      inline SimplexId getNbLower() const {
         return lowerOverlap_.size();
       }
 
@@ -215,12 +215,12 @@ namespace ttk {
 
       // Init
       // {
-      void initInterfaces(void);
+      void initInterfaces();
 
       template <typename triangulationType>
       void initOverlap(const triangulationType &mesh);
 
-      void initNbPartitions(void);
+      void initNbPartitions();
 
       //}
       // Process
@@ -235,7 +235,7 @@ namespace ttk {
                       std::vector<std::vector<ExtendedUnionFind *>> &baseUF_ST,
                       const triangulationType &mesh);
 
-      void stitch(void);
+      void stitch();
       void stitchTree(const char tree);
 
       // replace distributed tree by a global one, will be removed

@@ -45,7 +45,7 @@ namespace ttk {
         this->setDebugMsgPrefix("SuperNode");
       }
 
-      idNode getUpNodeId(void) const {
+      idNode getUpNodeId() const {
         // Caution. can be nullNode
         return upNodeId_;
       }
@@ -54,7 +54,7 @@ namespace ttk {
         upNodeId_ = id;
       }
 
-      idNode getDownNodeId(void) const {
+      idNode getDownNodeId() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(downNodeId_ == nullNode) {
           this->printErr("Arc have null down node");
@@ -67,7 +67,7 @@ namespace ttk {
         downNodeId_ = id;
       }
 
-      Propagation *getPropagation(void) const {
+      Propagation *getPropagation() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!ufProp_) {
           this->printErr("Arc have null UF propagation");
@@ -80,13 +80,13 @@ namespace ttk {
         ufProp_ = UFprop;
       }
 
-      bool hide(void) {
+      bool hide() {
         bool old = visible_;
         visible_ = false;
         return old;
       }
 
-      bool isVisible(void) const {
+      bool isVisible() const {
         return visible_;
       }
 
@@ -108,7 +108,7 @@ namespace ttk {
         }
       }
 
-      idVertex getEnd(void) const {
+      idVertex getEnd() const {
         return endV_;
       }
 
@@ -131,15 +131,15 @@ namespace ttk {
         }
       }
 
-      bool merged(void) const {
+      bool merged() const {
         return merged_ != nullSuperArc;
       }
 
-      idSuperArc mergedIn(void) const {
+      idSuperArc mergedIn() const {
         return merged_;
       }
 
-      void restore(void) {
+      void restore() {
         visible_ = true;
         merged_ = nullSuperArc;
       }

@@ -20,7 +20,7 @@ using namespace cf;
 Segment::Segment(const bool order) : ascendingOrder_(order) {
 }
 
-bool Segment::isAscending(void) const {
+bool Segment::isAscending() const {
   return ascendingOrder_;
 }
 
@@ -44,7 +44,7 @@ void Segment::emplace_back(const SimplexId &v) {
   vertices_.emplace_back(vertex{v, nullSuperArc});
 }
 
-void Segment::clear(void) {
+void Segment::clear() {
   vertices_.clear();
   vertices_.shrink_to_fit();
 }
@@ -77,11 +77,11 @@ sorted_iterator Segment::send() {
 // Segments
 // --------
 
-idSegment Segments::size(void) const {
+idSegment Segments::size() const {
   return segments_.size();
 }
 
-void Segments::clear(void) {
+void Segments::clear() {
   segments_.clear();
   segments_.shrink_to_fit();
 }

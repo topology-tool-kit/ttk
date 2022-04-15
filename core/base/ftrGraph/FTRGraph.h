@@ -147,7 +147,7 @@ namespace ttk {
       // Accessor on the graph
       // ---------------------
 
-      Graph &&extractOutputGraph(void) {
+      Graph &&extractOutputGraph() {
         return std::move(graph_);
       }
 
@@ -229,7 +229,7 @@ namespace ttk {
 
       // Print function (FTRGraphPrint)
 
-      std::string printMesh(void) const;
+      std::string printMesh() const;
 
       std::string printEdge(const idEdge edgeId,
                             const Propagation *const localProp) const;

@@ -48,7 +48,7 @@ namespace ttk {
 
       // Shared data get/set
 
-      inline Propagation *getPropagation(void) {
+      inline Propagation *getPropagation() {
         return prop_;
       }
 

@@ -61,11 +61,11 @@ namespace ttk {
 
       // Linked node
 
-      inline SimplexId getOrigin(void) const {
+      inline SimplexId getOrigin() const {
         return linkedNode_;
       }
 
-      inline SimplexId getTerminaison(void) const {
+      inline SimplexId getTerminaison() const {
         return linkedNode_;
       }
 
@@ -124,13 +124,13 @@ namespace ttk {
         vect_upSuperArcList_.emplace_back(upSuperArcId);
       }
 
-      inline idSuperArc clearDownSuperArcs(void) {
+      inline idSuperArc clearDownSuperArcs() {
         idSuperArc s = vect_downSuperArcList_.size();
         vect_downSuperArcList_.clear();
         return s;
       }
 
-      inline idSuperArc clearUpSuperArcs(void) {
+      inline idSuperArc clearUpSuperArcs() {
         idSuperArc s = vect_upSuperArcList_.size();
         vect_upSuperArcList_.clear();
         return s;

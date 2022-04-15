@@ -81,15 +81,15 @@ namespace ttk {
       // Accessor on structure
       // ---------------------
 
-      idNode getNumberOfNodes(void) const {
+      idNode getNumberOfNodes() const {
         return nodes_.size();
       }
 
-      idSuperArc getNumberOfArcs(void) const {
+      idSuperArc getNumberOfArcs() const {
         return arcs_.size();
       }
 
-      idSuperArc getNumberOfVisibleArcs(void) const {
+      idSuperArc getNumberOfVisibleArcs() const {
         idSuperArc res = 0;
         for(const auto &arc : arcs_) {
           if(arc.isVisible())
@@ -98,7 +98,7 @@ namespace ttk {
         return res;
       }
 
-      idNode getNumberOfLeaves(void) const {
+      idNode getNumberOfLeaves() const {
         return leaves_.size();
       }
 

@@ -509,7 +509,7 @@ namespace ttk {
     // ------------------------------------------------------------------------
 
     template <typename scalarType>
-    void ftm::FTMTree_MT::sortInput(void) {
+    void ftm::FTMTree_MT::sortInput() {
 
       const auto nbVertices = scalars_->size;
       scalars_->sortedVertices.resize(nbVertices);

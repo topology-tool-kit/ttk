@@ -55,7 +55,7 @@ namespace ttk {
 
       Propagation(const Propagation &other) = delete;
 
-      idVertex getCurVertex(void) const {
+      idVertex getCurVertex() const {
         return curVert_;
       }
 
@@ -67,7 +67,7 @@ namespace ttk {
         curVert_ = v;
       }
 
-      idSuperArc getNbArcs(void) const {
+      idSuperArc getNbArcs() const {
         return nbArcs_;
       }
 
@@ -83,17 +83,17 @@ namespace ttk {
         // std::endl;
       }
 
-      AtomicUF *getId(void) {
+      AtomicUF *getId() {
         return id_.find();
       }
 
-      idVertex nextVertex(void) {
+      idVertex nextVertex() {
         curVert_ = propagation_.top();
         removeDuplicates(curVert_);
         return curVert_;
       }
 
-      idVertex getNextVertex(void) const {
+      idVertex getNextVertex() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(propagation_.empty()) {
           std::cerr << "[FTR]: Propagation get next on empty structure"
@@ -136,7 +136,7 @@ namespace ttk {
         return propagation_.empty();
       }
 
-      void clear(void) {
+      void clear() {
         propagation_.clear();
       }
 
@@ -149,11 +149,11 @@ namespace ttk {
       }
 
       // true if propagation initiated form a min leaf
-      bool goUp(void) const {
+      bool goUp() const {
         return goUp_;
       }
 
-      bool goDown(void) const {
+      bool goDown() const {
         return !goUp_;
       }
 

@@ -6,7 +6,7 @@ namespace ttk {
   namespace ftr {
 
     template <typename ScalarType, typename triangulationType>
-    std::string FTRGraph<ScalarType, triangulationType>::printMesh(void) const {
+    std::string FTRGraph<ScalarType, triangulationType>::printMesh() const {
       std::stringstream res;
 
       res << "cells     : " << mesh_.getNumberOfCells() << std::endl;

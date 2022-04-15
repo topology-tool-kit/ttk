@@ -41,7 +41,7 @@ namespace ttk {
         return offsets_;
       }
 
-      idVertex getSize(void) const {
+      idVertex getSize() const {
         return size_;
       }
 
@@ -95,7 +95,7 @@ namespace ttk {
         }
       }
 
-      void removeNaN(void) {
+      void removeNaN() {
         // This section is aimed to prevent un-deterministic results if the
         // data-set have NaN values in it. In this loop, we replace every NaN by
         // a 0 value. Recall: Equals values are distinguished using Simulation

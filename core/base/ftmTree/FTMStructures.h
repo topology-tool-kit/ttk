@@ -82,7 +82,7 @@ namespace ttk {
         vertex = v;
       }
 
-      SimplexId getNextMinVertex(void) {
+      SimplexId getNextMinVertex() {
         vertex = propagation.top();
         propagation.pop();
         return vertex;

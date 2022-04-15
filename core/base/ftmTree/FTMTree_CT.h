@@ -43,11 +43,11 @@ namespace ttk {
       // ACCESSOR
       // -----------------
 
-      inline FTMTree_MT *getJoinTree(void) const {
+      inline FTMTree_MT *getJoinTree() const {
         return jt_;
       }
 
-      inline FTMTree_MT *getSplitTree(void) const {
+      inline FTMTree_MT *getSplitTree() const {
         return st_;
       }
 
@@ -109,7 +109,7 @@ namespace ttk {
                                    const bool isJT,
                                    idSuperArc xtArc);
 
-      void finalizeSegmentation(void);
+      void finalizeSegmentation();
     };
 
   } // namespace ftm

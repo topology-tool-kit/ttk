@@ -37,11 +37,11 @@ namespace ttk {
       explicit Segment(idVertex size);
       Segment();
 
-      segm_const_it begin(void) const;
-      segm_const_it end(void) const;
-      segm_it begin(void);
-      segm_it end(void);
-      idVertex size(void) const;
+      segm_const_it begin() const;
+      segm_const_it end() const;
+      segm_it begin();
+      segm_it end();
+      idVertex size() const;
       void reserve(const idVertex size);
       void emplace_back(const idVertex v);
 

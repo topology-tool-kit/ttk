@@ -183,13 +183,13 @@ namespace ttk {
 
       // Debug
 
-      std::string print(void);
+      std::string print();
 
       std::string print(const std::function<std::string(std::size_t)> &);
 
-      std::string printNbCC(void);
+      std::string printNbCC();
 
-      void test(void);
+      void test();
     };
 
     // Same as dynamic graph but keep the number of subtrees at any time
@@ -312,11 +312,11 @@ namespace ttk {
       // Accessor functions
       // ------------------
 
-      Type getWeight(void) const {
+      Type getWeight() const {
         return weight_;
       }
 
-      bool hasParent(void) const {
+      bool hasParent() const {
         return parent_;
       }
 
@@ -325,14 +325,14 @@ namespace ttk {
 
       /// Make this node the root of its tree
       // Various way to do that, test perfs ?
-      void evert(void);
+      void evert();
 
       /// Get representative node
-      DynGraphNode *findRoot(void) const;
+      DynGraphNode *findRoot() const;
 
       /// Get the arcs corresponding to this subtree:
       /// find the root before
-      idSuperArc findRootArc(void) const;
+      idSuperArc findRootArc() const;
 
       /// Get the arcs corresponding to this subtree
       idSuperArc getCorArc() const {
@@ -361,7 +361,7 @@ namespace ttk {
 
       /// Remove the link between this node and its parent, thus makeing a new
       /// root
-      void removeEdge(void);
+      void removeEdge();
     };
   } // namespace ftr
 } // namespace ttk

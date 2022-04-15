@@ -87,7 +87,7 @@ namespace ttk {
       nextId = nId;
     }
 
-    void clear(void) {
+    void clear() {
       reset();
 
       // Remove old content
@@ -96,7 +96,7 @@ namespace ttk {
       reserve(oldSize);
     }
 
-    std::size_t getNext(void) {
+    std::size_t getNext() {
       std::size_t resId;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
@@ -110,11 +110,11 @@ namespace ttk {
       return resId;
     }
 
-    std::size_t size(void) const {
+    std::size_t size() const {
       return nextId;
     }
 
-    bool empty(void) const {
+    bool empty() const {
       return nextId == 0;
     }
 
