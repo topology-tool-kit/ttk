@@ -628,6 +628,9 @@ namespace ttk {
 
       int getRealNumberOfNodes();
 
+      template <class dataType>
+      idNode getMergedRootOrigin();
+
       void getBranchOriginsFromThisBranch(
         idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res);
 
@@ -663,7 +666,24 @@ namespace ttk {
       // Persistence
       // --------------------
       template <class dataType>
+      std::tuple<dataType, dataType> getBirthDeathFromIds(idNode nodeId1,
+                                                          idNode nodeId2);
+
+      template <class dataType>
+      std::tuple<dataType, dataType> getBirthDeathNodeFromIds(idNode nodeId1,
+                                                              idNode nodeId2);
+
+      template <class dataType>
       std::tuple<dataType, dataType> getBirthDeath(idNode nodeId);
+
+      template <class dataType>
+      std::tuple<ftm::idNode, ftm::idNode> getBirthDeathNode(idNode nodeId);
+
+      template <class dataType>
+      std::tuple<dataType, dataType> getMergedRootBirthDeath();
+
+      template <class dataType>
+      std::tuple<ftm::idNode, ftm::idNode> getMergedRootBirthDeathNode();
 
       template <class dataType>
       dataType getBirth(idNode nodeId);
@@ -673,6 +693,9 @@ namespace ttk {
 
       template <class dataType>
       dataType getMaximumPersistence();
+
+      template <class dataType>
+      ftm::idNode getSecondMaximumPersistenceNode();
 
       template <class dataType>
       dataType getSecondMaximumPersistence();
@@ -718,14 +741,18 @@ namespace ttk {
       void printNodeSS(idNode node, std::stringstream &ss);
 
       template <class dataType>
-      void printNode2(idNode nodeId);
+      std::stringstream printNode2(idNode nodeId, bool doPrint = true);
+
+      template <class dataType>
+      std::stringstream printMergedRoot(bool doPrint = true);
 
       std::stringstream printTree(bool doPrint = true);
 
-      void printTreeStats();
+      std::stringstream printTreeStats(bool doPrint = true);
 
       template <class dataType>
-      void printTreeScalars(bool printNodeAlone = true);
+      std::stringstream printTreeScalars(bool printNodeAlone = true,
+                                         bool doPrint = true);
 
       template <class dataType>
       std::stringstream printPairsFromTree(bool useBD = false,
@@ -736,8 +763,9 @@ namespace ttk {
                                                             = true);
 
       template <class dataType>
-      void printMultiPersPairsFromTree(bool useBD = false,
-                                       bool printPairs = true);
+      std::stringstream printMultiPersPairsFromTree(bool useBD = false,
+                                                    bool printPairs = true,
+                                                    bool doPrint = true);
 
       // ----------------------------------------
       // End of utils functions

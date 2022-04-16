@@ -41,7 +41,8 @@ namespace ttk {
       if(threshold > 1)
         threshold /= 100.0;
       threshold = rootPers * threshold;
-      return this->getNodePersistence<dataType>(nodeId) > threshold;
+      auto pers = this->getNodePersistence<dataType>(nodeId);
+      return pers > threshold;
     }
 
     template <class dataType>
@@ -83,6 +84,24 @@ namespace ttk {
     // Get
     // --------------------
     template <class dataType>
+    idNode FTMTree_MT::getMergedRootOrigin() {
+      dataType maxPers = std::numeric_limits<dataType>::lowest();
+      int maxIndex = -1;
+      auto root = this->getRoot();
+      for(unsigned int j = 0; j < this->getNumberOfNodes(); ++j) {
+        if(j != root and this->isNodeOriginDefined(j)
+           and this->getNode(j)->getOrigin() == (int)root) {
+          dataType nodePers = this->getNodePersistence<dataType>(j);
+          if(nodePers > maxPers) {
+            maxPers = nodePers;
+            maxIndex = j;
+          }
+        }
+      }
+      return maxIndex;
+    }
+
+    template <class dataType>
     idNode FTMTree_MT::getLowestNode(idNode nodeStart) {
       idNode lowestNode = nodeStart;
       bool isJT = this->isJoinTree<dataType>();
@@ -110,17 +129,60 @@ namespace ttk {
     // Persistence
     // --------------------
     template <class dataType>
+    std::tuple<dataType, dataType>
+      FTMTree_MT::getBirthDeathFromIds(idNode nodeId1, idNode nodeId2) {
+      dataType scalar1 = this->getValue<dataType>(nodeId1);
+      dataType scalar2 = this->getValue<dataType>(nodeId2);
+      dataType birth = std::min(scalar1, scalar2);
+      dataType death = std::max(scalar1, scalar2);
+      return std::make_tuple(birth, death);
+    }
+
+    template <class dataType>
+    std::tuple<dataType, dataType>
+      FTMTree_MT::getBirthDeathNodeFromIds(idNode nodeId1, idNode nodeId2) {
+      auto nodeValue = this->getValue<dataType>(nodeId1);
+      auto node2Value = this->getValue<dataType>(nodeId2);
+      auto nodeBirth = (nodeValue < node2Value ? nodeId1 : nodeId2);
+      auto nodeDeath = (nodeValue < node2Value ? nodeId2 : nodeId1);
+      return std::make_tuple(nodeBirth, nodeDeath);
+    }
+
+    template <class dataType>
     std::tuple<dataType, dataType> FTMTree_MT::getBirthDeath(idNode nodeId) {
-      idNode originId = this->getNode(nodeId)->getOrigin();
-      if(this->isNodeOriginDefined(
-           nodeId)) { // Avoid error if origin is not defined
-        dataType pers1 = this->getValue<dataType>(nodeId);
-        dataType pers2 = this->getValue<dataType>(originId);
-        dataType birth = std::min(pers1, pers2);
-        dataType death = std::max(pers1, pers2);
-        return std::make_tuple(birth, death);
+      // Avoid error if origin is not defined
+      if(this->isNodeOriginDefined(nodeId)) {
+        return this->getBirthDeathFromIds<dataType>(
+          nodeId, this->getNode(nodeId)->getOrigin());
       }
       return std::make_tuple(0.0, 0.0);
+    }
+
+    template <class dataType>
+    std::tuple<ftm::idNode, ftm::idNode>
+      FTMTree_MT::getBirthDeathNode(idNode nodeId) {
+      if(this->isNodeOriginDefined(nodeId)) {
+        return this->getBirthDeathNodeFromIds<dataType>(
+          nodeId, this->getNode(nodeId)->getOrigin());
+      }
+      return std::make_tuple(0.0, 0.0);
+    }
+
+    template <class dataType>
+    std::tuple<dataType, dataType> FTMTree_MT::getMergedRootBirthDeath() {
+      if(!this->isFullMerge())
+        return this->getBirthDeath<dataType>(this->getRoot());
+      return this->getBirthDeathFromIds<dataType>(
+        this->getRoot(), this->getMergedRootOrigin<dataType>());
+    }
+
+    template <class dataType>
+    std::tuple<ftm::idNode, ftm::idNode>
+      FTMTree_MT::getMergedRootBirthDeathNode() {
+      if(!this->isFullMerge())
+        return this->getBirthDeathNode<dataType>(this->getRoot());
+      return this->getBirthDeathNodeFromIds<dataType>(
+        this->getRoot(), this->getMergedRootOrigin<dataType>());
     }
 
     template <class dataType>
@@ -147,7 +209,7 @@ namespace ttk {
       // Full merge case
       dataType maxPers = std::numeric_limits<dataType>::lowest();
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i)
-        if(not this->isNodeAlone(i) and this->isNodeOriginDefined(i)
+        if(/*not this->isNodeAlone(i) and*/ this->isNodeOriginDefined(i)
            and this->getNode(i)->getOrigin() == (int)root)
           maxPers = std::max(maxPers, this->getNodePersistence<dataType>(i));
 
@@ -155,20 +217,31 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType FTMTree_MT::getSecondMaximumPersistence() {
+    ftm::idNode FTMTree_MT::getSecondMaximumPersistenceNode() {
       idNode root = this->getRoot();
       dataType pers = std::numeric_limits<dataType>::lowest();
+      ftm::idNode nodeSecMax = -1;
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i) {
-        if(this->isLeaf(i) and not this->isNodeAlone(i)
+        if(not this->isRoot(i) and not this->isNodeAlone(i)
            and this->isNodeOriginDefined(i)) {
           idNode nodeOrigin = this->getNode(i)->getOrigin();
           if(not(nodeOrigin == root
-                 and this->getNode(nodeOrigin)->getOrigin() == (int)i))
-            pers = std::max(pers, this->getNodePersistence<dataType>(i));
+                 and this->getNode(nodeOrigin)->getOrigin() == (int)i)) {
+            auto nodePers = this->getNodePersistence<dataType>(i);
+            if(pers < nodePers) {
+              pers = nodePers;
+              nodeSecMax = i;
+            }
+          }
         }
       }
+      return nodeSecMax;
+    }
 
-      return pers;
+    template <class dataType>
+    dataType FTMTree_MT::getSecondMaximumPersistence() {
+      return this->getNodePersistence<dataType>(
+        this->getSecondMaximumPersistenceNode<dataType>());
     }
 
     template <class dataType>
@@ -222,17 +295,40 @@ namespace ttk {
     // Utils
     // --------------------
     template <class dataType>
-    void FTMTree_MT::printNode2(idNode nodeId) {
-      auto birthDeath = this->getBirthDeath<dataType>(nodeId);
+    std::stringstream FTMTree_MT::printNode2(idNode nodeId, bool doPrint) {
+      auto origin = this->getNode(nodeId)->getOrigin();
       std::stringstream ss;
-      ss << "nodeId = " << nodeId << " (" << std::get<0>(birthDeath)
-         << ") _ originId = " << this->getNode(nodeId)->getOrigin() << " ("
-         << std::get<1>(birthDeath) << ")";
-      printMsg(ss.str());
+      ss << "nodeId = " << nodeId << " (" << this->getValue<dataType>(nodeId)
+         << ") _ originId = " << this->getNode(nodeId)->getOrigin();
+      if(not this->isNodeIdInconsistent(origin))
+        ss << " (" << this->getValue<dataType>(origin) << ")";
+      if(doPrint)
+        printMsg(ss.str());
+      return ss;
     }
 
     template <class dataType>
-    void FTMTree_MT::printTreeScalars(bool printNodeAlone) {
+    std::stringstream FTMTree_MT::printMergedRoot(bool doPrint) {
+      std::stringstream ss;
+      ss << this->getRoot() << " (" << this->getValue<dataType>(this->getRoot())
+         << ") _ ";
+      auto mergedRootOrigin = this->getMergedRootOrigin<dataType>();
+      ss << mergedRootOrigin;
+      if(not this->isNodeIdInconsistent(mergedRootOrigin))
+        ss << " (" << this->getValue<dataType>(mergedRootOrigin) << ")";
+      ss << " _ " << this->getNodePersistence<dataType>(this->getRoot());
+      if(not this->isNodeIdInconsistent(mergedRootOrigin))
+        ss << " _ " << this->getNodePersistence<dataType>(mergedRootOrigin);
+      ss << std::endl;
+      if(doPrint)
+        printMsg(ss.str());
+      return ss;
+    }
+
+    template <class dataType>
+    std::stringstream FTMTree_MT::printTreeScalars(bool printNodeAlone,
+                                                   bool doPrint) {
+      std::stringstream wholeSS;
       std::streamsize sSize = std::cout.precision();
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i) {
         idNode iOrigin
@@ -244,11 +340,15 @@ namespace ttk {
           std::stringstream ss;
           ss << i << " _ " << std::setprecision(12)
              << this->getValue<dataType>(i);
-          printMsg(ss.str());
+          if(doPrint)
+            printMsg(ss.str());
+          wholeSS << ss.str() << std::endl;
         }
       }
-      printMsg(debug::Separator::L2);
+      if(doPrint)
+        printMsg(debug::Separator::L2);
       std::cout.precision(sSize);
+      return wholeSS;
     }
 
     template <class dataType>
@@ -276,7 +376,9 @@ namespace ttk {
     }
 
     template <class dataType>
-    void FTMTree_MT::printMultiPersPairsFromTree(bool useBD, bool printPairs) {
+    std::stringstream FTMTree_MT::printMultiPersPairsFromTree(bool useBD,
+                                                              bool printPairs,
+                                                              bool doPrint) {
       std::vector<std::tuple<idNode, idNode, dataType>> pairs;
       this->getPersistencePairsFromTree(pairs, useBD);
       std::vector<int> noOrigin(this->getNumberOfNodes(), 0);
@@ -294,8 +396,11 @@ namespace ttk {
         for(auto node : multiPers)
           ss << node << std::endl;
       }
-      printMsg(ss.str());
-      printMsg(debug::Separator::L2);
+      if(doPrint) {
+        printMsg(ss.str());
+        printMsg(debug::Separator::L2);
+      }
+      return ss;
     }
 
   } // namespace ftm
