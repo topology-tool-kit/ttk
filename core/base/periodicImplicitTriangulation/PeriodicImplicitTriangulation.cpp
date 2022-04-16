@@ -329,7 +329,7 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     getVertexNeighbors)() {
-  if(!vertexNeighborList_.size()) {
+  if(vertexNeighborList_.empty()) {
     Timer t;
     vertexNeighborList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
@@ -382,7 +382,7 @@ int PeriodicImplicitTriangulation::getVertexEdgeInternal(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::getVertexEdgesInternal() {
-  if(!vertexEdgeList_.size()) {
+  if(vertexEdgeList_.empty()) {
     Timer t;
 
     vertexEdgeList_.resize(vertexNumber_);
@@ -437,7 +437,7 @@ int PeriodicImplicitTriangulation::getVertexTriangleInternal(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::getVertexTrianglesInternal() {
-  if(!vertexTriangleList_.size()) {
+  if(vertexTriangleList_.empty()) {
     Timer t;
 
     vertexTriangleList_.resize(vertexNumber_);
@@ -480,7 +480,7 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLinks)() {
-  if(!vertexLinkList_.size()) {
+  if(vertexLinkList_.empty()) {
     Timer t;
 
     vertexLinkList_.resize(vertexNumber_);
@@ -536,7 +536,7 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStars)() {
-  if(!vertexStarList_.size()) {
+  if(vertexStarList_.empty()) {
     Timer t;
     vertexStarList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
@@ -680,7 +680,7 @@ int PeriodicImplicitTriangulation::getEdgeVertexInternal(
 const vector<std::array<SimplexId, 2>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdges)() {
 
-  if(!edgeList_.size()) {
+  if(edgeList_.empty()) {
     Timer t;
 
     edgeList_.resize(edgeNumber_);
@@ -777,7 +777,7 @@ int PeriodicImplicitTriangulation::getEdgeTriangleInternal(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::getEdgeTrianglesInternal() {
-  if(!edgeTriangleList_.size()) {
+  if(edgeTriangleList_.empty()) {
     Timer t;
 
     edgeTriangleList_.resize(edgeNumber_);
@@ -851,7 +851,7 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() {
 
-  if(!edgeLinkList_.size()) {
+  if(edgeLinkList_.empty()) {
     Timer t;
 
     edgeLinkList_.resize(edgeNumber_);
@@ -948,7 +948,7 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStars)() {
 
-  if(!edgeStarList_.size()) {
+  if(edgeStarList_.empty()) {
     Timer t;
 
     edgeStarList_.resize(edgeNumber_);
@@ -1122,7 +1122,7 @@ const vector<vector<SimplexId>> *
 const vector<std::array<SimplexId, 3>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
 
-  if(!triangleList_.size()) {
+  if(triangleList_.empty()) {
     Timer t;
 
     triangleList_.resize(triangleNumber_);
@@ -1186,7 +1186,7 @@ const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     getTriangleLinks)() {
 
-  if(!triangleLinkList_.size()) {
+  if(triangleLinkList_.empty()) {
     Timer t;
 
     triangleLinkList_.resize(triangleNumber_);
@@ -1259,7 +1259,7 @@ const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     getTriangleStars)() {
 
-  if(!triangleStarList_.size()) {
+  if(triangleStarList_.empty()) {
     Timer t;
 
     triangleStarList_.resize(triangleNumber_);
@@ -1742,7 +1742,7 @@ const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     getCellNeighbors)() {
 
-  if(!cellNeighborList_.size()) {
+  if(cellNeighborList_.empty()) {
     Timer t;
 
     if(dimensionality_ == 3)
