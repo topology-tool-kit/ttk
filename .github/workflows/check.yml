@@ -145,7 +145,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
 
     - name: Use Clang static analyzer
       if: matrix.config.sa
@@ -153,7 +153,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P2 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
       if: matrix.config.dox
@@ -225,4 +225,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs clang-check-11 -p build --extra-arg=-Werror
+        | xargs -n1 -P$(nproc) clang-check-11 -p build --extra-arg=-Werror
