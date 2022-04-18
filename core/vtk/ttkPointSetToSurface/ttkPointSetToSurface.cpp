@@ -2,7 +2,7 @@
 
 #include <vtkCellData.h>
 #include <vtkInformation.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkPolyData.h>
 
 #include <ttkUtils.h>
 
@@ -29,7 +29,7 @@ int ttkPointSetToSurface::FillInputPortInformation(int port,
 int ttkPointSetToSurface::FillOutputPortInformation(int port,
                                                     vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
   return 0;
@@ -52,7 +52,7 @@ int ttkPointSetToSurface::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
   const auto input = vtkPointSet::GetData(inputVector[0]);
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  auto output = vtkPolyData::GetData(outputVector);
 
   if(input == nullptr || output == nullptr) {
     this->printErr("Null input data, aborting");
@@ -130,7 +130,7 @@ int ttkPointSetToSurface::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   // Create new grid
-  vtkNew<vtkUnstructuredGrid> vtkOutput{};
+  vtkNew<vtkPolyData> vtkOutput{};
   vtkOutput->ShallowCopy(input);
 
   for(unsigned int i = 0; i < nUniqueValues; ++i) {
