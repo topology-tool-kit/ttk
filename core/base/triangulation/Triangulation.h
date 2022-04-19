@@ -68,8 +68,9 @@ namespace ttk {
      * Strategies for implicit & periodic triangulations preconditioning
      */
     enum class STRATEGY {
-      /** No preconditions above a grid dimension threshold (given by
-          TTK_IMPLICIT_PRECONDITIONS_THRESHOLD, default  to 256) */
+      /** No preconditions above a number of vertices threshold (given
+          by TTK_IMPLICIT_PRECONDITIONS_THRESHOLD, default to
+          256^3) */
       DEFAULT = 0,
       /** Always precondition implicit & periodic triangulations */
       WITH_PRECONDITIONS = 1,
