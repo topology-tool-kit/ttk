@@ -17,6 +17,10 @@ on:
       - 'mpi'
 
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PV_TAG: v5.10.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
