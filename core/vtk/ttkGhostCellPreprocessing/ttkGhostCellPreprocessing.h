@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkArrayPreconditioning
+/// \class ttkGhostCellPreprocessing
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date September 2020
 ///
@@ -14,13 +14,13 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::ttkArrayPreconditioning
+/// \sa ttk::ttkGhostCellPreprocessing
 /// \sa ttkAlgorithm
 
 #pragma once
 
 // VTK Module
-#include <ttkArrayPreconditioningModule.h>
+#include <ttkGhostCellPreprocessingModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
@@ -29,21 +29,12 @@
 #include <vtkDataArraySelection.h>
 #include <vtkNew.h>
 
-class TTKARRAYPRECONDITIONING_EXPORT ttkArrayPreconditioning
+class TTKGHOSTCELLPREPROCESSING_EXPORT ttkGhostCellPreprocessing
   : public ttkAlgorithm {
 
 public:
-  static ttkArrayPreconditioning *New();
-  vtkTypeMacro(ttkArrayPreconditioning, ttkAlgorithm);
-
-  vtkSetMacro(SelectFieldsWithRegexp, bool);
-  vtkGetMacro(SelectFieldsWithRegexp, bool);
-
-  vtkSetMacro(BurstSize, int);
-  vtkGetMacro(BurstSize, int);
-
-  vtkSetMacro(RegexpString, const std::string &);
-  vtkGetMacro(RegexpString, std::string);
+  static ttkGhostCellPreprocessing *New();
+  vtkTypeMacro(ttkGhostCellPreprocessing, ttkAlgorithm);
 
   // copy the vtkPassSelectedArray ("PassArrays" filter) API
   vtkDataArraySelection *GetPointDataArraySelection() {
@@ -51,22 +42,13 @@ public:
   }
 
 protected:
-  ttkArrayPreconditioning();
+  ttkGhostCellPreprocessing();
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-  void ReceiveAndAddToVector(
-    MPI_Datatype mpi_values,
-    int rankFrom,
-    int structTag,
-    int intTag,
-    std::vector<std::vector<ttk::value>> &unsortedReceivedValues);
 
 private:
   vtkNew<vtkDataArraySelection> ArraySelection{};
-  bool SelectFieldsWithRegexp{false};
-  std::string RegexpString{".*"};
-  int BurstSize{100};
 };
