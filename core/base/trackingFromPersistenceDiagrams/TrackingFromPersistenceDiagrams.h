@@ -15,7 +15,7 @@ namespace ttk {
   public:
     TrackingFromPersistenceDiagrams();
 
-    ~TrackingFromPersistenceDiagrams();
+    ~TrackingFromPersistenceDiagrams() override;
 
     /// Execute the package.
     /// \return Returns 0 upon success, negative values otherwise.

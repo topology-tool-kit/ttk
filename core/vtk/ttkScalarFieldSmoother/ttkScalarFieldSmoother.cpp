@@ -19,8 +19,7 @@ ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkScalarFieldSmoother::~ttkScalarFieldSmoother() {
-}
+ttkScalarFieldSmoother::~ttkScalarFieldSmoother() = default;
 
 int ttkScalarFieldSmoother::FillInputPortInformation(int port,
                                                      vtkInformation *info) {

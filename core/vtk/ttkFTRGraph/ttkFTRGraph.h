@@ -77,7 +77,7 @@ public:
     params_.singleSweep = ss;
     Modified();
   }
-  bool GetSingleSweep(void) const {
+  bool GetSingleSweep() const {
     return params_.singleSweep;
   }
   /// @}
@@ -88,7 +88,7 @@ public:
     params_.segm = segm;
     Modified();
   }
-  bool GetWithSegmentation(void) const {
+  bool GetWithSegmentation() const {
     return params_.segm;
   }
   /// @}
@@ -100,7 +100,7 @@ public:
     params_.normalize = norm;
     Modified();
   }
-  bool GetWithNormalize(void) const {
+  bool GetWithNormalize() const {
     return params_.normalize;
   }
   /// @}
@@ -111,7 +111,7 @@ public:
     params_.samplingLvl = lvl;
     Modified();
   }
-  int GetSuperArcSamplingLevel(void) const {
+  int GetSuperArcSamplingLevel() const {
     return params_.samplingLvl;
   }
   /// @}

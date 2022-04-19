@@ -22,8 +22,8 @@ ttkTopologicalSimplificationByPersistence::
 }
 
 ttkTopologicalSimplificationByPersistence::
-  ~ttkTopologicalSimplificationByPersistence() {
-}
+  ~ttkTopologicalSimplificationByPersistence()
+  = default;
 
 int ttkTopologicalSimplificationByPersistence::FillInputPortInformation(
   int port, vtkInformation *info) {

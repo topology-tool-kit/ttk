@@ -68,7 +68,7 @@ namespace ttk {
     };
 
     WebSocketIO();
-    ~WebSocketIO();
+    ~WebSocketIO() override;
 
     int isListening();
 

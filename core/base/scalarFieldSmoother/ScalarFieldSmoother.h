@@ -25,7 +25,7 @@ namespace ttk {
 
   public:
     ScalarFieldSmoother();
-    ~ScalarFieldSmoother();
+    ~ScalarFieldSmoother() override;
 
     inline void setDimensionNumber(const int &dimensionNumber) {
       dimensionNumber_ = dimensionNumber;

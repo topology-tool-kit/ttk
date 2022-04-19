@@ -32,7 +32,8 @@ ttkExtract::ttkExtract() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
-ttkExtract::~ttkExtract(){};
+ttkExtract::~ttkExtract() = default;
+;
 
 std::string ttkExtract::GetVtkDataTypeName(const int outputType) const {
   switch(outputType) {

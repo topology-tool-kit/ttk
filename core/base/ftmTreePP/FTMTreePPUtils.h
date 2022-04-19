@@ -5,9 +5,6 @@
 ///
 /// Utils function for manipulating FTMTree class
 
-#ifndef _FTMTREEPPUTILS_H
-#define _FTMTREEPPUTILS_H
-
 #pragma once
 
 #include <FTMTree.h>
@@ -45,5 +42,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif

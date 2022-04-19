@@ -10,8 +10,7 @@
 /// \sa ttk::Triangulation::setPeriodicBoundaryConditions
 ///
 
-#ifndef _PERIODICIMPLICITTRIANGULATION_H
-#define _PERIODICIMPLICITTRIANGULATION_H
+#pragma once
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -24,7 +23,7 @@ namespace ttk {
 
   public:
     PeriodicImplicitTriangulation();
-    ~PeriodicImplicitTriangulation();
+    ~PeriodicImplicitTriangulation() override;
 
     PeriodicImplicitTriangulation(const PeriodicImplicitTriangulation &)
       = default;
@@ -3388,5 +3387,3 @@ inline ttk::SimplexId
 #include <PeriodicPreconditions.h>
 
 /// @endcond
-
-#endif // _PERIODICIMPLICITTRIANGULATION_H

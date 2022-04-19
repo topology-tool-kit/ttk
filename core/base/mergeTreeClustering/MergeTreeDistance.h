@@ -66,7 +66,7 @@ namespace ttk {
       omp_set_nested(1);
 #endif
     }
-    ~MergeTreeDistance() = default;
+    ~MergeTreeDistance() override = default;
 
     void setIsCalled(bool ic) {
       isCalled_ = ic;
@@ -321,8 +321,7 @@ namespace ttk {
       dataType res
         = computeDistance<dataType>(tree1, tree2, realOutputMatching);
       for(auto tup : realOutputMatching)
-        outputMatching.push_back(
-          std::make_tuple(std::get<0>(tup), std::get<1>(tup)));
+        outputMatching.emplace_back(std::get<0>(tup), std::get<1>(tup));
       return res;
     }
 
@@ -413,8 +412,7 @@ namespace ttk {
         realOutputMatching;
       dataType res = execute<dataType>(tree1, tree2, realOutputMatching);
       for(auto tup : realOutputMatching)
-        outputMatching.push_back(
-          std::make_tuple(std::get<0>(tup), std::get<1>(tup)));
+        outputMatching.emplace_back(std::get<0>(tup), std::get<1>(tup));
       return res;
     }
 
@@ -1139,8 +1137,7 @@ namespace ttk {
                           < tree->getValue<dataType>(tree->getParentSafe(node));
 
           if(thisProblem)
-            problemNodes.push_back(
-              std::make_tuple(node, tree->getParentSafe(node)));
+            problemNodes.emplace_back(node, tree->getParentSafe(node));
 
           problem |= thisProblem;
         }

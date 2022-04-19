@@ -35,8 +35,7 @@ ttkWebSocketIO::ttkWebSocketIO() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkWebSocketIO::~ttkWebSocketIO() {
-}
+ttkWebSocketIO::~ttkWebSocketIO() = default;
 
 int ttkWebSocketIO::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

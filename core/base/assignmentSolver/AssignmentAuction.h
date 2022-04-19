@@ -11,10 +11,9 @@
 ///   - the mth column is the same but with jobs
 ///   - the last cell (costMatrix[n][m]) is not used
 
-#ifndef _ASSIGNMENTAUCTION_H
-#define _ASSIGNMENTAUCTION_H
+#pragma once
 
-#include "AssignmentSolver.h"
+#include <AssignmentSolver.h>
 
 #include <limits>
 #include <queue>
@@ -28,9 +27,9 @@ namespace ttk {
   public:
     AssignmentAuction() = default;
 
-    ~AssignmentAuction() = default;
+    ~AssignmentAuction() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<asgnMatchingTuple> &matchings) override;
     void runAuctionRound(std::vector<std::vector<dataType>> &cMatrix);
 
     void initFirstRound();
@@ -43,7 +42,7 @@ namespace ttk {
     dataType getRelativePrecision(std::vector<std::vector<dataType>> &cMatrix);
     dataType getMatchingDistance(std::vector<std::vector<dataType>> &cMatrix);
 
-    inline void setBalanced(bool balanced) {
+    inline void setBalanced(bool balanced) override {
       AssignmentSolver<dataType>::setBalanced(balanced);
       if(this->balancedAssignment)
         goodPrices.resize(this->colSize, 0);
@@ -353,5 +352,3 @@ namespace ttk {
   }
 
 } // namespace ttk
-
-#endif

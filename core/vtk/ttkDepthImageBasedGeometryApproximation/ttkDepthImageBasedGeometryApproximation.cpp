@@ -23,8 +23,8 @@ ttkDepthImageBasedGeometryApproximation::
   this->SetNumberOfOutputPorts(1);
 }
 ttkDepthImageBasedGeometryApproximation::
-  ~ttkDepthImageBasedGeometryApproximation() {
-}
+  ~ttkDepthImageBasedGeometryApproximation()
+  = default;
 
 int ttkDepthImageBasedGeometryApproximation::FillInputPortInformation(
   int port, vtkInformation *info) {

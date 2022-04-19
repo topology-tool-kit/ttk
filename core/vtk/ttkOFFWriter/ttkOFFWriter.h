@@ -32,10 +32,10 @@ public:
 
 protected:
   ttkOFFWriter();
-  ~ttkOFFWriter();
+  ~ttkOFFWriter() override;
 
   int OpenFile();
-  virtual void WriteData() override;
+  void WriteData() override;
 
   char *Filename{};
   std::ofstream Stream{};

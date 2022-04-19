@@ -21,7 +21,7 @@ namespace ttk {
 
   public:
     ImplicitTriangulation();
-    ~ImplicitTriangulation();
+    ~ImplicitTriangulation() override;
 
     ImplicitTriangulation(const ImplicitTriangulation &) = default;
     ImplicitTriangulation(ImplicitTriangulation &&) = default;

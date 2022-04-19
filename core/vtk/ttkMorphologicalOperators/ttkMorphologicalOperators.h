@@ -58,7 +58,7 @@ public:
 
 protected:
   ttkMorphologicalOperators();
-  ~ttkMorphologicalOperators();
+  ~ttkMorphologicalOperators() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

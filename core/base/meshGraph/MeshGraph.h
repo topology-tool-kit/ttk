@@ -44,7 +44,7 @@ namespace ttk {
     MeshGraph() {
       this->setDebugMsgPrefix("MeshGraph");
     }
-    ~MeshGraph() = default;
+    ~MeshGraph() override = default;
 
     inline size_t computeNumberOfOutputPoints(const size_t &nInputPoints,
                                               const size_t &nInputCells,

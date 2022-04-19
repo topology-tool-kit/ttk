@@ -2353,7 +2353,7 @@ bool DiscreteGradient::getDescendingPathThroughWall(
             if(vpath != nullptr) {
               vpath->push_back(Cell(1, edgeId));
             }
-            return 0;
+            return false;
           }
 
           currentId = edgeId;

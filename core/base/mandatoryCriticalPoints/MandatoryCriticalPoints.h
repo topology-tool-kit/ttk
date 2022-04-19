@@ -444,7 +444,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setDebugLevel(const int &debugLevel) {
+    inline int setDebugLevel(const int &debugLevel) override {
       Debug::setDebugLevel(debugLevel);
       upperJoinTree_.setDebugLevel(debugLevel);
       lowerJoinTree_.setDebugLevel(debugLevel);
@@ -500,7 +500,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setSoSoffsets(int *offsets = NULL) {
+    inline int setSoSoffsets(int *offsets = nullptr) {
       if((int)vertexSoSoffsets_.size() != vertexNumber_)
         vertexSoSoffsets_.resize(vertexNumber_);
       if(offsets) {

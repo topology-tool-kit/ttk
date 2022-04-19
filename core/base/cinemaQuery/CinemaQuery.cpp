@@ -8,8 +8,7 @@
 ttk::CinemaQuery::CinemaQuery() {
   this->setDebugMsgPrefix("CinemaQuery");
 }
-ttk::CinemaQuery::~CinemaQuery() {
-}
+ttk::CinemaQuery::~CinemaQuery() = default;
 
 int ttk::CinemaQuery::execute(
   const std::vector<std::string> &sqlTableDefinitions,
@@ -36,7 +35,7 @@ int ttk::CinemaQuery::execute(
 
   // SQLite Variables
   sqlite3 *db;
-  char *zErrMsg = 0;
+  char *zErrMsg = nullptr;
   int rc;
 
   // Create Temporary Database
@@ -54,7 +53,8 @@ int ttk::CinemaQuery::execute(
 
     // Create table
     for(auto &sqlTableDefinition : sqlTableDefinitions) {
-      rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
+      rc = sqlite3_exec(
+        db, sqlTableDefinition.data(), nullptr, nullptr, &zErrMsg);
       if(rc != SQLITE_OK) {
         this->printErr("Create table: " + std::string{zErrMsg});
 
@@ -67,7 +67,8 @@ int ttk::CinemaQuery::execute(
 
     // Fill table
     for(auto &sqlInsertStatement : sqlInsertStatements) {
-      rc = sqlite3_exec(db, sqlInsertStatement.data(), nullptr, 0, &zErrMsg);
+      rc = sqlite3_exec(
+        db, sqlInsertStatement.data(), nullptr, nullptr, &zErrMsg);
       if(rc != SQLITE_OK) {
         this->printErr("Insert values: " + std::string{zErrMsg});
 
@@ -87,7 +88,7 @@ int ttk::CinemaQuery::execute(
 
     sqlite3_stmt *sqlStatement;
 
-    if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, NULL)
+    if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, nullptr)
        != SQLITE_OK) {
       this->printErr("Query: " + std::string{sqlite3_errmsg(db)});
 

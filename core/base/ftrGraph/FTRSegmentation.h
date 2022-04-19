@@ -8,8 +8,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef FTR_SEGMENTATION_H_
-#define FTR_SEGMENTATION_H_
+#pragma once
 
 #include "FTRDataTypes.h"
 #include "FTRScalars.h"
@@ -38,11 +37,11 @@ namespace ttk {
       explicit Segment(idVertex size);
       Segment();
 
-      segm_const_it begin(void) const;
-      segm_const_it end(void) const;
-      segm_it begin(void);
-      segm_it end(void);
-      idVertex size(void) const;
+      segm_const_it begin() const;
+      segm_const_it end() const;
+      segm_it begin();
+      segm_it end();
+      idVertex size() const;
       void reserve(const idVertex size);
       void emplace_back(const idVertex v);
 
@@ -52,5 +51,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTR_SEGMENTATION_H_ */

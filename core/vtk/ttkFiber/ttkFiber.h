@@ -49,7 +49,7 @@ public:
 
 protected:
   ttkFiber();
-  ~ttkFiber();
+  ~ttkFiber() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

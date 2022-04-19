@@ -46,8 +46,7 @@ namespace ttk {
     struct triScheme {
       unsigned int scheme : 3;
 
-      triScheme() {
-      }
+      triScheme() = default;
 
       triScheme(const char u) : scheme(u) {
       }
@@ -73,8 +72,7 @@ namespace ttk {
       explicit Mesh(triangulationType *tri) : tri_{tri} {
       }
 
-      Mesh() {
-      }
+      Mesh() = default;
 
       void setTriangulation(triangulationType *tri) {
         tri_ = tri;
@@ -84,15 +82,15 @@ namespace ttk {
         return tri_;
       }
 
-      void alloc(void) override {
+      void alloc() override {
         edgesSortId_.resize(nbEdges_);
         trianglesSortId_.resize(nbTriangles_);
       }
 
-      void init(void) override {
+      void init() override {
       }
 
-      void preprocess(void) {
+      void preprocess() {
         tri_->preconditionVertexNeighbors();
         tri_->preconditionVertexEdges();
         tri_->preconditionVertexTriangles();
@@ -106,23 +104,23 @@ namespace ttk {
 
       // Facade Triangulation
 
-      inline SimplexId getDimensionality(void) const {
+      inline SimplexId getDimensionality() const {
         return tri_->getDimensionality();
       }
 
-      inline idVertex getNumberOfVertices(void) const {
+      inline idVertex getNumberOfVertices() const {
         return nbVerts_;
       }
 
-      inline idEdge getNumberOfEdges(void) const {
+      inline idEdge getNumberOfEdges() const {
         return nbEdges_;
       }
 
-      inline idCell getNumberOfTriangles(void) const {
+      inline idCell getNumberOfTriangles() const {
         return nbTriangles_;
       }
 
-      inline idCell getNumberOfCells(void) const {
+      inline idCell getNumberOfCells() const {
         return tri_->getNumberOfCells();
       }
 
@@ -218,7 +216,7 @@ namespace ttk {
 
       // tools
 
-      std::string printEdges(void) const;
+      std::string printEdges() const;
 
       std::string printEdge(const idEdge e) const;
     };
@@ -501,7 +499,7 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    std::string Mesh<triangulationType>::printEdges(void) const {
+    std::string Mesh<triangulationType>::printEdges() const {
       std::stringstream res;
       res << " edges: " << std::endl;
       for(idEdge i = 0; i < nbEdges_; ++i) {

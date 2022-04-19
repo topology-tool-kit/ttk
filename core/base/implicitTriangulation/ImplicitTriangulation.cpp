@@ -60,8 +60,7 @@ ImplicitTriangulation::ImplicitTriangulation()
   setDebugMsgPrefix("ImplicitTriangulation");
 }
 
-ImplicitTriangulation::~ImplicitTriangulation() {
-}
+ImplicitTriangulation::~ImplicitTriangulation() = default;
 
 int ImplicitTriangulation::setInputGrid(const float &xOrigin,
                                         const float &yOrigin,

@@ -13,7 +13,7 @@ namespace ttk {
   class ttkCinemaImagingVTK : virtual public Debug {
   public:
     ttkCinemaImagingVTK();
-    ~ttkCinemaImagingVTK();
+    ~ttkCinemaImagingVTK() override;
 
     int RenderVTKObject(vtkMultiBlockDataSet *outputImages,
 

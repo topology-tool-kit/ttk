@@ -1,5 +1,4 @@
-#ifndef _PERSISTENCEDIAGRAMAUCTIONIMPL_H
-#define _PERSISTENCEDIAGRAMAUCTIONIMPL_H
+#pragma once
 
 #ifndef matchingTuple
 #define matchingTuple std::tuple<SimplexId, SimplexId, dataType>
@@ -146,4 +145,3 @@ dataType ttk::PersistenceDiagramAuction<dataType>::run(
   dataType wassersteinDistance = this->getMatchingsAndDistance(matchings, true);
   return wassersteinDistance;
 }
-#endif

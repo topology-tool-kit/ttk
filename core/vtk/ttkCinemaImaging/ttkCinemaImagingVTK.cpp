@@ -31,8 +31,7 @@
 ttk::ttkCinemaImagingVTK::ttkCinemaImagingVTK() {
   this->setDebugMsgPrefix("CinemaImaging(VTK)");
 };
-ttk::ttkCinemaImagingVTK::~ttkCinemaImagingVTK() {
-}
+ttk::ttkCinemaImagingVTK::~ttkCinemaImagingVTK() = default;
 
 int ttk::ttkCinemaImagingVTK::setupRenderer(vtkRenderer *renderer,
                                             vtkPointSet *object,

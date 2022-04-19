@@ -24,8 +24,7 @@ ttkIdentifiers::ttkIdentifiers() {
                   "`Generate Ids' instead.");
 }
 
-ttkIdentifiers::~ttkIdentifiers() {
-}
+ttkIdentifiers::~ttkIdentifiers() = default;
 
 int ttkIdentifiers::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

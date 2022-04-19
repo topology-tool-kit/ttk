@@ -31,7 +31,7 @@ namespace ttk {
                                     // printed at the
       // beginning of every msg
     }
-    ~MergeTreeDistanceMatrix() = default;
+    ~MergeTreeDistanceMatrix() override = default;
 
     /**
      * Implementation of the algorithm.

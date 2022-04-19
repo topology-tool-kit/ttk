@@ -1,5 +1,4 @@
-#ifndef FTMTree_CT_Template_h_INCLUDED
-#define FTMTree_CT_Template_h_INCLUDED
+#pragma once
 
 #include <FTMTree_CT.h>
 
@@ -159,4 +158,3 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
 
 } // namespace ftm
 } // namespace ttk
-#endif // FTMTree_CT_Template_h_INCLUDED

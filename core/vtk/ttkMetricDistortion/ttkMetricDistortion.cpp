@@ -36,8 +36,7 @@ ttkMetricDistortion::ttkMetricDistortion() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkMetricDistortion::~ttkMetricDistortion() {
-}
+ttkMetricDistortion::~ttkMetricDistortion() = default;
 
 /**
  * Specify the required input data type of each input port

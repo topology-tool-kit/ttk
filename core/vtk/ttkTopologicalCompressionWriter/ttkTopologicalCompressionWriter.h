@@ -83,7 +83,7 @@ public:
 protected:
   // Regular writer management.
   ttkTopologicalCompressionWriter();
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   // Writer parameters.

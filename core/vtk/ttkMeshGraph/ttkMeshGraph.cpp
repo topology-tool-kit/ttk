@@ -26,8 +26,7 @@ ttkMeshGraph::ttkMeshGraph() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkMeshGraph::~ttkMeshGraph() {
-}
+ttkMeshGraph::~ttkMeshGraph() = default;
 
 int ttkMeshGraph::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

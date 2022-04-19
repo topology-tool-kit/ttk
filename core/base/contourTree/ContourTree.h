@@ -280,8 +280,8 @@ namespace ttk {
     int exportToVtk(const std::string &fileName,
                     // fixes a bug in paraview, the voxel size of the cube file
                     // format is not taken into account...
-                    const std::vector<float> *origin = NULL,
-                    const std::vector<float> *voxelSize = NULL);
+                    const std::vector<float> *origin = nullptr,
+                    const std::vector<float> *voxelSize = nullptr);
 
     int flush();
 
@@ -445,10 +445,10 @@ namespace ttk {
 
     inline const Node *getVertexNode(const int &vertexId) const {
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return NULL;
+        return nullptr;
       if(vertex2node_[vertexId] != -1)
         return &(nodeList_[vertex2node_[vertexId]]);
-      return NULL;
+      return nullptr;
     }
 
     inline int getVertexNodeId(const int &vertexId) const {
@@ -458,12 +458,12 @@ namespace ttk {
     }
 
     bool isJoinTree() const {
-      return ((maximumList_ == NULL)
+      return ((maximumList_ == nullptr)
               || ((maximumList_) && (maximumList_->empty())));
     }
 
     bool isSplitTree() const {
-      return ((minimumList_ == NULL)
+      return ((minimumList_ == nullptr)
               || ((minimumList_) && (minimumList_->empty())));
     }
 
@@ -527,7 +527,7 @@ namespace ttk {
     }
 
     virtual int simplify(const double &simplificationThreshold,
-                         ContourTreeSimplificationMetric *metric = NULL);
+                         ContourTreeSimplificationMetric *metric = nullptr);
 
     int sample(unsigned int samplingLevel = 3);
     int computeBarycenters();
@@ -595,7 +595,7 @@ namespace ttk {
       std::vector<std::pair<std::pair<int, int>, double>> &pairs,
       std::vector<std::pair<std::pair<int, int>, double>> *mergePairs = nullptr,
       std::vector<std::pair<std::pair<int, int>, double>> *splitPairs
-      = nullptr) const;
+      = nullptr) const override;
 
     int getPersistencePlot(
       std::vector<std::pair<double, int>> &plot,
@@ -615,7 +615,7 @@ namespace ttk {
       return &splitTree_;
     }
 
-    inline int maintainRegularVertices(const bool &onOff) {
+    inline int maintainRegularVertices(const bool &onOff) override {
       mergeTree_.maintainRegularVertices(onOff);
       splitTree_.maintainRegularVertices(onOff);
       return 0;
@@ -627,12 +627,12 @@ namespace ttk {
     int setVertexNeighbors(const int &vertexId,
                            const std::vector<int> &neighborList);
 
-    int computeSkeleton(unsigned int arcResolution = 3);
-    int smoothSkeleton(unsigned int skeletonSmoothing);
-    int clearSkeleton();
+    int computeSkeleton(unsigned int arcResolution = 3) override;
+    int smoothSkeleton(unsigned int skeletonSmoothing) override;
+    int clearSkeleton() override;
 
     int simplify(const double &simplificationThreshold,
-                 ContourTreeSimplificationMetric *metric = NULL);
+                 ContourTreeSimplificationMetric *metric = nullptr) override;
 
   protected:
     int combineTrees();

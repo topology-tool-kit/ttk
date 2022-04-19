@@ -23,7 +23,7 @@ namespace ttk {
   public:
     ExplicitTriangulation();
 
-    virtual ~ExplicitTriangulation();
+    ~ExplicitTriangulation() override;
 
     ExplicitTriangulation(const ExplicitTriangulation &) = default;
     ExplicitTriangulation(ExplicitTriangulation &&) = default;

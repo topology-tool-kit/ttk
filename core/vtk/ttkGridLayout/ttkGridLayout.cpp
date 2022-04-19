@@ -21,8 +21,7 @@ ttkGridLayout::ttkGridLayout() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkGridLayout::~ttkGridLayout() {
-}
+ttkGridLayout::~ttkGridLayout() = default;
 
 int ttkGridLayout::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0)

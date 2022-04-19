@@ -28,7 +28,7 @@ namespace ttk {
     // {
 
     template <typename scalarType>
-    void MergeTree::sortInput(void) {
+    void MergeTree::sortInput() {
       const auto &nbVertices = scalars_->size;
 
       if(scalars_->sortedVertices.size() != static_cast<size_t>(nbVertices)) {

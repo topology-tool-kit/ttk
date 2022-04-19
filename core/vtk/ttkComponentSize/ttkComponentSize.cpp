@@ -20,8 +20,7 @@ ttkComponentSize::ttkComponentSize() {
                   "`Connectivity' instead.");
 }
 
-ttkComponentSize::~ttkComponentSize() {
-}
+ttkComponentSize::~ttkComponentSize() = default;
 
 int ttkComponentSize::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

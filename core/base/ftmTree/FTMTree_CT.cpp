@@ -310,7 +310,7 @@ void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
   }
 }
 
-void FTMTree_CT::finalizeSegmentation(void) {
+void FTMTree_CT::finalizeSegmentation() {
   Timer finSegmTime;
   const auto &nbArc = getNumberOfSuperArcs();
 
@@ -324,7 +324,7 @@ void FTMTree_CT::finalizeSegmentation(void) {
   printTime(finSegmTime, "post-process segm", 4);
 }
 
-void FTMTree_CT::insertNodes(void) {
+void FTMTree_CT::insertNodes() {
   vector<idNode> sortedJTNodes = jt_->sortedNodes(true);
   vector<idNode> sortedSTNodes = st_->sortedNodes(true);
 

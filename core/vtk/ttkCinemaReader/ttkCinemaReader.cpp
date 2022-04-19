@@ -20,8 +20,7 @@ ttkCinemaReader::ttkCinemaReader() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaReader::~ttkCinemaReader() {
-}
+ttkCinemaReader::~ttkCinemaReader() = default;
 
 int ttkCinemaReader::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0)

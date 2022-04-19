@@ -3,8 +3,7 @@
 ttk::CinemaImagingEmbree::CinemaImagingEmbree() {
   this->setDebugMsgPrefix("CinemaImaging(Embree)");
 }
-ttk::CinemaImagingEmbree::~CinemaImagingEmbree() {
-}
+ttk::CinemaImagingEmbree::~CinemaImagingEmbree() = default;
 
 #if TTK_ENABLE_EMBREE
 
@@ -29,7 +28,7 @@ int ttk::CinemaImagingEmbree::initializeDevice(RTCDevice &device) const {
 
   if(!device) {
     this->printErr("Unable to create device");
-    this->printErr(std::to_string(rtcGetDeviceError(NULL)));
+    this->printErr(std::to_string(rtcGetDeviceError(nullptr)));
     return 0;
   }
 
@@ -38,7 +37,7 @@ int ttk::CinemaImagingEmbree::initializeDevice(RTCDevice &device) const {
         printf("error %d: %s\n", error, str);
       };
 
-  rtcSetDeviceErrorFunction(device, errorFunction, NULL);
+  rtcSetDeviceErrorFunction(device, errorFunction, nullptr);
 
   this->printMsg("Initializing Device", 1, timer.getElapsedTime());
 

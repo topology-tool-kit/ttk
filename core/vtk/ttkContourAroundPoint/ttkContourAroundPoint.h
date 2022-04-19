@@ -62,8 +62,7 @@ protected:
     SetNumberOfOutputPorts(2);
   }
 
-  ~ttkContourAroundPoint() override {
-  }
+  ~ttkContourAroundPoint() override = default;
 
   // Make sure this is consistent with the XML file and the
   // `SetNumberOfInputPorts` and `SetNumberOfOutputPorts` argument

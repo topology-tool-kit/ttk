@@ -74,13 +74,13 @@ namespace ttk {
     inline void setAlgorithm(int data) {
       computePersistenceDiagram_ = data;
     }
-    void setStartingDecimationLevel(int data) {
+    void setStartingDecimationLevel(int data) override {
       if(data != startingDecimationLevel_) {
         resumeProgressive_ = false;
       }
       startingDecimationLevel_ = std::max(data, 0);
     }
-    void setStoppingDecimationLevel(int data) {
+    void setStoppingDecimationLevel(int data) override {
       if(data >= stoppingDecimationLevel_) {
         resumeProgressive_ = false;
       }
@@ -92,7 +92,7 @@ namespace ttk {
         resumeProgressive_ = false;
       }
     }
-    void setPreallocateMemory(const bool b) {
+    void setPreallocateMemory(const bool b) override {
       if(b != preallocateMemory_) {
         resumeProgressive_ = false;
       }

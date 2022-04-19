@@ -31,7 +31,7 @@ namespace ttk {
         : vertexIdentifier_(vertIdentifier) {
       }
 
-      idVertex getVertexIdentifier(void) const {
+      idVertex getVertexIdentifier() const {
         return vertexIdentifier_;
       }
 
@@ -82,7 +82,7 @@ namespace ttk {
         upArcsIds_.reserve(nbUpArc);
       }
 
-      idSuperArc getNbUpArcs(void) const {
+      idSuperArc getNbUpArcs() const {
         return upArcsIds_.size();
       }
 
@@ -98,7 +98,7 @@ namespace ttk {
         downArcsIds_.reserve(nbDownArcs);
       }
 
-      idSuperArc getNbDownArcs(void) const {
+      idSuperArc getNbDownArcs() const {
         return downArcsIds_.size();
       }
 

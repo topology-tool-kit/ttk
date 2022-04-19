@@ -90,7 +90,7 @@ namespace ttk {
     // 1) constructors, destructors, operators, etc.
     Debug();
 
-    virtual ~Debug();
+    ~Debug() override;
 
     // 2) functions
     /// Set the debug level of a particular object. The global variable
@@ -105,7 +105,7 @@ namespace ttk {
     /// number of threads, etc.) from a wrapper to a base object.
     /// \param wrapper Pointer to the wrapping object.
     /// \return Returns 0 upon success, negative values otherwise.
-    virtual int setWrapper(const Wrapper *wrapper);
+    int setWrapper(const Wrapper *wrapper) override;
 
     // =========================================================================
     // New Debug Methods

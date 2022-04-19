@@ -73,12 +73,10 @@ namespace ttk {
     std::vector<std::array<SimplexId, 4>> tetraTriangles_;
 
   public:
-    ImplicitCluster() {
-    }
+    ImplicitCluster() = default;
     ImplicitCluster(SimplexId id) : nid(id) {
     }
-    ~ImplicitCluster() {
-    }
+    ~ImplicitCluster() = default;
 
     friend class CompactTriangulation;
   };
@@ -92,7 +90,7 @@ namespace ttk {
     CompactTriangulation();
     CompactTriangulation(const CompactTriangulation &rhs);
     CompactTriangulation &operator=(const CompactTriangulation &rhs);
-    ~CompactTriangulation();
+    ~CompactTriangulation() override;
     CompactTriangulation(CompactTriangulation &&rhs) = default;
     CompactTriangulation &operator=(CompactTriangulation &&rhs) = default;
 
@@ -275,8 +273,8 @@ namespace ttk {
             getClusterTetraEdges(exnode);
           }
           for(size_t i = 0; i < exnode->tetraEdges_.size(); i++) {
-            cellEdgeVector_.push_back({exnode->tetraEdges_.at(i).begin(),
-                                       exnode->tetraEdges_.at(i).end()});
+            cellEdgeVector_.emplace_back(exnode->tetraEdges_.at(i).begin(),
+                                         exnode->tetraEdges_.at(i).end());
           }
         }
       }
@@ -396,9 +394,9 @@ namespace ttk {
             getClusterCellTriangles(exnode);
           }
           for(size_t i = 0; i < exnode->tetraTriangles_.size(); i++) {
-            cellTriangleVector_.push_back(
-              {exnode->tetraTriangles_.at(i).begin(),
-               exnode->tetraTriangles_.at(i).end()});
+            cellTriangleVector_.emplace_back(
+              exnode->tetraTriangles_.at(i).begin(),
+              exnode->tetraTriangles_.at(i).end());
           }
         }
       }
@@ -776,8 +774,9 @@ namespace ttk {
             getClusterTriangleEdges(exnode);
           }
           for(size_t i = 0; i < exnode->triangleEdges_.size(); i++) {
-            triangleEdgeVector_.push_back({exnode->triangleEdges_.at(i).begin(),
-                                           exnode->triangleEdges_.at(i).end()});
+            triangleEdgeVector_.emplace_back(
+              exnode->triangleEdges_.at(i).begin(),
+              exnode->triangleEdges_.at(i).end());
           }
         }
       }

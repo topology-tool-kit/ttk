@@ -54,7 +54,8 @@ public:
 protected:
   ttkIdentifyByScalarField();
 
-  ~ttkIdentifyByScalarField() override{};
+  ~ttkIdentifyByScalarField() override = default;
+  ;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

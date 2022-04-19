@@ -1,5 +1,4 @@
-#ifndef GRAPH_TEMPLATE_H
-#define GRAPH_TEMPLATE_H
+#pragma once
 
 #ifndef NDEBUG
 // #include<sstream>
@@ -242,5 +241,3 @@ namespace ttk {
   } // namespace ftr
 
 } // namespace ttk
-
-#endif /* end of include guard: GRAPH_TEMPLATE_H */

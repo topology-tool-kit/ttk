@@ -31,10 +31,9 @@ MergeTree::MergeTree(Params *const params,
   treeData_.partition = part;
 }
 
-MergeTree::~MergeTree() {
-  // all is automatically destroyed in treedata
-  // do not touch pointers
-}
+MergeTree::~MergeTree() = default;
+// all is automatically destroyed in treedata
+// do not touch pointers
 
 // }
 // Process

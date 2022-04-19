@@ -39,11 +39,11 @@ namespace ttk {
                           std::list<std::vector<SimplexId>> &regularsList,
                           const bool reverse);
 
-      segm_const_it begin(void) const;
-      segm_const_it end(void) const;
-      segm_it begin(void);
-      segm_it end(void);
-      SimplexId size(void) const;
+      segm_const_it begin() const;
+      segm_const_it end() const;
+      segm_it begin();
+      segm_it end();
+      SimplexId size() const;
 
       SimplexId operator[](const size_t &idx) const;
       SimplexId &operator[](const size_t &idx);
@@ -69,13 +69,13 @@ namespace ttk {
       void resize(const std::vector<SimplexId> &sizes);
 
       // vector like
-      idSegment size(void) const;
-      void clear(void);
+      idSegment size() const;
+      void clear();
       Segment &operator[](const size_t &idx);
       const Segment &operator[](const size_t &idx) const;
 
       // print
-      inline std::string print(void) const {
+      inline std::string print() const {
         std::stringstream res;
         res << "{" << std::endl;
         for(const auto &s : segments_) {
@@ -131,7 +131,7 @@ namespace ttk {
       // else return false
       bool merge(const ArcRegion &r);
 
-      void clear(void) {
+      void clear() {
         segmentsIn_.clear();
         segmentation_.clear();
       }
@@ -143,7 +143,7 @@ namespace ttk {
       // a segment can contain vertices for several arcs
       void createSegmentation(const Scalars *s);
 
-      inline SimplexId count(void) const {
+      inline SimplexId count() const {
         SimplexId res = 0;
         for(const auto &reg : segmentsIn_) {
           res += std::abs(distance(reg.segmentBegin, reg.segmentEnd));
@@ -151,7 +151,7 @@ namespace ttk {
         return res;
       }
 
-      inline std::string print(void) const {
+      inline std::string print() const {
         std::stringstream res;
         res << "{";
         for(const auto &reg : segmentsIn_) {
@@ -168,17 +168,17 @@ namespace ttk {
       }
 
       // Direct access to the list of region
-      const decltype(segmentsIn_) &getRegions(void) const {
+      const decltype(segmentsIn_) &getRegions() const {
         return segmentsIn_;
       }
 
-      decltype(segmentsIn_) &getRegions(void) {
+      decltype(segmentsIn_) &getRegions() {
         return segmentsIn_;
       }
 
       // vector like manip
 
-      inline SimplexId size(void) const {
+      inline SimplexId size() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!segmented_)
           std::cerr << "Needs to create segmentation before size" << std::endl;
@@ -206,11 +206,11 @@ namespace ttk {
         return segmentation_[v];
       }
 
-      decltype(segmentation_)::iterator begin(void) {
+      decltype(segmentation_)::iterator begin() {
         return segmentation_.begin();
       }
 
-      decltype(segmentation_)::iterator end(void) {
+      decltype(segmentation_)::iterator end() {
         return segmentation_.end();
       }
     };

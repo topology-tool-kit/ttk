@@ -14,8 +14,8 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-#ifndef _TTK_SPHERE_FROM_POINT_H
-#define _TTK_SPHERE_FROM_POINT_H
+
+#pragma once
 
 // VTK includes
 
@@ -79,5 +79,3 @@ private:
   std::vector<vtkSphereSource *> sphereList_;
   std::vector<std::vector<vtkDataArray *>> dataArrayList_;
 };
-
-#endif // _TTK_SPHERE_FROM_POINT_H

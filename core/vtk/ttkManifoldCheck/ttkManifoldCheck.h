@@ -56,7 +56,8 @@ public:
 protected:
   ttkManifoldCheck();
 
-  ~ttkManifoldCheck() override{};
+  ~ttkManifoldCheck() override = default;
+  ;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

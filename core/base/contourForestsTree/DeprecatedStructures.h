@@ -11,8 +11,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#pragma once
 
 #include <iterator>
 
@@ -118,5 +117,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: STRUCTURES_H */

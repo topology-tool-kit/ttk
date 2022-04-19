@@ -164,7 +164,7 @@ namespace ttk {
     }
 
     /// Destructor of the Alignment Object
-    ~ContourTreeAlignment() {
+    ~ContourTreeAlignment() override {
       contourtrees.clear();
       nodes.clear();
       arcs.clear();

@@ -125,7 +125,7 @@ public:
 
 protected:
   ttkCinemaImaging();
-  ~ttkCinemaImaging();
+  ~ttkCinemaImaging() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

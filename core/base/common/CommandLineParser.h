@@ -5,8 +5,7 @@
 ///
 /// \brief Basic command line parsing.
 
-#ifndef _COMMAND_LINE_PARSER_H
-#define _COMMAND_LINE_PARSER_H
+#pragma once
 
 #include <Debug.h>
 
@@ -20,13 +19,13 @@ namespace ttk {
 
     public:
       CommandLineArgument() {
-        boolValue_ = NULL;
-        intValue_ = NULL;
-        intValueList_ = NULL;
-        doubleValue_ = NULL;
-        doubleValueList_ = NULL;
-        stringValue_ = NULL;
-        stringValueList_ = NULL;
+        boolValue_ = nullptr;
+        intValue_ = nullptr;
+        intValueList_ = nullptr;
+        doubleValue_ = nullptr;
+        doubleValueList_ = nullptr;
+        stringValue_ = nullptr;
+        stringValueList_ = nullptr;
         isSet_ = false;
 
         setDebugMsgPrefix("CMD");
@@ -118,7 +117,7 @@ namespace ttk {
       setDebugMsgPrefix("CMD");
     }
 
-    ~CommandLineParser() = default;
+    ~CommandLineParser() override = default;
 
     // 2) functions
     int parse(int argc, char **argv) {
@@ -423,5 +422,3 @@ namespace ttk {
     std::vector<CommandLineArgument> arguments_;
   };
 } // namespace ttk
-
-#endif
