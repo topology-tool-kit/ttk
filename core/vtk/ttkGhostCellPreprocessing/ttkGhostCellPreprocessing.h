@@ -1,18 +1,15 @@
 /// \ingroup vtk
 /// \class ttkGhostCellPreprocessing
-/// \author Pierre Guillou <pierre.guillou@lip6.fr>
-/// \date September 2020
+/// \author Michael Will <mswill@rhrk.uni-kl.de>
+/// \date 2021
 ///
-/// \brief TTK VTK-filter to generate order fields.
+/// \brief TTK VTK-filter to generate rank ownership information.
 ///
-/// This VTK filter generates order arrays from a selection of scalar
-/// field arrays.
+/// This VTK filter generates a rankArray based on a global id array and ghost cell information.
 ///
-/// \param Input vtkDataSet.
+/// \param Input vtkDataSet with global ids and ghost cell information.
 /// \param Output vtkDataSet.
 ///
-/// See the related ParaView example state files for usage examples within a
-/// VTK pipeline.
 ///
 /// \sa ttk::ttkGhostCellPreprocessing
 /// \sa ttkAlgorithm
