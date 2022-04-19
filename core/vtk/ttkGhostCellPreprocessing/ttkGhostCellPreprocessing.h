@@ -1,7 +1,7 @@
 /// \ingroup vtk
 /// \class ttkGhostCellPreprocessing
 /// \author Michael Will <mswill@rhrk.uni-kl.de>
-/// \date 2021
+/// \date 2022
 ///
 /// \brief TTK VTK-filter to generate rank ownership information.
 ///
