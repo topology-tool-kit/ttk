@@ -5,7 +5,8 @@
 ///
 /// \brief TTK VTK-filter to generate rank ownership information.
 ///
-/// This VTK filter generates a rankArray based on a global id array and ghost cell information.
+/// This VTK filter generates a rankArray based on a global id array and ghost
+/// cell information.
 ///
 /// \param Input vtkDataSet with global ids and ghost cell information.
 /// \param Output vtkDataSet.
