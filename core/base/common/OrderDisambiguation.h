@@ -183,6 +183,8 @@ namespace ttk {
                     std::unordered_map<IT, IT> &gidToLidMap,
                     const SimplexId *const order,
                     const int nThreads) {
+    
+    TTK_FORCE_USE(nThreads);
     std::vector<IT> outVector;
     outVector.resize(nGIds * 2);
 #ifdef TTK_ENABLE_OPENMP
