@@ -1,4 +1,3 @@
-#include <mpi.h>
 #include <ttkGhostCellPreprocessing.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -11,7 +10,6 @@
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
-#include <vtkMPIController.h>
 #include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkGhostCellPreprocessing);
@@ -62,20 +60,21 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto pointData = input->GetPointData();
   IT nVertices = input->GetNumberOfPoints();
+  this->printMsg("#Points: " + std::to_string(nVertices));
 
   auto vtkGlobalPointIds = pointData->GetGlobalIds();
   auto vtkGhostCells = pointData->GetArray("vtkGhostType");
   if(vtkGlobalPointIds != nullptr && vtkGhostCells != nullptr) {
-    vtkMPIController *controller
-      = vtkMPIController::SafeDownCast(vtkMPIController::GetGlobalController());
-    int numProcs = controller->GetNumberOfProcesses();
-    int rank = controller->GetLocalProcessId();
+#ifdef TTK_ENABLE_MPI
+    int numProcs;
+    int rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if(rank == 0)
       this->printMsg(
         "Global Point Ids and Ghost Cells exist, therefore we can continue!");
     this->printMsg("#Ranks " + std::to_string(numProcs) + ", this is rank "
                    + std::to_string(rank));
-    this->printMsg("#Points: " + std::to_string(nVertices));
     MPI_Datatype MIT = MPI_LONG_LONG_INT;
 
     vtkNew<vtkIntArray> rankArray{};
@@ -172,9 +171,14 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
       "Preprocessed RankArray", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
     return 1;
-  } else {
+#else
     this->printMsg(
-      "Either Global Point Ids or Ghost Cells don't exist, returning.");
-    return 1;
+      "Necessary arrays are present, but TTK is not build with MPI support");
+    return 0;
+
+#endif
+  } else {
+    this->printMsg("Necessary arrays are not present.");
+    return 0;
   }
 }

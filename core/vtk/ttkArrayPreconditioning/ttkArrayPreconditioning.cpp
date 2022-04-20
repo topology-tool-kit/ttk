@@ -1,5 +1,4 @@
 #include <OrderDisambiguation.h>
-#include <mpi.h>
 #include <ttkArrayPreconditioning.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -45,7 +44,7 @@ int ttkArrayPreconditioning::FillOutputPortInformation(int port,
   }
   return 0;
 }
-
+#ifdef TTK_ENABLE_MPI
 void ttkArrayPreconditioning::ReceiveAndAddToVector(
   MPI_Datatype mpi_values,
   int rankFrom,
@@ -65,6 +64,7 @@ void ttkArrayPreconditioning::ReceiveAndAddToVector(
            MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   unsortedReceivedValues[rankFrom] = receivedValues;
 }
+#endif
 
 int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
                                          vtkInformationVector **inputVector,
@@ -111,6 +111,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   auto rankArray = pointData->GetArray("RankArray");
   if(vtkGlobalPointIds != nullptr && vtkGhostCells != nullptr
      && rankArray != nullptr) {
+#ifdef TTK_ENABLE_MPI
     MPI_Datatype mpi_values;
     const int nitems = 4;
     int blocklengths[4] = {1, 1, 1, 1};
@@ -447,41 +448,21 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
           }
         }
 
-        // this->printMsg("Neighbors for rank " + std::to_string(rank) + ": " +
-        // std::to_string(neighbors));
-        /*for (int i = 0; i < numProcs; i++){
-          MPI_Send()
-        }*/
-
         output->GetPointData()->AddArray(orderArray);
         this->printMsg("Generated order array for scalar array `"
                          + std::string{scalarArray->GetName()} + "', rank "
                          + std::to_string(rank),
                        1, orderTimer.getElapsedTime());
-
-        /*
-        std::unordered_map<float, int> orderMap =
-        ttk::buildOrderMap(finalValues, totalSize);
-        // every rank now has an orderedValuesForRank array with the points
-        sorted in descending order and their correct order
-        // now we need to transform this to a correct vtk orderarray and append
-        it
-
-
-
-        ttk::buildOrderArray(nVertices,
-                            ttkUtils::GetPointer<float>(scalarArray),
-                            orderMap,
-                            ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
-                            this->threadNumber_);
-
-
-        */
       }
     }
     this->printMsg("Preconditioned selected scalar arrays", 1.0,
                    tm.getElapsedTime(), this->threadNumber_);
     return 1;
+#else
+    this->printMsg(
+      "Necessary arrays are present, but TTK is not build with MPI support");
+    return 0;
+#endif
   }
 
   for(auto scalarArray : scalarArrays) {
