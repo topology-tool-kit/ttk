@@ -268,7 +268,8 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
     persistence->SetTuple1(i, pair.persistence);
     birthScalars->SetTuple1(i, pair.birth.sfValue);
     isFinite->SetTuple1(i, pair.isFinite);
-    pairsDim->SetTuple1(i, pair.dim == 2 ? dim - 1 : pair.dim);
+    pairsDim->SetTuple1(
+      i, (pair.dim == 2 && pair.isFinite) ? dim - 1 : pair.dim);
   }
   offsets->SetTuple1(diagram.size(), connectivity->GetNumberOfTuples());
 
