@@ -173,6 +173,7 @@ jobs:
         omp: [OPENMP=TRUE, OPENMP=FALSE]
         simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
         opt: [Debug, Release]
+        mpi: [MPI=TRUE, MPI=FALSE]
     steps:
     - uses: actions/checkout@v2
 
@@ -217,6 +218,7 @@ jobs:
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_${{ matrix.kamikaze }} \
           -DTTK_ENABLE_${{ matrix.omp }} \
+          -DTTK_ENABLE_${{ matrix.mpi }} \
           -DTTK_ENABLE_${{ matrix.simplexId }} \
           $GITHUB_WORKSPACE
 
