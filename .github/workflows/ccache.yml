@@ -36,6 +36,7 @@ jobs:
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
+          libopenmpi-dev \
           libsqlite3-dev \
           graphviz \
           ninja-build \
@@ -71,6 +72,7 @@ jobs:
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_MPI=TRUE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
           -GNinja \
@@ -112,7 +114,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp ninja python
+        brew install wget libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
         python3 -m pip install scikit-learn
@@ -144,6 +146,7 @@ jobs:
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_MPI=TRUE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
           -GNinja \
