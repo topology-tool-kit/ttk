@@ -282,12 +282,15 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
     visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
     visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
     visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
+    visuMaker.setExcludeImportantPairsHigher(ExcludeImportantPairsHigher);
+    visuMaker.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
     // visuMaker.setShiftMode(3); // Double Line
     visuMaker.setShiftMode(2); // Line
     visuMaker.setVtkOutputNode(vtkOutputNode1);
     visuMaker.setVtkOutputArc(vtkOutputArc1);
     visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
     visuMaker.setTreesNodes(treesNodes);
+    visuMaker.copyPointData(treesNodes[i], treesNodeCorrMesh[i]);
     visuMaker.setTreesNodeCorrMesh(treesNodeCorrMesh);
     visuMaker.setTreesSegmentation(treesSegmentation);
     visuMaker.setInterpolatedTrees(interpolatedTrees);

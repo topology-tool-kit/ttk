@@ -98,6 +98,8 @@ private:
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
   bool BarycenterPositionAlpha = false;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
   // Old options
   bool ProgressiveComputation = false;
@@ -351,6 +353,12 @@ public:
 
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
+  
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
 
   // Old options
   vtkSetMacro(ProgressiveComputation, bool);

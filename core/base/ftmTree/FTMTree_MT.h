@@ -591,6 +591,12 @@ namespace ttk {
       bool isJoinTree();
 
       template <class dataType>
+      bool isImportantPair(idNode nodeId,
+                           double threshold,
+                           std::vector<double> &excludeLower,
+                           std::vector<double> &excludeHigher);
+
+      template <class dataType>
       bool isImportantPair(idNode nodeId, double threshold);
 
       bool isNodeMerged(idNode nodeId);

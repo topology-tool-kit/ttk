@@ -292,6 +292,7 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
     visuMaker.setVtkOutputArc(vtkOutputArc1);
     visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
     visuMaker.setTreesNodes(treesNodes);
+    visuMaker.copyPointData(treesNodes[i], treesNodeCorrMesh[i]);
     visuMaker.setTreesNodeCorrMesh(treesNodeCorrMesh);
     visuMaker.setTreesSegmentation(treesSegmentation);
     visuMaker.setPrintTreeId(i);
