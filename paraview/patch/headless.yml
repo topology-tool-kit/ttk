@@ -28,6 +28,7 @@ jobs:
         sudo apt install -y \
           g++-11 \
           libosmesa-dev \
+          libopenmpi-dev \
           ninja-build \
           dpkg-dev
 
@@ -38,6 +39,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DPARAVIEW_PYTHON_SITE_PACKAGES_SUFFIX=lib/python3/dist-packages \
+          -DPARAVIEW_USE_MPI=ON \
           -DPARAVIEW_USE_QT=OFF \
           -DVTK_USE_X=OFF \
           -DVTK_OPENGL_HAS_OSMESA=ON \
@@ -77,7 +79,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp ninja python
+        brew install wget libomp ninja python open-mpi
 
     - name: Create & configure ParaView build directory
       run: |
@@ -86,6 +88,7 @@ jobs:
         mkdir build && cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
+          -DPARAVIEW_USE_MPI=ON \
           -DPARAVIEW_USE_QT=OFF \
           -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \
