@@ -22,8 +22,6 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkStringArray.h>
-#include <vtkTransform.h>
-#include <vtkTransformFilter.h>
 #include <vtkUnstructuredGrid.h>
 
 class ttkMergeTreeVisualization : public ttk::MergeTreeVisualization {
@@ -327,7 +325,7 @@ public:
                      std::vector<int> &nodeCorrT) {
     if(!treeNodes)
       return;
-    
+
     auto treeNodeIdArray = treeNodes->GetPointData()->GetArray("TreeNodeId");
     std::vector<int> treeNodeIdRev;
     if(treeNodeIdArray)
@@ -1153,7 +1151,7 @@ public:
           for(int toAddT = 0; toAddT < toAdd; ++toAddT) {
             // Add node id
             nodeID->InsertNextTuple1(treeSimplexId[node]);
-            
+
             // Add trueNodeId
             trueNodeID->InsertNextTuple1(node);
 
@@ -1286,13 +1284,20 @@ public:
         // --------------
         printMsg("// Shift segmentation", ttk::debug::Priority::VERBOSE);
         if(OutputSegmentation and not PlanarLayout and treesSegmentation[i]) {
-          vtkNew<vtkTransform> transform{};
-          transform->Translate(diff_x, diff_y, diff_z);
-          vtkNew<vtkTransformFilter> transformFilter{};
-          transformFilter->SetTransform(transform);
-          transformFilter->SetInputData(treesSegmentation[i]);
-          transformFilter->Update();
-          appendFilter->AddInputData(transformFilter->GetOutputDataObject(0));
+          vtkNew<vtkUnstructuredGrid> iTreesSegmentationCopy{};
+          iTreesSegmentationCopy->DeepCopy(treesSegmentation[i]);
+          auto iVkOutputSegmentationTemp
+            = vtkUnstructuredGrid::SafeDownCast(iTreesSegmentationCopy);
+          for(int p = 0;
+              p < iVkOutputSegmentationTemp->GetPoints()->GetNumberOfPoints();
+              ++p) {
+            double *point = iVkOutputSegmentationTemp->GetPoints()->GetPoint(p);
+            point[0] += diff_x;
+            point[1] += diff_y;
+            point[2] += diff_z;
+            iVkOutputSegmentationTemp->GetPoints()->SetPoint(p, point);
+          }
+          appendFilter->AddInputData(iVkOutputSegmentationTemp);
         }
         printMsg("// Shift segmentation DONE", ttk::debug::Priority::VERBOSE);
       }

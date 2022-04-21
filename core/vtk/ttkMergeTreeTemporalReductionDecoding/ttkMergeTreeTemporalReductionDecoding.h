@@ -183,7 +183,7 @@ public:
 
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
-  
+
   vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
   vtkGetMacro(ExcludeImportantPairsLower, std::string);
 

@@ -2,4 +2,3 @@ NAME
   ttkPlanarGraphLayout
 DEPENDS
   ttkAlgorithm
-  VTK::FiltersGeneral
