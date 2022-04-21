@@ -247,13 +247,13 @@ public:
 
   // Custom array
   void addCustomArray(std::string &name, std::vector<double> &vec) {
-    customArrays.push_back(std::make_tuple(name, vec));
+    customArrays.emplace_back(std::make_tuple(name, vec));
   }
   void addCustomIntArray(std::string &name, std::vector<int> &vec) {
-    customIntArrays.push_back(std::make_tuple(name, vec));
+    customIntArrays.emplace_back(std::make_tuple(name, vec));
   }
   void addCustomStringArray(std::string &name, std::vector<std::string> &vec) {
-    customStringArrays.push_back(std::make_tuple(name, vec));
+    customStringArrays.emplace_back(std::make_tuple(name, vec));
   }
   void clearCustomArrays() {
     customArrays.clear();
@@ -1126,17 +1126,17 @@ public:
               // Add custom point arrays to cells
               for(unsigned int ca = 0; ca < customArrays.size(); ++ca) {
                 auto nodeToGet = treeBranching[node];
-                customCellArraysValues[ca].push_back(
+                customCellArraysValues[ca].emplace_back(
                   std::get<1>(customArrays[ca])[nodeToGet]);
               }
               for(unsigned int ca = 0; ca < customIntArrays.size(); ++ca) {
                 auto nodeToGet = treeBranching[node];
-                customCellIntArraysValues[ca].push_back(
+                customCellIntArraysValues[ca].emplace_back(
                   std::get<1>(customIntArrays[ca])[nodeToGet]);
               }
               for(unsigned int ca = 0; ca < customStringArrays.size(); ++ca) {
                 auto nodeToGet = treeBranching[node];
-                customCellStringArraysValues[ca].push_back(
+                customCellStringArraysValues[ca].emplace_back(
                   std::get<1>(customStringArrays[ca])[nodeToGet]);
               }
 
@@ -1264,13 +1264,13 @@ public:
 
             // Add custom arrays
             for(unsigned int ca = 0; ca < customArrays.size(); ++ca)
-              customArraysValues[ca].push_back(
+              customArraysValues[ca].emplace_back(
                 std::get<1>(customArrays[ca])[node]);
             for(unsigned int ca = 0; ca < customIntArrays.size(); ++ca)
-              customIntArraysValues[ca].push_back(
+              customIntArraysValues[ca].emplace_back(
                 std::get<1>(customIntArrays[ca])[node]);
             for(unsigned int ca = 0; ca < customStringArrays.size(); ++ca)
-              customStringArraysValues[ca].push_back(
+              customStringArraysValues[ca].emplace_back(
                 std::get<1>(customStringArrays[ca])[node]);
 
             pointCount++;
