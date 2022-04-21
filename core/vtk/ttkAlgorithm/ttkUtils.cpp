@@ -1,7 +1,4 @@
-#include <BaseClass.h>
 #include <ttkUtils.h>
-
-#include <limits>
 
 #include <vtkAbstractArray.h>
 #include <vtkCellArray.h>

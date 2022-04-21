@@ -27,7 +27,7 @@ public:
 
 protected:
   ttkPointSetToSurface();
-  ~ttkPointSetToSurface() = default;
+  ~ttkPointSetToSurface() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -40,6 +40,4 @@ protected:
                 const VTK_T1 *const values,
                 const VTK_T2 *const values2,
                 const size_t nvalues);
-
-private:
 };
