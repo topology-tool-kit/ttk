@@ -138,7 +138,8 @@ public:
                           const std::string &arrayName,
                           vtkDataSet *const inputData,
                           std::vector<ttk::SimplexId> &spareStorage,
-                          const int inputPort = 0);
+                          const int inputPort = 0,
+                          const bool printErr = true);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
@@ -164,7 +165,7 @@ public:
   ttk::Triangulation *GetTriangulation(vtkDataSet *object);
 
   /**
-   * This key can be used during the FillOutputPortInfomration() call to
+   * This key can be used during the FillOutputPortInformation() call to
    * specify that an output port should produce the same data type as a
    * certain input port.
    */

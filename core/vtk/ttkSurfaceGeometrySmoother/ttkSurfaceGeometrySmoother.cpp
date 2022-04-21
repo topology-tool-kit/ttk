@@ -21,7 +21,7 @@ int ttkSurfaceGeometrySmoother::FillInputPortInformation(int port,
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
   } else if(port == 1) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
   }
   return 0;
@@ -60,7 +60,10 @@ int ttkSurfaceGeometrySmoother::RequestData(
   std::vector<ttk::SimplexId> idSpareStorage{};
   const auto *vertsId = this->GetIdentifierArrayPtr(
     ForceIdentifiersField, 0, ttk::VertexScalarFieldName, inputPointSet,
-    idSpareStorage);
+    idSpareStorage, 0, false);
+  if(vertsId == nullptr) {
+    this->printWrn("No vertex scalar field detected on input");
+  }
 
   vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(
     ForceInputMaskScalarField, 1, ttk::MaskScalarFieldName, inputPointSet);
