@@ -14,6 +14,8 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <set>
+
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
 vtkStandardNewMacro(ttkProjectionFromTable);
@@ -159,10 +161,10 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
     yValues[i] = std::get<2>(tup);
   }
   std::sort(xValues.begin(), xValues.end());
-  const auto nUniqueXValues
+  const long nUniqueXValues
     = std::unique(xValues.begin(), xValues.end()) - xValues.begin();
   std::sort(yValues.begin(), yValues.end());
-  const auto nUniqueYValues
+  const long nUniqueYValues
     = std::unique(yValues.begin(), yValues.end()) - yValues.begin();
   std::array<const long, 2> surfaceDim{nUniqueXValues, nUniqueYValues};
 
