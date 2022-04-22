@@ -69,7 +69,7 @@ protected:
    * (see cpp file)
    */
   ttkProjectionFromTable();
-  ~ttkProjectionFromTable() override;
+  ~ttkProjectionFromTable() override = default;
 
   /**
    * Specify the input data type of each input port

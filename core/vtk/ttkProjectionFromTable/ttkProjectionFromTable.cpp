@@ -26,9 +26,6 @@ ttkProjectionFromTable::ttkProjectionFromTable() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkProjectionFromTable::~ttkProjectionFromTable() {
-}
-
 /**
  * Specify the required input data type of each input port
  */
