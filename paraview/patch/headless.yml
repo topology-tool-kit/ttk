@@ -113,7 +113,7 @@ jobs:
   # Windows #
   # ------- #
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     env:
       CONDA_ROOT: C:\Miniconda
       VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat
@@ -127,7 +127,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge glew
+        conda install -c conda-forge glew ninja
 
     - name: Remove hosted Python
       shell: bash
