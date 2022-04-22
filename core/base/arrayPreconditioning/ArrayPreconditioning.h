@@ -574,6 +574,12 @@ namespace ttk {
       }
 #else
       this->printMsg("MPI not enabled!");
+      TTK_FORCE_USE(orderArray);
+      TTK_FORCE_USE(scalarArray);
+      TTK_FORCE_USE(globalIds);
+      TTK_FORCE_USE(rankArray);
+      TTK_FORCE_USE(ghostCells);
+      TTK_FORCE_USE(burstSize);
       return 0;
 #endif
 
