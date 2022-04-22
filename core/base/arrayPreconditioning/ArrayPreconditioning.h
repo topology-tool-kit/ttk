@@ -83,16 +83,13 @@ namespace ttk {
     // only takes values of vertices which mainly belong to the current rank
     // ( so only vertices which are no ghost cells)
     template <typename DT, typename IT>
-    std::tuple<std::vector<value<DT, IT>>,
-               std::vector<IT>,
-               std::unordered_map<IT, IT>>
-      populateVector(const size_t nVerts,
-                     const DT *const scalars,
-                     const IT *const globalIds,
-                     const char *const ghostCells) const {
-      std::vector<value<DT, IT>> valuesToSortVector;
-      std::vector<IT> gidsToGetVector;
-      std::unordered_map<IT, IT> gidToLidMap;
+    void populateVector(std::vector<value<DT, IT>> &valuesToSortVector,
+                        std::vector<IT> &gidsToGetVector,
+                        std::unordered_map<IT, IT> &gidToLidMap,
+                        const size_t nVerts,
+                        const DT *const scalars,
+                        const IT *const globalIds,
+                        const char *const ghostCells) const {
       for(size_t i = 0; i < nVerts; i++) {
         IT globalId = globalIds[i];
         IT localId = i;
@@ -104,7 +101,6 @@ namespace ttk {
           gidsToGetVector.push_back(globalId);
         }
       }
-      return std::make_tuple(valuesToSortVector, gidsToGetVector, gidToLidMap);
     }
 
     // orders an value vector first by their scalar value and then by global id
@@ -120,10 +116,10 @@ namespace ttk {
     // send the highest burstSize values and decrease the vector by that amount
     // check if there are actually that many elements in the vector
     template <typename DT, typename IT>
-    std::vector<value<DT, IT>>
-      returnVectorForBurstsize(std::vector<value<DT, IT>> &values,
-                               size_t burstSize) const {
-      std::vector<value<DT, IT>> outVector;
+    void returnVectorForBurstsize(std::vector<value<DT, IT>> &outVector,
+                                  std::vector<value<DT, IT>> &values,
+                                  size_t burstSize) const {
+
       if(burstSize > values.size()) {
         outVector.assign(values.begin(), values.end());
         values.clear();
@@ -131,13 +127,7 @@ namespace ttk {
         outVector.assign(values.end() - burstSize, values.end());
         values.erase(values.end() - burstSize, values.end());
       }
-
-      return outVector;
     }
-
-  
-
-  
 
     /**
      * @brief Sort vertices according to scalars disambiguated by offsets
@@ -170,30 +160,27 @@ namespace ttk {
 
     // gets all the neighbors of a rank based on the rankarray of the vertices
     // belonging to this rank
-    inline std::unordered_set<int>
-      getNeighbors(const size_t nVertices,
-                   const int ownRank,
-                   const int *const rankArray) const {
-      std::unordered_set<int> neighbors;
+    inline void getNeighbors(std::unordered_set<int> &neighbors,
+                             const size_t nVertices,
+                             const int ownRank,
+                             const int *const rankArray) const {
       for(size_t i = 0; i < nVertices; i++) {
         int r = rankArray[i];
         if(r != ownRank)
           neighbors.emplace(r);
       }
-      return neighbors;
     }
 
     // returns a vector of gid vectors, one vector for each neighbor
     // this shows us where we need to get the order for these gids from
     template <typename IT>
-    std::vector<std::vector<IT>>
-      getGIdForNeighbors(const size_t nGIds,
-                         const size_t nNeighbors,
-                         std::vector<IT> &gidsToGetVector,
-                         std::unordered_set<int> &neighbors,
-                         std::unordered_map<IT, IT> &gidToLidMap,
-                         const int *const rankArray) const {
-      std::vector<std::vector<IT>> outVector;
+    void getGIdForNeighbors(std::vector<std::vector<IT>> &outVector,
+                            const size_t nGIds,
+                            const size_t nNeighbors,
+                            std::vector<IT> &gidsToGetVector,
+                            std::unordered_set<int> &neighbors,
+                            std::unordered_map<IT, IT> &gidToLidMap,
+                            const int *const rankArray) const {
       outVector.resize(nNeighbors);
       for(size_t i = 0; i < nGIds; i++) {
         IT gId = gidsToGetVector[i];
@@ -203,18 +190,17 @@ namespace ttk {
           = std::distance(neighbors.begin(), neighbors.find(rankForGId));
         outVector[distance].push_back(gId);
       }
-      return outVector;
     }
 
     template <typename IT>
-    std::vector<IT> getOrderForGIds(const size_t nGIds,
-                                    const IT *const gIds,
-                                    std::unordered_map<IT, IT> &gidToLidMap,
-                                    const SimplexId *const order,
-                                    const int nThreads) const {
+    void getOrderForGIds(std::vector<IT> &outVector,
+                         const size_t nGIds,
+                         const IT *const gIds,
+                         std::unordered_map<IT, IT> &gidToLidMap,
+                         const SimplexId *const order,
+                         const int nThreads) const {
 
       TTK_FORCE_USE(nThreads);
-      std::vector<IT> outVector;
       outVector.resize(nGIds * 2);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(nThreads)
@@ -226,7 +212,6 @@ namespace ttk {
         outVector[2 * i] = gId;
         outVector[2 * i + 1] = orderForThisGId;
       }
-      return outVector;
     }
 #ifdef TTK_ENABLE_MPI
     template <typename DT, typename IT>
@@ -309,9 +294,9 @@ namespace ttk {
         std::vector<value_DT_IT> sortingValues;
         std::vector<IT> gidsToGetVector;
         std::unordered_map<IT, IT> gidToLidMap;
-        tie(sortingValues, gidsToGetVector, gidToLidMap)
-          = this->populateVector<DT, IT>(
-            nVertices, scalarArray, globalIds, ghostCells);
+        this->populateVector<DT, IT>(sortingValues, gidsToGetVector,
+                                     gidToLidMap, nVertices, scalarArray,
+                                     globalIds, ghostCells);
 
         // sort the scalar array distributed first by the scalar value itself,
         // then by the global id
@@ -358,9 +343,9 @@ namespace ttk {
           // receive the first batch of values
           for(int i = 0; i < numProcs; i++) {
             if(i == 0) {
-              std::vector<value_DT_IT> ownValues
-                = this->returnVectorForBurstsize<DT, IT>(
-                  sortingValues, burstSize);
+              std::vector<value_DT_IT> ownValues;
+              this->returnVectorForBurstsize<DT, IT>(
+                ownValues, sortingValues, burstSize);
               unsortedReceivedValues[i] = ownValues;
             } else {
               this->ReceiveAndAddToVector<DT, IT>(
@@ -417,9 +402,9 @@ namespace ttk {
                   orderResendValues[rankIdOfMaxScalar].end());
                 orderResendValues[rankIdOfMaxScalar].clear();
                 if(sortingValues.size() > 0) {
-                  std::vector<value_DT_IT> ownValues
-                    = this->returnVectorForBurstsize<DT, IT>(
-                      sortingValues, burstSize);
+                  std::vector<value_DT_IT> ownValues;
+                  this->returnVectorForBurstsize<DT, IT>(
+                    ownValues, sortingValues, burstSize);
                   unsortedReceivedValues[rankIdOfMaxScalar] = ownValues;
                 } else {
                   this->printMsg("We are done with rank 0!");
@@ -459,9 +444,9 @@ namespace ttk {
           // send the next burstsize values and then wait for an answer from the
           // root rank
           while(sortingValues.size() > 0) {
-            std::vector<value_DT_IT> sendValues
-              = this->returnVectorForBurstsize<DT, IT>(
-                sortingValues, burstSize);
+            std::vector<value_DT_IT> sendValues;
+            this->returnVectorForBurstsize<DT, IT>(
+              sendValues, sortingValues, burstSize);
             int size = sendValues.size();
             MPI_Send(&size, 1, MPI_INT, 0, intTag, MPI_COMM_WORLD);
             MPI_Send(sendValues.data(), size, mpi_values, 0, structTag,
@@ -505,12 +490,14 @@ namespace ttk {
           orderArray, this->threadNumber_);
 
         // we still need to get the data for the ghostcells from their ranks
-        auto neighbors = this->getNeighbors(nVertices, rank, rankArray);
+        std::unordered_set<int> neighbors;
+        this->getNeighbors(neighbors, nVertices, rank, rankArray);
         this->printMsg("Rank " + std::to_string(rank)
                        + " #Neighbors: " + std::to_string(neighbors.size()));
-        auto gIdForNeighbors = this->getGIdForNeighbors<IT>(
-          gidsToGetVector.size(), neighbors.size(), gidsToGetVector, neighbors,
-          gidToLidMap, rankArray);
+        std::vector<std::vector<IT>> gIdForNeighbors;
+        this->getGIdForNeighbors<IT>(gIdForNeighbors, gidsToGetVector.size(),
+                                     neighbors.size(), gidsToGetVector,
+                                     neighbors, gidToLidMap, rankArray);
         MPI_Request req;
         std::vector<size_t> sizesToSend;
         sizesToSend.resize(gIdForNeighbors.size());
@@ -551,9 +538,9 @@ namespace ttk {
                      MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             // prepare what they need
-            ordersToSend[i] = this->getOrderForGIds<IT>(
-              gIdToRecv.size(), gIdToRecv.data(), gidToLidMap, orderArray,
-              this->threadNumber_);
+            this->getOrderForGIds<IT>(ordersToSend[i], gIdToRecv.size(),
+                                      gIdToRecv.data(), gidToLidMap, orderArray,
+                                      this->threadNumber_);
 
             // Isend it to them
             MPI_Isend(ordersToSend[i].data(), ordersToSend[i].size(), MPI_IT,
