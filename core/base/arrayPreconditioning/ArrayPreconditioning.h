@@ -11,7 +11,11 @@
 
 // ttk common includes
 #include <Debug.h>
+
+#ifdef TTK_ENABLE_MPI
 #include <mpi.h>
+#endif
+
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -25,7 +29,7 @@ namespace ttk {
 
   public:
     ArrayPreconditioning();
-
+#ifdef TTK_ENABLE_MPI
     MPI_Datatype getMPIType(float val) const {
       TTK_FORCE_USE(val);
       return MPI_FLOAT;
@@ -62,7 +66,7 @@ namespace ttk {
       TTK_FORCE_USE(val);
       return MPI_UNSIGNED_LONG_LONG;
     };
-
+#endif
     template <typename DT, typename IT>
     struct value {
       DT scalar;
@@ -131,49 +135,9 @@ namespace ttk {
       return outVector;
     }
 
-    // takes in an ordered (as defined above) vector of values and creates an
-    // ordermap for each scalar value
-    template <typename DT, typename IT>
-    std::unordered_map<DT, IT> buildOrderMap(std::vector<value<DT, IT>> &values,
-                                             size_t totalSize) const {
-      std::unordered_map<DT, IT> orderMap;
+  
 
-      // omp only creates larger overhead because orderMap needs to accessed
-      // critically
-      for(size_t i = 0; i < totalSize; i++) {
-        DT scalarVal = values[i].scalar;
-        IT orderVal = totalSize - i - 1;
-        orderMap[scalarVal] = orderVal;
-      }
-      return orderMap;
-    }
-
-    /**
-     * @brief Sort vertices according to scalars disambiguated by offsets
-     *
-     * @param[in] nVerts number of vertices
-     * @param[in] scalars array of size nVerts, the scalar values which we want
-     * to order
-     * @param[in] orderMap map which maps scalar values to a defined order
-     * @param[out] order array of size nVerts, computed order of vertices
-     * @param[in] nThreads number of parallel threads
-     */
-    template <typename DT, typename IT>
-    void buildOrderArray(const size_t nVerts,
-                         const float *const scalars,
-                         std::unordered_map<DT, IT> &orderMap,
-                         SimplexId *const order,
-                         const int nThreads) const {
-
-      TTK_FORCE_USE(nThreads);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(nThreads)
-#endif // TTK_ENABLE_OPENMP
-      for(size_t i = 0; i < nVerts; ++i) {
-        order[i] = orderMap[scalars[i]];
-      }
-    }
+  
 
     /**
      * @brief Sort vertices according to scalars disambiguated by offsets
@@ -264,7 +228,7 @@ namespace ttk {
       }
       return outVector;
     }
-
+#ifdef TTK_ENABLE_MPI
     template <typename DT, typename IT>
     void ReceiveAndAddToVector(
       MPI_Datatype mpi_values,
@@ -283,7 +247,7 @@ namespace ttk {
                MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       unsortedReceivedValues[rankFrom] = receivedValues;
     }
-
+#endif
     template <typename DT, typename IT>
     int processScalarArray(ttk::SimplexId *orderArray,
                            const DT *scalarArray,
@@ -304,9 +268,10 @@ namespace ttk {
       });
       this->printMsg(ttk::debug::Separator::L1);
 
-      // -----------------------------------------------------------------------
-      // Computing order Array
-      // -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Computing order Array
+// -----------------------------------------------------------------------
+#ifdef TTK_ENABLE_MPI
       {
         int numProcs;
         int rank;
@@ -620,6 +585,11 @@ namespace ttk {
         // at the end, free up the MPI Datatype
         MPI_Type_free(&mpi_values);
       }
+#else
+      this->printMsg("MPI not enabled!");
+      return 0;
+#endif
+
       // ---------------------------------------------------------------------
       // print global performance
       // ---------------------------------------------------------------------
