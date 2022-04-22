@@ -111,9 +111,6 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
         sizeOfCurrentRank = currentRankUnknownIds.size();
       MPI_Bcast(&sizeOfCurrentRank, 1, MIT, r, MPI_COMM_WORLD);
       allUnknownIds[r].resize(sizeOfCurrentRank);
-      // this->printMsg("This is rank " + std::to_string(rank) + ", rank " +
-      // std::to_string(r) + " needs values for " +
-      // std::to_string(sizeOfCurrentRank) + " vertices.");
       MPI_Bcast(
         allUnknownIds[r].data(), sizeOfCurrentRank, MIT, r, MPI_COMM_WORLD);
     }
@@ -132,9 +129,6 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
           }
         }
         // send whole vector of data
-        // this->printMsg("This is rank " + std::to_string(rank) + ", we send
-        // rank " + std::to_string(r) + " values for " +
-        // std::to_string(gIdsToSend[r].size()) + " vertices.");
         MPI_Isend(gIdsToSend[r].data(), gIdsToSend[r].size(), MIT, r, 101,
                   MPI_COMM_WORLD, &req);
         MPI_Request_free(&req);
@@ -143,8 +137,6 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
 
     // receive a variable amount of values from different ranks
     size_t i = 0;
-    // this->printMsg("Rank " + std::to_string(rank) + " wants " +
-    // std::to_string(allUnknownIds[rank].size()) + " values");
     while(i < allUnknownIds[rank].size()) {
       std::vector<IT> receivedGlobals;
       receivedGlobals.resize(allUnknownIds[rank].size());
@@ -154,9 +146,6 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
                MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
       int sourceRank = status.MPI_SOURCE;
       MPI_Get_count(&status, MIT, &amount);
-      // this->printMsg("Rank " + std::to_string(rank) + " got " +
-      // std::to_string(amount) + " values from rank " +
-      // std::to_string(sourceRank));
       receivedGlobals.resize(amount);
       for(IT receivedGlobal : receivedGlobals) {
         IT localVal = gIdToLocalMap[receivedGlobal];
