@@ -247,13 +247,13 @@ public:
 
   // Custom array
   void addCustomArray(std::string &name, std::vector<double> &vec) {
-    customArrays.emplace_back(std::make_tuple(name, vec));
+    customArrays.emplace_back(name, vec);
   }
   void addCustomIntArray(std::string &name, std::vector<int> &vec) {
-    customIntArrays.emplace_back(std::make_tuple(name, vec));
+    customIntArrays.emplace_back(name, vec);
   }
   void addCustomStringArray(std::string &name, std::vector<std::string> &vec) {
-    customStringArrays.emplace_back(std::make_tuple(name, vec));
+    customStringArrays.emplace_back(name, vec);
   }
   void clearCustomArrays() {
     customArrays.clear();
