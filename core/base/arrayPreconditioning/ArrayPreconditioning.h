@@ -30,40 +30,31 @@ namespace ttk {
   public:
     ArrayPreconditioning();
 #ifdef TTK_ENABLE_MPI
-    MPI_Datatype getMPIType(float val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const float ttkNotUsed(val)) const {
       return MPI_FLOAT;
     };
-    MPI_Datatype getMPIType(int val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const int ttkNotUsed(val)) const {
       return MPI_INT;
     };
-    MPI_Datatype getMPIType(unsigned int val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const unsigned int ttkNotUsed(val)) const {
       return MPI_UNSIGNED;
     };
-    MPI_Datatype getMPIType(double val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const double ttkNotUsed(val)) const {
       return MPI_DOUBLE;
     };
-    MPI_Datatype getMPIType(long double val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const long double ttkNotUsed(val)) const {
       return MPI_LONG_DOUBLE;
     };
-    MPI_Datatype getMPIType(long val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const long ttkNotUsed(val)) const {
       return MPI_LONG;
     };
-    MPI_Datatype getMPIType(unsigned long val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const unsigned long ttkNotUsed(val)) const {
       return MPI_UNSIGNED_LONG;
     };
-    MPI_Datatype getMPIType(long long val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const long long ttkNotUsed(val)) const {
       return MPI_LONG_LONG;
     };
-    MPI_Datatype getMPIType(unsigned long long val) const {
-      TTK_FORCE_USE(val);
+    MPI_Datatype getMPIType(const unsigned long long ttkNotUsed(val)) const {
       return MPI_UNSIGNED_LONG_LONG;
     };
 #endif

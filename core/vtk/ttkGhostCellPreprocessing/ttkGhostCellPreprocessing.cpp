@@ -13,7 +13,6 @@
 #include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkGhostCellPreprocessing);
-using IT = long long int;
 
 ttkGhostCellPreprocessing::ttkGhostCellPreprocessing() {
   this->SetNumberOfInputPorts(1);
@@ -59,7 +58,7 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();
-  IT nVertices = input->GetNumberOfPoints();
+  ttk::SimplexId nVertices = input->GetNumberOfPoints();
   this->printMsg("#Points: " + std::to_string(nVertices));
 
   auto vtkGlobalPointIds = pointData->GetGlobalIds();
@@ -75,19 +74,23 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
         "Global Point Ids and Ghost Cells exist, therefore we can continue!");
     this->printMsg("#Ranks " + std::to_string(numProcs) + ", this is rank "
                    + std::to_string(rank));
-    MPI_Datatype MIT = MPI_LONG_LONG_INT;
 
+#ifdef TTK_ENABLE_64BIT_IDS
+    MPI_Datatype MIT = MPI_LONG_LONG_INT;
+#else
+    MPI_Datatype MIT = MPI_INT;
+#endif
     vtkNew<vtkIntArray> rankArray{};
     rankArray->SetName("RankArray");
     rankArray->SetNumberOfComponents(1);
     rankArray->SetNumberOfTuples(nVertices);
-    std::vector<IT> currentRankUnknownIds;
-    std::vector<std::vector<IT>> allUnknownIds(numProcs);
-    std::unordered_set<IT> gIdSet;
-    std::unordered_map<IT, IT> gIdToLocalMap;
+    std::vector<ttk::SimplexId> currentRankUnknownIds;
+    std::vector<std::vector<ttk::SimplexId>> allUnknownIds(numProcs);
+    std::unordered_set<ttk::SimplexId> gIdSet;
+    std::unordered_map<ttk::SimplexId, ttk::SimplexId> gIdToLocalMap;
     for(int i = 0; i < nVertices; i++) {
-      IT ghostCellVal = vtkGhostCells->GetComponent(i, 0);
-      IT globalId = vtkGlobalPointIds->GetComponent(i, 0);
+      int ghostCellVal = vtkGhostCells->GetComponent(i, 0);
+      ttk::SimplexId globalId = vtkGlobalPointIds->GetComponent(i, 0);
       if(ghostCellVal == 0) {
         // if the ghost cell value is 0, then this vertex mainly belongs to this
         // rank
@@ -104,7 +107,7 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
     // this->printMsg("Rank " + std::to_string(rank) + " done with local
     // work.");
     allUnknownIds[rank] = currentRankUnknownIds;
-    IT sizeOfCurrentRank;
+    ttk::SimplexId sizeOfCurrentRank;
     // first each rank gets the information which rank needs which globalid
     for(int r = 0; r < numProcs; r++) {
       if(r == rank)
@@ -117,12 +120,12 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
 
     // then we check if the needed globalid values are present in the local
     // globalid map if so, we send the rank value to the requesting rank
-    std::vector<std::vector<IT>> gIdsToSend;
+    std::vector<std::vector<ttk::SimplexId>> gIdsToSend;
     MPI_Request req;
     gIdsToSend.resize(numProcs);
     for(int r = 0; r < numProcs; r++) {
       if(r != rank) {
-        for(IT gId : allUnknownIds[r]) {
+        for(ttk::SimplexId gId : allUnknownIds[r]) {
           if(gIdSet.count(gId)) {
             // add the value to the vector which will be sent
             gIdsToSend[r].push_back(gId);
@@ -138,7 +141,7 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
     // receive a variable amount of values from different ranks
     size_t i = 0;
     while(i < allUnknownIds[rank].size()) {
-      std::vector<IT> receivedGlobals;
+      std::vector<ttk::SimplexId> receivedGlobals;
       receivedGlobals.resize(allUnknownIds[rank].size());
       MPI_Status status;
       int amount;
@@ -147,8 +150,8 @@ int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
       int sourceRank = status.MPI_SOURCE;
       MPI_Get_count(&status, MIT, &amount);
       receivedGlobals.resize(amount);
-      for(IT receivedGlobal : receivedGlobals) {
-        IT localVal = gIdToLocalMap[receivedGlobal];
+      for(ttk::SimplexId receivedGlobal : receivedGlobals) {
+        ttk::SimplexId localVal = gIdToLocalMap[receivedGlobal];
         rankArray->SetComponent(localVal, 0, sourceRank);
         i++;
       }

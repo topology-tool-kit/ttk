@@ -1,13 +1,12 @@
 #pragma once
 
 #include <BaseClass.h>
-#include <iostream>
 
 #include <algorithm>
-
 #include <vector>
 
 namespace ttk {
+
   /**
    * @brief Sort vertices according to scalars disambiguated by offsets
    *
