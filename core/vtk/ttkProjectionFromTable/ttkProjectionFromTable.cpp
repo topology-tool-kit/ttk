@@ -83,7 +83,6 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
     printErr("Unable to load triangulation.");
     return 0;
   }
-  this->preconditionTriangulation(triangulation);
 
   // Get surface arrays
   const auto surfaceXArray = this->GetInputArrayToProcess(0, inputVector);

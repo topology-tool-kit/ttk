@@ -26,13 +26,6 @@ namespace ttk {
   public:
     ProjectionFromTable();
 
-    int preconditionTriangulation(AbstractTriangulation *triangulation) {
-      // Pre-condition functions.
-      if(triangulation) {
-      }
-      return 0;
-    }
-
     template <class triangulationType, class xDataType, class yDataType>
     void computeInputPoints(
       const triangulationType *triangulation,
@@ -50,7 +43,7 @@ namespace ttk {
       // 0 --- 2
       // |     |
       // 1 --- 3
-      std::vector<std::vector<int>> quadPoints(noPoints, std::vector<int>(4));
+      std::vector<std::array<int, 4>> quadPoints(noPoints);
       for(unsigned int i = 0; i < noPoints; ++i) {
         int i0 = 0, i1 = 0;
         for(unsigned int j = 0; j < surfaceDim[0]; ++j)
@@ -66,22 +59,21 @@ namespace ttk {
       }
 
       // Iterate through each point
-      std::vector<std::vector<double>> coef(
-        noPoints, std::vector<double>(4, 0.0));
+      std::vector<std::array<double, 4>> coef(noPoints);
       for(unsigned int i = 0; i < noPoints; ++i) {
-        std::vector<std::vector<double>> points(4, std::vector<double>(2));
+        std::vector<std::array<double, 2>> points(4);
         for(unsigned int j = 0; j < 4; ++j) {
           points[j][0] = std::get<1>(surfaceValues[quadPoints[i][j]]);
           points[j][1] = std::get<2>(surfaceValues[quadPoints[i][j]]);
         }
 
         // Find barycentric coordinates
-        std::vector<double> tableValues{static_cast<double>(tableXValues[i]),
-                                        static_cast<double>(tableYValues[i])};
-        std::vector<std::vector<double>> trianglePoints(3);
-        std::vector<int> indexes(3);
-        std::vector<double> mid{(points[3][0] - points[1][0]) / 2.0,
-                                (points[0][1] - points[1][1]) / 2.0};
+        std::array<double, 2> tableValues{static_cast<double>(tableXValues[i]),
+                                          static_cast<double>(tableYValues[i])};
+        std::vector<std::array<double, 3>> trianglePoints(3);
+        std::array<int, 3> indexes;
+        std::array<double, 2> mid{(points[3][0] - points[1][0]) / 2.0,
+                                  (points[0][1] - points[1][1]) / 2.0};
         if(tableXValues[i] > points[1][0] + mid[0]) {
           indexes[0] = 2;
           indexes[1] = 3;
@@ -99,7 +91,8 @@ namespace ttk {
         }
 
         for(unsigned int j = 0; j < 3; ++j)
-          trianglePoints[j] = points[indexes[j]];
+          for(unsigned int k = 0; k < 2; ++k)
+            trianglePoints[j][k] = points[indexes[j]][k];
 
         Geometry::computeTriangleArea(
           tableValues.data(), trianglePoints[0].data(),
