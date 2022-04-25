@@ -70,7 +70,7 @@ namespace ttk {
         // Find barycentric coordinates
         std::array<double, 2> tableValues{static_cast<double>(tableXValues[i]),
                                           static_cast<double>(tableYValues[i])};
-        std::vector<std::array<double, 3>> trianglePoints(3);
+        std::array<std::array<double, 3>, 3> trianglePoints;
         std::array<int, 3> indexes;
         std::array<double, 2> mid{(points[3][0] - points[1][0]) / 2.0,
                                   (points[0][1] - points[1][1]) / 2.0};
