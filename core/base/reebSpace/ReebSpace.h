@@ -325,12 +325,12 @@ namespace ttk {
     template <typename triangulationType>
     int compute3sheet(
       const SimplexId &vertexId,
-      const std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+      const std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
       const triangulationType &triangulation);
 
     template <typename triangulationType>
     int compute3sheets(
-      std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+      std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
       const triangulationType &triangulation);
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
@@ -467,7 +467,7 @@ inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
   compute2sheets(jacobiSetClassification, uField, vField, triangulation);
   //   compute2sheetChambers<dataTypeU, dataTypeV>();
 
-  std::vector<std::vector<std::vector<SimplexId>>> tetTriangles;
+  std::vector<std::vector<std::array<SimplexId, 3>>> tetTriangles;
   compute3sheets(tetTriangles, triangulation);
 
   this->printMsg(
@@ -1207,7 +1207,7 @@ int ttk::ReebSpace::compute1sheets(
 template <typename triangulationType>
 int ttk::ReebSpace::compute3sheet(
   const SimplexId &vertexId,
-  const std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+  const std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
   const triangulationType &triangulation) {
 
   SimplexId sheetId = originalData_.sheet3List_.size();
@@ -1317,7 +1317,7 @@ int ttk::ReebSpace::compute3sheet(
 
 template <typename triangulationType>
 int ttk::ReebSpace::compute3sheets(
-  std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+  std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
   const triangulationType &triangulation) {
 
   Timer t;
@@ -1333,12 +1333,10 @@ int ttk::ReebSpace::compute3sheets(
         SimplexId tetId
           = originalData_.sheet2List_[i].triangleList_[j][k].tetId_;
 
-        std::vector<SimplexId> triangle(3);
-        triangle[0] = i;
-        triangle[1] = j;
-        triangle[2] = k;
-
-        tetTriangles[tetId].push_back(triangle);
+        tetTriangles[tetId].emplace_back();
+        tetTriangles[tetId].back()[0] = i;
+        tetTriangles[tetId].back()[1] = j;
+        tetTriangles[tetId].back()[2] = k;
       }
     }
   }
@@ -1576,7 +1574,7 @@ int ttk::ReebSpace::compute3sheets(
 template <typename triangulationType>
 int ttk::ReebSpace::connectSheets(const triangulationType &triangulation) {
 
-  Timer t;
+  Timer tm;
 
   for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
     for(size_t j = 0; j < originalData_.sheet2List_[i].triangleList_.size();
@@ -1641,7 +1639,8 @@ int ttk::ReebSpace::connectSheets(const triangulationType &triangulation) {
     }
   }
 
-  this->printMsg("Sheet connectivity established.");
+  this->printMsg(
+    "Sheet connectivity established.", 1.0, tm.getElapsedTime(), 1);
 
   printConnectivity(originalData_);
 
