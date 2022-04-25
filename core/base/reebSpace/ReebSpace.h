@@ -754,12 +754,12 @@ inline int ttk::ReebSpace::computeGeometricalMeasures(
   for(size_t i = 0; i < sheet.tetList_.size(); i++) {
 
     SimplexId tetId = sheet.tetList_[i];
-    std::vector<std::pair<double, double>> domainBox, rangeBox;
-    std::vector<std::vector<float>> domainPoints(4), rangePoints(4);
+    std::array<std::pair<double, double>, 3> domainBox{};
+    std::array<std::pair<double, double>, 2> rangeBox;
+    std::array<std::array<float, 3>, 4> domainPoints{};
+    std::array<std::array<float, 2>, 4> rangePoints{};
 
     for(int j = 0; j < 4; j++) {
-      domainPoints[j].resize(3);
-      rangePoints[j].resize(2);
 
       SimplexId vertexId = -1;
       triangulation.getCellVertex(tetId, j, vertexId);

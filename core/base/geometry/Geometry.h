@@ -186,16 +186,41 @@ namespace ttk {
     T dotProduct(const T *vA, const T *vB);
 
     /// Compute the bounding box of a point set.
-    /// \param points Vector of points. Each entry is a std::vector whose size
-    /// is
-    /// equal to the dimension of the space embedding the points.
+    /// \param points Vector of points. Each entry is a
+    /// std::array<float, dim> whose size is equal to the dimension of
+    /// the space embedding the points.
     /// \param bBox Output bounding box. The number of entries in this
-    /// std::vector
-    /// is equal to the dimension of the space embedding the points.
+    /// std::array is equal to the dimension of the space embedding
+    /// the points.
     /// \return Returns 0 upon success, negative values otherwise.
-    template <typename T>
-    int getBoundingBox(const std::vector<std::vector<float>> &points,
-                       std::vector<std::pair<T, T>> &bBox);
+    template <typename T, typename Container, size_t dim>
+    int getBoundingBox(const Container &points,
+                       std::array<std::pair<T, T>, dim> &bBox) {
+      if(points.empty()) {
+        return -1;
+      }
+
+      for(size_t i = 0; i < points.size(); i++) {
+
+        if(i == 0) {
+          for(size_t j = 0; j < dim; j++) {
+            bBox[j].first = points[i][j];
+            bBox[j].second = points[i][j];
+          }
+        } else {
+          for(size_t j = 0; j < dim; j++) {
+            if(points[i][j] < bBox[j].first) {
+              bBox[j].first = points[i][j];
+            }
+            if(points[i][j] > bBox[j].second) {
+              bBox[j].second = points[i][j];
+            }
+          }
+        }
+      }
+
+      return 0;
+    }
 
     /// Check if the point \p p is inside the triangle (\p p0, \p p1, \p p2).
     /// \param p0 xyz coordinates of the first vertex of the triangle
