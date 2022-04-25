@@ -53,12 +53,14 @@ int RangeDrivenOctree::rangeSegmentQuery(
 
   SimplexId ret = rangeSegmentQuery(p0, p1, rootId_, cellList);
 
-  this->printMsg("Query done", 1.0, t.getElapsedTime(), this->threadNumber_,
-                 debug::LineMode::NEW, debug::Priority::DETAIL);
-  this->printMsg(
-    std::vector<std::vector<std::string>>{
-      {"#Non empty leaves", std::to_string(cellList.size())}},
-    debug::Priority::DETAIL);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
+    this->printMsg("Query done", 1.0, t.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
+    this->printMsg(
+      std::vector<std::vector<std::string>>{
+        {"#Non empty leaves", std::to_string(cellList.size())}},
+      debug::Priority::DETAIL);
+  }
 
   return ret;
 }
@@ -88,10 +90,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
     } else {
       // terminal leaf
       // return our cells
-      this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
-                       + std::to_string(nodeList_[nodeId].cellList_.size())
-                       + " cells(s).",
-                     debug::Priority::VERBOSE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+        this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
+                         + std::to_string(nodeList_[nodeId].cellList_.size())
+                         + " cells(s).",
+                       debug::Priority::VERBOSE);
+      }
 
       cellList.insert(cellList.end(), nodeList_[nodeId].cellList_.begin(),
                       nodeList_[nodeId].cellList_.end());
@@ -116,10 +120,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
     } else {
       // terminal leaf
       // return our cells
-      this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
-                       + std::to_string(nodeList_[nodeId].cellList_.size())
-                       + " cells(s).",
-                     debug::Priority::VERBOSE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+        this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
+                         + std::to_string(nodeList_[nodeId].cellList_.size())
+                         + " cells(s).",
+                       debug::Priority::VERBOSE);
+      }
 
       cellList.insert(cellList.end(), nodeList_[nodeId].cellList_.begin(),
                       nodeList_[nodeId].cellList_.end());
@@ -144,10 +150,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
     } else {
       // terminal leaf
       // return our cells
-      this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
-                       + std::to_string(nodeList_[nodeId].cellList_.size())
-                       + " cells(s).",
-                     debug::Priority::VERBOSE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+        this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
+                         + std::to_string(nodeList_[nodeId].cellList_.size())
+                         + " cells(s).",
+                       debug::Priority::VERBOSE);
+      }
 
       cellList.insert(cellList.end(), nodeList_[nodeId].cellList_.begin(),
                       nodeList_[nodeId].cellList_.end());
@@ -172,10 +180,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
     } else {
       // terminal leaf
       // return our cells
-      this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
-                       + std::to_string(nodeList_[nodeId].cellList_.size())
-                       + " cells(s).",
-                     debug::Priority::VERBOSE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+        this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
+                         + std::to_string(nodeList_[nodeId].cellList_.size())
+                         + " cells(s).",
+                       debug::Priority::VERBOSE);
+      }
 
       cellList.insert(cellList.end(), nodeList_[nodeId].cellList_.begin(),
                       nodeList_[nodeId].cellList_.end());
@@ -199,10 +209,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
     } else {
       // terminal leaf
       // return our cells
-      this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
-                       + std::to_string(nodeList_[nodeId].cellList_.size())
-                       + " cells(s).",
-                     debug::Priority::VERBOSE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+        this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
+                         + std::to_string(nodeList_[nodeId].cellList_.size())
+                         + " cells(s).",
+                       debug::Priority::VERBOSE);
+      }
 
       cellList.insert(cellList.end(), nodeList_[nodeId].cellList_.begin(),
                       nodeList_[nodeId].cellList_.end());
@@ -224,10 +236,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
     } else {
       // terminal leaf
       // return our cells
-      this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
-                       + std::to_string(nodeList_[nodeId].cellList_.size())
-                       + " cells(s).",
-                     debug::Priority::VERBOSE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+        this->printMsg("Node #" + std::to_string(nodeId) + " returns its "
+                         + std::to_string(nodeList_[nodeId].cellList_.size())
+                         + " cells(s).",
+                       debug::Priority::VERBOSE);
+      }
 
       cellList.insert(cellList.end(), nodeList_[nodeId].cellList_.begin(),
                       nodeList_[nodeId].cellList_.end());
