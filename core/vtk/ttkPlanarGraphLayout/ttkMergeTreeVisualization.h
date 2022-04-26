@@ -1291,7 +1291,6 @@ public:
             iTreesSegmentationCopy->DeepCopy(treesSegmentation[i]);
           else
             iTreesSegmentationCopy->ShallowCopy(treesSegmentation[i]);
-          iTreesSegmentationCopy->DeepCopy(treesSegmentation[i]);
           auto iVkOutputSegmentationTemp
             = vtkUnstructuredGrid::SafeDownCast(iTreesSegmentationCopy);
           if(!iVkOutputSegmentationTemp
