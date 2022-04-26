@@ -89,41 +89,46 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   if(vtkGlobalPointIds != nullptr && vtkGhostCells != nullptr
      && rankArray != nullptr) {
 #ifdef TTK_ENABLE_MPI
-    // add the order array for every scalar array, except the ghostcells, the
-    // rankarray and the global ids
-    for(auto scalarArray : scalarArrays) {
-      int status;
-      std::string arrayName = std::string(scalarArray->GetName());
-      if(arrayName != "GlobalPointIds" && arrayName != "vtkGhostType"
-         && arrayName != "RankArray") {
-        this->printMsg("Arrayname: " + arrayName);
-        vtkNew<ttkSimplexIdTypeArray> orderArray{};
-        orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
-        orderArray->SetNumberOfComponents(1);
-        orderArray->SetNumberOfTuples(nVertices);
+    if(ttk::isRunningWithMPI()) {
+      // add the order array for every scalar array, except the ghostcells, the
+      // rankarray and the global ids
+      for(auto scalarArray : scalarArrays) {
+        int status = 0;
+        std::string arrayName = std::string(scalarArray->GetName());
+        if(arrayName != "GlobalPointIds" && arrayName != "vtkGhostType"
+           && arrayName != "RankArray") {
+          this->printMsg("Arrayname: " + arrayName);
+          vtkNew<ttkSimplexIdTypeArray> orderArray{};
+          orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
+          orderArray->SetNumberOfComponents(1);
+          orderArray->SetNumberOfTuples(nVertices);
 
-        ttkTypeMacroAI(
-          scalarArray->GetDataType(), vtkGlobalPointIds->GetDataType(),
-          (status = processScalarArray<T0, T1>(
-             ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
-             ttkUtils::GetPointer<T0>(scalarArray),
-             ttkUtils::GetPointer<T1>(vtkGlobalPointIds),
-             ttkUtils::GetPointer<int>(rankArray),
-             ttkUtils::GetPointer<char>(vtkGhostCells), nVertices, BurstSize)));
+          ttkTypeMacroAI(scalarArray->GetDataType(),
+                         vtkGlobalPointIds->GetDataType(),
+                         (status = processScalarArray<T0, T1>(
+                            ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
+                            ttkUtils::GetPointer<T0>(scalarArray),
+                            ttkUtils::GetPointer<T1>(vtkGlobalPointIds),
+                            ttkUtils::GetPointer<int>(rankArray),
+                            ttkUtils::GetPointer<char>(vtkGhostCells),
+                            nVertices, BurstSize)));
 
-        // On error cancel filter execution
-        if(status != 1)
-          return 0;
-        output->GetPointData()->AddArray(orderArray);
+          // On error cancel filter execution
+          if(status != 1)
+            return 0;
+          output->GetPointData()->AddArray(orderArray);
+        }
       }
+      this->printMsg("Preconditioned selected scalar arrays", 1.0,
+                     tm.getElapsedTime(), this->threadNumber_);
+      return 1;
+    } else {
+      this->printMsg("Necessary arrays are present,  TTK is built with MPI "
+                     "support, but not run with mpirun. Running sequentially.");
     }
-    this->printMsg("Preconditioned selected scalar arrays", 1.0,
-                   tm.getElapsedTime(), this->threadNumber_);
-    return 1;
 #else
-    this->printMsg(
-      "Necessary arrays are present, but TTK is not build with MPI support");
-    return 0;
+    this->printMsg("Necessary arrays are present, but TTK is not built with "
+                   "MPI support, running sequentially.");
 #endif
   }
 

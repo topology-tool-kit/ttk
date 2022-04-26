@@ -23,9 +23,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 
-#ifdef TTK_ENABLE_MPI
-#include <mpi.h>
-#endif
+#include <MPIUtils.h>
 #include <vtkDataArraySelection.h>
 #include <vtkNew.h>
 

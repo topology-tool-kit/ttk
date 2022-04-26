@@ -12,10 +12,9 @@
 // ttk common includes
 #include <Debug.h>
 
-#ifdef TTK_ENABLE_MPI
-#include <mpi.h>
-#endif
+#include <MPIUtils.h>
 
+#include <limits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -29,35 +28,7 @@ namespace ttk {
 
   public:
     ArrayPreconditioning();
-#ifdef TTK_ENABLE_MPI
-    MPI_Datatype getMPIType(const float ttkNotUsed(val)) const {
-      return MPI_FLOAT;
-    };
-    MPI_Datatype getMPIType(const int ttkNotUsed(val)) const {
-      return MPI_INT;
-    };
-    MPI_Datatype getMPIType(const unsigned int ttkNotUsed(val)) const {
-      return MPI_UNSIGNED;
-    };
-    MPI_Datatype getMPIType(const double ttkNotUsed(val)) const {
-      return MPI_DOUBLE;
-    };
-    MPI_Datatype getMPIType(const long double ttkNotUsed(val)) const {
-      return MPI_LONG_DOUBLE;
-    };
-    MPI_Datatype getMPIType(const long ttkNotUsed(val)) const {
-      return MPI_LONG;
-    };
-    MPI_Datatype getMPIType(const unsigned long ttkNotUsed(val)) const {
-      return MPI_UNSIGNED_LONG;
-    };
-    MPI_Datatype getMPIType(const long long ttkNotUsed(val)) const {
-      return MPI_LONG_LONG;
-    };
-    MPI_Datatype getMPIType(const unsigned long long ttkNotUsed(val)) const {
-      return MPI_UNSIGNED_LONG_LONG;
-    };
-#endif
+
     template <typename DT, typename IT>
     struct value {
       DT scalar;
@@ -86,7 +57,7 @@ namespace ttk {
         IT localId = i;
         gidToLidMap[globalId] = localId;
         if((int)ghostCells[i] == 0) {
-          float scalarValue = scalars[i];
+          DT scalarValue = scalars[i];
           valuesToSortVector.emplace_back(scalarValue, globalId, localId);
         } else {
           gidsToGetVector.push_back(globalId);
@@ -96,9 +67,14 @@ namespace ttk {
 
     // orders an value vector first by their scalar value and then by global id
     template <typename DT, typename IT>
-    void sortVerticesDistributed(std::vector<value<DT, IT>> &values) const {
-      std::sort(
-        values.begin(), values.end(), [](value<DT, IT> v1, value<DT, IT> v2) {
+    void sortVerticesDistributed(std::vector<value<DT, IT>> &values,
+                                 const int nThreads) const {
+
+      TTK_FORCE_USE(nThreads);
+
+      TTK_PSORT(
+        nThreads, values.begin(), values.end(),
+        [](value<DT, IT> v1, value<DT, IT> v2) {
           return (v1.scalar < v2.scalar)
                  || (v1.scalar == v2.scalar && v1.globalId < v2.globalId);
         });
@@ -266,8 +242,8 @@ namespace ttk {
         MPI_Datatype mpi_values;
         const int nitems = 4;
         int blocklengths[4] = {1, 1, 1, 1};
-        MPI_Datatype MPI_DT = this->getMPIType(static_cast<DT>(0));
-        MPI_Datatype MPI_IT = this->getMPIType(static_cast<IT>(0));
+        MPI_Datatype MPI_DT = ttk::getMPIType(static_cast<DT>(0));
+        MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
         MPI_Datatype types[4] = {MPI_DT, MPI_IT, MPI_IT, MPI_IT};
         MPI_Aint offsets[4];
         typedef value<DT, IT> value_DT_IT;
@@ -291,7 +267,8 @@ namespace ttk {
 
         // sort the scalar array distributed first by the scalar value itself,
         // then by the global id
-        this->sortVerticesDistributed<DT, IT>(sortingValues);
+        this->sortVerticesDistributed<DT, IT>(
+          sortingValues, this->threadNumber_);
         this->printMsg("#Unique Points in Rank " + std::to_string(rank) + ": "
                        + std::to_string(sortingValues.size()));
         this->printMsg("#Ghostpoints in Rank " + std::to_string(rank) + ": "
@@ -347,12 +324,12 @@ namespace ttk {
           while(finalValues.size() < totalSize) {
             // take the current maximum scalar over all ranks
             int rankIdOfMaxScalar = -1;
-            float maxScalar = -FLT_MAX;
+            DT maxScalar = std::numeric_limits<DT>::min();
             IT maxGId = -1;
             for(int i = 0; i < numProcs; i++) {
               if(unsortedReceivedValues[i].size() > 0) {
                 int thisId = i;
-                float thisScalar = unsortedReceivedValues[i].back().scalar;
+                DT thisScalar = unsortedReceivedValues[i].back().scalar;
                 IT thisGId = unsortedReceivedValues[i].back().globalId;
                 if(thisScalar > maxScalar
                    || (thisScalar == maxScalar && thisGId > maxGId)) {
