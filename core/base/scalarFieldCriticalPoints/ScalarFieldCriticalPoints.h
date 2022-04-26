@@ -540,20 +540,13 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
 template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
-  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
-    if(std::is_same<triangulationType, ttk::CompactTriangulation>::value) {
+  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+     && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
 
-      printWrn("CompactTriangulation detected.");
-      printWrn("Defaulting to the generic backend.");
+    printWrn("Explicit, Compact or Periodic triangulation detected.");
+    printWrn("Defaulting to the generic backend.");
 
-      BackEnd = BACKEND::GENERIC;
-    } else if(!std::is_base_of<ttk::ImplicitTriangulation,
-                               triangulationType>::value) {
-
-      printWrn("Explicit triangulation detected.");
-      printWrn("Defaulting to the generic backend.");
-
-      BackEnd = BACKEND::GENERIC;
-    }
+    BackEnd = BACKEND::GENERIC;
   }
 }
