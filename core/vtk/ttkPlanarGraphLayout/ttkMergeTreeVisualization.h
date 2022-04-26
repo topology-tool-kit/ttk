@@ -1282,20 +1282,37 @@ public:
         // --------------
         // Manage segmentation
         // --------------
+        // Use TransfromFilter (see commit
+        // 85600763a8907674b8e57d6ad77ca97640725b30). When issue #513 is solved.
         printMsg("// Shift segmentation", ttk::debug::Priority::VERBOSE);
         if(OutputSegmentation and not PlanarLayout and treesSegmentation[i]) {
           vtkNew<vtkUnstructuredGrid> iTreesSegmentationCopy{};
+          if(ShiftMode != -1)
+            iTreesSegmentationCopy->DeepCopy(treesSegmentation[i]);
+          else
+            iTreesSegmentationCopy->ShallowCopy(treesSegmentation[i]);
           iTreesSegmentationCopy->DeepCopy(treesSegmentation[i]);
           auto iVkOutputSegmentationTemp
             = vtkUnstructuredGrid::SafeDownCast(iTreesSegmentationCopy);
-          for(int p = 0;
-              p < iVkOutputSegmentationTemp->GetPoints()->GetNumberOfPoints();
-              ++p) {
-            double *point = iVkOutputSegmentationTemp->GetPoints()->GetPoint(p);
-            point[0] += diff_x;
-            point[1] += diff_y;
-            point[2] += diff_z;
-            iVkOutputSegmentationTemp->GetPoints()->SetPoint(p, point);
+          if(!iVkOutputSegmentationTemp
+             or !iVkOutputSegmentationTemp->GetPoints()) {
+            printWrn("Convert segmentation to vtkUnstructuredGrid.");
+            vtkNew<vtkAppendFilter> appendFilter2{};
+            appendFilter2->AddInputData(treesSegmentation[i]);
+            appendFilter2->Update();
+            iVkOutputSegmentationTemp->ShallowCopy(appendFilter2->GetOutput());
+          }
+          if(ShiftMode != -1) {
+            for(int p = 0;
+                p < iVkOutputSegmentationTemp->GetPoints()->GetNumberOfPoints();
+                ++p) {
+              double *point
+                = iVkOutputSegmentationTemp->GetPoints()->GetPoint(p);
+              point[0] += diff_x;
+              point[1] += diff_y;
+              point[2] += diff_z;
+              iVkOutputSegmentationTemp->GetPoints()->SetPoint(p, point);
+            }
           }
           appendFilter->AddInputData(iVkOutputSegmentationTemp);
         }
