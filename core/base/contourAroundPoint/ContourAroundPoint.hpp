@@ -163,7 +163,6 @@ namespace ttk {
       return _radius;
     }
 
-    
     /// If greater than 0, means the coordinates are supposed to lie on a sphere
     /// with fixed radius.
     double _radius = 0.;
@@ -198,13 +197,13 @@ namespace ttk {
     mutable std::vector<float> _outCentroidsCoords;
     mutable std::vector<float> _outCentroidsScalars;
     mutable std::vector<int> _outCentroidsFlags;
-    
+
     /// `PointIterable` and `WeightIterable` must provide random access.
     /// `PointIterable` must contain sth. like a tuple, pair or array.
-    template<class PointIterable, class WeightIterable>
-    static std::array<double,
-      std::tuple_size<typename PointIterable::value_type>::value>
-    average(const PointIterable& pts, const WeightIterable& ws);
+    template <class PointIterable, class WeightIterable>
+    static std::
+      array<double, std::tuple_size<typename PointIterable::value_type>::value>
+      average(const PointIterable &pts, const WeightIterable &ws);
   };
 } // namespace ttk
 
@@ -489,7 +488,7 @@ void ttk::ContourAroundPoint::extendOutPts(
 
   auto triang = reinterpret_cast<Triang *>(_inpFldTriang);
   auto inpScalars = reinterpret_cast<const scalarT *>(_inpFldScalars);
-  
+
   const double radius = _radius;
   const bool spherical = radius > 0.;
 
@@ -504,20 +503,20 @@ void ttk::ContourAroundPoint::extendOutPts(
   auto scalar_w = [kernelInputScaler](double d) {
     return (std::cos(d * kernelInputScaler) + 1.) / 2.;
   };
-  
+
   // Additionally, each vertex is weighted considering the size of the domain it
   // "represents" (inversely proportional to the sampling density).
   // NOTE Currently we assume that whenever we have a spherical domain,
   // it is given on a regular lon-lat grid.
   const bool regularLonLat = spherical;
-  
+
   // We collect the 4D samples and weights to compute the weighted average
   // in a separate function
   const auto numVerts = vertices.size();
-  auto pts4d = std::vector<std::array<float, 4> >(numVerts);
+  auto pts4d = std::vector<std::array<float, 4>>(numVerts);
   auto ws = std::vector<double>(numVerts);
   for(std::size_t i = 0; i < numVerts; ++i) {
-    
+
     const auto v = vertices[i];
     const scalarT vSca = inpScalars[v];
     // Because we only use symmetric kernels for the weighting, the sign of
@@ -528,26 +527,29 @@ void ttk::ContourAroundPoint::extendOutPts(
     float x, y, z;
     triang->getVertexPoint(v, x, y, z);
     pts4d[i] = {x, y, z, static_cast<float>(vSca)};
-    
+
     if(!regularLonLat) {
-      // NOTE Implement case for arbitrary triangulation
+      // If someone has a lot of time, they can implement the case for an
+      // arbitrary triangulation. This requires computing the area/volume of all
+      // the cells that touch this vertex (better yet: the area/volume of the
+      // cell of the dual grid of which this vertex is the center).
       ws[i] = scalarW;
     } else {
       const double latInRad = std::asin(z / radius);
       // std::asin is in [-pi/2,+pi/2] => equator at 0 => fits
       const double spatialW = std::cos(latInRad);
       // weight 1 at equator, 0 at a pole
-      ws[i] = scalarW*spatialW; // or use sth like the mean weight here?
+      ws[i] = scalarW * spatialW; // or use sth like the mean weight here?
     }
   }
-  
+
   const auto res = average(pts4d, ws);
   auto x = res[0];
   auto y = res[1];
   auto z = res[2];
 
   if(spherical) {
-    const auto radiusCur = std::sqrt(x*x + y*y + z*z);
+    const auto radiusCur = std::sqrt(x * x + y * y + z * z);
     const auto radiusScaler = radius / radiusCur;
     x *= radiusScaler;
     y *= radiusScaler;
@@ -562,38 +564,38 @@ void ttk::ContourAroundPoint::extendOutPts(
 }
 
 //----------------------------------------------------------------------------//
-template<class PointIterable, class WeightIterable>
+template <class PointIterable, class WeightIterable>
 std::array<double, std::tuple_size<typename PointIterable::value_type>::value>
-ttk::ContourAroundPoint::average(
-  const PointIterable& pts, const WeightIterable& ws) {
+  ttk::ContourAroundPoint::average(const PointIterable &pts,
+                                   const WeightIterable &ws) {
 
-  constexpr auto numComponents =
-    std::tuple_size<typename PointIterable::value_type>::value;
+  constexpr auto numComponents
+    = std::tuple_size<typename PointIterable::value_type>::value;
   std::array<double, numComponents> res{};
   // as of C++14 there is no (simple) compile time "constexpr for loop"
 #ifndef NDEBUG
   for(std::size_t j = 0; j < numComponents; ++j)
-//     assert(std::get<j>(res) == 0.);
+    //     assert(std::get<j>(res) == 0.);
     assert(res[j] == 0.);
 #endif
   double wSum = 0.;
-  
+
   const auto numPts = pts.size();
   assert(ws.size() == numPts);
-  
+
   for(std::size_t i = 0; i < numPts; ++i) {
-    auto& pt = pts[i];
+    auto &pt = pts[i];
     const auto w = ws[i];
     wSum += w;
     for(std::size_t j = 0; j < numComponents; ++j)
-//       std::get<j>(res) += std::get<j>(pt) * w;
+      //       std::get<j>(res) += std::get<j>(pt) * w;
       res[j] += pt[j] * w;
   }
-  
+
   assert(wSum != 0.);
   for(std::size_t j = 0; j < numComponents; ++j)
-//     std::get<j>(res) /= wSum;
+    //     std::get<j>(res) /= wSum;
     res[j] /= wSum;
-  
+
   return res;
 }
