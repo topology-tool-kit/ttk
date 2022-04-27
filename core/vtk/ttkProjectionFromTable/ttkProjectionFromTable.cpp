@@ -159,10 +159,10 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
     xValues[i] = std::get<1>(tup);
     yValues[i] = std::get<2>(tup);
   }
-  std::sort(xValues.begin(), xValues.end());
+  TTK_PSORT(this->threadNumber_, xValues.begin(), xValues.end());
   const long nUniqueXValues
     = std::unique(xValues.begin(), xValues.end()) - xValues.begin();
-  std::sort(yValues.begin(), yValues.end());
+  TTK_PSORT(this->threadNumber_, yValues.begin(), yValues.end());
   const long nUniqueYValues
     = std::unique(yValues.begin(), yValues.end()) - yValues.begin();
   std::array<const long, 2> surfaceDim{nUniqueXValues, nUniqueYValues};
@@ -190,7 +190,8 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
   };
 
   // sort the vector of indices/values in ascending order
-  std::sort(orderedValues.begin(), orderedValues.end(), cmp);
+  TTK_PSORT(
+    this->threadNumber_, orderedValues.begin(), orderedValues.end(), cmp);
 
   //---------------------------------------------------------------------------
   // --- Call base

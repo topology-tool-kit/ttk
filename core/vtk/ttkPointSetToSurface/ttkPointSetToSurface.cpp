@@ -96,10 +96,10 @@ int ttkPointSetToSurface::RequestData(vtkInformation *ttkNotUsed(request),
     xValues[i] = std::get<1>(tup);
     yValues[i] = std::get<2>(tup);
   }
-  std::sort(xValues.begin(), xValues.end());
+  TTK_PSORT(this->threadNumber_, xValues.begin(), xValues.end());
   const auto nUniqueXValues
     = std::unique(xValues.begin(), xValues.end()) - xValues.begin();
-  std::sort(yValues.begin(), yValues.end());
+  TTK_PSORT(this->threadNumber_, yValues.begin(), yValues.end());
   const auto nUniqueYValues
     = std::unique(yValues.begin(), yValues.end()) - yValues.begin();
 
@@ -126,7 +126,8 @@ int ttkPointSetToSurface::RequestData(vtkInformation *ttkNotUsed(request),
   };
 
   // sort the vector of indices/values in ascending order
-  std::sort(orderedValues.begin(), orderedValues.end(), cmp);
+  TTK_PSORT(
+    this->threadNumber_, orderedValues.begin(), orderedValues.end(), cmp);
 
   // Create point ids matrix
   std::vector<std::vector<vtkIdType>> orderedIds(
