@@ -193,6 +193,27 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkTypeMacroErrorCase(0, group);                                       \
   }
 
+#ifdef TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+// reduced list of template instantiations by redefining ttkTypeMacroI
+// & ttkTypeMacroA
+#undef ttkTypeMacroI
+#define ttkTypeMacroI(group, call)                       \
+  switch(group) {                                        \
+    ttkTypeMacroCase(VTK_INT, int, 0, call);             \
+    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call); \
+    ttkTypeMacroErrorCase(0, group);                     \
+  }
+#undef ttkTypeMacroA
+#define ttkTypeMacroA(group, call)                       \
+  switch(group) {                                        \
+    ttkTypeMacroCase(VTK_FLOAT, float, 0, call);         \
+    ttkTypeMacroCase(VTK_DOUBLE, double, 0, call);       \
+    ttkTypeMacroCase(VTK_INT, int, 0, call);             \
+    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call); \
+    ttkTypeMacroErrorCase(0, group);                     \
+  }
+#endif // TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+
 #define ttkTypeMacroAT(group0, group1, call)                    \
   switch(group1) {                                              \
     ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
