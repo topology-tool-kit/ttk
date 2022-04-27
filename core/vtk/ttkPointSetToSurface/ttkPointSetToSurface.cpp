@@ -96,45 +96,55 @@ int ttkPointSetToSurface::RequestData(vtkInformation *ttkNotUsed(request),
     xValues[i] = std::get<1>(tup);
     yValues[i] = std::get<2>(tup);
   }
-  std::sort(xValues.begin(), xValues.end());
-  const auto nUniqueValues
+  TTK_PSORT(this->threadNumber_, xValues.begin(), xValues.end());
+  const auto nUniqueXValues
     = std::unique(xValues.begin(), xValues.end()) - xValues.begin();
-  std::sort(yValues.begin(), yValues.end());
-  const auto nUniqueValues2
+  TTK_PSORT(this->threadNumber_, yValues.begin(), yValues.end());
+  const auto nUniqueYValues
     = std::unique(yValues.begin(), yValues.end()) - yValues.begin();
 
-  if(nUniqueValues * nUniqueValues2 != input->GetNumberOfPoints()) {
-    printErr("Number of values in first array times the number of values in "
-             "the second one does not equal the number of points");
+  if(nUniqueXValues * nUniqueYValues != input->GetNumberOfPoints()) {
+    printErr(
+      "Number of unique values in first array times the number of unique "
+      "values in the second one does not equal the number of points");
     return 0;
   }
 
-  // compare two pairs of index/value according to their values
-  const auto cmp = [&](const std::tuple<vtkIdType, double, double> &a,
-                       const std::tuple<vtkIdType, double, double> &b) {
-    return std::get<1>(a) * nUniqueValues2 + std::get<2>(a)
-           < std::get<1>(b) * nUniqueValues2 + std::get<2>(b);
+  // Compare two pairs of index/value according to their values
+  double yRange[2] = {*std::min_element(yValues.begin(), yValues.end()),
+                      *std::max_element(yValues.begin(), yValues.end())};
+  double minXInterval = std::numeric_limits<double>::max();
+  for(unsigned int i = 1; i < nUniqueXValues; ++i)
+    minXInterval = std::min(minXInterval, xValues[i] - xValues[i - 1]);
+  const auto normValue = [&](double v) {
+    return (v - yRange[0]) / (yRange[1] - yRange[0]) * minXInterval * 0.99;
+  };
+  const auto cmp = [&](const std::tuple<int, double, double> &a,
+                       const std::tuple<int, double, double> &b) {
+    return std::get<1>(a) + normValue(std::get<2>(a))
+           < std::get<1>(b) + normValue(std::get<2>(b));
   };
 
   // sort the vector of indices/values in ascending order
-  std::sort(orderedValues.begin(), orderedValues.end(), cmp);
+  TTK_PSORT(
+    this->threadNumber_, orderedValues.begin(), orderedValues.end(), cmp);
 
   // Create point ids matrix
   std::vector<std::vector<vtkIdType>> orderedIds(
-    nUniqueValues, std::vector<vtkIdType>(nUniqueValues2));
-  for(unsigned int i = 0; i < nUniqueValues; ++i) {
-    for(unsigned int j = 0; j < nUniqueValues2; ++j) {
-      auto index = i * nUniqueValues2 + j;
+    nUniqueXValues, std::vector<vtkIdType>(nUniqueYValues));
+  for(unsigned int i = 0; i < nUniqueXValues; ++i) {
+    for(unsigned int j = 0; j < nUniqueYValues; ++j) {
+      auto index = i * nUniqueYValues + j;
       orderedIds[i][j] = std::get<0>(orderedValues[index]);
     }
   }
 
   // Create new grid
   vtkNew<vtkPolyData> vtkOutput{};
-  vtkOutput->ShallowCopy(input);
+  vtkOutput->DeepCopy(input);
 
-  for(unsigned int i = 0; i < nUniqueValues; ++i) {
-    for(unsigned int j = 0; j < nUniqueValues2; ++j) {
+  for(unsigned int i = 0; i < nUniqueXValues; ++i) {
+    for(unsigned int j = 0; j < nUniqueYValues; ++j) {
       if(j != 0) {
         std::array<vtkIdType, 2> linePoints{
           orderedIds[i][j - 1], orderedIds[i][j]};
