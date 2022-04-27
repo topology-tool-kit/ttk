@@ -404,11 +404,14 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
       visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
       visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
+      visuMaker.setExcludeImportantPairsHigher(ExcludeImportantPairsHigher);
+      visuMaker.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
 
       nodeCorr.clear();
       // First tree
       visuMaker.setNoSampleOffset(1);
       visuMaker.setTreesNodes(treesNodes[0]);
+      visuMaker.copyPointData(treesNodes[0], trees1NodeCorrMesh[0]);
       visuMaker.setTreesNodeCorrMesh(trees1NodeCorrMesh[0]);
       visuMaker.setTreesSegmentation(treesSegmentation[0]);
       visuMaker.setVtkOutputNode(vtkOutputNode1);
@@ -422,6 +425,8 @@ int ttkMergeTreeClustering::runOutput(
       // Second tree
       visuMaker.setISampleOffset(1);
       visuMaker.setTreesNodes(treesNodes[1]);
+      visuMaker.clearAllCustomArrays();
+      visuMaker.copyPointData(treesNodes[1], trees1NodeCorrMesh[1]);
       visuMaker.setTreesNodeCorrMesh(trees1NodeCorrMesh[1]);
       visuMaker.setTreesSegmentation(treesSegmentation[1]);
       visuMaker.setVtkOutputNode(vtkOutputNode2);
@@ -528,7 +533,10 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
           visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
           visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
+          visuMaker.setExcludeImportantPairsHigher(ExcludeImportantPairsHigher);
+          visuMaker.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
           visuMaker.setTreesNodes(treesNodes);
+          visuMaker.copyPointData(treesNodes[i], trees1NodeCorrMesh[i]);
           visuMaker.setTreesNodeCorrMesh(trees1NodeCorrMesh);
           visuMaker.setTreesSegmentation(treesSegmentation);
           visuMaker.setVtkOutputNode(vtkOutputNode1);
@@ -595,6 +603,9 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setImportantPairsSpacing(ImportantPairsSpacing);
         visuMakerBary.setNonImportantPairsSpacing(NonImportantPairsSpacing);
         visuMakerBary.setNonImportantPairsProximity(NonImportantPairsProximity);
+        visuMakerBary.setExcludeImportantPairsHigher(
+          ExcludeImportantPairsHigher);
+        visuMakerBary.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
         visuMakerBary.setShiftMode(1); // Star Barycenter
         visuMakerBary.setTreesNodes(treesNodes);
         visuMakerBary.setTreesNodeCorrMesh(trees1NodeCorrMesh);

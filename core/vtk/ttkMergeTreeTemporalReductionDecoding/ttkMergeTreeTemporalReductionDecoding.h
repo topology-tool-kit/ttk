@@ -94,6 +94,8 @@ private:
   double ImportantPairsSpacing = 1.;
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
   // ----------------------
   // Data for visualization
@@ -181,6 +183,12 @@ public:
 
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
+
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
 
   /**
    * This static method and the macro below are VTK conventions on how to

@@ -23,6 +23,10 @@ namespace ttk {
     double importantPairsSpacing_ = 1.;
     double nonImportantPairsSpacing_ = 1.;
     double nonImportantPairsProximity_ = 0.05;
+    std::string excludeImportantPairsLower_ = "";
+    std::string excludeImportantPairsHigher_ = "";
+    std::vector<double> excludeImportantPairsLowerValues_,
+      excludeImportantPairsHigherValues_;
 
   public:
     MergeTreeVisualization() = default;
@@ -52,6 +56,14 @@ namespace ttk {
     }
     void setNonImportantPairsProximity(double d) {
       nonImportantPairsProximity_ = d;
+    }
+    void setExcludeImportantPairsHigher(std::string &d) {
+      excludeImportantPairsHigher_ = d;
+      parseExcludeImportantPairsString(d, excludeImportantPairsHigherValues_);
+    }
+    void setExcludeImportantPairsLower(std::string &d) {
+      excludeImportantPairsLower_ = d;
+      parseExcludeImportantPairsString(d, excludeImportantPairsLowerValues_);
     }
 
     // ==========================================================================
@@ -131,19 +143,27 @@ namespace ttk {
             float nodeSpacing = 0;
             if(i > 0) {
               if(tree->isImportantPair<dataType>(
-                   nodeBranchingVector[i], importantPairs_)) {
+                   nodeBranchingVector[i], importantPairs_,
+                   excludeImportantPairsLowerValues_,
+                   excludeImportantPairsHigherValues_)) {
                 nodeSpacing = importantPairsGap;
               } else if(tree->isImportantPair<dataType>(
-                          nodeBranchingVector[i - 1], importantPairs_)) {
+                          nodeBranchingVector[i - 1], importantPairs_,
+                          excludeImportantPairsLowerValues_,
+                          excludeImportantPairsHigherValues_)) {
                 nodeSpacing = nonImportantPairsProximity_;
                 // prevX =
               } else {
                 nodeSpacing = nonImportantPairsGap;
               }
             } else if(not tree->isImportantPair<dataType>(
-                        nodeBranchingVector[i], importantPairs_)
+                        nodeBranchingVector[i], importantPairs_,
+                        excludeImportantPairsLowerValues_,
+                        excludeImportantPairsHigherValues_)
                       and tree->isImportantPair<dataType>(
-                        nodeOrigin, importantPairs_))
+                        nodeOrigin, importantPairs_,
+                        excludeImportantPairsLowerValues_,
+                        excludeImportantPairsHigherValues_))
               nodeSpacing = nonImportantPairsProximity_;
             float newMin = prevX + nodeSpacing;
             float shiftX = newMin - oldMin;
@@ -184,12 +204,16 @@ namespace ttk {
             // Update x base for next iteration
             prevX = std::get<1>(allNodeSpanX[nodeBranchingI]);
             if(tree->isImportantPair<dataType>(
-                 nodeBranchingVector[i], importantPairs_)) {
+                 nodeBranchingVector[i], importantPairs_,
+                 excludeImportantPairsLowerValues_,
+                 excludeImportantPairsHigherValues_)) {
               lastIndexImportant = i;
               prevX = std::get<1>(allNodeImportantSpanX[nodeBranchingI]);
               if(i < nodeBranchingVector.size() - 1
                  and not tree->isImportantPair<dataType>(
-                   nodeBranchingVector[i + 1], importantPairs_)) {
+                   nodeBranchingVector[i + 1], importantPairs_,
+                   excludeImportantPairsLowerValues_,
+                   excludeImportantPairsHigherValues_)) {
                 float spanMin
                   = std::get<0>(allNodeSpanX[nodeBranchingVector[0]]);
                 float spanMax
@@ -523,13 +547,17 @@ namespace ttk {
         for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
           ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
           bool isSubBranchImportant = tree->isImportantPair<dataType>(
-            branchNodeOrigin, importantPairs_);
+            branchNodeOrigin, importantPairs_,
+            excludeImportantPairsLowerValues_,
+            excludeImportantPairsHigherValues_);
           if(not isSubBranchImportant)
             allBranchOriginsSize[nodeOrigin]
               += allBranchOriginsSize[branchNodeOrigin];
         }
 
-        if(tree->isImportantPair<dataType>(nodeOrigin, importantPairs_))
+        if(tree->isImportantPair<dataType>(nodeOrigin, importantPairs_,
+                                           excludeImportantPairsLowerValues_,
+                                           excludeImportantPairsHigherValues_))
           maxSize = std::max(maxSize, allBranchOriginsSize[nodeOrigin]);
       }
       double nonImportantPairsGap
@@ -559,7 +587,9 @@ namespace ttk {
           ftm::idNode branchNode = tree->getNode(branchNodeOrigin)->getOrigin();
 
           bool isSubBranchImportant = tree->isImportantPair<dataType>(
-            branchNodeOrigin, importantPairs_);
+            branchNodeOrigin, importantPairs_,
+            excludeImportantPairsLowerValues_,
+            excludeImportantPairsHigherValues_);
           bool toLeft = not isSubBranchImportant;
 
           // float branchNodeOriginXmin =
@@ -615,7 +645,9 @@ namespace ttk {
                     previousbranchNodeOriginXmax
                       - retVec[treeSimplexId[branchNode] * 2];
               bool isSubBranchImportant = tree->isImportantPair<dataType>(
-                branchNodeOrigin, importantPairs_);
+                branchNodeOrigin, importantPairs_,
+                excludeImportantPairsLowerValues_,
+                excludeImportantPairsHigherValues_);
               shift += (isLeft ? -1 : 1)
                        * (isSubBranchImportant ? importantPairsGap
                                                : nonImportantPairsGap);
@@ -676,15 +708,18 @@ namespace ttk {
         queueCrossing.pop();
         ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
-        bool isBranchImportant
-          = tree->isImportantPair<dataType>(nodeOrigin, importantPairs_);
+        bool isBranchImportant = tree->isImportantPair<dataType>(
+          nodeOrigin, importantPairs_, excludeImportantPairsLowerValues_,
+          excludeImportantPairsHigherValues_);
         if(not isBranchImportant)
           continue;
 
         for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
           ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
           bool isSubBranchImportant = tree->isImportantPair<dataType>(
-            branchNodeOrigin, importantPairs_);
+            branchNodeOrigin, importantPairs_,
+            excludeImportantPairsLowerValues_,
+            excludeImportantPairsHigherValues_);
           double shift = 0;
           if(not isSubBranchImportant) {
             double gap = retVec[treeSimplexId[node] * 2]
@@ -776,10 +811,10 @@ namespace ttk {
     bool isConflictingBoundsXOneWay(
       std::tuple<float, float, float, float> first,
       std::tuple<float, float, float, float> second) {
-      return (std::get<0>(first) <= std::get<0>(second)
-              and std::get<0>(second) <= std::get<1>(first))
-             or (std::get<0>(first) <= std::get<1>(second)
-                 and std::get<1>(second) <= std::get<1>(first));
+      return (std::get<0>(first) <= std::get<0>(second) + 1e-6
+              and std::get<0>(second) <= std::get<1>(first) + 1e-6)
+             or (std::get<0>(first) <= std::get<1>(second) + 1e-6
+                 and std::get<1>(second) <= std::get<1>(first) + 1e-6);
     }
 
     bool isConflictingBoundsX(std::tuple<float, float, float, float> first,
@@ -791,10 +826,10 @@ namespace ttk {
     bool isConflictingBoundsYOneWay(
       std::tuple<float, float, float, float> first,
       std::tuple<float, float, float, float> second) {
-      return (std::get<2>(first) <= std::get<2>(second)
-              and std::get<2>(second) <= std::get<3>(first))
-             or (std::get<2>(first) <= std::get<3>(second)
-                 and std::get<3>(second) <= std::get<3>(first));
+      return (std::get<2>(first) <= std::get<2>(second) + 1e-6
+              and std::get<2>(second) <= std::get<3>(first) + 1e-6)
+             or (std::get<2>(first) <= std::get<3>(second) + 1e-6
+                 and std::get<3>(second) <= std::get<3>(first) + 1e-6);
     }
 
     bool isConflictingBoundsY(std::tuple<float, float, float, float> first,
@@ -904,6 +939,31 @@ namespace ttk {
           z_max = std::max(z_max, std::get<5>(allBounds[i]));
         }
       return std::make_tuple(x_min, x_max, y_min, y_max, z_min, z_max);
+    }
+
+    // ==========================================================================
+    // Utils
+    // ==========================================================================
+    void parseExcludeImportantPairsString(std::string &exludeString,
+                                          std::vector<double> &excludeVector) {
+      excludeVector.clear();
+      if(exludeString == "")
+        return;
+      std::string s{exludeString};
+      std::string delimiter = ",";
+
+      size_t pos = 0;
+      std::string token;
+      while((pos = s.find(delimiter)) != std::string::npos) {
+        token = s.substr(0, pos);
+        excludeVector.emplace_back(std::stod(token));
+        s.erase(0, pos + delimiter.length());
+      }
+      excludeVector.emplace_back(std::stod(s));
+
+      for(auto v : excludeVector)
+        std::cout << v << " ";
+      std::cout << std::endl;
     }
   };
 

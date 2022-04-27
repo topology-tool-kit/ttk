@@ -33,13 +33,32 @@ namespace ttk {
     }
 
     template <class dataType>
-    bool FTMTree_MT::isImportantPair(idNode nodeId, double threshold) {
+    bool FTMTree_MT::isImportantPair(idNode nodeId,
+                                     double threshold,
+                                     std::vector<double> &excludeLower,
+                                     std::vector<double> &excludeHigher) {
       dataType rootPers = this->getNodePersistence<dataType>(this->getRoot());
       if(threshold > 1)
         threshold /= 100.0;
       threshold = rootPers * threshold;
       auto pers = this->getNodePersistence<dataType>(nodeId);
-      return pers > threshold;
+
+      // Excluded pairs
+      bool isExcluded = false;
+      if(excludeLower.size() == excludeHigher.size())
+        for(unsigned i = 0; i < excludeLower.size(); ++i) {
+          isExcluded |= (pers > rootPers * excludeLower[i] / 100.0
+                         and pers < rootPers * excludeHigher[i] / 100.0);
+        }
+
+      return pers > threshold and not isExcluded;
+    }
+
+    template <class dataType>
+    bool FTMTree_MT::isImportantPair(idNode nodeId, double threshold) {
+      std::vector<double> excludeLower, excludeHigher;
+      return this->isImportantPair<dataType>(
+        nodeId, threshold, excludeLower, excludeHigher);
     }
 
     template <class dataType>

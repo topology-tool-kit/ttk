@@ -24,27 +24,26 @@ namespace ttk {
     template <class dataType>
     MergeTree<dataType> makeTree(vtkUnstructuredGrid *treeNodes,
                                  vtkUnstructuredGrid *treeArcs) {
+      auto treeNodeIdArray = treeNodes->GetPointData()->GetArray("TreeNodeId");
+
       // Init Scalars
-      // std::cout << "// Init Scalars" << std::endl;
       Scalars scalars;
       vtkSmartPointer<vtkDataArray> nodesScalar
         = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
       scalars.size = nodesScalar->GetNumberOfTuples();
       std::vector<dataType> scalarsValues(nodesScalar->GetNumberOfTuples());
-      for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i)
-        scalarsValues[i] = nodesScalar->GetTuple1(i);
-      // scalars.values = ttkUtils::GetVoidPointer(nodesScalar);
+      for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i) {
+        int index = (treeNodeIdArray ? treeNodeIdArray->GetTuple1(i) : i);
+        scalarsValues[index] = nodesScalar->GetTuple1(i);
+      }
       scalars.values = (void *)(scalarsValues.data());
 
       // Init Tree
-      // std::cout << "// Init tree" << std::endl;
       Params params;
       params.treeType = Join_Split;
-      // MergeTree<dataType> mergeTree(scalars, params);
       MergeTree<dataType> mergeTree(scalars, scalarsValues, params);
 
       // Add Nodes
-      // std::cout << "// Add nodes" << std::endl;
       vtkSmartPointer<vtkDataArray> nodesId
         = treeNodes->GetPointData()->GetArray("NodeId"); // 0: NodeId
       vtkIdType nodesNumTuples = nodesId->GetNumberOfTuples();
@@ -53,7 +52,6 @@ namespace ttk {
       }
 
       // Add Arcs
-      // std::cout << "// Add arcs" << std::endl;
       vtkSmartPointer<vtkDataArray> arcsUp
         = treeArcs->GetCellData()->GetArray("upNodeId"); // 1: upNodeId
       vtkSmartPointer<vtkDataArray> arcsDown
@@ -67,6 +65,10 @@ namespace ttk {
           continue;
         double downId = arcsDown->GetTuple1(i);
         double upId = arcsUp->GetTuple1(i);
+        if(treeNodeIdArray) {
+          downId = treeNodeIdArray->GetTuple1(downId);
+          upId = treeNodeIdArray->GetTuple1(upId);
+        }
         auto it = added_arcs.find(std::make_tuple(downId, upId));
         if(it == added_arcs.end()) { // arc not added yet
           mergeTree.tree.makeSuperArc(downId, upId); // (down, Up)
