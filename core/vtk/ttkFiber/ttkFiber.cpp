@@ -12,8 +12,7 @@ ttkFiber::ttkFiber() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkFiber::~ttkFiber() {
-}
+ttkFiber::~ttkFiber() = default;
 
 int ttkFiber::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
@@ -33,7 +32,7 @@ int ttkFiber::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFiber::RequestData(vtkInformation *request,
+int ttkFiber::RequestData(vtkInformation *ttkNotUsed(request),
                           vtkInformationVector **inputVector,
                           vtkInformationVector *outputVector) {
   ttk::Timer t;

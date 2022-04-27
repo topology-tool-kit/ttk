@@ -2,7 +2,6 @@
 
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
-#include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkInformation.h>
@@ -52,7 +51,7 @@ void ttkPointSetToCurve::dispatch(
   }
 }
 
-int ttkPointSetToCurve::RequestData(vtkInformation *request,
+int ttkPointSetToCurve::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   const auto input = vtkPointSet::GetData(inputVector[0]);

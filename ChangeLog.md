@@ -1,7 +1,31 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
-- Migration to ParaView-5.9.0
+- Persistence diagram approximation (IEEE LDAV 2021)
+- Compact triangulations (IEEE TVCG 2021)
+- Rips complex
+- Triangulation manager
+- PersistentSimplexPairs backend (Zomorodian 2010), slow.
+- Bug fixes
+- Documentation improvements
+
+### 1.0
+- Official integration into ParaView-5.10 \0/ clap! clap! clap! \0/
+- Migration to ParaView-5.9.1
+- Wasserstein Distances, Geodesics, Barycenters of Merge Trees (IEEE VIS 2021)
+- Progressive Scalar Field Topology (IEEE TVCG 2021)
+- Direct LTS-based persistence sensitive simplification
+- Improved Persistence diagram clustering features
+- Marking deprecated filters (ParaView integration)
+- Explicit triangulation performance improvement 
+- IO for preconditioned triangulations
+- Morphological modules (DilateErode)
+- StableManifoldPersistence module 
+- Pareto set extension to Jacobi sets
+- More performance optimization (Discrete Morse Theory / Morse-Smale complex)
+- Improved ZFP integration (fixed accuracy instead of fixed rate)
+- Support for WebSocketIO (web browser interaction)
+- CMake improvements
 - Bug fixes
 
 ### 0.9.9

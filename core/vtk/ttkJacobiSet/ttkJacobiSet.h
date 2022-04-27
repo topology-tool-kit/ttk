@@ -47,6 +47,10 @@
 ///
 /// \sa ttk::JacobiSet
 /// \sa vtkReebSpace
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
 
 #pragma once
 
@@ -96,4 +100,5 @@ private:
   // for each edge, the one skeleton of its triangle fan
   std::vector<std::vector<ttk::SimplexId>> edgeFans_{};
   std::vector<std::pair<ttk::SimplexId, char>> jacobiSet_{};
+  std::vector<char> isPareto_{};
 };

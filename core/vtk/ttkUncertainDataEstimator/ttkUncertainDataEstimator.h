@@ -10,7 +10,7 @@
 /// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
 /// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
 /// ...\n
-/// \param InputN Input ensemble scalar field #N (vtkDataSet)
+/// \param InputN Input ensemble scalar field #%N (vtkDataSet)
 /// \param Output0 Lower and upper bound fields (vtkDataSet)
 /// \param Output1 Histogram estimations of the vertex probability density
 /// functions (vtkDataSet)
@@ -34,10 +34,6 @@
 // ttk code includes
 #include <UncertainDataEstimator.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKUNCERTAINDATAESTIMATOR_EXPORT ttkUncertainDataEstimator
   : public ttkAlgorithm,
     protected ttk::UncertainDataEstimator {
@@ -45,7 +41,7 @@ class TTKUNCERTAINDATAESTIMATOR_EXPORT ttkUncertainDataEstimator
 public:
   static ttkUncertainDataEstimator *New();
 
-  vtkTypeMacro(ttkUncertainDataEstimator, vtkAlgorithm);
+  vtkTypeMacro(ttkUncertainDataEstimator, ttkAlgorithm);
 
   vtkGetMacro(ComputeLowerBound, bool);
   vtkSetMacro(ComputeLowerBound, bool);

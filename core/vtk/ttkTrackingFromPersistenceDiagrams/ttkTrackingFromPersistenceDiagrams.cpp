@@ -17,19 +17,24 @@ ttkTrackingFromPersistenceDiagrams::~ttkTrackingFromPersistenceDiagrams() {
 
 int ttkTrackingFromPersistenceDiagrams::FillInputPortInformation(
   int port, vtkInformation *info) {
-  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
-  return 1;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+    return 1;
+  }
+  return 0;
 }
 
 int ttkTrackingFromPersistenceDiagrams::FillOutputPortInformation(
   int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkTrackingFromPersistenceDiagrams::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

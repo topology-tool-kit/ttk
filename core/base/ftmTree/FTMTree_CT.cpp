@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk:FTMTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///
@@ -181,9 +181,8 @@ int FTMTree_CT::combine() {
         node1 = makeNode(currentNode);
 
         // check if leaf
-        if(!currentNode->getNumberOfDownSuperArcs())
-          mt_data_.leaves->emplace_back(node1);
-        else if(!currentNode->getNumberOfUpSuperArcs())
+        if(!currentNode->getNumberOfDownSuperArcs()
+           || !currentNode->getNumberOfUpSuperArcs())
           mt_data_.leaves->emplace_back(node1);
       }
 
@@ -311,7 +310,7 @@ void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
   }
 }
 
-void FTMTree_CT::finalizeSegmentation(void) {
+void FTMTree_CT::finalizeSegmentation() {
   Timer finSegmTime;
   const auto &nbArc = getNumberOfSuperArcs();
 
@@ -322,10 +321,10 @@ void FTMTree_CT::finalizeSegmentation(void) {
     getSuperArc(i)->createSegmentation(scalars_);
   }
 
-  printTime(finSegmTime, "post-process segm", -1, 4);
+  printTime(finSegmTime, "post-process segm", 4);
 }
 
-void FTMTree_CT::insertNodes(void) {
+void FTMTree_CT::insertNodes() {
   vector<idNode> sortedJTNodes = jt_->sortedNodes(true);
   vector<idNode> sortedSTNodes = st_->sortedNodes(true);
 

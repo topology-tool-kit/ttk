@@ -1,6 +1,8 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
@@ -36,7 +38,7 @@ int ttkDistanceField::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDistanceField::RequestData(vtkInformation *request,
+int ttkDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   ttk::Timer globalTimer;
@@ -45,73 +47,48 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   vtkPointSet *sources = vtkPointSet::GetData(inputVector[1]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
+  if(triangulation == nullptr) {
+    this->printErr("Wrong triangulation.");
+    return 0;
+  }
+
   this->preconditionTriangulation(triangulation);
-  Modified();
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation) {
-    this->printErr("wrong triangulation.");
-    return -1;
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  auto *identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField,
+                                                  0, ttk::VertexScalarFieldName,
+                                                  sources, idSpareStorage);
+  if(identifiers == nullptr) {
+    printErr("Wrong identifiers.");
+    return 0;
   }
-#endif
-
-  vtkDataArray *identifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 0, ttk::VertexScalarFieldName, sources);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!identifiers) {
-    printErr("wrong identifiers.");
-    return -2;
-  }
-#endif
 
   const int numberOfPointsInDomain = domain->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!numberOfPointsInDomain) {
-    printErr("domain has no points.");
-    return -3;
+  if(numberOfPointsInDomain == 0) {
+    printErr("Domain has no points.");
+    return 0;
   }
-#endif
 
   const int numberOfPointsInSources = sources->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!numberOfPointsInSources) {
-    printErr("sources have no points.");
-    return -4;
+  if(numberOfPointsInSources == 0) {
+    printErr("Sources have no points.");
+    return 0;
   }
-#endif
 
   vtkNew<ttkSimplexIdTypeArray> origin{};
-  if(origin) {
-    origin->SetNumberOfComponents(1);
-    origin->SetNumberOfTuples(numberOfPointsInDomain);
-    origin->SetName(ttk::VertexScalarFieldName);
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  else {
-    printErr("ttkSimplexIdTypeArray allocation problem.");
-    return -5;
-  }
-#endif
+  origin->SetNumberOfComponents(1);
+  origin->SetNumberOfTuples(numberOfPointsInDomain);
+  origin->SetName(ttk::VertexScalarFieldName);
 
   vtkNew<ttkSimplexIdTypeArray> seg{};
-  if(seg) {
-    seg->SetNumberOfComponents(1);
-    seg->SetNumberOfTuples(numberOfPointsInDomain);
-    seg->SetName("SeedIdentifier");
-  }
-#ifndef TTK_ENABLE_KAMIKAZE
-  else {
-    printErr("ttkSimplexIdTypeArray allocation problem.");
-    return -6;
-  }
-#endif
+  seg->SetNumberOfComponents(1);
+  seg->SetNumberOfTuples(numberOfPointsInDomain);
+  seg->SetName("SeedIdentifier");
 
   this->setVertexNumber(numberOfPointsInDomain);
   this->setSourceNumber(numberOfPointsInSources);
-  this->setVertexIdentifierScalarFieldPointer(
-    ttkUtils::GetVoidPointer(identifiers));
+  this->setVertexIdentifierScalarFieldPointer(identifiers);
   this->setOutputIdentifiers(ttkUtils::GetVoidPointer(origin));
   this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
 
@@ -120,17 +97,10 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   switch(static_cast<DistanceType>(OutputScalarFieldType)) {
     case DistanceType::Float:
       distanceScalars = vtkFloatArray::New();
-      if(distanceScalars) {
-        distanceScalars->SetNumberOfComponents(1);
-        distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
-        distanceScalars->SetName(OutputScalarFieldName.data());
-      }
-#ifndef TTK_ENABLE_KAMIKAZE
-      else {
-        printErr("vtkFloatArray allocation problem.");
-        return -7;
-      }
-#endif
+      distanceScalars->SetNumberOfComponents(1);
+      distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
+      distanceScalars->SetName(OutputScalarFieldName.data());
+
       this->setOutputScalarFieldPointer(
         ttkUtils::GetVoidPointer(distanceScalars));
       ttkTemplateMacro(
@@ -140,17 +110,10 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 
     case DistanceType::Double:
       distanceScalars = vtkDoubleArray::New();
-      if(distanceScalars) {
-        distanceScalars->SetNumberOfComponents(1);
-        distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
-        distanceScalars->SetName(OutputScalarFieldName.data());
-      }
-#ifndef TTK_ENABLE_KAMIKAZE
-      else {
-        printErr("vtkDoubleArray allocation problem.");
-        return -8;
-      }
-#endif
+      distanceScalars->SetNumberOfComponents(1);
+      distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
+      distanceScalars->SetName(OutputScalarFieldName.data());
+
       this->setOutputScalarFieldPointer(
         ttkUtils::GetVoidPointer(distanceScalars));
 
@@ -160,17 +123,15 @@ int ttkDistanceField::RequestData(vtkInformation *request,
       break;
 
     default:
-#ifndef TTK_ENABLE_KAMIKAZE
-      printErr("Scalar field type problem.");
-      return -9;
-#endif
+      printErr("Invalid scalar field type.");
+      return 0;
       break;
   }
 
   // something wrong in baseCode
-  if(ret) {
+  if(ret != 0) {
     printErr("DistanceField.execute() error code : " + std::to_string(ret));
-    return -10;
+    return 0;
   }
 
   // update result
@@ -180,5 +141,5 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(seg);
   distanceScalars->Delete();
 
-  return !ret;
+  return 1;
 }

@@ -11,6 +11,10 @@
 /// \param Output content of the data.csv file of the database in form of a
 /// vtkTable
 
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
+
 #pragma once
 
 // Module include
@@ -26,9 +30,9 @@ public:
   static ttkCinemaReader *New();
   vtkTypeMacro(ttkCinemaReader, ttkAlgorithm);
 
-  vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, const std::string &);
   vtkGetMacro(DatabasePath, std::string);
-  vtkSetMacro(FilePathColumnNames, std::string);
+  vtkSetMacro(FilePathColumnNames, const std::string &);
   vtkGetMacro(FilePathColumnNames, std::string);
 
 protected:

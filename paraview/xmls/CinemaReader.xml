@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+        <SourceProxy name="ttkCinemaReader" class="ttkCinemaReader" label="TTK CinemaReader">
+            <Documentation long_help="TTK CinemaReader" short_help="TTK CinemaReader">
+                This source reads the content of a Cinema Spec D database by converting the corresponding data.csv file into a vtkTable.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+            </Documentation>
+
+            <StringVectorProperty name="DatabasePath" label="Database Path" animateable="0" command="SetDatabasePath" number_of_elements="1">
+                <Documentation>Path to a Cinema Spec D database folder.</Documentation>
+                <FileListDomain name="files" />
+                <Hints>
+                    <UseDirectoryName />
+                </Hints>
+            </StringVectorProperty>
+            <StringVectorProperty name="FilePathColumnNames" label="File Path Columns" animateable="0" command="SetFilePathColumnNames" number_of_elements="1" default_values="FILE">
+                <Documentation>Columns that contain file paths separated by comma.</Documentation>
+            </StringVectorProperty>
+
+            <Property name="ReloadDatabase" label="Reload Database" command="Modified" panel_widget="command_button">
+                <Documentation>Reload Cinema Database.</Documentation>
+            </Property>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="DatabasePath" />
+                <Property name="FilePathColumnNames" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Commands">
+                <Property name="ReloadDatabase" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+              <ShowInMenu category="TTK" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

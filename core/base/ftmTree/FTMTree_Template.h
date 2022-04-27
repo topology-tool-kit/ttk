@@ -13,8 +13,7 @@
 ///
 /// \sa ttkFTMTree.cpp %for a usage example.
 
-#ifndef FTMTREE_TPL_H
-#define FTMTREE_TPL_H
+#pragma once
 
 #include "FTMTree.h"
 
@@ -36,7 +35,7 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   printParams();
 
 #ifdef TTK_ENABLE_OPENMP
-  omp_set_num_threads(threadNumber_);
+  ParallelGuard pg{threadNumber_};
   omp_set_nested(1);
 #ifdef TTK_ENABLE_OMP_PRIORITY
   if(omp_get_max_task_priority() < 5) {
@@ -89,7 +88,7 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
     default:
       break;
   }
-  printTime(initTime, "alloc", -1, 3);
+  printTime(initTime, "alloc", 3);
 
   Timer startTime;
 
@@ -114,13 +113,13 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
     default:
       break;
   }
-  printTime(setTimer, "init", -1, 3);
+  printTime(setTimer, "init", 3);
 
   // for fast comparison
   // and regions / segmentation
   Timer sortTime;
   sortInput<scalarType>();
-  printTime(sortTime, "sort step", -1, 3);
+  printTime(sortTime, "sort step", 3);
 
   // -----
   // BUILD
@@ -128,9 +127,9 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
 
   Timer buildTime;
   FTMTree_CT::build(mesh, params_->treeType);
-  printTime(buildTime, "build tree", -1, 3);
+  printTime(buildTime, "build tree", 3);
 
-  printTime(startTime, "Total ", -1, 1);
+  printTime(startTime, "Total ", 1);
 
 #ifdef PERF_TESTS
   exit(0);
@@ -199,5 +198,3 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
     }
   }
 }
-
-#endif /* end of include guard: FTMTREE_TPL_H */

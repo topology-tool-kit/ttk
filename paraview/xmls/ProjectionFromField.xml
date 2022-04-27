@@ -1,0 +1,195 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkProjectionFromField"
+     class="ttkProjectionFromField"
+     label="TTK ProjectionFromField">
+     <Documentation
+        long_help="TTK plugin which projects a data-set to 2D given two
+point-data scalar fields to be used as 2D coordinates."
+        short_help="TTK plugin which projects a data-set to 2D given two
+point-data scalar fields to be used as 2D coordinates.">
+         TTK plugin which projects a data-set to 2D given two
+point-data scalar fields to be used as 2D coordinates.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="uv_comp" number_of_components="1" attribute_type="point" optional="1" />
+        <InputArrayDomain name="coords_array" number_of_components="3" attribute_type="point" optional="1" />
+        <Documentation>
+          Data-set to texture map.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="UComponentNew" label="U Component"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
+                            number_of_elements="5" default_values="0">
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="uv_comp"
+            default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Select the scalar field to use as the U component.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="VComponentNew" label="V Component"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
+                            number_of_elements="5" default_values="1">
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="uv_comp"
+            default_values="1">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Select the scalar field to use as the V component.
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <IntVectorProperty name="Use3DCoordinatesArray"
+                     command="SetUse3DCoordinatesArray"
+                     label="Use 3D Coordinates Array"
+                     number_of_elements="1"
+                     default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ProjectPersistenceDiagram"
+                                   value="0" />
+        </Hints>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="UseTextureCoordinates"
+                     command="SetUseTextureCoordinates"
+                     label="Use Texture Coordinates"
+                     number_of_elements="1"
+                     default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="3DCoordinates" label="3D Coordinates"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
+                            number_of_elements="5" default_values="2">
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="coords_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Use3DCoordinatesArray"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Select the 3D coordinates array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="ProjectPersistenceDiagram"
+                     command="SetProjectPersistenceDiagram"
+                     label="Project Persistence Diagram"
+                     number_of_elements="1"
+                     default_values="0"
+                     panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Use3DCoordinatesArray"
+                                   value="0" />
+        </Hints>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="UComponentNew" />
+        <Property name="VComponentNew" />
+        <Property name="UseTextureCoordinates" />
+        <Property name="Use3DCoordinatesArray" />
+        <Property name="3DCoordinates" />
+        <Property name="ProjectPersistenceDiagram" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

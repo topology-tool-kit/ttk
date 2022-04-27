@@ -22,10 +22,12 @@ ttkRangePolygon::ttkRangePolygon() {
   this->SetNumberOfOutputPorts(1);
 
   setDebugMsgPrefix("RangePolygon");
+
+  vtkWarningMacro("`TTK RangePolygon' is now deprecated. Please use instead "
+                  "`Poly Line Source' followed by `Resample With Dataset'.");
 }
 
-ttkRangePolygon::~ttkRangePolygon() {
-}
+ttkRangePolygon::~ttkRangePolygon() = default;
 
 int ttkRangePolygon::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
@@ -45,7 +47,7 @@ int ttkRangePolygon::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ttkRangePolygon::RequestData(vtkInformation *request,
+int ttkRangePolygon::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
 

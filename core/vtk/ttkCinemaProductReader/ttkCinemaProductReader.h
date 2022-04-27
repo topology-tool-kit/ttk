@@ -13,6 +13,10 @@
 /// \param Input vtkTable that contains data product references (vtkTable)
 /// \param Output vtkMultiBlockDataSet where each block is a referenced product
 /// of an input table row (vtkMultiBlockDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
 
 #pragma once
 
@@ -36,16 +40,16 @@ public:
   static ttkCinemaProductReader *New();
   vtkTypeMacro(ttkCinemaProductReader, ttkAlgorithm);
 
-  vtkSetMacro(FilepathColumnName, std::string);
+  vtkSetMacro(FilepathColumnName, const std::string &);
   vtkGetMacro(FilepathColumnName, std::string);
   vtkSetMacro(AddFieldDataRecursively, bool);
   vtkGetMacro(AddFieldDataRecursively, bool);
 
 protected:
   ttkCinemaProductReader();
-  ~ttkCinemaProductReader();
+  ~ttkCinemaProductReader() override;
 
-  vtkSmartPointer<vtkDataObject> readFileLocal(std::string pathToFile);
+  vtkSmartPointer<vtkDataObject> readFileLocal(const std::string &pathToFile);
   int addFieldDataRecursively(vtkDataObject *object, vtkFieldData *fd);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;

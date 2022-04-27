@@ -1,5 +1,4 @@
-#ifndef FTMTree_CT_Template_h_INCLUDED
-#define FTMTree_CT_Template_h_INCLUDED
+#pragma once
 
 #include <FTMTree_CT.h>
 
@@ -27,7 +26,7 @@ namespace ttk {
 #endif
           { leafSearch(mesh); }
         }
-        printTime(precomputeTime, "leafSearch", -1, 3);
+        printTime(precomputeTime, "leafSearch", 3);
       }
 
 #ifdef TTK_ENABLE_OMP_PRIORITY
@@ -52,13 +51,13 @@ namespace ttk {
         {
           if(tt == TreeType::Join || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
+#pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             jt_->build(mesh, tt == TreeType::Contour);
           }
           if(tt == TreeType::Split || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
+#pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             st_->build(mesh, tt == TreeType::Contour);
           }
@@ -68,7 +67,7 @@ namespace ttk {
 #endif
       }
 
-      printTime(mergeTreesTime, "merge trees ", -1, 3);
+      printTime(mergeTreesTime, "merge trees ", 3);
 
       // Combine
       if(tt == TreeType::Contour) {
@@ -78,8 +77,8 @@ namespace ttk {
 
         Timer combineTime;
         combine();
-        printTime(combineTime, "combine trees", -1, 4);
-        printTime(combineFullTime, "combine full", -1, 3);
+        printTime(combineTime, "combine trees", 4);
+        printTime(combineFullTime, "combine full", 3);
       }
       // Debug
       if(debugLevel_ > 3) {
@@ -159,4 +158,3 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
 
 } // namespace ftm
 } // namespace ttk
-#endif // FTMTree_CT_Template_h_INCLUDED

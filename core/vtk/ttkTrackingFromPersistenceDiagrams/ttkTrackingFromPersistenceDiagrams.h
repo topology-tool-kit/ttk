@@ -60,10 +60,10 @@ public:
   vtkSetMacro(PS, double);
   vtkGetMacro(PS, double);
 
-  vtkSetMacro(WassersteinMetric, std::string);
+  vtkSetMacro(WassersteinMetric, const std::string &);
   vtkGetMacro(WassersteinMetric, std::string);
 
-  vtkSetMacro(DistanceAlgorithm, std::string);
+  vtkSetMacro(DistanceAlgorithm, const std::string &);
   vtkGetMacro(DistanceAlgorithm, std::string);
 
   vtkSetMacro(PVAlgorithm, int);
@@ -128,8 +128,8 @@ protected:
     const std::vector<diagramTuple> &diagram1,
     const std::vector<diagramTuple> &diagram2,
     const std::vector<matchingTuple> &matchings,
-    vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
-    vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_);
+    const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram1_,
+    const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram2_);
 
 private:
   // Input bottleneck config.
@@ -159,7 +159,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
   bool useGeometricSpacing,
   double spacing,
-  bool DoPostProc,
+  bool ttkNotUsed(DoPostProc),
   std::vector<std::set<int>> &trackingTupleToMerged,
   vtkPoints *points,
   vtkUnstructuredGrid *persistenceDiagram,
@@ -247,7 +247,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       int cid = k;
       bool hasMergedFirst = false;
       // if(DoPostProc) {
-      if(0) {
+      if(false) {
         std::set<int> &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());
@@ -362,7 +362,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       persistenceScalars->InsertTuple1(currentVertex, cost);
       valueScalars->InsertTuple1(
-        currentVertex, (std::get<10>(tuple1) + std::get<10>(tuple2)) / 2);
+        currentVertex, (std::get<10>(tuple1) + std::get<10>(tuple2)) / 2.0);
       matchingIdScalars->InsertTuple1(currentVertex, currentVertex);
       lengthScalars->InsertTuple1(currentVertex, chainLength);
 
@@ -403,15 +403,13 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
 
   vtkIntArray *extremumIndexScalars = vtkIntArray::SafeDownCast(
     CTPersistenceDiagram_->GetCellData()->GetArray("PairType"));
+  auto *persistenceScalars
+    = CTPersistenceDiagram_->GetCellData()->GetArray("Persistence");
+  auto *birthScalars = CTPersistenceDiagram_->GetCellData()->GetArray("Birth");
 
-  vtkDoubleArray *persistenceScalars = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram_->GetCellData()->GetArray("Persistence"));
-
-  vtkDoubleArray *birthScalars = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("Birth"));
-
-  vtkDoubleArray *deathScalars = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("Death"));
+  const auto coords = vtkFloatArray::SafeDownCast(
+    CTPersistenceDiagram_->GetPointData()->GetArray(
+      ttk::PersistenceCoordinatesName));
 
   vtkPoints *points = (CTPersistenceDiagram_->GetPoints());
   if(!pairIdentifierScalars)
@@ -428,9 +426,7 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
 
   auto s = (float)0.0;
 
-  if(!deathScalars != !birthScalars)
-    return -2;
-  bool is2D = !deathScalars && !birthScalars;
+  bool is2D = coords != nullptr;
   bool is3D = !is2D;
   if(Is3D && !is3D)
     Is3D = false;
@@ -453,7 +449,7 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
 
     int pairIdentifier = pairIdentifierScalars->GetValue(i);
     int pairType = extremumIndexScalars->GetValue(i);
-    double persistence = persistenceScalars->GetValue(i);
+    double persistence = persistenceScalars->GetTuple1(i);
 
     int index1 = 2 * i;
     double *coords1 = points->GetPoint(index1);
@@ -467,11 +463,8 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
     auto y2 = (float)coords2[1];
     auto z2 = (float)coords2[2];
 
-    dataType value1 = (!birthScalars) ? (dataType)x1
-                                      : (dataType)birthScalars->GetValue(2 * i);
-    dataType value2 = (!deathScalars)
-                        ? (dataType)y2
-                        : (dataType)deathScalars->GetValue(2 * i + 1);
+    dataType value1 = birthScalars->GetTuple1(i);
+    dataType value2 = value1 + persistence;
 
     if(pairIdentifier != -1 && pairIdentifier < pairingsSize)
       diagram.at(pairIdentifier)
@@ -507,8 +500,8 @@ int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
   const std::vector<diagramTuple> &diagram1,
   const std::vector<diagramTuple> &diagram2,
   const std::vector<matchingTuple> &matchings,
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_) {
+  const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram1_,
+  const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram2_) {
 
   auto diagramSize1 = (BIdVertex)diagram1.size();
   auto diagramSize2 = (BIdVertex)diagram2.size();

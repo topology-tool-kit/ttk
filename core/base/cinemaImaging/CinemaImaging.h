@@ -80,7 +80,7 @@ int ttk::CinemaImaging::interpolateArray(DT *outputArray,
   }
 
   return 1;
-};
+}
 
 template <typename DT>
 int ttk::CinemaImaging::lookupArray(DT *outputArray,
@@ -111,4 +111,4 @@ int ttk::CinemaImaging::lookupArray(DT *outputArray,
   }
 
   return 1;
-};
+}

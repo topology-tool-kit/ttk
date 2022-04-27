@@ -92,6 +92,10 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   for(int i = 0; i < nDiags; i++) {
     double max_dimension
       = getPersistenceDiagram(intermediateDiagrams[i], inputDiagrams[i]);
+    if(max_dimension < 0.0) {
+      this->printErr("Could not read Persistence Diagram");
+      return 0;
+    }
     if(max_dimension_total < max_dimension) {
       max_dimension_total = max_dimension;
     }
@@ -147,11 +151,10 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
   const auto cd = CTPersistenceDiagram_->GetCellData();
   const auto points = CTPersistenceDiagram_->GetPoints();
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(pd == nullptr || points == nullptr) {
-    return -2;
+  if(pd == nullptr || cd == nullptr || points == nullptr) {
+    this->printErr("Missing Diagram PointData, CellData or Points");
+    return -1.0;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   const auto vertexIdentifierScalars
     = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
@@ -161,21 +164,12 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
     = vtkIntArray::SafeDownCast(cd->GetArray("PairIdentifier"));
   const auto extremumIndexScalars
     = vtkIntArray::SafeDownCast(cd->GetArray("PairType"));
-  const auto persistenceScalars
-    = vtkDoubleArray::SafeDownCast(cd->GetArray("Persistence"));
-  const auto birthScalars = vtkDoubleArray::SafeDownCast(pd->GetArray("Birth"));
-  const auto deathScalars = vtkDoubleArray::SafeDownCast(pd->GetArray("Death"));
+  const auto persistenceScalars = cd->GetArray("Persistence");
+  const auto birthScalars = cd->GetArray("Birth");
   const auto critCoordinates
     = vtkFloatArray::SafeDownCast(pd->GetArray("Coordinates"));
 
-  const bool embed = birthScalars != nullptr && deathScalars != nullptr;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!embed && critCoordinates == nullptr) {
-    // missing data
-    return -2;
-  }
-#endif // TTK_ENABLE_KAMIKAZE
+  const bool embed = critCoordinates == nullptr;
 
   int pairingsSize = (int)pairIdentifierScalars->GetNumberOfTuples();
   // FIX : no more missed pairs
@@ -189,13 +183,12 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
   if(*pairIdentifierScalars->GetTuple(pairingsSize - 1) == -1)
     pairingsSize -= 1;
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(pairingsSize < 1 || !vertexIdentifierScalars || !pairIdentifierScalars
      || !nodeTypeScalars || !persistenceScalars || !extremumIndexScalars
      || !points) {
-    return -2;
+    this->printErr("Missing Persistence Diagram data array");
+    return -3.0;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   diagram.resize(pairingsSize + 1);
   int nbNonCompact = 0;
@@ -211,25 +204,21 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
 
     int pairIdentifier = pairIdentifierScalars->GetValue(i);
     int pairType = extremumIndexScalars->GetValue(i);
-    double persistence = persistenceScalars->GetValue(i);
+    const auto persistence = persistenceScalars->GetTuple1(i);
+    const auto birth = birthScalars->GetTuple1(i);
+    const auto death = birth + persistence;
 
     std::array<double, 3> coordsBirth{}, coordsDeath{};
 
     const auto i0 = 2 * i;
     const auto i1 = 2 * i + 1;
 
-    double birth, death;
-
     if(embed) {
       points->GetPoint(i0, coordsBirth.data());
       points->GetPoint(i1, coordsDeath.data());
-      birth = birthScalars->GetValue(i0);
-      death = deathScalars->GetValue(i1);
     } else {
       critCoordinates->GetTuple(i0, coordsBirth.data());
       critCoordinates->GetTuple(i1, coordsDeath.data());
-      birth = points->GetPoint(i0)[0];
-      death = points->GetPoint(i1)[1];
     }
 
     if(pairIdentifier != -1 && pairIdentifier < pairingsSize) {
@@ -249,10 +238,10 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
 
       } else {
         diagram[pairIdentifier] = std::make_tuple(
-          vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2,
-          persistence, pairType, birth, coordsBirth[0], coordsBirth[1],
-          coordsBirth[2], death, coordsDeath[0], coordsDeath[1],
-          coordsDeath[2]);
+          vertexId1, static_cast<ttk::CriticalType>(nodeType1), vertexId2,
+          static_cast<ttk::CriticalType>(nodeType2), persistence, pairType,
+          birth, coordsBirth[0], coordsBirth[1], coordsBirth[2], death,
+          coordsDeath[0], coordsDeath[1], coordsDeath[2]);
       }
     }
     if(pairIdentifier >= pairingsSize) {

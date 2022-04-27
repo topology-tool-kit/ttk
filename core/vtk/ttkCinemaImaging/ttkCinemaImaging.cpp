@@ -27,7 +27,8 @@ ttkCinemaImaging::ttkCinemaImaging() {
   this->SetNumberOfOutputPorts(1);
 };
 
-ttkCinemaImaging::~ttkCinemaImaging(){};
+ttkCinemaImaging::~ttkCinemaImaging() = default;
+;
 
 int ttkCinemaImaging::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
@@ -53,7 +54,7 @@ int ttkCinemaImaging::FillOutputPortInformation(int port,
   return 0;
 };
 
-int ttkCinemaImaging::RequestData(vtkInformation *request,
+int ttkCinemaImaging::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 
@@ -207,10 +208,10 @@ int ttkCinemaImaging::RequestDataSingle(
 
   vtkPointSet *inputObject,
   vtkPointSet *inputGrid,
-  const std::vector<double> &defaultFocalPoint,
-  const std::vector<double> &defaultNearFar,
-  const double defaultHeight,
-  const double defaultAngle) {
+  const std::vector<double> &ttkNotUsed(defaultFocalPoint),
+  const std::vector<double> &ttkNotUsed(defaultNearFar),
+  const double ttkNotUsed(defaultHeight),
+  const double ttkNotUsed(defaultAngle)) {
   ttk::Timer globalTimer;
 
   auto cells = ttkCinemaImaging::GetCells(inputObject);
@@ -268,7 +269,7 @@ vtkCellArray *ttkCinemaImaging::GetCells(vtkPointSet *pointSet) {
 int ttkCinemaImaging::AddFieldDataArray(vtkFieldData *fd,
                                         vtkDataArray *array,
                                         int tupelIdx,
-                                        std::string name) {
+                                        const std::string &name) {
   if(!array)
     return 0;
 
@@ -333,7 +334,7 @@ int ttkCinemaImaging::ComputeDirFromFocalPoint(vtkPointSet *inputGrid) {
 };
 
 int ttkCinemaImaging::EnsureGridData(vtkPointData *fd,
-                                     std::string name,
+                                     const std::string &name,
                                      int nTuples,
                                      const std::vector<double> &defaultValues) {
   auto array = vtkDoubleArray::SafeDownCast(fd->GetArray(name.data()));

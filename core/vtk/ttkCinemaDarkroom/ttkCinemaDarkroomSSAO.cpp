@@ -10,8 +10,7 @@ ttkCinemaDarkroomSSAO::ttkCinemaDarkroomSSAO() : ttkCinemaDarkroomShader() {
   this->setDebugMsgPrefix("CinemaDarkroomSSAO");
 }
 
-ttkCinemaDarkroomSSAO::~ttkCinemaDarkroomSSAO() {
-}
+ttkCinemaDarkroomSSAO::~ttkCinemaDarkroomSSAO() = default;
 
 std::string ttkCinemaDarkroomSSAO::GetFragmentShaderCode() {
   return std::string(R"(
@@ -115,7 +114,7 @@ void main(){
   )");
 }
 
-int ttkCinemaDarkroomSSAO::RequestData(vtkInformation *request,
+int ttkCinemaDarkroomSSAO::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

@@ -1,7 +1,7 @@
 #include <BaseClass.h>
 
 #ifdef TTK_ENABLE_OPENMP
-COMMON_EXPORTS int ttk::globalThreadNumber_ = omp_get_num_procs();
+COMMON_EXPORTS int ttk::globalThreadNumber_ = omp_get_max_threads();
 #else
 COMMON_EXPORTS int ttk::globalThreadNumber_ = 1;
 #endif

@@ -39,7 +39,7 @@ int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFTMTree::RequestData(vtkInformation *request,
+int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector) {
 
@@ -76,10 +76,12 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     // This data set may have several connected components,
     // we need to apply the FTM Tree for each one of these components
     // We then reconstruct the global tree using an offest mecanism
-    identify(input);
+    auto inputWithId = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    inputWithId->ShallowCopy(input);
+    identify(inputWithId);
 
     vtkNew<vtkConnectivityFilter> connectivity{};
-    connectivity->SetInputData(input);
+    connectivity->SetInputData(inputWithId);
     connectivity->SetExtractionModeToAllRegions();
     connectivity->ColorRegionsOn();
     connectivity->Update();
@@ -106,8 +108,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
         connected_components_[cc]->ShallowCopy(threshold->GetOutput());
       }
     } else {
-      connected_components_[0] = vtkSmartPointer<vtkUnstructuredGrid>::New();
-      connected_components_[0]->ShallowCopy(input);
+      connected_components_[0] = inputWithId;
     }
   } else if(input->IsA("vtkPolyData")) {
     // NOTE: CC check should not be implemented on a per vtk module layer.
@@ -582,9 +583,11 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
     }
   }
 
-  skeletonNodes->SetPoints(points);
+  ttkUtils::CellVertexFromPoints(skeletonNodes, points);
+
   vtkPointData *pointData = skeletonNodes->GetPointData();
   nodeData.addArray(pointData, params_);
+
   outputSkeletonNodes->ShallowCopy(skeletonNodes);
 
   return 1;

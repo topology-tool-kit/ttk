@@ -1,8 +1,9 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
@@ -42,7 +43,7 @@ int ttkTopologicalSimplification::FillOutputPortInformation(
 }
 
 int ttkTopologicalSimplification::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
@@ -50,6 +51,9 @@ int ttkTopologicalSimplification::RequestData(
 
   const auto domain = vtkDataSet::GetData(inputVector[0]);
   const auto constraints = vtkPointSet::GetData(inputVector[1]);
+  if(!domain || !constraints)
+    return !this->printErr("Unable to retrieve required input data objects.");
+
   auto output = vtkDataSet::GetData(outputVector);
 
   // triangulation
@@ -61,7 +65,6 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   this->preconditionTriangulation(triangulation);
-  Modified();
 
   if(triangulation->isEmpty()) {
     this->printErr("Triangulation allocation problem.");
@@ -86,78 +89,47 @@ int ttkTopologicalSimplification::RequestData(
     return -3;
   }
 
-  // constraint identifier field
-  const auto identifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 1, ttk::VertexScalarFieldName, constraints);
-
-  if(!identifiers) {
-    this->printErr("Wrong vertex identifier scalar field.");
-    return -1;
-  }
-
   // domain offset field
-  const auto offsets
+  const auto inputOrder
     = this->GetOrderArray(domain, 0, 2, ForceInputOffsetScalarField);
-  if(!offsets) {
+  if(!inputOrder) {
     this->printErr("Wrong input offset scalar field.");
     return -1;
   }
 
-  if(offsets->GetDataType() != VTK_INT
-     and offsets->GetDataType() != VTK_ID_TYPE) {
-    this->printErr("Input offset field type not supported.");
-    return -1;
-  }
+  // create output arrays
+  auto outputScalars
+    = vtkSmartPointer<vtkDataArray>::Take(inputScalars->NewInstance());
+  outputScalars->DeepCopy(inputScalars);
+  auto outputOrder
+    = vtkSmartPointer<vtkDataArray>::Take(inputOrder->NewInstance());
+  outputOrder->DeepCopy(inputOrder);
 
-  vtkNew<ttkSimplexIdTypeArray> outputOffsets{};
-  if(outputOffsets) {
-    outputOffsets->SetNumberOfComponents(1);
-    outputOffsets->SetNumberOfTuples(numberOfVertices);
-    outputOffsets->SetName(offsets->GetName());
-  } else {
-    this->printErr("ttkSimplexIdTypeArray allocation problem.");
-    return -7;
-  }
+  // constraint identifier field
+  int numberOfConstraints = constraints->GetNumberOfPoints();
 
-  vtkSmartPointer<vtkDataArray> outputScalars{inputScalars->NewInstance()};
-  if(outputScalars) {
-    outputScalars->SetNumberOfTuples(numberOfVertices);
-    outputScalars->SetName(inputScalars->GetName());
-  } else {
-    this->printErr("vtkDataArray allocation problem.");
-    return -9;
-  }
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  auto identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField, 1,
+                                                 ttk::VertexScalarFieldName,
+                                                 constraints, idSpareStorage);
 
-  const auto numberOfConstraints = constraints->GetNumberOfPoints();
-  if(numberOfConstraints <= 0) {
-    this->printErr("Input has no constraints.");
-    return -10;
-  }
-
-  if(identifiers->GetDataType() != offsets->GetDataType()) {
-    this->printErr("Type of identifiers and offsets are different.");
-    return -11;
-  }
-
+  // NOTE it'd be better if the two backends were inheriting from the same API
+  // (the switch would then happen in the base code)
   int ret{};
   if(this->UseLTS) {
-    ttk::LocalizedTopologicalSimplification lts{};
+    ttk::lts::LocalizedTopologicalSimplification lts{};
     lts.setDebugLevel(this->debugLevel_);
     lts.setThreadNumber(this->threadNumber_);
 
     lts.preconditionTriangulation(triangulation);
 
-    //   switch(inputScalars->GetDataType()) {
     ttkVtkTemplateMacro(
       inputScalars->GetDataType(), triangulation->getType(),
       (ret = lts.removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
-         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+         ttkUtils::GetPointer<VTK_TT>(outputScalars),
+         ttkUtils::GetPointer<SimplexId>(outputOrder),
 
-         static_cast<TTK_TT *>(triangulation->getData()),
-         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
+         static_cast<TTK_TT *>(triangulation->getData()), identifiers,
          numberOfConstraints, this->AddPerturbation)));
 
     // TODO: fix convention in original ttk module
@@ -165,13 +137,12 @@ int ttkTopologicalSimplification::RequestData(
   } else {
     switch(inputScalars->GetDataType()) {
       vtkTemplateMacro(
-        ret = this->execute(
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          numberOfConstraints, *triangulation->getData()));
+        ret = this->execute(ttkUtils::GetPointer<VTK_TT>(inputScalars),
+                            ttkUtils::GetPointer<VTK_TT>(outputScalars),
+                            identifiers,
+                            ttkUtils::GetPointer<SimplexId>(inputOrder),
+                            ttkUtils::GetPointer<SimplexId>(outputOrder),
+                            numberOfConstraints, *triangulation->getData()));
     }
   }
 
@@ -183,7 +154,7 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   output->ShallowCopy(domain);
-  output->GetPointData()->AddArray(outputOffsets);
+  output->GetPointData()->AddArray(outputOrder);
   output->GetPointData()->AddArray(outputScalars);
 
   return 1;

@@ -30,8 +30,7 @@ namespace ttk {
       this->setDebugMsgPrefix("ContourAroundPoint");
     }
 
-    ~ContourAroundPoint() {
-    }
+    ~ContourAroundPoint() override = default;
 
     /**
      * Setup a (valid) triangulation object for this TTK base object.
@@ -69,6 +68,7 @@ namespace ttk {
      * @param scalars Scalar value for each point.
      * @param isovals Isovalue corresponding to each point.
      * @param flags isMax-flag for each point.
+     * @param np Number of points.
      * @return 0 upon success, negative values otherwise.
      */
     int setInputPoints(float *coords,

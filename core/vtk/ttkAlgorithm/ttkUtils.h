@@ -21,13 +21,14 @@ class vtkDoubleArray;
 class vtkPoints;
 class vtkAbstractArray;
 class vtkCellArray;
+class vtkDataSet;
 
 template <typename T>
 class vtkSmartPointer;
 
 class TTKALGORITHM_EXPORT ttkUtils {
 private:
-  ttkUtils(){};
+  ttkUtils() = default;
 
 public:
   static int replaceVariable(const std::string &iString,
@@ -46,9 +47,11 @@ public:
   static int stringListToDoubleVector(const std::string &iString,
                                       std::vector<double> &v);
 
-  static vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
+  static vtkSmartPointer<vtkAbstractArray>
+    csvToVtkArray(const std::string &line);
 
-  static vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
+  static vtkSmartPointer<vtkDoubleArray>
+    csvToDoubleArray(const std::string &line);
 
   // Emultate old VTK functions
   static void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
@@ -56,7 +59,10 @@ public:
   template <typename DT>
   static DT *GetPointer(vtkDataArray *array, vtkIdType start = 0) {
     return static_cast<DT *>(ttkUtils::GetVoidPointer(array, start));
-  };
+  }
+
+  static vtkSmartPointer<vtkAbstractArray> SliceArray(vtkAbstractArray *array,
+                                                      vtkIdType idx);
 
   static void *
     WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
@@ -77,4 +83,17 @@ public:
                                     vtkIdType const *cells_off,
                                     vtkIdType ncells,
                                     vtkCellArray *cellArray);
+
+  /*
+   * @brief Fills an UnstructuredGrid or a PolyData dataset with
+   * vertices
+   *
+   * @param[out] dataSet Dataset to fill (either UnstructuredGrid or
+   * PolyData)
+   * @param[in] points Input points
+   *
+   * @return 1 if success, 0 otherwise
+   */
+  static int CellVertexFromPoints(vtkDataSet *const dataSet,
+                                  vtkPoints *const points);
 };

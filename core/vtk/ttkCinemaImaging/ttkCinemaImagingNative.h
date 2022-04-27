@@ -9,7 +9,7 @@ namespace ttk {
   class ttkCinemaImagingNative : public CinemaImagingNative {
   public:
     ttkCinemaImagingNative();
-    ~ttkCinemaImagingNative();
+    ~ttkCinemaImagingNative() override;
 
     int RenderVTKObject(vtkMultiBlockDataSet *outputImages,
 

@@ -4,11 +4,12 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -24,8 +25,7 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
-}
+ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() = default;
 
 int ttkScalarFieldCriticalPoints::FillInputPortInformation(
   int port, vtkInformation *info) {
@@ -40,7 +40,7 @@ int ttkScalarFieldCriticalPoints::FillInputPortInformation(
 int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
   else
     return 0;
 
@@ -48,12 +48,12 @@ int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
 }
 
 int ttkScalarFieldCriticalPoints::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
+  vtkPolyData *output = vtkPolyData::GetData(outputVector, 0);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
@@ -100,11 +100,6 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   vtkNew<vtkPoints> pointSet{};
   pointSet->SetNumberOfPoints(criticalPoints_.size());
-  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-  offsets->SetNumberOfComponents(1);
-  offsets->SetNumberOfTuples(criticalPoints_.size() + 1);
-  connectivity->SetNumberOfComponents(1);
-  connectivity->SetNumberOfTuples(criticalPoints_.size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -114,15 +109,9 @@ int ttkScalarFieldCriticalPoints::RequestData(
     input->GetPoint(criticalPoints_[i].first, p.data());
     pointSet->SetPoint(i, p.data());
     vertexTypes->SetTuple1(i, (float)criticalPoints_[i].second);
-    offsets->SetTuple1(i, i);
-    connectivity->SetTuple1(i, i);
   }
-  offsets->SetTuple1(criticalPoints_.size(), criticalPoints_.size());
 
-  vtkNew<vtkCellArray> cells{};
-  cells->SetData(offsets, connectivity);
-  output->SetCells(VTK_VERTEX, cells);
-  output->SetPoints(pointSet);
+  ttkUtils::CellVertexFromPoints(output, pointSet);
   output->GetPointData()->AddArray(vertexTypes);
 
   if(VertexBoundary) {

@@ -43,8 +43,8 @@ namespace ttk {
   public:
     MeshGraph() {
       this->setDebugMsgPrefix("MeshGraph");
-    };
-    ~MeshGraph(){};
+    }
+    ~MeshGraph() override = default;
 
     inline size_t computeNumberOfOutputPoints(const size_t &nInputPoints,
                                               const size_t &nInputCells,
@@ -60,7 +60,7 @@ namespace ttk {
                        * (nSubdivisions
                           * 2); // 2 per input point (a -> a0,a1) + 2 per cell
                                 // subdivision (sIu+sId)
-    };
+    }
 
     inline size_t
       computeNumberOfOutputCells(const size_t &nInputCells,
@@ -70,11 +70,11 @@ namespace ttk {
                    * 2 // each cell gets converted into two quadratic quads
                : nInputCells; // each cell gets converted into a one cell with
                               // multiple points
-    };
+    }
 
     inline size_t computeOutputCellSize(const size_t &nSubdivisions) const {
       return 4 + nSubdivisions * 2; // 4 corners + 2 for each subdivision
-    };
+    }
 
     inline size_t
       computeOutputConnectivityArraySize(const size_t &nInputCells,
@@ -86,7 +86,7 @@ namespace ttk {
                    * 16 // 8 corners (a0,m0,m1,a1, m0,b0,b1,m1) + 8
                         // mid-edge nodes (a0m0,c,m1a1,a, m0b0,b,b1m1,c)
                : nInputCells * this->computeOutputCellSize(nSubdivisions);
-    };
+    }
 
     // Mesh graph with quadratic quads
     template <typename IT, typename CT, typename DT>
@@ -141,8 +141,7 @@ namespace ttk {
     int mapInputCellDataToOutputCellData(DT *outputCellData,
                                          const size_t &nInputCells,
                                          const DT *inputCellData,
-                                         const bool &useQuadraticCells,
-                                         const size_t &nSubdivisions = 0) const;
+                                         const bool &useQuadraticCells) const;
   };
 } // namespace ttk
 
@@ -478,7 +477,7 @@ int ttk::MeshGraph::execute2(
       IT no1 = n1 * 6;
 
       size_t q2 = q + i * outputPointsSubdivisonOffset;
-      for(float j = 1; j <= nSubdivisions; j++) {
+      for(size_t j = 1; j <= nSubdivisions; j++) {
         computeBezierPoint(no0, no1, q2, j / nSubdivisionsP1);
         computeBezierPoint(no0 + 3, no1 + 3, q2 + 3, j / nSubdivisionsP1);
 
@@ -517,16 +516,16 @@ int ttk::MeshGraph::execute2(
       outputConnectivityArray[q2++] = c0;
       outputConnectivityArray[q2++] = c1;
 
-      size_t temp = subdivisionOffset + i * nSubdivisionPoints;
+      IT temp = subdivisionOffset + i * nSubdivisionPoints;
 
       for(size_t j = 0; j < nSubdivisions; j++)
-        outputConnectivityArray[q2++] = (IT)(temp + j * 2 + 1);
+        outputConnectivityArray[q2++] = temp + j * 2 + 1;
 
       outputConnectivityArray[q2++] = c2;
       outputConnectivityArray[q2++] = c3;
 
       for(int j = nSubdivisions - 1; j >= 0; j--)
-        outputConnectivityArray[q2++] = (IT)(temp + j * 2);
+        outputConnectivityArray[q2++] = temp + j * 2;
     }
 
     for(size_t i = 0; i <= nInputCells; i++)
@@ -635,7 +634,7 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
   }
 
   return 1;
-};
+}
 
 // =============================================================================
 // Map input cell data to output cell data
@@ -643,11 +642,9 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 template <typename DT>
 int ttk::MeshGraph::mapInputCellDataToOutputCellData(
   DT *outputCellData,
-
   const size_t &nInputCells,
   const DT *inputCellData,
-  const bool &useQuadraticCells,
-  const size_t &nSubdivisions) const {
+  const bool &useQuadraticCells) const {
 
   if(useQuadraticCells) {
 #ifdef TTK_ENABLE_OPENMP
@@ -668,4 +665,4 @@ int ttk::MeshGraph::mapInputCellDataToOutputCellData(
   }
 
   return 1;
-};
+}

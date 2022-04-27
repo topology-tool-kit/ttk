@@ -1,0 +1,279 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkTopologicalSimplification"
+      class="ttkTopologicalSimplification"
+      label="TTK TopologicalSimplification">
+      <Documentation
+        long_help="TTK plugin for the topological simplification of scalar data."
+        short_help="TTK plugin for the topological simplification of scalar
+        data.">
+
+        Given an input scalar field and a list of critical points to remove,
+        this plugin minimally edits the scalar field such that the listed critical
+        points disappear. This procedure is useful to speedup subsequent topological
+        data analysis when outlier critical points can be easily identified. It is
+        also useful for data simplification.
+
+        The list of critical points to remove must be associated with a point data
+        scalar field that represent the vertex global identifiers in the input
+        geometry.
+
+        Note that this plugin will also produce an output vertex offset scalar field
+        that can be used for further topological data analysis tasks to disambiguate
+        vertices on flat plateaus. For instance, this output vertex offset field
+        can specified to the ContourForests, IntegralLines, or
+        ScalarFieldCriticalPoints plugins.
+
+        Also, this plugin can be given a specific input vertex offset.
+
+        Related publications:
+        "Generalized Topological Simplification of Scalar Fields on Surfaces"
+        Julien Tierny, Valerio Pascucci
+        Proc. of IEEE VIS 2012.
+        IEEE Transactions on Visualization and Computer Graphics, 2012.
+
+        "Localized Topological Simplification of Scalar Data"
+        Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+        Proc. of IEEE VIS 2020.
+        IEEE Transactions on Visualization and Computer Graphics
+
+        See also ScalarFieldCriticalPoints, IntegralLines, ContourForests,
+Identifiers.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
+
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/ 
+        
+        - https://topology-tool-kit.github.io/examples/ctBones/
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering0/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering1/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering2/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering3/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering4/
+
+        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+        
+        - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
+
+        - https://topology-tool-kit.github.io/examples/interactionSites/       
+
+      </Documentation>
+
+      <InputProperty
+        name="Domain"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Constraints"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>
+          vtkPointSet that represent the constraints of the topological simplification.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
+        label="Force Input Offset Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Input Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Vertex Identifier Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Constraints" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifier scalar field in the sources.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ConsiderIdentifierAsBlackList"
+        command="SetConsiderIdentifierAsBlackList"
+        label="Remove selected extrema"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Check this box to remove the selected extrema (instead of
+          removing all non-selected extrema).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="UseLTS"
+        label="Use LTS"
+        command="SetUseLTS"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Use the Localized Topological Simplification algorithm.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="AddPerturbation"
+        command="SetAddPerturbation"
+        label="Numerical Perturbation"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Numerically perturb the output (to avoid the usage of an output
+          offset field for flat plateau disambiguation).
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field" />
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="Vertex Identifier Field" />
+        <Property name="ForceInputOffsetScalarField" />
+        <Property name="Input Offset Field" />
+        <Property name="ConsiderIdentifierAsBlackList" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="UseLTS" />
+        <Property name="AddPerturbation" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

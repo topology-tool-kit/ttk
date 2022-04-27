@@ -1,0 +1,245 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkMandatoryCriticalPoints"
+     class="ttkMandatoryCriticalPoints"
+     label="TTK MandatoryCriticalPoints">
+     <Documentation
+        long_help="TTK plugin for the computation of mandatory critical
+points in uncertain scalar data."
+        short_help="TTK plugin for the computation of mandatory critical
+points in uncertain scalar data.">
+
+This filter computes the mandatory critical points of uncertain scalar
+fields defined on triangulations. The input uncertain data is represented
+by reliable bound fields for each vertex. In particular, the input geometry
+(either 2D or 3D, either regular grids or triangulations) must be associated
+with two point data scalar fields, representing the lower and upper bounds
+for each vertex.
+
+The output is a domain segmentation into the mandatory critical points.
+
+Also, mandatory join and split trees are produced (to be visualized in a 2D
+layout).
+
+Related publication:
+"Mandatory Critical Points of 2D Uncertain Scalar Fields"
+David Guenther, Joseph Salmon, Julien Tierny
+Proc. of EuroVis 2014.
+Computer Graphics Forum, 2014.
+
+Online Examples:
+
+- https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Lower Bound Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="lowerBoundField">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the lower bound field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="Upper Bound Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="upperBoundField">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the upper bound field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+         name="SimplificationThreshold"
+         label="Normalized Threshold"
+         command="SetSimplificationThreshold"
+         number_of_elements="1"
+         default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+         <Documentation>
+          Set the simplification threshold.
+         </Documentation>
+      </DoubleVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Simplification">
+        <Property name="SimplificationThreshold" />
+      </PropertyGroup>
+
+      <IntVectorProperty
+         name="OutputAllMinimumComponents"
+         label="Display all minima"
+         command="setOutputAllMinimumComponents"
+         number_of_elements="1"
+         default_values="1">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Check this box to display all mandatory minima. Otherwise, specify
+          in the text box below which minimum to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputMinmumComponentId"
+         label="Only display minimum with Id"
+         command="SetOutputMinimumComponentId"
+         number_of_elements="1"
+         default_values="0">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+          Id of the mandatory minimum to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputAllJoinSaddleComponents"
+         label="Display all join saddles"
+         command="setOutputAllJoinSaddleComponents"
+         number_of_elements="1"
+         default_values="1">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Check this box to display all mandatory join saddles. Otherwise,
+specify in the text box below which join saddles to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputJoinSaddleComponentId"
+         label="Only display join saddle with Id"
+         command="SetOutputJoinSaddleComponentId"
+         number_of_elements="1"
+         default_values="0">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+          Id of the mandatory join saddle to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputAllSplitSaddleComponents"
+         label="Display all split saddles"
+         command="setOutputAllSplitSaddleComponents"
+         number_of_elements="1"
+         default_values="1">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+           Check this box to display all mandatory split saddles. Otherwise,
+specify in the text box below which split saddles to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputSplitSaddleComponentId"
+         label="Only display split saddle with Id"
+         command="SetOutputSplitSaddleComponentId"
+         number_of_elements="1"
+         default_values="0">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+          Id of the mandatory split saddle to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputAllMaximumComponents"
+         label="Display all maxima"
+         command="setOutputAllMaximumComponents"
+         number_of_elements="1"
+         default_values="1">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Check this box to display all mandatory maxima. Otherwise,
+specify in the text box below which maximum to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="OutputMaxmumComponentId"
+         label="Only display maximum with Id"
+         command="SetOutputMaximumComponentId"
+         number_of_elements="1"
+         default_values="0">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+          Id of the mandatory maximum to display.
+         </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="OutputAllMinimumComponents" />
+        <Property name="OutputAllJoinSaddleComponents" />
+        <Property name="OutputAllSplitSaddleComponents" />
+        <Property name="OutputAllMaximumComponents" />
+        <Property name="OutputMinmumComponentId" />
+        <Property name="OutputJoinSaddleComponentId" />
+        <Property name="OutputSplitSaddleComponentId" />
+        <Property name="OutputMaxmumComponentId" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SimplificationThreshold" />
+        <Property name="Lower Bound Field" />
+        <Property name="Upper Bound Field" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="MandatoryMinima" index="0" id="port0" />
+      <OutputPort name="MandatoryJoinSaddles" index="1" id="port1" />
+      <OutputPort name="MandatorySplitSaddles" index="2" id="port2" />
+      <OutputPort name="MandatoryMaxima" index="3" id="port3" />
+      <OutputPort name="MandatoryJoinTree" index="4" id="port4" />
+      <OutputPort name="MandatorySplitTree" index="5" id="port5" />
+
+      <Hints>
+        <ShowInMenu category="TTK - Uncertain Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

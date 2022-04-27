@@ -12,8 +12,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef FTMTREE_CT_H
-#define FTMTREE_CT_H
+#pragma once
 
 #include <queue>
 #include <set>
@@ -38,17 +37,17 @@ namespace ttk {
       // -----------------
 
       FTMTree_CT(Params *const params, Scalars *const scalars);
-      virtual ~FTMTree_CT();
+      ~FTMTree_CT() override;
 
       // -----------------
       // ACCESSOR
       // -----------------
 
-      inline FTMTree_MT *getJoinTree(void) const {
+      inline FTMTree_MT *getJoinTree() const {
         return jt_;
       }
 
-      inline FTMTree_MT *getSplitTree(void) const {
+      inline FTMTree_MT *getSplitTree() const {
         return st_;
       }
 
@@ -76,14 +75,14 @@ namespace ttk {
         st_->preconditionTriangulation(tri, false);
       }
 
-      inline int setDebugLevel(const int &d) {
+      inline int setDebugLevel(const int &d) override {
         Debug::setDebugLevel(d);
         jt_->setDebugLevel(d);
         st_->setDebugLevel(d);
         return 0;
       }
 
-      inline int setThreadNumber(const int n) {
+      inline int setThreadNumber(const int n) override {
         Debug::setThreadNumber(n);
         jt_->setThreadNumber(n);
         st_->setThreadNumber(n);
@@ -110,12 +109,10 @@ namespace ttk {
                                    const bool isJT,
                                    idSuperArc xtArc);
 
-      void finalizeSegmentation(void);
+      void finalizeSegmentation();
     };
 
   } // namespace ftm
 } // namespace ttk
 
 #include <FTMTree_CT_Template.h>
-
-#endif // CONTOURTREE_H

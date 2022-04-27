@@ -84,7 +84,11 @@ function(ttk_add_base_template_library library)
   string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
   if(uppercase_CMAKE_BUILD_TYPE MATCHES RELEASE)
     if(TTK_ENABLE_CPU_OPTIMIZATION AND NOT MSVC)
-      target_compile_options(${library} INTERFACE -march=native -O3)
+      if (CMAKE_OSX_ARCHITECTURES MATCHES arm64) # Apple Silicon
+        target_compile_options(${library} INTERFACE -mcpu=apple-m1 -O3)
+      else()
+        target_compile_options(${library} INTERFACE -march=native -O3)
+      endif()
     endif()
   endif()
 
@@ -145,43 +149,12 @@ function(ttk_set_compile_options library)
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
     target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
-
-    if (TTK_ENABLE_OMP_PRIORITY)
-      target_compile_definitions(${library} PUBLIC TTK_ENABLE_OMP_PRIORITY)
-    endif()
   endif()
 
   if (TTK_ENABLE_MPI)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI)
     target_include_directories(${library} PUBLIC ${MPI_CXX_INCLUDE_PATH})
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
-  endif()
-
-  if (TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
-    target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CDT_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
-    target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
-  endif()
-
-  if (TTK_ENABLE_EMBREE AND EMBREE_FOUND)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_EMBREE)
-    target_include_directories(${library} PUBLIC ${EMBREE_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${EMBREE_LIBRARY})
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_SQLITE3)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
-    target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
   endif()
 
   if (TTK_ENABLE_64BIT_IDS)

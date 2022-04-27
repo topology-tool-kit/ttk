@@ -20,8 +20,7 @@ ttkCinemaReader::ttkCinemaReader() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaReader::~ttkCinemaReader() {
-}
+ttkCinemaReader::~ttkCinemaReader() = default;
 
 int ttkCinemaReader::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
@@ -43,8 +42,8 @@ int ttkCinemaReader::validateDatabasePath() {
   return 1;
 }
 
-int ttkCinemaReader::RequestData(vtkInformation *request,
-                                 vtkInformationVector **inputVector,
+int ttkCinemaReader::RequestData(vtkInformation *ttkNotUsed(request),
+                                 vtkInformationVector **ttkNotUsed(inputVector),
                                  vtkInformationVector *outputVector) {
   ttk::Timer timer;
 

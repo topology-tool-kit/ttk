@@ -1,0 +1,828 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkDimensionReduction"
+      class="ttkDimensionReduction"
+      label="TTK DimensionReduction">
+      <Documentation
+        long_help="TTK dimensionReduction plugin."
+        short_help="TTK dimensionReduction plugin.">
+        TTK dimensionReduction plugin documentation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+        
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+        
+        - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="SelectFieldsWithRegexp"
+        label="Select Fields with a Regexp"
+        command="SetSelectFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetScalarFields"
+        clean_command="ClearScalarFields"
+        label="Input Columns"
+        name="ScalarFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="Method"
+                         label="Method"
+                         command="SetMethod"
+                         number_of_elements="1"
+                         default_values="2"
+                         panel_visibility="default">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Spectral Embedding"/>
+          <Entry value="1" text="Locally Linear Embedding"/>
+          <Entry value="2" text="Multi-Dimensional Scaling" />
+          <Entry value="3" text="t-distributed Stochastic Neighbor Embedding"/>
+          <Entry value="4" text="Isomap Embedding"/>
+          <Entry value="5" text="Principal Component Analysis" />
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="NumberOfComponents"
+        label="Components"
+        command="SetNumberOfComponents"
+        number_of_elements="1"
+        default_values="2"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the number of output components (i.e. dimensions).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="NumberOfNeighbors"
+        label="Neighbors"
+        command="SetNumberOfNeighbors"
+        number_of_elements="1"
+        default_values="5"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the number of neighbors.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="KeepAllDataArrays"
+        label="Keep All Data Arrays"
+        command="SetKeepAllDataArrays"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Keep all data arrays.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="InputDistanceMatrix"
+        label="Input Is a Distance Matrix"
+        command="SetInputIsADistanceMatrix"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="3" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="4" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          The Spectral Embedding and MDS methods can be fed directly
+          with dissimilarity (distance) matrices instead of raw point
+          clouds.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="se_Affinity"
+        label="Affinity"
+        command="Setse_Affinity"
+        number_of_elements="1"
+        default_values="nearest_neighbors"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="nearest_neighbors"/>
+          <String value="rbf"/>
+        </StringListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="InputDistanceMatrix"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="se_Gamma"
+        label="Gamma"
+        command="Setse_Gamma"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="se_EigenSolver"
+        label="Eigen Solver"
+        command="Setse_EigenSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="None"/>
+          <String value="arpack"/>
+          <String value="lobpcg"/>
+          <String value="amg"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="lle_Regularization"
+        label="Regularization"
+        command="Setlle_Regularization"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="lle_EigenSolver"
+        label="Eigen Solver"
+        command="Setlle_EigenSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="arpack"/>
+          <String value="dense"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="lle_Tolerance"
+        label="Tolerance"
+        command="Setlle_Tolerance"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="lle_MaxIteration"
+        label="Iteration threshold"
+        command="Setlle_MaxIteration"
+        number_of_elements="1"
+        default_values="300"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="lle_Method"
+        label="LLE Method"
+        command="Setlle_Method"
+        number_of_elements="1"
+        default_values="standard"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="standard"/>
+          <String value="hessian"/>
+          <String value="modified"/>
+          <String value="ltsa"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="lle_HessianTolerance"
+        label="Hessian Tolerance"
+        command="Setlle_HessianTolerance"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="lle_ModifiedTolerance"
+        label="Modified Tolerance"
+        command="Setlle_ModifiedTolerance"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="lle_NeighborsAlgorithm"
+        label="NN-algorithm"
+        command="Setlle_NeighborsAlgorithm"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="brute"/>
+          <String value="kd_tree"/>
+          <String value="ball_tree"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="mds_Metric"
+        label="Metric"
+        command="Setmds_Metric"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="mds_Init"
+        label="Number of init runs"
+        command="Setmds_Init"
+        number_of_elements="1"
+        default_values="4"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="mds_MaxIteration"
+        label="Iteration Threshold"
+        command="Setmds_MaxIteration"
+        number_of_elements="1"
+        default_values="300"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="mds_Verbose"
+        label="Verbosity Level"
+        command="Setmds_Verbose"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="mds_Epsilon"
+        label="Epsilon"
+        command="Setmds_Epsilon"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="tsne_Perplexity"
+        label="Perplexity"
+        command="Settsne_Perplexity"
+        number_of_elements="1"
+        default_values="30"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="tsne_Exaggeration"
+        label="Early Exaggeration"
+        command="Settsne_Exaggeration"
+        number_of_elements="1"
+        default_values="12"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="tsne_LearningRate"
+        label="Learning Rate"
+        command="Settsne_LearningRate"
+        number_of_elements="1"
+        default_values="200"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="tsne_MaxIteration"
+        label="Iteration Threshold"
+        command="Settsne_MaxIteration"
+        number_of_elements="1"
+        default_values="1000"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="tsne_MaxIterationProgress"
+        label="Iteration Without Progress Threshold"
+        command="Settsne_MaxIterationProgress"
+        number_of_elements="1"
+        default_values="300"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Documentation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="tsne_GradientThreshold"
+        label="Gradient Threshold"
+        command="Settsne_GradientThreshold"
+        number_of_elements="1"
+        default_values="1e-7"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="tsne_Metric"
+        label="Metric"
+        command="Settsne_Metric"
+        number_of_elements="1"
+        default_values="euclidean"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="tsne_Init"
+        label="Init"
+        command="Settsne_Init"
+        number_of_elements="1"
+        default_values="random"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="random"/>
+          <String value="pca"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="tsne_Verbose"
+        label="Verbosity Level"
+        command="Settsne_Verbose"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="tsne_Method"
+        label="tSNE Method"
+        command="Settsne_Method"
+        number_of_elements="1"
+        default_values="barnes_hut"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="barnes_hut"/>
+          <String value="exact"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="tsne_Angle"
+        label="Angle"
+        command="Settsne_Angle"
+        number_of_elements="1"
+        default_values="0.5"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="iso_EigenSolver"
+        label="Eigen Solver"
+        command="Setiso_EigenSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="arpack"/>
+          <String value="dense"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="iso_Tolerance"
+        label="Tolerance"
+        command="Setiso_Tolerance"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="iso_MaxIteration"
+        label="Iteration threshold"
+        command="Setiso_MaxIteration"
+        number_of_elements="1"
+        default_values="300"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="iso_PathMethod"
+        label="Path method"
+        command="Setiso_PathMethod"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="FW"/>
+          <String value="D"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="iso_NeighborsAlgorithm"
+        label="NN-algorithm"
+        command="Setiso_NeighborsAlgorithm"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="brute"/>
+          <String value="kd_tree"/>
+          <String value="ball_tree"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+      
+      <StringVectorProperty name="iso_Metric"
+        label="Metric"
+        command="Setiso_Metric"
+        number_of_elements="1"
+        default_values="euclidean"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="pca_Copy"
+        label="Copy"
+        command="Setpca_Copy"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="pca_Whiten"
+        label="Whiten"
+        command="Setpca_Whiten"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="pca_SVDSolver"
+        label="SVD Solver"
+        command="Setpca_SVDSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="full"/>
+          <String value="arpack"/>
+          <String value="randomized"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="pca_Tolerance"
+        label="Tolerance"
+        command="Setpca_Tolerance"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="pca_MaxIteration"
+        label="Iteration Threshold"
+        command="Setpca_MaxIteration"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ModulePath"
+        label="Module Path"
+        command="SetModulePath"
+        number_of_elements="1"
+        default_values="default"
+        panel_visibility="advanced">
+        <FileListDomain name="files"/>
+        <Documentation>
+          Set the path of the Python module.
+        </Documentation>
+        <Hints>
+          <UseDirectoryName/>
+          <AcceptAnyFile/>
+        </Hints>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ModuleName"
+        label="Module Name"
+        command="SetModuleName"
+        number_of_elements="1"
+        default_values="dimensionReduction"
+        panel_visibility="advanced">
+        <Documentation>
+          Set the name of the Python module.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="FunctionName"
+        label="Function Name"
+        command="SetFunctionName"
+        number_of_elements="1"
+        default_values="doIt"
+        panel_visibility="advanced">
+        <Documentation>
+          Set the name of the Python function.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="IsDeterministic"
+        label="Is Deterministic"
+        command="SetIsDeterministic"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Set the random state.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SelectFieldsWithRegexp" />
+        <Property name="ScalarFields" />
+        <Property name="Regexp" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Method" />
+        <Property name="NumberOfComponents" />
+        <Property name="NumberOfNeighbors" />
+        <Property name="KeepAllDataArrays" />
+        <Property name="InputDistanceMatrix" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Spectral Embedding">
+        <Property name="se_Affinity" />
+        <Property name="se_Gamma" />
+        <Property name="se_EigenSolver" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="0" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Locally Linear Embedding">
+        <Property name="lle_Regularization" />
+        <Property name="lle_EigenSolver" />
+        <Property name="lle_Tolerance" />
+        <Property name="lle_MaxIteration" />
+        <Property name="lle_Method" />
+        <Property name="lle_HessianTolerance" />
+        <Property name="lle_ModifiedTolerance" />
+        <Property name="lle_NeighborsAlgorithm" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="1" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Multi-Dimensional Scaling">
+        <Property name="mds_Metric" />
+        <Property name="mds_Init" />
+        <Property name="mds_MaxIteration" />
+        <Property name="mds_Verbose" />
+        <Property name="mds_Epsilon" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="2" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="t-distributed Stochastic Neighbor Embedding">
+        <Property name="tsne_Perplexity" />
+        <Property name="tsne_Exaggeration" />
+        <Property name="tsne_LearningRate" />
+        <Property name="tsne_MaxIteration" />
+        <Property name="tsne_MaxIterationProgress" />
+        <Property name="tsne_GradientThreshold" />
+        <Property name="tsne_Metric" />
+        <Property name="tsne_Init" />
+        <Property name="tsne_Verbose" />
+        <Property name="tsne_Method" />
+        <Property name="tsne_Angle" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="3" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Isomap Embedding">
+        <Property name="iso_EigenSolver" />
+        <Property name="iso_Tolerance" />
+        <Property name="iso_MaxIteration" />
+        <Property name="iso_PathMethod" />
+        <Property name="iso_NeighborsAlgorithm" />
+        <Property name="iso_Metric" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="4" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Principal Component Analysis">
+        <Property name="pca_Copy" />
+        <Property name="pca_Whiten" />
+        <Property name="pca_SVDSolver" />
+        <Property name="pca_Tolerance" />
+        <Property name="pca_MaxIteration" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="5" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="ModulePath" />
+        <Property name="ModuleName" />
+        <Property name="FunctionName" />
+        <Property name="IsDeterministic" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

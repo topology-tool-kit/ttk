@@ -6,8 +6,9 @@
 ///\brief TTK processing package that manage a paralle version of vector *Same
 /// as in FTM: Common ?*
 
-#ifndef FTRATOMICVECTOR_H
-#define FTRATOMICVECTOR_H
+#pragma once
+
+#include "BaseClass.h"
 
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
@@ -85,6 +86,7 @@ namespace ttk {
           std::vector<type>::resize(newSize);
         }
       }
+      TTK_FORCE_USE(fromOther);
     }
 
     void reset(const std::size_t &nId = 0) {
@@ -94,7 +96,7 @@ namespace ttk {
       nextId = nId;
     }
 
-    void clear(void) {
+    void clear() {
       reset();
 
       // Remove old content
@@ -103,7 +105,7 @@ namespace ttk {
       reserve(oldSize, true);
     }
 
-    std::size_t getNext(void) {
+    std::size_t getNext() {
       std::size_t resId;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
@@ -117,11 +119,11 @@ namespace ttk {
       return resId;
     }
 
-    std::size_t size(void) const {
+    std::size_t size() const {
       return nextId;
     }
 
-    bool empty(void) const {
+    bool empty() const {
       return nextId == 0;
     }
 
@@ -137,7 +139,7 @@ namespace ttk {
       (*this)[curPos] = elmt;
     }
 
-    void pop_back(void) {
+    void pop_back() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif
@@ -149,14 +151,16 @@ namespace ttk {
     // --------
 
     FTRAtomicVector<type> &operator=(const FTRAtomicVector<type> &other) {
-      std::vector<type>::operator=(other);
-      nextId = other.nextId;
+      if(&other != this) {
+        std::vector<type>::operator=(other);
+        nextId = other.nextId;
+      }
       return *this;
     }
 
     FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) noexcept {
-      std::vector<type>::operator=(std::move(other));
       nextId = std::move(other.nextId);
+      std::vector<type>::operator=(std::move(other));
       return *this;
     }
 
@@ -196,5 +200,3 @@ namespace ttk {
     }
   };
 } // namespace ttk
-
-#endif /* end of include guard: FTRATOMICVECTOR_H */

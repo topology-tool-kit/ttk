@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <limits>
+
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
@@ -26,7 +28,7 @@ namespace ttk {
 
   public:
     ContinuousScatterPlot();
-    ~ContinuousScatterPlot();
+    ~ContinuousScatterPlot() override;
 
     template <typename dataType1,
               typename dataType2,

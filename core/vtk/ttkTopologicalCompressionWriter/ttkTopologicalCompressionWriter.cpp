@@ -8,6 +8,7 @@
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkSignedCharArray.h>
 
@@ -31,8 +32,9 @@ int ttkTopologicalCompressionWriter::Write() {
 
   this->printMsg("New writing task.");
 
-  if(ZFPOnly && (ZFPBitBudget > 64 || ZFPBitBudget < 1)) {
-    this->printErr("Wrong ZFP bit budget for ZFP-onyl use, aborting.");
+  if(ZFPOnly && ZFPTolerance < 0.0) {
+    this->printErr(
+      "Wrong ZFP absolute error tolerance for ZFP-only use, aborting.");
     return 0;
   }
 
@@ -81,6 +83,11 @@ int ttkTopologicalCompressionWriter::Write() {
   outputScalarField->SetName(inputScalarField->GetName());
   Modified();
 
+  // manage tolerance (relative % -> absolute)
+  std::array<double, 2> sfRange{};
+  inputScalarField->GetRange(sfRange.data());
+  this->relToAbsZFPTolerance(this->ZFPTolerance, sfRange);
+
   ttkVtkTemplateMacro(
     inputScalarField->GetDataType(), triangulation->getType(),
     this->execute(
@@ -102,10 +109,9 @@ int ttkTopologicalCompressionWriter::Write() {
   auto vp = static_cast<double *>(ttkUtils::GetVoidPointer(inputScalarField));
 
   this->setFileName(FileName);
-  this->WriteToFile<double>(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
-                            vti->GetExtent(), vti->GetSpacing(),
-                            vti->GetOrigin(), vp, Tolerance, ZFPBitBudget,
-                            inputScalarField->GetName());
+  this->WriteToFile(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
+                    vti->GetExtent(), vti->GetSpacing(), vti->GetOrigin(), vp,
+                    Tolerance, ZFPTolerance, inputScalarField->GetName());
 
   this->printMsg("Wrote to " + std::string{FileName} + ".");
   return 1;

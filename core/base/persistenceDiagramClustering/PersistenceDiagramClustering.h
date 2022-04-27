@@ -34,20 +34,8 @@
 #endif
 
 // base code includes
-//
-// #include <Wrapper.h>
-//
-// #include <PersistenceDiagram.h>
-//
-#include <PersistenceDiagramBarycenter.h>
-//
-// #include <limits>
-//
 #include <PDClustering.h>
-//
-
-using namespace std;
-using namespace ttk;
+#include <PersistenceDiagramBarycenter.h>
 
 namespace ttk {
 
@@ -56,15 +44,19 @@ namespace ttk {
   public:
     PersistenceDiagramClustering() {
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
-    };
+    }
 
-    ~PersistenceDiagramClustering(){};
+    ~PersistenceDiagramClustering() override = default;
 
     template <class dataType>
     std::vector<int> execute(
       std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
       std::vector<std::vector<diagramTuple>> &centroids,
       std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
+
+    std::array<double, 3> getDistances() const {
+      return this->distances;
+    }
 
     template <class dataType>
     static dataType abs(const dataType var) {
@@ -74,6 +66,9 @@ namespace ttk {
   protected:
     // Critical pairs used for clustering
     // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
+
+    // distance results per pair type
+    std::array<double, 3> distances{};
 
     int DistanceWritingOptions{0};
     int PairTypeClustering{-1};
@@ -142,9 +137,15 @@ namespace ttk {
         // if (abs<dataType>(dt) < zeroThresh) continue;
         if(dt > 0) {
           if(nt1 == BLocalMin && nt2 == BLocalMax) {
-            data_max[i].push_back(t);
-            data_max_idx[i].push_back(j);
-            do_max = true;
+            if(PairTypeClustering == 2) {
+              data_max[i].push_back(t);
+              data_max_idx[i].push_back(j);
+              do_max = true;
+            } else {
+              data_min[i].push_back(t);
+              data_min_idx[i].push_back(j);
+              do_min = true;
+            }
           } else {
             if(nt1 == BLocalMax || nt2 == BLocalMax) {
               data_max[i].push_back(t);
@@ -193,7 +194,7 @@ namespace ttk {
       printMsg(msg.str());
     }
 
-    vector<vector<vector<vector<matchingTuple>>>>
+    std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
       all_matchings_per_type_and_cluster;
     PDClustering<dataType> KMeans = PDClustering<dataType>();
     KMeans.setNumberOfInputs(numberOfInputs_);
@@ -216,7 +217,10 @@ namespace ttk {
     KMeans.setDos(do_min, do_sad, do_max);
     inv_clustering
       = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
-    vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
+    std::vector<std::vector<int>> centroids_sizes
+      = KMeans.get_centroids_sizes();
+
+    this->distances = KMeans.getDistances();
 
     /// Reconstruct matchings
     //
@@ -235,29 +239,21 @@ namespace ttk {
       }
     }
 
+    bool removeDuplicateGlobalPair = false;
+    if(NumberOfClusters > 1 and do_min and do_max) {
+      removeDuplicateGlobalPair = true;
+    }
+
     all_matchings.resize(NumberOfClusters);
     for(int c = 0; c < NumberOfClusters; c++) {
       all_matchings[c].resize(numberOfInputs_);
+      if(removeDuplicateGlobalPair) {
+        centroids_sizes[c][0] -= 1;
+      }
     }
     for(int i = 0; i < numberOfInputs_; i++) {
       unsigned int c = inv_clustering[i];
-      // cout<<"CLUSTER : "<<inv_clustering[i]<<endl;
-      // LARGEST PAIR MUST BE FIRST
-      if(do_max) {
-        matchingTuple t
-          = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][0];
-        int bidder_id = std::get<0>(t);
-        if(bidder_id >= 0 && bidder_id < (int)data_max[i].size()) {
-          std::get<0>(t) = data_max_idx[i][bidder_id];
-          if(std::get<1>(t) >= 0) {
-            std::get<1>(t)
-              = std::get<1>(t) + centroids_sizes[c][0] + centroids_sizes[c][1];
-          } else {
-            std::get<1>(t) = -1;
-          }
-          all_matchings[inv_clustering[i]][i].push_back(t);
-        }
-      }
+
       if(do_min) {
         for(unsigned int j = 0;
             j
@@ -266,8 +262,12 @@ namespace ttk {
           matchingTuple t
             = all_matchings_per_type_and_cluster[c][0][idxInCluster[i]][j];
           int bidder_id = std::get<0>(t);
-          if(bidder_id >= 0 && bidder_id < (int)data_min[i].size()) {
-            std::get<0>(t) = data_min_idx[i][bidder_id];
+          if(bidder_id < (int)data_min[i].size()) {
+            if(bidder_id < 0) { // matching with a diagonal point
+              std::get<0>(t) = -1;
+            } else {
+              std::get<0>(t) = data_min_idx[i][bidder_id];
+            }
             // cout<<" IDS :  "<<bidder_id<<" "<<std::get<0>(t)<<endl;
             if(std::get<1>(t) < 0) {
               std::get<1>(t) = -1;
@@ -278,15 +278,19 @@ namespace ttk {
       }
 
       if(do_sad) {
-        for(unsigned int j = 1;
+        for(unsigned int j = 0;
             j
             < all_matchings_per_type_and_cluster[c][1][idxInCluster[i]].size();
             j++) {
           matchingTuple t
             = all_matchings_per_type_and_cluster[c][1][idxInCluster[i]][j];
           int bidder_id = std::get<0>(t);
-          if(bidder_id >= 0 && bidder_id < (int)data_sad[i].size()) {
-            std::get<0>(t) = data_sad_idx[i][bidder_id];
+          if(bidder_id < (int)data_sad[i].size()) {
+            if(bidder_id < 0) { // matching with a diagonal point
+              std::get<0>(t) = -1;
+            } else {
+              std::get<0>(t) = data_sad_idx[i][bidder_id];
+            }
             if(std::get<1>(t) >= 0) {
               std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0];
             } else {
@@ -305,11 +309,21 @@ namespace ttk {
           matchingTuple t
             = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][j];
           int bidder_id = std::get<0>(t);
-          if(bidder_id >= 0 && bidder_id < (int)data_max[i].size()) {
-            std::get<0>(t) = data_max_idx[i][bidder_id];
-            if(std::get<1>(t) >= 0) {
+          if(bidder_id < (int)data_max[i].size()) {
+            if(bidder_id < 0) { // matching with a diagonal point
+              std::get<0>(t) = -1;
+            } else {
+              std::get<0>(t) = data_max_idx[i][bidder_id];
+            }
+            // std::get<0>(t) = data_max_idx[i][bidder_id];
+            if(std::get<1>(t) > 0) {
               std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0]
                                + centroids_sizes[c][1];
+            } else if(std::get<1>(t) == 0) {
+              if(!removeDuplicateGlobalPair) {
+                std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0]
+                                 + centroids_sizes[c][1];
+              }
             } else {
               std::get<1>(t) = -1;
             }

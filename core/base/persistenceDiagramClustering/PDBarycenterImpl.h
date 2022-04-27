@@ -12,24 +12,20 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PDBARYCENTERIMPL_H
-#define _PDBARYCENTERIMPL_H
+#pragma once
 
 #define BLocalMax ttk::CriticalType::Local_maximum
 #define BLocalMin ttk::CriticalType::Local_minimum
 #define BSaddle1 ttk::CriticalType::Saddle1
 #define BSaddle2 ttk::CriticalType::Saddle2
 
-#include <cstdlib> /* srand, rand */
-//
 #include <cmath>
+#include <cstdlib> /* srand, rand */
 #include <numeric>
-
-using namespace ttk;
 
 template <typename dataType>
 std::vector<std::vector<matchingTuple>>
-  PDBarycenter<dataType>::execute(std::vector<diagramTuple> &barycenter) {
+  ttk::PDBarycenter<dataType>::execute(std::vector<diagramTuple> &barycenter) {
   // if(method_ == "Munkres")
   //     return executeMunkresBarycenter(barycenter);
   // else if(method_ == "Auction")
@@ -45,7 +41,7 @@ std::vector<std::vector<matchingTuple>>
 }
 
 template <typename dataType>
-void PDBarycenter<dataType>::runMatching(
+void ttk::PDBarycenter<dataType>::runMatching(
   dataType *total_cost,
   dataType epsilon,
   std::vector<int> sizes,
@@ -64,10 +60,11 @@ void PDBarycenter<dataType>::runMatching(
   for(int i = 0; i < numberOfInputs_; i++) {
     // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<"
     // "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
-    Auction<dataType> auction = Auction<dataType>(
-      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map, epsilon,
-      min_diag_price->at(i), use_kdt);
+    PersistenceDiagramAuction<dataType> auction
+      = PersistenceDiagramAuction<dataType>(
+        current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+        geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
+        epsilon, min_diag_price->at(i), use_kdt);
     // cout<<"\n RUN MATCHINGS : "<<i<<endl;
     // cout<<use_kdt<<endl;
     // cout<<epsilon<<endl;
@@ -125,7 +122,7 @@ void PDBarycenter<dataType>::runMatching(
 }
 
 template <typename dataType>
-void PDBarycenter<dataType>::runMatchingAuction(
+void ttk::PDBarycenter<dataType>::runMatchingAuction(
   dataType *total_cost,
   std::vector<int> sizes,
   KDTree<dataType> &kdt,
@@ -137,10 +134,11 @@ void PDBarycenter<dataType>::runMatchingAuction(
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
-    Auction<dataType> auction = Auction<dataType>(
-      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
-      (*min_diag_price)[i], use_kdt);
+    PersistenceDiagramAuction<dataType> auction
+      = PersistenceDiagramAuction<dataType>(
+        current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+        geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
+        (*min_diag_price)[i], use_kdt);
     std::vector<matchingTuple> matchings;
     dataType cost = auction.run(&matchings);
     all_matchings->at(i) = matchings;
@@ -168,7 +166,7 @@ void PDBarycenter<dataType>::runMatchingAuction(
 }
 
 template <typename dataType>
-bool PDBarycenter<dataType>::hasBarycenterConverged(
+bool ttk::PDBarycenter<dataType>::hasBarycenterConverged(
   std::vector<std::vector<matchingTuple>> &matchings,
   std::vector<std::vector<matchingTuple>> &previous_matchings) {
   if(points_added_ > 0 || points_deleted_ > 0
@@ -192,7 +190,7 @@ bool PDBarycenter<dataType>::hasBarycenterConverged(
 
 template <typename dataType>
 std::vector<std::vector<matchingTuple>>
-  PDBarycenter<dataType>::correctMatchings(
+  ttk::PDBarycenter<dataType>::correctMatchings(
     std::vector<std::vector<matchingTuple>> previous_matchings) {
   std::vector<std::vector<matchingTuple>> corrected_matchings(numberOfInputs_);
   for(int i = 0; i < numberOfInputs_; i++) {
@@ -220,7 +218,7 @@ std::vector<std::vector<matchingTuple>>
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::updateBarycenter(
+dataType ttk::PDBarycenter<dataType>::updateBarycenter(
   std::vector<std::vector<matchingTuple>> &matchings) {
   // cout<<"updating barycenter"<<endl;
   // 1. Initialize variables used in the sequel
@@ -407,17 +405,17 @@ dataType PDBarycenter<dataType>::updateBarycenter(
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::getEpsilon(dataType rho) {
+dataType ttk::PDBarycenter<dataType>::getEpsilon(dataType rho) {
   return rho * rho / 8.0;
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::getRho(dataType epsilon) {
+dataType ttk::PDBarycenter<dataType>::getRho(dataType epsilon) {
   return std::sqrt(8.0 * epsilon);
 }
 
 template <typename dataType>
-void PDBarycenter<dataType>::setBidderDiagrams() {
+void ttk::PDBarycenter<dataType>::setBidderDiagrams() {
 
   for(int i = 0; i < numberOfInputs_; i++) {
     std::vector<diagramTuple> *CTDiagram = &((*inputDiagrams_)[i]);
@@ -445,7 +443,7 @@ void PDBarycenter<dataType>::setBidderDiagrams() {
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(
+dataType ttk::PDBarycenter<dataType>::enrichCurrentBidderDiagrams(
   dataType previous_min_persistence,
   dataType min_persistence,
   std::vector<dataType> initial_diagonal_prices,
@@ -536,7 +534,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::getMaxPersistence() {
+dataType ttk::PDBarycenter<dataType>::getMaxPersistence() {
   dataType max_persistence = 0;
   for(int i = 0; i < numberOfInputs_; i++) {
     BidderDiagram<dataType> &D = bidder_diagrams_[i];
@@ -553,7 +551,7 @@ dataType PDBarycenter<dataType>::getMaxPersistence() {
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::getMinimalPrice(int i) {
+dataType ttk::PDBarycenter<dataType>::getMinimalPrice(int i) {
   dataType min_price = std::numeric_limits<dataType>::max();
 
   GoodDiagram<dataType> &D = barycenter_goods_[i];
@@ -574,7 +572,7 @@ dataType PDBarycenter<dataType>::getMinimalPrice(int i) {
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::getLowestPersistence() {
+dataType ttk::PDBarycenter<dataType>::getLowestPersistence() {
   dataType lowest_persistence = std::numeric_limits<dataType>::max();
   for(int i = 0; i < numberOfInputs_; i++) {
     BidderDiagram<dataType> &D = bidder_diagrams_[i];
@@ -594,7 +592,8 @@ dataType PDBarycenter<dataType>::getLowestPersistence() {
 }
 
 template <typename dataType>
-void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
+void ttk::PDBarycenter<dataType>::setInitialBarycenter(
+  dataType min_persistence) {
   int size = 0;
   int random_idx;
   std::vector<diagramTuple> *CTDiagram;
@@ -642,8 +641,8 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
 }
 
 template <typename dataType>
-typename PDBarycenter<dataType>::KDTreePair
-  PDBarycenter<dataType>::getKDTree() const {
+typename ttk::PDBarycenter<dataType>::KDTreePair
+  ttk::PDBarycenter<dataType>::getKDTree() const {
   Timer tm;
   auto kdt = std::unique_ptr<KDTree<dataType>>(
     new KDTree<dataType>{true, wasserstein_});
@@ -684,7 +683,7 @@ typename PDBarycenter<dataType>::KDTreePair
 
 // template <typename dataType>
 // std::vector<std::vector<matchingTuple>>
-// PDBarycenter<dataType>::executeMunkresBarycenter(std::vector<diagramTuple>&
+// ttk::PDBarycenter<dataType>::executeMunkresBarycenter(std::vector<diagramTuple>&
 // barycenter)
 // {
 //     double total_time = 0;
@@ -791,9 +790,8 @@ typename PDBarycenter<dataType>::KDTreePair
 
 template <typename dataType>
 std::vector<std::vector<matchingTuple>>
-  PDBarycenter<dataType>::executeAuctionBarycenter(
+  ttk::PDBarycenter<dataType>::executeAuctionBarycenter(
     std::vector<diagramTuple> &barycenter) {
-  double total_time = 0;
 
   std::vector<std::vector<matchingTuple>> previous_matchings;
   dataType min_persistence = 0;
@@ -818,16 +816,12 @@ std::vector<std::vector<matchingTuple>>
     2 * max_persistence, min_persistence, min_diag_price, min_price,
     min_points_to_add, false);
 
-  int n_iterations = 0;
-
   bool converged = false;
   bool finished = false;
   dataType total_cost;
 
   while(!finished) {
     Timer tm;
-
-    n_iterations += 1;
 
     std::pair<std::unique_ptr<KDTree<dataType>>,
               std::vector<KDTree<dataType> *>>
@@ -882,7 +876,6 @@ std::vector<std::vector<matchingTuple>>
 
     previous_matchings = std::move(all_matchings);
     // END OF TIMER
-    total_time += tm.getElapsedTime();
 
     for(unsigned int i = 0; i < barycenter_goods_.size(); ++i) {
       for(int j = 0; j < barycenter_goods_[i].size(); ++j) {
@@ -920,7 +913,7 @@ std::vector<std::vector<matchingTuple>>
 }
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::computeRealCost() {
+dataType ttk::PDBarycenter<dataType>::computeRealCost() {
   dataType total_real_cost = 0;
   std::vector<matchingTuple> fake_matchings;
   // for(int j=0; j<barycenter_goods_[0].size(); j++){
@@ -929,7 +922,7 @@ dataType PDBarycenter<dataType>::computeRealCost() {
   //     current_barycenter.addGood(good_tmp);
   // }
   for(int i = 0; i < numberOfInputs_; i++) {
-    Auction<dataType> auction(
+    PersistenceDiagramAuction<dataType> auction(
       wasserstein_, geometrical_factor_, lambda_, 0.01, true);
     GoodDiagram<dataType> current_barycenter = barycenter_goods_[0];
     BidderDiagram<dataType> current_bidder_diagram = bidder_diagrams_[i];
@@ -942,7 +935,7 @@ dataType PDBarycenter<dataType>::computeRealCost() {
 }
 
 template <typename dataType>
-bool PDBarycenter<dataType>::isPrecisionObjectiveMet(
+bool ttk::PDBarycenter<dataType>::isPrecisionObjectiveMet(
   dataType precision_objective, int mode) {
   if(mode == 0) { // ABSOLUTE PRECISION
     for(int i_input = 0; i_input < numberOfInputs_; i_input++) {
@@ -960,5 +953,3 @@ bool PDBarycenter<dataType>::isPrecisionObjectiveMet(
   }
   return true;
 }
-
-#endif

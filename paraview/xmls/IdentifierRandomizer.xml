@@ -1,0 +1,93 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkIdentifierRandomizer"
+     class="ttkIdentifierRandomizer"
+     label="TTK IdentifierRandomizer">
+     <Documentation
+        long_help="TTK identifierRandomizer plugin."
+        short_help="TTK identifierRandomizer plugin.">
+       TTK filter to shuflle ids randomly. Useful to reduce the number of neighbor
+       regions with close ids.
+
+       Online examples:
+
+       - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+       - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
+                            number_of_elements="5" default_values="0">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="Seed"
+                         label="Random Seed"
+                         command="SetRandomSeed"
+                         number_of_elements="1"
+                         default_values="0">
+      </IntVectorProperty>
+
+      <IntVectorProperty name="CompactRange"
+        label="Compact Range"
+        command="SetCompactRange"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Force the output values to be in the [0, #values - 1] integer range.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFieldNew" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Seed" />
+        <Property name="CompactRange" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

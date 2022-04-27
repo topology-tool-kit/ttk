@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the triangulation processing package.
 ///
-/// VTK wrapping code for the @Triangulation package.
+/// VTK wrapping code for the ttk::Triangulation package.
 ///
 /// \param Input Geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet)
@@ -24,14 +24,7 @@
 // ttk code includes
 #include <Triangulation.h>
 #include <ttkAlgorithm.h>
-
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkInformation.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+#include <ttkMacros.h>
 
 // VTK Module
 #include <ttkTriangulationRequestModule.h>
@@ -40,51 +33,47 @@ class TTKTRIANGULATIONREQUEST_EXPORT ttkTriangulationRequest
   : public ttkAlgorithm {
 
 public:
-  enum Simplex { Vertex = 0, Edge, Triangle, Tetra };
-
-  enum Request {
-    ComputeSimplex = 0,
-    ComputeFacet,
-    ComputeCofacet,
-    ComputeStar,
-    ComputeLink
+  enum class SIMPLEX {
+    VERTEX = 0,
+    EDGE = 1,
+    TRIANGLE = 2,
+    TETRA = 3,
+  };
+  enum class REQUEST {
+    COMPUTE_SIMPLEX = 0,
+    COMPUTE_FACET = 1,
+    COMPUTE_COFACET = 2,
+    COMPUTE_STAR = 3,
+    COMPUTE_LINK = 4,
   };
 
   static ttkTriangulationRequest *New();
-  vtkTypeMacro(ttkTriangulationRequest, ttkAlgorithm)
+  vtkTypeMacro(ttkTriangulationRequest, ttkAlgorithm);
 
-    vtkSetMacro(SimplexType, int);
-  vtkGetMacro(SimplexType, int);
+  ttkSetEnumMacro(SimplexType, SIMPLEX);
+  vtkGetEnumMacro(SimplexType, SIMPLEX);
 
-  vtkSetMacro(SimplexIdentifier, int);
-  vtkGetMacro(SimplexIdentifier, int);
+  vtkSetMacro(SimplexIdentifier, const std::string &);
+  vtkGetMacro(SimplexIdentifier, std::string);
 
-  vtkSetMacro(RequestType, int);
-  vtkGetMacro(RequestType, int);
+  ttkSetEnumMacro(RequestType, REQUEST);
+  vtkGetEnumMacro(RequestType, REQUEST);
 
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
 protected:
-  ttkTriangulationRequest() {
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-    this->setDebugMsgPrefix("TriangulationRequest");
-  }
-
-  ~ttkTriangulationRequest() override{};
+  ttkTriangulationRequest();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
-
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  int SimplexType{0};
-  int SimplexIdentifier{0};
-  int RequestType{0};
+  SIMPLEX SimplexType{};
+  REQUEST RequestType{};
+  std::string SimplexIdentifier{0};
   bool KeepAllDataArrays{true};
 };

@@ -1,14 +1,16 @@
 #include <ttkUtils.h>
 
-#include <limits>
-#include <vtkStringArray.h>
-
 #include <vtkAbstractArray.h>
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkIdTypeArray.h>
+#include <vtkNew.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
+#include <vtkUnstructuredGrid.h>
 
 int ttkUtils::replaceVariable(const std::string &iString,
                               vtkFieldData *fieldData,
@@ -19,13 +21,13 @@ int ttkUtils::replaceVariable(const std::string &iString,
   bool varIndexDefined = false;
 
   // Check if varIndex is specified
-  size_t indexDelimiter0 = iString.find("[");
-  size_t indexDelimiter1 = iString.find("]");
+  size_t indexDelimiter0 = iString.find('[');
+  size_t indexDelimiter1 = iString.find(']');
   if(indexDelimiter0 != std::string::npos
      && indexDelimiter1 != std::string::npos) {
     if(indexDelimiter0 > indexDelimiter1
-       || iString.find("[", indexDelimiter0 + 1) != std::string::npos
-       || iString.find("}", indexDelimiter1 + 1) != std::string::npos) {
+       || iString.find('[', indexDelimiter0 + 1) != std::string::npos
+       || iString.find('}', indexDelimiter1 + 1) != std::string::npos) {
       errorMsg = "Invalid Syntax:\n" + iString;
       return 0;
     }
@@ -63,7 +65,7 @@ int ttkUtils::replaceVariable(const std::string &iString,
   }
 
   return 1;
-};
+}
 
 int ttkUtils::replaceVariables(const std::string &iString,
                                vtkFieldData *fieldData,
@@ -71,18 +73,18 @@ int ttkUtils::replaceVariables(const std::string &iString,
                                std::string &errorMsg) {
   oString = iString;
 
-  while(oString.find("{") != std::string::npos
-        && oString.find("}") != std::string::npos) {
-    size_t o = oString.find("{");
-    size_t c = oString.find("}");
+  while(oString.find('{') != std::string::npos
+        && oString.find('}') != std::string::npos) {
+    size_t o = oString.find('{');
+    size_t c = oString.find('}');
     // {...{....{...}...}..}
     // |            |
     // o            c
 
-    size_t oNext = oString.find("{", o + 1);
+    size_t oNext = oString.find('{', o + 1);
     while(oNext != std::string::npos && oNext < c) {
       o = oNext;
-      oNext = oString.find("{", o + 1);
+      oNext = oString.find('{', o + 1);
     }
 
     // {...{....{var}...}..}
@@ -94,18 +96,18 @@ int ttkUtils::replaceVariables(const std::string &iString,
     if(!replaceVariable(var, fieldData, rVar, errorMsg))
       return 0;
 
-    oString = oString.substr(0, o) + rVar
-              + oString.substr(c + 1, oString.length() - c - 1);
+    oString = oString.substr(0, o).append(rVar).append(
+      oString.substr(c + 1, oString.length() - c - 1));
   }
 
-  if(oString.find("{") != std::string::npos
-     || oString.find("}") != std::string::npos) {
+  if(oString.find('{') != std::string::npos
+     || oString.find('}') != std::string::npos) {
     errorMsg = "Invalid Syntax:\n" + iString;
     return 0;
   }
 
   return 1;
-};
+}
 
 int ttkUtils::stringListToVector(const std::string &iString,
                                  std::vector<std::string> &v) {
@@ -113,17 +115,17 @@ int ttkUtils::stringListToVector(const std::string &iString,
   //     |  |
   //     i  j
   size_t i = 0;
-  size_t j = iString.find(",");
+  size_t j = iString.find(',');
   while(j != std::string::npos) {
     v.push_back(iString.substr(i, j - i));
     i = j + 1;
-    j = iString.find(",", i);
+    j = iString.find(',', i);
   }
   if(iString.length() > i)
     v.push_back(iString.substr(i, iString.length() - i));
 
   return 1;
-};
+}
 
 int ttkUtils::stringListToDoubleVector(const std::string &iString,
                                        std::vector<double> &v) {
@@ -141,10 +143,11 @@ int ttkUtils::stringListToDoubleVector(const std::string &iString,
   // }
 
   return 1;
-};
+}
 
-vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
-  size_t firstComma = line.find(",", 0);
+vtkSmartPointer<vtkAbstractArray>
+  ttkUtils::csvToVtkArray(const std::string &line) {
+  size_t firstComma = line.find(',', 0);
 
   if(firstComma == std::string::npos)
     return nullptr;
@@ -186,10 +189,11 @@ vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
       array->SetValue(i, valuesAsString[i]);
     return array;
   }
-};
+}
 
-vtkSmartPointer<vtkDoubleArray> ttkUtils::csvToDoubleArray(std::string line) {
-  size_t firstComma = line.find(",", 0);
+vtkSmartPointer<vtkDoubleArray>
+  ttkUtils::csvToDoubleArray(const std::string &line) {
+  size_t firstComma = line.find(',', 0);
 
   if(firstComma == std::string::npos)
     return nullptr;
@@ -210,24 +214,38 @@ vtkSmartPointer<vtkDoubleArray> ttkUtils::csvToDoubleArray(std::string line) {
     arrayData[i] = values[i];
 
   return array;
-};
+}
 
 /// Retrieve pointer to the internal data
 /// This method is a workaround to emulate
 /// the old GetVoidPointer in vtkDataArray
 void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
   void *outPtr = nullptr;
+  if(array == nullptr)
+    return outPtr;
+
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
       if(aosArray) { outPtr = aosArray->GetVoidPointer(start); });
   }
   return outPtr;
-};
+}
 
 void *ttkUtils::GetVoidPointer(vtkPoints *points, vtkIdType start) {
   return GetVoidPointer(points->GetData(), start);
-};
+}
+
+vtkSmartPointer<vtkAbstractArray> ttkUtils::SliceArray(vtkAbstractArray *array,
+                                                       vtkIdType idx) {
+  auto slicedArray
+    = vtkSmartPointer<vtkAbstractArray>::Take(array->NewInstance());
+  slicedArray->SetName(array->GetName());
+  slicedArray->SetNumberOfComponents(array->GetNumberOfComponents());
+  slicedArray->SetNumberOfTuples(1);
+  slicedArray->SetTuple(0, idx, array);
+  return slicedArray;
+}
 
 void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
                                  vtkIdType valueIdx,
@@ -241,7 +259,7 @@ void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
                      });
   }
   return outPtr;
-};
+}
 
 void *ttkUtils::WritePointer(vtkDataArray *array,
                              vtkIdType valueIdx,
@@ -253,7 +271,7 @@ void *ttkUtils::WritePointer(vtkDataArray *array,
       if(aosArray) { outPtr = aosArray->WritePointer(valueIdx, numValues); });
   }
   return outPtr;
-};
+}
 
 void ttkUtils::SetVoidArray(vtkDataArray *array,
                             void *data,
@@ -267,7 +285,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
         array->Print(std::cerr);
       });
   }
-};
+}
 
 [[deprecated]] void ttkUtils::FillCellArrayFromSingle(vtkIdType const *cells,
                                                       vtkIdType ncells,
@@ -284,7 +302,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
     }
     cellArray->InsertNextCell(verts);
   }
-};
+}
 
 void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
                                      vtkIdType const *cells_off,
@@ -301,4 +319,43 @@ void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
     }
     cellArray->InsertNextCell(verts);
   }
-};
+}
+
+int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
+                                   vtkPoints *const points) {
+
+  if(dataSet == nullptr || points == nullptr) {
+    return 0;
+  }
+
+  if(!dataSet->IsA("vtkUnstructuredGrid") && !dataSet->IsA("vtkPolyData")) {
+    return 0;
+  }
+
+  const size_t nPoints = points->GetNumberOfPoints();
+  if(nPoints == 0) {
+    return 0;
+  }
+
+  vtkNew<vtkCellArray> cells{};
+  cells->InsertNextCell(nPoints);
+  for(size_t i = 0; i < nPoints; ++i) {
+    cells->InsertCellPoint(i);
+  }
+
+  if(dataSet->IsA("vtkUnstructuredGrid")) {
+    const auto vtu{vtkUnstructuredGrid::SafeDownCast(dataSet)};
+    if(vtu != nullptr) {
+      vtu->SetPoints(points);
+      vtu->SetCells(VTK_POLY_VERTEX, cells);
+    }
+  } else if(dataSet->IsA("vtkPolyData")) {
+    const auto vtp{vtkPolyData::SafeDownCast(dataSet)};
+    if(vtp != nullptr) {
+      vtp->SetPoints(points);
+      vtp->SetVerts(cells);
+    }
+  }
+
+  return 1;
+}

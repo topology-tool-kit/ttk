@@ -224,7 +224,7 @@ ALIASES                =
 # A mapping has the form "name=value". For example adding "class=itcl::class"
 # will allow you to use the command class in the itcl::class meaning.
 
-TCL_SUBST              =
+#TCL_SUBST              =
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -821,7 +821,7 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             =
+IMAGE_PATH             = @DOXYGEN_IMAGE_PATH@
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -973,7 +973,7 @@ ALPHABETICAL_INDEX     = YES
 # Minimum value: 1, maximum value: 20, default value: 5.
 # This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
 
-COLS_IN_ALPHA_INDEX    = 5
+#COLS_IN_ALPHA_INDEX    = 5
 
 # In case all classes in a project start with a common prefix, all classes will
 # be put under the same header in the alphabetical index. The IGNORE_PREFIX tag
@@ -1650,16 +1650,6 @@ LATEX_BATCHMODE        = NO
 
 LATEX_HIDE_INDICES     = NO
 
-# If the LATEX_SOURCE_CODE tag is set to YES then doxygen will include source
-# code with syntax highlighting in the LaTeX output.
-#
-# Note that which sources are shown also depends on other settings such as
-# SOURCE_BROWSER.
-# The default value is: NO.
-# This tag requires that the tag GENERATE_LATEX is set to YES.
-
-LATEX_SOURCE_CODE      = NO
-
 # The LATEX_BIB_STYLE tag can be used to specify the style to use for the
 # bibliography, e.g. plainnat, or ieeetr. See
 # http://en.wikipedia.org/wiki/BibTeX and \cite for more info.
@@ -1783,13 +1773,13 @@ XML_OUTPUT             = xml
 # validating XML parser to check the syntax of the XML files.
 # This tag requires that the tag GENERATE_XML is set to YES.
 
-XML_SCHEMA             =
+# XML_SCHEMA             =
 
 # The XML_DTD tag can be used to specify a XML DTD, which can be used by a
 # validating XML parser to check the syntax of the XML files.
 # This tag requires that the tag GENERATE_XML is set to YES.
 
-XML_DTD                =
+#XML_DTD                =
 
 # If the XML_PROGRAMLISTING tag is set to YES doxygen will dump the program
 # listings (including syntax highlighting and cross-referencing information) to
@@ -1885,7 +1875,7 @@ ENABLE_PREPROCESSING   = YES
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES then
 # the macro expansion is limited to the macros specified with the PREDEFINED and
@@ -1893,7 +1883,7 @@ MACRO_EXPANSION        = NO
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_ONLY_PREDEF     = NO
+EXPAND_ONLY_PREDEF     = YES
 
 # If the SEARCH_INCLUDES tag is set to YES the includes files in the
 # INCLUDE_PATH will be searched if a #include is found.
@@ -1907,7 +1897,7 @@ SEARCH_INCLUDES        = YES
 # preprocessor.
 # This tag requires that the tag SEARCH_INCLUDES is set to YES.
 
-INCLUDE_PATH           =
+INCLUDE_PATH           = @DOXYGEN_INCLUDE_DIRS@
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
 # patterns (like *.h and *.hpp) to filter out the header-files in the
@@ -1925,7 +1915,90 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             =
+# from ParaView/Utilities/Doxygen/doxyfile.in:
+PREDEFINED  = "vtkSetMacro(name,type)= \
+                 virtual void Set##name (type);" \
+              "vtkGetMacro(name,type)= \
+                 virtual type Get##name ();" \
+              "vtkSetStringMacro(name)= \
+                 virtual void Set##name (const char*);" \
+              "vtkGetStringMacro(name)= \
+                 virtual char* Get##name ();" \
+              "vtkSetClampMacro(name,type,min,max)= \
+                 virtual void Set##name (type);" \
+              "vtkSetObjectMacro(name,type)= \
+                 virtual void Set##name (type*);" \
+              "vtkGetObjectMacro(name,type)= \
+                 virtual type *Get##name ();" \
+              "vtkBooleanMacro(name,type)= \
+                 virtual void name##On (); \
+                 virtual void name##Off ();" \
+              "vtkSetVector2Macro(name,type)= \
+                 virtual void Set##name (type, type); \
+                 void Set##name (type [2]);" \
+              "vtkGetVector2Macro(name,type)= \
+                 virtual type *Get##name (); \
+                 virtual void Get##name (type &, type &); \
+                 virtual void Get##name (type [2]);" \
+              "vtkSetVector3Macro(name,type)= \
+                 virtual void Set##name (type, type, type); \
+                 virtual void Set##name (type [3]);" \
+              "vtkGetVector3Macro(name,type)= \
+                 virtual type *Get##name (); \
+                 virtual void Get##name (type &, type &, type &); \
+                 virtual void Get##name (type [3]);" \
+              "vtkSetVector4Macro(name,type)= \
+                 virtual void Set##name (type, type, type, type); \
+                 virtual void Set##name (type [4]);" \
+              "vtkGetVector4Macro(name,type)= \
+                 virtual type *Get##name (); \
+                 virtual void Get##name (type &, type &, type &, type &); \
+                 virtual void Get##name (type [4]);" \
+               "vtkSetVector6Macro(name,type)= \
+                 virtual void Set##name (type, type, type, type, \
+                                         type, type); \
+                 virtual void Set##name (type [6]);" \
+               "vtkGetVector6Macro(name,type)= \
+                  virtual type *Get##name (); \
+                  virtual void Get##name (type &, type &, type &, \
+                                          type &, type &, type &); \
+                  virtual void Get##name (type [6]);" \
+               "vtkSetVectorMacro(name,type,count)= \
+                  virtual void Set##name(type data[]);" \
+               "vtkGetVectorMacro(name,type,count)= \
+                   virtual type *Get##name (); \
+                   virtual void Get##name(type data[##count]);" \
+               "vtkWorldCoordinateMacro(name)= \
+                   virtual vtkCoordinate *Get##name##Coordinate (); \
+                   virtual void Set##name(float x[3]); \
+                   virtual void Set##name(float x, float y, float z); \
+                   virtual float *Get##name();" \
+               "vtkViewportCoordinateMacro(name)= \
+                   virtual vtkCoordinate *Get##name##Coordinate (); \
+                   virtual void Set##name(float x[2]); \
+                   virtual void Set##name(float x, float y); \
+                   virtual float *Get##name();" \
+               "vtkTypeMacro(thisClass,superclass)= \
+                   typedef superclass Superclass; \
+                   virtual const char *GetClassName(); \
+                   static int IsTypeOf(const char *type); \
+                   virtual int IsA(const char *type); \
+                   static thisClass* SafeDownCast(vtkObject *o);" \
+               "vtkTypeMacro(thisClass,superclass)= \
+                   typedef superclass Superclass; \
+                   virtual const char *GetClassName(); \
+                   static int IsTypeOf(const char *type); \
+                   virtual int IsA(const char *type); \
+                   static thisClass* SafeDownCast(vtkObject *o);" \
+               "VTK_LEGACY(x)= x" \
+               "vtkSetEnumMacro(name, enumType)= \
+                   virtual void Set##name (enumType);" \
+               "vtkGetEnumMacro(name, enumType)=\
+                   virtual enumType Get##name () const;" \
+               "ttkSetEnumMacro(name, enumType)= \
+                   virtual void Set##name (int _arg); \
+                   virtual void Set##name (enumType);"
+
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
@@ -1995,7 +2068,7 @@ EXTERNAL_PAGES         = YES
 # interpreter (i.e. the result of 'which perl').
 # The default file (with absolute path) is: /usr/bin/perl.
 
-PERL_PATH              = /usr/bin/perl
+#PERL_PATH              = /usr/bin/perl
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
@@ -2017,7 +2090,7 @@ CLASS_DIAGRAMS         = YES
 # the mscgen tool resides. If left empty the tool is assumed to be found in the
 # default search path.
 
-MSCGEN_PATH            =
+#MSCGEN_PATH            =
 
 # If set to YES, the inheritance and collaboration graphs will hide inheritance
 # and usage relations if the target is undocumented or is not a class.

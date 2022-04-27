@@ -106,6 +106,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
                 max_iter=isoParams[2],
                 path_method=isoParams[3],
                 neighbors_algorithm=isoParams[4],
+                metric=isoParams[5],
                 n_jobs=njobs,
             )
             Y = iso.fit_transform(X)

@@ -4,7 +4,8 @@ template <class dataTypeU, class dataTypeV, typename triangulationType>
 int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
                             const dataTypeU *const uField,
                             const dataTypeV *const vField,
-                            const triangulationType &triangulation) {
+                            const triangulationType &triangulation,
+                            std::vector<char> *isPareto) {
 
   Timer t;
 
@@ -12,7 +13,7 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
 #ifndef TTK_ENABLE_KAMIKAZE
   if((triangulation.isEmpty())) {
     if(vertexNumber_) {
-      return executeLegacy(jacobiSet, uField, vField, triangulation);
+      return executeLegacy(jacobiSet, uField, vField);
     }
     return -1;
   }
@@ -74,6 +75,24 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
     }
   }
 
+  if(isPareto) {
+    isPareto->resize(jacobiSet.size(), 0);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int i = 0; i < (int)jacobiSet.size(); i++) {
+      int edgeId = jacobiSet[i].first;
+      SimplexId vertexId0 = -1, vertexId1 = -1;
+      triangulation.getEdgeVertex(edgeId, 0, vertexId0);
+      triangulation.getEdgeVertex(edgeId, 1, vertexId1);
+      double denominator = vField[vertexId1] - vField[vertexId0];
+      if(fabs(denominator) < Geometry::powIntTen(-DBL_DIG))
+        denominator = 1;
+      if((uField[vertexId1] - uField[vertexId0]) / denominator < 0)
+        (*isPareto)[i] = 1;
+    }
+  }
+
   this->printMsg(
     std::vector<std::vector<std::string>>{
       {"#Minimum edges", std::to_string(minimumNumber)},
@@ -91,12 +110,11 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV, typename triangulationType>
+template <class dataTypeU, class dataTypeV>
 int ttk::JacobiSet::executeLegacy(
   std::vector<std::pair<SimplexId, char>> &jacobiSet,
   const dataTypeU *const uField,
-  const dataTypeV *const vField,
-  const triangulationType &triangulation) {
+  const dataTypeV *const vField) {
 
   Timer t;
 

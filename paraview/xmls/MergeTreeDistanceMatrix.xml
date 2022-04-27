@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="MergeTreeDistanceMatrix" class="ttkMergeTreeDistanceMatrix" label="TTK MergeTreeDistanceMatrix">
+           <Documentation long_help="MergeTreeDistanceMatrix Long" short_help="MergeTreeDistanceMatrix Short">
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+           </Documentation>
+
+            <!-- INPUT -->
+                <InputProperty
+                    name="Input"
+                    command="SetInputConnection">
+                  <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/> 
+                  </ProxyGroupDomain>
+                  <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet"/>
+                  </DataTypeDomain>
+                  <InputArrayDomain name="input_scalars" number_of_components="1">
+                    <Property name="Input" function="FieldDataSelection" />
+                  </InputArrayDomain>
+                  <Documentation>
+                    Data-set to process.
+                  </Documentation>
+                </InputProperty>
+
+            <!-- INPUT PARAMETER WIDGETS -->
+                ${MERGE_TREE_INPUT_WIDGETS}
+                <IntVectorProperty
+                name="DistanceSquared"
+                command="SetDistanceSquared"
+                label="Distance Square Root"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                  <Documentation>
+                    The distance will be squared root.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="DistanceSquared"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PREPROCESS_WIDGETS}
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Distance Matrix" index="0" id="port0" />
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <!-- MENU CATEGORY -->
+                <Hints>
+                    <ShowInMenu category="TTK - Ensemble Scalar Data" />
+                </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

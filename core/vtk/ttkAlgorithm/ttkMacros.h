@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vtkIdTypeArray.h>
-#include <vtkIntArray.h>
+class vtkIdTypeArray;
+class vtkIntArray;
 
 #define TTK_COMMA ,
 
@@ -46,6 +46,19 @@ using ttkSimplexIdTypeArray = vtkIntArray;
   }                                                       \
   vtkSetEnumMacro(name, enumType);
 
+#ifdef TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+// reduced list of template instantiations by redefining vtkTemplateMacro
+#include <vtkSetGet.h>
+#ifdef vtkTemplateMacro
+#undef vtkTemplateMacro
+#define vtkTemplateMacro(call)                    \
+  vtkTemplateMacroCase(VTK_DOUBLE, double, call); \
+  vtkTemplateMacroCase(VTK_FLOAT, float, call);   \
+  vtkTemplateMacroCase(VTK_INT, int, call);       \
+  vtkTemplateMacroCase(VTK_LONG_LONG, long long, call);
+#endif // vtkTemplateMacro
+#endif // TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+
 #define ttkVtkTemplateMacroCase(                         \
   dataType, triangulationType, triangulationClass, call) \
   case triangulationType: {                              \
@@ -58,9 +71,17 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
                             ttk::ExplicitTriangulation, call);            \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
-                            ttk::ImplicitTriangulation, call);            \
+                            ttk::ImplicitNoPreconditions, call);          \
+    ttkVtkTemplateMacroCase(dataType,                                     \
+                            ttk::Triangulation::Type::HYBRID_IMPLICIT,    \
+                            ttk::ImplicitWithPreconditions, call);        \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
-                            ttk::PeriodicImplicitTriangulation, call);    \
+                            ttk::PeriodicNoPreconditions, call);          \
+    ttkVtkTemplateMacroCase(dataType,                                     \
+                            ttk::Triangulation::Type::HYBRID_PERIODIC,    \
+                            ttk::PeriodicWithPreconditions, call);        \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::COMPACT,  \
+                            ttk::CompactTriangulation, call);             \
   }
 
 #define ttkTemplate2IdMacro(call)                                           \
@@ -101,3 +122,203 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     call;                                                          \
   }; break
 #endif
+
+// -----------------------------------------------------------------------------
+
+#define ttkTypeMacroErrorCase(idx, type)                          \
+  default: {                                                      \
+    this->printErr("Unsupported " #idx "-th Template Data Type: " \
+                   + std::to_string(static_cast<int>(type)));     \
+  } break;
+
+#define ttkTypeMacroCase(enum, type, number, call) \
+  case enum: {                                     \
+    typedef type T##number;                        \
+    call;                                          \
+  } break;
+
+#define ttkTypeMacroT(group, call)                                 \
+  switch(group) {                                                  \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,           \
+                     ttk::ExplicitTriangulation, 0, call);         \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,           \
+                     ttk::ImplicitTriangulation, 0, call);         \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,           \
+                     ttk::PeriodicImplicitTriangulation, 0, call); \
+    ttkTypeMacroErrorCase(0, group);                               \
+  }
+
+#define ttkTypeMacroR(group, call)                 \
+  switch(group) {                                  \
+    ttkTypeMacroCase(VTK_FLOAT, float, 0, call);   \
+    ttkTypeMacroCase(VTK_DOUBLE, double, 0, call); \
+    ttkTypeMacroErrorCase(0, group);               \
+  }
+
+#define ttkTypeMacroI(group, call)                                         \
+  switch(group) {                                                          \
+    ttkTypeMacroCase(VTK_INT, int, 0, call);                               \
+    ttkTypeMacroCase(VTK_UNSIGNED_INT, unsigned int, 0, call);             \
+    ttkTypeMacroCase(VTK_CHAR, char, 0, call);                             \
+    ttkTypeMacroCase(VTK_SIGNED_CHAR, signed char, 0, call);               \
+    ttkTypeMacroCase(VTK_UNSIGNED_CHAR, unsigned char, 0, call);           \
+    ttkTypeMacroCase(VTK_LONG, long, 0, call);                             \
+    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call);                   \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG, unsigned long, 0, call);           \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG_LONG, unsigned long long, 0, call); \
+    ttkTypeMacroCase(VTK_ID_TYPE, vtkIdType, 0, call);                     \
+    ttkTypeMacroErrorCase(0, group);                                       \
+  }
+
+#define ttkTypeMacroA(group, call)                                         \
+  switch(group) {                                                          \
+    ttkTypeMacroCase(VTK_FLOAT, float, 0, call);                           \
+    ttkTypeMacroCase(VTK_DOUBLE, double, 0, call);                         \
+    ttkTypeMacroCase(VTK_INT, int, 0, call);                               \
+    ttkTypeMacroCase(VTK_UNSIGNED_INT, unsigned int, 0, call);             \
+    ttkTypeMacroCase(VTK_CHAR, char, 0, call);                             \
+    ttkTypeMacroCase(VTK_SIGNED_CHAR, signed char, 0, call);               \
+    ttkTypeMacroCase(VTK_UNSIGNED_CHAR, unsigned char, 0, call);           \
+    ttkTypeMacroCase(VTK_LONG, long, 0, call);                             \
+    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call);                   \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG, unsigned long, 0, call);           \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG_LONG, unsigned long long, 0, call); \
+    ttkTypeMacroCase(VTK_ID_TYPE, vtkIdType, 0, call);                     \
+    ttkTypeMacroErrorCase(0, group);                                       \
+  }
+
+#define ttkTypeMacroAT(group0, group1, call)                \
+  switch(group1) {                                          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,    \
+                     ttk::ExplicitTriangulation, 1,         \
+                     ttkTypeMacroA(group0, call));          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,    \
+                     ttk::ImplicitTriangulation, 1,         \
+                     ttkTypeMacroA(group0, call));          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,    \
+                     ttk::PeriodicImplicitTriangulation, 1, \
+                     ttkTypeMacroA(group0, call));          \
+    ttkTypeMacroErrorCase(1, group1);                       \
+  }
+
+#define ttkTypeMacroRT(group0, group1, call)                \
+  switch(group1) {                                          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,    \
+                     ttk::ExplicitTriangulation, 1,         \
+                     ttkTypeMacroR(group0, call));          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,    \
+                     ttk::ImplicitTriangulation, 1,         \
+                     ttkTypeMacroR(group0, call));          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,    \
+                     ttk::PeriodicImplicitTriangulation, 1, \
+                     ttkTypeMacroR(group0, call));          \
+    ttkTypeMacroErrorCase(1, group1);                       \
+  }
+
+#define ttkTypeMacroIT(group0, group1, call)                \
+  switch(group1) {                                          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,    \
+                     ttk::ExplicitTriangulation, 1,         \
+                     ttkTypeMacroI(group0, call));          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,    \
+                     ttk::ImplicitTriangulation, 1,         \
+                     ttkTypeMacroI(group0, call));          \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,    \
+                     ttk::PeriodicImplicitTriangulation, 1, \
+                     ttkTypeMacroI(group0, call));          \
+    ttkTypeMacroErrorCase(1, group1);                       \
+  }
+
+#define ttkTypeMacroAI(group0, group1, call)                                  \
+  switch(group1) {                                                            \
+    ttkTypeMacroCase(VTK_INT, int, 1, ttkTypeMacroA(group0, call));           \
+    ttkTypeMacroCase(                                                         \
+      VTK_LONG_LONG, long long, 1, ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(VTK_ID_TYPE, vtkIdType, 1, ttkTypeMacroA(group0, call)); \
+    ttkTypeMacroErrorCase(1, group1);                                         \
+  }
+
+#define ttkTypeMacroRR(group0, group1, call)                              \
+  switch(group1) {                                                        \
+    ttkTypeMacroCase(VTK_FLOAT, float, 1, ttkTypeMacroR(group0, call));   \
+    ttkTypeMacroCase(VTK_DOUBLE, double, 1, ttkTypeMacroR(group0, call)); \
+    ttkTypeMacroErrorCase(1, group1);                                     \
+  }
+
+#define ttkTypeMacroAA(group0, group1, call)                                  \
+  switch(group1) {                                                            \
+    ttkTypeMacroCase(VTK_FLOAT, float, 1, ttkTypeMacroA(group0, call));       \
+    ttkTypeMacroCase(VTK_DOUBLE, double, 1, ttkTypeMacroA(group0, call));     \
+    ttkTypeMacroCase(VTK_INT, int, 1, ttkTypeMacroA(group0, call));           \
+    ttkTypeMacroCase(                                                         \
+      VTK_UNSIGNED_INT, unsigned int, 1, ttkTypeMacroA(group0, call));        \
+    ttkTypeMacroCase(VTK_CHAR, char, 1, ttkTypeMacroA(group0, call));         \
+    ttkTypeMacroCase(                                                         \
+      VTK_SIGNED_CHAR, signed char, 1, ttkTypeMacroA(group0, call));          \
+    ttkTypeMacroCase(                                                         \
+      VTK_UNSIGNED_CHAR, unsigned char, 1, ttkTypeMacroA(group0, call));      \
+    ttkTypeMacroCase(VTK_LONG, long, 1, ttkTypeMacroA(group0, call));         \
+    ttkTypeMacroCase(                                                         \
+      VTK_LONG_LONG, long long, 1, ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(                                                         \
+      VTK_UNSIGNED_LONG, unsigned long, 1, ttkTypeMacroA(group0, call));      \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG_LONG, unsigned long long, 1,           \
+                     ttkTypeMacroA(group0, call));                            \
+    ttkTypeMacroCase(VTK_ID_TYPE, vtkIdType, 1, ttkTypeMacroA(group0, call)); \
+    ttkTypeMacroErrorCase(1, group1);                                         \
+  }
+
+#define ttkTypeMacroAAA(group0, group1, group2, call)                          \
+  switch(group2) {                                                             \
+    ttkTypeMacroCase(                                                          \
+      VTK_FLOAT, float, 2, ttkTypeMacroAA(group0, group1, call));              \
+    ttkTypeMacroCase(                                                          \
+      VTK_DOUBLE, double, 2, ttkTypeMacroAA(group0, group1, call));            \
+    ttkTypeMacroCase(VTK_INT, int, 2, ttkTypeMacroAA(group0, group1, call));   \
+    ttkTypeMacroCase(VTK_UNSIGNED_INT, unsigned int, 2,                        \
+                     ttkTypeMacroAA(group0, group1, call));                    \
+    ttkTypeMacroCase(VTK_CHAR, char, 2, ttkTypeMacroAA(group0, group1, call)); \
+    ttkTypeMacroCase(                                                          \
+      VTK_SIGNED_CHAR, signed char, 2, ttkTypeMacroAA(group0, group1, call));  \
+    ttkTypeMacroCase(VTK_UNSIGNED_CHAR, unsigned char, 2,                      \
+                     ttkTypeMacroAA(group0, group1, call));                    \
+    ttkTypeMacroCase(VTK_LONG, long, 2, ttkTypeMacroAA(group0, group1, call)); \
+    ttkTypeMacroCase(                                                          \
+      VTK_LONG_LONG, long long, 2, ttkTypeMacroAA(group0, group1, call));      \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG, unsigned long, 2,                      \
+                     ttkTypeMacroAA(group0, group1, call));                    \
+    ttkTypeMacroCase(VTK_UNSIGNED_LONG_LONG, unsigned long long, 2,            \
+                     ttkTypeMacroAA(group0, group1, call));                    \
+    ttkTypeMacroCase(                                                          \
+      VTK_ID_TYPE, vtkIdType, 2, ttkTypeMacroAA(group0, group1, call));        \
+    ttkTypeMacroErrorCase(2, group2);                                          \
+  }
+
+#define ttkTypeMacroAII(group0, group1, group2, call)                        \
+  switch(group2) {                                                           \
+    ttkTypeMacroCase(VTK_INT, int, 2, ttkTypeMacroAI(group0, group1, call)); \
+    ttkTypeMacroCase(                                                        \
+      VTK_LONG_LONG, long long, 2, ttkTypeMacroAI(group0, group1, call));    \
+    ttkTypeMacroCase(                                                        \
+      VTK_ID_TYPE, vtkIdType, 2, ttkTypeMacroAI(group0, group1, call));      \
+    ttkTypeMacroErrorCase(2, group2);                                        \
+  }
+
+#define ttkTypeMacroRRR(group0, group1, group2, call)               \
+  switch(group2) {                                                  \
+    ttkTypeMacroCase(                                               \
+      VTK_FLOAT, float, 2, ttkTypeMacroRR(group0, group1, call));   \
+    ttkTypeMacroCase(                                               \
+      VTK_DOUBLE, double, 2, ttkTypeMacroRR(group0, group1, call)); \
+    ttkTypeMacroErrorCase(2, group2);                               \
+  }
+
+#define ttkTypeMacroRRI(group0, group1, group2, call)                        \
+  switch(group2) {                                                           \
+    ttkTypeMacroCase(VTK_INT, int, 2, ttkTypeMacroRR(group0, group1, call)); \
+    ttkTypeMacroCase(                                                        \
+      VTK_LONG_LONG, long long, 2, ttkTypeMacroRR(group0, group1, call));    \
+    ttkTypeMacroCase(                                                        \
+      VTK_ID_TYPE, vtkIdType, 2, ttkTypeMacroRR(group0, group1, call));      \
+    ttkTypeMacroErrorCase(2, group2);                                        \
+  }

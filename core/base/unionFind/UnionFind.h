@@ -24,18 +24,18 @@ namespace ttk {
 
     inline bool operator<(const UnionFind &other) const {
       return rank_ < other.rank_;
-    };
+    }
 
     inline bool operator>(const UnionFind &other) const {
       return rank_ > other.rank_;
-    };
+    }
 
     // 2) functions
     inline UnionFind *find();
 
     inline int getRank() const {
       return rank_;
-    };
+    }
 
     static inline UnionFind *makeUnion(UnionFind *uf0, UnionFind *uf1) {
       uf0 = uf0->find();
@@ -57,10 +57,10 @@ namespace ttk {
     }
 
     static inline UnionFind *makeUnion(std::vector<UnionFind *> &sets) {
-      UnionFind *n = NULL;
+      UnionFind *n = nullptr;
 
       if(!sets.size())
-        return NULL;
+        return nullptr;
 
       if(sets.size() == 1)
         return sets[0];
@@ -73,11 +73,11 @@ namespace ttk {
 
     inline void setParent(UnionFind *parent) {
       parent_ = parent;
-    };
+    }
 
     inline void setRank(const int &rank) {
       rank_ = rank;
-    };
+    }
 
   protected:
     int rank_{};
@@ -90,7 +90,7 @@ namespace ttk {
     parent_ = this;
   }
 
-  inline UnionFind::UnionFind(const UnionFind &other) {
+  inline UnionFind::UnionFind(const UnionFind &other) : Debug(other) {
 
     rank_ = other.rank_;
     parent_ = this;

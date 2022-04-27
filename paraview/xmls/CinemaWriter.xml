@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkCinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
+            <Documentation 
+            long_help="ttkCinemaWriter" 
+            short_help="ttkCinemaWriter">
+                This filter stores a data product in a Cinema database, and then returns the unmodified input as output.
+
+                The field data arrays of the input are used to derive a unique key that identifies the data product in the Cinema database. If another product with the same key already exists then the filter will replace the existing data product, otherwise the data product is simply appended to the database. The data product itself is either stored in a VTK file format <em>(e.g., vtkUnstructuredGrid, vtkPolyData, vtkMultiBlockDataSet, vtkImageData, ...)</em> or in the PNG image file format (if conversion is possible and explicitly requested by the user).
+
+                NOTE:
+
+                1) Field data arrays whose names start with "_ttk" are ignored during key generation.
+
+                2) To add/remove field data arrays (product keys) run the "ttkArrayEditor" prior to the "ttkCinemaWriter" filter.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+                
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <InputArrayDomain name="point_arrays" attribute_type="point" optional="1"/>
+                <Documentation>Input data product of any type that is going to be stored in the Cinema database.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="DatabasePath" command="SetDatabasePath" number_of_elements="1">
+                <Documentation>Path to a Cinema Spec D database folder.</Documentation>
+                <FileListDomain name="files" />
+                <Hints>
+                    <UseDirectoryName />
+                </Hints>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="CompressionLevel" command="SetCompressionLevel" number_of_elements="1" default_values="5">
+                <IntRangeDomain name="range" min="0" max="9" />
+                <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="Format" label="Store as" command="SetFormat" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="VTK File"/>
+                    <Entry value="1" text="PNG Image"/>
+                    <Entry value="2" text="TTK Compression"/>
+                </EnumerationDomain>
+                <Documentation>Store input as VTK file, a PNG image or a TTK compressed file.</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="IterateMultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>If set to true and the input is a 'vtkMultiBlockDataSet' then store blocks individually.</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="ForwardInput" command="SetForwardInput" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if the filter returns an empty output or forwards the input as a shallow copy.</Documentation>
+            </IntVectorProperty>
+
+            <Property name="DeleteDatabase" command="DeleteDatabase" panel_widget="command_button">
+                <Documentation>Delete the database folder. WARNING: NO UNDO</Documentation>
+            </Property>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="DatabasePath" />
+                <Property name="CompressionLevel" />
+                <Property name="Format" />
+                <Property name="IterateMultiBlock" />
+                <Property name="ForwardInput" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Commands">
+                <Property name="DeleteDatabase" />
+            </PropertyGroup>
+
+            ${TOPOLOGICAL_COMPRESSION_WIDGETS}
+
+            <PropertyGroup panel_widget="Line" label="Topological Compression" >
+              <Property name="Scalar Field" />
+              <Property name="CompressionType" />
+              <Property name="Tolerance" />
+              <Property name="Subdivide" />
+              <Property name="MaximumError" />
+              <Property name="ZFPTolerance" />
+              <Property name="ZFPOnly" />
+              <Property name="UseTopologicalSimplification" />
+              <Property name="SQMethod" />
+              <Hints>
+                <PropertyWidgetDecorator
+                    type="GenericDecorator"
+                    mode="visibility"
+                    property="Format"
+                    value="2" />
+              </Hints>
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

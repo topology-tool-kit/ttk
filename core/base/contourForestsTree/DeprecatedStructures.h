@@ -11,8 +11,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#pragma once
 
 #include <iterator>
 
@@ -76,10 +75,10 @@ namespace ttk {
     // we can do so by using sbegin and send which use this class
     class sorted_iterator : public segmentIterator {
     public:
-      sorted_iterator(segmentIterator base)
+      sorted_iterator(const segmentIterator &base)
         : segmentIterator(base), forward_(true) {
       }
-      sorted_iterator(segmentRevIterator base)
+      sorted_iterator(const segmentRevIterator &base)
         : segmentIterator(base.base()), forward_(false) {
       }
 
@@ -118,5 +117,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: STRUCTURES_H */

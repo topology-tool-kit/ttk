@@ -1,3 +1,4 @@
+#include "BaseClass.h"
 #include <ttkCinemaDarkroomColorMapping.h>
 
 #include <vtkImageData.h>
@@ -9,7 +10,7 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <math.h>
+#include <cmath>
 
 vtkStandardNewMacro(ttkCinemaDarkroomColorMapping);
 
@@ -20,8 +21,7 @@ ttkCinemaDarkroomColorMapping::ttkCinemaDarkroomColorMapping() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaDarkroomColorMapping::~ttkCinemaDarkroomColorMapping() {
-}
+ttkCinemaDarkroomColorMapping::~ttkCinemaDarkroomColorMapping() = default;
 
 template <typename DT>
 int mapScalarsToColor(unsigned char *color,
@@ -40,7 +40,7 @@ int mapScalarsToColor(unsigned char *color,
   for(size_t i = 0; i < nPixels; i++) {
 
     const double value = (double)array[i];
-    if(isnan(value)) {
+    if(std::isnan(value)) {
       size_t idx = i * 3;
       color[idx + 0] = 255.0 * nanColor[0];
       color[idx + 1] = 255.0 * nanColor[1];
@@ -73,11 +73,12 @@ int mapScalarsToColor(unsigned char *color,
       = 255.0 * (lambdaInv * colorMap[idx2 + 3] + lambda * colorMap[idx2 + 7]);
   }
 
+  TTK_FORCE_USE(threadNumber);
   return 1;
-};
+}
 
 int ttkCinemaDarkroomColorMapping::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 

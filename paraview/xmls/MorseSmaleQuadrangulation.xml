@@ -1,0 +1,116 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkMorseSmaleQuadrangulation"
+        class="ttkMorseSmaleQuadrangulation"
+        label="TTK MorseSmaleQuadrangulation">
+      <Documentation
+          long_help="TTK plugin for Morse-Smale quadrangulation."
+          short_help="TTK plugin for Morse-Smale quadrangulation.">
+        This plugin outputs a very raw quadrangulation from a
+        Morse-Smale Complex of a triangular surfacic mesh.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+      </Documentation>
+
+      <InputProperty
+          name="domain"
+          label="Triangulated surface"
+          port_index="2"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input triangulated surface.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="criticalPoints"
+          label="Morse-Smale critical points"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="CriticalPoints" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Critical points of the input Morse-Smale complex.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="separatrices"
+          label="Morse-Smale 1-separatrices"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Separatrices" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Separatrices of the input Morse-Smale complex.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="DualQuadrangulation"
+          label="Dual Quadrangulation"
+          command="SetDualQuadrangulation"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Produce a dual quadrangulation (1 vertex per extremum).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ShowResError"
+          label="Force output despite warnings"
+          command="SetShowResError"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Produces an output despite warnings.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="ShowResError" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="DualQuadrangulation" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -21,10 +21,11 @@ ttkForEach::ttkForEach() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkForEach::~ttkForEach(){};
+ttkForEach::~ttkForEach() = default;
+;
 
 int addRecursivelyToFieldData(vtkDataObject *object,
-                              vtkSmartPointer<vtkDataArray> array) {
+                              const vtkSmartPointer<vtkDataArray> &array) {
   object->GetFieldData()->AddArray(array);
   if(object->IsA("vtkMultiBlockDataSet")) {
     auto objectAsMB = (vtkMultiBlockDataSet *)object;

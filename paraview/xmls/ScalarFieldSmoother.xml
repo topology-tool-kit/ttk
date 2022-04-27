@@ -1,0 +1,127 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkScalarFieldSmoother"
+      class="ttkScalarFieldSmoother"
+      label="TTK ScalarFieldSmoother">
+      <Documentation
+        long_help="TTK plugin for scalar field smoothing."
+        short_help="TTK plugin for scalar field smoothing.">
+        This class is a dummy example for the development of TTK filters. It
+        smooths an input scalar field by averaging the scalar values on the link
+        of each vertex.
+
+        See also GeometrySmoother.
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/   
+
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1" attribute_type="point">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to smooth.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty 
+        name="ScalarFieldNew" 
+        label="Scalar Field" 
+        command="SetInputArrayToProcess" 
+        element_types="0 0 0 0 2" 
+        number_of_elements="5" default_values="0">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to smooth.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="NumberOfIterations"
+        label="Iteration Number"
+        command="SetNumberOfIterations"
+        number_of_elements="1"
+        default_values="1" >
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Number of iterations for the smoothing filter.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputMaskScalarField"
+        command="SetForceInputMaskScalarField"
+        label="Force Input Mask Scalar Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box if an input scalar field should be considered as
+          vertex mask (used to mark vertices to smooth).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty 
+          name="InputMaskNew" 
+          label="Mask Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          number_of_elements="5" default_values="1">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputMaskScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Input mask field (used to mark vertices to smooth).
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFieldNew" />
+        <Property name="NumberOfIterations" />
+        <Property name="ForceInputMaskScalarField" />
+        <Property name="InputMaskNew" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

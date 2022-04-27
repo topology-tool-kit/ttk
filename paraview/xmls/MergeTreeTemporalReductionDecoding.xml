@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreeTemporalReductionDecoding" class="ttkMergeTreeTemporalReductionDecoding" label="TTK MergeTreeTemporalReductionDecoding">
+      <Documentation long_help="MergeTreeTemporalReductionDecoding Long" short_help="MergeTreeTemporalReductionDecoding Short">
+This filter allows to compute the reconstruction of a reduced sequence of merge trees.
+
+The input of this filter is the key frames and the reduction coefficients in the output of the MergeTreeTemporalReductionEncoding filter.
+
+The output of this filter contains the key frames and the reconstructed trees.
+
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
+IEEE Transactions on Visualization and Computer Graphics, 2021
+
+Online examples:
+- https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+          name="Key Frames"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Merge trees to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="ReductionCoefficients"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Encoding filter reduction coefficients output.
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+               <!-- Input options -->
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                    The assignment solver used in the algorithm.
+                  </Documentation>
+                </IntVectorProperty>
+                
+               <!-- Output options -->
+                <IntVectorProperty
+                name="OutputTrees"
+                command="SetOutputTrees"
+                label="Output Trees"
+                number_of_elements="1"
+                default_values="1">
+                  <Documentation>
+                    Display trees. 
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="DimensionSpacing"
+                command="SetDimensionSpacing"
+                label="Dimension Spacing"
+                number_of_elements="1"
+                default_values="1.0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Distance between trees.
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <IntVectorProperty
+                name="MergeTreePlanarLayout"
+                command="SetPlanarLayout"
+                label="Planar Layout"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Display trees in a plane or in the original domain.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="RescaleTreesIndividually"
+                command="SetRescaleTreesIndividually"
+                label="Rescale Trees Individually"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="MergeTreePlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty> 
+                
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="AssignmentSolver"/>
+            </PropertyGroup>
+            
+            <PropertyGroup panel_widget="Line" label="Output options">
+              <Property name="OutputTrees"/>
+              <Property name="DimensionSpacing"/>
+              <Property name="MergeTreePlanarLayout"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
+            <PropertyGroup panel_widget="Line" label="Output options">  
+              <Property name="RescaleTreesIndividually"/>
+            </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Reconstructed Sequence" index="0" id="port0" />
+                <OutputPort name="Matching" index="1" id="port1" />
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Time-varying Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

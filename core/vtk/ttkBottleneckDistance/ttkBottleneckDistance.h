@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the bottleneckDistance processing package.
 ///
-/// VTK wrapping code for the @BottleneckDistance package.
+/// VTK wrapping code for the ttk::BottleneckDistance package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -65,10 +65,10 @@ public:
   vtkSetMacro(UsePersistenceMetric, bool);
   vtkGetMacro(UsePersistenceMetric, bool);
 
-  vtkSetMacro(WassersteinMetric, std::string);
+  vtkSetMacro(WassersteinMetric, const std::string &);
   vtkGetMacro(WassersteinMetric, std::string);
 
-  vtkSetMacro(DistanceAlgorithm, std::string);
+  vtkSetMacro(DistanceAlgorithm, const std::string &);
   vtkGetMacro(DistanceAlgorithm, std::string);
 
   vtkSetMacro(PVAlgorithm, int);

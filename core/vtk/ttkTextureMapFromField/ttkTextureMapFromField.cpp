@@ -34,7 +34,7 @@ int ttkTextureMapFromField::FillOutputPortInformation(int port,
   return 0;
 };
 
-int ttkTextureMapFromField::RequestData(vtkInformation *request,
+int ttkTextureMapFromField::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

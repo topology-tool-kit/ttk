@@ -43,8 +43,7 @@ namespace ttk {
     bool isIncreasingOrder_{};
 
   public:
-    SweepCmp() {
-    }
+    SweepCmp() = default;
 
     SweepCmp(bool isIncreasingOrder) : isIncreasingOrder_{isIncreasingOrder} {
     }
@@ -69,22 +68,19 @@ namespace ttk {
   public:
     TopologicalSimplification();
 
-    template <typename dataType, typename triangulationType>
+    template <typename triangulationType>
     int getCriticalType(SimplexId vertexId,
-                        const dataType *const scalars,
                         const SimplexId *const offsets,
                         const triangulationType &triangulation) const;
 
-    template <typename dataType, typename triangulationType>
-    int getCriticalPoints(const dataType *const scalars,
-                          const SimplexId *const offsets,
+    template <typename triangulationType>
+    int getCriticalPoints(const SimplexId *const offsets,
                           std::vector<SimplexId> &minList,
                           std::vector<SimplexId> &maxList,
                           const triangulationType &triangulation) const;
 
-    template <typename dataType, typename triangulationType>
-    int getCriticalPoints(const dataType *const scalars,
-                          const SimplexId *const offsets,
+    template <typename triangulationType>
+    int getCriticalPoints(const SimplexId *const offsets,
                           std::vector<SimplexId> &minList,
                           std::vector<SimplexId> &maxList,
                           std::vector<bool> &blackList,
@@ -137,10 +133,9 @@ namespace ttk {
 // if the package is a pure template typename, uncomment the following line
 // #include                  <TopologicalSimplification.cpp>
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalType(
   SimplexId vertex,
-  const dataType *const scalars,
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
@@ -168,9 +163,8 @@ int ttk::TopologicalSimplification::getCriticalType(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalPoints(
-  const dataType *const scalars,
   const SimplexId *const offsets,
   std::vector<SimplexId> &minima,
   std::vector<SimplexId> &maxima,
@@ -182,7 +176,7 @@ int ttk::TopologicalSimplification::getCriticalPoints(
 #pragma omp parallel for
 #endif
   for(SimplexId k = 0; k < vertexNumber_; ++k)
-    type[k] = getCriticalType<dataType>(k, scalars, offsets, triangulation);
+    type[k] = getCriticalType(k, offsets, triangulation);
 
   for(SimplexId k = 0; k < vertexNumber_; ++k) {
     if(type[k] < 0)
@@ -193,9 +187,8 @@ int ttk::TopologicalSimplification::getCriticalPoints(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalPoints(
-  const dataType *const scalars,
   const SimplexId *const offsets,
   std::vector<SimplexId> &minima,
   std::vector<SimplexId> &maxima,
@@ -207,7 +200,7 @@ int ttk::TopologicalSimplification::getCriticalPoints(
 #endif
   for(SimplexId k = 0; k < vertexNumber_; ++k) {
     if(considerIdentifierAsBlackList_ xor extrema[k]) {
-      type[k] = getCriticalType<dataType>(k, scalars, offsets, triangulation);
+      type[k] = getCriticalType(k, offsets, triangulation);
     }
   }
 
@@ -294,8 +287,8 @@ int ttk::TopologicalSimplification::execute(
   std::vector<SimplexId> authorizedMaxima;
   std::vector<bool> authorizedExtrema(vertexNumber_, false);
 
-  getCriticalPoints(outputScalars, offsets, authorizedMinima, authorizedMaxima,
-                    extrema, triangulation);
+  getCriticalPoints(
+    offsets, authorizedMinima, authorizedMaxima, extrema, triangulation);
 
   this->printMsg("Maintaining " + std::to_string(constraintNumber)
                    + " constraints (" + std::to_string(authorizedMinima.size())
@@ -391,7 +384,7 @@ int ttk::TopologicalSimplification::execute(
     bool needForMoreIterations{false};
     std::vector<SimplexId> minima;
     std::vector<SimplexId> maxima;
-    getCriticalPoints(outputScalars, offsets, minima, maxima, triangulation);
+    getCriticalPoints(offsets, minima, maxima, triangulation);
 
     if(maxima.size() > authorizedMaxima.size())
       needForMoreIterations = true;

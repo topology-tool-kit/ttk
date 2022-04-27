@@ -5,12 +5,7 @@
 ///
 ///\brief TTK base package.
 
-#ifndef _BASECLASS_H
-#define _BASECLASS_H
-
-#ifdef TTK_ENABLE_OPENMP
-#include <omp.h>
-#endif
+#pragma once
 
 #ifdef _WIN32
 // enable the `and` and `or` keywords on MSVC
@@ -18,6 +13,7 @@
 #endif // _WIN32
 
 #include <DataTypes.h>
+#include <OpenMP.h>
 
 #if defined(_MSC_VER) && defined(TTK_ENABLE_SHARED_BASE_LIBRARIES)
 #if defined(common_EXPORTS)
@@ -31,6 +27,31 @@
 #define COMMON_EXPORTS
 #endif // _MSC_VER && TTK_ENABLE_SHARED_BASE_LIBRARIES
 
+/**
+ * @brief Mark function/method parameters that are not used in the
+ * function body at all.
+ *
+ * This is the TTK version of vtkNotUsed. It silences compiler
+ * warnings about unused parameters when those parameters are not used
+ * in the current function/method body but still necessary in the
+ * function/method signature (for instance when implementing a
+ * particular API with inheritance).
+ *
+ * Basically, it removes the name of the parameter at its definition
+ * site (similar to commenting the parameter name).
+ */
+#define ttkNotUsed(x)
+
+/**
+ * @brief Force the compiler to use the function/method parameter.
+ *
+ * Some function/method parameters are used under some `#ifdef`
+ * preprocessor conditions. This macro introduce a no-op statement
+ * that uses those parameters, to silence compiler warnings in the
+ * `#else` blocks. It can be inserted anywhere in the function body.
+ */
+#define TTK_FORCE_USE(x) (void)(x)
+
 namespace ttk {
 
   COMMON_EXPORTS extern int globalThreadNumber_;
@@ -41,11 +62,11 @@ namespace ttk {
   public:
     BaseClass();
 
-    virtual ~BaseClass(){};
+    virtual ~BaseClass() = default;
 
     int getThreadNumber() const {
       return threadNumber_;
-    };
+    }
 
     virtual int setThreadNumber(const int threadNumber) {
       threadNumber_ = threadNumber;
@@ -67,5 +88,3 @@ namespace ttk {
     Wrapper *wrapper_;
   };
 } // namespace ttk
-
-#endif // _BASECLASS_H

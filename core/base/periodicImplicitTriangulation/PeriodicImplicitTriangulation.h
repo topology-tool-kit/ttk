@@ -10,8 +10,7 @@
 /// \sa ttk::Triangulation::setPeriodicBoundaryConditions
 ///
 
-#ifndef _PERIODICIMPLICITTRIANGULATION_H
-#define _PERIODICIMPLICITTRIANGULATION_H
+#pragma once
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -20,11 +19,20 @@
 
 namespace ttk {
 
-  class PeriodicImplicitTriangulation final : public AbstractTriangulation {
+  class PeriodicImplicitTriangulation : public AbstractTriangulation {
 
   public:
     PeriodicImplicitTriangulation();
-    ~PeriodicImplicitTriangulation();
+    ~PeriodicImplicitTriangulation() override;
+
+    PeriodicImplicitTriangulation(const PeriodicImplicitTriangulation &)
+      = default;
+    PeriodicImplicitTriangulation(PeriodicImplicitTriangulation &&) = default;
+    PeriodicImplicitTriangulation &
+      operator=(const PeriodicImplicitTriangulation &)
+      = default;
+    PeriodicImplicitTriangulation &operator=(PeriodicImplicitTriangulation &&)
+      = default;
 
     int getCellEdgeInternal(const SimplexId &cellId,
                             const int &id,
@@ -49,12 +57,12 @@ namespace ttk {
                                 const int &id,
                                 SimplexId &triangleId) const override;
 
-    SimplexId
-      getCellTriangleNumberInternal(const SimplexId &cellId) const override {
+    SimplexId getCellTriangleNumberInternal(
+      const SimplexId &ttkNotUsed(cellId)) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
-    };
+    }
 
     const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() override;
@@ -69,7 +77,7 @@ namespace ttk {
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
-    };
+    }
 
     int
       TTK_TRIANGULATION_INTERNAL(getEdgeLink)(const SimplexId &edgeId,
@@ -112,19 +120,19 @@ namespace ttk {
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
       return cellNumber_;
-    };
+    }
 
     SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
-    };
+    }
 
     SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
-    };
+    }
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const override {
       return vertexNumber_;
-    };
+    }
 
     int getTetrahedronEdge(const SimplexId &tetId,
                            const int &id,
@@ -156,7 +164,7 @@ namespace ttk {
                                 SimplexId &edgeId) const override;
 
     SimplexId getTriangleEdgeNumberInternal(
-      const SimplexId &triangleId) const override {
+      const SimplexId &ttkNotUsed(triangleId)) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
@@ -268,7 +276,7 @@ namespace ttk {
 
     inline bool isEmpty() const override {
       return !vertexNumber_;
-    };
+    }
 
     bool TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
       const SimplexId &triangleId) const override;
@@ -286,10 +294,10 @@ namespace ttk {
                      const int &yDim,
                      const int &zDim);
 
-    int preconditionVerticesInternal();
-    int preconditionEdgesInternal() override;
-    int preconditionTrianglesInternal() override;
-    int preconditionTetrahedronsInternal();
+    virtual int preconditionVerticesInternal() = 0;
+    int preconditionEdgesInternal() override = 0;
+    int preconditionTrianglesInternal() override = 0;
+    virtual int preconditionTetrahedronsInternal() = 0;
 
     inline int preconditionCellsInternal() {
       if(dimensionality_ == 3) {
@@ -297,6 +305,15 @@ namespace ttk {
       } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
         hasPreconditionedTriangles_ = true;
         return this->preconditionTrianglesInternal();
+      }
+      return 0;
+    }
+
+    inline int preconditionVerticesAndCells() {
+      if(!this->hasPreconditionedVerticesAndCells_) {
+        this->preconditionVerticesInternal();
+        this->preconditionCellsInternal();
+        this->hasPreconditionedVerticesAndCells_ = true;
       }
       return 0;
     }
@@ -313,8 +330,8 @@ namespace ttk {
       getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
       getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
 
-      const auto &ind0 = vertexCoords_[v0];
-      const auto &ind1 = vertexCoords_[v1];
+      const auto &ind0 = this->getVertexCoords(v0);
+      const auto &ind1 = this->getVertexCoords(v1);
 
       for(int i = 0; i < dimensionality_; ++i) {
         if(ind1[i] == nbvoxels_[i]) {
@@ -348,9 +365,9 @@ namespace ttk {
       getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
       getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
 
-      const auto &ind0 = vertexCoords_[v0];
-      const auto &ind1 = vertexCoords_[v1];
-      const auto &ind2 = vertexCoords_[v2];
+      const auto &ind0 = this->getVertexCoords(v0);
+      const auto &ind1 = this->getVertexCoords(v1);
+      const auto &ind2 = this->getVertexCoords(v2);
 
       for(int i = 0; i < dimensionality_; ++i) {
         if(ind0[i] == nbvoxels_[i]) {
@@ -394,10 +411,10 @@ namespace ttk {
       getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
       getVertexPointInternal(v3, p3[0], p3[1], p3[2]);
 
-      const auto &ind0 = vertexCoords_[v0];
-      const auto &ind1 = vertexCoords_[v1];
-      const auto &ind2 = vertexCoords_[v2];
-      const auto &ind3 = vertexCoords_[v3];
+      const auto &ind0 = this->getVertexCoords(v0);
+      const auto &ind1 = this->getVertexCoords(v1);
+      const auto &ind2 = this->getVertexCoords(v2);
+      const auto &ind3 = this->getVertexCoords(v3);
 
       for(int i = 0; i < dimensionality_; ++i) {
         if(ind0[i] == nbvoxels_[i]) {
@@ -464,15 +481,6 @@ namespace ttk {
     SimplexId mod_[2];
     SimplexId div_[2];
 
-    // for  every vertex, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
-    // for every edge, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
-    // for every triangle, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
-    // for every tetrahedron, its coordinates on the grid
-    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
-
     enum class EdgePosition : char {
       //    e--------f
       //   /|       /|
@@ -531,17 +539,22 @@ namespace ttk {
       BOTTOM_2D, // bcd
     };
 
-    // for every edge, its position on the grid
-    std::vector<EdgePosition> edgePositions_{};
-    // for every triangle, its position on the grid
-    std::vector<TrianglePosition> trianglePositions_{};
-
-    // cache some edge vertex computation wrt acceleration
-    std::vector<SimplexId> edgeVertexAccelerated_{};
+    bool hasPreconditionedVerticesAndCells_{false};
 
     // acceleration functions
     int checkAcceleration();
     bool isPowerOfTwo(unsigned long long int v, unsigned long long int &r);
+
+    virtual std::array<SimplexId, 3>
+      getVertexCoords(const SimplexId v) const = 0;
+    virtual EdgePosition getEdgePosition(const SimplexId e) const = 0;
+    virtual std::array<SimplexId, 3> getEdgeCoords(const SimplexId e) const = 0;
+    virtual TrianglePosition getTrianglePosition(const SimplexId t) const = 0;
+    virtual std::array<SimplexId, 3>
+      getTriangleCoords(const SimplexId t) const = 0;
+    virtual std::array<SimplexId, 3>
+      getTetrahedronCoords(const SimplexId t) const = 0;
+    virtual SimplexId getEdgeVertexAccelerated(const SimplexId e) const = 0;
 
     //\cond
     // 2D //
@@ -697,6 +710,8 @@ namespace ttk {
     //\endcond
   };
 } // namespace ttk
+
+/// @cond
 
 inline void
   ttk::PeriodicImplicitTriangulation::vertexToPosition2d(const SimplexId vertex,
@@ -1359,10 +1374,10 @@ inline ttk::SimplexId
       return p[0] * 2 + p[1] * tshift_[0] + p[2] * tshift_[1];
     case 30:
       return tsetshift_[3] + (p[0] - 1) * 2 + (p[1] - 1) * tshift_[8]
-             + (p[2] - 1) * tshift_[9] + 1 + wrapXLeft + wrapZBack;
+             + (p[2] - 1) * tshift_[9] + 1 + wrapXLeft + wrapYTop + wrapZBack;
     case 31:
       return tsetshift_[0] + (p[0] - 1) * 2 + p[1] * tshift_[2]
-             + (p[2] - 1) * tshift_[3] + 1 + wrapXLeft + wrapYTop + wrapZBack;
+             + (p[2] - 1) * tshift_[3] + 1 + wrapXLeft + wrapZBack;
     case 32:
       return tsetshift_[0] + p[0] * 2 + p[1] * tshift_[2] + p[2] * tshift_[3];
     case 33:
@@ -3369,4 +3384,6 @@ inline ttk::SimplexId
   return -1;
 }
 
-#endif // _PERIODICIMPLICITTRIANGULATION_H
+#include <PeriodicPreconditions.h>
+
+/// @endcond

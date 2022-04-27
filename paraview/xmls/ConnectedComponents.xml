@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ConnectedComponents" class="ttkConnectedComponents" label="TTK ConnectedComponents">
+      <Documentation long_help="TTK connectedComponents" short_help="TTK connectedComponents">
+        This filter consumes a scalar field with a feature mask and computes for each edge connected group of vertices with a non-background mask value a so-called connected component via flood-filling, where the backgroud is masked with values smaller-equal zero. The computed components store the size, seed, and center of mass of each component. The flag UseSeedIdAsComponentId controls if the resulting segmentation is either labeled by the index of the component, or by its seed location (which can be used as a deterministic component label).
+      </Documentation>
+
+      <InputProperty name="Segmentation" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain attribute_type="point" name="segmantation_point_arrays" number_of_components="1" optional="1" />
+        <Documentation>A vtkDataSet.</Documentation>
+      </InputProperty>
+
+      <OutputPort index="0" id="port0" name="Segmentation" />
+      <OutputPort index="1" id="port1" name="Components" />
+
+      <StringVectorProperty name="FeatureMask" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="None">
+        <ArrayListDomain name="array_list" input_domain_name="segmantation_point_arrays" none_string="None">
+          <RequiredProperties>
+            <Property function="Input" name="Segmentation" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>Feature Mask where values smaller equal than zero correspond to the background.</Documentation>
+      </StringVectorProperty>
+      <DoubleVectorProperty name="BackgroundThreshold" command="SetBackgroundThreshold" number_of_elements="1" default_values="0">
+        <Documentation>Values of the mask smaller or equal to this threshold are considered background.</Documentation>
+      </DoubleVectorProperty>
+      <IntVectorProperty name="SegmentationSize" command="SetAugmentSegmentationWithComponentSize" number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool" />
+        <Documentation>If yes the segmentation will have an additional point data array that records for each vertex the size of its corresponding component.</Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="FeatureMask" />
+        <Property name="BackgroundThreshold" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SegmentationSize" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

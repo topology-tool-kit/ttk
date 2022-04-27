@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkCinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
+            <Documentation 
+                long_help="TTK CinemaQuery" 
+                short_help="TTK CinemaQuery">
+                This filter evaluates a SQL statement on multiple InputTables.
+                
+                Online examples:
+                    
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+            
+            </Documentation>
+
+            <InputProperty clean_command="RemoveAllInputs" name="InputTable" command="AddInputConnection" multiple_input="1">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkTable" />
+                </DataTypeDomain>
+                <Documentation>Input vtkTables to run the SQL statement on.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="SQLStatement" label="SQL Statement" command="SetSQLStatement" number_of_elements="1" default_values="SELECT * FROM InputTable0">
+                <Documentation>SQL Statement.</Documentation>
+                <Hints>
+                    <Widget type="multi_line" />
+                </Hints>
+            </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ExcludeColumnsWithRegexp"
+        label="Exclude columns with a Regexp"
+        command="SetExcludeColumnsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Allow to exclude selected table columns from being used by
+          the query. The intended use case is when the input table has
+          more columns than allowed by SQLite.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ExcludeColumnsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen
+            columns. Only matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        <Property name="SQLStatement" />
+        <Property name="ExcludeColumnsWithRegexp" />
+        <Property name="Regexp" />
+      </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

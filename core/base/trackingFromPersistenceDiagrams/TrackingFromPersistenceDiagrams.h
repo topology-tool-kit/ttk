@@ -15,7 +15,7 @@ namespace ttk {
   public:
     TrackingFromPersistenceDiagrams();
 
-    ~TrackingFromPersistenceDiagrams();
+    ~TrackingFromPersistenceDiagrams() override;
 
     /// Execute the package.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -27,8 +27,8 @@ namespace ttk {
       int i,
       std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
       std::vector<std::vector<matchingTuple>> &outputMatchings,
-      std::string algorithm,
-      std::string wasserstein,
+      const std::string &algorithm,
+      const std::string &wasserstein,
       double tolerance,
       bool is3D,
       double alpha,
@@ -120,11 +120,11 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   int i,
   std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
   std::vector<std::vector<matchingTuple>> &outputMatchings,
-  std::string algorithm,
-  std::string wasserstein,
+  const std::string &algorithm,
+  const std::string &wasserstein,
   double tolerance,
-  bool is3D,
-  double alpha,
+  bool ttkNotUsed(is3D),
+  double ttkNotUsed(alpha),
   double px,
   double py,
   double pz,

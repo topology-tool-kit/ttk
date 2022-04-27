@@ -1,0 +1,156 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkPersistenceCurve"
+      class="ttkPersistenceCurve"
+      label="TTK PersistenceCurve">
+      <Documentation
+        long_help="TTK plugin for the computation of persistence curves."
+        short_help="TTK plugin for the computation of persistence curves.">
+        TTK plugin for the computation of persistence curves.
+
+        This plugin computes the list of extremum-saddle pairs and computes the
+number of pairs as a function of persistence (i.e. the number of pairs
+whose persistence is higher than a threshold). The plugin produces tables.
+
+A good strategy to visualize these curves is to use the "Line Chart View"
+rendering type of ParaView, and to use the field "Persistence" as an X axis,
+and only display the "Number of Pairs".
+
+Such curves provide useful visual clues in order to fine-tune persistence
+simplification thresholds.
+
+See also ContourForests, PersistenceDiagram, ScalarFieldCriticalPoints, TopologicalSimplification.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+
+      </Documentation>
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+          TTK assumes that the input dataset is made of only one connected component.
+          If it's not the case, you can use the filter "Connectivity" (and select "Extract Largest Region").
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="ScalarFieldNew"
+        label="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        >
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         name="ForceInputOffsetScalarField"
+         command="SetForceInputOffsetScalarField"
+         label="Force Input Offset Field"
+         number_of_elements="1"
+         panel_visibility="advanced"
+         default_values="0">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+         </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="InputOffsetScalarFieldNameNew"
+        label="Input Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="1"
+          >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         name="SaddleConnectors"
+         command="SetComputeSaddleConnectors"
+         label="Compute saddle-saddle pairs (SLOW!)"
+         number_of_elements="1"
+         default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Add saddle-saddle pairs in the diagram (SLOW!).
+         </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SaddleConnectors" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="Minimum-saddle pairs" index="0" id="port0" />
+      <OutputPort name="Saddle-saddle pairs" index="1" id="port1" />
+      <OutputPort name="Saddle-maximum pairs" index="2" id="port2" />
+      <OutputPort name="All pairs" index="3" id="port3" />
+
+      <Hints>
+        <View type="XYChartView" />
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

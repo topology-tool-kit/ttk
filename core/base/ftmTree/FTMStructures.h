@@ -6,8 +6,7 @@
 ///
 ///\brief TTK structures for the contour tree
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#pragma once
 
 #include <forward_list>
 #include <iterator>
@@ -51,11 +50,17 @@ namespace ttk {
       // [size-1] -> vertex id of the global maximum
       std::vector<SimplexId> sortedVertices{};
 
-      bool isLower(SimplexId a, SimplexId b) const {
-        return offsets[a] < offsets[b];
+      inline bool isLower(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] < this->offsets[b];
       }
-      bool isHigher(SimplexId a, SimplexId b) const {
-        return offsets[a] > offsets[b];
+      inline bool isEqLower(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] <= this->offsets[b];
+      }
+      inline bool isHigher(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] > this->offsets[b];
+      }
+      inline bool isEqHigher(const SimplexId a, const SimplexId b) const {
+        return this->offsets[a] >= this->offsets[b];
       }
     };
 
@@ -77,7 +82,7 @@ namespace ttk {
         vertex = v;
       }
 
-      SimplexId getNextMinVertex(void) {
+      SimplexId getNextMinVertex() {
         vertex = propagation.top();
         propagation.pop();
         return vertex;
@@ -156,5 +161,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: STRUCTURES_H */

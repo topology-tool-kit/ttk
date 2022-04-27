@@ -4,6 +4,7 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
@@ -29,9 +30,6 @@ vtkStandardNewMacro(ttkHelloWorld);
 ttkHelloWorld::ttkHelloWorld() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
-}
-
-ttkHelloWorld::~ttkHelloWorld() {
 }
 
 /**
@@ -85,7 +83,7 @@ int ttkHelloWorld::FillOutputPortInformation(int port, vtkInformation *info) {
  *     2) The output objects are already initialized based on the information
  *        provided by the FillOutputPortInformation method.
  */
-int ttkHelloWorld::RequestData(vtkInformation *request,
+int ttkHelloWorld::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
 

@@ -14,8 +14,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef SEGMENTATION_H_
-#define SEGMENTATION_H_
+#pragma once
 
 #include <forward_list>
 #include <vector>
@@ -31,21 +30,21 @@ namespace ttk {
     public:
       Segment(const bool order = true);
 
-      bool isAscending(void) const;
+      bool isAscending() const;
 
       void sort(const Scalars *s);
 
       // std::vector like
       void emplace_back(const SimplexId &v);
-      void clear(void);
+      void clear();
       void norm_next(segmentIterator &it);
 
       SimplexId &operator[](size_t idx);
       const SimplexId &operator[](size_t idx) const;
 
       // custom iterator to cross the segment in sorted order
-      sorted_iterator sbegin(void);
-      sorted_iterator send(void);
+      sorted_iterator sbegin();
+      sorted_iterator send();
 
     private:
       std::vector<vertex> vertices_;
@@ -55,8 +54,8 @@ namespace ttk {
     // All the segments of the mesh, like a std::vector<Segment>
     class Segments {
     public:
-      idSegment size(void) const;
-      void clear(void);
+      idSegment size() const;
+      void clear();
       Segment &operator[](size_t idx);
       const Segment &operator[](size_t idx) const;
 
@@ -85,5 +84,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: SEGMENTATION_H_ */

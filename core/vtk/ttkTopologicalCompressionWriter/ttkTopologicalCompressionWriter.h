@@ -5,6 +5,12 @@
 ///
 /// \brief VTK-filter that wraps the topologicalCompressionWriter processing
 /// package.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/">Persistence-Driven
+///   Compression example</a> \n
+///
 
 #pragma once
 
@@ -35,8 +41,8 @@ public:
   vtkGetMacro(MaximumError, double);
   vtkSetMacro(MaximumError, double);
 
-  vtkGetMacro(ZFPBitBudget, double);
-  vtkSetMacro(ZFPBitBudget, double);
+  vtkGetMacro(ZFPTolerance, double);
+  vtkSetMacro(ZFPTolerance, double);
 
   vtkGetMacro(ZFPOnly, bool);
   vtkSetMacro(ZFPOnly, bool);
@@ -51,7 +57,7 @@ public:
   vtkSetMacro(NbVertices, int);
 
   vtkGetMacro(SQMethod, std::string);
-  vtkSetMacro(SQMethod, std::string);
+  vtkSetMacro(SQMethod, const std::string &);
 
   vtkSetMacro(Subdivide, bool);
   vtkGetMacro(Subdivide, bool);
@@ -77,7 +83,7 @@ public:
 protected:
   // Regular writer management.
   ttkTopologicalCompressionWriter();
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   // Writer parameters.

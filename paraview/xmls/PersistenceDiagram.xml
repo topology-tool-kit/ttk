@@ -1,0 +1,374 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistenceDiagram"
+        class="ttkPersistenceDiagram"
+        label="TTK PersistenceDiagram">
+      <Documentation
+          long_help="TTK plugin for the computation of persistence diagrams."
+          short_help="TTK plugin for the computation of persistence diagrams.">
+        TTK plugin for the computation of persistence diagrams.
+
+        This plugin computes the persistence diagram of the extremum-saddle pairs
+        of an input scalar field. The X-coordinate of each pair corresponds to its
+        birth, while its smallest and highest Y-coordinates correspond to its birth
+        and death respectively.
+
+        In practice, the diagram is represented by a vtkUnstructuredGrid. Each
+        vertex of this mesh represent a critical point of the input data. It is
+        associated with point data (vertexId, critical type). Each vertical edge
+        of this mesh represent a persistence pair. It is associated with cell data
+        (persistence of the pair, critical index of the extremum of the pair).
+        The diagonal of the diagram can be filtered out by considering its
+        PairIdentifier value (set at -1).
+
+        Persistence diagrams are useful and stable concise representations of the
+        topological features of a data-set. It is useful to fine-tune persistence
+        thresholds for topological simplification or for fast similarity
+        estimations for instance.
+
+        Four backends are available for the computation of the persistence diagram:
+
+        1) FTM
+
+        Related publication:
+        'Task-based Augmented Merge Trees with Fibonacci Heaps',
+        Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny,
+        Proc. of IEEE LDAV 2017.
+
+        2) A progressive approach
+
+        Related publication:
+        'A Progressive Approach to Scalar Field Topology'
+        Jules Vidal, Pierre Guillou, Julien Tierny
+        IEEE Transaction on Visualization and Computer Graphics, 2021
+
+        This approach necessitates the input data to be defined on an implicit regular grid.
+        It processes the data using a multiresolution hierarchical
+        representation in a coarse-to-fine fashion.
+        Set both the Start and End resolution levels to -1 to execute in
+        non-progressive mode on the finest level, i.e. the original grid.
+
+        3) Persistent Simplex
+
+        This is a textbook (and very slow) algorithm, described in
+        "Algorithm and Theory of Computation Handbook (Second Edition)
+        - Special Topics and Techniques" by Atallah and Blanton on
+        page 97.
+
+        4) Approximate Approach
+
+        Related publication
+        "Fast Approximation of Persistence Diagrams with Guarantees"
+        Jules Vidal, Julien Tierny
+        IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021.
+
+        This approach computes an approximation of the persistence diagram of the extremum-saddle pairs
+        of an input scalar field. It necessitates the input data to be defined on an implicit regular grid.
+
+        The approximation comes with a user-controlled error on the Bottleneck distance to the exact diagram.
+        The tolerance on the relative Bottleneck error is set using the parameter "Error".
+        An error of 0.05 corresponds to a maximal relative Bottleneck error of 5%.
+
+        See ttkPersistenceDiagramApproximation for more outputs, such as the approximated scalar field and visual cues
+        about the diagram approximation.
+
+
+        See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
+        TopologicalSimplification.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
+
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/        
+        
+        - https://topology-tool-kit.github.io/examples/ctBones/
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering0/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering1/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering2/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering3/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering4/
+
+        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+
+        - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
+        
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+                
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+          TTK assumes that the input dataset is made of only one connected component.
+          If it's not the case, you can use the filter "Connectivity" (and select "Extract Largest Region").
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="ScalarFieldNew"
+          label="Scalar Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="ForceInputOffsetScalarField"
+          command="SetForceInputOffsetScalarField"
+          label="Force Input Offset Field"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="InputOffsetScalarFieldNameNew"
+          label="Input Offset Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="1"
+            >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ForceInputOffsetScalarField"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+       <IntVectorProperty
+          name="BackEnd"
+          label="Backend"
+          command="SetBackEnd"
+          number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced" >
+         <EnumerationDomain name="enum">
+          <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
+          <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
+          <Entry value="2" text="Persistent Simplex (Zomorodian 2010)"/>
+          <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
+        </EnumerationDomain>
+        <Documentation>
+            Backend for the computation of the persistence diagram.
+            The progressive and approximate approaches only allow the computation of saddle-extremum pairs on regular grids.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StartingResolutionLevel"
+         label="Start resolution level"
+         command="SetStartingResolutionLevel"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced" >
+        <IntRangeDomain name="range" min="-1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="1" />
+        </Hints>
+        <Documentation>
+             Set the starting level of resolution for the progressive approach.
+             Set -1 for the finest level.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StoppingResolutionLevel"
+         label="End resolution level"
+         command="SetStoppingResolutionLevel"
+         number_of_elements="1"
+         default_values="-1"
+         panel_visibility="advanced" >
+        <IntRangeDomain name="range" min="-1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="1" />
+        </Hints>
+        <Documentation>
+             Set the ending level of resolution for the progressive approach.
+             Set -1 for the finest level.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="IsResumable"
+          label="Resumable Computation"
+          command="SetIsResumable"
+          number_of_elements="1"
+          default_values="1"
+         panel_visibility="advanced" >
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Allow resuming computation from a lower resolution
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="Epsilon"
+          label="Error"
+          command="SetEpsilon"
+          number_of_elements="1"
+          default_values="0.05"
+         panel_visibility="advanced" >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="3" />
+        </Hints>
+        <Documentation>
+            Tolerance on the maximal relative Bottleneck error.
+            Corresponds to the parameter Epsilon in the publication.
+            An error of 0.05 denotes a maximal relative error of 5%. 
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+          name="TimeLimit"
+          label="Time Limit (s)"
+          command="SetTimeLimit"
+          number_of_elements="1"
+          default_values="0"
+         panel_visibility="advanced" >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Maximal time of computation for the progressive computation.
+          Set 0 for no time limit.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+         name="SaddleConnectors"
+         command="SetComputeSaddleConnectors"
+         label="Compute saddle-saddle pairs (SLOW!)"
+         number_of_elements="1"
+         default_values="0" panel_visibility="advanced">
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="0" />
+        </Hints>
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Add saddle-saddle pairs in the diagram (SLOW!).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ShowInsideDomain"
+                         label="Embed in Domain"
+                         command="SetShowInsideDomain"
+                         number_of_elements="1"
+                         default_values="0"
+                         panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Embed the persistence pairs in the domain.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+          <Property name="ScalarFieldNew" />
+          <Property name="ForceInputOffsetScalarField"/>
+          <Property name="InputOffsetScalarFieldNameNew"/>
+        <Property name="BackEnd" />
+        <Property name="StartingResolutionLevel" />
+        <Property name="StoppingResolutionLevel" />
+        <Property name="IsResumable" />
+        <Property name="TimeLimit" />
+        <Property name="Epsilon" />
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SaddleConnectors" />
+        <Property name="ShowInsideDomain" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

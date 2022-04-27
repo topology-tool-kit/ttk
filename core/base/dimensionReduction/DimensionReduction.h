@@ -227,6 +227,7 @@ namespace ttk {
     int iso_MaxIteration{300};
     std::string iso_PathMethod{"auto"};
     std::string iso_NeighborsAlgorithm{"auto"};
+    std::string iso_Metric{"euclidean"};
 
     // pca
     bool pca_Copy{true};

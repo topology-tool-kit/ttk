@@ -10,8 +10,7 @@ ttkCinemaDarkroomFXAA::ttkCinemaDarkroomFXAA() : ttkCinemaDarkroomShader() {
   this->setDebugMsgPrefix("CinemaDarkroomFXAA");
 }
 
-ttkCinemaDarkroomFXAA::~ttkCinemaDarkroomFXAA() {
-}
+ttkCinemaDarkroomFXAA::~ttkCinemaDarkroomFXAA() = default;
 
 std::string ttkCinemaDarkroomFXAA::GetVertexShaderCode() {
   return std::string(R"(
@@ -127,7 +126,7 @@ void main() {
   )");
 }
 
-int ttkCinemaDarkroomFXAA::RequestData(vtkInformation *request,
+int ttkCinemaDarkroomFXAA::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

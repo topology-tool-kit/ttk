@@ -1,0 +1,205 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy
+            name="ttkftmtree"
+            class="ttkFTMTree"
+            label="TTK Merge and Contour Tree (FTM)">
+            <Documentation
+              long_help="TTK plugin that efficiently computes the contour tree of
+              scalar data and more."
+              short_help="TTK plugin that efficiently computes the contour tree of
+              scalar data and more.">
+              This plugin takes a scalar field attached as point data to a geometry
+              (either 2D or 3D, either regular grids or triangulations) and computes
+              its contour tree. Several outputs are produced to encode the nodes of
+              the tree (as points in 3D space), the arcs of the tree and the data
+              segmentation.
+
+              Related publication:
+              'Task-based Augmented Merge Trees with Fibonacci Heaps',
+              Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny,
+              Proc. of IEEE LDAV 2017.
+
+              CriticalType:
+              * 0 - minimum,
+              * 1 - 1saddle,
+              * 2 - 2saddle,
+              * 3 - maximum,
+              * 4 - degenerate,
+              * 5 - regular,
+
+              RegionType:
+              * 0 - (x,minimum),
+              * 1 - (x,maximum),
+              * 2 - (1-saddle,1-saddle),
+              * 3 - (2-saddle,2-saddle),
+              * 4 - (1-saddle,2-saddle).
+
+              Online examples:
+
+              - https://topology-tool-kit.github.io/examples/ctBones/
+
+              - https://topology-tool-kit.github.io/examples/dragon/
+
+              - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+              - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+        
+              - https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
+        
+              - https://topology-tool-kit.github.io/examples/interactionSites/
+
+            </Documentation>
+
+            <InputProperty
+                name="Input"
+                command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataSet"/>
+                </DataTypeDomain>
+                <InputArrayDomain name="input_scalars" number_of_components="1" attribute_type="point">
+                    <Property name="Input" function="FieldDataSelection" />
+                </InputArrayDomain>
+                <Documentation>
+                  Data-set to process.
+                  TTK assumes that the input dataset is made of only one connected component.
+                  If it's not the case, you can use the filter "Connectivity" (and select "Extract Largest Region").
+                </Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="Scalar Field"
+                                  command="SetInputArrayToProcess"
+                                  element_types="0 0 0 0 2"
+                                  number_of_elements="5"
+                                  default_values="0"
+                                  >
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>The scalar array that will be used to compute the tree.</Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty
+                name="ForceInputOffsetScalarField"
+                command="SetForceInputOffsetScalarField"
+                label="Force Input Offset Scalar Field"
+                number_of_elements="1"
+                panel_visibility="advanced"
+                default_values="0">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Check this box to force the usage of a specific input
+                    scalar field as vertex offset (used to disambiguate flat
+                    plateaus).
+                </Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty
+                name="Input Offset Field"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="1"
+                >
+              <ArrayListDomain
+                name="array_list"
+                default_values="0">
+                <RequiredProperties>
+                  <Property name="Input" function="Input" />
+                </RequiredProperties>
+              </ArrayListDomain>
+              <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator"
+                  mode="visibility"
+                  property="ForceInputOffsetScalarField"
+                  value="1" />
+              </Hints>
+              <Documentation>
+                Select the scalar field to use as a vertex offset
+                (used to disambiguate flat plateaus).
+              </Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="Tree Type" command="SetTreeType"
+                number_of_elements="1" default_values="2">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Join Tree"/>
+                    <Entry value="1" text="Split Tree"/>
+                    <Entry value="2" text="Contour Tree"/>
+                </EnumerationDomain>
+                <Documentation>
+                    0 is JT, 1 is ST, 2 is CT
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="SuperArcSamplingLevel"
+                command="SetSuperArcSamplingLevel"
+                label="Arc Sampling"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="default">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>
+                    Super Arc Sampling Level.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="NormalizeId"
+                command="SetWithNormalize"
+                label="Deterministic arc and node identifiers"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                  Force the deterministic generation of
+arc and node identifiers across distinct runs.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="AdvancedStats"
+                command="SetWithAdvStats"
+                label="Advanced Statistics"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                  Extra statistics on arcs and nodes (vertex numbers, distances
+between nodes, ...)
+                </Documentation>
+            </IntVectorProperty>
+
+            ${DEBUG_WIDGETS}
+
+            <PropertyGroup panel_widget="Line" label="Input options">
+                <Property name="Scalar Field"/>
+                <Property name="ForceInputOffsetScalarField"/>
+                <Property name="Input Offset Field"/>
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Output options">
+                <Property name="Tree Type"/>
+                <Property name="SuperArcSamplingLevel"/>
+                <Property name="NormalizeId" />
+                <Property name="AdvancedStats" />
+            </PropertyGroup>
+
+            <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+            <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+            <OutputPort name="Segmentation" index="2" id="port2"/>
+
+            <Hints>
+                <ShowInMenu category="TTK - Scalar Data" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

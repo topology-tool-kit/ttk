@@ -8,8 +8,7 @@
 ttk::CinemaQuery::CinemaQuery() {
   this->setDebugMsgPrefix("CinemaQuery");
 }
-ttk::CinemaQuery::~CinemaQuery() {
-}
+ttk::CinemaQuery::~CinemaQuery() = default;
 
 int ttk::CinemaQuery::execute(
   const std::vector<std::string> &sqlTableDefinitions,
@@ -36,7 +35,7 @@ int ttk::CinemaQuery::execute(
 
   // SQLite Variables
   sqlite3 *db;
-  char *zErrMsg = 0;
+  char *zErrMsg = nullptr;
   int rc;
 
   // Create Temporary Database
@@ -48,13 +47,14 @@ int ttk::CinemaQuery::execute(
     // Initialize DB in memory
     rc = sqlite3_open(":memory:", &db);
     if(rc != SQLITE_OK) {
-      this->printErr(sqlite3_errmsg(db));
+      this->printErr("Creating database: " + std::string{sqlite3_errmsg(db)});
       return 0;
     }
 
     // Create table
     for(auto &sqlTableDefinition : sqlTableDefinitions) {
-      rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
+      rc = sqlite3_exec(
+        db, sqlTableDefinition.data(), nullptr, nullptr, &zErrMsg);
       if(rc != SQLITE_OK) {
         this->printErr("Create table: " + std::string{zErrMsg});
 
@@ -67,7 +67,8 @@ int ttk::CinemaQuery::execute(
 
     // Fill table
     for(auto &sqlInsertStatement : sqlInsertStatements) {
-      rc = sqlite3_exec(db, sqlInsertStatement.data(), nullptr, 0, &zErrMsg);
+      rc = sqlite3_exec(
+        db, sqlInsertStatement.data(), nullptr, nullptr, &zErrMsg);
       if(rc != SQLITE_OK) {
         this->printErr("Insert values: " + std::string{zErrMsg});
 
@@ -87,7 +88,7 @@ int ttk::CinemaQuery::execute(
 
     sqlite3_stmt *sqlStatement;
 
-    if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, NULL)
+    if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, nullptr)
        != SQLITE_OK) {
       this->printErr("Query: " + std::string{sqlite3_errmsg(db)});
 
@@ -124,7 +125,7 @@ int ttk::CinemaQuery::execute(
       }
 
       if(rc != SQLITE_DONE) {
-        this->printErr(sqlite3_errmsg(db));
+        this->printErr("Fetching result: " + std::string{sqlite3_errmsg(db)});
 
         sqlite3_close(db);
         return 0;
@@ -146,7 +147,7 @@ int ttk::CinemaQuery::execute(
 
     // Print status
     if(rc != SQLITE_OK) {
-      this->printErr(sqlite3_errmsg(db));
+      this->printErr("Closing database:" + std::string{sqlite3_errmsg(db)});
       return 0;
     } else {
       this->printMsg("Closing database", 1, timer.getElapsedTime());
@@ -156,7 +157,14 @@ int ttk::CinemaQuery::execute(
   return 1;
 
 #else
+  TTK_FORCE_USE(sqlTableDefinitions);
+  TTK_FORCE_USE(sqlInsertStatements);
+  TTK_FORCE_USE(sqlQuery);
+  TTK_FORCE_USE(resultCSV);
+  TTK_FORCE_USE(csvNColumns);
+  TTK_FORCE_USE(csvNRows);
+
   this->printErr("This filter requires Sqlite3");
   return 0;
-#endif
+#endif // TTK_ENABLE_SQLITE3
 }

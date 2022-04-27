@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkDepthImageBasedGeometryApproximation" class="ttkDepthImageBasedGeometryApproximation" label="TTK DepthImageBasedGeometryApproximation">
+            <Documentation long_help="TTK depthImageBasedGeometryApproximation" short_help="TTK depthImageBasedGeometryApproximation">
+                This filter approximates the geometry that is depicted by a set of depth images.
+
+                Related publication:
+
+                'VOIDGA: A View-Approximation Oriented Image Database Generation Approach', Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth. IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
+                
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/geometryApproximation/
+
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>A vtkMultiBlockDataSet containing a set of depth images represented by vtkImagedata objects.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="DepthArray" label="Depth Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>A scalar array that contains depth values.</Documentation>
+            </StringVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="DepthArray" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

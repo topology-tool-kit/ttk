@@ -28,13 +28,6 @@
 #pragma once
 
 // standard includes
-#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-
 #include <array>
 #include <queue>
 
@@ -87,7 +80,7 @@ namespace ttk {
       const std::vector<std::pair<std::pair<double, double>,
                                   std::pair<double, double>>> &edgeList,
       const std::vector<SimplexId> &seedTetList,
-      const std::vector<SimplexId> *edgeIdList = NULL) const;
+      const std::vector<SimplexId> *edgeIdList = nullptr) const;
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int computeSurface(const std::pair<double, double> &rangePoint0,
@@ -168,8 +161,8 @@ namespace ttk {
 
     inline int setPolygonEdgeNumber(const SimplexId &polygonEdgeNumber) {
       polygonEdgeNumber_ = polygonEdgeNumber;
-      polygonEdgeVertexLists_.resize(polygonEdgeNumber, NULL);
-      polygonEdgeTriangleLists_.resize(polygonEdgeNumber, NULL);
+      polygonEdgeVertexLists_.resize(polygonEdgeNumber, nullptr);
+      polygonEdgeTriangleLists_.resize(polygonEdgeNumber, nullptr);
       return 0;
     }
 
@@ -385,7 +378,7 @@ namespace ttk {
       const std::vector<std::vector<Vertex>> &tetNewVertices,
       SimplexId &newTriangleNumber,
       std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
-      const std::pair<double, double> *intersection = NULL) const;
+      const std::pair<double, double> *intersection = nullptr) const;
 
     int flipEdges() const;
 
@@ -475,12 +468,11 @@ namespace ttk {
                         const std::vector<double> &t,
                         Vertex &v) const;
 
-    int snapVertexBarycentrics(const double &distanceThreshold) const;
+    int snapVertexBarycentrics() const;
 
     int snapVertexBarycentrics(
       const SimplexId &tetId,
-      const std::vector<std::pair<SimplexId, SimplexId>> &triangles,
-      const double &distanceThreshold) const;
+      const std::vector<std::pair<SimplexId, SimplexId>> &triangles) const;
 
     bool pointSnapping_{false};
 
@@ -621,7 +613,7 @@ inline int ttk::FiberSurface::computeBaseTriangle(
         break;
     }
 
-    std::vector<double> baryCentrics;
+    std::array<double, 2> baryCentrics{};
     std::vector<double> p0(2), p1(2), p(2);
     p0[0] = ((dataTypeU *)uField_)[vertexId0];
     p0[1] = ((dataTypeV *)vField_)[vertexId0];
@@ -765,7 +757,7 @@ inline int ttk::FiberSurface::computeCase0(
         break;
     }
 
-    std::vector<double> baryCentrics;
+    std::array<double, 2> baryCentrics{};
     std::vector<double> p0(2), p1(2), p(2);
     p0[0] = ((dataTypeU *)uField_)[vertexId0];
     p0[1] = ((dataTypeV *)vField_)[vertexId0];
@@ -2121,9 +2113,7 @@ inline int ttk::FiberSurface::processTetrahedron(
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if(lowerVertexNumber == 3) {
-          // well do nothing (empty triangle)
-        } else if(upperVertexNumber == 3) {
+        } else if(lowerVertexNumber == 3 || upperVertexNumber == 3) {
           // well do nothing (empty triangle)
         } else if((lowerVertexNumber == 1) && (upperVertexNumber == 1)
                   && (greyVertexNumber == 1)) {
@@ -2132,37 +2122,22 @@ inline int ttk::FiberSurface::processTetrahedron(
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if((lowerVertexNumber == 2) && (upperVertexNumber == 1)) {
+        } else if(((lowerVertexNumber == 2) && (upperVertexNumber == 1))
+                  || ((lowerVertexNumber == 1) && (upperVertexNumber == 2))) {
           createdVertices += computeCase2<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if((lowerVertexNumber == 1) && (upperVertexNumber == 2)) {
-          createdVertices += computeCase2<dataTypeU, dataTypeV>(
-            polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
-            uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
-            triangulation);
-        } else if((greyVertexNumber == 1) && (lowerVertexNumber == 2)) {
+        } else if((greyVertexNumber == 1)
+                  && ((lowerVertexNumber == 2) || (upperVertexNumber == 2))) {
           createdVertices += computeCase3<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
             triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
             triangulation);
-        } else if((greyVertexNumber == 1) && (upperVertexNumber == 2)) {
-          createdVertices += computeCase3<dataTypeU, dataTypeV>(
-            polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
-            uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
-            triangulation);
-        } else if((greyVertexNumber == 2) && (lowerVertexNumber == 1)) {
-          createdVertices += computeCase4<dataTypeU, dataTypeV>(
-            polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
-            uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
-            triangulation);
-        } else if((greyVertexNumber == 2) && (upperVertexNumber == 1)) {
+        } else if(((greyVertexNumber == 2))
+                  && ((lowerVertexNumber == 1) || (upperVertexNumber == 1))) {
           createdVertices += computeCase4<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,

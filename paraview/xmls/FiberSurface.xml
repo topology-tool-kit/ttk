@@ -1,0 +1,326 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkFiberSurface"
+     class="ttkFiberSurface"
+     label="TTK FiberSurface">
+     <Documentation
+        long_help="TTK plugin that computes fiber surfaces."
+        short_help="TTK plugin that computes fiber surfaces.">
+          Fiber surfaces are defined as the pre-images of curves drawn in the
+range of bivariate volumetric functions, typically on top of the continuous
+scatterplot. Fiber surfaces generalize the segmentation features of
+isosurfaces to bivariate data.
+This plugin implements an exact, parallel and fast algorithm for fiber
+surface computation on (explicit or implicit) tetrahedral meshes.
+
+The input bivariate data must be provided as two independent scalar fields
+attached as point data to the input geometry. The input range polygon must
+be provided as a vtkUnstructuredGrid with the actual 2D locations of the
+vertices also provided as two independent scalar fields attached as point
+data to the geometry. See the RangePolygon TTK plugin to create such an input
+polygon from sparse user inputs.
+
+Related publication:
+"Fast and Exact Fiber Surface Extraction for Tetrahedral Meshes",
+Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng
+IEEE Transactions on Visualization and Computer Graphics, 2016.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
+     </Documentation>
+     <InputProperty
+        name="Input Domain"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input Domain" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Dataset to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Range Polygon"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Range Polygon" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Range polygon.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Domain U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the U component of the bivariate field on the input data.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="Domain V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the V component of the bivariate field on the input data.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="Polygon U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Range Polygon" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the U component of the bivariate field for the range polygon.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="Polygon V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Range Polygon" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the V component of the bivariate field for the range polygon.
+        </Documentation>
+      </StringVectorProperty>
+
+
+
+      <!--
+      <IntVectorProperty
+        name="ThreadStrategy"
+        label="Thread Strategy"
+        command="SetThreadStrategy"
+        number_of_elements="1"
+        animateable="1"
+        default_values="0">
+        <EnumerationDomain name="StrategyEnumeration">
+          <Entry value="0" text="Domain Tetrahedra" />
+          <Entry value="1" text="Polygon Edges" />
+        </EnumerationDomain>
+        <Documentation>
+          Select the parallelism strategy.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ManifoldOutput"
+        command="SetManifold"
+        number_of_elements="1"
+        default_values="0"
+        label="Manifold Output">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Forces the output to be manifold.
+        </Documentation>
+      </IntVectorProperty>
+      -->
+
+      <!-- TODO:
+        - octree parameters
+        - manifold: set distance threshold
+        - threading strategy (on edges or on tets)
+        - better organize the sections -->
+
+
+
+      <IntVectorProperty
+        name="WithRangeCoordinates"
+        command="SetRangeCoordinates"
+        number_of_elements="1"
+        default_values="1"
+        label="With Range Coordinates" panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Stores the range coordinates for each vertex of the fiber surface.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="WithEdgeParameterization"
+        command="SetEdgeParameterization"
+        number_of_elements="1"
+        default_values="1"
+        label="With Edge Parameterization" panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Stores the edge parameterization
+          for each vertex of the fiber surface.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="WithEdgeIds"
+        command="SetEdgeIds"
+        number_of_elements="1"
+        default_values="1"
+        label="With Edge Identifiers" panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Stores the edge identifier
+          for each triangle of the fiber surface.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="WithTetIds"
+        command="SetTetIds"
+        number_of_elements="1"
+        default_values="1"
+        label="With Tet Identifiers" panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Stores the tetrahedron identifier
+          for each triangle of the fiber surface.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="WithCaseIds"
+        command="SetCaseIds"
+        number_of_elements="1"
+        default_values="1"
+        label="With Case Identifiers" panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Stores the case identifier
+          for each triangle of the fiber surface.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="WithPointMerge"
+        command="SetPointMerge"
+        number_of_elements="1"
+        default_values="0"
+        label="With Point Merging" >
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Merges points that coincide.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="PointMergeDistanceThreshold"
+         label="Distance Threshold"
+         command="SetPointMergeDistanceThreshold"
+         number_of_elements="1"
+         default_values="0.000001" >
+        <DoubleRangeDomain name="range" min="0" max="10" />
+         <Documentation>
+          Distance threshold to consider two points as coinciding.
+         </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="WithOctree"
+        command="SetRangeOctree"
+        number_of_elements="1"
+        default_values="1"
+        label="With Range Driven Octree" >
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Pre-computes and uses a range driven octree to speed up
+          fiber surface extraction.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Domain U Component" />
+        <Property name="Domain V Component" />
+        <Property name="Polygon U Component" />
+        <Property name="Polygon V Component" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Pre-processing">
+        <Property name="WithOctree" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="WithPointMerge" />
+        <Property name="PointMergeDistanceThreshold" />
+        <Property name="WithRangeCoordinates" />
+        <Property name="WithEdgeParameterization" />
+        <Property name="WithEdgeIds" />
+        <Property name="WithTetIds" />
+        <Property name="WithCaseIds" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Bivariate Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

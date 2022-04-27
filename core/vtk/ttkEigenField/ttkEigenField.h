@@ -26,6 +26,12 @@
 ///
 /// \sa ttkHarmonicField
 /// \sa ttk::EigenField
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///
 
 #pragma once
 
@@ -46,7 +52,7 @@ public:
 
   vtkTypeMacro(ttkEigenField, ttkAlgorithm);
 
-  vtkSetMacro(OutputFieldName, std::string);
+  vtkSetMacro(OutputFieldName, const std::string &);
   vtkGetMacro(OutputFieldName, std::string);
 
   vtkSetMacro(EigenNumber, unsigned int);

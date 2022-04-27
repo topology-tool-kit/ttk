@@ -21,11 +21,11 @@ bool Geometry::areVectorsColinear(const T *vA0,
                                   const T *vA1,
                                   const T *vB0,
                                   const T *vB1,
-                                  vector<T> *coefficients,
+                                  std::array<T, 3> *coefficients,
                                   const T *tolerance) {
 
   int aNullComponents = 0, bNullComponents = 0;
-  vector<T> a(3), b(3);
+  std::array<T, 3> a{}, b{};
   for(int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
     if(fabs(a[i]) < PREC_FLT) {
@@ -59,7 +59,7 @@ bool Geometry::areVectorsColinear(const T *vA0,
     useDenominatorA = true;
   }
 
-  vector<T> k(3, 0);
+  std::array<T, 3> k{};
 
   T maxDenominator = 0;
   int isNan = -1, maximizer = 0;
@@ -124,10 +124,8 @@ template <typename T>
 int Geometry::computeBarycentricCoordinates(const T *p0,
                                             const T *p1,
                                             const T *p,
-                                            vector<T> &baryCentrics,
+                                            std::array<T, 2> &baryCentrics,
                                             const int &dimension) {
-
-  baryCentrics.resize(2);
 
   int bestI = 0;
   T maxDenominator = 0;
@@ -167,10 +165,11 @@ int Geometry::computeBarycentricCoordinates(const T *p0,
   return 0;
 }
 template <typename T>
-int Geometry::computeBarycentricCoordinates(
-  const T *p0, const T *p1, const T *p2, const T *p, vector<T> &baryCentrics) {
-
-  baryCentrics.resize(3);
+int Geometry::computeBarycentricCoordinates(const T *p0,
+                                            const T *p1,
+                                            const T *p2,
+                                            const T *p,
+                                            std::array<T, 3> &baryCentrics) {
 
   // find the pair of coordinates that maximize the sum of the denominators
   // (more stable computations)
@@ -262,7 +261,7 @@ int Geometry::computeTriangleArea(const T *p0,
                                   const T *p2,
                                   T &area) {
 
-  vector<T> cross;
+  std::array<T, 3> cross{};
 
   crossProduct(p0, p1, p1, p2, cross);
 
@@ -272,12 +271,22 @@ int Geometry::computeTriangleArea(const T *p0,
 }
 
 template <typename T>
+int Geometry::computeTriangleAreaFromSides(const T s0,
+                                           const T s1,
+                                           const T s2,
+                                           T &area) {
+
+  double s = (s0 + s1 + s2) / 2.0;
+  area = std::sqrt(s * (s - s0) * (s - s1) * (s - s2));
+
+  return 0;
+}
+
+template <typename T>
 int Geometry::computeTriangleAngles(const T *p0,
                                     const T *p1,
                                     const T *p2,
-                                    vector<T> &angles) {
-
-  angles.resize(3);
+                                    std::array<T, 3> &angles) {
 
   angles[0] = angle(p0, p1, p1, p2);
   angles[1] = angle(p1, p2, p2, p0);
@@ -287,15 +296,24 @@ int Geometry::computeTriangleAngles(const T *p0,
 }
 
 template <typename T>
+int Geometry::computeTriangleAngleFromSides(const T s0,
+                                            const T s1,
+                                            const T s2,
+                                            T &angle) {
+
+  angle = std::acos((s0 * s0 + s1 * s1 - s2 * s2) / (2.0 * s0 * s1));
+
+  return 0;
+}
+
+template <typename T>
 int Geometry::crossProduct(const T *vA0,
                            const T *vA1,
                            const T *vB0,
                            const T *vB1,
-                           vector<T> &crossProduct) {
+                           std::array<T, 3> &crossProduct) {
 
-  crossProduct.resize(3);
-
-  vector<T> a(3), b(3);
+  std::array<T, 3> a{}, b{};
 
   for(int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
@@ -348,7 +366,7 @@ T Geometry::dotProduct(const T *vA, const T *vB) {
 
 template <typename T>
 int Geometry::getBoundingBox(const vector<vector<float>> &points,
-                             vector<pair<T, T>> &bBox) {
+                             vector<std::pair<T, T>> &bBox) {
 
   if(points.empty()) {
     return -1;
@@ -386,7 +404,7 @@ bool Geometry::isPointInTriangle(const T *p0,
                                  const T *p2,
                                  const T *p) {
 
-  vector<T> barycentrics;
+  std::array<T, 3> barycentrics{};
 
   Geometry::computeBarycentricCoordinates(p0, p1, p2, p, barycentrics);
 
@@ -426,7 +444,7 @@ bool Geometry::isPointOnSegment(const T *p,
                                 const T *pB,
                                 const int &dimension) {
 
-  vector<T> baryCentrics;
+  std::array<T, 2> baryCentrics{};
 
   Geometry::computeBarycentricCoordinates(pA, pB, p, baryCentrics, dimension);
 
@@ -443,7 +461,7 @@ bool Geometry::isTriangleColinear(const T *p0,
 
   bool maxDecision = false;
   T maxCoefficient = 0;
-  vector<T> coefficients(3);
+  std::array<T, 3> coefficients{};
 
   bool decision = areVectorsColinear(p0, p1, p1, p2, &coefficients, tolerance);
   maxDecision = decision;
@@ -515,23 +533,27 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template bool Geometry::areVectorsColinear<TYPE>(                           \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *,                   \
-    std::vector<TYPE> *, TYPE const *);                                       \
+    std::array<TYPE, 3> *, TYPE const *);                                     \
   template int Geometry::computeBarycentricCoordinates<TYPE>(                 \
-    TYPE const *, TYPE const *, TYPE const *, std::vector<TYPE> &,            \
+    TYPE const *, TYPE const *, TYPE const *, std::array<TYPE, 2> &,          \
     int const &);                                                             \
   template int Geometry::computeBarycentricCoordinates<TYPE>(                 \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *,                   \
-    std::vector<TYPE> &);                                                     \
+    std::array<TYPE, 3> &);                                                   \
   template bool Geometry::computeSegmentIntersection<TYPE>(                   \
     TYPE const &, TYPE const &, TYPE const &, TYPE const &, TYPE const &,     \
     TYPE const &, TYPE const &, TYPE const &, TYPE &, TYPE &);                \
   template int Geometry::computeTriangleAngles<TYPE>(                         \
-    TYPE const *, TYPE const *, TYPE const *, std::vector<TYPE> &);           \
+    TYPE const *, TYPE const *, TYPE const *, std::array<TYPE, 3> &);         \
+  template int Geometry::computeTriangleAngleFromSides<TYPE>(                 \
+    TYPE const, TYPE const, TYPE const, TYPE &);                              \
   template int Geometry::computeTriangleArea<TYPE>(                           \
     TYPE const *, TYPE const *, TYPE const *, TYPE &);                        \
+  template int Geometry::computeTriangleAreaFromSides<TYPE>(                  \
+    TYPE const, TYPE const, TYPE const, TYPE &);                              \
   template int Geometry::crossProduct<TYPE>(TYPE const *, TYPE const *,       \
                                             TYPE const *, TYPE const *,       \
-                                            std::vector<TYPE> &);             \
+                                            std::array<TYPE, 3> &);           \
   template int Geometry::crossProduct<TYPE>(                                  \
     TYPE const *, TYPE const *, TYPE *);                                      \
   template TYPE Geometry::distance<TYPE>(                                     \

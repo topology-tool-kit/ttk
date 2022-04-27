@@ -1,0 +1,94 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkEigenField"
+        class="ttkEigenField"
+        label="TTK EigenField">
+      <Documentation
+          long_help="TTK plugin for harmonic field computations."
+          short_help="TTK plugin for harmonic field computations.">
+        This plugin computes the first eigenfunctions of a given
+        triangular surface mesh.
+        Related publication
+        "Spectral surface quadrangulation"
+        Shen Dong, Peer-Timo Bremer, Michael Garland, Valerio Pascucci, John C. Hart
+        SIGGRAPH 2006
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+      </Documentation>
+
+      <InputProperty
+          name="Domain"
+          label="Input Geometry"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="EigenNumber"
+          label="Number of eigenfunctions"
+          command="SetEigenNumber"
+          number_of_elements="1"
+          default_values="500"
+          >
+        <Documentation>
+          Select the number of eigenfunctions to compute.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ComputeStatistics"
+          label="Compute statistics"
+          command="SetComputeStatistics"
+          number_of_elements="1"
+          default_values="0"
+          >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Also compute statistics (min, max, sum, average) on
+          generated eigenfunctions.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="OutputFieldName"
+        command="SetOutputFieldName"
+        label="Output scalar field name"
+        number_of_elements="1"
+        default_values="OutputEigenFunctions"
+        panel_visibility="advanced">
+        <Documentation>
+          Select the name of the output eigenfunctions field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="EigenNumber" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="OutputFieldName"/>
+        <Property name="ComputeStatistics"/>
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

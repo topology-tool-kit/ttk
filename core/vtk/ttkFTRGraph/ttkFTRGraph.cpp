@@ -277,7 +277,7 @@ int ttkFTRGraph::dispatch(Graph &graph) {
   return 0;
 }
 
-int ttkFTRGraph::RequestData(vtkInformation *request,
+int ttkFTRGraph::RequestData(vtkInformation *ttkNotUsed(request),
                              vtkInformationVector **inputVector,
                              vtkInformationVector *outputVector) {
 
@@ -433,7 +433,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
     nodeData.addNode(graph, nodeId, scalar);
   }
 
-  nodes->SetPoints(points);
+  ttkUtils::CellVertexFromPoints(nodes, points);
   nodeData.addArrays(nodes->GetPointData(), params_);
 
   outputSkeletonNodes->ShallowCopy(nodes);

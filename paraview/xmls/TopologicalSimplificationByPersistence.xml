@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkTopologicalSimplificationByPersistence" class="ttkTopologicalSimplificationByPersistence" label="TTK TopologicalSimplificationByPersistence">
+      <Documentation long_help="TopologicalSimplificationByPersistence Long" short_help="TopologicalSimplificationByPersistence Short">
+        Given an input scalar field and a persistence threshold (either as an absolute value or a fraction of the scalar range), this filter modifies the scalar field such that it no longer exhibits persistence pairs below the given threshold. All other pairs are unaffected. To this end the filter uses the persistence-sensitive specialization of localized topological simplification (PLTS). Note that this filter will also compute an unambiguous global vertex order that can be used in subsequent topological data analysis.
+
+        Related publications:
+        "Generalized Topological Simplification of Scalar Fields on Surfaces"
+        Julien Tierny, Valerio Pascucci
+        Proc. of IEEE VIS 2012.
+        IEEE Transactions on Visualization and Computer Graphics, 2012.
+
+        "Localized Topological Simplification of Scalar Data"
+        Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+        Proc. of IEEE VIS 2020.
+        IEEE Transactions on Visualization and Computer Graphics
+      </Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>A vtkDataSet that has at least one point data scalar array that will be simplified.</Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>The scalar array that will be simplified.</Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="InputArray" />
+      </PropertyGroup>
+
+      <IntVectorProperty name="PairType" command="SetPairType" number_of_elements="1" default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Extremum-Saddle" />
+          <Entry value="1" text="Minimum-Saddle" />
+          <Entry value="2" text="Maximum-Saddle" />
+        </EnumerationDomain>
+        <Documentation>Determines which type of persistence pairs will be removed.</Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="PersistenceThreshold" command="SetPersistenceThreshold" number_of_elements="1" default_values="0">
+        <Documentation>The persistence threshold all persistence pairs of the output scalar field must strictly exceed. Note, a persistence threshold of 0 will remove all flat plateau artifacts.</Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="ThresholdIsAbsolute" command="SetThresholdIsAbsolute" number_of_elements="1" default_values="1">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          This parameter determines if the persistence threshold is an absolute scalar value, or a fraction (0-1) of the function range.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="NumericalPerturbation" command="SetComputePerturbation" number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool" />
+        <Documentation>
+          Numerically perturb the output (to avoid the usage of an order array for flat plateau disambiguation).
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        <Property name="PairType" />
+        <Property name="PersistenceThreshold" />
+        <Property name="ThresholdIsAbsolute" />
+        <Property name="NumericalPerturbation" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

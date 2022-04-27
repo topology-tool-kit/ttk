@@ -1,15 +1,14 @@
 /// \ingroup base
-/// \class ttk::Geometry
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2016.
 ///
-/// \brief Minimalist class that handles simple geometric computations
+/// \brief Minimalist namespace that handles simple geometric computations
 /// (operations on std::vectors, barycentric coordinates, etc.).
-///
-#ifndef _GEOMETRY_H
-#define _GEOMETRY_H
+
+#pragma once
 
 #include <Debug.h>
+#include <array>
 
 namespace ttk {
 
@@ -28,8 +27,9 @@ namespace ttk {
     /// \param vA1 xyz coordinates of vA's destination
     /// \param vB0 xyz coordinates of vB's origin
     /// \param vB1 xyz coordinates of vB's destination
-    /// \param coefficients Optional output std::vector of colinearity
+    /// \param coefficients Optional output std::array of colinearity
     /// coefficients.
+    /// \param tolerance Optional tolerance value (default: PREC_FLT)
     /// \returns Returns true if the std::vectors are colinear, false
     /// otherwise.
     template <typename T>
@@ -37,7 +37,7 @@ namespace ttk {
                             const T *vA1,
                             const T *vB0,
                             const T *vB1,
-                            std::vector<T> *coefficients = NULL,
+                            std::array<T, 3> *coefficients = nullptr,
                             const T *tolerance = NULL);
 
     /// Compute the barycentric coordinates of point \p p with regard to the
@@ -54,7 +54,7 @@ namespace ttk {
     int computeBarycentricCoordinates(const T *p0,
                                       const T *p1,
                                       const T *p,
-                                      std::vector<T> &baryCentrics,
+                                      std::array<T, 2> &baryCentrics,
                                       const int &dimension = 3);
 
     /// Compute the barycentric coordinates of point \p p with regard to the
@@ -71,7 +71,7 @@ namespace ttk {
                                       const T *p1,
                                       const T *p2,
                                       const T *p,
-                                      std::vector<T> &baryCentrics);
+                                      std::array<T, 3> &baryCentrics);
 
     /// Compute the intersection between two 2D segments AB and CD.
     /// \param xA x coordinate of the first vertex of the first segment (AB)
@@ -106,7 +106,19 @@ namespace ttk {
     int computeTriangleAngles(const T *p0,
                               const T *p1,
                               const T *p2,
-                              std::vector<T> &angles);
+                              std::array<T, 3> &angles);
+
+    // Get the angle opposite to edge s2 using cosine law
+    /// \param s0 length of the first side of the triangle
+    /// \param s1 length of the second side of the triangle
+    /// \param s2 length of the third side of the triangle
+    /// \param angle Angle opposite to edge s2
+    /// \return Returns 0 upon success, negative values otherwise.
+    template <typename T>
+    int computeTriangleAngleFromSides(const T s0,
+                                      const T s1,
+                                      const T s2,
+                                      T &angle);
 
     /// Compute the area of a 3D triangle.
     /// \param p0 xyz coordinates of the first vertex of the triangle
@@ -116,6 +128,16 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     template <typename T>
     int computeTriangleArea(const T *p0, const T *p1, const T *p2, T &area);
+
+    /// Compute the area of a triangle given length of its sides
+    /// \param s0 length of the first side of the triangle
+    /// \param s1 length of the second side of the triangle
+    /// \param s2 length of the third side of the triangle
+    /// \param area Output area.
+    /// \return Returns 0 upon success, negative values otherwise.
+    template <typename T>
+    int
+      computeTriangleAreaFromSides(const T s0, const T s1, const T s2, T &area);
 
     /// Compute the cross product of two 3D std::vectors
     /// \param vA0 xyz coordinates of vA's origin
@@ -129,7 +151,7 @@ namespace ttk {
                      const T *vA1,
                      const T *vB0,
                      const T *vB1,
-                     std::vector<T> &crossProduct);
+                     std::array<T, 3> &crossProduct);
 
     /// Compute the cross product of two 3D std::vectors
     /// \param vA xyz coordinates of vA std::vector
@@ -157,8 +179,8 @@ namespace ttk {
     T dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
 
     /// Compute the dot product of two 3D std::vectors
-    /// \param vA0 xyz coordinates of vA std::vector
-    /// \param vB0 xyz coordinates of vB std::vector
+    /// \param vA xyz coordinates of vA std::vector
+    /// \param vB xyz coordinates of vB std::vector
     /// \return Returns Output dot product
     template <typename T>
     T dotProduct(const T *vA, const T *vB);
@@ -219,12 +241,13 @@ namespace ttk {
     /// \param p0 xyz coordinates of the first vertex of the triangle.
     /// \param p1 xyz coordinates of the second vertex of the triangle.
     /// \param p2 xyz coordinates of the third vertex of the triangle.
+    /// \param tolerance Optional tolerance value (default: PREC_FLT)
     /// \return Returns true if all the edges are colinear (false otherwise).
     template <typename T>
     bool isTriangleColinear(const T *p0,
                             const T *p1,
                             const T *p2,
-                            const T *tolerance = NULL);
+                            const T *tolerance = nullptr);
 
     /// Compute the magnitude of a 3D std::vector \p v.
     /// \param v xyz coordinates of the input std::vector.
@@ -296,5 +319,3 @@ namespace ttk {
 
   } // namespace Geometry
 } // namespace ttk
-
-#endif

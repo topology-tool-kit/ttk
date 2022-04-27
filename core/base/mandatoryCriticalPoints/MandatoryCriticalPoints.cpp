@@ -11,12 +11,12 @@ MandatoryCriticalPoints::MandatoryCriticalPoints() {
 }
 
 void MandatoryCriticalPoints::flush() {
-  inputUpperBoundField_ = NULL;
-  inputLowerBoundField_ = NULL;
-  outputMandatoryMinimum_ = NULL;
-  outputMandatoryJoinSaddle_ = NULL;
-  outputMandatorySplitSaddle_ = NULL;
-  outputMandatoryMaximum_ = NULL;
+  inputUpperBoundField_ = nullptr;
+  inputLowerBoundField_ = nullptr;
+  outputMandatoryMinimum_ = nullptr;
+  outputMandatoryJoinSaddle_ = nullptr;
+  outputMandatorySplitSaddle_ = nullptr;
+  outputMandatoryMaximum_ = nullptr;
   vertexNumber_ = 0;
   upperJoinTree_.flush();
   lowerJoinTree_.flush();
@@ -479,7 +479,6 @@ int MandatoryCriticalPoints::computePlanarLayout(
 }
 
 int MandatoryCriticalPoints::computeExtremumComponent(
-  const int componentId,
   const PointType &pointType,
   const SubLevelSetTree &tree,
   const int seedVertexId,
@@ -627,8 +626,7 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
       mandatoryExtremum.push_back(vertexId[i]);
       // Mark all the super arcs in the sub tree as visited and compute the
       // critical interval
-      criticalInterval.push_back(
-        std::pair<double, double>(vertexValue[i], vertexValue[i]));
+      criticalInterval.emplace_back(vertexValue[i], vertexValue[i]);
       for(int j = 0; j < (int)subTreeSuperArcId.size(); j++) {
         isSuperArcAlreadyVisited[subTreeSuperArcId[j]] = true;
         int downNodeId
@@ -721,7 +719,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   const PointType pointType,
   SubLevelSetTree &lowerTree,
   SubLevelSetTree &upperTree,
-  const std::vector<int> mandatoryExtremumVertex,
+  const std::vector<int> &mandatoryExtremumVertex,
   std::vector<std::pair<int, int>> &mandatorySaddleVertex,
   std::vector<std::vector<int>> &mandatoryMergedExtrema) {
 
@@ -1126,8 +1124,8 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   for(unsigned int i = 0; i < lowerSaddleList.size(); i++) {
     if(!isLowerVisited[i]) {
       // New component
-      lowComponent.push_back(std::vector<int>());
-      uppComponent.push_back(std::vector<int>());
+      lowComponent.emplace_back();
+      uppComponent.emplace_back();
       int componentId = static_cast<int>(lowComponent.size()) - 1;
       lowComponent[componentId].push_back(i);
       isLowerVisited[i] = true;
@@ -1224,8 +1222,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     mandatoryMergedExtrema_tmp[i].resize(
       distance(mandatoryMergedExtrema_tmp[i].begin(), newEnd));
     mandatoryMergedExtrema_tmp[i].shrink_to_fit();
-    order.push_back(
-      std::pair<int, int>(i, mandatoryMergedExtrema_tmp[i].size()));
+    order.emplace_back(i, mandatoryMergedExtrema_tmp[i].size());
   }
   // Sort by number of merged extrema
   mandatorySaddleComparaison cmp;

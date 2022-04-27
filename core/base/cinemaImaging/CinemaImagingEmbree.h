@@ -22,7 +22,7 @@ namespace ttk {
   class CinemaImagingEmbree : public CinemaImaging {
   public:
     CinemaImagingEmbree();
-    ~CinemaImagingEmbree();
+    ~CinemaImagingEmbree() override;
 
 #if TTK_ENABLE_EMBREE
 
@@ -53,7 +53,7 @@ namespace ttk {
 
 #endif
   };
-}; // namespace ttk
+} // namespace ttk
 
 #if TTK_ENABLE_EMBREE
 

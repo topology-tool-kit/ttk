@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkIcospheresFromPoints" class="ttkIcospheresFromPoints" label="TTK IcospheresFromPoints">
+            <Documentation long_help="TTK filter that creates an IcospheresFromPoints" short_help="TTK filter that creates an IcospheresFromPoints">
+              This filter creates for every vertex of an input vtkPointSet an IcoSphere with a specified number of subdivisions and radius.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+        
+        - https://topology-tool-kit.github.io/examples/morseMolecule/
+        
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+            </Documentation>
+
+            <InputProperty name="Input" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkPointSet" />
+                </DataTypeDomain>
+                <Documentation>Object whose points will be used as ico sphere centers.</Documentation>
+            </InputProperty>
+
+            <IntVectorProperty name="NumberOfSubdivisions" label="Subdivisions" command="SetNumberOfSubdivisions" number_of_elements="1" default_values="2">
+                <Documentation>Number of subdevisions.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="1">
+                <Documentation>Radius in world coordinates. If an input is provided then the radius is used as a scaling factor of the resulting bounding icosphere.</Documentation>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="CopyPointData" label="Copy Point Data" command="SetCopyPointData" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Add every point data array of the input to the output.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ComputeNormals" label="Compute Normals" number_of_elements="1" default_values="1" command="SetComputeNormals" >
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if the output contains normals at the vertices.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="NumberOfSubdivisions" />
+                <Property name="Radius" />
+                <Property name="CopyPointData" />
+                <Property name="ComputeNormals" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <Visibility replace_input="0" />
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

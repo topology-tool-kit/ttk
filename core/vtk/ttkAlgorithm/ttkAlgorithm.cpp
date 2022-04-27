@@ -27,10 +27,8 @@ vtkInformationKeyMacro(ttkAlgorithm, SAME_DATA_TYPE_AS_INPUT_PORT, Integer);
 
 // Constructor / Destructor
 vtkStandardNewMacro(ttkAlgorithm);
-ttkAlgorithm::ttkAlgorithm() {
-}
-ttkAlgorithm::~ttkAlgorithm() {
-}
+ttkAlgorithm::ttkAlgorithm() = default;
+ttkAlgorithm::~ttkAlgorithm() = default;
 
 ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
@@ -38,8 +36,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
 
-  auto triangulation
-    = ttkTriangulationFactory::GetTriangulation(this->debugLevel_, dataSet);
+  auto triangulation = ttkTriangulationFactory::GetTriangulation(
+    this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
   if(triangulation)
     return triangulation;
 
@@ -47,7 +45,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                  + std::string(dataSet->GetClassName()) + "'");
 
   return nullptr;
-};
+}
 
 vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                              const int &arrayIndex,
@@ -147,8 +145,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   switch(isValidOrderArray(orderArray)) {
     case -4: {
       ttk::Timer timer;
-      this->printWrn("No pre-existing order for array `"
-                     + std::string(scalarArray->GetName()) + "`.");
+      this->printWrn("No pre-existing order for array:");
+      this->printWrn("  `" + std::string(scalarArray->GetName()) + "`.");
 
       this->printMsg("Initializing order array.", 0, 0, this->threadNumber_,
                      ttk::debug::LineMode::REPLACE);
@@ -177,8 +175,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
-      this->printWrn("Tip: run `ttkArrayPreconditioning` first for improved "
-                     "performances :)");
+      this->printWrn("TIP: run `ttkArrayPreconditioning` first");
+      this->printWrn("for improved performances :)");
 
       return newOrderArray;
     }
@@ -212,8 +210,58 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   }
 }
 
+ttk::SimplexId *
+  ttkAlgorithm::GetIdentifierArrayPtr(const bool &enforceArrayIndex,
+                                      const int &arrayIndex,
+                                      const std::string &arrayName,
+                                      vtkDataSet *const inputData,
+                                      std::vector<ttk::SimplexId> &spareStorage,
+                                      const int inputPort,
+                                      const bool printErr) {
+
+  // fetch data array
+  const auto array = this->GetOptionalArray(
+    enforceArrayIndex, arrayIndex, arrayName, inputData, inputPort);
+  if(array == nullptr) {
+    if(printErr) {
+      this->printErr("Could not find the requested identifiers array");
+    }
+    return {};
+  }
+  if(array->GetNumberOfComponents() != 1) {
+    if(printErr) {
+      this->printErr("Identifiers field must have only one component!");
+    }
+    return {};
+  }
+
+#ifndef TTK_ENABLE_64BIT_IDS
+  if(array->GetDataType() == VTK_ID_TYPE
+     || array->GetDataType() == VTK_LONG_LONG) {
+    this->printMsg(
+      "Converting identifiers field from vtkIdType to SimplexId...");
+    const auto nItems = array->GetNumberOfTuples();
+
+    // fills the vector with the content of the data array converted to
+    // ttk::SimplexId
+    spareStorage.resize(nItems);
+    for(vtkIdType i = 0; i < nItems; ++i) {
+      spareStorage[i] = static_cast<ttk::SimplexId>(array->GetTuple1(i));
+    }
+
+    // return a pointer to the vector internal buffer
+    return spareStorage.data();
+  }
+#else
+  TTK_FORCE_USE(spareStorage);
+#endif
+
+  // return a pointer to the data array internal buffer
+  return static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(array));
+}
+
 template <class vtkDataType>
-int prepOutput(vtkInformation *info, std::string className) {
+int prepOutput(vtkInformation *info, const std::string &className) {
   auto output = vtkDataObject::GetData(info);
   if(!output || !output->IsA(className.data())) {
     auto newOutput = vtkSmartPointer<vtkDataType>::New();
@@ -246,7 +294,7 @@ void ttkAlgorithm::AddInputData(int index, vtkDataSet *input) {
   this->AddInputDataInternal(index, input);
 }
 
-int ttkAlgorithm::RequestDataObject(vtkInformation *request,
+int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // for each output

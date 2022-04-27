@@ -1,0 +1,4 @@
+ttk_add_base_library(persistenceDiagramAuction
+  SOURCES PersistenceDiagramAuction.cpp
+  HEADERS PersistenceDiagramAuction.h PersistenceDiagramAuctionImpl.h PersistenceDiagramAuctionActor.h
+  DEPENDS triangulation kdTree)

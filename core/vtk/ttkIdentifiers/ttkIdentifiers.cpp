@@ -1,12 +1,13 @@
 #include <ttkIdentifiers.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
-
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -18,10 +19,12 @@ ttkIdentifiers::ttkIdentifiers() {
   this->SetNumberOfOutputPorts(1);
 
   setDebugMsgPrefix("Identifiers");
+
+  vtkWarningMacro("`TTK Identifiers' is now deprecated. Please use "
+                  "`Generate Ids' instead.");
 }
 
-ttkIdentifiers::~ttkIdentifiers() {
-}
+ttkIdentifiers::~ttkIdentifiers() = default;
 
 int ttkIdentifiers::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
@@ -39,7 +42,7 @@ int ttkIdentifiers::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkIdentifiers::RequestData(vtkInformation *request,
+int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
 

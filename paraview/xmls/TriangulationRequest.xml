@@ -1,0 +1,107 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkTriangulationRequest"
+      class="ttkTriangulationRequest"
+      label="TTK TriangulationRequest">
+      <Documentation
+        long_help="TTK triangulationRequest plugin."
+        short_help="TTK triangulationRequest plugin.">
+        TTK triangulationRequest plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty name="SimplexType"
+        label="Simplex"
+        command="SetSimplexType"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Vertex"/>
+          <Entry value="1" text="Edge"/>
+          <Entry value="2" text="Triangle"/>
+          <Entry value="3" text="Tetra"/>
+        </EnumerationDomain>
+        <Documentation>
+          Output simplex.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="SimplexIdentifier"
+        label="Simplex identifiers"
+        command="SetSimplexIdentifier"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <Documentation>
+          Output simplex identifiers (comma-separated list).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="KeepAllDataArrays"
+        label="Keep All Data Arrays"
+        command="SetKeepAllDataArrays"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Keep all data arrays.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="RequestType"
+        label="Request type"
+        command="SetRequestType"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Simplex"/>
+          <Entry value="1" text="Facet"/>
+          <Entry value="2" text="Cofacet"/>
+          <Entry value="3" text="Star"/>
+          <Entry value="4" text="Link"/>
+        </EnumerationDomain>
+        <Documentation>
+          Output request.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SimplexType" />
+        <Property name="SimplexIdentifier" />
+        <Property name="KeepAllDataArrays" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="RequestType" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

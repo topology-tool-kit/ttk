@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that computes the overlap between labeled
 /// vtkPointSets.
 ///
-/// VTK wrapping code for the @TrackingFromOverlap package.
+/// VTK wrapping code for the ttk::TrackingFromOverlap package.
 ///
 /// This filter identifies and tracks labled vtkPointSets across time (and
 /// optionally levels) based on spatial overlap, where two points overlap iff
@@ -57,21 +57,14 @@ public:
   static ttkTrackingFromOverlap *New();
   vtkTypeMacro(ttkTrackingFromOverlap, ttkAlgorithm);
 
-  vtkSetMacro(LabelFieldName, std::string);
+  vtkSetMacro(LabelFieldName, const std::string &);
   vtkGetMacro(LabelFieldName, std::string);
 
 protected:
   ttkTrackingFromOverlap() {
-    SetLabelFieldName("RegionId");
-
-    UseAllCores = false;
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-
-  bool UseAllCores;
-  int ThreadNumber;
 
   int reset();
 
@@ -120,7 +113,7 @@ protected:
 
 private:
   int LabelDataType;
-  std::string LabelFieldName;
+  std::string LabelFieldName{"RegionId"};
 
   vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 

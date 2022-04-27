@@ -1,0 +1,153 @@
+<ServerManagerConfiguration>
+   <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+     <SourceProxy
+        name="ttkFTRGraph"
+        class="ttkFTRGraph"
+        label="TTK Reeb graph (FTR)">
+        <Documentation
+           long_help="TTK fTRGraph plugin."
+           short_help="TTK fTRGraph plugin.">
+          TTK filter to compute the Reeb graph of a manifold data set.
+          This filter is based on a parallel algorithm.
+
+          related article:
+          Gueunet C., Fortin P., Jomier J., Tierny J.:
+          "Task-based Augmented Reeb Graphs with Dynamic ST-Trees"
+          EGPGV 2019
+
+          Online Examples:
+
+          - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+        </Documentation>
+        <InputProperty
+           name="Input"
+           command="SetInputConnection">
+           <ProxyGroupDomain name="groups">
+              <Group name="sources"/>
+              <Group name="filters"/>
+           </ProxyGroupDomain>
+           <DataTypeDomain name="input_type">
+              <DataType value="vtkDataSet"/>
+           </DataTypeDomain>
+           <InputArrayDomain name="input_scalars" number_of_components="1">
+              <Property name="Input" function="FieldDataSelection" />
+           </InputArrayDomain>
+           <Documentation>
+              Data-set to process.
+           </Documentation>
+        </InputProperty>
+
+        <StringVectorProperty
+           name="Scalar Field"
+           command="SetInputArrayToProcess"
+           element_types="0 0 0 0 2"
+           number_of_elements="5"
+           default_values="0"
+           animateable="0"
+           >
+           <ArrayListDomain
+              name="array_list"
+              default_values="0">
+              <RequiredProperties>
+                 <Property name="Input" function="Input" />
+              </RequiredProperties>
+           </ArrayListDomain>
+           <Documentation>
+              Select the scalar field to process.
+           </Documentation>
+        </StringVectorProperty>
+
+        <IntVectorProperty
+           name="ForceInputOffsetScalarField"
+           command="SetForceInputOffsetScalarField"
+           label="Force Input Offset Scalar Field"
+           number_of_elements="1"
+           default_values="0">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+              Check this box to force the usage of a specific input
+              scalar field as vertex offset (used to disambiguate flat
+              plateaus).
+           </Documentation>
+        </IntVectorProperty>
+
+        <StringVectorProperty
+           name="Input Offset Field"
+           command="SetInputArrayToProcess"
+           element_types="0 0 0 0 2"
+           number_of_elements="5"
+           default_values="1"
+           animateable="0"
+           >
+           <ArrayListDomain
+              name="array_list"
+             default_values="0">
+            <RequiredProperties>
+                 <Property name="Input" function="Input" />
+              </RequiredProperties>
+           </ArrayListDomain>
+           <Hints>
+             <PropertyWidgetDecorator type="GenericDecorator"
+                                      mode="visibility"
+                                      property="ForceInputOffsetScalarField"
+                                      value="1" />
+             </Hints>
+           <Documentation>
+              Select the input offset scalar field to process.
+           </Documentation>
+        </StringVectorProperty>
+
+        <IntVectorProperty
+           name="ArcSampling"
+           label="Arc Sampling"
+           command="SetSampling"
+           number_of_elements="1"
+           default_values="0">
+           <IntRangeDomain name="range" min="-1" max="20" />
+           <Documentation>
+              Set arc sampling level. The sample create "sampleLvl" chunk
+              of element in an arc and add a point at the barycenters of these elements.
+              Special vaues: -1 will insert all regular arcs and 0 only the super arcs (faster)
+           </Documentation>
+        </IntVectorProperty>
+
+        <IntVectorProperty
+           name="SingleSweep"
+           label="Use single sweep"
+           command="SetSingleSweep"
+           number_of_elements="1"
+           default_values="0" panel_visibility="advanced">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+             Use the less efficient (but maybe more robust) single sweep version
+           </Documentation>
+        </IntVectorProperty>
+
+        ${DEBUG_WIDGETS}
+
+        <PropertyGroup panel_widget="Line" label="Input options">
+           <Property name="Scalar Field" />
+           <Property name="ForceInputOffsetScalarField" />
+           <Property name="Input Offset Field" />
+           <Property name="ArcSampling" />
+           <Property name="SingleSweep" />
+        </PropertyGroup>
+
+        <PropertyGroup panel_widget="Line" label="Output options">
+          <Property name="ArcSampling" />
+        </PropertyGroup>
+
+        <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+        <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+        <OutputPort name="Segmentation" index="2" id="port2" />
+
+        <Hints>
+           <ShowInMenu category="TTK - Scalar Data" />
+        </Hints>
+     </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -19,8 +19,7 @@ ttkBlockAggregator::ttkBlockAggregator() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkBlockAggregator::~ttkBlockAggregator() {
-}
+ttkBlockAggregator::~ttkBlockAggregator() = default;
 
 int ttkBlockAggregator::FillInputPortInformation(int port,
                                                  vtkInformation *info) {
@@ -97,7 +96,7 @@ int ttkBlockAggregator::AggregateBlock(vtkDataObject *dataObject) {
   return 1;
 }
 
-int ttkBlockAggregator::RequestData(vtkInformation *request,
+int ttkBlockAggregator::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // Get iteration information

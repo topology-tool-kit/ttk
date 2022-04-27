@@ -28,7 +28,7 @@ namespace ttk {
     // {
 
     template <typename scalarType>
-    void MergeTree::sortInput(void) {
+    void MergeTree::sortInput() {
       const auto &nbVertices = scalars_->size;
 
       if(scalars_->sortedVertices.size() != static_cast<size_t>(nbVertices)) {
@@ -117,17 +117,10 @@ namespace ttk {
 
       std::vector<idNode> sortedNodes(nbNode);
       iota(sortedNodes.begin(), sortedNodes.end(), 0);
-// Sort nodes by vertex scalar
-//{
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-      __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
-#else
-      sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
-#endif
-#else
-      sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
-#endif
+      // Sort nodes by vertex scalar
+      //{
+      TTK_PSORT(this->threadNumber_, sortedNodes.begin(), sortedNodes.end(),
+                isLowerComp);
       //}
 
       //}
@@ -167,16 +160,8 @@ namespace ttk {
       // Sort pairs by persistence
       //{
       // IS SET STILL BETTER ? (parallel sort) TODO
-
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-      __gnu_parallel::sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
-#else
-      sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
-#endif
-#else
-      sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
-#endif
+      TTK_PSORT(
+        this->threadNumber_, sortedPairs.begin(), sortedPairs.end(), pairComp);
 
       auto last = unique(sortedPairs.begin(), sortedPairs.end());
       sortedPairs.erase(last, sortedPairs.end());
@@ -793,7 +778,9 @@ namespace ttk {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
           orig, term,
-          fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)), goUp);
+          std::abs(static_cast<double>(getValue<scalarType>(orig)
+                                       - getValue<scalarType>(term))),
+          goUp);
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
         mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
@@ -812,7 +799,8 @@ namespace ttk {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
           orig, term,
-          fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)));
+          std::abs(static_cast<double>(getValue<scalarType>(orig)
+                                       - getValue<scalarType>(term))));
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
         mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);

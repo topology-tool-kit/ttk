@@ -21,6 +21,7 @@
 
 #include <array>
 #include <cmath>
+#include <map>
 #include <numeric>
 #include <queue>
 #include <set>
@@ -164,6 +165,11 @@ namespace ttk {
     void clearData();
 
     /**
+     * @brief Ad-hoc quad data structure
+     */
+    using Quad = std::array<LongSimplexId, 4>;
+
+    /**
      * @brief Subdivise degenerate quads in the quadrangulation
      *
      * @param[out] outputSubd Quad subdivision to be completed
@@ -171,17 +177,8 @@ namespace ttk {
      * @return 0
      */
     template <typename triangulationType>
-    int subdiviseDegenerateQuads(std::vector<LongSimplexId> &outputSubd,
+    int subdiviseDegenerateQuads(std::vector<Quad> &outputSubd,
                                  const triangulationType &triangulation);
-
-    // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
-    struct Quad {
-      LongSimplexId n;
-      LongSimplexId i;
-      LongSimplexId j;
-      LongSimplexId k;
-      LongSimplexId l;
-    };
 
     // number of vertices in triangulation
     SimplexId verticesNumber_{};
@@ -216,14 +213,12 @@ namespace ttk {
     std::vector<SimplexId> sepMids_{};
     // sub-segmentation of Morse-Smale cells
     std::vector<SimplexId> morseSeg_{};
-    // for each cell, the corresponding index in morseSeg_
-    std::vector<SimplexId> cellId_{};
-    // indices of separatrices that border quads
-    std::vector<std::vector<size_t>> quadSeps_{};
+    // morseSeg_ id -> separatrices that border quads id
+    std::vector<std::pair<SimplexId, std::vector<size_t>>> quadSeps_{};
 
   protected:
-    // array of output polygons
-    std::vector<LongSimplexId> outputCells_{};
+    // array of output quads
+    std::vector<Quad> outputCells_{};
     // array of output vertices (generated middles of duplicated separatrices)
     std::vector<float> outputPoints_{};
     // array of output vertices identifiers
@@ -250,6 +245,9 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
   ExplicitTriangulation newT{};
   bs.execute(triangulation, newT);
 
+  newT.setDebugLevel(this->debugLevel_);
+  newT.setThreadNumber(this->threadNumber_);
+  newT.preconditionEdges();
   newT.preconditionVertexNeighbors();
   newT.preconditionVertexEdges();
   newT.preconditionVertexTriangles();
@@ -351,7 +349,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
       sepId.emplace(edgeOnSep[e0]);
       sepId.emplace(edgeOnSep[e1]);
     } else if(edgeOnSep[e1] != -1 && edgeOnSep[e2] != -1) {
-      sepId.emplace(edgeOnSep[e0]);
+      sepId.emplace(edgeOnSep[e1]);
       sepId.emplace(edgeOnSep[e2]);
     } else if(edgeOnSep[e0] != -1 && edgeOnSep[e2] != -1) {
       sepId.emplace(edgeOnSep[e0]);
@@ -444,8 +442,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
 #endif // TTK_ENABLE_OPENMP
             {
               // keep indices in sync
-              quadSeps_.emplace_back(cellSeps);
-              cellId_.emplace_back(iter);
+              quadSeps_.emplace_back(iter, cellSeps);
             }
           }
         }
@@ -504,6 +501,14 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
       }
     }
   }
+
+  if(this->threadNumber_ > 1) {
+    // sort quadSeps_ according to cellIds_ to get a deterministic
+    // output when filled in parallel
+    TTK_PSORT(this->threadNumber_, quadSeps_.begin(), quadSeps_.end());
+    // (by default, pairs are sorted by their first element)
+  }
+
   return 0;
 }
 
@@ -530,7 +535,6 @@ int ttk::MorseSmaleQuadrangulation::quadrangulate(
   sepEnds_.resize(numSeps);
   morseSeg_.resize(verticesNumber_);
   std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
-  cellId_.clear();
   quadSeps_.clear();
 
   // fill in data arrays
@@ -542,10 +546,11 @@ int ttk::MorseSmaleQuadrangulation::quadrangulate(
 
   detectCellSeps(triangulation);
 
-  outputCells_.reserve(5 * quadSeps_.size());
-  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
+  outputCells_.reserve(quadSeps_.size());
 
-  for(const auto &qs : quadSeps_) {
+  for(const auto &qsp : quadSeps_) {
+
+    const auto &qs{qsp.second};
 
     std::vector<LongSimplexId> srcs{};
     std::vector<LongSimplexId> dsts{};
@@ -568,9 +573,9 @@ int ttk::MorseSmaleQuadrangulation::quadrangulate(
     }
 
     if(srcs.size() == 2) {
-      quads->emplace_back(Quad{4, dsts[0], srcs[0], dsts[1], srcs[1]});
+      outputCells_.emplace_back(Quad{dsts[0], srcs[0], dsts[1], srcs[1]});
     } else if(srcs.size() == 1) {
-      quads->emplace_back(Quad{4, dsts[0], srcs[0], dsts[1], srcs[0]});
+      outputCells_.emplace_back(Quad{dsts[0], srcs[0], dsts[1], srcs[0]});
       ndegen++;
     } else {
       found = false;
@@ -655,18 +660,14 @@ size_t ttk::MorseSmaleQuadrangulation::findSeparatrixMiddle(
 
 template <typename triangulationType>
 int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
-  std::vector<LongSimplexId> &outputSubd,
-  const triangulationType &triangulation) {
+  std::vector<Quad> &outputSubd, const triangulationType &triangulation) {
 
-  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
-  auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
-
-  for(size_t i = 0; i < quads->size(); ++i) {
-    auto q = quads->at(i);
-    auto seps = quadSeps_[i];
+  for(size_t i = 0; i < outputCells_.size(); ++i) {
+    auto q = outputCells_[i];
+    auto seps = quadSeps_[i].second;
 
     // don't deal with normal quadrangles
-    if(q.j != q.l) {
+    if(q[1] != q[3]) {
       continue;
     }
 
@@ -678,20 +679,20 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
     // identify the extremum that is twice dest
     int count_vi = 0, count_vk = 0;
     for(const auto &s : dsts) {
-      if(s == q.i) {
+      if(s == q[0]) {
         count_vi++;
       }
-      if(s == q.k) {
+      if(s == q[2]) {
         count_vk++;
       }
     }
     // extremum index
-    LongSimplexId vert2Seps = count_vi > count_vk ? q.i : q.k;
-    LongSimplexId vert1Sep = count_vi > count_vk ? q.k : q.i;
+    LongSimplexId vert2Seps = count_vi > count_vk ? q[0] : q[2];
+    LongSimplexId vert1Sep = count_vi > count_vk ? q[2] : q[0];
     // the two seps from j to vert2Seps
     std::vector<size_t> borderseps{};
     for(size_t j = 0; j < seps.size(); ++j) {
-      if(dsts[j] == vert2Seps && srcs[j] == q.j) {
+      if(dsts[j] == vert2Seps && srcs[j] == q[1]) {
         borderseps.emplace_back(seps[j]);
       }
     }
@@ -702,14 +703,14 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
 
     // find a midpoint between the two extrema on the triangulation
 
-    std::vector<SimplexId> boundi{criticalPointsIdentifier_[q.i]};
-    std::vector<SimplexId> boundk{criticalPointsIdentifier_[q.k]};
+    std::vector<SimplexId> boundi{criticalPointsIdentifier_[q[0]]};
+    std::vector<SimplexId> boundk{criticalPointsIdentifier_[q[2]]};
     std::array<std::vector<float>, 6> outputDists{};
 
     Dijkstra::shortestPath(
-      criticalPointsIdentifier_[q.i], triangulation, outputDists[0], boundk);
+      criticalPointsIdentifier_[q[0]], triangulation, outputDists[0], boundk);
     Dijkstra::shortestPath(
-      criticalPointsIdentifier_[q.k], triangulation, outputDists[1], boundi);
+      criticalPointsIdentifier_[q[2]], triangulation, outputDists[1], boundi);
 
     auto inf = std::numeric_limits<float>::infinity();
     std::vector<float> sum(outputDists[0].size(), inf);
@@ -742,9 +743,9 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
 
     // find two other points
 
-    std::vector<SimplexId> bounds{criticalPointsIdentifier_[q.i],
-                                  criticalPointsIdentifier_[q.j],
-                                  criticalPointsIdentifier_[q.k]};
+    std::vector<SimplexId> bounds{criticalPointsIdentifier_[q[0]],
+                                  criticalPointsIdentifier_[q[1]],
+                                  criticalPointsIdentifier_[q[2]]};
 
     auto m0Pos = sepMids_[borderseps[0]];
     auto m1Pos = sepMids_[borderseps[1]];
@@ -788,11 +789,11 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
     auto v2 = std::min_element(sum.begin(), sum.end()) - sum.begin();
     auto v2Pos = static_cast<LongSimplexId>(insertNewPoint(v2, i, 4));
 
-    qsubd->emplace_back(Quad{4, vert2Seps, m0Pos, v1Pos, v0Pos});
-    qsubd->emplace_back(Quad{4, vert2Seps, m1Pos, v2Pos, v0Pos});
-    qsubd->emplace_back(Quad{4, q.j, m0Pos, v1Pos, vert1Sep});
-    qsubd->emplace_back(Quad{4, q.j, m1Pos, v2Pos, vert1Sep});
-    qsubd->emplace_back(Quad{4, vert1Sep, v1Pos, v0Pos, v2Pos});
+    outputSubd.emplace_back(Quad{vert2Seps, m0Pos, v1Pos, v0Pos});
+    outputSubd.emplace_back(Quad{vert2Seps, m1Pos, v2Pos, v0Pos});
+    outputSubd.emplace_back(Quad{q[1], m0Pos, v1Pos, vert1Sep});
+    outputSubd.emplace_back(Quad{q[1], m1Pos, v2Pos, vert1Sep});
+    outputSubd.emplace_back(Quad{vert1Sep, v1Pos, v0Pos, v2Pos});
   }
   return 0;
 }
@@ -819,15 +820,13 @@ int ttk::MorseSmaleQuadrangulation::subdivise(
   // hold quad subdivision
   decltype(outputCells_) outputSubd{};
   outputSubd.reserve(4 * outputCells_.size());
-  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
-  auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
 
-  for(size_t i = 0; i < quads->size(); ++i) {
-    auto q = quads->at(i);
-    auto seps = quadSeps_[i];
+  for(size_t i = 0; i < outputCells_.size(); ++i) {
+    auto q = outputCells_[i];
+    auto seps = quadSeps_[i].second;
 
     // skip degenerate case here
-    if(q.j == q.l) {
+    if(q[1] == q[3]) {
       continue;
     }
 
@@ -842,14 +841,14 @@ int ttk::MorseSmaleQuadrangulation::subdivise(
 
     // bound Dijkstra by parent quad vertices
     std::vector<SimplexId> bounds{
-      criticalPointsIdentifier_[q.i], criticalPointsIdentifier_[q.j],
-      criticalPointsIdentifier_[q.k], criticalPointsIdentifier_[q.l]};
+      criticalPointsIdentifier_[q[0]], criticalPointsIdentifier_[q[1]],
+      criticalPointsIdentifier_[q[2]], criticalPointsIdentifier_[q[3]]};
 
     // Dijkstra propagation mask
     std::vector<bool> mask(morseSeg_.size(), false);
     // restrict Dijkstra propagation to current cell
     for(size_t j = 0; j < morseSeg_.size(); ++j) {
-      if(morseSeg_[j] == cellId_[i]) {
+      if(morseSeg_[j] == quadSeps_[i].first) {
         mask[j] = true;
       }
     }
@@ -883,7 +882,7 @@ int ttk::MorseSmaleQuadrangulation::subdivise(
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < sum.size(); ++j) {
       // skip if vertex j not in cell i
-      if(morseSeg_[j] != cellId_[i]) {
+      if(morseSeg_[j] != quadSeps_[i].first) {
         continue;
       }
       auto m = outputDists[0][j];
@@ -935,10 +934,10 @@ int ttk::MorseSmaleQuadrangulation::subdivise(
 
     auto sepsQuadVertex = [&](const size_t a, const size_t b) {
       if(srcs[a] == srcs[b]) {
-        qsubd->emplace_back(Quad{4, srcs[a], sepMids[a], baryPos, sepMids[b]});
+        outputSubd.emplace_back(Quad{srcs[a], sepMids[a], baryPos, sepMids[b]});
       }
       if(dsts[a] == dsts[b]) {
-        qsubd->emplace_back(Quad{4, dsts[a], sepMids[a], baryPos, sepMids[b]});
+        outputSubd.emplace_back(Quad{dsts[a], sepMids[a], baryPos, sepMids[b]});
       }
     };
 
@@ -977,29 +976,28 @@ bool ttk::MorseSmaleQuadrangulation::checkSurfaceCloseness(
     quadEdges{};
 
   // sweep over quadrangulation edges
-  auto quads = reinterpret_cast<const std::vector<Quad> *>(&outputCells_);
-  for(size_t i = 0; i < quads->size(); ++i) {
-    auto q = quads->at(i);
+  for(size_t i = 0; i < outputCells_.size(); ++i) {
+    auto q = outputCells_[i];
     // store edges in order
-    if(q.i < q.j) {
-      quadEdges[std::make_pair(q.i, q.j)].emplace(i);
+    if(q[0] < q[1]) {
+      quadEdges[std::make_pair(q[0], q[1])].emplace(i);
     } else {
-      quadEdges[std::make_pair(q.j, q.i)].emplace(i);
+      quadEdges[std::make_pair(q[1], q[0])].emplace(i);
     }
-    if(q.j < q.k) {
-      quadEdges[std::make_pair(q.j, q.k)].emplace(i);
+    if(q[1] < q[2]) {
+      quadEdges[std::make_pair(q[1], q[2])].emplace(i);
     } else {
-      quadEdges[std::make_pair(q.k, q.j)].emplace(i);
+      quadEdges[std::make_pair(q[2], q[1])].emplace(i);
     }
-    if(q.k < q.l) {
-      quadEdges[std::make_pair(q.k, q.l)].emplace(i);
+    if(q[2] < q[3]) {
+      quadEdges[std::make_pair(q[2], q[3])].emplace(i);
     } else {
-      quadEdges[std::make_pair(q.l, q.k)].emplace(i);
+      quadEdges[std::make_pair(q[3], q[2])].emplace(i);
     }
-    if(q.l < q.i) {
-      quadEdges[std::make_pair(q.l, q.i)].emplace(i);
+    if(q[3] < q[0]) {
+      quadEdges[std::make_pair(q[3], q[0])].emplace(i);
     } else {
-      quadEdges[std::make_pair(q.i, q.l)].emplace(i);
+      quadEdges[std::make_pair(q[0], q[3])].emplace(i);
     }
   }
 
@@ -1074,10 +1072,7 @@ int ttk::MorseSmaleQuadrangulation::execute(
     }
   }
 
-  // number of produced quads
-  size_t quadNumber = outputCells_.size() / 5;
-
-  this->printMsg("Produced " + std::to_string(quadNumber) + " ("
+  this->printMsg("Produced " + std::to_string(outputCells_.size()) + " ("
                    + std::to_string(ndegen) + " degenerated)",
                  1.0, tm.getElapsedTime(), this->threadNumber_);
 

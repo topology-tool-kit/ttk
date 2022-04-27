@@ -46,8 +46,7 @@ namespace ttk {
     struct triScheme {
       unsigned int scheme : 3;
 
-      triScheme() {
-      }
+      triScheme() = default;
 
       triScheme(const char u) : scheme(u) {
       }
@@ -73,8 +72,7 @@ namespace ttk {
       explicit Mesh(triangulationType *tri) : tri_{tri} {
       }
 
-      Mesh() {
-      }
+      Mesh() = default;
 
       void setTriangulation(triangulationType *tri) {
         tri_ = tri;
@@ -84,15 +82,15 @@ namespace ttk {
         return tri_;
       }
 
-      void alloc(void) override {
+      void alloc() override {
         edgesSortId_.resize(nbEdges_);
         trianglesSortId_.resize(nbTriangles_);
       }
 
-      void init(void) override {
+      void init() override {
       }
 
-      void preprocess(void) {
+      void preprocess() {
         tri_->preconditionVertexNeighbors();
         tri_->preconditionVertexEdges();
         tri_->preconditionVertexTriangles();
@@ -106,23 +104,23 @@ namespace ttk {
 
       // Facade Triangulation
 
-      inline SimplexId getDimensionality(void) const {
+      inline SimplexId getDimensionality() const {
         return tri_->getDimensionality();
       }
 
-      inline idVertex getNumberOfVertices(void) const {
+      inline idVertex getNumberOfVertices() const {
         return nbVerts_;
       }
 
-      inline idEdge getNumberOfEdges(void) const {
+      inline idEdge getNumberOfEdges() const {
         return nbEdges_;
       }
 
-      inline idCell getNumberOfTriangles(void) const {
+      inline idCell getNumberOfTriangles() const {
         return nbTriangles_;
       }
 
-      inline idCell getNumberOfCells(void) const {
+      inline idCell getNumberOfCells() const {
         return tri_->getNumberOfCells();
       }
 
@@ -188,9 +186,9 @@ namespace ttk {
 
       // precompute
 
-      void preSortEdges(VertCompFN lowerThan);
+      void preSortEdges(const VertCompFN &lowerThan);
 
-      void preSortTriangles(VertCompFN lowerThan);
+      void preSortTriangles(const VertCompFN &lowerThan);
 
       // get simplex
 
@@ -210,21 +208,21 @@ namespace ttk {
 
       bool compareEdges(const idEdge e0,
                         const idEdge e1,
-                        VertCompFN lowerThan) const;
+                        const VertCompFN &lowerThan) const;
 
       bool compareLinks(const linkEdge &l0,
                         const linkEdge &l1,
-                        VertCompFN lowerTan) const;
+                        const VertCompFN &lowerTan) const;
 
       // tools
 
-      std::string printEdges(void) const;
+      std::string printEdges() const;
 
       std::string printEdge(const idEdge e) const;
     };
 
     template <typename triangulationType>
-    void Mesh<triangulationType>::preSortEdges(VertCompFN lowerThan) {
+    void Mesh<triangulationType>::preSortEdges(const VertCompFN &lowerThan) {
 // Can't be parallel on a vector of bool !!
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(static)
@@ -239,7 +237,8 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    void Mesh<triangulationType>::preSortTriangles(VertCompFN lowerThan) {
+    void
+      Mesh<triangulationType>::preSortTriangles(const VertCompFN &lowerThan) {
 // require edges to be already sorted
 //
 // Not sure we can parallelie on a vector of bitfields
@@ -463,9 +462,8 @@ namespace ttk {
     // tools
 
     template <typename triangulationType>
-    bool Mesh<triangulationType>::compareEdges(const idEdge e0,
-                                               const idEdge e1,
-                                               VertCompFN lowerThan) const {
+    bool Mesh<triangulationType>::compareEdges(
+      const idEdge e0, const idEdge e1, const VertCompFN &lowerThan) const {
       idVertex e0v0, e0v1;
       if(edgesSortId_[e0] == 0) {
         getEdgeVertex(e0, 0, e0v0);
@@ -490,9 +488,10 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    bool Mesh<triangulationType>::compareLinks(const linkEdge &l0,
-                                               const linkEdge &l1,
-                                               VertCompFN lowerThan) const {
+    bool
+      Mesh<triangulationType>::compareLinks(const linkEdge &l0,
+                                            const linkEdge &l1,
+                                            const VertCompFN &lowerThan) const {
       if(std::get<0>(l0) == std::get<0>(l1)) {
         return compareEdges(std::get<1>(l0), std::get<1>(l1), lowerThan);
       }
@@ -500,7 +499,7 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    std::string Mesh<triangulationType>::printEdges(void) const {
+    std::string Mesh<triangulationType>::printEdges() const {
       std::stringstream res;
       res << " edges: " << std::endl;
       for(idEdge i = 0; i < nbEdges_; ++i) {

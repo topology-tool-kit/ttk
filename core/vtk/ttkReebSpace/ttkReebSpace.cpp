@@ -29,13 +29,10 @@ int ttkReebSpace::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkReebSpace::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0) { // 0-sheets, corners of jacobi set segments
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  } else if(port == 1) { // 1-sheets, jacobi sets
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  } else if(port == 2) { // 2-sheets, fiber surfaces of jacobi sets
+  if(port == 0 || port == 1 || port == 2) {
+    // 0-sheets, corners of jacobi set segments
+    // 1-sheets, jacobi sets
+    // 2-sheets, fiber surfaces of jacobi sets
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   } else if(port == 3) {
@@ -79,7 +76,7 @@ int ttkReebSpace::dispatch(const dataTypeU *const uField,
 
   return 0;
 }
-int ttkReebSpace::RequestData(vtkInformation *request,
+int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
 

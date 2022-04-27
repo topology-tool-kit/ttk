@@ -19,11 +19,7 @@
 /// (C++-only) TTK component.
 
 // include the local headers
-#include <CommandLineParser.h>
-#include <MorseSmaleComplex.h>
-#include <PersistenceCurve.h>
-#include <PersistenceDiagram.h>
-#include <TopologicalSimplification.h>
+#include <TopologyToolKit.h>
 
 #include <cassert>
 #include <iostream>
@@ -195,13 +191,14 @@ int main(int argc, char **argv) {
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
   curve.preconditionTriangulation(&triangulation);
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float>(height.data(), order.data(), &triangulation);
+  curve.execute<float>(height.data(), 0, order.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<ttk::PersistencePair> diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
-  diagram.execute(diagramOutput, height.data(), order.data(), &triangulation);
+  diagram.execute(
+    diagramOutput, height.data(), 0, order.data(), &triangulation);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
@@ -209,8 +206,8 @@ int main(int argc, char **argv) {
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
     if(diagramOutput[i].persistence > 0.05) {
       // 5. selecting the most persistent pairs
-      authorizedCriticalPoints.push_back(diagramOutput[i].birth);
-      authorizedCriticalPoints.push_back(diagramOutput[i].death);
+      authorizedCriticalPoints.push_back(diagramOutput[i].birth.id);
+      authorizedCriticalPoints.push_back(diagramOutput[i].death.id);
     }
   }
 
@@ -230,60 +227,24 @@ int main(int argc, char **argv) {
   // 7. computing the Morse-Smale complex
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
-  ttk::SimplexId criticalPoints_numberOfPoints{};
-  std::vector<float> criticalPoints_points;
-  std::vector<char> criticalPoints_points_cellDimensions;
-  std::vector<ttk::SimplexId> criticalPoints_points_cellIds;
-  std::vector<char> criticalPoints_points_isOnBoundary;
-  std::vector<float> criticalPoints_points_cellScalars;
-  std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize;
+  ttk::MorseSmaleComplex::OutputCriticalPoints outCriticalPoints{};
   // 1-separatrices
-  ttk::SimplexId separatrices1_numberOfPoints{};
-  std::vector<float> separatrices1_points;
-  std::vector<char> separatrices1_points_smoothingMask;
-  std::vector<char> separatrices1_points_cellDimensions;
-  std::vector<ttk::SimplexId> separatrices1_points_cellIds;
-  ttk::SimplexId separatrices1_numberOfCells{};
-  std::vector<long long> separatrices1_cells_connectivity;
-  std::vector<ttk::SimplexId> separatrices1_cells_sourceIds;
-  std::vector<ttk::SimplexId> separatrices1_cells_destinationIds;
-  std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds;
-  std::vector<char> separatrices1_cells_separatrixTypes;
-  std::vector<char> separatrices1_cells_isOnBoundary;
-  std::vector<double> separatrices1_cells_separatrixFunctionMaxima;
-  std::vector<double> separatrices1_cells_separatrixFunctionMinima;
-  std::vector<double> separatrices1_cells_separatrixFunctionDiffs;
+  ttk::MorseSmaleComplex::Output1Separatrices out1Separatrices{};
+  // 2-separatrices
+  ttk::MorseSmaleComplex::Output2Separatrices out2Separatrices{};
   // segmentation
   std::vector<ttk::SimplexId> ascendingSegmentation(
     triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1),
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
-  morseSmaleComplex.preconditionTriangulation(&triangulation);
-  morseSmaleComplex.setInputScalarField(simplifiedHeight.data());
-  morseSmaleComplex.setInputOffsets(simplifiedOrder.data());
-  morseSmaleComplex.setOutputMorseComplexes(ascendingSegmentation.data(),
-                                            descendingSegmentation.data(),
-                                            mscSegmentation.data());
-  morseSmaleComplex.setOutputCriticalPoints(
-    &criticalPoints_numberOfPoints, &criticalPoints_points,
-    &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-    &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-    &criticalPoints_points_PLVertexIdentifiers,
-    &criticalPoints_points_manifoldSize);
-  morseSmaleComplex.setOutputSeparatrices1(
-    &separatrices1_numberOfPoints, &separatrices1_points,
-    &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
-    &separatrices1_points_cellIds, &separatrices1_numberOfCells,
-    &separatrices1_cells_connectivity, &separatrices1_cells_sourceIds,
-    &separatrices1_cells_destinationIds, &separatrices1_cells_separatrixIds,
-    &separatrices1_cells_separatrixTypes,
-    &separatrices1_cells_separatrixFunctionMaxima,
-    &separatrices1_cells_separatrixFunctionMinima,
-    &separatrices1_cells_separatrixFunctionDiffs,
-    &separatrices1_cells_isOnBoundary);
+  ttk::MorseSmaleComplex::OutputManifold outSegmentation{
+    ascendingSegmentation.data(), descendingSegmentation.data(),
+    mscSegmentation.data()};
 
-  morseSmaleComplex.execute<float>(triangulation);
+  morseSmaleComplex.preconditionTriangulation(&triangulation);
+  morseSmaleComplex.execute(
+    outCriticalPoints, out1Separatrices, out2Separatrices, outSegmentation,
+    simplifiedHeight.data(), 0, simplifiedOrder.data(), triangulation);
 
   // save the output
   save(pointSet, triangleSetCo, triangleSetOff, "output.off");

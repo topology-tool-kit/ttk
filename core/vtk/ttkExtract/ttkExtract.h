@@ -101,7 +101,7 @@ public:
   vtkSetMacro(OutputType, int);
   vtkGetMacro(OutputType, int);
 
-  vtkSetMacro(ExpressionString, std::string);
+  vtkSetMacro(ExpressionString, const std::string &);
   vtkGetMacro(ExpressionString, std::string);
 
   vtkSetMacro(ExtractUniqueValues, bool);
@@ -110,7 +110,7 @@ public:
   vtkSetMacro(ArrayAttributeType, int);
   vtkGetMacro(ArrayAttributeType, int);
 
-  vtkSetMacro(OutputArrayName, std::string);
+  vtkSetMacro(OutputArrayName, const std::string &);
   vtkGetMacro(OutputArrayName, std::string);
 
   vtkSetVector6Macro(ImageExtent, int);
@@ -144,10 +144,11 @@ public:
                    const std::vector<double> &indices);
 
   static ttkExtract *New();
-  vtkTypeMacro(ttkExtract, ttkAlgorithm)
+  vtkTypeMacro(ttkExtract, ttkAlgorithm);
 
-    protected : ttkExtract();
-  ~ttkExtract();
+protected:
+  ttkExtract();
+  ~ttkExtract() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

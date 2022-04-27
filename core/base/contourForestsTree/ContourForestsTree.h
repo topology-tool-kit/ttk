@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURTREE_H
-#define _CONTOURTREE_H
+#pragma once
 
 #include <queue>
 #include <set>
@@ -49,7 +48,7 @@ namespace ttk {
       ContourForestsTree(Params *const params,
                          Scalars *const scalars,
                          idPartition part = nullPartition);
-      virtual ~ContourForestsTree();
+      ~ContourForestsTree() override;
 
       // }
       // -----------------
@@ -57,7 +56,7 @@ namespace ttk {
       // -----------------
       // {
 
-      void flush(void) {
+      void flush() {
         MergeTree::flush();
         jt_->flush();
         st_->flush();
@@ -69,11 +68,11 @@ namespace ttk {
       // -----------------
       // {
 
-      inline MergeTree *getJoinTree(void) const {
+      inline MergeTree *getJoinTree() const {
         return jt_;
       }
 
-      inline MergeTree *getSplitTree(void) const {
+      inline MergeTree *getSplitTree() const {
         return st_;
       }
 
@@ -110,11 +109,9 @@ namespace ttk {
 
       /// \brief initialize data of the Merge Trees jt & st
       template <typename scalarType>
-      void initDataMT(void);
+      void initDataMT();
 
       // }
     };
   } // namespace cf
 } // namespace ttk
-
-#endif // CONTOURTREE_H

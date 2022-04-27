@@ -23,8 +23,8 @@ namespace ttk {
   public:
     Icosphere() {
       this->setDebugMsgPrefix("Icosphere");
-    };
-    ~Icosphere() override{};
+    }
+    ~Icosphere() override = default;
 
     /**
      * Efficiently computes for a given subdivision level the number of
@@ -42,7 +42,7 @@ namespace ttk {
       }
 
       return 1;
-    };
+    }
 
     /**
      * Translates an icosphere
@@ -103,13 +103,13 @@ namespace ttk {
                  IT &vertexIndex) const {
       IT cIndex = vertexIndex * 3;
 
-      DT length = sqrt(x * x + y * y + z * z);
+      DT length = std::sqrt(x * x + y * y + z * z);
       vertexCoords[cIndex] = x / length;
       vertexCoords[cIndex + 1] = y / length;
       vertexCoords[cIndex + 2] = z / length;
 
       return vertexIndex++;
-    };
+    }
 
     /**
      * Adds the ijk ids of a new triangle to the connectivityList at
@@ -127,7 +127,7 @@ namespace ttk {
       connectivityList[cIndex + 1] = j;
       connectivityList[cIndex + 2] = k;
       return triangleIndex++;
-    };
+    }
 
     /**
      * Adds a new vertex at the middle of an edge between the vertices i
@@ -167,7 +167,7 @@ namespace ttk {
         processedEdges.insert({{a, b}, mIndex});
         return mIndex;
       }
-    };
+    }
   };
 } // namespace ttk
 
@@ -296,7 +296,7 @@ int ttk::Icosphere::computeIcosphere(
   this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
   return 1;
-};
+}
 
 template <typename DT, typename IT>
 int ttk::Icosphere::translateIcosphere(DT *vertexCoords,
@@ -384,7 +384,7 @@ int ttk::Icosphere::computeIcospheres(
 
   // Translating Icospheres
   ttk::Timer timer;
-  const std::string transMsg = "Transforming " + std::to_string(nSpheres)
+  const std::string transMsg = "Moving " + std::to_string(nSpheres)
                                + " Icospheres (R: " + std::to_string(radius)
                                + ")";
   this->printMsg(

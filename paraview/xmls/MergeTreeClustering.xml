@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="MergeTreeClustering" 
+                     class="ttkMergeTreeClustering" 
+                     label="TTK MergeTreeClustering">
+           <Documentation long_help="TTK MergeTreeClustering plugin that compute distance, geodesics and barycenters between merge trees." 
+                          short_help="TTK MergeTreeClustering plugin that compute distance, geodesics and barycenters between merge trees.">
+This filter allows to compute distances, geodesics, barycenters and clusters of merge trees.
+
+Two backends are available:
+
+- The Wasserstein Distance:
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
+IEEE Transactions on Visualization and Computer Graphics, 2021
+
+- The Edit Distance:
+Related publication:
+'Edit distance between merge trees.'
+R. Sridharamurthy, T. B. Masood, A. Kamakshidasan, and V. Natarajan.
+IEEE Transactions on Visualization and Computer Graphics, 2018.
+
+Only the first backend allows to compute geodesics, barycenters and clusters of merge trees. The second one can only compute distances.
+These backends are different through 3 parameters:
+
+               Parameters | Wasserstein |  Edit |
+--------------------------|-------------|-------|
+     Branch Decomposition |        True | False |
+   Normalized Wasserstein |        True | False |
+             Keep Subtree |       False |  True |
+
+These parameters can be configured manually by selecting the Custom backend.
+
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+
+When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
+
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+           </Documentation>
+
+            <!-- INPUT -->
+           
+                <InputProperty
+                    name="Input"
+                    port_index="0"
+                    command="SetInputConnection">
+                  <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                  </ProxyGroupDomain>
+                  <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet"/>
+                  </DataTypeDomain>
+                  <InputArrayDomain name="input_scalars" number_of_components="1">
+                    <Property name="Input" function="FieldDataSelection" />
+                  </InputArrayDomain>
+                  <Documentation>
+                    Merge trees to process.
+                  </Documentation>
+                </InputProperty>
+                
+                <InputProperty
+                    name="Optional Input (clustering)"
+                    port_index="1"
+                    command="SetInputConnection">
+                  <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                  </ProxyGroupDomain>
+                  <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet"/>
+                  </DataTypeDomain>
+                  <InputArrayDomain name="input_scalars" number_of_components="1">
+                    <Property name="Input" function="FieldDataSelection" />
+                  </InputArrayDomain>
+                  <Documentation>
+                    This input is used for the clustering of merge trees that can use join and split tree together. Pass as input either join or split trees in the first input and the other type of trees in the second input.
+                  </Documentation>
+                </InputProperty>
+
+            <!-- INPUT PARAMETER WIDGETS -->
+                <!-- Execution options -->
+                ${MERGE_TREE_INPUT_WIDGETS}
+                                
+                <IntVectorProperty
+                name="ComputeBarycenter"
+                command="SetComputeBarycenter"
+                label="Compute Barycenter"
+                number_of_elements="1"
+                default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="or">
+                      <Expression type="and">
+                        <Expression type="and">
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="BranchDecomposition"
+                                                  value="1" />
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="Backend"
+                                                  value="2" />
+                        </Expression>
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="KeepSubtree"
+                                                value="0" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="Backend"
+                                              value="0" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+                  <Documentation>
+                    Compute a barycenter of the merge trees in input.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="NumberOfBarycenters"
+                command="SetNumberOfBarycenters"
+                label="Number Of Clusters"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="and">
+                      <Expression type="and">
+                        <Expression type="or">
+                          <Expression type="and">
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="BranchDecomposition"
+                                                    value="1" />
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="Backend"
+                                                    value="2" />
+                          </Expression>
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="Backend"
+                                                  value="0" />
+                        </Expression>
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="KeepSubtree"
+                                                value="0" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="ComputeBarycenter"
+                                              value="1" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+                  <Documentation>
+                    Number of barycenters/clusters to compute (performs a KMeans with merge trees as centroids).
+                  </Documentation>
+                </IntVectorProperty>
+
+                <IntVectorProperty
+                name="Deterministic"
+                command="SetDeterministic"
+                label="Deterministic"
+                number_of_elements="1"
+                  default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="and">
+                      <Expression type="and">
+                        <Expression type="or">
+                          <Expression type="and">
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="BranchDecomposition"
+                                                    value="1" />
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="Backend"
+                                                    value="2" />
+                          </Expression>
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="Backend"
+                                                  value="0" />
+                        </Expression>
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="KeepSubtree"
+                                                value="0" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="ComputeBarycenter"
+                                              value="1" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+
+                  <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+
+                
+                
+                <DoubleVectorProperty
+                name="Alpha"
+                command="SetAlpha"
+                label="Alpha"
+                number_of_elements="1"
+                default_values="0.5"
+                panel_visibility="advanced">>
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="ComputeBarycenter"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Set the alpha coefficent of the first tree. Use to work when there is only 2 input trees, the alpha of the second input will be (1-alpha).
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="1" />
+                </DoubleVectorProperty> 
+                
+                <DoubleVectorProperty
+                name="JoinSplitMixtureCoefficient"
+                command="SetJoinSplitMixtureCoefficient"
+                label="Join Split Mixture Coefficient"
+                number_of_elements="1"
+                default_values="0.5"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="ComputeBarycenter"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    When Input2 is filled, either it contains split tree and Input1 join tree or the other way around. This parameter allows to ponderate more or less the second input or the first one in the computation of the barycenter.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="1" />
+                </DoubleVectorProperty>
+                
+                <!-- Input options -->
+                <!-- TODO <IntVectorProperty
+                name="UseMinMaxPair"
+                command="SetUseMinMaxPair"
+                label="Use Min Max Pair"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <Documentation>
+                    
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty> -->
+                <!-- Output options -->
+                
+                <IntVectorProperty
+                name="OutputTrees"
+                command="SetOutputTrees"
+                label="Output Trees"
+                number_of_elements="1"
+                  default_values="1"
+                  panel_visibility="advanced">
+                  <Documentation>
+                    Display output trees. 
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="DimensionSpacing"
+                command="SetDimensionSpacing"
+                label="Dimension Spacing"
+                number_of_elements="1"
+                default_values="1.0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    
+                  </Documentation>
+                </DoubleVectorProperty>
+                
+                <IntVectorProperty
+                name="DimensionToShift"
+                label="Dimension To shift"
+                command="SetDimensionToShift"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="MergeTreePlanarLayout"
+                                           value="0" />
+                  </Hints>
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                  <Documentation>
+                  </Documentation>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="BarycenterPositionAlpha"
+                command="SetBarycenterPositionAlpha"
+                label="Barycenter position according to alpha"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Position barycenter according to alpha parameter (when 2 input trees).
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="MergeTreePlanarLayout"
+                command="SetPlanarLayout"
+                label="Planar Layout"
+                number_of_elements="1"
+                default_values="1">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Display trees in a plane or in the original domain.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="RescaleTreesIndividually"
+                command="SetRescaleTreesIndividually"
+                label="Rescale Trees Individually"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="MergeTreePlanarLayout"
+                                           value="1" />
+                  </Hints>
+                  <Documentation>
+                    Rescale trees individually. If enabled, the trees will have the same size, it can be interesting to use to individually analyze trees but the comparison between trees given their size will be biased.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="OutputSegmentation"
+                command="SetOutputSegmentation"
+                label="Output Segmentation"
+                number_of_elements="1"
+                default_values="0">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="OutputTrees"
+                                           value="1" />
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="MergeTreePlanarLayout"
+                                           value="0" />
+                  </Hints>
+                  <Documentation>
+                    Display output segmentation. Be careful, it can consume a lot of memory since some segmentations must be copied (to shift them).
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>  
+
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="ComputeBarycenter"/>
+              <Property name="NumberOfBarycenters"/>
+              <Property name="Deterministic"/>
+              <Property name="Alpha"/>
+              <Property name="JoinSplitMixtureCoefficient"/>
+              <!-- <Property name="UseMinMaxPair"/> -->
+            </PropertyGroup>
+            ${MERGE_TREE_PREPROCESS_WIDGETS}
+                
+            <PropertyGroup panel_widget="Line" label="Output options">
+              <Property name="OutputTrees"/>
+              <Property name="DimensionSpacing"/>
+              <Property name="DimensionToShift"/>
+              <Property name="BarycenterPositionAlpha"/>
+              <Property name="MergeTreePlanarLayout"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PLANAR_LAYOUT_WIDGETS}
+            <PropertyGroup panel_widget="Line" label="Output options">
+              <Property name="RescaleTreesIndividually"/>
+              <Property name="OutputSegmentation"/>
+            </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Clustered Merge Trees" index="0" id="port0" />
+                <OutputPort name="Centroids Merge Trees" index="1" id="port1" />
+                <OutputPort name="Matchings" index="2" id="port2" />
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <!-- MENU CATEGORY -->
+                <Hints>
+                    <ShowInMenu category="TTK - Ensemble Scalar Data" />
+                </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

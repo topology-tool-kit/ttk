@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk:FTMTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///
@@ -209,7 +209,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp taskwait
 #endif
 
-  printTime(segmentsSet, "segmentation set vertices", -1, 4);
+  printTime(segmentsSet, "segmentation set vertices", 4);
 
   if(mt_data_.trunkSegments->size() == 0) {
     // sort arc that have been filled by the trunk
@@ -226,7 +226,7 @@ void FTMTree_MT::buildSegmentation() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-    printTime(segmentsSortTime, "segmentation sort vertices", -1, 4);
+    printTime(segmentsSortTime, "segmentation sort vertices", 4);
   } else {
     // Contour tree: we create the arc segmentation for arcs in the trunk
     Timer segmentsArcTime;
@@ -245,7 +245,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp taskwait
 #endif
 
-    printTime(segmentsArcTime, "segmentation arcs lists", -1, 4);
+    printTime(segmentsArcTime, "segmentation arcs lists", 4);
   }
 
   // Update SuperArc region
@@ -368,7 +368,7 @@ void FTMTree_MT::delNode(idNode node) {
 #endif
 }
 
-void FTMTree_MT::finalizeSegmentation(void) {
+void FTMTree_MT::finalizeSegmentation() {
   for(auto &arc : *mt_data_.superArcs) {
     arc.createSegmentation(scalars_);
   }
@@ -517,7 +517,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
   return newNodeId;
 }
 
-idNode FTMTree_MT::makeNode(const Node *const n, SimplexId term) {
+idNode FTMTree_MT::makeNode(const Node *const n, SimplexId) {
   return makeNode(n->getVertexId());
 }
 
@@ -548,7 +548,7 @@ void FTMTree_MT::move(FTMTree_MT *mt) {
   mt->mt_data_.vert2tree = nullptr;
 }
 
-void FTMTree_MT::normalizeIds(void) {
+void FTMTree_MT::normalizeIds() {
   Timer normTime;
   sortLeaves(true);
 
@@ -644,7 +644,7 @@ void FTMTree_MT::normalizeIds(void) {
   }
 #endif
 
-  printTime(normTime, "normalize ids", -1, 4);
+  printTime(normTime, "normalize ids", 4);
 }
 
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId) {
@@ -723,7 +723,7 @@ string FTMTree_MT::printNode(idNode n) {
   return res.str();
 }
 
-void FTMTree_MT::printParams(void) const {
+void FTMTree_MT::printParams() const {
   if(debugLevel_ > 1) {
     if(debugLevel_ > 2) {
       this->printMsg(ttk::debug::Separator::L1);
@@ -749,7 +749,6 @@ void FTMTree_MT::printParams(void) const {
 
 int FTMTree_MT::printTime(Timer &t,
                           const string &s,
-                          SimplexId nbScalars,
                           const int debugLevel) const {
 
   if(this->debugLevel_ >= debugLevel) {
@@ -806,20 +805,8 @@ void FTMTree_MT::sortLeaves(const bool para) {
   };
 
   if(para) {
-#ifdef __clang__
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#else
-#ifndef _MSC_VER
-#ifdef TTK_ENABLE_OPENMP
-    __gnu_parallel::sort(
-      mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#else
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#endif
-#else
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-#endif
-#endif
+    TTK_PSORT(this->threadNumber_, mt_data_.leaves->begin(),
+              mt_data_.leaves->end(), indirect_sort);
   } else {
     std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
   }
@@ -835,19 +822,8 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para) {
   };
 
   if(para) {
-#ifdef __clang__
-    std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#else
-#ifndef _MSC_VER
-#ifdef TTK_ENABLE_OPENMP
-    __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#else
-    std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#endif
-#else
-    std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
-#endif
-#endif
+    TTK_PSORT(this->threadNumber_, sortedNodes.begin(), sortedNodes.end(),
+              indirect_sort);
   } else {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp single
@@ -1022,12 +998,13 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
   return tot;
 }
 
-ostream &ttk::ftm::operator<<(ostream &o, SuperArc const &a) {
+std::ostream &ttk::ftm::operator<<(std::ostream &o,
+                                   ttk::ftm::SuperArc const &a) {
   o << a.getDownNodeId() << " <>> " << a.getUpNodeId();
   return o;
 }
 
-ostream &ttk::ftm::operator<<(ostream &o, Node const &n) {
+std::ostream &ttk::ftm::operator<<(std::ostream &o, ttk::ftm::Node const &n) {
   o << n.getNumberOfDownSuperArcs() << " .-. " << n.getNumberOfUpSuperArcs();
   return o;
 }

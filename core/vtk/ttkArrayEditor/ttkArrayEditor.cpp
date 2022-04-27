@@ -34,8 +34,7 @@ ttkArrayEditor::ttkArrayEditor() {
   }
 }
 
-ttkArrayEditor::~ttkArrayEditor() {
-}
+ttkArrayEditor::~ttkArrayEditor() = default;
 
 vtkDataArraySelection *ttkArrayEditor::GetArraySelection(int association) {
   if(association >= 0 && association < vtkDataObject::NUMBER_OF_ASSOCIATIONS) {
@@ -65,17 +64,19 @@ int ttkArrayEditor::FillOutputPortInformation(int port, vtkInformation *info) {
 
 template <typename VTK_T1, typename VTK_T2>
 int copyArrayData(vtkDataArray *target, vtkDataArray *copy) {
-  auto targetData = (VTK_T1 *)ttkUtils::GetVoidPointer(target);
-  auto copyData = (VTK_T2 *)ttkUtils::GetVoidPointer(copy);
-  for(size_t i = 0, n = target->GetNumberOfValues(); i < n; i++)
+  auto targetData = ttkUtils::GetPointer<VTK_T1>(target);
+  auto copyData = ttkUtils::GetPointer<VTK_T2>(copy);
+  for(size_t i = 0, n = target->GetNumberOfValues(); i < n; i++) {
+    // NOLINTNEXTLINE (bugprone-signed-char-misuse)
     copyData[i] = (VTK_T2)(targetData[i]);
+  }
   return 1;
 }
 
 // =============================================================================
 // RequestData
 // =============================================================================
-int ttkArrayEditor::RequestData(vtkInformation *request,
+int ttkArrayEditor::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
 
@@ -199,10 +200,8 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
     case MODE::EDIT_ARRAY: {
 
       auto targetArray = this->GetInputArrayToProcess(0, inputVector);
-      if(!targetArray) {
-        this->printErr("Unable to retrieve input array.");
-        return 0;
-      }
+      if(!targetArray)
+        return !this->printErr("Unable to retrieve input array.");
 
       int targetArrayAssociation
         = this->GetInputArrayAssociation(0, inputVector);
@@ -216,10 +215,10 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
       // check if it is necessary to create a new array
       if(this->TargetArrayType >= 0 || this->TargetArrayIndexation[0] >= 0
          || this->TargetArrayIndexation[1] >= 0) {
-        copy = vtkSmartPointer<vtkDataArray>::Take(vtkDataArray::SafeDownCast(
-          vtkAbstractArray::CreateArray(this->TargetArrayType < 0
-                                          ? targetArray->GetDataType()
-                                          : this->TargetArrayType)));
+        copy
+          = vtkSmartPointer<vtkDataArray>::Take(vtkDataArray::CreateDataArray(
+            this->TargetArrayType < 0 ? targetArray->GetDataType()
+                                      : this->TargetArrayType));
 
         size_t nComponents = this->TargetArrayIndexation[1] >= 0
                                ? this->TargetArrayIndexation[1]
@@ -233,7 +232,7 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
                          : this->TargetArrayIndexation[1] >= 0
                            ? targetArray->GetNumberOfValues()
                                / this->TargetArrayIndexation[1]
-                           : targetArray->GetNumberOfComponents();
+                           : targetArray->GetNumberOfTuples();
         copy->Allocate(nTuples * nComponents);
         copy->SetNumberOfComponents(nComponents);
         copy->SetNumberOfTuples(nTuples);

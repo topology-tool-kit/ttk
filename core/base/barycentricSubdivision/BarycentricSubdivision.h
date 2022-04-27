@@ -72,15 +72,13 @@ namespace ttk {
      *
      * @param[in] data Pointer to input data on parent triangulation
      * @param[out] output Allocated buffer to be filled
+     * @param[in] inputTriangl Input triangulation object
      *
      * @return 0 in case of success
      */
     template <typename T, typename triangulationType>
     int interpolateContinuousScalarField(
-      const T *data,
-      T *output,
-      const triangulationType &inputTriangl,
-      const ExplicitTriangulation &outputTriangl) const {
+      const T *data, T *output, const triangulationType &inputTriangl) const {
       static_assert(
         std::is_floating_point<T>::value, "Floating point type required.");
       const auto nOutVerts = this->getNumberOfVertices();
@@ -192,12 +190,6 @@ namespace ttk {
 template <typename triangulationType>
 int ttk::BarycentricSubdivision::subdiviseTriangulation(
   const triangulationType &inputTriangl) {
-
-  // not implemented for dimension >= 3
-  if(inputTriangl.getDimensionality() >= 3) {
-    this->printErr("Not yet implemented for dimension 3 and above");
-    return 1;
-  }
 
   const SimplexId newPoints{nVertices_ + nEdges_ + nTriangles_};
   const size_t dataPerPoint{3};
@@ -321,6 +313,12 @@ template <typename triangulationType>
 int ttk::BarycentricSubdivision::execute(
   const triangulationType &inputTriangl,
   ttk::ExplicitTriangulation &outputTriangl) {
+
+  // not implemented for dimension >= 3
+  if(inputTriangl.getDimensionality() >= 3) {
+    this->printErr("Not yet implemented for dimension 3 and above");
+    return 1;
+  }
 
   Timer tm;
 

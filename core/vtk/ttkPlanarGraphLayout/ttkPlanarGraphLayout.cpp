@@ -6,9 +6,15 @@
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
+
+#include <FTMTreePPUtils.h>
+#include <ttkFTMTreeUtils.h>
+#include <ttkMergeTreeVisualization.h>
 
 vtkStandardNewMacro(ttkPlanarGraphLayout);
 
@@ -16,14 +22,16 @@ ttkPlanarGraphLayout::ttkPlanarGraphLayout() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
-ttkPlanarGraphLayout::~ttkPlanarGraphLayout() {
-}
+ttkPlanarGraphLayout::~ttkPlanarGraphLayout() = default;
 
 int ttkPlanarGraphLayout::FillInputPortInformation(int port,
                                                    vtkInformation *info) {
-  if(port == 0)
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
-  else
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+    info->Append(
+      vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    info->Append(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
+  } else
     return 0;
   return 1;
 }
@@ -37,16 +45,17 @@ int ttkPlanarGraphLayout::FillOutputPortInformation(int port,
   return 1;
 }
 
-int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
-                                      vtkInformationVector **inputVector,
-                                      vtkInformationVector *outputVector) {
+int ttkPlanarGraphLayout::planarGraphLayoutCall(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
   // Get input and output objects
-  auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
 
-  if(input == nullptr || output == nullptr) {
-    return -1;
-  }
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
+
+  if(!input || !output)
+    return !this->printErr("Unable to retrieve input/output data objects.");
 
   // Copy input to output
   output->ShallowCopy(input);
@@ -56,28 +65,20 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
 
   // Get input arrays
   auto sequenceArray = this->GetInputArrayToProcess(0, inputVector);
-  if(this->GetUseSequences() && !sequenceArray) {
-    this->printErr("Unable to retrieve sequence array.");
-    return 0;
-  }
+  if(this->GetUseSequences() && !sequenceArray)
+    return !this->printErr("Unable to retrieve sequence array.");
 
   auto sizeArray = this->GetInputArrayToProcess(1, inputVector);
-  if(this->GetUseSizes() && !sizeArray) {
-    this->printErr("Unable to retrieve size array.");
-    return 0;
-  }
+  if(this->GetUseSizes() && !sizeArray)
+    return !this->printErr("Unable to retrieve size array.");
 
   auto branchArray = this->GetInputArrayToProcess(2, inputVector);
-  if(this->GetUseBranches() && !branchArray) {
-    this->printErr("Unable to retrieve branch array.");
-    return 0;
-  }
+  if(this->GetUseBranches() && !branchArray)
+    return !this->printErr("Unable to retrieve branch array.");
 
   auto levelArray = this->GetInputArrayToProcess(3, inputVector);
-  if(this->GetUseLevels() && !levelArray) {
-    this->printErr("Unable to retrieve level array.");
-    return 0;
-  }
+  if(this->GetUseLevels() && !levelArray)
+    return !this->printErr("Unable to retrieve level array.");
 
   // Initialize output array
   auto outputArray = vtkSmartPointer<vtkFloatArray>::New();
@@ -85,57 +86,31 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
   outputArray->SetNumberOfComponents(2); // (x,y) position
   outputArray->SetNumberOfValues(nPoints * 2);
 
-  auto dataType
-    = this->GetUseSequences() ? sequenceArray->GetDataType() : VTK_CHAR;
-  auto idType = this->GetUseBranches() ? branchArray->GetDataType()
-                : this->GetUseLevels() ? levelArray->GetDataType()
-                                       : VTK_CHAR;
-  //   auto levelType
-  //     = this->GetUseLevels()
-  //         ? levels->GetDataType()
-  //         : this->GetUseBranches() ? branches->GetDataType() : VTK_CHAR;
+  vtkDataArray *cells{nullptr};
+  if(auto outputAsUG = vtkUnstructuredGrid::SafeDownCast(output))
+    cells = outputAsUG->GetCells()->GetConnectivityArray();
+  else if(auto outputAsPD = vtkPolyData::SafeDownCast(output))
+    cells = outputAsPD->GetLines()->GetConnectivityArray();
 
-  //   if(branchType != levelType) {
-  //     dMsg(cout,
-  //          "[ttkPlanarGraphLayout] ERROR: Branch and Level array must have
-  //          the " "same type.\n", fatalMsg);
-  //     return 0;
-  //   }
+  if(!cells)
+    return !this->printErr("Unable to retrieve connectivity array.");
 
   int status = 1;
+  ttkTypeMacroAII(
+    this->GetUseSequences() ? sequenceArray->GetDataType() : VTK_INT,
+    this->GetUseBranches() ? branchArray->GetDataType() : VTK_INT,
+    cells->GetDataType(),
+    (status = this->computeLayout<T0, T1, T2>(
+       // Output
+       ttkUtils::GetPointer<float>(outputArray),
+       // Input
+       ttkUtils::GetPointer<T2>(cells), nPoints, nEdges,
+       this->GetUseSequences() ? ttkUtils::GetPointer<T0>(sequenceArray)
+                               : nullptr,
+       this->GetUseSizes() ? ttkUtils::GetPointer<float>(sizeArray) : nullptr,
+       this->GetUseBranches() ? ttkUtils::GetPointer<T1>(branchArray) : nullptr,
+       this->GetUseLevels() ? ttkUtils::GetPointer<T1>(levelArray) : nullptr)));
 
-  switch(vtkTemplate2PackMacro(idType, dataType)) {
-    ttkTemplate2IdMacro(
-      (status = this->execute<VTK_T1, VTK_T2>(
-         // Output
-         (float *)outputArray->GetVoidPointer(0),
-         // Input
-         output->GetCells()->GetData()->GetPointer(0), nPoints, nEdges,
-         !this->GetUseSequences() ? nullptr
-                                  : (VTK_T2 *)sequenceArray->GetVoidPointer(0),
-         !this->GetUseSizes() ? nullptr : (float *)sizeArray->GetVoidPointer(0),
-         !this->GetUseBranches() ? nullptr
-                                 : (VTK_T1 *)branchArray->GetVoidPointer(0),
-         !this->GetUseLevels() ? nullptr
-                               : (VTK_T1 *)levelArray->GetVoidPointer(0))));
-  }
-
-  //   // Compute layout with base code
-  //   switch(vtkTemplate2PackMacro(branchType, sequenceType)) {
-  //     vtkTemplate2Macro(
-  //       (status = planarGraphLayout.execute<vtkIdType, VTK_T1, VTK_T2>(
-  //          // Input
-  //          !this->GetUseSequences() ? nullptr
-  //                                   : (VTK_T2 *)sequences->GetVoidPointer(0),
-  //          !this->GetUseSizes() ? nullptr : (float
-  //          *)sizes->GetVoidPointer(0), !this->GetUseBranches() ? nullptr
-  //                                  : (VTK_T1 *)branches->GetVoidPointer(0),
-  //          !this->GetUseLevels() ? nullptr : (VTK_T1
-  //          *)levels->GetVoidPointer(0), output->GetCells()->GetPointer(),
-  //          nPoints, nEdges,
-  //          // Output
-  //          (float *)outputField->GetVoidPointer(0))));
-  //   }
   if(status != 1)
     return 0;
 
@@ -143,4 +118,73 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(outputArray);
 
   return 1;
+}
+
+template <class dataType>
+int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
+  vtkUnstructuredGrid *treeNodes,
+  vtkUnstructuredGrid *treeArcs,
+  vtkUnstructuredGrid *output) {
+  auto mergeTree = ttk::ftm::makeTree<dataType>(treeNodes, treeArcs);
+  ttk::ftm::FTMTree_MT *tree = &(mergeTree.tree);
+  // tree->printTree2();
+
+  ttk::ftm::computePersistencePairs<dataType>(tree);
+
+  std::vector<std::vector<int>> treeNodeCorrMesh(1);
+  treeNodeCorrMesh[0] = std::vector<int>(tree->getNumberOfNodes());
+  for(unsigned int j = 0; j < tree->getNumberOfNodes(); ++j)
+    treeNodeCorrMesh[0][j] = j;
+
+  ttkMergeTreeVisualization visuMaker;
+  visuMaker.setPlanarLayout(true);
+  visuMaker.setOutputSegmentation(false);
+  visuMaker.setBranchDecompositionPlanarLayout(BranchDecompositionPlanarLayout);
+  visuMaker.setBranchSpacing(BranchSpacing);
+  visuMaker.setImportantPairs(ImportantPairs);
+  visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
+  visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
+  visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
+  visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
+  visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
+  visuMaker.setVtkOutputNode(output);
+  visuMaker.setVtkOutputArc(output);
+  visuMaker.setTreesNodes(treeNodes);
+  visuMaker.setTreesNodeCorrMesh(treeNodeCorrMesh);
+  visuMaker.setDebugLevel(this->debugLevel_);
+  visuMaker.makeTreesOutput<dataType>(tree);
+
+  return 1;
+}
+
+int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkUnstructuredGrid *treeNodes
+    = vtkUnstructuredGrid::GetData(inputVector[0], 0);
+  vtkUnstructuredGrid *treeArcs
+    = vtkUnstructuredGrid::GetData(inputVector[0], 1);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  int dataTypeInt
+    = treeNodes->GetPointData()->GetArray("Scalar")->GetDataType();
+
+  int res = 0;
+
+  switch(dataTypeInt) {
+    vtkTemplateMacro(res = mergeTreePlanarLayoutCallTemplate<VTK_TT>(
+                       treeNodes, treeArcs, output););
+  }
+
+  return res;
+}
+
+int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
+  if(not InputIsAMergeTree)
+    return planarGraphLayoutCall(request, inputVector, outputVector);
+  else
+    return mergeTreePlanarLayoutCall(request, inputVector, outputVector);
 }

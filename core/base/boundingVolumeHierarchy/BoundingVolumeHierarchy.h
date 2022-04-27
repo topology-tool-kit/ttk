@@ -22,10 +22,9 @@ namespace ttk {
   class BoundingVolumeHierarchy {
   protected:
     struct Node {
-      Node() {
-      }
+      Node() = default;
       // leaf constructor
-      Node(const std::vector<int> triangleIndices,
+      Node(const std::vector<int> &triangleIndices,
            const size_t nTriangles,
            const float *pMin,
            const float *pMax) {
@@ -74,8 +73,7 @@ namespace ttk {
       float m_centroid_x, m_centroid_y, m_centroid_z;
       float m_minX, m_minY, m_minZ;
       float m_maxX, m_maxY, m_maxZ;
-      Triangle() {
-      }
+      Triangle() = default;
 
       void init(const int &index,
                 const float &centroid_x,
@@ -381,4 +379,4 @@ namespace ttk {
       return (v1 + v2 + v3) / 3;
     }
   };
-}; // namespace ttk
+} // namespace ttk

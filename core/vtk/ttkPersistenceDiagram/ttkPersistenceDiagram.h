@@ -37,11 +37,86 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
+/// Four backends are available for the computation:
+///
+///  1) FTM \n
+/// \b Related \b publication \n
+/// "Task-based Augmented Contour Trees with Fibonacci Heaps"
+/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
+/// IEEE Transactions on Parallel and Distributed Systems, 2019
+///
+///  2) Progressive Approach \n
+/// \b Related \b publication \n
+/// "A Progressive Approach to Scalar Field Topology" \n
+/// Jules Vidal, Pierre Guillou, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// 3) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+///
+/// 4) Approximate Approach \n
+/// \b Related \b publication \n
+/// "Fast Approximation of Persistence Diagrams with Guarantees" \n
+/// Jules Vidal, Julien Tierny\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021\n
+///
 /// \sa ttkFTMTreePP
 /// \sa ttkPersistenceCurve
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceDiagram
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 0 example</a> \n
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 1 example</a> \n
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 2 example</a> \n
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 3 example</a> \n
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 4 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///
 
 #pragma once
 
@@ -55,6 +130,7 @@
 // ttk code includes
 #include <PersistenceDiagram.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public ttkAlgorithm,
@@ -74,6 +150,24 @@ public:
   vtkSetMacro(ShowInsideDomain, bool);
   vtkGetMacro(ShowInsideDomain, bool);
 
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
+  vtkGetMacro(StartingResolutionLevel, int);
+  vtkSetMacro(StartingResolutionLevel, int);
+
+  vtkGetMacro(StoppingResolutionLevel, int);
+  vtkSetMacro(StoppingResolutionLevel, int);
+
+  vtkGetMacro(IsResumable, bool);
+  vtkSetMacro(IsResumable, bool);
+
+  vtkGetMacro(TimeLimit, double);
+  vtkSetMacro(TimeLimit, double);
+
+  vtkGetMacro(Epsilon, double);
+  vtkSetMacro(Epsilon, double);
+
 protected:
   ttkPersistenceDiagram();
 
@@ -89,15 +183,11 @@ private:
   int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
                vtkDataArray *const inputScalarsArray,
                const scalarType *const inputScalars,
+               scalarType *outputScalars,
+               SimplexId *outputOffsets,
+               int *outputMonotonyOffsets,
                const SimplexId *const inputOrder,
                const triangulationType *triangulation);
-
-  template <typename scalarType, typename triangulationType>
-  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-                            const std::vector<ttk::PersistencePair> &diagram,
-                            vtkDataArray *inputScalarsArray,
-                            const scalarType *const inputScalars,
-                            const triangulationType *triangulation) const;
 
   bool ForceInputOffsetScalarField{false};
   bool ShowInsideDomain{false};

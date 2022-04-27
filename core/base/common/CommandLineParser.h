@@ -5,8 +5,7 @@
 ///
 /// \brief Basic command line parsing.
 
-#ifndef _COMMAND_LINE_PARSER_H
-#define _COMMAND_LINE_PARSER_H
+#pragma once
 
 #include <Debug.h>
 
@@ -20,17 +19,17 @@ namespace ttk {
 
     public:
       CommandLineArgument() {
-        boolValue_ = NULL;
-        intValue_ = NULL;
-        intValueList_ = NULL;
-        doubleValue_ = NULL;
-        doubleValueList_ = NULL;
-        stringValue_ = NULL;
-        stringValueList_ = NULL;
+        boolValue_ = nullptr;
+        intValue_ = nullptr;
+        intValueList_ = nullptr;
+        doubleValue_ = nullptr;
+        doubleValueList_ = nullptr;
+        stringValue_ = nullptr;
+        stringValueList_ = nullptr;
         isSet_ = false;
 
         setDebugMsgPrefix("CMD");
-      };
+      }
 
       int print(std::ostream &stream) const {
         std::string s;
@@ -93,7 +92,7 @@ namespace ttk {
         printMsg(s, debug::Priority::ERROR, debug::LineMode::NEW, stream);
 
         return 0;
-      };
+      }
 
       bool isOptional_, isAnOption_, isSet_;
       bool *boolValue_;
@@ -116,9 +115,9 @@ namespace ttk {
       debugLevel_ = (int)(debug::Priority::INFO);
 
       setDebugMsgPrefix("CMD");
-    };
+    }
 
-    ~CommandLineParser(){};
+    ~CommandLineParser() override = default;
 
     // 2) functions
     int parse(int argc, char **argv) {
@@ -190,7 +189,7 @@ namespace ttk {
       setDebugLevel(ttk::globalDebugLevel_);
 
       return 0;
-    };
+    }
 
     int printArgs(std::ostream &o = std::cout) const {
 
@@ -292,7 +291,7 @@ namespace ttk {
 
       exit(0);
       return 0;
-    };
+    }
 
     int setOption(const std::string &key,
                   bool *value,
@@ -309,7 +308,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = true;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     double *value,
@@ -327,7 +326,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::vector<double> *value,
@@ -345,7 +344,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     inline int setArgument(const std::string &key,
                            int *value,
@@ -363,7 +362,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::vector<int> *value,
@@ -381,7 +380,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::string *value,
@@ -399,7 +398,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::vector<std::string> *value,
@@ -417,11 +416,9 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
   protected:
     std::vector<CommandLineArgument> arguments_;
   };
 } // namespace ttk
-
-#endif

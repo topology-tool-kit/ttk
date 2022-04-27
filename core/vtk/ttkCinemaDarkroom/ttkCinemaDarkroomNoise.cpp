@@ -12,10 +12,9 @@ vtkStandardNewMacro(ttkCinemaDarkroomNoise);
 ttkCinemaDarkroomNoise::ttkCinemaDarkroomNoise() : ttkCinemaDarkroomShader() {
   this->setDebugMsgPrefix("CinemaDarkroomNoise");
 }
-ttkCinemaDarkroomNoise::~ttkCinemaDarkroomNoise() {
-}
+ttkCinemaDarkroomNoise::~ttkCinemaDarkroomNoise() = default;
 
-int ttkCinemaDarkroomNoise::RequestData(vtkInformation *request,
+int ttkCinemaDarkroomNoise::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

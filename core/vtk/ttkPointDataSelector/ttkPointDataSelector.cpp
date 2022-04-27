@@ -56,7 +56,7 @@ int ttkPointDataSelector::RequestInformation(
   return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
-int ttkPointDataSelector::RequestData(vtkInformation *request,
+int ttkPointDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
@@ -92,7 +92,7 @@ int ttkPointDataSelector::RequestData(vtkInformation *request,
         continue;
       }
       // check bounds in the range
-      ptrdiff_t pos
+      std::ptrdiff_t pos
         = std::find(AvailableFields.begin(), AvailableFields.end(), scalar)
           - AvailableFields.begin();
       if(pos < RangeId[0] || pos > RangeId[1]) {

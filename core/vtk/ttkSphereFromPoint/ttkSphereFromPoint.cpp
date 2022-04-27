@@ -16,7 +16,7 @@ vtkStandardNewMacro(ttkSphereFromPoint);
 
 ttkSphereFromPoint::ttkSphereFromPoint() {
 
-  masterAppender_ = NULL;
+  masterAppender_ = nullptr;
 
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
@@ -64,7 +64,7 @@ int ttkSphereFromPoint::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkSphereFromPoint::RequestData(vtkInformation *request,
+int ttkSphereFromPoint::RequestData(vtkInformation *ttkNotUsed(request),
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 
@@ -75,7 +75,7 @@ int ttkSphereFromPoint::RequestData(vtkInformation *request,
 
   if(masterAppender_) {
     masterAppender_->Delete();
-    masterAppender_ = NULL;
+    masterAppender_ = nullptr;
   }
 
   for(SimplexId i = 0; i < (SimplexId)appenderList_.size(); i++) {

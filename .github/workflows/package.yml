@@ -1,0 +1,485 @@
+# This is a basic workflow to help you get started with Actions
+
+name: packaging
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branch-ignore:
+      - '*'
+    tags:
+      - 'v*'
+      - 'dev*'
+      - '*-*-*'
+      - '*.*.*'
+      - 'pack*'
+
+env:
+  PV_TAG: v5.9.1
+  PV_REPO: topology-tool-kit/ttk-paraview
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # -------------#
+  # Build Ubuntu #
+  # -------------#
+  build-linux:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libsqlite3-dev \
+          libgl1-mesa-dev \
+          graphviz \
+          python3-sklearn \
+          zlib1g-dev \
+          dpkg-dev
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      name: Fetch TTK-ParaView package
+      with:
+        repo: "${{ env.PV_REPO }}"
+        version: "tags/${{ env.PV_TAG }}"
+        file: "ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb"
+        target: "ttk-paraview.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_DOUBLE_TEMPLATING=TRUE \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          $GITHUB_WORKSPACE
+
+    - name: Build TTK
+      run: |
+        cd build
+        # not enough RAM to build in parallel (or with ninja)
+        cmake --build .
+
+    - name: Package TTK & update package informations
+      run: |
+        cd build
+        cpack -G DEB
+        # unpack deb package to access control file
+        mkdir tmp
+        dpkg-deb --extract ttk.deb tmp
+        dpkg-deb --control ttk.deb tmp/DEBIAN
+        # modify control file, remove libgcc-s1 dependency
+        sed 's/libgcc-s1[^,]*, //g' -i tmp/DEBIAN/control
+        # build updated deb package
+        dpkg -b tmp ttk-ubuntu-20.04.deb
+
+    - name: Upload TTK .deb package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk-ubuntu-20.04.deb
+        path: build/ttk-ubuntu-20.04.deb
+
+  # ------------#
+  # Test Ubuntu #
+  # ------------#
+  test-linux:
+    needs: build-linux
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      name: Fetch TTK-ParaView package
+      with:
+        repo: "${{ env.PV_REPO }}"
+        version: "tags/${{ env.PV_TAG }}"
+        file: "ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb"
+        target: "ttk-paraview.deb"
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Fetch TTK .deb artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ttk-ubuntu-20.04.deb
+
+    - name: Install generated .deb packages
+      run: |
+        sudo apt update
+        sudo apt install ./ttk-paraview.deb
+        sudo apt install ./ttk-ubuntu-20.04.deb
+
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-unix
+
+
+  # ------------#
+  # Build macOS #
+  # ------------#
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - name: Remove hosted Python
+      run: |
+        sudo rm -rf /usr/local/Frameworks/Python.framework
+
+    - name: Install macOS dependencies
+      run: |
+        # ParaView dependencies
+        brew install --cask xquartz
+        brew install wget libomp mesa glew qt@5 ninja python
+        # TTK dependencies
+        brew install boost eigen graphviz embree
+        python3 -m pip install scikit-learn
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
+    - name: Fetch & install TTK-ParaView
+      run: |
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
+        sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 \
+          -DPython3_FIND_STRATEGY=LOCATION \
+          -DPython3_ROOT_DIR=$(python -c "import sys; print(sys.prefix)") \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_DOUBLE_TEMPLATING=TRUE \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          -GNinja \
+          $GITHUB_WORKSPACE
+
+    - name: Build TTK
+      run: |
+        cd build
+        cmake --build . --parallel
+
+    - name: Package TTK
+      run: |
+        cd build
+        cpack -G productbuild
+
+    - name: Upload .pkg package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk.pkg
+        path: build/ttk.pkg
+
+  # -----------#
+  # Test macOS #
+  # -----------#
+  test-macos:
+    needs: build-macos
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - name: Remove hosted Python
+      run: |
+        sudo rm -rf /usr/local/Frameworks/Python.framework
+
+    - name: Install macOS dependencies
+      run: |
+        # ParaView dependencies
+        brew install --cask xquartz
+        brew install wget libomp mesa glew qt@5 ninja python
+        # TTK dependencies
+        brew install boost eigen graphviz embree
+        python3 -m pip install scikit-learn
+
+    - name: Fetch TTK-ParaView
+      run: |
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
+
+    - name: Fetch TTK .pkg artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ttk.pkg
+
+    - name: Install .pkg packages
+      run: |
+        sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
+        sudo installer -pkg ttk.pkg -target /
+
+    - name: Test TTK examples
+      run: |
+        # base layer
+        cd $GITHUB_WORKSPACE/examples/c++
+        mkdir build && cd build
+        cmake ..
+        cmake --build . --parallel
+        ./ttkExample-c++ -i ../../data/inputData.off
+        # VTK layer
+        export CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH
+        cd $GITHUB_WORKSPACE/examples/vtk-c++
+        mkdir build &&  cd build
+        cmake ..
+        cmake --build . --parallel
+        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
+        # pure Python
+        export PYTHONPATH=/Applications/lib/python3.9/site-packages
+        export DYLD_LIBRARY_PATH=/Applications/lib:$DYLD_LIBRARY_PATH
+        cd $GITHUB_WORKSPACE/examples/python
+        python3 example.py ../data/inputData.vtu
+        # pvpython
+        export PATH=/Applications/bin:$PATH
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython example.py ../data/inputData.vtu
+        # standalones
+        cd $GITHUB_WORKSPACE
+        ttkHelloWorldCmd -i examples/data/inputData.vtu
+
+
+  # --------------#
+  # Build Windows #
+  # --------------#
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c conda-forge qt boost eigen spectralib zfp \
+          scikit-learn openmp "graphviz>=2.50"
+
+    - name: Remove hosted Python
+      shell: bash
+      run: |
+        rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Fetch TTK-ParaView installer
+      run: |
+        Invoke-WebRequest `
+        -OutFile ttk-paraview.exe `
+        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
+
+    - name: Install ParaView .exe
+      shell: cmd
+      run: |
+        ttk-paraview.exe /S
+
+    - name: Fetch Visual C++ redistribuable run-time
+      run: |
+        Invoke-WebRequest `
+          -OutFile vc_redist.x64.exe `
+          -Uri https://aka.ms/vs/16/release/vc_redist.x64.exe
+
+    - name: Create & configure TTK build directory
+      shell: cmd
+      run: |
+        set CONDA_ROOT="C:\Miniconda"
+        set CMAKE_PREFIX_PATH="%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake"
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        mkdir build
+        cd build
+        cmake ^
+          -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
+          -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
+          -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
+          -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
+          -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
+          -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
+          -DTTK_BUILD_STANDALONE_APPS=TRUE ^
+          -DTTK_ENABLE_KAMIKAZE=TRUE ^
+          -DTTK_ENABLE_DOUBLE_TEMPLATING=TRUE ^
+          -DTTK_ENABLE_OPENMP=TRUE ^
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
+          -G"Visual Studio 16 2019" ^
+          -Tclangcl ^
+          ..
+
+    - name: Build TTK
+      shell: bash
+      run: |
+        cd build
+        cmake --build . --config Release --parallel
+
+    - name: Package TTK
+      shell: bash
+      run: |
+        cd build
+        cpack -C Release -G NSIS64
+
+    - name: Upload TTK .exe package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk.exe
+        path: build/ttk.exe
+
+  # -------------#
+  # Test Windows #
+  # -------------#
+  test-windows:
+    needs: build-windows
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c conda-forge qt boost eigen spectralib zfp \
+          scikit-learn openmp "graphviz>=2.50"
+
+    - name: Remove hosted Python
+      shell: bash
+      run: |
+        rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Fetch TTK-ParaView installer
+      run: |
+        Invoke-WebRequest `
+        -OutFile ttk-paraview.exe `
+        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
+
+    - name: Fetch TTK .exe artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ttk.exe
+
+    - name: Install TTK-ParaView and TTK
+      shell: cmd
+      run: |
+        ttk-paraview.exe /S
+        ttk.exe /S
+
+    - name: Build & Test native TTK examples
+      shell: cmd
+      run: |
+        :: set environment variables
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        set PV_DIR=%ProgramFiles%\TTK-ParaView
+        set TTK_DIR=%ProgramFiles%\TTK
+        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set PATH=%PATH%;%PV_DIR%\bin;%TTK_DIR%\bin
+        :: base layer
+        cd %GITHUB_WORKSPACE%\examples\c++
+        mkdir build
+        cd build
+        cmake -G"Visual Studio 16 2019" -Tclangcl ..
+        cmake --build . --config Release --parallel
+        Release\ttkExample-c++.exe -i ..\..\data\inputData.off
+        :: VTK layer
+        cd %GITHUB_WORKSPACE%\examples\vtk-c++
+        mkdir build
+        cd build
+        cmake -G"Visual Studio 16 2019" -Tclangcl ..
+        cmake --build . --config Release --parallel
+        Release\ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
+        :: HelloWorld standalone
+        ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
+
+    - name: Test Python examples
+      shell: bash
+      run: |
+        # set environment variables
+        export PV_BIN="/c/Program Files/TTK-ParaView/bin"
+        export TTK_BIN="/c/Program Files/TTK/bin"
+        export CONDA_ROOT="/c/Miniconda"
+        export PV_PLUGIN_PATH="$TTK_BIN/plugins"
+        export PATH="$PATH:$PV_BIN:$TTK_BIN"
+        export PYTHONPATH="$PV_BIN/Lib/site-packages:$TTK_BIN/Lib/site-packages:$CONDA_ROOT/Lib"
+        # pure python
+        cd $GITHUB_WORKSPACE/examples/python
+        python example.py ../data/inputData.vtu
+        # pvpython
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython.exe example.py ../data/inputData.vtu
+
+
+  # ---------------#
+  # Create release #
+  # ---------------#
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [test-linux, test-macos, test-windows]
+    steps:
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+
+    - name: Fetch all uploaded artifacts
+      uses: actions/download-artifact@v2
+
+    - name: Upload Ubuntu Focal .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-ubuntu-20.04.deb/ttk-ubuntu-20.04.deb
+        asset_name: ttk-$tag-ubuntu-20.04.deb
+
+    - name: Upload macOS .pkg as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk.pkg/ttk.pkg
+        asset_name: ttk-$tag.pkg
+
+    - name: Upload Windows .exe as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk.exe/ttk.exe
+        asset_name: ttk-$tag.exe

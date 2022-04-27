@@ -9,6 +9,10 @@
 /// data.csv file of a Cinema Spec D database.
 ///
 /// \param Input vtkDataSet to be stored (vtkDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
 
 #pragma once
 
@@ -36,7 +40,7 @@ private:
   // topological compression
   double Tolerance{1.0};
   double MaximumError{};
-  double ZFPBitBudget{0};
+  double ZFPTolerance{50};
   int CompressionType{
     static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
   int SQMethodPV{};
@@ -48,7 +52,7 @@ public:
   static ttkCinemaWriter *New();
   vtkTypeMacro(ttkCinemaWriter, ttkAlgorithm);
 
-  vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, const std::string &);
   vtkGetMacro(DatabasePath, std::string);
 
   ttkSetEnumMacro(Format, FORMAT);
@@ -67,8 +71,8 @@ public:
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(MaximumError, double);
   vtkSetMacro(MaximumError, double);
-  vtkGetMacro(ZFPBitBudget, double);
-  vtkSetMacro(ZFPBitBudget, double);
+  vtkGetMacro(ZFPTolerance, double);
+  vtkSetMacro(ZFPTolerance, double);
   vtkGetMacro(ZFPOnly, bool);
   vtkSetMacro(ZFPOnly, bool);
   vtkGetMacro(CompressionType, int);
@@ -85,7 +89,7 @@ public:
 
 protected:
   ttkCinemaWriter();
-  ~ttkCinemaWriter();
+  ~ttkCinemaWriter() override;
 
   int ValidateDatabasePath();
   int ProcessDataProduct(vtkDataObject *input);

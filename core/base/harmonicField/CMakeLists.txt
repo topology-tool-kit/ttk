@@ -11,5 +11,5 @@ ttk_add_base_library(harmonicField
 
 if(TTK_ENABLE_EIGEN)
   target_compile_definitions(harmonicField PRIVATE TTK_ENABLE_EIGEN)
-  target_include_directories(harmonicField SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+  target_link_libraries(harmonicField PRIVATE Eigen3::Eigen)
 endif()

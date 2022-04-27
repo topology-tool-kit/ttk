@@ -9,12 +9,16 @@
 /// This filter creates a temporary SQLite3 database from the input table,
 /// performs a SQL query, and then returns the result as a vtkTable.
 ///
-/// VTK wrapping code for the @CinemaQuery package.
+/// VTK wrapping code for the ttk::CinemaQuery package.
 ///
 /// \param Input Input table (vtkTable)
 /// \param Output Output table (vtkTable)
 ///
 /// sa ttk::CinemaQuery
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
 
 #pragma once
 
@@ -33,13 +37,13 @@ public:
   static ttkCinemaQuery *New();
   vtkTypeMacro(ttkCinemaQuery, ttkAlgorithm);
 
-  vtkSetMacro(SQLStatement, std::string);
+  vtkSetMacro(SQLStatement, const std::string &);
   vtkGetMacro(SQLStatement, std::string);
 
   vtkSetMacro(ExcludeColumnsWithRegexp, bool);
   vtkGetMacro(ExcludeColumnsWithRegexp, bool);
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
 protected:

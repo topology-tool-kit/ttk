@@ -10,12 +10,10 @@ namespace ttk {
     // DynamicGraph ----------------------------------
 
     template <typename Type>
-    DynamicGraph<Type>::DynamicGraph() {
-    }
+    DynamicGraph<Type>::DynamicGraph() = default;
 
     template <typename Type>
-    DynamicGraph<Type>::~DynamicGraph() {
-    }
+    DynamicGraph<Type>::~DynamicGraph() = default;
 
     template <typename Type>
     void DynamicGraph<Type>::alloc() {
@@ -43,7 +41,7 @@ namespace ttk {
     }
 
     template <typename Type>
-    std::string DynamicGraph<Type>::print(void) {
+    std::string DynamicGraph<Type>::print() {
 
       std::stringstream res;
 
@@ -66,7 +64,7 @@ namespace ttk {
 
     template <typename Type>
     std::string DynamicGraph<Type>::print(
-      std::function<std::string(std::size_t)> printFunction) {
+      const std::function<std::string(std::size_t)> &printFunction) {
 
       std::stringstream res;
 
@@ -86,7 +84,7 @@ namespace ttk {
     }
 
     template <typename Type>
-    std::string DynamicGraph<Type>::printNbCC(void) {
+    std::string DynamicGraph<Type>::printNbCC() {
 
       std::stringstream res;
       std::vector<DynGraphNode<Type> *> roots;
@@ -105,7 +103,7 @@ namespace ttk {
     // DynGraphNode ----------------------------------
 
     template <typename Type>
-    void DynGraphNode<Type>::evert(void) {
+    void DynGraphNode<Type>::evert() {
       if(!parent_)
         return;
 
@@ -141,7 +139,7 @@ namespace ttk {
     }
 
     template <typename Type>
-    DynGraphNode<Type> *DynGraphNode<Type>::findRoot(void) const {
+    DynGraphNode<Type> *DynGraphNode<Type>::findRoot() const {
       // the lastNode trick is used so we are sure to have a non null
       // return even if another thread is touching these nodes.
       DynGraphNode *curNode = const_cast<DynGraphNode<Type> *>(this);
@@ -157,8 +155,9 @@ namespace ttk {
     }
 
     template <typename Type>
-    idSuperArc DynGraphNode<Type>::findRootArc(void) const {
-      return findRoot()->corArc_;
+    idSuperArc DynGraphNode<Type>::findRootArc() const {
+      const auto root = findRoot();
+      return root != nullptr ? root->corArc_ : -1;
     }
 
     template <typename Type>
@@ -214,7 +213,7 @@ namespace ttk {
         // corArc_ = corArc;
 
         // remove old
-        std::get<1>(nNodes)->parent_ = 0;
+        std::get<1>(nNodes)->parent_ = nullptr;
         std::get<1>(nNodes)->corArc_ = corArc;
       } else {
         corArc_ = corArc;
@@ -224,7 +223,7 @@ namespace ttk {
     }
 
     template <typename Type>
-    void DynGraphNode<Type>::removeEdge(void) {
+    void DynGraphNode<Type>::removeEdge() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!parent_) {
         Debug dbg{};

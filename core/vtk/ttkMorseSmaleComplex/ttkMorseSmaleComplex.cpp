@@ -8,13 +8,13 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkMorseSmaleComplex);
 
@@ -36,7 +36,7 @@ int ttkMorseSmaleComplex::FillInputPortInformation(int port,
 int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
                                                     vtkInformation *info) {
   if(port == 0 || port == 1 || port == 2) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   } else if(port == 3) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
@@ -51,92 +51,19 @@ void setArray(vtkArrayType &vtkArray, vectorType &vector) {
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkMorseSmaleComplex::dispatch(
-  vtkDataArray *const inputScalars,
-  vtkDataArray *const inputOffsets,
-  vtkUnstructuredGrid *const outputCriticalPoints,
-  vtkUnstructuredGrid *const outputSeparatrices1,
-  vtkUnstructuredGrid *const outputSeparatrices2,
-  const triangulationType &triangulation) {
+int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
+                                   vtkPolyData *const outputCriticalPoints,
+                                   vtkPolyData *const outputSeparatrices1,
+                                   vtkPolyData *const outputSeparatrices2,
+                                   const SimplexId *const inputOffsets,
+                                   const triangulationType &triangulation) {
 
-  const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
+  const int dimensionality = triangulation.getDimensionality();
+  const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
 
-  // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  std::vector<scalarType> criticalPoints_points_cellScalars;
-  criticalPoints_points.clear();
-  criticalPoints_points_cellDimensions.clear();
-  criticalPoints_points_cellIds.clear();
-  criticalPoints_points_isOnBoundary.clear();
-  criticalPoints_points_PLVertexIdentifiers.clear();
-  criticalPoints_points_manifoldSize.clear();
-
-  // 1-separatrices
-  SimplexId separatrices1_numberOfPoints{};
-  SimplexId separatrices1_numberOfCells{};
-  separatrices1_points.clear();
-  separatrices1_points_smoothingMask.clear();
-  separatrices1_points_cellDimensions.clear();
-  separatrices1_points_cellIds.clear();
-  separatrices1_cells_connectivity.clear();
-  separatrices1_cells_sourceIds.clear();
-  separatrices1_cells_destinationIds.clear();
-  separatrices1_cells_separatrixIds.clear();
-  separatrices1_cells_separatrixTypes.clear();
-  separatrices1_cells_isOnBoundary.clear();
-  separatrices1_cells_separatrixFunctionMaxima.clear();
-  separatrices1_cells_separatrixFunctionMinima.clear();
-  separatrices1_cells_separatrixFunctionDiffs.clear();
-
-  // 2-separatrices
-  SimplexId separatrices2_numberOfPoints{};
-  SimplexId separatrices2_numberOfCells{};
-  separatrices2_points.clear();
-  separatrices2_cells_offsets.clear();
-  separatrices2_cells_connectivity.clear();
-  separatrices2_cells_sourceIds.clear();
-  separatrices2_cells_separatrixIds.clear();
-  separatrices2_cells_separatrixTypes.clear();
-  separatrices2_cells_isOnBoundary.clear();
-  separatrices2_cells_separatrixFunctionMaxima.clear();
-  separatrices2_cells_separatrixFunctionMinima.clear();
-  separatrices2_cells_separatrixFunctionDiffs.clear();
-
-  if(ComputeCriticalPoints) {
-    this->setOutputCriticalPoints(
-      &criticalPoints_numberOfPoints, &criticalPoints_points,
-      &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-      &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-      &criticalPoints_points_PLVertexIdentifiers,
-      &criticalPoints_points_manifoldSize);
-  } else {
-    this->setOutputCriticalPoints(
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
-  }
-
-  this->setOutputSeparatrices1(
-    &separatrices1_numberOfPoints, &separatrices1_points,
-    &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
-    &separatrices1_points_cellIds, &separatrices1_numberOfCells,
-    &separatrices1_cells_connectivity, &separatrices1_cells_sourceIds,
-    &separatrices1_cells_destinationIds, &separatrices1_cells_separatrixIds,
-    &separatrices1_cells_separatrixTypes,
-    &separatrices1_cells_separatrixFunctionMaxima,
-    &separatrices1_cells_separatrixFunctionMinima,
-    &separatrices1_cells_separatrixFunctionDiffs,
-    &separatrices1_cells_isOnBoundary);
-
-  this->setOutputSeparatrices2(
-    &separatrices2_numberOfPoints, &separatrices2_points,
-    &separatrices2_numberOfCells, &separatrices2_cells_offsets,
-    &separatrices2_cells_connectivity, &separatrices2_cells_sourceIds,
-    &separatrices2_cells_separatrixIds, &separatrices2_cells_separatrixTypes,
-    &separatrices2_cells_separatrixFunctionMaxima,
-    &separatrices2_cells_separatrixFunctionMinima,
-    &separatrices2_cells_separatrixFunctionDiffs,
-    &separatrices2_cells_isOnBoundary);
-
-  const int ret = this->execute<scalarType, triangulationType>(triangulation);
+  const int ret = this->execute(
+    criticalPoints_, separatrices1_, separatrices2_, segmentations_, scalars,
+    inputScalars->GetMTime(), inputOffsets, triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -147,81 +74,63 @@ int ttkMorseSmaleComplex::dispatch(
 
   // critical points
   {
-    vtkNew<vtkFloatArray> pointsCoords{};
+    vtkNew<vtkPoints> points{};
     vtkNew<vtkSignedCharArray> cellDimensions{};
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
     vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
     vtkNew<vtkSignedCharArray> isOnBoundary{};
     vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
     vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};
+    const auto nPoints = criticalPoints_.points_.size();
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!pointsCoords || !cellDimensions || !cellIds || !cellScalars
-       || !isOnBoundary || !PLVertexIdentifiers || !manifoldSizeScalars) {
+    if(!points || !cellDimensions || !cellIds || !cellScalars || !isOnBoundary
+       || !PLVertexIdentifiers || !manifoldSizeScalars) {
       this->printErr("Critical points vtkDataArray allocation problem.");
       return -1;
     }
 #endif
 
-    pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, criticalPoints_points);
+    points->SetNumberOfPoints(nPoints);
 
     cellDimensions->SetNumberOfComponents(1);
-    cellDimensions->SetName("CellDimension");
-    setArray(cellDimensions, criticalPoints_points_cellDimensions);
+    cellDimensions->SetName(ttk::MorseSmaleCellDimensionName);
+    setArray(cellDimensions, criticalPoints_.cellDimensions_);
 
     cellIds->SetNumberOfComponents(1);
-    cellIds->SetName("CellId");
-    setArray(cellIds, criticalPoints_points_cellIds);
+    cellIds->SetName(ttk::MorseSmaleCellIdName);
+    setArray(cellIds, criticalPoints_.cellIds_);
 
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(inputScalars->GetName());
-    cellScalars->SetNumberOfTuples(criticalPoints_numberOfPoints);
+    cellScalars->SetNumberOfTuples(nPoints);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
+    for(size_t i = 0; i < nPoints; ++i) {
+      points->SetPoint(i, criticalPoints_.points_[i].data());
+      cellScalars->SetTuple1(
+        i, scalars[criticalPoints_.PLVertexIdentifiers_[i]]);
     }
 
     isOnBoundary->SetNumberOfComponents(1);
-    isOnBoundary->SetName("IsOnBoundary");
-    setArray(isOnBoundary, criticalPoints_points_isOnBoundary);
+    isOnBoundary->SetName(ttk::MorseSmaleBoundaryName);
+    setArray(isOnBoundary, criticalPoints_.isOnBoundary_);
 
     PLVertexIdentifiers->SetNumberOfComponents(1);
     PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-    setArray(PLVertexIdentifiers, criticalPoints_points_PLVertexIdentifiers);
+    setArray(PLVertexIdentifiers, criticalPoints_.PLVertexIdentifiers_);
 
     manifoldSizeScalars->SetNumberOfComponents(1);
-    manifoldSizeScalars->SetName("ManifoldSize");
+    manifoldSizeScalars->SetName(ttk::MorseSmaleManifoldSizeName);
     if(!ComputeAscendingSegmentation or !ComputeDescendingSegmentation) {
-      criticalPoints_points_manifoldSize.resize(criticalPoints_numberOfPoints);
-      std::fill(criticalPoints_points_manifoldSize.begin(),
-                criticalPoints_points_manifoldSize.end(), -1);
+      criticalPoints_.manifoldSize_.resize(nPoints);
+      std::fill(criticalPoints_.manifoldSize_.begin(),
+                criticalPoints_.manifoldSize_.end(), -1);
     }
-    setArray(manifoldSizeScalars, criticalPoints_points_manifoldSize);
+    setArray(manifoldSizeScalars, criticalPoints_.manifoldSize_);
 
-    vtkNew<vtkPoints> points{};
-    points->SetData(pointsCoords);
-    outputCriticalPoints->SetPoints(points);
-
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(criticalPoints_numberOfPoints + 1);
-    connectivity->SetNumberOfComponents(1);
-    connectivity->SetNumberOfTuples(criticalPoints_numberOfPoints);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      offsets->SetTuple1(i, i);
-      connectivity->SetTuple1(i, i);
-    }
-    offsets->SetTuple1(
-      criticalPoints_numberOfPoints, criticalPoints_numberOfPoints);
-    vtkNew<vtkCellArray> cells{};
-    cells->SetData(offsets, connectivity);
-    outputCriticalPoints->SetCells(VTK_VERTEX, cells);
+    ttkUtils::CellVertexFromPoints(outputCriticalPoints, points);
 
     auto pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -267,65 +176,78 @@ int ttkMorseSmaleComplex::dispatch(
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices1_points);
+    setArray(pointsCoords, separatrices1_.pt.points_);
 
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
-    setArray(smoothingMask, separatrices1_points_smoothingMask);
+    setArray(smoothingMask, separatrices1_.pt.smoothingMask_);
 
     cellDimensions->SetNumberOfComponents(1);
-    cellDimensions->SetName("CellDimension");
-    setArray(cellDimensions, separatrices1_points_cellDimensions);
+    cellDimensions->SetName(ttk::MorseSmaleCellDimensionName);
+    setArray(cellDimensions, separatrices1_.pt.cellDimensions_);
 
     cellIds->SetNumberOfComponents(1);
-    cellIds->SetName("CellId");
-    setArray(cellIds, separatrices1_points_cellIds);
+    cellIds->SetName(ttk::MorseSmaleCellIdName);
+    setArray(cellIds, separatrices1_.pt.cellIds_);
 
     sourceIds->SetNumberOfComponents(1);
-    sourceIds->SetName("SourceId");
-    setArray(sourceIds, separatrices1_cells_sourceIds);
+    sourceIds->SetName(ttk::MorseSmaleSourceIdName);
+    setArray(sourceIds, separatrices1_.cl.sourceIds_);
 
     destinationIds->SetNumberOfComponents(1);
-    destinationIds->SetName("DestinationId");
-    setArray(destinationIds, separatrices1_cells_destinationIds);
+    destinationIds->SetName(ttk::MorseSmaleDestinationIdName);
+    setArray(destinationIds, separatrices1_.cl.destinationIds_);
 
     separatrixIds->SetNumberOfComponents(1);
-    separatrixIds->SetName("SeparatrixId");
-    setArray(separatrixIds, separatrices1_cells_separatrixIds);
+    separatrixIds->SetName(ttk::MorseSmaleSeparatrixIdName);
+    setArray(separatrixIds, separatrices1_.cl.separatrixIds_);
 
     separatrixTypes->SetNumberOfComponents(1);
-    separatrixTypes->SetName("SeparatrixType");
-    setArray(separatrixTypes, separatrices1_cells_separatrixTypes);
+    separatrixTypes->SetName(ttk::MorseSmaleSeparatrixTypeName);
+    setArray(separatrixTypes, separatrices1_.cl.separatrixTypes_);
 
     separatrixFunctionMaxima->SetNumberOfComponents(1);
-    separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
-    setArray(
-      separatrixFunctionMaxima, separatrices1_cells_separatrixFunctionMaxima);
+    separatrixFunctionMaxima->SetName(ttk::MorseSmaleSeparatrixMaximumName);
+    separatrixFunctionMaxima->SetNumberOfTuples(
+      separatrices1_.cl.numberOfCells_);
 
     separatrixFunctionMinima->SetNumberOfComponents(1);
-    separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
-    setArray(
-      separatrixFunctionMinima, separatrices1_cells_separatrixFunctionMinima);
+    separatrixFunctionMinima->SetName(ttk::MorseSmaleSeparatrixMinimumName);
+    separatrixFunctionMinima->SetNumberOfTuples(
+      separatrices1_.cl.numberOfCells_);
 
     separatrixFunctionDiffs->SetNumberOfComponents(1);
-    separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
-    setArray(
-      separatrixFunctionDiffs, separatrices1_cells_separatrixFunctionDiffs);
-
-    isOnBoundary->SetNumberOfComponents(1);
-    isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
-    setArray(isOnBoundary, separatrices1_cells_isOnBoundary);
-
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(separatrices1_numberOfCells + 1);
-    connectivity->SetNumberOfComponents(1);
-    setArray(connectivity, separatrices1_cells_connectivity);
+    separatrixFunctionDiffs->SetName(ttk::MorseSmaleSeparatrixDifferenceName);
+    separatrixFunctionDiffs->SetNumberOfTuples(
+      separatrices1_.cl.numberOfCells_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices1_numberOfCells + 1; ++i) {
+    for(SimplexId i = 0; i < separatrices1_.cl.numberOfCells_; ++i) {
+      const auto sepId = separatrices1_.cl.separatrixIds_[i];
+      // inputScalars->GetTuple1 not thread safe...
+      const auto min = scalars[separatrices1_.cl.sepFuncMinId_[sepId]];
+      const auto max = scalars[separatrices1_.cl.sepFuncMaxId_[sepId]];
+      separatrixFunctionMinima->SetTuple1(i, min);
+      separatrixFunctionMaxima->SetTuple1(i, max);
+      separatrixFunctionDiffs->SetTuple1(i, max - min);
+    }
+
+    isOnBoundary->SetNumberOfComponents(1);
+    isOnBoundary->SetName(ttk::MorseSmaleCriticalPointsOnBoundaryName);
+    setArray(isOnBoundary, separatrices1_.cl.isOnBoundary_);
+
+    vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(separatrices1_.cl.numberOfCells_ + 1);
+    connectivity->SetNumberOfComponents(1);
+    setArray(connectivity, separatrices1_.cl.connectivity_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < separatrices1_.cl.numberOfCells_ + 1; ++i) {
       offsets->SetTuple1(i, 2 * i);
     }
 
@@ -333,8 +255,11 @@ int ttkMorseSmaleComplex::dispatch(
     points->SetData(pointsCoords);
     outputSeparatrices1->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
+#ifndef TTK_ENABLE_64BIT_IDS
+    cells->Use32BitStorage();
+#endif // TTK_ENABLE_64BIT_IDS
     cells->SetData(offsets, connectivity);
-    outputSeparatrices1->SetCells(VTK_LINE, cells);
+    outputSeparatrices1->SetLines(cells);
 
     auto pointData = outputSeparatrices1->GetPointData();
     auto cellData = outputSeparatrices1->GetCellData();
@@ -383,66 +308,67 @@ int ttkMorseSmaleComplex::dispatch(
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices2_points);
+    setArray(pointsCoords, separatrices2_.pt.points_);
 
     sourceIds->SetNumberOfComponents(1);
-    sourceIds->SetName("SourceId");
-    setArray(sourceIds, separatrices2_cells_sourceIds);
+    sourceIds->SetName(ttk::MorseSmaleSourceIdName);
+    setArray(sourceIds, separatrices2_.cl.sourceIds_);
 
     separatrixIds->SetNumberOfComponents(1);
-    separatrixIds->SetName("SeparatrixId");
-    setArray(separatrixIds, separatrices2_cells_separatrixIds);
+    separatrixIds->SetName(ttk::MorseSmaleSeparatrixIdName);
+    setArray(separatrixIds, separatrices2_.cl.separatrixIds_);
 
     separatrixTypes->SetNumberOfComponents(1);
-    separatrixTypes->SetName("SeparatrixType");
-    setArray(separatrixTypes, separatrices2_cells_separatrixTypes);
+    separatrixTypes->SetName(ttk::MorseSmaleSeparatrixTypeName);
+    setArray(separatrixTypes, separatrices2_.cl.separatrixTypes_);
 
     separatrixFunctionMaxima->SetNumberOfComponents(1);
-    separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
-    setArray(
-      separatrixFunctionMaxima, separatrices2_cells_separatrixFunctionMaxima);
+    separatrixFunctionMaxima->SetName(ttk::MorseSmaleSeparatrixMaximumName);
+    separatrixFunctionMaxima->SetNumberOfTuples(
+      separatrices2_.cl.numberOfCells_);
 
     separatrixFunctionMinima->SetNumberOfComponents(1);
-    separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
-    setArray(
-      separatrixFunctionMinima, separatrices2_cells_separatrixFunctionMinima);
+    separatrixFunctionMinima->SetName(ttk::MorseSmaleSeparatrixMinimumName);
+    separatrixFunctionMinima->SetNumberOfTuples(
+      separatrices2_.cl.numberOfCells_);
 
     separatrixFunctionDiffs->SetNumberOfComponents(1);
-    separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
-    setArray(
-      separatrixFunctionDiffs, separatrices2_cells_separatrixFunctionDiffs);
-
-    isOnBoundary->SetNumberOfComponents(1);
-    isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
-    setArray(isOnBoundary, separatrices2_cells_isOnBoundary);
-
-    vtkNew<vtkUnsignedCharArray> cellTypes{};
-    cellTypes->SetNumberOfComponents(1);
-    cellTypes->SetNumberOfTuples(separatrices2_numberOfCells);
+    separatrixFunctionDiffs->SetName(ttk::MorseSmaleSeparatrixDifferenceName);
+    separatrixFunctionDiffs->SetNumberOfTuples(
+      separatrices2_.cl.numberOfCells_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
-      if(separatrices2_cells_separatrixTypes[i] == 2) {
-        cellTypes->SetTuple1(i, VTK_TRIANGLE);
-      } else if(separatrices2_cells_separatrixTypes[i] == 1) {
-        cellTypes->SetTuple1(i, VTK_POLYGON);
-      }
+    for(SimplexId i = 0; i < separatrices2_.cl.numberOfCells_; ++i) {
+      const auto sepId = separatrices2_.cl.separatrixIds_[i];
+      // inputScalars->GetTuple1 not thread safe...
+      const auto min = scalars[separatrices2_.cl.sepFuncMinId_[sepId]];
+      const auto max = scalars[separatrices2_.cl.sepFuncMaxId_[sepId]];
+      separatrixFunctionMinima->SetTuple1(i, min);
+      separatrixFunctionMaxima->SetTuple1(i, max);
+      separatrixFunctionDiffs->SetTuple1(i, max - min);
     }
 
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    isOnBoundary->SetNumberOfComponents(1);
+    isOnBoundary->SetName(ttk::MorseSmaleCriticalPointsOnBoundaryName);
+    setArray(isOnBoundary, separatrices2_.cl.isOnBoundary_);
+
+    vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
-    setArray(offsets, separatrices2_cells_offsets);
+    setArray(offsets, separatrices2_.cl.offsets_);
     connectivity->SetNumberOfComponents(1);
-    setArray(connectivity, separatrices2_cells_connectivity);
+    setArray(connectivity, separatrices2_.cl.connectivity_);
 
     vtkNew<vtkPoints> points{};
     points->SetData(pointsCoords);
     outputSeparatrices2->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
+#ifndef TTK_ENABLE_64BIT_IDS
+    cells->Use32BitStorage();
+#endif // TTK_ENABLE_64BIT_IDS
     cells->SetData(offsets, connectivity);
-    outputSeparatrices2->SetCells(cellTypes, cells);
+    outputSeparatrices2->SetPolys(cells);
 
     auto cellData = outputSeparatrices2->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -464,14 +390,14 @@ int ttkMorseSmaleComplex::dispatch(
   return ret;
 }
 
-int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
+int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
-  auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
-  auto outputSeparatrices1 = vtkUnstructuredGrid::GetData(outputVector, 1);
-  auto outputSeparatrices2 = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
+  auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
+  auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
   auto outputMorseComplexes = vtkDataSet::GetData(outputVector, 3);
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -544,54 +470,33 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
 #endif
   ascendingManifold->SetNumberOfComponents(1);
   ascendingManifold->SetNumberOfTuples(numberOfVertices);
-  ascendingManifold->SetName("AscendingManifold");
+  ascendingManifold->SetName(ttk::MorseSmaleAscendingName);
 
   descendingManifold->SetNumberOfComponents(1);
   descendingManifold->SetNumberOfTuples(numberOfVertices);
-  descendingManifold->SetName("DescendingManifold");
+  descendingManifold->SetName(ttk::MorseSmaleDescendingName);
 
   morseSmaleManifold->SetNumberOfComponents(1);
   morseSmaleManifold->SetNumberOfTuples(numberOfVertices);
-  morseSmaleManifold->SetName("MorseSmaleManifold");
+  morseSmaleManifold->SetName(ttk::MorseSmaleManifoldName);
+
+  this->segmentations_ = {ttkUtils::GetPointer<SimplexId>(ascendingManifold),
+                          ttkUtils::GetPointer<SimplexId>(descendingManifold),
+                          ttkUtils::GetPointer<SimplexId>(morseSmaleManifold)};
 
   this->setIterationThreshold(IterationThreshold);
-
-  this->setComputeAscendingSeparatrices1(ComputeAscendingSeparatrices1);
-  this->setComputeDescendingSeparatrices1(ComputeDescendingSeparatrices1);
-  this->setComputeSaddleConnectors(ComputeSaddleConnectors);
-
-  this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
-  this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
-
   this->setReturnSaddleConnectors(ReturnSaddleConnectors);
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
-
-  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
-  this->setInputOffsets(
-    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
-
-  void *ascendingManifoldPtr = nullptr;
-  void *descendingManifoldPtr = nullptr;
-  void *morseSmaleManifoldPtr = nullptr;
-  if(ComputeAscendingSegmentation)
-    ascendingManifoldPtr = ttkUtils::GetVoidPointer(ascendingManifold);
-  if(ComputeDescendingSegmentation)
-    descendingManifoldPtr = ttkUtils::GetVoidPointer(descendingManifold);
-  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
-     and ComputeFinalSegmentation)
-    morseSmaleManifoldPtr = ttkUtils::GetVoidPointer(morseSmaleManifold);
-
-  this->setOutputMorseComplexes(
-    ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
   int ret{};
 
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
     (ret = dispatch<VTK_TT, TTK_TT>(
-       inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
-       outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
+       inputScalars, outputCriticalPoints, outputSeparatrices1,
+       outputSeparatrices2, ttkUtils::GetPointer<SimplexId>(inputOffsets),
+       *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
     return -1;

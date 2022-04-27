@@ -7,11 +7,9 @@ using namespace std;
 using namespace ttk;
 using namespace ftr;
 
-Graph::Graph() {
-}
+Graph::Graph() = default;
 
-Graph::~Graph() {
-}
+Graph::~Graph() = default;
 
 std::string Graph::print(const int verbosity) const {
   stringstream res;

@@ -1,5 +1,6 @@
-#ifndef _BUILDWEIGHTS_H
-#define _BUILDWEIGHTS_H
+#pragma once
+
+#include <KDTree.h>
 
 namespace ttk {
   template <typename dataType>
@@ -43,9 +44,9 @@ namespace ttk {
 
     if(idx.size() > 2) {
       // Build left leaf
-      std::vector<int> idx_left;
+      std::vector<int> idx_left(median_loc);
       for(int i = 0; i < median_loc; i++) {
-        idx_left.push_back(idx[i]);
+        idx_left[i] = idx[i];
       }
 
       this->left_ = std::unique_ptr<KDTree>(
@@ -76,9 +77,10 @@ namespace ttk {
     const int &ptNumber,
     const int &dimension,
     KDTree<dataType> *parent,
-    std::vector<KDTree<dataType> *> &correspondance_map,
+    KDTreeMap &correspondance_map,
     std::vector<std::vector<dataType>> &weights,
     const int weight_number) {
+
     // First, perform a argsort on the data
     sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {
       return data[dimension * i1 + coords_number_]
@@ -148,5 +150,3 @@ namespace ttk {
     return;
   }
 } // namespace ttk
-
-#endif

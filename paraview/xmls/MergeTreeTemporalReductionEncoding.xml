@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreeTemporalReductionEncoding" class="ttkMergeTreeTemporalReductionEncoding" label="TTK MergeTreeTemporalReductionEncoding">
+      <Documentation long_help="MergeTreeTemporalReductionEncoding Long" short_help="MergeTreeTemporalReductionEncoding Short">
+This filter allows to compute a temporal reduction of a sequence of merge trees.
+
+It greedily removes trees in the sequence that can be accurately reconstructed with the geodesic computation. This iterated removal reveals key frames in the sequence (the trees that are not removed and used to reconstruct the removed trees). 
+
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+
+The output of this filter contains the key frames and the reduction coefficients needed to reconstructs the removed trees. To reconstruct the sequence, call the MergeTreeTemporalReductionDecoding filter.
+
+Related publication:
+'Wasserstein Distances, Geodesics and Barycenters of Merge Trees'
+Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
+Proc. of IEEE VIS 2021.
+IEEE Transactions on Visualization and Computer Graphics, 2021
+
+Online examples:
+- https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+          name="Input"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1" attribute_type="field">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Merge trees to process.
+        </Documentation>
+      </InputProperty>
+
+           <!-- INPUT PARAMETER WIDGETS -->
+                <!-- Input options -->
+                <IntVectorProperty
+                name="AssignmentSolver"
+                label="Assignment Solver"
+                command="SetAssignmentSolver"
+                number_of_elements="1"
+                default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auction"/>
+                    <Entry value="1" text="Exhaustive Search"/>
+                    <Entry value="2" text="Munkres"/>
+                </EnumerationDomain>
+                  <Documentation>
+                    The assignment solver used in the algorithm.
+                  </Documentation>
+                </IntVectorProperty>
+                
+                <DoubleVectorProperty
+                name="RemovalPercentage"
+                command="SetRemovalPercentage"
+                label="Removal Percentage"
+                number_of_elements="1"
+                default_values="50">
+                  <Documentation>
+                    Percentage of the total number of data in input to remove.
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty> 
+                
+                <IntVectorProperty
+                name="UseCustomTimeVariable"
+                command="SetUseCustomTimeVariable"
+                label="Use custom time variable"
+                number_of_elements="1"
+                default_values="0">
+                  <Documentation>
+                    Allows to use a custom time variable for each data in input. By default the nth input is considered to be the timestep n.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <StringVectorProperty
+                    name="TimeVariableName"
+                    command="SetTimeVariableName"
+                    label="Time Variable"
+                    element_types="0 0 0 0 2"
+                    number_of_elements="5"
+                    default_values="0"
+                    animateable="0"
+                    >
+                  <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator"
+                                            mode="visibility"
+                                            property="UseCustomTimeVariable"
+                                            value="1" />
+                  </Hints>
+                  <ArrayListDomain
+                      name="array_list"
+                      default_values="0">
+                    <RequiredProperties>
+                      <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                  </ArrayListDomain>
+                  <Documentation>
+                    Select the name of the time variable to use.
+                  </Documentation>
+                </StringVectorProperty>
+                
+                <IntVectorProperty
+                name="UseL2Distance"
+                command="SetUseL2Distance"
+                label="Use L2 distance"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+                    Use the L2 distance and L2 barycenter of the original data to compute the reduction (needs to have the Segmentation output of FTMTree).
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+            
+            <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="AssignmentSolver"/>
+              <Property name="RemovalPercentage"/>
+              <Property name="UseCustomTimeVariable"/>
+              <Property name="TimeVariableName"/>
+              <Property name="UseL2Distance"/>
+            </PropertyGroup>
+            ${MERGE_TREE_PREPROCESS_WIDGETS}
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+                <OutputPort name="Key Frames" index="0" id="port0" />
+                <OutputPort name="Reduction Coefficients" index="1" id="port1" />
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Time-varying Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

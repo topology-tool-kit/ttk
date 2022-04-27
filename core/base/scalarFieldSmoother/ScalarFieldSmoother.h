@@ -25,26 +25,22 @@ namespace ttk {
 
   public:
     ScalarFieldSmoother();
-    ~ScalarFieldSmoother();
+    ~ScalarFieldSmoother() override;
 
-    int setDimensionNumber(const int &dimensionNumber) {
+    inline void setDimensionNumber(const int &dimensionNumber) {
       dimensionNumber_ = dimensionNumber;
-      return 0;
     }
 
-    int setInputDataPointer(void *data) {
+    inline void setInputDataPointer(void *data) {
       inputData_ = data;
-      return 0;
     }
 
-    int setOutputDataPointer(void *data) {
+    inline void setOutputDataPointer(void *data) {
       outputData_ = data;
-      return 0;
     }
 
-    int setMaskDataPointer(void *mask) {
-      mask_ = (char *)mask;
-      return 0;
+    inline void setMaskDataPointer(const char *const mask) {
+      mask_ = mask;
     }
 
     int preconditionTriangulation(AbstractTriangulation *triangulation) {
@@ -63,7 +59,7 @@ namespace ttk {
   protected:
     int dimensionNumber_{1};
     void *inputData_{nullptr}, *outputData_{nullptr};
-    char *mask_{nullptr};
+    const char *mask_{nullptr};
   };
 
 } // namespace ttk

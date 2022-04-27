@@ -1,0 +1,134 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkPointDataSelector"
+      class="ttkPointDataSelector"
+      label="TTK PointDataSelector">
+      <Documentation
+        long_help="TTK fieldSelector plugin."
+        short_help="TTK fieldSelector plugin.">
+        TTK fieldSelector plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars"
+          attribute_type="point">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty command="AddScalarField"
+        clean_command="ClearScalarFields"
+        label="Scalar Fields"
+        name="ScalarFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        animatable="0"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="NbScalarRange"
+        command="GetRangeIds"
+        information_only="1"
+        si_class="vtkSIDataArraySelectionProperty" />
+
+      <IntVectorProperty
+        name="RangeId"
+        label="Range Id"
+        command="SetRangeId"
+        number_of_elements="2"
+        default_values="0 999"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" default_mode="min,min,max,max">
+          <RequiredProperties>
+            <Property name="NbScalarRange" function="RangeInfo" />
+          </RequiredProperties>
+        </IntRangeDomain>
+        <Documentation>
+            First and last accepted scalar field id.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+         name="RegexFilter"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="RenameSelected"
+        label="Rename selected field"
+        command="SetRenameSelected"
+        number_of_elements="1"
+        default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Rename the output field if only one is selected (useful for animations).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="SelectedName"
+        label="Name for selected field"
+        command="SetSelectedFieldName"
+        number_of_elements="1"
+        default_values="SelectedField" panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="RenameSelected"
+                                   value="1" />
+          </Hints>
+        <Documentation>
+          Name to be used for renaming the selected field.
+        </Documentation>
+      </StringVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFields" />
+        <Property name="RangeId" />
+        <Property name="RegexFilter" />
+        <Property name="RenameSelected" />
+        <Property name="SelectedName" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

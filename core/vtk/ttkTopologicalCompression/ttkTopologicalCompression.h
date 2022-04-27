@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that wraps the topologicalCompression processing
 /// package.
 ///
-/// VTK wrapping code for the @TopologicalCompression package.
+/// VTK wrapping code for the ttk::TopologicalCompression package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -26,6 +26,12 @@
 /// within a VTK pipeline.
 ///
 /// \sa ttk::TopologicalCompression
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/">Persistence-Driven
+///   Compression example</a> \n
+///
 
 #pragma once
 
@@ -53,7 +59,7 @@ public:
   vtkSetMacro(CompressionType, int);
   vtkGetMacro(CompressionType, int);
 
-  vtkSetMacro(SQMethod, std::string);
+  vtkSetMacro(SQMethod, const std::string &);
   vtkGetMacro(SQMethod, std::string);
 
   vtkSetMacro(Subdivide, bool);

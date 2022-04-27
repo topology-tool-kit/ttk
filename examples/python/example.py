@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
-#/// \ingroup examples
-#/// \author Lutz Hofmann <lutz.hofmann@iwr.uni-heidelberg.de>
-#/// \date August 2019.
-#///
-#/// \brief Minimalist python TTK example pipeline, including:
-#///  -# The computation of a persistence curve
-#///  -# The computation of a persistence diagram
-#///  -# The selection of the most persistent pairs of the diagram
-#///  -# The pre-simplification of the data according to this selection
-#///  -# The computation of the Morse-Smale complex on this simplified data
-#///  -# The storage of the output of this pipeline to disk.
-#///
-#/// This example reproduces the Figure 1 of the TTK companion paper:
-#/// "The Topology ToolKit", J. Tierny, G. Favelier, J. Levine, C. Gueunet, M.
-#/// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
-#/// of IEEE VIS 2017.
+# /// \ingroup examples
+# /// \author Lutz Hofmann <lutz.hofmann@iwr.uni-heidelberg.de>
+# /// \date August 2019.
+# ///
+# /// \brief Minimalist python TTK example pipeline, including:
+# ///  -# The computation of a persistence curve
+# ///  -# The computation of a persistence diagram
+# ///  -# The selection of the most persistent pairs of the diagram
+# ///  -# The pre-simplification of the data according to this selection
+# ///  -# The computation of the Morse-Smale complex on this simplified data
+# ///  -# The storage of the output of this pipeline to disk.
+# ///
+# /// This example reproduces the Figure 1 of the TTK companion paper:
+# /// "The Topology ToolKit", J. Tierny, G. Favelier, J. Levine, C. Gueunet, M.
+# /// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
+# /// of IEEE VIS 2017.
 
 import sys
 
@@ -23,6 +23,7 @@ from vtk import (
     vtkDataObject,
     vtkTableWriter,
     vtkThreshold,
+    vtkXMLPolyDataWriter,
     vtkXMLUnstructuredGridReader,
     vtkXMLUnstructuredGridWriter,
 )
@@ -60,14 +61,16 @@ diagram.SetDebugLevel(3)
 criticalPairs = vtkThreshold()
 criticalPairs.SetInputConnection(diagram.GetOutputPort())
 criticalPairs.SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "PairIdentifier")
+    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "PairIdentifier"
+)
 criticalPairs.ThresholdBetween(-0.1, 999999)
 
 # 5. selecting the most persistent pairs
 persistentPairs = vtkThreshold()
 persistentPairs.SetInputConnection(criticalPairs.GetOutputPort())
 persistentPairs.SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "Persistence")
+    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "Persistence"
+)
 persistentPairs.ThresholdBetween(0.05, 999999)
 
 # 6. simplifying the input data to remove non-persistent pairs
@@ -89,9 +92,9 @@ curveWriter.SetInputConnection(curve.GetOutputPort())
 curveWriter.SetFileName("curve.vtk")
 curveWriter.Write()
 
-sepWriter = vtkXMLUnstructuredGridWriter()
+sepWriter = vtkXMLPolyDataWriter()
 sepWriter.SetInputConnection(morseSmaleComplex.GetOutputPort(1))
-sepWriter.SetFileName("separatrices.vtu")
+sepWriter.SetFileName("separatrices.vtp")
 sepWriter.Write()
 
 segWriter = vtkXMLUnstructuredGridWriter()

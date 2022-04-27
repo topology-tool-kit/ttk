@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkGridLayout" class="ttkGridLayout" label="TTK GridLayout">
+            <Documentation 
+            long_help="TTK GridLayout plugin." 
+            short_help="TTK GridLayout plugin.">
+                This filter computes a grid layout for the blocks of a vtkMultiBlockDataSet.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+                
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet" />
+                </DataTypeDomain>
+                <Documentation>vtkMultiBlockDataSet.</Documentation>
+            </InputProperty>
+
+            <IntVectorProperty name="ColAxis" label="Column Axis" command="SetColAxis" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                <Documentation>Axis which will be used to represent columns.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="ColGap" label="Column Gap %" command="SetColGap" number_of_elements="1" default_values="0">
+                <DoubleRangeDomain name="range" min="0" max="100" />
+                <Documentation>A constant factor that is used to create gaps between columns.</Documentation>
+            </DoubleVectorProperty>
+
+            <IntVectorProperty name="RowAxis" label="Row Axis" command="SetRowAxis" number_of_elements="1" default_values="1">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                <Documentation>Axis which will be used to represent rows.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="RowGap" label="Row Gap %" command="SetRowGap" number_of_elements="1" default_values="0">
+                <DoubleRangeDomain name="range" min="0" max="100" />
+                <Documentation>A constant factor that is used to create gaps between rows.</Documentation>
+            </DoubleVectorProperty>
+
+            <IntVectorProperty name="NumberOfRows" label="Number of Rows" command="SetNumberOfRows" number_of_elements="1" default_values="0">
+                <Documentation>Number of rows (0: auto).</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="ColAxis" />
+                <Property name="ColGap" />
+                <Property name="RowAxis" />
+                <Property name="RowGap" />
+                <Property name="NumberOfRows" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <RepresentationType view="RenderView" type="Surface"/>
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

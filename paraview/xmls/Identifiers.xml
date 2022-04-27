@@ -1,0 +1,71 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkIdentifiers"
+     class="ttkIdentifiers"
+     label="TTK Identifiers">
+     <Documentation
+        long_help="TTK plugin that computes the global identifiers for each vertex and each cell as point data and cell data scalar fields."
+        short_help="TTK plugin that computes the global identifiers for each vertex and each cell as point data and cell data scalar fields.">
+      TTK plugin that computes the global identifiers for each
+      vertex and each cell as point data and cell data scalar fields.
+
+      This filter is useful to retrieve the global identifiers of vertices or
+      cells in subsequent filters throughout the VTK pipeline.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="CellFieldName"
+        command="SetCellFieldName"
+        label="Cell Field Name"
+        number_of_elements="1"
+        default_values="CellIdentifiers">
+        <Documentation>
+          Name of the output cell identifier field.
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <StringVectorProperty
+        name="VertexFieldName"
+        command="SetVertexFieldName"
+        label="Vertex Field Name"
+        number_of_elements="1"
+        default_values="ttkVertexScalarField">
+        <Documentation>
+          Name of the output vertex identifier field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="CellFieldName" />
+        <Property name="VertexFieldName" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

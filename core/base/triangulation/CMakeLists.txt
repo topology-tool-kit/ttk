@@ -5,7 +5,13 @@ ttk_add_base_library(triangulation
     Triangulation.h
   DEPENDS
     abstractTriangulation
+    compactTriangulation
     explicitTriangulation
     implicitTriangulation
     periodicImplicitTriangulation
     )
+
+target_compile_definitions(triangulation
+  PRIVATE
+  TTK_IMPLICIT_PRECONDITIONS_THRESHOLD=${TTK_IMPLICIT_PRECONDITIONS_THRESHOLD}
+)

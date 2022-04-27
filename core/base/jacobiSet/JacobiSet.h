@@ -40,7 +40,8 @@ namespace ttk {
     int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
                 const dataTypeU *const uField,
                 const dataTypeV *const vField,
-                const triangulationType &triangulation);
+                const triangulationType &triangulation,
+                std::vector<char> *isPareto = nullptr);
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
     char getCriticalType(const SimplexId &edgeId,
@@ -119,11 +120,10 @@ namespace ttk {
     }
 
   protected:
-    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    template <class dataTypeU, class dataTypeV>
     int executeLegacy(std::vector<std::pair<SimplexId, char>> &jacobiSet,
                       const dataTypeU *const uField,
-                      const dataTypeV *const vField,
-                      const triangulationType &triangulation);
+                      const dataTypeV *const vField);
 
     SimplexId vertexNumber_{};
     const SimplexId *tetList_{};

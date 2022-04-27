@@ -47,6 +47,9 @@ public:
   vtkGetMacro(RandomSeed, int);
   vtkSetMacro(RandomSeed, int);
 
+  vtkGetMacro(CompactRange, bool);
+  vtkSetMacro(CompactRange, bool);
+
 protected:
   ttkIdentifierRandomizer();
 
@@ -60,4 +63,5 @@ protected:
 
 private:
   int RandomSeed{};
+  bool CompactRange{false};
 };

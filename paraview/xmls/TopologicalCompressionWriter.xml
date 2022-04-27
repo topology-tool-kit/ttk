@@ -1,0 +1,79 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="writers">
+    <WriterProxy
+        name="ttkTopologicalCompressionWriter"
+        class="ttkTopologicalCompressionWriter"
+        label="TTK TopologicalCompressionWriter">
+
+      <Documentation
+          long_help="TTK topologicalCompressionWriter plugin."
+          short_help="TTK topologicalCompressionWriter plugin.">
+        TTK topologicalCompression plugin documentation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/
+
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkImageData"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+        <Documentation>
+          This property specifies the file name for the OFF writer.
+        </Documentation>
+      </StringVectorProperty>
+
+      ${TOPOLOGICAL_COMPRESSION_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input">
+        <Property name="Scalar Field" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output">
+        <Property name="FileName" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="double_range"
+        label="Topology aware compression">
+        <Property name="CompressionType" />
+        <Property name="Tolerance" />
+        <Property name="Subdivide" />
+        <Property name="MaximumError" />
+        <Property name="ZFPTolerance" />
+        <Property name="ZFPOnly" />
+        <Property name="UseTopologicalSimplification" />
+        <Property name="SQMethod" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <Property name="Input" show="0"/>
+        <Property name="FileName" show="1"/>
+        <WriterFactory extensions="ttk"
+          file_description="Topology ToolKit Compressed Image Data" />
+      </Hints>
+    </WriterProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

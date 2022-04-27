@@ -19,7 +19,7 @@ namespace ttk {
   class CinemaQuery : virtual public Debug {
   public:
     CinemaQuery();
-    ~CinemaQuery();
+    ~CinemaQuery() override;
 
     /** Creates a temporary database based on a SQL table definition and
      *  and table content to subsequentually return a query result.

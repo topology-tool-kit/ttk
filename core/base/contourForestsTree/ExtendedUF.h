@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef EXTENDEDUF_H
-#define EXTENDEDUF_H
+#pragma once
 
 #include <vector>
 
@@ -56,11 +55,11 @@ namespace ttk {
         origin_ = origin;
       }
 
-      inline const ufDataType &getData(void) const {
+      inline const ufDataType &getData() const {
         return data_;
       }
 
-      inline const SimplexId &getOrigin(void) const {
+      inline const SimplexId &getOrigin() const {
         return origin_;
       }
 
@@ -76,15 +75,15 @@ namespace ttk {
 
       inline int getRank() const {
         return rank_;
-      };
+      }
 
       inline void setParent(ExtendedUnionFind *parent) {
         parent_ = parent;
-      };
+      }
 
       inline void setRank(const int &rank) {
         rank_ = rank;
-      };
+      }
 
       static inline ExtendedUnionFind *makeUnion(ExtendedUnionFind *uf0,
                                                  ExtendedUnionFind *uf1) {
@@ -108,10 +107,10 @@ namespace ttk {
 
       static inline ExtendedUnionFind *
         makeUnion(std::vector<ExtendedUnionFind *> &sets) {
-        ExtendedUnionFind *n = NULL;
+        ExtendedUnionFind *n = nullptr;
 
         if(!sets.size())
-          return NULL;
+          return nullptr;
 
         if(sets.size() == 1)
           return sets[0];
@@ -124,13 +123,11 @@ namespace ttk {
 
       inline bool operator<(const ExtendedUnionFind &other) const {
         return rank_ < other.rank_;
-      };
+      }
 
       inline bool operator>(const ExtendedUnionFind &other) const {
         return rank_ > other.rank_;
-      };
+      }
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: EXTENDEDUF_H */

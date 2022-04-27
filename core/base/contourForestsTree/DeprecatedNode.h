@@ -13,8 +13,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include <vector>
 
@@ -74,11 +73,11 @@ namespace ttk {
       // Linked node
       // ........................{
 
-      inline const SimplexId &getOrigin(void) const {
+      inline const SimplexId &getOrigin() const {
         return linkedNode_;
       }
 
-      inline const SimplexId &getTerminaison(void) const {
+      inline const SimplexId &getTerminaison() const {
         return linkedNode_;
       }
 
@@ -115,7 +114,7 @@ namespace ttk {
         }
 #endif
         return vect_downSuperArcList_[neighborId];
-      };
+      }
 
       inline idSuperArc getUpSuperArcId(const idSuperArc &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -139,13 +138,13 @@ namespace ttk {
         vect_upSuperArcList_.emplace_back(upSuperArcId);
       }
 
-      inline idSuperArc clearDownSuperArcs(void) {
+      inline idSuperArc clearDownSuperArcs() {
         idSuperArc s = vect_downSuperArcList_.size();
         vect_downSuperArcList_.clear();
         return s;
       }
 
-      inline idSuperArc clearUpSuperArcs(void) {
+      inline idSuperArc clearUpSuperArcs() {
         idSuperArc s = vect_upSuperArcList_.size();
         vect_upSuperArcList_.clear();
         return s;
@@ -241,15 +240,15 @@ namespace ttk {
       // Valence
       // .......................................... {
 
-      inline idSuperArc getUpValence(void) const {
+      inline idSuperArc getUpValence() const {
         return std::get<1>(valence_);
       }
 
-      inline idSuperArc getDownValence(void) const {
+      inline idSuperArc getDownValence() const {
         return std::get<0>(valence_);
       }
 
-      inline idSuperArc getValence(void) const {
+      inline idSuperArc getValence() const {
         return std::get<0>(valence_) + std::get<1>(valence_);
       }
 
@@ -261,19 +260,19 @@ namespace ttk {
         std::get<0>(valence_) = v;
       }
 
-      inline void incUpValence(void) {
+      inline void incUpValence() {
         ++std::get<1>(valence_);
       }
 
-      inline void incDownValence(void) {
+      inline void incDownValence() {
         ++std::get<0>(valence_);
       }
 
-      inline void decUpValence(void) {
+      inline void decUpValence() {
         --std::get<1>(valence_);
       }
 
-      inline void decDownValence(void) {
+      inline void decDownValence() {
         --std::get<0>(valence_);
       }
 
@@ -284,4 +283,3 @@ namespace ttk {
 
   } // namespace cf
 } // namespace ttk
-#endif /* end of include guard: NODE_H */

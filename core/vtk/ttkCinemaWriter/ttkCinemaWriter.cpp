@@ -38,8 +38,7 @@ ttkCinemaWriter::ttkCinemaWriter() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaWriter::~ttkCinemaWriter() {
-}
+ttkCinemaWriter::~ttkCinemaWriter() = default;
 
 int ttkCinemaWriter::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
@@ -59,7 +58,7 @@ int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ensureFolder(std::string path) {
+int ensureFolder(const std::string &path) {
   auto directory = vtkSmartPointer<vtkDirectory>::New();
   if(directory->Open(path.data()) == 1
      || vtkDirectory::MakeDirectory(path.data()) == 1)
@@ -169,7 +168,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     }
 
     // delete columns from fd
-    for(auto name : toIgnore)
+    for(const auto &name : toIgnore)
       inputFD->RemoveArray(name.data());
 
     nFields = inputFD->GetNumberOfArrays();
@@ -496,7 +495,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
         topologicalCompressionWriter->SetTolerance(this->Tolerance);
         topologicalCompressionWriter->SetMaximumError(this->MaximumError);
-        topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
+        topologicalCompressionWriter->SetZFPTolerance(this->ZFPTolerance);
         topologicalCompressionWriter->SetCompressionType(this->CompressionType);
         topologicalCompressionWriter->SetSQMethodPV(this->SQMethodPV);
         topologicalCompressionWriter->SetZFPOnly(this->ZFPOnly);
@@ -529,7 +528,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
   return 1;
 }
 
-int ttkCinemaWriter::RequestData(vtkInformation *request,
+int ttkCinemaWriter::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
   ttk::Timer timer;

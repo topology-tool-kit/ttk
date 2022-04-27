@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef PROPAGATION_H
-#define PROPAGATION_H
+#pragma once
 
 // local include
 #include "FTRAtomicUF.h"
@@ -48,7 +47,7 @@ namespace ttk {
       AtomicUF id_;
 
     public:
-      Propagation(idVertex startVert, VertCompFN vertComp, bool up)
+      Propagation(idVertex startVert, const VertCompFN &vertComp, bool up)
         : curVert_{nullVertex}, nbArcs_{1}, comp_{vertComp}, goUp_{up},
           propagation_{vertComp}, id_{this} {
         propagation_.emplace(startVert);
@@ -56,7 +55,7 @@ namespace ttk {
 
       Propagation(const Propagation &other) = delete;
 
-      idVertex getCurVertex(void) const {
+      idVertex getCurVertex() const {
         return curVert_;
       }
 
@@ -68,7 +67,7 @@ namespace ttk {
         curVert_ = v;
       }
 
-      idSuperArc getNbArcs(void) const {
+      idSuperArc getNbArcs() const {
         return nbArcs_;
       }
 
@@ -84,17 +83,17 @@ namespace ttk {
         // std::endl;
       }
 
-      AtomicUF *getId(void) {
+      AtomicUF *getId() {
         return id_.find();
       }
 
-      idVertex nextVertex(void) {
+      idVertex nextVertex() {
         curVert_ = propagation_.top();
         removeDuplicates(curVert_);
         return curVert_;
       }
 
-      idVertex getNextVertex(void) const {
+      idVertex getNextVertex() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(propagation_.empty()) {
           std::cerr << "[FTR]: Propagation get next on empty structure"
@@ -111,7 +110,7 @@ namespace ttk {
         }
       }
 
-      void removeBelow(const idVertex d, VertCompFN comp) {
+      void removeBelow(const idVertex d, const VertCompFN &comp) {
         while(!propagation_.empty() && comp(propagation_.top(), d)) {
           propagation_.pop();
         }
@@ -137,7 +136,7 @@ namespace ttk {
         return propagation_.empty();
       }
 
-      void clear(void) {
+      void clear() {
         propagation_.clear();
       }
 
@@ -150,11 +149,11 @@ namespace ttk {
       }
 
       // true if propagation initiated form a min leaf
-      bool goUp(void) const {
+      bool goUp() const {
         return goUp_;
       }
 
-      bool goDown(void) const {
+      bool goDown() const {
         return !goUp_;
       }
 
@@ -188,5 +187,3 @@ namespace ttk {
     };
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: PROPAGATION_H */

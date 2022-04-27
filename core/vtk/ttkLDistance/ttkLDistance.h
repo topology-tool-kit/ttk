@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the lDistance processing package.
 ///
-/// VTK wrapping code for the @LDistance package.
+/// VTK wrapping code for the ttk::LDistance package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -41,10 +41,10 @@ public:
   static ttkLDistance *New();
   vtkTypeMacro(ttkLDistance, ttkAlgorithm);
 
-  vtkSetMacro(DistanceType, std::string);
+  vtkSetMacro(DistanceType, const std::string &);
   vtkGetMacro(DistanceType, std::string);
 
-  vtkSetMacro(DistanceFieldName, std::string);
+  vtkSetMacro(DistanceFieldName, const std::string &);
   vtkGetMacro(DistanceFieldName, std::string);
 
   vtkGetMacro(result, double);
@@ -59,6 +59,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::string DistanceType{2};
+  std::string DistanceType{"2"};
   std::string DistanceFieldName{"L2-distance"};
 };

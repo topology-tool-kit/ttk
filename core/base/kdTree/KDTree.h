@@ -8,9 +8,6 @@
 
 #pragma once
 
-#ifndef _KDTREE_H
-#define _KDTREE_H
-
 // base code includes
 #include <Debug.h>
 #include <Geometry.h> // for pow
@@ -172,9 +169,9 @@ namespace ttk {
 
     if(idx.size() > 2) {
       // Build left leaf
-      std::vector<int> idx_left;
+      std::vector<int> idx_left(median_loc);
       for(int i = 0; i < median_loc; i++) {
-        idx_left.push_back(idx[i]);
+        idx_left[i] = idx[i];
       }
 
       this->left_ = std::unique_ptr<KDTree>(
@@ -421,5 +418,3 @@ namespace ttk {
   }
 } // namespace ttk
 #include <buildWeights.h>
-
-#endif

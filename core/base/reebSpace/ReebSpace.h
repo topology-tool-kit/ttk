@@ -107,7 +107,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet0List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet0List_[sheetId]);
@@ -117,7 +117,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet1List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet1List_[sheetId]);
@@ -128,7 +128,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)originalData_.sheet2List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(originalData_.sheet2List_[sheetId]);
@@ -138,7 +138,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet3List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet3List_[sheetId]);
@@ -160,7 +160,7 @@ namespace ttk {
       return &currentData_.tet2sheet3_;
     }
 
-    const std::vector<SimplexId> *getEdgeTypes() const {
+    const std::vector<char> *getEdgeTypes() const {
       return &currentData_.edgeTypes_;
     }
 
@@ -282,7 +282,7 @@ namespace ttk {
       double simplificationThreshold_{};
 
       std::vector<SimplexId> edge2sheet1_{};
-      std::vector<SimplexId> edgeTypes_{};
+      std::vector<char> edgeTypes_{};
       std::vector<SimplexId> tet2sheet3_{};
       std::vector<SimplexId> vertex2sheet0_{};
       std::vector<SimplexId> vertex2sheet3_{};
@@ -395,8 +395,7 @@ namespace ttk {
 
     int prepareSimplification();
 
-    int printConnectivity(std::ostream &stream,
-                          const ReebSpaceData &data) const;
+    int printConnectivity(const ReebSpaceData &data) const;
 
     template <typename triangulationType>
     int simplifySheets(const double &simplificationThreshold,
@@ -906,8 +905,7 @@ int ttk::ReebSpace::compute1sheetsOnly(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           originalData_.sheet1List_.back().edgeList_.push_back(edgeId);
           originalData_.edge2sheet1_[edgeId] = sheet1Id;
@@ -1048,8 +1046,7 @@ int ttk::ReebSpace::compute1sheets(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           if(originalData_.edgeTypes_[edgeId] == 1) {
             // saddle edge
@@ -1646,7 +1643,7 @@ int ttk::ReebSpace::connectSheets(const triangulationType &triangulation) {
 
   this->printMsg("Sheet connectivity established.");
 
-  printConnectivity(std::cout, originalData_);
+  printConnectivity(originalData_);
 
   hasConnectedSheets_ = true;
 
@@ -2069,7 +2066,7 @@ int ttk::ReebSpace::simplifySheets(
 
   // TODO: update segmentation for 1-sheets and 0-sheets?...
 
-  printConnectivity(std::cout, currentData_);
+  printConnectivity(currentData_);
 
   this->printMsg(std::vector<std::vector<std::string>>{
     {"#3-sheets simplified", std::to_string(simplifiedSheets)},

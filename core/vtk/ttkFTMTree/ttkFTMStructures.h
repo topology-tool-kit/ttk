@@ -1,5 +1,4 @@
-#ifndef TTKFTMSTRUCTURES_H
-#define TTKFTMSTRUCTURES_H
+#pragma once
 
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
@@ -93,14 +92,12 @@ namespace ttk {
 
       inline int init(std::vector<LocalFTM> &ftmTree, Params params) {
         idSuperArc nbArcs = 0;
-        idSuperArc nbNodes = 0;
         idSuperArc samplePoints = 0;
         SimplexId nbVerts = 0;
 
         for(auto &t : ftmTree) {
           FTMTree_MT *tree = t.tree.getTree(params.treeType);
           nbArcs += tree->getNumberOfSuperArcs();
-          nbNodes += tree->getNumberOfNodes();
           samplePoints
             += params.samplingLvl >= 0
                  ? tree->getNumberOfNodes() + (nbArcs * params.samplingLvl)
@@ -421,11 +418,10 @@ namespace ttk {
 
         ArcType regionType;
         // RegionType
-        if(upNodeType == CriticalType::Local_minimum
-           && downNodeType == CriticalType::Local_maximum) {
-          regionType = ArcType::Min_arc;
-        } else if(upNodeType == CriticalType::Local_minimum
-                  || downNodeType == CriticalType::Local_minimum) {
+        if((upNodeType == CriticalType::Local_minimum
+            && downNodeType == CriticalType::Local_maximum)
+           || (upNodeType == CriticalType::Local_minimum
+               || downNodeType == CriticalType::Local_minimum)) {
           regionType = ArcType::Min_arc;
         } else if(upNodeType == CriticalType::Local_maximum
                   || downNodeType == CriticalType::Local_maximum) {
@@ -492,5 +488,3 @@ namespace ttk {
     };
   }; // namespace ftm
 }; // namespace ttk
-
-#endif /* end of include guard: TTKFTMSTRUCTURES_H */

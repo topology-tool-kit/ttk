@@ -1,3 +1,4 @@
+#include "BaseClass.h"
 #include <ttkExtract.h>
 
 #include <vtkInformationVector.h>
@@ -31,7 +32,8 @@ ttkExtract::ttkExtract() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
-ttkExtract::~ttkExtract(){};
+ttkExtract::~ttkExtract() = default;
+;
 
 std::string ttkExtract::GetVtkDataTypeName(const int outputType) const {
   switch(outputType) {
@@ -83,9 +85,10 @@ int ttkExtract::FillOutputPortInformation(int port, vtkInformation *info) {
 // =============================================================================
 // RequestInformation
 // =============================================================================
-int ttkExtract::RequestInformation(vtkInformation *,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
+int ttkExtract::RequestInformation(
+  vtkInformation *,
+  vtkInformationVector **ttkNotUsed(inputVector),
+  vtkInformationVector *outputVector) {
 
   if(this->ExtractionMode == EXTRACTION_MODE::BLOCKS
      && this->GetOutputType() == VTK_IMAGE_DATA) {
@@ -165,7 +168,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
                            "that contains vtkMultiBlockDataSets as input.");
             return 0;
           }
-          if(tupleIndex < 0 || tupleIndex >= blockAsMB->GetNumberOfBlocks()) {
+          if(tupleIndex >= blockAsMB->GetNumberOfBlocks()) {
             this->printErr(
               "Index out of range (" + std::to_string(tupleIndex) + "/"
               + std::to_string(blockAsMB->GetNumberOfBlocks()) + ").");
@@ -182,7 +185,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
     } else {
       for(size_t i = 0; i < indices.size(); i++) {
         size_t blockIndex = (size_t)indices[i];
-        if(blockIndex < 0 || blockIndex >= inputAsMB->GetNumberOfBlocks()) {
+        if(blockIndex >= inputAsMB->GetNumberOfBlocks()) {
           this->printErr("Index out of range (" + std::to_string(blockIndex)
                          + "/" + std::to_string(inputAsMB->GetNumberOfBlocks())
                          + ").");
@@ -315,6 +318,7 @@ int computeMask_(signed char *mask,
     mask[i] = hasToBeMarked ? 1 : 0;
   }
 
+  TTK_FORCE_USE(threadNumber);
   return 1;
 }
 
@@ -679,7 +683,7 @@ int ttkExtract::ExtractArray(vtkDataObject *output,
 // =============================================================================
 // RequestData
 // =============================================================================
-int ttkExtract::RequestData(vtkInformation *request,
+int ttkExtract::RequestData(vtkInformation *ttkNotUsed(request),
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector) {
   // Get Input to Output

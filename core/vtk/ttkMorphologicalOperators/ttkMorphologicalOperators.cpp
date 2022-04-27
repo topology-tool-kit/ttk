@@ -3,6 +3,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
@@ -16,8 +17,7 @@ ttkMorphologicalOperators::ttkMorphologicalOperators() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkMorphologicalOperators::~ttkMorphologicalOperators() {
-}
+ttkMorphologicalOperators::~ttkMorphologicalOperators() = default;
 
 int ttkMorphologicalOperators::FillInputPortInformation(int port,
                                                         vtkInformation *info) {
@@ -37,7 +37,7 @@ int ttkMorphologicalOperators::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkMorphologicalOperators::RequestData(vtkInformation *request,
+int ttkMorphologicalOperators::RequestData(vtkInformation *ttkNotUsed(request),
                                            vtkInformationVector **inputVector,
                                            vtkInformationVector *outputVector) {
   // get input and output

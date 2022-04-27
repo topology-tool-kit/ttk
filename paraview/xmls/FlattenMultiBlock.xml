@@ -1,0 +1,42 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkFlattenMultiBlock"
+        class="ttkFlattenMultiBlock"
+        label="TTK FlattenMultiBlock">
+      <Documentation
+          long_help="Flatten vtkMultiBlockDataSet of vtkMultiBlockDataSet."
+          shorthelp="Flatten vtkMultiBlockDataSet."
+          >
+        This filter flattens the top-level hierarchy of a tree
+        vtkMultiBlockDataSet structure.
+
+        The main use-case is to flatten a "Group Datasets" of several
+        vtkMultiBlockDataSets.
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="AddInputConnection"
+          clean_command="RemoveAllInputs"
+          multiple_input="1">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Hierarchy of vtkMultiBlockDataSet to process.
+        </Documentation>
+      </InputProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Pipeline" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -12,19 +12,12 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PDBARYCENTER_H
-#define _PDBARYCENTER_H
+#pragma once
 
-#include <Auction.h>
-//
 #include <KDTree.h>
-//
-#include <limits>
-//
-#include <PersistenceDiagramBarycenter.h>
+#include <PersistenceDiagramAuction.h>
 
-using namespace std;
-using namespace ttk;
+#include <limits>
 
 namespace ttk {
   template <typename dataType>
@@ -44,9 +37,9 @@ namespace ttk {
       epsilon_decreases_ = true;
       early_stoppage_ = true;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
-    };
+    }
 
-    ~PDBarycenter(){};
+    ~PDBarycenter() override = default;
 
     std::vector<std::vector<matchingTuple>>
       execute(std::vector<diagramTuple> &barycenter);
@@ -265,4 +258,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <PDBarycenterImpl.h>
-#endif

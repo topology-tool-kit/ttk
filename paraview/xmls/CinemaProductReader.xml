@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkCinemaProductReader" class="ttkCinemaProductReader" label="TTK CinemaProductReader">
+            <Documentation 
+            long_help="TTK CinemaProductReader" 
+            short_help="TTK CinemaProductReader">
+                This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.
+                
+                Online examples:
+    
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+            
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkTable" />
+                </DataTypeDomain>
+                <Documentation>vtkTable containing product references in at least one column.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty command="SetFilepathColumnName" label="Filepath Column" name="SelectColumn" number_of_elements="1" default_values="FILE">
+                <ArrayListDomain name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Name of the column containing data product references.</Documentation>
+            </StringVectorProperty>
+            <IntVectorProperty command="SetAddFieldDataRecursively" label="Add Field Data Recursively" name="AddFieldDataRecursively" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if row data should be added to all children of a vtkMultiBlockDataSet.</Documentation>
+            </IntVectorProperty>
+
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="SelectColumn" />
+                <Property name="AddFieldDataRecursively" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

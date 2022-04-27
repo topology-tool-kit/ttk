@@ -1,7 +1,7 @@
 /// \namespace ttk The Topology ToolKit
 
-/// \mainpage TTK 0.9.10 Documentation
-/// \image html "../img/splash.png"
+/// \mainpage TTK 1.1 Documentation
+/// \image html "splash.png"
 /// Useful links:
 ///   - TTK Home:
 /// <a href="https://topology-tool-kit.github.io/"
@@ -82,7 +82,7 @@ namespace ttk {
     } // namespace output
 
     const int LINEWIDTH = 80;
-  }; // namespace debug
+  } // namespace debug
 
   class Debug : public BaseClass {
 
@@ -90,7 +90,7 @@ namespace ttk {
     // 1) constructors, destructors, operators, etc.
     Debug();
 
-    virtual ~Debug();
+    ~Debug() override;
 
     // 2) functions
     /// Set the debug level of a particular object. The global variable
@@ -105,7 +105,7 @@ namespace ttk {
     /// number of threads, etc.) from a wrapper to a base object.
     /// \param wrapper Pointer to the wrapping object.
     /// \return Returns 0 upon success, negative values otherwise.
-    virtual int setWrapper(const Wrapper *wrapper);
+    int setWrapper(const Wrapper *wrapper) override;
 
     // =========================================================================
     // New Debug Methods
@@ -451,6 +451,7 @@ namespace ttk {
 } // namespace ttk
 
 #include <Os.h>
+#include <Timer.h>
 
 namespace ttk {
   /// \brief Legacy backward compatibility

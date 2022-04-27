@@ -21,6 +21,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <map>
 #include <numeric>
 #include <set>
 #include <stack>
@@ -84,12 +85,6 @@ namespace ttk {
     template <typename triangulationType = AbstractTriangulation>
     int execute(const triangulationType &triangulation);
 
-    inline LongSimplexId *getQuadBuf() {
-      return reinterpret_cast<LongSimplexId *>(outputQuads_.data());
-    }
-    inline size_t getQuadNumber() const {
-      return outputQuads_.size();
-    }
     inline float *getPointsBuf() {
       return reinterpret_cast<float *>(outputPoints_.data());
     }
@@ -128,14 +123,11 @@ namespace ttk {
         return stream;
       }
     };
-    // VTK_QUAD representation with vtkIdType
-    struct Quad {
-      LongSimplexId n; // number of vertices, 4
-      LongSimplexId i; // index of first vertex
-      LongSimplexId j; // second vertex
-      LongSimplexId k; // third vertex
-      LongSimplexId l; // fourth vertex
-    };
+
+    /**
+     * @brief Ad-hoc quad data structure (4 vertex ids)
+     */
+    using Quad = std::array<LongSimplexId, 4>;
 
     /**
      * @brief Subdivise a quadrangular mesh
@@ -534,7 +526,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     }
 
     // compute barycentric coords of projection
-    std::vector<float> baryCoords;
+    std::array<float, 3> baryCoords{};
     Geometry::computeBarycentricCoordinates(
       &pm.x, &pn.x, &po.x, &res.x, baryCoords);
 
@@ -731,12 +723,11 @@ int ttk::QuadrangulationSubdivision::subdivise(
   }
 
   for(auto &q : outputQuads_) {
-    assert(q.n == 4); // magic number...
 
-    auto i = static_cast<size_t>(q.i);
-    auto j = static_cast<size_t>(q.j);
-    auto k = static_cast<size_t>(q.k);
-    auto l = static_cast<size_t>(q.l);
+    auto i = static_cast<size_t>(q[0]);
+    auto j = static_cast<size_t>(q[1]);
+    auto k = static_cast<size_t>(q[2]);
+    auto l = static_cast<size_t>(q[3]);
 
     // middles of edges
     auto ijid = findEdgeMiddle(i, j, triangulation);
@@ -761,10 +752,10 @@ int ttk::QuadrangulationSubdivision::subdivise(
     triangulation.getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
     // order edges to avoid duplicates (ij vs. ji)
-    auto ij = std::make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
-    auto jk = std::make_pair(std::min(q.j, q.k), std::max(q.j, q.k));
-    auto kl = std::make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
-    auto li = std::make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
+    auto ij = std::make_pair(std::min(q[0], q[1]), std::max(q[0], q[1]));
+    auto jk = std::make_pair(std::min(q[1], q[2]), std::max(q[1], q[2]));
+    auto kl = std::make_pair(std::min(q[2], q[3]), std::max(q[2], q[3]));
+    auto li = std::make_pair(std::min(q[3], q[0]), std::max(q[3], q[0]));
 
     auto process_edge_middle
       = [&](const std::pair<LongSimplexId, LongSimplexId> &pair,
@@ -793,14 +784,14 @@ int ttk::QuadrangulationSubdivision::subdivise(
     nearestVertexIdentifier_.emplace_back(baryid);
 
     // add the four new quads
-    tmp.emplace_back(Quad{
-      4, q.i, processedEdges[ij].first, baryIdx, processedEdges[li].first});
-    tmp.emplace_back(Quad{
-      4, q.j, processedEdges[jk].first, baryIdx, processedEdges[ij].first});
-    tmp.emplace_back(Quad{
-      4, q.k, processedEdges[kl].first, baryIdx, processedEdges[jk].first});
-    tmp.emplace_back(Quad{
-      4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
+    tmp.emplace_back(
+      Quad{q[0], processedEdges[ij].first, baryIdx, processedEdges[li].first});
+    tmp.emplace_back(
+      Quad{q[1], processedEdges[jk].first, baryIdx, processedEdges[ij].first});
+    tmp.emplace_back(
+      Quad{q[2], processedEdges[kl].first, baryIdx, processedEdges[jk].first});
+    tmp.emplace_back(
+      Quad{q[3], processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
   // output subdivision level
@@ -842,10 +833,10 @@ void ttk::QuadrangulationSubdivision::quadStatistics(
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < outputQuads_.size(); ++i) {
     const auto &q = outputQuads_[i];
-    Point pi = outputPoints_[q.i];
-    Point pj = outputPoints_[q.j];
-    Point pk = outputPoints_[q.k];
-    Point pl = outputPoints_[q.l];
+    Point pi = outputPoints_[q[0]];
+    Point pj = outputPoints_[q[1]];
+    Point pk = outputPoints_[q[2]];
+    Point pl = outputPoints_[q[3]];
 
     // quadrangle area
     float area0{}, area1{};

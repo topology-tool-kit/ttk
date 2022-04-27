@@ -11,7 +11,7 @@ ttk_add_base_library(eigenField
 
 if(TTK_ENABLE_SPECTRA)
   target_compile_definitions(eigenField PRIVATE TTK_ENABLE_EIGEN)
-  target_include_directories(eigenField SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+  target_link_libraries(eigenField PRIVATE Eigen3::Eigen)
   target_compile_definitions(eigenField PRIVATE TTK_ENABLE_SPECTRA)
-  target_include_directories(eigenField SYSTEM PRIVATE ${SPECTRA_INCLUDE_DIR})
+  target_link_libraries(eigenField PRIVATE Spectra::Spectra)
 endif()

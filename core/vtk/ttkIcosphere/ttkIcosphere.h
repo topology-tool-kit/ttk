@@ -56,7 +56,7 @@ public:
 
 protected:
   ttkIcosphere();
-  ~ttkIcosphere();
+  ~ttkIcosphere() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

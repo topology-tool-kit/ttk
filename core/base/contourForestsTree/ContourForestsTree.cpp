@@ -144,9 +144,8 @@ int ContourForestsTree::combine(const SimplexId &seed0,
       node1 = makeNode(currentNode);
 
       // check if leaf
-      if(!currentNode->getNumberOfDownSuperArcs())
-        treeData_.leaves.emplace_back(node1);
-      else if(!currentNode->getNumberOfUpSuperArcs())
+      if(!currentNode->getNumberOfDownSuperArcs()
+         || !currentNode->getNumberOfUpSuperArcs())
         treeData_.leaves.emplace_back(node1);
     }
 

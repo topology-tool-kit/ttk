@@ -2,8 +2,10 @@
 
 #include <Geometry.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
 #include <ttkMacros.h>
@@ -21,8 +23,7 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
   setDebugMsgPrefix("ScalarFieldNormalizer");
 }
 
-ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() {
-}
+ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() = default;
 
 int ttkScalarFieldNormalizer::FillInputPortInformation(int port,
                                                        vtkInformation *info) {
@@ -74,7 +75,7 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
   return 0;
 }
 
-int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
+int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
 

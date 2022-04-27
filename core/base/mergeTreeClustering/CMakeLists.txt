@@ -1,0 +1,15 @@
+ttk_add_base_library(mergeTreeClustering
+  SOURCES
+    MergeTreeDistance.cpp
+  HEADERS
+    MergeTreeDistance.h
+    MergeTreeBase.h
+    MergeTreeUtils.h
+    MergeTreeBarycenter.h
+    MergeTreeClustering.h
+  DEPENDS
+    ftmTree
+    ftmTreePP
+    triangulation
+    assignmentSolver
+    )

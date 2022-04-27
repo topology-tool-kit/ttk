@@ -3,8 +3,10 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
 using namespace std;
@@ -17,8 +19,7 @@ ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkScalarFieldSmoother::~ttkScalarFieldSmoother() {
-}
+ttkScalarFieldSmoother::~ttkScalarFieldSmoother() = default;
 
 int ttkScalarFieldSmoother::FillInputPortInformation(int port,
                                                      vtkInformation *info) {
@@ -38,7 +39,7 @@ int ttkScalarFieldSmoother::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
+int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 
@@ -85,8 +86,8 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
      {"  Mask Array", inputMaskField ? inputMaskField->GetName() : "None"},
      {"  #iterations", std::to_string(NumberOfIterations)}});
 
-  void *inputMaskPtr
-    = (inputMaskField) ? ttkUtils::GetVoidPointer(inputMaskField) : nullptr;
+  const auto inputMaskPtr
+    = (inputMaskField) ? ttkUtils::GetPointer<char>(inputMaskField) : nullptr;
 
   this->setDimensionNumber(inputScalarField->GetNumberOfComponents());
   this->setInputDataPointer(ttkUtils::GetVoidPointer(inputScalarField));

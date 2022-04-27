@@ -1,0 +1,38 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+    <SourceProxy
+        name="ttkTopologicalCompressionReader"
+        class="ttkTopologicalCompressionReader"
+        label="TTK TopologicalCompressionReader">
+      <Documentation
+          long_help="TTK topologicalCompressionReader plugin."
+          short_help="Read a .ttk file.">
+        This plugin specifies the file name for the TTK reader.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/
+
+      </Documentation>
+      <StringVectorProperty
+              name="FileName"
+              animateable="0"
+              command="SetFileName"
+              number_of_elements="1">
+        <FileListDomain name="files"/>
+        <Documentation>
+          This property specifies the file name for the OFF reader.
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="filename_widget" label="Select file">
+        <Property name="FileName" />
+      </PropertyGroup>
+
+      <Hints>
+        <ReaderFactory extensions="ttk"
+                       file_description="Topology ToolKit Compressed Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

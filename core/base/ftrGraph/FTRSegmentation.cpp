@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk:ftr::Segment
+/// \class ttk::ftr::Segment
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2018-08-02
 ///
@@ -26,26 +26,25 @@ using namespace ftr;
 Segment::Segment(idVertex size) : vertices_(size, nullVertex) {
 }
 
-Segment::Segment() {
-}
+Segment::Segment() = default;
 
-segm_const_it Segment::begin(void) const {
+segm_const_it Segment::begin() const {
   return vertices_.begin();
 }
 
-segm_it Segment::begin(void) {
+segm_it Segment::begin() {
   return vertices_.begin();
 }
 
-segm_const_it Segment::end(void) const {
+segm_const_it Segment::end() const {
   return vertices_.end();
 }
 
-segm_it Segment::end(void) {
+segm_it Segment::end() {
   return vertices_.end();
 }
 
-idVertex Segment::size(void) const {
+idVertex Segment::size() const {
   return vertices_.size();
 }
 

@@ -1,15 +1,14 @@
 #include <PlanarGraphLayout.h>
 
 #if TTK_ENABLE_GRAPHVIZ
-#include <graphviz/cgraph.h>
-#include <graphviz/gvc.h>
+#include <cgraph.h>
+#include <gvc.h>
 #endif
 
 ttk::PlanarGraphLayout::PlanarGraphLayout() {
   this->setDebugMsgPrefix("PlanarGraphLayout");
 }
-ttk::PlanarGraphLayout::~PlanarGraphLayout() {
-}
+ttk::PlanarGraphLayout::~PlanarGraphLayout() = default;
 
 // Compute Dot Layout
 int ttk::PlanarGraphLayout::computeDotLayout(
@@ -55,7 +54,11 @@ int ttk::PlanarGraphLayout::computeDotLayout(
 
   return 1;
 #else
+  TTK_FORCE_USE(layout);
+  TTK_FORCE_USE(nodeIndicies);
+  TTK_FORCE_USE(dotString);
+
   this->printErr("This filter requires GraphViz to compute a layout.");
   return 0;
-#endif
+#endif // TTK_ENABLE_GRAPHVIZ
 }

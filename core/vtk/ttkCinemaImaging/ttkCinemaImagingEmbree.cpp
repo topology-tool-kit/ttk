@@ -16,8 +16,7 @@
 ttk::ttkCinemaImagingEmbree::ttkCinemaImagingEmbree() {
   this->setDebugMsgPrefix("CinemaImaging(Embree)");
 };
-ttk::ttkCinemaImagingEmbree::~ttkCinemaImagingEmbree() {
-}
+ttk::ttkCinemaImagingEmbree::~ttkCinemaImagingEmbree() = default;
 
 int ttk::ttkCinemaImagingEmbree::RenderVTKObject(
   vtkMultiBlockDataSet *outputImages,
@@ -137,8 +136,12 @@ int ttk::ttkCinemaImagingEmbree::RenderVTKObject(
   this->deallocateScene(device, scene);
 
 #else
+  TTK_FORCE_USE(outputImages);
+  TTK_FORCE_USE(inputObject);
+  TTK_FORCE_USE(inputGrid);
+
   this->printErr("TTK was build without EMBREE backend.");
-#endif
+#endif // TTK_ENABLE_EMBREE
 
   return status;
 };

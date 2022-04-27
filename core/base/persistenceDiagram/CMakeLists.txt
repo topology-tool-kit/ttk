@@ -3,8 +3,12 @@ ttk_add_base_library(persistenceDiagram
     PersistenceDiagram.cpp
   HEADERS
     PersistenceDiagram.h
+    PersistenceDiagramUtils.h
   DEPENDS
     discreteGradient
     triangulation
     ftmTreePP
+    persistentSimplexPairs
+    progressiveTopology
+    approximateTopology
     )
