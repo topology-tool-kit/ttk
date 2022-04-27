@@ -11,9 +11,10 @@ on:
       - 'ci*'
       - 'check*'
   pull_request:
-    # also triggered by pull requests on the "dev" branch
+    # also triggered by pull requests on the "dev" & "mpi" branches
     branches:
       - 'dev'
+      - 'mpi'
 
 
 env:

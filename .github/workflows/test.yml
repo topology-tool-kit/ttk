@@ -12,9 +12,10 @@ on:
       - 'build*'
       - 'test*'
   pull_request:
-    # also triggered by pull requests on the "dev" branch
+    # also triggered by pull requests on the "dev" & "mpi" branches
     branches:
       - 'dev'
+      - 'mpi'
 
 env:
   PV_TAG: v5.10.1-headless
