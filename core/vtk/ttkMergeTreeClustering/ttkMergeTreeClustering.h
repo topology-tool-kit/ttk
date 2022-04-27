@@ -80,6 +80,7 @@ private:
   double JoinSplitMixtureCoefficient = 0.5;
   bool ComputeBarycenter = false;
   unsigned int NumberOfBarycenters = 1;
+  double BarycenterSizeLimitPercent = 0.0;
   bool Deterministic = false;
 
   // Output Options
@@ -307,6 +308,13 @@ public:
     resetDataVisualization();
   }
   vtkGetMacro(NumberOfBarycenters, unsigned int);
+
+  void SetBarycenterSizeLimitPercent(double percent) {
+    BarycenterSizeLimitPercent = percent;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(BarycenterSizeLimitPercent, double);
 
   // Output Options
   vtkSetMacro(BarycenterPositionAlpha, bool);

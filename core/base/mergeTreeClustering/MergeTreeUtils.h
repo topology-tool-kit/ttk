@@ -220,4 +220,24 @@ namespace ttk {
     return tree;
   }
 
+  template <class dataType>
+  ftm::MergeTree<dataType>
+    makeFakeMergeTree(std::vector<dataType> &scalarsVector,
+                      std::vector<std::tuple<ftm::idNode, ftm::idNode>> &arcs) {
+    ftm::MergeTree<dataType> mergeTree
+      = ttk::ftm::createEmptyMergeTree<dataType>(scalarsVector.size());
+    ttk::ftm::setTreeScalars<dataType>(mergeTree, scalarsVector);
+    ftm::FTMTree_MT *tree = &(mergeTree.tree);
+
+    // Add Nodes
+    for(unsigned int i = 0; i < scalarsVector.size(); ++i)
+      tree->makeNode(i);
+
+    // Add Arcs
+    for(std::tuple<ftm::idNode, ftm::idNode> arc : arcs)
+      tree->makeSuperArc(std::get<0>(arc), std::get<1>(arc)); // (down, Up)
+
+    return mergeTree;
+  }
+
 } // namespace ttk
