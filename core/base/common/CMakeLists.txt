@@ -9,7 +9,7 @@ ttk_add_base_library(common
         Debug.h
         DataTypes.h
         FlatJaggedArray.h
-        MPIUtils.h
+        MPI.h
         OpenMP.h
         OrderDisambiguation.h
         Os.h

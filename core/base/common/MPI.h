@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::MPIUtils
+/// \class ttk::MPI
 /// \author Michael Will <mswill@rhrk.uni-kl.de>
 /// \date 2022.
 ///

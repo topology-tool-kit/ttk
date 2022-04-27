@@ -12,7 +12,7 @@
 // ttk common includes
 #include <Debug.h>
 
-#include <MPIUtils.h>
+#include <MPI.h>
 
 #include <limits>
 #include <unordered_map>
