@@ -2,12 +2,12 @@
 
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkGhostCellPreprocessing"
-                 class="ttkGhostCellPreprocessing"
-                 label="TTK GhostCellPreprocessing">
+    <SourceProxy name="ttkGhostCellPreconditioning"
+                 class="ttkGhostCellPreconditioning"
+                 label="TTK GhostCellPreconditioning">
       <Documentation
-          long_help="Ghostcell Preprocessing"
-          short_help="Ghostcell Preprocessing">
+          long_help="Ghostcell Preconditioning"
+          short_help="Ghostcell Preconditioning">
         This filter prepocesses a vtkDataSet for ghostcells by adding the rankid of the rank to which it belongs. 
         All other ranks only get it as ghostcell. 
       </Documentation>

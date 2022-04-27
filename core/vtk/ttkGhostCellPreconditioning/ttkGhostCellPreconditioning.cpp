@@ -1,4 +1,4 @@
-#include <ttkGhostCellPreprocessing.h>
+#include <ttkGhostCellPreconditioning.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
@@ -12,21 +12,21 @@
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 
-vtkStandardNewMacro(ttkGhostCellPreprocessing);
+vtkStandardNewMacro(ttkGhostCellPreconditioning);
 
-ttkGhostCellPreprocessing::ttkGhostCellPreprocessing() {
+ttkGhostCellPreconditioning::ttkGhostCellPreconditioning() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
-  this->setDebugMsgPrefix("GhostCellPreprocessing");
+  this->setDebugMsgPrefix("GhostCellPreconditioning");
 
   // ensure that modifying the selection re-triggers the filter
   // (c.f. vtkPassSelectedArrays.cxx)
   this->ArraySelection->AddObserver(
-    vtkCommand::ModifiedEvent, this, &ttkGhostCellPreprocessing::Modified);
+    vtkCommand::ModifiedEvent, this, &ttkGhostCellPreconditioning::Modified);
 }
 
-int ttkGhostCellPreprocessing::FillInputPortInformation(int port,
-                                                        vtkInformation *info) {
+int ttkGhostCellPreconditioning::FillInputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -34,8 +34,8 @@ int ttkGhostCellPreprocessing::FillInputPortInformation(int port,
   return 0;
 }
 
-int ttkGhostCellPreprocessing::FillOutputPortInformation(int port,
-                                                         vtkInformation *info) {
+int ttkGhostCellPreconditioning::FillOutputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
@@ -43,9 +43,10 @@ int ttkGhostCellPreprocessing::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkGhostCellPreprocessing::RequestData(vtkInformation *ttkNotUsed(request),
-                                           vtkInformationVector **inputVector,
-                                           vtkInformationVector *outputVector) {
+int ttkGhostCellPreconditioning::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkDataSet::GetData(outputVector);

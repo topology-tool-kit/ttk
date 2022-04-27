@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkGhostCellPreprocessing
+/// \class ttkGhostCellPreconditioning
 /// \author Michael Will <mswill@rhrk.uni-kl.de>
 /// \date 2022
 ///
@@ -12,13 +12,13 @@
 /// \param Output vtkDataSet.
 ///
 ///
-/// \sa ttk::ttkGhostCellPreprocessing
+/// \sa ttk::ttkGhostCellPreconditioning
 /// \sa ttkAlgorithm
 
 #pragma once
 
 // VTK Module
-#include <ttkGhostCellPreprocessingModule.h>
+#include <ttkGhostCellPreconditioningModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
@@ -27,12 +27,12 @@
 #include <vtkDataArraySelection.h>
 #include <vtkNew.h>
 
-class TTKGHOSTCELLPREPROCESSING_EXPORT ttkGhostCellPreprocessing
+class TTKGHOSTCELLPRECONDITIONING_EXPORT ttkGhostCellPreconditioning
   : public ttkAlgorithm {
 
 public:
-  static ttkGhostCellPreprocessing *New();
-  vtkTypeMacro(ttkGhostCellPreprocessing, ttkAlgorithm);
+  static ttkGhostCellPreconditioning *New();
+  vtkTypeMacro(ttkGhostCellPreconditioning, ttkAlgorithm);
 
   // copy the vtkPassSelectedArray ("PassArrays" filter) API
   vtkDataArraySelection *GetPointDataArraySelection() {
@@ -40,7 +40,7 @@ public:
   }
 
 protected:
-  ttkGhostCellPreprocessing();
+  ttkGhostCellPreconditioning();
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,

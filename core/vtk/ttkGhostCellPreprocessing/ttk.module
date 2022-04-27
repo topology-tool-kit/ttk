@@ -1,8 +1,0 @@
-NAME
-  ttkGhostCellPreprocessing
-SOURCES
-  ttkGhostCellPreprocessing.cpp
-HEADERS
-  ttkGhostCellPreprocessing.h
-DEPENDS
-  ttkAlgorithm
