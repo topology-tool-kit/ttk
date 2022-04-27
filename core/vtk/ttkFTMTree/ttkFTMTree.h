@@ -103,7 +103,7 @@ public:
     params_.treeType = (ttk::ftm::TreeType)type;
     Modified();
   }
-  ttk::ftm::TreeType GetTreeType(void) const {
+  ttk::ftm::TreeType GetTreeType() const {
     return params_.treeType;
   }
   /// @}
@@ -114,7 +114,7 @@ public:
     params_.segm = segm;
     Modified();
   }
-  bool GetWithSegmentation(void) const {
+  bool GetWithSegmentation() const {
     return params_.segm;
   }
   /// @}
@@ -126,7 +126,7 @@ public:
     params_.normalize = norm;
     Modified();
   }
-  bool GetWithNormalize(void) const {
+  bool GetWithNormalize() const {
     return params_.normalize;
   }
   /// @}
@@ -138,7 +138,7 @@ public:
     params_.advStats = adv;
     Modified();
   }
-  bool GetWithAdvStats(void) const {
+  bool GetWithAdvStats() const {
     return params_.advStats;
   }
   /// @}
@@ -149,7 +149,7 @@ public:
     params_.samplingLvl = lvl;
     Modified();
   }
-  int GetSuperArcSamplingLevel(void) const {
+  int GetSuperArcSamplingLevel() const {
     return params_.samplingLvl;
   }
   /// @}

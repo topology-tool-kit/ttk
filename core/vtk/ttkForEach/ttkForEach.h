@@ -42,7 +42,7 @@ public:
 
 protected:
   ttkForEach();
-  ~ttkForEach();
+  ~ttkForEach() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

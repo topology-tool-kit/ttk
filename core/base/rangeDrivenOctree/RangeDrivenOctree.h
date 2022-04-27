@@ -158,7 +158,7 @@ int ttk::RangeDrivenOctree::build(
       cellDomainBox_[i][j].second = -FLT_MAX;
     }
 
-    const SimplexId *cell = NULL;
+    const SimplexId *cell = nullptr;
     if(!triangulation) {
       cell = &(cellList_[5 * i + 1]);
     }

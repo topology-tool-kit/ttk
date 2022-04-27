@@ -21,17 +21,17 @@ namespace ttk {
       this->setDebugMsgPrefix("AssignmentMunkres");
     }
 
-    ~AssignmentMunkres() = default;
+    ~AssignmentMunkres() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<asgnMatchingTuple> &matchings) override;
 
-    inline void clear() {
+    inline void clear() override {
       AssignmentSolver<dataType>::clear();
       pathCount = 0;
       createdZeros.clear();
     }
 
-    inline int setInput(std::vector<std::vector<dataType>> &C_) {
+    inline int setInput(std::vector<std::vector<dataType>> &C_) override {
       AssignmentSolver<dataType>::setInput(C_);
 
       createdZeros.clear();

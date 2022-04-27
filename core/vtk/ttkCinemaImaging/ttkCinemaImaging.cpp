@@ -27,7 +27,8 @@ ttkCinemaImaging::ttkCinemaImaging() {
   this->SetNumberOfOutputPorts(1);
 };
 
-ttkCinemaImaging::~ttkCinemaImaging(){};
+ttkCinemaImaging::~ttkCinemaImaging() = default;
+;
 
 int ttkCinemaImaging::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

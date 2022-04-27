@@ -686,8 +686,7 @@ int FiberSurface::flipEdges(
           alpha = fabs(angles[j]);
       }
 
-      localTriangles.push_back(
-        pair<double, pair<SimplexId, SimplexId>>(alpha, triangles[i]));
+      localTriangles.emplace_back(alpha, triangles[i]);
     }
 
     const auto FiberSurfaceTriangleCmp

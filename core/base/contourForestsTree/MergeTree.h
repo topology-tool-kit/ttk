@@ -57,7 +57,7 @@ namespace ttk {
                 TreeType type,
                 idPartition part = nullPartition);
 
-      virtual ~MergeTree();
+      ~MergeTree() override;
 
       //}
       // --------------------
@@ -71,17 +71,17 @@ namespace ttk {
       }
 
       /// \brief init the type of the current tree froms params
-      void initTreeType(void) {
+      void initTreeType() {
         treeData_.treeType = params_->treeType;
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
       /// Also fill the mirror std::vector
       template <typename scalarType>
-      void sortInput(void);
+      void sortInput();
 
       /// \brief clear local data for new computation
-      void flush(void) {
+      void flush() {
         treeData_.superArcs.clear();
         treeData_.nodes.clear();
         treeData_.leaves.clear();
@@ -103,7 +103,7 @@ namespace ttk {
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline int setDebugLevel(const int &local_debugLevel) {
+      inline int setDebugLevel(const int &local_debugLevel) override {
         Debug::setDebugLevel(local_debugLevel);
         params_->debugLevel = local_debugLevel;
         return 0;
@@ -139,7 +139,7 @@ namespace ttk {
       // partition
       // .....................{
 
-      inline idPartition getPartition(void) const {
+      inline idPartition getPartition() const {
         return treeData_.partition;
       }
 
@@ -177,11 +177,11 @@ namespace ttk {
       // arcs
       // .....................{
 
-      inline idSuperArc getNumberOfSuperArcs(void) const {
+      inline idSuperArc getNumberOfSuperArcs() const {
         return treeData_.superArcs.size();
       }
 
-      inline idSuperArc getNumberOfVisibleArcs(void) const {
+      inline idSuperArc getNumberOfVisibleArcs() const {
         // Costly ! for dedbug only
         idSuperArc visibleArc = 0;
         for(const SuperArc &arc : treeData_.superArcs) {
@@ -191,7 +191,7 @@ namespace ttk {
         return visibleArc;
       }
 
-      inline const std::vector<SuperArc> &getSuperArc(void) const {
+      inline const std::vector<SuperArc> &getSuperArc() const {
         // break encapsulation...
         return treeData_.superArcs;
       }
@@ -229,11 +229,11 @@ namespace ttk {
       // nodes
       // .....................{
 
-      inline idNode getNumberOfNodes(void) const {
+      inline idNode getNumberOfNodes() const {
         return treeData_.nodes.size();
       }
 
-      inline const std::vector<Node> &getNodes(void) const {
+      inline const std::vector<Node> &getNodes() const {
         // break encapsulation...
         return treeData_.nodes;
       }
@@ -246,11 +246,11 @@ namespace ttk {
       // leaves / root
       // .....................{
 
-      inline SimplexId getNumberOfLeaves(void) const {
+      inline SimplexId getNumberOfLeaves() const {
         return treeData_.leaves.size();
       }
 
-      inline const std::vector<idNode> &getLeaves(void) const {
+      inline const std::vector<idNode> &getLeaves() const {
         // break encapsulation...
         return treeData_.leaves;
       }
@@ -265,7 +265,7 @@ namespace ttk {
         return treeData_.leaves[id];
       }
 
-      inline const std::vector<idNode> &getRoots(void) const {
+      inline const std::vector<idNode> &getRoots() const {
         // break encapsulation...
         return treeData_.roots;
       }
@@ -566,7 +566,7 @@ namespace ttk {
       // {
 
       // Print
-      void printTree2(void);
+      void printTree2();
 
       std::string printArc(const idSuperArc &a) {
         const SuperArc *sa = getSuperArc(a);

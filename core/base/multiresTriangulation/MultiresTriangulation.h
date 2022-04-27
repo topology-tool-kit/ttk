@@ -27,7 +27,7 @@ namespace ttk {
 
   public:
     MultiresTriangulation();
-    ~MultiresTriangulation();
+    ~MultiresTriangulation() override;
 
     SimplexId getVertexNeighborAtDecimation(const SimplexId &vertexId,
                                             const int &localNeighborId,

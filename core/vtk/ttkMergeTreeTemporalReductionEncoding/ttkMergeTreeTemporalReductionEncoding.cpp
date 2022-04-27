@@ -39,9 +39,8 @@ ttkMergeTreeTemporalReductionEncoding::ttkMergeTreeTemporalReductionEncoding() {
   this->SetNumberOfOutputPorts(2);
 }
 
-ttkMergeTreeTemporalReductionEncoding::
-  ~ttkMergeTreeTemporalReductionEncoding() {
-}
+ttkMergeTreeTemporalReductionEncoding::~ttkMergeTreeTemporalReductionEncoding()
+  = default;
 
 /**
  * This method specifies the required input object data types of the

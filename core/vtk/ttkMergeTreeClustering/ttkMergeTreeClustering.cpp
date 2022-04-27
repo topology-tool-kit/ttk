@@ -49,8 +49,7 @@ ttkMergeTreeClustering::ttkMergeTreeClustering() {
   this->SetNumberOfOutputPorts(3);
 }
 
-ttkMergeTreeClustering::~ttkMergeTreeClustering() {
-}
+ttkMergeTreeClustering::~ttkMergeTreeClustering() = default;
 
 /**
  * Specify the required input data type of each input port

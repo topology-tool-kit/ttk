@@ -34,7 +34,7 @@ public:
 
 protected:
   ttkDataSetInterpolator();
-  ~ttkDataSetInterpolator();
+  ~ttkDataSetInterpolator() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

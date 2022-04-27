@@ -9,7 +9,7 @@ namespace ttk {
   class ttkCinemaImagingEmbree : public CinemaImagingEmbree {
   public:
     ttkCinemaImagingEmbree();
-    ~ttkCinemaImagingEmbree();
+    ~ttkCinemaImagingEmbree() override;
 
     int RenderVTKObject(vtkMultiBlockDataSet *outputImages,
 

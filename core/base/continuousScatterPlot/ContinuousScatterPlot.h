@@ -28,7 +28,7 @@ namespace ttk {
 
   public:
     ContinuousScatterPlot();
-    ~ContinuousScatterPlot();
+    ~ContinuousScatterPlot() override;
 
     template <typename dataType1,
               typename dataType2,

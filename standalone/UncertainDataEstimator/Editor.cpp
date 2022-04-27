@@ -302,7 +302,7 @@ int Editor::loadData(const std::string &fileName) {
       this->printErr("Function loadData: reader not initialized");
       return -1;
     }
-    input_ = NULL;
+    input_ = nullptr;
     rawReader_->SetFileName(fileName.c_str());
     rawReader_->UpdateWholeExtent();
     input_ = vtkDataSet::SafeDownCast(rawReader_->GetOutput());
@@ -312,31 +312,31 @@ int Editor::loadData(const std::string &fileName) {
     if(inputFormat_ == "vtu") {
       if(input_) {
         input_->Delete();
-        input_ = NULL;
+        input_ = nullptr;
       }
       input_ = readXMLFile<vtkXMLUnstructuredGridReader>(fileName);
     } else if(inputFormat_ == "vtp") {
       if(input_) {
         input_->Delete();
-        input_ = NULL;
+        input_ = nullptr;
       }
       input_ = readXMLFile<vtkXMLPolyDataReader>(fileName);
     } else if(inputFormat_ == "vts") {
       if(input_) {
         input_->Delete();
-        input_ = NULL;
+        input_ = nullptr;
       }
       input_ = readXMLFile<vtkXMLStructuredGridReader>(fileName);
     } else if(inputFormat_ == "vtr") {
       if(input_) {
         input_->Delete();
-        input_ = NULL;
+        input_ = nullptr;
       }
       input_ = readXMLFile<vtkXMLRectilinearGridReader>(fileName);
     } else if(inputFormat_ == "vti") {
       if(input_) {
         input_->Delete();
-        input_ = NULL;
+        input_ = nullptr;
       }
       input_ = readXMLFile<vtkXMLImageDataReader>(fileName);
     } else {

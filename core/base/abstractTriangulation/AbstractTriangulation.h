@@ -61,7 +61,7 @@ namespace ttk {
   public:
     AbstractTriangulation();
 
-    virtual ~AbstractTriangulation();
+    ~AbstractTriangulation() override;
 
     AbstractTriangulation(const AbstractTriangulation &) = default;
     AbstractTriangulation(AbstractTriangulation &&) = default;
@@ -179,7 +179,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getCellEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedCellEdges())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 1)
         return getCellNeighbors();
@@ -276,7 +276,7 @@ namespace ttk {
       getCellNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedCellNeighbors())
-        return NULL;
+        return nullptr;
 #endif
       return getCellNeighborsInternal();
     }
@@ -389,10 +389,10 @@ namespace ttk {
       getCellTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedCellTriangles())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 2)
         return getCellNeighbors();
@@ -463,10 +463,10 @@ namespace ttk {
     virtual inline const std::vector<std::array<SimplexId, 2>> *getEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdges())
-        return NULL;
+        return nullptr;
 #endif
       return getEdgesInternal();
     }
@@ -557,10 +557,10 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getEdgeLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdgeLinks())
-        return NULL;
+        return nullptr;
 #endif
       return getEdgeLinksInternal();
     }
@@ -663,10 +663,10 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getEdgeStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdgeStars())
-        return NULL;
+        return nullptr;
 #endif
       return getEdgeStarsInternal();
     }
@@ -768,10 +768,10 @@ namespace ttk {
       getEdgeTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdgeTriangles())
-        return NULL;
+        return nullptr;
 #endif
 
       if(getDimensionality() == 2)
@@ -934,7 +934,7 @@ namespace ttk {
     virtual inline const std::vector<std::array<SimplexId, 3>> *getTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedTriangles())
-        return NULL;
+        return nullptr;
 #endif
       return getTrianglesInternal();
     }
@@ -1030,10 +1030,10 @@ namespace ttk {
       getTriangleEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedTriangleEdges())
-        return NULL;
+        return nullptr;
 #endif
 
       return getTriangleEdgesInternal();
@@ -1129,10 +1129,10 @@ namespace ttk {
       getTriangleLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() != 3)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedTriangleLinks())
-        return NULL;
+        return nullptr;
 #endif
       return getTriangleLinksInternal();
     }
@@ -1228,10 +1228,10 @@ namespace ttk {
       getTriangleStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() != 3)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedTriangleStars())
-        return NULL;
+        return nullptr;
 #endif
       return getTriangleStarsInternal();
     }
@@ -1371,7 +1371,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getVertexEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexEdges())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 1)
         return getVertexStars();
@@ -1461,7 +1461,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getVertexLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexLinks())
-        return NULL;
+        return nullptr;
 #endif
       return getVertexLinksInternal();
     }
@@ -1542,7 +1542,7 @@ namespace ttk {
       getVertexNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexNeighbors())
-        return NULL;
+        return nullptr;
 #endif
       return getVertexNeighborsInternal();
     }
@@ -1644,7 +1644,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getVertexStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexStars())
-        return NULL;
+        return nullptr;
 #endif
       return getVertexStarsInternal();
     }
@@ -1747,10 +1747,10 @@ namespace ttk {
       getVertexTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedVertexTriangles())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 2)
         return getVertexStars();
@@ -2534,7 +2534,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2551,7 +2551,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellNeighborsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2568,7 +2568,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2589,7 +2589,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::array<SimplexId, 2>> *
       getEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2606,7 +2606,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeLinksInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2623,7 +2623,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeStarsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2640,7 +2640,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2668,7 +2668,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::array<SimplexId, 3>> *
       getTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2685,7 +2685,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2702,7 +2702,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleLinksInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2719,7 +2719,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleStarsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2743,7 +2743,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2760,7 +2760,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexLinksInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2777,7 +2777,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexNeighborsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2802,7 +2802,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexStarsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2819,22 +2819,22 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline bool
       isEdgeOnBoundaryInternal(const SimplexId &ttkNotUsed(edgeId)) const {
-      return 0;
+      return false;
     }
 
     virtual inline bool isTriangleOnBoundaryInternal(
       const SimplexId &ttkNotUsed(triangleId)) const {
-      return 0;
+      return false;
     }
 
     virtual inline bool
       isVertexOnBoundaryInternal(const SimplexId &ttkNotUsed(vertexId)) const {
-      return 0;
+      return false;
     }
 
     inline bool hasPreconditionedBoundaryEdges() const {
@@ -3114,7 +3114,7 @@ namespace ttk {
     }
 
     // empty wrapping to VTK for now
-    bool needsToAbort() {
+    bool needsToAbort() override {
       return false;
     }
 
@@ -3214,7 +3214,7 @@ namespace ttk {
                                const std::string &tableName = "",
                                std::ostream &stream = std::cout) const;
 
-    int updateProgress(const float &ttkNotUsed(progress)) {
+    int updateProgress(const float &ttkNotUsed(progress)) override {
       return 0;
     }
 

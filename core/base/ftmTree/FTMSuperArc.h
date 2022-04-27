@@ -65,11 +65,11 @@ namespace ttk {
 
       // node
 
-      inline idNode getUpNodeId(void) const {
+      inline idNode getUpNodeId() const {
         return upNodeId_;
       }
 
-      inline idNode getDownNodeId(void) const {
+      inline idNode getDownNodeId() const {
         return downNodeId_;
       }
 
@@ -83,7 +83,7 @@ namespace ttk {
 
       // last vertex seen, nb vertex seen & ids
 
-      inline SimplexId getLastVisited(void) const {
+      inline SimplexId getLastVisited() const {
         return lastVisited_;
       }
 
@@ -99,15 +99,15 @@ namespace ttk {
         verticesSeen_ += nb;
       }
 
-      inline void decrNbSeen(void) {
+      inline void decrNbSeen() {
         --verticesSeen_;
       }
 
-      inline SimplexId getNbVertSeen(void) const {
+      inline SimplexId getNbVertSeen() const {
         return verticesSeen_;
       }
 
-      inline idSuperArc getNormalizedId(void) const {
+      inline idSuperArc getNormalizedId() const {
         return normalizedId_;
       }
 
@@ -117,15 +117,15 @@ namespace ttk {
 
       // state
 
-      inline bool isHidden(void) const {
+      inline bool isHidden() const {
         return state_ == ComponentState::Hidden;
       }
 
-      inline bool isMerged(void) const {
+      inline bool isMerged() const {
         return state_ == ComponentState::Merged;
       }
 
-      inline bool isVisible(void) const {
+      inline bool isVisible() const {
         return state_ == ComponentState::Visible;
       }
 
@@ -157,38 +157,38 @@ namespace ttk {
       }
 
       // Direct read access to the list of region
-      const std::list<Region> &getRegions(void) const {
+      const std::list<Region> &getRegions() const {
         return region_.getRegions();
       }
 
-      std::list<Region> &getRegions(void) {
+      std::list<Region> &getRegions() {
         return region_.getRegions();
       }
 
-      const ArcRegion &getRegion(void) const {
+      const ArcRegion &getRegion() const {
         return region_;
       }
 
-      size_t regionSize(void) const {
+      size_t regionSize() const {
         return region_.count();
       }
 
-      void clearSegmentation(void) {
+      void clearSegmentation() {
         region_.clear();
       }
 
       // access segmentation (after createSegmentation)
       // vector-like
 
-      inline size_t size(void) const {
+      inline size_t size() const {
         return region_.size();
       }
 
-      std::vector<SimplexId>::iterator begin(void) {
+      std::vector<SimplexId>::iterator begin() {
         return region_.begin();
       }
 
-      std::vector<SimplexId>::iterator end(void) {
+      std::vector<SimplexId>::iterator end() {
         return region_.end();
       }
 
@@ -235,7 +235,7 @@ namespace ttk {
         return region_.merge(s.region_);
       }
 
-      std::string printReg(void) const {
+      std::string printReg() const {
         return region_.print();
       }
     };

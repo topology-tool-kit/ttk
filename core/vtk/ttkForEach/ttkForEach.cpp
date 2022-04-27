@@ -21,7 +21,8 @@ ttkForEach::ttkForEach() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkForEach::~ttkForEach(){};
+ttkForEach::~ttkForEach() = default;
+;
 
 int addRecursivelyToFieldData(vtkDataObject *object,
                               const vtkSmartPointer<vtkDataArray> &array) {

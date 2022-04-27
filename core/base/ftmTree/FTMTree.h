@@ -12,8 +12,7 @@
 ///
 /// \sa ttkFTMTree.cpp %for a usage example.
 
-#ifndef FTMTREE_H
-#define FTMTREE_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
@@ -37,7 +36,7 @@ namespace ttk {
       // -----------------
 
       FTMTree();
-      virtual ~FTMTree();
+      ~FTMTree() override;
 
       // -------
       // PROCESS
@@ -53,5 +52,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif // TASKEDTREE_H

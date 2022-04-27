@@ -48,7 +48,8 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkImportEmbeddingFromTable() override{};
+  ~ttkImportEmbeddingFromTable() override = default;
+  ;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

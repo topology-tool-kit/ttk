@@ -54,7 +54,7 @@ namespace ttk {
       LocalizedTopologicalSimplification() {
         this->setDebugMsgPrefix("LTS");
       }
-      ~LocalizedTopologicalSimplification() = default;
+      ~LocalizedTopologicalSimplification() override = default;
 
       int preconditionTriangulation(
         ttk::AbstractTriangulation *triangulation) const {

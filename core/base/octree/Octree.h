@@ -16,7 +16,7 @@
 #pragma once
 
 #include <Triangulation.h>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <stack>
 #include <unordered_map>
@@ -33,8 +33,7 @@ public:
     childExists_ = 0;
   }
 
-  ~OctreeNode() {
-  }
+  ~OctreeNode() = default;
 
 protected:
   uint32_t locCode_;
@@ -49,7 +48,7 @@ class Octree : public virtual ttk::Debug {
 public:
   Octree(const ttk::AbstractTriangulation *t);
   Octree(const ttk::AbstractTriangulation *t, const int k);
-  ~Octree();
+  ~Octree() override;
   void initialize(const ttk::AbstractTriangulation *t, const int k);
 
   bool empty();

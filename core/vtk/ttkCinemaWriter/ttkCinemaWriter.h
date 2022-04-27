@@ -89,7 +89,7 @@ public:
 
 protected:
   ttkCinemaWriter();
-  ~ttkCinemaWriter();
+  ~ttkCinemaWriter() override;
 
   int ValidateDatabasePath();
   int ProcessDataProduct(vtkDataObject *input);

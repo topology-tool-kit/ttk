@@ -39,7 +39,7 @@ namespace ttk {
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     }
 
-    ~PDBarycenter() = default;
+    ~PDBarycenter() override = default;
 
     std::vector<std::vector<matchingTuple>>
       execute(std::vector<diagramTuple> &barycenter);

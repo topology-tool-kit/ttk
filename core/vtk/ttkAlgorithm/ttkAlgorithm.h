@@ -138,7 +138,8 @@ public:
                           const std::string &arrayName,
                           vtkDataSet *const inputData,
                           std::vector<ttk::SimplexId> &spareStorage,
-                          const int inputPort = 0);
+                          const int inputPort = 0,
+                          const bool printErr = true);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
@@ -164,7 +165,7 @@ public:
   ttk::Triangulation *GetTriangulation(vtkDataSet *object);
 
   /**
-   * This key can be used during the FillOutputPortInfomration() call to
+   * This key can be used during the FillOutputPortInformation() call to
    * specify that an output port should produce the same data type as a
    * certain input port.
    */
@@ -206,7 +207,7 @@ public:
 
 protected:
   ttkAlgorithm();
-  virtual ~ttkAlgorithm();
+  ~ttkAlgorithm() override;
 
   /**
    * This method is called during the first pipeline pass in
@@ -313,9 +314,8 @@ protected:
    * This method has to be overridden to specify the required input data
    * types.
    */
-  virtual int
-    FillInputPortInformation(int ttkNotUsed(port),
-                             vtkInformation *ttkNotUsed(info)) override {
+  int FillInputPortInformation(int ttkNotUsed(port),
+                               vtkInformation *ttkNotUsed(info)) override {
     return 0;
   }
 
@@ -329,9 +329,8 @@ protected:
    * This method has to be overridden to specify the data types of the
    * outputs.
    */
-  virtual int
-    FillOutputPortInformation(int ttkNotUsed(port),
-                              vtkInformation *ttkNotUsed(info)) override {
+  int FillOutputPortInformation(int ttkNotUsed(port),
+                                vtkInformation *ttkNotUsed(info)) override {
     return 0;
   }
 };

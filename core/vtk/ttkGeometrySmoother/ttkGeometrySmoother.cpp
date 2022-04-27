@@ -16,8 +16,7 @@ ttkGeometrySmoother::ttkGeometrySmoother() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkGeometrySmoother::~ttkGeometrySmoother() {
-}
+ttkGeometrySmoother::~ttkGeometrySmoother() = default;
 
 int ttkGeometrySmoother::FillInputPortInformation(int port,
                                                   vtkInformation *info) {

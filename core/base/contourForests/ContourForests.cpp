@@ -609,7 +609,7 @@ void ContourForests::printVectCT() {
       }
     }
 
-    if(1) {
+    if(true) {
       cout << "Leaves" << endl;
 
       for(const auto &l : parallelData_.trees[nb].getLeaves())

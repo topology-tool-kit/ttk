@@ -34,7 +34,7 @@ public:
 
 protected:
   ttkDataSetToTable();
-  ~ttkDataSetToTable();
+  ~ttkDataSetToTable() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

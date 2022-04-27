@@ -17,8 +17,7 @@ ttkPersistenceCurve::ttkPersistenceCurve() {
   this->SetNumberOfOutputPorts(4);
 }
 
-ttkPersistenceCurve::~ttkPersistenceCurve() {
-}
+ttkPersistenceCurve::~ttkPersistenceCurve() = default;
 
 vtkTable *ttkPersistenceCurve::GetOutput() {
   return this->GetOutput(0);

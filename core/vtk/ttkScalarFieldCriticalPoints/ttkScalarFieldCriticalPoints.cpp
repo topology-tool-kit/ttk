@@ -25,8 +25,7 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
-}
+ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() = default;
 
 int ttkScalarFieldCriticalPoints::FillInputPortInformation(
   int port, vtkInformation *info) {

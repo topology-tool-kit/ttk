@@ -20,8 +20,7 @@ ttkCinemaDarkroomCompositing::ttkCinemaDarkroomCompositing() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaDarkroomCompositing::~ttkCinemaDarkroomCompositing() {
-}
+ttkCinemaDarkroomCompositing::~ttkCinemaDarkroomCompositing() = default;
 
 int ttkCinemaDarkroomCompositing::FillInputPortInformation(
   int port, vtkInformation *info) {

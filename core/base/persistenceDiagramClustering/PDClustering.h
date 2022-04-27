@@ -48,7 +48,7 @@ namespace ttk {
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
     }
 
-    ~PDClustering() = default;
+    ~PDClustering() override = default;
 
     std::vector<int>
       execute(std::vector<std::vector<diagramTuple>> &final_centroids,

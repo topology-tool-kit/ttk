@@ -27,10 +27,8 @@ vtkInformationKeyMacro(ttkAlgorithm, SAME_DATA_TYPE_AS_INPUT_PORT, Integer);
 
 // Constructor / Destructor
 vtkStandardNewMacro(ttkAlgorithm);
-ttkAlgorithm::ttkAlgorithm() {
-}
-ttkAlgorithm::~ttkAlgorithm() {
-}
+ttkAlgorithm::ttkAlgorithm() = default;
+ttkAlgorithm::~ttkAlgorithm() = default;
 
 ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
@@ -218,17 +216,22 @@ ttk::SimplexId *
                                       const std::string &arrayName,
                                       vtkDataSet *const inputData,
                                       std::vector<ttk::SimplexId> &spareStorage,
-                                      const int inputPort) {
+                                      const int inputPort,
+                                      const bool printErr) {
 
   // fetch data array
   const auto array = this->GetOptionalArray(
     enforceArrayIndex, arrayIndex, arrayName, inputData, inputPort);
   if(array == nullptr) {
-    this->printErr("Could not find the requested identifiers array");
+    if(printErr) {
+      this->printErr("Could not find the requested identifiers array");
+    }
     return {};
   }
   if(array->GetNumberOfComponents() != 1) {
-    this->printErr("Identifiers field must have only one component!");
+    if(printErr) {
+      this->printErr("Identifiers field must have only one component!");
+    }
     return {};
   }
 

@@ -8,9 +8,6 @@
 
 #pragma once
 
-#ifndef _KDTREE_H
-#define _KDTREE_H
-
 // base code includes
 #include <Debug.h>
 #include <Geometry.h> // for pow
@@ -421,5 +418,3 @@ namespace ttk {
   }
 } // namespace ttk
 #include <buildWeights.h>
-
-#endif

@@ -8,12 +8,11 @@ MultiresTriangulation::MultiresTriangulation() {
   decimationLevel_ = 0;
   debugLevel_ = 0;
   gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
   this->setDebugMsgPrefix("MultiresTriangulation");
 }
 
-MultiresTriangulation::~MultiresTriangulation() {
-}
+MultiresTriangulation::~MultiresTriangulation() = default;
 
 int ttk::MultiresTriangulation::preconditionVerticesInternal() {
   vertexPositions_.resize(vertexNumber_);

@@ -22,8 +22,7 @@ namespace ttk {
       this->setDebugMsgPrefix("Gabow-Tarjan");
     }
 
-    ~GabowTarjan() {
-    }
+    ~GabowTarjan() override = default;
 
     template <typename dataType>
     dataType Distance(dataType maxLevel);

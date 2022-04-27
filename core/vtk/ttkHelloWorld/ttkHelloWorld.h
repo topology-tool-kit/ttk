@@ -102,7 +102,7 @@ protected:
    *         (see cpp file)
    */
   ttkHelloWorld();
-  virtual ~ttkHelloWorld() override = default;
+  ~ttkHelloWorld() override = default;
 
   /**
    * TODO 8: Specify the input data type of each input port

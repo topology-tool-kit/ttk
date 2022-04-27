@@ -211,14 +211,14 @@ int SubLevelSetTree::build() {
 
   vector<UnionFind> seeds;
   vector<vector<int>> seedSuperArcs;
-  vector<UnionFind *> vertexSeeds(vertexNumber_, (UnionFind *)NULL);
+  vector<UnionFind *> vertexSeeds(vertexNumber_, (UnionFind *)nullptr);
   vector<UnionFind *> starSets;
   vector<bool> visitedVertices(vertexNumber_, false);
 
   SimplexId vertexId = -1, nId = -1;
-  UnionFind *seed = NULL, *firstUf = NULL;
+  UnionFind *seed = nullptr, *firstUf = nullptr;
 
-  const vector<int> *extremumList = NULL;
+  const vector<int> *extremumList = nullptr;
 
   bool isMergeTree = true;
 
@@ -272,7 +272,7 @@ int SubLevelSetTree::build() {
     starSets.clear();
 
     merge = false;
-    firstUf = NULL;
+    firstUf = nullptr;
 
     SimplexId neighborNumber
       = triangulation_->getVertexNeighborNumber(vertexId);
@@ -2437,7 +2437,7 @@ int ContourTree::combineTrees() {
     return -1;
 
   queue<const Node *> nodeQueue;
-  const Node *mergeNode = NULL, *splitNode = NULL;
+  const Node *mergeNode = nullptr, *splitNode = nullptr;
   int initNumber = 0;
 
   do {
@@ -2461,7 +2461,7 @@ int ContourTree::combineTrees() {
     if((int)nodeQueue.size() == initQueueSize)
       break;
 
-    const Node *n0 = NULL, *n1 = NULL, *other = NULL;
+    const Node *n0 = nullptr, *n1 = nullptr, *other = nullptr;
 
     do {
 
@@ -2483,7 +2483,7 @@ int ContourTree::combineTrees() {
         if(!((other->getNumberOfUpArcs())
              && (other->getNumberOfDownArcs() > 1))) {
 
-          n1 = NULL;
+          n1 = nullptr;
 
           if(n0->getNumberOfUpArcs()) {
 
@@ -2533,7 +2533,7 @@ int ContourTree::combineTrees() {
         if(!((other->getNumberOfUpArcs())
              && (other->getNumberOfDownArcs() > 1))) {
 
-          n1 = NULL;
+          n1 = nullptr;
 
           if(n0->getNumberOfUpArcs()) {
 
@@ -2682,7 +2682,7 @@ bool ContourTree::isNodeEligible(const Node *n) const {
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const Node *merge = NULL, *split = NULL;
+  const Node *merge = nullptr, *split = nullptr;
 
   if(mergeTree_.getNode(n - mergeTree_.getNode(0)) == n) {
     merge = n;

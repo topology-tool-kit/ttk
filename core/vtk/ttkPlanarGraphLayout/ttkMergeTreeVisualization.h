@@ -86,8 +86,10 @@ private:
   double prevXMax = 0;
 
 public:
-  ttkMergeTreeVisualization(){};
-  ~ttkMergeTreeVisualization(){};
+  ttkMergeTreeVisualization() = default;
+  ;
+  ~ttkMergeTreeVisualization() override = default;
+  ;
 
   // ==========================================================================
   // Getter / Setter

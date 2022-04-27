@@ -34,7 +34,7 @@ public:
 
 protected:
   ttkEndFor();
-  ~ttkEndFor();
+  ~ttkEndFor() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

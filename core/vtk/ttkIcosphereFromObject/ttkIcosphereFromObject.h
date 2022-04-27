@@ -37,7 +37,7 @@ public:
 
 protected:
   ttkIcosphereFromObject();
-  ~ttkIcosphereFromObject();
+  ~ttkIcosphereFromObject() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

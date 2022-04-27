@@ -13,8 +13,7 @@
 ///
 /// \sa ttkFTMTree.cpp %for a usage example.
 
-#ifndef FTMTREE_TPL_H
-#define FTMTREE_TPL_H
+#pragma once
 
 #include "FTMTree.h"
 
@@ -199,5 +198,3 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
     }
   }
 }
-
-#endif /* end of include guard: FTMTREE_TPL_H */

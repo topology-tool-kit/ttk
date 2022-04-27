@@ -4,7 +4,7 @@
 
 // DynamicTree ----------------------------------
 
-std::string ttk::DynamicTree::print(void) const {
+std::string ttk::DynamicTree::print() const {
   std::stringstream res;
 
   for(const auto &node : nodes_) {
@@ -21,7 +21,7 @@ std::string ttk::DynamicTree::print(void) const {
   return res.str();
 }
 
-std::string ttk::DynamicTree::printNbCC(void) const {
+std::string ttk::DynamicTree::printNbCC() const {
   std::stringstream res;
   std::vector<DynTreeNode *> roots;
   roots.reserve(nodes_.size());
@@ -38,7 +38,7 @@ std::string ttk::DynamicTree::printNbCC(void) const {
 
 // DynTreeNode ----------------------------------
 
-void ttk::DynTreeNode::evert(void) {
+void ttk::DynTreeNode::evert() {
   if(!parent_)
     return;
 
@@ -63,7 +63,7 @@ void ttk::DynTreeNode::evert(void) {
   }
 }
 
-ttk::DynTreeNode *ttk::DynTreeNode::findRoot(void) const {
+ttk::DynTreeNode *ttk::DynTreeNode::findRoot() const {
   DynTreeNode *curNode = const_cast<DynTreeNode *>(this);
   while(curNode->parent_) {
     curNode = curNode->parent_;

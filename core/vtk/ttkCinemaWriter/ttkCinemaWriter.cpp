@@ -38,8 +38,7 @@ ttkCinemaWriter::ttkCinemaWriter() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaWriter::~ttkCinemaWriter() {
-}
+ttkCinemaWriter::~ttkCinemaWriter() = default;
 
 int ttkCinemaWriter::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {

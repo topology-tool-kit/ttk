@@ -50,7 +50,7 @@ namespace ttk {
     TrackingFromOverlap() {
       this->setDebugMsgPrefix("TrackingFromOverlap");
     }
-    ~TrackingFromOverlap() = default;
+    ~TrackingFromOverlap() override = default;
 
     struct Node {
       labelTypeVariant label{};

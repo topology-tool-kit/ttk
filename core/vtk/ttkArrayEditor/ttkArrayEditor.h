@@ -91,7 +91,7 @@ public:
 
 protected:
   ttkArrayEditor();
-  ~ttkArrayEditor();
+  ~ttkArrayEditor() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

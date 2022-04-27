@@ -43,8 +43,7 @@ namespace ttk {
     bool isIncreasingOrder_{};
 
   public:
-    SweepCmp() {
-    }
+    SweepCmp() = default;
 
     SweepCmp(bool isIncreasingOrder) : isIncreasingOrder_{isIncreasingOrder} {
     }

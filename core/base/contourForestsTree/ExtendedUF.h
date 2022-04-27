@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef EXTENDEDUF_H
-#define EXTENDEDUF_H
+#pragma once
 
 #include <vector>
 
@@ -56,11 +55,11 @@ namespace ttk {
         origin_ = origin;
       }
 
-      inline const ufDataType &getData(void) const {
+      inline const ufDataType &getData() const {
         return data_;
       }
 
-      inline const SimplexId &getOrigin(void) const {
+      inline const SimplexId &getOrigin() const {
         return origin_;
       }
 
@@ -108,10 +107,10 @@ namespace ttk {
 
       static inline ExtendedUnionFind *
         makeUnion(std::vector<ExtendedUnionFind *> &sets) {
-        ExtendedUnionFind *n = NULL;
+        ExtendedUnionFind *n = nullptr;
 
         if(!sets.size())
-          return NULL;
+          return nullptr;
 
         if(sets.size() == 1)
           return sets[0];
@@ -132,5 +131,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: EXTENDEDUF_H */

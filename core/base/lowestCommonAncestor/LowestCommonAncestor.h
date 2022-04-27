@@ -51,7 +51,7 @@ namespace ttk {
     /// Add a node in the tree
     /// \return Returns the id of the new node
     inline int addNode() {
-      node_.push_back(Node());
+      node_.emplace_back();
       int id = static_cast<int>(node_.size());
       node_[id].setAncestor(id);
       return id;

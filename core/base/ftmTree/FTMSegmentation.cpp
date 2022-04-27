@@ -29,11 +29,11 @@ using namespace ftm;
 Segment::Segment(SimplexId size) : vertices_(size, nullVertex) {
 }
 
-segm_const_it Segment::begin(void) const {
+segm_const_it Segment::begin() const {
   return vertices_.begin();
 }
 
-segm_it Segment::begin(void) {
+segm_it Segment::begin() {
   return vertices_.begin();
 }
 
@@ -69,11 +69,11 @@ void Segment::createFromList(const Scalars *s,
   regularList.clear();
 }
 
-segm_const_it Segment::end(void) const {
+segm_const_it Segment::end() const {
   return vertices_.end();
 }
 
-segm_it Segment::end(void) {
+segm_it Segment::end() {
   return vertices_.end();
 }
 
@@ -85,7 +85,7 @@ SimplexId &Segment::operator[](const size_t &idx) {
   return vertices_[idx];
 }
 
-SimplexId Segment::size(void) const {
+SimplexId Segment::size() const {
   return vertices_.size();
 }
 
@@ -100,10 +100,9 @@ void Segment::sort(const Scalars *s) {
 // Segments
 // --------
 
-Segments::Segments() {
-}
+Segments::Segments() = default;
 
-void Segments::clear(void) {
+void Segments::clear() {
   segments_.clear();
 }
 
@@ -128,7 +127,7 @@ void Segments::resize(const vector<SimplexId> &sizes) {
   }
 }
 
-idSegment Segments::size(void) const {
+idSegment Segments::size() const {
   return segments_.size();
 }
 

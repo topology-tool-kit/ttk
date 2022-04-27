@@ -36,7 +36,7 @@ namespace ttk {
 
   public:
     PlanarGraphLayout();
-    ~PlanarGraphLayout();
+    ~PlanarGraphLayout() override;
 
     template <typename ST, typename IT, typename CT>
     int computeLayout(

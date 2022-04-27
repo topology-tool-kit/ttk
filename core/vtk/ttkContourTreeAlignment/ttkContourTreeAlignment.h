@@ -109,7 +109,8 @@ protected:
 
   // filter constructor and destructor
   ttkContourTreeAlignment();
-  ~ttkContourTreeAlignment() override{};
+  ~ttkContourTreeAlignment() override = default;
+  ;
 
 private:
   // filter parameters

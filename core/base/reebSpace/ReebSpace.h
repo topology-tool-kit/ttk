@@ -107,7 +107,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet0List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet0List_[sheetId]);
@@ -117,7 +117,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet1List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet1List_[sheetId]);
@@ -128,7 +128,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)originalData_.sheet2List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(originalData_.sheet2List_[sheetId]);
@@ -138,7 +138,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet3List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet3List_[sheetId]);
@@ -905,8 +905,7 @@ int ttk::ReebSpace::compute1sheetsOnly(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           originalData_.sheet1List_.back().edgeList_.push_back(edgeId);
           originalData_.edge2sheet1_[edgeId] = sheet1Id;
@@ -1047,8 +1046,7 @@ int ttk::ReebSpace::compute1sheets(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           if(originalData_.edgeTypes_[edgeId] == 1) {
             // saddle edge

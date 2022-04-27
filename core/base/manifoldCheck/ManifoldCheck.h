@@ -30,7 +30,7 @@ namespace ttk {
   public:
     ManifoldCheck();
 
-    ~ManifoldCheck();
+    ~ManifoldCheck() override;
 
     /// Execute the package.
     template <class triangulationType = AbstractTriangulation>

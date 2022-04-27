@@ -368,7 +368,7 @@ void FTMTree_MT::delNode(idNode node) {
 #endif
 }
 
-void FTMTree_MT::finalizeSegmentation(void) {
+void FTMTree_MT::finalizeSegmentation() {
   for(auto &arc : *mt_data_.superArcs) {
     arc.createSegmentation(scalars_);
   }
@@ -548,7 +548,7 @@ void FTMTree_MT::move(FTMTree_MT *mt) {
   mt->mt_data_.vert2tree = nullptr;
 }
 
-void FTMTree_MT::normalizeIds(void) {
+void FTMTree_MT::normalizeIds() {
   Timer normTime;
   sortLeaves(true);
 
@@ -723,7 +723,7 @@ string FTMTree_MT::printNode(idNode n) {
   return res.str();
 }
 
-void FTMTree_MT::printParams(void) const {
+void FTMTree_MT::printParams() const {
   if(debugLevel_ > 1) {
     if(debugLevel_ > 2) {
       this->printMsg(ttk::debug::Separator::L1);

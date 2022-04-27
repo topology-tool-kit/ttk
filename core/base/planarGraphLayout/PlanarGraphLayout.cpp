@@ -8,8 +8,7 @@
 ttk::PlanarGraphLayout::PlanarGraphLayout() {
   this->setDebugMsgPrefix("PlanarGraphLayout");
 }
-ttk::PlanarGraphLayout::~PlanarGraphLayout() {
-}
+ttk::PlanarGraphLayout::~PlanarGraphLayout() = default;
 
 // Compute Dot Layout
 int ttk::PlanarGraphLayout::computeDotLayout(

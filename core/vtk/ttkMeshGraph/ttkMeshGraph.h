@@ -55,7 +55,7 @@ public:
 
 protected:
   ttkMeshGraph();
-  ~ttkMeshGraph();
+  ~ttkMeshGraph() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

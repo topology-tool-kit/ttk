@@ -36,7 +36,7 @@ public:
 
   vtkTypeMacro(ttkCustomInteractor, vtkInteractorStyleTrackballCamera);
 
-  virtual void OnKeyPress() override;
+  void OnKeyPress() override;
 
   inline int setUserInterface(ttkUserInterfaceBase *userInterface) {
 
@@ -131,7 +131,7 @@ public:
     ttkModule_ = (Debug *)ttkObject_.GetPointer();
   };
 
-  virtual int run() {
+  int run() override {
     return ttkUserInterfaceBase::run();
   }
 

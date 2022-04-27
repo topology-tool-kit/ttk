@@ -59,7 +59,7 @@ namespace ttk {
       omp_set_nested(1);
 #endif
     }
-    ~MergeTreeBarycenter() = default;
+    ~MergeTreeBarycenter() override = default;
 
     void setTol(double tolT) {
       tol_ = tolT;
@@ -211,7 +211,7 @@ namespace ttk {
       // Get nodes and scalars to add
       std::queue<std::tuple<ftm::idNode, ftm::idNode>> queue;
       queue.emplace(std::make_tuple(nodeId2, nodeId1));
-      nodesToProcess.push_back(std::make_tuple(nodeId2, nodeId1, i));
+      nodesToProcess.emplace_back(nodeId2, nodeId1, i);
       while(!queue.empty()) {
         auto queueTuple = queue.front();
         queue.pop();
@@ -225,7 +225,7 @@ namespace ttk {
         tree2->getChildren(node, children);
         for(auto child : children) {
           queue.emplace(std::make_tuple(child, nodeCpt + 1));
-          nodesToProcess.push_back(std::make_tuple(child, nodeCpt + 1, i));
+          nodesToProcess.emplace_back(child, nodeCpt + 1, i);
         }
         nodeCpt += 2; // we will add two nodes (birth and death)
       }
@@ -396,8 +396,8 @@ namespace ttk {
             std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
               nodesProcessedT;
             for(auto tup : nodesProcessed[i])
-              nodesProcessedT.push_back(
-                std::make_tuple(std::get<0>(tup), std::get<1>(tup), -1));
+              nodesProcessedT.emplace_back(
+                std::get<0>(tup), std::get<1>(tup), -1);
             matchings[i].insert(matchings[i].end(), nodesProcessedT.begin(),
                                 nodesProcessedT.end());
           }

@@ -34,8 +34,7 @@ ttkArrayEditor::ttkArrayEditor() {
   }
 }
 
-ttkArrayEditor::~ttkArrayEditor() {
-}
+ttkArrayEditor::~ttkArrayEditor() = default;
 
 vtkDataArraySelection *ttkArrayEditor::GetArraySelection(int association) {
   if(association >= 0 && association < vtkDataObject::NUMBER_OF_ASSOCIATIONS) {

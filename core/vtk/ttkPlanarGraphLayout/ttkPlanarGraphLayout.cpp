@@ -22,8 +22,7 @@ ttkPlanarGraphLayout::ttkPlanarGraphLayout() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
-ttkPlanarGraphLayout::~ttkPlanarGraphLayout() {
-}
+ttkPlanarGraphLayout::~ttkPlanarGraphLayout() = default;
 
 int ttkPlanarGraphLayout::FillInputPortInformation(int port,
                                                    vtkInformation *info) {

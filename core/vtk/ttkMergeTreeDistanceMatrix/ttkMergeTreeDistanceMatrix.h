@@ -25,9 +25,6 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
 ///   Tree Clustering example</a> \n
 
-#ifndef _TTKMERGETREEDISTANCEMATRIX_
-#define _TTKMERGETREEDISTANCEMATRIX_
-
 #pragma once
 
 // VTK Module
@@ -198,5 +195,3 @@ protected:
   int run(vtkInformationVector *outputVector,
           std::vector<vtkMultiBlockDataSet *> inputTrees);
 };
-
-#endif

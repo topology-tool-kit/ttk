@@ -41,7 +41,7 @@ namespace ttk {
                 const dataTypeU *const uField,
                 const dataTypeV *const vField,
                 const triangulationType &triangulation,
-                std::vector<char> *isPareto = NULL);
+                std::vector<char> *isPareto = nullptr);
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
     char getCriticalType(const SimplexId &edgeId,

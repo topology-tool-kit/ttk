@@ -44,7 +44,7 @@ namespace ttk {
       this->setDebugMsgPrefix("BottleneckDistance");
     }
 
-    ~BottleneckDistance() = default;
+    ~BottleneckDistance() override = default;
 
     template <typename dataType>
     int execute(bool usePersistenceMetric);

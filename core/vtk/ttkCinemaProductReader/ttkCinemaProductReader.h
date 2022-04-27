@@ -47,7 +47,7 @@ public:
 
 protected:
   ttkCinemaProductReader();
-  ~ttkCinemaProductReader();
+  ~ttkCinemaProductReader() override;
 
   vtkSmartPointer<vtkDataObject> readFileLocal(const std::string &pathToFile);
   int addFieldDataRecursively(vtkDataObject *object, vtkFieldData *fd);

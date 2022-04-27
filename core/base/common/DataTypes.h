@@ -5,8 +5,7 @@
 ///
 ///\brief TTK base package defining the standard types.
 
-#ifndef _DATATYPES_H
-#define _DATATYPES_H
+#pragma once
 
 namespace ttk {
   /// \brief Identifier type for simplices of any dimension.
@@ -83,5 +82,3 @@ namespace ttk {
   const int CriticalTypeNumber = 6;
 
 } // namespace ttk
-
-#endif // _DATATYPES_H

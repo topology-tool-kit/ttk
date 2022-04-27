@@ -439,15 +439,15 @@ namespace ttk {
         // Init vector with all origins
         std::vector<std::tuple<ftm::idNode, int>> vecOrigins;
         for(auto nodeMergedOrigin : treeNodeMerged[node]) {
-          vecOrigins.push_back(std::make_tuple(nodeMergedOrigin, 0));
+          vecOrigins.emplace_back(nodeMergedOrigin, 0);
           for(auto multiPersOrigin :
               treeMultiPers[tree->getNode(nodeMergedOrigin)->getOrigin()])
-            vecOrigins.push_back(std::make_tuple(multiPersOrigin, 1));
+            vecOrigins.emplace_back(multiPersOrigin, 1);
         }
         if(not tree->isNodeMerged(node))
           for(auto multiPersOrigin : treeMultiPers[node])
-            vecOrigins.push_back(std::make_tuple(multiPersOrigin, 1));
-        vecOrigins.push_back(std::make_tuple(nodeOrigin, 2));
+            vecOrigins.emplace_back(multiPersOrigin, 1);
+        vecOrigins.emplace_back(nodeOrigin, 2);
 
         bool splitRoot = (vecOrigins.size() != 1 and treeNew->isRoot(node));
         splitRoot = false; // disabled
@@ -711,11 +711,11 @@ namespace ttk {
         if(tree->isLeaf(node)) {
           if(tree->isNodeAlone(nodeOrigin)) {
             if(not isFM)
-              nodeParent.push_back(std::make_tuple(nodeOrigin, node));
+              nodeParent.emplace_back(nodeOrigin, node);
             else
-              nodeParent.push_back(std::make_tuple(node, nodeOrigin));
+              nodeParent.emplace_back(node, nodeOrigin);
           } else if(tree->isMultiPersPair(node)) {
-            nodeParent.push_back(std::make_tuple(node, nodeOrigin));
+            nodeParent.emplace_back(node, nodeOrigin);
           }
           continue;
         }
@@ -741,7 +741,7 @@ namespace ttk {
           if(tree->isMultiPersPair(children[i]))
             continue;
           int index = getIndexNotMultiPers(i - 1, tree, children);
-          nodeParent.push_back(std::make_tuple(children[i], children[index]));
+          nodeParent.emplace_back(children[i], children[index]);
         }
 
         bool multiPersPair
@@ -750,15 +750,15 @@ namespace ttk {
           if(not isFM) {
             int index
               = getIndexNotMultiPers(children.size() - 1, tree, children);
-            nodeParent.push_back(std::make_tuple(nodeOrigin, children[index]));
+            nodeParent.emplace_back(nodeOrigin, children[index]);
           } else
-            nodeParent.push_back(std::make_tuple(children[0], node));
+            nodeParent.emplace_back(children[0], node);
         } else {
           // std::cout << "branchDecompositionToTree multiPersPair" <<
           // std::endl;
-          nodeParent.push_back(std::make_tuple(children[0], nodeOrigin));
+          nodeParent.emplace_back(children[0], nodeOrigin);
           int index = getIndexNotMultiPers(children.size() - 1, tree, children);
-          nodeParent.push_back(std::make_tuple(node, children[index]));
+          nodeParent.emplace_back(node, children[index]);
         }
 
         // Push children to the queue
@@ -882,8 +882,7 @@ namespace ttk {
               dataType costT
                 = relabelCost<dataType>(tree1, tree1Node, tree2, tree2Node);
               cost = static_cast<double>(costT);
-              outputMatching.push_back(
-                std::make_tuple(tree1Node, tree2Node, cost));
+              outputMatching.emplace_back(tree1Node, tree2Node, cost);
             }
           }
         } else {
@@ -933,9 +932,9 @@ namespace ttk {
 
         if(!tree1->isNodeAlone(node1Higher)
            and !tree2->isNodeAlone(node2Higher))
-          toAdd.push_back(std::make_tuple(node1Higher, node2Higher, cost));
+          toAdd.emplace_back(node1Higher, node2Higher, cost);
         if(!tree1->isNodeAlone(node1Lower) and !tree2->isNodeAlone(node2Lower))
-          toAdd.push_back(std::make_tuple(node1Lower, node2Lower, cost));
+          toAdd.emplace_back(node1Lower, node2Lower, cost);
       }
       outputMatching.clear();
       outputMatching.insert(outputMatching.end(), toAdd.begin(), toAdd.end());
@@ -958,8 +957,7 @@ namespace ttk {
 
       outputMatching.clear();
       for(auto tup : realOutputMatching)
-        outputMatching.push_back(
-          std::make_tuple(std::get<0>(tup), std::get<1>(tup)));
+        outputMatching.emplace_back(std::get<0>(tup), std::get<1>(tup));
     }
 
     template <class dataType>
@@ -976,8 +974,7 @@ namespace ttk {
         dataType deleteInsertCostVal = deleteCost<dataType>(tree1, tree1Node)
                                        + insertCost<dataType>(tree2, tree2Node);
         bool isRealMatching = (relabelCostVal <= deleteInsertCostVal);
-        realMatching.push_back(
-          std::make_tuple(tree1Node, tree2Node, isRealMatching));
+        realMatching.emplace_back(tree1Node, tree2Node, isRealMatching);
       }
     }
 
@@ -1247,7 +1244,7 @@ namespace ttk {
           continue;
         int tableId1 = children1[std::get<0>(mTuple)] + 1;
         int tableId2 = children2[std::get<1>(mTuple)] + 1;
-        forestAssignment.push_back(std::make_tuple(tableId1, tableId2));
+        forestAssignment.emplace_back(tableId1, tableId2);
       }
       return cost;
     }

@@ -1,5 +1,4 @@
-#ifndef TTKFTMSTRUCTURES_H
-#define TTKFTMSTRUCTURES_H
+#pragma once
 
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
@@ -489,5 +488,3 @@ namespace ttk {
     };
   }; // namespace ftm
 }; // namespace ttk
-
-#endif /* end of include guard: TTKFTMSTRUCTURES_H */

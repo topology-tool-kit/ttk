@@ -41,8 +41,7 @@ CompactTriangulation &
   return *this;
 }
 
-CompactTriangulation::~CompactTriangulation() {
-}
+CompactTriangulation::~CompactTriangulation() = default;
 
 int CompactTriangulation::reorderVertices(std::vector<SimplexId> &vertexMap) {
   // get the number of nodes (the max value in the array)

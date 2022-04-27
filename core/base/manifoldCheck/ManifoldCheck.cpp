@@ -5,11 +5,10 @@ using namespace ttk;
 
 ManifoldCheck::ManifoldCheck() {
 
-  vertexLinkComponentNumber_ = NULL;
-  edgeLinkComponentNumber_ = NULL;
-  triangleLinkComponentNumber_ = NULL;
+  vertexLinkComponentNumber_ = nullptr;
+  edgeLinkComponentNumber_ = nullptr;
+  triangleLinkComponentNumber_ = nullptr;
   this->setDebugMsgPrefix("ManifoldCheck");
 }
 
-ManifoldCheck::~ManifoldCheck() {
-}
+ManifoldCheck::~ManifoldCheck() = default;

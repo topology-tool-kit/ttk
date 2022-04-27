@@ -12,8 +12,7 @@
 /// etc.).
 ///
 
-#ifndef FTMTREE_MT_H
-#define FTMTREE_MT_H
+#pragma once
 
 #include <functional>
 #include <map>
@@ -103,7 +102,7 @@ namespace ttk {
       // Tree with global data and partition number
       FTMTree_MT(Params *const params, Scalars *const scalars, TreeType type);
 
-      virtual ~FTMTree_MT();
+      ~FTMTree_MT() override;
 
       // --------------------
       // Init
@@ -114,7 +113,7 @@ namespace ttk {
         scalars_->size = triangulation->getNumberOfVertices();
       }
 
-      void initComp(void) {
+      void initComp() {
         if(isST()) {
           comp_.vertLower
             = [this](const SimplexId a, const SimplexId b) -> bool {
@@ -142,10 +141,10 @@ namespace ttk {
 
       /// \brief if sortedVertices_ is null, define and fill it
       template <typename scalarType>
-      void sortInput(void);
+      void sortInput();
 
       /// \brief clear local data for new computation
-      void makeAlloc(void) {
+      void makeAlloc() {
         createAtomicVector<SuperArc>(mt_data_.superArcs);
 
         // Stats alloc
@@ -184,7 +183,7 @@ namespace ttk {
         mt_data_.segments_.clear();
       }
 
-      void makeInit(void) {
+      void makeInit() {
         initVector<idCorresp>(mt_data_.vert2tree, nullCorresp);
         initVector<SimplexId>(mt_data_.visitOrder, nullVertex);
         initVector<UF>(mt_data_.ufs, nullptr);
@@ -260,7 +259,7 @@ namespace ttk {
       void buildSegmentation();
 
       // Create the segmentation of all arcs by operating the pending operations
-      void finalizeSegmentation(void);
+      void finalizeSegmentation();
 
       void normalizeIds();
 
@@ -280,11 +279,11 @@ namespace ttk {
         return getSuperArc(arcId)->size();
       }
 
-      inline bool isJT(void) const {
+      inline bool isJT() const {
         return mt_data_.treeType == TreeType::Join;
       }
 
-      inline bool isST(void) const {
+      inline bool isST() const {
         return mt_data_.treeType == TreeType::Split;
       }
 
@@ -354,7 +353,7 @@ namespace ttk {
 
       // arcs
 
-      inline idSuperArc getNumberOfSuperArcs(void) const {
+      inline idSuperArc getNumberOfSuperArcs() const {
         return mt_data_.superArcs->size();
       }
 
@@ -380,7 +379,7 @@ namespace ttk {
 
       // nodes
 
-      inline idNode getNumberOfNodes(void) const {
+      inline idNode getNumberOfNodes() const {
         return mt_data_.nodes->size();
       }
 
@@ -394,11 +393,11 @@ namespace ttk {
 
       // leaves / root
 
-      inline idNode getNumberOfLeaves(void) const {
+      inline idNode getNumberOfLeaves() const {
         return mt_data_.leaves->size();
       }
 
-      inline const std::vector<idNode> &getLeaves(void) const {
+      inline const std::vector<idNode> &getLeaves() const {
         // break encapsulation...
         return (*mt_data_.leaves);
       }
@@ -413,14 +412,14 @@ namespace ttk {
         return (*mt_data_.leaves)[id];
       }
 
-      inline const std::vector<idNode> &getRoots(void) const {
+      inline const std::vector<idNode> &getRoots() const {
         // break encapsulation...
         return (*mt_data_.roots);
       }
 
       // vertices
 
-      inline SimplexId getNumberOfVertices(void) const {
+      inline SimplexId getNumberOfVertices() const {
         return scalars_->size;
       }
 
@@ -559,9 +558,9 @@ namespace ttk {
 
       std::string printNode(idNode n);
 
-      void printTree2(void);
+      void printTree2();
 
-      void printParams(void) const;
+      void printParams() const;
 
       int printTime(Timer &t,
                     const std::string &s,
@@ -628,6 +627,9 @@ namespace ttk {
 
       int getRealNumberOfNodes();
 
+      template <class dataType>
+      idNode getMergedRootOrigin();
+
       void getBranchOriginsFromThisBranch(
         idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res);
 
@@ -663,7 +665,24 @@ namespace ttk {
       // Persistence
       // --------------------
       template <class dataType>
+      std::tuple<dataType, dataType> getBirthDeathFromIds(idNode nodeId1,
+                                                          idNode nodeId2);
+
+      template <class dataType>
+      std::tuple<dataType, dataType> getBirthDeathNodeFromIds(idNode nodeId1,
+                                                              idNode nodeId2);
+
+      template <class dataType>
       std::tuple<dataType, dataType> getBirthDeath(idNode nodeId);
+
+      template <class dataType>
+      std::tuple<ftm::idNode, ftm::idNode> getBirthDeathNode(idNode nodeId);
+
+      template <class dataType>
+      std::tuple<dataType, dataType> getMergedRootBirthDeath();
+
+      template <class dataType>
+      std::tuple<ftm::idNode, ftm::idNode> getMergedRootBirthDeathNode();
 
       template <class dataType>
       dataType getBirth(idNode nodeId);
@@ -673,6 +692,9 @@ namespace ttk {
 
       template <class dataType>
       dataType getMaximumPersistence();
+
+      template <class dataType>
+      ftm::idNode getSecondMaximumPersistenceNode();
 
       template <class dataType>
       dataType getSecondMaximumPersistence();
@@ -718,14 +740,18 @@ namespace ttk {
       void printNodeSS(idNode node, std::stringstream &ss);
 
       template <class dataType>
-      void printNode2(idNode nodeId);
+      std::stringstream printNode2(idNode nodeId, bool doPrint = true);
+
+      template <class dataType>
+      std::stringstream printMergedRoot(bool doPrint = true);
 
       std::stringstream printTree(bool doPrint = true);
 
-      void printTreeStats();
+      std::stringstream printTreeStats(bool doPrint = true);
 
       template <class dataType>
-      void printTreeScalars(bool printNodeAlone = true);
+      std::stringstream printTreeScalars(bool printNodeAlone = true,
+                                         bool doPrint = true);
 
       template <class dataType>
       std::stringstream printPairsFromTree(bool useBD = false,
@@ -736,8 +762,9 @@ namespace ttk {
                                                             = true);
 
       template <class dataType>
-      void printMultiPersPairsFromTree(bool useBD = false,
-                                       bool printPairs = true);
+      std::stringstream printMultiPersPairsFromTree(bool useBD = false,
+                                                    bool printPairs = true,
+                                                    bool doPrint = true);
 
       // ----------------------------------------
       // End of utils functions
@@ -914,5 +941,3 @@ namespace ttk {
 
 #include <FTMTreeUtils_Template.h>
 #include <FTMTree_MT_Template.h>
-
-#endif /* end of include guard: MERGETREE_H */

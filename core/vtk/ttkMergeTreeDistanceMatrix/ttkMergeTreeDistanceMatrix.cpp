@@ -34,8 +34,7 @@ ttkMergeTreeDistanceMatrix::ttkMergeTreeDistanceMatrix() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkMergeTreeDistanceMatrix::~ttkMergeTreeDistanceMatrix() {
-}
+ttkMergeTreeDistanceMatrix::~ttkMergeTreeDistanceMatrix() = default;
 
 /**
  * Specify the required input data type of each input port
@@ -119,6 +118,9 @@ int ttkMergeTreeDistanceMatrix::run(
   epsilonTree2_ = epsilonTree1_;
   epsilon2Tree2_ = epsilon2Tree1_;
   epsilon3Tree2_ = epsilon3Tree1_;
+  printMsg("BranchDecomposition: " + std::to_string(branchDecomposition_));
+  printMsg("NormalizedWasserstein: " + std::to_string(normalizedWasserstein_));
+  printMsg("KeepSubtree: " + std::to_string(keepSubtree_));
 
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(

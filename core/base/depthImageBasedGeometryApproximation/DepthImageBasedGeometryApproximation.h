@@ -31,7 +31,7 @@ namespace ttk {
     DepthImageBasedGeometryApproximation() {
       this->setDebugMsgPrefix("DIBGA");
     }
-    ~DepthImageBasedGeometryApproximation() = default;
+    ~DepthImageBasedGeometryApproximation() override = default;
 
     /**
      * This function computes for an input depth image and its corresponding

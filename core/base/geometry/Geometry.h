@@ -247,7 +247,7 @@ namespace ttk {
     bool isTriangleColinear(const T *p0,
                             const T *p1,
                             const T *p2,
-                            const T *tolerance = NULL);
+                            const T *tolerance = nullptr);
 
     /// Compute the magnitude of a 3D std::vector \p v.
     /// \param v xyz coordinates of the input std::vector.

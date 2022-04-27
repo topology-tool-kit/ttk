@@ -9,8 +9,7 @@
 ///
 /// \sa ftrGraph
 
-#ifndef ATOMICUFFTR_H
-#define ATOMICUFFTR_H
+#pragma once
 
 // c++ includes
 #include <memory>
@@ -49,7 +48,7 @@ namespace ttk {
 
       // Shared data get/set
 
-      inline Propagation *getPropagation(void) {
+      inline Propagation *getPropagation() {
         return prop_;
       }
 
@@ -100,10 +99,10 @@ namespace ttk {
       }
 
       static inline AtomicUF *makeUnion(std::vector<AtomicUF *> &sets) {
-        AtomicUF *n = NULL;
+        AtomicUF *n = nullptr;
 
         if(!sets.size())
-          return NULL;
+          return nullptr;
 
         if(sets.size() == 1)
           return sets[0];
@@ -126,5 +125,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: ATOMICUFFTR_H */

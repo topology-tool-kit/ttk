@@ -13,8 +13,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef FTMTREE_MT_TPL_H
-#define FTMTREE_MT_TPL_H
+#pragma once
 
 #include <functional>
 
@@ -510,7 +509,7 @@ namespace ttk {
     // ------------------------------------------------------------------------
 
     template <typename scalarType>
-    void ftm::FTMTree_MT::sortInput(void) {
+    void ftm::FTMTree_MT::sortInput() {
 
       const auto nbVertices = scalars_->size;
       scalars_->sortedVertices.resize(nbVertices);
@@ -526,5 +525,3 @@ namespace ttk {
   } // namespace ftm
 } // namespace ttk
 // Process
-
-#endif /* end of include guard: FTMTREE_MT_TPL_H */

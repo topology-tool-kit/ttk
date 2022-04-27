@@ -19,7 +19,7 @@ namespace ttk {
     CinemaImagingNative() {
       this->setDebugMsgPrefix("CinemaImaging(Native)");
     }
-    ~CinemaImagingNative() = default;
+    ~CinemaImagingNative() override = default;
 
     template <typename IT>
     int renderImage(float *depthBuffer,
