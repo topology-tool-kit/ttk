@@ -15,6 +15,7 @@ on:
     # also triggered by pull requests on the "dev" branch
     branches:
       - 'dev'
+      - 'mpi'
 
 env:
   PV_REPO: topology-tool-kit/ttk-paraview
