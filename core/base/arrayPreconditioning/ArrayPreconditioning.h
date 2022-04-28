@@ -12,8 +12,6 @@
 // ttk common includes
 #include <Debug.h>
 
-#include <MPI.h>
-
 #include <limits>
 #include <unordered_map>
 #include <unordered_set>

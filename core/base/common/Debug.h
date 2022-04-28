@@ -23,6 +23,7 @@
 #pragma once
 
 #include <BaseClass.h>
+#include <BaseMPIClass.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -31,6 +32,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#if TTK_ENABLE_MPI
+#include <mpi.h>
+#endif
 
 namespace ttk {
 
@@ -84,7 +89,11 @@ namespace ttk {
     const int LINEWIDTH = 80;
   } // namespace debug
 
+#if TTK_ENABLE_MPI
+  class Debug : public BaseMPIClass {
+#else
   class Debug : public BaseClass {
+#endif
 
   public:
     // 1) constructors, destructors, operators, etc.
@@ -359,7 +368,14 @@ namespace ttk {
      * debug message.
      */
     inline void setDebugMsgPrefix(const std::string &prefix) {
+#if TTK_ENABLE_MPI
+      this->debugMsgPrefix_
+        = prefix.length() > 0
+            ? "[" + prefix + "-" + std::to_string(MPIrank_) + "] "
+            : "";
+#else
       this->debugMsgPrefix_ = prefix.length() > 0 ? "[" + prefix + "] " : "";
+#endif
     }
 
   protected:
