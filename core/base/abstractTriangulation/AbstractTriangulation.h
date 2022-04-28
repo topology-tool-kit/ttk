@@ -18,6 +18,7 @@
 
 #include <array>
 #include <ostream>
+#include <unordered_map>
 
 #ifdef TTK_ENABLE_KAMIKAZE
 #define TTK_TRIANGULATION_INTERNAL(NAME) NAME
@@ -2520,6 +2521,24 @@ namespace ttk {
       return 0;
     }
 
+#ifdef TTK_ENABLE_MPI
+    inline void setGlobalIds(const LongSimplexId *const cellGid,
+                             const unsigned char *const ghostCellMask) {
+      this->cellGid_ = cellGid;
+      this->ghostCellMask_ = ghostCellMask;
+    }
+
+    virtual int preconditionDistributedCells() {
+      return 0;
+    }
+    virtual int preconditionDistributedEdges() {
+      return 0;
+    }
+    virtual int preconditionDistributedTriangles() {
+      return 0;
+    }
+#endif // TTK_ENABLE_MPI
+
   protected:
     virtual int getCellEdgeInternal(const SimplexId &ttkNotUsed(cellId),
                                     const int &ttkNotUsed(localEdgeId),
@@ -3254,6 +3273,26 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> cellEdgeVector_{};
     std::vector<std::vector<SimplexId>> cellTriangleVector_{};
     std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
+
+#ifdef TTK_ENABLE_MPI
+    // "GlobalCellIds" from "Generate Global Ids"
+    const LongSimplexId *cellGid_{};
+    // "vtkGhostType" from "Ghost Cells Generator"
+    const unsigned char *ghostCellMask_{};
+
+    // global cell id -> owner rank (filled/used only by rank 0)
+    std::vector<int> cellGidToRank_{};
+    std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
+
+    std::vector<SimplexId> edgeLidToGid_{};
+    std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
+    std::vector<SimplexId> triangleLidToGid_{};
+    std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
+
+    bool hasPreconditionedDistributedCells_{false};
+    bool hasPreconditionedDistributedEdges_{false};
+    bool hasPreconditionedDistributedTriangles_{false};
+#endif // TTK_ENABLE_OPENMP
 
     // only ttk::dcg::DiscreteGradient should use what's defined below.
     friend class ttk::dcg::DiscreteGradient;
