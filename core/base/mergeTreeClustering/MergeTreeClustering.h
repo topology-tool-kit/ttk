@@ -118,11 +118,11 @@ namespace ttk {
             trees, trees2, limitPercent, false);
         } else {
           // Create vector of probabilities
-          dataType sum = 0;
+          double sum = 0;
           for(auto val : distances)
             sum += val;
-          dataType bestValue = std::numeric_limits<dataType>::lowest();
-          std::vector<dataType> probabilities(trees.size());
+          double bestValue = std::numeric_limits<double>::lowest();
+          std::vector<double> probabilities(trees.size());
           for(unsigned int j = 0; j < distances.size(); ++j) {
             probabilities[j]
               = (sum != 0 ? distances[j] / sum : 1.0 / distances.size());
