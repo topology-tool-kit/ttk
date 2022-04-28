@@ -876,8 +876,7 @@ namespace ttk {
             int index
               = getIndexNotMultiPers(children.size() - 1, tree, children);
             if(index >= 0)
-              nodeParent.push_back(
-                std::make_tuple(nodeOrigin, children[index]));
+              nodeParent.emplace_back(nodeOrigin, children[index]);
             else
               nodeParent.emplace_back(nodeOrigin, children[index]);
           } else

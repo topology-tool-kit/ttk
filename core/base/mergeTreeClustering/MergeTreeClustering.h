@@ -481,7 +481,7 @@ namespace ttk {
       }
 
       for(unsigned int i = 0; i < bestCentroidT.size(); ++i)
-        assignmentC.push_back(std::make_tuple(bestCentroidT[i], i));
+        assignmentC.emplace_back(bestCentroidT[i], i);
     }
 
     template <class dataType>

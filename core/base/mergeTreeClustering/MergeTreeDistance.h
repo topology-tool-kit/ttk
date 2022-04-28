@@ -189,7 +189,7 @@ namespace ttk {
           continue;
         int tableId1 = children1[std::get<0>(mTuple)] + 1;
         int tableId2 = children2[std::get<1>(mTuple)] + 1;
-        forestAssignment.push_back(std::make_tuple(tableId1, tableId2));
+        forestAssignment.emplace_back(tableId1, tableId2);
       }
       return cost;
     }
@@ -432,8 +432,7 @@ namespace ttk {
               dataType costT
                 = relabelCost<dataType>(tree1, tree1Node, tree2, tree2Node);
               cost = static_cast<double>(costT);
-              outputMatching.push_back(
-                std::make_tuple(tree1Node, tree2Node, cost));
+              outputMatching.emplace_back(tree1Node, tree2Node, cost);
             }
           }
         } else {
