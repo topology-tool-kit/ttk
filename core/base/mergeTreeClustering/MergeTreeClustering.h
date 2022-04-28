@@ -124,7 +124,8 @@ namespace ttk {
           dataType bestValue = std::numeric_limits<dataType>::lowest();
           std::vector<dataType> probabilities(trees.size());
           for(unsigned int j = 0; j < distances.size(); ++j) {
-            probabilities[j] = distances[j] / sum;
+            probabilities[j]
+              = (sum != 0 ? distances[j] / sum : 1.0 / distances.size());
             if(probabilities[j] > bestValue) {
               bestValue = probabilities[j];
               bestIndex = j;
