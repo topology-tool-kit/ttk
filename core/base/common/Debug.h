@@ -33,10 +33,6 @@
 #include <string>
 #include <vector>
 
-#if TTK_ENABLE_MPI
-#include <mpi.h>
-#endif
-
 namespace ttk {
 
   COMMON_EXPORTS extern bool welcomeMsg_;
