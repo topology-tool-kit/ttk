@@ -570,7 +570,7 @@ public:
 
     // TreeNodeIdRev
     for(int i = 0; i < numInputs; ++i) {
-      if(treesNodes[i]) {
+      if(i < (int)treesNodes.size() and treesNodes[i]) {
         auto treeNodeIdArray
           = treesNodes[i]->GetPointData()->GetArray("TreeNodeId");
         if(treeNodeIdArray) {
