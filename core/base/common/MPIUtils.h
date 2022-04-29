@@ -1,21 +1,18 @@
 /// \ingroup base
-/// \class ttk::BaseMPIClass
 /// \author Michael Will <mswill@rhrk.uni-kl.de>
 /// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
 /// \date April 2022
 ///
-/// \brief Base Class and utilities for MPI implementation.
+/// \brief Utilities for MPI implementation.
 
 #pragma once
+
 #include <BaseClass.h>
-#include <iostream>
-#include <vector>
 
 #if TTK_ENABLE_MPI
 #include <mpi.h>
 
 namespace ttk {
-  COMMON_EXPORTS extern int MPIrank_;
 
   inline MPI_Datatype getMPIType(const float ttkNotUsed(val)) {
     return MPI_FLOAT;
@@ -48,15 +45,9 @@ namespace ttk {
   inline bool isRunningWithMPI() {
     int flag_i;
     MPI_Initialized(&flag_i);
-    return flag_i;
+    return flag_i != 0;
   }
 
-  class BaseMPIClass : public BaseClass {
-
-  public:
-    BaseMPIClass();
-    virtual ~BaseMPIClass() = default;
-  };
 } // namespace ttk
 
 #endif
