@@ -1,4 +1,6 @@
-#include "JacobiSet.h"
+#pragma once
+
+#include <JacobiSet.h>
 
 template <class dataTypeU, class dataTypeV, typename triangulationType>
 int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
@@ -39,18 +41,24 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
 
     if(type != -2) {
       // -2: regular vertex
-      ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
-      threadId = omp_get_thread_num();
-#endif
-      threadedCriticalTypes[threadId].push_back(
-        std::pair<SimplexId, char>(i, type));
+      const auto tid = omp_get_thread_num();
+#else
+      const auto tid = 0;
+#endif // TTK_ENABLE_OPENMP
+      threadedCriticalTypes[tid].emplace_back(i, type);
     }
   }
 
   // now merge the threaded lists
+  size_t jacobiSetSize{};
+  for(const auto &vec : threadedCriticalTypes) {
+    jacobiSetSize += vec.size();
+  }
+  jacobiSet.reserve(jacobiSetSize);
+
   for(SimplexId i = 0; i < threadNumber_; i++) {
-    for(SimplexId j = 0; j < (SimplexId)threadedCriticalTypes[i].size(); j++) {
+    for(size_t j = 0; j < threadedCriticalTypes[i].size(); j++) {
       jacobiSet.push_back(threadedCriticalTypes[i][j]);
     }
   }
@@ -58,7 +66,7 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
   SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
             monkeySaddleNumber = 0;
 
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+  for(size_t i = 0; i < jacobiSet.size(); i++) {
     switch(jacobiSet[i].second) {
       case 0:
         minimumNumber++;
@@ -146,7 +154,7 @@ int ttk::JacobiSet::executeLegacy(
   // for each thread
   //      for each vertex: distance field map
   std::vector<std::vector<double>> threadedDistanceField(threadNumber_);
-  for(SimplexId i = 0; i < (SimplexId)threadedDistanceField.size(); i++) {
+  for(size_t i = 0; i < threadedDistanceField.size(); i++) {
     threadedDistanceField[i].resize(vertexNumber_);
   }
 
@@ -162,7 +170,7 @@ int ttk::JacobiSet::executeLegacy(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)edgeList_->size(); i++) {
+  for(size_t i = 0; i < edgeList_->size(); i++) {
 
     // avoid any processing if the abort signal is sent
     if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
@@ -193,7 +201,7 @@ int ttk::JacobiSet::executeLegacy(
       rangeNormal[0] = -rangeEdge[1];
       rangeNormal[1] = rangeEdge[0];
 
-      for(SimplexId j = 0; j < (SimplexId)(*edgeFans_)[i].size() / 4; j++) {
+      for(size_t j = 0; j < (*edgeFans_)[i].size() / 4; j++) {
         for(int k = 0; k < 3; k++) {
 
           SimplexId vertexId = (*edgeFans_)[i][j * 4 + 1 + k];
@@ -247,7 +255,7 @@ int ttk::JacobiSet::executeLegacy(
 
   // now merge the threaded lists
   for(ThreadId i = 0; i < threadNumber_; i++) {
-    for(SimplexId j = 0; j < (SimplexId)threadedCriticalTypes[i].size(); j++) {
+    for(size_t j = 0; j < threadedCriticalTypes[i].size(); j++) {
       jacobiSet.push_back(threadedCriticalTypes[i][j]);
     }
   }
@@ -255,7 +263,7 @@ int ttk::JacobiSet::executeLegacy(
   SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
             monkeySaddleNumber = 0;
 
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+  for(size_t i = 0; i < jacobiSet.size(); i++) {
     switch(jacobiSet[i].second) {
       case 0:
         minimumNumber++;
@@ -335,7 +343,7 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
          && (vertexId != vertexId1)) {
         // new neighbor
         bool isIn = false;
-        for(SimplexId k = 0; k < (SimplexId)lowerNeighbors.size(); k++) {
+        for(size_t k = 0; k < lowerNeighbors.size(); k++) {
           if(vertexId == lowerNeighbors[k]) {
             isIn = true;
             break;
@@ -343,7 +351,7 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
         }
 
         if(!isIn) {
-          for(SimplexId k = 0; k < (SimplexId)upperNeighbors.size(); k++) {
+          for(size_t k = 0; k < upperNeighbors.size(); k++) {
             if(vertexId == upperNeighbors[k]) {
               isIn = true;
               break;
@@ -450,10 +458,10 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
   std::vector<UnionFind> upperSeeds(upperNeighbors.size());
   std::vector<UnionFind *> upperList(upperNeighbors.size());
 
-  for(SimplexId i = 0; i < (SimplexId)lowerSeeds.size(); i++) {
+  for(size_t i = 0; i < lowerSeeds.size(); i++) {
     lowerList[i] = &(lowerSeeds[i]);
   }
-  for(SimplexId i = 0; i < (SimplexId)upperSeeds.size(); i++) {
+  for(size_t i = 0; i < upperSeeds.size(); i++) {
     upperList[i] = &(upperSeeds[i]);
   }
 
@@ -475,22 +483,22 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
 
             // we need to find out if they're lower or not
             bool lower0 = false;
-            for(SimplexId l = 0; l < (SimplexId)lowerNeighbors.size(); l++) {
+            for(size_t l = 0; l < lowerNeighbors.size(); l++) {
               if(lowerNeighbors[l] == edgeVertexId0) {
                 lower0 = true;
                 break;
               }
             }
             bool lower1 = false;
-            for(SimplexId l = 0; l < (SimplexId)lowerNeighbors.size(); l++) {
+            for(size_t l = 0; l < lowerNeighbors.size(); l++) {
               if(lowerNeighbors[l] == edgeVertexId1) {
                 lower1 = true;
                 break;
               }
             }
 
-            std::vector<SimplexId> *neighbors = &lowerNeighbors;
-            std::vector<UnionFind *> *seeds = &lowerList;
+            auto *neighbors = &lowerNeighbors;
+            auto *seeds = &lowerList;
 
             if(!lower0) {
               neighbors = &upperNeighbors;
@@ -500,7 +508,7 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
             if(lower0 == lower1) {
               // connect their union-find sets!
               SimplexId lowerId0 = -1, lowerId1 = -1;
-              for(SimplexId l = 0; l < (SimplexId)neighbors->size(); l++) {
+              for(size_t l = 0; l < neighbors->size(); l++) {
                 if((*neighbors)[l] == edgeVertexId0) {
                   lowerId0 = l;
                 }
@@ -524,19 +532,21 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
   }
 
   // update the UF if necessary
-  for(SimplexId i = 0; i < (SimplexId)lowerList.size(); i++)
+  for(size_t i = 0; i < lowerList.size(); i++)
     lowerList[i] = lowerList[i]->find();
-  for(SimplexId i = 0; i < (SimplexId)upperList.size(); i++)
+  for(size_t i = 0; i < upperList.size(); i++)
     upperList[i] = upperList[i]->find();
 
-  std::vector<UnionFind *>::iterator it;
-  sort(lowerList.begin(), lowerList.end());
-  it = unique(lowerList.begin(), lowerList.end());
-  lowerList.resize(distance(lowerList.begin(), it));
-
-  sort(upperList.begin(), upperList.end());
-  it = unique(upperList.begin(), upperList.end());
-  upperList.resize(distance(upperList.begin(), it));
+  {
+    std::sort(lowerList.begin(), lowerList.end());
+    const auto it = std::unique(lowerList.begin(), lowerList.end());
+    lowerList.erase(it, lowerList.end());
+  }
+  {
+    std::sort(upperList.begin(), upperList.end());
+    const auto it = std::unique(upperList.begin(), upperList.end());
+    upperList.erase(it, upperList.end());
+  }
 
   if((upperList.size() == 1) && (lowerList.size() == 1))
     return -2;
