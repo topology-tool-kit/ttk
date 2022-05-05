@@ -45,6 +45,7 @@ public:
     COMPUTE_COFACET = 2,
     COMPUTE_STAR = 3,
     COMPUTE_LINK = 4,
+    COMPUTE_BOUNDARY = 5,
   };
 
   static ttkTriangulationRequest *New();
