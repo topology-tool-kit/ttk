@@ -328,7 +328,7 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
 #endif // !TTK_ENABLE_KAMIKAZE
 
   if(dimensionality_ == 3)
-    return (getTriangleStarNumber(triangleId) == 1);
+    return (TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId) == 1);
 
   return false;
 }
