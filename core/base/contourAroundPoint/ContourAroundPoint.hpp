@@ -535,11 +535,14 @@ void ttk::ContourAroundPoint::extendOutPts(
       // cell of the dual grid of which this vertex is the center).
       ws[i] = scalarW;
     } else {
+      // spatial weight 1 at equator, 0 at a pole
       const double latInRad = std::asin(z / radius);
       // std::asin is in [-pi/2,+pi/2] => equator at 0 => fits
       const double spatialW = std::cos(latInRad);
-      // weight 1 at equator, 0 at a pole
-      ws[i] = scalarW * spatialW; // or use sth like the mean weight here?
+      ws[i] = scalarW * spatialW;
+      // Why product and not mean of the weights?
+      // -> The resulting weight should be 0 if the vertex is either outside
+      // of the sub/super-level set (scalar weight 0) or its cell size is 0 (spatial weight 0)
     }
   }
 
