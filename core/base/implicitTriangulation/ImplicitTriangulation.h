@@ -237,7 +237,21 @@ namespace ttk {
       return 0;
     }
 
+#ifdef TTK_ENABLE_MPI
+
+    int preconditionDistributedCells() override;
+    int preconditionDistributedEdges() override;
+    int preconditionDistributedTriangles() override;
+
+#endif // TTK_ENABLE_MPI
+
   protected:
+#ifdef TTK_ENABLE_MPI
+    // the cellGid_ array only applies on cubic cells, not on
+    // simplicial ones...
+    std::vector<SimplexId> cellLidToGid_{};
+#endif // TTK_ENABLE_MPI
+
     enum class VertexPosition : char {
       // a--------b
 
