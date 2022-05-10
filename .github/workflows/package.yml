@@ -272,7 +272,7 @@ jobs:
   # Build Windows #
   # --------------#
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -359,7 +359,7 @@ jobs:
   # -------------#
   test-windows:
     needs: build-windows
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code

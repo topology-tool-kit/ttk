@@ -38,9 +38,16 @@ Please find below generic recommendations for setting up your fork of TTK's main
 
 # 2. Code formatting
   - To make TTK's source code more homogeneous and readable, we use [clang-format](https://clang.llvm.org/docs/ClangFormat.html) (under Ubuntu, install the package <code>clang-format-11</code>). A style file is already available in TTK's source tree.
-**Before creating a new pull request**, please make sure that you clang-formatted your local 
-repository by entering the following command at the top of TTK's source tree: <code>
-$ clang-format -i -style=file core/\*/\*/\*h core/\*/\*/\*hpp core/\*/\*/\*cpp core/\*/\*/\*inl standalone/\*/\*/\*cpp standalone/\*/\*/\*h standalone/\*/\*cpp </code>
+**Before creating a new pull request**, please make sure that you clang-formatted your local
+repository by entering the following command at the top of TTK's source tree:
+
+```sh
+$ git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$|\.inl$" | xargs -P$(nproc) -n1 clang-format -i
+```
+
+  - `clang-format` can also be used on individual files (`$
+    clang-format -i source.cpp`) or on Git diffs with
+    `git-clang-format`.
 
   - To make your life even easier, we recommend that you setup a clang-format pre-commit hook, which will automatically run clang-format on any of your commits to your local repository.
 For this, we recommend to use scripts such as [this one](https://github.com/barisione/clang-format-hooks/).
@@ -115,10 +122,87 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
 
 
 # 5. Continuous integration
-  - TTK uses some basic continuous integration, which consists in testing for build and run success under Linux, Windows and MacOs upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
+
+- TTK uses some basic continuous integration, which consists in
+  testing for build and run success under Linux, Windows and MacOs
+  upon each commit or pull request. **Your pull request will not be
+  merged if it fails these tests**.
+
+- TTK developers can either try to launch themselves the CI workflows
+  on their public fork (see [the CI
+  documentation](./.github/workflows/README.md)) or replicate locally
+  the checks performed by the CI (way faster).
+
+- The CI makes heavy use of Clang tools, such as `clang-check` or
+  `clang-tidy`. The first step is to use CMake to generate a
+  Compilation Database, a JSON file that contains explicit compilation
+  commands for each source file in the repository. Go to your build
+  directory, then
+
+  ```sh
+  $ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE .
+  ```
+
+  This will generate a `compile_commands.json` file in your build
+  directory.
+
+- The `clang-check` tool parses source files according to the
+  corresponding compilation database entry and displays eventual
+  compilation errors or warnings. This tool can be used to complement
+  GCC (it is quicker to run and the error descriptions are usually
+  better phrased). From TTK's root directory, use `$ clang-check -p
+  build source.cpp` where `build` is the build directory (which
+  contains the compilation database). To pass over all TTK source
+  files, use:
+
+  ```sh
+  $ git ls-files | grep core | grep -E "\.cpp$|\.cxx$" | xargs -P$(nproc) -n1 clang-check -p build
+  ```
+
+- Among the warnings that are tested with `clang-tidy` in the CI are
+  the `unused-parameter` warnings. To silence them, TTK offers several solutions:
+
+  * the `ttkNotUsed` macro used on the parameter declaration
+    highlights the non-usage of the parameter in the function body;
+  * the `TTK_FORCE_USE` macro in the function body is treated by the
+    compiler as a parameter use.
+
+  See the definition of these variables in
+  [BaseClass.h](./core/base/common/BaseClass.h) for use-cases.
+
+- Finally, the `clang-tidy` tool is used in the CI to perform C++ code
+  style checks and some basic static analysis (using Clang's Static
+  Analyzer). The checks are listed in the [.clang-tidy](./.clang-tidy)
+  file. A description of each of these checks is available on
+  [clang-tidy's
+  website](https://clang.llvm.org/extra/clang-tidy/checks/list.html).
+  Similarly to `clang-check`, `clang-tidy` can be used on individual
+  source files with `$ clang-tidy -p build source.cpp`, or on the
+  whole TTK codebase:
+
+  ```sh
+  $ git ls-files | grep core | grep -E "\.cpp$|\.cxx$" | xargs -P$(nproc) -n1 clang-tidy -p build
+  ```
+
+  Note that a `--fix` flag is available to automatically correct some
+  warnings.
+
+- Static analysis is performed using the
+  `--checks="-*,clang-analyzer-*"` flags that disables every
+  `clang-tidy` warning except the Clang Static Analyzer ones:
+
+  ```sh
+  $ git ls-files | grep core | grep -E "\.cpp$|\.cxx$" \
+    | xargs -P$(nproc) -n1 clang-tidy --checks="-*,clang-analyzer-*" -p build
+  ```
+
+- Code editors, thanks to the [Language Server
+  Protocol](https://microsoft.github.io/language-server-protocol/),
+  can take advantage of `clang-check` and `clang-tidy` and display
+  their warnings in their interface.
 
 # 6. Submitting code
-  - If you plan to submit a **new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). 
+  - If you plan to submit a **new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module).
   - Prepare your pull-request to the **dev** branch of [TTK](https://github.com/topology-tool-kit/ttk/tree/dev). **Before** submitting it, please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public dev</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree). Please make sure that your new code runs fine with TTK's performance mode turned on <code>TTK\_ENABLE\_KAMIKAZE=ON</code> (OFF by default on the **dev** branch).
   - Please submit a pull-request with an example to [ttk-data](https://github.com/topology-tool-kit/ttk-data/tree/dev). See [ttk-data](https://github.com/topology-tool-kit/ttk-data)'s [CONTRIBUTOR Guide](https://github.com/topology-tool-kit/ttk-data/blob/dev/CONTRIBUTING.md) for detailed instructions.
   - Prepare, if possible, a video tutorial, similar to those available on [TTK's tutorial page](https://topology-tool-kit.github.io/tutorials.html). In this video, you should:
