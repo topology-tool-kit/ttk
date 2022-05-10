@@ -45,18 +45,14 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
     if(this->inputScalarField_.first == nullptr) {
       return {};
     }
-    const auto pos = cacheHandler.find(this->inputScalarField_);
-    if(pos != cacheHandler.end()) {
-      return &pos->second;
-    }
-    return {};
+    return cacheHandler.get(this->inputScalarField_);
   };
 
   this->gradient_ = findGradient();
   if(this->gradient_ == nullptr) {
     // add new cache entry
-    cacheHandler[this->inputScalarField_] = {};
-    this->gradient_ = &cacheHandler[this->inputScalarField_];
+    cacheHandler.insert(this->inputScalarField_, {});
+    this->gradient_ = cacheHandler.get(this->inputScalarField_);
     // allocate gradient memory
     this->initMemory(triangulation);
 

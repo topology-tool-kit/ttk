@@ -12,11 +12,11 @@
 #pragma once
 
 // base code includes
+#include <Cache.h>
 #include <Geometry.h>
 #include <Wrapper.h>
 
 #include <array>
-#include <map>
 #include <ostream>
 
 #ifdef TTK_ENABLE_KAMIKAZE
@@ -3290,10 +3290,10 @@ namespace ttk {
     /*
      * @brief Type for caching Discrete Gradient internal data structure.
      *
-     * Uses a std::map with \ref gradientKeytype as key and \ref
-     * gradientType as value types.
+     * Uses the ttk::LRUCache with \ref gradientKeytype as key and
+     * \ref gradientType as value types.
      */
-    using gradientCacheType = std::map<gradientKeyType, gradientType>;
+    using gradientCacheType = LRUCache<gradientKeyType, gradientType>;
     /*
      * @brief Access to the gradientCache_ mutable member variable
      *

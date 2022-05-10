@@ -127,6 +127,10 @@ int Geometry::computeBarycentricCoordinates(const T *p0,
                                             std::array<T, 2> &baryCentrics,
                                             const int &dimension) {
 
+  if(dimension > 3) {
+    return -1;
+  }
+
   int bestI = 0;
   T maxDenominator = 0;
 
@@ -150,7 +154,7 @@ int Geometry::computeBarycentricCoordinates(const T *p0,
   baryCentrics[1] = 1 - baryCentrics[0];
 
   // check if the point lies in the edge
-  vector<T> test(dimension);
+  std::array<T, 3> test{};
   for(int i = 0; i < dimension; i++) {
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i];
   }
@@ -365,40 +369,6 @@ T Geometry::dotProduct(const T *vA, const T *vB) {
 }
 
 template <typename T>
-int Geometry::getBoundingBox(const vector<vector<float>> &points,
-                             vector<std::pair<T, T>> &bBox) {
-
-  if(points.empty()) {
-    return -1;
-  }
-
-  int dimension = points[0].size();
-
-  bBox.resize(dimension);
-
-  for(SimplexId i = 0; i < static_cast<SimplexId>(points.size()); i++) {
-
-    if(i == 0) {
-      for(int j = 0; j < dimension; j++) {
-        bBox[j].first = points[i][j];
-        bBox[j].second = points[i][j];
-      }
-    } else {
-      for(int j = 0; j < dimension; j++) {
-        if(points[i][j] < bBox[j].first) {
-          bBox[j].first = points[i][j];
-        }
-        if(points[i][j] > bBox[j].second) {
-          bBox[j].second = points[i][j];
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
-template <typename T>
 bool Geometry::isPointInTriangle(const T *p0,
                                  const T *p1,
                                  const T *p2,
@@ -424,17 +394,7 @@ template <typename T>
 bool Geometry::isPointOnSegment(
   const T &x, const T &y, const T &xA, const T &yA, const T &xB, const T &yB) {
 
-  vector<T> pA(2), pB(2), p(2);
-
-  pA[0] = xA;
-  pA[1] = yA;
-
-  pB[0] = xB;
-  pB[1] = yB;
-
-  p[0] = x;
-  p[1] = y;
-
+  std::array<T, 2> pA{xA, yA}, pB{xB, yB}, p{x, y};
   return Geometry::isPointOnSegment(p.data(), pA.data(), pB.data(), 2);
 }
 
@@ -561,9 +521,6 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
   template TYPE Geometry::dotProduct<TYPE>(                                   \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template TYPE Geometry::dotProduct<TYPE>(TYPE const *, TYPE const *);       \
-  template int Geometry::getBoundingBox<TYPE>(                                \
-    std::vector<std::vector<float>> const &,                                  \
-    std::vector<std::pair<TYPE, TYPE>> &);                                    \
   template bool Geometry::isPointInTriangle<TYPE>(                            \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template bool Geometry::isPointOnSegment<TYPE>(TYPE const &, TYPE const &,  \
