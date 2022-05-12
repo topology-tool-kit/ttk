@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - 'docker-update'
+
+jobs:
+  docker:
+    runs-on: self-hosted
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Build and push ttk
+        uses: docker/build-push-action@v2
+        with:
+          platforms: linux/amd64
+          target: ttk
+          push: true
+          tags: |
+            ghcr.io/scivislab/ttk2:latest
+          cache-from: type=gha,ref=ghcr.io/scivislab/ttk2:buildcache
+          cache-to:   type=gha,ref=ghcr.io/scivislab/ttk2:buildcache,mode=max
+      -
+        name: Build and push ttk-dev
+        uses: docker/build-push-action@v2
+        with:
+          platforms: linux/amd64
+          target: ttk-dev
+          push: true
+          tags: |
+            ghcr.io/scivislab/ttk2-dev:latest
+          cache-from: type=gha,ref=ghcr.io/scivislab/ttk2:buildcache
