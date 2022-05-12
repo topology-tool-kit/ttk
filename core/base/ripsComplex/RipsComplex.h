@@ -19,6 +19,8 @@
 
 #include <Debug.h>
 
+#include <array>
+
 namespace ttk {
 
   class RipsComplex : virtual public Debug {
