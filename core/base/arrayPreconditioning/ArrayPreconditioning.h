@@ -476,6 +476,7 @@ namespace ttk {
           int rankToSend = *iter;
           std::vector<IT> gIdToSend = gIdForNeighbors[i];
           sizesToSend[i] = gIdToSend.size();
+#ifndef __clang_analyzer__
           // we need to send to all neighbors how many we will send them,
           // and then send the values to neighbors where the amount > 0
           // first we Isend everything we need to the neighbors
@@ -487,6 +488,7 @@ namespace ttk {
                       rankToSend, intTag, MPI_COMM_WORLD, &req);
             MPI_Request_free(&req);
           }
+#endif // __clang_analyzer__
         }
 
         // then we blockingly receive from our neighbors
