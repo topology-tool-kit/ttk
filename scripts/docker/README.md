@@ -1,6 +1,6 @@
 # Paraview + TTK Docker Image
 
-This docker file can be used to build docker images containing installations of the [Topology Tool Kit (TTK)](http://topology-tool-kit.github.io) and/or [ParaView](http://www.paraview.org) and corresponding dependencies for usage and development. For a description of the build process, see [Custom Images](##custom-images), for usage, see [Simple Usage](##simple-usage) or [Advanced Usage](##advanced-usage).
+This docker file can be used to build docker images containing installations of the [Topology Tool Kit (TTK)](http://topology-tool-kit.github.io) and/or [ParaView](http://www.paraview.org) and corresponding dependencies for usage and development. For a description of the build process, see [Custom Images](##custom-images), for usageof the images, see [Simple Usage](##simple-usage) or [Advanced Usage](##advanced-usage).
 
 The full docker image specifically contains:
 
