@@ -25,7 +25,7 @@ To run a python script which uses TTK, simply run:
 
 ## Custom Images
 
-To re-build the image, simply clone this repository and run `docker build .`. (This will build a docker image with current versions of ParaView and TTK.)
+To re-build the image, simply clone this repository and run `docker build .` (which will build a docker image with current versions of ParaView and TTK).
 
 The Dockerfile can build different images using the following targets through `docker build --target <targetname> .`:
 - `ttk` will build the default target containing ParaView and TTK. When run, the image starts a ParaView server on port 11111.
