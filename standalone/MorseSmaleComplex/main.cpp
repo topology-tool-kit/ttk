@@ -130,8 +130,8 @@ int main(int argc, char **argv) {
         continue;
       }
 
-      auto writer
-        = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
+        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
       std::string outputFileName = outputPathPrefix + "_port_"
                                    + std::to_string(i) + "."

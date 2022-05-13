@@ -216,6 +216,9 @@ int ttkMergeTreeClustering::runCompute(
   EpsilonTree2 = EpsilonTree1;
   Epsilon2Tree2 = Epsilon2Tree1;
   Epsilon3Tree2 = Epsilon3Tree1;
+  printMsg("BranchDecomposition: " + std::to_string(BranchDecomposition));
+  printMsg("NormalizedWasserstein: " + std::to_string(NormalizedWasserstein));
+  printMsg("KeepSubtree: " + std::to_string(KeepSubtree));
 
   // Call base
   if(not ComputeBarycenter) {
@@ -267,6 +270,8 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeBarycenter.setTol(Tol);
       mergeTreeBarycenter.setAddNodes(AddNodes);
       mergeTreeBarycenter.setDeterministic(Deterministic);
+      mergeTreeBarycenter.setBarycenterSizeLimitPercent(
+        BarycenterSizeLimitPercent);
       mergeTreeBarycenter.setProgressiveBarycenter(ProgressiveBarycenter);
       mergeTreeBarycenter.setProgressiveSpeedDivisor(ProgressiveSpeedDivisor);
       mergeTreeBarycenter.setAlpha(Alpha);
@@ -302,6 +307,8 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setAddNodes(AddNodes);
       mergeTreeClustering.setDeterministic(Deterministic);
       mergeTreeClustering.setNoCentroids(NumberOfBarycenters);
+      mergeTreeClustering.setBarycenterSizeLimitPercent(
+        BarycenterSizeLimitPercent);
       mergeTreeClustering.setProgressiveBarycenter(ProgressiveBarycenter);
       mergeTreeClustering.setProgressiveSpeedDivisor(ProgressiveSpeedDivisor);
       mergeTreeClustering.setPostprocess(OutputTrees);
@@ -503,6 +510,9 @@ int ttkMergeTreeClustering::runOutput(
       // ------------------------------------------
       output_clusters->SetNumberOfBlocks(numInputs);
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
         for(int i = 0; i < numInputs; ++i) {
           if(clusteringAssignment[i] != (int)c)
             continue;
@@ -594,7 +604,7 @@ int ttkMergeTreeClustering::runOutput(
           BranchDecompositionPlanarLayout);
         visuMakerBary.setBranchSpacing(BranchSpacing);
         visuMakerBary.setRescaleTreesIndividually(RescaleTreesIndividually);
-        visuMakerBary.setOutputSegmentation(OutputSegmentation);
+        visuMakerBary.setOutputSegmentation(false);
         visuMakerBary.setDimensionSpacing(DimensionSpacing);
         visuMakerBary.setDimensionToShift(DimensionToShift);
         visuMakerBary.setImportantPairs(ImportantPairs);

@@ -7,6 +7,7 @@ ttk_add_base_library(common
     HEADERS
         BaseClass.h
         BaseMPIClass.h
+        Cache.h
         CommandLineParser.h
         Debug.h
         DataTypes.h
