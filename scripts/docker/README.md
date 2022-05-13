@@ -14,7 +14,7 @@ It is supposed to be used in conjunction with a local ParaView GUI.
 To run Kitware's binary distribution of ParaView with TTK's docker, simply run:
 
 ```
-./runParaViewTTKDocker.sh <Path to ParaView binary (version 5.10.0)> [<Standard ParaView arguments (state files, data, etc.)>]
+./runParaViewTTKDocker.sh <Path to ParaView binary (version 5.10.1)> [<Standard ParaView arguments (state files, data, etc.)>]
 ```
 
 To run a python script which uses TTK, simply run:
