@@ -5,7 +5,9 @@ namespace ttk {
   COMMON_EXPORTS int MPIrank_;
 
   BaseMPIClass::BaseMPIClass() {
-    MPI_Comm_rank(MPI_COMM_WORLD, &MPIrank_);
+    if(ttk::isRunningWithMPI()) {
+      MPI_Comm_rank(MPI_COMM_WORLD, &MPIrank_);
+    }
   }
 
 } // namespace ttk

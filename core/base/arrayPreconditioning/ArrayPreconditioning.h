@@ -252,7 +252,7 @@ namespace ttk {
 // Computing order Array
 // -----------------------------------------------------------------------
 #ifdef TTK_ENABLE_MPI
-      {
+      if(ttk::isRunningWithMPI()) {
         int numProcs;
         int rank;
         MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
@@ -393,6 +393,10 @@ namespace ttk {
         ttk::exchangeGhostCells<ttk::SimplexId, IT>(orderArray, rankArray,
                                                     globalIds, gidToLidMap,
                                                     nVerts, MPI_COMM_WORLD);
+      } else {
+        this->printMsg(
+          "TTK is built with MPI support, but not initialized, returning.");
+        return 0;
       }
 #else
       this->printMsg("MPI not enabled!");

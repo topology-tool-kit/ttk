@@ -201,7 +201,7 @@ namespace ttk {
 
   public:
     BaseMPIClass();
-    virtual ~BaseMPIClass() = default;
+    ~BaseMPIClass() override = default;
   };
 } // namespace ttk
 
