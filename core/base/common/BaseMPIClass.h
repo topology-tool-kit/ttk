@@ -104,7 +104,7 @@ namespace ttk {
 
       // send the amount of ids and the needed ids themselves
       for(int r = 0; r < nRanks; r++) {
-        if(rankToSend != r && neighbors.count(r) > 0) {
+        if(rankToSend != r && neighbors.find(r) != neighbors.end()) {
           IT nValues = rankVectors[r].size();
           MPI_Send(&nValues, 1, MPI_IT, r, amountTag, communicator);
           if(nValues > 0) {
@@ -116,7 +116,7 @@ namespace ttk {
 
       // receive the scalar values
       for(int r = 0; r < nRanks; r++) {
-        if(rankToSend != r && neighbors.count(r) > 0) {
+        if(rankToSend != r && neighbors.find(r) != neighbors.end()) {
           IT nValues = rankVectors[r].size();
           std::vector<DT> receivedValues(nValues);
           if(nValues > 0) {
@@ -135,7 +135,7 @@ namespace ttk {
     } else {
       // if rankToSend is not the neighbor of the current rank, we do not need
       // to do anything
-      if(neighbors.count(rankToSend) > 0) {
+      if(neighbors.find(rankToSend) != neighbors.end()) {
         // receive the amount of ids and the needed ids themselves
         IT nValues;
         MPI_Recv(&nValues, 1, MPI_IT, rankToSend, amountTag, communicator,
@@ -160,12 +160,7 @@ namespace ttk {
     }
   }
 
-  // this builds all the neighbors for each rank in both directions
-  // e.g. all ranks from which we need something and all ranks which need
-  // something from is these are not generally the same we do this by sending
-  // all ranks from which we need something to rank 0, which checks all other
-  // ranks if they need something to us
-  // TODO: actually do this
+  // this gets the neighbors for each rank by traversing the rankArray
   template <typename IT>
   std::unordered_set<int> getNeighbors(const int *const rankArray,
                                        const IT nVerts,
