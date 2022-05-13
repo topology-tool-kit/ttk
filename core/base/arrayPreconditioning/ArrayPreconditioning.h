@@ -327,7 +327,7 @@ namespace ttk {
                 i, structTag, unsortedReceivedValues);
             }
           }
-          while(finalValues.size() < totalSize) {
+          while(finalValues.size() < (size_t)totalSize) {
             this->getMax<DT, IT>(intTag, structTag, currentOrder, burstSize,
                                  MPI_IT, finalValues, unsortedReceivedValues,
                                  orderResendValues, orderedValuesForRank,

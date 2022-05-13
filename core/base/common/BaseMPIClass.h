@@ -75,11 +75,11 @@ namespace ttk {
   void getGhostCellScalars(DT *scalarArray,
                            const int *const rankArray,
                            const IT *const globalIds,
-                           const std::unordered_map<IT, IT> gidToLidMap,
-                           const std::unordered_set<int> neighbors,
+                           const std::unordered_map<IT, IT> &gidToLidMap,
+                           const std::unordered_set<int> &neighbors,
                            const int rankToSend,
                            const IT nVerts,
-                           const MPI_Comm communicator) {
+                           MPI_Comm communicator) {
     MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
     MPI_Datatype MPI_IT = getMPIType(static_cast<IT>(0));
     int rank;
@@ -183,7 +183,7 @@ namespace ttk {
                           const IT *const globalIds,
                           const std::unordered_map<IT, IT> gidToLidMap,
                           const IT nVerts,
-                          const MPI_Comm communicator) {
+                          MPI_Comm communicator) {
     int nRanks;
     int rank;
     MPI_Comm_size(communicator, &nRanks);
