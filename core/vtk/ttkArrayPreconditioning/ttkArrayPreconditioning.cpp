@@ -84,10 +84,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   auto vtkGlobalPointIds = pointData->GetGlobalIds();
-  auto vtkGhostCells = pointData->GetArray("vtkGhostType");
   auto rankArray = pointData->GetArray("RankArray");
-  if(vtkGlobalPointIds != nullptr && vtkGhostCells != nullptr
-     && rankArray != nullptr) {
+  if(vtkGlobalPointIds != nullptr && rankArray != nullptr) {
 #ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
       // add the order array for every scalar array, except the ghostcells, the
@@ -103,15 +101,14 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
           orderArray->SetNumberOfComponents(1);
           orderArray->SetNumberOfTuples(nVertices);
 
-          ttkTypeMacroAI(scalarArray->GetDataType(),
-                         vtkGlobalPointIds->GetDataType(),
-                         (status = processScalarArray<T0, T1>(
-                            ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
-                            ttkUtils::GetPointer<T0>(scalarArray),
-                            ttkUtils::GetPointer<T1>(vtkGlobalPointIds),
-                            ttkUtils::GetPointer<int>(rankArray),
-                            ttkUtils::GetPointer<char>(vtkGhostCells),
-                            nVertices, BurstSize)));
+          this->printMsg(std::to_string(scalarArray->GetDataType()));
+          ttkTypeMacroAI(
+            scalarArray->GetDataType(), vtkGlobalPointIds->GetDataType(),
+            (status = processScalarArray<T0, T1>(
+               ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
+               ttkUtils::GetPointer<T0>(scalarArray),
+               ttkUtils::GetPointer<T1>(vtkGlobalPointIds),
+               ttkUtils::GetPointer<int>(rankArray), nVertices, BurstSize)));
 
           // On error cancel filter execution
           if(status != 1)

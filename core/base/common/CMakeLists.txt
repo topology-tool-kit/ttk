@@ -1,15 +1,16 @@
 ttk_add_base_library(common
     SOURCES
         BaseClass.cpp
+        BaseMPIClass.cpp
         Debug.cpp
         Os.cpp
     HEADERS
         BaseClass.h
+        BaseMPIClass.h
         CommandLineParser.h
         Debug.h
         DataTypes.h
         FlatJaggedArray.h
-        MPI.h
         OpenMP.h
         OrderDisambiguation.h
         Os.h
