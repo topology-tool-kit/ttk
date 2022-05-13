@@ -26,22 +26,22 @@ jobs:
         name: Build and push ttk
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           context: "{{defaultContext}}:scripts/docker"
           target: ttk
           push: true
           tags: |
-            ghcr.io/scivislab/ttk2:latest
-          cache-from: type=gha,ref=ghcr.io/scivislab/ttk2:buildcache
-          cache-to:   type=gha,ref=ghcr.io/scivislab/ttk2:buildcache,mode=max
+            ghcr.io/topology-tool-kit/ttk:latest
+          cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache
+          cache-to:   type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache,mode=max
       -
         name: Build and push ttk-dev
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           context: "{{defaultContext}}:scripts/docker"
           target: ttk-dev
           push: true
           tags: |
-            ghcr.io/scivislab/ttk2-dev:latest
-          cache-from: type=gha,ref=ghcr.io/scivislab/ttk2:buildcache
+            ghcr.io/topology-tool-kit/ttk-dev:latest
+          cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache
