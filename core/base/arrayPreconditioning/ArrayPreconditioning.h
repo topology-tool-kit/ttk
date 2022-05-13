@@ -194,7 +194,8 @@ namespace ttk {
           // send to the finished rank that we want more
           MPI_Send(orderResendValues[rankIdOfMaxScalar].data(),
                    orderResendValues[rankIdOfMaxScalar].size(), MPI_IT,
-                   rankIdOfMaxScalar, intTag, MPI_COMM_WORLD);
+                   rankIdOfMaxScalar, intTag * rankIdOfMaxScalar,
+                   MPI_COMM_WORLD);
           orderResendValues[rankIdOfMaxScalar].clear();
           // we receive more vals, if the size is still zero afterwards, we are
           // finished with this rank
@@ -221,12 +222,11 @@ namespace ttk {
       // the correct size
       int amount;
       MPI_Status status;
-      MPI_Probe(rankFrom, structTag, MPI_COMM_WORLD, &status);
+      MPI_Probe(rankFrom, structTag * rankFrom, MPI_COMM_WORLD, &status);
       MPI_Get_count(&status, MPI_CHAR, &amount);
-      this->printMsg("Received " + std::to_string(amount / sizeof(value<DT, IT>)) + " from R" + std::to_string(rankFrom));
       receivedValues.resize(amount / sizeof(value<DT, IT>), {0, 0});
-      MPI_Recv(receivedValues.data(), amount, MPI_CHAR, rankFrom, structTag,
-               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Recv(receivedValues.data(), amount, MPI_CHAR, rankFrom,
+               structTag * rankFrom, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 #endif
 
@@ -346,9 +346,8 @@ namespace ttk {
             this->returnVectorForBurstsize<DT, IT>(
               sendValues, sortingValues, burstSize);
             int size = sendValues.size();
-            this->printMsg("Sending " + std::to_string(size) + " from R" + std::to_string(rank));
             MPI_Send(sendValues.data(), size * sizeof(value<DT, IT>), MPI_CHAR,
-                     0, structTag, MPI_COMM_WORLD);
+                     0, structTag * rank, MPI_COMM_WORLD);
             std::vector<IT> receivedValues;
 
             // be prepared to receive burstsize of elements, resize after
@@ -356,8 +355,8 @@ namespace ttk {
             receivedValues.resize(burstSize * 2);
             MPI_Status status;
             int amount;
-            MPI_Recv(receivedValues.data(), burstSize * 2, MPI_IT, 0, intTag,
-                     MPI_COMM_WORLD, &status);
+            MPI_Recv(receivedValues.data(), burstSize * 2, MPI_IT, 0,
+                     intTag * rank, MPI_COMM_WORLD, &status);
             MPI_Get_count(&status, MPI_IT, &amount);
 
             receivedValues.resize(amount);
@@ -367,8 +366,8 @@ namespace ttk {
           }
           // afterwards send once a message of length 0 to root to show that we
           // are done
-          MPI_Send(
-            sortingValues.data(), 0, MPI_CHAR, 0, structTag, MPI_COMM_WORLD);
+          MPI_Send(sortingValues.data(), 0, MPI_CHAR, 0, structTag * rank,
+                   MPI_COMM_WORLD);
         }
 
         // all ranks do the following
