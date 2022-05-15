@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 namespace ttk {
 
   /**
@@ -244,7 +245,7 @@ namespace ttk {
         MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
         MPI_Datatype types[4] = {MPI_DT, MPI_IT, MPI_IT, MPI_IT};
         MPI_Aint offsets[4];
-        typedef value<DT, IT> value_DT_IT;
+        using value_DT_IT = value<DT, IT>;
         offsets[0] = offsetof(value_DT_IT, scalar);
         offsets[1] = offsetof(value_DT_IT, globalId);
         offsets[2] = offsetof(value_DT_IT, localId);
@@ -367,7 +368,7 @@ namespace ttk {
                   orderResendValues[rankIdOfMaxScalar].begin(),
                   orderResendValues[rankIdOfMaxScalar].end());
                 orderResendValues[rankIdOfMaxScalar].clear();
-                if(sortingValues.size() > 0) {
+                if(!sortingValues.empty()) {
                   std::vector<value_DT_IT> ownValues;
                   this->returnVectorForBurstsize<DT, IT>(
                     ownValues, sortingValues, burstSize);
@@ -399,17 +400,19 @@ namespace ttk {
             }
           }
 
-          this->printMsg("Finished with sorting, max value is "
-                         + std::to_string(finalValues[0].scalar)
-                         + ", min value is "
-                         + std::to_string(finalValues.back().scalar));
+          if(!finalValues.empty()) {
+            this->printMsg("Finished with sorting, max value is "
+                           + std::to_string(finalValues[0].scalar)
+                           + ", min value is "
+                           + std::to_string(finalValues.back().scalar));
+          }
         } else {
           IT nValues = sortingValues.size();
           MPI_Send(&nValues, 1, MPI_IT, 0, intTag, MPI_COMM_WORLD);
 
           // send the next burstsize values and then wait for an answer from the
           // root rank
-          while(sortingValues.size() > 0) {
+          while(!sortingValues.empty()) {
             std::vector<value_DT_IT> sendValues;
             this->returnVectorForBurstsize<DT, IT>(
               sendValues, sortingValues, burstSize);
@@ -433,7 +436,7 @@ namespace ttk {
                                         receivedValues.end());
 
             // afterwards send to root if there are still values to be sent
-            bool moreVals = sortingValues.size() > 0;
+            bool moreVals = !sortingValues.empty();
             MPI_Send(&moreVals, 1, MPI_CXX_BOOL, 0, boolTag, MPI_COMM_WORLD);
           }
         }
@@ -473,6 +476,7 @@ namespace ttk {
           int rankToSend = *iter;
           std::vector<IT> gIdToSend = gIdForNeighbors[i];
           sizesToSend[i] = gIdToSend.size();
+#ifndef __clang_analyzer__
           // we need to send to all neighbors how many we will send them,
           // and then send the values to neighbors where the amount > 0
           // first we Isend everything we need to the neighbors
@@ -484,6 +488,7 @@ namespace ttk {
                       rankToSend, intTag, MPI_COMM_WORLD, &req);
             MPI_Request_free(&req);
           }
+#endif // __clang_analyzer__
         }
 
         // then we blockingly receive from our neighbors

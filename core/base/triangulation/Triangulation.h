@@ -2593,6 +2593,13 @@ namespace ttk {
              || abstractTriangulation_ == &periodicPreconditionsTriangulation_;
     }
 
+#ifdef TTK_ENABLE_MPI
+    inline void setGlobalIds(const LongSimplexId *const cellGid,
+                             const unsigned char *const ghostCellMask) {
+      this->abstractTriangulation_->setGlobalIds(cellGid, ghostCellMask);
+    }
+#endif // TTK_ENABLE_MPI
+
   protected:
     inline bool isEmptyCheck() const {
       if(!abstractTriangulation_) {

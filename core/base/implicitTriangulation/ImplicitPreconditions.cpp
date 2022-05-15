@@ -295,6 +295,11 @@ int ttk::ImplicitWithPreconditions::preconditionEdgesInternal() {
     }
     edgePositions_[this->edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
   }
+
+#ifdef TTK_ENABLE_MPI
+  return this->preconditionDistributedEdges();
+#endif // TTK_ENABLE_MPI
+
   return 0;
 }
 
@@ -341,6 +346,11 @@ int ttk::ImplicitWithPreconditions::preconditionTrianglesInternal() {
       }
     }
   }
+
+#ifdef TTK_ENABLE_MPI
+  return this->preconditionDistributedTriangles();
+#endif // TTK_ENABLE_MPI
+
   return 0;
 }
 

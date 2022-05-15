@@ -287,17 +287,28 @@ int ExplicitTriangulation::preconditionEdgesInternal() {
     OneSkeleton oneSkeleton;
     oneSkeleton.setWrapper(this);
     // also computes edgeStar and triangleEdge / tetraEdge lists for free...
+    int ret{};
     if(getDimensionality() == 1) {
       std::vector<std::array<SimplexId, 1>> tmp{};
       return oneSkeleton.buildEdgeList<1>(
         vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tmp);
     } else if(getDimensionality() == 2) {
-      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_,
-                                       edgeStarData_, triangleEdgeList_);
+      ret = oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_,
+                                      edgeStarData_, triangleEdgeList_);
     } else if(getDimensionality() == 3) {
-      return oneSkeleton.buildEdgeList(
+      ret = oneSkeleton.buildEdgeList(
         vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tetraEdgeList_);
     }
+
+    if(ret != 0) {
+      return ret;
+    }
+
+#ifdef TTK_ENABLE_MPI
+    if(this->getDimensionality() == 2 || this->getDimensionality() == 3) {
+      return this->preconditionDistributedEdges();
+    }
+#endif // TTK_ENABLE_MPI
   }
 
   return 0;
@@ -387,6 +398,10 @@ int ExplicitTriangulation::preconditionTrianglesInternal() {
 
     twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_, &triangleList_,
                                   &triangleStarData_, &tetraTriangleList_);
+
+#ifdef TTK_ENABLE_MPI
+    this->preconditionDistributedTriangles();
+#endif // TTK_ENABLE_MPI
   }
 
   return 0;
@@ -566,6 +581,290 @@ int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
 
   return 0;
 }
+
+#ifdef TTK_ENABLE_MPI
+
+int ExplicitTriangulation::preconditionDistributedCells() {
+  if(this->hasPreconditionedDistributedCells_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+  if(this->ghostCellMask_ == nullptr) {
+    this->printWrn("Missing ghost mask on cells");
+    return -3;
+  }
+
+  // number of local cells (with ghost cells...)
+  const auto nLocCells{this->getNumberOfCells()};
+
+  // global cell id -> local cell id (reverse of this->cellGid_)
+  this->cellGidToLid_.reserve(nLocCells);
+  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    this->cellGidToLid_[this->cellGid_[lcid]] = lcid;
+  }
+
+  // global cell ids for cell owned by current rank
+  std::vector<LongSimplexId> globalCellsInRank{};
+  globalCellsInRank.reserve(nLocCells);
+
+  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    if(this->ghostCellMask_[lcid] == 0) {
+      globalCellsInRank.emplace_back(this->cellGid_[lcid]);
+    }
+  }
+
+  // global cell ids per rank (used by rank 0)
+  std::vector<std::vector<LongSimplexId>> cellsRankPerProc{};
+
+  gatherVectors(cellsRankPerProc, globalCellsInRank, 0);
+
+  if(ttk::MPIrank_ == 0) {
+    // global number of cells
+    auto nGlobalCells = cellsRankPerProc[0].size();
+    for(int i = 1; i < MPIsize_; ++i) {
+      nGlobalCells += cellsRankPerProc[i].size();
+    }
+
+    this->cellGidToRank_.resize(nGlobalCells, -1);
+    for(int i = 0; i < MPIsize_; ++i) {
+      for(const auto gcid : cellsRankPerProc[i]) {
+        this->cellGidToRank_[gcid] = i;
+      }
+    }
+  }
+
+  this->hasPreconditionedDistributedCells_ = true;
+
+  return 0;
+}
+
+template <typename Func>
+int preconditionDistributedIntermediate(size_t &globalCount,
+                                        const std::vector<int> &cellGidToRank,
+                                        const Func &processCells) {
+
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+
+  const int COMPUTE = 1, STOP = 2;
+
+  if(ttk::MPIrank_ == 0) {
+    size_t gcid{};
+    while(gcid < cellGidToRank.size()) {
+      const auto currRank{cellGidToRank[gcid]};
+      size_t endCurrRank{gcid + 1};
+      if(gcid < cellGidToRank.size() - 1) {
+        for(size_t j = gcid + 1; j < cellGidToRank.size(); ++j) {
+          if(cellGidToRank[j] != currRank) {
+            endCurrRank = j;
+            break;
+          }
+        }
+        if(endCurrRank == gcid + 1 && cellGidToRank[endCurrRank] == currRank) {
+          endCurrRank = cellGidToRank.size();
+        }
+      }
+
+      if(currRank == 0) {
+        // process local edges
+        processCells(gcid, endCurrRank, globalCount);
+      } else {
+        // send to relevant process
+        std::array<unsigned long, 3> toSend{globalCount, gcid, endCurrRank};
+        MPI_Send(toSend.data(), 3, MPI_UNSIGNED_LONG, currRank, COMPUTE,
+                 MPI_COMM_WORLD);
+        // receive updated edgeCount
+        MPI_Recv(&globalCount, 1, MPI_UNSIGNED_LONG, currRank, MPI_ANY_TAG,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      }
+
+      gcid = endCurrRank;
+    }
+
+    // send STOP signal to break infinite loop
+    std::array<unsigned long, 3> dummy{};
+    for(int i = 1; i < ttk::MPIsize_; ++i) {
+      MPI_Send(dummy.data(), 3, MPI_UNSIGNED_LONG, i, STOP, MPI_COMM_WORLD);
+    }
+
+  } else {
+    while(true) {
+      // receive data
+      std::array<unsigned long, 3> toRecv{};
+      MPI_Status status;
+      MPI_Recv(toRecv.data(), 3, MPI_UNSIGNED_LONG, 0, MPI_ANY_TAG,
+               MPI_COMM_WORLD, &status);
+      if(status.MPI_TAG == STOP) {
+        break;
+      }
+      // process local edges
+      globalCount = toRecv[0];
+      processCells(toRecv[1], toRecv[2], globalCount);
+      // send back updated edgeCount to rank 0
+      MPI_Send(&globalCount, 1, MPI_UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
+    }
+  }
+
+  return 0;
+}
+
+int ExplicitTriangulation::preconditionDistributedEdges() {
+  if(this->hasPreconditionedDistributedEdges_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+
+  if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
+    return -3;
+  }
+
+  this->preconditionDistributedCells();
+
+  // allocate memory
+  this->edgeLidToGid_.resize(this->getNumberOfEdgesInternal(), -1);
+  this->edgeGidToLid_.reserve(this->getNumberOfEdgesInternal());
+
+  const auto processEdge = [this](const SimplexId leid, const SimplexId lcid,
+                                  size_t &edgeCount) {
+    bool alreadyProcessed{false};
+    const auto nStar{this->TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(leid)};
+    for(SimplexId i = 0; i < nStar; ++i) {
+      SimplexId sid{-1};
+      this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(leid, i, sid);
+      if(sid == -1 || sid == lcid) {
+        continue;
+      }
+      // rule: an edge is owned by the cell in its star with the
+      // lowest global id
+      if(this->cellGid_[sid] < this->cellGid_[lcid]) {
+        alreadyProcessed = true;
+        break;
+      }
+    }
+    if(!alreadyProcessed) {
+      this->edgeLidToGid_[leid] = edgeCount;
+      this->edgeGidToLid_[edgeCount] = leid;
+      edgeCount++;
+    }
+  };
+
+  const auto processCellsEdges
+    = [this, &processEdge](
+        const size_t gcid, const size_t endCurrRank, size_t &edgeCount) {
+        for(size_t j = gcid; j < endCurrRank; ++j) {
+          // local cell id
+          const auto lcid{this->cellGidToLid_[j]};
+          for(SimplexId i = 0; i < this->getCellEdgeNumberInternal(lcid); ++i) {
+            SimplexId leid{-1};
+            this->getCellEdgeInternal(lcid, i, leid);
+            processEdge(leid, lcid, edgeCount);
+          }
+        }
+      };
+
+  size_t edgeCount{};
+  preconditionDistributedIntermediate(
+    edgeCount, this->cellGidToRank_, processCellsEdges);
+
+  if(MPIrank_ == 0) {
+    this->printMsg("Domain contains " + std::to_string(edgeCount) + " edges");
+  }
+
+  this->hasPreconditionedDistributedEdges_ = true;
+
+  return 0;
+}
+
+int ExplicitTriangulation::preconditionDistributedTriangles() {
+  if(this->hasPreconditionedDistributedTriangles_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+
+  if(this->getDimensionality() != 3) {
+    return -3;
+  }
+
+  this->preconditionDistributedCells();
+
+  // allocate memory
+  this->triangleLidToGid_.resize(this->getNumberOfTrianglesInternal(), -1);
+  this->triangleGidToLid_.reserve(this->getNumberOfTrianglesInternal());
+
+  const auto processTriangle =
+    [this](const SimplexId ltid, const SimplexId lcid, size_t &triangleCount) {
+      bool alreadyProcessed{false};
+      const auto nStar{
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(ltid)};
+      for(SimplexId i = 0; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(ltid, i, sid);
+        if(sid == -1 || sid == lcid) {
+          continue;
+        }
+        // rule: an edge is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellGid_[sid] < this->cellGid_[lcid]) {
+          alreadyProcessed = true;
+          break;
+        }
+      }
+      if(!alreadyProcessed) {
+        this->triangleLidToGid_[ltid] = triangleCount;
+        this->triangleGidToLid_[triangleCount] = ltid;
+        triangleCount++;
+      }
+    };
+
+  const auto processCellsTriangles
+    = [this, &processTriangle](
+        const size_t gcid, const size_t endCurrRank, size_t &triangleCount) {
+        for(size_t j = gcid; j < endCurrRank; ++j) {
+          // local cell id
+          const auto lcid{this->cellGidToLid_[j]};
+          for(SimplexId i = 0; i < this->getCellTriangleNumberInternal(lcid);
+              ++i) {
+            SimplexId ltid{-1};
+            this->getCellTriangleInternal(lcid, i, ltid);
+            processTriangle(ltid, lcid, triangleCount);
+          }
+        }
+      };
+
+  size_t triangleCount{};
+  preconditionDistributedIntermediate(
+    triangleCount, this->cellGidToRank_, processCellsTriangles);
+
+  if(MPIrank_ == 0) {
+    this->printMsg("Domain contains " + std::to_string(triangleCount)
+                   + " triangles");
+  }
+
+  this->hasPreconditionedDistributedTriangles_ = true;
+
+  return 0;
+}
+
+#endif // TTK_ENABLE_MPI
 
 template <typename T>
 void writeBin(std::ofstream &stream, const T var) {

@@ -237,7 +237,58 @@ namespace ttk {
       return 0;
     }
 
+#ifdef TTK_ENABLE_MPI
+
+    int preconditionDistributedCells() override;
+    int preconditionDistributedEdges() override;
+    int preconditionDistributedTriangles() override;
+
+    inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeGlobalId)(
+      const SimplexId &leid) override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(leid < 0 || leid >= this->getNumberOfEdgesInternal()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->edgeLidToGid_[leid];
+    }
+    inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLocalId)(
+      const SimplexId &geid) override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->edgeGidToLid_.find(geid) == this->edgeGidToLid_.end()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->edgeGidToLid_[geid];
+    }
+    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleGlobalId)(
+      const SimplexId &ltid) override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(ltid < 0 || ltid >= this->getNumberOfTrianglesInternal()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->triangleLidToGid_[ltid];
+    }
+    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLocalId)(
+      const SimplexId &gtid) override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->triangleGidToLid_.find(gtid) == this->triangleGidToLid_.end()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->triangleGidToLid_[gtid];
+    }
+
+#endif // TTK_ENABLE_MPI
+
   protected:
+#ifdef TTK_ENABLE_MPI
+    // the cellGid_ array only applies on cubic cells, not on
+    // simplicial ones...
+    std::vector<SimplexId> cellLidToGid_{};
+#endif // TTK_ENABLE_MPI
+
     enum class VertexPosition : char {
       // a--------b
 

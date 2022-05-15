@@ -55,6 +55,8 @@
 namespace ttk {
 
   COMMON_EXPORTS extern int globalThreadNumber_;
+  COMMON_EXPORTS extern int MPIrank_;
+  COMMON_EXPORTS extern int MPIsize_;
 
   class Wrapper;
 
@@ -88,3 +90,5 @@ namespace ttk {
     Wrapper *wrapper_;
   };
 } // namespace ttk
+
+#include <MPIUtils.h>
