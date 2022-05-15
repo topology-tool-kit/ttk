@@ -3,8 +3,10 @@
 #include <ttkAlgorithmModule.h>
 
 #include <Debug.h>
-#include <unordered_map>
 #include <vtkType.h>
+
+#include <memory>
+#include <unordered_map>
 
 class vtkDataSet;
 class vtkImageData;
