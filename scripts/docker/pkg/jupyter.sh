@@ -1,12 +1,12 @@
 #! /bin/bash
 set -e
 
-build_pkgs \
+require_pkgs \
 	git				\
 	nodejs			\
 	npm
 
-runtime_pkgs \
+install-pkgs \
 	python3-pip				  	\
 	python3-numpy				\
 	python3-pillow		   	  	\
