@@ -2,8 +2,15 @@ name: docker_build
 
 on:
   push:
-    branches:
-      - 'dev'
+    # triggered on tag pushes with tags beginning with either "v" or "dev"
+    branch-ignore:
+      - '*'
+    tags:
+      - 'v*'
+      - 'dev*'
+      - '*-*-*'
+      - '*.*.*'
+      - 'pack*'
 
 jobs:
   docker:
