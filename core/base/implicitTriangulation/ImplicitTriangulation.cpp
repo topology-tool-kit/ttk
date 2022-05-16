@@ -273,15 +273,16 @@ bool ImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
   return false;
 }
 
-bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
-  const SimplexId &vertexId) const {
+template <typename Derived>
+bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  isVertexOnBoundary)(const SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
     case VertexPosition::CENTER_2D:
     case VertexPosition::CENTER_1D:
@@ -291,15 +292,16 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
   }
 }
 
-bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
-  const SimplexId &edgeId) const {
+template <typename Derived>
+bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  isEdgeOnBoundary)(const SimplexId &edgeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
     case EdgePosition::L_xnn_3D:
     case EdgePosition::H_nyn_3D:
     case EdgePosition::P_nnz_3D:
@@ -326,15 +328,16 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
 #endif // !TTK_ENABLE_KAMIKAZE
 
   if(dimensionality_ == 3)
-    return (getTriangleStarNumber(triangleId) == 1);
+    return (TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId) == 1);
 
   return false;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
-  const SimplexId &vertexId,
-  const int &localNeighborId,
-  SimplexId &neighborId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexNeighbor)(const SimplexId &vertexId,
+                     const int &localNeighborId,
+                     SimplexId &neighborId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
@@ -342,7 +345,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       neighborId = vertexId + this->vertexNeighborABCDEFGH_[localNeighborId];
       break;
@@ -470,7 +473,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() {
-  if(!vertexNeighborList_.size()) {
+  if(vertexNeighborList_.empty()) {
     Timer t;
     vertexNeighborList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
@@ -491,9 +494,9 @@ SimplexId ImplicitTriangulation::getVertexEdgeNumberInternal(
   return TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(vertexId);
 }
 
-int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
-                                                 const int &localEdgeId,
-                                                 SimplexId &edgeId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
+  const SimplexId &vertexId, const int &localEdgeId, SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localEdgeId < 0 or localEdgeId >= getVertexEdgeNumberInternal(vertexId))
     return -1;
@@ -515,9 +518,9 @@ int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
   // D3: diagonale3 (type be)
   // D4: diagonale4 (type bg)
 
-  const auto &p = this->getVertexCoords(vertexId);
+  const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       edgeId = getVertexEdgeABCDEFGH(p.data(), localEdgeId);
       break;
@@ -644,7 +647,7 @@ int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::getVertexEdgesInternal() {
-  if(!vertexEdgeList_.size()) {
+  if(vertexEdgeList_.empty()) {
     Timer t;
 
     vertexEdgeList_.resize(vertexNumber_);
@@ -661,14 +664,15 @@ const vector<vector<SimplexId>> *
   return &vertexEdgeList_;
 }
 
-SimplexId ImplicitTriangulation::getVertexTriangleNumberInternal(
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::getVertexTriangleNumberInternal(
   const SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
 #endif
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       return 36;
     case VertexPosition::FRONT_FACE_3D:
@@ -709,7 +713,8 @@ SimplexId ImplicitTriangulation::getVertexTriangleNumberInternal(
   return 0;
 }
 
-int ImplicitTriangulation::getVertexTriangleInternal(
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getVertexTriangleInternal(
   const SimplexId &vertexId,
   const int &localTriangleId,
   SimplexId &triangleId) const {
@@ -719,9 +724,9 @@ int ImplicitTriangulation::getVertexTriangleInternal(
     return -1;
 #endif
 
-  const auto &p = this->getVertexCoords(vertexId);
+  const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       triangleId = getVertexTriangleABCDEFGH(p.data(), localTriangleId);
       break;
@@ -813,7 +818,7 @@ int ImplicitTriangulation::getVertexTriangleInternal(
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::getVertexTrianglesInternal() {
-  if(!vertexTriangleList_.size()) {
+  if(vertexTriangleList_.empty()) {
     Timer t;
 
     vertexTriangleList_.resize(vertexNumber_);
@@ -835,17 +840,20 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(vertexId);
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
-  const SimplexId &vertexId, const int &localLinkId, SimplexId &linkId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexLink)(const SimplexId &vertexId,
+                 const int &localLinkId,
+                 SimplexId &linkId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getVertexLinkNumber(vertexId))
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  const auto &p = this->getVertexCoords(vertexId);
+  const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       linkId = getVertexLinkABCDEFGH(p.data(), localLinkId);
       break;
@@ -964,7 +972,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLinks)() {
-  if(!vertexLinkList_.size()) {
+  if(vertexLinkList_.empty()) {
     Timer t;
 
     vertexLinkList_.resize(vertexNumber_);
@@ -981,7 +989,8 @@ const vector<vector<SimplexId>> *
   return &vertexLinkList_;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   getVertexStarNumber)(const SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -989,7 +998,7 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       return 24;
     case VertexPosition::FRONT_FACE_3D:
@@ -1041,17 +1050,20 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
-  const SimplexId &vertexId, const int &localStarId, SimplexId &starId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexStar)(const SimplexId &vertexId,
+                 const int &localStarId,
+                 SimplexId &starId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId < 0 or localStarId >= getVertexStarNumber(vertexId))
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  const auto &p = this->getVertexCoords(vertexId);
+  const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  switch(this->getVertexPosition(vertexId)) {
+  switch(this->underlying().getVertexPosition(vertexId)) {
     case VertexPosition::CENTER_3D:
       starId = getVertexStarABCDEFGH(p.data(), localStarId);
       break;
@@ -1171,7 +1183,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStars)() {
 
-  if(!vertexStarList_.size()) {
+  if(vertexStarList_.empty()) {
     Timer t;
     vertexStarList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
@@ -1187,17 +1199,21 @@ const vector<vector<SimplexId>> *
   return &vertexStarList_;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexPoint)(
-  const SimplexId &vertexId, float &x, float &y, float &z) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexPoint)(const SimplexId &vertexId,
+                  float &x,
+                  float &y,
+                  float &z) const {
 
   if(dimensionality_ == 3) {
-    const auto &p = this->getVertexCoords(vertexId);
+    const auto &p = this->underlying().getVertexCoords(vertexId);
 
     x = origin_[0] + spacing_[0] * p[0];
     y = origin_[1] + spacing_[1] * p[1];
     z = origin_[2] + spacing_[2] * p[2];
   } else if(dimensionality_ == 2) {
-    const auto &p = this->getVertexCoords(vertexId);
+    const auto &p = this->underlying().getVertexCoords(vertexId);
 
     if(dimensions_[0] > 1 and dimensions_[1] > 1) {
       x = origin_[0] + spacing_[0] * p[0];
@@ -1231,9 +1247,11 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexPoint)(
   return 0;
 }
 
-int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
-                                                 const int &localVertexId,
-                                                 SimplexId &vertexId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
+  const SimplexId &edgeId,
+  const int &localVertexId,
+  SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return -1;
@@ -1241,7 +1259,7 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
     return -2;
 #endif
 
-  const auto &p = this->getEdgeCoords(edgeId);
+  const auto &p = this->underlying().getEdgeCoords(edgeId);
 
   const auto helper3d = [&](const SimplexId a, const SimplexId b) -> SimplexId {
     if(isAccelerated_) {
@@ -1263,7 +1281,7 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
     }
   };
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
   CASE_EDGE_POSITION_L_3D:
     vertexId = helper3d(0, 1);
     break;
@@ -1313,7 +1331,7 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
 const vector<std::array<SimplexId, 2>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdges)() {
 
-  if(!edgeList_.size()) {
+  if(edgeList_.empty()) {
     Timer t;
 
     edgeList_.resize(edgeNumber_);
@@ -1331,14 +1349,15 @@ const vector<std::array<SimplexId, 2>> *
   return &edgeList_;
 }
 
-SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::getEdgeTriangleNumberInternal(
   const SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return -1;
 #endif
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
     case EdgePosition::L_xnn_3D:
     case EdgePosition::H_nyn_3D:
     case EdgePosition::P_nnz_3D:
@@ -1396,7 +1415,8 @@ SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
   return 0;
 }
 
-int ImplicitTriangulation::getEdgeTriangleInternal(
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
   const SimplexId &edgeId,
   const int &localTriangleId,
   SimplexId &triangleId) const {
@@ -1406,9 +1426,9 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     return -1;
 #endif
 
-  const auto &p = this->getEdgeCoords(edgeId);
+  const auto &p = this->underlying().getEdgeCoords(edgeId);
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
     case EdgePosition::L_xnn_3D:
       triangleId = getEdgeTriangleL_xnn(p.data(), localTriangleId);
       break;
@@ -1553,7 +1573,7 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::getEdgeTrianglesInternal() {
-  if(!edgeTriangleList_.size()) {
+  if(edgeTriangleList_.empty()) {
     Timer t;
 
     edgeTriangleList_.resize(edgeNumber_);
@@ -1575,7 +1595,8 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
   return TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(edgeId);
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
   const SimplexId &edgeId, const int &localLinkId, SimplexId &linkId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1583,9 +1604,9 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
     return -1;
 #endif
 
-  const auto &p = this->getEdgeCoords(edgeId);
+  const auto &p = this->underlying().getEdgeCoords(edgeId);
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
   CASE_EDGE_POSITION_L_3D:
     linkId = getEdgeLinkL(p.data(), localLinkId);
     break;
@@ -1629,7 +1650,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() {
 
-  if(!edgeLinkList_.size()) {
+  if(edgeLinkList_.empty()) {
     Timer t;
 
     edgeLinkList_.resize(edgeNumber_);
@@ -1646,15 +1667,16 @@ const vector<vector<SimplexId>> *
   return &edgeLinkList_;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(
-  const SimplexId &edgeId) const {
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getEdgeStarNumber)(const SimplexId &edgeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return -1;
 #endif
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
     case EdgePosition::L_xnn_3D:
     case EdgePosition::H_nyn_3D:
     case EdgePosition::P_nnz_3D:
@@ -1712,7 +1734,8 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(
   return 0;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
   const SimplexId &edgeId, const int &localStarId, SimplexId &starId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1720,9 +1743,9 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
     return -1;
 #endif
 
-  const auto &p = this->getEdgeCoords(edgeId);
+  const auto &p = this->underlying().getEdgeCoords(edgeId);
 
-  switch(this->getEdgePosition(edgeId)) {
+  switch(this->underlying().getEdgePosition(edgeId)) {
   CASE_EDGE_POSITION_L_3D:
     starId = getEdgeStarL(p.data(), localStarId);
     break;
@@ -1767,7 +1790,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStars)() {
 
-  if(!edgeStarList_.size()) {
+  if(edgeStarList_.empty()) {
     Timer t;
 
     edgeStarList_.resize(edgeNumber_);
@@ -1784,7 +1807,8 @@ const vector<vector<SimplexId>> *
   return &edgeStarList_;
 }
 
-int ImplicitTriangulation::getTriangleVertexInternal(
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
   const SimplexId &triangleId,
   const int &localVertexId,
   SimplexId &vertexId) const {
@@ -1811,10 +1835,10 @@ int ImplicitTriangulation::getTriangleVertexInternal(
   // D2: diagonale2 (type abg/bgh)
   // D3: diagonale3 (type bcg/bfg)
 
-  const auto &p = this->getTriangleCoords(triangleId);
+  const auto &p = this->underlying().getTriangleCoords(triangleId);
   vertexId = -1;
 
-  switch(this->getTrianglePosition(triangleId)) {
+  switch(this->underlying().getTrianglePosition(triangleId)) {
     case TrianglePosition::F_3D:
       vertexId = getTriangleVertexF(p.data(), localVertexId);
       break;
@@ -1865,9 +1889,11 @@ int ImplicitTriangulation::getTriangleVertexInternal(
   return 0;
 }
 
-int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
-                                                   const int &localEdgeId,
-                                                   SimplexId &edgeId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
+  const SimplexId &triangleId,
+  const int &localEdgeId,
+  SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -1875,11 +1901,11 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     return -2;
 #endif
 
-  const auto &p = this->getTriangleCoords(triangleId);
+  const auto &p = this->underlying().getTriangleCoords(triangleId);
   const auto par = triangleId % 2;
   edgeId = -1;
 
-  switch(this->getTrianglePosition(triangleId)) {
+  switch(this->underlying().getTrianglePosition(triangleId)) {
     case TrianglePosition::F_3D:
       edgeId = (par == 1) ? getTriangleEdgeF_1(p.data(), localEdgeId)
                           : getTriangleEdgeF_0(p.data(), localEdgeId);
@@ -1964,7 +1990,7 @@ const vector<vector<SimplexId>> *
 const vector<std::array<SimplexId, 3>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
 
-  if(!triangleList_.size()) {
+  if(triangleList_.empty()) {
     Timer t;
 
     triangleList_.resize(triangleNumber_);
@@ -1980,19 +2006,20 @@ const vector<std::array<SimplexId, 3>> *
   return &triangleList_;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
-  const SimplexId &triangleId,
-  const int &localLinkId,
-  SimplexId &linkId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getTriangleLink)(const SimplexId &triangleId,
+                   const int &localLinkId,
+                   SimplexId &linkId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getTriangleLinkNumber(triangleId))
     return -1;
 #endif
 
-  const auto p = this->getTriangleCoords(triangleId);
+  const auto &p = this->underlying().getTriangleCoords(triangleId);
 
-  switch(this->getTrianglePosition(triangleId)) {
+  switch(this->underlying().getTrianglePosition(triangleId)) {
     case TrianglePosition::F_3D:
       linkId = getTriangleLinkF(p.data(), localLinkId);
       break;
@@ -2026,7 +2053,7 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() {
-  if(!triangleLinkList_.size()) {
+  if(triangleLinkList_.empty()) {
     Timer t;
 
     triangleLinkList_.resize(triangleNumber_);
@@ -2042,7 +2069,8 @@ const vector<vector<SimplexId>> *
   return &triangleLinkList_;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   getTriangleStarNumber)(const SimplexId &triangleId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -2050,9 +2078,9 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif
 
-  const auto p = this->getTriangleCoords(triangleId);
+  const auto &p = this->underlying().getTriangleCoords(triangleId);
 
-  switch(this->getTrianglePosition(triangleId)) {
+  switch(this->underlying().getTrianglePosition(triangleId)) {
     case TrianglePosition::F_3D:
       return (p[2] > 0 and p[2] < nbvoxels_[2]) ? 2 : 1;
     case TrianglePosition::H_3D:
@@ -2070,19 +2098,20 @@ SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
-  const SimplexId &triangleId,
-  const int &localStarId,
-  SimplexId &starId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getTriangleStar)(const SimplexId &triangleId,
+                   const int &localStarId,
+                   SimplexId &starId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId < 0 or localStarId >= getTriangleStarNumber(triangleId))
     return -1;
 #endif
 
-  const auto p = this->getTriangleCoords(triangleId);
+  const auto &p = this->underlying().getTriangleCoords(triangleId);
 
-  switch(this->getTrianglePosition(triangleId)) {
+  switch(this->underlying().getTrianglePosition(triangleId)) {
     case TrianglePosition::F_3D:
       starId = getTriangleStarF(p.data(), localStarId);
       break;
@@ -2112,7 +2141,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStars)() {
 
-  if(!triangleStarList_.size()) {
+  if(triangleStarList_.empty()) {
     Timer t;
 
     triangleStarList_.resize(triangleNumber_);
@@ -2128,7 +2157,8 @@ const vector<vector<SimplexId>> *
   return &triangleStarList_;
 }
 
-SimplexId ImplicitTriangulation::getTriangleNeighborNumber(
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::getTriangleNeighborNumber(
   const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -2136,7 +2166,7 @@ SimplexId ImplicitTriangulation::getTriangleNeighborNumber(
 #endif
 
   if(dimensionality_ == 2) {
-    const auto p = this->getTriangleCoords(triangleId);
+    const auto &p = this->underlying().getTriangleCoords(triangleId);
     const SimplexId id = triangleId % 2;
 
     if(id) {
@@ -2159,9 +2189,11 @@ SimplexId ImplicitTriangulation::getTriangleNeighborNumber(
   return 0;
 }
 
-int ImplicitTriangulation::getTriangleNeighbor(const SimplexId &triangleId,
-                                               const int &localNeighborId,
-                                               SimplexId &neighborId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
+  const SimplexId &triangleId,
+  const int &localNeighborId,
+  SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
      or localNeighborId >= getTriangleNeighborNumber(triangleId))
@@ -2171,7 +2203,7 @@ int ImplicitTriangulation::getTriangleNeighbor(const SimplexId &triangleId,
   neighborId = -1;
 
   if(dimensionality_ == 2) {
-    const auto p = this->getTriangleCoords(triangleId);
+    const auto &p = this->underlying().getTriangleCoords(triangleId);
     const SimplexId id = triangleId % 2;
 
     if(id) {
@@ -2259,9 +2291,9 @@ int ImplicitTriangulation::getTriangleNeighbors(
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronVertex(const SimplexId &tetId,
-                                                const int &localVertexId,
-                                                SimplexId &vertexId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTetrahedronVertex(
+  const SimplexId &tetId, const int &localVertexId, SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
@@ -2273,7 +2305,7 @@ int ImplicitTriangulation::getTetrahedronVertex(const SimplexId &tetId,
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    const auto c = this->getTetrahedronCoords(tetId);
+    const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
@@ -2300,9 +2332,9 @@ int ImplicitTriangulation::getTetrahedronVertex(const SimplexId &tetId,
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronEdge(const SimplexId &tetId,
-                                              const int &localEdgeId,
-                                              SimplexId &edgeId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
+  const SimplexId &tetId, const int &localEdgeId, SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
@@ -2314,7 +2346,7 @@ int ImplicitTriangulation::getTetrahedronEdge(const SimplexId &tetId,
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    const auto c = this->getTetrahedronCoords(tetId);
+    const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
@@ -2354,9 +2386,11 @@ int ImplicitTriangulation::getTetrahedronEdges(
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronTriangle(const SimplexId &tetId,
-                                                  const int &localTriangleId,
-                                                  SimplexId &triangleId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
+  const SimplexId &tetId,
+  const int &localTriangleId,
+  SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
@@ -2368,7 +2402,7 @@ int ImplicitTriangulation::getTetrahedronTriangle(const SimplexId &tetId,
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    const auto c = this->getTetrahedronCoords(tetId);
+    const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
@@ -2408,7 +2442,8 @@ int ImplicitTriangulation::getTetrahedronTriangles(
   return 0;
 }
 
-SimplexId ImplicitTriangulation::getTetrahedronNeighborNumber(
+template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighborNumber(
   const SimplexId &tetId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -2417,7 +2452,7 @@ SimplexId ImplicitTriangulation::getTetrahedronNeighborNumber(
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    const auto c = this->getTetrahedronCoords(tetId);
+    const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
@@ -2475,9 +2510,11 @@ SimplexId ImplicitTriangulation::getTetrahedronNeighborNumber(
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronNeighbor(const SimplexId &tetId,
-                                                  const int &localNeighborId,
-                                                  SimplexId &neighborId) const {
+template <typename Derived>
+int ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighbor(
+  const SimplexId &tetId,
+  const int &localNeighborId,
+  SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
      or localNeighborId >= getTetrahedronNeighborNumber(tetId))
@@ -2488,7 +2525,7 @@ int ImplicitTriangulation::getTetrahedronNeighbor(const SimplexId &tetId,
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    const auto c = this->getTetrahedronCoords(tetId);
+    const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
@@ -2644,7 +2681,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
 
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() {
-  if(!cellNeighborList_.size()) {
+  if(cellNeighborList_.empty()) {
     Timer t;
 
     if(dimensionality_ == 3)
@@ -3006,3 +3043,303 @@ int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
 
   return 0;
 }
+
+#ifdef TTK_ENABLE_MPI
+
+int ttk::ImplicitTriangulation::preconditionDistributedCells() {
+  if(this->hasPreconditionedDistributedCells_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+  if(this->ghostCellMask_ == nullptr) {
+    this->printWrn("Missing ghost mask on cells");
+    return -3;
+  }
+
+  // number of local cells (with ghost cells...)
+  const auto nLocCells{this->getNumberOfCells()};
+
+  // there are 6 tetrahedra per cell
+  const int nTetraPerCube{6};
+  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
+
+  // local (simplicial) cell id -> global cell id
+  this->cellLidToGid_.resize(nLocCells);
+  // global (simplicial) cell id -> local cell id (reverse of
+  // this->cellLidToGid_)
+  this->cellGidToLid_.reserve(nLocCells);
+  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    const auto locCubeId{lcid / nTetraPerCube};
+    const auto globCellId{nTetraPerCube * this->cellGid_[locCubeId]
+                          + fillCells[locCubeId]++};
+    this->cellGidToLid_[globCellId] = lcid;
+    this->cellLidToGid_[lcid] = globCellId;
+  }
+
+  // global cell ids for cell owned by current rank
+  std::vector<LongSimplexId> globalCellsInRank{};
+  globalCellsInRank.reserve(nLocCells);
+
+  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    const auto locCubeId{lcid / nTetraPerCube};
+    if(this->ghostCellMask_[locCubeId] == 0) {
+      globalCellsInRank.emplace_back(this->cellLidToGid_[lcid]);
+    }
+  }
+
+  // global cell ids per rank (used by rank 0)
+  std::vector<std::vector<LongSimplexId>> cellsRankPerProc{};
+
+  gatherVectors(cellsRankPerProc, globalCellsInRank, 0);
+
+  if(ttk::MPIrank_ == 0) {
+    // global number of cells
+    auto nGlobalCells = cellsRankPerProc[0].size();
+    for(int i = 1; i < MPIsize_; ++i) {
+      nGlobalCells += cellsRankPerProc[i].size();
+    }
+
+    this->cellGidToRank_.resize(nGlobalCells, -1);
+    for(int i = 0; i < MPIsize_; ++i) {
+      for(const auto gcid : cellsRankPerProc[i]) {
+        this->cellGidToRank_[gcid] = i;
+      }
+    }
+  }
+
+  this->hasPreconditionedDistributedCells_ = true;
+
+  return 0;
+}
+
+template <typename Func>
+int preconditionDistributedIntermediate(size_t &globalCount,
+                                        const std::vector<int> &cellGidToRank,
+                                        const Func &processCells) {
+
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+
+  const int COMPUTE = 1, STOP = 2;
+
+  if(ttk::MPIrank_ == 0) {
+    size_t gcid{};
+    while(gcid < cellGidToRank.size()) {
+      const auto currRank{cellGidToRank[gcid]};
+      size_t endCurrRank{gcid + 1};
+      if(gcid < cellGidToRank.size() - 1) {
+        for(size_t j = gcid + 1; j < cellGidToRank.size(); ++j) {
+          if(cellGidToRank[j] != currRank) {
+            endCurrRank = j;
+            break;
+          }
+        }
+        if(endCurrRank == gcid + 1 && cellGidToRank[endCurrRank] == currRank) {
+          endCurrRank = cellGidToRank.size();
+        }
+      }
+
+      if(currRank == 0) {
+        // process local edges
+        processCells(gcid, endCurrRank, globalCount);
+      } else {
+        // send to relevant process
+        std::array<unsigned long, 3> toSend{globalCount, gcid, endCurrRank};
+        MPI_Send(toSend.data(), 3, MPI_UNSIGNED_LONG, currRank, COMPUTE,
+                 MPI_COMM_WORLD);
+        // receive updated edgeCount
+        MPI_Recv(&globalCount, 1, MPI_UNSIGNED_LONG, currRank, MPI_ANY_TAG,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      }
+
+      gcid = endCurrRank;
+    }
+
+    // send STOP signal to break infinite loop
+    std::array<unsigned long, 3> dummy{};
+    for(int i = 1; i < ttk::MPIsize_; ++i) {
+      MPI_Send(dummy.data(), 3, MPI_UNSIGNED_LONG, i, STOP, MPI_COMM_WORLD);
+    }
+
+  } else {
+    while(true) {
+      // receive data
+      std::array<unsigned long, 3> toRecv{};
+      MPI_Status status;
+      MPI_Recv(toRecv.data(), 3, MPI_UNSIGNED_LONG, 0, MPI_ANY_TAG,
+               MPI_COMM_WORLD, &status);
+      if(status.MPI_TAG == STOP) {
+        break;
+      }
+      // process local edges
+      globalCount = toRecv[0];
+      processCells(toRecv[1], toRecv[2], globalCount);
+      // send back updated edgeCount to rank 0
+      MPI_Send(&globalCount, 1, MPI_UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
+    }
+  }
+
+  return 0;
+}
+
+int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
+  if(this->hasPreconditionedDistributedEdges_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+
+  if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
+    return -3;
+  }
+
+  this->preconditionDistributedCells();
+
+  // allocate memory
+  this->edgeLidToGid_.resize(this->getNumberOfEdgesInternal(), -1);
+  this->edgeGidToLid_.reserve(this->getNumberOfEdgesInternal());
+
+  const auto processEdge = [this](const SimplexId leid, const SimplexId lcid,
+                                  size_t &edgeCount) {
+    bool alreadyProcessed{false};
+    const auto nStar{this->TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(leid)};
+    for(SimplexId i = 0; i < nStar; ++i) {
+      SimplexId sid{-1};
+      this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(leid, i, sid);
+      if(sid == -1 || sid == lcid) {
+        continue;
+      }
+      // rule: an edge is owned by the cell in its star with the
+      // lowest global id
+      if(this->cellLidToGid_[sid] < this->cellLidToGid_[lcid]) {
+        alreadyProcessed = true;
+        break;
+      }
+    }
+    if(!alreadyProcessed) {
+      this->edgeLidToGid_[leid] = edgeCount;
+      this->edgeGidToLid_[edgeCount] = leid;
+      edgeCount++;
+    }
+  };
+
+  const auto processCellsEdges
+    = [this, &processEdge](
+        const size_t gcid, const size_t endCurrRank, size_t &edgeCount) {
+        for(size_t j = gcid; j < endCurrRank; ++j) {
+          // local cell id
+          const auto lcid{this->cellGidToLid_[j]};
+          for(SimplexId i = 0; i < this->getCellEdgeNumberInternal(lcid); ++i) {
+            SimplexId leid{-1};
+            this->getCellEdgeInternal(lcid, i, leid);
+            processEdge(leid, lcid, edgeCount);
+          }
+        }
+      };
+
+  size_t edgeCount{};
+  preconditionDistributedIntermediate(
+    edgeCount, this->cellGidToRank_, processCellsEdges);
+
+  if(MPIrank_ == 0) {
+    this->printMsg("Domain contains " + std::to_string(edgeCount) + " edges");
+  }
+
+  this->hasPreconditionedDistributedEdges_ = true;
+
+  return 0;
+}
+
+int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
+  if(this->hasPreconditionedDistributedTriangles_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+
+  if(this->getDimensionality() != 3) {
+    return -3;
+  }
+
+  this->preconditionDistributedCells();
+
+  // allocate memory
+  this->triangleLidToGid_.resize(this->getNumberOfTrianglesInternal(), -1);
+  this->triangleGidToLid_.reserve(this->getNumberOfTrianglesInternal());
+
+  const auto processTriangle =
+    [this](const SimplexId ltid, const SimplexId lcid, size_t &triangleCount) {
+      bool alreadyProcessed{false};
+      const auto nStar{
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(ltid)};
+      for(SimplexId i = 0; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(ltid, i, sid);
+        if(sid == -1 || sid == lcid) {
+          continue;
+        }
+        // rule: an edge is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellLidToGid_[sid] < this->cellLidToGid_[lcid]) {
+          alreadyProcessed = true;
+          break;
+        }
+      }
+      if(!alreadyProcessed) {
+        this->triangleLidToGid_[ltid] = triangleCount;
+        this->triangleGidToLid_[triangleCount] = ltid;
+        triangleCount++;
+      }
+    };
+
+  const auto processCellsTriangles
+    = [this, &processTriangle](
+        const size_t gcid, const size_t endCurrRank, size_t &triangleCount) {
+        for(size_t j = gcid; j < endCurrRank; ++j) {
+          // local cell id
+          const auto lcid{this->cellGidToLid_[j]};
+          for(SimplexId i = 0; i < this->getCellTriangleNumberInternal(lcid);
+              ++i) {
+            SimplexId ltid{-1};
+            this->getCellTriangleInternal(lcid, i, ltid);
+            processTriangle(ltid, lcid, triangleCount);
+          }
+        }
+      };
+
+  size_t triangleCount{};
+  preconditionDistributedIntermediate(
+    triangleCount, this->cellGidToRank_, processCellsTriangles);
+
+  if(MPIrank_ == 0) {
+    this->printMsg("Domain contains " + std::to_string(triangleCount)
+                   + " triangles");
+  }
+
+  this->hasPreconditionedDistributedTriangles_ = true;
+
+  return 0;
+}
+
+#endif // TTK_ENABLE_MPI
+
+// explicit instantiations
+template class ttk::ImplicitTriangulationCRTP<ttk::ImplicitWithPreconditions>;
+template class ttk::ImplicitTriangulationCRTP<ttk::ImplicitNoPreconditions>;

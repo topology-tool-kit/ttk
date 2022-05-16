@@ -4,7 +4,6 @@
 #include <ttkUtils.h>
 
 #include <regex>
-#include <unordered_map>
 #include <vtkCommand.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>

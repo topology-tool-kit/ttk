@@ -23,7 +23,7 @@ fi
 
 cd "$1" || exit 3
 $PATCH_BIN Clients/ParaView/CMakeLists.txt \
-  < "${PATCH_DIR}/paraview-5.8.0-CMakeLists.txt.patch"
+  < "${PATCH_DIR}/paraview-5.10.1-CMakeLists.txt.patch"
 $PATCH_BIN Qt/Components/Resources/UI/pqAboutDialog.ui \
   < "${PATCH_DIR}/pqAboutDialog.ui.patch"
 $PATCH_BIN VTK/IO/Export/vtkVRMLExporter.cxx \

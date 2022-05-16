@@ -536,10 +536,10 @@ void ttk::PersistenceDiagram::checkProgressivityRequirement(
 
   if((BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
       || BackEnd == BACKEND::APPROXIMATE_TOPOLOGY)
-     && !std::is_base_of<ttk::ImplicitTriangulation,
-                         triangulationType>::value) {
+     && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
 
-    printWrn("Explicit triangulation detected.");
+    printWrn("Explicit, Compact or Periodic triangulation detected.");
     printWrn("Defaulting to the FTM backend.");
 
     BackEnd = BACKEND::FTM;

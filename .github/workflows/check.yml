@@ -11,14 +11,14 @@ on:
       - 'ci*'
       - 'check*'
   pull_request:
-    # also triggered by pull requests on the "dev" branch
+    # also triggered by pull requests on the "dev" & "mpi" branches
     branches:
       - 'dev'
       - 'mpi'
 
 
 env:
-  PV_TAG: v5.10.0-headless
+  PV_TAG: v5.10.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -137,6 +137,7 @@ jobs:
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_OPENMP=FALSE \
+          -DTTK_ENABLE_MPI=TRUE \
           -DTTK_BUILD_DOCUMENTATION=TRUE \
           $GITHUB_WORKSPACE
 
@@ -146,7 +147,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
 
     - name: Use Clang static analyzer
       if: matrix.config.sa
@@ -154,7 +155,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P2 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
       if: matrix.config.dox
@@ -174,6 +175,7 @@ jobs:
         omp: [OPENMP=TRUE, OPENMP=FALSE]
         simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
         opt: [Debug, Release]
+        mpi: [MPI=TRUE, MPI=FALSE]
     steps:
     - uses: actions/checkout@v2
 
@@ -218,6 +220,7 @@ jobs:
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_${{ matrix.kamikaze }} \
           -DTTK_ENABLE_${{ matrix.omp }} \
+          -DTTK_ENABLE_${{ matrix.mpi }} \
           -DTTK_ENABLE_${{ matrix.simplexId }} \
           $GITHUB_WORKSPACE
 
@@ -226,4 +229,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs clang-check-11 -p build --extra-arg=-Werror
+        | xargs -n1 -P$(nproc) clang-check-11 -p build --extra-arg=-Werror
