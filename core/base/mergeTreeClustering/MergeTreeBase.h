@@ -875,10 +875,7 @@ namespace ttk {
           if(not isFM) {
             int index
               = getIndexNotMultiPers(children.size() - 1, tree, children);
-            if(index >= 0)
-              nodeParent.emplace_back(nodeOrigin, children[index]);
-            else
-              nodeParent.emplace_back(nodeOrigin, children[index]);
+            nodeParent.emplace_back(nodeOrigin, children[index]);
           } else
             nodeParent.emplace_back(children[0], node);
         } else {

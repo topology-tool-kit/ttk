@@ -305,7 +305,7 @@ namespace ttk {
 
         // values added
         for(std::pair<SimplexId, bool> *vertices : vertLists) {
-          const SimplexId &size = vertSizes.front();
+          const SimplexId size = vertSizes.front();
           vertSizes.pop_front();
           for(SimplexId i = 0; i < size; ++i) {
             tmpVert[pos++] = vertices[i];

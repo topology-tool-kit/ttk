@@ -398,11 +398,15 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
 
       if(block->IsA("vtkUnstructuredGrid")) {
         auto blockAsUG = vtkUnstructuredGrid::SafeDownCast(block);
-        cells = blockAsUG->GetCells();
+        if(blockAsUG != nullptr) {
+          cells = blockAsUG->GetCells();
+        }
       } else if(block->IsA("vtkPolyData")) {
         auto blockAsPD = vtkPolyData::SafeDownCast(block);
-        cells = blockAsPD->GetPolys() ? blockAsPD->GetPolys()
-                                      : blockAsPD->GetLines();
+        if(blockAsPD != nullptr) {
+          cells = blockAsPD->GetPolys() ? blockAsPD->GetPolys()
+                                        : blockAsPD->GetLines();
+        }
       }
 
       if(cells) {
@@ -465,6 +469,9 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
 
           if(array->IsA("vtkDataArray")) {
             auto dataArray = vtkDataArray::SafeDownCast(array);
+            if(dataArray == nullptr) {
+              continue;
+            }
             this->queueMessage(
               "{"
               "\"target\":\""
