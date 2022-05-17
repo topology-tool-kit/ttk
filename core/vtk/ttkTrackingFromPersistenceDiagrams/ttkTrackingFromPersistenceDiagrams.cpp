@@ -57,20 +57,20 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
   using ttk::CriticalType;
   int currentVertex = 0;
-  for(unsigned int k = 0; k < trackings.size(); ++k) {
-    ttk::trackingTuple tt = trackings.at((unsigned long)k);
+  for(size_t k = 0; k < trackings.size(); ++k) {
+    const ttk::trackingTuple &tt = trackings[k];
 
     int numStart = std::get<0>(tt);
     //     int numEnd = std::get<1>(tt);
-    std::vector<ttk::SimplexId> chain = std::get<2>(tt);
+    const std::vector<ttk::SimplexId> &chain = std::get<2>(tt);
     int chainLength = chain.size();
 
-    if(chain.size() <= 1) {
+    if(chainLength <= 1) {
       // printErr("Got an unexpected 0-size chain.");
       return 0;
     }
 
-    for(int c = 0; c < (int)chain.size() - 1; ++c) {
+    for(int c = 0; c < chainLength - 1; ++c) {
       const auto &matchings1 = outputMatchings[numStart + c];
       int d1id = numStart + c;
       int d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
@@ -142,7 +142,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         const auto &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());
-          ttk::trackingTuple ttt = trackings.at((unsigned long)min);
+          const ttk::trackingTuple &ttt = trackings[min];
           // int numStart2 = std::get<0>(ttt);
           int numEnd2 = std::get<1>(ttt);
           if((numEnd2 > 0 && numStart + c > numEnd2 + 1) && min < (int)k) {
@@ -157,10 +157,10 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
             // Replace former first end of the segment with previous ending
             // segment.
-            std::vector<ttk::SimplexId> chain3 = std::get<2>(ttt);
-            const auto nn = chain3[chain3.size() - 1];
+            const std::vector<ttk::SimplexId> &chain3 = std::get<2>(ttt);
+            const auto nn = chain3.back();
             const auto &diagramRematch = inputPersistenceDiagrams[numEnd2];
-            const auto &pairN = diagramRematch.at((unsigned long)nn);
+            const auto &pairN = diagramRematch[nn];
 
             point1Type1 = pairN.birth.type;
             point1Type2 = pairN.death.type;
