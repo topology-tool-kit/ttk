@@ -52,10 +52,10 @@ namespace ttk {
                         std::vector<std::vector<MatchingType>> &allMatchings,
                         std::vector<trackingTuple> &trackings);
 
-    int performPostProcess(std::vector<ttk::DiagramType> &allDiagrams,
-                           std::vector<trackingTuple> &trackings,
+    int performPostProcess(const std::vector<ttk::DiagramType> &allDiagrams,
+                           const std::vector<trackingTuple> &trackings,
                            std::vector<std::set<int>> &trackingTupleToMerged,
-                           double postProcThresh);
+                           const double postProcThresh);
 
     /// Pass a pointer to an input array representing a scalarfield.
     /// The array is expected to be correctly allocated. idx in

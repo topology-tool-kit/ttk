@@ -174,25 +174,26 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
 }
 
 int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
-  std::vector<ttk::DiagramType> &allDiagrams,
-  std::vector<trackingTuple> &trackings,
+  const std::vector<ttk::DiagramType> &allDiagrams,
+  const std::vector<trackingTuple> &trackings,
   std::vector<std::set<int>> &trackingTupleToMerged,
-  double postProcThresh) {
-  auto numPersistenceDiagramsInput = (int)allDiagrams.size();
+  const double postProcThresh) {
+
+  const int numPersistenceDiagramsInput = allDiagrams.size();
 
   // Merge close connected components with threshold.
-  for(unsigned int k = 0; k < trackings.size(); ++k) {
-    trackingTuple tk = trackings[k];
+  for(size_t k = 0; k < trackings.size(); ++k) {
+    const auto &tk = trackings[k];
     int startK = std::get<0>(tk);
     int endK = std::get<1>(tk);
     if(endK < 0)
       endK = numPersistenceDiagramsInput - 1;
-    std::vector<SimplexId> chainK = std::get<2>(tk);
-    ttk::DiagramType &diagramStartK = allDiagrams[startK];
-    ttk::DiagramType &diagramEndK = allDiagrams[endK];
+    const std::vector<SimplexId> &chainK = std::get<2>(tk);
+    const ttk::DiagramType &diagramStartK = allDiagrams[startK];
+    const ttk::DiagramType &diagramEndK = allDiagrams[endK];
 
-    const auto n1 = chainK.at(0);
-    const auto n2 = chainK.at(chainK.size() - 1);
+    const auto n1 = chainK.front();
+    const auto n2 = chainK.back();
     const auto &tuple1 = diagramStartK[n1];
     const auto &tuple2 = diagramEndK[n2];
 
@@ -235,11 +236,11 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
       continue;
 
     // Check every other tracking trajectory.
-    for(unsigned int m = k + 1; m < trackings.size(); ++m) {
-      trackingTuple &tm = trackings[m];
+    for(size_t m = k + 1; m < trackings.size(); ++m) {
+      const auto &tm = trackings[m];
       int startM = std::get<0>(tm);
       int endM = std::get<1>(tm);
-      std::vector<SimplexId> &chainM = std::get<2>(tm);
+      const std::vector<SimplexId> &chainM = std::get<2>(tm);
       if((endK > 0 && startM > endK) || (endM > 0 && startK > endM))
         continue;
 
@@ -253,7 +254,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
         /// Check proximity.
         const auto n3 = chainM[c];
-        ttk::DiagramType &diagramM = allDiagrams[startM + c];
+        const ttk::DiagramType &diagramM = allDiagrams[startM + c];
         const auto &tuple3 = diagramM[n3];
         double x3, y3, z3;
         const auto point3Type1 = tuple3.birth.type;
@@ -282,8 +283,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         bool hasMatched = false;
         if(doMatch1 && ((t3Max && t1Max) || (t3Min && t1Min))) {
           double dist13
-            = sqrt(Geometry::pow(x1 - x3, 2) + Geometry::pow(y1 - y3, 2)
-                   + Geometry::pow(z1 - z3, 2));
+            = std::sqrt(Geometry::pow(x1 - x3, 2) + Geometry::pow(y1 - y3, 2)
+                        + Geometry::pow(z1 - z3, 2));
           dist = dist13;
           if(dist13 >= postProcThresh)
             continue;
@@ -292,8 +293,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
         if(doMatch2 && ((t3Max && t2Max) || (t3Min && t2Min))) {
           double dist23
-            = sqrt(Geometry::pow(x2 - x3, 2) + Geometry::pow(y2 - y3, 2)
-                   + Geometry::pow(z2 - z3, 2));
+            = std::sqrt(Geometry::pow(x2 - x3, 2) + Geometry::pow(y2 - y3, 2)
+                        + Geometry::pow(z2 - z3, 2));
           dist = dist23;
           if(dist23 >= postProcThresh)
             continue;
