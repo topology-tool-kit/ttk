@@ -26,6 +26,12 @@ To create packages, delete any GitHub Release named "package", then:
 git tag -f package && git push -f github_remote package
 ```
 
+To create docker packages:
+
+```sh
+git tag -f docker && git push -f [remote] docker
+```
+
 Workflows
 ---------
 
