@@ -4,7 +4,7 @@ index f51fe395b..3044bfe08 100644
 +++ b/Clients/ParaView/CMakeLists.txt
 @@ -16,9 +16,9 @@ if (PARAVIEW_ENABLE_EMBEDDED_DOCUMENTATION)
  endif ()
- 
+
  if (DEFINED PARAVIEW_VERSION_NICKNAME)
 -  set(paraview_version "${PARAVIEW_VERSION_NICKNAME}")
 +  set(paraview_version "[TTK 1.1] ${PARAVIEW_VERSION_NICKNAME}")

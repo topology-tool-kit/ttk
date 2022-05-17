@@ -31,7 +31,7 @@ Online examples:
                     Data-set to process.
                   </Documentation>
                 </InputProperty>
-                
+
                 <InputProperty
                     name="Optional Input"
                     port_index="1"
@@ -47,7 +47,7 @@ Online examples:
                     <Property name="Input" function="FieldDataSelection" />
                   </InputArrayDomain>
                   <Documentation>
-                    
+
                   </Documentation>
                 </InputProperty>
 
@@ -60,13 +60,13 @@ Online examples:
                 default_values="0"
                 panel_visibility="advanced">
                   <Documentation>
-                    
+
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
-                
+
                 ${MERGE_TREE_INPUT_WIDGETS}
-                
+
                 <IntVectorProperty
                 name="DistanceSquared"
                 command="SetDistanceSquared"

@@ -174,7 +174,7 @@ Online examples:
                     Number of barycenters/clusters to compute (performs a KMeans with merge trees as centroids).
                   </Documentation>
                 </IntVectorProperty>
-                
+
                 <DoubleVectorProperty
                 name="BarycenterSizeLimitPercent"
                 command="SetBarycenterSizeLimitPercent"
@@ -215,7 +215,7 @@ Online examples:
                   </PropertyWidgetDecorator>
                   </Hints>
                   <Documentation>
-                    
+
                   </Documentation>
                   <DoubleRangeDomain name="range" min="0" max="100" />
                 </DoubleVectorProperty>

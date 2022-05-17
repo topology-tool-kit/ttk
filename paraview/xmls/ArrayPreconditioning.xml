@@ -82,12 +82,17 @@
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="BurstSize" label="BurstSize" number_of_elements="1" default_values="100" command="SetBurstSize" >
+                <Documentation>Controls how many elements are sent from the ranks at once.</Documentation>
+      </IntVectorProperty>
+
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input Options">
         <Property name="SelectFieldsWithRegexp" />
         <Property name="PointDataArrays" />
         <Property name="Regexp" />
+        <Property name="BurstSize" />
       </PropertyGroup>
 
       <Hints>
