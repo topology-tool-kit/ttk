@@ -43,7 +43,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   const std::vector<ttk::DiagramType> &inputPersistenceDiagrams,
   const bool useGeometricSpacing,
   const double spacing,
-  const bool ttkNotUsed(doPostProc),
+  const bool doPostProc,
   const std::vector<std::set<int>> &trackingTupleToMerged,
   vtkPoints *points,
   vtkUnstructuredGrid *persistenceDiagram,
@@ -53,7 +53,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   vtkIntArray *lengthScalars,
   vtkIntArray *timeScalars,
   vtkIntArray *componentIds,
-  vtkIntArray *pointTypeScalars) {
+  vtkIntArray *pointTypeScalars,
+  const ttk::Debug &dbg) {
 
   using ttk::CriticalType;
   int currentVertex = 0;
@@ -66,7 +67,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     int chainLength = chain.size();
 
     if(chainLength <= 1) {
-      // printErr("Got an unexpected 0-size chain.");
+      dbg.printErr("Got an unexpected 0-size chain.");
       return 0;
     }
 
@@ -137,8 +138,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       // Postproc component ids.
       int cid = k;
       bool hasMergedFirst = false;
-      // if(DoPostProc) {
-      if(false) {
+      if(doPostProc) {
         const auto &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());
@@ -146,8 +146,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
           // int numStart2 = std::get<0>(ttt);
           int numEnd2 = std::get<1>(ttt);
           if((numEnd2 > 0 && numStart + c > numEnd2 + 1) && min < (int)k) {
-            // std::cout << "[ttkTrackingFromPersistenceDiagrams] Switched " <<
-            // k << " for " << min << std::endl;
+            dbg.printMsg("Switched " + std::to_string(k) + " for "
+                         + std::to_string(min));
             cid = min;
             hasMergedFirst = numStart + c <= numEnd2 + 3;
           }
@@ -411,7 +411,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
             useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged,
             points, persistenceDiagram, persistenceScalars, valueScalars,
             matchingIdScalars, lengthScalars, timeScalars, componentIds,
-            pointTypeScalars);
+            pointTypeScalars, *this);
 
   outputMesh->ShallowCopy(persistenceDiagram);
 

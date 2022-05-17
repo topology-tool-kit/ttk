@@ -74,7 +74,8 @@ public:
     vtkIntArray *lengthScalars,
     vtkIntArray *timeScalars,
     vtkIntArray *componentIds,
-    vtkIntArray *pointTypeScalars);
+    vtkIntArray *pointTypeScalars,
+    const ttk::Debug &dbg);
 
 protected:
   ttkTrackingFromPersistenceDiagrams();
