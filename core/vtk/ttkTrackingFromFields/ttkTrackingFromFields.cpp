@@ -56,6 +56,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   ttk::TrackingFromPersistenceDiagrams tfp{};
   tfp.setThreadNumber(this->threadNumber_);
+  tfp.setDebugLevel(this->debugLevel_);
   tfp.performMatchings(
     (int)fieldNumber, persistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
