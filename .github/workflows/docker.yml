@@ -10,7 +10,7 @@ on:
       - 'dev*'
       - '*-*-*'
       - '*.*.*'
-      - 'pack*'
+      - 'docker*'
 
 jobs:
   docker:
