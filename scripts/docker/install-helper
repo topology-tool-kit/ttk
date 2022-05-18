@@ -1,0 +1,85 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# --------------------------------------------------------------------------
+
+function require-pkgs() {
+    # compute which packages must be newly installed
+    # if we simply install existing packages, they might be
+    # erroneously removed later
+    dpkg-query -f '${db:Status-Abbrev} ${Package}\n' -W \
+        | awk '/^ii/ {print $2}' \
+        > /tmp/pkgs1
+
+    for pkg in "$@"; 
+        do echo ${pkg} >> /tmp/pkgs2; 
+    done
+
+    pkgs=$(sort /tmp/pkgs2 | uniq | sort - /tmp/pkgs1 /tmp/pkgs1 | uniq -u | tr '\n' ' '    )
+
+    echo "installing additional build packages: ${pkgs}"
+    apt-get -qq -o=Dpkg::Use-Pty=0 --no-install-recommends install ${pkgs}
+}
+
+# --------------------------------------------------------------------------
+
+function fetch-src() {
+    curl -qL "$1" | tar xz --strip-components 1
+}
+
+# --------------------------------------------------------------------------
+
+configure_args=""
+
+function conf_args() {
+    configure_args+=" $@"
+}
+
+# --------------------------------------------------------------------------
+
+function cmake-default() {
+    cmake -B build -S . $@ ${configure_args} 
+    cmake --build build
+    cmake --install build
+}
+
+# --------------------------------------------------------------------------
+
+# build basename
+what=$(basename $1 .sh)
+echo "---- begin $what ----"
+
+# call build script
+_build_dir="/build/${what}"
+
+mkdir -p ${_build_dir}
+pushd ${_build_dir} > /dev/null
+source $1
+popd > /dev/null
+
+# remove build dir and build script
+echo "cleaning up build dir"
+rm -rf ${_build_dir} $1
+
+echo "collecting shared library dependencies for /usr/local"
+
+update-dlocatedb
+
+(
+set +o pipefail
+
+find /usr/local -type f \( -name "*.so" -o -executable \) \
+    | file -F" " -f-    \
+    | awk '/ELF/ { print $1 }' \
+    | xargs ldd \
+    | grep -v "not found" \
+    | awk '/^\t(.*)=>(.*)/ { print $3 }' \
+    | grep -v "^\/usr\/local" \
+    | sort | uniq \
+    | xargs dlocate -p \
+    | sort | uniq \
+    > /usr/local/.pkgs
+)
+
+echo "---- end $what ----"

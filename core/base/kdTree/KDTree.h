@@ -11,10 +11,10 @@
 // base code includes
 #include <Debug.h>
 #include <Geometry.h> // for pow
+
 #include <algorithm>
-#include <cmath>
-#include <iostream>
 #include <limits>
+#include <memory>
 
 namespace ttk {
   template <typename dataType>
