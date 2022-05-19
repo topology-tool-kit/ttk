@@ -6,8 +6,8 @@ COMMON_EXPORTS int ttk::globalThreadNumber_ = omp_get_max_threads();
 COMMON_EXPORTS int ttk::globalThreadNumber_ = 1;
 #endif
 
-COMMON_EXPORTS int ttk::MPIrank_ = 0;
-COMMON_EXPORTS int ttk::MPIsize_ = 1;
+COMMON_EXPORTS int ttk::MPIrank_ = -1;
+COMMON_EXPORTS int ttk::MPIsize_ = -1;
 
 using namespace ttk;
 
@@ -15,7 +15,7 @@ BaseClass::BaseClass() : lastObject_{false}, wrapper_{nullptr} {
   threadNumber_ = ttk::globalThreadNumber_;
 
 #ifdef TTK_ENABLE_MPI
-  if(isRunningWithMPI()) {
+  if(ttk::MPIrank_ == -1 && isRunningWithMPI()) {
     MPI_Comm_rank(MPI_COMM_WORLD, &ttk::MPIrank_);
     MPI_Comm_size(MPI_COMM_WORLD, &ttk::MPIsize_);
   }

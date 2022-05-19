@@ -222,22 +222,44 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 
   std::vector<char> vertexTypes(vertexNumber_);
 
+#if TTK_ENABLE_MPI
+  bool withMPI = isRunningWithMPI() != 0;
+#endif
+#ifdef TTK_ENABLE_OPENMP
+  int chunkSize = std::max(1000, vertexNumber_ / (threadNumber_ * 100));
+#endif
+
   if(triangulation) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
-
-      vertexTypes[i] = getCriticalType(i, offsets, triangulation);
+#if TTK_ENABLE_MPI
+      if(!withMPI
+         || (withMPI
+             && (!(this->PointGhostArray[i] && ttk::type::DUPLICATEPOINT)))) {
+#endif
+        vertexTypes[i] = getCriticalType(i, offsets, triangulation);
+#if TTK_ENABLE_MPI
+      }
+#endif
     }
   } else if(vertexLinkEdgeLists_) {
     // legacy implementation
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
-
-      vertexTypes[i] = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
+#if TTK_ENABLE_MPI
+      if(!withMPI
+         || (withMPI
+             && (!(this->PointGhostArray[i] && ttk::type::DUPLICATEPOINT)))) {
+#endif
+        vertexTypes[i]
+          = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
+#if TTK_ENABLE_MPI
+      }
+#endif
     }
   }
 
