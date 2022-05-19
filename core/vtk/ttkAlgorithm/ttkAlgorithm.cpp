@@ -396,32 +396,22 @@ void ttkAlgorithm::MPIPreconditioning(vtkInformation *request,
     vtkNew<vtkGenerateGlobalIds> globalIds;
     globalIds->SetInputData(input);
     globalIds->Update();
-    vtkDataArray *ids
-      = vtkDataSet::SafeDownCast(globalIds->GetOutputDataObject(0))
-          ->GetPointData()
-          ->GetArray("GlobalPointIds");
-    input->GetPointData()->AddArray(ids);
+    input->ShallowCopy(globalIds->GetOutputDataObject(0));
     this->setGlobalIdsArray(static_cast<long int *>(ttkUtils::GetVoidPointer(
       input->GetPointData()->GetArray("GlobalPointIds"))));
   }
 
-  vtkNew<vtkGhostCellsGenerator> generator;
-  this->setPointGhostArray(static_cast<unsigned char *>(
-    ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("vtkGhostType"))));
-  if(!this->PointGhostArray) {
+  if(!input->HasAnyGhostPoints()) {
+    vtkNew<vtkGhostCellsGenerator> generator;
     generator->SetInputData(input);
     generator->BuildIfRequiredOff();
-    generator->SetNumberOfGhostLayers(2);
+    generator->SetNumberOfGhostLayers(4);
     generator->Update();
-    vtkDataArray *ghosts
-      = vtkDataSet::SafeDownCast(generator->GetOutputDataObject(0))
-          ->GetPointData()
-          ->GetArray("vtkGhostType");
-    input->GetPointData()->AddArray(ghosts);
-    this->setPointGhostArray(
-      static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
-        input->GetPointData()->GetArray("vtkGhostType"))));
+    input->ShallowCopy(generator->GetOutputDataObject(0));
   }
+  this->setPointGhostArray(static_cast<unsigned char *>(
+    ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("vtkGhostType"))));
+
   this->setRankArray(static_cast<int *>(
     ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("RankArray"))));
   if(!this->RankArray) {
