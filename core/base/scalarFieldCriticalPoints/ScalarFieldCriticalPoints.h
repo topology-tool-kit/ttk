@@ -220,7 +220,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 
   Timer t;
 
-  std::vector<char> vertexTypes(vertexNumber_);
+  std::vector<char> vertexTypes(vertexNumber_, (char)(CriticalType::Regular));
 
 #if TTK_ENABLE_MPI
   bool withMPI = isRunningWithMPI() != 0;
