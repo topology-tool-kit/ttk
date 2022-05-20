@@ -224,7 +224,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   std::vector<char> vertexTypes(vertexNumber_, (char)(CriticalType::Regular));
 
 #ifdef TTK_ENABLE_OPENMP
-  int chunkSize = std::max(1000, vertexNumber_ / (threadNumber_ * 100));
+  int chunkSize = std::max(1000.0, vertexNumber_ / (threadNumber_ * 100));
 #endif
 
   if(triangulation) {
