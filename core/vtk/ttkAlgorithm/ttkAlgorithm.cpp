@@ -384,6 +384,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
   return 1;
 }
 
+#if TTK_ENABLE_MPI
 void ttkAlgorithm::MPIPreconditioning(vtkInformationVector **inputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   this->setGlobalIdsArray(static_cast<long int *>(ttkUtils::GetVoidPointer(
@@ -417,7 +418,7 @@ void ttkAlgorithm::MPIPreconditioning(vtkInformationVector **inputVector) {
              "ttkGhostCellPreconditioning filter to do so.");
   }
 }
-
+#endif
 //==============================================================================
 int ttkAlgorithm::ProcessRequest(vtkInformation *request,
                                  vtkInformationVector **inputVector,
