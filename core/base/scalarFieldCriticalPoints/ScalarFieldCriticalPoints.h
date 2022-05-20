@@ -235,7 +235,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 #if TTK_ENABLE_MPI
       if(!isRunningWithMPI()
          || (isRunningWithMPI()
-             && (!(this->PointGhostArray[i] && ttk::type::DUPLICATEPOINT)))) {
+             && (!(this->PointGhostArray[i] & ttk::type::DUPLICATEPOINT)))) {
 #endif
         vertexTypes[i] = getCriticalType(i, offsets, triangulation);
 #if TTK_ENABLE_MPI
@@ -251,7 +251,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 #if TTK_ENABLE_MPI
       if(!isRunningWithMPI()
          || (isRunningWithMPI()
-             && (!(this->PointGhostArray[i] && ttk::type::DUPLICATEPOINT)))) {
+             && (!(this->PointGhostArray[i] & ttk::type::DUPLICATEPOINT)))) {
 #endif
         vertexTypes[i]
           = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
