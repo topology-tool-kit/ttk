@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <map>
 
 // base code includes
@@ -222,9 +223,6 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 
   std::vector<char> vertexTypes(vertexNumber_, (char)(CriticalType::Regular));
 
-#if TTK_ENABLE_MPI
-  bool withMPI = isRunningWithMPI() != 0;
-#endif
 #ifdef TTK_ENABLE_OPENMP
   int chunkSize = std::max(1000, vertexNumber_ / (threadNumber_ * 100));
 #endif
@@ -235,8 +233,8 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 #if TTK_ENABLE_MPI
-      if(!withMPI
-         || (withMPI
+      if(!isRunningWithMPI()
+         || (isRunningWithMPI()
              && (!(this->PointGhostArray[i] && ttk::type::DUPLICATEPOINT)))) {
 #endif
         vertexTypes[i] = getCriticalType(i, offsets, triangulation);
@@ -251,8 +249,8 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 #if TTK_ENABLE_MPI
-      if(!withMPI
-         || (withMPI
+      if(!isRunningWithMPI()
+         || (isRunningWithMPI()
              && (!(this->PointGhostArray[i] && ttk::type::DUPLICATEPOINT)))) {
 #endif
         vertexTypes[i]

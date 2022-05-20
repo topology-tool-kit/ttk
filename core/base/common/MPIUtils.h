@@ -53,9 +53,7 @@ namespace ttk {
   }
 
   inline bool isRunningWithMPI() {
-    int flag_i;
-    MPI_Initialized(&flag_i);
-    return flag_i != 0;
+    return ttk::MPIsize_ > 1;
   }
 
   /**

@@ -15,7 +15,7 @@ BaseClass::BaseClass() : lastObject_{false}, wrapper_{nullptr} {
   threadNumber_ = ttk::globalThreadNumber_;
 
 #ifdef TTK_ENABLE_MPI
-  if(ttk::MPIrank_ == -1 && isRunningWithMPI()) {
+  if(ttk::MPIrank_ == -1) {
     MPI_Comm_rank(MPI_COMM_WORLD, &ttk::MPIrank_);
     MPI_Comm_size(MPI_COMM_WORLD, &ttk::MPIsize_);
   }

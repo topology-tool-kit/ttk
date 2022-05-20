@@ -215,9 +215,7 @@ protected:
    * computation are computed and if not, computes them.
    */
 
-  void MPIPreconditioning(vtkInformation *request,
-                          vtkInformationVector **inputVectors,
-                          vtkInformationVector *outputVector);
+  void MPIPreconditioning(vtkInformationVector **inputVectors);
 
   /**
    * This method is called during the first pipeline pass in

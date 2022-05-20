@@ -384,9 +384,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
   return 1;
 }
 
-void ttkAlgorithm::MPIPreconditioning(vtkInformation *request,
-                                      vtkInformationVector **inputVector,
-                                      vtkInformationVector *outputVector) {
+void ttkAlgorithm::MPIPreconditioning(vtkInformationVector **inputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   this->setGlobalIdsArray(static_cast<long int *>(ttkUtils::GetVoidPointer(
     input->GetPointData()->GetArray("GlobalPointIds"))));
@@ -405,7 +403,7 @@ void ttkAlgorithm::MPIPreconditioning(vtkInformation *request,
     vtkNew<vtkGhostCellsGenerator> generator;
     generator->SetInputData(input);
     generator->BuildIfRequiredOff();
-    generator->SetNumberOfGhostLayers(4);
+    generator->SetNumberOfGhostLayers(2);
     generator->Update();
     input->ShallowCopy(generator->GetOutputDataObject(0));
   }
@@ -473,8 +471,8 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
     this->printMsg("Processing REQUEST_DATA", ttk::debug::Priority::VERBOSE);
     this->printMsg(ttk::debug::Separator::L0);
 #if TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI() != 0) {
-      this->MPIPreconditioning(request, inputVector, outputVector);
+    if(ttk::isRunningWithMPI()) {
+      this->MPIPreconditioning(inputVector);
     }
 #endif
     return this->RequestData(request, inputVector, outputVector);

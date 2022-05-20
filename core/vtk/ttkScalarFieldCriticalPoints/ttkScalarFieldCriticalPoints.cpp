@@ -13,6 +13,10 @@
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
+#if TTK_ENABLE_MPI_TIME
+#include <vtkMPIController.h>
+#include <vtkMultiProcessController.h>
+#endif
 
 using namespace std;
 using namespace ttk;
@@ -163,7 +167,11 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
     for(size_t i = 0; i < criticalPoints_.size(); i++) {
 #if TTK_ENABLE_MPI
-      vertexIds->SetTuple1(i, this->GlobalIdsArray[criticalPoints_[i].first]);
+      if(isRunningWithMPI()) {
+        vertexIds->SetTuple1(i, this->GlobalIdsArray[criticalPoints_[i].first]);
+      } else {
+        vertexIds->SetTuple1(i, criticalPoints_[i].first);
+      }
 #else
       vertexIds->SetTuple1(i, criticalPoints_[i].first);
 #endif
