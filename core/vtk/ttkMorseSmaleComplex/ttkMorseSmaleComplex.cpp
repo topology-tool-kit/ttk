@@ -140,7 +140,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     }
 #endif
 
-    pointData->AddArray(cellDimensions);
+    pointData->SetScalars(cellDimensions);
     pointData->AddArray(cellIds);
     pointData->AddArray(cellScalars);
     pointData->AddArray(isOnBoundary);
@@ -278,7 +278,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     cellData->AddArray(sourceIds);
     cellData->AddArray(destinationIds);
     cellData->AddArray(separatrixIds);
-    cellData->AddArray(separatrixTypes);
+    cellData->SetScalars(separatrixTypes);
     cellData->AddArray(separatrixFunctionMaxima);
     cellData->AddArray(separatrixFunctionMinima);
     cellData->AddArray(separatrixFunctionDiffs);
@@ -520,8 +520,6 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
        and ComputeFinalSegmentation)
       pointData->AddArray(morseSmaleManifold);
-
-    pointData->AddArray(inputOffsets);
   }
 
   return !ret;
