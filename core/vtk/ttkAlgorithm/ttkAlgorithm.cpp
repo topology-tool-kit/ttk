@@ -10,7 +10,9 @@
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
 #include <vtkGenerateGlobalIds.h>
+#if TTK_ENABLE_MPI
 #include <vtkGhostCellsGenerator.h>
+#endif
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationIntegerKey.h>
