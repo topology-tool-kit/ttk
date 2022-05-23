@@ -62,11 +62,6 @@ namespace ttk {
 
   class BaseClass {
   public:
-#if TTK_ENABLE_MPI
-    long int *GlobalIdsArray;
-    unsigned char *PointGhostArray;
-    int *RankArray;
-#endif
     BaseClass();
 
     virtual ~BaseClass() = default;
@@ -79,20 +74,6 @@ namespace ttk {
       threadNumber_ = threadNumber;
       return 0;
     }
-
-#if TTK_ENABLE_MPI
-    void setGlobalIdsArray(long int *array) {
-      this->GlobalIdsArray = array;
-    }
-
-    void setPointGhostArray(unsigned char *array) {
-      this->PointGhostArray = array;
-    }
-
-    void setRankArray(int *rankArray) {
-      this->RankArray = rankArray;
-    }
-#endif
     /// Specify a pointer to a calling object that wraps the current class
     /// deriving from ttk::BaseClass.
     ///

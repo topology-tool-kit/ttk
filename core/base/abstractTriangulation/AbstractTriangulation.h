@@ -3372,6 +3372,27 @@ namespace ttk {
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};
     bool hasPreconditionedDistributedTriangles_{false};
+
+    long int *globalIdsArray_;
+    int *rankArray_;
+
+  public:
+    void setGlobalIdsArray(long int *array) {
+      this->globalIdsArray_ = array;
+    }
+
+    long int *getGlobalIdsArray() const {
+      return this->globalIdsArray_;
+    }
+
+    void setRankArray(int *rankArray) {
+      this->rankArray_ = rankArray;
+    }
+
+    int *getRankArray() const {
+      return this->rankArray_;
+    }
+
 #endif // TTK_ENABLE_OPENMP
 
     // only ttk::dcg::DiscreteGradient should use what's defined below.

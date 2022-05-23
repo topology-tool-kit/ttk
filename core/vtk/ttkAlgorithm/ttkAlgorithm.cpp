@@ -389,17 +389,20 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 #if TTK_ENABLE_MPI
 void ttkAlgorithm::MPIPreconditioning(vtkInformationVector **inputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  this->setGlobalIdsArray(static_cast<long int *>(ttkUtils::GetVoidPointer(
-    input->GetPointData()->GetArray("GlobalPointIds"))));
-  if(!this->GlobalIdsArray) {
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+  triangulation->setGlobalIdsArray(
+    static_cast<long int *>(ttkUtils::GetVoidPointer(
+      input->GetPointData()->GetArray("GlobalPointIds"))));
+  if(!triangulation->getGlobalIdsArray()) {
     printWrn("Global ids haven't been produced in sequential, the parallel "
              "result may be different");
     vtkNew<vtkGenerateGlobalIds> globalIds;
     globalIds->SetInputData(input);
     globalIds->Update();
     input->ShallowCopy(globalIds->GetOutputDataObject(0));
-    this->setGlobalIdsArray(static_cast<long int *>(ttkUtils::GetVoidPointer(
-      input->GetPointData()->GetArray("GlobalPointIds"))));
+    triangulation->setGlobalIdsArray(
+      static_cast<long int *>(ttkUtils::GetVoidPointer(
+        input->GetPointData()->GetArray("GlobalPointIds"))));
   }
 
   if(!input->HasAnyGhostPoints()) {
@@ -410,12 +413,10 @@ void ttkAlgorithm::MPIPreconditioning(vtkInformationVector **inputVector) {
     generator->Update();
     input->ShallowCopy(generator->GetOutputDataObject(0));
   }
-  this->setPointGhostArray(static_cast<unsigned char *>(
-    ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("vtkGhostType"))));
 
-  this->setRankArray(static_cast<int *>(
+  triangulation->setRankArray(static_cast<int *>(
     ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("RankArray"))));
-  if(!this->RankArray) {
+  if(!triangulation->getRankArray()) {
     printWrn("RankArray has not been defined. Use the "
              "ttkGhostCellPreconditioning filter to do so.");
   }

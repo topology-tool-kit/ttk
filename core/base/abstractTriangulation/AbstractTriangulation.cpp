@@ -6,7 +6,8 @@ using namespace ttk;
 AbstractTriangulation::AbstractTriangulation() {
 
   setDebugMsgPrefix("AbstractTriangulation");
-
+  rankArray_ = nullptr;
+  globalIdsArray_ = nullptr;
   clear();
 }
 
