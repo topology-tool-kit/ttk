@@ -215,7 +215,9 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   if(triangulation) {
     vertexNumber_ = triangulation->getNumberOfVertices();
     dimension_ = triangulation->getCellVertexNumber(0) - 1;
+#if TTK_ENABLE_MPI
     rankArray_ = triangulation->getRankArray();
+#endif
   }
 
   printMsg("Extracting critical points...");
