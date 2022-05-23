@@ -99,6 +99,30 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
     inputScalarField->GetDataType(), triangulation->getType(),
     (this->smooth<VTK_TT, TTK_TT>(
       (TTK_TT *)triangulation->getData(), NumberOfIterations)));
+#ifdef TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    size_t nVertices = input->GetNumberOfPoints();
+    auto pointData = input->GetPointData();
+    auto vtkGlobalPointIds = pointData->GetGlobalIds();
+    auto rankArray = pointData->GetArray("RankArray");
+    if (vtkGlobalPointIds == nullptr || rankArray == nullptr) {
+      return 0;
+    }
+    std::unordered_map<ttk::SimplexId, ttk::SimplexId> gidToLidMap;
+
+    for (size_t i = 0; i < nVertices; i++){
+      gidToLidMap[i] = vtkGlobalPointIds->GetComponent(i,0);
+    }
+    ttkTypeMacroA(
+      inputScalarField->GetDataType(),
+      (ttk::exchangeGhostCells<T0, ttk::SimplexId>(
+          ttkUtils::GetPointer<T0>(inputScalarField),
+          ttkUtils::GetPointer<int>(rankArray),
+          ttkUtils::GetPointer<ttk::SimplexId>(vtkGlobalPointIds),
+          gidToLidMap, nVertices, MPI_COMM_WORLD)));
+
+  }
+#endif
 
   return 1;
 }
