@@ -45,13 +45,6 @@ namespace ttk {
     return MPI_UNSIGNED_LONG_LONG;
   };
 
-  // Type definition of Ghost Points
-  namespace type {
-    enum PointGhostTypes {
-      DUPLICATEPOINT = 1,
-    };
-  }
-
   inline bool isRunningWithMPI() {
     return ttk::MPIsize_ > 1;
   }

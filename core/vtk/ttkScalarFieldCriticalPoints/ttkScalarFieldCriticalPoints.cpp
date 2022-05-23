@@ -13,10 +13,6 @@
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
-#if TTK_ENABLE_MPI_TIME
-#include <vtkMPIController.h>
-#include <vtkMultiProcessController.h>
-#endif
 
 using namespace std;
 using namespace ttk;
@@ -82,15 +78,9 @@ int ttkScalarFieldCriticalPoints::RequestData(
   this->preconditionTriangulation(triangulation);
   this->setOutput(&criticalPoints_);
 
-#if TTK_ENABLE_MPI_TIME
-  Timer t_mpi;
-  // Get processes information
-  vtkMPIController *controller = vtkMPIController::SafeDownCast(
-    vtkMultiProcessController::GetGlobalController());
-  controller->Barrier();
-  if(ttk::MPIrank_ == 0) {
-    t_mpi.reStart();
-  }
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::Timer t_mpi;
+  ttkUtils::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
 
   printMsg("Starting computation...");
@@ -107,13 +97,12 @@ int ttkScalarFieldCriticalPoints::RequestData(
   if(status < 0)
     return 0;
 
-#if TTK_ENABLE_MPI_TIME
-  controller->Barrier();
-
+#ifdef TTK_ENABLE_MPI_TIME
+  double elapsedTime
+    = ttkUtils::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
     printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :"
-             + std::to_string(t_mpi.getElapsedTime()));
+             + " MPI processes lasted :" + std::to_string(elapsedTime));
   }
 #endif
 
@@ -164,11 +153,11 @@ int ttkScalarFieldCriticalPoints::RequestData(
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName(ttk::VertexScalarFieldName);
-
+    long int *globalIds = triangulation->getGlobalIdsArray();
     for(size_t i = 0; i < criticalPoints_.size(); i++) {
 #if TTK_ENABLE_MPI
       if(isRunningWithMPI()) {
-        vertexIds->SetTuple1(i, this->GlobalIdsArray[criticalPoints_[i].first]);
+        vertexIds->SetTuple1(i, globalIds[criticalPoints_[i].first]);
       } else {
         vertexIds->SetTuple1(i, criticalPoints_[i].first);
       }

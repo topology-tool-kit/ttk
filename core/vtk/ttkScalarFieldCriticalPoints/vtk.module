@@ -2,4 +2,3 @@ NAME
   ttkScalarFieldCriticalPoints
 DEPENDS
   ttkAlgorithm
-  VTK::ParallelCore

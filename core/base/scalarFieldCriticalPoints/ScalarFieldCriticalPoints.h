@@ -27,7 +27,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <map>
 
 // base code includes
@@ -139,6 +138,7 @@ namespace ttk {
     const std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
       *vertexLinkEdgeLists_{};
     std::vector<std::pair<SimplexId, char>> *criticalPoints_{};
+    int *rankArray_;
 
     bool forceNonManifoldCheck{false};
 
@@ -215,6 +215,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   if(triangulation) {
     vertexNumber_ = triangulation->getNumberOfVertices();
     dimension_ = triangulation->getCellVertexNumber(0) - 1;
+    rankArray_ = triangulation->getRankArray();
   }
 
   printMsg("Extracting critical points...");
@@ -234,8 +235,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 #if TTK_ENABLE_MPI
       if(!isRunningWithMPI()
-         || (isRunningWithMPI()
-             && (!(this->PointGhostArray[i] & ttk::type::DUPLICATEPOINT)))) {
+         || (isRunningWithMPI() && (this->rankArray_[i] == ttk::MPIrank_))) {
 #endif
         vertexTypes[i] = getCriticalType(i, offsets, triangulation);
 #if TTK_ENABLE_MPI
@@ -250,8 +250,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 #if TTK_ENABLE_MPI
       if(!isRunningWithMPI()
-         || (isRunningWithMPI()
-             && (!(this->PointGhostArray[i] & ttk::type::DUPLICATEPOINT)))) {
+         || (isRunningWithMPI() && (this->rankArray_[i] == ttk::MPIrank_))) {
 #endif
         vertexTypes[i]
           = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
