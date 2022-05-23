@@ -64,6 +64,15 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
     }
   }
 
+#ifdef TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    // if we are built with MPI and are running with MPI, we need to calculate
+    // the min and max over all ranks. we do this by using MPI_Allreduce
+    MPI_Allreduce(MPI_IN_PLACE, &min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  }
+#endif
+
   for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
     double value = input->GetTuple1(i);
 
