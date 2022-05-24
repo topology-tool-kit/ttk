@@ -362,26 +362,3 @@ int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
 
   return 1;
 }
-
-#ifdef TTK_ENABLE_MPI_TIME
-void ttkUtils::startMPITimer(ttk::Timer &t, int rank, int size) {
-  if(size > 0) {
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(rank == 0) {
-      t.reStart();
-    }
-  }
-}
-
-double ttkUtils::endMPITimer(ttk::Timer &t, int rank, int size) {
-  double elapsedTime = 0;
-  if(size > 0) {
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(rank == 0) {
-      elapsedTime = t.getElapsedTime();
-    }
-  }
-
-  return elapsedTime;
-}
-#endif

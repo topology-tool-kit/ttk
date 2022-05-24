@@ -10,7 +10,6 @@
 // VTK Module
 #include <ttkAlgorithmModule.h>
 
-#include <Timer.h>
 #include <string>
 #include <vector>
 #include <vtkType.h>
@@ -96,8 +95,4 @@ public:
    */
   static int CellVertexFromPoints(vtkDataSet *const dataSet,
                                   vtkPoints *const points);
-#ifdef TTK_ENABLE_MPI_TIME
-  static void startMPITimer(ttk::Timer &t, int rank, int size);
-  static double endMPITimer(ttk::Timer &t, int rank, int size);
-#endif
 };

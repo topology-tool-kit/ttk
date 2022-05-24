@@ -8,11 +8,12 @@
 #pragma once
 
 #include <BaseClass.h>
+#include <Timer.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#if TTK_ENABLE_MPI
+//#if TTK_ENABLE_MPI
 #include <mpi.h>
 
 namespace ttk {
@@ -47,7 +48,29 @@ namespace ttk {
 
   inline bool isRunningWithMPI() {
     return ttk::MPIsize_ > 1;
-  }
+  };
+
+  inline int startMPITimer(Timer &t, int rank, int size) {
+    if(size > 0) {
+      MPI_Barrier(MPI_COMM_WORLD);
+      if(rank == 0) {
+        t.reStart();
+      }
+    }
+    return 0;
+  };
+
+  inline double endMPITimer(Timer &t, int rank, int size) {
+    double elapsedTime = 0;
+    if(size > 0) {
+      MPI_Barrier(MPI_COMM_WORLD);
+      if(rank == 0) {
+        elapsedTime = t.getElapsedTime();
+      }
+    }
+
+    return elapsedTime;
+  };
 
   /**
    * @brief Gather vectors on a specific rank
@@ -275,4 +298,4 @@ namespace ttk {
 
 } // namespace ttk
 
-#endif
+//#endif
