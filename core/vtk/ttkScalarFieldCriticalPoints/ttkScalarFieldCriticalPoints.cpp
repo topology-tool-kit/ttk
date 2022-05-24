@@ -80,7 +80,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
 #ifdef TTK_ENABLE_MPI_TIME
   ttk::Timer t_mpi;
-  ttkUtils::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
 
   printMsg("Starting computation...");
@@ -98,8 +98,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
     return 0;
 
 #ifdef TTK_ENABLE_MPI_TIME
-  double elapsedTime
-    = ttkUtils::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
     printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
              + " MPI processes lasted :" + std::to_string(elapsedTime));

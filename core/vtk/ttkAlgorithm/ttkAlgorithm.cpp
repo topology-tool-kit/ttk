@@ -9,8 +9,8 @@
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
-#include <vtkGenerateGlobalIds.h>
 #if TTK_ENABLE_MPI
+#include <vtkGenerateGlobalIds.h>
 #include <vtkGhostCellsGenerator.h>
 #endif
 #include <vtkImageData.h>
@@ -387,8 +387,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 }
 
 #if TTK_ENABLE_MPI
-void ttkAlgorithm::MPIPreconditioning(vtkInformationVector **inputVector) {
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+void ttkAlgorithm::MPIPreconditioning(vtkDataSet *input) {
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   triangulation->setGlobalIdsArray(
     static_cast<long int *>(ttkUtils::GetVoidPointer(
@@ -476,7 +475,7 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
     this->printMsg(ttk::debug::Separator::L0);
 #if TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
-      this->MPIPreconditioning(inputVector);
+      this->MPIPreconditioning(vtkDataSet::GetData(inputVector[0]));
     }
 #endif
     return this->RequestData(request, inputVector, outputVector);

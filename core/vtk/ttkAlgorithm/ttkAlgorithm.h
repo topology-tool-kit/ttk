@@ -214,9 +214,7 @@ protected:
    * RequestData. It verifies that several attributes necessary for MPI
    * computation are computed and if not, computes them.
    */
-
-  void MPIPreconditioning(vtkInformationVector **inputVectors);
-
+  void MPIPreconditioning(vtkDataSet *input);
   /**
    * This method is called during the first pipeline pass in
    * ProcessRequest() to create empty output data objects. The data type of
