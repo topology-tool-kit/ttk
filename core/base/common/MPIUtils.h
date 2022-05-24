@@ -13,7 +13,7 @@
 #include <unordered_set>
 #include <vector>
 
-//#if TTK_ENABLE_MPI
+#if TTK_ENABLE_MPI
 #include <mpi.h>
 
 namespace ttk {
@@ -298,4 +298,4 @@ namespace ttk {
 
 } // namespace ttk
 
-//#endif
+#endif
