@@ -2598,6 +2598,31 @@ namespace ttk {
                              const unsigned char *const ghostCellMask) {
       this->abstractTriangulation_->setGlobalIds(cellGid, ghostCellMask);
     }
+
+    inline void setRankArray(int *rankArray) {
+      if(this->abstractTriangulation_)
+        this->abstractTriangulation_->setRankArray(rankArray);
+    }
+
+    inline int *getRankArray() {
+      if(this->abstractTriangulation_)
+        return this->abstractTriangulation_->getRankArray();
+
+      return nullptr;
+    }
+
+    inline void setGlobalIdsArray(long int *globalIds) {
+      if(this->abstractTriangulation_)
+        this->abstractTriangulation_->setGlobalIdsArray(globalIds);
+    }
+
+    inline long int *getGlobalIdsArray() {
+      if(this->abstractTriangulation_)
+        return this->abstractTriangulation_->getGlobalIdsArray();
+
+      return nullptr;
+    }
+
 #endif // TTK_ENABLE_MPI
 
   protected:
