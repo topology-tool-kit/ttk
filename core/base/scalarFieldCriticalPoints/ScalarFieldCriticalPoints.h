@@ -138,7 +138,7 @@ namespace ttk {
     const std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
       *vertexLinkEdgeLists_{};
     std::vector<std::pair<SimplexId, char>> *criticalPoints_{};
-    int *rankArray_;
+    int *rankArray_{nullptr};
 
     bool forceNonManifoldCheck{false};
 
