@@ -2600,19 +2600,23 @@ namespace ttk {
     }
 
     inline void setRankArray(int *rankArray) {
-      this->abstractTriangulation_->setRankArray(rankArray);
+      if(this->abstractTriangulation_)
+        this->abstractTriangulation_->setRankArray(rankArray);
     }
 
     inline int *getRankArray() {
-      return this->abstractTriangulation_->getRankArray();
+      if(this->abstractTriangulation_)
+        return this->abstractTriangulation_->getRankArray();
     }
 
     inline void setGlobalIdsArray(long int *globalIds) {
-      this->abstractTriangulation_->setGlobalIdsArray(globalIds);
+      if(this->abstractTriangulation_)
+        this->abstractTriangulation_->setGlobalIdsArray(globalIds);
     }
 
     inline long int *getGlobalIdsArray() {
-      return this->abstractTriangulation_->getGlobalIdsArray();
+      if(this->abstractTriangulation_)
+        return this->abstractTriangulation_->getGlobalIdsArray();
     }
 
 #endif // TTK_ENABLE_MPI
