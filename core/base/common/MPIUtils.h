@@ -11,8 +11,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
+#include <iostream>
 #if TTK_ENABLE_MPI
+#define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
 
 namespace ttk {
@@ -157,7 +158,7 @@ namespace ttk {
           rankVectors[rankArray[i]].push_back(globalIds[i]);
         }
       }
-
+      std::cout << "R" << std::to_string(ttk::MPIrank_) << " aggregated ids" << std::endl;
       // send the amount of ids and the needed ids themselves
       for(int r = 0; r < ttk::MPIsize_; r++) {
         if(ttk::MPIrank_ != r && neighbors.find(r) != neighbors.end()) {
@@ -169,6 +170,7 @@ namespace ttk {
           }
         }
       }
+      std::cout << "R" << std::to_string(ttk::MPIrank_) << " sent rankvectors" << std::endl;
 
       // receive the scalar values
       for(int r = 0; r < ttk::MPIsize_; r++) {
@@ -187,6 +189,7 @@ namespace ttk {
           }
         }
       }
+      std::cout << "R" << std::to_string(ttk::MPIrank_) << " received scalars" << std::endl;
 
     } else { // owner ranks
       // if rankToSend is not the neighbor of the current rank, we do not need
@@ -201,6 +204,8 @@ namespace ttk {
           MPI_Recv(receivedIds.data(), nValues, MPI_IT, rankToSend, idsTag,
                    communicator, MPI_STATUS_IGNORE);
 
+          std::cout << "R" << std::to_string(ttk::MPIrank_) << " received ids" << std::endl;
+
           // assemble the scalar values
           std::vector<DT> valuesToSend(nValues);
           for(IT i = 0; i < nValues; i++) {
@@ -208,9 +213,13 @@ namespace ttk {
             IT localId = gidToLidMap.at(globalId);
             valuesToSend[i] = scalarArray[localId];
           }
+          std::cout << "R" << std::to_string(ttk::MPIrank_) << " assembled scalars" << std::endl;
+
           // send the scalar values
           MPI_Send(valuesToSend.data(), nValues, MPI_DT, rankToSend, valuesTag,
                    communicator);
+          std::cout << "R" << std::to_string(ttk::MPIrank_) << " sent scalars" << std::endl;
+
         }
       }
     }
