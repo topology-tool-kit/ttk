@@ -2608,7 +2608,7 @@ namespace ttk {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getRankArray();
 
-      return 0;
+      return nullptr;
     }
 
     inline void setGlobalIdsArray(long int *globalIds) {
@@ -2620,7 +2620,7 @@ namespace ttk {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getGlobalIdsArray();
 
-      return 0;
+      return nullptr;
     }
 
 #endif // TTK_ENABLE_MPI
