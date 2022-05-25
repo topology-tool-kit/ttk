@@ -99,23 +99,19 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
     auto pointData = input->GetPointData();
     auto vtkGlobalPointIds = pointData->GetGlobalIds();
     auto rankArray = pointData->GetArray("RankArray");
-    if(vtkGlobalPointIds == nullptr || rankArray == nullptr) {
-      return 0;
-    }
 
     ttkTypeMacroAT(inputScalarField->GetDataType(), triangulation->getType(),
-                   (distributedSmooth<T0, T1>(
+                   (smooth<T0, T1>(
                      static_cast<const T1 *>(triangulation->getData()),
-                     ttkUtils::GetPointer<int>(rankArray),
-                     ttkUtils::GetPointer<ttk::SimplexId>(vtkGlobalPointIds),
-                     NumberOfIterations)));
+                     NumberOfIterations, ttkUtils::GetPointer<int>(rankArray),
+                     ttkUtils::GetPointer<ttk::SimplexId>(vtkGlobalPointIds))));
   }
 #else
   // calling the smoothing package
-  ttkVtkTemplateMacro(
+  ttkTypeMacroAT(
     inputScalarField->GetDataType(), triangulation->getType(),
-    (this->smooth<VTK_TT, TTK_TT>(
-      (TTK_TT *)triangulation->getData(), NumberOfIterations)));
+    (smooth<T0, T1>(
+      static_cast<const T1 *>(triangulation->getData()), NumberOfIterations)));
 #endif
 
   return 1;
