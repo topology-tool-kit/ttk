@@ -132,6 +132,10 @@ int ttk::ImplicitWithPreconditions::preconditionVerticesInternal() {
       }
     }
   }
+#ifdef TTK_ENABLE_MPI
+  return this->preconditionDistributedVertices();
+#endif // TTK_ENABLE_MPI
+
   return 0;
 }
 

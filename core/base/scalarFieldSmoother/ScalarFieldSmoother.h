@@ -47,6 +47,7 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
+        triangulation->preconditionDistributedVertices();
       }
 
       return 0;
@@ -86,6 +87,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     return -4;
 #endif
   bool useMPI = false;
+  TTK_FORCE_USE(useMPI);
 #if TTK_ENABLE_MPI
   if(ttk::isRunningWithMPI() && rankArray != nullptr && globalIds != nullptr)
     useMPI = true;
@@ -96,15 +98,8 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
 
   dataType *outputData = (dataType *)outputData_;
   dataType *inputData = (dataType *)inputData_;
-#if TTK_ENABLE_MPI
-  std::unordered_map<SimplexId, SimplexId> gidToLidMap;
-#endif
   // init the output
   for(SimplexId i = 0; i < vertexNumber; i++) {
-#if TTK_ENABLE_MPI
-    if(useMPI)
-      gidToLidMap[globalIds[i]] = i;
-#endif
     for(int j = 0; j < dimensionNumber_; j++) {
       outputData[dimensionNumber_ * i + j]
         = inputData[dimensionNumber_ * i + j];
@@ -158,8 +153,10 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     if(useMPI) {
       // after each iteration we need to exchange the ghostcell values with our
       // neighbors
+      std::unordered_map<SimplexId, SimplexId> map;
+      triangulation->getVertexGlobalIdMap(map);
       exchangeGhostCells<dataType, SimplexId>(outputData, rankArray, globalIds,
-                                              gidToLidMap, vertexNumber,
+                                              map, vertexNumber,
                                               MPI_COMM_WORLD);
     }
 #endif

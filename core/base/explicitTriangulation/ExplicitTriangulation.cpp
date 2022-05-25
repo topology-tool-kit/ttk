@@ -864,6 +864,82 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
   return 0;
 }
 
+
+int ExplicitTriangulation::preconditionDistributedVertices() {
+  if(this->hasPreconditionedDistributedVertices_) {
+    return 0;
+  }
+  if(!ttk::isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printWrn("Missing global identifiers on cells");
+    return -2;
+  }
+
+  if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
+    return -3;
+  }
+
+  this->preconditionDistributedCells();
+
+  // allocate memory
+  this->vertexLidToGid_.resize(this->getNumberOfVerticesInternal(), -1);
+  this->vertexGidToLid_.reserve(this->getNumberOfVerticesInternal());
+
+  const auto processVertex =
+    [this](const SimplexId ltid, const SimplexId lcid, size_t &vertexCount) {
+      bool alreadyProcessed{false};
+      const auto nStar{
+        this->TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(ltid)};
+      for(SimplexId i = 0; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getVertexStar)(ltid, i, sid);
+        if(sid == -1 || sid == lcid) {
+          continue;
+        }
+        // rule: an edge is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellGid_[sid] < this->cellGid_[lcid]) {
+          alreadyProcessed = true;
+          break;
+        }
+      }
+      if(!alreadyProcessed) {
+        this->vertexLidToGid_[ltid] = vertexCount;
+        this->vertexGidToLid_[vertexCount] = ltid;
+        vertexCount++;
+      }
+    };
+
+  const auto processCellsVertices
+    = [this, &processVertex](
+        const size_t gcid, const size_t endCurrRank, size_t &vertexCount) {
+        for(size_t j = gcid; j < endCurrRank; ++j) {
+          // local cell id
+          const auto lcid{this->cellGidToLid_[j]};
+          for(SimplexId i = 0; i < this->getCellVertexNumberInternal(lcid);
+              ++i) {
+            SimplexId ltid{-1};
+            this->getCellVertexInternal(lcid, i, ltid);
+            processVertex(ltid, lcid, vertexCount);
+          }
+        }
+      };
+
+  size_t vertexCount{};
+  preconditionDistributedIntermediate(
+    vertexCount, this->cellGidToRank_, processCellsVertices);
+
+  if(MPIrank_ == 0) {
+    this->printMsg("Domain contains " + std::to_string(vertexCount)
+                   + " vertices");
+  }
+
+  this->hasPreconditionedDistributedVertices_ = true;
+
+  return 0;
+}
 #endif // TTK_ENABLE_MPI
 
 template <typename T>
