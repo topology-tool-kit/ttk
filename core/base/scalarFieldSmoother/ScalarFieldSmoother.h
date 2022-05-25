@@ -59,9 +59,9 @@ namespace ttk {
 #ifdef TTK_ENABLE_MPI
     template <class dataType, class triangulationType = AbstractTriangulation>
     int distributedSmooth(const triangulationType *triangulation,
-               const int *rankArray,
-               const SimplexId *globalIds,
-               const int &numberOfIterations) const;
+                          const int *rankArray,
+                          const SimplexId *globalIds,
+                          const int &numberOfIterations) const;
 #endif
   protected:
     int dimensionNumber_{1};
@@ -164,106 +164,104 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
 }
 
 #ifdef TTK_ENABLE_MPI
-  // template functions
-  template <class dataType, class triangulationType>
-  int ttk::ScalarFieldSmoother::distributedSmooth(const triangulationType *triangulation,
-                const int *rankArray,
-                const SimplexId *globalIds,
-                const int &numberOfIterations) const {
+// template functions
+template <class dataType, class triangulationType>
+int ttk::ScalarFieldSmoother::distributedSmooth(
+  const triangulationType *triangulation,
+  const int *const rankArray,
+  const SimplexId *const globalIds,
+  const int &numberOfIterations) const {
 
-    Timer t;
+  Timer t;
 
-  #ifndef TTK_ENABLE_KAMIKAZE
-    if(!triangulation)
-      return -1;
-    if(!dimensionNumber_)
-      return -2;
-    if(!inputData_)
-      return -3;
-    if(!outputData_)
-      return -4;
-  #endif
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation)
+    return -1;
+  if(!dimensionNumber_)
+    return -2;
+  if(!inputData_)
+    return -3;
+  if(!outputData_)
+    return -4;
+#endif
 
-    SimplexId vertexNumber = triangulation->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
-    std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
+  std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
 
-    dataType *outputData = (dataType *)outputData_;
-    dataType *inputData = (dataType *)inputData_;
-    std::unordered_map<SimplexId, SimplexId> gidToLidMap;
-    // init the output and the map
-    for(SimplexId i = 0; i < vertexNumber; i++) {
-      gidToLidMap[i] = globalIds[i];
-      for(int j = 0; j < dimensionNumber_; j++) {
-        outputData[dimensionNumber_ * i + j]
-          = inputData[dimensionNumber_ * i + j];
-      }
+  dataType *outputData = (dataType *)outputData_;
+  dataType *inputData = (dataType *)inputData_;
+  std::unordered_map<SimplexId, SimplexId> gidToLidMap;
+  // init the output and the map
+  for(SimplexId i = 0; i < vertexNumber; i++) {
+    gidToLidMap[globalIds[i]] = i;
+    for(int j = 0; j < dimensionNumber_; j++) {
+      outputData[dimensionNumber_ * i + j]
+        = inputData[dimensionNumber_ * i + j];
     }
-
-    printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices, vertexnumber: " + std::to_string(vertexNumber) + ", dimensionNumber: " + std::to_string(dimensionNumber_), 0, 0,
-            threadNumber_, ttk::debug::LineMode::REPLACE);
-
-    int timeBuckets = 10;
-    if(numberOfIterations < timeBuckets)
-      timeBuckets = numberOfIterations;
-
-    for(int it = 0; it < numberOfIterations; it++) {
-  #ifdef TTK_ENABLE_OPENMP
-  #pragma omp parallel for num_threads(threadNumber_)
-  #endif
-      for(SimplexId i = 0; i < vertexNumber; i++) {
-
-        // avoid to process masked vertices
-        if(mask_ != nullptr && mask_[i] == 0)
-          continue;
-
-        for(int j = 0; j < dimensionNumber_; j++) {
-          tmpData[dimensionNumber_ * i + j] = 0;
-
-          SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
-          for(SimplexId k = 0; k < neighborNumber; k++) {
-            SimplexId neighborId = -1;
-            triangulation->getVertexNeighbor(i, k, neighborId);
-            tmpData[dimensionNumber_ * i + j]
-              += outputData[dimensionNumber_ * (neighborId) + j];
-          }
-          tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
-          
-        }
-      
-      }
-      if(numberOfIterations) {
-        // assign the tmpData back to the output
-        for(SimplexId i = 0; i < vertexNumber; i++) {
-          for(int j = 0; j < dimensionNumber_; j++) {
-            // only set value for unmasked points
-            if(mask_ == nullptr || mask_[i] != 0) {
-              outputData[dimensionNumber_ * i + j]
-                = tmpData[dimensionNumber_ * i + j];
-            }
-          }
-        }
-      }
-
-      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
-        if(!(it % ((numberOfIterations) / timeBuckets))) {
-          printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices, exchanging ghost cell info",
-                  (it / (float)numberOfIterations), t.getElapsedTime(),
-                  threadNumber_, debug::LineMode::REPLACE);
-        }
-      }
-      // after each iteration we need to exchange the ghostcell values with our neighbors
-      exchangeGhostCells<dataType, SimplexId>(
-        outputData,
-        rankArray,
-        globalIds,
-        gidToLidMap, vertexNumber, MPI_COMM_WORLD);
-
-    }
-
-    printMsg("Smoothed " + std::to_string(vertexNumber) + " vertices", 1,
-            t.getElapsedTime(), threadNumber_);
-
-    return 0;
   }
+
+  printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices", 0, 0,
+           threadNumber_, ttk::debug::LineMode::REPLACE);
+
+  int timeBuckets = 10;
+  if(numberOfIterations < timeBuckets)
+    timeBuckets = numberOfIterations;
+
+  for(int it = 0; it < numberOfIterations; it++) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(SimplexId i = 0; i < vertexNumber; i++) {
+
+      // avoid to process masked vertices
+      if(mask_ != nullptr && mask_[i] == 0)
+        continue;
+
+      for(int j = 0; j < dimensionNumber_; j++) {
+        tmpData[dimensionNumber_ * i + j] = 0;
+
+        SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
+        for(SimplexId k = 0; k < neighborNumber; k++) {
+          SimplexId neighborId = -1;
+          triangulation->getVertexNeighbor(i, k, neighborId);
+          tmpData[dimensionNumber_ * i + j]
+            += outputData[dimensionNumber_ * (neighborId) + j];
+        }
+        tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
+      }
+    }
+    if(numberOfIterations) {
+      // assign the tmpData back to the output
+      for(SimplexId i = 0; i < vertexNumber; i++) {
+        for(int j = 0; j < dimensionNumber_; j++) {
+          // only set value for unmasked points
+          if(mask_ == nullptr || mask_[i] != 0) {
+            outputData[dimensionNumber_ * i + j]
+              = tmpData[dimensionNumber_ * i + j];
+          }
+        }
+      }
+    }
+
+    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+      if(!(it % ((numberOfIterations) / timeBuckets))) {
+        printMsg("Smoothing " + std::to_string(vertexNumber)
+                   + " vertices, exchanging ghost cell info",
+                 (it / (float)numberOfIterations), t.getElapsedTime(),
+                 threadNumber_, debug::LineMode::REPLACE);
+      }
+    }
+    // after each iteration we need to exchange the ghostcell values with our
+    // neighbors
+    exchangeGhostCells<dataType, SimplexId>(outputData, rankArray, globalIds,
+                                            gidToLidMap, vertexNumber,
+                                            MPI_COMM_WORLD);
+  }
+
+  printMsg("Smoothed " + std::to_string(vertexNumber) + " vertices", 1,
+           t.getElapsedTime(), threadNumber_);
+
+  return 0;
+}
 #endif
