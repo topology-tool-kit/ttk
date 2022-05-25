@@ -140,7 +140,7 @@ int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
       float fnext = std::numeric_limits<float>::min();
       SimplexId neighborNumber = triangulation->getVertexNeighborNumber(v);
       for(SimplexId k = 0; k < neighborNumber; ++k) {
-        SimplexId n;
+        SimplexId n{-1};
         triangulation->getVertexNeighbor(v, k, n);
 
         if((direction_ == static_cast<int>(Direction::Forward))
