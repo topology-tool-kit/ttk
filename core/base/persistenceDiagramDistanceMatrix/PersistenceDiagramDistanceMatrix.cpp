@@ -140,9 +140,8 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   return distMat;
 }
 
-template <typename T>
 double PersistenceDiagramDistanceMatrix::getMostPersistent(
-  const std::vector<T> &bidder_diags) const {
+  const std::vector<BidderDiagram<double>> &bidder_diags) const {
 
   double max_persistence = 0;
 
@@ -158,10 +157,8 @@ double PersistenceDiagramDistanceMatrix::getMostPersistent(
   return max_persistence;
 }
 
-template <typename T>
-double
-  PersistenceDiagramDistanceMatrix::computePowerDistance(const T &D1,
-                                                         const T &D2) const {
+double PersistenceDiagramDistanceMatrix::computePowerDistance(
+  const BidderDiagram<double> &D1, const BidderDiagram<double> &D2) const {
 
   GoodDiagram<double> D2_bis{};
   for(int i = 0; i < D2.size(); i++) {
@@ -178,13 +175,12 @@ double
   return auction.run();
 }
 
-template <typename T>
 void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
   const std::array<size_t, 2> &nInputs,
   std::vector<std::vector<double>> &distanceMatrix,
-  const std::vector<T> &diags_min,
-  const std::vector<T> &diags_sad,
-  const std::vector<T> &diags_max) const {
+  const std::vector<BidderDiagram<double>> &diags_min,
+  const std::vector<BidderDiagram<double>> &diags_sad,
+  const std::vector<BidderDiagram<double>> &diags_max) const {
 
   distanceMatrix.resize(nInputs[0]);
 
@@ -244,11 +240,10 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
   }
 }
 
-template <typename T>
 void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
   const size_t nInputs,
   std::vector<Diagram> &inputDiagrams,
-  std::vector<T> &bidder_diags) const {
+  std::vector<BidderDiagram<double>> &bidder_diags) const {
 
   bidder_diags.resize(nInputs);
 
@@ -269,10 +264,9 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
   }
 }
 
-template <typename T>
 void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
-  const std::vector<T> &bidder_diags,
-  std::vector<T> &current_bidder_diags,
+  const std::vector<BidderDiagram<double>> &bidder_diags,
+  std::vector<BidderDiagram<double>> &current_bidder_diags,
   const std::vector<double> &maxDiagPersistence) const {
 
   current_bidder_diags.resize(bidder_diags.size());

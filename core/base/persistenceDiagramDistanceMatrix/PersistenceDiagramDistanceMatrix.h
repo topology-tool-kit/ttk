@@ -50,6 +50,11 @@ namespace ttk {
 
   using Diagram = std::vector<DiagramTuple>;
 
+  // forward declaration
+  // (keeps the #include <PersistenceDiagramAuction.h> inside the .cpp)
+  template <typename T>
+  class BidderDiagram;
+
   class PersistenceDiagramDistanceMatrix : virtual public Debug {
 
   public:
@@ -99,24 +104,23 @@ namespace ttk {
     }
 
   protected:
-    template <typename T>
-    double getMostPersistent(const std::vector<T> &bidder_diags) const;
-    template <typename T>
-    double computePowerDistance(const T &D1, const T &D2) const;
-    template <typename T>
-    void getDiagramsDistMat(const std::array<size_t, 2> &nInputs,
-                            std::vector<std::vector<double>> &distanceMatrix,
-                            const std::vector<T> &diags_min,
-                            const std::vector<T> &diags_sad,
-                            const std::vector<T> &diags_max) const;
-    template <typename T>
-    void setBidderDiagrams(const size_t nInputs,
-                           std::vector<Diagram> &inputDiagrams,
-                           std::vector<T> &bidder_diags) const;
-    template <typename T>
+    double getMostPersistent(
+      const std::vector<BidderDiagram<double>> &bidder_diags) const;
+    double computePowerDistance(const BidderDiagram<double> &D1,
+                                const BidderDiagram<double> &D2) const;
+    void getDiagramsDistMat(
+      const std::array<size_t, 2> &nInputs,
+      std::vector<std::vector<double>> &distanceMatrix,
+      const std::vector<BidderDiagram<double>> &diags_min,
+      const std::vector<BidderDiagram<double>> &diags_sad,
+      const std::vector<BidderDiagram<double>> &diags_max) const;
+    void
+      setBidderDiagrams(const size_t nInputs,
+                        std::vector<Diagram> &inputDiagrams,
+                        std::vector<BidderDiagram<double>> &bidder_diags) const;
     void enrichCurrentBidderDiagrams(
-      const std::vector<T> &bidder_diags,
-      std::vector<T> &current_bidder_diags,
+      const std::vector<BidderDiagram<double>> &bidder_diags,
+      std::vector<BidderDiagram<double>> &current_bidder_diags,
       const std::vector<double> &maxDiagPersistence) const;
 
     int Wasserstein{2};
