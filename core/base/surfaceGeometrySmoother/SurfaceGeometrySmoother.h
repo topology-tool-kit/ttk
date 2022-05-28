@@ -137,14 +137,14 @@ namespace ttk {
       relax(const SimplexId a,
             std::vector<ttk::SurfaceGeometrySmoother::Point> &outputPoints,
             const triangulationType &triangulationToSmooth) const {
-      Point relaxed{};
+      Point relaxed{outputPoints[a]};
       const auto nneigh{triangulationToSmooth.getVertexNeighborNumber(a)};
       for(SimplexId i = 0; i < nneigh; ++i) {
         SimplexId neigh{};
         triangulationToSmooth.getVertexNeighbor(a, i, neigh);
         relaxed = relaxed + outputPoints[neigh];
       }
-      return relaxed * (1.0F / static_cast<float>(nneigh));
+      return relaxed * (1.0F / static_cast<float>(nneigh + 1));
     }
 
     /**
