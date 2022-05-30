@@ -52,7 +52,9 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
 
   this->preconditionTriangulation(triangulation);
-  ttkTypeMacroT(triangulation->getType(),this->preconditionDistributedTriangulation<T0>(static_cast<T0 *>(triangulation->getData())));
+  ttkTypeMacroT(
+    triangulation->getType(), this->preconditionDistributedTriangulation<T0>(
+                                static_cast<T0 *>(triangulation->getData())));
   vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, inputVector);
   if(!inputScalarField)
     return 0;

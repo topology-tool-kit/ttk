@@ -2616,7 +2616,8 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getVertexGlobalIdInternal(leid);
     }
-    virtual inline int getVertexGlobalIdMap(std::unordered_map<SimplexId, SimplexId> &map) const {
+    virtual inline int getVertexGlobalIdMap(
+      std::unordered_map<SimplexId, SimplexId> &map) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
         this->printErr("Only 2D and 3D datasets are supported");
@@ -2668,8 +2669,8 @@ namespace ttk {
       getVertexGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) {
       return 0;
     }
-    virtual inline int
-      getVertexGlobalIdMapInternal(std::unordered_map<SimplexId, SimplexId> &ttkNotUsed(&map)) const {
+    virtual inline int getVertexGlobalIdMapInternal(
+      std::unordered_map<SimplexId, SimplexId> &ttkNotUsed(&map)) const {
       return 0;
     }
     virtual inline SimplexId
@@ -3430,7 +3431,6 @@ namespace ttk {
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
     std::vector<SimplexId> vertexLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
-
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};

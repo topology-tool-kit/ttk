@@ -162,9 +162,8 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
       // neighbors
       std::unordered_map<SimplexId, SimplexId> map;
       triangulation->getVertexGlobalIdMap(map);
-      exchangeGhostCells<dataType, SimplexId>(outputData, rankArray, globalIds,
-                                              map, vertexNumber,
-                                              MPI_COMM_WORLD);
+      exchangeGhostCells<dataType, SimplexId>(
+        outputData, rankArray, globalIds, map, vertexNumber, MPI_COMM_WORLD);
     }
 #endif
 
