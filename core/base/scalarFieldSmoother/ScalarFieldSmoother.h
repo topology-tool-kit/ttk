@@ -50,7 +50,7 @@ namespace ttk {
       }
       return 0;
     }
-
+#if TTK_ENABLE_MPI
     template <class triangulationType>
     int preconditionDistributedTriangulation(triangulationType *triangulation) {
       // Pre-condition distributed functions.
@@ -59,6 +59,7 @@ namespace ttk {
       }
       return 0;
     }
+#endif
 
     template <class dataType, class triangulationType = AbstractTriangulation>
     int smooth(const triangulationType *triangulation,
