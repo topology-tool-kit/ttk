@@ -210,6 +210,12 @@ protected:
   ~ttkAlgorithm() override;
 
   /**
+   * This method is called in ProcessRequest, when the request is of type
+   * RequestData. It verifies that several attributes necessary for MPI
+   * computation are computed and if not, computes them.
+   */
+  void MPIPreconditioning(vtkDataSet *input);
+  /**
    * This method is called during the first pipeline pass in
    * ProcessRequest() to create empty output data objects. The data type of
    * the generated outputs is specified in FillOutputPortInfomration().

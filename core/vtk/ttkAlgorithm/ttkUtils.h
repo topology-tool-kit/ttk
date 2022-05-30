@@ -12,7 +12,6 @@
 
 #include <string>
 #include <vector>
-
 #include <vtkType.h>
 
 class vtkFieldData;

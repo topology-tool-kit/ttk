@@ -74,7 +74,6 @@ namespace ttk {
       threadNumber_ = threadNumber;
       return 0;
     }
-
     /// Specify a pointer to a calling object that wraps the current class
     /// deriving from ttk::BaseClass.
     ///

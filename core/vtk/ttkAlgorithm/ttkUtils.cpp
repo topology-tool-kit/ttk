@@ -12,6 +12,9 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#ifdef TTK_ENABLE_MPI_TIME
+#include <mpi.h>
+#endif
 int ttkUtils::replaceVariable(const std::string &iString,
                               vtkFieldData *fieldData,
                               std::string &oString,
