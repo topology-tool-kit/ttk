@@ -1379,8 +1379,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param leid Input local vertex identifier.
     /// \return vertexId Input global vertex identifier.
-    inline SimplexId
-      getVertexGlobalId(const SimplexId &leid) const override {
+    inline SimplexId getVertexGlobalId(const SimplexId &leid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -1397,10 +1396,10 @@ namespace ttk {
     /// be returned otherwise.
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
-    /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want our GidToLidMap.
-    /// \return 0 if succesful, -1 else.
+    /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
+    /// our GidToLidMap. \return 0 if succesful, -1 else.
     inline int getVertexGlobalIdMap(
-       std::unordered_map<SimplexId, SimplexId> &map) const override {
+      std::unordered_map<SimplexId, SimplexId> &map) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -1419,8 +1418,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param geid Input global vertex identifier.
     /// \return vertexId Input local vertex identifier.
-    inline SimplexId
-      getVertexLocalId(const SimplexId &geid) const override {
+    inline SimplexId getVertexLocalId(const SimplexId &geid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -2199,8 +2197,6 @@ namespace ttk {
 #endif
       return abstractTriangulation_->preconditionTriangleEdges();
     }
-
-
 
     /// Pre-process the triangle links.
     ///
