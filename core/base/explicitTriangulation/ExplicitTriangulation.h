@@ -559,7 +559,7 @@ namespace ttk {
       return this->triangleGidToLid_[gtid];
     }
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexGlobalId)(
-      const SimplexId &ltid) override {
+      const SimplexId &ltid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(ltid < 0 || ltid >= this->getNumberOfVerticesInternal()) {
         return -1;
@@ -573,13 +573,13 @@ namespace ttk {
       return 1;
     }
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLocalId)(
-      const SimplexId &gtid) override {
+      const SimplexId &gtid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->vertexGidToLid_.find(gtid) == this->vertexGidToLid_.end()) {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_[gtid];
+      return this->vertexGidToLid_.at(gtid);
     }
 
 #endif // TTK_ENABLE_MPI

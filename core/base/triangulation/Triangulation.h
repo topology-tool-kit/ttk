@@ -1367,6 +1367,69 @@ namespace ttk {
       return abstractTriangulation_->getVertexEdges();
     }
 
+#if TTK_ENABLE_MPI
+    /// Get the corresponding global id for a given local id of a vertex.
+    ///    ///
+    /// \pre For this function to behave correctly,
+    /// preconditonDistributedVertices() needs to be called
+    /// on this object prior to any traversal, in a clearly distinct
+    /// pre-processing step that involves no traversal at all. An error will
+    /// be returned otherwise.
+    /// \note It is recommended to exclude such a pre-processing step
+    /// from any time performance measurement.
+    /// \param leid Input local vertex identifier.
+    /// \return vertexId Input global vertex identifier.
+    inline SimplexId
+      getVertexGlobalId(const SimplexId &leid) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getVertexGlobalId(leid);
+    }
+
+    /// Get the global id to local id map for the triangulation.
+    ///
+    /// \pre For this function to behave correctly,
+    /// preconditonDistributedVertices() needs to be called
+    /// on this object prior to any traversal, in a clearly distinct
+    /// pre-processing step that involves no traversal at all. An error will
+    /// be returned otherwise.
+    /// \note It is recommended to exclude such a pre-processing step
+    /// from any time performance measurement.
+    /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want our GidToLidMap.
+    /// \return 0 if succesful, -1 else.
+    inline int getVertexGlobalIdMap(
+       std::unordered_map<SimplexId, SimplexId> &map) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getVertexGlobalIdMap(map);
+    }
+
+    /// Get the corresponding local id for a given global id of a vertex.
+    ///
+    /// \pre For this function to behave correctly,
+    /// preconditonDistributedVertices() needs to be called
+    /// on this object prior to any traversal, in a clearly distinct
+    /// pre-processing step that involves no traversal at all. An error will
+    /// be returned otherwise.
+    /// \note It is recommended to exclude such a pre-processing step
+    /// from any time performance measurement.
+    /// \param geid Input global vertex identifier.
+    /// \return vertexId Input local vertex identifier.
+    inline SimplexId
+      getVertexLocalId(const SimplexId &geid) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getVertexLocalId(geid);
+    }
+
+#endif // TTK_ENABLE_MPI
+
     /// Get the \p localLinkId-th simplex of the link of the \p vertexId-th
     /// vertex.
     ///
@@ -2137,6 +2200,8 @@ namespace ttk {
       return abstractTriangulation_->preconditionTriangleEdges();
     }
 
+
+
     /// Pre-process the triangle links.
     ///
     /// This function should ONLY be called as a pre-condition to the
@@ -2216,6 +2281,35 @@ namespace ttk {
 
       return abstractTriangulation_->preconditionVertexEdges();
     }
+
+#if TTK_ENABLE_MPI
+    /// Pre-process the distributed vertex ids.
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getVertexGlobalId()
+    ///   - getVertexGlobalIdMap()
+    ///   - getVertexLocalId()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this pre-processing function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getVertexGlobalId()
+    /// \sa getVertexGlobalIdMap()
+    /// \sa getVertexLocalId()
+    inline int preconditionDistributedVertices() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+
+      return abstractTriangulation_->preconditionDistributedVertices();
+    }
+#endif // TTK_ENABLE_MPI
 
     /// Pre-process the vertex links.
     ///

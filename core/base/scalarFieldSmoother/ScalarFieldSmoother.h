@@ -47,21 +47,13 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
-      }
-      return 0;
-    }
 #if TTK_ENABLE_MPI
-    template <class triangulationType>
-    int preconditionDistributedTriangulation(triangulationType *triangulation) {
-      // Pre-condition distributed functions.
-      if(triangulation) {
-        this->printMsg("Preconditioning Vertices");
-        triangulation->preconditionDistributedVertices();
-        this->printMsg("Preconditioned Vertices!");
+        if(ttk::isRunningWithMPI())
+          triangulation->preconditionDistributedVertices();
+#endif
       }
       return 0;
     }
-#endif
 
     template <class dataType, class triangulationType = AbstractTriangulation>
     int smooth(const triangulationType *triangulation,

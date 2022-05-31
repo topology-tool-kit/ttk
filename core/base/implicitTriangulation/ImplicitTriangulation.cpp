@@ -3338,20 +3338,16 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
   return 0;
 }
 
-int ttk::ImplicitTriangulation::preconditionDistributedVertices() {
+int ImplicitTriangulation::preconditionDistributedVertices() {
   if(this->hasPreconditionedDistributedVertices_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
+  if(!isRunningWithMPI()) {
     return -1;
   }
-  if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+  if(this->globalIdsArray_ == nullptr) {
+    this->printWrn("Missing global identifiers array!");
     return -2;
-  }
-
-  if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
-    return -3;
   }
 
   // allocate memory

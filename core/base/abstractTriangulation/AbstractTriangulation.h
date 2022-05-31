@@ -2601,7 +2601,7 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getTriangleLocalIdInternal(gtid);
     }
-    virtual inline SimplexId getVertexGlobalId(const SimplexId &leid) {
+    virtual inline SimplexId getVertexGlobalId(const SimplexId &leid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
         this->printErr("Only 2D and 3D datasets are supported");
@@ -2632,7 +2632,7 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getVertexGlobalIdMapInternal(map);
     }
-    virtual inline SimplexId getVertexLocalId(const SimplexId &geid) {
+    virtual inline SimplexId getVertexLocalId(const SimplexId &geid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
         this->printErr("Only 2D and 3D datasets are supported");
@@ -2666,7 +2666,7 @@ namespace ttk {
       return 0;
     }
     virtual inline SimplexId
-      getVertexGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) {
+      getVertexGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) const {
       return 0;
     }
     virtual inline int getVertexGlobalIdMapInternal(
@@ -2674,7 +2674,7 @@ namespace ttk {
       return 0;
     }
     virtual inline SimplexId
-      getVertexLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) {
+      getVertexLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) const {
       return 0;
     }
 

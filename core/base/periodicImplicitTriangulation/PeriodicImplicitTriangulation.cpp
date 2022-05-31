@@ -1795,6 +1795,39 @@ const vector<vector<SimplexId>> *
 
   return &cellNeighborList_;
 }
+#if TTK_ENABLE_MPI
+int PeriodicImplicitTriangulation::preconditionDistributedVertices() {
+  if(this->hasPreconditionedDistributedVertices_) {
+    return 0;
+  }
+  if(!isRunningWithMPI()) {
+    return -1;
+  }
+  if(this->globalIdsArray_ == nullptr) {
+    this->printWrn("Missing global identifiers array!");
+    return -2;
+  }
+
+  // allocate memory
+  this->vertexLidToGid_.resize(this->vertexNumber_, -1);
+  this->vertexGidToLid_.reserve(this->vertexNumber_);
+
+  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
+    this->vertexLidToGid_[i] = this->globalIdsArray_[i];
+    this->vertexGidToLid_[this->globalIdsArray_[i]] = i;
+  }
+
+  if(MPIrank_ == 0) {
+    this->printMsg("Domain contains "
+                   + std::to_string(this->getNumberOfVerticesInternal())
+                   + " vertices");
+  }
+
+  this->hasPreconditionedDistributedVertices_ = true;
+
+  return 0;
+}
+#endif // TTK_ENABLE_MPI
 
 // explicit instantiations
 template class ttk::PeriodicImplicitTriangulationCRTP<
