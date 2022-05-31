@@ -55,7 +55,9 @@ namespace ttk {
     int preconditionDistributedTriangulation(triangulationType *triangulation) {
       // Pre-condition distributed functions.
       if(triangulation) {
+        this->printMsg("Preconditioning Vertices");
         triangulation->preconditionDistributedVertices();
+        this->printMsg("Preconditioned Vertices!");
       }
       return 0;
     }
@@ -96,6 +98,9 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
 #endif
   bool useMPI = false;
   TTK_FORCE_USE(useMPI);
+  TTK_FORCE_USE(rankArray);
+  TTK_FORCE_USE(globalIds);
+
 #if TTK_ENABLE_MPI
   if(ttk::isRunningWithMPI() && rankArray != nullptr && globalIds != nullptr)
     useMPI = true;
