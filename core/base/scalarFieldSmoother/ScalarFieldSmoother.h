@@ -47,10 +47,6 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
-#if TTK_ENABLE_MPI
-        if(ttk::isRunningWithMPI())
-          triangulation->preconditionDistributedVertices();
-#endif
       }
       return 0;
     }

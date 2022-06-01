@@ -2302,7 +2302,6 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 #endif
-
       return abstractTriangulation_->preconditionDistributedVertices();
     }
 #endif // TTK_ENABLE_MPI
@@ -2535,7 +2534,6 @@ namespace ttk {
                             const SimplexId &xDim,
                             const SimplexId &yDim,
                             const SimplexId &zDim) {
-
       gridDimensions_[0] = xDim;
       gridDimensions_[1] = yDim;
       gridDimensions_[2] = zDim;
@@ -2554,11 +2552,13 @@ namespace ttk {
       ret |= implicitPreconditionsTriangulation_.setInputGrid(
         xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
         zDim);
-
       const auto useImplicitPreconditions = this->processImplicitStrategy();
 
       this->switchGrid(this->hasPeriodicBoundaries_, useImplicitPreconditions);
-
+#ifdef TTK_ENABLE_MPI
+      if(ttk::isRunningWithMPI())
+        preconditionDistributedVertices();
+#endif
       return ret;
     }
 
@@ -2638,8 +2638,13 @@ namespace ttk {
 
       abstractTriangulation_ = &explicitTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return explicitTriangulation_.setInputPoints(
+      int status = explicitTriangulation_.setInputPoints(
         pointNumber, pointSet, doublePrecision);
+#ifdef TTK_ENABLE_MPI
+      if(ttk::isRunningWithMPI())
+        preconditionDistributedVertices();
+#endif
+      return status;
     }
 
     inline int setStellarInputPoints(const SimplexId &pointNumber,
@@ -2649,8 +2654,13 @@ namespace ttk {
 
       abstractTriangulation_ = &compactTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return compactTriangulation_.setInputPoints(
+      int status = compactTriangulation_.setInputPoints(
         pointNumber, pointSet, indexArray, doublePrecision);
+#ifdef TTK_ENABLE_MPI
+      if(ttk::isRunningWithMPI())
+        preconditionDistributedVertices();
+#endif
+      return status;
     }
 
     /// Tune the number of active threads (default: number of logical cores)

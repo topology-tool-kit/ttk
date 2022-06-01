@@ -2603,8 +2603,9 @@ namespace ttk {
     }
     virtual inline SimplexId getVertexGlobalId(const SimplexId &leid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
-        this->printErr("Only 2D and 3D datasets are supported");
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
         return -1;
       }
       if(!this->hasPreconditionedDistributedVertices_) {
@@ -2619,8 +2620,9 @@ namespace ttk {
     virtual inline int getVertexGlobalIdMap(
       std::unordered_map<SimplexId, SimplexId> &map) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
-        this->printErr("Only 2D and 3D datasets are supported");
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
         return -1;
       }
       if(!this->hasPreconditionedDistributedVertices_) {
@@ -2634,8 +2636,9 @@ namespace ttk {
     }
     virtual inline SimplexId getVertexLocalId(const SimplexId &geid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
-        this->printErr("Only 2D and 3D datasets are supported");
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
         return -1;
       }
       if(!this->hasPreconditionedDistributedVertices_) {
