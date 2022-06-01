@@ -14,9 +14,9 @@
 // ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
-#include <limits.h>
+#include <climits>
+#include <cstdint>
 #include <map>
-#include <stdint.h>
 #include <unordered_map>
 
 namespace ttk {
@@ -306,10 +306,10 @@ namespace ttk {
             // the ids themselves the NULL attributes are only relevant for the
             // root rank
             MPI_Gather(
-              &localSize, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
+              &localSize, 1, MPI_INT, nullptr, 0, MPI_INT, 0, MPI_COMM_WORLD);
             MPI_Gatherv(foreignVertices.data(),
                         foreignVertices.size() * sizeof(globalIdOwner),
-                        MPI_CHAR, NULL, NULL, NULL, MPI_CHAR, 0,
+                        MPI_CHAR, nullptr, nullptr, nullptr, MPI_CHAR, 0,
                         MPI_COMM_WORLD);
           }
 
