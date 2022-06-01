@@ -2555,10 +2555,6 @@ namespace ttk {
       const auto useImplicitPreconditions = this->processImplicitStrategy();
 
       this->switchGrid(this->hasPeriodicBoundaries_, useImplicitPreconditions);
-#ifdef TTK_ENABLE_MPI
-      if(ttk::isRunningWithMPI())
-        preconditionDistributedVertices();
-#endif
       return ret;
     }
 
@@ -2638,13 +2634,8 @@ namespace ttk {
 
       abstractTriangulation_ = &explicitTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      int status = explicitTriangulation_.setInputPoints(
+      return explicitTriangulation_.setInputPoints(
         pointNumber, pointSet, doublePrecision);
-#ifdef TTK_ENABLE_MPI
-      if(ttk::isRunningWithMPI())
-        preconditionDistributedVertices();
-#endif
-      return status;
     }
 
     inline int setStellarInputPoints(const SimplexId &pointNumber,
@@ -2654,13 +2645,8 @@ namespace ttk {
 
       abstractTriangulation_ = &compactTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      int status = compactTriangulation_.setInputPoints(
+      return compactTriangulation_.setInputPoints(
         pointNumber, pointSet, indexArray, doublePrecision);
-#ifdef TTK_ENABLE_MPI
-      if(ttk::isRunningWithMPI())
-        preconditionDistributedVertices();
-#endif
-      return status;
     }
 
     /// Tune the number of active threads (default: number of logical cores)
