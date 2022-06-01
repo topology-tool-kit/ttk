@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkPathCompression" class="ttkPathCompression" label="TTK PathCompression">
+      <Documentation long_help="PathCompression Long" short_help="PathCompression Short">This filter computes for each vertex of a vtkDataSet the vertex indices of their ascending and descending manifold (ergo 'their' minimum and maximum).</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>A vtkDataSet that has at least one point data scalar array that can be used to compute the compression.</Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- This is the VTK way of selecting arrays for processing by calling the SetInputArrayToProcess method -->
+      <!-- (see ttkPathCompression.cpp for details) -->
+      <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>The scalar array that will be used to compute the compression on.</Documentation>
+      </StringVectorProperty>
+
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="InputArray" />
+      </PropertyGroup>
+
+
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
