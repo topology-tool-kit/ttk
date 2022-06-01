@@ -402,8 +402,6 @@ namespace ttk {
             ttk::SimplexId descVal = currentDesc[i];
             ttk::SimplexId gid = globalIds[i];
             ttk::SimplexId ascVal = currentAsc[i];
-            // this->printMsg("checking maps for " +
-            // std::to_string(globalIds[i]));
             if(gIdToDescendingMap.count(descVal)) {
               currentDesc[i] = gIdToDescendingMap[descVal];
             } else if(gIdToDescendingMap.count(gid)) {
