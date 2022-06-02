@@ -427,16 +427,18 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 
   template <class dataType>
-  int runCompute(vtkInformationVector *outputVector,
-                 std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                 std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+  int runCompute(
+    vtkInformationVector *outputVector,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 
   template <class dataType>
-  int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+  int runOutput(
+    vtkInformationVector *outputVector,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 };

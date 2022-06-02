@@ -105,7 +105,7 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
   // --- Load blocks
   // ------------------------------------------------------------------------------------
   printMsg("Load blocks", ttk::debug::Priority::VERBOSE);
-  std::vector<vtkMultiBlockDataSet *> inputTrees;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees;
   loadBlocks(inputTrees, blocks);
   printMsg("Load blocks done.", debug::Priority::VERBOSE);
   int dataTypeInt
@@ -129,7 +129,7 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
 template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::run(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   if(not isDataVisualizationFilled())
     runCompute<dataType>(inputTrees);
   runOutput<dataType>(outputVector, inputTrees);
@@ -165,7 +165,7 @@ std::vector<vtkSmartPointer<vtkDataSet>>
 
 template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::runCompute(
-  std::vector<vtkMultiBlockDataSet *> &inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
 template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::runOutput(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
@@ -256,7 +256,7 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   std::vector<vtkUnstructuredGrid *> treesArcsT;
   std::vector<vtkDataSet *> treesSegmentationT;
   std::vector<std::vector<int>> treesNodeCorrMeshT;
-  std::vector<vtkMultiBlockDataSet *> inputTreesT;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTreesT;
   for(size_t i = 0; i < keyFramesIndex.size(); ++i) {
     treesNodesT.push_back(treesNodes[keyFramesIndex[i]]);
     treesArcsT.push_back(treesArcs[keyFramesIndex[i]]);

@@ -190,6 +190,6 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 };

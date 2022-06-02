@@ -227,17 +227,17 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
           std::vector<std::tuple<double, int, int, int, int>> &coefs,
           std::vector<bool> &interpolatedTrees);
 
   template <class dataType>
-  int runCompute(std::vector<vtkMultiBlockDataSet *> &inputTrees,
+  int runCompute(std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                  std::vector<std::tuple<double, int, int, int, int>> &coefs);
 
   template <class dataType>
   int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees,
+                std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                 std::vector<std::tuple<double, int, int, int, int>> &coefs,
                 std::vector<bool> &interpolatedTrees);
 };

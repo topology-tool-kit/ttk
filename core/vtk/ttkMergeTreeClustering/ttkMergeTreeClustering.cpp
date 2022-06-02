@@ -121,7 +121,7 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
-  std::vector<vtkMultiBlockDataSet *> inputTrees, inputTrees2;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
   int dataTypeInt
@@ -144,8 +144,8 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
 template <class dataType>
 int ttkMergeTreeClustering::run(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
   if(not isDataVisualizationFilled())
     runCompute<dataType>(outputVector, inputTrees, inputTrees2);
   runOutput<dataType>(outputVector, inputTrees, inputTrees2);
@@ -155,8 +155,8 @@ int ttkMergeTreeClustering::run(
 template <class dataType>
 int ttkMergeTreeClustering::runCompute(
   vtkInformationVector *ttkNotUsed(outputVector),
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
@@ -341,8 +341,8 @@ int ttkMergeTreeClustering::runCompute(
 template <class dataType>
 int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &ttkNotUsed(inputTrees2)) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &ttkNotUsed(inputTrees2)) {
   std::vector<MergeTree<dataType>> intermediateMTrees;
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
   std::vector<FTMTree_MT *> intermediateTrees;
