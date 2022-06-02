@@ -590,23 +590,19 @@ int ttkMergeTreeClustering::runOutput(
           nodeCorr[i] = nodeCorrT[i];
 
           // Field data
+          vtkOutputNode1->GetFieldData()->ShallowCopy(
+            treesNodes[i]->GetFieldData());
+          vtkOutputArc1->GetFieldData()->ShallowCopy(
+            treesArcs[i]->GetFieldData());
+          if(OutputSegmentation)
+            vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+              treesSegmentation[i]->GetFieldData());
+
           vtkNew<vtkDoubleArray> vtkClusterAssignment{};
           vtkClusterAssignment->SetName("ClusterAssignment");
           vtkClusterAssignment->SetNumberOfTuples(1);
           vtkClusterAssignment->SetTuple1(0, clusteringAssignment[i]);
-
-          vtkOutputNode1->GetFieldData()->ShallowCopy(
-            treesNodes[i]->GetFieldData());
           vtkOutputNode1->GetFieldData()->AddArray(vtkClusterAssignment);
-          vtkOutputArc1->GetFieldData()->ShallowCopy(
-            treesArcs[i]->GetFieldData());
-          vtkOutputArc1->GetFieldData()->AddArray(vtkClusterAssignment);
-          if(OutputSegmentation) {
-            vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
-              treesSegmentation[i]->GetFieldData());
-            vtkOutputSegmentation1->GetFieldData()->AddArray(
-              vtkClusterAssignment);
-          }
 
           // Construct multiblock
           vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))

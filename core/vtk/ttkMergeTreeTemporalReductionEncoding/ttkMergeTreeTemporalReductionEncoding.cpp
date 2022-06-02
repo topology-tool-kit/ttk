@@ -235,6 +235,7 @@ template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::runOutput(
   vtkInformationVector *outputVector,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
+  bool OutputSegmentation = (inputTrees[0]->GetNumberOfBlocks() == 3);
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
@@ -274,7 +275,23 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   mergeTreesDoubleToTemplate<dataType>(keyFrames, keyFramesT);
   std::vector<FTMTree_MT *> keyFramesTree;
   mergeTreeToFTMTree<dataType>(keyFramesT, keyFramesTree);
-  output_keyFrames->SetNumberOfBlocks(keyFramesT.size());
+
+  output_keyFrames->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
+    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+  vtkBlockNodes->SetNumberOfBlocks(keyFramesT.size());
+  output_keyFrames->SetBlock(0, vtkBlockNodes);
+  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+  vtkBlockArcs->SetNumberOfBlocks(keyFramesT.size());
+  output_keyFrames->SetBlock(1, vtkBlockArcs);
+  if(OutputSegmentation) {
+    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+    vtkBlockSegs->SetNumberOfBlocks(keyFramesT.size());
+    output_keyFrames->SetBlock(2, vtkBlockSegs);
+  }
+
   double prevXMax = 0;
   for(size_t i = 0; i < keyFramesT.size(); ++i) {
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
@@ -283,14 +300,13 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation1
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock1
-      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
     ttkMergeTreeVisualization visuMaker;
     visuMaker.setShiftMode(2); // Line
     visuMaker.setVtkOutputNode(vtkOutputNode1);
     visuMaker.setVtkOutputArc(vtkOutputArc1);
     visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
+    visuMaker.setOutputSegmentation(OutputSegmentation);
     visuMaker.setTreesNodes(treesNodes);
     visuMaker.copyPointData(treesNodes[i], treesNodeCorrMesh[i]);
     visuMaker.setTreesNodeCorrMesh(treesNodeCorrMesh);
@@ -303,17 +319,20 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
     prevXMax = visuMaker.getPrevXMax();
 
     // Field data
-    vtkBlock1->GetFieldData()->ShallowCopy(inputTrees[i]->GetFieldData());
+    vtkOutputNode1->GetFieldData()->ShallowCopy(treesNodes[i]->GetFieldData());
+    vtkOutputArc1->GetFieldData()->ShallowCopy(treesArcs[i]->GetFieldData());
+    if(treesSegmentation[i] and OutputSegmentation)
+      vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+        treesSegmentation[i]->GetFieldData());
 
     // Construct multiblock
-    bool outputSegmentation = inputTrees[i]->GetNumberOfBlocks() == 3;
-    vtkBlock1->SetNumberOfBlocks((outputSegmentation ? 3 : 2));
-    vtkBlock1->SetBlock(0, vtkOutputNode1);
-    vtkBlock1->SetBlock(1, vtkOutputArc1);
-    if(outputSegmentation)
-      vtkBlock1->SetBlock(2, vtkOutputSegmentation1);
-
-    output_keyFrames->SetBlock(i, vtkBlock1);
+    vtkMultiBlockDataSet::SafeDownCast(output_keyFrames->GetBlock(0))
+      ->SetBlock(i, vtkOutputNode1);
+    vtkMultiBlockDataSet::SafeDownCast(output_keyFrames->GetBlock(1))
+      ->SetBlock(i, vtkOutputArc1);
+    if(OutputSegmentation)
+      vtkMultiBlockDataSet::SafeDownCast(output_keyFrames->GetBlock(2))
+        ->SetBlock(i, vtkOutputSegmentation1);
   }
   // Add input parameters to field data
   vtkNew<vtkIntArray> vtkAssignmentSolver{};

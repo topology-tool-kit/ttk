@@ -211,6 +211,7 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
   std::vector<std::tuple<double, int, int, int, int>> &coefs,
   std::vector<bool> &interpolatedTrees) {
+  bool OutputSegmentation = false; // TODO
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
@@ -253,9 +254,24 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
   std::vector<FTMTree_MT *> trees;
   mergeTreeToFTMTree<dataType>(intermediateMTrees, trees);
-  output_sequence->SetNumberOfBlocks(intermediateMTrees.size());
+
+  output_sequence->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
+    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+  vtkBlockNodes->SetNumberOfBlocks(intermediateMTrees.size());
+  output_sequence->SetBlock(0, vtkBlockNodes);
+  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+  vtkBlockArcs->SetNumberOfBlocks(intermediateMTrees.size());
+  output_sequence->SetBlock(1, vtkBlockArcs);
+  if(OutputSegmentation) {
+    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+    vtkBlockSegs->SetNumberOfBlocks(intermediateMTrees.size());
+    output_sequence->SetBlock(2, vtkBlockSegs);
+  }
+
   double prevXMax = 0;
-  bool OutputSegmentation = false;
   std::vector<std::vector<SimplexId>> nodeCorr(intermediateMTrees.size());
   int cptInterpolatedTree = 0;
   for(size_t i = 0; i < intermediateMTrees.size(); ++i) {
@@ -265,8 +281,6 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation1
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock1
-      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
     ttkMergeTreeVisualization visuMaker;
     visuMaker.setPlanarLayout(PlanarLayout);
@@ -303,15 +317,14 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
     nodeCorr[i] = visuMaker.getNodeCorr()[i];
 
     // Field data
-    if(inputTrees[i] != nullptr)
-      vtkBlock1->GetFieldData()->ShallowCopy(inputTrees[i]->GetFieldData());
-
-    // Construct multiblock
-    vtkBlock1->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-    vtkBlock1->SetBlock(0, vtkOutputNode1);
-    vtkBlock1->SetBlock(1, vtkOutputArc1);
-    if(OutputSegmentation)
-      vtkBlock1->SetBlock(2, vtkOutputSegmentation1);
+    if(treesNodes[i])
+      vtkOutputNode1->GetFieldData()->ShallowCopy(
+        treesNodes[i]->GetFieldData());
+    if(treesArcs[i])
+      vtkOutputArc1->GetFieldData()->ShallowCopy(treesArcs[i]->GetFieldData());
+    if(treesSegmentation[i] and OutputSegmentation)
+      vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+        treesSegmentation[i]->GetFieldData());
 
     // Field data
     if(interpolatedTrees[i]) {
@@ -321,33 +334,39 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
       vtkDistancePreviousKey->SetNumberOfTuples(1);
       vtkDistancePreviousKey->SetTuple1(
         0, distancesToKeyFrames_[cptInterpolatedTree * 2]);
-      vtkBlock1->GetFieldData()->AddArray(vtkDistancePreviousKey);
+      vtkOutputNode1->GetFieldData()->AddArray(vtkDistancePreviousKey);
       // Distance next key frame
       vtkNew<vtkDoubleArray> vtkDistanceNextKey{};
       vtkDistanceNextKey->SetName("DistanceNextKeyFrame");
       vtkDistanceNextKey->SetNumberOfTuples(1);
       vtkDistanceNextKey->SetTuple1(
         0, distancesToKeyFrames_[cptInterpolatedTree * 2 + 1]);
-      vtkBlock1->GetFieldData()->AddArray(vtkDistanceNextKey);
+      vtkOutputNode1->GetFieldData()->AddArray(vtkDistanceNextKey);
       // Index previous key frame
       vtkNew<vtkIntArray> vtkIndexPreviousKey{};
       vtkIndexPreviousKey->SetName("IndexPreviousKeyFrame");
       vtkIndexPreviousKey->SetNumberOfTuples(1);
       vtkIndexPreviousKey->SetTuple1(
         0, std::get<3>(coefs[cptInterpolatedTree]));
-      vtkBlock1->GetFieldData()->AddArray(vtkIndexPreviousKey);
+      vtkOutputNode1->GetFieldData()->AddArray(vtkIndexPreviousKey);
       // Index previous key frame
       vtkNew<vtkIntArray> vtkIndexNextKey{};
       vtkIndexNextKey->SetName("IndexNextKeyFrame");
       vtkIndexNextKey->SetNumberOfTuples(1);
       vtkIndexNextKey->SetTuple1(0, std::get<4>(coefs[cptInterpolatedTree]));
-      vtkBlock1->GetFieldData()->AddArray(vtkIndexNextKey);
+      vtkOutputNode1->GetFieldData()->AddArray(vtkIndexNextKey);
       // Increment interpolated tree counter
       ++cptInterpolatedTree;
     }
 
-    // Add to all multiblocks
-    output_sequence->SetBlock(i, vtkBlock1);
+    // Construct multiblock
+    vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(0))
+      ->SetBlock(i, vtkOutputNode1);
+    vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(1))
+      ->SetBlock(i, vtkOutputArc1);
+    if(OutputSegmentation)
+      vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(2))
+        ->SetBlock(i, vtkOutputSegmentation1);
   }
 
   // -----------------------------------------
@@ -360,12 +379,12 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
       = vtkUnstructuredGrid::SafeDownCast(
-        vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(i))
-          ->GetBlock(0));
+        vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(0))
+          ->GetBlock(i));
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
       = vtkUnstructuredGrid::SafeDownCast(
-        vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(i + 1))
-          ->GetBlock(0));
+        vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(0))
+          ->GetBlock(i + 1));
     std::vector<std::vector<SimplexId>> nodeCorrTemp;
     nodeCorrTemp.push_back(nodeCorr[i]);
     nodeCorrTemp.push_back(nodeCorr[i + 1]);
