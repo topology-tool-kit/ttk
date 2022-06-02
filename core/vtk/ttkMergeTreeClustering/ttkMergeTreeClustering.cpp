@@ -714,12 +714,12 @@ int ttkMergeTreeClustering::runOutput(
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
             = vtkUnstructuredGrid::SafeDownCast(
-              vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(i))
-                ->GetBlock(0));
+              vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))
+                ->GetBlock(i));
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
             = vtkUnstructuredGrid::SafeDownCast(
-              vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(c))
-                ->GetBlock(0));
+              vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(0))
+                ->GetBlock(c));
 
           // Fill vtk objects
           ttkMergeTreeVisualization visuMakerMatching;
