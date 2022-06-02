@@ -12,8 +12,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
 #if TTK_ENABLE_MPI
+#define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
 
 namespace ttk {
@@ -173,12 +173,12 @@ namespace ttk {
       std::vector<std::vector<IT>> rankVectors(
         ttk::MPIsize_, std::vector<IT>(0));
       // aggregate the needed ids
+
       for(IT i = 0; i < nVerts; i++) {
         if(ttk::MPIrank_ != rankArray[i]) {
           rankVectors[rankArray[i]].push_back(globalIds[i]);
         }
       }
-
       // send the amount of ids and the needed ids themselves
       for(int r = 0; r < ttk::MPIsize_; r++) {
         if(ttk::MPIrank_ != r && neighbors.find(r) != neighbors.end()) {
@@ -190,7 +190,6 @@ namespace ttk {
           }
         }
       }
-
       // receive the scalar values
       for(int r = 0; r < ttk::MPIsize_; r++) {
         if(ttk::MPIrank_ != r && neighbors.find(r) != neighbors.end()) {
@@ -215,8 +214,10 @@ namespace ttk {
       if(neighbors.find(rankToSend) != neighbors.end()) {
         // receive the amount of ids and the needed ids themselves
         IT nValues;
+
         MPI_Recv(&nValues, 1, MPI_IT, rankToSend, amountTag, communicator,
                  MPI_STATUS_IGNORE);
+
         if(nValues > 0) {
           std::vector<IT> receivedIds(nValues);
           MPI_Recv(receivedIds.data(), nValues, MPI_IT, rankToSend, idsTag,
@@ -229,6 +230,7 @@ namespace ttk {
             IT localId = gidToLidMap.at(globalId);
             valuesToSend[i] = scalarArray[localId];
           }
+
           // send the scalar values
           MPI_Send(valuesToSend.data(), nValues, MPI_DT, rankToSend, valuesTag,
                    communicator);

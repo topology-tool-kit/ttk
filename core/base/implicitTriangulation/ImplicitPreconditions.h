@@ -84,6 +84,9 @@ namespace ttk {
     }
 
     inline int preconditionVerticesInternal() override {
+#ifdef TTK_ENABLE_MPI
+      return this->preconditionDistributedVertices();
+#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionEdgesInternal() override {

@@ -2537,6 +2537,9 @@ namespace ttk {
     virtual int preconditionDistributedTriangles() {
       return 0;
     }
+    virtual int preconditionDistributedVertices() {
+      return 0;
+    }
 
     virtual inline SimplexId getEdgeGlobalId(const SimplexId &leid) {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -2598,6 +2601,55 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getTriangleLocalIdInternal(gtid);
     }
+    virtual inline SimplexId getVertexGlobalId(const SimplexId &leid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexGlobalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexGlobalIdInternal(leid);
+    }
+    virtual inline int getVertexGlobalIdMap(
+      std::unordered_map<SimplexId, SimplexId> &map) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexGlobalMap query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexGlobalIdMapInternal(map);
+    }
+    virtual inline SimplexId getVertexLocalId(const SimplexId &geid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexLocalIdInternal(geid);
+    }
 
   protected:
     virtual inline SimplexId
@@ -2614,6 +2666,18 @@ namespace ttk {
     }
     virtual inline SimplexId
       getTriangleLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) {
+      return 0;
+    }
+    virtual inline SimplexId
+      getVertexGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) const {
+      return 0;
+    }
+    virtual inline int getVertexGlobalIdMapInternal(
+      std::unordered_map<SimplexId, SimplexId> &ttkNotUsed(&map)) const {
+      return 0;
+    }
+    virtual inline SimplexId
+      getVertexLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) const {
       return 0;
     }
 
@@ -3368,10 +3432,13 @@ namespace ttk {
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
     std::vector<SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
+    std::vector<SimplexId> vertexLidToGid_{};
+    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};
     bool hasPreconditionedDistributedTriangles_{false};
+    bool hasPreconditionedDistributedVertices_{false};
 
     long int *globalIdsArray_{nullptr};
     int *rankArray_{nullptr};
@@ -3393,7 +3460,7 @@ namespace ttk {
       return this->rankArray_;
     }
 
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_MPI
 
     // only ttk::dcg::DiscreteGradient should use what's defined below.
     friend class ttk::dcg::DiscreteGradient;
