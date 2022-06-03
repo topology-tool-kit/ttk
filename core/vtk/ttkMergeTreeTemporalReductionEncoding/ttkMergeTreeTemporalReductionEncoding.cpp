@@ -153,11 +153,11 @@ std::vector<vtkSmartPointer<vtkDataSet>>
       // images.push_back(resampleFilterOut);
       vtkSmartPointer<vtkDataSet> image = vtkSmartPointer<vtkImageData>::New();
       image->DeepCopy(resampleFilterOut);
-      images.push_back(image);
+      images.emplace_back(image);
     } else {
       vtkSmartPointer<vtkDataSet> image;
       image.TakeReference(treesSegmentation[i]);
-      images.push_back(image);
+      images.emplace_back(image);
     }
   }
   return images;
@@ -186,7 +186,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
     for(size_t i = 0; i < images.size(); ++i) {
       auto array = images[i]->GetPointData()->GetArray("Scalars");
       for(vtkIdType j = 0; j < array->GetNumberOfTuples(); ++j)
-        fieldL2_[i].push_back(array->GetTuple1(j));
+        fieldL2_[i].emplace_back(array->GetTuple1(j));
     }
   }
 
@@ -223,7 +223,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
     if((int)i != removed[indexRemoved]) {
       MergeTree<double> keyFrame;
       mergeTreeTemplateToDouble<dataType>(intermediateMTrees[i], keyFrame);
-      keyFrames.push_back(keyFrame);
+      keyFrames.emplace_back(keyFrame);
     } else
       ++indexRemoved;
   }
@@ -249,7 +249,7 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   int indexRemoved = 0;
   for(size_t i = 0; i < inputTrees.size(); ++i)
     if((int)i != removed[indexRemoved]) {
-      keyFramesIndex.push_back(i);
+      keyFramesIndex.emplace_back(i);
     } else
       ++indexRemoved;
 
@@ -259,11 +259,11 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   std::vector<std::vector<int>> treesNodeCorrMeshT;
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTreesT;
   for(size_t i = 0; i < keyFramesIndex.size(); ++i) {
-    treesNodesT.push_back(treesNodes[keyFramesIndex[i]]);
-    treesArcsT.push_back(treesArcs[keyFramesIndex[i]]);
-    treesSegmentationT.push_back(treesSegmentation[keyFramesIndex[i]]);
-    treesNodeCorrMeshT.push_back(treesNodeCorrMesh[keyFramesIndex[i]]);
-    inputTreesT.push_back(inputTrees[keyFramesIndex[i]]);
+    treesNodesT.emplace_back(treesNodes[keyFramesIndex[i]]);
+    treesArcsT.emplace_back(treesArcs[keyFramesIndex[i]]);
+    treesSegmentationT.emplace_back(treesSegmentation[keyFramesIndex[i]]);
+    treesNodeCorrMeshT.emplace_back(treesNodeCorrMesh[keyFramesIndex[i]]);
+    inputTreesT.emplace_back(inputTrees[keyFramesIndex[i]]);
   }
   treesNodes.swap(treesNodesT);
   treesArcs.swap(treesArcsT);

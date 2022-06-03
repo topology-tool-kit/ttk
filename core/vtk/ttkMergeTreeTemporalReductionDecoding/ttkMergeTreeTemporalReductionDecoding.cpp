@@ -199,7 +199,7 @@ int ttkMergeTreeTemporalReductionDecoding::runCompute(
   for(size_t i = 0; i < allMT_T.size(); ++i) {
     MergeTree<double> tree;
     mergeTreeTemplateToDouble<dataType>(allMT_T[i], tree);
-    intermediateSTrees.push_back(tree);
+    intermediateSTrees.emplace_back(tree);
   }
 
   return 1;
@@ -230,18 +230,18 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   size_t cpt = 0;
   while(cpt < coefs.size()) {
     while(cpt < coefs.size() and std::get<2>(coefs[cpt]) <= index) {
-      treesNodesT.push_back(nullptr);
-      treesArcsT.push_back(nullptr);
-      treesSegmentationT.push_back(nullptr);
+      treesNodesT.emplace_back(nullptr);
+      treesArcsT.emplace_back(nullptr);
+      treesSegmentationT.emplace_back(nullptr);
       treesNodeCorrMeshT.emplace_back();
-      inputTreesT.push_back(nullptr);
+      inputTreesT.emplace_back(nullptr);
       ++cpt;
     }
-    treesNodesT.push_back(treesNodes[index]);
-    treesArcsT.push_back(treesArcs[index]);
-    treesSegmentationT.push_back(treesSegmentation[index]);
-    treesNodeCorrMeshT.push_back(treesNodeCorrMesh[index]);
-    inputTreesT.push_back(inputTrees[index]);
+    treesNodesT.emplace_back(treesNodes[index]);
+    treesArcsT.emplace_back(treesArcs[index]);
+    treesSegmentationT.emplace_back(treesSegmentation[index]);
+    treesNodeCorrMeshT.emplace_back(treesNodeCorrMesh[index]);
+    inputTreesT.emplace_back(inputTrees[index]);
     ++index;
   }
   treesNodes.swap(treesNodesT);
@@ -386,8 +386,8 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
         vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(0))
           ->GetBlock(i + 1));
     std::vector<std::vector<SimplexId>> nodeCorrTemp;
-    nodeCorrTemp.push_back(nodeCorr[i]);
-    nodeCorrTemp.push_back(nodeCorr[i + 1]);
+    nodeCorrTemp.emplace_back(nodeCorr[i]);
+    nodeCorrTemp.emplace_back(nodeCorr[i + 1]);
 
     // Fill vtk objects
     ttkMergeTreeVisualization visuMakerMatching;
