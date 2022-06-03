@@ -20,8 +20,7 @@ ttkPathCompression::ttkPathCompression() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkPathCompression::~ttkPathCompression() = default {
-}
+ttkPathCompression::~ttkPathCompression() = default;
 
 int ttkPathCompression::FillInputPortInformation(int port,
                                                  vtkInformation *info) {
