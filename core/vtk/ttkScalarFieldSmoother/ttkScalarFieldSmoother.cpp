@@ -94,11 +94,25 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
   this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputArray));
   this->setMaskDataPointer(inputMaskPtr);
 
-  // calling the smoothing package
-  ttkVtkTemplateMacro(
+#ifdef TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    auto pointData = input->GetPointData();
+    auto vtkGlobalPointIds = pointData->GetGlobalIds();
+    auto rankArray = pointData->GetArray("RankArray");
+
+    ttkTypeMacroAT(inputScalarField->GetDataType(), triangulation->getType(),
+                   (smooth<T0, T1>(
+                     static_cast<const T1 *>(triangulation->getData()),
+                     NumberOfIterations, ttkUtils::GetPointer<int>(rankArray),
+                     ttkUtils::GetPointer<ttk::SimplexId>(vtkGlobalPointIds))));
+    return 1;
+  }
+#endif // TTK_ENABLE_MPI
+  // calling the smoothing package sequentially
+  ttkTypeMacroAT(
     inputScalarField->GetDataType(), triangulation->getType(),
-    (this->smooth<VTK_TT, TTK_TT>(
-      (TTK_TT *)triangulation->getData(), NumberOfIterations)));
+    (smooth<T0, T1>(
+      static_cast<const T1 *>(triangulation->getData()), NumberOfIterations)));
 
   return 1;
 }
