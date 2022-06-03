@@ -98,8 +98,8 @@ public:
     return persistenceThreshold_;
   }
 
-  void SetDeleteMultiPersPairs(bool deleteMultiPersPairs) {
-    deleteMultiPersPairs_ = deleteMultiPersPairs;
+  void SetDeleteMultiPersPairs(bool doDelete) {
+    deleteMultiPersPairs_ = doDelete;
     Modified();
   }
   bool SetDeleteMultiPersPairs() {
