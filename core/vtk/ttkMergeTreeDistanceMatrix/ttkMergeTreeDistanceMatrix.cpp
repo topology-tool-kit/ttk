@@ -8,7 +8,6 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 using namespace ttk;

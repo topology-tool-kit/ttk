@@ -33,6 +33,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 
 // TTK Base Includes
 #include <MergeTreeDistanceMatrix.h>

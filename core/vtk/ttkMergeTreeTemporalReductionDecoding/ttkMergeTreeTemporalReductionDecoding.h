@@ -40,6 +40,7 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
+#include <vtkSmartPointer.h>
 
 /* Note on including VTK modules
  *

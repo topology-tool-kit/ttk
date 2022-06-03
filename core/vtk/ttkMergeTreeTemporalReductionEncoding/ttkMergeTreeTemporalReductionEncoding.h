@@ -41,6 +41,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes

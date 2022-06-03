@@ -19,7 +19,6 @@
 #include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 #include <string>

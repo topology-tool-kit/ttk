@@ -11,7 +11,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkResampleToImage.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 #include <ttkMacros.h>
