@@ -41,6 +41,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
@@ -153,8 +154,8 @@ public:
     return useMinMaxPair_;
   }
 
-  void SetDeleteMultiPersPairs(bool deleteMultiPersPairs) {
-    deleteMultiPersPairs_ = deleteMultiPersPairs;
+  void SetDeleteMultiPersPairs(bool doDelete) {
+    deleteMultiPersPairs_ = doDelete;
     Modified();
     resetDataVisualization();
   }
@@ -245,12 +246,13 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
 
   template <class dataType>
-  int runCompute(std::vector<vtkMultiBlockDataSet *> &inputTrees);
+  int runCompute(
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
 
   template <class dataType>
   int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees);
+                std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
 };
