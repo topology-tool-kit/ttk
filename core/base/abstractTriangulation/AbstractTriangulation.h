@@ -2541,7 +2541,7 @@ namespace ttk {
       return 0;
     }
 
-    virtual inline SimplexId getEdgeGlobalId(const SimplexId &leid) {
+    virtual inline SimplexId getEdgeGlobalId(const SimplexId &leid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
         this->printErr("Only 2D and 3D datasets are supported");
@@ -2556,7 +2556,7 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getEdgeGlobalIdInternal(leid);
     }
-    virtual inline SimplexId getEdgeLocalId(const SimplexId &geid) {
+    virtual inline SimplexId getEdgeLocalId(const SimplexId &geid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
         this->printErr("Only 2D and 3D datasets are supported");
@@ -2571,7 +2571,7 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getEdgeLocalIdInternal(geid);
     }
-    virtual inline SimplexId getTriangleGlobalId(const SimplexId &ltid) {
+    virtual inline SimplexId getTriangleGlobalId(const SimplexId &ltid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 3) {
         this->printErr("Only 3D datasets are supported");
@@ -2586,7 +2586,7 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getTriangleGlobalIdInternal(ltid);
     }
-    virtual inline SimplexId getTriangleLocalId(const SimplexId &gtid) {
+    virtual inline SimplexId getTriangleLocalId(const SimplexId &gtid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 3) {
         this->printErr("Only 3D datasets are supported");
@@ -2653,19 +2653,19 @@ namespace ttk {
 
   protected:
     virtual inline SimplexId
-      getEdgeGlobalIdInternal(const SimplexId &ttkNotUsed(leid)) {
+      getEdgeGlobalIdInternal(const SimplexId &ttkNotUsed(leid)) const {
       return 0;
     }
     virtual inline SimplexId
-      getEdgeLocalIdInternal(const SimplexId &ttkNotUsed(geid)) {
+      getEdgeLocalIdInternal(const SimplexId &ttkNotUsed(geid)) const {
       return 0;
     }
     virtual inline SimplexId
-      getTriangleGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) {
+      getTriangleGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) const {
       return 0;
     }
     virtual inline SimplexId
-      getTriangleLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) {
+      getTriangleLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) const {
       return 0;
     }
     virtual inline SimplexId
