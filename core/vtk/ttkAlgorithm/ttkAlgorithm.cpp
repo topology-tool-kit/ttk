@@ -177,12 +177,12 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
         this->MPIPipelinePreconditioning(inputData);
         auto vtkGlobalPointIds = inputData->GetPointData()->GetGlobalIds();
         auto rankArray = inputData->GetPointData()->GetArray("RankArray");
-        ttkTypeMacroAI(
-          scalarArray->GetDataType(), vtkGlobalPointIds->GetDataType(),
-          (ttk::produceOrdering<T0, T1>(
+        ttkTypeMacroA(
+          scalarArray->GetDataType(),
+          (ttk::produceOrdering<T0>(
             ttkUtils::GetPointer<ttk::SimplexId>(newOrderArray),
             ttkUtils::GetPointer<T0>(scalarArray),
-            ttkUtils::GetPointer<T1>(vtkGlobalPointIds),
+            ttkUtils::GetPointer<ttk::LongSimplexId>(vtkGlobalPointIds),
             ttkUtils::GetPointer<int>(rankArray), nVertices, 500)));
       } else {
         switch(scalarArray->GetDataType()) {
@@ -453,10 +453,10 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     std::vector<int> rankArray(vertexNumber, 0);
     double *boundingBox = input->GetBounds();
     ttk::produceRankArray(rankArray,
-                          static_cast<long int *>(ttkUtils::GetVoidPointer(
-                            input->GetPointData()->GetGlobalIds())),
-                          static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
-                            input->GetPointData()->GetArray("vtkGhostType"))),
+                          ttkUtils::GetPointer<ttk::LongSimplexId>(
+                            input->GetPointData()->GetGlobalIds()),
+                          ttkUtils::GetPointer<unsigned char>(
+                            input->GetPointData()->GetArray("vtkGhostType")),
                           vertexNumber, boundingBox);
 
     vtkNew<vtkIntArray> vtkRankArray{};
@@ -477,10 +477,10 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     std::vector<int> cellsRankArray(cellNumber, 0);
     double *boundingBox = input->GetBounds();
     ttk::produceRankArray(cellsRankArray,
-                          static_cast<long int *>(ttkUtils::GetVoidPointer(
-                            input->GetCellData()->GetGlobalIds())),
-                          static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
-                            input->GetCellData()->GetArray("vtkGhostType"))),
+                          ttkUtils::GetPointer<ttk::LongSimplexId>(
+                            input->GetCellData()->GetGlobalIds()),
+                          ttkUtils::GetPointer<unsigned char>(
+                            input->GetCellData()->GetArray("vtkGhostType")),
                           cellNumber, boundingBox);
 
     vtkNew<vtkIntArray> vtkCellsRankArray{};

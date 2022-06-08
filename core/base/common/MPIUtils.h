@@ -9,14 +9,19 @@
 
 #include <BaseClass.h>
 #include <Timer.h>
+
 #include <algorithm>
 #include <array>
 #include <limits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 #if TTK_ENABLE_MPI
+
+// disable the MPI C++ API
 #define OMPI_SKIP_MPICXX 1
+
 #include <mpi.h>
 
 namespace ttk {
@@ -163,12 +168,13 @@ namespace ttk {
   template <typename DT, typename IT>
   int getGhostCellScalars(DT *scalarArray,
                           const int *const rankArray,
-                          const IT *const globalIds,
+                          const LongSimplexId *const globalIds,
                           const std::unordered_map<IT, IT> &gidToLidMap,
                           const std::unordered_set<int> &neighbors,
                           const int rankToSend,
                           const IT nVerts,
                           MPI_Comm communicator) {
+
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }
@@ -368,7 +374,7 @@ namespace ttk {
   template <typename DT, typename IT>
   int exchangeGhostCells(DT *scalarArray,
                          const int *const rankArray,
-                         const IT *const globalIds,
+                         const LongSimplexId *const globalIds,
                          const std::unordered_map<IT, IT> &gidToLidMap,
                          const IT nVerts,
                          MPI_Comm communicator) {
@@ -407,7 +413,7 @@ namespace ttk {
    * @param[in] nVertices number of vertices in the arrays
    */
   void inline produceRankArray(std::vector<int> &rankArray,
-                               long int *globalIds,
+                               LongSimplexId *globalIds,
                                unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox) {
@@ -696,7 +702,7 @@ namespace ttk {
                       std::unordered_map<IT, IT> &gidToLidMap,
                       const size_t nVerts,
                       const DT *const scalars,
-                      const IT *const globalIds,
+                      const LongSimplexId *const globalIds,
                       const int *const rankArray) {
     for(size_t i = 0; i < nVerts; i++) {
       IT globalId = globalIds[i];

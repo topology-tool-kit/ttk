@@ -64,14 +64,14 @@ int ttkGhostCellPreconditioning::RequestData(
   this->printMsg("#Points: " + std::to_string(nVertices));
   this->printMsg("#Cells: " + std::to_string(nCells));
 
-  long int *verticesGlobalIds = static_cast<long int *>(
-    ttkUtils::GetVoidPointer(pointData->GetGlobalIds()));
-  unsigned char *verticesGhostCells = static_cast<unsigned char *>(
-    ttkUtils::GetVoidPointer(pointData->GetArray("vtkGhostType")));
-  long int *cellsGlobalIds = static_cast<long int *>(
-    ttkUtils::GetVoidPointer(cellData->GetGlobalIds()));
-  unsigned char *cellsGhostCells = static_cast<unsigned char *>(
-    ttkUtils::GetVoidPointer(cellData->GetArray("vtkGhostType")));
+  auto *verticesGlobalIds
+    = ttkUtils::GetPointer<ttk::LongSimplexId>(pointData->GetGlobalIds());
+  auto *verticesGhostCells
+    = ttkUtils::GetPointer<unsigned char>(pointData->GetArray("vtkGhostType"));
+  auto *cellsGlobalIds
+    = ttkUtils::GetPointer<ttk::LongSimplexId>(cellData->GetGlobalIds());
+  auto *cellsGhostCells
+    = ttkUtils::GetPointer<unsigned char>(cellData->GetArray("vtkGhostType"));
 
   if(verticesGlobalIds != nullptr && verticesGhostCells != nullptr
      && cellsGlobalIds != nullptr && cellsGhostCells != nullptr) {
