@@ -152,7 +152,8 @@ int ttkGhostCellPreconditioning::RequestData(
           }
         }
       }
-
+      // free the communicator once we are done with everything MPI
+      MPI_Comm_free(&ttkGhostCellPreconditioningComm);
       output->GetPointData()->AddArray(rankArray);
 
       this->printMsg("Preprocessed RankArray", 1.0, tm.getElapsedTime(),
