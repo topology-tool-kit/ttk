@@ -37,7 +37,8 @@ dataType DiscreteGradient::getPersistence(
 }
 
 template <typename triangulationType>
-int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
+int DiscreteGradient::buildGradient(const triangulationType &triangulation,
+                                    const bool bypassCache) {
 
   auto &cacheHandler = *triangulation.getGradientCacheHandler();
   const auto findGradient
@@ -48,11 +49,15 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
     return cacheHandler.get(this->inputScalarField_);
   };
 
-  this->gradient_ = findGradient();
-  if(this->gradient_ == nullptr) {
-    // add new cache entry
-    cacheHandler.insert(this->inputScalarField_, {});
-    this->gradient_ = cacheHandler.get(this->inputScalarField_);
+  this->gradient_ = bypassCache ? &this->localGradient_ : findGradient();
+  if(this->gradient_ == nullptr || bypassCache) {
+
+    if(!bypassCache) {
+      // add new cache entry
+      cacheHandler.insert(this->inputScalarField_, {});
+      this->gradient_ = cacheHandler.get(this->inputScalarField_);
+    }
+
     // allocate gradient memory
     this->initMemory(triangulation);
 

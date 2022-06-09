@@ -337,7 +337,8 @@ saddle-connectors.
 triangulation.
        */
       template <typename triangulationType>
-      int buildGradient(const triangulationType &triangulation);
+      int buildGradient(const triangulationType &triangulation,
+                        const bool bypassCache = false);
 
       /**
        * Automatic detection of the PL critical points and simplification
@@ -916,7 +917,12 @@ gradient, false otherwise.
       std::vector<SimplexId> dmt2Saddle2PL_{};
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 
+      // spare storage (bypass cache) for gradient internal structure
+      AbstractTriangulation::gradientType localGradient_{};
+      // cache key (scalar field pointer + timestamp)
       AbstractTriangulation::gradientKeyType inputScalarField_{};
+      // pointer to either cache entry corresponding to inputScalarField_ or
+      // localGradient_ (if cache is bypassed)
       AbstractTriangulation::gradientType *gradient_{};
       const SimplexId *inputOffsets_{};
     };
