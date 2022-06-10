@@ -67,8 +67,6 @@ int ttkGhostCellPreconditioning::RequestData(
   if(vtkGlobalPointIds != nullptr && vtkGhostCells != nullptr) {
 #ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
-      MPI_Comm ttkGhostCellPreconditioningComm;
-      MPI_Comm_dup(MPI_COMM_WORLD, &ttkGhostCellPreconditioningComm);
 
       if(ttk::MPIrank_ == 0)
         this->printMsg(
@@ -107,11 +105,10 @@ int ttkGhostCellPreconditioning::RequestData(
       for(int r = 0; r < ttk::MPIsize_; r++) {
         if(r == ttk::MPIrank_)
           sizeOfCurrentRank = currentRankUnknownIds.size();
-        MPI_Bcast(
-          &sizeOfCurrentRank, 1, MIT, r, ttkGhostCellPreconditioningComm);
+        MPI_Bcast(&sizeOfCurrentRank, 1, MIT, r, ttk::MPIcomm_);
         allUnknownIds[r].resize(sizeOfCurrentRank);
-        MPI_Bcast(allUnknownIds[r].data(), sizeOfCurrentRank, MIT, r,
-                  ttkGhostCellPreconditioningComm);
+        MPI_Bcast(
+          allUnknownIds[r].data(), sizeOfCurrentRank, MIT, r, ttk::MPIcomm_);
       }
 
       // then we check if the needed globalid values are present in the local
@@ -128,8 +125,8 @@ int ttkGhostCellPreconditioning::RequestData(
             }
           }
           // send whole vector of data
-          MPI_Send(gIdsToSend.data(), gIdsToSend.size(), MIT, r, 101,
-                   ttkGhostCellPreconditioningComm);
+          MPI_Send(
+            gIdsToSend.data(), gIdsToSend.size(), MIT, r, 101, ttk::MPIcomm_);
         } else {
           // receive a variable amount of values from different ranks
           size_t i = 0;
@@ -140,7 +137,7 @@ int ttkGhostCellPreconditioning::RequestData(
             int amount;
             MPI_Recv(receivedGlobals.data(),
                      allUnknownIds[ttk::MPIrank_].size(), MIT, MPI_ANY_SOURCE,
-                     MPI_ANY_TAG, ttkGhostCellPreconditioningComm, &status);
+                     MPI_ANY_TAG, ttk::MPIcomm_, &status);
             int sourceRank = status.MPI_SOURCE;
             MPI_Get_count(&status, MIT, &amount);
             receivedGlobals.resize(amount);
@@ -153,7 +150,6 @@ int ttkGhostCellPreconditioning::RequestData(
         }
       }
       // free the communicator once we are done with everything MPI
-      MPI_Comm_free(&ttkGhostCellPreconditioningComm);
       output->GetPointData()->AddArray(rankArray);
 
       this->printMsg("Preprocessed RankArray", 1.0, tm.getElapsedTime(),
