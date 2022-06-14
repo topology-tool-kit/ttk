@@ -3065,8 +3065,9 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   // number of local cells (with ghost cells...)
   const auto nLocCells{this->getNumberOfCells()};
 
-  // there are 6 tetrahedra per cell
-  const int nTetraPerCube{6};
+  // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
+  const int nTetraPerCube{ImplicitTriangulation::getDimensionality() == 3 ? 6
+                                                                          : 2};
   std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
   // local (simplicial) cell id -> global cell id
@@ -3207,6 +3208,13 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
 
   this->preconditionDistributedCells();
 
+  bool localHasPrecEdgeStars{this->hasPreconditionedEdgeStars_};
+  this->hasPreconditionedEdgeStars_ = true;
+  bool localHasPrecTriangleStars{this->hasPreconditionedTriangleStars_};
+  this->hasPreconditionedTriangleStars_ = true;
+  bool localHasPrecCellEdges{this->hasPreconditionedCellEdges_};
+  this->hasPreconditionedCellEdges_ = true;
+
   // allocate memory
   this->edgeLidToGid_.resize(this->getNumberOfEdgesInternal(), -1);
   this->edgeGidToLid_.reserve(this->getNumberOfEdgesInternal());
@@ -3241,9 +3249,19 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
         for(size_t j = gcid; j < endCurrRank; ++j) {
           // local cell id
           const auto lcid{this->cellGidToLid_[j]};
-          for(SimplexId i = 0; i < this->getCellEdgeNumberInternal(lcid); ++i) {
+          SimplexId nEdges{};
+          if(this->dimensionality_ == 3) {
+            nEdges = this->getCellEdgeNumberInternal(lcid);
+          } else if(this->dimensionality_ == 2) {
+            nEdges = this->getTriangleEdgeNumberInternal(lcid);
+          }
+          for(SimplexId i = 0; i < nEdges; ++i) {
             SimplexId leid{-1};
-            this->getCellEdgeInternal(lcid, i, leid);
+            if(this->dimensionality_ == 3) {
+              this->getCellEdgeInternal(lcid, i, leid);
+            } else if(this->dimensionality_ == 2) {
+              this->getTriangleEdge(lcid, i, leid);
+            }
             processEdge(leid, lcid, edgeCount);
           }
         }
@@ -3258,6 +3276,9 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
   }
 
   this->hasPreconditionedDistributedEdges_ = true;
+  this->hasPreconditionedEdgeStars_ = localHasPrecEdgeStars;
+  this->hasPreconditionedTriangleStars_ = localHasPrecTriangleStars;
+  this->hasPreconditionedCellEdges_ = localHasPrecCellEdges;
 
   return 0;
 }
@@ -3283,6 +3304,9 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
   // allocate memory
   this->triangleLidToGid_.resize(this->getNumberOfTrianglesInternal(), -1);
   this->triangleGidToLid_.reserve(this->getNumberOfTrianglesInternal());
+
+  bool localHasPrecTriangleStars{this->hasPreconditionedTriangleStars_};
+  this->hasPreconditionedTriangleStars_ = true;
 
   const auto processTriangle =
     [this](const SimplexId ltid, const SimplexId lcid, size_t &triangleCount) {
@@ -3334,6 +3358,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
   }
 
   this->hasPreconditionedDistributedTriangles_ = true;
+  this->hasPreconditionedTriangleStars_ = localHasPrecTriangleStars;
 
   return 0;
 }

@@ -767,9 +767,19 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
         for(size_t j = gcid; j < endCurrRank; ++j) {
           // local cell id
           const auto lcid{this->cellGidToLid_[j]};
-          for(SimplexId i = 0; i < this->getCellEdgeNumberInternal(lcid); ++i) {
+          SimplexId nEdges{};
+          if(this->getDimensionality() == 3) {
+            nEdges = this->getCellEdgeNumberInternal(lcid);
+          } else if(this->getDimensionality() == 2) {
+            nEdges = this->getTriangleEdgeNumberInternal(lcid);
+          }
+          for(SimplexId i = 0; i < nEdges; ++i) {
             SimplexId leid{-1};
-            this->getCellEdgeInternal(lcid, i, leid);
+            if(this->getDimensionality() == 3) {
+              this->getCellEdgeInternal(lcid, i, leid);
+            } else if(this->getDimensionality() == 2) {
+              this->getTriangleEdgeInternal(lcid, i, leid);
+            }
             processEdge(leid, lcid, edgeCount);
           }
         }
