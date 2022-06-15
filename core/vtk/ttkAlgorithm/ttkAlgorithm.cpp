@@ -411,43 +411,42 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     input->ShallowCopy(globalIds->GetOutputDataObject(0));
   }
 
-    vtkNew<vtkGhostCellsGenerator> generator;
-    if(!input->HasAnyGhostCells()) {
-      generator->SetInputData(input);
-      generator->BuildIfRequiredOff();
-      generator->SetNumberOfGhostLayers(2);
-      generator->Update();
-      input->ShallowCopy(generator->GetOutputDataObject(0));
-      input->GetPointData()->AddArray(
-        generator->GetOutputDataObject(0)->GetGhostArray(0));
-      input->GetCellData()->AddArray(
-        generator->GetOutputDataObject(0)->GetGhostArray(1));
+  vtkNew<vtkGhostCellsGenerator> generator;
+  if(!input->HasAnyGhostCells()) {
+    generator->SetInputData(input);
+    generator->BuildIfRequiredOff();
+    generator->SetNumberOfGhostLayers(2);
+    generator->Update();
+    input->ShallowCopy(generator->GetOutputDataObject(0));
+    input->GetPointData()->AddArray(
+      generator->GetOutputDataObject(0)->GetGhostArray(0));
+    input->GetCellData()->AddArray(
+      generator->GetOutputDataObject(0)->GetGhostArray(1));
+  }
+
+  // If the RankArray array doesn't exist, it is created
+  if(input->GetPointData()->GetArray("RankArray") == nullptr) {
+    int vertexNumber = input->GetNumberOfPoints();
+    std::vector<int> rankArray(vertexNumber, 0);
+
+    ttk::produceRankArray(rankArray,
+                          static_cast<long int *>(ttkUtils::GetVoidPointer(
+                            input->GetPointData()->GetGlobalIds())),
+                          static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
+                            input->GetPointData()->GetArray("vtkGhostType"))),
+                          vertexNumber);
+
+    vtkNew<vtkIntArray> vtkRankArray{};
+    vtkRankArray->SetName("RankArray");
+    vtkRankArray->SetNumberOfComponents(1);
+    vtkRankArray->SetNumberOfTuples(vertexNumber);
+
+    for(int i = 0; i < vertexNumber; i++) {
+      vtkRankArray->SetComponent(i, 0, rankArray[i]);
     }
 
-    // If the RankArray array doesn't exist, it is created
-    if(input->GetPointData()->GetArray("RankArray") == nullptr) {
-      int vertexNumber = input->GetNumberOfPoints();
-      std::vector<int> rankArray(vertexNumber, 0);
-
-      ttk::produceRankArray(
-        rankArray,
-        static_cast<long int *>(
-          ttkUtils::GetVoidPointer(input->GetPointData()->GetGlobalIds())),
-        static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
-          input->GetPointData()->GetArray("vtkGhostType"))),
-        vertexNumber);
-
-      vtkNew<vtkIntArray> vtkRankArray{};
-      vtkRankArray->SetName("RankArray");
-      vtkRankArray->SetNumberOfComponents(1);
-      vtkRankArray->SetNumberOfTuples(vertexNumber);
-
-      for(int i = 0; i < vertexNumber; i++) {
-        vtkRankArray->SetComponent(i, 0, rankArray[i]);
-      }
-
-      input->GetPointData()->AddArray(vtkRankArray);
-    }
+    input->GetPointData()->AddArray(vtkRankArray);
+  }
 }
 
 void ttkAlgorithm::MPITriangulationPreconditioning(
