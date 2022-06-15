@@ -404,7 +404,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
   vtkNew<vtkGenerateGlobalIds> globalIds;
   // If the global point id array doesn't exist, it is created
   if(input->GetPointData()->GetGlobalIds() == nullptr) {
-    printMsg("create globalIds");
     printWrn("Global ids haven't been produced in sequential, the parallel "
              "result may be different");
     globalIds->SetInputData(input);
@@ -414,7 +413,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
     vtkNew<vtkGhostCellsGenerator> generator;
     if(!input->HasAnyGhostCells()) {
-      printMsg("Create Ghost array");
       generator->SetInputData(input);
       generator->BuildIfRequiredOff();
       generator->SetNumberOfGhostLayers(2);
@@ -428,7 +426,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
     // If the RankArray array doesn't exist, it is created
     if(input->GetPointData()->GetArray("RankArray") == nullptr) {
-      printMsg("create rankArray");
       int vertexNumber = input->GetNumberOfPoints();
       std::vector<int> rankArray(vertexNumber, 0);
 
