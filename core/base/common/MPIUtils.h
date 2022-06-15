@@ -52,7 +52,7 @@ namespace ttk {
 
   inline int startMPITimer(Timer &t, int rank, int size) {
     if(size > 0) {
-      MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(ttk::MPIcomm_);
       if(rank == 0) {
         t.reStart();
       }
@@ -63,7 +63,7 @@ namespace ttk {
   inline double endMPITimer(Timer &t, int rank, int size) {
     double elapsedTime = 0;
     if(size > 0) {
-      MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(ttk::MPIcomm_);
       if(rank == 0) {
         elapsedTime = t.getElapsedTime();
       }
@@ -100,7 +100,7 @@ namespace ttk {
     const unsigned long localSize = src.size();
     // gather src sizes on destRank
     MPI_Gather(&localSize, 1, MPI_UNSIGNED_LONG, vecSizes.data(), 1,
-               MPI_UNSIGNED_LONG, destRank, MPI_COMM_WORLD);
+               MPI_UNSIGNED_LONG, destRank, ttk::MPIcomm_);
 
     if(ttk::MPIrank_ == destRank) {
       // allocate dst with vecSizes
@@ -117,14 +117,14 @@ namespace ttk {
         }
         // receive src content from other ranks
         MPI_Recv(dst[i].data(), dst[i].size(), ttk::getMPIType(src[0]), i,
-                 MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                 MPI_ANY_TAG, ttk::MPIcomm_, MPI_STATUS_IGNORE);
       }
       dst[destRank] = std::move(src);
 
     } else {
       // send src content to destRank
       MPI_Send(src.data(), src.size(), ttk::getMPIType(src[0]), destRank, 0,
-               MPI_COMM_WORLD);
+               ttk::MPIcomm_);
     }
 
     return 0;
@@ -145,7 +145,7 @@ namespace ttk {
    * @param[in] rankToSend Destination process identifier
    * @param[in] nVerts number of vertices in the arrays
    * @param[in] communicator the communicator over which the ranks are connected
-   * (most likely MPI_COMM_WORLD)
+   * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
   template <typename DT, typename IT>
@@ -274,7 +274,7 @@ namespace ttk {
    * rank-based ids
    * @param[in] nVerts number of vertices in the arrays
    * @param[in] communicator the communicator over which the ranks are connected
-   * (most likely MPI_COMM_WORLD)
+   * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
   template <typename DT, typename IT>
