@@ -52,7 +52,7 @@ namespace ttk {
 
   inline int startMPITimer(Timer &t, int rank, int size) {
     if(size > 0) {
-      MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(ttk::MPIcomm_);
       if(rank == 0) {
         t.reStart();
       }
@@ -63,7 +63,7 @@ namespace ttk {
   inline double endMPITimer(Timer &t, int rank, int size) {
     double elapsedTime = 0;
     if(size > 0) {
-      MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(ttk::MPIcomm_);
       if(rank == 0) {
         elapsedTime = t.getElapsedTime();
       }
@@ -100,7 +100,7 @@ namespace ttk {
     const unsigned long localSize = src.size();
     // gather src sizes on destRank
     MPI_Gather(&localSize, 1, MPI_UNSIGNED_LONG, vecSizes.data(), 1,
-               MPI_UNSIGNED_LONG, destRank, MPI_COMM_WORLD);
+               MPI_UNSIGNED_LONG, destRank, ttk::MPIcomm_);
 
     if(ttk::MPIrank_ == destRank) {
       // allocate dst with vecSizes
@@ -117,14 +117,14 @@ namespace ttk {
         }
         // receive src content from other ranks
         MPI_Recv(dst[i].data(), dst[i].size(), ttk::getMPIType(src[0]), i,
-                 MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                 MPI_ANY_TAG, ttk::MPIcomm_, MPI_STATUS_IGNORE);
       }
       dst[destRank] = std::move(src);
 
     } else {
       // send src content to destRank
       MPI_Send(src.data(), src.size(), ttk::getMPIType(src[0]), destRank, 0,
-               MPI_COMM_WORLD);
+               ttk::MPIcomm_);
     }
 
     return 0;
@@ -145,7 +145,7 @@ namespace ttk {
    * @param[in] rankToSend Destination process identifier
    * @param[in] nVerts number of vertices in the arrays
    * @param[in] communicator the communicator over which the ranks are connected
-   * (most likely MPI_COMM_WORLD)
+   * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
   template <typename DT, typename IT>
@@ -274,7 +274,7 @@ namespace ttk {
    * rank-based ids
    * @param[in] nVerts number of vertices in the arrays
    * @param[in] communicator the communicator over which the ranks are connected
-   * (most likely MPI_COMM_WORLD)
+   * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
   template <typename DT, typename IT>
@@ -297,6 +297,15 @@ namespace ttk {
     }
     return 0;
   }
+
+  /**
+   * @brief produce the RankArray array, that stores rank ownership information
+   *
+   * @param[out] rankArray the owner array for the scalar data
+   * @param[in] globalIds the global id array for the scalar data
+   * @param[in] ghostCells the ghost array for the scalar data
+   * @param[in] nVertices number of vertices in the arrays
+   */
 
   void inline produceRankArray(std::vector<int> &rankArray,
                                long int *globalIds,
@@ -333,10 +342,10 @@ namespace ttk {
     for(int r = 0; r < ttk::MPIsize_; r++) {
       if(r == ttk::MPIrank_)
         sizeOfCurrentRank = currentRankUnknownIds.size();
-      MPI_Bcast(&sizeOfCurrentRank, 1, MIT, r, ttkGhostCellPreconditioningComm);
+      MPI_Bcast(&sizeOfCurrentRank, 1, MIT, r, ttk::MPIcomm_);
       allUnknownIds[r].resize(sizeOfCurrentRank);
-      MPI_Bcast(allUnknownIds[r].data(), sizeOfCurrentRank, MIT, r,
-                ttkGhostCellPreconditioningComm);
+      MPI_Bcast(
+        allUnknownIds[r].data(), sizeOfCurrentRank, MIT, r, ttk::MPIcomm_);
     }
     // then we check if the needed globalid values are present in the local
     // globalid map if so, we send the rank value to the requesting rank
@@ -352,8 +361,8 @@ namespace ttk {
           }
         }
         // send whole vector of data
-        MPI_Send(gIdsToSend.data(), gIdsToSend.size(), MIT, r, 101,
-                 ttkGhostCellPreconditioningComm);
+        MPI_Send(
+          gIdsToSend.data(), gIdsToSend.size(), MIT, r, 101, ttk::MPIcomm_);
       } else {
         // receive a variable amount of values from different ranks
         size_t i = 0;
@@ -363,8 +372,7 @@ namespace ttk {
           MPI_Status status;
           int amount;
           MPI_Recv(receivedGlobals.data(), allUnknownIds[ttk::MPIrank_].size(),
-                   MIT, MPI_ANY_SOURCE, MPI_ANY_TAG,
-                   ttkGhostCellPreconditioningComm, &status);
+                   MIT, MPI_ANY_SOURCE, MPI_ANY_TAG, ttk::MPIcomm_, &status);
           int sourceRank = status.MPI_SOURCE;
           MPI_Get_count(&status, MIT, &amount);
           receivedGlobals.resize(amount);
@@ -376,8 +384,6 @@ namespace ttk {
         }
       }
     }
-    // free the communicator once we are done with everything MPI
-    MPI_Comm_free(&ttkGhostCellPreconditioningComm);
   }
 } // namespace ttk
 #endif

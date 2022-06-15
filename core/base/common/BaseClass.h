@@ -14,6 +14,10 @@
 
 #include <DataTypes.h>
 #include <OpenMP.h>
+#if TTK_ENABLE_MPI
+#define OMPI_SKIP_MPICXX 1
+#include <mpi.h>
+#endif
 
 #if defined(_MSC_VER) && defined(TTK_ENABLE_SHARED_BASE_LIBRARIES)
 #if defined(common_EXPORTS)
@@ -57,6 +61,9 @@ namespace ttk {
   COMMON_EXPORTS extern int globalThreadNumber_;
   COMMON_EXPORTS extern int MPIrank_;
   COMMON_EXPORTS extern int MPIsize_;
+#ifdef TTK_ENABLE_MPI
+  COMMON_EXPORTS extern MPI_Comm MPIcomm_;
+#endif
 
   class Wrapper;
 
@@ -89,5 +96,4 @@ namespace ttk {
     Wrapper *wrapper_;
   };
 } // namespace ttk
-
 #include <MPIUtils.h>
