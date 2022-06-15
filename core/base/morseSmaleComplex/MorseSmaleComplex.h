@@ -439,7 +439,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setDebugLevel(debugLevel_);
   this->discreteGradient_.setInputScalarField(scalars, scalarsMTime);
   this->discreteGradient_.setInputOffsets(offsets);
-  this->discreteGradient_.buildGradient(triangulation);
+  this->discreteGradient_.buildGradient(
+    triangulation, this->ReturnSaddleConnectors);
 
   if(dim == 3 && ReturnSaddleConnectors) {
     discreteGradient_.reverseGradient<dataType>(triangulation);
