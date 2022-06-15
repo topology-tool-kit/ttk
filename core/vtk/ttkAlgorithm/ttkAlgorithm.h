@@ -210,11 +210,21 @@ protected:
   ~ttkAlgorithm() override;
 
   /**
-   * This method is called in ProcessRequest, when the request is of type
-   * RequestData. It verifies that several attributes necessary for MPI
-   * computation are computed and if not, computes them.
+   * This method is called in GetTriangulation, after the triangulation as been
+   * created. It verifies that several attributes necessary for MPI computation
+   * are present in the pipeline and if not, computes them.
    */
-  void MPIPreconditioning(vtkDataSet *input);
+  void MPIPipelinePreconditioning(vtkDataSet *input);
+
+  /**
+   * This method is called in GetTriangulation, after the triangulation as been
+   * created. It retrieves several attributes from the pipeline to precondition
+   * the triangulation for MPI computation.
+   */
+
+  void MPITriangulationPreconditioning(ttk::Triangulation *triangulation,
+                                       vtkDataSet *input);
+
   /**
    * This method is called during the first pipeline pass in
    * ProcessRequest() to create empty output data objects. The data type of
