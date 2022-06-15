@@ -312,8 +312,6 @@ namespace ttk {
                                unsigned char *ghostCells,
                                int nVertices) {
     MPI_Datatype MIT = ttk::getMPIType(static_cast<ttk::SimplexId>(0));
-    MPI_Comm ttkGhostCellPreconditioningComm;
-    MPI_Comm_dup(MPI_COMM_WORLD, &ttkGhostCellPreconditioningComm);
     std::vector<ttk::SimplexId> currentRankUnknownIds;
     std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);
     std::unordered_set<ttk::SimplexId> gIdSet;
