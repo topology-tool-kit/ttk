@@ -428,13 +428,13 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
   if(input->GetPointData()->GetArray("RankArray") == nullptr) {
     int vertexNumber = input->GetNumberOfPoints();
     std::vector<int> rankArray(vertexNumber, 0);
-
+    double *boundingBox = input->GetBounds();
     ttk::produceRankArray(rankArray,
                           static_cast<long int *>(ttkUtils::GetVoidPointer(
                             input->GetPointData()->GetGlobalIds())),
                           static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
                             input->GetPointData()->GetArray("vtkGhostType"))),
-                          vertexNumber);
+                          vertexNumber, boundingBox);
 
     vtkNew<vtkIntArray> vtkRankArray{};
     vtkRankArray->SetName("RankArray");

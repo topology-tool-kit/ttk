@@ -74,8 +74,10 @@ int ttkGhostCellPreconditioning::RequestData(
       this->printMsg("#Ranks " + std::to_string(ttk::MPIsize_)
                      + ", this is rank " + std::to_string(ttk::MPIrank_));
       std::vector<int> rankArray(nVertices, 0);
+      double *boundingBox = input->GetBounds();
 
-      ttk::produceRankArray(rankArray, globalIds, ghostCells, nVertices);
+      ttk::produceRankArray(
+        rankArray, globalIds, ghostCells, nVertices, boundingBox);
 
       vtkNew<vtkIntArray> vtkRankArray{};
       vtkRankArray->SetName("RankArray");
