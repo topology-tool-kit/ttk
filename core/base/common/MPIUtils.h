@@ -325,7 +325,8 @@ namespace ttk {
                                unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox) {
-    std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
+    std::vector<std::array<double, 6>> rankBoundingBoxes(
+      ttk::MPIsize_, std::array<double, 6>({}));
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
     for(int r = 0; r < ttk::MPIsize_; r++) {
