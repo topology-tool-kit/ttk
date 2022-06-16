@@ -9,6 +9,7 @@
 
 #include <BaseClass.h>
 #include <Timer.h>
+#include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -324,12 +325,11 @@ namespace ttk {
                                unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox) {
-    std::vector<double *> rankBoundingBoxes(ttk::MPIsize_);
-    rankBoundingBoxes[ttk::MPIrank_] = boundingBox;
+    std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
+    std::copy(
+      boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
     for(int r = 0; r < ttk::MPIsize_; r++) {
-      if(r != ttk::MPIrank_)
-        rankBoundingBoxes[r] = (double *)malloc(6 * sizeof(double));
-      MPI_Bcast(rankBoundingBoxes[r], 6, MPI_DOUBLE, r, ttk::MPIcomm_);
+      MPI_Bcast(rankBoundingBoxes[r].data(), 6, MPI_DOUBLE, r, ttk::MPIcomm_);
     }
 
     double epsilon = 0.00001;
@@ -343,7 +343,7 @@ namespace ttk {
     std::vector<int> neighbors;
     for(int i = 0; i < ttk::MPIsize_; i++) {
       if(i != ttk::MPIrank_) {
-        double *theirBoundingBox = rankBoundingBoxes[i];
+        double *theirBoundingBox = rankBoundingBoxes[i].data();
         if(checkForIntersection(boundingBox, theirBoundingBox)) {
           neighbors.push_back(i);
         }
