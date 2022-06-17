@@ -1,5 +1,6 @@
 #include <ttkMacros.h>
 #include <ttkPersistenceDiagramClustering.h>
+#include <ttkPersistenceDiagramUtils.h>
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
@@ -12,8 +13,6 @@
 #include <vtkMultiBlockDataSet.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
-#include <vtkTransform.h>
-#include <vtkTransformFilter.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -517,29 +516,25 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
       pointPers->SetTuple1(2 * j + 1, pers);
     }
 
+    // translate diagram back to canonical representation
+    ResetDiagramPosition(vtu, *this);
+
     if(dm == DISPLAY::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis
-      vtkNew<vtkTransform> tr{};
-      tr->Translate(0, 0, i == 0 ? -spacing : spacing);
-      vtkNew<vtkTransformFilter> trf{};
-      trf->SetTransform(tr);
-      trf->SetInputData(vtu);
-      trf->Update();
-      output->SetBlock(i, trf->GetOutputDataObject(0));
+      const std::array<double, 3> trans{0, 0, i == 0 ? -spacing : spacing};
+      TranslateDiagram(vtu, trans);
+      output->SetBlock(i, vtu);
     } else if(dm == DISPLAY::STARS && spacing > 0) {
       const auto c = inv_clustering[i];
       const auto angle = 2.0 * M_PI * static_cast<double>(diagIdInClust[i])
                          / static_cast<double>(clustSize[c]);
       // translate diagrams in the XY plane
-      vtkNew<vtkTransform> tr{};
-      tr->Translate(3.0 * (spacing + 0.2) * max_persistence * c
-                      + spacing * max_persistence * std::cos(angle) + 0.2,
-                    spacing * max_persistence * std::sin(angle), 0);
-      vtkNew<vtkTransformFilter> trf{};
-      trf->SetTransform(tr);
-      trf->SetInputData(vtu);
-      trf->Update();
-      output->SetBlock(i, trf->GetOutputDataObject(0));
+      const std::array<double, 3> trans{
+        3.0 * (spacing + 0.2) * max_persistence * c
+          + spacing * max_persistence * std::cos(angle) + 0.2,
+        spacing * max_persistence * std::sin(angle), 0};
+      TranslateDiagram(vtu, trans);
+      output->SetBlock(i, vtu);
 
     } else {
       // add diagram to output multi-block dataset
@@ -567,13 +562,10 @@ void ttkPersistenceDiagramClustering::outputCentroids(
 
     if(dm == DISPLAY::STARS && spacing > 0) {
       // shift centroid along the X axis
-      vtkNew<vtkTransform> tr{};
-      tr->Translate(3.0 * (spacing + 0.2) * max_persistence * i, 0, 0);
-      vtkNew<vtkTransformFilter> trf{};
-      trf->SetTransform(tr);
-      trf->SetInputData(vtu);
-      trf->Update();
-      output->SetBlock(i, trf->GetOutputDataObject(0));
+      const std::array<double, 3> trans{
+        3.0 * (spacing + 0.2) * max_persistence * i, 0, 0};
+      TranslateDiagram(vtu, trans);
+      output->SetBlock(i, vtu);
 
     } else {
       // add centroid to output multi-block dataset
