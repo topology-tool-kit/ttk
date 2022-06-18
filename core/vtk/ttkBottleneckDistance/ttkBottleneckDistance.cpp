@@ -8,8 +8,6 @@
 #include <vtkIntArray.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
-#include <vtkTransform.h>
-#include <vtkTransformFilter.h>
 #include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkBottleneckDistance);
@@ -38,20 +36,6 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
     return 1;
   }
   return 0;
-}
-
-int translateDiagram(vtkUnstructuredGrid *output,
-                     vtkUnstructuredGrid *input,
-                     const double spacing) {
-  vtkNew<vtkTransform> tr{};
-  tr->Translate(0, 0, spacing);
-  vtkNew<vtkTransformFilter> trf{};
-  trf->SetTransform(tr);
-  trf->SetInputData(input);
-  trf->Update();
-  output->ShallowCopy(trf->GetOutputDataObject(0));
-
-  return 1;
 }
 
 int generateMatchings(vtkUnstructuredGrid *const outputCT3,
@@ -198,8 +182,12 @@ int ttkBottleneckDistance::RequestData(vtkInformation *ttkNotUsed(request),
   // Translate diagrams
   vtkNew<vtkUnstructuredGrid> vtu0{}, vtu1{};
   if(this->UseGeometricSpacing) {
-    translateDiagram(vtu0, inputDiags[0], -this->Spacing / 2.0);
-    translateDiagram(vtu1, inputDiags[1], this->Spacing / 2.0);
+    vtu0->ShallowCopy(inputDiags[0]);
+    ResetDiagramPosition(vtu0, *this);
+    TranslateDiagram(vtu0, {0, 0, -this->Spacing});
+    vtu1->ShallowCopy(inputDiags[1]);
+    ResetDiagramPosition(vtu1, *this);
+    TranslateDiagram(vtu1, {0, 0, this->Spacing});
   } else {
     vtu0->ShallowCopy(inputDiags[0]);
     vtu1->ShallowCopy(inputDiags[1]);
