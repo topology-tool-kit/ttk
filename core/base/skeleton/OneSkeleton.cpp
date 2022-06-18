@@ -138,7 +138,8 @@ int OneSkeleton::buildEdgeList(
   // check parameters consistency (we need n to be consistent with the
   // dimensionality of the mesh)
   const size_t dim = cellArray.getCellVertexNumber(0) - 1;
-  if(n != dim * (dim + 1) / 2) {
+  // n == 4 -> non simplicial mesh (quadrangulation), skip check
+  if(n != dim * (dim + 1) / 2 && n != 4) {
     this->printErr("Wrong template parameter (" + std::to_string(n)
                    + " edges per " + std::to_string(dim) + "D cell)");
     this->printErr("Cannot build edge list");
@@ -168,34 +169,83 @@ int OneSkeleton::buildEdgeList(
 
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
-    const SimplexId nbVertsInCell = cellArray.getCellVertexNumber(cid);
     // id of edge in cell
     SimplexId ecid{};
 
-    // tet case: {0-1}, {0-2}, {0-3}, {1-2}, {1-3}, {2-3}
-    for(SimplexId j = 0; j <= nbVertsInCell - 2; j++) {
-      for(SimplexId k = j + 1; k <= nbVertsInCell - 1; k++) {
-        // edge processing
-        SimplexId v0 = cellArray.getCellVertex(cid, j);
-        SimplexId v1 = cellArray.getCellVertex(cid, k);
-        if(v0 > v1) {
-          std::swap(v0, v1);
-        }
-        auto &vec = edgeTable[v0];
-        const auto pos
-          = std::find_if(vec.begin(), vec.end(),
-                         [&](const EdgeData &a) { return a.highVert == v1; });
-        if(pos == vec.end()) {
-          // not found in edgeTable: new edge
-          vec.emplace_back(EdgeData{v1, edgeCount});
-          cellEdgeList[cid][ecid] = edgeCount;
-          edgeCount++;
-        } else {
-          // found an existing edge
-          cellEdgeList[cid][ecid] = pos->id;
-        }
-        ecid++;
+    using edgeType = std::array<SimplexId, 2>;
+    std::array<edgeType, n> localEdges{};
+    if(n == 1) {
+      localEdges[0]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
+    } else if(n == 3) {
+      // triangle case: {0-1}, {0-2}, {1-2}
+      localEdges[0]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
+      localEdges[1]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
+      localEdges[2]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
+    } else if(n == 4) {
+      // quad case: {0-1}, {1-2}, {2-3}, {3-0}
+      localEdges[0]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
+      localEdges[1]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
+      localEdges[2]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 2)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
+      localEdges[3]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 3)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 0))};
+    } else if(n == 6) {
+      // tet case: {0-1}, {0-2}, {0-3}, {1-2}, {1-3}, {2-3}
+      localEdges[0]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
+      localEdges[1]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
+      localEdges[2]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
+      localEdges[3]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
+      localEdges[4]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
+      localEdges[5]
+        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 2)),
+                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
+    }
+
+    for(const auto &le : localEdges) {
+      // edge processing
+      SimplexId v0 = le[0];
+      SimplexId v1 = le[1];
+      if(v0 > v1) {
+        std::swap(v0, v1);
       }
+      auto &vec = edgeTable[v0];
+      const auto pos
+        = std::find_if(vec.begin(), vec.end(),
+                       [&](const EdgeData &a) { return a.highVert == v1; });
+      if(pos == vec.end()) {
+        // not found in edgeTable: new edge
+        vec.emplace_back(EdgeData{v1, edgeCount});
+        cellEdgeList[cid][ecid] = edgeCount;
+        edgeCount++;
+      } else {
+        // found an existing edge
+        cellEdgeList[cid][ecid] = pos->id;
+      }
+      ecid++;
     }
     if(debugLevel_ >= (int)(debug::Priority::INFO)) {
       if(!(cid % ((cellNumber) / timeBuckets)))
@@ -274,6 +324,14 @@ template int OneSkeleton::buildEdgeList<3>(
   std::vector<std::array<SimplexId, 2>> &edgeList,
   FlatJaggedArray &edgeStars,
   std::vector<std::array<SimplexId, 3>> &cellEdgeList) const;
+
+// explicit template instantiation for 2D cells (quads)
+template int OneSkeleton::buildEdgeList<4>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  std::vector<std::array<SimplexId, 2>> &edgeList,
+  FlatJaggedArray &edgeStars,
+  std::vector<std::array<SimplexId, 4>> &cellEdgeList) const;
 
 // explicit template instantiation for 3D cells (tetrathedron)
 template int OneSkeleton::buildEdgeList<6>(
