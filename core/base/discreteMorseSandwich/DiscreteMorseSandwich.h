@@ -79,7 +79,23 @@ namespace ttk {
                                 const triangulationType &triangulation,
                                 const bool ignoreBoundary);
 
-  private:
+    /**
+     * @brief Type for exporting persistent generators
+     *
+     * A generator = a 2-saddle index + vector of edges with 1-saddle
+     * at index 0.
+     */
+    struct GeneratorType {
+      /** Generator edges beginning with the 1-saddle */
+      std::vector<SimplexId> boundary;
+      /** Critical triangle index (-1 if infinite) */
+      SimplexId critTriangleId;
+      /** Vertex indices for the critical triangle (or global max) and
+          the critical edge */
+      std::array<SimplexId, 2> critVertsIds;
+    };
+
+  protected:
     /**
      * @brief Follow the descending 1-separatrices to compute the saddles ->
      * minima association
@@ -182,6 +198,8 @@ namespace ttk {
     void getSaddleSaddlePairs(std::vector<PersistencePair> &pairs,
                               std::vector<bool> &paired1Saddles,
                               std::vector<bool> &paired2Saddles,
+                              const bool exportBoundaries,
+                              std::vector<GeneratorType> &boundaries,
                               const std::vector<SimplexId> &critical1Saddles,
                               const std::vector<SimplexId> &critical2Saddles,
                               const std::vector<SimplexId> &crit1SaddlesOrder,
@@ -194,13 +212,15 @@ namespace ttk {
      * @param[out] critCellsOrder Filtration order on critical cells
      * @param[in] offsets Vertex offset field
      * @param[in] triangulation Triangulation
+     * @param[in] sortEdges Sort all edges vs. only 1-saddles
      */
     template <typename triangulationType>
     void extractCriticalCells(
       std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
       std::array<std::vector<SimplexId>, 4> &critCellsOrder,
       const SimplexId *const offsets,
-      const triangulationType &triangulation) const;
+      const triangulationType &triangulation,
+      const bool sortEdges) const;
 
     /**
      * @brief Print number of pairs, critical cells per dimension & unpaired
@@ -721,6 +741,8 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
   std::vector<PersistencePair> &pairs,
   std::vector<bool> &paired1Saddles,
   std::vector<bool> &paired2Saddles,
+  const bool exportBoundaries,
+  std::vector<GeneratorType> &boundaries,
   const std::vector<SimplexId> &critical1Saddles,
   const std::vector<SimplexId> &critical2Saddles,
   const std::vector<SimplexId> &crit1SaddlesOrder,
@@ -795,7 +817,8 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     const auto s2 = saddles2[i];
     SimplexId s1{-1};
 
-    if(edgeTrianglePartner[*s2Boundaries[i].begin()] == -1) {
+    if(!s2Boundaries[i].empty()
+       && edgeTrianglePartner[*s2Boundaries[i].begin()] == -1) {
       // use shortcut if first 1-saddle on wall is non-paired
       s1 = *s2Boundaries[i].begin();
     } else {
@@ -817,6 +840,24 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     }
   }
 
+  if(exportBoundaries) {
+    boundaries.resize(s2Boundaries.size());
+    for(size_t i = 0; i < boundaries.size(); ++i) {
+      const auto &boundSet{s2Boundaries[i]};
+      if(boundSet.empty()) {
+        continue;
+      }
+      boundaries[i] = {
+        {boundSet.begin(), boundSet.end()},
+        saddles2[i],
+        std::array<SimplexId, 2>{
+          this->dg_.getCellGreaterVertex(Cell{2, saddles2[i]}, triangulation),
+          this->dg_.getCellGreaterVertex(
+            Cell{1, *boundSet.begin()}, triangulation),
+        }};
+    }
+  }
+
   const auto nSadSadPairs = pairs.size() - nSadExtrPairs;
 
   this->printMsg(
@@ -833,7 +874,8 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
   std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
   std::array<std::vector<SimplexId>, 4> &critCellsOrder,
   const SimplexId *const offsets,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation,
+  const bool sortEdges) const {
 
   Timer tm{};
   const auto dim = this->dg_.getDimensionality();
@@ -874,7 +916,7 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
 
   // memory allocations
   auto &critEdges{this->critEdges_};
-  if(dim < 3) {
+  if(!sortEdges) {
     critEdges.resize(criticalCellsByDim[1].size());
   }
   std::vector<TriangleSimplex> critTriangles(criticalCellsByDim[2].size());
@@ -884,7 +926,7 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
 #pragma omp parallel num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   {
-    if(dim == 3) {
+    if(sortEdges) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp for nowait
 #endif // TTK_ENABLE_OPENMP
@@ -920,7 +962,7 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
   TTK_PSORT(this->threadNumber_, critTriangles.begin(), critTriangles.end());
   TTK_PSORT(this->threadNumber_, critTetras.begin(), critTetras.end());
 
-  if(dim == 3) {
+  if(sortEdges) {
     TTK_PSORT(this->threadNumber_, criticalCellsByDim[1].begin(),
               criticalCellsByDim[1].end(),
               [&critCellsOrder](const SimplexId a, const SimplexId b) {
@@ -988,7 +1030,7 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   auto &critCellsOrder{this->critCellsOrder_};
 
   this->extractCriticalCells(
-    criticalCellsByDim, critCellsOrder, offsets, triangulation);
+    criticalCellsByDim, critCellsOrder, offsets, triangulation, dim == 3);
 
   // if minima are paired
   auto &pairedMinima{this->pairedCritCells_[0]};
@@ -1030,9 +1072,10 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   // saddle - saddle pairs
   if(dim == 3 && !criticalCellsByDim[1].empty()
      && !criticalCellsByDim[2].empty()) {
-    this->getSaddleSaddlePairs(pairs, paired1Saddles, paired2Saddles,
-                               criticalCellsByDim[1], criticalCellsByDim[2],
-                               critCellsOrder[1], triangulation);
+    std::vector<GeneratorType> tmp{};
+    this->getSaddleSaddlePairs(
+      pairs, paired1Saddles, paired2Saddles, false, tmp, criticalCellsByDim[1],
+      criticalCellsByDim[2], critCellsOrder[1], triangulation);
   }
 
   if(std::is_same<triangulationType, ttk::ExplicitTriangulation>::value) {
