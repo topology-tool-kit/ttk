@@ -1,9 +1,5 @@
-# This is a basic workflow to help you get started with Actions
-
 name: packaging
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branch-ignore:
@@ -16,17 +12,19 @@ on:
       - 'pack*'
 
 env:
-  PV_TAG: v5.9.1
+  PV_TAG: v5.10.1
   PV_REPO: topology-tool-kit/ttk-paraview
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
   # -------------#
   # Build Ubuntu #
   # -------------#
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -54,7 +52,7 @@ jobs:
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb"
+        file: "ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.deb"
         target: "ttk-paraview.deb"
         token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -88,27 +86,22 @@ jobs:
       run: |
         cd build
         cpack -G DEB
-        # unpack deb package to access control file
-        mkdir tmp
-        dpkg-deb --extract ttk.deb tmp
-        dpkg-deb --control ttk.deb tmp/DEBIAN
-        # modify control file, remove libgcc-s1 dependency
-        sed 's/libgcc-s1[^,]*, //g' -i tmp/DEBIAN/control
-        # build updated deb package
-        dpkg -b tmp ttk-ubuntu-20.04.deb
 
     - name: Upload TTK .deb package
       uses: actions/upload-artifact@v2
       with:
-        name: ttk-ubuntu-20.04.deb
-        path: build/ttk-ubuntu-20.04.deb
+        name: ttk-${{ matrix.os }}.deb
+        path: build/ttk.deb
 
   # ------------#
   # Test Ubuntu #
   # ------------#
   test-linux:
     needs: build-linux
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -118,20 +111,25 @@ jobs:
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-${{ env.PV_TAG }}-ubuntu-20.04.deb"
+        file: "ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.deb"
         target: "ttk-paraview.deb"
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Fetch TTK .deb artifact
       uses: actions/download-artifact@v2
       with:
-        name: ttk-ubuntu-20.04.deb
+        name: ttk-${{ matrix.os }}.deb
 
     - name: Install generated .deb packages
       run: |
         sudo apt update
         sudo apt install ./ttk-paraview.deb
-        sudo apt install ./ttk-ubuntu-20.04.deb
+        sudo apt install ./ttk.deb
+
+    - name: Set PYTHONPATH for Ubuntu 22.04 pvpython
+      if: matrix.os == 'ubuntu-22.04'
+      run: |
+        echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
@@ -272,7 +270,7 @@ jobs:
   # Build Windows #
   # --------------#
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -282,7 +280,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge qt boost eigen spectralib zfp \
+        conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
           scikit-learn openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
@@ -312,7 +310,6 @@ jobs:
       run: |
         set CONDA_ROOT="C:\Miniconda"
         set CMAKE_PREFIX_PATH="%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake"
-        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         mkdir build
         cd build
         cmake ^
@@ -332,7 +329,7 @@ jobs:
           -DTTK_ENABLE_OPENMP=TRUE ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
-          -G"Visual Studio 16 2019" ^
+          -G"Visual Studio 17 2022" ^
           -Tclangcl ^
           ..
 
@@ -359,7 +356,7 @@ jobs:
   # -------------#
   test-windows:
     needs: build-windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -398,7 +395,6 @@ jobs:
       shell: cmd
       run: |
         :: set environment variables
-        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set PV_DIR=%ProgramFiles%\TTK-ParaView
         set TTK_DIR=%ProgramFiles%\TTK
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
@@ -407,14 +403,14 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake -G"Visual Studio 16 2019" -Tclangcl ..
+        cmake -G"Visual Studio 17 2022" -Tclangcl ..
         cmake --build . --config Release --parallel
         Release\ttkExample-c++.exe -i ..\..\data\inputData.off
         :: VTK layer
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake -G"Visual Studio 16 2019" -Tclangcl ..
+        cmake -G"Visual Studio 17 2022" -Tclangcl ..
         cmake --build . --config Release --parallel
         Release\ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
         :: HelloWorld standalone
@@ -465,8 +461,16 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-ubuntu-20.04.deb/ttk-ubuntu-20.04.deb
+        file: ttk-ubuntu-20.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-20.04.deb
+
+    - name: Upload Ubuntu Jammy .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-ubuntu-22.04.deb/ttk.deb
+        asset_name: ttk-$tag-ubuntu-22.04.deb
 
     - name: Upload macOS .pkg as Release Asset
       uses: svenstaro/upload-release-action@v2
