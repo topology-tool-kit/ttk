@@ -270,6 +270,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   checkProgressivityRequirement(triangulation);
 
+  Timer tm{};
+
   switch(BackEnd) {
     case BACKEND::PERSISTENT_SIMPLEX:
       executePersistentSimplex(
@@ -294,6 +296,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
     default:
       printErr("No method was selected");
   }
+
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, inputOffsets);
