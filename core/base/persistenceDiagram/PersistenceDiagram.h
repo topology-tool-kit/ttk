@@ -198,7 +198,7 @@ namespace ttk {
     DiscreteMorseSandwich dms_{};
 
     // int BackEnd{0};
-    BACKEND BackEnd{BACKEND::FTM};
+    BACKEND BackEnd{BACKEND::DISCRETE_MORSE_SANDWICH};
     // progressivity
     ttk::ProgressiveTopology progT_{};
     ttk::ApproximateTopology approxT_{};

@@ -209,7 +209,7 @@
            label="Backend"
            command="SetBackEnd"
            number_of_elements="1"
-           default_values="0"
+           default_values="2"
            panel_visibility="advanced" >
          <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>

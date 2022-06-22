@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
-  int backEnd = 0;
+  int backEnd = 2;
   int startingRL = 0;
   int stoppingRL = -1;
   double tl = 0.0;
