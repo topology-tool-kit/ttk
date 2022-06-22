@@ -424,7 +424,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
       generator->GetOutputDataObject(0)->GetGhostArray(1));
   }
 
-  // If the RankArray array doesn't exist, it is created
+  // If the RankArray array doesn't exist for pointdata, it is created
   if(input->GetPointData()->GetArray("RankArray") == nullptr) {
     int vertexNumber = input->GetNumberOfPoints();
     std::vector<int> rankArray(vertexNumber, 0);
@@ -446,6 +446,30 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     }
 
     input->GetPointData()->AddArray(vtkRankArray);
+  }
+
+  // If the RankArray array doesn't exist for celldata, it is created
+  if(input->GetCellData()->GetArray("RankArray") == nullptr) {
+    int cellNumber = input->GetNumberOfCells();
+    std::vector<int> cellsRankArray(cellNumber, 0);
+    double *boundingBox = input->GetBounds();
+    ttk::produceRankArray(cellsRankArray,
+                          static_cast<long int *>(ttkUtils::GetVoidPointer(
+                            input->GetCellData()->GetGlobalIds())),
+                          static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
+                            input->GetCellData()->GetArray("vtkGhostType"))),
+                          cellNumber, boundingBox);
+
+    vtkNew<vtkIntArray> vtkCellsRankArray{};
+    vtkCellsRankArray->SetName("RankArray");
+    vtkCellsRankArray->SetNumberOfComponents(1);
+    vtkCellsRankArray->SetNumberOfTuples(cellNumber);
+
+    for(int i = 0; i < cellNumber; i++) {
+      vtkCellsRankArray->SetComponent(i, 0, cellsRankArray[i]);
+    }
+
+    input->GetCellData()->AddArray(vtkCellsRankArray);
   }
 }
 

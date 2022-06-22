@@ -2,8 +2,7 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <unordered_map>
-#include <unordered_set>
+#include <vtkCellData.h>
 #include <vtkCommand.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -58,14 +57,24 @@ int ttkGhostCellPreconditioning::RequestData(
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();
+  auto cellData = input->GetCellData();
   ttk::SimplexId nVertices = input->GetNumberOfPoints();
-  this->printMsg("#Points: " + std::to_string(nVertices));
+  ttk::SimplexId nCells = input->GetNumberOfCells();
 
-  long int *globalIds = static_cast<long int *>(
+  this->printMsg("#Points: " + std::to_string(nVertices));
+  this->printMsg("#Cells: " + std::to_string(nCells));
+
+  long int *verticesGlobalIds = static_cast<long int *>(
     ttkUtils::GetVoidPointer(pointData->GetGlobalIds()));
-  unsigned char *ghostCells = static_cast<unsigned char *>(
+  unsigned char *verticesGhostCells = static_cast<unsigned char *>(
     ttkUtils::GetVoidPointer(pointData->GetArray("vtkGhostType")));
-  if(globalIds != nullptr && ghostCells != nullptr) {
+  long int *cellsGlobalIds = static_cast<long int *>(
+    ttkUtils::GetVoidPointer(cellData->GetGlobalIds()));
+  unsigned char *cellsGhostCells = static_cast<unsigned char *>(
+    ttkUtils::GetVoidPointer(cellData->GetArray("vtkGhostType")));
+
+  if(verticesGlobalIds != nullptr && verticesGhostCells != nullptr
+     && cellsGlobalIds != nullptr && cellsGhostCells != nullptr) {
 #ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
       if(ttk::MPIrank_ == 0)
@@ -73,22 +82,34 @@ int ttkGhostCellPreconditioning::RequestData(
           "Global Point Ids and Ghost Cells exist, therefore we can continue!");
       this->printMsg("#Ranks " + std::to_string(ttk::MPIsize_)
                      + ", this is rank " + std::to_string(ttk::MPIrank_));
-      std::vector<int> rankArray(nVertices, 0);
+      std::vector<int> verticesRankArray(nVertices, 0);
+      std::vector<int> cellsRankArray(nCells, 0);
       double *boundingBox = input->GetBounds();
 
+      ttk::produceRankArray(verticesRankArray, verticesGlobalIds,
+                            verticesGhostCells, nVertices, boundingBox);
       ttk::produceRankArray(
-        rankArray, globalIds, ghostCells, nVertices, boundingBox);
+        cellsRankArray, cellsGlobalIds, cellsGhostCells, nCells, boundingBox);
 
-      vtkNew<vtkIntArray> vtkRankArray{};
-      vtkRankArray->SetName("RankArray");
-      vtkRankArray->SetNumberOfComponents(1);
-      vtkRankArray->SetNumberOfTuples(nVertices);
+      vtkNew<vtkIntArray> vtkVerticesRankArray{};
+      vtkVerticesRankArray->SetName("RankArray");
+      vtkVerticesRankArray->SetNumberOfComponents(1);
+      vtkVerticesRankArray->SetNumberOfTuples(nVertices);
+
+      vtkNew<vtkIntArray> vtkCellsRankArray{};
+      vtkCellsRankArray->SetName("RankArray");
+      vtkCellsRankArray->SetNumberOfComponents(1);
+      vtkCellsRankArray->SetNumberOfTuples(nCells);
 
       for(int i = 0; i < nVertices; i++) {
-        vtkRankArray->SetComponent(i, 0, rankArray[i]);
+        vtkVerticesRankArray->SetComponent(i, 0, verticesRankArray[i]);
+      }
+      for(int i = 0; i < nCells; i++) {
+        vtkCellsRankArray->SetComponent(i, 0, cellsRankArray[i]);
       }
 
-      output->GetPointData()->AddArray(vtkRankArray);
+      output->GetPointData()->AddArray(vtkVerticesRankArray);
+      output->GetCellData()->AddArray(vtkCellsRankArray);
 
       this->printMsg("Preprocessed RankArray", 1.0, tm.getElapsedTime(),
                      this->threadNumber_);
