@@ -49,6 +49,10 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     return cacheHandler.get(this->inputScalarField_);
   };
 
+  // set member variables at each buildGradient() call
+  this->dimensionality_ = triangulation.getCellVertexNumber(0) - 1;
+  this->numberOfVertices_ = triangulation.getNumberOfVertices();
+
   this->gradient_ = bypassCache ? &this->localGradient_ : findGradient();
   if(this->gradient_ == nullptr || bypassCache) {
 
