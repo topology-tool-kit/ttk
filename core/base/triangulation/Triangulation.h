@@ -2686,14 +2686,26 @@ namespace ttk {
       this->abstractTriangulation_->setGlobalIds(cellGid, ghostCellMask);
     }
 
-    inline void setRankArray(int *rankArray) {
+    inline void setVertRankArray(int *rankArray) {
       if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setRankArray(rankArray);
+        this->abstractTriangulation_->setVertRankArray(rankArray);
     }
 
-    inline int *getRankArray() const {
+    inline const int *getVertRankArray() const {
       if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getRankArray();
+        return this->abstractTriangulation_->getVertRankArray();
+
+      return nullptr;
+    }
+
+    inline void setCellRankArray(int *rankArray) {
+      if(this->abstractTriangulation_)
+        this->abstractTriangulation_->setCellRankArray(rankArray);
+    }
+
+    inline const int *getCellRankArray() const {
+      if(this->abstractTriangulation_)
+        return this->abstractTriangulation_->getCellRankArray();
 
       return nullptr;
     }
@@ -2703,7 +2715,7 @@ namespace ttk {
         this->abstractTriangulation_->setGlobalIdsArray(globalIds);
     }
 
-    inline long int *getGlobalIdsArray() const {
+    inline const long int *getGlobalIdsArray() const {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getGlobalIdsArray();
 

@@ -229,7 +229,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
     vertexNumber_ = triangulation->getNumberOfVertices();
     dimension_ = triangulation->getCellVertexNumber(0) - 1;
 #if TTK_ENABLE_MPI
-    rankArray_ = triangulation->getRankArray();
+    rankArray_ = triangulation->getVertRankArray();
 #endif
   }
 

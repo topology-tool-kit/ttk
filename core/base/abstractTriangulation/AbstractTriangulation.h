@@ -3441,23 +3441,32 @@ namespace ttk {
     bool hasPreconditionedDistributedVertices_{false};
 
     long int *globalIdsArray_{nullptr};
-    int *rankArray_{nullptr};
+    int *vertRankArray_{nullptr};
+    int *cellRankArray_{nullptr};
 
   public:
     void setGlobalIdsArray(long int *array) {
       this->globalIdsArray_ = array;
     }
 
-    long int *getGlobalIdsArray() const {
+    const long int *getGlobalIdsArray() const {
       return this->globalIdsArray_;
     }
 
-    void setRankArray(int *rankArray) {
-      this->rankArray_ = rankArray;
+    void setVertRankArray(int *rankArray) {
+      this->vertRankArray_ = rankArray;
     }
 
-    int *getRankArray() const {
-      return this->rankArray_;
+    const int *getVertRankArray() const {
+      return this->vertRankArray_;
+    }
+
+    void setCellRankArray(int *rankArray) {
+      this->cellRankArray_ = rankArray;
+    }
+
+    int *getCellRankArray() const {
+      return this->cellRankArray_;
     }
 
 #endif // TTK_ENABLE_MPI

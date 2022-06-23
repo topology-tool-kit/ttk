@@ -498,13 +498,15 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
 void ttkAlgorithm::MPITriangulationPreconditioning(
   ttk::Triangulation *triangulation, vtkDataSet *input) {
-  triangulation->setGlobalIdsArray(static_cast<long int *>(
-    ttkUtils::GetVoidPointer(input->GetPointData()->GetGlobalIds())));
-  triangulation->setGlobalIdsArray(static_cast<long int *>(
-    ttkUtils::GetVoidPointer(input->GetPointData()->GetGlobalIds())));
+  triangulation->setGlobalIdsArray(
+    ttkUtils::GetPointer<long int>(input->GetPointData()->GetGlobalIds()));
+  triangulation->setGlobalIdsArray(
+    ttkUtils::GetPointer<long int>(input->GetPointData()->GetGlobalIds()));
   triangulation->preconditionDistributedVertices();
-  triangulation->setRankArray(static_cast<int *>(
-    ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("RankArray"))));
+  triangulation->setVertRankArray(
+    ttkUtils::GetPointer<int>(input->GetPointData()->GetArray("RankArray")));
+  triangulation->setCellRankArray(
+    ttkUtils::GetPointer<int>(input->GetCellData()->GetArray("RankArray")));
   // provide "GlobalCellIds" & "vtkGhostType" cell data array to
   // the triangulation
   const auto cd{input->GetCellData()};
