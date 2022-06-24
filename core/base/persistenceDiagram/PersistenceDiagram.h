@@ -193,7 +193,7 @@ namespace ttk {
     }
 
   protected:
-    bool IgnoreBoundary{true};
+    bool IgnoreBoundary{false};
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};

@@ -338,7 +338,7 @@
           name="Ignore Boundary"
           command="SetIgnoreBoundary"
           number_of_elements="1"
-          default_values="1" panel_visibility="advanced">
+          default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
