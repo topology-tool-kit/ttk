@@ -70,20 +70,20 @@ namespace ttk {
       const SimplexId len;
       inline SimplexId operator[](const SimplexId id) {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if(id < 0 || id >= len) {
+        if(id < 0 || id >= this->len) {
           return -1;
         }
 #endif
-        return ptr[id];
+        return this->ptr[id];
       }
       inline const SimplexId *data() const {
-        return ptr;
+        return this->ptr;
       }
       inline const SimplexId *begin() const {
-        return ptr;
+        return this->ptr;
       }
       inline const SimplexId *end() const {
-        return ptr + len;
+        return this->ptr + this->len;
       }
       inline SimplexId size() const {
         return this->len;
@@ -97,7 +97,7 @@ namespace ttk {
         this->id++;
       }
       inline Slice operator*() const {
-        return parent[id];
+        return this->parent[this->id];
       }
       inline bool operator!=(const Iterator &other) const {
         return this->id != other.id;
@@ -113,7 +113,7 @@ namespace ttk {
 
     inline Slice operator[](const SimplexId id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(id < 0 || id >= (SimplexId)offsets_.size()) {
+      if(id < 0 || id >= (SimplexId)this->offsets_.size()) {
         return {nullptr, 0};
       }
 #endif
