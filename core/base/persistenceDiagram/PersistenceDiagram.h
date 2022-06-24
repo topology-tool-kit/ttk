@@ -86,6 +86,9 @@ namespace ttk {
     inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
     }
+    inline void setBackend(const BACKEND be) {
+      this->BackEnd = be;
+    }
 
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
                                   ftm::TreeType treeType,
