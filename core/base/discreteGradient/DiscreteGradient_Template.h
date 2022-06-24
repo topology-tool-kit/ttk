@@ -38,7 +38,7 @@ dataType DiscreteGradient::getPersistence(
 
 template <typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation,
-                                    const bool bypassCache) {
+                                    bool bypassCache) {
 
   auto &cacheHandler = *triangulation.getGradientCacheHandler();
   const auto findGradient
@@ -48,6 +48,14 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     }
     return cacheHandler.get(this->inputScalarField_);
   };
+
+#ifdef TTK_ENABLE_OPENMP
+  if(!bypassCache && omp_in_parallel()) {
+    this->printWrn(
+      "buildGradient() called inside a parallel region, disabling cache...");
+    bypassCache = true;
+  }
+#endif // TTK_ENABLE_OPENMP
 
   // set member variables at each buildGradient() call
   this->dimensionality_ = triangulation.getCellVertexNumber(0) - 1;

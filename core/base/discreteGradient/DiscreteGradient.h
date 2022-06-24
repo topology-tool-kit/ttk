@@ -338,7 +338,7 @@ triangulation.
        */
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
-                        const bool bypassCache = false);
+                        bool bypassCache = false);
 
       /**
        * Automatic detection of the PL critical points and simplification
