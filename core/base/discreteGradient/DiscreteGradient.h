@@ -338,7 +338,7 @@ triangulation.
        */
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
-                        const bool bypassCache = false);
+                        bool bypassCache = false);
 
       /**
        * Automatic detection of the PL critical points and simplification
@@ -376,8 +376,7 @@ according to them.
        */
       inline void preconditionTriangulation(AbstractTriangulation *const data) {
         if(data != nullptr) {
-          dimensionality_ = data->getCellVertexNumber(0) - 1;
-          numberOfVertices_ = data->getNumberOfVertices();
+          const auto dim{data->getDimensionality()};
 
           data->preconditionBoundaryVertices();
           data->preconditionVertexNeighbors();
@@ -385,12 +384,12 @@ according to them.
           data->preconditionVertexStars();
           data->preconditionEdges();
           data->preconditionEdgeStars();
-          if(dimensionality_ >= 2) {
+          if(dim >= 2) {
             data->preconditionBoundaryEdges();
           }
-          if(dimensionality_ == 2) {
+          if(dim == 2) {
             data->preconditionCellEdges();
-          } else if(dimensionality_ == 3) {
+          } else if(dim == 3) {
             data->preconditionBoundaryTriangles();
             data->preconditionVertexTriangles();
             data->preconditionEdgeTriangles();

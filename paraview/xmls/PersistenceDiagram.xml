@@ -87,8 +87,8 @@
 
         - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
 
-        - https://topology-tool-kit.github.io/examples/2manifoldLearning/        
-        
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/
+
         - https://topology-tool-kit.github.io/examples/ctBones/
 
         - https://topology-tool-kit.github.io/examples/dragon/
@@ -100,7 +100,7 @@
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
 
         - https://topology-tool-kit.github.io/examples/morsePersistence/
-        
+
         - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
 
         - https://topology-tool-kit.github.io/examples/persistenceClustering0/
@@ -116,10 +116,10 @@
         - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
 
         - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
-        
+
         - https://topology-tool-kit.github.io/examples/interactionSites/
 
-                
+
       </Documentation>
 
       <InputProperty
@@ -205,17 +205,18 @@
       </StringVectorProperty>
 
        <IntVectorProperty
-          name="BackEnd"
-          label="Backend"
-          command="SetBackEnd"
-          number_of_elements="1"
-         default_values="0"
-         panel_visibility="advanced" >
+           name="BackEnd"
+           label="Backend"
+           command="SetBackEnd"
+           number_of_elements="1"
+           default_values="2"
+           panel_visibility="advanced" >
          <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
-          <Entry value="2" text="Persistent Simplex (Zomorodian 2010)"/>
+          <Entry value="2" text="Discrete Morse Sandwich"/>
           <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
+          <Entry value="4" text="Persistent Simplex (Zomorodian 2010)"/>
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
@@ -292,7 +293,7 @@
         <Documentation>
             Tolerance on the maximal relative Bottleneck error.
             Corresponds to the parameter Epsilon in the publication.
-            An error of 0.05 denotes a maximal relative error of 5%. 
+            An error of 0.05 denotes a maximal relative error of 5%.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -333,6 +334,23 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="Ignore Boundary"
+          command="SetIgnoreBoundary"
+          number_of_elements="1"
+          default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          Ignore the boundary component.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty name="ShowInsideDomain"
                          label="Embed in Domain"
                          command="SetShowInsideDomain"
@@ -346,9 +364,9 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-          <Property name="ScalarFieldNew" />
-          <Property name="ForceInputOffsetScalarField"/>
-          <Property name="InputOffsetScalarFieldNameNew"/>
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
         <Property name="BackEnd" />
         <Property name="StartingResolutionLevel" />
         <Property name="StoppingResolutionLevel" />
@@ -362,6 +380,7 @@
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SaddleConnectors" />
+        <Property name="Ignore Boundary" />
         <Property name="ShowInsideDomain" />
       </PropertyGroup>
 

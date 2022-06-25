@@ -168,6 +168,9 @@ public:
   vtkGetMacro(Epsilon, double);
   vtkSetMacro(Epsilon, double);
 
+  vtkSetMacro(IgnoreBoundary, bool);
+  vtkGetMacro(IgnoreBoundary, bool);
+
 protected:
   ttkPersistenceDiagram();
 
