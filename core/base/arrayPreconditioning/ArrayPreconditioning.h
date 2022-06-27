@@ -194,7 +194,7 @@ namespace ttk {
           MPI_Send(orderResendValues[rankIdOfMaxScalar].data(),
                    orderResendValues[rankIdOfMaxScalar].size(), MPI_IT,
                    rankIdOfMaxScalar, intTag * rankIdOfMaxScalar,
-                   MPI_COMM_WORLD);
+                   ttk::MPIcomm_);
           orderResendValues[rankIdOfMaxScalar].clear();
           // we receive more vals, if the size is still zero afterwards, we are
           // finished with this rank
@@ -221,11 +221,11 @@ namespace ttk {
       // the correct size
       int amount;
       MPI_Status status;
-      MPI_Probe(rankFrom, structTag * rankFrom, MPI_COMM_WORLD, &status);
+      MPI_Probe(rankFrom, structTag * rankFrom, ttk::MPIcomm_, &status);
       MPI_Get_count(&status, MPI_CHAR, &amount);
       receivedValues.resize(amount / sizeof(value<DT, IT>), {0, 0});
       MPI_Recv(receivedValues.data(), amount, MPI_CHAR, rankFrom,
-               structTag * rankFrom, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+               structTag * rankFrom, ttk::MPIcomm_, MPI_STATUS_IGNORE);
     }
 #endif
 
@@ -259,7 +259,7 @@ namespace ttk {
                          "therefore we are in distributed mode!");
         this->printMsg("#Ranks " + std::to_string(ttk::MPIsize_)
                        + ", this is rank " + std::to_string(ttk::MPIrank_));
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(ttk::MPIcomm_);
 
         MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
 
@@ -283,7 +283,7 @@ namespace ttk {
                        + ": " + std::to_string(gidsToGetVector.size()));
         // when all are done sorting, rank 0 requests the highest values and
         // merges them
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(ttk::MPIcomm_);
         if(ttk::MPIrank_ == 0) {
           this->printMsg(
             "Filling vector and sorting for each rank done, starting merge.", 1,
@@ -297,7 +297,7 @@ namespace ttk {
         IT totalSize;
         // get the complete size  of the dataset by summing up the local sizes
         MPI_Reduce(
-          &localSize, &totalSize, 1, MPI_IT, MPI_SUM, 0, MPI_COMM_WORLD);
+          &localSize, &totalSize, 1, MPI_IT, MPI_SUM, 0, ttk::MPIcomm_);
         if(ttk::MPIrank_ == 0) {
           this->printMsg("Total amount of distributed points: "
                          + std::to_string(totalSize));
@@ -345,7 +345,7 @@ namespace ttk {
               sendValues, sortingValues, burstSize);
             int size = sendValues.size();
             MPI_Send(sendValues.data(), size * sizeof(value<DT, IT>), MPI_CHAR,
-                     0, structTag * ttk::MPIrank_, MPI_COMM_WORLD);
+                     0, structTag * ttk::MPIrank_, ttk::MPIcomm_);
             std::vector<IT> receivedValues;
 
             // be prepared to receive burstsize of elements, resize after
@@ -354,7 +354,7 @@ namespace ttk {
             MPI_Status status;
             int amount;
             MPI_Recv(receivedValues.data(), burstSize * 2, MPI_IT, 0,
-                     intTag * ttk::MPIrank_, MPI_COMM_WORLD, &status);
+                     intTag * ttk::MPIrank_, ttk::MPIcomm_, &status);
             MPI_Get_count(&status, MPI_IT, &amount);
 
             receivedValues.resize(amount);
@@ -365,11 +365,11 @@ namespace ttk {
           // afterwards send once a message of length 0 to root to show that we
           // are done
           MPI_Send(sortingValues.data(), 0, MPI_CHAR, 0,
-                   structTag * ttk::MPIrank_, MPI_COMM_WORLD);
+                   structTag * ttk::MPIrank_, ttk::MPIcomm_);
         }
 
         // all ranks do the following
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(ttk::MPIcomm_);
         if(ttk::MPIrank_ == 0) {
           this->printMsg(
             "Merging done and results sent to ranks, ranks are getting order "
@@ -388,9 +388,8 @@ namespace ttk {
 
         // we receive the values at the ghostcells through the abstract
         // exchangeGhostCells method
-        ttk::exchangeGhostCells<ttk::SimplexId, IT>(orderArray, rankArray,
-                                                    globalIds, gidToLidMap,
-                                                    nVerts, MPI_COMM_WORLD);
+        ttk::exchangeGhostCells<ttk::SimplexId, IT>(
+          orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_);
       }
 #else
       this->printMsg("MPI not enabled!");

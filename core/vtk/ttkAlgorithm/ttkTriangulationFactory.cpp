@@ -358,22 +358,6 @@ ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
       instance->registry.emplace(std::piecewise_construct,
                                  std::forward_as_tuple(key),
                                  std::forward_as_tuple(object, triangulation));
-#ifdef TTK_ENABLE_MPI
-      if(ttk::isRunningWithMPI()) {
-        // provide "GlobalCellIds" & "vtkGhostType" cell data array to
-        // the triangulation
-        const auto cd{object->GetCellData()};
-        if(cd == nullptr) {
-          instance->printWrn("No cell data on input object");
-        }
-        if(cd != nullptr) {
-          triangulation->setGlobalIds(
-            ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()),
-            ttkUtils::GetPointer<unsigned char>(
-              cd->GetArray(vtkCellData::GhostArrayName())));
-        }
-      }
-#endif // TTK_ENABLE_MPI
     }
   }
 

@@ -3153,10 +3153,10 @@ int preconditionDistributedIntermediate(size_t &globalCount,
         // send to relevant process
         std::array<unsigned long, 3> toSend{globalCount, gcid, endCurrRank};
         MPI_Send(toSend.data(), 3, MPI_UNSIGNED_LONG, currRank, COMPUTE,
-                 MPI_COMM_WORLD);
+                 ttk::MPIcomm_);
         // receive updated edgeCount
         MPI_Recv(&globalCount, 1, MPI_UNSIGNED_LONG, currRank, MPI_ANY_TAG,
-                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
       }
 
       gcid = endCurrRank;
@@ -3165,7 +3165,7 @@ int preconditionDistributedIntermediate(size_t &globalCount,
     // send STOP signal to break infinite loop
     std::array<unsigned long, 3> dummy{};
     for(int i = 1; i < ttk::MPIsize_; ++i) {
-      MPI_Send(dummy.data(), 3, MPI_UNSIGNED_LONG, i, STOP, MPI_COMM_WORLD);
+      MPI_Send(dummy.data(), 3, MPI_UNSIGNED_LONG, i, STOP, ttk::MPIcomm_);
     }
 
   } else {
@@ -3174,7 +3174,7 @@ int preconditionDistributedIntermediate(size_t &globalCount,
       std::array<unsigned long, 3> toRecv{};
       MPI_Status status;
       MPI_Recv(toRecv.data(), 3, MPI_UNSIGNED_LONG, 0, MPI_ANY_TAG,
-               MPI_COMM_WORLD, &status);
+               ttk::MPIcomm_, &status);
       if(status.MPI_TAG == STOP) {
         break;
       }
@@ -3182,7 +3182,7 @@ int preconditionDistributedIntermediate(size_t &globalCount,
       globalCount = toRecv[0];
       processCells(toRecv[1], toRecv[2], globalCount);
       // send back updated edgeCount to rank 0
-      MPI_Send(&globalCount, 1, MPI_UNSIGNED_LONG, 0, 1, MPI_COMM_WORLD);
+      MPI_Send(&globalCount, 1, MPI_UNSIGNED_LONG, 0, 1, ttk::MPIcomm_);
     }
   }
 

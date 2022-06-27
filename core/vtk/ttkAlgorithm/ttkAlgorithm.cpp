@@ -10,6 +10,7 @@
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
 #if TTK_ENABLE_MPI
+#include <vtkCellData.h>
 #include <vtkGenerateGlobalIds.h>
 #include <vtkGhostCellsGenerator.h>
 #endif
@@ -39,9 +40,20 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
   this->printMsg("Requesting triangulation for '"
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
-
+#if TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    this->MPIPipelinePreconditioning(dataSet);
+  }
+#endif
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
+#if TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    if(triangulation) {
+      this->MPITriangulationPreconditioning(triangulation, dataSet);
+    }
+  }
+#endif
   if(triangulation)
     return triangulation;
 
@@ -387,38 +399,100 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 }
 
 #if TTK_ENABLE_MPI
-void ttkAlgorithm::MPIPreconditioning(vtkDataSet *input) {
-  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
-  triangulation->setGlobalIdsArray(
-    static_cast<long int *>(ttkUtils::GetVoidPointer(
-      input->GetPointData()->GetArray("GlobalPointIds"))));
-  if(!triangulation->getGlobalIdsArray()) {
+void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
+
+  vtkNew<vtkGenerateGlobalIds> globalIds;
+  // If the global point id array doesn't exist, it is created
+  if(input->GetPointData()->GetGlobalIds() == nullptr) {
     printWrn("Global ids haven't been produced in sequential, the parallel "
              "result may be different");
-    vtkNew<vtkGenerateGlobalIds> globalIds;
     globalIds->SetInputData(input);
     globalIds->Update();
     input->ShallowCopy(globalIds->GetOutputDataObject(0));
-    triangulation->setGlobalIdsArray(
-      static_cast<long int *>(ttkUtils::GetVoidPointer(
-        input->GetPointData()->GetArray("GlobalPointIds"))));
   }
-  triangulation->preconditionDistributedVertices();
 
-  if(!input->HasAnyGhostPoints()) {
-    vtkNew<vtkGhostCellsGenerator> generator;
+  vtkNew<vtkGhostCellsGenerator> generator;
+  if(!input->HasAnyGhostCells()) {
     generator->SetInputData(input);
     generator->BuildIfRequiredOff();
     generator->SetNumberOfGhostLayers(2);
     generator->Update();
     input->ShallowCopy(generator->GetOutputDataObject(0));
+    input->GetPointData()->AddArray(
+      generator->GetOutputDataObject(0)->GetGhostArray(0));
+    input->GetCellData()->AddArray(
+      generator->GetOutputDataObject(0)->GetGhostArray(1));
   }
 
+  // If the RankArray array doesn't exist for pointdata, it is created
+  if(input->GetPointData()->GetArray("RankArray") == nullptr) {
+    int vertexNumber = input->GetNumberOfPoints();
+    std::vector<int> rankArray(vertexNumber, 0);
+    double *boundingBox = input->GetBounds();
+    ttk::produceRankArray(rankArray,
+                          static_cast<long int *>(ttkUtils::GetVoidPointer(
+                            input->GetPointData()->GetGlobalIds())),
+                          static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
+                            input->GetPointData()->GetArray("vtkGhostType"))),
+                          vertexNumber, boundingBox);
+
+    vtkNew<vtkIntArray> vtkRankArray{};
+    vtkRankArray->SetName("RankArray");
+    vtkRankArray->SetNumberOfComponents(1);
+    vtkRankArray->SetNumberOfTuples(vertexNumber);
+
+    for(int i = 0; i < vertexNumber; i++) {
+      vtkRankArray->SetComponent(i, 0, rankArray[i]);
+    }
+
+    input->GetPointData()->AddArray(vtkRankArray);
+  }
+
+  // If the RankArray array doesn't exist for celldata, it is created
+  if(input->GetCellData()->GetArray("RankArray") == nullptr) {
+    int cellNumber = input->GetNumberOfCells();
+    std::vector<int> cellsRankArray(cellNumber, 0);
+    double *boundingBox = input->GetBounds();
+    ttk::produceRankArray(cellsRankArray,
+                          static_cast<long int *>(ttkUtils::GetVoidPointer(
+                            input->GetCellData()->GetGlobalIds())),
+                          static_cast<unsigned char *>(ttkUtils::GetVoidPointer(
+                            input->GetCellData()->GetArray("vtkGhostType"))),
+                          cellNumber, boundingBox);
+
+    vtkNew<vtkIntArray> vtkCellsRankArray{};
+    vtkCellsRankArray->SetName("RankArray");
+    vtkCellsRankArray->SetNumberOfComponents(1);
+    vtkCellsRankArray->SetNumberOfTuples(cellNumber);
+
+    for(int i = 0; i < cellNumber; i++) {
+      vtkCellsRankArray->SetComponent(i, 0, cellsRankArray[i]);
+    }
+
+    input->GetCellData()->AddArray(vtkCellsRankArray);
+  }
+}
+
+void ttkAlgorithm::MPITriangulationPreconditioning(
+  ttk::Triangulation *triangulation, vtkDataSet *input) {
+  triangulation->setGlobalIdsArray(static_cast<long int *>(
+    ttkUtils::GetVoidPointer(input->GetPointData()->GetGlobalIds())));
+  triangulation->setGlobalIdsArray(static_cast<long int *>(
+    ttkUtils::GetVoidPointer(input->GetPointData()->GetGlobalIds())));
+  triangulation->preconditionDistributedVertices();
   triangulation->setRankArray(static_cast<int *>(
     ttkUtils::GetVoidPointer(input->GetPointData()->GetArray("RankArray"))));
-  if(!triangulation->getRankArray()) {
-    printWrn("RankArray has not been defined. Use the "
-             "ttkGhostCellPreconditioning filter to do so.");
+  // provide "GlobalCellIds" & "vtkGhostType" cell data array to
+  // the triangulation
+  const auto cd{input->GetCellData()};
+  if(cd == nullptr) {
+    triangulation->printWrn("No cell data on input object");
+  }
+  if(cd != nullptr) {
+    triangulation->setGlobalIds(
+      ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()),
+      ttkUtils::GetPointer<unsigned char>(
+        cd->GetArray(vtkCellData::GhostArrayName())));
   }
 }
 #endif
@@ -474,11 +548,6 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
   if(request->Has(vtkCompositeDataPipeline::REQUEST_DATA())) {
     this->printMsg("Processing REQUEST_DATA", ttk::debug::Priority::VERBOSE);
     this->printMsg(ttk::debug::Separator::L0);
-#if TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI()) {
-      this->MPIPreconditioning(vtkDataSet::GetData(inputVector[0]));
-    }
-#endif
     return this->RequestData(request, inputVector, outputVector);
   }
 
