@@ -232,14 +232,14 @@ namespace ttk {
 
           // now we need to request the values we still need from other ranks
           // R0 builds up out transferance map over ranks
-          MPI_Barrier(MPI_COMM_WORLD);
+          MPI_Barrier(ttk::MPIcomm_);
           // MPI_Reduce to get the size of everything we need
           int localSize = foreignVertices.size();
           this->printMsg("Localsize: " + std::to_string(localSize));
           int totalSize;
           MPI_Reduce(
-            &localSize, &totalSize, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-          MPI_Bcast(&totalSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            &localSize, &totalSize, 1, MPI_INT, MPI_SUM, 0, ttk::MPIcomm_);
+          MPI_Bcast(&totalSize, 1, MPI_INT, 0, ttk::MPIcomm_);
           this->printMsg("Rank " + std::to_string(ttk::MPIrank_)
                          + " got the totalsize " + std::to_string(totalSize));
           std::vector<globalIdOwner> edgesWithTargets(totalSize);
@@ -256,7 +256,7 @@ namespace ttk {
             // first we use MPI_Gather to get the size of each rank to populate
             // the displacements
             MPI_Gather(
-              &localSize, 1, MPI_INT, sizes, 1, MPI_INT, 0, MPI_COMM_WORLD);
+              &localSize, 1, MPI_INT, sizes, 1, MPI_INT, 0, ttk::MPIcomm_);
             for(int i = 0; i < ttk::MPIsize_; i++) {
               sizes[i] = sizes[i] * sizeof(globalIdOwner);
             }
@@ -273,7 +273,7 @@ namespace ttk {
             MPI_Gatherv(foreignVertices.data(),
                         foreignVertices.size() * sizeof(globalIdOwner),
                         MPI_CHAR, edges.data(), sizes, displacements, MPI_CHAR,
-                        0, MPI_COMM_WORLD);
+                        0, ttk::MPIcomm_);
             this->printMsg("R0 received " + std::to_string(edges.size())
                            + " ids which are needed");
 
@@ -306,19 +306,19 @@ namespace ttk {
             // the ids themselves the NULL attributes are only relevant for the
             // root rank
             MPI_Gather(
-              &localSize, 1, MPI_INT, nullptr, 0, MPI_INT, 0, MPI_COMM_WORLD);
+              &localSize, 1, MPI_INT, nullptr, 0, MPI_INT, 0, ttk::MPIcomm_);
             MPI_Gatherv(foreignVertices.data(),
                         foreignVertices.size() * sizeof(globalIdOwner),
                         MPI_CHAR, nullptr, nullptr, nullptr, MPI_CHAR, 0,
-                        MPI_COMM_WORLD);
+                        ttk::MPIcomm_);
           }
 
           // we need to receive the results to which the gids are pointing from
           // the ranks and build our map
           // we broadcast sizes and displacements and gather all the results
           // with allgatherv
-          MPI_Bcast(sizes, ttk::MPIsize_, MPI_INT, 0, MPI_COMM_WORLD);
-          MPI_Bcast(displacements, ttk::MPIsize_, MPI_INT, 0, MPI_COMM_WORLD);
+          MPI_Bcast(sizes, ttk::MPIsize_, MPI_INT, 0, ttk::MPIcomm_);
+          MPI_Bcast(displacements, ttk::MPIsize_, MPI_INT, 0, ttk::MPIcomm_);
           this->printMsg("R" + std::to_string(ttk::MPIrank_)
                          + " received sizes and displacements from R0");
 
@@ -331,7 +331,7 @@ namespace ttk {
           MPI_Scatterv(allValuesFromRanks.data(), sizes, displacements,
                        MPI_CHAR, receivedIds.data(),
                        receivedSize * sizeof(globalIdOwner), MPI_CHAR, 0,
-                       MPI_COMM_WORLD);
+                       ttk::MPIcomm_);
           this->printMsg("R" + std::to_string(ttk::MPIrank_) + " received ids");
 
           // now we need to find to where the gids point and send the values
@@ -350,7 +350,7 @@ namespace ttk {
           MPI_Allgatherv(sendValues.data(),
                          sendValues.size() * sizeof(globalIdOwner), MPI_CHAR,
                          edgesWithTargets.data(), sizes, displacements,
-                         MPI_CHAR, MPI_COMM_WORLD);
+                         MPI_CHAR, ttk::MPIcomm_);
           this->printMsg("R" + std::to_string(ttk::MPIrank_)
                          + " got the results");
 
