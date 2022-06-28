@@ -5,9 +5,9 @@
         class="ttkPersistentGenerators"
         label="TTK PersistentGenerators">
       <Documentation
-          long_help="TTK plugin for the computation of persistence cycles."
-          short_help="TTK plugin for the computation of persistence cycles.">
-        TTK plugin for the computation of persistence cycles.
+          long_help="TTK plugin for the computation of persistent one-dimensional generators."
+          short_help="TTK plugin for the computation of persistent generators.">
+        TTK plugin for the computation of persistent one-dimensional generators.
       </Documentation>
 
       <InputProperty
