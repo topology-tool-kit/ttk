@@ -529,11 +529,69 @@ void ttk::ContourAroundPoint::extendOutPts(
     pts4d[i] = {x, y, z, static_cast<float>(vSca)};
 
     if(!regularLonLat) {
-      // If someone has a lot of time, they can implement the case for an
-      // arbitrary triangulation. This requires computing the area/volume of all
-      // the cells that touch this vertex (better yet: the area/volume of the
-      // cell of the dual grid of which this vertex is the center).
-      ws[i] = scalarW;
+      if(_inpDimMax > 2) {
+        // If someone has a lot of time, they can implement the case for a
+        // tetrahedralization.
+        printWrn("Vertex weighting does not consider vertex density of this "
+                 "volumetric data");
+        ws[i] = scalarW;
+      } else {
+        // This is just *some* code to fill this gap until it is replaced by sth
+        // better; essentially this module was written for regular spherical
+        // grids.
+        // printMsg("Irregular triangulation");
+
+        // Compute the distance between points a and b.
+        constexpr auto compDist
+          = [](float ax, float ay, float az, float bx, float by, float bz) {
+              const auto dx = bx - ax;
+              const auto dy = by - ay;
+              const auto dz = bz - az;
+              return std::sqrt(dx * dx + dy * dy + dz * dz);
+            };
+
+        // We use Heron's formula for the area of a triangle, only using the
+        // side lengths a, b, c.
+        constexpr auto compArea = [](double a, double b, double c) {
+          const double s = (a + b + c) / 2.; // half the perimeter
+          // return std::sqrt(s*(s-a)*(s-b)*(s-c));
+          return std::sqrt(
+            3 * s * s - s * a - s * b
+            - s * c); // numerically more stable (with tested datasets)
+        };
+
+        // We assume a closed triangulation (i.e. no holes) and the vertex
+        // neighbors being ordered in a fan-like fashion.
+        double area = 0.;
+        float x2, y2, z2, x3, y3, z3;
+        SimplexId u;
+        triang->getVertexNeighbor(v, 0, u);
+        triang->getVertexPoint(u, x2, y2, z2);
+        double a = compDist(x, y, z, x2, y2, z2);
+
+        // Backup the first edge for the last triangle.
+        const float x2Bak = x2, y2Bak = y2, z2Bak = z2;
+        const double aBak = a;
+
+        const SimplexId n = triang->getVertexNeighborNumber(v);
+        for(SimplexId j = 1; j < n; ++j) {
+          triang->getVertexNeighbor(v, j, u);
+          triang->getVertexPoint(u, x3, y3, z3);
+          const double b = compDist(x, y, z, x3, y3, z3);
+          const double c = compDist(x2, y2, z2, x3, y3, z3);
+          area += compArea(a, b, c);
+          x2 = x3;
+          y2 = y3;
+          z2 = z3;
+          a = b;
+        }
+
+        const double b = aBak;
+        const double c = compDist(x2, y2, z2, x2Bak, y2Bak, z2Bak);
+        area += compArea(a, b, c);
+        //  std::cout<<"area: "<<area<<std::endl;
+        ws[i] = scalarW * area;
+      }
     } else {
       // spatial weight 1 at equator, 0 at a pole
       const double latInRad = std::asin(z / radius);
@@ -542,7 +600,8 @@ void ttk::ContourAroundPoint::extendOutPts(
       ws[i] = scalarW * spatialW;
       // Why product and not mean of the weights?
       // -> The resulting weight should be 0 if the vertex is either outside
-      // of the sub/super-level set (scalar weight 0) or its cell size is 0 (spatial weight 0)
+      // of the sub/super-level set (scalar weight 0) or its cell size is 0
+      // (spatial weight 0)
     }
   }
 
@@ -559,6 +618,7 @@ void ttk::ContourAroundPoint::extendOutPts(
     z *= radiusScaler;
   }
 
+  // std::cout<<x<<","<<y<<","<<z<<std::endl;
   _outCentroidsCoords.push_back(static_cast<float>(x));
   _outCentroidsCoords.push_back(static_cast<float>(y));
   _outCentroidsCoords.push_back(static_cast<float>(z));
