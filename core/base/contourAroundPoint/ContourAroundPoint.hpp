@@ -542,7 +542,7 @@ void ttk::ContourAroundPoint::extendOutPts(
         // printMsg("Irregular triangulation");
 
         // Compute the distance between points a and b.
-        constexpr auto compDist
+        static const auto compDist
           = [](float ax, float ay, float az, float bx, float by, float bz) {
               const auto dx = bx - ax;
               const auto dy = by - ay;
@@ -552,7 +552,7 @@ void ttk::ContourAroundPoint::extendOutPts(
 
         // We use Heron's formula for the area of a triangle, only using the
         // side lengths a, b, c.
-        constexpr auto compArea = [](double a, double b, double c) {
+        static const auto compArea = [](double a, double b, double c) {
           const double s = (a + b + c) / 2.; // half the perimeter
           // return std::sqrt(s*(s-a)*(s-b)*(s-c));
           return std::sqrt(
