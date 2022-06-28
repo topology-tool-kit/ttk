@@ -33,6 +33,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 
 // TTK Base Includes
 #include <MergeTreeDistanceMatrix.h>
@@ -49,6 +50,8 @@ private:
    */
   // Execution Options
   int Backend = 0;
+
+  bool UseFieldDataParameters = false;
 
 public:
   /**
@@ -96,16 +99,8 @@ public:
     return persistenceThreshold_;
   }
 
-  void SetUseMinMaxPair(bool useMinMaxPair) {
-    useMinMaxPair_ = useMinMaxPair;
-    Modified();
-  }
-  bool SetUseMinMaxPair() {
-    return useMinMaxPair_;
-  }
-
-  void SetDeleteMultiPersPairs(bool deleteMultiPersPairs) {
-    deleteMultiPersPairs_ = deleteMultiPersPairs;
+  void SetDeleteMultiPersPairs(bool doDelete) {
+    deleteMultiPersPairs_ = doDelete;
     Modified();
   }
   bool SetDeleteMultiPersPairs() {
@@ -156,6 +151,9 @@ public:
     return distanceSquared_;
   }
 
+  vtkSetMacro(UseFieldDataParameters, bool);
+  vtkGetMacro(UseFieldDataParameters, bool);
+
   /**
    * This static method and the macro below are VTK conventions on how to
    * instantiate VTK objects. You don't have to modify this.
@@ -193,5 +191,6 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> inputTrees);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 };

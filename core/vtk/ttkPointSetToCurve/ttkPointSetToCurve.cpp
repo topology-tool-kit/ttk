@@ -87,7 +87,8 @@ int ttkPointSetToCurve::RequestData(vtkInformation *ttkNotUsed(request),
          const std::pair<vtkIdType, double> &b) { return a.second < b.second; };
 
   // sort the vector of indices/values in ascending order
-  std::sort(orderedValues.begin(), orderedValues.end(), cmp);
+  TTK_PSORT(
+    this->threadNumber_, orderedValues.begin(), orderedValues.end(), cmp);
 
   // shallow-copy input into output
   output->ShallowCopy(input);

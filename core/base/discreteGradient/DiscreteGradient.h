@@ -337,7 +337,8 @@ saddle-connectors.
 triangulation.
        */
       template <typename triangulationType>
-      int buildGradient(const triangulationType &triangulation);
+      int buildGradient(const triangulationType &triangulation,
+                        bool bypassCache = false);
 
       /**
        * Automatic detection of the PL critical points and simplification
@@ -375,8 +376,7 @@ according to them.
        */
       inline void preconditionTriangulation(AbstractTriangulation *const data) {
         if(data != nullptr) {
-          dimensionality_ = data->getCellVertexNumber(0) - 1;
-          numberOfVertices_ = data->getNumberOfVertices();
+          const auto dim{data->getDimensionality()};
 
           data->preconditionBoundaryVertices();
           data->preconditionVertexNeighbors();
@@ -384,12 +384,12 @@ according to them.
           data->preconditionVertexStars();
           data->preconditionEdges();
           data->preconditionEdgeStars();
-          if(dimensionality_ >= 2) {
+          if(dim >= 2) {
             data->preconditionBoundaryEdges();
           }
-          if(dimensionality_ == 2) {
+          if(dim == 2) {
             data->preconditionCellEdges();
-          } else if(dimensionality_ == 3) {
+          } else if(dim == 3) {
             data->preconditionBoundaryTriangles();
             data->preconditionVertexTriangles();
             data->preconditionEdgeTriangles();
@@ -916,7 +916,12 @@ gradient, false otherwise.
       std::vector<SimplexId> dmt2Saddle2PL_{};
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 
+      // spare storage (bypass cache) for gradient internal structure
+      AbstractTriangulation::gradientType localGradient_{};
+      // cache key (scalar field pointer + timestamp)
       AbstractTriangulation::gradientKeyType inputScalarField_{};
+      // pointer to either cache entry corresponding to inputScalarField_ or
+      // localGradient_ (if cache is bypassed)
       AbstractTriangulation::gradientType *gradient_{};
       const SimplexId *inputOffsets_{};
     };

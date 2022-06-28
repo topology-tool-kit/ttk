@@ -2,3 +2,5 @@ NAME
  ttkPersistenceDiagram
 DEPENDS
  ttkAlgorithm
+PRIVATE_DEPENDS
+  VTK::FiltersGeneral

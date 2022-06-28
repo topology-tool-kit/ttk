@@ -114,7 +114,7 @@ int ttkDiscreteGradient::fillCriticalPoints(
   }
 #endif
 
-  pointData->AddArray(cellDimensions);
+  pointData->SetScalars(cellDimensions);
   pointData->AddArray(cellIds);
   pointData->AddArray(cellScalars);
   pointData->AddArray(isOnBoundary);
@@ -198,7 +198,7 @@ int ttkDiscreteGradient::fillGradientGlyphs(
 #endif
 
   pointData->AddArray(pairOrigins);
-  cellData->AddArray(pairTypes);
+  cellData->SetScalars(pairTypes);
 
   this->printMsg(
     "Computed gradient glyphs", 1.0, tm.getElapsedTime(), this->threadNumber_);

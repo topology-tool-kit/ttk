@@ -1072,8 +1072,12 @@ int ttk::MorseSmaleQuadrangulation::execute(
     }
   }
 
-  this->printMsg("Produced " + std::to_string(outputCells_.size()) + " ("
-                   + std::to_string(ndegen) + " degenerated)",
+  std::string s_degen{
+    ndegen > 0 ? "(" + std::to_string(ndegen) + " degenerated) " : ""};
+
+  this->printMsg("Produced " + std::to_string(this->outputCells_.size())
+                   + " quads " + s_degen + "("
+                   + std::to_string(this->outputPointsIds_.size()) + " points)",
                  1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 0;

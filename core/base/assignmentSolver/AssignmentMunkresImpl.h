@@ -2,6 +2,8 @@
 
 #include <AssignmentMunkres.h>
 
+#include <tuple>
+
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::run(
   std::vector<asgnMatchingTuple> &matchings) {

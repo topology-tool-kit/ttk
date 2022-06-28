@@ -92,6 +92,44 @@ panel_visibility="advanced">
   </Documentation>
 </IntVectorProperty>
 
+<StringVectorProperty
+name="ExcludeImportantPairsLower"
+command="SetExcludeImportantPairsLower"
+label="Exclude Important Pairs Lower"
+number_of_elements="1"
+default_values=""
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                          mode="visibility"
+                          property="MergeTreePlanarLayout"
+                          value="1" />
+  </Hints>
+  <Documentation>
+    Allows to forbid some pairs to be treated as important using intervals of relative persistence. This parameter is a string containing all lower bounds separated with a comma (",").
+    For example, when setting this parameter to "0, 20" and the ExcludeImportantPairsHigher parameter to "10, 30", then persistence pairs having a persistence in the range 0%-10% and in the range 20%-30% of the maximum persistence will not be treated as important no matter the value of ImportantPairsThreshold.
+  </Documentation>
+</StringVectorProperty>
+
+<StringVectorProperty
+name="ExcludeImportantPairsHigher"
+command="SetExcludeImportantPairsHigher"
+label="Exclude Important Pairs Higher"
+number_of_elements="1"
+default_values=""
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                          mode="visibility"
+                          property="MergeTreePlanarLayout"
+                          value="1" />
+  </Hints>
+  <Documentation>
+    Allows to forbid some pairs to be treated as important using intervals of relative persistence. This parameter is a string containing all higher bounds separated with a comma (",").
+    For example, when setting the ExcludeImportantPairsLower parameter to "0, 20" and this parameter to "10, 30", then persistence pairs having a persistence in the range 0%-10% and in the range 20%-30% of the maximum persistence will not be treated as important no matter the value of ImportantPairsThreshold.
+  </Documentation>
+</StringVectorProperty>
+
 <DoubleVectorProperty
 name="ImportantPairsSpacing"
 command="SetImportantPairsSpacing"
@@ -150,6 +188,8 @@ default_values="0.05">
   <Property name="ImportantPairs"/>
   <Property name="MaximumImportantPairs"/>
   <Property name="MinimumImportantPairs"/>
+  <Property name="ExcludeImportantPairsHigher"/>
+  <Property name="ExcludeImportantPairsLower"/>
   <Property name="ImportantPairsSpacing"/>
   <Property name="NonImportantPairsSpacing"/>
   <Property name="NonImportantPairsProximity"/>

@@ -30,7 +30,7 @@ vtkStandardNewMacro(ttkMergeTreeDistanceMatrix);
  * to be freed when the filter is destroyed.
  */
 ttkMergeTreeDistanceMatrix::ttkMergeTreeDistanceMatrix() {
-  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
 
@@ -45,9 +45,11 @@ ttkMergeTreeDistanceMatrix::~ttkMergeTreeDistanceMatrix() = default;
  */
 int ttkMergeTreeDistanceMatrix::FillInputPortInformation(int port,
                                                          vtkInformation *info) {
-  if(port == 0)
+  if(port == 0 || port == 1) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
-  else
+    if(port == 1)
+      info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+  } else
     return 0;
 
   return 1;
@@ -94,20 +96,26 @@ int ttkMergeTreeDistanceMatrix::FillOutputPortInformation(
 template <class dataType>
 int ttkMergeTreeDistanceMatrix::run(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
+
+  // Construct trees
   const int numInputs = inputTrees.size();
-  std::vector<MergeTree<dataType>> intermediateTrees(numInputs);
+  std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
   constructTrees(inputTrees, intermediateTrees);
+  constructTrees(inputTrees2, intermediateTrees2);
 
   // Verify parameters
-  if(Backend == 0) {
-    branchDecomposition_ = true;
-    normalizedWasserstein_ = true;
-    keepSubtree_ = false;
-  } else if(Backend == 1) {
-    branchDecomposition_ = false;
-    normalizedWasserstein_ = false;
-    keepSubtree_ = true;
+  if(not UseFieldDataParameters) {
+    if(Backend == 0) {
+      branchDecomposition_ = true;
+      normalizedWasserstein_ = true;
+      keepSubtree_ = false;
+    } else if(Backend == 1) {
+      branchDecomposition_ = false;
+      normalizedWasserstein_ = false;
+      keepSubtree_ = true;
+    }
   }
   if(not branchDecomposition_) {
     if(normalizedWasserstein_)
@@ -125,7 +133,7 @@ int ttkMergeTreeDistanceMatrix::run(
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(
     numInputs, std::vector<double>(numInputs));
-  execute<dataType>(intermediateTrees, treesDistMat);
+  execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
 
   // --- Create output
   auto treesDistTable = vtkTable::GetData(outputVector);
@@ -161,10 +169,10 @@ int ttkMergeTreeDistanceMatrix::run(
 
   // aggregate input field data
   vtkNew<vtkFieldData> fd{};
-  fd->CopyStructure(inputTrees[0]->GetFieldData());
+  fd->CopyStructure(inputTrees[0]->GetBlock(0)->GetFieldData());
   fd->SetNumberOfTuples(inputTrees.size());
   for(size_t i = 0; i < inputTrees.size(); ++i) {
-    fd->SetTuple(i, 0, inputTrees[i]->GetFieldData());
+    fd->SetTuple(i, 0, inputTrees[i]->GetBlock(0)->GetFieldData());
   }
 
   // copy input field data to output row data
@@ -179,22 +187,44 @@ int ttkMergeTreeDistanceMatrix::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-
   // --- Get input object from input vector
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
+  auto blocks2 = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
 
-  // --- Construct trees
-  std::vector<vtkMultiBlockDataSet *> inputTrees;
+  // --- Load blocks
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
+  loadBlocks(inputTrees2, blocks2);
 
-  int dataType = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
+  auto arrayToGet
+    = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
+        ->GetPointData()
+        ->GetArray("Scalar");
+  if(arrayToGet == nullptr)
+    arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
                    ->GetPointData()
-                   ->GetArray("Scalar")
-                   ->GetDataType();
+                   ->GetArray("Birth");
+  int dataTypeInt = arrayToGet->GetDataType();
+
+  // --- Load field data parameters
+  if(UseFieldDataParameters) {
+    printMsg("Load parameters from field data.");
+    std::vector<std::string> paramNames;
+    getParamNames(paramNames);
+    for(auto paramName : paramNames) {
+      auto array = blocks->GetFieldData()->GetArray(paramName.c_str());
+      if(array) {
+        double value = array->GetTuple1(0);
+        setParamValueFromName(paramName, value);
+        printMsg(" - " + paramName + " = " + std::to_string(value));
+      } else
+        printMsg(" - " + paramName + " was not found in the field data.");
+    }
+  }
 
   int res = 0;
-  switch(dataType) {
-    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputTrees));
+  switch(dataTypeInt) {
+    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputTrees, inputTrees2));
   }
 
   return res;

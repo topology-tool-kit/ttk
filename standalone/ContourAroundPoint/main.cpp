@@ -153,8 +153,8 @@ int main(int argc, char **argv) {
   if(!outputPathPrefix.empty()) {
     for(int i = 0; i < contourAroundPoint->GetNumberOfOutputPorts(); i++) {
       auto output = contourAroundPoint->GetOutputDataObject(i);
-      auto writer
-        = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
+        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
       std::string outputFileName = outputPathPrefix + "_port_"
                                    + std::to_string(i) + "."

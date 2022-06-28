@@ -115,16 +115,16 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
         continue;
 
       for(int j = 0; j < dimensionNumber_; j++) {
-        tmpData[dimensionNumber_ * i + j] = 0;
+        const auto curr{dimensionNumber_ * i + j};
+        tmpData[curr] = outputData[curr];
 
-        SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
+        const auto neighborNumber = triangulation->getVertexNeighborNumber(i);
         for(SimplexId k = 0; k < neighborNumber; k++) {
           SimplexId neighborId = -1;
           triangulation->getVertexNeighbor(i, k, neighborId);
-          tmpData[dimensionNumber_ * i + j]
-            += outputData[dimensionNumber_ * (neighborId) + j];
+          tmpData[curr] += outputData[dimensionNumber_ * (neighborId) + j];
         }
-        tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
+        tmpData[curr] /= static_cast<double>(neighborNumber + 1);
       }
     }
 

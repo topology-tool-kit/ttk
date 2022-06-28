@@ -40,6 +40,7 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
+#include <vtkSmartPointer.h>
 
 /* Note on including VTK modules
  *
@@ -94,6 +95,8 @@ private:
   double ImportantPairsSpacing = 1.;
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
   // ----------------------
   // Data for visualization
@@ -182,6 +185,12 @@ public:
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
 
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
+
   /**
    * This static method and the macro below are VTK conventions on how to
    * instantiate VTK objects. You don't have to modify this.
@@ -219,17 +228,17 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
           std::vector<std::tuple<double, int, int, int, int>> &coefs,
           std::vector<bool> &interpolatedTrees);
 
   template <class dataType>
-  int runCompute(std::vector<vtkMultiBlockDataSet *> &inputTrees,
+  int runCompute(std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                  std::vector<std::tuple<double, int, int, int, int>> &coefs);
 
   template <class dataType>
   int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees,
+                std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                 std::vector<std::tuple<double, int, int, int, int>> &coefs,
                 std::vector<bool> &interpolatedTrees);
 };

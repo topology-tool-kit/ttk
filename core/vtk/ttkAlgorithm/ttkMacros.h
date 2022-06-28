@@ -137,15 +137,21 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     call;                                          \
   } break;
 
-#define ttkTypeMacroT(group, call)                                 \
-  switch(group) {                                                  \
-    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,           \
-                     ttk::ExplicitTriangulation, 0, call);         \
-    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,           \
-                     ttk::ImplicitTriangulation, 0, call);         \
-    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,           \
-                     ttk::PeriodicImplicitTriangulation, 0, call); \
-    ttkTypeMacroErrorCase(0, group);                               \
+#define ttkTypeMacroT(group, call)                                            \
+  switch(group) {                                                             \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,                      \
+                     ttk::ExplicitTriangulation, 0, call);                    \
+    ttkTypeMacroCase(                                                         \
+      ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation, 0, call); \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,                      \
+                     ttk::ImplicitNoPreconditions, 0, call);                  \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT,               \
+                     ttk::ImplicitWithPreconditions, 0, call);                \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,                      \
+                     ttk::PeriodicNoPreconditions, 0, call);                  \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC,               \
+                     ttk::PeriodicWithPreconditions, 0, call);                \
+    ttkTypeMacroErrorCase(0, group);                                          \
   }
 
 #define ttkTypeMacroR(group, call)                 \
@@ -187,46 +193,94 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkTypeMacroErrorCase(0, group);                                       \
   }
 
-#define ttkTypeMacroAT(group0, group1, call)                \
-  switch(group1) {                                          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,    \
-                     ttk::ExplicitTriangulation, 1,         \
-                     ttkTypeMacroA(group0, call));          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,    \
-                     ttk::ImplicitTriangulation, 1,         \
-                     ttkTypeMacroA(group0, call));          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,    \
-                     ttk::PeriodicImplicitTriangulation, 1, \
-                     ttkTypeMacroA(group0, call));          \
-    ttkTypeMacroErrorCase(1, group1);                       \
+#ifdef TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+// reduced list of template instantiations by redefining ttkTypeMacroI
+// & ttkTypeMacroA
+#undef ttkTypeMacroI
+#define ttkTypeMacroI(group, call)                       \
+  switch(group) {                                        \
+    ttkTypeMacroCase(VTK_INT, int, 0, call);             \
+    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call); \
+    ttkTypeMacroErrorCase(0, group);                     \
+  }
+#undef ttkTypeMacroA
+#define ttkTypeMacroA(group, call)                       \
+  switch(group) {                                        \
+    ttkTypeMacroCase(VTK_FLOAT, float, 0, call);         \
+    ttkTypeMacroCase(VTK_DOUBLE, double, 0, call);       \
+    ttkTypeMacroCase(VTK_INT, int, 0, call);             \
+    ttkTypeMacroCase(VTK_LONG_LONG, long long, 0, call); \
+    ttkTypeMacroErrorCase(0, group);                     \
+  }
+#endif // TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+
+#define ttkTypeMacroAT(group0, group1, call)                    \
+  switch(group1) {                                              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
+                     ttk::ExplicitTriangulation, 1,             \
+                     ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
+                     ttk::CompactTriangulation, 1,              \
+                     ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
+                     ttk::ImplicitNoPreconditions, 1,           \
+                     ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT, \
+                     ttk::ImplicitWithPreconditions, 1,         \
+                     ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,        \
+                     ttk::PeriodicNoPreconditions, 1,           \
+                     ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC, \
+                     ttk::PeriodicWithPreconditions, 1,         \
+                     ttkTypeMacroA(group0, call));              \
+    ttkTypeMacroErrorCase(1, group1);                           \
   }
 
-#define ttkTypeMacroRT(group0, group1, call)                \
-  switch(group1) {                                          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,    \
-                     ttk::ExplicitTriangulation, 1,         \
-                     ttkTypeMacroR(group0, call));          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,    \
-                     ttk::ImplicitTriangulation, 1,         \
-                     ttkTypeMacroR(group0, call));          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,    \
-                     ttk::PeriodicImplicitTriangulation, 1, \
-                     ttkTypeMacroR(group0, call));          \
-    ttkTypeMacroErrorCase(1, group1);                       \
+#define ttkTypeMacroRT(group0, group1, call)                    \
+  switch(group1) {                                              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
+                     ttk::ExplicitTriangulation, 1,             \
+                     ttkTypeMacroR(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
+                     ttk::CompactTriangulation, 1,              \
+                     ttkTypeMacroR(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
+                     ttk::ImplicitNoPreconditions, 1,           \
+                     ttkTypeMacroR(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT, \
+                     ttk::ImplicitWithPreconditions, 1,         \
+                     ttkTypeMacroR(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,        \
+                     ttk::PeriodicNoPreconditions, 1,           \
+                     ttkTypeMacroR(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC, \
+                     ttk::PeriodicWithPreconditions, 1,         \
+                     ttkTypeMacroR(group0, call));              \
+    ttkTypeMacroErrorCase(1, group1);                           \
   }
 
-#define ttkTypeMacroIT(group0, group1, call)                \
-  switch(group1) {                                          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,    \
-                     ttk::ExplicitTriangulation, 1,         \
-                     ttkTypeMacroI(group0, call));          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,    \
-                     ttk::ImplicitTriangulation, 1,         \
-                     ttkTypeMacroI(group0, call));          \
-    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,    \
-                     ttk::PeriodicImplicitTriangulation, 1, \
-                     ttkTypeMacroI(group0, call));          \
-    ttkTypeMacroErrorCase(1, group1);                       \
+#define ttkTypeMacroIT(group0, group1, call)                    \
+  switch(group1) {                                              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
+                     ttk::ExplicitTriangulation, 1,             \
+                     ttkTypeMacroI(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
+                     ttk::CompactTriangulation, 1,              \
+                     ttkTypeMacroI(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
+                     ttk::ImplicitNoPreconditions, 1,           \
+                     ttkTypeMacroI(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT, \
+                     ttk::ImplicitWithPreconditions, 1,         \
+                     ttkTypeMacroI(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,        \
+                     ttk::PeriodicNoPreconditions, 1,           \
+                     ttkTypeMacroI(group0, call));              \
+    ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC, \
+                     ttk::PeriodicWithPreconditions, 1,         \
+                     ttkTypeMacroI(group0, call));              \
+    ttkTypeMacroErrorCase(1, group1);                           \
   }
 
 #define ttkTypeMacroAI(group0, group1, call)                                  \
