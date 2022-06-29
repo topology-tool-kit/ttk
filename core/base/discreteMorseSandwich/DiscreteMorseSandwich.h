@@ -6,8 +6,15 @@
 ///
 /// \brief TTK %DiscreteMorseSandwich processing package.
 ///
-/// %DiscreteMorseSandwich compute a Persistence Diagram by using the
+/// %DiscreteMorseSandwich computes a Persistence Diagram by using the
 /// %Discrete Morse-Theory %DiscreteGradient algorithms.
+///
+/// \b Related \b publication \n
+/// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
+/// Scalar Data -- An Algorithm and A Benchmark" \n
+/// Pierre Guillou, Jules Vidal, Julien Tierny \n
+/// Technical Report, arXiv:2206.13932, 2022
+///
 ///
 /// \sa ttk::dcg::DiscreteGradient
 

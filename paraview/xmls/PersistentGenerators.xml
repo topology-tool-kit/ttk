@@ -8,6 +8,11 @@
           long_help="TTK plugin for the computation of persistent one-dimensional generators."
           short_help="TTK plugin for the computation of persistent generators.">
         TTK plugin for the computation of persistent one-dimensional generators.
+
+        Related publication:
+        'Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for Scalar Data -- An Algorithm and A Benchmark'
+        Pierre Guillou, Jules Vidal, Julien Tierny
+        Technical Report, arXiv:2206.13932, 2022
       </Documentation>
 
       <InputProperty

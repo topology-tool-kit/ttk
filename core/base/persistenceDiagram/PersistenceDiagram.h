@@ -25,31 +25,38 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-/// Four backends can be chosen for the computation:
+/// Five backends are available for the computation:
 ///
-///  1) FTM
+///  1) FTM \n
 /// \b Related \b publication \n
 /// "Task-based Augmented Contour Trees with Fibonacci Heaps"
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
 /// IEEE Transactions on Parallel and Distributed Systems, 2019
 ///
-///  2) Progressive Approach
+///  2) Progressive Approach \n
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 ///
-/// 3) Persistent Simplex \n
-/// This is a textbook (and very slow) algorithm, described in
-/// "Algorithm and Theory of Computation Handbook (Second Edition)
-/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+/// 3) Discrete Morse Sandwich (default) \n
+/// \b Related \b publication \n
+/// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
+/// Scalar Data -- An Algorithm and A Benchmark" \n
+/// Pierre Guillou, Jules Vidal, Julien Tierny \n
+/// Technical Report, arXiv:2206.13932, 2022 \n
+/// Fast and versatile algorithm for persistence diagram computation.
 ///
 /// 4) Approximate Approach \n
 /// \b Related \b publication \n
 /// "Fast Approximation of Persistence Diagrams with Guarantees" \n
 /// Jules Vidal, Julien Tierny\n
-/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021
 ///
+/// 5) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
 ///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
