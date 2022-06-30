@@ -405,7 +405,6 @@ namespace ttk {
    * @param[in] ghostCells the ghost array for the scalar data
    * @param[in] nVertices number of vertices in the arrays
    */
-
   void inline produceRankArray(std::vector<int> &rankArray,
                                long int *globalIds,
                                unsigned char *ghostCells,
@@ -507,6 +506,39 @@ namespace ttk {
     }
   }
 
+  /**
+   * @brief send the highest burstSize values and decrease the vector by that
+   * amount, check if there are actually that many elements in the vector
+   *
+   * @param[out] outVector the vector which is returned
+   * @param[in] values the data vector from which we take the elements
+   * @param[in] burstSize the amount of elements extracted
+   */
+  template <typename DT, typename IT>
+  void returnVectorForBurstsize(std::vector<value<DT, IT>> &outVector,
+                                std::vector<value<DT, IT>> &values,
+                                size_t burstSize) {
+
+    if(burstSize > values.size()) {
+      outVector.resize(values.size(), {0, 0});
+      outVector.assign(values.begin(), values.end());
+      values.clear();
+    } else {
+      outVector.resize(burstSize, {0, 0});
+      outVector.assign(values.end() - burstSize, values.end());
+      values.erase(values.end() - burstSize, values.end());
+    }
+  }
+
+  /**
+   * @brief receive elements from a rank and add them to the correct subvector
+   *
+   * @param[in] rankFrom the rank from which we receive
+   * @param[in] structTag an MPI tag representing messages in which structs are
+   * sent
+   * @param[out] unsortedReceivedValues a vector of vectors representing
+   * received values for each rank
+   */
   template <typename DT, typename IT>
   void ReceiveAndAddToVector(
     int rankFrom,
@@ -514,8 +546,7 @@ namespace ttk {
     std::vector<std::vector<value<DT, IT>>> &unsortedReceivedValues) {
     std::vector<value<DT, IT>> &receivedValues
       = unsortedReceivedValues[rankFrom];
-    // be prepared to receive burstsize of elements, resize after receiving to
-    // the correct size
+    // probe to get the correct size to receive
     int amount;
     MPI_Status status;
     MPI_Probe(rankFrom, structTag * rankFrom, ttk::MPIcomm_, &status);
@@ -524,9 +555,30 @@ namespace ttk {
     MPI_Recv(receivedValues.data(), amount, MPI_CHAR, rankFrom,
              structTag * rankFrom, ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
-  // this method gets the current maximum value and works with it
-  // if this leads to the vector of one rank being empty,
-  // it sends the ordering to the rank and requests new values
+
+  /**
+   * @brief get the current maximum value and works with it, if this leads to
+   * the vector of one rank being empty, send the ordering to the rank and
+   * request new values
+   *
+   * @param[in] intTag an MPI tag representing messages in which integers are
+   * sent
+   * @param[in] structTag an MPI tag representing messages in which structs are
+   * sent
+   * @param[in, out] currentOrder integer keeping track of the current order,
+   * counting down
+   * @param[in] burstSize number of values sent in one communication step
+   * @param[in] MPI_IT MPI datatype representing integers
+   * @param[out] finalValues a vector of sorted structs from each rank
+   * @param[in, out] unsortedReceivedValues a vector of vectors representing
+   * received values for each rank
+   * @param[in, out] orderResendValues a vector of vectors of integers
+   * representing globalIds and their orders for each rank
+   * @param[in, out] orderedValuesForRank a vector representing integers
+   * representing globalIds and their orders for this rank
+   * @param[in, out] sortingValues vector of value structs with global ids
+   * belonging to this rank
+   */
   template <typename DT, typename IT>
   void getMax(int intTag,
               int structTag,
@@ -552,14 +604,7 @@ namespace ttk {
         }
       }
     }
-    /*
-    if(rankIdOfMaxScalar == -1) {
-      Debug dbg;
-      dbg.printMsg("FinalValues.size: " + std::to_string(finalValues.size()));
-      dbg.printErr("All vectors are empty, but out final vector is "
-                     "not complete yet. Either something went wrong or "
-                     "some rank didn't send their values yet.");
-    }*/
+
     // move the struct from the unsortedReceivedValues subvector to the
     // finalValues vector to get an ordering
     value<DT, IT> currentValue
@@ -586,9 +631,7 @@ namespace ttk {
           returnVectorForBurstsize<DT, IT>(ownValues, sortingValues, burstSize);
 
           unsortedReceivedValues[rankIdOfMaxScalar] = ownValues;
-        } /*else {
-          printMsg("We are done with rank 0");
-        }*/
+        }
       } else {
         // receive more values from rank, send ordering to the rank
         // send to the finished rank that we want more
@@ -600,23 +643,19 @@ namespace ttk {
         // finished with this rank
         ReceiveAndAddToVector(
           rankIdOfMaxScalar, structTag, unsortedReceivedValues);
-        /*if(unsortedReceivedValues[rankIdOfMaxScalar].size() == 0) {
-          printMsg("We are done with rank "
-                         + std::to_string(rankIdOfMaxScalar));
-        }*/
       }
     }
   }
 
   /**
-   * @brief Sort vertices according to scalars disambiguated by offsets
+   * @brief fill the order array based on global ids and their order values
    *
    * @param[in] nInts number of long ints, as globalid / order pairs
    * @param[in] orderedValuesForRank array of size nInts, the actual pairs,
    * [i] = gId, [i+1] = order
    * @param[in] gidToLidMap map which maps scalar values to a defined order
    * @param[out] order array of size nVerts, computed order of vertices, this
-   * procedure doesn't fill it completely
+   * procedure doesn't fill it completely, ghostcells are missing
    * @param[in] nThreads number of parallel threads
    */
   template <typename IT>
@@ -636,27 +675,20 @@ namespace ttk {
     }
   }
 
-  // send the highest burstSize values and decrease the vector by that amount
-  // check if there are actually that many elements in the vector
-  template <typename DT, typename IT>
-  void returnVectorForBurstsize(std::vector<value<DT, IT>> &outVector,
-                                std::vector<value<DT, IT>> &values,
-                                size_t burstSize) {
-
-    if(burstSize > values.size()) {
-      outVector.resize(values.size(), {0, 0});
-      outVector.assign(values.begin(), values.end());
-      values.clear();
-    } else {
-      outVector.resize(burstSize, {0, 0});
-      outVector.assign(values.end() - burstSize, values.end());
-      values.erase(values.end() - burstSize, values.end());
-    }
-  }
-
-  // creates a vector of value structs based on the given pointers
-  // only takes values of vertices which mainly belong to the current rank
-  // ( so only vertices which are no ghost cells)
+  /**
+   * @brief creates a vector of value structs based on the given pointers, only
+   * takes values of vertices which belong to the current rank, so no ghost
+   * cells
+   *
+   * @param[out] valuesToSortVector vector of value structs with global ids
+   * belonging to this rank
+   * @param[out] gidsToGetVector vector of global ids not belonging to this rank
+   * @param[out] gidToLidMap map mapping global ids to local rank ids
+   * @param[in] nVerts number of vertices
+   * @param[in] scalars the scalar data array
+   * @param[in] globalIds the global id array for the scalar data
+   * @param[in] rankArray the rank array for the dataset
+   */
   template <typename DT, typename IT>
   void populateVector(std::vector<value<DT, IT>> &valuesToSortVector,
                       std::vector<IT> &gidsToGetVector,
@@ -676,7 +708,13 @@ namespace ttk {
     }
   }
 
-  // orders an value vector first by their scalar value and then by global id
+  /**
+   * @brief Sort vertices according to scalars disambiguated by global ids
+   *
+   * @param[in, out] values vector of size nVerts, structs with a scalar value
+   * and a global id
+   * @param[in] nThreads number of parallel threads
+   */
   template <typename DT, typename IT>
   void sortVerticesDistributed(std::vector<value<DT, IT>> &values,
                                const int nThreads) {
@@ -691,12 +729,15 @@ namespace ttk {
   }
 
   /**
-   * @brief produce the RankArray array, that stores rank ownership information
+   * @brief produce the orderArray, that defines a unique ordering based on the
+   * scalar values and the global ids
    *
-   * @param[out] rankArray the owner array for the scalar data
+   * @param[out] orderArray the order array for the scalar data
+   * @param[in] scalarArray the scalar data array
    * @param[in] globalIds the global id array for the scalar data
-   * @param[in] ghostCells the ghost array for the scalar data
-   * @param[in] nVertices number of vertices in the arrays
+   * @param[in] rankArray the rank array for the dataset
+   * @param[in] nVerts number of vertices in the arrays
+   * @param[in] burstSize number of values sent in one communication step
    */
   template <typename DT, typename IT>
   void produceOrdering(SimplexId *orderArray,
@@ -707,17 +748,11 @@ namespace ttk {
                        const int burstSize) {
     int intTag = 101;
     int structTag = 102;
-    /*if(ttk::MPIrank_ == 0)
-      printMsg("Global Point Ids and RankArray exist, "
-                     "therefore we are in distributed mode!");
-    printMsg("#Ranks " + std::to_string(ttk::MPIsize_) + ", this is rank "
-                   + std::to_string(ttk::MPIrank_));*/
+
     MPI_Barrier(ttk::MPIcomm_);
 
     MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
 
-    /*printMsg("#Points in Rank " + std::to_string(ttk::MPIrank_) + ": "
-                   + std::to_string(nVerts));*/
     ttk::Timer fillAndSortTimer;
     std::vector<value<DT, IT>> sortingValues;
     std::vector<IT> gidsToGetVector;
@@ -728,20 +763,10 @@ namespace ttk {
     // sort the scalar array distributed first by the scalar value itself,
     // then by the global id
     sortVerticesDistributed<DT, IT>(sortingValues, ttk::globalThreadNumber_);
-    /*
-    printMsg("#Unique Points in Rank " + std::to_string(ttk::MPIrank_)
-                   + ": " + std::to_string(sortingValues.size()));
-    printMsg("#Ghostpoints in Rank " + std::to_string(ttk::MPIrank_)
-                   + ": " + std::to_string(gidsToGetVector.size()));
-                   */
+
     // when all are done sorting, rank 0 requests the highest values and
     // merges them
     MPI_Barrier(ttk::MPIcomm_);
-    /*if(ttk::MPIrank_ == 0) {
-      printMsg(
-        "Filling vector and sorting for each rank done, starting merge.", 1,
-        fillAndSortTimer.getElapsedTime());
-    }*/
 
     std::vector<IT> orderedValuesForRank;
     std::vector<value<DT, IT>> finalValues;
@@ -751,9 +776,6 @@ namespace ttk {
     // get the complete size  of the dataset by summing up the local sizes
     MPI_Reduce(&localSize, &totalSize, 1, MPI_IT, MPI_SUM, 0, ttk::MPIcomm_);
     if(ttk::MPIrank_ == 0) {
-      /*printMsg("Total amount of distributed points: "
-                     + std::to_string(totalSize));
-      printMsg("Rank 0 starts merging");*/
       finalValues.reserve(totalSize);
       IT currentOrder = totalSize - 1;
       std::vector<std::vector<value<DT, IT>>> unsortedReceivedValues;
@@ -779,12 +801,7 @@ namespace ttk {
                        finalValues, unsortedReceivedValues, orderResendValues,
                        orderedValuesForRank, sortingValues);
       }
-      /*if(!finalValues.empty()) {
-        printMsg("Finished with sorting, max value is "
-                       + std::to_string(finalValues[0].scalar)
-                       + ", min value is "
-                       + std::to_string(finalValues.back().scalar));
-      }*/
+
     } else { // other Ranks
       // send the next burstsize values and then wait for an answer from the
       // root rank
@@ -818,20 +835,11 @@ namespace ttk {
 
     // all ranks do the following
     MPI_Barrier(ttk::MPIcomm_);
-    /*if(ttk::MPIrank_ == 0) {
-      printMsg(
-        "Merging done and results sent to ranks, ranks are getting order "
-        "for ghost cells and constructing order array.",
-        1, mergeTimer.getElapsedTime());
-    }
-    printMsg("#Orders received for Rank " + std::to_string(ttk::MPIrank_)
-                   + ": " + std::to_string(orderedValuesForRank.size() / 2));
-  */
+
     ttk::Timer orderTimer;
     buildArrayForReceivedData<IT>(orderedValuesForRank.size(),
                                   orderedValuesForRank.data(), gidToLidMap,
                                   orderArray, ttk::globalThreadNumber_);
-    // printMsg("Built own values, getting Ghost Cell values");
 
     // we receive the values at the ghostcells through the abstract
     // exchangeGhostCells method
