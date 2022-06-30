@@ -6,6 +6,7 @@ on:
       - '*'
     tags:
       - 'v?\d+.\d+.\d+-headless'
+      - 'headless*'
 
 jobs:
 
@@ -16,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK-ParaView source code
@@ -43,8 +44,9 @@ jobs:
           -DPARAVIEW_USE_QT=OFF \
           -DVTK_USE_X=OFF \
           -DVTK_OPENGL_HAS_OSMESA=ON \
+          -DTTK_PARAVIEW_HEADLESS_DEPS=ON \
           -GNinja \
-          ..
+          $GITHUB_WORKSPACE
 
     - name: Build ParaView
       run: |
@@ -61,6 +63,7 @@ jobs:
       with:
         name: ttk-paraview-headless-${{ matrix.os }}
         path: build/ttk-paraview.deb
+
 
   # ----- #
   # macOS #
@@ -83,8 +86,6 @@ jobs:
 
     - name: Create & configure ParaView build directory
       run: |
-        # switch to Xcode 11 since Xcode 12 breaks the ParaView build
-        sudo xcode-select -s "/Applications/Xcode_11.7.app"
         mkdir build && cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
@@ -92,7 +93,7 @@ jobs:
           -DPARAVIEW_USE_QT=OFF \
           -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \
-          ..
+          $GITHUB_WORKSPACE
 
     - name: Build ParaView
       run: |
@@ -116,10 +117,9 @@ jobs:
   # Windows #
   # ------- #
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     env:
       CONDA_ROOT: C:\Miniconda
-      VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat
 
     steps:
     - uses: actions/checkout@v2
@@ -130,7 +130,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge glew ninja
+        conda install -c conda-forge glew
 
     - name: Remove hosted Python
       shell: bash
@@ -140,7 +140,6 @@ jobs:
     - name: Create & configure ParaView build directory
       shell: cmd
       run: |
-        call "%VCVARS%"
         cd ..
         mkdir b
         cd b
@@ -148,13 +147,12 @@ jobs:
           -DPARAVIEW_USE_QT=OFF ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -GNinja ^
+          -G"Visual Studio 17 2022" ^
           %GITHUB_WORKSPACE%
 
     - name: Build ParaView
       shell: cmd
       run: |
-        call "%VCVARS%"
         cd ..\b
         cmake --build . --config Release --parallel
 
@@ -208,6 +206,14 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-paraview-headless-ubuntu-20.04/ttk-paraview.deb
         asset_name: ttk-paraview-headless-ubuntu-20.04.deb
+
+    - name: Upload Ubuntu Jammy .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-ubuntu-22.04/ttk-paraview.deb
+        asset_name: ttk-paraview-headless-ubuntu-22.04.deb
 
     - name: Upload .tar.gz as Release Asset
       uses: svenstaro/upload-release-action@v2
