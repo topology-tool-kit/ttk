@@ -629,6 +629,9 @@ int ttk::BottleneckDistance::computeBottleneck(
   std::vector<bool> paired1(CTDiagram1.size(), false);
   std::vector<bool> paired2(CTDiagram2.size(), false);
 
+  // store last matching distance for bottleneck
+  double partialDistance{};
+
   for(const auto &mt : matchings) {
     int i = transposeOriginal ? std::get<1>(mt) : std::get<0>(mt);
     int j = transposeOriginal ? std::get<0>(mt) : std::get<1>(mt);
@@ -638,7 +641,7 @@ int ttk::BottleneckDistance::computeBottleneck(
     paired1[i] = true;
     paired2[j] = true;
 
-    const auto partialDistance = this->distanceFunction(t1, t2, wasserstein);
+    partialDistance = this->distanceFunction(t1, t2, wasserstein);
 
     if(t1.death.type == CriticalType::Local_maximum) {
       if(!isBottleneck) {
@@ -662,14 +665,15 @@ int ttk::BottleneckDistance::computeBottleneck(
     }
   }
 
-  const auto affectationD = costs[0] + costs[1] + costs[2];
+  const auto affectationD
+    = !isBottleneck ? costs[0] + costs[1] + costs[2] : partialDistance;
   const auto addedPers
     = addedPersistence[0] + addedPersistence[1] + addedPersistence[2];
   this->distance_
-    = !isBottleneck ? Geometry::pow(affectationD + addedPers, 1.0 / wasserstein)
-                    : std::max(*std::max_element(costs.begin(), costs.end()),
-                               *std::max_element(addedPersistence.begin(),
-                                                 addedPersistence.end()));
+    = !isBottleneck
+        ? Geometry::pow(affectationD + addedPers, 1.0 / wasserstein)
+        : std::max(affectationD, *std::max_element(addedPersistence.begin(),
+                                                   addedPersistence.end()));
 
   std::stringstream msg;
   this->printMsg("Computed distance:");
@@ -693,11 +697,14 @@ int ttk::BottleneckDistance::computeBottleneck(
   // display results
   std::vector<std::vector<std::string>> rows{
     {" Min-saddle cost",
-     std::to_string(Geometry::pow(costs[0], 1.0 / wasserstein))},
+     std::to_string(!isBottleneck ? Geometry::pow(costs[0], 1.0 / wasserstein)
+                                  : costs[0])},
     {" Saddle-saddle cost",
-     std::to_string(Geometry::pow(costs[1], 1.0 / wasserstein))},
+     std::to_string(!isBottleneck ? Geometry::pow(costs[1], 1.0 / wasserstein)
+                                  : costs[1])},
     {" Saddle-max cost",
-     std::to_string(Geometry::pow(costs[2], 1.0 / wasserstein))},
+     std::to_string(!isBottleneck ? Geometry::pow(costs[2], 1.0 / wasserstein)
+                                  : costs[2])},
     {isBottleneck ? "Bottleneck Distance" : "Wasserstein Distance",
      std::to_string(this->distance_)},
   };
