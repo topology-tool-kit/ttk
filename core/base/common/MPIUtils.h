@@ -9,6 +9,7 @@
 
 #include <BaseClass.h>
 #include <Timer.h>
+#include <algorithm>
 #include <array>
 #include <limits>
 #include <unordered_map>
