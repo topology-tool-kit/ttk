@@ -42,7 +42,10 @@ int generateMatchings(vtkUnstructuredGrid *const outputCT3,
                       const ttk::DiagramType &diagram1,
                       const ttk::DiagramType &diagram2,
                       const std::vector<ttk::MatchingType> &matchings,
+                      const std::array<double, 3> &distances,
+                      const double globalDist,
                       const double spacing,
+                      const bool isBottleneck,
                       const bool is2D0,
                       const bool is2D1) {
 
@@ -97,6 +100,32 @@ int generateMatchings(vtkUnstructuredGrid *const outputCT3,
     costs->SetTuple1(i, std::get<2>(t));
     matchingIds->SetTuple1(i, i);
   }
+
+  // add distance results to output_matchings FieldData
+  vtkNew<vtkDoubleArray> minSad{};
+  minSad->SetName("MinSaddleCost");
+  minSad->SetNumberOfTuples(1);
+  minSad->SetTuple1(0, distances[0]);
+
+  vtkNew<vtkDoubleArray> sadSad{};
+  sadSad->SetName("SaddleSaddleCost");
+  sadSad->SetNumberOfTuples(1);
+  sadSad->SetTuple1(0, distances[1]);
+
+  vtkNew<vtkDoubleArray> sadMax{};
+  sadMax->SetName("SaddleMaxCost");
+  sadMax->SetNumberOfTuples(1);
+  sadMax->SetTuple1(0, distances[2]);
+
+  vtkNew<vtkDoubleArray> wass{};
+  wass->SetName(isBottleneck ? "BottleneckDistance" : "WassersteinDistance");
+  wass->SetNumberOfTuples(1);
+  wass->SetTuple1(0, globalDist);
+
+  vtu->GetFieldData()->AddArray(minSad);
+  vtu->GetFieldData()->AddArray(sadSad);
+  vtu->GetFieldData()->AddArray(sadMax);
+  vtu->GetFieldData()->AddArray(wass);
 
   outputCT3->ShallowCopy(vtu);
 
@@ -171,7 +200,8 @@ int ttkBottleneckDistance::RequestData(vtkInformation *ttkNotUsed(request),
   // Generate matchings
   if(this->UseOutputMatching) {
     status = generateMatchings(outputMatchings, diagram0, diagram1, matchings,
-                               this->Spacing, is2D0, is2D1);
+                               this->costs_, this->distance_, this->Spacing,
+                               this->WassersteinMetric == "inf", is2D0, is2D1);
 
     if(status != 1) {
       this->printErr("Could not compute matchings");

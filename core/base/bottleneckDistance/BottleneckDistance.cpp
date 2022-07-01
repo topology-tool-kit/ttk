@@ -685,26 +685,22 @@ int ttk::BottleneckDistance::computeBottleneck(
 
   // aggregate costs per pair type
   if(!isBottleneck) {
-    costs[0] += addedPersistence[0];
-    costs[1] += addedPersistence[1];
-    costs[2] += addedPersistence[2];
+    costs[0] = Geometry::pow(costs[0] + addedPersistence[0], 1.0 / wasserstein);
+    costs[1] = Geometry::pow(costs[1] + addedPersistence[1], 1.0 / wasserstein);
+    costs[2] = Geometry::pow(costs[2] + addedPersistence[2], 1.0 / wasserstein);
   } else {
     costs[0] = std::max(costs[0], addedPersistence[0]);
     costs[1] = std::max(costs[1], addedPersistence[1]);
     costs[2] = std::max(costs[2], addedPersistence[2]);
   }
 
+  this->costs_ = costs;
+
   // display results
   std::vector<std::vector<std::string>> rows{
-    {" Min-saddle cost",
-     std::to_string(!isBottleneck ? Geometry::pow(costs[0], 1.0 / wasserstein)
-                                  : costs[0])},
-    {" Saddle-saddle cost",
-     std::to_string(!isBottleneck ? Geometry::pow(costs[1], 1.0 / wasserstein)
-                                  : costs[1])},
-    {" Saddle-max cost",
-     std::to_string(!isBottleneck ? Geometry::pow(costs[2], 1.0 / wasserstein)
-                                  : costs[2])},
+    {" Min-saddle cost", std::to_string(this->costs_[0])},
+    {" Saddle-saddle cost", std::to_string(this->costs_[1])},
+    {" Saddle-max cost", std::to_string(this->costs_[2])},
     {isBottleneck ? "Bottleneck Distance" : "Wasserstein Distance",
      std::to_string(this->distance_)},
   };

@@ -54,6 +54,7 @@ namespace ttk {
 
   protected:
     double distance_{-1.0};
+    std::array<double, 3> costs_{};
 
     std::string WassersteinMetric{"2"};
     std::string DistanceAlgorithm{};
