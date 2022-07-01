@@ -135,6 +135,23 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
+    - uses: actions/checkout@v2
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        python3 -u python/run.py
+        cat python/res.json
+        diff python/hashes/${{ matrix.os }}.json python/res.json
+      env:
+        OMP_NUM_THREADS: 1
+
 
   # ------------#
   # Build macOS #
@@ -266,6 +283,25 @@ jobs:
         cd $GITHUB_WORKSPACE
         ttkHelloWorldCmd -i examples/data/inputData.vtu
 
+    - uses: actions/checkout@v2
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        python3 -u python/run.py
+        cat python/res.json
+        diff python/hashes/macOS.json python/res.json
+      env:
+        PYTHONPATH: /Applications/lib/python3.9/site-packages
+        PV_PLUGIN_PATH: /Applications/bin/plugins/TopologyToolKit
+        OMP_NUM_THREADS: 1
+
 
   # --------------#
   # Build Windows #
@@ -317,6 +353,7 @@ jobs:
         cmake ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DCMAKE_INSTALL_PREFIX="%ProgramFiles%\TTK" ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
           -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
@@ -445,6 +482,26 @@ jobs:
       run: |
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
+
+    - uses: actions/checkout@v2
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data Python scripts [NOT ENFORCED]
+      continue-on-error: true
+      shell: cmd
+      run: |
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd ttk-data
+        python -u python\run.py
+        type python\res.json
+        FC python\hashes\windows.json python\res.json
+      env:
+        OMP_NUM_THREADS: 1
 
 
   # ---------------#
