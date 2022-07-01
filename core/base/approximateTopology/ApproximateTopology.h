@@ -305,7 +305,7 @@ int ttk::ApproximateTopology::executeApproximateTopology(
 
   Timer timer;
 
-  SimplexId *const vertsOrder = static_cast<SimplexId *>(outputOffsets);
+  SimplexId *const vertsOrder = outputOffsets;
 
   decimationLevel_ = startingDecimationLevel_;
   multiresTriangulation_.setTriangulation(triangulation_);

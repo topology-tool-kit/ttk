@@ -53,6 +53,11 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
   // ===========================================================================
   // Convert Input Tables to SQL Tables
   auto nTables = inputVector[0]->GetNumberOfInformationObjects();
+  if(nTables == 0) {
+    this->printErr("No input vtkTable found");
+    return 0;
+  }
+
   std::vector<vtkTable *> inTables(nTables);
   for(int i = 0; i < nTables; ++i) {
     inTables[i] = vtkTable::GetData(inputVector[0], i);

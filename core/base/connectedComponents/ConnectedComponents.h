@@ -82,7 +82,7 @@ namespace ttk {
         // add neihbors
         size_t nNeighbors = triangulation->getVertexNeighborNumber(cIndex);
         for(size_t i = 0; i < nNeighbors; i++) {
-          TID nIndex;
+          TID nIndex{-1};
           triangulation->getVertexNeighbor(cIndex, i, nIndex);
           if(labels[nIndex] == this->UNLABELED) {
             labels[nIndex] = componentId;

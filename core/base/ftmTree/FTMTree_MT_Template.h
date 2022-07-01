@@ -102,7 +102,7 @@ namespace ttk {
               valence val = 0;
 
               for(valence n = 0; n < neighNumb; ++n) {
-                SimplexId neigh;
+                SimplexId neigh{-1};
                 mesh->getVertexNeighbor(v, n, neigh);
                 comp_.vertLower(neigh, v) && ++val;
               }
@@ -352,7 +352,7 @@ namespace ttk {
 
       // propagation / is saddle
       for(valence n = 0; n < nbNeigh; ++n) {
-        SimplexId neigh;
+        SimplexId neigh{-1};
         mesh->getVertexNeighbor(currentState.vertex, n, neigh);
 
         if(comp_.vertLower(neigh, currentState.vertex)) {
@@ -460,7 +460,7 @@ namespace ttk {
       // Union of the UF coming here (merge propagation and closing arcs)
       const auto &nbNeigh = mesh->getVertexNeighborNumber(saddleVert);
       for(valence n = 0; n < nbNeigh; ++n) {
-        SimplexId neigh;
+        SimplexId neigh{-1};
         mesh->getVertexNeighbor(saddleVert, n, neigh);
 
         if(comp_.vertLower(neigh, saddleVert)) {
@@ -489,7 +489,7 @@ namespace ttk {
       // Union of the UF coming here (merge propagation and closing arcs)
       const auto &nbNeigh = mesh->getVertexNeighborNumber(saddleVert);
       for(valence n = 0; n < nbNeigh; ++n) {
-        SimplexId neigh;
+        SimplexId neigh{-1};
         mesh->getVertexNeighbor(saddleVert, n, neigh);
 
         if(comp_.vertLower(neigh, saddleVert)) {

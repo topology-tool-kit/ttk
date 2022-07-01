@@ -127,7 +127,7 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
         valence downval = 0;
 
         for(valence n = 0; n < neighNumb; ++n) {
-          SimplexId neigh;
+          SimplexId neigh{-1};
           mesh->getVertexNeighbor(v, n, neigh);
           if(scalars_->isLower(neigh, v)) {
             ++downval;

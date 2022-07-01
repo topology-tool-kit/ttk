@@ -146,7 +146,7 @@ int ttk::TopologicalCompression::PerformSimplification(
     // Smoothe neighborhood (along with offsets).
     SimplexId neighborNumber = triangulation.getVertexNeighborNumber(id);
     for(SimplexId j = 0; j < neighborNumber; ++j) {
-      SimplexId neighbor;
+      SimplexId neighbor{-1};
       triangulation.getVertexNeighbor(id, j, neighbor);
 
       if(type == 1) { // Local_maximum.
@@ -720,7 +720,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         SimplexId neighborNumber
           = triangulation.getVertexNeighborNumber(vertex);
         for(SimplexId j = 0; j < neighborNumber; ++j) {
-          SimplexId neighbor;
+          SimplexId neighbor{-1};
           triangulation.getVertexNeighbor(vertex, j, neighbor);
 
           // Add current neighbor to processing stack.

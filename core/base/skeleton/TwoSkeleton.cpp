@@ -247,8 +247,9 @@ int TwoSkeleton::buildTriangleList(
 
   // check parameters consistency (this method is useless in 2D)
   const auto dim = cellArray.getCellVertexNumber(0) - 1;
-  if(dim == 2) {
-    this->printWrn("Calling buildTriangleList is useless in 2D, skipping...");
+  if(dim < 3) {
+    this->printWrn("Calling buildTriangleList is useless in "
+                   + std::to_string(dim) + "D, skipping...");
     return -1;
   }
 
