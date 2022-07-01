@@ -184,6 +184,15 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
             ttkUtils::GetPointer<T0>(scalarArray),
             ttkUtils::GetPointer<T1>(vtkGlobalPointIds),
             ttkUtils::GetPointer<int>(rankArray), nVertices, 500)));
+      } else {
+        switch(scalarArray->GetDataType()) {
+          vtkTemplateMacro(ttk::preconditionOrderArray(
+            nVertices,
+            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
+            static_cast<ttk::SimplexId *>(
+              ttkUtils::GetVoidPointer(newOrderArray)),
+            this->threadNumber_));
+        }
       }
 
 #else
