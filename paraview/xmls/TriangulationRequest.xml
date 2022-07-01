@@ -52,6 +52,13 @@
         number_of_elements="1"
         default_values="0"
         panel_visibility="default">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="RequestType"
+                                   value="5"
+                                   inverse="1" />
+        </Hints>
         <Documentation>
           Output simplex identifiers (comma-separated list).
         </Documentation>
@@ -81,6 +88,7 @@
           <Entry value="2" text="Cofacet"/>
           <Entry value="3" text="Star"/>
           <Entry value="4" text="Link"/>
+          <Entry value="5" text="Domain Boundary"/>
         </EnumerationDomain>
         <Documentation>
           Output request.

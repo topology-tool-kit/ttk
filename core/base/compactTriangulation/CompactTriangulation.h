@@ -1084,6 +1084,9 @@ namespace ttk {
       SimplexId nid = vertexIndices_[vertexId];
       SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
+      if(exnode == nullptr) {
+        return -1;
+      }
       if(exnode->vertexNeighbors_.empty()) {
         getClusterVertexNeighbors(exnode);
       }

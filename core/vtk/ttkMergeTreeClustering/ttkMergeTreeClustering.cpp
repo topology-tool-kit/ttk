@@ -19,7 +19,6 @@
 #include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 #include <string>
@@ -121,7 +120,7 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
-  std::vector<vtkMultiBlockDataSet *> inputTrees, inputTrees2;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
   int dataTypeInt
@@ -144,8 +143,8 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
 template <class dataType>
 int ttkMergeTreeClustering::run(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
   if(not isDataVisualizationFilled())
     runCompute<dataType>(outputVector, inputTrees, inputTrees2);
   runOutput<dataType>(outputVector, inputTrees, inputTrees2);
@@ -155,8 +154,8 @@ int ttkMergeTreeClustering::run(
 template <class dataType>
 int ttkMergeTreeClustering::runCompute(
   vtkInformationVector *ttkNotUsed(outputVector),
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
@@ -341,8 +340,8 @@ int ttkMergeTreeClustering::runCompute(
 template <class dataType>
 int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &ttkNotUsed(inputTrees2)) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &ttkNotUsed(inputTrees2)) {
   std::vector<MergeTree<dataType>> intermediateMTrees;
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
   std::vector<FTMTree_MT *> intermediateTrees;
@@ -390,9 +389,11 @@ int ttkMergeTreeClustering::runOutput(
       vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation2
         = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock1
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
         = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock2
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
         = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
       // Fill vtk objects
@@ -445,25 +446,37 @@ int ttkMergeTreeClustering::runOutput(
       nodeCorr.push_back(visuMaker.getNodeCorr()[0]);
 
       // Field data
-      vtkBlock1->GetFieldData()->ShallowCopy(inputTrees[0]->GetFieldData());
-      vtkBlock2->GetFieldData()->ShallowCopy(inputTrees[1]->GetFieldData());
+      vtkOutputNode1->GetFieldData()->ShallowCopy(
+        treesNodes[0]->GetFieldData());
+      vtkOutputNode2->GetFieldData()->ShallowCopy(
+        treesNodes[1]->GetFieldData());
+      vtkOutputArc1->GetFieldData()->ShallowCopy(treesArcs[0]->GetFieldData());
+      vtkOutputArc2->GetFieldData()->ShallowCopy(treesArcs[1]->GetFieldData());
+      if(OutputSegmentation) {
+        vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+          treesSegmentation[0]->GetFieldData());
+        vtkOutputSegmentation2->GetFieldData()->ShallowCopy(
+          treesSegmentation[1]->GetFieldData());
+      }
 
       // Construct multiblock
-      vtkBlock1->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-      vtkBlock1->SetBlock(0, vtkOutputNode1);
-      vtkBlock1->SetBlock(1, vtkOutputArc1);
-      if(OutputSegmentation)
-        vtkBlock1->SetBlock(2, vtkOutputSegmentation1);
+      vtkBlockNodes->SetNumberOfBlocks(2);
+      vtkBlockNodes->SetBlock(0, vtkOutputNode1);
+      vtkBlockNodes->SetBlock(1, vtkOutputNode2);
 
-      vtkBlock2->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-      vtkBlock2->SetBlock(0, vtkOutputNode2);
-      vtkBlock2->SetBlock(1, vtkOutputArc2);
-      if(OutputSegmentation)
-        vtkBlock2->SetBlock(2, vtkOutputSegmentation2);
+      vtkBlockArcs->SetNumberOfBlocks(2);
+      vtkBlockArcs->SetBlock(0, vtkOutputArc1);
+      vtkBlockArcs->SetBlock(1, vtkOutputArc2);
 
-      output_clusters->SetNumberOfBlocks(2);
-      output_clusters->SetBlock(0, vtkBlock1);
-      output_clusters->SetBlock(1, vtkBlock2);
+      output_clusters->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+      output_clusters->SetBlock(0, vtkBlockNodes);
+      output_clusters->SetBlock(1, vtkBlockArcs);
+      if(OutputSegmentation) {
+        vtkBlockSegs->SetNumberOfBlocks(2);
+        vtkBlockSegs->SetBlock(0, vtkOutputSegmentation1);
+        vtkBlockSegs->SetBlock(1, vtkOutputSegmentation2);
+        output_clusters->SetBlock(2, vtkBlockSegs);
+      }
 
       // ------------------------------------------
       // --- Matching
@@ -508,7 +521,21 @@ int ttkMergeTreeClustering::runOutput(
       // ------------------------------------------
       // --- Input trees
       // ------------------------------------------
-      output_clusters->SetNumberOfBlocks(numInputs);
+      output_clusters->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
+        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+      vtkBlockNodes->SetNumberOfBlocks(numInputs);
+      output_clusters->SetBlock(0, vtkBlockNodes);
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+      vtkBlockArcs->SetNumberOfBlocks(numInputs);
+      output_clusters->SetBlock(1, vtkBlockArcs);
+      if(OutputSegmentation) {
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+        vtkBlockSegs->SetNumberOfBlocks(numInputs);
+        output_clusters->SetBlock(2, vtkBlockSegs);
+      }
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
@@ -524,8 +551,6 @@ int ttkMergeTreeClustering::runOutput(
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation1
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
-          vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock1
-            = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
           // Fill vtk objects
           ttkMergeTreeVisualization visuMaker;
@@ -564,27 +589,43 @@ int ttkMergeTreeClustering::runOutput(
           nodeCorr[i] = nodeCorrT[i];
 
           // Field data
-          vtkBlock1->GetFieldData()->ShallowCopy(inputTrees[i]->GetFieldData());
+          vtkOutputNode1->GetFieldData()->ShallowCopy(
+            treesNodes[i]->GetFieldData());
+          vtkOutputArc1->GetFieldData()->ShallowCopy(
+            treesArcs[i]->GetFieldData());
+          if(OutputSegmentation)
+            vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+              treesSegmentation[i]->GetFieldData());
+
           vtkNew<vtkDoubleArray> vtkClusterAssignment{};
           vtkClusterAssignment->SetName("ClusterAssignment");
           vtkClusterAssignment->SetNumberOfTuples(1);
           vtkClusterAssignment->SetTuple1(0, clusteringAssignment[i]);
-          vtkBlock1->GetFieldData()->AddArray(vtkClusterAssignment);
+          vtkOutputNode1->GetFieldData()->AddArray(vtkClusterAssignment);
 
           // Construct multiblock
-          vtkBlock1->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-          vtkBlock1->SetBlock(0, vtkOutputNode1);
-          vtkBlock1->SetBlock(1, vtkOutputArc1);
+          vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))
+            ->SetBlock(i, vtkOutputNode1);
+          vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(1))
+            ->SetBlock(i, vtkOutputArc1);
           if(OutputSegmentation)
-            vtkBlock1->SetBlock(2, vtkOutputSegmentation1);
-          output_clusters->SetBlock(i, vtkBlock1);
+            vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(2))
+              ->SetBlock(i, vtkOutputSegmentation1);
         }
       }
 
       // ------------------------------------------
       // --- Barycenter(s)
       // ------------------------------------------
-      output_centroids->SetNumberOfBlocks(NumberOfBarycenters);
+      output_centroids->SetNumberOfBlocks(2);
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes2
+        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+      vtkBlockNodes2->SetNumberOfBlocks(NumberOfBarycenters);
+      output_centroids->SetBlock(0, vtkBlockNodes2);
+      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs2
+        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+      vtkBlockArcs2->SetNumberOfBlocks(NumberOfBarycenters);
+      output_centroids->SetBlock(1, vtkBlockArcs2);
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
 
         // Declare vtk objects
@@ -594,8 +635,6 @@ int ttkMergeTreeClustering::runOutput(
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
         vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation2
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
-        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock2
-          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
         // Fill vtk objects
         ttkMergeTreeVisualization visuMakerBary;
@@ -645,15 +684,15 @@ int ttkMergeTreeClustering::runOutput(
         vtkClusterAssignment->SetName("ClusterAssignment");
         vtkClusterAssignment->SetNumberOfTuples(1);
         vtkClusterAssignment->SetTuple1(0, c);
-        vtkBlock2->GetFieldData()->AddArray(vtkClusterAssignment);
+
+        vtkOutputNode2->GetFieldData()->AddArray(vtkClusterAssignment);
+        vtkOutputArc2->GetFieldData()->AddArray(vtkClusterAssignment);
 
         // Construct multiblock
-        vtkBlock2->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-        vtkBlock2->SetBlock(0, vtkOutputNode2);
-        vtkBlock2->SetBlock(1, vtkOutputArc2);
-        if(OutputSegmentation)
-          vtkBlock2->SetBlock(2, vtkOutputSegmentation2);
-        output_centroids->SetBlock(c, vtkBlock2);
+        vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(0))
+          ->SetBlock(c, vtkOutputNode2);
+        vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(1))
+          ->SetBlock(c, vtkOutputArc2);
       }
 
       // ------------------------------------------
@@ -670,12 +709,12 @@ int ttkMergeTreeClustering::runOutput(
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
             = vtkUnstructuredGrid::SafeDownCast(
-              vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(i))
-                ->GetBlock(0));
+              vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))
+                ->GetBlock(i));
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
             = vtkUnstructuredGrid::SafeDownCast(
-              vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(c))
-                ->GetBlock(0));
+              vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(0))
+                ->GetBlock(c));
 
           // Fill vtk objects
           ttkMergeTreeVisualization visuMakerMatching;

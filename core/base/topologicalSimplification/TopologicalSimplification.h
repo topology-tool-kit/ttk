@@ -143,7 +143,7 @@ int ttk::TopologicalSimplification::getCriticalType(
   bool isMaxima{true};
   SimplexId neighborNumber = triangulation.getVertexNeighborNumber(vertex);
   for(SimplexId i = 0; i < neighborNumber; ++i) {
-    SimplexId neighbor;
+    SimplexId neighbor{-1};
     triangulation.getVertexNeighbor(vertex, i, neighbor);
 
     if(offsets[neighbor] < offsets[vertex])
@@ -344,7 +344,7 @@ int ttk::TopologicalSimplification::execute(
         SimplexId neighborNumber
           = triangulation.getVertexNeighborNumber(vertexId);
         for(SimplexId k = 0; k < neighborNumber; ++k) {
-          SimplexId neighbor;
+          SimplexId neighbor{-1};
           triangulation.getVertexNeighbor(vertexId, k, neighbor);
           if(!visitedVertices[neighbor]) {
             sweepFront.emplace(

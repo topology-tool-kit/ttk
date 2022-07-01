@@ -37,7 +37,8 @@ dataType DiscreteGradient::getPersistence(
 }
 
 template <typename triangulationType>
-int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
+int DiscreteGradient::buildGradient(const triangulationType &triangulation,
+                                    bool bypassCache) {
 
   auto &cacheHandler = *triangulation.getGradientCacheHandler();
   const auto findGradient
@@ -48,11 +49,27 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
     return cacheHandler.get(this->inputScalarField_);
   };
 
-  this->gradient_ = findGradient();
-  if(this->gradient_ == nullptr) {
-    // add new cache entry
-    cacheHandler.insert(this->inputScalarField_, {});
-    this->gradient_ = cacheHandler.get(this->inputScalarField_);
+#ifdef TTK_ENABLE_OPENMP
+  if(!bypassCache && omp_in_parallel()) {
+    this->printWrn(
+      "buildGradient() called inside a parallel region, disabling cache...");
+    bypassCache = true;
+  }
+#endif // TTK_ENABLE_OPENMP
+
+  // set member variables at each buildGradient() call
+  this->dimensionality_ = triangulation.getCellVertexNumber(0) - 1;
+  this->numberOfVertices_ = triangulation.getNumberOfVertices();
+
+  this->gradient_ = bypassCache ? &this->localGradient_ : findGradient();
+  if(this->gradient_ == nullptr || bypassCache) {
+
+    if(!bypassCache) {
+      // add new cache entry
+      cacheHandler.insert(this->inputScalarField_, {});
+      this->gradient_ = cacheHandler.get(this->inputScalarField_);
+    }
+
     // allocate gradient memory
     this->initMemory(triangulation);
 

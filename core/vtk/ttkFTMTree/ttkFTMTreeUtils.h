@@ -85,23 +85,33 @@ namespace ttk {
       return mergeTree;
     }
 
-    inline void loadBlocks(std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                           vtkMultiBlockDataSet *blocks) {
+    inline void
+      loadBlocks(std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+                 vtkMultiBlockDataSet *blocks) {
       if(blocks != nullptr) {
-        inputTrees.resize(blocks->GetNumberOfBlocks());
+        inputTrees.resize(
+          vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(0))
+            ->GetNumberOfBlocks());
         for(size_t i = 0; i < inputTrees.size(); ++i) {
-          inputTrees[i]
-            = vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(i));
+          vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock
+            = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+          vtkBlock->SetNumberOfBlocks(blocks->GetNumberOfBlocks());
+          for(unsigned int j = 0; j < blocks->GetNumberOfBlocks(); ++j)
+            vtkBlock->SetBlock(
+              j, vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(j))
+                   ->GetBlock(i));
+          inputTrees[i] = vtkBlock;
         }
       }
     }
 
     template <class dataType>
-    void constructTrees(std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                        std::vector<MergeTree<dataType>> &intermediateTrees,
-                        std::vector<vtkUnstructuredGrid *> &treesNodes,
-                        std::vector<vtkUnstructuredGrid *> &treesArcs,
-                        std::vector<vtkDataSet *> &treesSegmentation) {
+    void constructTrees(
+      std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+      std::vector<MergeTree<dataType>> &intermediateTrees,
+      std::vector<vtkUnstructuredGrid *> &treesNodes,
+      std::vector<vtkUnstructuredGrid *> &treesArcs,
+      std::vector<vtkDataSet *> &treesSegmentation) {
       const int numInputs = inputTrees.size();
       intermediateTrees = std::vector<MergeTree<dataType>>(numInputs);
       treesNodes = std::vector<vtkUnstructuredGrid *>(numInputs);
@@ -120,8 +130,9 @@ namespace ttk {
     }
 
     template <class dataType>
-    void constructTrees(std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                        std::vector<MergeTree<dataType>> &intermediateTrees) {
+    void constructTrees(
+      std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+      std::vector<MergeTree<dataType>> &intermediateTrees) {
       std::vector<vtkUnstructuredGrid *> treesNodes;
       std::vector<vtkUnstructuredGrid *> treesArcs;
       std::vector<vtkDataSet *> treesSegmentation;

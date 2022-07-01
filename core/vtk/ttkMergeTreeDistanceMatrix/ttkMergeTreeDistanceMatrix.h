@@ -33,6 +33,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 
 // TTK Base Includes
 #include <MergeTreeDistanceMatrix.h>
@@ -98,8 +99,8 @@ public:
     return persistenceThreshold_;
   }
 
-  void SetDeleteMultiPersPairs(bool deleteMultiPersPairs) {
-    deleteMultiPersPairs_ = deleteMultiPersPairs;
+  void SetDeleteMultiPersPairs(bool doDelete) {
+    deleteMultiPersPairs_ = doDelete;
     Modified();
   }
   bool SetDeleteMultiPersPairs() {
@@ -190,6 +191,6 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 };

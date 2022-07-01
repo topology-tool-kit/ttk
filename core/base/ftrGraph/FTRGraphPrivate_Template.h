@@ -138,7 +138,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
     } else {
       // locally apply the lazy one the current growing arc
       for(const idEdge e : star.lower) {
-        const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
+        const auto node{dynGraph(localProp).getNode(e)};
+        const idSuperArc a
+          = node != nullptr ? node->findRootArc() : nullSuperArc;
         if(a != nullSuperArc && graph_.getArc(a).isVisible()
            && graph_.getArc(a).getPropagation()->getId()
                 == localProp->getId()) {

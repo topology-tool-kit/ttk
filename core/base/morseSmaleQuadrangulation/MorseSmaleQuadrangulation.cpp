@@ -125,6 +125,50 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
     dualQuads.emplace_back(Quad{crit[0], gen[0], crit[1], gen[1]});
   }
 
+  // clean output points, remove points with no neighbors
+  std::vector<bool> hasNeighs(outputPointsIds_.size(), false);
+  for(const auto &q : dualQuads) {
+    for(const auto &qv : q) {
+      hasNeighs[qv] = true;
+    }
+  }
+
+  std::vector<SimplexId> newPos(outputPointsIds_.size(), -1);
+  SimplexId pos{0};
+  for(size_t i = 0; i < outputPointsIds_.size(); ++i) {
+    if(hasNeighs[i]) {
+      newPos[i] = pos++;
+    }
+  }
+
+  decltype(this->outputPoints_) newPoints(3 * pos);
+  decltype(this->outputPointsIds_) newPointsIds(pos);
+  decltype(this->outputPointsTypes_) newPointsTypes(pos);
+  decltype(this->outputPointsCells_) newPointsCells(pos);
+
+  for(size_t i = 0; i < outputPointsIds_.size(); ++i) {
+    if(hasNeighs[i]) {
+      newPoints[3 * newPos[i] + 0] = this->outputPoints_[3 * i + 0];
+      newPoints[3 * newPos[i] + 1] = this->outputPoints_[3 * i + 1];
+      newPoints[3 * newPos[i] + 2] = this->outputPoints_[3 * i + 2];
+      newPointsIds[newPos[i]] = this->outputPointsIds_[i];
+      newPointsTypes[newPos[i]] = this->outputPointsTypes_[i];
+      newPointsCells[newPos[i]] = this->outputPointsCells_[i];
+    }
+  }
+
+  this->outputPoints_ = std::move(newPoints);
+  this->outputPointsIds_ = std::move(newPointsIds);
+  this->outputPointsTypes_ = std::move(newPointsTypes);
+  this->outputPointsCells_ = std::move(newPointsCells);
+
+  // compact cells
+  for(auto &q : dualQuads) {
+    for(auto &qv : q) {
+      qv = newPos[qv];
+    }
+  }
+
   outputCells_ = std::move(dualQuads);
 
   return 0;

@@ -71,3 +71,27 @@ int ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
 int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
                        vtkUnstructuredGrid *const outputDiagram,
                        const ttk::Debug &dbg);
+
+/**
+ * @brief Translate a diagram to a new position.
+ *
+ * @param[in,out] diagram Input diagram in its spatial embedding form
+ * @param[in] trans Translation vector
+ *
+ * @return 0 in case of success
+ */
+int TranslateDiagram(vtkUnstructuredGrid *const diagram,
+                     const std::array<double, 3> &trans);
+
+/**
+ * @brief Translate back a canonical diagram into its original position.
+ *
+ * Use the cellData array `Birth` as original coordinates
+ *
+ * @param[in,out] diagram Input diagram in its spatial embedding form
+ * @param[in] dbg Debug instance (for logging and access to threadNumber_)
+ *
+ * @return 0 in case of success
+ */
+int ResetDiagramPosition(vtkUnstructuredGrid *const diagram,
+                         const ttk::Debug &dbg);

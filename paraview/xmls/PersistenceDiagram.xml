@@ -31,7 +31,7 @@
         thresholds for topological simplification or for fast similarity
         estimations for instance.
 
-        Four backends are available for the computation of the persistence diagram:
+        Five backends are available for the computation of the persistence diagram:
 
         1) FTM
 
@@ -53,12 +53,14 @@
         Set both the Start and End resolution levels to -1 to execute in
         non-progressive mode on the finest level, i.e. the original grid.
 
-        3) Persistent Simplex
+        3) Discrete Morse Sandwich (default)
 
-        This is a textbook (and very slow) algorithm, described in
-        "Algorithm and Theory of Computation Handbook (Second Edition)
-        - Special Topics and Techniques" by Atallah and Blanton on
-        page 97.
+        Related publication:
+        'Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for Scalar Data -- An Algorithm and A Benchmark'
+        Pierre Guillou, Jules Vidal, Julien Tierny
+        Technical Report, arXiv:2206.13932, 2022
+
+        Fast and versatile algorithm for persistence diagram computation.
 
         4) Approximate Approach
 
@@ -78,6 +80,14 @@
         about the diagram approximation.
 
 
+        5) Persistent Simplex
+
+        This is a textbook (and very slow) algorithm, described in
+        "Algorithm and Theory of Computation Handbook (Second Edition)
+        - Special Topics and Techniques" by Atallah and Blanton on
+        page 97.
+
+
         See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
         TopologicalSimplification.
 
@@ -87,8 +97,8 @@
 
         - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
 
-        - https://topology-tool-kit.github.io/examples/2manifoldLearning/        
-        
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/
+
         - https://topology-tool-kit.github.io/examples/ctBones/
 
         - https://topology-tool-kit.github.io/examples/dragon/
@@ -100,7 +110,7 @@
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
 
         - https://topology-tool-kit.github.io/examples/morsePersistence/
-        
+
         - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
 
         - https://topology-tool-kit.github.io/examples/persistenceClustering0/
@@ -116,10 +126,10 @@
         - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
 
         - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
-        
+
         - https://topology-tool-kit.github.io/examples/interactionSites/
 
-                
+
       </Documentation>
 
       <InputProperty
@@ -205,17 +215,18 @@
       </StringVectorProperty>
 
        <IntVectorProperty
-          name="BackEnd"
-          label="Backend"
-          command="SetBackEnd"
-          number_of_elements="1"
-         default_values="0"
-         panel_visibility="advanced" >
+           name="BackEnd"
+           label="Backend"
+           command="SetBackEnd"
+           number_of_elements="1"
+           default_values="2"
+           panel_visibility="advanced" >
          <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
-          <Entry value="2" text="Persistent Simplex (Zomorodian 2010)"/>
+          <Entry value="2" text="Discrete Morse Sandwich"/>
           <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
+          <Entry value="4" text="Persistent Simplex (Zomorodian 2010)"/>
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
@@ -292,7 +303,7 @@
         <Documentation>
             Tolerance on the maximal relative Bottleneck error.
             Corresponds to the parameter Epsilon in the publication.
-            An error of 0.05 denotes a maximal relative error of 5%. 
+            An error of 0.05 denotes a maximal relative error of 5%.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -333,6 +344,23 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="Ignore Boundary"
+          command="SetIgnoreBoundary"
+          number_of_elements="1"
+          default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          Ignore the boundary component.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty name="ShowInsideDomain"
                          label="Embed in Domain"
                          command="SetShowInsideDomain"
@@ -346,9 +374,9 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-          <Property name="ScalarFieldNew" />
-          <Property name="ForceInputOffsetScalarField"/>
-          <Property name="InputOffsetScalarFieldNameNew"/>
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
         <Property name="BackEnd" />
         <Property name="StartingResolutionLevel" />
         <Property name="StoppingResolutionLevel" />
@@ -362,6 +390,7 @@
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SaddleConnectors" />
+        <Property name="Ignore Boundary" />
         <Property name="ShowInsideDomain" />
       </PropertyGroup>
 

@@ -33,7 +33,7 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
   printMsg("Building cell neighbors", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-  const SimplexId triangleNumber = localTriangleStars->subvectorsNumber();
+  const SimplexId triangleNumber = localTriangleStars->size();
   std::vector<SimplexId> offsets(cellNumber + 1);
   // number of neighbors processed per cell
   std::vector<SimplexId> neighborsId(cellNumber);

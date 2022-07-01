@@ -47,7 +47,7 @@ void Octree::initialize(const AbstractTriangulation *t, const int k) {
  */
 bool Octree::empty() {
   OctreeNode *root = lookupNode(1);
-  if(root->vertexIds_.empty() && !root->childExists_) {
+  if(root != nullptr && root->vertexIds_.empty() && !root->childExists_) {
     return true;
   }
 

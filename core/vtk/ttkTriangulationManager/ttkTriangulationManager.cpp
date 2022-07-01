@@ -151,11 +151,11 @@ int ttkTriangulationManager::processExplicit(
 
   // insert cells in the output mesh
   output->Allocate(cells.size());
-  int dimension = triangulation.getCellVertexNumber(0);
+  const size_t dimension = triangulation.getCellVertexNumber(0);
 
   for(unsigned int i = 0; i < cells.size(); i++) {
     std::array<vtkIdType, 4> cell{};
-    for(int j = 0; j < dimension; j++) {
+    for(size_t j = 0; j < dimension; j++) {
       ttk::SimplexId vertexId;
       triangulation.getCellVertex(cells[i], j, vertexId);
       cell[j] = vertexMap[vertexId];

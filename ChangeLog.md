@@ -1,6 +1,7 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Discrete Morse Sandwich & persistent generators (arXiv:2206.13932, 2022)
 - Persistence diagram approximation (IEEE LDAV 2021)
 - Compact triangulations (IEEE TVCG 2021)
 - Rips complex

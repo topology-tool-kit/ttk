@@ -70,8 +70,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 
   if(getDimensionality() == 2) {
     preconditionEdgeStarsInternal();
-    for(SimplexId i = 0; i < (SimplexId)edgeStarData_.subvectorsNumber(); i++) {
-      if(edgeStarData_.size(i) == 1) {
+    for(SimplexId i = 0; i < (SimplexId)edgeStarData_.size(); i++) {
+      if(edgeStarData_[i].size() == 1) {
         boundaryEdges_[i] = true;
       }
     }
@@ -79,8 +79,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     preconditionTriangleStarsInternal();
     preconditionTriangleEdgesInternal();
 
-    for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
-      if(triangleStarData_.size(i) == 1) {
+    for(size_t i = 0; i < triangleStarData_.size(); i++) {
+      if(triangleStarData_[i].size() == 1) {
         for(int j = 0; j < 3; j++) {
           boundaryEdges_[triangleEdgeList_[i][j]] = true;
         }
@@ -120,8 +120,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
   if(getDimensionality() == 3) {
     preconditionTriangleStarsInternal();
 
-    for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
-      if(triangleStarData_.size(i) == 1) {
+    for(size_t i = 0; i < triangleStarData_.size(); i++) {
+      if(triangleStarData_[i].size() == 1) {
         boundaryTriangles_[i] = true;
       }
     }
@@ -156,8 +156,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
   // look for singletons
   if(getDimensionality() == 1) {
     preconditionVertexStarsInternal();
-    for(size_t i = 0; i < vertexStarData_.subvectorsNumber(); i++) {
-      if(vertexStarData_.size(i) == 1) {
+    for(size_t i = 0; i < vertexStarData_.size(); i++) {
+      if(vertexStarData_[i].size() == 1) {
         boundaryVertices_[i] = true;
       }
     }
@@ -165,8 +165,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     preconditionEdgesInternal();
     preconditionEdgeStarsInternal();
 
-    for(SimplexId i = 0; i < (SimplexId)edgeStarData_.subvectorsNumber(); i++) {
-      if(edgeStarData_.size(i) == 1) {
+    for(SimplexId i = 0; i < (SimplexId)edgeStarData_.size(); i++) {
+      if(edgeStarData_[i].size() == 1) {
         boundaryVertices_[edgeList_[i][0]] = true;
         boundaryVertices_[edgeList_[i][1]] = true;
       }
@@ -175,8 +175,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     preconditionTrianglesInternal();
     preconditionTriangleStarsInternal();
 
-    for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
-      if(triangleStarData_.size(i) == 1) {
+    for(size_t i = 0; i < triangleStarData_.size(); i++) {
+      if(triangleStarData_[i].size() == 1) {
         boundaryVertices_[triangleList_[i][0]] = true;
         boundaryVertices_[triangleList_[i][1]] = true;
         boundaryVertices_[triangleList_[i][2]] = true;
@@ -479,7 +479,7 @@ int ExplicitTriangulation::preconditionVertexEdgesInternal() {
     return 1;
   }
 
-  if((SimplexId)vertexEdgeData_.subvectorsNumber() != vertexNumber_) {
+  if((SimplexId)vertexEdgeData_.size() != vertexNumber_) {
     ZeroSkeleton zeroSkeleton;
 
     if(edgeList_.empty()) {
@@ -500,7 +500,7 @@ int ExplicitTriangulation::preconditionVertexLinksInternal() {
     return 1;
   }
 
-  if((SimplexId)vertexLinkData_.subvectorsNumber() != vertexNumber_) {
+  if((SimplexId)vertexLinkData_.size() != vertexNumber_) {
 
     if(getDimensionality() == 2) {
       preconditionEdgesInternal();
@@ -534,7 +534,7 @@ int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
     return 1;
   }
 
-  if((SimplexId)vertexNeighborData_.subvectorsNumber() != vertexNumber_) {
+  if((SimplexId)vertexNeighborData_.size() != vertexNumber_) {
     this->preconditionEdgesInternal();
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setWrapper(this);
@@ -551,7 +551,7 @@ int ExplicitTriangulation::preconditionVertexStarsInternal() {
     return 1;
   }
 
-  if((SimplexId)vertexStarData_.subvectorsNumber() != vertexNumber_) {
+  if((SimplexId)vertexStarData_.size() != vertexNumber_) {
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setWrapper(this);
 
@@ -568,7 +568,7 @@ int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
     return 1;
   }
 
-  if((SimplexId)vertexTriangleData_.subvectorsNumber() != vertexNumber_) {
+  if((SimplexId)vertexTriangleData_.size() != vertexNumber_) {
 
     preconditionTrianglesInternal();
 
@@ -988,7 +988,7 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   const auto write_variable = [&stream](const FlatJaggedArray &arr) {
     // empty array guard
     WRITE_GUARD(arr);
-    writeBinArray(stream, arr.offset_ptr(), arr.subvectorsNumber() + 1);
+    writeBinArray(stream, arr.offset_ptr(), arr.size() + 1);
     writeBinArray(stream, arr.get_ptr(0, 0), arr.dataSize());
   };
 

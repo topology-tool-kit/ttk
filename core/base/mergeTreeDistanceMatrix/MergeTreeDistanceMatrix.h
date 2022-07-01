@@ -75,7 +75,7 @@ namespace ttk {
 #pragma omp task firstprivate(i) UNTIED() shared(distanceMatrix, trees)
         {
 #endif
-          if(i % (distanceMatrix.size() / 10) == 0) {
+          if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
             std::stringstream stream;
             stream << i << " / " << distanceMatrix.size();
             printMsg(stream.str());
