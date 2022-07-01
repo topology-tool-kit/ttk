@@ -122,6 +122,7 @@ namespace ttk {
       findProjection(const ProjectionInput &pi,
                      VisitedMask &trianglesTested,
                      std::vector<float> &dists,
+                     std::stack<SimplexId> &trianglesToTest,
                      const triangulationType &triangulation) const;
 
     /**
@@ -209,12 +210,15 @@ ttk::SurfaceGeometrySmoother::ProjectionResult
     const ProjectionInput &pi,
     VisitedMask &trianglesTested,
     std::vector<float> &dists,
+    std::stack<SimplexId> &trianglesToTest,
     const triangulationType &triangulation) const {
 
   ProjectionResult res{pi.pt, pi.nearestVertex, 0, false};
 
-  // list of triangle IDs to test to find a potential projection
-  std::stack<SimplexId> trianglesToTest{};
+  // clean trianglesToTest
+  while(!trianglesToTest.empty()) {
+    trianglesToTest.pop();
+  }
 
   // init pipeline by checking in the first triangle around selected vertex
   if(triangulation.getVertexTriangleNumber(res.nearestVertex) > 0) {
@@ -373,11 +377,12 @@ int ttk::SurfaceGeometrySmoother::relaxProject(
   const triangulationType1 &triangulationSurface) const {
 
   Timer tm;
+  std::stack<SimplexId> trianglesToTest{};
 
   // main loop
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) \
-  firstprivate(trianglesTested, visitedTriangles, dists)
+  firstprivate(trianglesTested, visitedTriangles, dists, trianglesToTest)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < outputPoints.size(); i++) {
 
@@ -393,7 +398,7 @@ int ttk::SurfaceGeometrySmoother::relaxProject(
     // replace curr in outputPoints_ by its projection
     const auto res
       = this->findProjection(ProjectionInput{tmpStorage[i], nearestVertexId[i]},
-                             vm, dists, triangulationSurface);
+                             vm, dists, trianglesToTest, triangulationSurface);
 
     tmpStorage[i] = res.pt;
     nearestVertexId[i] = res.nearestVertex;
