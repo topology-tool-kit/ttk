@@ -444,11 +444,16 @@ namespace ttk {
     }
 
     inline const Node *getVertexNode(const int &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return nullptr;
-      if(vertex2node_[vertexId] != -1)
-        return &(nodeList_[vertex2node_[vertexId]]);
-      return nullptr;
+        this->printErr("Out-of-bounds access in getVertexNode: element "
+                       + std::to_string(vertexId) + " in list of size "
+                       + std::to_string(vertexNumber_));
+      if(vertex2node_[vertexId] == -1)
+        this->printErr("Invalid node id value in getVertexNode at index"
+                       + std::to_string(vertexId));
+#endif // !TTK_ENABLE_KAMIKAZE
+      return &(nodeList_[vertex2node_[vertexId]]);
     }
 
     inline int getVertexNodeId(const int &vertexId) const {

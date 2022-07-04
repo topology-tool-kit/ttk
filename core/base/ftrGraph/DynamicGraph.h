@@ -75,7 +75,8 @@ namespace ttk {
       }
 
       idSuperArc getSubtreeArc(const std::size_t nid) const {
-        return getNode(nid)->findRootArc();
+        const auto node{getNode(nid)};
+        return node != nullptr ? node->findRootArc() : nullSuperArc;
       }
 
       idSuperArc getCorArc(const std::size_t nid) const {

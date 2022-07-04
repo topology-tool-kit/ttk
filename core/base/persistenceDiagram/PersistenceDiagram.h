@@ -25,31 +25,38 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-/// Four backends can be chosen for the computation:
+/// Five backends are available for the computation:
 ///
-///  1) FTM
+///  1) FTM \n
 /// \b Related \b publication \n
 /// "Task-based Augmented Contour Trees with Fibonacci Heaps"
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
 /// IEEE Transactions on Parallel and Distributed Systems, 2019
 ///
-///  2) Progressive Approach
+///  2) Progressive Approach \n
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 ///
-/// 3) Persistent Simplex \n
-/// This is a textbook (and very slow) algorithm, described in
-/// "Algorithm and Theory of Computation Handbook (Second Edition)
-/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+/// 3) Discrete Morse Sandwich (default) \n
+/// \b Related \b publication \n
+/// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
+/// Scalar Data -- An Algorithm and A Benchmark" \n
+/// Pierre Guillou, Jules Vidal, Julien Tierny \n
+/// Technical Report, arXiv:2206.13932, 2022 \n
+/// Fast and versatile algorithm for persistence diagram computation.
 ///
 /// 4) Approximate Approach \n
 /// \b Related \b publication \n
 /// "Fast Approximation of Persistence Diagrams with Guarantees" \n
 /// Jules Vidal, Julien Tierny\n
-/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021
 ///
+/// 5) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
 ///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
@@ -57,7 +64,7 @@
 
 // base code includes
 #include <ApproximateTopology.h>
-#include <DiscreteGradient.h>
+#include <DiscreteMorseSandwich.h>
 #include <FTMTreePP.h>
 #include <PersistenceDiagramUtils.h>
 #include <PersistentSimplexPairs.h>
@@ -76,14 +83,18 @@ namespace ttk {
     enum class BACKEND {
       FTM = 0,
       PROGRESSIVE_TOPOLOGY = 1,
-      PERSISTENT_SIMPLEX = 2,
-      APPROXIMATE_TOPOLOGY = 3
+      DISCRETE_MORSE_SANDWICH = 2,
+      APPROXIMATE_TOPOLOGY = 3,
+      PERSISTENT_SIMPLEX = 4,
     };
 
     PersistenceDiagram();
 
     inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
+    }
+    inline void setBackend(const BACKEND be) {
+      this->BackEnd = be;
     }
 
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
@@ -138,6 +149,13 @@ namespace ttk {
                                  const SimplexId *inputOffsets,
                                  const triangulationType *triangulation);
 
+    template <typename scalarType, class triangulationType>
+    int executeDiscreteMorseSandwich(std::vector<PersistencePair> &CTDiagram,
+                                     const scalarType *inputScalars,
+                                     const size_t scalarsMTime,
+                                     const SimplexId *inputOffsets,
+                                     const triangulationType *triangulation);
+
     template <class triangulationType>
     void checkProgressivityRequirement(const triangulationType *triangulation);
 
@@ -151,11 +169,16 @@ namespace ttk {
           contourTree_.setDebugLevel(debugLevel_);
           contourTree_.setThreadNumber(threadNumber_);
           contourTree_.preconditionTriangulation(triangulation);
+          if(this->ComputeSaddleConnectors) {
+            dcg_.setDebugLevel(debugLevel_);
+            dcg_.setThreadNumber(threadNumber_);
+            dcg_.preconditionTriangulation(triangulation);
+          }
         }
-        if(this->ComputeSaddleConnectors) {
-          dcg_.setDebugLevel(debugLevel_);
-          dcg_.setThreadNumber(threadNumber_);
-          dcg_.preconditionTriangulation(triangulation);
+        if(this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
+          dms_.setDebugLevel(debugLevel_);
+          dms_.setThreadNumber(threadNumber_);
+          dms_.preconditionTriangulation(triangulation);
         }
         if(this->BackEnd == BACKEND::PERSISTENT_SIMPLEX) {
           psp_.preconditionTriangulation(triangulation);
@@ -177,13 +200,15 @@ namespace ttk {
     }
 
   protected:
+    bool IgnoreBoundary{false};
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};
     PersistentSimplexPairs psp_{};
+    DiscreteMorseSandwich dms_{};
 
     // int BackEnd{0};
-    BACKEND BackEnd{BACKEND::FTM};
+    BACKEND BackEnd{BACKEND::DISCRETE_MORSE_SANDWICH};
     // progressivity
     ttk::ProgressiveTopology progT_{};
     ttk::ApproximateTopology approxT_{};
@@ -255,10 +280,16 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   checkProgressivityRequirement(triangulation);
 
+  Timer tm{};
+
   switch(BackEnd) {
     case BACKEND::PERSISTENT_SIMPLEX:
       executePersistentSimplex(
         CTDiagram, inputScalars, inputOffsets, triangulation);
+      break;
+    case BACKEND::DISCRETE_MORSE_SANDWICH:
+      executeDiscreteMorseSandwich(
+        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
       break;
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       executeProgressiveTopology(
@@ -275,6 +306,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
     default:
       printErr("No method was selected");
   }
+
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, inputOffsets);
@@ -296,10 +329,10 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
 
   std::vector<ttk::PersistentSimplexPairs::PersistencePair> pairs{};
 
-  dcg_.setInputOffsets(inputOffsets);
   psp_.setDebugLevel(this->debugLevel_);
   psp_.setThreadNumber(this->threadNumber_);
   psp_.computePersistencePairs(pairs, inputOffsets, *triangulation);
+  dms_.setInputOffsets(inputOffsets);
 
   // convert PersistentSimplex pairs (with critical cells id) to PL
   // pairs (with vertices id)
@@ -313,10 +346,10 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
     }
     if(p.type > 0) {
       p.birth
-        = dcg_.getCellGreaterVertex(Cell{birthType, p.birth}, *triangulation);
+        = dms_.getCellGreaterVertex(Cell{birthType, p.birth}, *triangulation);
     }
     if(p.death != -1) {
-      p.death = dcg_.getCellGreaterVertex(
+      p.death = dms_.getCellGreaterVertex(
         Cell{birthType + 1, p.death}, *triangulation);
     }
   }
@@ -359,6 +392,82 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   }
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executeDiscreteMorseSandwich(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const size_t scalarsMTime,
+  const SimplexId *inputOffsets,
+  const triangulationType *triangulation) {
+
+  Timer tm{};
+  const auto dim = triangulation->getDimensionality();
+
+  dms_.buildGradient(inputScalars, scalarsMTime, inputOffsets, *triangulation);
+  std::vector<DiscreteMorseSandwich::PersistencePair> dms_pairs{};
+  dms_.computePersistencePairs(
+    dms_pairs, inputOffsets, *triangulation, this->IgnoreBoundary);
+  CTDiagram.resize(dms_pairs.size());
+
+  // transform DiscreteMorseSandwich pairs (critical cells id) to PL
+  // pairs (vertices id)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < dms_pairs.size(); ++i) {
+    auto &pair{dms_pairs[i]};
+    if(pair.type > 0) {
+      pair.birth = dms_.getCellGreaterVertex(
+        Cell{pair.type, pair.birth}, *triangulation);
+    }
+    if(pair.death != -1) {
+      pair.death = dms_.getCellGreaterVertex(
+        Cell{pair.type + 1, pair.death}, *triangulation);
+    }
+  }
+
+  // find the global maximum
+  const auto nVerts = triangulation->getNumberOfVertices();
+  const SimplexId globmax = std::distance(
+    inputOffsets, std::max_element(inputOffsets, inputOffsets + nVerts));
+
+  // convert pairs to the relevant format
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < dms_pairs.size(); ++i) {
+    const auto &p{dms_pairs[i]};
+    const auto isFinite = (p.death >= 0);
+    const auto death = isFinite ? p.death : globmax;
+    const double pers = inputScalars[death] - inputScalars[p.birth];
+
+    if(p.type == 0) {
+      const auto dtype = (isFinite && dim > 1) ? CriticalType::Saddle1
+                                               : CriticalType::Local_maximum;
+      CTDiagram[i] = PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{death, dtype, {}, {}}, pers, p.type, isFinite};
+    } else if(p.type == 1) {
+      const auto btype
+        = (dim == 3) ? CriticalType::Saddle1 : CriticalType::Saddle2;
+      const auto dtype = (isFinite && dim == 3) ? CriticalType::Saddle2
+                                                : CriticalType::Local_maximum;
+      CTDiagram[i] = PersistencePair{CriticalVertex{p.birth, btype, {}, {}},
+                                     CriticalVertex{death, dtype, {}, {}}, pers,
+                                     p.type, isFinite};
+    } else if(p.type == 2) {
+      const auto btype = (isFinite || dim == 3) ? CriticalType::Saddle2
+                                                : CriticalType::Local_maximum;
+      CTDiagram[i] = PersistencePair{
+        CriticalVertex{p.birth, btype, {}, {}},
+        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, pers,
+        p.type, isFinite};
+    }
+  }
+
   return 0;
 }
 

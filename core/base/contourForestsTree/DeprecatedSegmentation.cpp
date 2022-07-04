@@ -126,6 +126,9 @@ void ArcRegion::createSegmentation(const idSuperArc &thisArc) {
   while(added) {
     added = false;
     for(unsigned i = 0; i < nbSegments; i++) {
+      if(i >= ends.size()) {
+        break;
+      }
       auto &&head = heads[i];
       auto &&end = ends[i];
       // find next potential vertex

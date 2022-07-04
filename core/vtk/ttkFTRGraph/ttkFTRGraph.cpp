@@ -262,6 +262,7 @@ int ttkFTRGraph::dispatch(Graph &graph) {
 
   // common parameters
   ftrGraph_.setParams(params_);
+  ftrGraph_.setDebugLevel(this->debugLevel_);
   // reeb graph parameters
   ftrGraph_.setScalars(ttkUtils::GetVoidPointer(inputScalars_));
   // TODO: SimplexId -> template to int + long long?

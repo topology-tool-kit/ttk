@@ -73,7 +73,7 @@ int ZeroSkeleton::buildVertexLinks(
 
   Timer t;
 
-  const SimplexId vertexNumber = vertexStars.subvectorsNumber();
+  const SimplexId vertexNumber = vertexStars.size();
   std::vector<SimplexId> offsets(vertexNumber + 1);
   // one edge per star
   std::vector<SimplexId> links(vertexStars.dataSize());
@@ -130,7 +130,7 @@ int ZeroSkeleton::buildVertexLinks(
 
   Timer tm;
 
-  const SimplexId vertexNumber = vertexStars.subvectorsNumber();
+  const SimplexId vertexNumber = vertexStars.size();
   std::vector<SimplexId> offsets(vertexNumber + 1);
   // one triangle per star
   std::vector<SimplexId> links(vertexStars.dataSize());

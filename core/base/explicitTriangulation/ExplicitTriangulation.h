@@ -79,7 +79,7 @@ namespace ttk {
       const int &localNeighborId,
       SimplexId &neighborId) const override {
 
-      neighborId = cellNeighborData_.get(cellId, localNeighborId);
+      neighborId = cellNeighborData_[cellId][localNeighborId];
       return 0;
     }
 
@@ -163,7 +163,7 @@ namespace ttk {
       const int &localLinkId,
       SimplexId &linkId) const override {
 
-      linkId = edgeLinkData_.get(edgeId, localLinkId);
+      linkId = edgeLinkData_[edgeId][localLinkId];
       return 0;
     }
 
@@ -183,7 +183,7 @@ namespace ttk {
       const int &localStarId,
       SimplexId &starId) const override {
 
-      starId = edgeStarData_.get(edgeId, localStarId);
+      starId = edgeStarData_[edgeId][localStarId];
       return 0;
     }
 
@@ -201,7 +201,7 @@ namespace ttk {
     inline int getEdgeTriangleInternal(const SimplexId &edgeId,
                                        const int &localTriangleId,
                                        SimplexId &triangleId) const override {
-      triangleId = edgeTriangleData_.get(edgeId, localTriangleId);
+      triangleId = edgeTriangleData_[edgeId][localTriangleId];
       return 0;
     }
 
@@ -296,13 +296,13 @@ namespace ttk {
       const int &localLinkId,
       SimplexId &linkId) const override {
 
-      linkId = triangleLinkData_.get(triangleId, localLinkId);
+      linkId = triangleLinkData_[triangleId][localLinkId];
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
       const SimplexId &triangleId) const override {
-      return triangleLinkData_.size(triangleId);
+      return triangleLinkData_[triangleId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -315,13 +315,13 @@ namespace ttk {
       const SimplexId &triangleId,
       const int &localStarId,
       SimplexId &starId) const override {
-      starId = triangleStarData_.get(triangleId, localStarId);
+      starId = triangleStarData_[triangleId][localStarId];
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
       const SimplexId &triangleId) const override {
-      return triangleStarData_.size(triangleId);
+      return triangleStarData_[triangleId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -347,13 +347,13 @@ namespace ttk {
     inline int getVertexEdgeInternal(const SimplexId &vertexId,
                                      const int &localEdgeId,
                                      SimplexId &edgeId) const override {
-      edgeId = vertexEdgeData_.get(vertexId, localEdgeId);
+      edgeId = vertexEdgeData_[vertexId][localEdgeId];
       return 0;
     }
 
     inline SimplexId
       getVertexEdgeNumberInternal(const SimplexId &vertexId) const override {
-      return vertexEdgeData_.size(vertexId);
+      return vertexEdgeData_[vertexId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -367,13 +367,13 @@ namespace ttk {
       const int &localLinkId,
       SimplexId &linkId) const override {
 
-      linkId = vertexLinkData_.get(vertexId, localLinkId);
+      linkId = vertexLinkData_[vertexId][localLinkId];
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLinkNumber)(
       const SimplexId &vertexId) const override {
-      return vertexLinkData_.size(vertexId);
+      return vertexLinkData_[vertexId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -387,13 +387,13 @@ namespace ttk {
       const int &localNeighborId,
       SimplexId &neighborId) const override {
 
-      neighborId = vertexNeighborData_.get(vertexId, localNeighborId);
+      neighborId = vertexNeighborData_[vertexId][localNeighborId];
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
       const SimplexId &vertexId) const override {
-      return vertexNeighborData_.size(vertexId);
+      return vertexNeighborData_[vertexId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -426,13 +426,13 @@ namespace ttk {
       const SimplexId &vertexId,
       const int &localStarId,
       SimplexId &starId) const override {
-      starId = vertexStarData_.get(vertexId, localStarId);
+      starId = vertexStarData_[vertexId][localStarId];
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(
       const SimplexId &vertexId) const override {
-      return vertexStarData_.size(vertexId);
+      return vertexStarData_[vertexId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -444,13 +444,13 @@ namespace ttk {
     inline int getVertexTriangleInternal(const SimplexId &vertexId,
                                          const int &localTriangleId,
                                          SimplexId &triangleId) const override {
-      triangleId = vertexTriangleData_.get(vertexId, localTriangleId);
+      triangleId = vertexTriangleData_[vertexId][localTriangleId];
       return 0;
     }
 
     inline SimplexId getVertexTriangleNumberInternal(
       const SimplexId &vertexId) const override {
-      return vertexTriangleData_.size(vertexId);
+      return vertexTriangleData_[vertexId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *

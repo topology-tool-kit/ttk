@@ -17,7 +17,7 @@ int TwoSkeleton::buildCellNeighborsFromEdges(
   printMsg("Building cell neighbors", 0, 0, 1, debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-  const SimplexId edgeNumber = edgeStars.subvectorsNumber();
+  const SimplexId edgeNumber = edgeStars.size();
   std::vector<SimplexId> offsets(cellNumber + 1);
   // number of neigbhors processed per cell
   std::vector<SimplexId> neighborsId(cellNumber);
@@ -247,8 +247,9 @@ int TwoSkeleton::buildTriangleList(
 
   // check parameters consistency (this method is useless in 2D)
   const auto dim = cellArray.getCellVertexNumber(0) - 1;
-  if(dim == 2) {
-    this->printWrn("Calling buildTriangleList is useless in 2D, skipping...");
+  if(dim < 3) {
+    this->printWrn("Calling buildTriangleList is useless in "
+                   + std::to_string(dim) + "D, skipping...");
     return -1;
   }
 
@@ -481,8 +482,7 @@ int TwoSkeleton::buildTriangleLinks(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleList.empty())
     return -1;
-  if((triangleStars.empty())
-     || (triangleStars.subvectorsNumber() != triangleList.size()))
+  if((triangleStars.empty()) || (triangleStars.size() != triangleList.size()))
     return -2;
 #endif
 

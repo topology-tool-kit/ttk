@@ -96,8 +96,8 @@ int ttkMergeTreeDistanceMatrix::FillOutputPortInformation(
 template <class dataType>
 int ttkMergeTreeDistanceMatrix::run(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees2) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
 
   // Construct trees
   const int numInputs = inputTrees.size();
@@ -169,10 +169,10 @@ int ttkMergeTreeDistanceMatrix::run(
 
   // aggregate input field data
   vtkNew<vtkFieldData> fd{};
-  fd->CopyStructure(inputTrees[0]->GetFieldData());
+  fd->CopyStructure(inputTrees[0]->GetBlock(0)->GetFieldData());
   fd->SetNumberOfTuples(inputTrees.size());
   for(size_t i = 0; i < inputTrees.size(); ++i) {
-    fd->SetTuple(i, 0, inputTrees[i]->GetFieldData());
+    fd->SetTuple(i, 0, inputTrees[i]->GetBlock(0)->GetFieldData());
   }
 
   // copy input field data to output row data
@@ -192,7 +192,7 @@ int ttkMergeTreeDistanceMatrix::RequestData(
   auto blocks2 = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
 
   // --- Load blocks
-  std::vector<vtkMultiBlockDataSet *> inputTrees, inputTrees2;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
 

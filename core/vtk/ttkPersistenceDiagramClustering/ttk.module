@@ -6,4 +6,5 @@ HEADERS
   ttkPersistenceDiagramClustering.h
 DEPENDS
   ttkAlgorithm
+  ttkPersistenceDiagram
   persistenceDiagramClustering

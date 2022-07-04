@@ -999,7 +999,7 @@ int ttk::MandatoryCriticalPoints::buildSubTrees(
     bool isUpperMax = true;
     SimplexId neighborNumber = triangulation.getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
-      SimplexId neighborId;
+      SimplexId neighborId{-1};
       triangulation.getVertexNeighbor(i, j, neighborId);
       if((lowerVertexScalars_[neighborId] < lowerVertexScalars_[i])
          || ((lowerVertexScalars_[neighborId] == lowerVertexScalars_[i])

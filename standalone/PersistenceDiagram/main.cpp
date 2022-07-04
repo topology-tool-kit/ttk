@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
-  int backEnd = 0;
+  int backEnd = 2;
   int startingRL = 0;
   int stoppingRL = -1;
   double tl = 0.0;
@@ -45,10 +45,11 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("B", &backEnd,
-                       "Method (0: FTM, 1: progressive, 2: persistent simplex, "
-                       "3: approximation)",
-                       true);
+    parser.setArgument(
+      "B", &backEnd,
+      "Method (0: FTM, 1: progressive, 2: DiscreteMorseSandwich, 3: "
+      "approximation, 4: persistent simplex)",
+      true);
     parser.setArgument("S", &startingRL,
                        "Starting Resolution Level for progressive "
                        "multiresolution scheme (-1: finest level)",
@@ -151,6 +152,8 @@ int main(int argc, char **argv) {
   persistenceDiagram->SetStartingResolutionLevel(startingRL);
   persistenceDiagram->SetStoppingResolutionLevel(stoppingRL);
   persistenceDiagram->SetEpsilon(epsilon);
+  persistenceDiagram->SetIgnoreBoundary(false);
+
   persistenceDiagram->Update();
 
   // ---------------------------------------------------------------------------

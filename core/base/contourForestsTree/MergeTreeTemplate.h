@@ -1005,7 +1005,7 @@ namespace ttk {
 
       idSuperArc currentArc;
       idNode closingNode, currentNode;
-      SimplexId neighbor;
+      SimplexId neighbor{-1};
 
       // Check UF in neighborhood
       for(SimplexId n = 0; n < neighborNumber; ++n) {

@@ -11,7 +11,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkResampleToImage.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 #include <ttkMacros.h>
@@ -105,7 +104,7 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
   // --- Load blocks
   // ------------------------------------------------------------------------------------
   printMsg("Load blocks", ttk::debug::Priority::VERBOSE);
-  std::vector<vtkMultiBlockDataSet *> inputTrees;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees;
   loadBlocks(inputTrees, blocks);
   printMsg("Load blocks done.", debug::Priority::VERBOSE);
   int dataTypeInt
@@ -129,7 +128,7 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
 template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::run(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   if(not isDataVisualizationFilled())
     runCompute<dataType>(inputTrees);
   runOutput<dataType>(outputVector, inputTrees);
@@ -153,11 +152,11 @@ std::vector<vtkSmartPointer<vtkDataSet>>
       // images.push_back(resampleFilterOut);
       vtkSmartPointer<vtkDataSet> image = vtkSmartPointer<vtkImageData>::New();
       image->DeepCopy(resampleFilterOut);
-      images.push_back(image);
+      images.emplace_back(image);
     } else {
       vtkSmartPointer<vtkDataSet> image;
       image.TakeReference(treesSegmentation[i]);
-      images.push_back(image);
+      images.emplace_back(image);
     }
   }
   return images;
@@ -165,7 +164,7 @@ std::vector<vtkSmartPointer<vtkDataSet>>
 
 template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::runCompute(
-  std::vector<vtkMultiBlockDataSet *> &inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
@@ -186,7 +185,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
     for(size_t i = 0; i < images.size(); ++i) {
       auto array = images[i]->GetPointData()->GetArray("Scalars");
       for(vtkIdType j = 0; j < array->GetNumberOfTuples(); ++j)
-        fieldL2_[i].push_back(array->GetTuple1(j));
+        fieldL2_[i].emplace_back(array->GetTuple1(j));
     }
   }
 
@@ -223,7 +222,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
     if((int)i != removed[indexRemoved]) {
       MergeTree<double> keyFrame;
       mergeTreeTemplateToDouble<dataType>(intermediateMTrees[i], keyFrame);
-      keyFrames.push_back(keyFrame);
+      keyFrames.emplace_back(keyFrame);
     } else
       ++indexRemoved;
   }
@@ -234,7 +233,8 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
 template <class dataType>
 int ttkMergeTreeTemporalReductionEncoding::runOutput(
   vtkInformationVector *outputVector,
-  std::vector<vtkMultiBlockDataSet *> &inputTrees) {
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
+  bool OutputSegmentation = (inputTrees[0]->GetNumberOfBlocks() == 3);
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
@@ -248,7 +248,7 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   int indexRemoved = 0;
   for(size_t i = 0; i < inputTrees.size(); ++i)
     if((int)i != removed[indexRemoved]) {
-      keyFramesIndex.push_back(i);
+      keyFramesIndex.emplace_back(i);
     } else
       ++indexRemoved;
 
@@ -256,13 +256,13 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   std::vector<vtkUnstructuredGrid *> treesArcsT;
   std::vector<vtkDataSet *> treesSegmentationT;
   std::vector<std::vector<int>> treesNodeCorrMeshT;
-  std::vector<vtkMultiBlockDataSet *> inputTreesT;
+  std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTreesT;
   for(size_t i = 0; i < keyFramesIndex.size(); ++i) {
-    treesNodesT.push_back(treesNodes[keyFramesIndex[i]]);
-    treesArcsT.push_back(treesArcs[keyFramesIndex[i]]);
-    treesSegmentationT.push_back(treesSegmentation[keyFramesIndex[i]]);
-    treesNodeCorrMeshT.push_back(treesNodeCorrMesh[keyFramesIndex[i]]);
-    inputTreesT.push_back(inputTrees[keyFramesIndex[i]]);
+    treesNodesT.emplace_back(treesNodes[keyFramesIndex[i]]);
+    treesArcsT.emplace_back(treesArcs[keyFramesIndex[i]]);
+    treesSegmentationT.emplace_back(treesSegmentation[keyFramesIndex[i]]);
+    treesNodeCorrMeshT.emplace_back(treesNodeCorrMesh[keyFramesIndex[i]]);
+    inputTreesT.emplace_back(inputTrees[keyFramesIndex[i]]);
   }
   treesNodes.swap(treesNodesT);
   treesArcs.swap(treesArcsT);
@@ -274,7 +274,23 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
   mergeTreesDoubleToTemplate<dataType>(keyFrames, keyFramesT);
   std::vector<FTMTree_MT *> keyFramesTree;
   mergeTreeToFTMTree<dataType>(keyFramesT, keyFramesTree);
-  output_keyFrames->SetNumberOfBlocks(keyFramesT.size());
+
+  output_keyFrames->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
+    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+  vtkBlockNodes->SetNumberOfBlocks(keyFramesT.size());
+  output_keyFrames->SetBlock(0, vtkBlockNodes);
+  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+  vtkBlockArcs->SetNumberOfBlocks(keyFramesT.size());
+  output_keyFrames->SetBlock(1, vtkBlockArcs);
+  if(OutputSegmentation) {
+    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+    vtkBlockSegs->SetNumberOfBlocks(keyFramesT.size());
+    output_keyFrames->SetBlock(2, vtkBlockSegs);
+  }
+
   double prevXMax = 0;
   for(size_t i = 0; i < keyFramesT.size(); ++i) {
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
@@ -283,14 +299,13 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
     vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation1
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock1
-      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
     ttkMergeTreeVisualization visuMaker;
     visuMaker.setShiftMode(2); // Line
     visuMaker.setVtkOutputNode(vtkOutputNode1);
     visuMaker.setVtkOutputArc(vtkOutputArc1);
     visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
+    visuMaker.setOutputSegmentation(OutputSegmentation);
     visuMaker.setTreesNodes(treesNodes);
     visuMaker.copyPointData(treesNodes[i], treesNodeCorrMesh[i]);
     visuMaker.setTreesNodeCorrMesh(treesNodeCorrMesh);
@@ -303,17 +318,20 @@ int ttkMergeTreeTemporalReductionEncoding::runOutput(
     prevXMax = visuMaker.getPrevXMax();
 
     // Field data
-    vtkBlock1->GetFieldData()->ShallowCopy(inputTrees[i]->GetFieldData());
+    vtkOutputNode1->GetFieldData()->ShallowCopy(treesNodes[i]->GetFieldData());
+    vtkOutputArc1->GetFieldData()->ShallowCopy(treesArcs[i]->GetFieldData());
+    if(treesSegmentation[i] and OutputSegmentation)
+      vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+        treesSegmentation[i]->GetFieldData());
 
     // Construct multiblock
-    bool outputSegmentation = inputTrees[i]->GetNumberOfBlocks() == 3;
-    vtkBlock1->SetNumberOfBlocks((outputSegmentation ? 3 : 2));
-    vtkBlock1->SetBlock(0, vtkOutputNode1);
-    vtkBlock1->SetBlock(1, vtkOutputArc1);
-    if(outputSegmentation)
-      vtkBlock1->SetBlock(2, vtkOutputSegmentation1);
-
-    output_keyFrames->SetBlock(i, vtkBlock1);
+    vtkMultiBlockDataSet::SafeDownCast(output_keyFrames->GetBlock(0))
+      ->SetBlock(i, vtkOutputNode1);
+    vtkMultiBlockDataSet::SafeDownCast(output_keyFrames->GetBlock(1))
+      ->SetBlock(i, vtkOutputArc1);
+    if(OutputSegmentation)
+      vtkMultiBlockDataSet::SafeDownCast(output_keyFrames->GetBlock(2))
+        ->SetBlock(i, vtkOutputSegmentation1);
   }
   // Add input parameters to field data
   vtkNew<vtkIntArray> vtkAssignmentSolver{};
