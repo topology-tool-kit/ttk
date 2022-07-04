@@ -58,6 +58,7 @@ jobs:
       uses: ./.github/actions/install-deps-unix
 
     - uses: dsaltares/fetch-gh-release-asset@master
+      continue-on-error: true
       name: Fetch archived ccache
       with:
         repo: "topology-tool-kit/ttk"
@@ -67,6 +68,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Decompress ccache archive
+      continue-on-error: true
       run: |
         tar xzf ttk-ccache.tar.gz
         mv .ccache /home/runner/
@@ -201,10 +203,12 @@ jobs:
       uses: ./.github/actions/install-deps-unix
 
     - name: Fetch archived ccache
+      continue-on-error: true
       run: |
         wget https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-ccache-macOS.tar.gz
 
     - name: Decompress ccache archive
+      continue-on-error: true
       run: |
         tar xzf ttk-ccache-macOS.tar.gz
         rm -rf /Users/runner/work/ttk/.ccache
