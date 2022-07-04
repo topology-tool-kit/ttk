@@ -68,9 +68,7 @@ namespace ttk {
 // template functions
 template <class dataType, class triangulationType>
 int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
-                                     const int &numberOfIterations,
-                                     const int *rankArray,
-                                     const SimplexId *globalIds) const {
+                                     const int &numberOfIterations) const {
 
   Timer t;
 
@@ -85,13 +83,17 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     return -4;
 #endif
   bool useMPI = false;
+  std::unordered_map<SimplexId, SimplexId> map;
   TTK_FORCE_USE(useMPI);
+  TTK_FORCE_USE(map);
   TTK_FORCE_USE(rankArray);
   TTK_FORCE_USE(globalIds);
 
 #if TTK_ENABLE_MPI
   if(ttk::isRunningWithMPI() && rankArray != nullptr && globalIds != nullptr)
     useMPI = true;
+  triangulation->getVertexGlobalIdMap(map);
+
 #endif
   SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
@@ -154,8 +156,6 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     if(useMPI) {
       // after each iteration we need to exchange the ghostcell values with our
       // neighbors
-      std::unordered_map<SimplexId, SimplexId> map;
-      triangulation->getVertexGlobalIdMap(map);
       exchangeGhostCells<dataType, SimplexId>(
         outputData, rankArray, globalIds, map, vertexNumber, ttk::MPIcomm_);
     }

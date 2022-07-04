@@ -282,7 +282,7 @@ namespace ttk {
   int exchangeGhostCells(DT *scalarArray,
                          const int *const rankArray,
                          const IT *const globalIds,
-                         const std::unordered_map<IT, IT> gidToLidMap,
+                         const std::unordered_map<IT, IT> &gidToLidMap,
                          const IT nVerts,
                          MPI_Comm communicator) {
     if(!ttk::isRunningWithMPI()) {

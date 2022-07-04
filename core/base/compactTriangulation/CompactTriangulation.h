@@ -1339,8 +1339,8 @@ namespace ttk {
       return this->vertexLidToGid_[ltid];
     }
     inline int TTK_TRIANGULATION_INTERNAL(getVertexGlobalIdMap)(
-      std::unordered_map<SimplexId, SimplexId> &map) const override {
-      map = this->vertexGidToLid_;
+      std::unordered_map<SimplexId, SimplexId> *map) const override {
+      map = &this->vertexGidToLid_;
       return 1;
     }
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLocalId)(

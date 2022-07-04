@@ -1399,7 +1399,7 @@ namespace ttk {
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if succesful, -1 else.
     inline int getVertexGlobalIdMap(
-      std::unordered_map<SimplexId, SimplexId> &map) const override {
+      std::unordered_map<SimplexId, SimplexId> *map) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
