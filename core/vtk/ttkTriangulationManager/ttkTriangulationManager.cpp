@@ -89,6 +89,16 @@ int ttkTriangulationManager::processExplicit(
   }
   ttk::Timer tm{};
 
+#ifdef TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    this->printErr(
+      "Compact triangulation not (yet) supported in an MPI context!");
+    this->printErr("Keeping the Explicit triangulation.");
+    output->ShallowCopy(input);
+    return 0;
+  }
+#endif // TTK_ENABLE_MPI
+
   // If all checks pass then log which array is going to be processed.
   this->printMsg("Compact explicit triangulation...");
   int status = 0; // this integer checks if the base code returns an error
