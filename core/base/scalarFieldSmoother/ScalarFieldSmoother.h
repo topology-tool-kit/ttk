@@ -53,9 +53,7 @@ namespace ttk {
 
     template <class dataType, class triangulationType = AbstractTriangulation>
     int smooth(const triangulationType *triangulation,
-               const int &numberOfIterations,
-               const int *rankArray = nullptr,
-               const SimplexId *globalIds = nullptr) const;
+               const int &numberOfIterations) const;
 
   protected:
     int dimensionNumber_{1};
@@ -82,17 +80,29 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
   if(!outputData_)
     return -4;
 #endif
+  int *rankArray_{nullptr};
+  SimplexId *globalIds_{nullptr};
   bool useMPI = false;
-  std::unordered_map<SimplexId, SimplexId> map;
+  const std::unordered_map<SimplexId, SimplexId> *map = nullptr;
   TTK_FORCE_USE(useMPI);
   TTK_FORCE_USE(map);
-  TTK_FORCE_USE(rankArray);
-  TTK_FORCE_USE(globalIds);
+  TTK_FORCE_USE(rankArray_);
+  TTK_FORCE_USE(globalIds_);
 
 #if TTK_ENABLE_MPI
-  if(ttk::isRunningWithMPI() && rankArray != nullptr && globalIds != nullptr)
+  rankArray_ = triangulation->getRankArray();
+  globalIds_ = (SimplexId *)triangulation->getGlobalIdsArray();
+  if(ttk::isRunningWithMPI() && rankArray_ != nullptr
+     && globalIds_ != nullptr) {
     useMPI = true;
-  triangulation->getVertexGlobalIdMap(map);
+    map = triangulation->getVertexGlobalIdMap();
+    if(map != nullptr) {
+      std::unordered_map<SimplexId, SimplexId> testmap = *map;
+      this->printMsg("Map size: " + std::to_string(testmap.size()));
+    } else {
+      this->printMsg("Map is nullptr!");
+    }
+  }
 
 #endif
   SimplexId vertexNumber = triangulation->getNumberOfVertices();
@@ -157,7 +167,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
       // after each iteration we need to exchange the ghostcell values with our
       // neighbors
       exchangeGhostCells<dataType, SimplexId>(
-        outputData, rankArray, globalIds, map, vertexNumber, ttk::MPIcomm_);
+        outputData, rankArray_, globalIds_, *map, vertexNumber, ttk::MPIcomm_);
     }
 #endif
 
