@@ -2648,22 +2648,20 @@ namespace ttk {
 #endif // TTK_ENABLE_KAMIKAZE
       return this->getVertexGlobalIdInternal(leid);
     }
-    virtual inline const std::unordered_map<SimplexId, SimplexId> *
+    virtual inline const std::unordered_map<SimplexId, SimplexId> &
       getVertexGlobalIdMap() const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
          && this->getDimensionality() != 3) {
         this->printErr("Only 1D, 2D and 3D datasets are supported");
-        return nullptr;
       }
       if(!this->hasPreconditionedDistributedVertices_) {
         this->printErr("VertexGlobalMap query without pre-process!");
         this->printErr(
           "Please call preconditionDistributedVertices() in a pre-process.");
-        return nullptr;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      return this->getVertexGlobalIdMapInternal();
+      return this->vertexGidToLid_;
     }
     virtual inline SimplexId getVertexLocalId(const SimplexId &geid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -2702,10 +2700,6 @@ namespace ttk {
     virtual inline SimplexId
       getVertexGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) const {
       return 0;
-    }
-    virtual inline const std::unordered_map<SimplexId, SimplexId> *
-      getVertexGlobalIdMapInternal() const {
-      return nullptr;
     }
     virtual inline SimplexId
       getVertexLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) const {

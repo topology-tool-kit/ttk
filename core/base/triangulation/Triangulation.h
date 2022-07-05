@@ -1398,11 +1398,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if succesful, -1 else.
-    inline const std::unordered_map<SimplexId, SimplexId> *
+    inline const std::unordered_map<SimplexId, SimplexId> &
       getVertexGlobalIdMap() const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return nullptr;
+        return this->getVertexGlobalIdMap();
 #endif
       return abstractTriangulation_->getVertexGlobalIdMap();
     }
