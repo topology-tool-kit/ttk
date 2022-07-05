@@ -1402,7 +1402,7 @@ namespace ttk {
       getVertexGlobalIdMap() const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return -1;
+        return nullptr;
 #endif
       return abstractTriangulation_->getVertexGlobalIdMap();
     }
