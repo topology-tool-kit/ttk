@@ -11,6 +11,7 @@
 #include <vtkTransformFilter.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVersion.h> // for VTK_VERSION_CHECK via ParaView 5.8.1
 
 int VTUToDiagram(ttk::DiagramType &diagram,
                  vtkUnstructuredGrid *vtu,
@@ -310,7 +311,13 @@ int ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
   threshold->SetInputArrayToProcess(0, 0, 0,
                                     vtkDataObject::FIELD_ASSOCIATION_CELLS,
                                     ttk::PersistencePairIdentifierName);
+#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
   threshold->ThresholdByUpper(0);
+#else
+  threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_UPPER);
+  threshold->SetUpperThreshold(0);
+#endif
+
   threshold->Update();
 
   auto diagonalLess = threshold->GetOutput();

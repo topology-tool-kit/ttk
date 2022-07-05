@@ -18,11 +18,13 @@
 # /// of IEEE VIS 2017.
 
 import sys
+from packaging import version
 
 from vtk import (
     vtkDataObject,
     vtkTableWriter,
     vtkThreshold,
+    vtkVersion,
     vtkXMLPolyDataWriter,
     vtkXMLUnstructuredGridReader,
     vtkXMLUnstructuredGridWriter,
@@ -63,7 +65,12 @@ criticalPairs.SetInputConnection(diagram.GetOutputPort())
 criticalPairs.SetInputArrayToProcess(
     0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "PairIdentifier"
 )
-criticalPairs.ThresholdBetween(-0.1, 999999)
+if version.parse(vtkVersion.GetVTKVersion()) < version.parse("9.2.0"):
+    criticalPairs.ThresholdBetween(-0.1, 999999)
+else:
+    criticalPairs.SetThresholdFunction(vtkThreshold.THRESHOLD_BETWEEN)
+    criticalPairs.SetLowerThreshold(-0.1)
+    criticalPairs.SetUpperThreshold(999999)
 
 # 5. selecting the most persistent pairs
 persistentPairs = vtkThreshold()
@@ -71,7 +78,12 @@ persistentPairs.SetInputConnection(criticalPairs.GetOutputPort())
 persistentPairs.SetInputArrayToProcess(
     0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "Persistence"
 )
-persistentPairs.ThresholdBetween(0.05, 999999)
+if version.parse(vtkVersion.GetVTKVersion()) < version.parse("9.2.0"):
+    persistentPairs.ThresholdBetween(0.05, 999999)
+else:
+    persistentPairs.SetThresholdFunction(vtkThreshold.THRESHOLD_BETWEEN)
+    persistentPairs.SetLowerThreshold(0.05)
+    persistentPairs.SetUpperThreshold(999999)
 
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = ttkTopologicalSimplification()

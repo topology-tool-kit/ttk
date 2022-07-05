@@ -1,16 +1,15 @@
 #include "BaseClass.h"
 #include <ttkExtract.h>
 
-#include <vtkInformationVector.h>
-
-#include <vtkMultiBlockDataSet.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
-#include <vtkUnstructuredGrid.h>
-
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkSmartPointer.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkVersion.h> // for VTK_VERSION_CHECK via ParaView 5.8.1
+
+#include <vtkMultiBlockDataSet.h>
+#include <vtkTable.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -496,7 +495,12 @@ int ttkExtract::ExtractGeometry(vtkDataObject *output,
     threshold->SetInputDataObject(maskOutput);
     threshold->SetInputArrayToProcess(
       0, 0, 0, isPointDataArray ? 0 : 1, "Mask");
+#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
     threshold->ThresholdByUpper(0.5);
+#else
+    threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_UPPER);
+    threshold->SetUpperThreshold(0.5);
+#endif
     threshold->SetAllScalars(this->CellMode == CELL_MODE::ALL);
     threshold->Update();
 
