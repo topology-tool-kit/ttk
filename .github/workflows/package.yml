@@ -129,6 +129,7 @@ jobs:
     - name: Set PYTHONPATH for Ubuntu 22.04 pvpython
       if: matrix.os == 'ubuntu-22.04'
       run: |
+        # pvpython does not embed the correct PYTHONPATH
         echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
@@ -173,7 +174,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 \
           -DPython3_FIND_STRATEGY=LOCATION \
-          -DPython3_ROOT_DIR=$(python -c "import sys; print(sys.prefix)") \
+          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -271,6 +272,8 @@ jobs:
   # --------------#
   build-windows:
     runs-on: windows-2022
+    env:
+      CONDA_ROOT: C:\Miniconda
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -294,7 +297,7 @@ jobs:
         -OutFile ttk-paraview.exe `
         -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
 
-    - name: Install ParaView .exe
+    - name: Install ParaView
       shell: cmd
       run: |
         ttk-paraview.exe /S
@@ -308,8 +311,7 @@ jobs:
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
-        set CONDA_ROOT="C:\Miniconda"
-        set CMAKE_PREFIX_PATH="%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake"
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake
         mkdir build
         cd build
         cmake ^
@@ -357,6 +359,10 @@ jobs:
   test-windows:
     needs: build-windows
     runs-on: windows-2022
+    env:
+      PV_DIR: C:\Program Files\TTK-ParaView
+      TTK_DIR: C:\Program Files\TTK
+      CONDA_ROOT: C:\Miniconda
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
@@ -366,7 +372,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge qt boost eigen spectralib zfp \
+        conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
           scikit-learn openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
@@ -391,47 +397,54 @@ jobs:
         ttk-paraview.exe /S
         ttk.exe /S
 
-    - name: Build & Test native TTK examples
+    - name: Set PATH environment variable
+      shell: bash
+      run: |
+        echo "$PV_DIR/bin" >> $GITHUB_PATH
+        echo "$TTK_DIR/bin" >> $GITHUB_PATH
+
+    - name: Test C++ example
       shell: cmd
       run: |
-        :: set environment variables
-        set PV_DIR=%ProgramFiles%\TTK-ParaView
-        set TTK_DIR=%ProgramFiles%\TTK
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
-        set PATH=%PATH%;%PV_DIR%\bin;%TTK_DIR%\bin
-        :: base layer
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
         cmake -G"Visual Studio 17 2022" -Tclangcl ..
         cmake --build . --config Release --parallel
         Release\ttkExample-c++.exe -i ..\..\data\inputData.off
-        :: VTK layer
+
+    - name: Test VTK-C++ example
+      shell: cmd
+      run: |
+        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
         cmake -G"Visual Studio 17 2022" -Tclangcl ..
         cmake --build . --config Release --parallel
         Release\ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
-        :: HelloWorld standalone
-        ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 
-    - name: Test Python examples
-      shell: bash
+    - name: Test Python example
+      shell: cmd
       run: |
-        # set environment variables
-        export PV_BIN="/c/Program Files/TTK-ParaView/bin"
-        export TTK_BIN="/c/Program Files/TTK/bin"
-        export CONDA_ROOT="/c/Miniconda"
-        export PV_PLUGIN_PATH="$TTK_BIN/plugins"
-        export PATH="$PATH:$PV_BIN:$TTK_BIN"
-        export PYTHONPATH="$PV_BIN/Lib/site-packages:$TTK_BIN/Lib/site-packages:$CONDA_ROOT/Lib"
-        # pure python
-        cd $GITHUB_WORKSPACE/examples/python
-        python example.py ../data/inputData.vtu
-        # pvpython
-        cd $GITHUB_WORKSPACE/examples/pvpython
-        pvpython.exe example.py ../data/inputData.vtu
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        cd %GITHUB_WORKSPACE%\examples\python
+        python example.py ..\data\inputData.vtu
+
+    - name: Test pvpython example
+      shell: cmd
+      run: |
+        set PYTHONPATH=%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd %GITHUB_WORKSPACE%\examples\pvpython
+        pvpython.exe example.py ..\data\inputData.vtu
+
+    - name: Test standalone
+      shell: cmd
+      run: |
+        cd %GITHUB_WORKSPACE%\examples\vtk-c++
+        ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 
 
   # ---------------#
