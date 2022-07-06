@@ -1398,13 +1398,13 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if succesful, -1 else.
-    inline int getVertexGlobalIdMap(
-      std::unordered_map<SimplexId, SimplexId> &map) const override {
+    inline const std::unordered_map<SimplexId, SimplexId> *
+      getVertexGlobalIdMap() const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return -1;
+        return nullptr;
 #endif
-      return abstractTriangulation_->getVertexGlobalIdMap(map);
+      return abstractTriangulation_->getVertexGlobalIdMap();
     }
 
     /// Get the corresponding local id for a given global id of a vertex.
@@ -2690,7 +2690,7 @@ namespace ttk {
         this->abstractTriangulation_->setRankArray(rankArray);
     }
 
-    inline int *getRankArray() {
+    inline int *getRankArray() const {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getRankArray();
 
@@ -2702,7 +2702,7 @@ namespace ttk {
         this->abstractTriangulation_->setGlobalIdsArray(globalIds);
     }
 
-    inline long int *getGlobalIdsArray() {
+    inline long int *getGlobalIdsArray() const {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getGlobalIdsArray();
 
