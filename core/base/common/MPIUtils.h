@@ -9,7 +9,9 @@
 
 #include <BaseClass.h>
 #include <Timer.h>
+#include <algorithm>
 #include <array>
+#include <limits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -45,6 +47,15 @@ namespace ttk {
   };
   inline MPI_Datatype getMPIType(const unsigned long long ttkNotUsed(val)) {
     return MPI_UNSIGNED_LONG_LONG;
+  };
+
+  template <typename DT, typename IT>
+  struct value {
+    DT scalar;
+    IT globalId;
+
+    value(DT _scalar, IT _globalId) : scalar(_scalar), globalId(_globalId) {
+    }
   };
 
   inline bool isRunningWithMPI() {
@@ -254,12 +265,88 @@ namespace ttk {
   template <typename IT>
   int getNeighbors(std::unordered_set<int> &neighbors,
                    const int *const rankArray,
-                   const IT nVerts) {
+                   const IT nVerts,
+                   MPI_Comm communicator) {
     for(IT i = 0; i < nVerts; i++) {
       if(rankArray[i] != ttk::MPIrank_) {
         neighbors.emplace(rankArray[i]);
       }
     }
+    std::vector<int> sendVector(neighbors.begin(), neighbors.end());
+    int localSize = neighbors.size();
+    int sizes[ttk::MPIsize_];
+    int displacements[ttk::MPIsize_];
+    MPI_Gather(&localSize, 1, MPI_INT, sizes, 1, MPI_INT, 0, communicator);
+    int totalSize = 0;
+    if(ttk::MPIrank_ == 0) {
+      for(int i = 0; i < ttk::MPIsize_; i++) {
+        totalSize += sizes[i];
+        if(i == 0) {
+          displacements[i] = 0;
+        } else {
+          displacements[i] = displacements[i - 1] + sizes[i - 1];
+        }
+      }
+    }
+    std::vector<int> rootVector(totalSize);
+
+    MPI_Gatherv(sendVector.data(), sendVector.size(), MPI_INT,
+                rootVector.data(), sizes, displacements, MPI_INT, 0,
+                communicator);
+    std::vector<int> scatterVector;
+
+    if(ttk::MPIrank_ == 0) {
+      // now we transform this 1d vector in a correct vector of sets which we
+      // will transform back to scatter it
+      std::vector<std::unordered_set<int>> setsFromRanks(ttk::MPIsize_);
+      auto begin = rootVector.begin();
+      auto end = rootVector.begin();
+      for(int i = 0; i < ttk::MPIsize_; i++) {
+        end = begin + sizes[i];
+        std::unordered_set<int> s(begin, end);
+        setsFromRanks[i] = s;
+        begin = end;
+        // std::cout << "R" << std::to_string(i) << " nr needs something from "
+        // << std::to_string(setsFromRanks[i].size()) << " neighbors." <<
+        // std::endl;
+      }
+      // now we need to check for each rank if they are a neighbor of any other
+      // rank. If so, we need to add those to the neighbors
+      for(int i = 0; i < ttk::MPIsize_; i++) {
+        for(int j = 0; i < ttk::MPIsize_; i++) {
+          if(setsFromRanks[j].find(i) != setsFromRanks[j].end()) {
+            setsFromRanks[i].emplace(j);
+          }
+        }
+      }
+      // now we transform this vector of sets back into a 1d vector to scatter
+      // it
+      for(int i = 0; i < ttk::MPIsize_; i++) {
+        sizes[i] = setsFromRanks[i].size();
+        if(i == 0) {
+          displacements[i] = 0;
+        } else {
+          displacements[i] = displacements[i - 1] + sizes[i - 1];
+        }
+        scatterVector.insert(scatterVector.end(), setsFromRanks[i].begin(),
+                             setsFromRanks[i].end());
+      }
+    }
+
+    // scatter first the size and then the vector itself
+    int receivedSize;
+    MPI_Scatter(sizes, 1, MPI_INT, &receivedSize, 1, MPI_INT, 0, communicator);
+
+    // and then the actual neighbors
+    std::vector<int> receivedNeighbors(receivedSize);
+    MPI_Scatterv(scatterVector.data(), sizes, displacements, MPI_INT,
+                 receivedNeighbors.data(), receivedSize, MPI_INT, 0,
+                 communicator);
+    // then we turn the vector back into a set
+    std::unordered_set<int> finalSet(
+      receivedNeighbors.begin(), receivedNeighbors.end());
+    neighbors = finalSet;
+
     return 0;
   }
 
@@ -289,7 +376,7 @@ namespace ttk {
       return -1;
     }
     std::unordered_set<int> neighbors;
-    getNeighbors<IT>(neighbors, rankArray, nVerts);
+    getNeighbors<IT>(neighbors, rankArray, nVerts, communicator);
     for(int r = 0; r < ttk::MPIsize_; r++) {
       getGhostCellScalars<DT, IT>(scalarArray, rankArray, globalIds,
                                   gidToLidMap, neighbors, r, nVerts,
@@ -319,7 +406,6 @@ namespace ttk {
    * @param[in] ghostCells the ghost array for the scalar data
    * @param[in] nVertices number of vertices in the arrays
    */
-
   void inline produceRankArray(std::vector<int> &rankArray,
                                long int *globalIds,
                                unsigned char *ghostCells,
@@ -420,5 +506,347 @@ namespace ttk {
       receivedGlobals.resize(sizeOfCurrentRank);
     }
   }
+
+  /**
+   * @brief send the highest burstSize values and decrease the vector by that
+   * amount, check if there are actually that many elements in the vector
+   *
+   * @param[out] outVector the vector which is returned
+   * @param[in] values the data vector from which we take the elements
+   * @param[in] burstSize the amount of elements extracted
+   */
+  template <typename DT, typename IT>
+  void returnVectorForBurstsize(std::vector<value<DT, IT>> &outVector,
+                                std::vector<value<DT, IT>> &values,
+                                size_t burstSize) {
+
+    if(burstSize > values.size()) {
+      outVector.resize(values.size(), {0, 0});
+      outVector.assign(values.begin(), values.end());
+      values.clear();
+    } else {
+      outVector.resize(burstSize, {0, 0});
+      outVector.assign(values.end() - burstSize, values.end());
+      values.erase(values.end() - burstSize, values.end());
+    }
+  }
+
+  /**
+   * @brief receive elements from a rank and add them to the correct subvector
+   *
+   * @param[in] rankFrom the rank from which we receive
+   * @param[in] structTag an MPI tag representing messages in which structs are
+   * sent
+   * @param[out] unsortedReceivedValues a vector of vectors representing
+   * received values for each rank
+   */
+  template <typename DT, typename IT>
+  void ReceiveAndAddToVector(
+    int rankFrom,
+    int structTag,
+    std::vector<std::vector<value<DT, IT>>> &unsortedReceivedValues) {
+    std::vector<value<DT, IT>> &receivedValues
+      = unsortedReceivedValues[rankFrom];
+    // probe to get the correct size to receive
+    int amount;
+    MPI_Status status;
+    MPI_Probe(rankFrom, structTag * rankFrom, ttk::MPIcomm_, &status);
+    MPI_Get_count(&status, MPI_CHAR, &amount);
+    receivedValues.resize(amount / sizeof(value<DT, IT>), {0, 0});
+    MPI_Recv(receivedValues.data(), amount, MPI_CHAR, rankFrom,
+             structTag * rankFrom, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+  }
+
+  /**
+   * @brief get the current maximum value and works with it, if this leads to
+   * the vector of one rank being empty, send the ordering to the rank and
+   * request new values
+   *
+   * @param[in] intTag an MPI tag representing messages in which integers are
+   * sent
+   * @param[in] structTag an MPI tag representing messages in which structs are
+   * sent
+   * @param[in, out] currentOrder integer keeping track of the current order,
+   * counting down
+   * @param[in] burstSize number of values sent in one communication step
+   * @param[in] MPI_IT MPI datatype representing integers
+   * @param[out] finalValues a vector of sorted structs from each rank
+   * @param[in, out] unsortedReceivedValues a vector of vectors representing
+   * received values for each rank
+   * @param[in, out] orderResendValues a vector of vectors of integers
+   * representing globalIds and their orders for each rank
+   * @param[in, out] orderedValuesForRank a vector representing integers
+   * representing globalIds and their orders for this rank
+   * @param[in, out] sortingValues vector of value structs with global ids
+   * belonging to this rank
+   */
+  template <typename DT, typename IT>
+  void getMax(int intTag,
+              int structTag,
+              IT &currentOrder,
+              int burstSize,
+              MPI_Datatype MPI_IT,
+              std::vector<value<DT, IT>> &finalValues,
+              std::vector<std::vector<value<DT, IT>>> &unsortedReceivedValues,
+              std::vector<std::vector<IT>> &orderResendValues,
+              std::vector<IT> &orderedValuesForRank,
+              std::vector<value<DT, IT>> &sortingValues) {
+    // take the current maximum scalar over all ranks
+    int rankIdOfMaxScalar = -1;
+    DT maxScalar = std::numeric_limits<DT>::lowest();
+    IT maxGId = -1;
+    for(size_t i = 0; i < unsortedReceivedValues.size(); i++) {
+      if(unsortedReceivedValues[i].size() > 0) {
+        const auto &v = unsortedReceivedValues[i].back();
+        if(v.scalar == maxScalar ? v.globalId > maxGId : v.scalar > maxScalar) {
+          maxScalar = v.scalar;
+          maxGId = v.globalId;
+          rankIdOfMaxScalar = i;
+        }
+      }
+    }
+
+    // move the struct from the unsortedReceivedValues subvector to the
+    // finalValues vector to get an ordering
+    value<DT, IT> currentValue
+      = unsortedReceivedValues[rankIdOfMaxScalar].back();
+    // we send the globalId and the the order via one send command,
+    // therefore we need to check two concurrent values at the same time
+    // later on
+    orderResendValues[rankIdOfMaxScalar].push_back(currentValue.globalId);
+    orderResendValues[rankIdOfMaxScalar].push_back(currentOrder);
+    currentOrder--;
+    finalValues.push_back(currentValue);
+    unsortedReceivedValues[rankIdOfMaxScalar].pop_back();
+    if(unsortedReceivedValues[rankIdOfMaxScalar].size() == 0) {
+      if(rankIdOfMaxScalar == 0) {
+        // append the ordered values to the correct vector
+        orderedValuesForRank.insert(
+          orderedValuesForRank.end(),
+          orderResendValues[rankIdOfMaxScalar].begin(),
+          orderResendValues[rankIdOfMaxScalar].end());
+        orderResendValues[rankIdOfMaxScalar].clear();
+
+        if(!sortingValues.empty()) {
+          std::vector<value<DT, IT>> ownValues;
+          returnVectorForBurstsize<DT, IT>(ownValues, sortingValues, burstSize);
+
+          unsortedReceivedValues[rankIdOfMaxScalar] = ownValues;
+        }
+      } else {
+        // receive more values from rank, send ordering to the rank
+        // send to the finished rank that we want more
+        MPI_Send(orderResendValues[rankIdOfMaxScalar].data(),
+                 orderResendValues[rankIdOfMaxScalar].size(), MPI_IT,
+                 rankIdOfMaxScalar, intTag * rankIdOfMaxScalar, ttk::MPIcomm_);
+        orderResendValues[rankIdOfMaxScalar].clear();
+        // we receive more vals, if the size is still zero afterwards, we are
+        // finished with this rank
+        ReceiveAndAddToVector(
+          rankIdOfMaxScalar, structTag, unsortedReceivedValues);
+      }
+    }
+  }
+
+  /**
+   * @brief fill the order array based on global ids and their order values
+   *
+   * @param[in] nInts number of long ints, as globalid / order pairs
+   * @param[in] orderedValuesForRank array of size nInts, the actual pairs,
+   * [i] = gId, [i+1] = order
+   * @param[in] gidToLidMap map which maps scalar values to a defined order
+   * @param[out] order array of size nVerts, computed order of vertices, this
+   * procedure doesn't fill it completely, ghostcells are missing
+   * @param[in] nThreads number of parallel threads
+   */
+  template <typename IT>
+  void buildArrayForReceivedData(const size_t nInts,
+                                 const IT *const orderedValuesForRank,
+                                 std::unordered_map<IT, IT> &gidToLidMap,
+                                 SimplexId *const order,
+                                 const int nThreads) {
+
+    TTK_FORCE_USE(nThreads);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads)
+#endif // TTK_ENABLE_OPENMP
+    for(size_t i = 0; i < nInts; i += 2) {
+      order[gidToLidMap[orderedValuesForRank[i]]] = orderedValuesForRank[i + 1];
+    }
+  }
+
+  /**
+   * @brief creates a vector of value structs based on the given pointers, only
+   * takes values of vertices which belong to the current rank, so no ghost
+   * cells
+   *
+   * @param[out] valuesToSortVector vector of value structs with global ids
+   * belonging to this rank
+   * @param[out] gidsToGetVector vector of global ids not belonging to this rank
+   * @param[out] gidToLidMap map mapping global ids to local rank ids
+   * @param[in] nVerts number of vertices
+   * @param[in] scalars the scalar data array
+   * @param[in] globalIds the global id array for the scalar data
+   * @param[in] rankArray the rank array for the dataset
+   */
+  template <typename DT, typename IT>
+  void populateVector(std::vector<value<DT, IT>> &valuesToSortVector,
+                      std::vector<IT> &gidsToGetVector,
+                      std::unordered_map<IT, IT> &gidToLidMap,
+                      const size_t nVerts,
+                      const DT *const scalars,
+                      const IT *const globalIds,
+                      const int *const rankArray) {
+    for(size_t i = 0; i < nVerts; i++) {
+      IT globalId = globalIds[i];
+      gidToLidMap[globalId] = i;
+      if(rankArray[i] == ttk::MPIrank_) {
+        valuesToSortVector.emplace_back(scalars[i], globalId);
+      } else {
+        gidsToGetVector.push_back(globalId);
+      }
+    }
+  }
+
+  /**
+   * @brief Sort vertices according to scalars disambiguated by global ids
+   *
+   * @param[in, out] values vector of size nVerts, structs with a scalar value
+   * and a global id
+   * @param[in] nThreads number of parallel threads
+   */
+  template <typename DT, typename IT>
+  void sortVerticesDistributed(std::vector<value<DT, IT>> &values,
+                               const int nThreads) {
+
+    TTK_FORCE_USE(nThreads);
+
+    TTK_PSORT(nThreads, values.begin(), values.end(),
+              [](value<DT, IT> v1, value<DT, IT> v2) {
+                return (v1.scalar < v2.scalar)
+                       || (v1.scalar == v2.scalar && v1.globalId < v2.globalId);
+              });
+  }
+
+  /**
+   * @brief produce the orderArray, that defines a unique ordering based on the
+   * scalar values and the global ids
+   *
+   * @param[out] orderArray the order array for the scalar data
+   * @param[in] scalarArray the scalar data array
+   * @param[in] globalIds the global id array for the scalar data
+   * @param[in] rankArray the rank array for the dataset
+   * @param[in] nVerts number of vertices in the arrays
+   * @param[in] burstSize number of values sent in one communication step
+   */
+  template <typename DT, typename IT>
+  void produceOrdering(SimplexId *orderArray,
+                       const DT *scalarArray,
+                       const IT *globalIds,
+                       const int *rankArray,
+                       const size_t nVerts,
+                       const int burstSize) {
+    int intTag = 101;
+    int structTag = 102;
+
+    MPI_Barrier(ttk::MPIcomm_);
+
+    MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
+
+    ttk::Timer fillAndSortTimer;
+    std::vector<value<DT, IT>> sortingValues;
+    std::vector<IT> gidsToGetVector;
+    std::unordered_map<IT, IT> gidToLidMap;
+    populateVector<DT, IT>(sortingValues, gidsToGetVector, gidToLidMap, nVerts,
+                           scalarArray, globalIds, rankArray);
+
+    // sort the scalar array distributed first by the scalar value itself,
+    // then by the global id
+    sortVerticesDistributed<DT, IT>(sortingValues, ttk::globalThreadNumber_);
+
+    // when all are done sorting, rank 0 requests the highest values and
+    // merges them
+    MPI_Barrier(ttk::MPIcomm_);
+
+    std::vector<IT> orderedValuesForRank;
+    std::vector<value<DT, IT>> finalValues;
+    ttk::Timer mergeTimer;
+    IT localSize = sortingValues.size();
+    IT totalSize;
+    // get the complete size  of the dataset by summing up the local sizes
+    MPI_Reduce(&localSize, &totalSize, 1, MPI_IT, MPI_SUM, 0, ttk::MPIcomm_);
+    if(ttk::MPIrank_ == 0) {
+      finalValues.reserve(totalSize);
+      IT currentOrder = totalSize - 1;
+      std::vector<std::vector<value<DT, IT>>> unsortedReceivedValues;
+      unsortedReceivedValues.resize(ttk::MPIsize_);
+      std::vector<std::vector<IT>> orderResendValues;
+      orderResendValues.resize(ttk::MPIsize_);
+      for(int i = 0; i < ttk::MPIsize_; i++) {
+        orderResendValues[i].reserve(burstSize);
+      }
+
+      // receive the first batch of values
+      for(int i = 0; i < ttk::MPIsize_; i++) {
+        if(i == 0) {
+          std::vector<value<DT, IT>> ownValues;
+          returnVectorForBurstsize<DT, IT>(ownValues, sortingValues, burstSize);
+          unsortedReceivedValues[i] = ownValues;
+        } else {
+          ReceiveAndAddToVector<DT, IT>(i, structTag, unsortedReceivedValues);
+        }
+      }
+      while(finalValues.size() < (size_t)totalSize) {
+        getMax<DT, IT>(intTag, structTag, currentOrder, burstSize, MPI_IT,
+                       finalValues, unsortedReceivedValues, orderResendValues,
+                       orderedValuesForRank, sortingValues);
+      }
+
+    } else { // other Ranks
+      // send the next burstsize values and then wait for an answer from the
+      // root rank
+      while(!sortingValues.empty()) {
+        std::vector<value<DT, IT>> sendValues;
+        returnVectorForBurstsize<DT, IT>(sendValues, sortingValues, burstSize);
+        int size = sendValues.size();
+        MPI_Send(sendValues.data(), size * sizeof(value<DT, IT>), MPI_CHAR, 0,
+                 structTag * ttk::MPIrank_, ttk::MPIcomm_);
+        std::vector<IT> receivedValues;
+
+        // be prepared to receive burstsize of elements, resize after
+        // receiving to the correct size
+        receivedValues.resize(burstSize * 2);
+        MPI_Status status;
+        int amount;
+        MPI_Recv(receivedValues.data(), burstSize * 2, MPI_IT, 0,
+                 intTag * ttk::MPIrank_, ttk::MPIcomm_, &status);
+        MPI_Get_count(&status, MPI_IT, &amount);
+
+        receivedValues.resize(amount);
+        orderedValuesForRank.insert(orderedValuesForRank.end(),
+                                    receivedValues.begin(),
+                                    receivedValues.end());
+      }
+      // afterwards send once a message of length 0 to root to show that we
+      // are done
+      MPI_Send(sortingValues.data(), 0, MPI_CHAR, 0, structTag * ttk::MPIrank_,
+               ttk::MPIcomm_);
+    }
+
+    // all ranks do the following
+    MPI_Barrier(ttk::MPIcomm_);
+
+    ttk::Timer orderTimer;
+    buildArrayForReceivedData<IT>(orderedValuesForRank.size(),
+                                  orderedValuesForRank.data(), gidToLidMap,
+                                  orderArray, ttk::globalThreadNumber_);
+
+    // we receive the values at the ghostcells through the abstract
+    // exchangeGhostCells method
+    ttk::exchangeGhostCells<ttk::SimplexId, IT>(
+      orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_);
+  }
+
 } // namespace ttk
 #endif
