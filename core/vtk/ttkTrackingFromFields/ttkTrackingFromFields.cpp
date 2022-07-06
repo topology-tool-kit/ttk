@@ -1,4 +1,6 @@
+#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkPointData.h>
 
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
@@ -39,31 +41,26 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   using trackingTuple = ttk::trackingTuple;
 
   // 1. get persistence diagrams.
-  std::vector<std::vector<diagramTuple>> persistenceDiagrams(
-    fieldNumber, std::vector<diagramTuple>());
+  std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
 
   this->performDiagramComputation<dataType, triangulationType>(
     (int)fieldNumber, persistenceDiagrams, triangulation);
 
   // 2. call feature tracking with threshold.
-  std::vector<std::vector<matchingTuple>> outputMatchings(
-    fieldNumber - 1, std::vector<matchingTuple>());
+  std::vector<std::vector<ttk::MatchingType>> outputMatchings(fieldNumber - 1);
 
   double spacing = Spacing;
   std::string algorithm = DistanceAlgorithm;
-  double alpha = Alpha;
   double tolerance = Tolerance;
-  bool is3D = true; // Is3D;
   std::string wasserstein = WassersteinMetric;
 
   ttk::TrackingFromPersistenceDiagrams tfp{};
   tfp.setThreadNumber(this->threadNumber_);
-  tfp.performMatchings<dataType>(
+  tfp.setDebugLevel(this->debugLevel_);
+  tfp.performMatchings(
     (int)fieldNumber, persistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
-    wasserstein, tolerance, is3D,
-    alpha, // Blending
-    PX, PY, PZ, PS, PE // Coefficients
+    wasserstein, tolerance, PX, PY, PZ, PS, PE // Coefficients
   );
 
   vtkNew<vtkPoints> points{};
@@ -87,25 +84,23 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   // (+ vertex id)
   std::vector<trackingTuple> trackingsBase;
-  tfp.performTracking<dataType>(
-    persistenceDiagrams, outputMatchings, trackingsBase);
+  tfp.performTracking(persistenceDiagrams, outputMatchings, trackingsBase);
 
-  std::vector<std::set<int>> trackingTupleToMerged(
-    trackingsBase.size(), std::set<int>());
+  std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size());
 
   if(DoPostProc) {
-    tfp.performPostProcess<dataType>(persistenceDiagrams, trackingsBase,
-                                     trackingTupleToMerged, PostProcThresh);
+    tfp.performPostProcess(persistenceDiagrams, trackingsBase,
+                           trackingTupleToMerged, PostProcThresh);
   }
 
   bool useGeometricSpacing = UseGeometricSpacing;
 
   // Build mesh.
-  ttkTrackingFromPersistenceDiagrams::buildMesh<dataType>(
+  ttkTrackingFromPersistenceDiagrams::buildMesh(
     trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
     spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
     persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
-    timeScalars, componentIds, pointTypeScalars);
+    timeScalars, componentIds, pointTypeScalars, *this);
 
   output->ShallowCopy(persistenceDiagram);
 

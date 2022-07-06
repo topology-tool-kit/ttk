@@ -7,3 +7,4 @@ HEADERS
 DEPENDS
   trackingFromPersistenceDiagrams
   ttkAlgorithm
+  ttkBottleneckDistance

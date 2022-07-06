@@ -28,7 +28,7 @@ namespace ttk {
               typename triangulationType = ttk::AbstractTriangulation>
     int performDiagramComputation(
       int fieldNumber,
-      std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
+      std::vector<ttk::DiagramType> &persistenceDiagrams,
       const triangulationType *triangulation);
 
     /// Pass a pointer to an input array representing a scalarfield.
@@ -84,7 +84,7 @@ namespace ttk {
 template <typename dataType, typename triangulationType>
 int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
-  std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
+  std::vector<ttk::DiagramType> &persistenceDiagrams,
   const triangulationType *triangulation) {
 
 #ifdef TTK_ENABLE_OPENMP
@@ -120,10 +120,10 @@ int ttk::TrackingFromFields::performDiagramComputation(
       triangulation->getVertexPoint(b, q[0], q[1], q[2]);
       const double sa = ((double *)inputData_[i])[a];
       const double sb = ((double *)inputData_[i])[b];
-      persistenceDiagrams[i][j] = std::make_tuple(
-        currentTuple.birth.id, currentTuple.birth.type, currentTuple.death.id,
-        currentTuple.death.type, currentTuple.persistence, currentTuple.dim, sa,
-        p[0], p[1], p[2], sb, q[0], q[1], q[2]);
+      persistenceDiagrams[i][j] = PersistencePair{
+        CriticalVertex{currentTuple.birth.id, currentTuple.birth.type, sa, p},
+        CriticalVertex{currentTuple.death.id, currentTuple.death.type, sb, q},
+        currentTuple.persistence, currentTuple.dim, true};
     }
   }
 

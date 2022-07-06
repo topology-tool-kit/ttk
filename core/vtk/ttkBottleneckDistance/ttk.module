@@ -4,6 +4,8 @@ SOURCES
   ttkBottleneckDistance.cpp
 HEADERS
   ttkBottleneckDistance.h
+  ttkBottleneckDistanceUtils.h
 DEPENDS
   bottleneckDistance
   ttkAlgorithm
+  ttkPersistenceDiagram

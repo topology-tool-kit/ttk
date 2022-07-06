@@ -21,38 +21,14 @@
         Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018.
       </Documentation>
 
-      <InputProperty
-      name="Input1"
-      port_index="0"
-      label="Persistence diagram 1"
-      command="SetInputConnection"
-      >
+      <InputProperty name="Input"
+                     command="SetInputConnection" >
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
-        </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Input" function="FieldDataSelection" />
-        </InputArrayDomain>
-        <Documentation>
-          Data-set to process.
-        </Documentation>
-      </InputProperty>
-
-      <InputProperty
-      name="Input2"
-      port_index="1"
-      label="Persistence diagram 2"
-      command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkMultiBlockDataSet"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
@@ -212,8 +188,6 @@ the extremum</Documentation>
         </Documentation>
       </DoubleVectorProperty>
 
-
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Tolerance" />
       </PropertyGroup>
@@ -226,9 +200,8 @@ the extremum</Documentation>
 
         ${DEBUG_WIDGETS}
 
-      <OutputPort name="Persistence Diagram 1" index="0" id="port0"/>
-      <OutputPort name="Persistence Diagram 2" index="1" id="port1"/>
-      <OutputPort name="Persistence Mesh" index="2" id="port2"/>
+      <OutputPort name="Persistence Diagrams" index="0" id="port0"/>
+      <OutputPort name="Matchings" index="1" id="port1"/>
 
       <Hints>
         <ShowInMenu category="TTK - Ensemble Scalar Data" />

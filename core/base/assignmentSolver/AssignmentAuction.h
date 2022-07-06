@@ -29,7 +29,7 @@ namespace ttk {
 
     ~AssignmentAuction() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings) override;
+    int run(std::vector<MatchingType> &matchings) override;
     void runAuctionRound(std::vector<std::vector<dataType>> &cMatrix);
 
     void initFirstRound();
@@ -249,8 +249,7 @@ namespace ttk {
   }
 
   template <typename dataType>
-  int AssignmentAuction<dataType>::run(
-    std::vector<asgnMatchingTuple> &matchings) {
+  int AssignmentAuction<dataType>::run(std::vector<MatchingType> &matchings) {
     initEpsilon();
 
     // Try to avoid price war
