@@ -60,6 +60,9 @@ vtkSmartPointer<vtkDataObject>
   } else if(pathToFile.substr(pathToFile.size() - 4) == ".tif"
             || pathToFile.substr(pathToFile.size() - 5) == ".tiff") {
     return readFileLocal_(pathToFile, this->tiffReader);
+  } else if(pathToFile.substr(pathToFile.length() - 4, 4).compare(".png")
+            == 0) {
+    return readFileLocal_(pathToFile, this->pngReader);
   } else {
     // Check if dataset is XML encoded
     std::ifstream is(pathToFile.data());
