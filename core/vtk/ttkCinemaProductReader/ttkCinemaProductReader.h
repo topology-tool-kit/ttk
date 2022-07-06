@@ -29,6 +29,7 @@
 #include <ttkTopologicalCompressionReader.h>
 #include <vtkGenericDataObjectReader.h>
 #include <vtkNew.h>
+#include <vtkPNGReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkTIFFReader.h>
 #include <vtkXMLGenericDataObjectReader.h>
@@ -62,6 +63,9 @@ protected:
 private:
   std::string FilepathColumnName{"FILE"};
   bool AddFieldDataRecursively{true};
+
+  // PNG READER
+  vtkNew<vtkPNGReader> pngReader{};
 
   // TTK READER
   vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};
