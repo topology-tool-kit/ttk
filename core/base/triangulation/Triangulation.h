@@ -2690,7 +2690,7 @@ namespace ttk {
         this->abstractTriangulation_->setRankArray(rankArray);
     }
 
-    inline int *getRankArray() {
+    inline int *getRankArray() const {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getRankArray();
 
@@ -2702,7 +2702,7 @@ namespace ttk {
         this->abstractTriangulation_->setGlobalIdsArray(globalIds);
     }
 
-    inline long int *getGlobalIdsArray() {
+    inline long int *getGlobalIdsArray() const {
       if(this->abstractTriangulation_)
         return this->abstractTriangulation_->getGlobalIdsArray();
 
