@@ -2,13 +2,13 @@
 #include <FTMTreeUtils.h>
 #include <iostream>
 
+void ttk::ftm::printTreesStats(std::vector<FTMTree_MT *> &trees) {
+  for(auto tree : trees)
+    tree->printTreeStats();
+}
+
 namespace ttk {
   namespace ftm {
-
-    void printTreesStats(std::vector<ftm::FTMTree_MT *> &trees) {
-      for(auto tree : trees)
-        tree->printTreeStats();
-    }
 
     // --------------------
     // Is

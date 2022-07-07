@@ -20,7 +20,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+    env:
+      CCACHE_DIR: /home/runner/.ccache
     steps:
 
     - uses: actions/checkout@v2
@@ -65,6 +67,7 @@ jobs:
         mkdir build
         cd build
         cmake \
+          -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           -DCMAKE_INSTALL_PREFIX=/usr \
@@ -205,6 +208,14 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-ccache-ubuntu-20.04/ttk-ccache.tar.gz
         asset_name: ttk-ccache-ubuntu-20.04.tar.gz
+
+    - name: Upload Ubuntu Jammy .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-ccache-ubuntu-22.04/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-ubuntu-22.04.tar.gz
 
     - name: Upload .pkg as Release Asset
       uses: svenstaro/upload-release-action@v2

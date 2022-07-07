@@ -1,5 +1,4 @@
 /// \ingroup base
-/// \class FTMTreeUtils
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///

@@ -74,8 +74,6 @@ mkdir -p TTK/Data/
 cp ${PATCH_DIR}/data/* TTK/Data/
 cp TTK/Data/*pvsm Qt/ApplicationComponents/Resources/ExampleVisualizations/
 cp TTK/Data/*png Qt/ApplicationComponents/Resources/Thumbnails/
-$PATCH_BIN CMakeLists.txt \
-  < "${PATCH_DIR}/paraview-examples-5.10-CMakeLists.txt.patch"
 $PATCH_BIN Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc \
   < "${PATCH_DIR}/paraview-5.5.0-pqApplicationComponents.qrc.patch"
 $PATCH_BIN Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
@@ -87,9 +85,7 @@ $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
 
 ## CPack variables for packaging meta-data
 $PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.9.0-CPack-CMakeLists.txt.patch"
-$PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.9.0-build-options-CMakeLists.txt.patch"
+  < "${PATCH_DIR}/paraview-5.10.1-CPack-CMakeLists.txt.patch"
 mkdir -p .github/workflows/
 cp ${PATCH_DIR}/package.yml .github/workflows
 cp ${PATCH_DIR}/headless.yml .github/workflows

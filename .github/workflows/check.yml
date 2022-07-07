@@ -29,7 +29,7 @@ jobs:
   # Check source formatting #
   # ----------------------- #
   check-formatting:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CLANG_FORMAT: clang-format-11
     steps:
@@ -84,7 +84,7 @@ jobs:
   # Code lint job #
   # ------------- #
   lint-code:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CLANG_TIDY: clang-tidy-12
     strategy:
@@ -100,8 +100,6 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
-        # workaround: remove GCC 11
-        sudo apt purge gcc-11 libgcc-11-dev libgfortran-11-dev libstdc++-11-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
@@ -119,7 +117,7 @@ jobs:
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-headless-ubuntu-20.04.deb"
+        file: "ttk-paraview-headless-ubuntu-22.04.deb"
         target: "ttk-paraview-headless.deb"
         token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -168,7 +166,7 @@ jobs:
   # Check compiler warnings #
   # ----------------------- #
   check-warnings:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
@@ -182,8 +180,6 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
-        # workaround: remove GCC 11
-        sudo apt purge gcc-11 libgcc-11-dev libgfortran-11-dev libstdc++-11-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
@@ -200,7 +196,7 @@ jobs:
       with:
         repo: "${{ env.PV_REPO }}"
         version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-headless-ubuntu-20.04.deb"
+        file: "ttk-paraview-headless-ubuntu-22.04.deb"
         target: "ttk-paraview-headless.deb"
         token: ${{ secrets.GITHUB_TOKEN }}
 
