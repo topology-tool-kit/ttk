@@ -52,7 +52,7 @@ jobs:
           ninja-build \
           zlib1g-dev \
           dpkg-dev
-        sudo python3 -m pip install scikit-learn
+        sudo python3 -m pip install scikit-learn packaging
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -203,7 +203,7 @@ jobs:
         brew install wget libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
-        python3 -m pip install scikit-learn
+        python3 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
@@ -316,7 +316,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn openmp "graphviz>=2.50"
+          scikit-learn packaging openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
       shell: bash

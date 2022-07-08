@@ -173,7 +173,7 @@ jobs:
         brew install wget libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree
-        python3 -m pip install scikit-learn
+        python3 -m pip install scikit-learn packaging
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -239,7 +239,7 @@ jobs:
         brew install wget libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree
-        python3 -m pip install scikit-learn
+        python3 -m pip install scikit-learn packaging
 
     - name: Fetch TTK-ParaView
       run: |
@@ -320,7 +320,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp "graphviz>=2.50"
+          scikit-learn packaging openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
       shell: bash
@@ -410,7 +410,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp "graphviz>=2.50"
+          scikit-learn packaging openmp "graphviz>=2.50"
 
     - name: Remove hosted Python
       shell: bash
