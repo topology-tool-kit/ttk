@@ -44,6 +44,9 @@ namespace ttk {
       AbstractTriangulation *const triangulation) {
       if(triangulation != nullptr) {
         triangulation->preconditionVertexNeighbors();
+        if(triangulation->getDimensionality() == 2) {
+          triangulation->preconditionVertexStars();
+        }
       }
     }
     inline void preconditionTriangulationSurface(
@@ -117,25 +120,31 @@ namespace ttk {
       size_t trianglesChecked;
       /** Projection status */
       bool projSuccess;
+      /** If reverse projection was used */
+      bool reverseProjection;
     };
 
     /**
      * @brief Stores the findProjection() input
      */
     struct ProjectionInput {
+      /** Vertex id in the surface to project */
+      size_t id;
       /** Input point coordinates */
       Point &pt;
-      /** Nearest vertex in the surface */
+      /** Nearest vertex in the reference surface */
       SimplexId nearestVertex;
     };
 
-    template <typename triangulationType>
+    template <typename triangulationType0, typename triangulationType1>
     ProjectionResult
       findProjection(const ProjectionInput &pi,
                      VisitedMask &trianglesTested,
                      std::vector<float> &dists,
                      std::stack<SimplexId> &trianglesToTest,
-                     const triangulationType &triangulation) const;
+                     const bool reverseProjection,
+                     const triangulationType0 &triangulationToSmooth,
+                     const triangulationType1 &triangulationSurface) const;
 
     /**
      * @brief Computes the barycenter of a given point's neighbors
@@ -369,16 +378,25 @@ ttk::SurfaceGeometrySmoother::Point
   return res;
 }
 
-template <typename triangulationType>
+template <typename triangulationType0, typename triangulationType1>
 ttk::SurfaceGeometrySmoother::ProjectionResult
   ttk::SurfaceGeometrySmoother::findProjection(
     const ProjectionInput &pi,
     VisitedMask &trianglesTested,
     std::vector<float> &dists,
     std::stack<SimplexId> &trianglesToTest,
-    const triangulationType &triangulation) const {
+    const bool reverseProjection,
+    const triangulationType0 &triangulationToSmooth,
+    const triangulationType1 &triangulation) const {
 
-  ProjectionResult res{pi.pt, pi.nearestVertex, 0, false};
+  ProjectionResult res{pi.pt, pi.nearestVertex, 0, false, false};
+
+  Point surfaceNormal{};
+  if(reverseProjection) {
+    surfaceNormal
+      = this->computeSurfaceNormalAtPoint(pi.id, triangulationToSmooth);
+    res.reverseProjection = !std::isnan(surfaceNormal[0]);
+  }
 
   // clean trianglesToTest
   while(!trianglesToTest.empty()) {
@@ -415,7 +433,38 @@ ttk::SurfaceGeometrySmoother::ProjectionResult
 
     const auto normTri{this->computeTriangleNormal(mno[0], mno[1], mno[2])};
 
-    res.pt = this->projectOnTrianglePlane(pi.pt, mno[0], normTri);
+    static const float PREC_FLT{powf(10, -FLT_DIG)};
+
+    if(res.reverseProjection) {
+
+      const auto denom
+        = Geometry::dotProduct(surfaceNormal.data(), normTri.data());
+
+      // check if triangle plane is parallel to surface to project normal
+      if(std::abs(denom) < PREC_FLT) {
+        // fill pipeline with neighboring triangles
+        for(auto &vert : tverts) {
+          auto ntr = triangulation.getVertexTriangleNumber(vert);
+          for(SimplexId j = 0; j < ntr; ++j) {
+            SimplexId tid;
+            triangulation.getVertexTriangle(vert, j, tid);
+            if(tid != curr) {
+              trianglesToTest.push(tid);
+            }
+          }
+        }
+        continue;
+      }
+
+      // compute intersection between _surface to project normal at
+      // current vertex line_ and _reference surface triangle plane_
+      auto tmp = mno[0] - pi.pt;
+      auto alpha = Geometry::dotProduct(tmp.data(), normTri.data()) / denom;
+      res.pt = pi.pt + surfaceNormal * alpha;
+
+    } else {
+      res.pt = this->projectOnTrianglePlane(pi.pt, mno[0], normTri);
+    }
 
     // compute barycentric coords of projection
     Point baryCoords{};
@@ -424,7 +473,6 @@ ttk::SurfaceGeometrySmoother::ProjectionResult
 
     // check if projection in triangle
     bool inTriangle = true;
-    static const float PREC_FLT{powf(10, -FLT_DIG)};
 
     for(auto &coord : baryCoords) {
       if(coord < -PREC_FLT) {
@@ -518,6 +566,23 @@ ttk::SurfaceGeometrySmoother::ProjectionResult
     res.projSuccess = false;
   }
 
+  Point nearestCoords{};
+  triangulation.getVertexPoint(
+    pi.nearestVertex, nearestCoords[0], nearestCoords[1], nearestCoords[2]);
+  if(Geometry::distance(res.pt.data(), pi.pt.data())
+     > 5.0 * Geometry::distance(res.pt.data(), nearestCoords.data())) {
+    res.projSuccess = false;
+    if(triangulationToSmooth.getDimensionality() == 2 && !reverseProjection) {
+      // clean trianglesTested
+      for(const auto t : trianglesTested.visitedIds_) {
+        trianglesTested.isVisited_[t] = false;
+      }
+      trianglesTested.visitedIds_.clear();
+      return this->findProjection(pi, trianglesTested, dists, trianglesToTest,
+                                  true, triangulationToSmooth, triangulation);
+    }
+  }
+
   if(!res.projSuccess) {
     // replace proj by the nearest vertex?
     res.nearestVertex
@@ -561,9 +626,9 @@ int ttk::SurfaceGeometrySmoother::relaxProject(
     VisitedMask vm{trianglesTested, visitedTriangles};
 
     // replace curr in outputPoints_ by its projection
-    const auto res
-      = this->findProjection(ProjectionInput{tmpStorage[i], nearestVertexId[i]},
-                             vm, dists, trianglesToTest, triangulationSurface);
+    const auto res = this->findProjection(
+      ProjectionInput{i, tmpStorage[i], nearestVertexId[i]}, vm, dists,
+      trianglesToTest, false, triangulationToSmooth, triangulationSurface);
 
     tmpStorage[i] = res.pt;
     nearestVertexId[i] = res.nearestVertex;
