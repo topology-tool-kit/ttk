@@ -365,6 +365,7 @@ jobs:
   - script: |
       brew install --cask xquartz
       brew install wget libomp mesa glew boost ccache ninja python
+      python3 -m pip install scikit-learn packaging
     displayName: 'Install dependencies'
 
   - script: |
