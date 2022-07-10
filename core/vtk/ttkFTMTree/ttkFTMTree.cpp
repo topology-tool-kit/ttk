@@ -11,6 +11,7 @@
 #include <vtkPolyData.h>
 #include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVersion.h> // for VTK_VERSION_CHECK via ParaView 5.8.1
 
 vtkStandardNewMacro(ttkFTMTree);
 
@@ -102,7 +103,13 @@ int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
         threshold->SetInputConnection(connectivity->GetOutputPort());
         threshold->SetInputArrayToProcess(
           0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
+#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
         threshold->ThresholdBetween(cc, cc);
+#else
+        threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
+        threshold->SetLowerThreshold(cc);
+        threshold->SetUpperThreshold(cc);
+#endif
         threshold->Update();
         connected_components_[cc] = vtkSmartPointer<vtkUnstructuredGrid>::New();
         connected_components_[cc]->ShallowCopy(threshold->GetOutput());

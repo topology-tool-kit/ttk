@@ -44,7 +44,7 @@ jobs:
           ninja-build \
           zlib1g-dev \
           dpkg-dev
-        sudo python3 -m pip install scikit-learn
+        sudo python3 -m pip install scikit-learn packaging
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -120,7 +120,7 @@ jobs:
         brew install wget libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
-        python3 -m pip install scikit-learn
+        python3 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
