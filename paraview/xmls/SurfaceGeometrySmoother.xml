@@ -10,7 +10,16 @@
         GeometrySmoother with a twist!
 
         This class smoothes and projects a 1D or a 2D mesh onto a 2D
-        closed triangulated surface.
+        closed triangulated surface
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_casting/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_skull/
+
       </Documentation>
 
       <InputProperty

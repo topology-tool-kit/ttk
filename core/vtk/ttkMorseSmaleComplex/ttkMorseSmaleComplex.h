@@ -79,6 +79,12 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 0 example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_at/">Persistent
+///   Generators AT example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
+///   Generators DarkSky example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
 ///

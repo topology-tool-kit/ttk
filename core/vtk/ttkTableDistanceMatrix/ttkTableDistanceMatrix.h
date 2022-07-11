@@ -6,6 +6,14 @@
 /// \brief Computes a distance matrix using LDistance from a vtkTable
 ///
 /// \sa LDistanceMatrix
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_houseHoldAnalysis/">Persistent
+///   Generators Household Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
 
 #pragma once
 

@@ -16,6 +16,30 @@
 /// Technical Report, arXiv:2206.13932, 2022
 ///
 /// \sa ttk::DiscreteMorseSandwich
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_at/">Persistent
+///   Generators AT example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
+///   Generators DarkSky example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_casting/">Persistent
+///   Generators Casting example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/">Persistent
+///   Generators Fertility example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_houseHoldAnalysis/">Persistent
+///   Generators Household Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_skull/">Persistent
+///   Generators Skull example</a> \n
+///
 
 #pragma once
 
