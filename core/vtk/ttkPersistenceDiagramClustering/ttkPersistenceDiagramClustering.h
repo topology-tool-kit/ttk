@@ -1,5 +1,5 @@
-/// \ingroup base
-/// \class ttk::ttkPersistenceDiagramBarycenter
+/// \ingroup vtk
+/// \class ttkPersistenceDiagramClustering
 /// \author Jules Vidal <jules.vidal@lip6.fr>
 /// \author Joseph Budin <joseph.budin@polytechnique.edu>
 /// \date September 2019
