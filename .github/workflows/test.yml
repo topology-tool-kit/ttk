@@ -53,7 +53,7 @@ jobs:
           ninja-build \
           zlib1g-dev \
           dpkg-dev
-        sudo python3 -m pip install scikit-learn packaging
+        sudo python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -213,7 +213,7 @@ jobs:
         brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree websocketpp ccache
-        python3.10 -m pip install scikit-learn packaging
+        python3.10 -m pip install scikit-learn
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
         # remove Python 3.11 installation
@@ -340,7 +340,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz ninja websocketpp sccache
+          scikit-learn openmp graphviz ninja websocketpp sccache
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH
