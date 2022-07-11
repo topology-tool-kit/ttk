@@ -154,12 +154,16 @@ jobs:
             # Ubuntu 22.04 performs more iterations in
             # PersistenceDiagramClustering than older Ubuntu VMs
             rm -f output_screenshots/persistenceDiagramClustering*.png
+            # EigenField output not deterministic...
+            rm -f output_screenshots/persistentGenerators_skull_1.png
           fi
           # HarmonicField output not deterministic...
           rm -f output_screenshots/harmonicSkeleton_0.png
           rm -f output_screenshots/harmonicSkeleton_1.png
           # ViscousFingering plot rendering issues
           rm -rf output_screenshots/viscousFingering_0.png
+          # EigenField output not deterministic...
+          rm -rf output_screenshots/persistentGenerators_fertility_1.png
 
           if [ "$(ls -A output_screenshots)" ]; then
             tar zcf screenshots.tar.gz output_screenshots
