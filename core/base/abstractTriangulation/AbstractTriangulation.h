@@ -3565,12 +3565,44 @@ namespace ttk {
     // "squares"/"cubes" and not "triangles"/"tetrahedron")
     const int *cellRankArray_{};
 
-    // global cell id -> owner rank (filled/used only by rank 0)
-    std::vector<int> cellGidToRank_{};
     // inverse of cellGid_
     std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
     // inverse of vertGid_
     std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
+
+    // range of (local) cells owned by the current rank that have
+    // contiguous global ids (to label edges & triangles)
+    struct CellRange {
+      // rank-local range id
+      size_t id;
+      // range beginning (global cell id)
+      size_t begin;
+      // range end (inclusive, global cell id)
+      size_t end;
+      // owner rank
+      size_t rank;
+
+      static inline MPI_Datatype getMPIType() {
+        MPI_Datatype res{};
+        const auto cellRangeSize = sizeof(CellRange) / sizeof(size_t);
+        MPI_Type_contiguous(cellRangeSize, ttk::getMPIType(size_t{}), &res);
+        return res;
+      }
+    };
+    // cell ranges per rank
+    std::vector<CellRange> localCellRanges_{};
+    // cell ranges from all ranks (gathered on rank 0)
+    std::vector<CellRange> gatheredCellRanges_{};
+    // number of CellRanges per rank
+    std::vector<int> nRangesPerRank_{};
+
+    // list of neighboring ranks (sharing ghost cells to current rank)
+    std::vector<int> neighborRanks_{};
+    // global ids of (local) ghost cells per each MPI (neighboring) rank
+    std::vector<std::vector<SimplexId>> ghostCellPerOwner_{};
+    // global ids of local (owned) cells that are ghost cells of other
+    // (neighboring) ranks (per MPI rank)
+    std::vector<std::vector<SimplexId>> remoteGhostCells_{};
 
     std::vector<SimplexId> edgeLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
