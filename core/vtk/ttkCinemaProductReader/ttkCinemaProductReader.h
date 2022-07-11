@@ -17,8 +17,12 @@
 /// \b Online \b examples: \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
 ///   IO example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence Diagram Clustering example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence Diagram Distance example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
+///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
+///   Diagram Distance example</a> \n
 ///
 
 #pragma once
