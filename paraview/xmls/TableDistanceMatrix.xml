@@ -9,6 +9,12 @@
        shorthelp="Table Distance Matrix."
        >
        TTK Table Distance Matrix.
+
+       Online examples:
+
+       - https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/
+
+       - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
     </Documentation>
 
      <InputProperty

@@ -29,6 +29,13 @@
        Proceedings of IEEE VIS 2019.
 
        See also PersistenceDiagram, BottleneckDistance
+
+       Online examples:
+        
+       - https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/
+
+       - https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/
+
     </Documentation>
 
      <InputProperty

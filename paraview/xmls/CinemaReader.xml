@@ -8,6 +8,13 @@
                 Online examples:
                 
                 - https://topology-tool-kit.github.io/examples/cinemaIO/
+
+                - https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/
+
+                - https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/
+
+                - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
+
             </Documentation>
 
             <StringVectorProperty name="DatabasePath" label="Database Path" animateable="0" command="SetDatabasePath" number_of_elements="1">
