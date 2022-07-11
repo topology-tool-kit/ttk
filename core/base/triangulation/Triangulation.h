@@ -2681,46 +2681,40 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
-    inline void setGlobalIds(const LongSimplexId *const cellGid,
-                             const unsigned char *const ghostCellMask) {
-      this->abstractTriangulation_->setGlobalIds(cellGid, ghostCellMask);
-    }
 
-    inline void setVertRankArray(int *rankArray) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setVertRankArray(rankArray);
-    }
+    // support TriangulationManager by setting "RankArray" & "Global
+    // Ids" arrays in all triangulation instances
 
-    inline const int *getVertRankArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getVertRankArray();
+#define TTK_GET_SET_ARRAYS(FNAME, TYPE)                         \
+  inline void set##FNAME(const TYPE *const data) {              \
+    if(data == nullptr) {                                       \
+      return;                                                   \
+    }                                                           \
+    this->explicitTriangulation_.set##FNAME(data);              \
+    this->compactTriangulation_.set##FNAME(data);               \
+    this->implicitTriangulation_.set##FNAME(data);              \
+    this->implicitPreconditionsTriangulation_.set##FNAME(data); \
+    this->periodicImplicitTriangulation_.set##FNAME(data);      \
+    this->periodicPreconditionsTriangulation_.set##FNAME(data); \
+  }                                                             \
+  inline const TYPE *get##FNAME() const {                       \
+    if(this->abstractTriangulation_ != nullptr) {               \
+      return this->abstractTriangulation_->get##FNAME();        \
+    }                                                           \
+    return {};                                                  \
+  }
 
-      return nullptr;
-    }
+    // GlobalPointIds, GlobalCellIds
 
-    inline void setCellRankArray(int *rankArray) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setCellRankArray(rankArray);
-    }
+    TTK_GET_SET_ARRAYS(VertsGlobalIds, LongSimplexId);
+    TTK_GET_SET_ARRAYS(CellsGlobalIds, LongSimplexId);
 
-    inline const int *getCellRankArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getCellRankArray();
+    // RankArray on points & cells
 
-      return nullptr;
-    }
+    TTK_GET_SET_ARRAYS(VertRankArray, int);
+    TTK_GET_SET_ARRAYS(CellRankArray, int);
 
-    inline void setGlobalIdsArray(long int *globalIds) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setGlobalIdsArray(globalIds);
-    }
-
-    inline const long int *getGlobalIdsArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getGlobalIdsArray();
-
-      return nullptr;
-    }
+#undef TTK_GET_SET_ARRAYS
 
 #endif // TTK_ENABLE_MPI
 

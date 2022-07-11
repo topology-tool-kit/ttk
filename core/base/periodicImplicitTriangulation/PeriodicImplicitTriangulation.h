@@ -255,7 +255,7 @@ namespace ttk {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexLidToGid_[ltid];
+      return this->vertGid_[ltid];
     }
     inline const std::unordered_map<SimplexId, SimplexId> *
       TTK_TRIANGULATION_INTERNAL(getVertexGlobalIdMap)() const override {

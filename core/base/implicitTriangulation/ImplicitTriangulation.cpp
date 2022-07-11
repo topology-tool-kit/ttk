@@ -3057,8 +3057,8 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     this->printWrn("Missing global identifiers on cells");
     return -2;
   }
-  if(this->ghostCellMask_ == nullptr) {
-    this->printWrn("Missing ghost mask on cells");
+  if(this->cellRankArray_ == nullptr) {
+    this->printWrn("Missing RankArray on cells");
     return -3;
   }
 
@@ -3088,7 +3088,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     const auto locCubeId{lcid / nTetraPerCube};
-    if(this->ghostCellMask_[locCubeId] == 0) {
+    if(this->cellRankArray_[locCubeId] == ttk::MPIrank_) {
       globalCellsInRank.emplace_back(this->cellLidToGid_[lcid]);
     }
   }
@@ -3345,18 +3345,16 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   if(!isRunningWithMPI()) {
     return -1;
   }
-  if(this->globalIdsArray_ == nullptr) {
+  if(this->vertGid_ == nullptr) {
     this->printWrn("Missing global identifiers array!");
     return -2;
   }
 
   // allocate memory
-  this->vertexLidToGid_.resize(this->vertexNumber_, -1);
   this->vertexGidToLid_.reserve(this->vertexNumber_);
 
   for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexLidToGid_[i] = this->globalIdsArray_[i];
-    this->vertexGidToLid_[this->globalIdsArray_[i]] = i;
+    this->vertexGidToLid_[this->vertGid_[i]] = i;
   }
 
   if(MPIrank_ == 0) {

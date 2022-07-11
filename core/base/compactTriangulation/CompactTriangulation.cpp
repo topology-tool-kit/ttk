@@ -2520,18 +2520,16 @@ int CompactTriangulation::preconditionDistributedVertices() {
   if(!isRunningWithMPI()) {
     return -1;
   }
-  if(this->globalIdsArray_ == nullptr) {
+  if(this->vertGid_ == nullptr) {
     this->printWrn("Missing global identifiers array!");
     return -2;
   }
 
   // allocate memory
-  this->vertexLidToGid_.resize(this->vertexNumber_, -1);
   this->vertexGidToLid_.reserve(this->vertexNumber_);
 
   for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexLidToGid_[i] = this->globalIdsArray_[i];
-    this->vertexGidToLid_[this->globalIdsArray_[i]] = i;
+    this->vertexGidToLid_[this->vertGid_[i]] = i;
   }
 
   if(MPIrank_ == 0) {

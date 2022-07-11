@@ -498,26 +498,30 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
 void ttkAlgorithm::MPITriangulationPreconditioning(
   ttk::Triangulation *triangulation, vtkDataSet *input) {
-  triangulation->setGlobalIdsArray(
-    ttkUtils::GetPointer<long int>(input->GetPointData()->GetGlobalIds()));
-  triangulation->setGlobalIdsArray(
-    ttkUtils::GetPointer<long int>(input->GetPointData()->GetGlobalIds()));
-  triangulation->preconditionDistributedVertices();
-  triangulation->setVertRankArray(
-    ttkUtils::GetPointer<int>(input->GetPointData()->GetArray("RankArray")));
-  triangulation->setCellRankArray(
-    ttkUtils::GetPointer<int>(input->GetCellData()->GetArray("RankArray")));
-  // provide "GlobalCellIds" & "vtkGhostType" cell data array to
-  // the triangulation
+
+  const auto pd{input->GetPointData()};
+  if(pd == nullptr) {
+    triangulation->printWrn("No point data on input object");
+  } else {
+    // provide "GlobalPointIds" & "RankArray" point data arrays to the
+    // triangulation
+    triangulation->setVertsGlobalIds(
+      ttkUtils::GetPointer<ttk::LongSimplexId>(pd->GetGlobalIds()));
+    triangulation->setVertRankArray(
+      ttkUtils::GetPointer<int>(pd->GetArray("RankArray")));
+    triangulation->preconditionDistributedVertices();
+  }
+
   const auto cd{input->GetCellData()};
   if(cd == nullptr) {
     triangulation->printWrn("No cell data on input object");
-  }
-  if(cd != nullptr) {
-    triangulation->setGlobalIds(
-      ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()),
-      ttkUtils::GetPointer<unsigned char>(
-        cd->GetArray(vtkCellData::GhostArrayName())));
+  } else {
+    // provide "GlobalCellIds" & "RankArray" cell data arrays to the
+    // triangulation
+    triangulation->setCellsGlobalIds(
+      ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()));
+    triangulation->setCellRankArray(
+      ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
   }
 }
 #endif

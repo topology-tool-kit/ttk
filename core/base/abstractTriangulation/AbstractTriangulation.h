@@ -2522,11 +2522,40 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
-    inline void setGlobalIds(const LongSimplexId *const cellGid,
-                             const unsigned char *const ghostCellMask) {
+
+    // GlobalPointIds, GlobalCellIds
+
+    inline void setCellsGlobalIds(const LongSimplexId *const cellGid) {
       this->cellGid_ = cellGid;
-      this->ghostCellMask_ = ghostCellMask;
     }
+    inline const LongSimplexId *getCellsGlobalIds() const {
+      return this->cellGid_;
+    }
+
+    inline void setVertsGlobalIds(const LongSimplexId *array) {
+      this->vertGid_ = array;
+    }
+    inline const LongSimplexId *getVertsGlobalIds() const {
+      return this->vertGid_;
+    }
+
+    // RankArray on points & cells
+
+    inline void setVertRankArray(const int *const rankArray) {
+      this->vertRankArray_ = rankArray;
+    }
+    inline const int *getVertRankArray() const {
+      return this->vertRankArray_;
+    }
+
+    inline void setCellRankArray(const int *const rankArray) {
+      this->cellRankArray_ = rankArray;
+    }
+    inline const int *getCellRankArray() const {
+      return this->cellRankArray_;
+    }
+
+    // precondition methods for distributed meshes
 
     virtual int preconditionDistributedCells() {
       return 0;
@@ -2540,6 +2569,8 @@ namespace ttk {
     virtual int preconditionDistributedVertices() {
       return 0;
     }
+
+    // global <-> local id mappings
 
     virtual inline SimplexId getEdgeGlobalId(const SimplexId &leid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -3419,55 +3450,36 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
 
 #ifdef TTK_ENABLE_MPI
+
     // "GlobalCellIds" from "Generate Global Ids"
+    // (warning: for Implicit/Periodic triangulations, concerns
+    // "squares"/"cubes" and not "triangles"/"tetrahedron")
     const LongSimplexId *cellGid_{};
-    // "vtkGhostType" from "Ghost Cells Generator"
-    const unsigned char *ghostCellMask_{};
+    // "GlobalPointIds" from "Generate Global Ids"
+    const LongSimplexId *vertGid_{};
+    // PointData "RankArray" from "TTKGhostCellPreconditioning"
+    const int *vertRankArray_{};
+    // CellData "RankArray" from "TTKGhostCellPreconditioning"
+    // (warning: for Implicit/Periodic triangulations, concerns
+    // "squares"/"cubes" and not "triangles"/"tetrahedron")
+    const int *cellRankArray_{};
 
     // global cell id -> owner rank (filled/used only by rank 0)
     std::vector<int> cellGidToRank_{};
+    // inverse of cellGid_
     std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
+    // inverse of vertGid_
+    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
 
     std::vector<SimplexId> edgeLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
     std::vector<SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
-    std::vector<SimplexId> vertexLidToGid_{};
-    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};
     bool hasPreconditionedDistributedTriangles_{false};
     bool hasPreconditionedDistributedVertices_{false};
-
-    long int *globalIdsArray_{nullptr};
-    int *vertRankArray_{nullptr};
-    int *cellRankArray_{nullptr};
-
-  public:
-    void setGlobalIdsArray(long int *array) {
-      this->globalIdsArray_ = array;
-    }
-
-    const long int *getGlobalIdsArray() const {
-      return this->globalIdsArray_;
-    }
-
-    void setVertRankArray(int *rankArray) {
-      this->vertRankArray_ = rankArray;
-    }
-
-    const int *getVertRankArray() const {
-      return this->vertRankArray_;
-    }
-
-    void setCellRankArray(int *rankArray) {
-      this->cellRankArray_ = rankArray;
-    }
-
-    int *getCellRankArray() const {
-      return this->cellRankArray_;
-    }
 
 #endif // TTK_ENABLE_MPI
 
