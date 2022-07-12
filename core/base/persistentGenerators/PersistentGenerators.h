@@ -466,10 +466,10 @@ int ttk::PersistentGenerators::computePersistentGenerators(
     // (eliminateBoundariesSandwich boundaries right before
     // simplification)
     std::vector<PersistencePair> sadSadPairs{};
-    this->getSaddleSaddlePairs(sadSadPairs, paired1Saddles, paired2Saddles,
-                               true, generators, criticalCellsByDim[1],
-                               criticalCellsByDim[2], critCellsOrder[1],
-                               triangulation);
+    this->getSaddleSaddlePairs(
+      sadSadPairs, paired1Saddles, dim == 3 ? paired2Saddles : pairedMaxima,
+      true, generators, criticalCellsByDim[1], criticalCellsByDim[2],
+      critCellsOrder[1], triangulation);
   }
 
   // detect topological handles
