@@ -12,6 +12,12 @@
 /// \param Input vtkDataObject that will be added as a block.
 /// \param Output vtkMultiBlockDataSet containing all added blocks.
 /// \sa ttkAlgorithm
+////
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   example</a> \n
 
 #pragma once
 

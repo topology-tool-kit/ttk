@@ -15,6 +15,13 @@
 ///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
 ///   IO example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
 ///   Diagram Clustering example</a> \n
 ///   - <a

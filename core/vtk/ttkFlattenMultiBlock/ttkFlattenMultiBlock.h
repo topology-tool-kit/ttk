@@ -5,6 +5,12 @@
 ///
 /// \brief TTK processing package for flattening the top-level
 /// hierarchy of a tree vtkMultiBlockDataSet structure.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   example</a> \n
 
 #pragma once
 
