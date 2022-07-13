@@ -17,6 +17,11 @@
 /// Leitte. Computer Graphics Forum (Special Issue, Proceedings Eurographics /
 /// IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
 ///
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 

@@ -32,7 +32,12 @@
 /// holds all timesteps of level \b j. \param Output A \b vtkUnstructuredGrid
 /// that represents the (nested) tracking graph embedded in the spatial domain.
 ///
-/// sa ttk::TrackingFromOverlap
+/// \sa ttk::TrackingFromOverlap
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
