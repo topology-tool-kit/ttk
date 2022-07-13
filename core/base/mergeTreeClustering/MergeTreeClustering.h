@@ -13,6 +13,11 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
 
 #define treesMatchingVector \
   std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
