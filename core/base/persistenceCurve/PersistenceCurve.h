@@ -14,6 +14,19 @@
 /// simplification thresholds.
 ///
 /// \sa ttkPersistenceCurve.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
+/// </a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+/// example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
 
 #pragma once
 
