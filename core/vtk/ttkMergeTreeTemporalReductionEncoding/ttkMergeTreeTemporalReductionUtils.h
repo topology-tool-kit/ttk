@@ -1,4 +1,4 @@
-/// \ingroup base
+/// \ingroup vtk
 /// \class vtk::ttkMergeTreeTemporalReductionUtils
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
