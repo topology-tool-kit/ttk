@@ -6,12 +6,10 @@
 /// \brief TTK VTK-filter that computes an alignment for a multiblock of
 /// contourtrees
 ///
-/// VTK wrapping code for the ttk::ContourTreeAlignment package.
-///
 /// This filter takes a multiblock of unstructured grids, where each block
 /// represents a contour tree, and computed the alignment of these contour
-/// trees. For each tree, a point array for the scalar vlues, a cell array for
-/// the region sizes of arcs and a cell array "for the segmentation ids of arcs
+/// trees. For each tree, a point array for the scalar values, a cell array for
+/// the region sizes of arcs and a cell array for the segmentation ids of arcs
 /// are required. Contour trees computed by the FTMTree module fulfill these
 /// requirements and are the recommended way to use this filter.
 ///
