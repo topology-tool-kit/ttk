@@ -5,6 +5,11 @@
 ///
 /// \brief TTK processing package for merging vtkTables from a
 /// vtkMultiBlockDataSet.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
 
 #pragma once
 
