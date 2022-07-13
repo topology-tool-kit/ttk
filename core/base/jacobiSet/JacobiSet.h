@@ -20,6 +20,10 @@
 /// Foundations of Computational Mathematics. Cambridge University Press, 2002.
 ///
 /// \sa ttkJacobiSet.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
 
 #pragma once
 
