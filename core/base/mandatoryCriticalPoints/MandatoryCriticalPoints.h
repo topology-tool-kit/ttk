@@ -22,6 +22,11 @@
 /// Computer Graphics Forum, 2014.
 ///
 /// \sa ttkMandatoryCriticalPoints.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
 
 #pragma once
 
