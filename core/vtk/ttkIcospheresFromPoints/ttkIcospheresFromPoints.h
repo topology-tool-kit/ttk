@@ -15,11 +15,13 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
 ///   Harmonic Skeleton example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
-/// Morse molecule example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
-///   Interaction sites</a> \n
+///   Interaction sites example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
+/// Morse molecule example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">
+/// Tectonic puzzle example</a> \n
 ///
 
 #pragma once
