@@ -1,4 +1,4 @@
-/// \ingroup base
+/// \ingroup vtk
 /// \class ttkPersistenceDiagramDistanceMatrix
 /// \author Jules Vidal <jules.vidal@lip6.fr>
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
