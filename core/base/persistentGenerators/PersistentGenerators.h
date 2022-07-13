@@ -22,11 +22,11 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_at/">Persistent
 ///   Generators AT example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
-///   Generators DarkSky example</a> \n
-///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_casting/">Persistent
 ///   Generators Casting example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
+///   Generators DarkSky example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/">Persistent
 ///   Generators Fertility example</a> \n
