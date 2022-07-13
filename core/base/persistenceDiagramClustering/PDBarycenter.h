@@ -30,7 +30,6 @@ namespace ttk {
       method_ = "Partial Bidding";
       threadNumber_ = 1;
       use_progressive_ = true;
-      time_limit_ = std::numeric_limits<double>::max();
       epsilon_min_ = 1e-5;
       reinit_prices_ = true;
       deterministic_ = false;
@@ -147,10 +146,6 @@ namespace ttk {
       use_progressive_ = use_progressive;
     }
 
-    inline void setTimeLimit(const double time_limit) {
-      time_limit_ = time_limit;
-    }
-
     inline void setGeometricalFactor(const double geometrical_factor) {
       geometrical_factor_ = geometrical_factor;
     }
@@ -237,7 +232,6 @@ namespace ttk {
     dataType cost_;
     int numberOfInputs_;
     bool use_progressive_;
-    double time_limit_;
     double epsilon_min_;
     std::vector<std::vector<diagramTuple>> *inputDiagrams_;
 

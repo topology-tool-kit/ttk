@@ -124,7 +124,6 @@ int ttkPersistenceDiagramClustering::RequestData(
       pdBarycenter.setWasserstein(wassersteinMetric);
       pdBarycenter.setMethod(2);
       pdBarycenter.setNumberOfInputs(numInputs);
-      pdBarycenter.setTimeLimit(TimeLimit);
       pdBarycenter.setDeterministic(Deterministic);
       pdBarycenter.setUseProgressive(UseProgressive);
       pdBarycenter.setDebugLevel(debugLevel_);

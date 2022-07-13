@@ -47,7 +47,6 @@ namespace ttk {
       lambda_ = 1;
       numberOfInputs_ = 0;
       threadNumber_ = 1;
-      time_limit_ = 1;
       deterministic_ = true;
       reinit_prices_ = true;
       epsilon_decreases_ = true;
@@ -105,10 +104,6 @@ namespace ttk {
       lambda_ = lambda;
     }
 
-    inline void setTimeLimit(const double time_limit) {
-      time_limit_ = time_limit;
-    }
-
     template <typename type>
     static type abs(const type var) {
       return (var >= 0) ? var : -var;
@@ -141,7 +136,6 @@ namespace ttk {
     bool use_progressive_;
     double alpha_;
     double lambda_;
-    double time_limit_;
 
     int points_added_;
     int points_deleted_;
@@ -226,12 +220,6 @@ namespace ttk {
         matching_max;
 
       dataType total_cost = 0;
-      if(do_min && do_max) {
-        time_limit_ = time_limit_ / 2;
-      }
-      if(do_sad) {
-        time_limit_ = time_limit_ / 3;
-      }
       /*omp_set_num_threads(1);
       #ifdef TTK_ENABLE_OPENMP
       #pragma omp parallel sections
@@ -249,7 +237,6 @@ namespace ttk {
         bary_min.setNumberOfInputs(numberOfInputs_);
         bary_min.setDiagramType(0);
         bary_min.setUseProgressive(use_progressive_);
-        bary_min.setTimeLimit(time_limit_);
         bary_min.setGeometricalFactor(alpha_);
         bary_min.setDebugLevel(debugLevel_);
         bary_min.setDeterministic(deterministic_);
@@ -276,7 +263,6 @@ namespace ttk {
         bary_sad.setNumberOfInputs(numberOfInputs_);
         bary_sad.setDiagramType(1);
         bary_sad.setUseProgressive(use_progressive_);
-        bary_sad.setTimeLimit(time_limit_);
         bary_sad.setGeometricalFactor(alpha_);
         bary_sad.setLambda(lambda_);
         bary_sad.setDebugLevel(debugLevel_);
@@ -303,7 +289,6 @@ namespace ttk {
         bary_max.setNumberOfInputs(numberOfInputs_);
         bary_max.setDiagramType(2);
         bary_max.setUseProgressive(use_progressive_);
-        bary_max.setTimeLimit(time_limit_);
         bary_max.setGeometricalFactor(alpha_);
         bary_max.setLambda(lambda_);
         bary_max.setMethod(method_);
