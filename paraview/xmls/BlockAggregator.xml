@@ -4,6 +4,15 @@
         <SourceProxy name="ttkBlockAggregator" class="ttkBlockAggregator" label="TTK BlockAggregator">
             <Documentation long_help="ttkBlockAggregator" short_help="ttkBlockAggregator">
             This filter appends every input vtkDataObject as a block to an output vtkMultiBlockDataSet.
+
+            Online examples:
+
+            - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+
+            - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+            - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
+
             </Documentation>
 
             <InputProperty name="Input" port_index="0" clean_command="RemoveAllInputs" command="AddInputConnection" multiple_input="1">
