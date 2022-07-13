@@ -16,7 +16,11 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkManifoldCheck.cpp %for a usage example.
-
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/manifoldCheck/">Manifold
+///   check example</a> \n
 #pragma once
 
 // base code includes
