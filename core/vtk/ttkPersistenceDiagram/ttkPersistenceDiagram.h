@@ -85,6 +85,9 @@
 ///   Learning Circles example</a> \n
 ///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
 ///   2-Manifold Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
+///   </a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
@@ -95,6 +98,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
 ///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
 ///   Digits 64-Dimensions example</a> \n
@@ -107,23 +113,33 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 0 example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 1 example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 2 example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 3 example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
 ///   clustering 4 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
+///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
+///   Diagram Distance example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
+///   example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
 ///   Uncertain Starting Vortex example</a> \n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
-///   Interaction sites</a> \n
 ///
 
 #pragma once
