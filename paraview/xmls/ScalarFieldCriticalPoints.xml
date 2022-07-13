@@ -55,13 +55,15 @@ upper link of each vertex to compute its critical type.
 
         Online examples:
 
+        - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+
         - https://topology-tool-kit.github.io/examples/dragon/
 
-        - https://topology-tool-kit.github.io/examples/morsePersistence/
+        - https://topology-tool-kit.github.io/examples/interactionSites/
 
         - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
         
-        - https://topology-tool-kit.github.io/examples/interactionSites/
+
 
 
      </Documentation>
