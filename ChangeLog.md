@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+
+### 1.1
 - Discrete Morse Sandwich & persistent generators (arXiv:2206.13932, 2022)
 - Persistence diagram approximation (IEEE LDAV 2021)
 - Compact triangulations (IEEE TVCG 2021)
@@ -9,6 +11,7 @@
 - PersistentSimplexPairs backend (Zomorodian 2010), slow.
 - Bug fixes
 - Documentation improvements
+- Online examples
 
 ### 1.0
 - Official integration into ParaView-5.10 \0/ clap! clap! clap! \0/
