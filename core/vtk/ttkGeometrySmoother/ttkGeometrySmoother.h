@@ -26,9 +26,6 @@
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
 ///   Learning example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
-///   Learning Circles example</a> \n
-///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
 ///   2-Manifold Learning example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
@@ -40,7 +37,10 @@
 /// Morse molecule example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
-///   Interaction sites</a> \n
+///   Interaction sites example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">
+///   Morse Molecule example</a> \n
 ///
 
 #pragma once
