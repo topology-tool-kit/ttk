@@ -2,6 +2,11 @@
 /// \class ttk::TrackingFromPersistenceDiagrams
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
+///   tracking example</a>
 
 #pragma once
 
