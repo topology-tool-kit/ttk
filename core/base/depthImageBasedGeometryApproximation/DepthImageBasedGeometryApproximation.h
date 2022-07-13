@@ -13,6 +13,11 @@
 /// Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph
 /// Garth. IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV),
 /// 2018.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/geometryApproximation/">Geometry
+///   Approximation example</a> \n
 
 #pragma once
 
