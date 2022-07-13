@@ -46,6 +46,11 @@
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::LocalizedTopologicalSimplification
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
 
 #pragma once
 #include <ttkTopologicalSimplificationByPersistenceModule.h>
