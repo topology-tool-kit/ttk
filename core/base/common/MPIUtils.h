@@ -313,7 +313,7 @@ namespace ttk {
       // now we need to check for each rank if they are a neighbor of any other
       // rank. If so, we need to add those to the neighbors
       for(int i = 0; i < ttk::MPIsize_; i++) {
-        for(int j = 0; i < ttk::MPIsize_; i++) {
+        for(int j = 0; j < ttk::MPIsize_; j++) {
           if(setsFromRanks[j].find(i) != setsFromRanks[j].end()) {
             setsFromRanks[i].emplace(j);
           }
