@@ -25,7 +25,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/">Persistent
 ///   Generators Fertility example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_houseHoldAnalysis/">Persistent
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/">Persistent
 ///   Generators Household Analysis example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
