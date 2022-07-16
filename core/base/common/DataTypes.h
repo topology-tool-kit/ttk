@@ -5,8 +5,7 @@
 ///
 ///\brief TTK base package defining the standard types.
 
-#ifndef _DATATYPES_H
-#define _DATATYPES_H
+#pragma once
 
 namespace ttk {
   /// \brief Identifier type for simplices of any dimension.
@@ -65,6 +64,10 @@ namespace ttk {
   const char PersistencePairIdentifierName[] = "PairIdentifier";
   const char PersistenceName[] = "Persistence";
   const char PersistencePairTypeName[] = "PairType";
+  const char PersistenceIsFinite[] = "IsFinite";
+
+  // default name for compact triangulation index
+  const char compactTriangulationIndex[] = "ttkCompactTriangulationIndex";
 
   /// default value for critical index
   enum class CriticalType {
@@ -79,5 +82,3 @@ namespace ttk {
   const int CriticalTypeNumber = 6;
 
 } // namespace ttk
-
-#endif // _DATATYPES_H

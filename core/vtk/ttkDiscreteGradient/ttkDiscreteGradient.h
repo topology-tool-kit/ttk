@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the discreteGradient processing package.
 ///
-/// VTK wrapping code for the @DiscreteGradient package.
+/// VTK wrapping code for the ttk::dcg::DiscreteGradient package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)

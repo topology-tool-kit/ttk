@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that computes a planar graph layout.
 ///
-/// VTK wrapping code for the @PlanarGraphLayout package.
+/// VTK wrapping code for the ttk::PlanarGraphLayout package.
 ///
 /// This filter computes a planar graph layout of a \b vtkUnstructuredGrid. To
 /// improve the quality of the layout it is possible to pass additional field
@@ -37,6 +37,14 @@
 /// vtkCalculator.
 ///
 /// \sa ttk::PlanarGraphLayout
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
@@ -76,6 +84,8 @@ private:
   double ImportantPairsSpacing = 1.;
   double NonImportantPairsSpacing = 0.1;
   double NonImportantPairsProximity = 0.05;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
 public:
   // --- Graph Planar Layout
@@ -124,13 +134,19 @@ public:
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
 
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
+
   // ---
   static ttkPlanarGraphLayout *New();
   vtkTypeMacro(ttkPlanarGraphLayout, ttkAlgorithm);
 
 protected:
   ttkPlanarGraphLayout();
-  ~ttkPlanarGraphLayout();
+  ~ttkPlanarGraphLayout() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

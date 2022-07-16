@@ -14,6 +14,17 @@
         short_help="TTK identifierRandomizer plugin.">
        TTK filter to shuflle ids randomly. Useful to reduce the number of neighbor
        regions with close ids.
+
+       Online examples:
+
+       - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+       - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+       - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+
+       - https://topology-tool-kit.github.io/examples/tribute/
+
      </Documentation>
      <InputProperty
         name="Input"
@@ -56,9 +67,24 @@
                          default_values="0">
       </IntVectorProperty>
 
+      <IntVectorProperty name="CompactRange"
+        label="Compact Range"
+        command="SetCompactRange"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Force the output values to be in the [0, #values - 1] integer range.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFieldNew" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="Seed" />
+        <Property name="CompactRange" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}

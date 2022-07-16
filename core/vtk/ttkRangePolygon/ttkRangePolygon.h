@@ -24,7 +24,7 @@
 /// \warning This feature will only work properly with the TTK-branded ParaView
 /// (ParaView sources need to be patched with TTK fixes, see the documentation)
 ///
-/// -
+/// .
 ///
 /// \param Input Input 2D selection, typically "Extract Selection" in ParaView
 /// (vtkUnstructuredGrid)
@@ -47,6 +47,10 @@
 /// \sa ttk::FiberSurface
 /// \sa vtkReebSpace
 ///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
+
 #pragma once
 
 // VTK includes -- to adapt

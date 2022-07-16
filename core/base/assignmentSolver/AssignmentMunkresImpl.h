@@ -1,8 +1,12 @@
 #pragma once
 
+#include <AssignmentMunkres.h>
+
+#include <tuple>
+
 template <typename dataType>
-int AssignmentMunkres<dataType>::run(
-  std::vector<asgnMatchingTuple> &matchings) {
+int ttk::AssignmentMunkres<dataType>::run(
+  std::vector<MatchingType> &matchings) {
   int step = 1;
   int iter = 0;
   int maxIter = 100000;
@@ -77,7 +81,7 @@ int AssignmentMunkres<dataType>::run(
 
 // Preprocess cost matrix.
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepOne(int &step) // ~ 0% perf
+int ttk::AssignmentMunkres<dataType>::stepOne(int &step) // ~ 0% perf
 {
   double minInCol;
   std::vector<std::vector<dataType>> *C
@@ -202,7 +206,7 @@ int AssignmentMunkres<dataType>::stepOne(int &step) // ~ 0% perf
 // Find a zero in the matrix,
 // star it if it is the only one in its row and col.
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepTwo(int &step) // ~ 0% perf
+int ttk::AssignmentMunkres<dataType>::stepTwo(int &step) // ~ 0% perf
 {
   std::vector<std::vector<dataType>> *C
     = AssignmentSolver<dataType>::getCostMatrixPointer();
@@ -242,7 +246,7 @@ int AssignmentMunkres<dataType>::stepTwo(int &step) // ~ 0% perf
 // If all columns are starred (1 star only per column is possible)
 // then the algorithm is terminated.
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepThree(int &step) // ~ 10% perf
+int ttk::AssignmentMunkres<dataType>::stepThree(int &step) // ~ 10% perf
 {
   for(int r = 0; r < this->rowSize; ++r) {
     int start = rowLimitsMinus[r];
@@ -271,7 +275,7 @@ int AssignmentMunkres<dataType>::stepThree(int &step) // ~ 10% perf
 // Repeat until there are no uncovered zero left
 // Save smallest uncovered value then -> step 6
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepFour(int &step) // ~ 45% perf
+int ttk::AssignmentMunkres<dataType>::stepFour(int &step) // ~ 45% perf
 {
   int row = -1;
   int col = -1;
@@ -307,7 +311,7 @@ int AssignmentMunkres<dataType>::stepFour(int &step) // ~ 45% perf
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::findStarInRow(int row) {
+int ttk::AssignmentMunkres<dataType>::findStarInRow(int row) {
   int start = rowLimitsMinus[row];
   int end = rowLimitsPlus[row];
   for(int c = start; c < end; ++c)
@@ -317,10 +321,8 @@ int AssignmentMunkres<dataType>::findStarInRow(int row) {
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::findZero(int &row, int &col) {
-  std::vector<std::vector<dataType>> *C
-    = AssignmentSolver<dataType>::getCostMatrixPointer();
-  ;
+int ttk::AssignmentMunkres<dataType>::findZero(int &row, int &col) {
+  auto *C = AssignmentSolver<dataType>::getCostMatrixPointer();
 
   row = -1;
   col = -1;
@@ -368,7 +370,7 @@ int AssignmentMunkres<dataType>::findZero(int &row, int &col) {
 // in the series,
 // erase all primes, uncover every line, return to step 3.
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepFive(int &step) // ~ 10% perf
+int ttk::AssignmentMunkres<dataType>::stepFive(int &step) // ~ 10% perf
 {
   {
     int r;
@@ -428,7 +430,7 @@ int AssignmentMunkres<dataType>::stepFive(int &step) // ~ 10% perf
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::findStarInCol(int col) {
+int ttk::AssignmentMunkres<dataType>::findStarInCol(int col) {
   int start = colLimitsMinus[col];
   int end = colLimitsPlus[col];
   for(int r = start; r < end; ++r)
@@ -441,7 +443,7 @@ int AssignmentMunkres<dataType>::findStarInCol(int col) {
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::findPrimeInRow(int row) {
+int ttk::AssignmentMunkres<dataType>::findPrimeInRow(int row) {
   int start = rowLimitsMinus[row];
   int end = rowLimitsPlus[row];
   for(int c = start; c < end; ++c)
@@ -454,10 +456,9 @@ int AssignmentMunkres<dataType>::findPrimeInRow(int row) {
 // subtract it from every element of each uncovered col.
 // Return to step 4 without altering any stars/primes/covers.
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
+int ttk::AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
 {
-  std::vector<std::vector<dataType>> *C
-    = AssignmentSolver<dataType>::getCostMatrixPointer();
+  auto *C = AssignmentSolver<dataType>::getCostMatrixPointer();
 
   dataType minVal = std::numeric_limits<dataType>::max();
 
@@ -502,14 +503,14 @@ int AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::stepSeven(int &ttkNotUsed(step)) {
+int ttk::AssignmentMunkres<dataType>::stepSeven(int &ttkNotUsed(step)) {
   this->printMsg("Step 7 over.", debug::Priority::DETAIL);
   return 0;
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::affect(
-  std::vector<asgnMatchingTuple> &matchings,
+int ttk::AssignmentMunkres<dataType>::affect(
+  std::vector<MatchingType> &matchings,
   const std::vector<std::vector<dataType>> &C) {
   int nbC = this->colSize;
   int nbR = this->rowSize;
@@ -519,8 +520,7 @@ int AssignmentMunkres<dataType>::affect(
   for(int r = 0; r < nbR; ++r)
     for(int c = 0; c < nbC; ++c)
       if(M[r][c] == 1) {
-        asgnMatchingTuple t = std::make_tuple(r, c, C[r][c]);
-        matchings.push_back(t);
+        matchings.emplace_back(r, c, C[r][c]);
         // Use row cover to match to last column diagonal.
         if(r < nbR - 1)
           rowCover[r] = true;
@@ -530,8 +530,7 @@ int AssignmentMunkres<dataType>::affect(
   for(int r = 0; r < nbR - 1; ++r) {
     // Match to diagonal.
     if(!rowCover[r]) {
-      asgnMatchingTuple t = std::make_tuple(r, nbC - 1, C[r][nbC - 1]);
-      matchings.push_back(t);
+      matchings.emplace_back(r, nbC - 1, C[r][nbC - 1]);
     }
     // Ensure row covers are cleared.
     else {
@@ -543,7 +542,7 @@ int AssignmentMunkres<dataType>::affect(
 }
 
 template <typename dataType>
-int AssignmentMunkres<dataType>::computeAffectationCost(
+int ttk::AssignmentMunkres<dataType>::computeAffectationCost(
   const std::vector<std::vector<dataType>> &C) {
   int nbC = this->colSize;
   int nbR = this->rowSize;

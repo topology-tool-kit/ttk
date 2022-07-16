@@ -15,10 +15,8 @@
 #pragma once
 
 #include <array>
-#include <limits>
 
-#include <PersistenceDiagramAuction.h>
-#include <Wrapper.h>
+#include <Debug.h>
 
 namespace ttk {
 
@@ -51,6 +49,11 @@ namespace ttk {
     float>;
 
   using Diagram = std::vector<DiagramTuple>;
+
+  // forward declaration
+  // (keeps the #include <PersistenceDiagramAuction.h> inside the .cpp)
+  template <typename T>
+  class BidderDiagram;
 
   class PersistenceDiagramDistanceMatrix : virtual public Debug {
 
@@ -103,8 +106,8 @@ namespace ttk {
   protected:
     double getMostPersistent(
       const std::vector<BidderDiagram<double>> &bidder_diags) const;
-    double computeDistance(const BidderDiagram<double> &D1,
-                           const BidderDiagram<double> &D2) const;
+    double computePowerDistance(const BidderDiagram<double> &D1,
+                                const BidderDiagram<double> &D2) const;
     void getDiagramsDistMat(
       const std::array<size_t, 2> &nInputs,
       std::vector<std::vector<double>> &distanceMatrix,

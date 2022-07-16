@@ -17,6 +17,11 @@
 /// Leitte. Computer Graphics Forum (Special Issue, Proceedings Eurographics /
 /// IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
 ///
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
@@ -44,47 +49,47 @@ using labelTypeVariant = boost::variant<double,
                                         unsigned char>;
 using sizeType = float;
 
-struct Node {
-  labelTypeVariant label{};
-  sizeType size{};
-  float x{};
-  float y{};
-  float z{};
-
-  idType branchID{-1};
-  idType maxPredID{-1};
-  idType maxSuccID{-1};
-
-  Node() = default;
-};
-
-using Edges = std::vector<idType>; // [index0, index1, overlap, branch,...]
-using Nodes = std::vector<Node>;
-
-struct CoordinateComparator {
-  const float *coordinates;
-
-  CoordinateComparator(const float *coords) : coordinates(coords) {
-  }
-
-  inline bool operator()(const size_t &i, const size_t &j) {
-    size_t ic = i * 3;
-    size_t jc = j * 3;
-    return coordinates[ic] == coordinates[jc]
-             ? coordinates[ic + 1] == coordinates[jc + 1]
-                 ? coordinates[ic + 2] < coordinates[jc + 2]
-                 : coordinates[ic + 1] < coordinates[jc + 1]
-             : coordinates[ic] < coordinates[jc];
-  }
-};
-
 namespace ttk {
   class TrackingFromOverlap : virtual public Debug {
   public:
     TrackingFromOverlap() {
       this->setDebugMsgPrefix("TrackingFromOverlap");
     }
-    ~TrackingFromOverlap() = default;
+    ~TrackingFromOverlap() override = default;
+
+    struct Node {
+      labelTypeVariant label{};
+      sizeType size{};
+      float x{};
+      float y{};
+      float z{};
+
+      idType branchID{-1};
+      idType maxPredID{-1};
+      idType maxSuccID{-1};
+
+      Node() = default;
+    };
+
+    using Edges = std::vector<idType>; // [index0, index1, overlap, branch,...]
+    using Nodes = std::vector<Node>;
+
+    struct CoordinateComparator {
+      const float *coordinates;
+
+      CoordinateComparator(const float *coords) : coordinates(coords) {
+      }
+
+      inline bool operator()(const size_t &i, const size_t &j) {
+        size_t ic = i * 3;
+        size_t jc = j * 3;
+        return coordinates[ic] == coordinates[jc]
+                 ? coordinates[ic + 1] == coordinates[jc + 1]
+                     ? coordinates[ic + 2] < coordinates[jc + 2]
+                     : coordinates[ic + 1] < coordinates[jc + 1]
+                 : coordinates[ic] < coordinates[jc];
+      }
+    };
 
     // This function sorts points based on their x, y, and then z coordinate
     int sortCoordinates(const float *pointCoordinates,

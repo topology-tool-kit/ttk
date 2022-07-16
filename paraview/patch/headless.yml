@@ -6,6 +6,7 @@ on:
       - '*'
     tags:
       - 'v?\d+.\d+.\d+-headless'
+      - 'headless*'
 
 jobs:
 
@@ -16,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
     steps:
     - uses: actions/checkout@v2
       name: Checkout TTK-ParaView source code
@@ -28,6 +29,7 @@ jobs:
         sudo apt install -y \
           g++-11 \
           libosmesa-dev \
+          libopenmpi-dev \
           ninja-build \
           dpkg-dev
 
@@ -38,11 +40,13 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DPARAVIEW_PYTHON_SITE_PACKAGES_SUFFIX=lib/python3/dist-packages \
+          -DPARAVIEW_USE_MPI=ON \
           -DPARAVIEW_USE_QT=OFF \
           -DVTK_USE_X=OFF \
           -DVTK_OPENGL_HAS_OSMESA=ON \
+          -DTTK_PARAVIEW_HEADLESS_DEPS=ON \
           -GNinja \
-          ..
+          $GITHUB_WORKSPACE
 
     - name: Build ParaView
       run: |
@@ -59,6 +63,7 @@ jobs:
       with:
         name: ttk-paraview-headless-${{ matrix.os }}
         path: build/ttk-paraview.deb
+
 
   # ----- #
   # macOS #
@@ -77,19 +82,18 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp ninja python
+        brew install wget libomp ninja python open-mpi
 
     - name: Create & configure ParaView build directory
       run: |
-        # switch to Xcode 11 since Xcode 12 breaks the ParaView build
-        sudo xcode-select -s "/Applications/Xcode_11.7.app"
         mkdir build && cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
+          -DPARAVIEW_USE_MPI=ON \
           -DPARAVIEW_USE_QT=OFF \
           -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \
-          ..
+          $GITHUB_WORKSPACE
 
     - name: Build ParaView
       run: |
@@ -113,10 +117,9 @@ jobs:
   # Windows #
   # ------- #
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       CONDA_ROOT: C:\Miniconda
-      VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat
 
     steps:
     - uses: actions/checkout@v2
@@ -137,34 +140,34 @@ jobs:
     - name: Create & configure ParaView build directory
       shell: cmd
       run: |
-        call "%VCVARS%"
-        mkdir build
-        cd build
+        cd ..
+        mkdir b
+        cd b
         cmake ^
           -DPARAVIEW_USE_QT=OFF ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -GNinja ^
-          ..
+          -G"Visual Studio 17 2022" ^
+          %GITHUB_WORKSPACE%
 
     - name: Build ParaView
       shell: cmd
       run: |
-        call "%VCVARS%"
-        cd build
+        cd ..\b
         cmake --build . --config Release --parallel
 
     - name: Create ParaView package
       shell: bash
       run: |
-        cd build
+        cd ../b
         cpack -G NSIS64
+        mv ttk-paraview.exe $GITHUB_WORKSPACE
 
     - name: Upload install executable
       uses: actions/upload-artifact@v2
       with:
         name: ttk-paraview-headless-windows
-        path: build/ttk-paraview.exe
+        path: ttk-paraview.exe
 
 
   # --------------------- #
@@ -183,7 +186,7 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: false
-        prerelease: false
+        prerelease: true
 
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v2
@@ -203,6 +206,14 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-paraview-headless-ubuntu-20.04/ttk-paraview.deb
         asset_name: ttk-paraview-headless-ubuntu-20.04.deb
+
+    - name: Upload Ubuntu Jammy .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-ubuntu-22.04/ttk-paraview.deb
+        asset_name: ttk-paraview-headless-ubuntu-22.04.deb
 
     - name: Upload .tar.gz as Release Asset
       uses: svenstaro/upload-release-action@v2

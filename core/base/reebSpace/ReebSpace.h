@@ -107,7 +107,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet0List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet0List_[sheetId]);
@@ -117,7 +117,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet1List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet1List_[sheetId]);
@@ -128,7 +128,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)originalData_.sheet2List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(originalData_.sheet2List_[sheetId]);
@@ -138,7 +138,7 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if((sheetId < 0)
          || (sheetId >= (SimplexId)currentData_.sheet3List_.size()))
-        return NULL;
+        return nullptr;
 #endif
 
       return &(currentData_.sheet3List_[sheetId]);
@@ -160,7 +160,7 @@ namespace ttk {
       return &currentData_.tet2sheet3_;
     }
 
-    const std::vector<SimplexId> *getEdgeTypes() const {
+    const std::vector<char> *getEdgeTypes() const {
       return &currentData_.edgeTypes_;
     }
 
@@ -282,7 +282,7 @@ namespace ttk {
       double simplificationThreshold_{};
 
       std::vector<SimplexId> edge2sheet1_{};
-      std::vector<SimplexId> edgeTypes_{};
+      std::vector<char> edgeTypes_{};
       std::vector<SimplexId> tet2sheet3_{};
       std::vector<SimplexId> vertex2sheet0_{};
       std::vector<SimplexId> vertex2sheet3_{};
@@ -325,12 +325,12 @@ namespace ttk {
     template <typename triangulationType>
     int compute3sheet(
       const SimplexId &vertexId,
-      const std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+      const std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
       const triangulationType &triangulation);
 
     template <typename triangulationType>
     int compute3sheets(
-      std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+      std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
       const triangulationType &triangulation);
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
@@ -467,7 +467,7 @@ inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
   compute2sheets(jacobiSetClassification, uField, vField, triangulation);
   //   compute2sheetChambers<dataTypeU, dataTypeV>();
 
-  std::vector<std::vector<std::vector<SimplexId>>> tetTriangles;
+  std::vector<std::vector<std::array<SimplexId, 3>>> tetTriangles;
   compute3sheets(tetTriangles, triangulation);
 
   this->printMsg(
@@ -754,12 +754,12 @@ inline int ttk::ReebSpace::computeGeometricalMeasures(
   for(size_t i = 0; i < sheet.tetList_.size(); i++) {
 
     SimplexId tetId = sheet.tetList_[i];
-    std::vector<std::pair<double, double>> domainBox, rangeBox;
-    std::vector<std::vector<float>> domainPoints(4), rangePoints(4);
+    std::array<std::pair<double, double>, 3> domainBox{};
+    std::array<std::pair<double, double>, 2> rangeBox;
+    std::array<std::array<float, 3>, 4> domainPoints{};
+    std::array<std::array<float, 2>, 4> rangePoints{};
 
     for(int j = 0; j < 4; j++) {
-      domainPoints[j].resize(3);
-      rangePoints[j].resize(2);
 
       SimplexId vertexId = -1;
       triangulation.getCellVertex(tetId, j, vertexId);
@@ -905,8 +905,7 @@ int ttk::ReebSpace::compute1sheetsOnly(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           originalData_.sheet1List_.back().edgeList_.push_back(edgeId);
           originalData_.edge2sheet1_[edgeId] = sheet1Id;
@@ -1047,8 +1046,7 @@ int ttk::ReebSpace::compute1sheets(
 
         if(!visitedEdges[edgeId]) {
 
-          jacobiClassification.push_back(
-            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+          jacobiClassification.emplace_back(edgeId, sheet1Id);
 
           if(originalData_.edgeTypes_[edgeId] == 1) {
             // saddle edge
@@ -1209,7 +1207,7 @@ int ttk::ReebSpace::compute1sheets(
 template <typename triangulationType>
 int ttk::ReebSpace::compute3sheet(
   const SimplexId &vertexId,
-  const std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+  const std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
   const triangulationType &triangulation) {
 
   SimplexId sheetId = originalData_.sheet3List_.size();
@@ -1319,7 +1317,7 @@ int ttk::ReebSpace::compute3sheet(
 
 template <typename triangulationType>
 int ttk::ReebSpace::compute3sheets(
-  std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles,
+  std::vector<std::vector<std::array<SimplexId, 3>>> &tetTriangles,
   const triangulationType &triangulation) {
 
   Timer t;
@@ -1335,12 +1333,10 @@ int ttk::ReebSpace::compute3sheets(
         SimplexId tetId
           = originalData_.sheet2List_[i].triangleList_[j][k].tetId_;
 
-        std::vector<SimplexId> triangle(3);
-        triangle[0] = i;
-        triangle[1] = j;
-        triangle[2] = k;
-
-        tetTriangles[tetId].push_back(triangle);
+        tetTriangles[tetId].emplace_back();
+        tetTriangles[tetId].back()[0] = i;
+        tetTriangles[tetId].back()[1] = j;
+        tetTriangles[tetId].back()[2] = k;
       }
     }
   }
@@ -1578,7 +1574,7 @@ int ttk::ReebSpace::compute3sheets(
 template <typename triangulationType>
 int ttk::ReebSpace::connectSheets(const triangulationType &triangulation) {
 
-  Timer t;
+  Timer tm;
 
   for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
     for(size_t j = 0; j < originalData_.sheet2List_[i].triangleList_.size();
@@ -1643,7 +1639,8 @@ int ttk::ReebSpace::connectSheets(const triangulationType &triangulation) {
     }
   }
 
-  this->printMsg("Sheet connectivity established.");
+  this->printMsg(
+    "Sheet connectivity established.", 1.0, tm.getElapsedTime(), 1);
 
   printConnectivity(originalData_);
 

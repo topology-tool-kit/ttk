@@ -2,7 +2,30 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkCinemaProductReader" class="ttkCinemaProductReader" label="TTK CinemaProductReader">
-            <Documentation long_help="TTK CinemaProductReader" short_help="TTK CinemaProductReader">This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.</Documentation>
+            <Documentation 
+            long_help="TTK CinemaProductReader" 
+            short_help="TTK CinemaProductReader">
+                This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.
+                
+                Online examples:
+    
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+
+                - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+
+                - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+                - https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
+
+                - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
+
+                - https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/
+
+                - https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/
+
+                - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
+            
+            </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

@@ -365,6 +365,7 @@ jobs:
   - script: |
       brew install --cask xquartz
       brew install wget libomp mesa glew boost ccache ninja python
+      python3 -m pip install scikit-learn packaging
     displayName: 'Install dependencies'
 
   - script: |
@@ -495,7 +496,9 @@ jobs:
 # VTK 9, no rendering
 
 - job:
-  condition: true
+  # disable Windows job as it runs longer than the 1h maximum timeout
+  # (and is redundant with the Windows GitHub Action test CI)
+  condition: false
   displayName: Windows-VTK
   strategy:
     matrix:

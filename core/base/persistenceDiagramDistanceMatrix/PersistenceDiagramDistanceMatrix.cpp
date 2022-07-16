@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <limits>
 
+#include <PersistenceDiagramAuction.h>
 #include <PersistenceDiagramDistanceMatrix.h>
 
 using namespace ttk;
@@ -155,12 +157,12 @@ double PersistenceDiagramDistanceMatrix::getMostPersistent(
   return max_persistence;
 }
 
-double PersistenceDiagramDistanceMatrix::computeDistance(
+double PersistenceDiagramDistanceMatrix::computePowerDistance(
   const BidderDiagram<double> &D1, const BidderDiagram<double> &D2) const {
 
   GoodDiagram<double> D2_bis{};
   for(int i = 0; i < D2.size(); i++) {
-    const Bidder<double> &b = D2.get(i);
+    const auto &b = D2.get(i);
     Good<double> g(b.x_, b.y_, b.isDiagonal(), D2_bis.size());
     g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
     g.setPrice(0);
@@ -200,19 +202,19 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
       if(this->do_min_) {
         auto &dimin = diags_min[a];
         auto &djmin = diags_min[b];
-        distance += computeDistance(dimin, djmin);
+        distance += computePowerDistance(dimin, djmin);
       }
       if(this->do_sad_) {
         auto &disad = diags_sad[a];
         auto &djsad = diags_sad[b];
-        distance += computeDistance(disad, djsad);
+        distance += computePowerDistance(disad, djsad);
       }
       if(this->do_max_) {
         auto &dimax = diags_max[a];
         auto &djmax = diags_max[b];
-        distance += computeDistance(dimax, djmax);
+        distance += computePowerDistance(dimax, djmax);
       }
-      return distance;
+      return Geometry::pow(distance, 1.0 / this->Wasserstein);
     };
 
     if(nInputs[1] == 0) {
@@ -319,7 +321,7 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
     double local_min_persistence = std::numeric_limits<double>::min();
     std::vector<double> persistences;
     for(int j = 0; j < bidder_diags[i].size(); j++) {
-      Bidder<double> b = bidder_diags[i].get(j);
+      const auto b = bidder_diags[i].get(j);
       double persistence = b.getPersistence();
       if(persistence >= 0.0 && persistence <= prev_min_persistence) {
         candidates_to_be_added[i].emplace_back(j);
@@ -350,8 +352,7 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
     // 3. Add the points to the current diagrams
     const auto s = candidates_to_be_added[i].size();
     for(size_t j = 0; j < std::min(max_points_to_add, s); j++) {
-      Bidder<double> b
-        = bidder_diags[i].get(candidates_to_be_added[i][idx[i][j]]);
+      auto b = bidder_diags[i].get(candidates_to_be_added[i][idx[i][j]]);
       const double persistence = b.getPersistence();
       if(persistence >= new_min_persistence) {
         b.id_ = current_bidder_diags[i].size();

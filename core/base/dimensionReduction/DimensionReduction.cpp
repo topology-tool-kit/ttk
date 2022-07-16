@@ -98,7 +98,7 @@ int DimensionReduction::execute() const {
 
   string modulePath;
 
-  if(PyArray_API == NULL) {
+  if(PyArray_API == nullptr) {
 #ifndef __clang_analyzer__
     import_array1(-1);
 #endif // __clang_analyzer__
@@ -277,6 +277,7 @@ int DimensionReduction::execute() const {
   PyList_Append(pISOParams, PyUnicode_FromString(iso_PathMethod.data()));
   PyList_Append(
     pISOParams, PyUnicode_FromString(iso_NeighborsAlgorithm.data()));
+  PyList_Append(pISOParams, PyUnicode_FromString(iso_Metric.data()));
 
   pPCAParams = PyList_New(0);
   PyList_Append(pPCAParams, PyBool_FromLong(pca_Copy));

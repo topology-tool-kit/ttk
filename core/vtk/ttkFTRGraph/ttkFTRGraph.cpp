@@ -262,6 +262,7 @@ int ttkFTRGraph::dispatch(Graph &graph) {
 
   // common parameters
   ftrGraph_.setParams(params_);
+  ftrGraph_.setDebugLevel(this->debugLevel_);
   // reeb graph parameters
   ftrGraph_.setScalars(ttkUtils::GetVoidPointer(inputScalars_));
   // TODO: SimplexId -> template to int + long long?
@@ -433,7 +434,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
     nodeData.addNode(graph, nodeId, scalar);
   }
 
-  nodes->SetPoints(points);
+  ttkUtils::CellVertexFromPoints(nodes, points);
   nodeData.addArrays(nodes->GetPointData(), params_);
 
   outputSkeletonNodes->ShallowCopy(nodes);

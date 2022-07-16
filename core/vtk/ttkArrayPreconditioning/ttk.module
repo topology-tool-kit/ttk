@@ -5,4 +5,5 @@ SOURCES
 HEADERS
   ttkArrayPreconditioning.h
 DEPENDS
+  arrayPreconditioning
   ttkAlgorithm

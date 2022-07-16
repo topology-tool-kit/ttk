@@ -27,6 +27,11 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
 
 #pragma once
 
@@ -35,6 +40,7 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
+#include <vtkSmartPointer.h>
 
 /* Note on including VTK modules
  *
@@ -73,6 +79,8 @@ class TTKMERGETREETEMPORALREDUCTIONDECODING_EXPORT
                                                       // base class
 {
 private:
+  using idNode = ttk::ftm::idNode;
+
   // Output options
   bool OutputTrees = true;
   bool PlanarLayout = false;
@@ -87,6 +95,8 @@ private:
   double ImportantPairsSpacing = 1.;
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
   // ----------------------
   // Data for visualization
@@ -97,9 +107,8 @@ private:
   std::vector<vtkDataSet *> treesSegmentation;
   // Output
   std::vector<std::vector<int>> treesNodeCorrMesh;
-  std::vector<MergeTree<double>> intermediateSTrees;
-  std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-    allMatching;
+  std::vector<ttk::ftm::MergeTree<double>> intermediateSTrees;
+  std::vector<std::vector<std::tuple<idNode, idNode, double>>> allMatching;
 
   void setDataVisualization(int numInputs) {
     // Trees
@@ -111,9 +120,9 @@ private:
   void resetDataVisualization() {
     setDataVisualization(0);
     treesNodeCorrMesh = std::vector<std::vector<int>>();
-    intermediateSTrees = std::vector<MergeTree<double>>();
-    allMatching = std::vector<
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>();
+    intermediateSTrees = std::vector<ttk::ftm::MergeTree<double>>();
+    allMatching
+      = std::vector<std::vector<std::tuple<idNode, idNode, double>>>();
   }
 
   bool isDataVisualizationFilled() {
@@ -176,6 +185,12 @@ public:
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
 
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
+
   /**
    * This static method and the macro below are VTK conventions on how to
    * instantiate VTK objects. You don't have to modify this.
@@ -213,17 +228,17 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
           std::vector<std::tuple<double, int, int, int, int>> &coefs,
           std::vector<bool> &interpolatedTrees);
 
   template <class dataType>
-  int runCompute(std::vector<vtkMultiBlockDataSet *> &inputTrees,
+  int runCompute(std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                  std::vector<std::tuple<double, int, int, int, int>> &coefs);
 
   template <class dataType>
   int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees,
+                std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                 std::vector<std::tuple<double, int, int, int, int>> &coefs,
                 std::vector<bool> &interpolatedTrees);
 };

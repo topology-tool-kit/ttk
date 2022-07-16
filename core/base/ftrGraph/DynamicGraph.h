@@ -11,8 +11,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef DYNAMICGRAPH_H
-#define DYNAMICGRAPH_H
+#pragma once
 
 #include "FTRCommon.h"
 
@@ -34,7 +33,7 @@ namespace ttk {
 
     public:
       DynamicGraph();
-      virtual ~DynamicGraph();
+      ~DynamicGraph() override;
 
       // Initialize functions
       // --------------------
@@ -76,7 +75,8 @@ namespace ttk {
       }
 
       idSuperArc getSubtreeArc(const std::size_t nid) const {
-        return getNode(nid)->findRootArc();
+        const auto node{getNode(nid)};
+        return node != nullptr ? node->findRootArc() : nullSuperArc;
       }
 
       idSuperArc getCorArc(const std::size_t nid) const {
@@ -144,8 +144,8 @@ namespace ttk {
         return roots;
       }
 
-      /// \ret true if we have merged two tree, false if it was just an intern
-      /// operation
+      /// @return true if we have merged two tree, false if it was just an
+      /// intern operation
       bool insertEdge(DynGraphNode<Type> *const n1,
                       DynGraphNode<Type> *const n2,
                       const Type w,
@@ -172,25 +172,25 @@ namespace ttk {
       }
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(DynGraphNode<Type> *const n1,
                      DynGraphNode<Type> *const n2);
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(const std::size_t nid1, const std::size_t nid2) {
         return removeEdge(getNode(nid1), getNode(nid2));
       }
 
       // Debug
 
-      std::string print(void);
+      std::string print();
 
       std::string print(const std::function<std::string(std::size_t)> &);
 
-      std::string printNbCC(void);
+      std::string printNbCC();
 
-      void test(void);
+      void test();
     };
 
     // Same as dynamic graph but keep the number of subtrees at any time
@@ -225,8 +225,8 @@ namespace ttk {
         nbCC_ = this->nodes_.size();
       }
 
-      /// \ret true if we have merged two tree, false if it was just an intern
-      /// operation
+      /// @return true if we have merged two tree, false if it was just an
+      /// intern operation
       bool insertEdge(DynGraphNode<Type> *const n1,
                       DynGraphNode<Type> *const n2,
                       const Type w,
@@ -261,7 +261,7 @@ namespace ttk {
       }
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(DynGraphNode<Type> *const n1,
                      DynGraphNode<Type> *const n2) {
         int ret = super::removeEdge(n1, n2);
@@ -271,7 +271,7 @@ namespace ttk {
       }
 
       /// remove the edge btwn n1 and n2
-      /// \ret 0 if not an edge
+      /// @return 0 if not an edge
       int removeEdge(const std::size_t nid1, const std::size_t nid2) {
         int ret = super::removeEdge(nid1, nid2);
         if(ret)
@@ -313,11 +313,11 @@ namespace ttk {
       // Accessor functions
       // ------------------
 
-      Type getWeight(void) const {
+      Type getWeight() const {
         return weight_;
       }
 
-      bool hasParent(void) const {
+      bool hasParent() const {
         return parent_;
       }
 
@@ -326,14 +326,14 @@ namespace ttk {
 
       /// Make this node the root of its tree
       // Various way to do that, test perfs ?
-      void evert(void);
+      void evert();
 
       /// Get representative node
-      DynGraphNode *findRoot(void) const;
+      DynGraphNode *findRoot() const;
 
       /// Get the arcs corresponding to this subtree:
       /// find the root before
-      idSuperArc findRootArc(void) const;
+      idSuperArc findRootArc() const;
 
       /// Get the arcs corresponding to this subtree
       idSuperArc getCorArc() const {
@@ -349,24 +349,22 @@ namespace ttk {
 
       /// Get representative node and kepp track of
       /// the node with the min weight on the path
-      /// \ret tuple<root, node with min weight>
+      /// @return tuple<root, node with min weight>
       std::tuple<DynGraphNode<Type> *, DynGraphNode<Type> *>
         findMinWeightRoot() const;
 
       /// Create a new edge between this node and the node n
-      /// \ret true if we have merged two tree, false if it was just an intern
-      /// operation
+      /// @return true if we have merged two tree, false if it was just an
+      /// intern operation
       bool insertEdge(DynGraphNode *const n,
                       const Type weight,
                       const idSuperArc corArc);
 
       /// Remove the link between this node and its parent, thus makeing a new
       /// root
-      void removeEdge(void);
+      void removeEdge();
     };
   } // namespace ftr
 } // namespace ttk
 
 #include "DynamicGraph_Template.h"
-
-#endif /* end of include guard: DYNAMICGRAPH_H */

@@ -13,6 +13,32 @@
 /// \param Input vtkTable that contains data product references (vtkTable)
 /// \param Output vtkMultiBlockDataSet where each block is a referenced product
 /// of an input table row (vtkMultiBlockDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
+///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
+///   Diagram Distance example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
+///
 
 #pragma once
 
@@ -25,6 +51,7 @@
 #include <ttkTopologicalCompressionReader.h>
 #include <vtkGenericDataObjectReader.h>
 #include <vtkNew.h>
+#include <vtkPNGReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkTIFFReader.h>
 #include <vtkXMLGenericDataObjectReader.h>
@@ -43,7 +70,7 @@ public:
 
 protected:
   ttkCinemaProductReader();
-  ~ttkCinemaProductReader();
+  ~ttkCinemaProductReader() override;
 
   vtkSmartPointer<vtkDataObject> readFileLocal(const std::string &pathToFile);
   int addFieldDataRecursively(vtkDataObject *object, vtkFieldData *fd);
@@ -58,6 +85,9 @@ protected:
 private:
   std::string FilepathColumnName{"FILE"};
   bool AddFieldDataRecursively{true};
+
+  // PNG READER
+  vtkNew<vtkPNGReader> pngReader{};
 
   // TTK READER
   vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};

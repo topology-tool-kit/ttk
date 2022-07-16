@@ -161,10 +161,10 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
   int numberOfBytesRead = 0;
 
   numberOfBytesRead += sizeof(int);
-  numberOfVertices = Read<int>(fm);
+  numberOfVertices = Read<int32_t>(fm);
 
   numberOfBytesRead += sizeof(int);
-  numberOfSegments = Read<int>(fm);
+  numberOfSegments = Read<int32_t>(fm);
 
   unsigned int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
 
@@ -189,7 +189,7 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
     int compressedInt;
     numberOfBytesRead += sizeof(int);
-    compressedInt = Read<int>(fm);
+    compressedInt = Read<int32_t>(fm);
 
     while(offset + numberOfBitsPerSegment <= 32) {
 
@@ -309,7 +309,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
     // Test for overflow filling last part of current container.
     if(currentCell >= numberOfVertices) {
       numberOfBytesWritten += sizeof(int);
-      Write(fm, compressedInt);
+      Write<int32_t>(fm, compressedInt);
       break;
     }
 
@@ -333,7 +333,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
 
     // Dump current container.
     numberOfBytesWritten += sizeof(int);
-    Write(fm, compressedInt);
+    Write<int32_t>(fm, compressedInt);
   }
 
   return numberOfBytesWritten;
@@ -353,19 +353,19 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
   // 1.a. Read mapping.
   int mappingSize;
   numberOfBytesRead += sizeof(int);
-  mappingSize = Read<int>(fm);
+  mappingSize = Read<int32_t>(fm);
 
   for(int i = 0; i < mappingSize; ++i) {
     int idv;
     numberOfBytesRead += sizeof(int);
-    idv = Read<int>(fm);
+    idv = Read<int32_t>(fm);
 
     double value;
     numberOfBytesRead += sizeof(double);
     value = Read<double>(fm);
 
-    mappings.push_back(std::make_tuple(value, idv));
-    mappingsSortedPerValue.push_back(std::make_tuple(value, idv));
+    mappings.emplace_back(value, idv);
+    mappingsSortedPerValue.emplace_back(value, idv);
   }
 
   // Sort mapping.
@@ -374,7 +374,7 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
 
   // 1.b. Read constraints.
   numberOfBytesRead += sizeof(int);
-  nbConstraints = Read<int>(fm);
+  nbConstraints = Read<int32_t>(fm);
 
   for(int i = 0; i < nbConstraints; ++i) {
     int idVertex;
@@ -382,13 +382,13 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
     int vertexType;
 
     numberOfBytesRead += sizeof(int);
-    idVertex = Read<int>(fm);
+    idVertex = Read<int32_t>(fm);
 
     numberOfBytesRead += sizeof(double);
     value = Read<double>(fm);
 
     numberOfBytesRead += sizeof(int);
-    vertexType = Read<int>(fm);
+    vertexType = Read<int32_t>(fm);
 
     if(i == 0) {
       min = value;
@@ -400,7 +400,7 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
     if(value > max)
       max = value;
 
-    constraints.push_back(std::make_tuple(idVertex, value, vertexType));
+    constraints.emplace_back(idVertex, value, vertexType);
   }
 
   return numberOfBytesRead;
@@ -416,23 +416,23 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
   // Size.
   auto mappingSize = (int)mapping.size();
   numberOfBytesWritten += sizeof(int);
-  Write(fm, mappingSize);
+  Write<int32_t>(fm, mappingSize);
 
   // Segmentation values for each particular index.
   for(int i = 0; i < mappingSize; ++i) {
     std::tuple<double, int> t = mapping[i];
     int idv = std::get<1>(t);
     numberOfBytesWritten += sizeof(int);
-    Write(fm, idv);
+    Write<int32_t>(fm, idv);
 
     auto value = std::get<0>(t);
     numberOfBytesWritten += sizeof(double);
-    Write(fm, value);
+    Write<double>(fm, value);
   }
 
   auto nbConstraints = (int)constraints.size();
   numberOfBytesWritten += sizeof(int);
-  Write(fm, nbConstraints);
+  Write<int32_t>(fm, nbConstraints);
 
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
@@ -441,13 +441,13 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
     int vertexType = std::get<2>(t);
 
     numberOfBytesWritten += sizeof(int);
-    Write(fm, idVertex);
+    Write<int32_t>(fm, idVertex);
 
     numberOfBytesWritten += sizeof(double);
-    Write(fm, value);
+    Write<double>(fm, value);
 
     numberOfBytesWritten += sizeof(int);
-    Write(fm, vertexType);
+    Write<int32_t>(fm, vertexType);
   }
 
   return numberOfBytesWritten;
@@ -494,10 +494,10 @@ int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
     return -1;
 
   numberOfBytesWritten += sizeof(int);
-  Write(fm, numberOfVertices);
+  Write<int32_t>(fm, numberOfVertices);
 
   numberOfBytesWritten += sizeof(int);
-  Write(fm, numberOfSegments);
+  Write<int32_t>(fm, numberOfSegments);
 
   numberOfBytesWritten += WriteCompactSegmentation(
     fm, getSegmentation(), numberOfVertices, numberOfSegments);
@@ -625,9 +625,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
                 dataArrayName);
 
 #ifdef TTK_ENABLE_ZLIB
-  Write(fp, true);
+  Write<uint8_t>(fp, true);
 #else
-  Write(fp, false);
+  Write<uint8_t>(fp, false);
 #endif
 
   bool usePersistence
@@ -708,8 +708,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   this->printMsg("Data successfully compressed.");
 
   // [fm->fp] Copy fm to fp.
-  Write(fp, destLen); // Compressed size...
-  Write(fp, sourceLen);
+  Write<uint64_t>(fp, destLen); // Compressed size...
+  Write<uint64_t>(fp, sourceLen);
   WriteByteArray(fp, ddest.data(), destLen);
   this->printMsg("Data successfully written to filesystem.");
 
@@ -719,8 +719,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   unsigned long sourceLen = (unsigned long)rawFileLength;
   unsigned long destLen = (unsigned long)rawFileLength;
 
-  Write(fp, destLen); // Compressed size...
-  Write(fp, sourceLen);
+  Write<uint64_t>(fp, destLen); // Compressed size...
+  Write<uint64_t>(fp, sourceLen);
   WriteByteArray(fp, source, destLen);
 #endif
 
@@ -747,13 +747,13 @@ int ttk::TopologicalCompression::WriteMetaData(
   WriteByteArray(fp, magicBytes_, std::strlen(magicBytes_));
 
   // -3. File format version
-  Write(fp, formatVersion_);
+  Write<uint64_t>(fp, formatVersion_);
 
   // -2. Persistence, or Other
-  Write(fp, compressionType);
+  Write<int32_t>(fp, compressionType);
 
   // -1. zfpOnly
-  Write(fp, zfpOnly);
+  Write<uint8_t>(fp, zfpOnly);
 
   // 0. SQ type
   const char *sq = sqMethod;
@@ -762,30 +762,30 @@ int ttk::TopologicalCompression::WriteMetaData(
                : (strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) ? 2
                                                                 : 3;
 
-  Write(fp, sqType);
+  Write<int32_t>(fp, sqType);
 
   // 1. DataType
-  Write(fp, dataType);
+  Write<int32_t>(fp, dataType);
 
   // 2. Data extent, spacing, origin
   for(int i = 0; i < 6; ++i)
-    Write(fp, dataExtent[i]);
+    Write<int32_t>(fp, dataExtent[i]);
 
   for(int i = 0; i < 3; ++i)
-    Write(fp, dataSpacing[i]);
+    Write<double>(fp, dataSpacing[i]);
 
   for(int i = 0; i < 3; ++i)
-    Write(fp, dataOrigin[i]);
+    Write<double>(fp, dataOrigin[i]);
 
   // 4. Tolerance
-  Write(fp, tolerance);
+  Write<double>(fp, tolerance);
 
   // 5. ZFP ratio
-  Write(fp, zfpTolerance);
+  Write<double>(fp, zfpTolerance);
 
   // 6. Length of array name
   // (explicit call to unsigned long variant for MSVC compatibility)
-  Write<unsigned long>(fp, dataArrayName.size());
+  Write<uint64_t>(fp, dataArrayName.size());
 
   // 7. Array name (as unsigned chars)
   WriteByteArray(fp, dataArrayName.c_str(), dataArrayName.size());
@@ -811,7 +811,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   }
 
   // -3. File format version
-  const auto fileVersion = Read<unsigned long>(fm);
+  const auto fileVersion = Read<uint64_t>(fm);
   if(fileVersion < this->formatVersion_) {
     this->printErr("Old format version detected (" + std::to_string(fileVersion)
                    + " vs. " + std::to_string(this->formatVersion_) + ").");
@@ -826,21 +826,21 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   }
 
   // -2. Compression type.
-  compressionType_ = Read<int>(fm);
+  compressionType_ = Read<int32_t>(fm);
 
   // -1. ZFP only type.
-  ZFPOnly = Read<bool>(fm);
+  ZFPOnly = Read<uint8_t>(fm);
 
   // 0. SQ type
-  SQMethodInt = Read<int>(fm);
+  SQMethodInt = Read<int32_t>(fm);
 
   // 1. DataType
-  dataScalarType_ = Read<int>(fm);
+  dataScalarType_ = Read<int32_t>(fm);
   // DataScalarType = VTK_DOUBLE;
 
   // 2. Data extent, spacing, origin
   for(int i = 0; i < 6; ++i)
-    dataExtent_[i] = Read<int>(fm);
+    dataExtent_[i] = Read<int32_t>(fm);
 
   for(int i = 0; i < 3; ++i)
     dataSpacing_[i] = Read<double>(fm);
@@ -855,7 +855,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   ZFPTolerance = Read<double>(fm);
 
   // 6. Length of array name
-  size_t dataArrayNameLength = Read<unsigned long>(fm);
+  size_t dataArrayNameLength = Read<uint64_t>(fm);
 
   // 7. Array name (as unsigned chars)
   dataArrayName_.resize(dataArrayNameLength + 1);

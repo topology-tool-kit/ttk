@@ -17,8 +17,7 @@ ttkPersistenceCurve::ttkPersistenceCurve() {
   this->SetNumberOfOutputPorts(4);
 }
 
-ttkPersistenceCurve::~ttkPersistenceCurve() {
-}
+ttkPersistenceCurve::~ttkPersistenceCurve() = default;
 
 vtkTable *ttkPersistenceCurve::GetOutput() {
   return this->GetOutput(0);
@@ -150,6 +149,7 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
                                   vtkTable *outputSTPersistenceCurve,
                                   vtkTable *outputCTPersistenceCurve,
                                   const VTK_TT *inputScalars,
+                                  const size_t scalarsMTime,
                                   const void *inputOffsets,
                                   const TTK_TT *triangulation) {
 
@@ -165,7 +165,7 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   this->setOutputMSCPlot(&MSCPlot);
 
   ret = this->execute<VTK_TT, TTK_TT>(
-    inputScalars, (SimplexId *)inputOffsets, triangulation);
+    inputScalars, scalarsMTime, (SimplexId *)inputOffsets, triangulation);
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
     outputJTPersistenceCurve, TreeType::Join, JTPlot);
@@ -252,13 +252,14 @@ int ttkPersistenceCurve::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 
   int status = 0;
-  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                      (status = this->dispatch<VTK_TT, TTK_TT>(
-                         outputJTPersistenceCurve, outputMSCPersistenceCurve,
-                         outputSTPersistenceCurve, outputCTPersistenceCurve,
-                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
-                         ttkUtils::GetVoidPointer(offsetField),
-                         (TTK_TT *)(triangulation->getData()))));
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    (status = this->dispatch<VTK_TT, TTK_TT>(
+       outputJTPersistenceCurve, outputMSCPersistenceCurve,
+       outputSTPersistenceCurve, outputCTPersistenceCurve,
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
+       inputScalars->GetMTime(), ttkUtils::GetVoidPointer(offsetField),
+       (TTK_TT *)(triangulation->getData()))));
 
   // something wrong in baseCode
   if(status) {

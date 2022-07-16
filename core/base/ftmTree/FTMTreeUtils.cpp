@@ -2,13 +2,13 @@
 #include <FTMTreeUtils.h>
 #include <iostream>
 
+void ttk::ftm::printTreesStats(std::vector<FTMTree_MT *> &trees) {
+  for(auto tree : trees)
+    tree->printTreeStats();
+}
+
 namespace ttk {
   namespace ftm {
-
-    void printTreesStats(std::vector<ftm::FTMTree_MT *> &trees) {
-      for(auto tree : trees)
-        tree->printTreeStats();
-    }
 
     // --------------------
     // Is
@@ -462,13 +462,15 @@ namespace ttk {
       return ss;
     }
 
-    void FTMTree_MT::printTreeStats() {
+    std::stringstream FTMTree_MT::printTreeStats(bool doPrint) {
       auto noNodesT = this->getNumberOfNodes();
       auto noNodes = this->getRealNumberOfNodes();
       std::stringstream ss;
       ss << "tree [node: " << noNodes << " / " << noNodesT;
       ss << ", depth: " << this->getTreeDepth() << "]";
-      printMsg(ss.str());
+      if(doPrint)
+        printMsg(ss.str());
+      return ss;
     }
 
     std::stringstream

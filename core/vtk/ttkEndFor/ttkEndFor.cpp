@@ -18,7 +18,8 @@ ttkEndFor::ttkEndFor() {
   SetNumberOfOutputPorts(1);
 }
 
-ttkEndFor::~ttkEndFor(){};
+ttkEndFor::~ttkEndFor() = default;
+;
 
 int ttkEndFor::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0 || port == 1) {

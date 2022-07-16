@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef GRAPH_H
-#define GRAPH_H
+#pragma once
 
 #include "FTRAtomicVector.h"
 #include "FTRCommon.h"
@@ -58,7 +57,7 @@ namespace ttk {
       Graph();
       Graph(Graph &&other) noexcept = default;
       Graph(const Graph &other) = delete;
-      virtual ~Graph();
+      ~Graph() override;
 
       Graph &operator=(Graph &&other) noexcept {
         if(this != &other) {
@@ -82,15 +81,15 @@ namespace ttk {
       // Accessor on structure
       // ---------------------
 
-      idNode getNumberOfNodes(void) const {
+      idNode getNumberOfNodes() const {
         return nodes_.size();
       }
 
-      idSuperArc getNumberOfArcs(void) const {
+      idSuperArc getNumberOfArcs() const {
         return arcs_.size();
       }
 
-      idSuperArc getNumberOfVisibleArcs(void) const {
+      idSuperArc getNumberOfVisibleArcs() const {
         idSuperArc res = 0;
         for(const auto &arc : arcs_) {
           if(arc.isVisible())
@@ -99,7 +98,7 @@ namespace ttk {
         return res;
       }
 
-      idNode getNumberOfLeaves(void) const {
+      idNode getNumberOfLeaves() const {
         return leaves_.size();
       }
 
@@ -308,13 +307,10 @@ namespace ttk {
               return s->isLower(std::get<0>(a), std::get<0>(b));
             };
         if(parallel) {
-          ::ttk::ftr::parallel_sort<decltype(leaves_.begin()),
-                                    std::tuple<idVertex, bool>>(
-            leaves_.begin(), leaves_.end(), compare_fun);
+          TTK_PSORT(
+            this->threadNumber_, leaves_.begin(), leaves_.end(), compare_fun);
         } else {
-          ::ttk::ftr::sort<decltype(leaves_.begin()),
-                           std::tuple<idVertex, bool>>(
-            leaves_.begin(), leaves_.end(), compare_fun);
+          std::sort(leaves_.begin(), leaves_.end(), compare_fun);
         }
       }
 
@@ -373,5 +369,3 @@ namespace ttk {
 } // namespace ttk
 
 #include "Graph_Template.h"
-
-#endif /* end of include guard: GRAPH_H */

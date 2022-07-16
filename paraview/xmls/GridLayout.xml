@@ -2,7 +2,18 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkGridLayout" class="ttkGridLayout" label="TTK GridLayout">
-            <Documentation long_help="TTK GridLayout plugin." short_help="TTK GridLayout plugin.">This filter computes a grid layout for the blocks of a vtkMultiBlockDataSet.</Documentation>
+            <Documentation 
+            long_help="TTK GridLayout plugin." 
+            short_help="TTK GridLayout plugin.">
+                This filter computes a grid layout for the blocks of a vtkMultiBlockDataSet.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+
+                - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+                
+            </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

@@ -8,16 +8,13 @@
 
 #pragma once
 
-#ifndef _KDTREE_H
-#define _KDTREE_H
-
 // base code includes
 #include <Debug.h>
 #include <Geometry.h> // for pow
+
 #include <algorithm>
-#include <cmath>
-#include <iostream>
 #include <limits>
+#include <memory>
 
 namespace ttk {
   template <typename dataType>
@@ -340,13 +337,8 @@ namespace ttk {
       costs.push_back(cost);
     } else {
       // 1.1- Find the most costly amongst neighbours
-      std::vector<int> idx(k);
-      for(unsigned int i = 0; i < k; i++) {
-        idx[i] = i;
-      }
-      int idx_max_cost = *std::max_element(
-        idx.begin(), idx.end(),
-        [&costs](int &a, int &b) { return costs[a] < costs[b]; });
+      const auto idx_max_cost = std::distance(
+        costs.begin(), std::max_element(costs.begin(), costs.begin() + k));
       dataType max_cost = costs[idx_max_cost];
 
       // 1.2- If the current KDTree is less costly, put it in the neighbours and
@@ -421,5 +413,3 @@ namespace ttk {
   }
 } // namespace ttk
 #include <buildWeights.h>
-
-#endif

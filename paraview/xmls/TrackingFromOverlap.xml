@@ -14,6 +14,10 @@ Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposiu
 Type:
 * 0 - tracking graph,
 * 1 - nesting tree
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
                 </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">

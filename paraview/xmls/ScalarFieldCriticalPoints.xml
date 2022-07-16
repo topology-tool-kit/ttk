@@ -15,18 +15,20 @@
        short_help="TTK plugin for the computation of critical points in PL
        scalar fields defined on PL manifolds.">
 
-       This plugin computes the list of critical points of the input scalar field and classify them according to their type.
-
-       Related publication:
-       "Critical points and curvature for embedded polyhedral surfaces"
-       Thomas Banchoff
-       American Mathematical Monthly, 1970.
+       This plugin computes the list of critical points of the input scalar 
+field and classify them according to their type.
 
        Two backends are available for the computation of critical points:
 
         1) Default generic backend
+        
+        Related publication:
+        "Critical points and curvature for embedded polyhedral surfaces"
+        Thomas Banchoff
+        American Mathematical Monthly, 1970.
 
-        This generic backend uses a Union Find data structure on the lower and upper link of each vertex to compute its critical type.
+        This generic backend uses a Union Find data structure on the lower and 
+upper link of each vertex to compute its critical type.
 
         2) A progressive approach
 
@@ -49,6 +51,21 @@
        * 3 - maximum,
        * 4 - degenerate,
        * 5 - regular,
+
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+        - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
+        
+
+
+
      </Documentation>
      <InputProperty
         name="Input"

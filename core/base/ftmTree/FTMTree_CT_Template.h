@@ -1,5 +1,4 @@
-#ifndef FTMTree_CT_Template_h_INCLUDED
-#define FTMTree_CT_Template_h_INCLUDED
+#pragma once
 
 #include <FTMTree_CT.h>
 
@@ -52,13 +51,13 @@ namespace ttk {
         {
           if(tt == TreeType::Join || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
+#pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             jt_->build(mesh, tt == TreeType::Contour);
           }
           if(tt == TreeType::Split || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
+#pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             st_->build(mesh, tt == TreeType::Contour);
           }
@@ -128,7 +127,7 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
         valence downval = 0;
 
         for(valence n = 0; n < neighNumb; ++n) {
-          SimplexId neigh;
+          SimplexId neigh{-1};
           mesh->getVertexNeighbor(v, n, neigh);
           if(scalars_->isLower(neigh, v)) {
             ++downval;
@@ -159,4 +158,3 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
 
 } // namespace ftm
 } // namespace ttk
-#endif // FTMTree_CT_Template_h_INCLUDED

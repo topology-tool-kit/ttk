@@ -146,7 +146,7 @@ int ttk::TopologicalCompression::PerformSimplification(
     // Smoothe neighborhood (along with offsets).
     SimplexId neighborNumber = triangulation.getVertexNeighborNumber(id);
     for(SimplexId j = 0; j < neighborNumber; ++j) {
-      SimplexId neighbor;
+      SimplexId neighbor{-1};
       triangulation.getVertexNeighbor(id, j, neighbor);
 
       if(type == 1) { // Local_maximum.
@@ -663,7 +663,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     if(!already[vert]) {
       already[vert] = true;
       dataType dttt = outputData[i];
-      mapping_.push_back(std::make_tuple((double)dttt, vert));
+      mapping_.emplace_back((double)dttt, vert);
     }
   }
 
@@ -720,7 +720,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         SimplexId neighborNumber
           = triangulation.getVertexNeighborNumber(vertex);
         for(SimplexId j = 0; j < neighborNumber; ++j) {
-          SimplexId neighbor;
+          SimplexId neighbor{-1};
           triangulation.getVertexNeighbor(vertex, j, neighbor);
 
           // Add current neighbor to processing stack.
@@ -734,7 +734,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       if(newSegment) {
         dataType result = (maxNewSegment + minNewSegment) / 2;
         segments.push_back(std::make_tuple(result, newIndex));
-        mapping_.push_back(std::make_tuple((double)result, newIndex));
+        mapping_.emplace_back((double)result, newIndex);
         newIndex++; // Set index for next potential segment.
       }
     }
@@ -754,7 +754,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       if(type == -1 // Local_minimum
          || type == 1 // Local_maximum
          || type == 0) {
-        criticalConstraints_.push_back(std::make_tuple(id, (double)val, type));
+        criticalConstraints_.emplace_back(id, (double)val, type);
       } else { // 0 -> Saddle
       }
     }

@@ -9,6 +9,16 @@
 /// target) based on a string or point/cell/field data of an optional second
 /// 'vtkDataObject' (called source). This filter can also be used to directly
 /// edit an array (including renaming, type conversion, and reindexing).
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking From Overlap example</a> \n
 
 #pragma once
 
@@ -87,7 +97,7 @@ public:
 
 protected:
   ttkArrayEditor();
-  ~ttkArrayEditor();
+  ~ttkArrayEditor() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

@@ -15,6 +15,21 @@
         This filter is a dummy example for the development of TTK packages. It
         smooths an input mesh by average the vertex locations on the link of each
         vertex.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+        - https://topology-tool-kit.github.io/examples/morseMolecule/
+
       </Documentation>
       <InputProperty
         name="Input"
@@ -45,12 +60,12 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-        name="ForceInputMaskScalarField"
-        command="SetForceInputMaskScalarField"
-        label="Force Input Mask Scalar Field"
+        name="UseMaskScalarField"
+        command="SetUseMaskScalarField"
+        label="Use a Scalar Field as Mask"
         number_of_elements="1"
         panel_visibility="advanced"
-        default_values="0">
+        default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
           Check this box if an input scalar field should be considered as
@@ -58,9 +73,29 @@
         </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty name="InputMaskNew" 
-                            label="Input Mask Field" 
-command="SetInputArrayToProcess" element_types="0 0 0 0 2" 
+      <IntVectorProperty
+        name="ForceInputMaskScalarField"
+        command="SetForceInputMaskScalarField"
+        label="Force Input Mask Scalar Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+          <Hints>
+            <PropertyWidgetDecorator type="GenericDecorator"
+              mode="visibility"
+              property="UseMaskScalarField"
+              value="1" />
+          </Hints>
+        <Documentation>
+          Check this box to choose a non-default scalar field as mask
+          (default mask scalar field is named ttk::MaskScalarFieldName).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="InputMaskNew"
+                            label="Input Mask Field"
+command="SetInputArrayToProcess" element_types="0 0 0 0 2"
 number_of_elements="5" panel_visibility="advanced">
           <ArrayListDomain attribute_type="Scalars" name="array_list">
             <RequiredProperties>
@@ -79,6 +114,7 @@ number_of_elements="5" panel_visibility="advanced">
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Input" />
         <Property name="NumberOfIterations" />
+        <Property name="UseMaskScalarField" />
         <Property name="ForceInputMaskScalarField" />
         <Property name="InputMaskNew" />
       </PropertyGroup>

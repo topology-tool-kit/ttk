@@ -21,8 +21,7 @@ ttkGridLayout::ttkGridLayout() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkGridLayout::~ttkGridLayout() {
-}
+ttkGridLayout::~ttkGridLayout() = default;
 
 int ttkGridLayout::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
@@ -148,7 +147,7 @@ int ttkGridLayout::RequestData(vtkInformation *ttkNotUsed(request),
   const size_t nRows
     = this->GetNumberOfRows() < 1 ? 0 : (size_t)this->GetNumberOfRows();
   const size_t nColumns
-    = nRows == 0 ? ceil(sqrt(nBlocks)) : ceil(nBlocks / nRows);
+    = nRows == 0 ? std::ceil(std::sqrt(nBlocks)) : std::ceil(nBlocks / nRows);
 
   for(size_t i = 0; i < nBlocks; i++) {
     // get block
@@ -157,7 +156,7 @@ int ttkGridLayout::RequestData(vtkInformation *ttkNotUsed(request),
     auto outBlock = vtkSmartPointer<vtkDataObject>::Take(block->NewInstance());
     this->CopyObject(outBlock, block);
 
-    const size_t row = floor(i / nColumns);
+    const size_t row = std::floor(i / nColumns);
     const size_t col = i % nColumns;
 
     if(!this->TranslateObject(

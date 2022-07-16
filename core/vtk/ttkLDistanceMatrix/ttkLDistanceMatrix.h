@@ -36,6 +36,11 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
+  template <typename T>
+  int dispatch(std::vector<std::vector<double>> &distanceMatrix,
+               const std::vector<vtkDataSet *> &inputData,
+               const size_t nPoints);
+
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;

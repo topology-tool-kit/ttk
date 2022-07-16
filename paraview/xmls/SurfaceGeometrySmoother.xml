@@ -1,0 +1,204 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkSurfaceGeometrySmoother"
+      class="ttkSurfaceGeometrySmoother"
+      label="TTK SurfaceGeometrySmoother">
+      <Documentation
+        long_help="TTK plugin for smoothing meshes on surfaces."
+        short_help="TTK plugin for smoothing meshes.">
+        GeometrySmoother with a twist!
+
+        This class smoothes and projects a 1D or a 2D mesh onto a 2D
+        closed triangulated surface
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_casting/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_skull/
+
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1" >
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Point-set to smooth.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="Surface"
+          label="Triangulated surface"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input triangulated surface.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="NumberOfIterations"
+        label="Iteration Number"
+        command="SetNumberOfIterations"
+        number_of_elements="1"
+        default_values="1" >
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Number of iterations for the smoothing filter.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ForceIdentifiersField"
+          label="Force Vertex Identifiers Field"
+          command="SetForceIdentifiersField"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use a non-default vertex identifiers field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="VertexIdsField"
+          label="Identifiers Field"
+          command="SetInputArrayToProcess"
+          number_of_elements="5"
+          element_types="0 0 0 0 2"
+          default_values="0"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="input_scalars"
+            default_values="0"
+            >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="ForceIdentifiersField"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifiers field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="UseMaskScalarField"
+        command="SetUseMaskScalarField"
+        label="Use a Scalar Field as Mask"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box if an input scalar field should be considered as
+          vertex mask (used to mark vertices to smooth).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputMaskScalarField"
+        command="SetForceInputMaskScalarField"
+        label="Force Input Mask Scalar Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseMaskScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Check this box to choose a non-default scalar field as mask
+          (default mask scalar field is named ttk::MaskScalarFieldName).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="InputMaskNew"
+          label="Mask Field"
+          command="SetInputArrayToProcess"
+          number_of_elements="5"
+          element_types="0 0 0 0 2"
+          default_values="1"
+          >
+        <ArrayListDomain
+          name="array_list"
+          input_domain_name="input_scalars"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ForceInputMaskScalarField"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="UseMaskScalarField"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Input mask field (used to mark vertices to smooth).
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Input" />
+        <Property name="NumberOfIterations" />
+        <Property name="ForceIdentifiersField" />
+        <Property name="VertexIdsField" />
+        <Property name="UseMaskScalarField" />
+        <Property name="ForceInputMaskScalarField" />
+        <Property name="InputMaskNew" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

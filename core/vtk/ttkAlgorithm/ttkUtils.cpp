@@ -1,15 +1,20 @@
 #include <ttkUtils.h>
 
-#include <limits>
-#include <vtkStringArray.h>
-
 #include <vtkAbstractArray.h>
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkIdTypeArray.h>
+#include <vtkNew.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
+#include <vtkUnstructuredGrid.h>
 
+#ifdef TTK_ENABLE_MPI_TIME
+#include <mpi.h>
+#endif
 int ttkUtils::replaceVariable(const std::string &iString,
                               vtkFieldData *fieldData,
                               std::string &oString,
@@ -317,4 +322,43 @@ void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
     }
     cellArray->InsertNextCell(verts);
   }
+}
+
+int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
+                                   vtkPoints *const points) {
+
+  if(dataSet == nullptr || points == nullptr) {
+    return 0;
+  }
+
+  if(!dataSet->IsA("vtkUnstructuredGrid") && !dataSet->IsA("vtkPolyData")) {
+    return 0;
+  }
+
+  const size_t nPoints = points->GetNumberOfPoints();
+  if(nPoints == 0) {
+    return 0;
+  }
+
+  vtkNew<vtkCellArray> cells{};
+  cells->InsertNextCell(nPoints);
+  for(size_t i = 0; i < nPoints; ++i) {
+    cells->InsertCellPoint(i);
+  }
+
+  if(dataSet->IsA("vtkUnstructuredGrid")) {
+    const auto vtu{vtkUnstructuredGrid::SafeDownCast(dataSet)};
+    if(vtu != nullptr) {
+      vtu->SetPoints(points);
+      vtu->SetCells(VTK_POLY_VERTEX, cells);
+    }
+  } else if(dataSet->IsA("vtkPolyData")) {
+    const auto vtp{vtkPolyData::SafeDownCast(dataSet)};
+    if(vtp != nullptr) {
+      vtp->SetPoints(points);
+      vtp->SetVerts(cells);
+    }
+  }
+
+  return 1;
 }

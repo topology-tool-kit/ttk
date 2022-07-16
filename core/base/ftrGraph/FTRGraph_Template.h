@@ -41,7 +41,7 @@ namespace ttk {
       // init some values
 
 #ifdef TTK_ENABLE_OPENMP
-      omp_set_num_threads(params_.threadNumber);
+      ParallelGuard pg{params_.threadNumber};
       omp_set_nested(1);
 #ifdef TTK_ENABLE_OMP_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
@@ -208,9 +208,10 @@ namespace ttk {
 
           // each task uses its local forests
           for(idVertex v = lowerBound; v < upperBound; ++v) {
-            std::tie(valences_.lower[v], valences_.upper[v])
-              = critPoints.getNumberOfLowerUpperComponents(
-                v, scalars_.getOffsets(), mesh_.getTriangulation());
+            bool lBoundary = false, uBoundary = false;
+            critPoints.getNumberOfLowerUpperComponents(
+              v, scalars_.getOffsets(), mesh_.getTriangulation(),
+              valences_.lower[v], valences_.upper[v], lBoundary, uBoundary);
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {

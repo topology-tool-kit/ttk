@@ -10,6 +10,11 @@
 ///
 ///
 /// \sa ttkQuadrangulationSubdivision.cpp % for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
 
 #pragma once
 
@@ -526,7 +531,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     }
 
     // compute barycentric coords of projection
-    std::vector<float> baryCoords;
+    std::array<float, 3> baryCoords{};
     Geometry::computeBarycentricCoordinates(
       &pm.x, &pn.x, &po.x, &res.x, baryCoords);
 

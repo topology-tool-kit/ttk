@@ -9,15 +9,16 @@
 ///
 /// \sa Triangulation
 
-#ifndef _ABSTRACTTRIANGULATION_H
-#define _ABSTRACTTRIANGULATION_H
+#pragma once
 
 // base code includes
+#include <Cache.h>
 #include <Geometry.h>
 #include <Wrapper.h>
 
 #include <array>
 #include <ostream>
+#include <unordered_map>
 
 #ifdef TTK_ENABLE_KAMIKAZE
 #define TTK_TRIANGULATION_INTERNAL(NAME) NAME
@@ -31,24 +32,42 @@
     call;                                                                 \
   }; break
 
-#define ttkTemplateMacro(triangulationType, call)                            \
-  switch(triangulationType) {                                                \
-    ttkTemplateMacroCase(                                                    \
-      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation, call); \
-    ttkTemplateMacroCase(                                                    \
-      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation, call); \
-    ttkTemplateMacroCase(ttk::Triangulation::Type::PERIODIC,                 \
-                         ttk::PeriodicImplicitTriangulation, call);          \
+#define ttkTemplateMacro(triangulationType, call)                              \
+  switch(triangulationType) {                                                  \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation, call);   \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitNoPreconditions, call); \
+    ttkTemplateMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT,            \
+                         ttk::ImplicitWithPreconditions, call);                \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::PERIODIC, ttk::PeriodicNoPreconditions, call); \
+    ttkTemplateMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC,            \
+                         ttk::PeriodicWithPreconditions, call);                \
+    ttkTemplateMacroCase(                                                      \
+      ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation, call);     \
   }
 
 namespace ttk {
+
+  // forward declaration of the ttk::dcg::DiscreteGradient class to
+  // give it access to the gradient cache (with a `friend`
+  // declaration)
+  namespace dcg {
+    class DiscreteGradient;
+  }
 
   class AbstractTriangulation : public Wrapper {
 
   public:
     AbstractTriangulation();
 
-    virtual ~AbstractTriangulation();
+    ~AbstractTriangulation() override;
+
+    AbstractTriangulation(const AbstractTriangulation &) = default;
+    AbstractTriangulation(AbstractTriangulation &&) = default;
+    AbstractTriangulation &operator=(const AbstractTriangulation &) = default;
+    AbstractTriangulation &operator=(AbstractTriangulation &&) = default;
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -161,7 +180,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getCellEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedCellEdges())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 1)
         return getCellNeighbors();
@@ -258,7 +277,7 @@ namespace ttk {
       getCellNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedCellNeighbors())
-        return NULL;
+        return nullptr;
 #endif
       return getCellNeighborsInternal();
     }
@@ -371,10 +390,10 @@ namespace ttk {
       getCellTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedCellTriangles())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 2)
         return getCellNeighbors();
@@ -445,10 +464,10 @@ namespace ttk {
     virtual inline const std::vector<std::array<SimplexId, 2>> *getEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdges())
-        return NULL;
+        return nullptr;
 #endif
       return getEdgesInternal();
     }
@@ -539,10 +558,10 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getEdgeLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdgeLinks())
-        return NULL;
+        return nullptr;
 #endif
       return getEdgeLinksInternal();
     }
@@ -645,10 +664,10 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getEdgeStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdgeStars())
-        return NULL;
+        return nullptr;
 #endif
       return getEdgeStarsInternal();
     }
@@ -750,10 +769,10 @@ namespace ttk {
       getEdgeTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedEdgeTriangles())
-        return NULL;
+        return nullptr;
 #endif
 
       if(getDimensionality() == 2)
@@ -916,7 +935,7 @@ namespace ttk {
     virtual inline const std::vector<std::array<SimplexId, 3>> *getTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedTriangles())
-        return NULL;
+        return nullptr;
 #endif
       return getTrianglesInternal();
     }
@@ -1012,10 +1031,10 @@ namespace ttk {
       getTriangleEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedTriangleEdges())
-        return NULL;
+        return nullptr;
 #endif
 
       return getTriangleEdgesInternal();
@@ -1111,10 +1130,10 @@ namespace ttk {
       getTriangleLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() != 3)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedTriangleLinks())
-        return NULL;
+        return nullptr;
 #endif
       return getTriangleLinksInternal();
     }
@@ -1210,10 +1229,10 @@ namespace ttk {
       getTriangleStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() != 3)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedTriangleStars())
-        return NULL;
+        return nullptr;
 #endif
       return getTriangleStarsInternal();
     }
@@ -1353,7 +1372,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getVertexEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexEdges())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 1)
         return getVertexStars();
@@ -1443,7 +1462,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getVertexLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexLinks())
-        return NULL;
+        return nullptr;
 #endif
       return getVertexLinksInternal();
     }
@@ -1524,7 +1543,7 @@ namespace ttk {
       getVertexNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexNeighbors())
-        return NULL;
+        return nullptr;
 #endif
       return getVertexNeighborsInternal();
     }
@@ -1626,7 +1645,7 @@ namespace ttk {
     virtual inline const std::vector<std::vector<SimplexId>> *getVertexStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedVertexStars())
-        return NULL;
+        return nullptr;
 #endif
       return getVertexStarsInternal();
     }
@@ -1729,10 +1748,10 @@ namespace ttk {
       getVertexTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
-        return NULL;
+        return nullptr;
 
       if(!hasPreconditionedVertexTriangles())
-        return NULL;
+        return nullptr;
 #endif
       if(getDimensionality() == 2)
         return getVertexStars();
@@ -2396,12 +2415,13 @@ namespace ttk {
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
-    inline int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
-      SimplexId vertexId[2];
+    inline int getEdgeIncenter(const SimplexId edgeId,
+                               float incenter[3]) const {
+      std::array<SimplexId, 2> vertexId{};
       getEdgeVertex(edgeId, 0, vertexId[0]);
       getEdgeVertex(edgeId, 1, vertexId[1]);
 
-      float p[6];
+      std::array<float, 6> p{};
       getVertexPoint(vertexId[0], p[0], p[1], p[2]);
       getVertexPoint(vertexId[1], p[3], p[4], p[5]);
 
@@ -2415,10 +2435,10 @@ namespace ttk {
     /**
      * Compute the incenter of the points of the given triangle identifier.
      */
-    inline int getTriangleIncenter(SimplexId triangleId,
+    inline int getTriangleIncenter(const SimplexId triangleId,
                                    float incenter[3]) const {
 
-      SimplexId vertexId[3];
+      std::array<SimplexId, 3> vertexId{};
       if(getDimensionality() == 2) {
         getCellVertex(triangleId, 0, vertexId[0]);
         getCellVertex(triangleId, 1, vertexId[1]);
@@ -2429,15 +2449,15 @@ namespace ttk {
         getTriangleVertex(triangleId, 2, vertexId[2]);
       }
 
-      float p[9];
+      std::array<float, 9> p{};
       getVertexPoint(vertexId[0], p[0], p[1], p[2]);
       getVertexPoint(vertexId[1], p[3], p[4], p[5]);
       getVertexPoint(vertexId[2], p[6], p[7], p[8]);
 
-      float d[3];
-      d[0] = Geometry::distance(p + 3, p + 6);
-      d[1] = Geometry::distance(p, p + 6);
-      d[2] = Geometry::distance(p, p + 3);
+      std::array<float, 3> d{};
+      d[0] = Geometry::distance(&p[3], &p[6]);
+      d[1] = Geometry::distance(&p[0], &p[6]);
+      d[2] = Geometry::distance(&p[0], &p[3]);
       const float sum = d[0] + d[1] + d[2];
 
       d[0] = d[0] / sum;
@@ -2455,16 +2475,17 @@ namespace ttk {
      * Compute the barycenter of the incenters of the triangles of the given
        tetra identifier.
      */
-    inline int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
+    inline int getTetraIncenter(const SimplexId tetraId,
+                                float incenter[3]) const {
       incenter[0] = 0.0f;
       incenter[1] = 0.0f;
       incenter[2] = 0.0f;
 
-      float p[3];
+      std::array<float, 3> p{};
       for(int i = 0; i < 4; ++i) {
         SimplexId triangleId;
         getCellTriangle(tetraId, i, triangleId);
-        getTriangleIncenter(triangleId, p);
+        getTriangleIncenter(triangleId, p.data());
         incenter[0] += p[0];
         incenter[1] += p[1];
         incenter[2] += p[2];
@@ -2480,8 +2501,9 @@ namespace ttk {
     /**
      * Compute the geometric barycenter of a given cell.
      */
-    inline int
-      getCellIncenter(SimplexId cellid, int dim, float incenter[3]) const {
+    inline int getCellIncenter(const SimplexId cellid,
+                               const int dim,
+                               float incenter[3]) const {
       switch(dim) {
         case 0:
           getVertexPoint(cellid, incenter[0], incenter[1], incenter[2]);
@@ -2499,6 +2521,168 @@ namespace ttk {
       return 0;
     }
 
+#ifdef TTK_ENABLE_MPI
+    inline void setGlobalIds(const LongSimplexId *const cellGid,
+                             const unsigned char *const ghostCellMask) {
+      this->cellGid_ = cellGid;
+      this->ghostCellMask_ = ghostCellMask;
+    }
+
+    virtual int preconditionDistributedCells() {
+      return 0;
+    }
+    virtual int preconditionDistributedEdges() {
+      return 0;
+    }
+    virtual int preconditionDistributedTriangles() {
+      return 0;
+    }
+    virtual int preconditionDistributedVertices() {
+      return 0;
+    }
+
+    virtual inline SimplexId getEdgeGlobalId(const SimplexId &leid) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
+        this->printErr("Only 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("EdgeGlobalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedEdges() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getEdgeGlobalIdInternal(leid);
+    }
+    virtual inline SimplexId getEdgeLocalId(const SimplexId &geid) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
+        this->printErr("Only 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("EdgeLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedEdges() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getEdgeLocalIdInternal(geid);
+    }
+    virtual inline SimplexId getTriangleGlobalId(const SimplexId &ltid) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 3) {
+        this->printErr("Only 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("TriangleGlobalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedTriangles() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getTriangleGlobalIdInternal(ltid);
+    }
+    virtual inline SimplexId getTriangleLocalId(const SimplexId &gtid) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 3) {
+        this->printErr("Only 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("TriangleLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedTriangles() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getTriangleLocalIdInternal(gtid);
+    }
+    virtual inline SimplexId getVertexGlobalId(const SimplexId &leid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexGlobalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexGlobalIdInternal(leid);
+    }
+    virtual inline const std::unordered_map<SimplexId, SimplexId> *
+      getVertexGlobalIdMap() const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return nullptr;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexGlobalMap query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return nullptr;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexGlobalIdMapInternal();
+    }
+    virtual inline SimplexId getVertexLocalId(const SimplexId &geid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexLocalIdInternal(geid);
+    }
+
+  protected:
+    virtual inline SimplexId
+      getEdgeGlobalIdInternal(const SimplexId &ttkNotUsed(leid)) {
+      return 0;
+    }
+    virtual inline SimplexId
+      getEdgeLocalIdInternal(const SimplexId &ttkNotUsed(geid)) {
+      return 0;
+    }
+    virtual inline SimplexId
+      getTriangleGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) {
+      return 0;
+    }
+    virtual inline SimplexId
+      getTriangleLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) {
+      return 0;
+    }
+    virtual inline SimplexId
+      getVertexGlobalIdInternal(const SimplexId &ttkNotUsed(ltid)) const {
+      return 0;
+    }
+    virtual inline const std::unordered_map<SimplexId, SimplexId> *
+      getVertexGlobalIdMapInternal() const {
+      return nullptr;
+    }
+    virtual inline SimplexId
+      getVertexLocalIdInternal(const SimplexId &ttkNotUsed(gtid)) const {
+      return 0;
+    }
+
+#endif // TTK_ENABLE_MPI
+
   protected:
     virtual int getCellEdgeInternal(const SimplexId &ttkNotUsed(cellId),
                                     const int &ttkNotUsed(localEdgeId),
@@ -2513,7 +2697,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2530,7 +2714,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellNeighborsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2547,7 +2731,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2568,7 +2752,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::array<SimplexId, 2>> *
       getEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2585,7 +2769,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeLinksInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2602,7 +2786,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeStarsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2619,7 +2803,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2647,7 +2831,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::array<SimplexId, 3>> *
       getTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2664,7 +2848,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2681,7 +2865,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleLinksInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2698,7 +2882,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleStarsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2722,7 +2906,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexEdgesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2739,7 +2923,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexLinksInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2756,7 +2940,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexNeighborsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2781,7 +2965,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexStarsInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline int
@@ -2798,22 +2982,22 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexTrianglesInternal() {
-      return NULL;
+      return nullptr;
     }
 
     virtual inline bool
       isEdgeOnBoundaryInternal(const SimplexId &ttkNotUsed(edgeId)) const {
-      return 0;
+      return false;
     }
 
     virtual inline bool isTriangleOnBoundaryInternal(
       const SimplexId &ttkNotUsed(triangleId)) const {
-      return 0;
+      return false;
     }
 
     virtual inline bool
       isVertexOnBoundaryInternal(const SimplexId &ttkNotUsed(vertexId)) const {
-      return 0;
+      return false;
     }
 
     inline bool hasPreconditionedBoundaryEdges() const {
@@ -3093,7 +3277,7 @@ namespace ttk {
     }
 
     // empty wrapping to VTK for now
-    bool needsToAbort() {
+    bool needsToAbort() override {
       return false;
     }
 
@@ -3193,7 +3377,7 @@ namespace ttk {
                                const std::string &tableName = "",
                                std::ostream &stream = std::cout) const;
 
-    int updateProgress(const float &ttkNotUsed(progress)) {
+    int updateProgress(const float &ttkNotUsed(progress)) override {
       return 0;
     }
 
@@ -3233,10 +3417,102 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> cellEdgeVector_{};
     std::vector<std::vector<SimplexId>> cellTriangleVector_{};
     std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
+
+#ifdef TTK_ENABLE_MPI
+    // "GlobalCellIds" from "Generate Global Ids"
+    const LongSimplexId *cellGid_{};
+    // "vtkGhostType" from "Ghost Cells Generator"
+    const unsigned char *ghostCellMask_{};
+
+    // global cell id -> owner rank (filled/used only by rank 0)
+    std::vector<int> cellGidToRank_{};
+    std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
+
+    std::vector<SimplexId> edgeLidToGid_{};
+    std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
+    std::vector<SimplexId> triangleLidToGid_{};
+    std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
+    std::vector<SimplexId> vertexLidToGid_{};
+    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
+
+    bool hasPreconditionedDistributedCells_{false};
+    bool hasPreconditionedDistributedEdges_{false};
+    bool hasPreconditionedDistributedTriangles_{false};
+    bool hasPreconditionedDistributedVertices_{false};
+
+    long int *globalIdsArray_{nullptr};
+    int *rankArray_{nullptr};
+
+  public:
+    void setGlobalIdsArray(long int *array) {
+      this->globalIdsArray_ = array;
+    }
+
+    long int *getGlobalIdsArray() const {
+      return this->globalIdsArray_;
+    }
+
+    void setRankArray(int *rankArray) {
+      this->rankArray_ = rankArray;
+    }
+
+    int *getRankArray() const {
+      return this->rankArray_;
+    }
+
+#endif // TTK_ENABLE_MPI
+
+    // only ttk::dcg::DiscreteGradient should use what's defined below.
+    friend class ttk::dcg::DiscreteGradient;
+
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    using gradIdType = char;
+#else
+    using gradIdType = SimplexId;
+#endif
+
+    /**
+     * @brief Discrete gradient internal struct
+     *
+     * 0: paired edge id per vertex
+     * 1: paired vertex id per edge
+     * 2: paired triangle id per edge
+     * 3: paired edge id per triangle
+     * 4: paired tetra id per triangle
+     * 5: paired triangle id per tetra
+     * Values: -1 if critical or paired to a cell of another dimension
+     *
+     * Is used as a value type for \ref gradientCacheType.
+     */
+    using gradientType = std::array<std::vector<gradIdType>, 6>;
+    /**
+     * @brief Key type for \ref gradientCacheType.
+     *
+     * The key type models a scalar field buffer. The first element is
+     * a const void pointer to the beginning of the buffer and the
+     * second stores the timestamp of the last modification of the
+     * scalar field.
+     */
+    using gradientKeyType = std::pair<const void *, size_t>;
+    /*
+     * @brief Type for caching Discrete Gradient internal data structure.
+     *
+     * Uses the ttk::LRUCache with \ref gradientKeytype as key and
+     * \ref gradientType as value types.
+     */
+    using gradientCacheType = LRUCache<gradientKeyType, gradientType>;
+    /*
+     * @brief Access to the gradientCache_ mutable member variable
+     *
+     * \warning This should only be used by the
+     * ttk::dcg::DiscreteGradient class.
+     */
+    inline gradientCacheType *getGradientCacheHandler() const {
+      return &this->gradientCache_;
+    }
+
+    // store, for each triangulation object and per offset field, a
+    // reference to the discrete gradient internal structure
+    mutable gradientCacheType gradientCache_{};
   };
 } // namespace ttk
-
-// if the package is not a template, comment the following line
-// #include                  <AbstractTriangulation.cpp>
-
-#endif // _ABSTRACTTRIANGULATION_H

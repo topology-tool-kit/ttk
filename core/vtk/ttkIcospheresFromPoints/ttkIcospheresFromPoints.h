@@ -8,6 +8,21 @@
 ///
 /// \sa ttk::IcoSphere
 /// \sa ttk::ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+/// example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
+/// Morse molecule example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">
+/// Tectonic puzzle example</a> \n
+///
 
 #pragma once
 
@@ -32,7 +47,7 @@ public:
 
 protected:
   ttkIcospheresFromPoints();
-  ~ttkIcospheresFromPoints();
+  ~ttkIcospheresFromPoints() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

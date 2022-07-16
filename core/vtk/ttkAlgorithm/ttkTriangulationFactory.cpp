@@ -2,8 +2,10 @@
 
 #include <Triangulation.h>
 #include <ttkUtils.h>
+#include <vtkCellData.h>
 #include <vtkCellTypes.h>
 #include <vtkImageData.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -189,8 +191,6 @@ RegistryTriangulation
 RegistryTriangulation
   ttkTriangulationFactory::CreateExplicitTriangulation(vtkPointSet *pointSet) {
   ttk::Timer timer;
-  this->printMsg("Initializing Explicit Triangulation", 0, 0,
-                 ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
   auto points = pointSet->GetPoints();
   if(!points) {
@@ -205,6 +205,16 @@ RegistryTriangulation
   }
 
   auto triangulation = RegistryTriangulation(new ttk::Triangulation());
+  int hasIndexArray
+    = pointSet->GetPointData()->HasArray(ttk::compactTriangulationIndex);
+
+  if(hasIndexArray) {
+    this->printMsg("Initializing Compact Triangulation", 0, 0,
+                   ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
+  } else {
+    this->printMsg("Initializing Explicit Triangulation", 0, 0,
+                   ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
+  }
 
   // Points
   {
@@ -216,8 +226,16 @@ RegistryTriangulation
     }
 
     void *pointDataArray = ttkUtils::GetVoidPointer(points);
-    triangulation->setInputPoints(
-      points->GetNumberOfPoints(), pointDataArray, pointDataType == VTK_DOUBLE);
+    if(hasIndexArray) {
+      vtkAbstractArray *indexArray = pointSet->GetPointData()->GetAbstractArray(
+        ttk::compactTriangulationIndex);
+      triangulation->setStellarInputPoints(
+        points->GetNumberOfPoints(), pointDataArray,
+        (int *)indexArray->GetVoidPointer(0), pointDataType == VTK_DOUBLE);
+    } else {
+      triangulation->setInputPoints(points->GetNumberOfPoints(), pointDataArray,
+                                    pointDataType == VTK_DOUBLE);
+    }
   }
 
   // check if cell types are simplices
@@ -256,7 +274,13 @@ RegistryTriangulation
     auto offsets = static_cast<vtkIdType *>(
       ttkUtils::GetVoidPointer(cells->GetOffsetsArray()));
 
-    int status = triangulation->setInputCells(nCells, connectivity, offsets);
+    int status;
+    if(hasIndexArray) {
+      status
+        = triangulation->setStellarInputCells(nCells, connectivity, offsets);
+    } else {
+      status = triangulation->setInputCells(nCells, connectivity, offsets);
+    }
 
     if(status != 0) {
       this->printErr(
@@ -265,9 +289,15 @@ RegistryTriangulation
     }
   }
 
-  this->printMsg("Initializing Explicit Triangulation", 1,
-                 timer.getElapsedTime(), ttk::debug::LineMode::NEW,
-                 ttk::debug::Priority::DETAIL);
+  if(hasIndexArray) {
+    this->printMsg("Initializing Compact Triangulation", 1,
+                   timer.getElapsedTime(), ttk::debug::LineMode::NEW,
+                   ttk::debug::Priority::DETAIL);
+  } else {
+    this->printMsg("Initializing Explicit Triangulation", 1,
+                   timer.getElapsedTime(), ttk::debug::LineMode::NEW,
+                   ttk::debug::Priority::DETAIL);
+  }
 
   return triangulation;
 }
@@ -292,9 +322,8 @@ RegistryTriangulation
   return nullptr;
 }
 
-ttk::Triangulation *
-  ttkTriangulationFactory::GetTriangulation(int debugLevel,
-                                            vtkDataSet *object) {
+ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
+  int debugLevel, float cacheRatio, vtkDataSet *object) {
   auto instance = &ttkTriangulationFactory::Instance;
   instance->setDebugLevel(debugLevel);
 
@@ -336,8 +365,10 @@ ttk::Triangulation *
     "# Registered Triangulations: " + std::to_string(instance->registry.size()),
     ttk::debug::Priority::VERBOSE);
 
-  if(triangulation)
+  if(triangulation) {
     triangulation->setDebugLevel(debugLevel);
+    triangulation->setCacheSize(cacheRatio);
+  }
 
   return triangulation;
 }

@@ -44,7 +44,7 @@ public:
 
 protected:
   ttkMatrixToHeatMap();
-  ~ttkMatrixToHeatMap() = default;
+  ~ttkMatrixToHeatMap() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

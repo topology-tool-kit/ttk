@@ -30,6 +30,11 @@
 ///     |                   |
 ///     a0--s0d--s1d-- ...  b0
 ///
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
@@ -44,7 +49,7 @@ namespace ttk {
     MeshGraph() {
       this->setDebugMsgPrefix("MeshGraph");
     }
-    ~MeshGraph() = default;
+    ~MeshGraph() override = default;
 
     inline size_t computeNumberOfOutputPoints(const size_t &nInputPoints,
                                               const size_t &nInputCells,
@@ -477,7 +482,7 @@ int ttk::MeshGraph::execute2(
       IT no1 = n1 * 6;
 
       size_t q2 = q + i * outputPointsSubdivisonOffset;
-      for(float j = 1; j <= nSubdivisions; j++) {
+      for(size_t j = 1; j <= nSubdivisions; j++) {
         computeBezierPoint(no0, no1, q2, j / nSubdivisionsP1);
         computeBezierPoint(no0 + 3, no1 + 3, q2 + 3, j / nSubdivisionsP1);
 
@@ -516,16 +521,16 @@ int ttk::MeshGraph::execute2(
       outputConnectivityArray[q2++] = c0;
       outputConnectivityArray[q2++] = c1;
 
-      size_t temp = subdivisionOffset + i * nSubdivisionPoints;
+      IT temp = subdivisionOffset + i * nSubdivisionPoints;
 
       for(size_t j = 0; j < nSubdivisions; j++)
-        outputConnectivityArray[q2++] = (IT)(temp + j * 2 + 1);
+        outputConnectivityArray[q2++] = temp + j * 2 + 1;
 
       outputConnectivityArray[q2++] = c2;
       outputConnectivityArray[q2++] = c3;
 
       for(int j = nSubdivisions - 1; j >= 0; j--)
-        outputConnectivityArray[q2++] = (IT)(temp + j * 2);
+        outputConnectivityArray[q2++] = temp + j * 2;
     }
 
     for(size_t i = 0; i <= nInputCells; i++)

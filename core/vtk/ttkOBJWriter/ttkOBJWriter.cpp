@@ -24,8 +24,7 @@ ttkOBJWriter::ttkOBJWriter() {
   this->setDebugMsgPrefix("OBJWriter");
 }
 
-ttkOBJWriter::~ttkOBJWriter() {
-}
+ttkOBJWriter::~ttkOBJWriter() = default;
 
 int ttkOBJWriter::OpenFile() {
 

@@ -11,10 +11,19 @@ install(
   FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/dimensionReduction.py
   DESTINATION
-    scripts/ttk
+    ${TTK_SCRIPTS_PATH}
   )
 
-target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_PREFIX}/scripts/ttk)
+# CPack doesn't accept absolute paths in install DESTINATION, must
+# pass a relative path to TTK_SCRIPTS_PATH and append
+# ${CMAKE_INSTALL_PREFIX} before giving it to dimensionReduction
+if(IS_ABSOLUTE ${TTK_SCRIPTS_PATH})
+  set(TTK_SCRIPTS_ABS_PATH "${TTK_SCRIPTS_PATH}")
+else()
+  set(TTK_SCRIPTS_ABS_PATH "${CMAKE_INSTALL_PREFIX}/${TTK_SCRIPTS_PATH}")
+endif()
+
+target_compile_definitions(dimensionReduction PUBLIC TTK_SCRIPTS_PATH=${TTK_SCRIPTS_ABS_PATH})
 
 if(TTK_ENABLE_SCIKIT_LEARN)
   target_compile_definitions(dimensionReduction PRIVATE TTK_ENABLE_SCIKIT_LEARN)

@@ -41,8 +41,16 @@
 ///
 /// \sa vtkGeometrySmoother
 /// \sa ttk::ScalarFieldSmoother
-#ifndef _TTK_SCALAR_FIELD_SMOOTHER_H
-#define _TTK_SCALAR_FIELD_SMOOTHER_H
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
+///   Generators Dark Sky example</a> \n
+
+#pragma once
 
 // VTK includes
 
@@ -85,5 +93,3 @@ private:
   int NumberOfIterations{1};
   bool ForceInputMaskScalarField{false};
 };
-
-#endif // _TTK_SCALAR_FIELD_SMOOTHER_H

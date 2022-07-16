@@ -28,7 +28,7 @@ public:
 
 protected:
   ttkStringArrayConverter();
-  ~ttkStringArrayConverter() = default;
+  ~ttkStringArrayConverter() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

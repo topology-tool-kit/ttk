@@ -1,4 +1,4 @@
-#include "BaseClass.h"
+#include <Shuffle.h>
 #include <ttkIdentifierRandomizer.h>
 
 #include <vtkCellData.h>
@@ -12,6 +12,7 @@
 #include <ttkUtils.h>
 
 #include <map>
+#include <numeric>
 #include <random>
 
 vtkStandardNewMacro(ttkIdentifierRandomizer);
@@ -47,23 +48,31 @@ int shuffleScalarFieldValues(const T *const inputField,
                              T *const outputField,
                              const int nValues,
                              const int seed,
+                             const bool compactRange,
                              const int nThreads = 1) {
 
   // copy input field into vector
   std::vector<T> inputValues(inputField, inputField + nValues);
 
   // reduce the copy
-  PSORT(nThreads)(inputValues.begin(), inputValues.end());
+  TTK_PSORT(nThreads, inputValues.begin(), inputValues.end());
   const auto last = std::unique(inputValues.begin(), inputValues.end());
   inputValues.erase(last, inputValues.end());
 
   // copy the range of values
-  std::vector<T> shuffledValues(inputValues);
+  std::vector<T> shuffledValues(inputValues.size());
+  if(compactRange) {
+    std::iota(shuffledValues.begin(), shuffledValues.end(), T{});
+  } else {
+    std::copy(inputValues.begin(), inputValues.end(), shuffledValues.begin());
+  }
 
   // shuffle them using the seed
   std::mt19937 random_engine{};
   random_engine.seed(seed);
-  std::shuffle(shuffledValues.begin(), shuffledValues.end(), random_engine);
+  // use the Fisher-Yates algorithm instead of std::shuffle, whose
+  // results are platform-dependent
+  ttk::shuffle(shuffledValues, random_engine);
 
   // link original value to shuffled value correspondance
   std::map<T, T> originalToShuffledValues{};
@@ -129,7 +138,8 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *ttkNotUsed(request),
     vtkTemplateMacro(shuffleScalarFieldValues(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputArray)),
-      outputArray->GetNumberOfTuples(), this->RandomSeed, this->threadNumber_));
+      outputArray->GetNumberOfTuples(), this->RandomSeed, this->CompactRange,
+      this->threadNumber_));
   }
 
   if(isPointData)

@@ -10,7 +10,7 @@
 /// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
 /// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
 /// ...\n
-/// \param InputN Input ensemble scalar field #N (vtkDataSet)
+/// \param InputN Input ensemble scalar field #%N (vtkDataSet)
 /// \param Output0 Lower and upper bound fields (vtkDataSet)
 /// \param Output1 Histogram estimations of the vertex probability density
 /// functions (vtkDataSet)

@@ -84,7 +84,12 @@ function(ttk_add_base_template_library library)
   string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
   if(uppercase_CMAKE_BUILD_TYPE MATCHES RELEASE)
     if(TTK_ENABLE_CPU_OPTIMIZATION AND NOT MSVC)
-      target_compile_options(${library} INTERFACE -march=native -O3)
+      if (CMAKE_OSX_ARCHITECTURES MATCHES arm64) # Apple Silicon
+        target_compile_options(${library} INTERFACE -mcpu=apple-m1)
+      else()
+        # -O3 already enabled by CMake's Release configuration
+        target_compile_options(${library} INTERFACE -march=native)
+      endif()
     endif()
   endif()
 
@@ -151,6 +156,9 @@ function(ttk_set_compile_options library)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI)
     target_include_directories(${library} PUBLIC ${MPI_CXX_INCLUDE_PATH})
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
+    if (TTK_ENABLE_MPI_TIME)
+      target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI_TIME)
+    endif()
   endif()
 
   if (TTK_ENABLE_64BIT_IDS)

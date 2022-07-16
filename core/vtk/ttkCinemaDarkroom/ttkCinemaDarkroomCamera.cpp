@@ -24,8 +24,7 @@ ttkCinemaDarkroomCamera::ttkCinemaDarkroomCamera() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaDarkroomCamera::~ttkCinemaDarkroomCamera() {
-}
+ttkCinemaDarkroomCamera::~ttkCinemaDarkroomCamera() = default;
 
 int ttkCinemaDarkroomCamera::FillInputPortInformation(int, vtkInformation *) {
   return 0;

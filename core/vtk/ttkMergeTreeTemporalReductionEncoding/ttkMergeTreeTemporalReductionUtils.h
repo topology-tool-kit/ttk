@@ -1,11 +1,10 @@
-/// \ingroup base
+/// \ingroup vtk
 /// \class vtk::ttkMergeTreeTemporalReductionUtils
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
 
-#ifndef _TTKMERGETREETEMPORALREDUCTIONUTILS_H
-#define _TTKMERGETREETEMPORALREDUCTIONUTILS_H
+#pragma once
 
 #include <FTMTreeUtils.h>
 
@@ -13,23 +12,21 @@
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
-using namespace ttk;
-using namespace ftm;
-
 // -------------------------------------------------------------------------------------
 // Temporal Subsampling
 // -------------------------------------------------------------------------------------
 template <class dataType>
 void makeTemporalSubsamplingOutput(
-  std::vector<MergeTree<dataType>> &intermediateMTrees,
-  std::vector<std::vector<double>> &embedding,
-  std::vector<MergeTree<dataType>> &allMT,
-  std::vector<int> removed,
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1,
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc1,
-  bool displayRemoved = false) {
+  const std::vector<ttk::ftm::MergeTree<dataType>> &intermediateMTrees,
+  const std::vector<std::vector<double>> &embedding,
+  const std::vector<ttk::ftm::MergeTree<dataType>> &ttkNotUsed(allMT),
+  const std::vector<int> &removed,
+  vtkUnstructuredGrid *const vtkOutputNode1,
+  vtkUnstructuredGrid *const vtkOutputArc1,
+  const bool displayRemoved = false) {
+
   auto fullSize = intermediateMTrees.size() + removed.size();
-  std::vector<SimplexId> nodeSimplexId(fullSize);
+  std::vector<ttk::SimplexId> nodeSimplexId(fullSize);
   vtkNew<vtkIntArray> treeId{};
   treeId->SetName("TreeId");
   vtkNew<vtkIntArray> nodePathId{};
@@ -43,9 +40,8 @@ void makeTemporalSubsamplingOutput(
   vtkNew<vtkIntArray> arcId{};
   arcId->SetName("ArcId");
 
-  vtkSmartPointer<vtkUnstructuredGrid> vtkArcs
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkUnstructuredGrid> vtkArcs{};
+  vtkNew<vtkPoints> points{};
   for(unsigned int i = 0; i < embedding[0].size(); ++i) {
     if(not displayRemoved and i >= intermediateMTrees.size())
       continue;
@@ -185,20 +181,20 @@ void makeTemporalSubsamplingOutput(
 
 template <class dataType>
 void makeTemporalSubsamplingETDOutput(
-  std::vector<MergeTree<dataType>> &intermediateMTrees,
-  std::vector<double> &emptyTreeDistances,
-  std::vector<MergeTree<dataType>> &allMT,
-  std::vector<int> removed,
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1,
-  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc1,
-  double DistanceAxisStretch) {
-  std::vector<std::vector<double>> embedding(2);
-  for(int i = 0; i < (int)intermediateMTrees.size() + (int)removed.size();
-      ++i) {
+  const std::vector<ttk::ftm::MergeTree<dataType>> &intermediateMTrees,
+  const std::vector<double> &emptyTreeDistances,
+  const std::vector<ttk::ftm::MergeTree<dataType>> &allMT,
+  const std::vector<int> removed,
+  vtkUnstructuredGrid *const vtkOutputNode1,
+  vtkUnstructuredGrid *const vtkOutputArc1,
+  const double DistanceAxisStretch) {
+
+  std::array<std::vector<double>, 2> embedding{};
+  for(size_t i = 0; i < intermediateMTrees.size() + removed.size(); ++i) {
     double y = emptyTreeDistances[i] * DistanceAxisStretch;
     double x = i;
-    if(i >= (int)intermediateMTrees.size())
-      x = removed[i - (int)intermediateMTrees.size()];
+    if(i >= intermediateMTrees.size())
+      x = removed[i - intermediateMTrees.size()];
 
     embedding[0].push_back(x);
     embedding[1].push_back(y);
@@ -209,5 +205,3 @@ void makeTemporalSubsamplingETDOutput(
                                           removed, vtkOutputNode1,
                                           vtkOutputArc1);
 }
-
-#endif

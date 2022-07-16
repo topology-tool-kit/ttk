@@ -23,6 +23,18 @@
 /// VTK pipeline.
 ///
 /// \sa ttk::IdentifierRandomizer
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+/// processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">
+///   KarhunenLove Digits 64Dimensions example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">
+/// Tectonic puzzle example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/tribute/">
+/// Tribute example</a> \n
 #pragma once
 
 // VTK includes -- to adapt
@@ -47,6 +59,9 @@ public:
   vtkGetMacro(RandomSeed, int);
   vtkSetMacro(RandomSeed, int);
 
+  vtkGetMacro(CompactRange, bool);
+  vtkSetMacro(CompactRange, bool);
+
 protected:
   ttkIdentifierRandomizer();
 
@@ -60,4 +75,5 @@ protected:
 
 private:
   int RandomSeed{};
+  bool CompactRange{false};
 };

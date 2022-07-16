@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMetricDistortion" class="ttkMetricDistortion" label="TTK MetricDistortion">
+      <Documentation long_help="MetricDistortion Long" short_help="MetricDistortion Short">This filter computes distance, area and curvature information about a surface and an optionnal distance matrix (giving the distance between the points of the surface in a metric space).</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->      
+      <InputProperty
+        name="Surface"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="TableDistanceMatrix"
+        label="Distance Matrix (optional)"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <Documentation>
+          
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+
+      <!-- Create a UI group that contains all output parameter widgets (here only one) -->
+      
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

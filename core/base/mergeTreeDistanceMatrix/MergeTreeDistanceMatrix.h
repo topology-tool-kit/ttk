@@ -6,9 +6,10 @@
 /// This VTK filter uses the ttk::MergeTreeDistanceMatrix module to compute the
 /// distance matrix of a group of merge trees.
 ///
-
-#ifndef _MERGETREEDISTANCEMATRIX_H
-#define _MERGETREEDISTANCEMATRIX_H
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
 
 #pragma once
 
@@ -35,26 +36,35 @@ namespace ttk {
                                     // printed at the
       // beginning of every msg
     }
-    ~MergeTreeDistanceMatrix() = default;
+    ~MergeTreeDistanceMatrix() override = default;
 
     /**
      * Implementation of the algorithm.
      */
     template <class dataType>
-    void execute(std::vector<MergeTree<dataType>> trees,
+    void execute(std::vector<ftm::MergeTree<dataType>> &trees,
+                 std::vector<ftm::MergeTree<dataType>> &trees2,
                  std::vector<std::vector<double>> &distanceMatrix) {
       executePara<dataType>(trees, distanceMatrix);
+      if(trees2.size() != 0) {
+        useDoubleInput_ = true;
+        std::vector<std::vector<double>> distanceMatrix2(
+          trees2.size(), std::vector<double>(trees2.size()));
+        executePara<dataType>(trees2, distanceMatrix2, false);
+        mixDistancesMatrix(distanceMatrix, distanceMatrix2);
+      }
     }
 
     template <class dataType>
-    void executePara(std::vector<MergeTree<dataType>> trees,
-                     std::vector<std::vector<double>> &distanceMatrix) {
+    void executePara(std::vector<ftm::MergeTree<dataType>> &trees,
+                     std::vector<std::vector<double>> &distanceMatrix,
+                     bool isFirstInput = true) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(this->threadNumber_)
       {
 #pragma omp single nowait
 #endif
-        executeParaImpl<dataType>(trees, distanceMatrix);
+        executeParaImpl<dataType>(trees, distanceMatrix, isFirstInput);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
       } // pragma omp parallel
@@ -62,16 +72,19 @@ namespace ttk {
     }
 
     template <class dataType>
-    void executeParaImpl(std::vector<MergeTree<dataType>> trees,
-                         std::vector<std::vector<double>> &distanceMatrix) {
+    void executeParaImpl(std::vector<ftm::MergeTree<dataType>> &trees,
+                         std::vector<std::vector<double>> &distanceMatrix,
+                         bool isFirstInput = true) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(i) untied shared(distanceMatrix)
+#pragma omp task firstprivate(i) UNTIED() shared(distanceMatrix, trees)
         {
 #endif
-          std::stringstream stream;
-          stream << i << " / " << distanceMatrix.size();
-          printMsg(stream.str());
+          if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
+            std::stringstream stream;
+            stream << i << " / " << distanceMatrix.size();
+            printMsg(stream.str());
+          }
 
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
@@ -101,6 +114,12 @@ namespace ttk {
             mergeTreeDistance.setSaveTree(true);
             mergeTreeDistance.setCleanTree(true);
             mergeTreeDistance.setIsCalled(true);
+            mergeTreeDistance.setPostprocess(false);
+            if(useDoubleInput_) {
+              double weight = mixDistancesMinMaxPairWeight(isFirstInput);
+              mergeTreeDistance.setMinMaxPairWeight(weight);
+              mergeTreeDistance.setDistanceSquared(true);
+            }
             std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
             distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
               trees[i], trees[j], outputMatching);
@@ -116,5 +135,3 @@ namespace ttk {
   }; // MergeTreeDistanceMatrix class
 
 } // namespace ttk
-
-#endif

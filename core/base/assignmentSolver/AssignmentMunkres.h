@@ -2,16 +2,10 @@
 /// \class ttk::AssignmentMunkres
 /// \author Maxime Soler <soler.maxime@total.com>
 
-#ifndef _ASSIGNMENTMUNKRES_H
-#define _ASSIGNMENTMUNKRES_H
-
-#include <Debug.h>
-
-#include "AssignmentSolver.h"
-
 #pragma once
 
-#include <Debug.h>
+#include <AssignmentSolver.h>
+
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -27,17 +21,17 @@ namespace ttk {
       this->setDebugMsgPrefix("AssignmentMunkres");
     }
 
-    ~AssignmentMunkres() = default;
+    ~AssignmentMunkres() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<MatchingType> &matchings) override;
 
-    inline void clear() {
+    inline void clear() override {
       AssignmentSolver<dataType>::clear();
       pathCount = 0;
       createdZeros.clear();
     }
 
-    inline int setInput(std::vector<std::vector<dataType>> &C_) {
+    inline int setInput(std::vector<std::vector<dataType>> &C_) override {
       AssignmentSolver<dataType>::setInput(C_);
 
       createdZeros.clear();
@@ -135,7 +129,7 @@ namespace ttk {
 
     int stepSeven(int &step);
 
-    int affect(std::vector<asgnMatchingTuple> &matchings,
+    int affect(std::vector<MatchingType> &matchings,
                const std::vector<std::vector<dataType>> &C);
 
     int computeAffectationCost(const std::vector<std::vector<dataType>> &C);
@@ -169,9 +163,6 @@ namespace ttk {
     }
   };
 
-// Include in namespace ttk
-#include <AssignmentMunkresImpl.h>
-
 } // namespace ttk
 
-#endif
+#include <AssignmentMunkresImpl.h>

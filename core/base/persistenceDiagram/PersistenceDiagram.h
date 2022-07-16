@@ -25,60 +25,118 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-///  Two backends can be chosen for the computation:
+/// Five backends are available for the computation:
 ///
-///  1) FTM
+///  1) FTM \n
 /// \b Related \b publication \n
 /// "Task-based Augmented Contour Trees with Fibonacci Heaps"
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
 /// IEEE Transactions on Parallel and Distributed Systems, 2019
 ///
-///  2) Progressive Approach
+///  2) Progressive Approach \n
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 ///
+/// 3) Discrete Morse Sandwich (default) \n
+/// \b Related \b publication \n
+/// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
+/// Scalar Data -- An Algorithm and A Benchmark" \n
+/// Pierre Guillou, Jules Vidal, Julien Tierny \n
+/// Technical Report, arXiv:2206.13932, 2022 \n
+/// Fast and versatile algorithm for persistence diagram computation.
+///
+/// 4) Approximate Approach \n
+/// \b Related \b publication \n
+/// "Fast Approximation of Persistence Diagrams with Guarantees" \n
+/// Jules Vidal, Julien Tierny\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021
+///
+/// 5) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
+///   </a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 0 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 1 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 2 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 3 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 4 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
+///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
+///   Diagram Distance example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
 
 #pragma once
 
 // base code includes
-#include <DiscreteGradient.h>
+#include <ApproximateTopology.h>
+#include <DiscreteMorseSandwich.h>
 #include <FTMTreePP.h>
+#include <PersistenceDiagramUtils.h>
+#include <PersistentSimplexPairs.h>
 #include <ProgressiveTopology.h>
 #include <Triangulation.h>
 
 namespace ttk {
-
-  /**
-   * @brief Persistence pair type (with persistence in double)
-   */
-  struct PersistencePair {
-    /** first (lower) vertex id */
-    ttk::SimplexId birth{};
-    /** first vertex type */
-    ttk::CriticalType birthType{};
-    /** second (higher) vertex id */
-    ttk::SimplexId death{};
-    /** second vertex type */
-    ttk::CriticalType deathType{};
-    /** persistence value (scalars[second] - scalars[first]) */
-    double persistence{};
-    /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
-    ttk::SimplexId pairType{};
-
-    PersistencePair() = default;
-    PersistencePair(const SimplexId b,
-                    const CriticalType bType,
-                    const SimplexId d,
-                    const CriticalType dType,
-                    const double pers,
-                    const SimplexId pType)
-      : birth{b}, birthType{bType}, death{d}, deathType{dType},
-        persistence{pers}, pairType{pType} {
-    }
-  };
 
   /**
    * Compute the persistence diagram of a function on a triangulation.
@@ -87,12 +145,21 @@ namespace ttk {
   class PersistenceDiagram : virtual public Debug {
 
   public:
-    enum class BACKEND { FTM = 0, PROGRESSIVE_TOPOLOGY = 1 };
+    enum class BACKEND {
+      FTM = 0,
+      PROGRESSIVE_TOPOLOGY = 1,
+      DISCRETE_MORSE_SANDWICH = 2,
+      APPROXIMATE_TOPOLOGY = 3,
+      PERSISTENT_SIMPLEX = 4,
+    };
 
     PersistenceDiagram();
 
     inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
+    }
+    inline void setBackend(const BACKEND be) {
+      this->BackEnd = be;
     }
 
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
@@ -120,12 +187,14 @@ namespace ttk {
     template <typename scalarType, class triangulationType>
     int execute(std::vector<PersistencePair> &CTDiagram,
                 const scalarType *inputScalars,
+                const size_t scalarsMTime,
                 const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
     template <typename scalarType, class triangulationType>
     int executeFTM(std::vector<PersistencePair> &CTDiagram,
                    const scalarType *inputScalars,
+                   const size_t scalarsMTime,
                    const SimplexId *inputOffsets,
                    const triangulationType *triangulation);
 
@@ -134,6 +203,23 @@ namespace ttk {
                                    const scalarType *inputScalars,
                                    const SimplexId *inputOffsets,
                                    const triangulationType *triangulation);
+    template <typename scalarType, class triangulationType>
+    int executeApproximateTopology(std::vector<PersistencePair> &CTDiagram,
+                                   const scalarType *inputScalars,
+                                   const triangulationType *triangulation);
+
+    template <typename scalarType, class triangulationType>
+    int executePersistentSimplex(std::vector<PersistencePair> &CTDiagram,
+                                 const scalarType *inputScalars,
+                                 const SimplexId *inputOffsets,
+                                 const triangulationType *triangulation);
+
+    template <typename scalarType, class triangulationType>
+    int executeDiscreteMorseSandwich(std::vector<PersistencePair> &CTDiagram,
+                                     const scalarType *inputScalars,
+                                     const size_t scalarsMTime,
+                                     const SimplexId *inputOffsets,
+                                     const triangulationType *triangulation);
 
     template <class triangulationType>
     void checkProgressivityRequirement(const triangulationType *triangulation);
@@ -142,31 +228,66 @@ namespace ttk {
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
-        contourTree_.setDebugLevel(debugLevel_);
-        contourTree_.setThreadNumber(threadNumber_);
-        contourTree_.preconditionTriangulation(triangulation);
-        if(this->ComputeSaddleConnectors) {
-          dcg_.setDebugLevel(debugLevel_);
-          dcg_.setThreadNumber(threadNumber_);
-          dcg_.preconditionTriangulation(triangulation);
+        if(this->BackEnd == BACKEND::FTM
+           || this->BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+           || this->BackEnd == BACKEND::APPROXIMATE_TOPOLOGY) {
+          contourTree_.setDebugLevel(debugLevel_);
+          contourTree_.setThreadNumber(threadNumber_);
+          contourTree_.preconditionTriangulation(triangulation);
+          if(this->ComputeSaddleConnectors) {
+            dcg_.setDebugLevel(debugLevel_);
+            dcg_.setThreadNumber(threadNumber_);
+            dcg_.preconditionTriangulation(triangulation);
+          }
+        }
+        if(this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
+          dms_.setDebugLevel(debugLevel_);
+          dms_.setThreadNumber(threadNumber_);
+          dms_.preconditionTriangulation(triangulation);
+        }
+        if(this->BackEnd == BACKEND::PERSISTENT_SIMPLEX) {
+          psp_.preconditionTriangulation(triangulation);
         }
       }
     }
 
+    inline void setOutputMonotonyOffsets(void *data) {
+      outputMonotonyOffsets_ = data;
+    }
+    inline void setOutputOffsets(void *data) {
+      outputOffsets_ = data;
+    }
+    inline void setOutputScalars(void *data) {
+      outputScalars_ = data;
+    }
+    inline void setDeltaApproximate(double data) {
+      approxT_.setDelta(data);
+    }
+
   protected:
+    bool IgnoreBoundary{false};
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};
+    PersistentSimplexPairs psp_{};
+    DiscreteMorseSandwich dms_{};
 
     // int BackEnd{0};
-    BACKEND BackEnd{BACKEND::FTM};
+    BACKEND BackEnd{BACKEND::DISCRETE_MORSE_SANDWICH};
     // progressivity
     ttk::ProgressiveTopology progT_{};
+    ttk::ApproximateTopology approxT_{};
 
     int StartingResolutionLevel{0};
     int StoppingResolutionLevel{-1};
     bool IsResumable{false};
     double TimeLimit{};
+
+    // Approximation
+    void *outputScalars_{};
+    void *outputOffsets_{};
+    void *outputMonotonyOffsets_{};
+    double Epsilon;
   };
 } // namespace ttk
 
@@ -187,22 +308,28 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
 
     if(type == true) {
       diagram[i] = PersistencePair{
-        v0,
-        getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0),
-        v1,
-        getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1),
-        persistenceValue,
-        0};
+        CriticalVertex{
+          v0, getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0), {}, {}},
+        CriticalVertex{
+          v1, getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1), {}, {}},
+        persistenceValue, 0, true};
     } else {
       diagram[i] = PersistencePair{
-        v1,
-        getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1),
-        v0,
-        getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0),
-        persistenceValue,
-        2};
+        CriticalVertex{
+          v1,
+          getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1),
+          {},
+          {}},
+        CriticalVertex{
+          v0,
+          getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0),
+          {},
+          {}},
+        persistenceValue, 2, true};
     }
   }
+
+  diagram.back().isFinite = false; // global extrema pair is infinite
 
   return 0;
 }
@@ -210,6 +337,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
 template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
                                      const scalarType *inputScalars,
+                                     const size_t scalarsMTime,
                                      const SimplexId *inputOffsets,
                                      const triangulationType *triangulation) {
 
@@ -217,25 +345,239 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   checkProgressivityRequirement(triangulation);
 
-  switch(BackEnd) {
+  Timer tm{};
 
+  switch(BackEnd) {
+    case BACKEND::PERSISTENT_SIMPLEX:
+      executePersistentSimplex(
+        CTDiagram, inputScalars, inputOffsets, triangulation);
+      break;
+    case BACKEND::DISCRETE_MORSE_SANDWICH:
+      executeDiscreteMorseSandwich(
+        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
+      break;
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       executeProgressiveTopology(
         CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
-
-    case BACKEND::FTM:
-      executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
+    case BACKEND::APPROXIMATE_TOPOLOGY:
+      executeApproximateTopology(CTDiagram, inputScalars, triangulation);
       break;
 
+    case BACKEND::FTM:
+      executeFTM(
+        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
+      break;
     default:
       printErr("No method was selected");
   }
+
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, inputOffsets);
 
   printMsg(ttk::debug::Separator::L1);
+
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executePersistentSimplex(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const SimplexId *inputOffsets,
+  const triangulationType *triangulation) {
+
+  Timer tm{};
+  const auto dim = triangulation->getDimensionality();
+
+  std::vector<ttk::PersistentSimplexPairs::PersistencePair> pairs{};
+
+  psp_.setDebugLevel(this->debugLevel_);
+  psp_.setThreadNumber(this->threadNumber_);
+  psp_.computePersistencePairs(pairs, inputOffsets, *triangulation);
+  dms_.setInputOffsets(inputOffsets);
+
+  // convert PersistentSimplex pairs (with critical cells id) to PL
+  // pairs (with vertices id)
+
+  for(auto &p : pairs) {
+    int birthType{};
+    if(dim == 3) {
+      birthType = p.type;
+    } else if(dim == 2) {
+      birthType = (p.type == 0) ? 0 : 1;
+    }
+    if(p.type > 0) {
+      p.birth
+        = dms_.getCellGreaterVertex(Cell{birthType, p.birth}, *triangulation);
+    }
+    if(p.death != -1) {
+      p.death = dms_.getCellGreaterVertex(
+        Cell{birthType + 1, p.death}, *triangulation);
+    }
+  }
+
+  CTDiagram.reserve(pairs.size() + 1);
+
+  // find the global maximum
+  const auto nVerts = triangulation->getNumberOfVertices();
+  const SimplexId globmax = std::distance(
+    inputOffsets, std::max_element(inputOffsets, inputOffsets + nVerts));
+
+  // convert pairs to the relevant format
+  for(const auto &p : pairs) {
+    const auto isFinite = (p.death >= 0);
+    const auto death = isFinite ? p.death : globmax;
+    const auto pers
+      = static_cast<double>(inputScalars[death] - inputScalars[p.birth]);
+    if(p.type == 0) {
+      const auto deathType = (isFinite && dim > 1)
+                               ? CriticalType::Saddle1
+                               : CriticalType::Local_maximum;
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{death, deathType, {}, {}}, pers, p.type, isFinite});
+    } else if(p.type == 1) {
+      const auto birthType
+        = (dim == 3) ? CriticalType::Saddle1 : CriticalType::Saddle2;
+      const auto deathType = (isFinite && dim == 3)
+                               ? CriticalType::Saddle2
+                               : CriticalType::Local_maximum;
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, birthType, {}, {}},
+        CriticalVertex{death, deathType, {}, {}}, pers, p.type, isFinite});
+    } else if(p.type == 2) {
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
+        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, pers,
+        p.type, isFinite});
+    }
+  }
+
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executeDiscreteMorseSandwich(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const size_t scalarsMTime,
+  const SimplexId *inputOffsets,
+  const triangulationType *triangulation) {
+
+  Timer tm{};
+  const auto dim = triangulation->getDimensionality();
+
+  dms_.buildGradient(inputScalars, scalarsMTime, inputOffsets, *triangulation);
+  std::vector<DiscreteMorseSandwich::PersistencePair> dms_pairs{};
+  dms_.computePersistencePairs(
+    dms_pairs, inputOffsets, *triangulation, this->IgnoreBoundary);
+  CTDiagram.resize(dms_pairs.size());
+
+  // transform DiscreteMorseSandwich pairs (critical cells id) to PL
+  // pairs (vertices id)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < dms_pairs.size(); ++i) {
+    auto &pair{dms_pairs[i]};
+    if(pair.type > 0) {
+      pair.birth = dms_.getCellGreaterVertex(
+        Cell{pair.type, pair.birth}, *triangulation);
+    }
+    if(pair.death != -1) {
+      pair.death = dms_.getCellGreaterVertex(
+        Cell{pair.type + 1, pair.death}, *triangulation);
+    }
+  }
+
+  // find the global maximum
+  const auto nVerts = triangulation->getNumberOfVertices();
+  const SimplexId globmax = std::distance(
+    inputOffsets, std::max_element(inputOffsets, inputOffsets + nVerts));
+
+  // convert pairs to the relevant format
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < dms_pairs.size(); ++i) {
+    const auto &p{dms_pairs[i]};
+    const auto isFinite = (p.death >= 0);
+    const auto death = isFinite ? p.death : globmax;
+    const double pers = inputScalars[death] - inputScalars[p.birth];
+
+    if(p.type == 0) {
+      const auto dtype = (isFinite && dim > 1) ? CriticalType::Saddle1
+                                               : CriticalType::Local_maximum;
+      CTDiagram[i] = PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{death, dtype, {}, {}}, pers, p.type, isFinite};
+    } else if(p.type == 1) {
+      const auto btype
+        = (dim == 3) ? CriticalType::Saddle1 : CriticalType::Saddle2;
+      const auto dtype = (isFinite && dim == 3) ? CriticalType::Saddle2
+                                                : CriticalType::Local_maximum;
+      CTDiagram[i] = PersistencePair{CriticalVertex{p.birth, btype, {}, {}},
+                                     CriticalVertex{death, dtype, {}, {}}, pers,
+                                     p.type, isFinite};
+    } else if(p.type == 2) {
+      const auto btype = (isFinite || dim == 3) ? CriticalType::Saddle2
+                                                : CriticalType::Local_maximum;
+      CTDiagram[i] = PersistencePair{
+        CriticalVertex{p.birth, btype, {}, {}},
+        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, pers,
+        p.type, isFinite};
+    }
+  }
+
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executeApproximateTopology(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const triangulationType *triangulation) {
+
+  approxT_.setDebugLevel(debugLevel_);
+  approxT_.setThreadNumber(threadNumber_);
+  approxT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  approxT_.setStartingResolutionLevel(StartingResolutionLevel);
+  approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
+  approxT_.setPreallocateMemory(true);
+  approxT_.setEpsilon(Epsilon);
+
+  std::vector<ApproximateTopology::PersistencePair> resultDiagram{};
+
+  approxT_.computeApproximatePD(
+    resultDiagram, inputScalars, (scalarType *)outputScalars_,
+    (SimplexId *)outputOffsets_, (int *)outputMonotonyOffsets_);
+
+  // create the final diagram
+  for(const auto &p : resultDiagram) {
+    const auto pers
+      = static_cast<double>(inputScalars[p.death] - inputScalars[p.birth]);
+
+    if(p.pairType == 0) {
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, pers,
+        p.pairType, true});
+    } else if(p.pairType == 2) {
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers,
+        p.pairType, true});
+    } else if(p.pairType == -1) {
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers,
+        p.pairType, false});
+    }
+  }
 
   return 0;
 }
@@ -262,19 +604,24 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
 
   // create the final diagram
   for(const auto &p : resultDiagram) {
+    const auto pers
+      = static_cast<double>(inputScalars[p.death] - inputScalars[p.birth]);
+
     if(p.pairType == 0) {
-      CTDiagram.emplace_back(
-        p.birth, CriticalType::Local_minimum, p.death, CriticalType::Saddle1,
-        inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, pers,
+        p.pairType, true});
     } else if(p.pairType == 2) {
-      CTDiagram.emplace_back(
-        p.birth, CriticalType::Saddle2, p.death, CriticalType::Local_maximum,
-        inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers,
+        p.pairType, true});
     } else if(p.pairType == -1) {
-      CTDiagram.emplace_back(p.birth, CriticalType::Local_minimum, p.death,
-                             CriticalType::Local_maximum,
-                             inputScalars[p.death] - inputScalars[p.birth],
-                             p.pairType);
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers, 0,
+        false});
     }
   }
 
@@ -285,6 +632,7 @@ template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::executeFTM(
   std::vector<PersistencePair> &CTDiagram,
   const scalarType *inputScalars,
+  const size_t scalarsMTime,
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
@@ -336,7 +684,7 @@ int ttk::PersistenceDiagram::executeFTM(
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
     pl_saddleSaddlePairs;
   if(triangulation->getDimensionality() == 3 and ComputeSaddleConnectors) {
-    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputScalarField(inputScalars, scalarsMTime);
     dcg_.setInputOffsets(inputOffsets);
     dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);
@@ -347,8 +695,10 @@ int ttk::PersistenceDiagram::executeFTM(
       const ttk::SimplexId v1 = std::get<1>(i);
       const auto persistenceValue = static_cast<double>(std::get<2>(i));
 
-      CTDiagram.emplace_back(v0, ttk::CriticalType::Saddle1, v1,
-                             ttk::CriticalType::Saddle2, persistenceValue, 1);
+      CTDiagram.emplace_back(
+        PersistencePair{CriticalVertex{v0, ttk::CriticalType::Saddle1, {}, {}},
+                        CriticalVertex{v1, ttk::CriticalType::Saddle2, {}, {}},
+                        persistenceValue, 1, true});
     }
   }
   return 0;
@@ -357,13 +707,15 @@ int ttk::PersistenceDiagram::executeFTM(
 template <class triangulationType>
 void ttk::PersistenceDiagram::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
-  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
-    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 
-      printWrn("Explicit triangulation detected.");
-      printWrn("Defaulting to the FTM backend.");
+  if((BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+      || BackEnd == BACKEND::APPROXIMATE_TOPOLOGY)
+     && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
 
-      BackEnd = BACKEND::FTM;
-    }
+    printWrn("Explicit, Compact or Periodic triangulation detected.");
+    printWrn("Defaulting to the FTM backend.");
+
+    BackEnd = BACKEND::FTM;
   }
 }

@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   if(!inputArrayNames.size()) {
     if(defaultArray)
-      inputArrayNames.push_back(defaultArray->GetName());
+      inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
     ldist->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
@@ -123,8 +123,8 @@ int main(int argc, char **argv) {
   if(!outputPathPrefix.empty()) {
     for(int i = 0; i < ldist->GetNumberOfOutputPorts(); i++) {
       auto output = ldist->GetOutputDataObject(i);
-      auto writer
-        = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
+        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
       std::string outputFileName = outputPathPrefix + "_port_"
                                    + std::to_string(i) + "."

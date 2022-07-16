@@ -27,6 +27,11 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
 
 #pragma once
 
@@ -36,6 +41,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
@@ -65,7 +71,7 @@ private:
   // Output
   std::vector<std::vector<int>> treesNodeCorrMesh;
   std::vector<double> emptyTreeDistances;
-  std::vector<MergeTree<double>> keyFrames;
+  std::vector<ttk::ftm::MergeTree<double>> keyFrames;
   std::vector<int> removed;
 
   void setDataVisualization(int numInputs) {
@@ -79,7 +85,7 @@ private:
     setDataVisualization(0);
     treesNodeCorrMesh = std::vector<std::vector<int>>();
     emptyTreeDistances = std::vector<double>();
-    keyFrames = std::vector<MergeTree<double>>();
+    keyFrames = std::vector<ttk::ftm::MergeTree<double>>();
     removed = std::vector<int>();
   }
 
@@ -148,8 +154,8 @@ public:
     return useMinMaxPair_;
   }
 
-  void SetDeleteMultiPersPairs(bool deleteMultiPersPairs) {
-    deleteMultiPersPairs_ = deleteMultiPersPairs;
+  void SetDeleteMultiPersPairs(bool doDelete) {
+    deleteMultiPersPairs_ = doDelete;
     Modified();
     resetDataVisualization();
   }
@@ -240,12 +246,13 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
 
   template <class dataType>
-  int runCompute(std::vector<vtkMultiBlockDataSet *> &inputTrees);
+  int runCompute(
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
 
   template <class dataType>
   int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees);
+                std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
 };

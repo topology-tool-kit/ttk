@@ -16,6 +16,10 @@ This filter provides multiple methods to extract subsets of an input data object
 5. Array Values: The filter extracts all array values of a vtkAbstractArray based on a list of value indices. The extracted values are stored in a new field data array.
 
 6. Arrays: The filter extracts all point/cell data arrays based on a given list of indices (not names).
+
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
             </Documentation>
 
             <InputProperty name="Input" port_index="0" command="SetInputConnection">

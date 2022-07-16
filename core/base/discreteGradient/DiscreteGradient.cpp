@@ -29,10 +29,10 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
 
   // clear & init gradient memory
   for(int i = 0; i < dimensionality_; ++i) {
-    gradient_[2 * i].clear();
-    gradient_[2 * i].resize(numberOfCells[i], -1);
-    gradient_[2 * i + 1].clear();
-    gradient_[2 * i + 1].resize(numberOfCells[i + 1], -1);
+    (*gradient_)[2 * i].clear();
+    (*gradient_)[2 * i].resize(numberOfCells[i], -1);
+    (*gradient_)[2 * i + 1].clear();
+    (*gradient_)[2 * i + 1].resize(numberOfCells[i + 1], -1);
   }
 
   std::vector<std::vector<std::string>> rows{
@@ -120,7 +120,7 @@ CriticalType
 
 bool DiscreteGradient::isMinimum(const Cell &cell) const {
   if(cell.dim_ == 0) {
-    return (gradient_[0][cell.id_] == -1);
+    return ((*gradient_)[0][cell.id_] == -1);
   }
 
   return false;
@@ -128,7 +128,8 @@ bool DiscreteGradient::isMinimum(const Cell &cell) const {
 
 bool DiscreteGradient::isSaddle1(const Cell &cell) const {
   if(cell.dim_ == 1) {
-    return (gradient_[1][cell.id_] == -1 and gradient_[2][cell.id_] == -1);
+    return ((*gradient_)[1][cell.id_] == -1
+            and (*gradient_)[2][cell.id_] == -1);
   }
 
   return false;
@@ -136,7 +137,8 @@ bool DiscreteGradient::isSaddle1(const Cell &cell) const {
 
 bool DiscreteGradient::isSaddle2(const Cell &cell) const {
   if(dimensionality_ == 3 and cell.dim_ == 2) {
-    return (gradient_[3][cell.id_] == -1 and gradient_[4][cell.id_] == -1);
+    return ((*gradient_)[3][cell.id_] == -1
+            and (*gradient_)[4][cell.id_] == -1);
   }
 
   return false;
@@ -144,15 +146,15 @@ bool DiscreteGradient::isSaddle2(const Cell &cell) const {
 
 bool DiscreteGradient::isMaximum(const Cell &cell) const {
   if(dimensionality_ == 1 and cell.dim_ == 1) {
-    return (gradient_[1][cell.id_] == -1);
+    return ((*gradient_)[1][cell.id_] == -1);
   }
 
   if(dimensionality_ == 2 and cell.dim_ == 2) {
-    return (gradient_[3][cell.id_] == -1);
+    return ((*gradient_)[3][cell.id_] == -1);
   }
 
   if(dimensionality_ == 3 and cell.dim_ == 3) {
-    return (gradient_[5][cell.id_] == -1);
+    return ((*gradient_)[5][cell.id_] == -1);
   }
 
   return false;
@@ -166,21 +168,21 @@ bool DiscreteGradient::isCellCritical(const int cellDim,
   }
 
   if(cellDim == 0) {
-    return (gradient_[0][cellId] == -1);
+    return ((*gradient_)[0][cellId] == -1);
   }
 
   if(cellDim == 1) {
-    return (gradient_[1][cellId] == -1
-            && (dimensionality_ == 1 || gradient_[2][cellId] == -1));
+    return ((*gradient_)[1][cellId] == -1
+            && (dimensionality_ == 1 || (*gradient_)[2][cellId] == -1));
   }
 
   if(cellDim == 2) {
-    return (gradient_[3][cellId] == -1
-            && (dimensionality_ == 2 || gradient_[4][cellId] == -1));
+    return ((*gradient_)[3][cellId] == -1
+            && (dimensionality_ == 2 || (*gradient_)[4][cellId] == -1));
   }
 
   if(cellDim == 3) {
-    return (gradient_[5][cellId] == -1);
+    return ((*gradient_)[5][cellId] == -1);
   }
 
   return false;
@@ -205,61 +207,45 @@ int DiscreteGradient::getCriticalPointMap(
 }
 
 int DiscreteGradient::setManifoldSize(
-  const std::vector<Cell> &criticalPoints,
+  const size_t nCritPoints,
   const std::vector<size_t> &nCriticalPointsByDim,
-  const std::vector<SimplexId> &maxSeeds,
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   std::vector<SimplexId> &manifoldSize) const {
 
-  const auto nCritPoints = criticalPoints.size();
-  const auto nDimensions = getNumberOfDimensions();
+  // in the manifoldSize vector, critical points are sorted first by
+  // dim then by index
+
+  // ascendingManifold (resp. descendingManifold) region indices are
+  // numbered from 0 to #maxima == nCriticalPointsByDim.back()
+  // (resp. #minina == nCriticalPointsByDim[0])
+
+  if(nCritPoints == 0
+     || (nCriticalPointsByDim[0] == 0 && nCriticalPointsByDim.back() == 0)) {
+    // no critical points || no extrema
+    return 0;
+  }
 
   manifoldSize.resize(nCritPoints, 0);
 
-  // pre-compute size of descending manifold cells
-  std::map<SimplexId, size_t> descendingCellsSize{};
-  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-    descendingCellsSize[descendingManifold[i]]++;
+  // descending manifold cells size
+  if(nCriticalPointsByDim[0] > 0) {
+    for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+      if(descendingManifold[i] != -1) {
+        manifoldSize[descendingManifold[i]]++;
+      }
+    }
   }
 
-  // minima
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
-    const Cell &cell = criticalPoints[i];
-    const SimplexId seedId = descendingManifold[cell.id_];
-    manifoldSize[i] = descendingCellsSize[seedId];
-  }
+  if(nCriticalPointsByDim.back() > 0) {
+    // index of first maximum in critical points array
+    const auto nFirstMaximum{nCritPoints - nCriticalPointsByDim.back()};
 
-  // index of first maximum in critical points array
-  size_t nFirstMaximum{};
-  for(int i = 0; i < nDimensions - 1; ++i) {
-    nFirstMaximum += nCriticalPointsByDim[i];
-  }
-
-  // pre-compute size of ascending manifold cells
-  std::map<SimplexId, size_t> ascendingCellsSize{};
-  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-    ascendingCellsSize[ascendingManifold[i]]++;
-  }
-
-  // pre-compute maximum SimplexId -> index in maxSeeds
-  std::map<SimplexId, size_t> seedsPos{};
-  for(size_t i = 0; i < maxSeeds.size(); ++i) {
-    seedsPos[maxSeeds[i]] = i;
-  }
-
-  // maxima
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = nFirstMaximum; i < nCritPoints; ++i) {
-    const Cell &cell = criticalPoints[i];
-    if(seedsPos.find(cell.id_) != seedsPos.end()) {
-      const auto seedId = seedsPos[cell.id_];
-      manifoldSize[i] = ascendingCellsSize[seedId];
+    // ascending manifold cells size
+    for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+      if(ascendingManifold[i] != -1) {
+        manifoldSize[ascendingManifold[i] + nFirstMaximum]++;
+      }
     }
   }
 

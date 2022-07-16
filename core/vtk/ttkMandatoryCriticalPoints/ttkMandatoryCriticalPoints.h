@@ -48,6 +48,11 @@
 /// \sa ttk::MandatoryCriticalPoints
 /// \sa vtkUncertainDataEstimator
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
+
 #pragma once
 
 // VTK Module

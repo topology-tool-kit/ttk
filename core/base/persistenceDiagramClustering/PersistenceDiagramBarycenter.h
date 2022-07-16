@@ -31,18 +31,10 @@
 #endif
 
 // base code includes
-#include <Wrapper.h>
-//
-#include <PersistenceDiagramAuction.h>
-//
 #include <KDTree.h>
-//
-#include <limits>
-//
 #include <PDBarycenter.h>
-
-using namespace std;
-using namespace ttk;
+#include <PersistenceDiagramAuction.h>
+#include <Wrapper.h>
 
 namespace ttk {
   template <typename dataType>
@@ -56,14 +48,14 @@ namespace ttk {
       numberOfInputs_ = 0;
       threadNumber_ = 1;
       time_limit_ = 1;
-      deterministic_ = 1;
-      reinit_prices_ = 1;
-      epsilon_decreases_ = 1;
-      use_progressive_ = 1;
+      deterministic_ = true;
+      reinit_prices_ = true;
+      epsilon_decreases_ = true;
+      use_progressive_ = true;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     }
 
-    ~PersistenceDiagramBarycenter() = default;
+    ~PersistenceDiagramBarycenter() override = default;
 
     void execute(
       std::vector<std::vector<diagramTuple>> &intermediateDiagrams,

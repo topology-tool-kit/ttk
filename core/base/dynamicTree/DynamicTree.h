@@ -1,11 +1,13 @@
 /// \ingroup base
 /// \class ttk::DynamicTree
 /// \author Gueunet Charles <charles.gueunet+ttk@gmail.com>
-/// \adapted by Jules Vidal <jules.vidal@lip6.fr> from the DynamicGraph class in
-/// FTRGraph.h \date 2019-09-15
+/// \author Jules Vidal <jules.vidal@lip6.fr>
+/// \date 2019-09-15
 ///
 /// \brief Implements the Dynamic Tree data-structure (or ST-Tree)
-/// Previously implemented in ftrGraph
+///
+/// Adapted by Jules Vidal from the ttk::ftr::DynamicGraph class from
+/// FTRGraph.h
 ///
 /// \sa ttk::FTRGraph
 
@@ -26,7 +28,7 @@ namespace ttk {
     // Accessor functions
     // ------------------
 
-    inline bool hasParent(void) const {
+    inline bool hasParent() const {
       return parent_ != nullptr;
     }
 
@@ -35,19 +37,19 @@ namespace ttk {
 
     /// Make this node the root of its tree
     // Various way to do that, test perfs ?
-    void evert(void);
+    void evert();
 
     /// Get representative node
-    DynTreeNode *findRoot(void) const;
+    DynTreeNode *findRoot() const;
 
     /// Create a new edge between this node and the node n
-    /// \ret true if we have merged two tree, false if it was just an intern
+    /// @return true if we have merged two tree, false if it was just an intern
     /// operation
     bool insertEdge(DynTreeNode *const n);
 
     /// Remove the link between this node and its parent, thus makeing a new
     /// root
-    inline void removeEdge(void) {
+    inline void removeEdge() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!parent_) {
         std::cerr << "[DynamicTree]: DynTree remove edge in root node"
@@ -86,7 +88,7 @@ namespace ttk {
       return node - &nodes_[0];
     }
 
-    /// \ret true if we have merged two tree, false if it was just an intern
+    /// @return true if we have merged two tree, false if it was just an intern
     /// operation
     bool insertEdge(DynTreeNode *const n1, DynTreeNode *const n2) {
       return n1->insertEdge(n2);
@@ -108,7 +110,7 @@ namespace ttk {
     }
 
     /// remove the edge btwn n1 and n2
-    /// \ret 0 if not an edge
+    /// @return 0 if not an edge
     int removeEdge(DynTreeNode *const n1, DynTreeNode *const n2) {
       if(n1->parent_ == n2) {
         n1->removeEdge();
@@ -122,7 +124,7 @@ namespace ttk {
     }
 
     /// remove the edge btwn n1 and n2
-    /// \ret 0 if not an edge
+    /// @return 0 if not an edge
     inline int removeEdge(const std::size_t nid1, const std::size_t nid2) {
       return removeEdge(getNode(nid1), getNode(nid2));
     }
@@ -144,8 +146,8 @@ namespace ttk {
 
     // Debug
 
-    std::string print(void) const;
-    std::string printNbCC(void) const;
+    std::string print() const;
+    std::string printNbCC() const;
   };
 
 } // namespace ttk

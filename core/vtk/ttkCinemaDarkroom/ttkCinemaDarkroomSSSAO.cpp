@@ -10,8 +10,7 @@ ttkCinemaDarkroomSSSAO::ttkCinemaDarkroomSSSAO() : ttkCinemaDarkroomShader() {
   this->setDebugMsgPrefix("CinemaDarkroomSSSAO");
 }
 
-ttkCinemaDarkroomSSSAO::~ttkCinemaDarkroomSSSAO() {
-}
+ttkCinemaDarkroomSSSAO::~ttkCinemaDarkroomSSSAO() = default;
 
 std::string ttkCinemaDarkroomSSSAO::GetFragmentShaderCode() {
   return std::string(R"(

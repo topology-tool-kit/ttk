@@ -84,10 +84,16 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
     switch(inputTriangulation.getType()) {                                    \
       BARYSUBD_TRIANGL_CALLS(                                                 \
         TYPE, ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation) \
+      BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::IMPLICIT,        \
+                             ttk::ImplicitNoPreconditions)                    \
+      BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::HYBRID_IMPLICIT, \
+                             ttk::ImplicitWithPreconditions)                  \
       BARYSUBD_TRIANGL_CALLS(                                                 \
-        TYPE, ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation) \
+        TYPE, ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation)   \
       BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::PERIODIC,        \
-                             ttk::PeriodicImplicitTriangulation)              \
+                             ttk::PeriodicNoPreconditions)                    \
+      BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::HYBRID_PERIODIC, \
+                             ttk::PeriodicWithPreconditions)                  \
     }                                                                         \
     break;
 #define BARYSUBD_TRIANGL_CALLS(DATATYPE, TRIANGL_CASE, TRIANGL_TYPE)          \

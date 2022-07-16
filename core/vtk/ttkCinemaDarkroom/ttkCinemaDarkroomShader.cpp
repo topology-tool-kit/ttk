@@ -40,8 +40,7 @@ ttkCinemaDarkroomShader::ttkCinemaDarkroomShader() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkCinemaDarkroomShader::~ttkCinemaDarkroomShader() {
-}
+ttkCinemaDarkroomShader::~ttkCinemaDarkroomShader() = default;
 
 int ttkCinemaDarkroomShader::FillInputPortInformation(int port,
                                                       vtkInformation *info) {
@@ -176,6 +175,9 @@ int ttkCinemaDarkroomShader::InitRenderer(vtkImageData *outputImage) {
     this->RenderWindow->OffScreenRenderingOn();
 
     auto windowAsOGL = vtkOpenGLRenderWindow::SafeDownCast(this->RenderWindow);
+    if(windowAsOGL == nullptr) {
+      return 0;
+    }
     windowAsOGL->SetSize(dim[0], dim[1]);
     windowAsOGL->Initialize();
 

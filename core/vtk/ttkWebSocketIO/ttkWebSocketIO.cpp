@@ -35,8 +35,7 @@ ttkWebSocketIO::ttkWebSocketIO() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkWebSocketIO::~ttkWebSocketIO() {
-}
+ttkWebSocketIO::~ttkWebSocketIO() = default;
 
 int ttkWebSocketIO::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
@@ -245,8 +244,8 @@ int ttkWebSocketIO::ParseVtkDataObjectFromJSON(const std::string &json) {
                                      const boost::property_tree::ptree &fdJSON,
                                      const std::string &fdKey) {
       // parse point data
-      for(auto pda : fdJSON.get_child(fdKey)) {
-        auto &jsonArray = pda.second;
+      for(const auto &pda : fdJSON.get_child(fdKey)) {
+        const auto &jsonArray = pda.second;
         size_t nComponents = jsonGetValue<size_t>(jsonArray, "nComponents");
         size_t nTuples = jsonGetValue<size_t>(jsonArray, "nTuples");
 
@@ -367,8 +366,8 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
       "Serializing vtkDataObject", 0.4, 0, ttk::debug::LineMode::REPLACE);
 
     // send points if last input is a vtkPointSet
-    if(block->IsA("vtkPointSet")) {
-      auto blockAsPS = vtkPointSet::SafeDownCast(block);
+    auto blockAsPS = vtkPointSet::SafeDownCast(block);
+    if(blockAsPS != nullptr) {
       auto points = blockAsPS->GetPoints();
       this->queueMessage(
         "{"
@@ -382,7 +381,7 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
         + ","
           "\"nComponents\": 3"
           "}");
-      if(blockAsPS->GetNumberOfPoints() > 0)
+      if(blockAsPS->GetNumberOfPoints() > 0 && points != nullptr)
         switch(points->GetDataType()) {
           vtkTemplateMacro(this->queueMessage(
             blockAsPS->GetNumberOfPoints() * sizeof(VTK_TT) * 3,
@@ -399,11 +398,15 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
 
       if(block->IsA("vtkUnstructuredGrid")) {
         auto blockAsUG = vtkUnstructuredGrid::SafeDownCast(block);
-        cells = blockAsUG->GetCells();
+        if(blockAsUG != nullptr) {
+          cells = blockAsUG->GetCells();
+        }
       } else if(block->IsA("vtkPolyData")) {
         auto blockAsPD = vtkPolyData::SafeDownCast(block);
-        cells = blockAsPD->GetPolys() ? blockAsPD->GetPolys()
-                                      : blockAsPD->GetLines();
+        if(blockAsPD != nullptr) {
+          cells = blockAsPD->GetPolys() ? blockAsPD->GetPolys()
+                                        : blockAsPD->GetLines();
+        }
       }
 
       if(cells) {
@@ -466,6 +469,9 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
 
           if(array->IsA("vtkDataArray")) {
             auto dataArray = vtkDataArray::SafeDownCast(array);
+            if(dataArray == nullptr) {
+              continue;
+            }
             this->queueMessage(
               "{"
               "\"target\":\""

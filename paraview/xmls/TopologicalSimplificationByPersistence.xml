@@ -15,6 +15,10 @@
         Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
         Proc. of IEEE VIS 2020.
         IEEE Transactions on Visualization and Computer Graphics
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
       </Documentation>
 
       <InputProperty name="Input" command="SetInputConnection">

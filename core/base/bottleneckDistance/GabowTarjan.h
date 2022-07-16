@@ -1,7 +1,8 @@
 #pragma once
 
-#include "MatchingGraph.h"
 #include <Debug.h>
+#include <PersistenceDiagramUtils.h>
+
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -12,28 +13,35 @@ namespace ttk {
 
   class GabowTarjan : public Debug {
 
+    struct Edge {
+      int v1{};
+      int v2{};
+      double weight{};
+
+      Edge(int p1, int p2, double w) : v1{p1}, v2{p2}, weight{w} {
+      }
+
+      bool operator<(const Edge &other) const {
+        return weight < other.weight;
+      }
+    };
+
   public:
     GabowTarjan() {
       this->setDebugMsgPrefix("Gabow-Tarjan");
     }
 
-    ~GabowTarjan() {
-    }
+    double Distance();
 
-    template <typename dataType>
-    dataType Distance(dataType maxLevel);
-
-    template <typename dataType>
     void printCurrentMatching();
 
-    template <typename dataType>
-    int run(std::vector<matchingTuple> &matchings);
+    int run(std::vector<MatchingType> &matchings);
 
-    template <typename dataType>
-    inline void setInput(int rowSize_, int colSize_, void *C_) {
+    inline void setInput(int rowSize_,
+                         int colSize_,
+                         std::vector<std::vector<double>> *C_) {
       Cptr = C_;
 
-      auto C = (std::vector<std::vector<dataType>> *)Cptr;
       Size1 = (unsigned int)rowSize_ - 1;
       Size2 = (unsigned int)colSize_ - 1;
       if(Size1 <= 0 || Size2 <= 0) {
@@ -52,26 +60,25 @@ namespace ttk {
       for(unsigned int i = 0; i < Size1; ++i) {
         unsigned int k = MaxSize;
         for(unsigned int j = 0; j < Size2; ++j) {
-          auto val = (double)(*C)[i][j];
+          auto val = (*C_)[i][j];
           Edges.emplace_back(Edge(i, k++, val));
         }
       }
 
       // Connect real points with their diagonal.
       for(unsigned int i = 0; i < Size1; ++i) {
-        auto val = (double)(*C)[i][Size2];
+        auto val = (*C_)[i][Size2];
         Edges.emplace_back(Edge(i, MaxSize + Size2 + i, val));
       }
 
       for(unsigned int j = 0, k = MaxSize; j < Size2; ++j, ++k) {
-        auto val = (double)(*C)[Size1][j];
+        auto val = (*C_)[Size1][j];
         Edges.emplace_back(Edge(Size1 + (k - MaxSize), k, val));
       }
 
       std::sort(Edges.begin(), Edges.end());
     }
 
-    template <typename dataType>
     inline void clear() {
       MaxSize = 0;
       Size1 = 0;
@@ -84,7 +91,7 @@ namespace ttk {
 
   private:
     // Original cost matrix.
-    void *Cptr;
+    std::vector<std::vector<double>> *Cptr;
 
     /*
      * Total number of persistencePairs
@@ -123,18 +130,11 @@ namespace ttk {
      */
     std::vector<int> Layers;
 
-    template <typename dataType>
     bool DFS(int v);
-
-    template <typename dataType>
     bool BFS();
 
     // Hopcroft-Karp algorithm: find a maximal matching
-    template <typename dataType>
     void HopcroftKarp(unsigned int &matching);
   };
-
-// Namespace ttk
-#include <GabowTarjanImpl.h>
 
 } // namespace ttk

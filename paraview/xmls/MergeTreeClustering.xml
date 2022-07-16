@@ -44,6 +44,10 @@ These parameters can be configured manually by selecting the Custom backend.
 The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
 
 When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
+
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeClustering/
            </Documentation>
 
             <!-- INPUT -->
@@ -170,6 +174,51 @@ When using the clustering algorithm, this filter allows to use the join tree and
                     Number of barycenters/clusters to compute (performs a KMeans with merge trees as centroids).
                   </Documentation>
                 </IntVectorProperty>
+
+                <DoubleVectorProperty
+                name="BarycenterSizeLimitPercent"
+                command="SetBarycenterSizeLimitPercent"
+                label="Barycenter Size Limit Percent"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                    <Expression type="and">
+                      <Expression type="and">
+                        <Expression type="or">
+                          <Expression type="and">
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="BranchDecomposition"
+                                                    value="1" />
+                            <PropertyWidgetDecorator type="GenericDecorator"
+                                                    mode="visibility"
+                                                    property="Backend"
+                                                    value="2" />
+                          </Expression>
+                          <PropertyWidgetDecorator type="GenericDecorator"
+                                                  mode="visibility"
+                                                  property="Backend"
+                                                  value="0" />
+                        </Expression>
+                        <PropertyWidgetDecorator type="GenericDecorator"
+                                                mode="visibility"
+                                                property="KeepSubtree"
+                                                value="0" />
+                      </Expression>
+                      <PropertyWidgetDecorator type="GenericDecorator"
+                                              mode="visibility"
+                                              property="ComputeBarycenter"
+                                              value="1" />
+                    </Expression>
+                  </PropertyWidgetDecorator>
+                  </Hints>
+                  <Documentation>
+
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="100" />
+                </DoubleVectorProperty>
 
                 <IntVectorProperty
                 name="Deterministic"
@@ -408,6 +457,7 @@ When using the clustering algorithm, this filter allows to use the join tree and
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="ComputeBarycenter"/>
               <Property name="NumberOfBarycenters"/>
+              <Property name="BarycenterSizeLimitPercent"/>
               <Property name="Deterministic"/>
               <Property name="Alpha"/>
               <Property name="JoinSplitMixtureCoefficient"/>

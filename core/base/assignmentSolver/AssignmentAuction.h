@@ -11,12 +11,12 @@
 ///   - the mth column is the same but with jobs
 ///   - the last cell (costMatrix[n][m]) is not used
 
-#ifndef _ASSIGNMENTAUCTION_H
-#define _ASSIGNMENTAUCTION_H
+#pragma once
 
-#include <Debug.h>
+#include <AssignmentSolver.h>
 
-#include "AssignmentSolver.h"
+#include <limits>
+#include <queue>
 
 namespace ttk {
 
@@ -27,9 +27,9 @@ namespace ttk {
   public:
     AssignmentAuction() = default;
 
-    ~AssignmentAuction() = default;
+    ~AssignmentAuction() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<MatchingType> &matchings) override;
     void runAuctionRound(std::vector<std::vector<dataType>> &cMatrix);
 
     void initFirstRound();
@@ -42,7 +42,7 @@ namespace ttk {
     dataType getRelativePrecision(std::vector<std::vector<dataType>> &cMatrix);
     dataType getMatchingDistance(std::vector<std::vector<dataType>> &cMatrix);
 
-    inline void setBalanced(bool balanced) {
+    inline void setBalanced(bool balanced) override {
       AssignmentSolver<dataType>::setBalanced(balanced);
       if(this->balancedAssignment)
         goodPrices.resize(this->colSize, 0);
@@ -134,7 +134,7 @@ namespace ttk {
 
   template <typename dataType>
   void AssignmentAuction<dataType>::initEpsilon() {
-    if(epsilon == -1) {
+    if(epsilon == -1.0) {
       dataType maxValue
         = getMaxValue<dataType>(this->costMatrix, this->balancedAssignment);
       // int tRowSize = this->balancedAssignment ? this->rowSize :
@@ -142,12 +142,12 @@ namespace ttk {
       // this->balancedAssignment ? this->colSize :
       // (this->rowSize-1)+(this->colSize-1); epsilon = maxValue *
       // std::min(tRowSize, tColSize)/2;
-      epsilon = maxValue / 4;
+      epsilon = maxValue / 4.0;
       // epsilon = std::pow(maxValue, 2)/4;
       // epsilon += *std::max_element(goodPrices.begin(), goodPrices.end());
       // epsilon += getSecondMinValueVector(goodPrices);
-      if(epsilon == 0)
-        epsilon = 1;
+      if(epsilon == 0.0)
+        epsilon = 1.0;
       epsilon
         /= ((epsilonDiviserMultiplier == 0) ? 1 : epsilonDiviserMultiplier * 5);
     }
@@ -249,8 +249,7 @@ namespace ttk {
   }
 
   template <typename dataType>
-  int AssignmentAuction<dataType>::run(
-    std::vector<asgnMatchingTuple> &matchings) {
+  int AssignmentAuction<dataType>::run(std::vector<MatchingType> &matchings) {
     initEpsilon();
 
     // Try to avoid price war
@@ -352,5 +351,3 @@ namespace ttk {
   }
 
 } // namespace ttk
-
-#endif

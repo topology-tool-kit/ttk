@@ -8,8 +8,7 @@
 /// \sa ttk::Triangulation
 /// \sa FTRGraph.h %for a usage example.
 
-#ifndef PROPAGATIONS_H
-#define PROPAGATIONS_H
+#pragma once
 
 // local includes
 #include "FTRAtomicVector.h"
@@ -36,7 +35,7 @@ namespace ttk {
       Visits visits_;
 
     public:
-      virtual ~Propagations() {
+      ~Propagations() override {
         for(Propagation *p : propagations_) {
           delete p;
         }
@@ -143,5 +142,3 @@ namespace ttk {
     };
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: PROPAGATIONS_H */

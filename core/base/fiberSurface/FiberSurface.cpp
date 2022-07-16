@@ -22,7 +22,7 @@ int FiberSurface::getNumberOfCommonVertices(
   SimplexId commonVertexNumber = 0;
 
   for(int i = 0; i < 3; i++) {
-    vector<double> p0(3);
+    std::array<double, 3> p0{};
 
     for(int j = 0; j < 3; j++) {
       p0[j] = tetIntersections[tetId][triangleId0].p_[i][j];
@@ -30,7 +30,7 @@ int FiberSurface::getNumberOfCommonVertices(
 
     // check if this guy exists in the other triangle
     for(int j = 0; j < 3; j++) {
-      vector<double> p1(3);
+      std::array<double, 3> p1{};
 
       bool isTheSame = true;
       for(int k = 0; k < 3; k++) {
@@ -56,8 +56,8 @@ int FiberSurface::computeTriangleFiber(
   const SimplexId &triangleId,
   const pair<double, double> &intersection,
   const vector<vector<IntersectionTriangle>> &tetIntersections,
-  vector<double> &pA,
-  vector<double> &pB,
+  std::array<double, 3> &pA,
+  std::array<double, 3> &pB,
   SimplexId &pivotVertexId,
   bool &edgeFiber) const {
 
@@ -143,8 +143,8 @@ int FiberSurface::computeTriangleFiber(
   }
 
   // compute the interpolations
-  vector<double> baryCentrics0, baryCentrics1;
-  vector<double> p(2), p0(2), p1(2), p2(2);
+  std::array<double, 2> baryCentrics0{}, baryCentrics1{};
+  std::array<double, 2> p{}, p0{}, p1{}, p2{};
 
   p[0] = intersection.first;
   p[1] = intersection.second;
@@ -167,7 +167,6 @@ int FiberSurface::computeTriangleFiber(
   Geometry::computeBarycentricCoordinates(
     p0.data(), p2.data(), p.data(), baryCentrics1, 2);
 
-  pA.resize(3);
   for(int i = 0; i < 3; i++) {
     pA[i] = baryCentrics0[0]
               * tetIntersections[tetId][triangleId].p_[pivotVertexId][i]
@@ -176,7 +175,6 @@ int FiberSurface::computeTriangleFiber(
                     .p_[(pivotVertexId + 1) % 3][i];
   }
 
-  pB.resize(3);
   for(int i = 0; i < 3; i++) {
     pB[i] = baryCentrics1[0]
               * tetIntersections[tetId][triangleId].p_[pivotVertexId][i]
@@ -194,11 +192,11 @@ int FiberSurface::computeTriangleIntersection(
   const SimplexId &triangleId1,
   const SimplexId &polygonEdgeId0,
   const SimplexId &polygonEdgeId1,
-  const pair<double, double> &intersection,
+  const std::pair<double, double> &intersection,
   SimplexId &newVertexNumber,
   SimplexId &newTriangleNumber,
-  vector<vector<IntersectionTriangle>> &tetIntersections,
-  vector<vector<Vertex>> &tetNewVertices) const {
+  std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
+  std::vector<std::vector<Vertex>> &tetNewVertices) const {
 
   SimplexId commonVertexNumber = getNumberOfCommonVertices(
     tetId, triangleId0, triangleId1, tetIntersections);
@@ -212,7 +210,7 @@ int FiberSurface::computeTriangleIntersection(
   }
 
   SimplexId pivotVertexIda = -1, pivotVertexIdb = -1;
-  vector<double> p0a, p1a, p0b, p1b;
+  std::array<double, 3> p0a{}, p1a{}, p0b{}, p1b{};
 
   // extract the fiber in both triangles and see if they match up
   bool edgeFiber0 = false;
@@ -256,7 +254,7 @@ int FiberSurface::computeTriangleIntersection(
   }
 
   bool foundA = false, foundB = false;
-  vector<double> pA, pB;
+  std::array<double, 3> pA{}, pB{};
 
   // test if p0a lies in [p0b, p1b]
   if(Geometry::isPointOnSegment(p0a.data(), p0b.data(), p1b.data())) {
@@ -333,14 +331,14 @@ int FiberSurface::computeTriangleIntersection(
   const SimplexId &tetId,
   const SimplexId &triangleId,
   const SimplexId &polygonEdgeId,
-  const pair<double, double> &intersection,
-  const vector<double> &pA,
-  const vector<double> &pB,
+  const std::pair<double, double> &intersection,
+  const std::array<double, 3> &pA,
+  const std::array<double, 3> &pB,
   const SimplexId &pivotVertexId,
   SimplexId &newVertexNumber,
   SimplexId &newTriangleNumber,
-  vector<vector<IntersectionTriangle>> &tetIntersections,
-  vector<vector<Vertex>> &tetNewVertices) const {
+  std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
+  std::vector<std::vector<Vertex>> &tetNewVertices) const {
 
   // check if the triangle has already been intersected on that fiber
   if((fabs(tetIntersections[tetId][triangleId].intersection_.first
@@ -372,7 +370,7 @@ int FiberSurface::computeTriangleIntersection(
   }
 
   // 1. compute the barycentric coordinates of pA and pB
-  vector<double> barypA, barypB;
+  std::array<double, 3> barypA{}, barypB{};
   Geometry::computeBarycentricCoordinates(
     tetIntersections[tetId][triangleId].p_[0].data(),
     tetIntersections[tetId][triangleId].p_[1].data(),
@@ -386,8 +384,8 @@ int FiberSurface::computeTriangleIntersection(
   // 2. between the two, find the closest point from the edge
   // [pivotVertexId, (pivotVertexId+2)%3]
   // that's the vertex which minimizes its coordinate [(pivotVertexId+1)%3]
-  vector<double> A = pA, B = pB;
-  vector<double> baryA = barypA, baryB = barypB;
+  std::array<double, 3> A = pA, B = pB;
+  std::array<double, 3> baryA = barypA, baryB = barypB;
   if(fabs(barypB[(pivotVertexId + 1) % 3])
      < fabs(barypA[(pivotVertexId + 1) % 3])) {
     // let's swith the two
@@ -642,7 +640,7 @@ int FiberSurface::flipEdges() const {
 }
 
 int FiberSurface::flipEdges(
-  vector<pair<SimplexId, SimplexId>> &triangles) const {
+  std::vector<std::pair<SimplexId, SimplexId>> &triangles) const {
 
   for(SimplexId it = 0; it < (SimplexId)triangles.size(); it++) {
 
@@ -662,7 +660,7 @@ int FiberSurface::flipEdges(
     // (make sure we start with bad angles)
     vector<pair<double, pair<SimplexId, SimplexId>>> localTriangles;
     for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
-      vector<SimplexId> vertexIds(3);
+      std::array<SimplexId, 3> vertexIds{};
 
       vertexIds[0]
         = (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]
@@ -674,7 +672,7 @@ int FiberSurface::flipEdges(
         = (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]
             .vertexIds_[2];
 
-      vector<double> angles;
+      std::array<double, 3> angles{};
       Geometry::computeTriangleAngles(
         (*globalVertexList_)[vertexIds[0]].p_.data(),
         (*globalVertexList_)[vertexIds[1]].p_.data(),
@@ -686,8 +684,7 @@ int FiberSurface::flipEdges(
           alpha = fabs(angles[j]);
       }
 
-      localTriangles.push_back(
-        pair<double, pair<SimplexId, SimplexId>>(alpha, triangles[i]));
+      localTriangles.emplace_back(alpha, triangles[i]);
     }
 
     const auto FiberSurfaceTriangleCmp
@@ -704,7 +701,7 @@ int FiberSurface::flipEdges(
 
     for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
 
-      vector<SimplexId> vertexIds(3);
+      std::array<SimplexId, 3> vertexIds{};
 
       vertexIds[0]
         = (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]
@@ -716,7 +713,7 @@ int FiberSurface::flipEdges(
         = (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]
             .vertexIds_[2];
 
-      vector<double> angles;
+      std::array<double, 3> angles{};
       Geometry::computeTriangleAngles(
         (*globalVertexList_)[vertexIds[0]].p_.data(),
         (*globalVertexList_)[vertexIds[1]].p_.data(),
@@ -788,7 +785,7 @@ int FiberSurface::flipEdges(
 
               if((nonCommonVertexId != -1) && (otherNonCommonVertexId != -1)) {
 
-                vector<double> beta0angles, beta1angles;
+                std::array<double, 3> beta0angles{}, beta1angles{};
 
                 Geometry::computeTriangleAngles(
                   (*globalVertexList_)[nonCommonVertexId].p_.data(),
@@ -881,8 +878,8 @@ int FiberSurface::getTriangleRangeExtremities(
   pair<double, double> &extremity0,
   pair<double, double> &extremity1) const {
 
-  vector<double> p0(2), p1(2), p(2);
-  vector<double> baryCentrics;
+  std::array<double, 2> p0{}, p1{}, p{};
+  std::array<double, 2> baryCentrics{};
   bool isInBetween = true;
 
   // check for edges that project to points first
@@ -961,10 +958,10 @@ bool FiberSurface::hasDuplicatedVertices(const double *p0,
   return false;
 }
 
-int FiberSurface::interpolateBasePoints(const vector<double> &p0,
+int FiberSurface::interpolateBasePoints(const std::array<double, 3> &p0,
                                         const pair<double, double> &uv0,
                                         const double &t0,
-                                        const vector<double> &p1,
+                                        const std::array<double, 3> &p1,
                                         const pair<double, double> &uv1,
                                         const double &t1,
                                         const double &t,
@@ -1534,7 +1531,7 @@ int FiberSurface::mergeVertices(const double &distanceThreshold) const {
     // now copy triangles over with non zero-area triangles
     // NOTE: no need to re-allocate the memory, we know we are not going to use
     // more.
-    (*polygonEdgeTriangleLists_[i]).resize(0);
+    (*polygonEdgeTriangleLists_[i]).clear();
     for(SimplexId j = 0; j < (SimplexId)tmpTriangleLists[i].size(); j++) {
 
       if(keepTriangle[i][j]) {
@@ -1616,7 +1613,7 @@ int FiberSurface::snapVertexBarycentrics() const {
 
 int FiberSurface::snapVertexBarycentrics(
   const SimplexId &tetId,
-  const vector<pair<SimplexId, SimplexId>> &triangles) const {
+  const std::vector<std::pair<SimplexId, SimplexId>> &triangles) const {
 
   for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
 
@@ -1628,8 +1625,8 @@ int FiberSurface::snapVertexBarycentrics(
 
       // check for each triangle of the tet
       double minimum = -DBL_MAX;
-      vector<double> minBarycentrics;
-      vector<SimplexId> minimizer(3);
+      std::array<double, 3> minBarycentrics{};
+      std::array<SimplexId, 3> minimizer{};
 
       for(int k = 0; k < 2; k++) {
         for(int l = k + 1; l < 3; l++) {
@@ -1639,7 +1636,7 @@ int FiberSurface::snapVertexBarycentrics(
             SimplexId vertexId1 = tetList_[5 * tetId + 1 + l];
             SimplexId vertexId2 = tetList_[5 * tetId + 1 + m];
 
-            vector<double> p0(3), p1(3), p2(3);
+            std::array<double, 3> p0{}, p1{}, p2{};
 
             for(int n = 0; n < 3; n++) {
               p0[n] = pointSet_[3 * vertexId0 + n];
@@ -1647,7 +1644,7 @@ int FiberSurface::snapVertexBarycentrics(
               p2[n] = pointSet_[3 * vertexId2 + n];
             }
 
-            vector<double> barycentrics;
+            std::array<double, 3> barycentrics{};
             Geometry::computeBarycentricCoordinates(
               p0.data(), p1.data(), p2.data(),
               (*globalVertexList_)[vertexId].p_.data(), barycentrics);

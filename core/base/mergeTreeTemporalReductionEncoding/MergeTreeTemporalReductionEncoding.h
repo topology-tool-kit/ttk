@@ -11,6 +11,11 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
 
 #pragma once
 
@@ -83,8 +88,8 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType computeDistance(MergeTree<dataType> &mTree1,
-                             MergeTree<dataType> &mTree2,
+    dataType computeDistance(ftm::MergeTree<dataType> &mTree1,
+                             ftm::MergeTree<dataType> &mTree2,
                              bool emptyTreeDistance = false) {
       MergeTreeDistance mergeTreeDistance;
       mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
@@ -119,9 +124,9 @@ namespace ttk {
     }
 
     template <class dataType>
-    MergeTree<dataType> computeBarycenter(MergeTree<dataType> &mTree1,
-                                          MergeTree<dataType> &mTree2,
-                                          double alpha) {
+    ftm::MergeTree<dataType> computeBarycenter(ftm::MergeTree<dataType> &mTree1,
+                                               ftm::MergeTree<dataType> &mTree2,
+                                               double alpha) {
       MergeTreeBarycenter mergeTreeBarycenter;
       mergeTreeBarycenter.setAssignmentSolver(assignmentSolverID_);
       mergeTreeBarycenter.setEpsilonTree1(epsilonTree1_);
@@ -147,12 +152,12 @@ namespace ttk {
       mergeTreeBarycenter.setPostprocess(false);
       // mergeTreeBarycenter.setIsCalled(true);
 
-      std::vector<MergeTree<dataType>> intermediateTrees;
+      std::vector<ftm::MergeTree<dataType>> intermediateTrees;
       intermediateTrees.push_back(mTree1);
       intermediateTrees.push_back(mTree2);
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         outputMatchingBarycenter(2);
-      MergeTree<dataType> barycenter;
+      ftm::MergeTree<dataType> barycenter;
       mergeTreeBarycenter.execute<dataType>(
         intermediateTrees, outputMatchingBarycenter, barycenter);
       return barycenter;
@@ -167,9 +172,9 @@ namespace ttk {
 
     template <class dataType>
     void
-      temporalSubsampling(std::vector<MergeTree<dataType>> &mTrees,
+      temporalSubsampling(std::vector<ftm::MergeTree<dataType>> &mTrees,
                           std::vector<int> &removed,
-                          std::vector<MergeTree<dataType>> &barycenters,
+                          std::vector<ftm::MergeTree<dataType>> &barycenters,
                           std::vector<std::vector<dataType>> &barycentersL2) {
       std::vector<bool> treeRemoved(mTrees.size(), false);
 
@@ -184,8 +189,9 @@ namespace ttk {
       for(int iter = 0; iter < toRemoved; ++iter) {
         dataType bestCost = std::numeric_limits<dataType>::max();
         int bestMiddleIndex = -1;
-        MergeTree<dataType> bestBarycenter;
-        std::vector<std::tuple<MergeTree<dataType>, int>> bestBarycentersOnPath;
+        ftm::MergeTree<dataType> bestBarycenter;
+        std::vector<std::tuple<ftm::MergeTree<dataType>, int>>
+          bestBarycentersOnPath;
         std::vector<dataType> bestBarycenterL2;
         std::vector<std::tuple<std::vector<dataType>, int>>
           bestBarycentersL2OnPath;
@@ -209,7 +215,7 @@ namespace ttk {
           // Compute barycenter
           printMsg("Compute barycenter", debug::Priority::VERBOSE);
           double alpha = computeAlpha(index1, middleIndex, index2);
-          MergeTree<dataType> barycenter;
+          ftm::MergeTree<dataType> barycenter;
           std::vector<dataType> barycenterL2;
           if(not useL2Distance_)
             barycenter = computeBarycenter<dataType>(
@@ -232,7 +238,8 @@ namespace ttk {
           // Compute distances of previously removed trees on the path
           printMsg("Compute distances of previously removed trees",
                    debug::Priority::VERBOSE);
-          std::vector<std::tuple<MergeTree<dataType>, int>> barycentersOnPath;
+          std::vector<std::tuple<ftm::MergeTree<dataType>, int>>
+            barycentersOnPath;
           std::vector<std::tuple<std::vector<dataType>, int>>
             barycentersL2OnPath;
           for(unsigned int i = 0; i < 2; ++i) {
@@ -243,7 +250,7 @@ namespace ttk {
 
               // Compute barycenter
               double alphaT = computeAlpha(index1, tIndex, index2);
-              MergeTree<dataType> barycenterP;
+              ftm::MergeTree<dataType> barycenterP;
               std::vector<dataType> barycenterPL2;
               if(not useL2Distance_)
                 barycenterP = computeBarycenter<dataType>(
@@ -306,9 +313,9 @@ namespace ttk {
     }
 
     template <class dataType>
-    std::vector<int> execute(std::vector<MergeTree<dataType>> &mTrees,
+    std::vector<int> execute(std::vector<ftm::MergeTree<dataType>> &mTrees,
                              std::vector<double> &emptyTreeDistances,
-                             std::vector<MergeTree<dataType>> &allMT) {
+                             std::vector<ftm::MergeTree<dataType>> &allMT) {
       Timer t_tempSub;
 
       // --- Preprocessing
@@ -324,7 +331,7 @@ namespace ttk {
       }
 
       // --- Execute
-      std::vector<MergeTree<dataType>> barycenters(mTrees.size());
+      std::vector<ftm::MergeTree<dataType>> barycenters(mTrees.size());
       std::vector<std::vector<dataType>> barycentersL2(mTrees.size());
       std::vector<int> removed;
       if(not useCustomTimeVariable_) {

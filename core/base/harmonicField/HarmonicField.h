@@ -10,6 +10,11 @@
 ///
 ///
 /// \sa ttkHarmonicField.cpp % for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
 
 #pragma once
 

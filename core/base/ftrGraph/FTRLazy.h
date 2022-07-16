@@ -28,8 +28,7 @@ namespace ttk {
       std::vector<std::set<linkEdge>> lazyAdd_;
 
     public:
-      Lazy() {
-      }
+      Lazy() = default;
 
       void alloc() override {
         lazyAdd_.resize(nbElmt_);

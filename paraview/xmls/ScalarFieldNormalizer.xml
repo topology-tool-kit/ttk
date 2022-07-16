@@ -13,6 +13,15 @@
         long_help="TTK plugin that normalizes an input scalar field."
         short_help="TTK plugin that normalizes an input scalar field.">
           TTK plugin that normalizes an input scalar field.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
      </Documentation>
      <InputProperty
         name="Input"

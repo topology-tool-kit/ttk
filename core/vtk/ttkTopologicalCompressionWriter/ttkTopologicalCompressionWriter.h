@@ -5,6 +5,12 @@
 ///
 /// \brief VTK-filter that wraps the topologicalCompressionWriter processing
 /// package.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/">Persistence-Driven
+///   Compression example</a> \n
+///
 
 #pragma once
 
@@ -77,7 +83,7 @@ public:
 protected:
   // Regular writer management.
   ttkTopologicalCompressionWriter();
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   // Writer parameters.

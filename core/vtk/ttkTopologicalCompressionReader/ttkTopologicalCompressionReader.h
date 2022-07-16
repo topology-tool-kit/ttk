@@ -5,6 +5,12 @@
 ///
 /// \brief VTK-filter that wraps the topologicalCompressionWriter processing
 /// package.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDrivenCompression/">Persistence-Driven
+///   Compression example</a> \n
+///
 
 #pragma once
 
@@ -42,9 +48,9 @@ protected:
   int RequestData(vtkInformation *,
                   vtkInformationVector **,
                   vtkInformationVector *) override;
-  virtual int RequestInformation(vtkInformation *request,
-                                 vtkInformationVector **inputVector,
-                                 vtkInformationVector *outputVector) override;
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
 
   // TTK management.
   void BuildMesh(vtkImageData *mesh) const;

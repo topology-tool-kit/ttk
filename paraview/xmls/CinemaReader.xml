@@ -4,6 +4,25 @@
         <SourceProxy name="ttkCinemaReader" class="ttkCinemaReader" label="TTK CinemaReader">
             <Documentation long_help="TTK CinemaReader" short_help="TTK CinemaReader">
                 This source reads the content of a Cinema Spec D database by converting the corresponding data.csv file into a vtkTable.
+
+                Online examples:
+                
+                - https://topology-tool-kit.github.io/examples/cinemaIO/
+
+                - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+
+                - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+                - https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
+
+                - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
+
+                - https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/
+
+                - https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/
+
+                - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
+
             </Documentation>
 
             <StringVectorProperty name="DatabasePath" label="Database Path" animateable="0" command="SetDatabasePath" number_of_elements="1">

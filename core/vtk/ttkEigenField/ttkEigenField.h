@@ -26,6 +26,21 @@
 ///
 /// \sa ttkHarmonicField
 /// \sa ttk::EigenField
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_casting/">Persistent
+///   Generators Casting example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/">Persistent
+///   Generators Fertility example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_skull/">Persistent
+///   Generators Skull example</a> \n
+///
 
 #pragma once
 

@@ -13,6 +13,24 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkDimensionReduction.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/">Persistent
+///   Generators Household Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
+///
 
 #pragma once
 
@@ -227,6 +245,7 @@ namespace ttk {
     int iso_MaxIteration{300};
     std::string iso_PathMethod{"auto"};
     std::string iso_NeighborsAlgorithm{"auto"};
+    std::string iso_Metric{"euclidean"};
 
     // pca
     bool pca_Copy{true};

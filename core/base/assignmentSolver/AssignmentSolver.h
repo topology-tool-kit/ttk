@@ -11,12 +11,10 @@
 ///   - the mth column is the same but with jobs
 ///   - the last cell (costMatrix[n][m]) is not used
 
-#ifndef _ASSIGNMENTSOLVER_H
-#define _ASSIGNMENTSOLVER_H
-
-#define asgnMatchingTuple std::tuple<int, int, double>
+#pragma once
 
 #include <Debug.h>
+#include <PersistenceDiagramUtils.h>
 
 namespace ttk {
 
@@ -26,9 +24,9 @@ namespace ttk {
   public:
     AssignmentSolver() = default;
 
-    virtual ~AssignmentSolver() = default;
+    ~AssignmentSolver() override = default;
 
-    virtual int run(std::vector<asgnMatchingTuple> &matchings) = 0;
+    virtual int run(std::vector<MatchingType> &matchings) = 0;
 
     virtual inline void clear() {
       rowSize = 0;
@@ -85,5 +83,3 @@ namespace ttk {
     bool balancedAssignment;
   };
 } // namespace ttk
-
-#endif

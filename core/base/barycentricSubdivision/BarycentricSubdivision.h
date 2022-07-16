@@ -72,6 +72,7 @@ namespace ttk {
      *
      * @param[in] data Pointer to input data on parent triangulation
      * @param[out] output Allocated buffer to be filled
+     * @param[in] inputTriangl Input triangulation object
      *
      * @return 0 in case of success
      */

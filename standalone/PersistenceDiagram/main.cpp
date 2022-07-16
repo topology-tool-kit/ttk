@@ -24,10 +24,11 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
-  int backEnd = 0;
+  int backEnd = 2;
   int startingRL = 0;
   int stoppingRL = -1;
   double tl = 0.0;
+  double epsilon = 0.0;
   bool listArrays{false};
 
   // ---------------------------------------------------------------------------
@@ -44,7 +45,11 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("B", &backEnd, "Method (0:FTM, 1: progressive)", true);
+    parser.setArgument(
+      "B", &backEnd,
+      "Method (0: FTM, 1: progressive, 2: DiscreteMorseSandwich, 3: "
+      "approximation, 4: persistent simplex)",
+      true);
     parser.setArgument("S", &startingRL,
                        "Starting Resolution Level for progressive "
                        "multiresolution scheme (-1: finest level)",
@@ -54,6 +59,8 @@ int main(int argc, char **argv) {
                        "multiresolution scheme (-1: finest level)",
                        true);
     parser.setArgument("T", &tl, "Time limit for progressive method", true);
+    parser.setArgument(
+      "e", &epsilon, "% error (for approximate approach)", true);
     parser.setOption("l", &listArrays, "List available arrays");
     parser.parse(argc, argv);
   }
@@ -131,7 +138,7 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   if(!inputArrayNames.size()) {
     if(defaultArray)
-      inputArrayNames.push_back(defaultArray->GetName());
+      inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
     persistenceDiagram->SetInputArrayToProcess(
@@ -144,6 +151,9 @@ int main(int argc, char **argv) {
   persistenceDiagram->SetTimeLimit(tl);
   persistenceDiagram->SetStartingResolutionLevel(startingRL);
   persistenceDiagram->SetStoppingResolutionLevel(stoppingRL);
+  persistenceDiagram->SetEpsilon(epsilon);
+  persistenceDiagram->SetIgnoreBoundary(false);
+
   persistenceDiagram->Update();
 
   // ---------------------------------------------------------------------------
@@ -152,8 +162,8 @@ int main(int argc, char **argv) {
   if(!outputPathPrefix.empty()) {
     for(int i = 0; i < persistenceDiagram->GetNumberOfOutputPorts(); i++) {
       auto output = persistenceDiagram->GetOutputDataObject(i);
-      auto writer
-        = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
+        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
       std::string outputFileName = outputPathPrefix + "_port_"
                                    + std::to_string(i) + "."

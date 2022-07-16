@@ -2,7 +2,7 @@
 ///
 /// \ingroup base
 /// \class ttk::HelloWorld
-/// \author Your Name Here <Your Email Address Here>
+/// \author Your Name Here <your.email@address.here>
 /// \date The Date Here.
 ///
 /// This module defines the %HelloWorld class that computes for each vertex of a
@@ -94,7 +94,7 @@ namespace ttk {
 
           // add neighbor values to average
           size_t nNeighbors = triangulation->getVertexNeighborNumber(i);
-          ttk::SimplexId neighborId;
+          ttk::SimplexId neighborId{-1};
           for(size_t j = 0; j < nNeighbors; j++) {
             triangulation->getVertexNeighbor(i, j, neighborId);
             outputData[i] += inputData[neighborId];

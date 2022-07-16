@@ -10,6 +10,10 @@
           >
         This filter merges vtkTables stored in a vtkMultiBlockDataSet
         into one unique vtkTable.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
       </Documentation>
 
       <InputProperty

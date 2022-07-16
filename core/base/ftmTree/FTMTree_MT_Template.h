@@ -13,13 +13,9 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef FTMTREE_MT_TPL_H
-#define FTMTREE_MT_TPL_H
+#pragma once
 
 #include <functional>
-#if(defined(__GNUC__) && !defined(__clang__))
-#include <parallel/algorithm>
-#endif
 
 #include "FTMTree_MT.h"
 
@@ -106,7 +102,7 @@ namespace ttk {
               valence val = 0;
 
               for(valence n = 0; n < neighNumb; ++n) {
-                SimplexId neigh;
+                SimplexId neigh{-1};
                 mesh->getVertexNeighbor(v, n, neigh);
                 comp_.vertLower(neigh, v) && ++val;
               }
@@ -185,7 +181,7 @@ namespace ttk {
         (*mt_data_.ufs)[v] = new AtomicUF(v);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied OPTIONAL_PRIORITY(isPrior())
+#pragma omp task UNTIED() OPTIONAL_PRIORITY(isPrior())
 #endif
         arcGrowth(mesh, v, n);
       }
@@ -356,7 +352,7 @@ namespace ttk {
 
       // propagation / is saddle
       for(valence n = 0; n < nbNeigh; ++n) {
-        SimplexId neigh;
+        SimplexId neigh{-1};
         mesh->getVertexNeighbor(currentState.vertex, n, neigh);
 
         if(comp_.vertLower(neigh, currentState.vertex)) {
@@ -464,7 +460,7 @@ namespace ttk {
       // Union of the UF coming here (merge propagation and closing arcs)
       const auto &nbNeigh = mesh->getVertexNeighborNumber(saddleVert);
       for(valence n = 0; n < nbNeigh; ++n) {
-        SimplexId neigh;
+        SimplexId neigh{-1};
         mesh->getVertexNeighbor(saddleVert, n, neigh);
 
         if(comp_.vertLower(neigh, saddleVert)) {
@@ -493,7 +489,7 @@ namespace ttk {
       // Union of the UF coming here (merge propagation and closing arcs)
       const auto &nbNeigh = mesh->getVertexNeighborNumber(saddleVert);
       for(valence n = 0; n < nbNeigh; ++n) {
-        SimplexId neigh;
+        SimplexId neigh{-1};
         mesh->getVertexNeighbor(saddleVert, n, neigh);
 
         if(comp_.vertLower(neigh, saddleVert)) {
@@ -513,7 +509,7 @@ namespace ttk {
     // ------------------------------------------------------------------------
 
     template <typename scalarType>
-    void ftm::FTMTree_MT::sortInput(void) {
+    void ftm::FTMTree_MT::sortInput() {
 
       const auto nbVertices = scalars_->size;
       scalars_->sortedVertices.resize(nbVertices);
@@ -529,5 +525,3 @@ namespace ttk {
   } // namespace ftm
 } // namespace ttk
 // Process
-
-#endif /* end of include guard: FTMTREE_MT_TPL_H */

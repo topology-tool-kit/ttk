@@ -13,6 +13,10 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2008.
 ///
 /// \sa ttkContinuousScatterPlot.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
 
 #pragma once
 
@@ -28,7 +32,7 @@ namespace ttk {
 
   public:
     ContinuousScatterPlot();
-    ~ContinuousScatterPlot();
+    ~ContinuousScatterPlot() override;
 
     template <typename dataType1,
               typename dataType2,
@@ -129,8 +133,10 @@ int ttk::ContinuousScatterPlot::execute(
     delta[0] / resolutions_[0], delta[1] / resolutions_[1]};
   const double epsilon{0.000001};
 
+  std::vector<std::array<SimplexId, 3>> triangles{};
+
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) firstprivate(triangles)
 #endif
   for(SimplexId cell = 0; cell < numberOfCells; ++cell) {
     bool isDummy{};
@@ -254,9 +260,9 @@ int ttk::ContinuousScatterPlot::execute(
 
     // projection:
     double density{};
-    std::vector<std::vector<SimplexId>> triangles;
     double imaginaryPosition[3]{};
-    std::vector<SimplexId> triangle(3);
+    triangles.clear();
+    std::array<SimplexId, 3> triangle{};
     // class 0
     if(isInTriangle) {
       // mass density

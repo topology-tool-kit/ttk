@@ -211,14 +211,14 @@ int SubLevelSetTree::build() {
 
   vector<UnionFind> seeds;
   vector<vector<int>> seedSuperArcs;
-  vector<UnionFind *> vertexSeeds(vertexNumber_, (UnionFind *)NULL);
+  vector<UnionFind *> vertexSeeds(vertexNumber_, (UnionFind *)nullptr);
   vector<UnionFind *> starSets;
   vector<bool> visitedVertices(vertexNumber_, false);
 
   SimplexId vertexId = -1, nId = -1;
-  UnionFind *seed = NULL, *firstUf = NULL;
+  UnionFind *seed = nullptr, *firstUf = nullptr;
 
-  const vector<int> *extremumList = NULL;
+  const vector<int> *extremumList = nullptr;
 
   bool isMergeTree = true;
 
@@ -272,7 +272,7 @@ int SubLevelSetTree::build() {
     starSets.clear();
 
     merge = false;
-    firstUf = NULL;
+    firstUf = nullptr;
 
     SimplexId neighborNumber
       = triangulation_->getVertexNeighborNumber(vertexId);
@@ -1280,16 +1280,12 @@ int SubLevelSetTree::getPersistenceDiagram(
   diagram.resize(pairs->size());
 
   for(int i = 0; i < (int)pairs->size(); i++) {
-    if((minimumList_) && (!maximumList_)) {
-      // join tree
-      diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
-      diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
-    } else if((maximumList_) && (!minimumList_)) {
+    if((maximumList_) && (!minimumList_)) {
       // split tree
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.second];
     } else {
-      // contour tree
+      // join tree or contour tree
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
     }
@@ -2441,7 +2437,7 @@ int ContourTree::combineTrees() {
     return -1;
 
   queue<const Node *> nodeQueue;
-  const Node *mergeNode = NULL, *splitNode = NULL;
+  const Node *mergeNode = nullptr, *splitNode = nullptr;
   int initNumber = 0;
 
   do {
@@ -2465,7 +2461,7 @@ int ContourTree::combineTrees() {
     if((int)nodeQueue.size() == initQueueSize)
       break;
 
-    const Node *n0 = NULL, *n1 = NULL, *other = NULL;
+    const Node *n0 = nullptr, *n1 = nullptr, *other = nullptr;
 
     do {
 
@@ -2487,7 +2483,7 @@ int ContourTree::combineTrees() {
         if(!((other->getNumberOfUpArcs())
              && (other->getNumberOfDownArcs() > 1))) {
 
-          n1 = NULL;
+          n1 = nullptr;
 
           if(n0->getNumberOfUpArcs()) {
 
@@ -2537,7 +2533,7 @@ int ContourTree::combineTrees() {
         if(!((other->getNumberOfUpArcs())
              && (other->getNumberOfDownArcs() > 1))) {
 
-          n1 = NULL;
+          n1 = nullptr;
 
           if(n0->getNumberOfUpArcs()) {
 
@@ -2686,7 +2682,7 @@ bool ContourTree::isNodeEligible(const Node *n) const {
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const Node *merge = NULL, *split = NULL;
+  const Node *merge = nullptr, *split = nullptr;
 
   if(mergeTree_.getNode(n - mergeTree_.getNode(0)) == n) {
     merge = n;
@@ -2893,16 +2889,12 @@ int ContourTree::getPersistenceDiagram(
   diagram.resize(pairs->size());
 
   for(int i = 0; i < (int)pairs->size(); i++) {
-    if((minimumList_) && (!maximumList_)) {
-      // join tree
-      diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
-      diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
-    } else if((maximumList_) && (!minimumList_)) {
+    if((maximumList_) && (!minimumList_)) {
       // split tree
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.second];
     } else {
-      // contour tree
+      // join tree or contour tree
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
     }

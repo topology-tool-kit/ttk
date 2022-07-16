@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that computes the overlap between labeled
 /// vtkPointSets.
 ///
-/// VTK wrapping code for the @TrackingFromOverlap package.
+/// VTK wrapping code for the ttk::TrackingFromOverlap package.
 ///
 /// This filter identifies and tracks labled vtkPointSets across time (and
 /// optionally levels) based on spatial overlap, where two points overlap iff
@@ -32,7 +32,12 @@
 /// holds all timesteps of level \b j. \param Output A \b vtkUnstructuredGrid
 /// that represents the (nested) tracking graph embedded in the spatial domain.
 ///
-/// sa ttk::TrackingFromOverlap
+/// \sa ttk::TrackingFromOverlap
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
@@ -62,16 +67,9 @@ public:
 
 protected:
   ttkTrackingFromOverlap() {
-    SetLabelFieldName("RegionId");
-
-    UseAllCores = false;
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-
-  bool UseAllCores;
-  int ThreadNumber;
 
   int reset();
 
@@ -120,7 +118,7 @@ protected:
 
 private:
   int LabelDataType;
-  std::string LabelFieldName;
+  std::string LabelFieldName{"RegionId"};
 
   vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 

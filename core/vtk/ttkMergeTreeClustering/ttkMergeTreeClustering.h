@@ -28,6 +28,11 @@
 ///
 /// \sa ttk::MergeTreeClustering
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
 
 #pragma once
 
@@ -37,6 +42,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
@@ -75,6 +81,7 @@ private:
   double JoinSplitMixtureCoefficient = 0.5;
   bool ComputeBarycenter = false;
   unsigned int NumberOfBarycenters = 1;
+  double BarycenterSizeLimitPercent = 0.0;
   bool Deterministic = false;
 
   // Output Options
@@ -93,6 +100,8 @@ private:
   double NonImportantPairsSpacing = 1.;
   double NonImportantPairsProximity = 0.05;
   bool BarycenterPositionAlpha = false;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
   // Old options
   bool ProgressiveComputation = false;
@@ -107,19 +116,21 @@ private:
   // Data for visualization
   // ----------------------
   // Trees
-  std::vector<MergeTree<double>> intermediateSTrees, intermediateSTrees2;
+  std::vector<ttk::ftm::MergeTree<double>> intermediateSTrees,
+    intermediateSTrees2;
   std::vector<vtkUnstructuredGrid *> treesNodes, treesNodes2;
   std::vector<vtkUnstructuredGrid *> treesArcs, treesArcs2;
   std::vector<vtkDataSet *> treesSegmentation, treesSegmentation2;
 
   // Matching
-  std::vector<std::tuple<idNode, idNode, double>> outputMatching;
-  std::vector<
-    std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>
+  std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>
+    outputMatching;
+  std::vector<std::vector<
+    std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>
     outputMatchingBarycenter, outputMatchingBarycenter2;
 
   // Barycenter
-  std::vector<MergeTree<double>> barycentersS;
+  std::vector<ttk::ftm::MergeTree<double>> barycentersS;
   std::vector<int> clusteringAssignment;
 
   // Node correspondence
@@ -130,8 +141,8 @@ private:
 
   void setDataVisualization(int numInputs, int numInputs2) {
     // Trees
-    intermediateSTrees = std::vector<MergeTree<double>>(numInputs);
-    intermediateSTrees2 = std::vector<MergeTree<double>>(numInputs2);
+    intermediateSTrees = std::vector<ttk::ftm::MergeTree<double>>(numInputs);
+    intermediateSTrees2 = std::vector<ttk::ftm::MergeTree<double>>(numInputs2);
     treesNodes = std::vector<vtkUnstructuredGrid *>(numInputs);
     treesNodes2 = std::vector<vtkUnstructuredGrid *>(numInputs2);
     treesArcs = std::vector<vtkUnstructuredGrid *>(numInputs);
@@ -140,20 +151,23 @@ private:
     treesSegmentation2 = std::vector<vtkDataSet *>(numInputs2);
 
     // Matching
-    outputMatchingBarycenter = std::vector<
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>(
+    outputMatchingBarycenter = std::vector<std::vector<
+      std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>(
       NumberOfBarycenters,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
+      std::vector<
+        std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs));
 
-    outputMatchingBarycenter2 = std::vector<
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>(
+    outputMatchingBarycenter2 = std::vector<std::vector<
+      std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>(
       NumberOfBarycenters,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
+      std::vector<
+        std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs2));
 
     // Barycenter
-    barycentersS = std::vector<MergeTree<double>>(NumberOfBarycenters);
+    barycentersS
+      = std::vector<ttk::ftm::MergeTree<double>>(NumberOfBarycenters);
     clusteringAssignment = std::vector<int>(numInputs, 0);
   }
 
@@ -233,6 +247,8 @@ public:
 
   void SetAlpha(double alpha) {
     Alpha = 1 - alpha;
+    Alpha = std::min(1 - 1e-6, Alpha);
+    Alpha = std::max(1e-6, Alpha);
     Modified();
     resetDataVisualization();
   }
@@ -294,6 +310,13 @@ public:
   }
   vtkGetMacro(NumberOfBarycenters, unsigned int);
 
+  void SetBarycenterSizeLimitPercent(double percent) {
+    BarycenterSizeLimitPercent = percent;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(BarycenterSizeLimitPercent, double);
+
   // Output Options
   vtkSetMacro(BarycenterPositionAlpha, bool);
   vtkGetMacro(BarycenterPositionAlpha, bool);
@@ -339,6 +362,12 @@ public:
 
   vtkSetMacro(NonImportantPairsProximity, double);
   vtkGetMacro(NonImportantPairsProximity, double);
+
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
 
   // Old options
   vtkSetMacro(ProgressiveComputation, bool);
@@ -399,16 +428,18 @@ protected:
 
   template <class dataType>
   int run(vtkInformationVector *outputVector,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees,
-          std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+          std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 
   template <class dataType>
-  int runCompute(vtkInformationVector *outputVector,
-                 std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                 std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+  int runCompute(
+    vtkInformationVector *outputVector,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 
   template <class dataType>
-  int runOutput(vtkInformationVector *outputVector,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees,
-                std::vector<vtkMultiBlockDataSet *> &inputTrees2);
+  int runOutput(
+    vtkInformationVector *outputVector,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+    std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
 };

@@ -6,12 +6,10 @@ using namespace ttk;
 AbstractTriangulation::AbstractTriangulation() {
 
   setDebugMsgPrefix("AbstractTriangulation");
-
   clear();
 }
 
-AbstractTriangulation::~AbstractTriangulation() {
-}
+AbstractTriangulation::~AbstractTriangulation() = default;
 
 int AbstractTriangulation::clear() {
 

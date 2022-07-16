@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::FTMTree
+/// \class ttk::ftm::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date December 2016.
 ///
@@ -11,9 +11,26 @@
 /// etc.).
 ///
 /// \sa ttkFTMTree.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
 
-#ifndef FTMTREE_H
-#define FTMTREE_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
@@ -37,7 +54,7 @@ namespace ttk {
       // -----------------
 
       FTMTree();
-      virtual ~FTMTree();
+      ~FTMTree() override;
 
       // -------
       // PROCESS
@@ -53,5 +70,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif // TASKEDTREE_H

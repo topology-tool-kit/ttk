@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::DiscreteGradient
+/// \class ttk::dcg::DiscreteGradient
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
@@ -19,6 +19,7 @@
 #include <FTMTree.h>
 #include <Geometry.h>
 #include <Triangulation.h>
+#include <VisitedMask.h>
 
 #include <algorithm>
 #include <array>
@@ -275,47 +276,6 @@ namespace ttk {
       }
     };
 
-    struct VisitedMask {
-      std::vector<bool> &isVisited_;
-      std::vector<SimplexId> &visitedIds_;
-
-      VisitedMask(std::vector<bool> &isVisited,
-                  std::vector<SimplexId> &visitedIds)
-        : isVisited_{isVisited}, visitedIds_{visitedIds} {
-      }
-      ~VisitedMask() {
-        // use RAII to clean & reset referenced vectors
-        for(const auto id : this->visitedIds_) {
-          this->isVisited_[id] = false;
-        }
-        // set size to 0 but keep allocated memory
-        this->visitedIds_.clear();
-      }
-      void insert(SimplexId id) {
-        this->isVisited_[id] = true;
-        this->visitedIds_.emplace_back(id);
-      }
-    };
-
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-    using gradIdType = char;
-#else
-    using gradIdType = SimplexId;
-#endif
-
-    /**
-     * @brief Discrete gradient struct
-     *
-     * 0: paired edge id per vertex
-     * 1: paired vertex id per edge
-     * 2: paired triangle id per edge
-     * 3: paired edge id per triangle
-     * 4: paired tetra id per triangle
-     * 5: paired triangle id per tetra
-     * -1 if critical or paired to a cell of another dimension
-     */
-    using gradientType = std::array<std::vector<gradIdType>, 6>;
-
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
      * TTK assumes that the input dataset is made of only one connected
@@ -377,7 +337,8 @@ saddle-connectors.
 triangulation.
        */
       template <typename triangulationType>
-      int buildGradient(const triangulationType &triangulation);
+      int buildGradient(const triangulationType &triangulation,
+                        bool bypassCache = false);
 
       /**
        * Automatic detection of the PL critical points and simplification
@@ -399,9 +360,15 @@ according to them.
 
       /**
        * Set the input scalar function.
+       *
+       * The first parameter is a pointer to the scalar field buffer
+       * (often provided by ttkUtils::GetVoidPointer()), the second
+       * one is a timestamp representing the last modification time of
+       * the scalar field (often provided by vtkObject::GetMTime()).
        */
-      inline void setInputScalarField(const void *const data) {
-        inputScalarField_ = data;
+      inline void setInputScalarField(const void *const data,
+                                      const size_t mTime) {
+        inputScalarField_ = std::make_pair(data, mTime);
       }
 
       /**
@@ -409,8 +376,7 @@ according to them.
        */
       inline void preconditionTriangulation(AbstractTriangulation *const data) {
         if(data != nullptr) {
-          dimensionality_ = data->getCellVertexNumber(0) - 1;
-          numberOfVertices_ = data->getNumberOfVertices();
+          const auto dim{data->getDimensionality()};
 
           data->preconditionBoundaryVertices();
           data->preconditionVertexNeighbors();
@@ -418,12 +384,12 @@ according to them.
           data->preconditionVertexStars();
           data->preconditionEdges();
           data->preconditionEdgeStars();
-          if(dimensionality_ >= 2) {
+          if(dim >= 2) {
             data->preconditionBoundaryEdges();
           }
-          if(dimensionality_ == 2) {
+          if(dim == 2) {
             data->preconditionCellEdges();
-          } else if(dimensionality_ == 3) {
+          } else if(dim == 3) {
             data->preconditionBoundaryTriangles();
             data->preconditionVertexTriangles();
             data->preconditionEdgeTriangles();
@@ -434,7 +400,6 @@ according to them.
             // for filterSaddleConnectors
             contourTree_.preconditionTriangulation(data);
           }
-          this->initMemory(*data);
         }
       }
 
@@ -616,9 +581,8 @@ in the gradient.
       /**
        * Compute manifold size for critical extrema
        */
-      int setManifoldSize(const std::vector<Cell> &criticalPoints,
+      int setManifoldSize(const size_t nCritPoints,
                           const std::vector<size_t> &nCriticalPointsByDim,
-                          const std::vector<SimplexId> &maxSeeds,
                           const SimplexId *const ascendingManifold,
                           const SimplexId *const descendingManifold,
                           std::vector<SimplexId> &manifoldSize) const;
@@ -947,13 +911,18 @@ gradient, false otherwise.
 
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
-      gradientType gradient_{};
       std::vector<SimplexId> dmtMax2PL_{};
       std::vector<SimplexId> dmt1Saddle2PL_{};
       std::vector<SimplexId> dmt2Saddle2PL_{};
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 
-      const void *inputScalarField_{};
+      // spare storage (bypass cache) for gradient internal structure
+      AbstractTriangulation::gradientType localGradient_{};
+      // cache key (scalar field pointer + timestamp)
+      AbstractTriangulation::gradientKeyType inputScalarField_{};
+      // pointer to either cache entry corresponding to inputScalarField_ or
+      // localGradient_ (if cache is bypassed)
+      AbstractTriangulation::gradientType *gradient_{};
       const SimplexId *inputOffsets_{};
     };
 

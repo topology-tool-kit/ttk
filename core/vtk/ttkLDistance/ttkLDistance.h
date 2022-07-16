@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the lDistance processing package.
 ///
-/// VTK wrapping code for the @LDistance package.
+/// VTK wrapping code for the ttk::LDistance package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)

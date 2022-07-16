@@ -2,7 +2,6 @@
 /// \brief The Topology ToolKit - VTK wrapping code for the processing
 /// packages.
 /// @{
-/// \ingroup vtk
 /// \class ttkAlgorithm
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2019.
@@ -36,6 +35,7 @@ class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
 private:
   int ThreadNumber{1};
   bool UseAllCores{true};
+  float CompactTriangulationCacheSize{0.2f};
 
 public:
   static ttkAlgorithm *New();
@@ -75,6 +75,14 @@ public:
    */
   void SetDebugLevel(int debugLevel) {
     this->setDebugLevel(debugLevel); // from ttk::Debug
+    this->Modified();
+  }
+
+  /**
+   * Set the cache size of the compact triangulation.
+   */
+  void SetCompactTriangulationCacheSize(float cacheSize) {
+    this->CompactTriangulationCacheSize = cacheSize;
     this->Modified();
   }
 
@@ -130,7 +138,8 @@ public:
                           const std::string &arrayName,
                           vtkDataSet *const inputData,
                           std::vector<ttk::SimplexId> &spareStorage,
-                          const int inputPort = 0);
+                          const int inputPort = 0,
+                          const bool printErr = true);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
@@ -156,7 +165,7 @@ public:
   ttk::Triangulation *GetTriangulation(vtkDataSet *object);
 
   /**
-   * This key can be used during the FillOutputPortInfomration() call to
+   * This key can be used during the FillOutputPortInformation() call to
    * specify that an output port should produce the same data type as a
    * certain input port.
    */
@@ -198,7 +207,23 @@ public:
 
 protected:
   ttkAlgorithm();
-  virtual ~ttkAlgorithm();
+  ~ttkAlgorithm() override;
+
+  /**
+   * This method is called in GetTriangulation, after the triangulation as been
+   * created. It verifies that several attributes necessary for MPI computation
+   * are present in the pipeline and if not, computes them.
+   */
+  void MPIPipelinePreconditioning(vtkDataSet *input);
+
+  /**
+   * This method is called in GetTriangulation, after the triangulation as been
+   * created. It retrieves several attributes from the pipeline to precondition
+   * the triangulation for MPI computation.
+   */
+
+  void MPITriangulationPreconditioning(ttk::Triangulation *triangulation,
+                                       vtkDataSet *input);
 
   /**
    * This method is called during the first pipeline pass in
@@ -305,9 +330,8 @@ protected:
    * This method has to be overridden to specify the required input data
    * types.
    */
-  virtual int
-    FillInputPortInformation(int ttkNotUsed(port),
-                             vtkInformation *ttkNotUsed(info)) override {
+  int FillInputPortInformation(int ttkNotUsed(port),
+                               vtkInformation *ttkNotUsed(info)) override {
     return 0;
   }
 
@@ -321,9 +345,8 @@ protected:
    * This method has to be overridden to specify the data types of the
    * outputs.
    */
-  virtual int
-    FillOutputPortInformation(int ttkNotUsed(port),
-                              vtkInformation *ttkNotUsed(info)) override {
+  int FillOutputPortInformation(int ttkNotUsed(port),
+                                vtkInformation *ttkNotUsed(info)) override {
     return 0;
   }
 };

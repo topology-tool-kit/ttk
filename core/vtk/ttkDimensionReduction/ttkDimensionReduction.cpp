@@ -60,7 +60,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
     const SimplexId numberOfColumns = ScalarFields.size();
 
     if(numberOfRows <= 0 || numberOfColumns <= 0) {
-      this->printErr("input matrix has invalid dimensions (rows: "
+      this->printErr("Input matrix has invalid dimensions (rows: "
                      + std::to_string(numberOfRows)
                      + ", columns: " + std::to_string(numberOfColumns) + ")");
       return 0;

@@ -24,6 +24,19 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
 ///
 /// \sa ttkScalarFieldCriticalPoints.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">
+///   BuiltInExample1</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
 
 #pragma once
 
@@ -45,7 +58,8 @@ namespace ttk {
 
     /**
      * Execute the package.
-     * \param argment Dummy integer argument.
+     * \param offsets Pointer to order field on vertices
+     * \param triangulation Triangulation
      * \return Returns 0 upon success, negative values otherwise.
      *
      * @pre For this function to behave correctly in the absence of
@@ -71,10 +85,13 @@ namespace ttk {
     void checkProgressivityRequirement(const triangulationType *triangulation);
 
     template <class triangulationType = AbstractTriangulation>
-    std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
-      const SimplexId vertexId,
-      const SimplexId *const offsets,
-      const triangulationType *triangulation) const;
+    int getNumberOfLowerUpperComponents(const SimplexId vertexId,
+                                        const SimplexId *const offsets,
+                                        const triangulationType *triangulation,
+                                        ttk::SimplexId &lowerComponentNumber,
+                                        ttk::SimplexId &upperComponentNumber,
+                                        bool &isLowerOnBoundary,
+                                        bool &isUpperOnBoundary) const;
 
     template <class triangulationType = AbstractTriangulation>
     char getCriticalType(const SimplexId &vertexId,
@@ -101,6 +118,7 @@ namespace ttk {
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
         triangulation->preconditionVertexStars();
+        triangulation->preconditionBoundaryVertices();
       }
 
       setDomainDimension(triangulation->getDimensionality());
@@ -133,6 +151,7 @@ namespace ttk {
     const std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
       *vertexLinkEdgeLists_{};
     std::vector<std::pair<SimplexId, char>> *criticalPoints_{};
+    int *rankArray_{nullptr};
 
     bool forceNonManifoldCheck{false};
 
@@ -209,30 +228,50 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   if(triangulation) {
     vertexNumber_ = triangulation->getNumberOfVertices();
     dimension_ = triangulation->getCellVertexNumber(0) - 1;
+#if TTK_ENABLE_MPI
+    rankArray_ = triangulation->getRankArray();
+#endif
   }
 
   printMsg("Extracting critical points...");
 
   Timer t;
 
-  std::vector<char> vertexTypes(vertexNumber_);
+  std::vector<char> vertexTypes(vertexNumber_, (char)(CriticalType::Regular));
+
+#ifdef TTK_ENABLE_OPENMP
+  int chunkSize = std::max(1000, (int)vertexNumber_ / (threadNumber_ * 100));
+#endif
 
   if(triangulation) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
-
-      vertexTypes[i] = getCriticalType(i, offsets, triangulation);
+#if TTK_ENABLE_MPI
+      if(!isRunningWithMPI()
+         || (isRunningWithMPI() && (this->rankArray_[i] == ttk::MPIrank_))) {
+#endif
+        vertexTypes[i] = getCriticalType(i, offsets, triangulation);
+#if TTK_ENABLE_MPI
+      }
+#endif
     }
   } else if(vertexLinkEdgeLists_) {
     // legacy implementation
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
-
-      vertexTypes[i] = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
+#if TTK_ENABLE_MPI
+      if(!isRunningWithMPI()
+         || (isRunningWithMPI() && (this->rankArray_[i] == ttk::MPIrank_))) {
+#endif
+        vertexTypes[i]
+          = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
+#if TTK_ENABLE_MPI
+      }
+#endif
     }
   }
 
@@ -322,11 +361,14 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 }
 
 template <class triangulationType>
-std::pair<ttk::SimplexId, ttk::SimplexId>
-  ttk::ScalarFieldCriticalPoints::getNumberOfLowerUpperComponents(
-    const SimplexId vertexId,
-    const SimplexId *const offsets,
-    const triangulationType *triangulation) const {
+int ttk::ScalarFieldCriticalPoints::getNumberOfLowerUpperComponents(
+  const SimplexId vertexId,
+  const SimplexId *const offsets,
+  const triangulationType *triangulation,
+  ttk::SimplexId &lowerComponentNumber,
+  ttk::SimplexId &upperComponentNumber,
+  bool &isLowerOnBoundary,
+  bool &isUpperOnBoundary) const {
 
   SimplexId neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
   std::vector<SimplexId> lowerNeighbors, upperNeighbors;
@@ -337,23 +379,35 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
 
     if(offsets[neighborId] < offsets[vertexId]) {
       lowerNeighbors.push_back(neighborId);
+      if(dimension_ == 3) {
+        if(triangulation->isVertexOnBoundary(neighborId))
+          isLowerOnBoundary = true;
+      }
     }
 
     // upper link
     if(offsets[neighborId] > offsets[vertexId]) {
       upperNeighbors.push_back(neighborId);
+      if(dimension_ == 3) {
+        if(triangulation->isVertexOnBoundary(neighborId))
+          isUpperOnBoundary = true;
+      }
     }
   }
 
   // shortcut, if min or max do not construct the complete star
   if(!forceNonManifoldCheck && lowerNeighbors.empty()) {
     // minimum
-    return std::make_pair(0, 1);
+    lowerComponentNumber = 0;
+    upperComponentNumber = 1;
+    return 0;
   }
 
   if(!forceNonManifoldCheck && upperNeighbors.empty()) {
     // maximum
-    return std::make_pair(1, 0);
+    lowerComponentNumber = 1;
+    upperComponentNumber = 0;
+    return 0;
   }
 
   // now do the actual work
@@ -450,7 +504,10 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
              debug::Priority::VERBOSE);
   }
 
-  return std::make_pair(lowerList.size(), upperList.size());
+  lowerComponentNumber = lowerList.size();
+  upperComponentNumber = upperList.size();
+
+  return 0;
 }
 
 template <class triangulationType>
@@ -459,23 +516,34 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   const SimplexId *const offsets,
   const triangulationType *triangulation) const {
 
-  SimplexId downValence, upValence;
-  std::tie(downValence, upValence)
-    = getNumberOfLowerUpperComponents(vertexId, offsets, triangulation);
+  bool isLowerOnBoundary = false, isUpperOnBoundary = false;
+  SimplexId lowerComponentNumber, upperComponentNumber;
+  getNumberOfLowerUpperComponents(vertexId, offsets, triangulation,
+                                  lowerComponentNumber, upperComponentNumber,
+                                  isLowerOnBoundary, isUpperOnBoundary);
 
-  if(downValence == 0 && upValence == 1) {
+  if(lowerComponentNumber == 0 && upperComponentNumber == 1) {
     return (char)(CriticalType::Local_minimum);
-  } else if(downValence == 1 && upValence == 0) {
+  } else if(lowerComponentNumber == 1 && upperComponentNumber == 0) {
     return (char)(CriticalType::Local_maximum);
-  } else if(downValence == 1 && upValence == 1) {
+  } else if(lowerComponentNumber == 1 && upperComponentNumber == 1) {
+
+    if((dimension_ == 3) && (triangulation->isVertexOnBoundary(vertexId))) {
+      // special case of boundary saddles
+      if((isUpperOnBoundary) && (!isLowerOnBoundary))
+        return (char)(CriticalType::Saddle1);
+      if((!isUpperOnBoundary) && (isLowerOnBoundary))
+        return (char)(CriticalType::Saddle2);
+    }
+
     // regular point
     return (char)(CriticalType::Regular);
   } else {
     // saddles
     if(dimension_ == 2) {
-      if((downValence == 2 && upValence == 1)
-         || (downValence == 1 && upValence == 2)
-         || (downValence == 2 && upValence == 2)) {
+      if((lowerComponentNumber == 2 && upperComponentNumber == 1)
+         || (lowerComponentNumber == 1 && upperComponentNumber == 2)
+         || (lowerComponentNumber == 2 && upperComponentNumber == 2)) {
         // regular saddle
         return (char)(CriticalType::Saddle1);
       } else {
@@ -487,9 +555,9 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
         // disambiguate boundary from interior vertices
       }
     } else if(dimension_ == 3) {
-      if(downValence == 2 && upValence == 1) {
+      if(lowerComponentNumber == 2 && upperComponentNumber == 1) {
         return (char)(CriticalType::Saddle1);
-      } else if(downValence == 1 && upValence == 2) {
+      } else if(lowerComponentNumber == 1 && upperComponentNumber == 2) {
         return (char)(CriticalType::Saddle2);
       } else {
         // monkey saddle, saddle + extremum
@@ -506,13 +574,13 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
 template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
-  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
-    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
+  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
+     && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
 
-      printWrn("Explicit triangulation detected.");
-      printWrn("Defaulting to the generic backend.");
+    printWrn("Explicit, Compact or Periodic triangulation detected.");
+    printWrn("Defaulting to the generic backend.");
 
-      BackEnd = BACKEND::GENERIC;
-    }
+    BackEnd = BACKEND::GENERIC;
   }
 }

@@ -19,8 +19,7 @@ ttkBlockAggregator::ttkBlockAggregator() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkBlockAggregator::~ttkBlockAggregator() {
-}
+ttkBlockAggregator::~ttkBlockAggregator() = default;
 
 int ttkBlockAggregator::FillInputPortInformation(int port,
                                                  vtkInformation *info) {

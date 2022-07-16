@@ -31,10 +31,9 @@ MergeTree::MergeTree(Params *const params,
   treeData_.partition = part;
 }
 
-MergeTree::~MergeTree() {
-  // all is automatically destroyed in treedata
-  // do not touch pointers
-}
+MergeTree::~MergeTree() = default;
+// all is automatically destroyed in treedata
+// do not touch pointers
 
 // }
 // Process
@@ -1302,12 +1301,12 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
 
 // Operators
 
-ostream &ttk::cf::operator<<(ostream &o, SuperArc const &a) {
+std::ostream &ttk::cf::operator<<(std::ostream &o, ttk::cf::SuperArc const &a) {
   o << a.getDownNodeId() << " <>> " << a.getUpNodeId();
   return o;
 }
 
-ostream &ttk::cf::operator<<(ostream &o, Node const &n) {
+std::ostream &ttk::cf::operator<<(std::ostream &o, ttk::cf::Node const &n) {
   o << n.getNumberOfDownSuperArcs() << " .-. " << n.getNumberOfUpSuperArcs();
   return o;
 }

@@ -13,6 +13,12 @@
 
         The main use-case is to flatten a "Group Datasets" of several
         vtkMultiBlockDataSets.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+        - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
       </Documentation>
 
       <InputProperty

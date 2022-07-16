@@ -4,5 +4,4 @@ ttk::ScalarFieldSmoother::ScalarFieldSmoother() {
   this->setDebugMsgPrefix("ScalarFieldSmoother");
 }
 
-ttk::ScalarFieldSmoother::~ScalarFieldSmoother() {
-}
+ttk::ScalarFieldSmoother::~ScalarFieldSmoother() = default;

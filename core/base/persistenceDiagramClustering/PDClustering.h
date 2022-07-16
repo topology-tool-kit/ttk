@@ -12,20 +12,14 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PDCLUSTERING_H
-#define _PDCLUSTERING_H
+#pragma once
 
-#include <PersistenceDiagramAuction.h>
-//
 #include <KDTree.h>
-//
+#include <PDBarycenter.h>
+#include <PersistenceDiagramAuction.h>
+
 #include <array>
 #include <limits>
-
-#include <PDBarycenter.h>
-
-using namespace std;
-using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
@@ -54,24 +48,26 @@ namespace ttk {
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
     }
 
-    ~PDClustering() = default;
+    ~PDClustering() override = default;
 
     std::vector<int>
       execute(std::vector<std::vector<diagramTuple>> &final_centroids,
-              vector<vector<vector<vector<matchingTuple>>>> &all_matchings);
+              std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
+                &all_matchings);
 
     std::array<double, 3> getDistances() const {
       return {this->cost_min_, this->cost_sad_, this->cost_max_};
     }
 
     dataType getMostPersistent(int type = -1);
-    vector<vector<int>> get_centroids_sizes();
+    std::vector<std::vector<int>> get_centroids_sizes();
     dataType getLessPersistent(int type = -1);
     std::vector<std::vector<dataType>> getMinDiagonalPrices();
     std::vector<std::vector<dataType>> getMinPrices();
 
     void correctMatchings(
-      vector<vector<vector<vector<matchingTuple>>>> &previous_matchings);
+      std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
+        &previous_matchings);
 
     dataType computeDistance(const BidderDiagram<dataType> &D1,
                              const BidderDiagram<dataType> &D2,
@@ -100,7 +96,7 @@ namespace ttk {
     void initializeCentroids();
     void initializeCentroidsKMeanspp();
     void initializeAcceleratedKMeans();
-    void initializeBarycenterComputers(vector<dataType> min_persistence);
+    void initializeBarycenterComputers(std::vector<dataType> min_persistence);
     void printDistancesToFile();
     void printMatchings(std::vector<std::vector<std::vector<matchingTuple>>>);
     void printRealDistancesToFile();
@@ -123,8 +119,15 @@ namespace ttk {
     void updateClusters();
     void invertClusters();
     void invertInverseClusters();
-    void
-      computeBarycenterForTwo(vector<vector<vector<vector<matchingTuple>>>> &);
+    void computeBarycenterForTwoGlobal(
+      std::vector<std::vector<std::vector<std::vector<matchingTuple>>>> &);
+
+    void computeBarycenterForTwo(
+      std::vector<std::vector<matchingTuple>> &matchings,
+      std::vector<std::vector<int>> &bidders_ids,
+      std::vector<BidderDiagram<dataType>> &current_bidder_diagrams,
+      std::vector<BidderDiagram<dataType>> &bidder_diagrams,
+      GoodDiagram<dataType> &barycenter);
 
     void acceleratedUpdateClusters();
     std::vector<dataType> updateCentroidsPosition(
@@ -344,4 +347,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <PDClusteringImpl.h>
-#endif

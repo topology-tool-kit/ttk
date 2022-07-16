@@ -16,6 +16,11 @@ point-data scalar fields to be used as 2D coordinates."
 point-data scalar fields to be used as 2D coordinates.">
          TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
      </Documentation>
      <InputProperty
         name="Input"

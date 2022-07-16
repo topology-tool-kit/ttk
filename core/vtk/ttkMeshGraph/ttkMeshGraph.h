@@ -10,12 +10,17 @@
 /// width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of
 /// a set of either quadratic quads or linear polygons.
 ///
-/// VTK wrapping code for the @MeshGraph package.
+/// VTK wrapping code for the ttk::MeshGraph package.
 ///
 /// \param Input Graph (vtkUnstructuredGrid)
 /// \param Output Graph (vtkUnstructuredGrid)
 ///
 /// \sa ttk::MeshGraph
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
@@ -55,7 +60,7 @@ public:
 
 protected:
   ttkMeshGraph();
-  ~ttkMeshGraph();
+  ~ttkMeshGraph() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

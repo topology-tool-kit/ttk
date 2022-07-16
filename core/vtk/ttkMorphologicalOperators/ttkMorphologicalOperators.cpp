@@ -17,8 +17,7 @@ ttkMorphologicalOperators::ttkMorphologicalOperators() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkMorphologicalOperators::~ttkMorphologicalOperators() {
-}
+ttkMorphologicalOperators::~ttkMorphologicalOperators() = default;
 
 int ttkMorphologicalOperators::FillInputPortInformation(int port,
                                                         vtkInformation *info) {

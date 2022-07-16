@@ -1,3 +1,21 @@
+/// \ingroup base
+/// \class ttk::CinemaImaging
+/// \author Jonas Lukasczyk <jl@jluk.de>
+/// \date 1.9.2018
+///
+/// \brief TTK modules that generates images of a dataset.
+///
+/// This module takes images of a dataset from positions specified on a
+/// point set. Each image will be a block of a multi-blocks where
+/// block order corresponds to point order. Each sample point can optionally
+/// have double arrays to override the rendering parameters, i.e, the
+/// resolution, focus, clipping planes, and viewport height.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/geometryApproximation/">Geometry
+///   Approximation example</a> \n
+
 #pragma once
 
 #include <Debug.h>

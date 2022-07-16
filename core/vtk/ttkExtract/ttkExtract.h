@@ -39,6 +39,10 @@
 /// 6. Arrays: The filter extracts all point/cell data arrays based on a given
 /// list of indices (not names).
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">
+///   Contour Tree Alignment example</a> \n
 #pragma once
 
 // VTK Module
@@ -144,10 +148,11 @@ public:
                    const std::vector<double> &indices);
 
   static ttkExtract *New();
-  vtkTypeMacro(ttkExtract, ttkAlgorithm)
+  vtkTypeMacro(ttkExtract, ttkAlgorithm);
 
-    protected : ttkExtract();
-  ~ttkExtract();
+protected:
+  ttkExtract();
+  ~ttkExtract() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

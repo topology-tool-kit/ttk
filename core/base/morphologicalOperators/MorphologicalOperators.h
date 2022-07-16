@@ -27,8 +27,7 @@ namespace ttk {
       this->setDebugMsgPrefix("MorphologicalOperators");
     }
 
-    ~MorphologicalOperators() {
-    }
+    ~MorphologicalOperators() override = default;
 
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
@@ -163,7 +162,7 @@ int ttk::MorphologicalOperators::performElementaryMorphoOp(
             // check neighbors if they need to be dilated
             const SimplexId nNeighbors
               = triangulation->getVertexNeighborNumber(i);
-            SimplexId nIndex;
+            SimplexId nIndex{-1};
             for(SimplexId n = 0; n < nNeighbors; n++) {
               triangulation->getVertexNeighbor(i, n, nIndex);
               if(source[nIndex] == pivotLabel) {
@@ -188,7 +187,7 @@ int ttk::MorphologicalOperators::performElementaryMorphoOp(
             // check neighbors if neighbors have a non-eroded label
             const SimplexId nNeighbors
               = triangulation->getVertexNeighborNumber(i);
-            SimplexId nIndex;
+            SimplexId nIndex{-1};
             DT maxNeighborLabel = minLabel;
             for(SimplexId n = 0; n < nNeighbors; n++) {
               triangulation->getVertexNeighbor(i, n, nIndex);

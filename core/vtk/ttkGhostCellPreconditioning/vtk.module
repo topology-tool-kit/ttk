@@ -1,0 +1,4 @@
+NAME
+  ttkGhostCellPreconditioning
+DEPENDS
+  ttkAlgorithm

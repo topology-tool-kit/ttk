@@ -3,7 +3,22 @@
     <ProxyGroup name="filters">
         <SourceProxy name="ttkIcospheresFromPoints" class="ttkIcospheresFromPoints" label="TTK IcospheresFromPoints">
             <Documentation long_help="TTK filter that creates an IcospheresFromPoints" short_help="TTK filter that creates an IcospheresFromPoints">
-                This filter creates for every vertex of an input vtkPointSet an IcoSphere with a specified number of subdivisions and radius.
+              This filter creates for every vertex of an input vtkPointSet an IcoSphere with a specified number of subdivisions and radius.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+        - https://topology-tool-kit.github.io/examples/morseMolecule/
+
+        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+        
+
+
             </Documentation>
 
             <InputProperty name="Input" port_index="0" command="SetInputConnection">

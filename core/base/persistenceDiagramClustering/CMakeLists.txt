@@ -5,6 +5,10 @@ ttk_add_base_library(persistenceDiagramClustering
   HEADERS
     PersistenceDiagramClustering.h
     PersistenceDiagramBarycenter.h
+    PDBarycenter.h
+    PDBarycenterImpl.h
+    PDClustering.h
+    PDClusteringImpl.h
   DEPENDS
     common
     persistenceDiagramAuction

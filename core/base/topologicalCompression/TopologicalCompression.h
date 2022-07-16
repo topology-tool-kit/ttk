@@ -187,8 +187,8 @@ namespace ttk {
 
     template <typename T>
     T Read(FILE *fm) const {
-      static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
-                      || std::is_same<T, unsigned long>()
+      static_assert(std::is_same<T, uint8_t>() || std::is_same<T, int32_t>()
+                      || std::is_same<T, uint64_t>()
                       || std::is_same<T, double>(),
                     "Function should have only those types");
       T ret;
@@ -208,8 +208,8 @@ namespace ttk {
     }
     template <typename T>
     void Write(FILE *fm, T data) const {
-      static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
-                      || std::is_same<T, unsigned long>()
+      static_assert(std::is_same<T, uint8_t>() || std::is_same<T, int32_t>()
+                      || std::is_same<T, uint64_t>()
                       || std::is_same<T, double>(),
                     "Function should have only those types");
       auto status = std::fwrite(&data, sizeof(T), 1, fm);
@@ -451,7 +451,7 @@ int ttk::TopologicalCompression::ReadFromFile(
     return -4;
   }
 
-  bool useZlib = Read<bool>(fp);
+  bool useZlib = Read<uint8_t>(fp);
   unsigned char *dest;
   std::vector<unsigned char> ddest;
   unsigned long destLen;
@@ -459,8 +459,8 @@ int ttk::TopologicalCompression::ReadFromFile(
 #ifdef TTK_ENABLE_ZLIB
   if(useZlib) {
     // [fp->ff] Read compressed data.
-    auto sl = Read<unsigned long>(fp); // Compressed size...
-    auto dl = Read<unsigned long>(fp); // Uncompressed size...
+    auto sl = Read<uint64_t>(fp); // Compressed size...
+    auto dl = Read<uint64_t>(fp); // Uncompressed size...
 
     destLen = dl;
     std::vector<unsigned char> ssource(sl);
@@ -476,8 +476,8 @@ int ttk::TopologicalCompression::ReadFromFile(
   } else {
     this->printMsg("File was not compressed with ZLIB.");
 
-    Read<unsigned long>(fp); // Compressed size...
-    unsigned long dl = Read<unsigned long>(fp); // Uncompressed size...
+    Read<uint64_t>(fp); // Compressed size...
+    const auto dl = Read<uint64_t>(fp); // Uncompressed size...
 
     destLen = dl;
     ddest.resize(destLen);
@@ -492,8 +492,8 @@ int ttk::TopologicalCompression::ReadFromFile(
   } else {
     this->printMsg(" ZLIB not installed, but file was not compressed anyways.");
 
-    Read<unsigned long>(fp); // Compressed size...
-    unsigned long dl = Read<unsigned long>(fp); // Uncompressed size...
+    Read<uint64_t>(fp); // Compressed size...
+    const auto dl = Read<uint64_t>(fp); // Uncompressed size...
 
     destLen = dl;
     ddest.resize(destLen);

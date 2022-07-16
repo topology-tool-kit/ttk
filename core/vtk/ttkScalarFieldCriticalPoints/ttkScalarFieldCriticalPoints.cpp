@@ -25,8 +25,7 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
-}
+ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() = default;
 
 int ttkScalarFieldCriticalPoints::FillInputPortInformation(
   int port, vtkInformation *info) {
@@ -79,6 +78,11 @@ int ttkScalarFieldCriticalPoints::RequestData(
   this->preconditionTriangulation(triangulation);
   this->setOutput(&criticalPoints_);
 
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::Timer t_mpi;
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
+
   printMsg("Starting computation...");
   printMsg({{"  Scalar Array", inputScalarField->GetName()},
             {"  Offset Array", offsetField ? offsetField->GetName() : "None"}});
@@ -93,6 +97,14 @@ int ttkScalarFieldCriticalPoints::RequestData(
   if(status < 0)
     return 0;
 
+#ifdef TTK_ENABLE_MPI_TIME
+  double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted :" + std::to_string(elapsedTime));
+  }
+#endif
+
   // allocate the output
   vtkNew<vtkSignedCharArray> vertexTypes{};
   vertexTypes->SetNumberOfComponents(1);
@@ -101,11 +113,6 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   vtkNew<vtkPoints> pointSet{};
   pointSet->SetNumberOfPoints(criticalPoints_.size());
-  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-  offsets->SetNumberOfComponents(1);
-  offsets->SetNumberOfTuples(criticalPoints_.size() + 1);
-  connectivity->SetNumberOfComponents(1);
-  connectivity->SetNumberOfTuples(criticalPoints_.size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -115,15 +122,9 @@ int ttkScalarFieldCriticalPoints::RequestData(
     input->GetPoint(criticalPoints_[i].first, p.data());
     pointSet->SetPoint(i, p.data());
     vertexTypes->SetTuple1(i, (float)criticalPoints_[i].second);
-    offsets->SetTuple1(i, i);
-    connectivity->SetTuple1(i, i);
   }
-  offsets->SetTuple1(criticalPoints_.size(), criticalPoints_.size());
 
-  vtkNew<vtkCellArray> cells{};
-  cells->SetData(offsets, connectivity);
-  output->SetVerts(cells);
-  output->SetPoints(pointSet);
+  ttkUtils::CellVertexFromPoints(output, pointSet);
   output->GetPointData()->AddArray(vertexTypes);
 
   if(VertexBoundary) {
@@ -151,9 +152,19 @@ int ttkScalarFieldCriticalPoints::RequestData(
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName(ttk::VertexScalarFieldName);
-
+#if TTK_ENABLE_MPI
+    long int *globalIds = triangulation->getGlobalIdsArray();
+#endif
     for(size_t i = 0; i < criticalPoints_.size(); i++) {
+#if TTK_ENABLE_MPI
+      if(isRunningWithMPI()) {
+        vertexIds->SetTuple1(i, globalIds[criticalPoints_[i].first]);
+      } else {
+        vertexIds->SetTuple1(i, criticalPoints_[i].first);
+      }
+#else
       vertexIds->SetTuple1(i, criticalPoints_[i].first);
+#endif
     }
 
     output->GetPointData()->AddArray(vertexIds);

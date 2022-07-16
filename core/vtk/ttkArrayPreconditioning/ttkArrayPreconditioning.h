@@ -28,8 +28,14 @@
 #include <vtkDataArraySelection.h>
 #include <vtkNew.h>
 
+// TTK Base Includes
+#include <ArrayPreconditioning.h>
+
 class TTKARRAYPRECONDITIONING_EXPORT ttkArrayPreconditioning
-  : public ttkAlgorithm {
+  : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
+  ,
+    protected ttk::ArrayPreconditioning // and we inherit from the base class
+{
 
 public:
   static ttkArrayPreconditioning *New();
@@ -37,6 +43,9 @@ public:
 
   vtkSetMacro(SelectFieldsWithRegexp, bool);
   vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(BurstSize, int);
+  vtkGetMacro(BurstSize, int);
 
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
@@ -58,4 +67,5 @@ private:
   vtkNew<vtkDataArraySelection> ArraySelection{};
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
+  int BurstSize{100};
 };

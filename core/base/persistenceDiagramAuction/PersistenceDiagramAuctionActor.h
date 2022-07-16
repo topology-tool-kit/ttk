@@ -1,5 +1,4 @@
-#ifndef _PERSISTENCEDIAGRAMAUCTIONACTOR_H
-#define _PERSISTENCEDIAGRAMAUCTIONACTOR_H
+#pragma once
 
 #include <Debug.h>
 #include <KDTree.h>
@@ -61,7 +60,7 @@ namespace ttk {
       // geom_pair_length_[1] = 0;
       // geom_pair_length_[2] = 0;
     }
-    ~PersistenceDiagramAuctionActor() = default;
+    ~PersistenceDiagramAuctionActor() override = default;
 
     void SetCoordinates(dataType &x, dataType &y);
     void SetCriticalCoordinates(float coords_x, float coords_y, float coords_z);
@@ -416,8 +415,7 @@ namespace ttk {
       diagonal_price_ = 0;
     }
 
-    ~Bidder() {
-    }
+    ~Bidder() override = default;
 
     // Off-diagonal Bidding (with or without the use of a KD-Tree
     int runBidding(GoodDiagram<dataType> *goods,
@@ -935,5 +933,3 @@ namespace ttk {
   };
 
 } // namespace ttk
-
-#endif

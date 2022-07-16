@@ -5,8 +5,7 @@
 ///
 /// \brief Os-specifics.
 
-#ifndef _OS_H
-#define _OS_H
+#pragma once
 
 #ifdef _WIN32
 #ifndef _USE_MATH_DEFINES
@@ -15,9 +14,6 @@
 
 #define drand48() (double(rand()) / RAND_MAX)
 //  #define               isnan(x)      _isnan(x)
-#ifndef _MSC_VER
-#define round(x) OsCall::roundToNearestInt(x)
-#endif
 #define srand48(seed) srand(seed)
 #endif // _WIN32
 
@@ -120,5 +116,3 @@ namespace ttk {
   };
 
 } // namespace ttk
-
-#endif

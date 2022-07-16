@@ -28,6 +28,8 @@
 
 #include <ttkWRLExporter.h>
 
+/// @cond
+
 TTKWRLEXPORTER_EXPORT vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.
@@ -510,3 +512,5 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
     fprintf(fp, "          }\n");
   }
 }
+
+/// @endcond

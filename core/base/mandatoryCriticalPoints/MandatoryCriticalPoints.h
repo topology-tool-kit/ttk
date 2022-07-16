@@ -22,6 +22,11 @@
 /// Computer Graphics Forum, 2014.
 ///
 /// \sa ttkMandatoryCriticalPoints.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
 
 #pragma once
 
@@ -444,7 +449,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setDebugLevel(const int &debugLevel) {
+    inline int setDebugLevel(const int &debugLevel) override {
       Debug::setDebugLevel(debugLevel);
       upperJoinTree_.setDebugLevel(debugLevel);
       lowerJoinTree_.setDebugLevel(debugLevel);
@@ -500,7 +505,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setSoSoffsets(int *offsets = NULL) {
+    inline int setSoSoffsets(int *offsets = nullptr) {
       if((int)vertexSoSoffsets_.size() != vertexNumber_)
         vertexSoSoffsets_.resize(vertexNumber_);
       if(offsets) {
@@ -532,7 +537,7 @@ namespace ttk {
 
     /// Set the position (x,y,z) of the i-th point
     /// \param i Index of the vertex
-    /// \param point[3] Position (x,y,z)
+    /// \param point Position (x,y,z) (buffer of 3 doubles)
     /// \return Returns 0 upon success, negative values otherwise.
     inline int setVertexPosition(const int &i, const double point[3]) {
       if((int)vertexPositions_.size() != vertexNumber_)
@@ -999,7 +1004,7 @@ int ttk::MandatoryCriticalPoints::buildSubTrees(
     bool isUpperMax = true;
     SimplexId neighborNumber = triangulation.getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
-      SimplexId neighborId;
+      SimplexId neighborId{-1};
       triangulation.getVertexNeighbor(i, j, neighborId);
       if((lowerVertexScalars_[neighborId] < lowerVertexScalars_[i])
          || ((lowerVertexScalars_[neighborId] == lowerVertexScalars_[i])

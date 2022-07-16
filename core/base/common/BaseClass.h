@@ -5,12 +5,7 @@
 ///
 ///\brief TTK base package.
 
-#ifndef _BASECLASS_H
-#define _BASECLASS_H
-
-#ifdef TTK_ENABLE_OPENMP
-#include <omp.h>
-#endif
+#pragma once
 
 #ifdef _WIN32
 // enable the `and` and `or` keywords on MSVC
@@ -18,6 +13,11 @@
 #endif // _WIN32
 
 #include <DataTypes.h>
+#include <OpenMP.h>
+#if TTK_ENABLE_MPI
+#define OMPI_SKIP_MPICXX 1
+#include <mpi.h>
+#endif
 
 #if defined(_MSC_VER) && defined(TTK_ENABLE_SHARED_BASE_LIBRARIES)
 #if defined(common_EXPORTS)
@@ -49,16 +49,21 @@
 /**
  * @brief Force the compiler to use the function/method parameter.
  *
- * Some function/method parameters are used under some #ifdef
+ * Some function/method parameters are used under some `#ifdef`
  * preprocessor conditions. This macro introduce a no-op statement
  * that uses those parameters, to silence compiler warnings in the
- * #else blocks. It can be inserted anywhere in the function body.
+ * `#else` blocks. It can be inserted anywhere in the function body.
  */
 #define TTK_FORCE_USE(x) (void)(x)
 
 namespace ttk {
 
   COMMON_EXPORTS extern int globalThreadNumber_;
+  COMMON_EXPORTS extern int MPIrank_;
+  COMMON_EXPORTS extern int MPIsize_;
+#ifdef TTK_ENABLE_MPI
+  COMMON_EXPORTS extern MPI_Comm MPIcomm_;
+#endif
 
   class Wrapper;
 
@@ -76,7 +81,6 @@ namespace ttk {
       threadNumber_ = threadNumber;
       return 0;
     }
-
     /// Specify a pointer to a calling object that wraps the current class
     /// deriving from ttk::BaseClass.
     ///
@@ -92,5 +96,4 @@ namespace ttk {
     Wrapper *wrapper_;
   };
 } // namespace ttk
-
-#endif // _BASECLASS_H
+#include <MPIUtils.h>

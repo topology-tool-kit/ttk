@@ -14,6 +14,19 @@
 /// simplification thresholds.
 ///
 /// \sa ttkPersistenceCurve.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
+/// </a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+/// example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
 
 #pragma once
 
@@ -53,6 +66,7 @@ namespace ttk {
     template <typename scalarType,
               class triangulationType = ttk::AbstractTriangulation>
     int execute(const scalarType *inputScalars,
+                const size_t scalarsMTime,
                 const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
@@ -115,6 +129,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
 
 template <typename scalarType, class triangulationType>
 int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
+                                   const size_t scalarsMTime,
                                    const SimplexId *inputOffsets,
                                    const triangulationType *triangulation) {
 
@@ -160,7 +175,7 @@ int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
   if(dimensionality == 3 and ComputeSaddleConnectors and MSCPlot_ != nullptr) {
     std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
       pl_saddleSaddlePairs;
-    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputScalarField(inputScalars, scalarsMTime);
     dcg_.setInputOffsets(inputOffsets);
     dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);

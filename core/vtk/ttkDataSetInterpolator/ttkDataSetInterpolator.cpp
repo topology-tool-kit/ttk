@@ -17,8 +17,7 @@ ttkDataSetInterpolator::ttkDataSetInterpolator() {
   vtkWarningMacro("`TTK DataSetInterpolator' is now deprecated. Please use "
                   "`ResampleWithDataset' instead.");
 }
-ttkDataSetInterpolator::~ttkDataSetInterpolator() {
-}
+ttkDataSetInterpolator::~ttkDataSetInterpolator() = default;
 
 int ttkDataSetInterpolator::FillInputPortInformation(int port,
                                                      vtkInformation *info) {

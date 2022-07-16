@@ -2,7 +2,14 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ttkCinemaImaging" class="ttkCinemaImaging" label="TTK CinemaImaging">
-            <Documentation long_help="TTK CinemaImaging" short_help="TTK CinemaImaging">This filter takes images of a vtkDataObject (first input) from angles specified on a vtkPointSet (second input). Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, camera direction, clipping planes, and viewport height.</Documentation>
+            <Documentation long_help="TTK CinemaImaging" short_help="TTK CinemaImaging">
+                This filter takes images of a vtkDataObject (first input) from angles specified on a vtkPointSet (second input). Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, camera direction, clipping planes, and viewport height.
+            
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/geometryApproximation/
+
+            </Documentation>
 
             <!-- Inputs -->
             <InputProperty name="Dataset" port_index="0" command="SetInputConnection">

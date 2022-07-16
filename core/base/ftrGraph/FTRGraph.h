@@ -10,6 +10,16 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa vtkFTRGraph.cpp %for a usage example.
+///
+/// \b Related \b publication \n
+/// "Task-based Augmented Reeb Graphs with Dynamic ST-Trees" \n
+/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
+/// EGPGV19: Eurographics Symposium on Parallel Graphics and Visualization
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
 
 #pragma once
 
@@ -147,7 +157,7 @@ namespace ttk {
       // Accessor on the graph
       // ---------------------
 
-      Graph &&extractOutputGraph(void) {
+      Graph &&extractOutputGraph() {
         return std::move(graph_);
       }
 
@@ -164,7 +174,7 @@ namespace ttk {
       }
 
       /// Control the verbosity of the base code
-      virtual int setDebugLevel(const int &lvl) override {
+      int setDebugLevel(const int &lvl) override {
         params_.debugLevel = lvl;
         return Debug::setDebugLevel(lvl);
       }
@@ -229,7 +239,7 @@ namespace ttk {
 
       // Print function (FTRGraphPrint)
 
-      std::string printMesh(void) const;
+      std::string printMesh() const;
 
       std::string printEdge(const idEdge edgeId,
                             const Propagation *const localProp) const;

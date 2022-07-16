@@ -17,6 +17,11 @@
         of each vertex.
 
         See also GeometrySmoother.
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/   
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/
       </Documentation>
       <InputProperty
         name="Input"

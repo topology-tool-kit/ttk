@@ -8,7 +8,9 @@
     <ProxyGroup name="filters">
         <SourceProxy name="MergeTreeDistanceMatrix" class="ttkMergeTreeDistanceMatrix" label="TTK MergeTreeDistanceMatrix">
            <Documentation long_help="MergeTreeDistanceMatrix Long" short_help="MergeTreeDistanceMatrix Short">
-               
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeClustering/
            </Documentation>
 
             <!-- INPUT -->
@@ -30,8 +32,41 @@
                   </Documentation>
                 </InputProperty>
 
+                <InputProperty
+                    name="Optional Input"
+                    port_index="1"
+                    command="SetInputConnection">
+                  <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                  </ProxyGroupDomain>
+                  <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet"/>
+                  </DataTypeDomain>
+                  <InputArrayDomain name="input_scalars" number_of_components="1">
+                    <Property name="Input" function="FieldDataSelection" />
+                  </InputArrayDomain>
+                  <Documentation>
+
+                  </Documentation>
+                </InputProperty>
+
             <!-- INPUT PARAMETER WIDGETS -->
+                <IntVectorProperty
+                name="UseFieldDataParameters"
+                command="SetUseFieldDataParameters"
+                label="Use Field Data Parameters"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                  <Documentation>
+
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+
                 ${MERGE_TREE_INPUT_WIDGETS}
+
                 <IntVectorProperty
                 name="DistanceSquared"
                 command="SetDistanceSquared"
@@ -46,6 +81,7 @@
                 </IntVectorProperty>
                 
             <PropertyGroup panel_widget="Line" label="Input options">
+              <Property name="UseFieldDataParameters"/>
               <Property name="DistanceSquared"/>
             </PropertyGroup>
             ${MERGE_TREE_PREPROCESS_WIDGETS}

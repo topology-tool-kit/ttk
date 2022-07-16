@@ -14,14 +14,15 @@
 /// An exhaustive search for the assignment problem has an exponential
 /// complexity Use this algorithm only for small assigment problem
 
-#ifndef _ASSIGNMENTEXHAUSTIVE_H
-#define _ASSIGNMENTEXHAUSTIVE_H
+#pragma once
 
+#include <AssignmentSolver.h>
 #include <Debug.h>
 
-#include "AssignmentSolver.h"
-
 #include <iterator>
+#include <limits>
+#include <map>
+#include <queue>
 #include <set>
 
 namespace ttk {
@@ -33,12 +34,12 @@ namespace ttk {
   public:
     AssignmentExhaustive() = default;
 
-    ~AssignmentExhaustive() = default;
+    ~AssignmentExhaustive() override = default;
 
-    int run(std::vector<asgnMatchingTuple> &matchings);
+    int run(std::vector<MatchingType> &matchings) override;
 
     dataType tryAssignment(std::vector<int> &asgn,
-                           std::vector<asgnMatchingTuple> &matchings);
+                           std::vector<MatchingType> &matchings);
 
     std::string vectorToString(std::vector<dataType> &my_vector) {
       std::stringstream result;
@@ -105,8 +106,7 @@ namespace ttk {
                 // TODO there is probably be a better way to avoid duplicates
                 std::sort(elemVec.begin() + min_dim, elemVec.end());
                 std::string new_string = vectorToString(elemVec);
-                auto it2 = std::find(
-                  unasgnAdded.begin(), unasgnAdded.end(), new_string);
+                auto it2 = unasgnAdded.find(new_string);
                 if(it2 == unasgnAdded.end()) {
                   unasgnAdded.insert(vectorToString(elemVec));
                   allAsgn.push_back(elemVec);
@@ -287,7 +287,7 @@ namespace ttk {
 
   template <typename dataType>
   dataType AssignmentExhaustive<dataType>::tryAssignment(
-    std::vector<int> &asgn, std::vector<asgnMatchingTuple> &matchings) {
+    std::vector<int> &asgn, std::vector<MatchingType> &matchings) {
     unsigned int nRows = this->costMatrix.size() - 1;
     unsigned int nCols = this->costMatrix[0].size() - 1;
     // int max_dim = std::max(nRows, nCols);
@@ -307,7 +307,7 @@ namespace ttk {
 
   template <typename dataType>
   int AssignmentExhaustive<dataType>::run(
-    std::vector<asgnMatchingTuple> &matchings) {
+    std::vector<MatchingType> &matchings) {
     int nRows = this->costMatrix.size() - 1;
     int nCols = this->costMatrix[0].size() - 1;
     int max_dim = std::max(nRows, nCols);
@@ -347,9 +347,9 @@ namespace ttk {
 
     // --- Try these assignments and get the better
     dataType bestCost = std::numeric_limits<dataType>::max();
-    std::vector<asgnMatchingTuple> bestMatching;
+    std::vector<MatchingType> bestMatching;
     for(std::vector<int> asgn : allAsgn) {
-      std::vector<asgnMatchingTuple> tempMatching;
+      std::vector<MatchingType> tempMatching;
       dataType cost = tryAssignment(asgn, tempMatching);
       if(bestCost > cost) {
         bestCost = cost;
@@ -362,5 +362,3 @@ namespace ttk {
   }
 
 } // namespace ttk
-
-#endif

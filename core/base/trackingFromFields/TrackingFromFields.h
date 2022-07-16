@@ -2,6 +2,11 @@
 /// \class ttk::TrackingFromPersistenceDiagrams
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
+///   tracking example</a>
 
 #pragma once
 
@@ -28,7 +33,7 @@ namespace ttk {
               typename triangulationType = ttk::AbstractTriangulation>
     int performDiagramComputation(
       int fieldNumber,
-      std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
+      std::vector<ttk::DiagramType> &persistenceDiagrams,
       const triangulationType *triangulation);
 
     /// Pass a pointer to an input array representing a scalarfield.
@@ -84,7 +89,7 @@ namespace ttk {
 template <typename dataType, typename triangulationType>
 int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
-  std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
+  std::vector<ttk::DiagramType> &persistenceDiagrams,
   const triangulationType *triangulation) {
 
 #ifdef TTK_ENABLE_OPENMP
@@ -93,37 +98,37 @@ int ttk::TrackingFromFields::performDiagramComputation(
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram;
     persistenceDiagram.setThreadNumber(1);
+    persistenceDiagram.setBackend(PersistenceDiagram::BACKEND::FTM);
 
     // std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
     // persistenceDiagram.setDMTPairs(&dmt_pairs);
     // persistenceDiagram.setInputScalars(inputData_[i]);
     // persistenceDiagram.setInputOffsets(inputOffsets_);
     persistenceDiagram.setComputeSaddleConnectors(false);
-    std::vector<PersistencePair> CTDiagram{};
+    ttk::DiagramType CTDiagram{};
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
     persistenceDiagram.execute<dataType, triangulationType>(
-      CTDiagram, (dataType *)(inputData_[i]), inputOffsets_[i], triangulation);
+      CTDiagram, (dataType *)(inputData_[i]), 0, inputOffsets_[i],
+      triangulation);
 
     // Copy diagram into augmented diagram.
-    persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());
+    persistenceDiagrams[i].resize(CTDiagram.size());
 
     for(int j = 0; j < (int)CTDiagram.size(); ++j) {
-      float p[3];
-      float q[3];
+      std::array<float, 3> p{};
+      std::array<float, 3> q{};
       auto currentTuple = CTDiagram[j];
-      const int a = currentTuple.birth;
-      const int b = currentTuple.death;
+      const int a = currentTuple.birth.id;
+      const int b = currentTuple.death.id;
       triangulation->getVertexPoint(a, p[0], p[1], p[2]);
       triangulation->getVertexPoint(b, q[0], q[1], q[2]);
       const double sa = ((double *)inputData_[i])[a];
       const double sb = ((double *)inputData_[i])[b];
-      diagramTuple dt = std::make_tuple(
-        currentTuple.birth, currentTuple.birthType, currentTuple.death,
-        currentTuple.deathType, currentTuple.persistence, currentTuple.pairType,
-        sa, p[0], p[1], p[2], sb, q[0], q[1], q[2]);
-
-      persistenceDiagrams[i][j] = dt;
+      persistenceDiagrams[i][j] = PersistencePair{
+        CriticalVertex{currentTuple.birth.id, currentTuple.birth.type, sa, p},
+        CriticalVertex{currentTuple.death.id, currentTuple.death.type, sb, q},
+        currentTuple.persistence, currentTuple.dim, true};
     }
   }
 
