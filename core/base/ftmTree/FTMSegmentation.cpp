@@ -148,12 +148,13 @@ void Segments::sortAll(const Scalars *s) {
 // ----------
 // Arc Region
 // ----------
-
-ArcRegion::ArcRegion() {
 #ifndef TTK_ENABLE_KAMIKAZE
+ArcRegion::ArcRegion() {
   segmented_ = false;
-#endif
 }
+#else
+ArcRegion::ArcRegion() = default;
+#endif
 
 ArcRegion::ArcRegion(const segm_it &begin, const segm_it &end) : ArcRegion() {
   concat(begin, end);
