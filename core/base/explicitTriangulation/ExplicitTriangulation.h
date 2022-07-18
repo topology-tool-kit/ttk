@@ -522,63 +522,6 @@ namespace ttk {
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
 
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeGlobalId)(
-      const SimplexId &leid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(leid < 0 || leid >= this->getNumberOfEdgesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->edgeLidToGid_[leid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLocalId)(
-      const SimplexId &geid) const override {
-      const auto it = this->edgeGidToLid_.find(geid);
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(it == this->edgeGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return it->second;
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleGlobalId)(
-      const SimplexId &ltid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid < 0 || ltid >= this->getNumberOfTrianglesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->triangleLidToGid_[ltid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLocalId)(
-      const SimplexId &gtid) const override {
-      const auto it = this->triangleGidToLid_.find(gtid);
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(it == this->triangleGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return it->second;
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexGlobalId)(
-      const SimplexId &ltid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid < 0 || ltid >= this->getNumberOfVerticesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertGid_[ltid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLocalId)(
-      const SimplexId &gtid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->vertexGidToLid_.find(gtid) == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_.at(gtid);
-    }
-
 #endif // TTK_ENABLE_MPI
 
 #ifdef TTK_CELL_ARRAY_NEW

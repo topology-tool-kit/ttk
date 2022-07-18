@@ -1379,7 +1379,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param leid Input local vertex identifier.
     /// \return vertexId Input global vertex identifier.
-    inline SimplexId getVertexGlobalId(const SimplexId &leid) const override {
+    inline SimplexId getVertexGlobalId(const SimplexId leid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -1418,7 +1418,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param geid Input global vertex identifier.
     /// \return vertexId Input local vertex identifier.
-    inline SimplexId getVertexLocalId(const SimplexId &geid) const override {
+    inline SimplexId getVertexLocalId(const SimplexId geid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;

@@ -1328,25 +1328,9 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
+
     int preconditionDistributedVertices() override;
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexGlobalId)(
-      const SimplexId &ltid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid < 0 || ltid >= this->getNumberOfVerticesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertGid_[ltid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLocalId)(
-      const SimplexId &gtid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->vertexGidToLid_.find(gtid) == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_.at(gtid);
-    }
+
 #endif // TTK_ENABLE_MPI
 
     inline int preconditionBoundaryEdgesInternal() override {
