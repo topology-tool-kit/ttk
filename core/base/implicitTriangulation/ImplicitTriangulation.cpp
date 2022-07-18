@@ -3062,6 +3062,8 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     return -3;
   }
 
+  Timer tm{};
+
   // number of local cells (with ghost cells...)
   const auto nLocCells{this->getNumberOfCells()};
 
@@ -3086,11 +3088,23 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   // global cell ids for cell owned by current rank
   std::vector<LongSimplexId> globalCellsInRank{};
   globalCellsInRank.reserve(nLocCells);
+  this->ghostCellPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     const auto locCubeId{lcid / nTetraPerCube};
     if(this->cellRankArray_[locCubeId] == ttk::MPIrank_) {
       globalCellsInRank.emplace_back(this->cellLidToGid_[lcid]);
+    } else {
+      // store ghost cell global ids (per rank)
+      this->ghostCellPerOwner_[this->cellRankArray_[locCubeId]].emplace_back(
+        this->cellLidToGid_[lcid]);
+    }
+  }
+
+  // store neighboring ranks
+  for(size_t i = 0; i < this->ghostCellPerOwner_.size(); ++i) {
+    if(!this->ghostCellPerOwner_[i].empty()) {
+      this->neighborRanks_.emplace_back(i);
     }
   }
 
@@ -3114,7 +3128,36 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     }
   }
 
+  // for each rank, store the global id of local cells that are ghost cells of
+  // other ranks.
+  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
+  this->remoteGhostCells_.resize(ttk::MPIsize_);
+  // number of owned cells that are ghost cells of other ranks
+  std::vector<size_t> nOwnedGhostCellsPerRank(ttk::MPIsize_);
+
+  for(const auto neigh : this->neighborRanks_) {
+    // 1. send to neigh number of ghost cells owned by neigh
+    const auto nCells{this->ghostCellPerOwner_[neigh].size()};
+    MPI_Sendrecv(&nCells, 1, ttk::getMPIType(nCells), neigh, ttk::MPIrank_,
+                 &nOwnedGhostCellsPerRank[neigh], 1, ttk::getMPIType(nCells),
+                 neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    this->remoteGhostCells_[neigh].resize(nOwnedGhostCellsPerRank[neigh]);
+
+    // 2. send to neigh list of ghost cells owned by neigh
+    MPI_Sendrecv(this->ghostCellPerOwner_[neigh].data(),
+                 this->ghostCellPerOwner_[neigh].size(), MIT, neigh,
+                 ttk::MPIrank_, this->remoteGhostCells_[neigh].data(),
+                 this->remoteGhostCells_[neigh].size(), MIT, neigh, neigh,
+                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
+  }
+
   this->hasPreconditionedDistributedCells_ = true;
+
+  if(ttk::MPIrank_ == 0) {
+    this->printMsg("Domain contains "
+                     + std::to_string(this->cellGidToRank_.size()) + " cells",
+                   1.0, tm.getElapsedTime(), this->threadNumber_);
+  }
 
   return 0;
 }
@@ -3190,6 +3233,91 @@ int preconditionDistributedIntermediate(size_t &globalCount,
   return 0;
 }
 
+template <typename Func0, typename Func1, typename Func2>
+int ttk::ImplicitTriangulation::exchangeDistributedInternal(
+  const Func0 &getGlobalSimplexId,
+  const Func1 &storeGlobalSimplexId,
+  const Func2 &iterCond,
+  const int nSimplicesPerCell) {
+
+  // per neighbor, owned ghost cell simplex global ids to transfer back
+  std::vector<std::vector<SimplexId>> globalIdPerOwnedGhostCell(ttk::MPIsize_);
+  // per neighbor, non-owned ghost cell simplex global ids to transfer back
+  std::vector<std::vector<SimplexId>> globalIdPerLocalGhostCell(ttk::MPIsize_);
+
+  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
+
+  // make sure that all simplices are correctly labelled: for a given
+  // rank, a simplex can be owned by a ghost cell from a neighboring
+  // rank but in reality can be owned by another ghost cell in a third
+  // rank
+  bool doIter{true};
+
+  while(doIter) {
+
+    doIter = false;
+
+    // 3. for each list of ghost cell, accumulate the global simplex id
+    for(const auto neigh : this->neighborRanks_) {
+      // sending side
+      globalIdPerOwnedGhostCell[neigh].resize(
+        nSimplicesPerCell * this->remoteGhostCells_[neigh].size());
+      for(size_t i = 0; i < this->remoteGhostCells_[neigh].size(); ++i) {
+        const auto lcid{this->cellGidToLid_[this->remoteGhostCells_[neigh][i]]};
+        for(int j = 0; j < nSimplicesPerCell; ++j) {
+          globalIdPerOwnedGhostCell[neigh][nSimplicesPerCell * i + j]
+            = getGlobalSimplexId(lcid, j);
+        }
+      }
+      // receiving side
+      globalIdPerLocalGhostCell[neigh].resize(
+        nSimplicesPerCell * this->ghostCellPerOwner_[neigh].size());
+
+      // 4. transfer back global simplex ids
+      MPI_Sendrecv(globalIdPerOwnedGhostCell[neigh].data(),
+                   globalIdPerOwnedGhostCell[neigh].size(), MIT, neigh,
+                   ttk::MPIrank_, globalIdPerLocalGhostCell[neigh].data(),
+                   globalIdPerLocalGhostCell[neigh].size(), MIT, neigh, neigh,
+                   ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    }
+
+    // 5. extend local <-> global simplex ids mappings
+    for(const auto neigh : this->neighborRanks_) {
+      for(size_t i = 0; i < this->ghostCellPerOwner_[neigh].size(); ++i) {
+        const auto gcid{this->ghostCellPerOwner_[neigh][i]};
+        const auto lcid{this->cellGidToLid_[gcid]};
+        for(int j = 0; j < nSimplicesPerCell; ++j) {
+          const auto geid{
+            globalIdPerLocalGhostCell[neigh][nSimplicesPerCell * i + j]};
+          storeGlobalSimplexId(lcid, geid, j);
+        }
+      }
+    }
+
+    // do an additional transmission if there still is some locally
+    // non-labelled simplices
+    int doNextIter{0};
+    if(iterCond()) {
+      doNextIter = 1;
+      doIter = true;
+    }
+    for(int i = 0; i < ttk::MPIsize_; ++i) {
+      if(doIter) {
+        // reset doNextIter (might have been erased by the MPI_Bcast)
+        doNextIter = 1;
+      }
+      MPI_Bcast(&doNextIter, 1, ttk::getMPIType(doNextIter), i, ttk::MPIcomm_);
+      doIter |= (doNextIter == 1);
+    }
+
+    if(doIter && ttk::MPIrank_ == 0) {
+      this->printMsg("Re-sending global ids to neighbors...");
+    }
+  }
+
+  return 0;
+}
+
 int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
   if(this->hasPreconditionedDistributedEdges_) {
     return 0;
@@ -3205,6 +3333,8 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
   if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
     return -3;
   }
+
+  Timer tm{};
 
   this->preconditionDistributedCells();
 
@@ -3271,8 +3401,31 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
   preconditionDistributedIntermediate(
     edgeCount, this->cellGidToRank_, processCellsEdges);
 
+  const auto nEdgesPerCell{this->getDimensionality() == 3 ? 6 : 3};
+  this->exchangeDistributedInternal(
+    [this](const SimplexId lcid, const int j) {
+      SimplexId leid{};
+      this->getCellEdgeInternal(lcid, j, leid);
+      return this->edgeLidToGid_[leid];
+    },
+    [this](const SimplexId lcid, const SimplexId geid, const int j) {
+      SimplexId leid{};
+      this->getCellEdgeInternal(lcid, j, leid);
+      if(this->edgeLidToGid_[leid] == -1 && geid != -1) {
+        this->edgeLidToGid_[leid] = geid;
+        this->edgeGidToLid_[geid] = leid;
+      }
+    },
+    [this]() {
+      return std::count(
+               this->edgeLidToGid_.begin(), this->edgeLidToGid_.end(), -1)
+             > 0;
+    },
+    nEdgesPerCell);
+
   if(MPIrank_ == 0) {
-    this->printMsg("Domain contains " + std::to_string(edgeCount) + " edges");
+    this->printMsg("Domain contains " + std::to_string(edgeCount) + " edges",
+                   1.0, tm.getElapsedTime(), 1);
   }
 
   this->hasPreconditionedDistributedEdges_ = true;
@@ -3298,6 +3451,8 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
   if(this->getDimensionality() != 3) {
     return -3;
   }
+
+  Timer tm{};
 
   this->preconditionDistributedCells();
 
@@ -3352,9 +3507,32 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
   preconditionDistributedIntermediate(
     triangleCount, this->cellGidToRank_, processCellsTriangles);
 
+  const auto nTrianglesPerCell{4};
+  this->exchangeDistributedInternal(
+    [this](const SimplexId lcid, const int j) {
+      SimplexId ltid{};
+      this->getCellTriangleInternal(lcid, j, ltid);
+      return this->triangleLidToGid_[ltid];
+    },
+    [this](const SimplexId lcid, const SimplexId gtid, const int j) {
+      SimplexId ltid{};
+      this->getCellTriangleInternal(lcid, j, ltid);
+      if(this->triangleLidToGid_[ltid] == -1 && gtid != -1) {
+        this->triangleLidToGid_[ltid] = gtid;
+        this->triangleGidToLid_[gtid] = ltid;
+      }
+    },
+    [this]() {
+      return std::count(this->triangleLidToGid_.begin(),
+                        this->triangleLidToGid_.end(), -1)
+             > 0;
+    },
+    nTrianglesPerCell);
+
   if(MPIrank_ == 0) {
-    this->printMsg("Domain contains " + std::to_string(triangleCount)
-                   + " triangles");
+    this->printMsg(
+      "Domain contains " + std::to_string(triangleCount) + " triangles", 1.0,
+      tm.getElapsedTime(), 1);
   }
 
   this->hasPreconditionedDistributedTriangles_ = true;
@@ -3382,16 +3560,11 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
     this->vertexGidToLid_[this->vertGid_[i]] = i;
   }
 
-  if(MPIrank_ == 0) {
-    this->printMsg("Domain contains "
-                   + std::to_string(this->getNumberOfVerticesInternal())
-                   + " vertices");
-  }
-
   this->hasPreconditionedDistributedVertices_ = true;
 
   return 0;
 }
+
 #endif // TTK_ENABLE_MPI
 
 // explicit instantiations
