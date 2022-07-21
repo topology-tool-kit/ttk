@@ -117,7 +117,7 @@ function(ttk_get_target ttk_module ttk_target)
 
   # dependencies check
   ttk_parse_module_file(${VTKWRAPPER_DIR}/${ttk_module}/vtk.module)
-  cmake_parse_arguments("VTK" "" "NAME" "DEPENDS;PRIVATE_DEPENDS" ${moduleFileContent})
+  cmake_parse_arguments("VTK" "" "NAME" "DEPENDS;PRIVATE_DEPENDS;OPTIONAL_DEPENDS" ${moduleFileContent})
   foreach(VTK_DEP_TARGET ${VTK_DEPENDS})
     # Check VTK targets are available (Assume VTK use the VTK namespace)
     string(REGEX MATCH "VTK::.*" TARGET_VTK ${VTK_DEP_TARGET})
