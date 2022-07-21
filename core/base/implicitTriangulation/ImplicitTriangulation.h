@@ -246,6 +246,10 @@ namespace ttk {
                                     const Func2 &iterCond,
                                     const int nSimplicesPerCell);
 
+    int preconditionDistributedCellRanges();
+    size_t
+      computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
+
   public:
     int preconditionDistributedCells() override;
     int preconditionDistributedEdges() override;
