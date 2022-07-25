@@ -211,6 +211,38 @@ namespace ttk {
       }
       return std::min_element(dists.begin(), dists.end()) - dists.begin();
     }
+
+    /**
+     * @brief Compute normal vector to triangle
+     *
+     * @param[in] a First triangle vertex coordinates
+     * @param[in] b Second triangle vertex coordinates
+     * @param[in] c Third triangle vertex coordinates
+     * @return Triangle unitary normal
+     */
+    inline Point
+      computeTriangleNormal(const Point a, const Point b, const Point c) const {
+
+      // triangle normal: cross product of two edges
+      Point crossP{};
+      // ab, ac vectors
+      const Point ab = b - a;
+      const Point ac = c - a;
+      // compute ab ^ ac
+      Geometry::crossProduct(ab.data(), ac.data(), crossP.data());
+      // magnitude
+      const auto mag = Geometry::magnitude(crossP.data());
+
+      if(mag > powf(10, -FLT_DIG)) {
+        // unitary normal vector
+        return crossP / mag;
+      }
+
+      crossP[0] = -1.0F;
+      crossP[1] = -1.0F;
+      crossP[2] = -1.0F;
+      return crossP;
+    }
   };
 
 } // namespace ttk
@@ -259,15 +291,7 @@ ttk::SurfaceGeometrySmoother::ProjectionResult
     triangulation.getVertexPoint(tverts[1], mno[1][0], mno[1][1], mno[1][2]);
     triangulation.getVertexPoint(tverts[2], mno[2][0], mno[2][1], mno[2][2]);
 
-    // triangle normal: cross product of two edges
-    Point crossP{};
-    // mn, mo vectors
-    const Point mn = mno[1] - mno[0];
-    const Point mo = mno[2] - mno[0];
-    // compute mn ^ mo
-    Geometry::crossProduct(mn.data(), mo.data(), crossP.data());
-    // unitary normal vector
-    const Point normTri = crossP / Geometry::magnitude(crossP.data());
+    const auto normTri{this->computeTriangleNormal(mno[0], mno[1], mno[2])};
 
     res.pt = this->projectOnTrianglePlane(pi.pt, mno[0], normTri);
 
