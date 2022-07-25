@@ -21,7 +21,7 @@
       }
     },
     {
-      "name": "TTK-Perf",
+      "name": "TTK-PerformanceBenchmark",
       "inherits": "TTK-Default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
