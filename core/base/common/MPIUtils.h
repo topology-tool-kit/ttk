@@ -90,64 +90,6 @@ namespace ttk {
   };
 
   /**
-   * @brief Gather vectors on a specific rank
-   *
-   * @param[out] dst Container storing vectors copied from other ranks
-   * @param[in] src Data to send to \ref destRank and to store in \ref dst
-   * @param[in] destRank Destination process identifier
-   * @return 0 in case of success
-   */
-  template <typename T>
-  int gatherVectors(std::vector<std::vector<T>> &dst,
-                    const std::vector<T> &src,
-                    const int destRank) {
-
-    if(!ttk::isRunningWithMPI()) {
-      return -1;
-    }
-
-    // src sizes (gathered on rank 0)
-    std::vector<unsigned long> vecSizes{};
-
-    if(ttk::MPIrank_ == destRank) {
-      vecSizes.resize(MPIsize_);
-      dst.resize(MPIsize_);
-    }
-
-    const unsigned long localSize = src.size();
-    // gather src sizes on destRank
-    MPI_Gather(&localSize, 1, MPI_UNSIGNED_LONG, vecSizes.data(), 1,
-               MPI_UNSIGNED_LONG, destRank, ttk::MPIcomm_);
-
-    if(ttk::MPIrank_ == destRank) {
-      // allocate dst with vecSizes
-      for(int i = 0; i < ttk::MPIsize_; ++i) {
-        if(i == destRank) {
-          continue;
-        }
-        dst[i].resize(vecSizes[i]);
-      }
-
-      for(int i = 0; i < ttk::MPIsize_; ++i) {
-        if(i == destRank) {
-          continue;
-        }
-        // receive src content from other ranks
-        MPI_Recv(dst[i].data(), dst[i].size(), ttk::getMPIType(src[0]), i,
-                 MPI_ANY_TAG, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      }
-      dst[destRank] = std::move(src);
-
-    } else {
-      // send src content to destRank
-      MPI_Send(src.data(), src.size(), ttk::getMPIType(src[0]), destRank, 0,
-               ttk::MPIcomm_);
-    }
-
-    return 0;
-  }
-
-  /**
    * @brief Request all ghost cell scalar data from one rank from their owning
    * ranks and get the data
    *
