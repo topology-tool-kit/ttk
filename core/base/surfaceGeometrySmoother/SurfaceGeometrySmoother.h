@@ -28,6 +28,7 @@
 #include <Triangulation.h>
 #include <VisitedMask.h>
 
+#include <numeric>
 #include <stack>
 #include <string>
 
@@ -243,9 +244,130 @@ namespace ttk {
       crossP[2] = -1.0F;
       return crossP;
     }
+
+    /**
+     * @brief Compute (mean) surface normal at given surface vertex
+     *
+     * @param[in] a Surface vertex id
+     * @param[in] triangulation Mesh
+     * @return Mean of surface normals in star of @p a
+     */
+    template <typename triangulationType>
+    Point
+      computeSurfaceNormalAtPoint(const SimplexId a,
+                                  const triangulationType &triangulation) const;
   };
 
 } // namespace ttk
+
+template <typename triangulationType>
+ttk::SurfaceGeometrySmoother::Point
+  ttk::SurfaceGeometrySmoother::computeSurfaceNormalAtPoint(
+    const SimplexId a, const triangulationType &triangulation) const {
+
+  Point res{};
+
+  // store for each triangle in a's star a's two direct neighbors
+  std::vector<std::array<SimplexId, 2>> edges{};
+
+  const auto nStar{triangulation.getVertexStarNumber(a)};
+
+  if(triangulation.getCellVertexNumber(0) == 3) {
+    // triangle mesh
+    for(SimplexId i = 0; i < nStar; ++i) {
+      SimplexId c{};
+      triangulation.getVertexStar(a, i, c);
+      SimplexId v0{}, v1{};
+      triangulation.getCellVertex(c, 0, v0);
+      if(v0 == a) {
+        triangulation.getCellVertex(c, 1, v0);
+      } else {
+        triangulation.getCellVertex(c, 1, v1);
+        if(v1 == a) {
+          triangulation.getCellVertex(c, 2, v1);
+        }
+      }
+      edges.emplace_back(std::array<SimplexId, 2>{v0, v1});
+    }
+  } else if(triangulation.getCellVertexNumber(0) == 4) {
+    // quad mesh
+    for(SimplexId i = 0; i < nStar; ++i) {
+      SimplexId c{};
+      triangulation.getVertexStar(a, i, c);
+      std::array<SimplexId, 4> q{};
+      triangulation.getCellVertex(c, 0, q[0]);
+      triangulation.getCellVertex(c, 1, q[1]);
+      triangulation.getCellVertex(c, 2, q[2]);
+      triangulation.getCellVertex(c, 3, q[3]);
+      if(q[0] == a) {
+        edges.emplace_back(std::array<SimplexId, 2>{
+          static_cast<SimplexId>(q[3]),
+          static_cast<SimplexId>(q[1]),
+        });
+      } else if(q[1] == a) {
+        edges.emplace_back(std::array<SimplexId, 2>{
+          static_cast<SimplexId>(q[0]),
+          static_cast<SimplexId>(q[2]),
+        });
+      } else if(q[2] == a) {
+        edges.emplace_back(std::array<SimplexId, 2>{
+          static_cast<SimplexId>(q[1]),
+          static_cast<SimplexId>(q[3]),
+        });
+      } else if(q[3] == a) {
+        edges.emplace_back(std::array<SimplexId, 2>{
+          static_cast<SimplexId>(q[2]),
+          static_cast<SimplexId>(q[0]),
+        });
+      }
+    }
+  }
+
+  // current vertex 3d coordinates
+  Point pa{};
+  triangulation.getVertexPoint(a, pa[0], pa[1], pa[2]);
+
+  // triangle normals around current surface vertex
+  std::vector<Point> normals{};
+  normals.reserve(nStar);
+
+  for(auto &e : edges) {
+    Point pb{}, pc{};
+    triangulation.getVertexPoint(e[0], pb[0], pb[1], pb[2]);
+    triangulation.getVertexPoint(e[1], pc[0], pc[1], pc[2]);
+
+    const auto normal{this->computeTriangleNormal(pa, pb, pc)};
+    // ensure normal not null
+    if(normal[0] != -1.0F && normal[1] != -1.0F && normal[2] != -1.0F) {
+      // unitary normal vector
+      normals.emplace_back(normal);
+    }
+  }
+
+  if(!normals.empty()) {
+
+    // ensure normals have same direction
+    for(size_t i = 1; i < normals.size(); ++i) {
+      const auto dotProd
+        = Geometry::dotProduct(normals[0].data(), normals[i].data());
+      if(dotProd < 0.0F) {
+        normals[i] = normals[i] * -1.0F;
+      }
+    }
+
+    // compute mean of normals
+    res = std::accumulate(
+      normals.begin(), normals.end(), Point{}, std::plus<Point>());
+    res = res / static_cast<float>(normals.size());
+
+  } else {
+
+    // set error value directly in output variable...
+    res[0] = NAN;
+  }
+
+  return res;
+}
 
 template <typename triangulationType>
 ttk::SurfaceGeometrySmoother::ProjectionResult
