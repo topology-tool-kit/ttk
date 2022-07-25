@@ -111,10 +111,18 @@ int ttkMergeTreeDistanceMatrix::run(
       branchDecomposition_ = true;
       normalizedWasserstein_ = true;
       keepSubtree_ = false;
+      baseModule = 0;
     } else if(Backend == 1) {
       branchDecomposition_ = false;
       normalizedWasserstein_ = false;
       keepSubtree_ = true;
+      baseModule = 0;
+    } else if(Backend == 2) {
+      baseModule = 1;
+    } else if(Backend == 3) {
+      baseModule = 2;
+    } else {
+      baseModule = 0;
     }
   }
   if(not branchDecomposition_) {

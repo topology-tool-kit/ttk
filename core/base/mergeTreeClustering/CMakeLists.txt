@@ -1,8 +1,12 @@
 ttk_add_base_library(mergeTreeClustering
   SOURCES
     MergeTreeDistance.cpp
+    BranchMappingDistance.cpp
+    PathMappingDistance.cpp
   HEADERS
     MergeTreeDistance.h
+    BranchMappingDistance.h
+    PathMappingDistance.h
     MergeTreeBase.h
     MergeTreeUtils.h
     MergeTreeBarycenter.h

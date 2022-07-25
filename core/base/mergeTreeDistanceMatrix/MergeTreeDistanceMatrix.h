@@ -29,6 +29,8 @@ namespace ttk {
    */
   class MergeTreeDistanceMatrix : virtual public Debug,
                                   virtual public MergeTreeBase {
+  protected:
+    int baseModule = 0;
   public:
     MergeTreeDistanceMatrix() {
       this->setDebugMsgPrefix(
@@ -37,6 +39,10 @@ namespace ttk {
       // beginning of every msg
     }
     ~MergeTreeDistanceMatrix() override = default;
+
+    void setBaseModule(int m) {
+        baseModule = m;
+    }
 
     /**
      * Implementation of the algorithm.
@@ -89,40 +95,48 @@ namespace ttk {
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
             // Execute
-            MergeTreeDistance mergeTreeDistance;
-            mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
-            mergeTreeDistance.setEpsilonTree1(epsilonTree1_);
-            mergeTreeDistance.setEpsilonTree2(epsilonTree2_);
-            mergeTreeDistance.setEpsilon2Tree1(epsilon2Tree1_);
-            mergeTreeDistance.setEpsilon2Tree2(epsilon2Tree2_);
-            mergeTreeDistance.setEpsilon3Tree1(epsilon3Tree1_);
-            mergeTreeDistance.setEpsilon3Tree2(epsilon3Tree2_);
-            mergeTreeDistance.setProgressiveComputation(
-              progressiveComputation_);
-            mergeTreeDistance.setBranchDecomposition(branchDecomposition_);
-            mergeTreeDistance.setParallelize(parallelize_);
-            mergeTreeDistance.setPersistenceThreshold(persistenceThreshold_);
-            mergeTreeDistance.setDebugLevel(2);
-            mergeTreeDistance.setThreadNumber(this->threadNumber_);
-            mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
-            mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
-            mergeTreeDistance.setNormalizedWassersteinReg(
-              normalizedWassersteinReg_);
-            mergeTreeDistance.setKeepSubtree(keepSubtree_);
-            mergeTreeDistance.setDistanceSquared(distanceSquared_);
-            mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
-            mergeTreeDistance.setSaveTree(true);
-            mergeTreeDistance.setCleanTree(true);
-            mergeTreeDistance.setIsCalled(true);
-            mergeTreeDistance.setPostprocess(false);
-            if(useDoubleInput_) {
-              double weight = mixDistancesMinMaxPairWeight(isFirstInput);
-              mergeTreeDistance.setMinMaxPairWeight(weight);
-              mergeTreeDistance.setDistanceSquared(true);
+            if(baseModule==0){
+              MergeTreeDistance mergeTreeDistance;
+              mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
+              mergeTreeDistance.setEpsilonTree1(epsilonTree1_);
+              mergeTreeDistance.setEpsilonTree2(epsilonTree2_);
+              mergeTreeDistance.setEpsilon2Tree1(epsilon2Tree1_);
+              mergeTreeDistance.setEpsilon2Tree2(epsilon2Tree2_);
+              mergeTreeDistance.setEpsilon3Tree1(epsilon3Tree1_);
+              mergeTreeDistance.setEpsilon3Tree2(epsilon3Tree2_);
+              mergeTreeDistance.setProgressiveComputation(
+                progressiveComputation_);
+              mergeTreeDistance.setBranchDecomposition(branchDecomposition_);
+              mergeTreeDistance.setParallelize(parallelize_);
+              mergeTreeDistance.setPersistenceThreshold(persistenceThreshold_);
+              mergeTreeDistance.setDebugLevel(2);
+              mergeTreeDistance.setThreadNumber(this->threadNumber_);
+              mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
+              mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
+              mergeTreeDistance.setNormalizedWassersteinReg(
+                normalizedWassersteinReg_);
+              mergeTreeDistance.setKeepSubtree(keepSubtree_);
+              mergeTreeDistance.setDistanceSquared(distanceSquared_);
+              mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
+              mergeTreeDistance.setSaveTree(true);
+              mergeTreeDistance.setCleanTree(true);
+              mergeTreeDistance.setIsCalled(true);
+              mergeTreeDistance.setPostprocess(false);
+              if(useDoubleInput_) {
+                double weight = mixDistancesMinMaxPairWeight(isFirstInput);
+                mergeTreeDistance.setMinMaxPairWeight(weight);
+                mergeTreeDistance.setDistanceSquared(true);
+              }
+              std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
+              distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
+                trees[i], trees[j], outputMatching);
             }
-            std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
-            distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
-              trees[i], trees[j], outputMatching);
+            else if(baseModule==1){
+              distanceMatrix[i][j] = i+j;
+            }
+            else if(baseModule==2){
+              distanceMatrix[i][j] = i-j;
+            }
             // distance matrix is symmetric
             distanceMatrix[j][i] = distanceMatrix[i][j];
           } // end for j
