@@ -1367,11 +1367,12 @@ namespace ttk {
       return abstractTriangulation_->getVertexEdges();
     }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+
     /// Get the corresponding global id for a given local id of a vertex.
     ///    ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1390,7 +1391,7 @@ namespace ttk {
     /// Get the global id to local id map for the triangulation.
     ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1410,7 +1411,7 @@ namespace ttk {
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.

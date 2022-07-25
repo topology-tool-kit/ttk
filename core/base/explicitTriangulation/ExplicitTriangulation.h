@@ -515,23 +515,6 @@ namespace ttk {
     int preconditionVertexStarsInternal() override;
     int preconditionVertexTrianglesInternal() override;
 
-#ifdef TTK_ENABLE_MPI
-
-  protected:
-    template <typename Func0, typename Func1, typename Func2>
-    int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
-                                    const Func1 &storeGlobalSimplexId,
-                                    const Func2 &iterCond,
-                                    const int nSimplicesPerCell);
-
-  public:
-    int preconditionDistributedCells() override;
-    int preconditionDistributedEdges() override;
-    int preconditionDistributedVertices() override;
-    int preconditionDistributedTriangles() override;
-
-#endif // TTK_ENABLE_MPI
-
 #ifdef TTK_CELL_ARRAY_NEW
     // Layout with connectivity + offset array (new)
     inline int setInputCells(const SimplexId &cellNumber,
@@ -630,6 +613,26 @@ namespace ttk {
      * Use a custom binary format for fast loading
      */
     int readFromFile(std::ifstream &stream);
+
+#ifdef TTK_ENABLE_MPI
+
+  protected:
+    template <typename Func0, typename Func1, typename Func2>
+    int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
+                                    const Func1 &storeGlobalSimplexId,
+                                    const Func2 &iterCond,
+                                    const int nSimplicesPerCell);
+
+    int preconditionDistributedCellRanges();
+    size_t
+      computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
+
+    int preconditionDistributedCells() override;
+    int preconditionDistributedEdges() override;
+    int preconditionDistributedVertices() override;
+    int preconditionDistributedTriangles() override;
+
+#endif // TTK_ENABLE_MPI
 
   private:
     bool doublePrecision_;

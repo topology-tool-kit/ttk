@@ -2555,17 +2555,7 @@ namespace ttk {
       return this->cellRankArray_;
     }
 
-    // precondition methods for distributed meshes
-
-    virtual int preconditionDistributedCells() {
-      return 0;
-    }
-    virtual int preconditionDistributedEdges() {
-      return 0;
-    }
-    virtual int preconditionDistributedTriangles() {
-      return 0;
-    }
+    // public precondition method (used in Triangulation/ttkAlgorithm)
     virtual int preconditionDistributedVertices() {
       return 0;
     }
@@ -3551,6 +3541,18 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
 
 #ifdef TTK_ENABLE_MPI
+
+    // precondition methods for distributed meshes
+
+    virtual int preconditionDistributedCells() {
+      return 0;
+    }
+    virtual int preconditionDistributedEdges() {
+      return 0;
+    }
+    virtual int preconditionDistributedTriangles() {
+      return 0;
+    }
 
     // "GlobalCellIds" from "Generate Global Ids"
     // (warning: for Implicit/Periodic triangulations, concerns

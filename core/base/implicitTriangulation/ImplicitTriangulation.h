@@ -250,12 +250,12 @@ namespace ttk {
     size_t
       computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
 
-  public:
     int preconditionDistributedCells() override;
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
 
+  public:
     inline SimplexId
       getCellGlobalIdInternal(const SimplexId lcid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
