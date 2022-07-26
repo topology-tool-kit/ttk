@@ -49,33 +49,56 @@ int ttkTriangulationManager::FillOutputPortInformation(int port,
   return 0;
 }
 
-void ttkTriangulationManager::processImplicit(
-  ttk::Triangulation &triangulation) const {
-
+void switchPeriodicity(ttk::Triangulation &triangulation,
+                       const bool periodic,
+                       const ttk::Debug &dbg) {
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
-  if(prevPeriodic != this->Periodicity) {
-    triangulation.setPeriodicBoundaryConditions(Periodicity);
-    printMsg("Switching regular grid periodicity from "
-             + (prevPeriodic ? std::string("ON") : std::string("OFF")) + " to "
-             + (Periodicity ? std::string("ON") : std::string("OFF")));
-  }
 
+  if(prevPeriodic != periodic) {
+
+#ifdef TTK_ENABLE_MPI
+    if(ttk::isRunningWithMPI() && periodic) {
+      dbg.printErr("Periodic implicit triangulation not (yet) supported in "
+                   "an MPI context!");
+      dbg.printErr("Keeping the Implicit triangulation.");
+      return;
+    }
+#endif // TTK_ENABLE_MPI
+
+    triangulation.setPeriodicBoundaryConditions(periodic);
+    dbg.printMsg("Switching regular grid periodicity from "
+                 + (prevPeriodic ? std::string("ON") : std::string("OFF"))
+                 + " to "
+                 + (periodic ? std::string("ON") : std::string("OFF")));
+  }
+}
+
+void switchPreconditions(ttk::Triangulation &triangulation,
+                         const ttk::Triangulation::STRATEGY precStrategy,
+                         const ttk::Debug &dbg) {
   const bool prevPreconditions = triangulation.hasImplicitPreconditions();
-  if((this->PreconditioningStrategy == STRATEGY::NO_PRECONDITIONS
+  if((precStrategy == ttk::Triangulation::STRATEGY::NO_PRECONDITIONS
       && !prevPreconditions)
-     || (this->PreconditioningStrategy == STRATEGY::WITH_PRECONDITIONS
+     || (precStrategy == ttk::Triangulation::STRATEGY::WITH_PRECONDITIONS
          && prevPreconditions)) {
     return;
   }
 
-  triangulation.setImplicitPreconditions(this->PreconditioningStrategy);
+  triangulation.setImplicitPreconditions(precStrategy);
   const auto newPreconditions = triangulation.hasImplicitPreconditions();
   if(prevPreconditions != newPreconditions) {
-    printMsg("Switching regular grid preconditions from "
-             + (prevPreconditions ? std::string("ON") : std::string("OFF"))
-             + " to "
-             + (newPreconditions ? std::string("ON") : std::string("OFF")));
+    dbg.printMsg("Switching regular grid preconditions from "
+                 + (prevPreconditions ? std::string("ON") : std::string("OFF"))
+                 + " to "
+                 + (newPreconditions ? std::string("ON") : std::string("OFF")));
   }
+}
+
+void ttkTriangulationManager::processImplicit(
+  ttk::Triangulation &triangulation) const {
+
+  switchPeriodicity(triangulation, this->Periodicity, *this);
+  switchPreconditions(triangulation, this->PreconditioningStrategy, *this);
 }
 
 int ttkTriangulationManager::processExplicit(
