@@ -2512,34 +2512,3 @@ int CompactTriangulation::getBoundaryCells(ImplicitCluster *const nodePtr,
 
   return 0;
 }
-#if TTK_ENABLE_MPI
-int CompactTriangulation::preconditionDistributedVertices() {
-  if(this->hasPreconditionedDistributedVertices_) {
-    return 0;
-  }
-  if(!isRunningWithMPI()) {
-    return -1;
-  }
-  if(this->vertGid_ == nullptr) {
-    this->printWrn("Missing global identifiers array!");
-    return -2;
-  }
-
-  // allocate memory
-  this->vertexGidToLid_.reserve(this->vertexNumber_);
-
-  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexGidToLid_[this->vertGid_[i]] = i;
-  }
-
-  if(MPIrank_ == 0) {
-    this->printMsg("Domain contains "
-                   + std::to_string(this->getNumberOfVerticesInternal())
-                   + " vertices");
-  }
-
-  this->hasPreconditionedDistributedVertices_ = true;
-
-  return 0;
-}
-#endif // TTK_ENABLE_MPI

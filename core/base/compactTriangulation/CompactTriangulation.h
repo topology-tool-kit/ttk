@@ -1327,12 +1327,6 @@ namespace ttk {
       return (exnode->boundaryVertices_)[localVertexId];
     }
 
-#ifdef TTK_ENABLE_MPI
-
-    int preconditionDistributedVertices() override;
-
-#endif // TTK_ENABLE_MPI
-
     inline int preconditionBoundaryEdgesInternal() override {
       return 0;
     }
