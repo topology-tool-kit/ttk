@@ -66,8 +66,8 @@ int DimensionReduction::execute() const {
 
   Timer t;
 
-  const int numberOfComponents = std::max(2, numberOfComponents_);
-  const int numberOfNeighbors = std::max(1, numberOfNeighbors_);
+  const int numberOfComponents = std::max(2, this->NumberOfComponents);
+  const int numberOfNeighbors = std::max(1, this->NumberOfNeighbors);
 
   // declared here to avoid crossing initialization with goto
   vector<PyObject *> gc;
@@ -192,7 +192,7 @@ int DimensionReduction::execute() const {
   }
 #endif
 
-  pIsDeterministic = PyLong_FromLong(randomState_);
+  pIsDeterministic = PyLong_FromLong(static_cast<long>(this->IsDeterministic));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pIsDeterministic) {
     this->printErr("Python: cannot convert pIsDeterministic.");

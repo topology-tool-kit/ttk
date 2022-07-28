@@ -248,9 +248,6 @@ private:
   std::string RegexpString{".*"};
   std::vector<std::string> ScalarFields{};
 
-  int NumberOfComponents{2};
-  int NumberOfNeighbors{5};
-  int IsDeterministic{true};
   bool KeepAllDataArrays{true};
 
   // mds && se

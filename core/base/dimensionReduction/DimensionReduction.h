@@ -197,19 +197,16 @@ namespace ttk {
       return 0;
     }
 
-    inline int setInputNumberOfComponents(int numberOfComponents) {
-      numberOfComponents_ = numberOfComponents;
-      return 0;
+    inline void setInputNumberOfComponents(const int numberOfComponents) {
+      this->NumberOfComponents = numberOfComponents;
     }
 
-    inline int setInputNumberOfNeighbors(int numberOfNeighbors) {
-      numberOfNeighbors_ = numberOfNeighbors;
-      return 0;
+    inline void setInputNumberOfNeighbors(const int numberOfNeighbors) {
+      this->NumberOfNeighbors = numberOfNeighbors;
     }
 
-    inline int setInputIsDeterministic(int randomState) {
-      randomState_ = randomState;
-      return 0;
+    inline void setInputIsDeterministic(const int isDeterm) {
+      this->IsDeterministic = isDeterm;
     }
 
     inline int setOutputComponents(std::vector<std::vector<double>> *data) {
@@ -281,9 +278,9 @@ namespace ttk {
     SimplexId numberOfRows_{0};
     SimplexId numberOfColumns_{0};
     METHOD Method{METHOD::MDS};
-    int numberOfComponents_{0};
-    int numberOfNeighbors_{0};
-    int randomState_{0};
+    int NumberOfComponents{2};
+    int NumberOfNeighbors{5};
+    int IsDeterministic{true};
     void *matrix_{};
     std::vector<std::vector<double>> *embedding_{};
     char majorVersion_{'0'};
