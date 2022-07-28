@@ -12,7 +12,30 @@
 #include <algorithm>
 #include <chrono>
 
-inline float ttk::BranchMappingDistance::editCost_Wasserstein(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2){
+inline float ttk::BranchMappingDistance::editCost_Wasserstein1(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2){
+    if(n1<0){
+        float b1 = nodes2[n2];
+        float d1 = nodes2[p2];
+        float b2 = (b1+d1)*0.5;
+        float d2 = (b1+d1)*0.5;
+        return std::abs(b1-b2)+std::abs(d1-d2);
+    }
+    if(n2<0){
+        float b1 = nodes1[n1];
+        float d1 = nodes1[p1];
+        float b2 = (b1+d1)*0.5;
+        float d2 = (b1+d1)*0.5;
+        return std::abs(b1-b2)+std::abs(d1-d2);
+    }
+    float b1 = nodes1[n1];
+    float d1 = nodes1[p1];
+    float b2 = nodes2[n2];
+    float d2 = nodes2[p2];
+    float d = std::abs(b1-b2)+std::abs(d1-d2);
+    return d*d;
+}
+
+inline float ttk::BranchMappingDistance::editCost_Wasserstein2(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2){
     if(n1<0){
         float b1 = nodes2[n2];
         float d1 = nodes2[p2];
@@ -51,6 +74,27 @@ inline float ttk::BranchMappingDistance::editCost_Persistence(int n1, int p1, in
     float b2 = nodes2[n2];
     float d2 = nodes2[p2];
     float d = std::abs(std::abs(b1-d1)-std::abs(b2-d2));
+    return d;
+}
+
+inline float ttk::BranchMappingDistance::editCost_Shifting(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2){
+    if(n1<0){
+        float b1 = nodes2[n2];
+        float d1 = nodes2[p2];
+        return std::abs(d1-b1);
+    }
+    if(n2<0){
+        float b1 = nodes1[n1];
+        float d1 = nodes1[p1];
+        return std::abs(d1-b1);
+    }
+    float b1 = nodes1[n1];
+    float d1 = nodes1[p1];
+    float b2 = nodes2[n2];
+    float d2 = nodes2[p2];
+    float pers1 = std::abs(b1-d1);
+    float pers2 = std::abs(b2-d2);
+    float d = std::abs(b1-b2)+std::abs(pers1-pers2);
     return d;
 }
 
@@ -105,12 +149,12 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
     // size_t dim3_ = (nn1 + 1) * dim2;
     // size_t dim4_ = (nn2 + 1) * dim3;
 
-    float* memT = new float[(nn1+1)*(depth1+1)*(nn2+1)*(depth2+1)];
+    std::unique_ptr<float[]> memT(new float[(nn1+1)*(depth1+1)*(nn2+1)*(depth2+1)]);
     //std::vector<float> memT((nn1+1)*(depth1+1)*(nn2+1)*(depth2+1));
 
     memT[nn1+0*dim2+nn2*dim3+0*dim4] = 0;
-    for(int i=0; i<nn1; i++){
-        for(int l=1; l<=predecessors1[i].size(); l++){
+    for(size_t i=0; i<nn1; i++){
+        for(size_t l=1; l<=predecessors1[i].size(); l++){
 
             int curr1 = i;
             int parent1 = predecessors1[i][predecessors1[i].size()-l];
@@ -118,7 +162,11 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
             //-----------------------------------------------------------------------
             // If first subtree has only one branch, return deletion cost of this branch
             if(topo1[curr1].size()==0){
-                memT[curr1+l*dim2+nn2*dim3+0*dim4] = this->baseMetric == 0 ? editCost_Wasserstein(curr1,parent1,-1,-1,nodes1,nodes2) : editCost_Persistence(curr1,parent1,-1,-1,nodes1,nodes2);
+                memT[curr1+l*dim2+nn2*dim3+0*dim4] =
+                      this->baseMetric == 0 ?   editCost_Wasserstein1(curr1,parent1,-1,-1,nodes1,nodes2)
+                    : this->baseMetric == 1 ?   editCost_Wasserstein2(curr1,parent1,-1,-1,nodes1,nodes2)
+                    : this->baseMetric == 2 ?   editCost_Persistence(curr1,parent1,-1,-1,nodes1,nodes2)
+                    :                           editCost_Shifting(curr1,parent1,-1,-1,nodes1,nodes2);
             }
             //-----------------------------------------------------------------------
             // If first subtree has more than one branch, try all decompositions
@@ -139,8 +187,8 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
             
         }
     }
-    for(int j=0; j<nn2; j++){
-        for(int l=1; l<=predecessors2[j].size(); l++){
+    for(size_t j=0; j<nn2; j++){
+        for(size_t l=1; l<=predecessors2[j].size(); l++){
 
             int curr2 = j;
             int parent2 = predecessors2[j][predecessors2[j].size()-l];
@@ -148,7 +196,11 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
             //-----------------------------------------------------------------------
             // If first subtree has only one branch, return deletion cost of this branch
             if(topo2[curr2].size()==0){
-                memT[nn1+0*dim2+curr2*dim3+l*dim4] = this->baseMetric == 0 ? editCost_Wasserstein(-1,-1,curr2,parent2,nodes1,nodes2) : editCost_Persistence(-1,-1,curr2,parent2,nodes1,nodes2);
+                memT[nn1+0*dim2+curr2*dim3+l*dim4] =
+                  this->baseMetric == 0 ?   editCost_Wasserstein1(-1,-1,curr2,parent2,nodes1,nodes2)
+                : this->baseMetric == 1 ?   editCost_Wasserstein2(-1,-1,curr2,parent2,nodes1,nodes2)
+                : this->baseMetric == 2 ?   editCost_Persistence(-1,-1,curr2,parent2,nodes1,nodes2)
+                :                           editCost_Shifting(-1,-1,curr2,parent2,nodes1,nodes2);
             }
             //-----------------------------------------------------------------------
             // If first subtree has more than one branch, try all decompositions
@@ -170,10 +222,10 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
         }
     }
 
-    for(int i=0; i<nn1; i++){
-        for(int j=0; j<nn2; j++){
-            for(int l1=1; l1<=predecessors1[i].size(); l1++){
-                for(int l2=1; l2<=predecessors2[j].size(); l2++){
+    for(size_t i=0; i<nn1; i++){
+        for(size_t j=0; j<nn2; j++){
+            for(size_t l1=1; l1<=predecessors1[i].size(); l1++){
+                for(size_t l2=1; l2<=predecessors2[j].size(); l2++){
 
                     int curr1 = i;
                     int parent1 = predecessors1[i][predecessors1[i].size()-l1];
@@ -187,7 +239,11 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
                     //---------------------------------------------------------------------------
                     // If both trees only have one branch, return edit cost between the two branches
                     if(topo1[curr1].size()==0 and topo2[curr2].size()==0){
-                        memT[curr1+l1*dim2+curr2*dim3+l2*dim4] = this->baseMetric == 0 ? editCost_Wasserstein(curr1,parent1,curr2,parent2,nodes1,nodes2) : editCost_Persistence(curr1,parent1,curr2,parent2,nodes1,nodes2);
+                        memT[curr1+l1*dim2+curr2*dim3+l2*dim4] =
+                              this->baseMetric == 0 ?   editCost_Wasserstein1(curr1,parent1,curr2,parent2,nodes1,nodes2)
+                            : this->baseMetric == 1 ?   editCost_Wasserstein2(curr1,parent1,curr2,parent2,nodes1,nodes2)
+                            : this->baseMetric == 2 ?   editCost_Persistence(curr1,parent1,curr2,parent2,nodes1,nodes2)
+                            :                           editCost_Shifting(curr1,parent1,curr2,parent2,nodes1,nodes2);
                     }
                     //---------------------------------------------------------------------------
                     // If first tree only has one branch, try all decompositions of second tree
@@ -293,6 +349,6 @@ float ttk::BranchMappingDistance::editDistance_branch(   std::vector<float> &nod
     }
 
     float res = memT[topo1[rootID1][0]+1*dim2+topo2[rootID2][0]*dim3+1*dim4];
-    delete[] memT;
+    //delete[] memT;
     return res;
 }

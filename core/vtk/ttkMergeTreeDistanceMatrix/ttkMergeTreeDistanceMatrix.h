@@ -34,6 +34,7 @@
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
 #include <MergeTreeDistanceMatrix.h>
@@ -107,6 +108,16 @@ public:
     return deleteMultiPersPairs_;
   }
 
+  void SetBranchMetric(int m) {
+    branchMetric = m;
+    Modified();
+  }
+
+  void SetPathMetric(int m) {
+    pathMetric = m;
+    Modified();
+  }
+
   // Execution Options
   vtkSetMacro(Backend, int);
   vtkGetMacro(Backend, int);
@@ -169,6 +180,8 @@ protected:
   ttkMergeTreeDistanceMatrix();
   ~ttkMergeTreeDistanceMatrix() override;
 
+  std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ftmToAdjList(vtkSmartPointer<vtkUnstructuredGrid> mt_nodes,vtkSmartPointer<vtkUnstructuredGrid> mt, int treeType, bool scalarLabels = false);
+
   /**
    * Specify the input data type of each input port
    *         (see cpp file)
@@ -193,4 +206,5 @@ protected:
   int run(vtkInformationVector *outputVector,
           std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
           std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
+  
 };

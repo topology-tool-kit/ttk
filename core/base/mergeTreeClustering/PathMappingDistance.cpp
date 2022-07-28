@@ -11,6 +11,8 @@
 #include <set>
 #include <algorithm>
 #include <chrono>
+#include <AssignmentMunkres.h>
+#include <AssignmentAuction.h>
 
 inline float ttk::PathMappingDistance::editCost_Persistence(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2){
     if(n1<0){
@@ -38,7 +40,7 @@ float ttk::PathMappingDistance::editDistance_path(   std::vector<float> &nodes1,
                                                     std::vector<std::vector<int>> &topo2,
                                                     int rootID2){
 
-    // initialize memoization tables
+    // initialize memoization tables 
 
     std::vector<std::vector<int>> predecessors1(nodes1.size());
     std::vector<std::vector<int>> predecessors2(nodes2.size());
@@ -82,12 +84,12 @@ float ttk::PathMappingDistance::editDistance_path(   std::vector<float> &nodes1,
     // size_t dim3_ = (nn1 + 1) * dim2;
     // size_t dim4_ = (nn2 + 1) * dim3;
 
-    float* memT = new float[(nn1+1)*(depth1+1)*(nn2+1)*(depth2+1)];
+    std::unique_ptr<float[]> memT(new float[(nn1+1)*(depth1+1)*(nn2+1)*(depth2+1)]);
     //std::vector<float> memT((nn1+1)*(depth1+1)*(nn2+1)*(depth2+1));
 
     memT[nn1+0*dim2+nn2*dim3+0*dim4] = 0;
-    for(int i=0; i<nn1; i++){
-        for(int l=1; l<=predecessors1[i].size(); l++){
+    for(size_t i=0; i<nn1; i++){
+        for(size_t l=1; l<=predecessors1[i].size(); l++){
 
             int curr1 = i;
             int parent1 = predecessors1[i][predecessors1[i].size()-l];
@@ -101,8 +103,8 @@ float ttk::PathMappingDistance::editDistance_path(   std::vector<float> &nodes1,
             
         }
     }
-    for(int j=0; j<nn2; j++){
-        for(int l=1; l<=predecessors2[j].size(); l++){
+    for(size_t j=0; j<nn2; j++){
+        for(size_t l=1; l<=predecessors2[j].size(); l++){
 
             int curr2 = j;
             int parent2 = predecessors2[j][predecessors2[j].size()-l];
@@ -117,10 +119,10 @@ float ttk::PathMappingDistance::editDistance_path(   std::vector<float> &nodes1,
         }
     }
 
-    for(int i=0; i<nn1; i++){
-        for(int j=0; j<nn2; j++){
-            for(int l1=1; l1<=predecessors1[i].size(); l1++){
-                for(int l2=1; l2<=predecessors2[j].size(); l2++){
+    for(size_t i=0; i<nn1; i++){
+        for(size_t j=0; j<nn2; j++){
+            for(size_t l1=1; l1<=predecessors1[i].size(); l1++){
+                for(size_t l2=1; l2<=predecessors2[j].size(); l2++){
 
                     int curr1 = i;
                     int parent1 = predecessors1[i][predecessors1[i].size()-l1];
@@ -184,18 +186,59 @@ float ttk::PathMappingDistance::editDistance_path(   std::vector<float> &nodes1,
                             d = std::min(d,memT[child11+1*dim2+child22*dim3+1*dim4] + memT[child12+1*dim2+child21*dim3+1*dim4] + editCost_Persistence(curr1,parent1,curr2,parent2,nodes1,nodes2));
                         }
                         else{
+                            auto start = std::chrono::high_resolution_clock::now();
                             float d_ = editCost_Persistence(curr1,parent1,curr2,parent2,nodes1,nodes2);
                             auto f = [&] (unsigned r, unsigned c) {
-                                int c1 = r<topo1[curr1].size() ? topo1[curr1][r] : nn1;
-                                int c2 = c<topo2[curr2].size() ? topo2[curr2][c] : nn2;
-                                int l1 = c1==nn1?0:1;
-                                int l2 = c2==nn2?0:1;
-                                return memT[c1+l1*dim2+c2*dim3+l2*dim4];
+                                size_t c1 = r<topo1[curr1].size() ? topo1[curr1][r] : nn1;
+                                size_t c2 = c<topo2[curr2].size() ? topo2[curr2][c] : nn2;
+                                //if(c1==nn1 && c2==nn2) return 0.0;
+                                int l1_ = c1==nn1?0:1;
+                                int l2_ = c2==nn2?0:1;
+                                return memT[c1+l1_*dim2+c2*dim3+l2_*dim4];
                             };
                             int size = std::max(topo1[curr1].size(),topo2[curr2].size()) + 1;
                             auto matching = munkres_algorithm<float>(size, size, f);
                             for(auto m : matching) d_ += f(m.first,m.second);
+                            auto end = std::chrono::high_resolution_clock::now();
+                            auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
                             d = std::min(d,d_);
+
+                            start = std::chrono::high_resolution_clock::now();
+                            auto costMatrix_ = std::vector<std::vector<float>>(size,std::vector<float>(size,0));
+                            std::vector<MatchingType> matching_;
+                            for(int r=0; r<size; r++){
+                                for(int c=0; c<size; c++){
+                                    costMatrix_[r][c] = f(r,c);
+                                }
+                            }
+                            AssignmentAuction<float> munkresSolver;
+                            munkresSolver.setInput(costMatrix_);
+                            munkresSolver.setBalanced(true);
+                            munkresSolver.run(matching_);
+                            float d__ = editCost_Persistence(curr1,parent1,curr2,parent2,nodes1,nodes2);
+                            for(auto m : matching_) d__ += std::get<2>(m);
+                            end = std::chrono::high_resolution_clock::now();
+                            auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+                            start = std::chrono::high_resolution_clock::now();
+                            auto costMatrix__ = std::vector<std::vector<float>>(topo1[curr1].size()+1,std::vector<float>(topo2[curr2].size()+1,0));
+                            std::vector<MatchingType> matching__;
+                            for(int r=0; r<topo1[curr1].size()+1; r++){
+                                for(int c=0; c<topo2[curr2].size()+1; c++){
+                                    costMatrix__[r][c] = f(r,c);
+                                }
+                            }
+                            AssignmentAuction<float> munkresSolver_;
+                            munkresSolver_.setInput(costMatrix__);
+                            munkresSolver_.setBalanced(false);
+                            munkresSolver_.run(matching__);
+                            float d___ = editCost_Persistence(curr1,parent1,curr2,parent2,nodes1,nodes2);
+                            for(auto m : matching__) d___ += std::get<2>(m);
+                            end = std::chrono::high_resolution_clock::now();
+                            auto duration3 = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+                            std::cout << d_ << " " << d__ << " " << d___ << std::endl;
+                            std::cout << duration1.count() << " " << duration2.count() << " " << duration3.count() << "\n" << std::endl;
                         }
                         //-----------------------------------------------------------------------
                         // Try to continue main branch on one child of first tree and delete all other subtrees
@@ -232,6 +275,6 @@ float ttk::PathMappingDistance::editDistance_path(   std::vector<float> &nodes1,
     }
 
     float res = memT[topo1[rootID1][0]+1*dim2+topo2[rootID2][0]*dim3+1*dim4];
-    delete[] memT;
+    //delete[] memT;
     return res;
 }

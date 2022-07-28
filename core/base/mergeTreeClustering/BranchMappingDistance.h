@@ -12,8 +12,10 @@ namespace ttk {
 
         private:
         int baseMetric = 0;
-        inline float editCost_Wasserstein(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2);
+        inline float editCost_Wasserstein1(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2);
+        inline float editCost_Wasserstein2(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2);
         inline float editCost_Persistence(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2);
+        inline float editCost_Shifting(int n1, int p1, int n2, int p2, std::vector<float> &nodes1, std::vector<float> &nodes2);
 
         public:
         BranchMappingDistance() {
