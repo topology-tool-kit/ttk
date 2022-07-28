@@ -62,10 +62,10 @@ namespace ttk {
       PCA = 5,
     };
 
-    inline int setSEParameters(std::string &Affinity,
-                               float Gamma,
-                               std::string &EigenSolver,
-                               bool InputIsADistanceMatrix) {
+    inline void setSEParameters(const std::string &Affinity,
+                                const float Gamma,
+                                const std::string &EigenSolver,
+                                const bool InputIsADistanceMatrix) {
       if(InputIsADistanceMatrix) {
         se_Affinity = "precomputed";
       } else {
@@ -73,17 +73,16 @@ namespace ttk {
       }
       se_Gamma = Gamma;
       se_EigenSolver = EigenSolver;
-      return 0;
     }
 
-    inline int setLLEParameters(float Regularization,
-                                std::string &EigenSolver,
-                                float Tolerance,
-                                int MaxIteration,
-                                std::string &Method_s,
-                                float HessianTolerance,
-                                float ModifiedTolerance,
-                                std::string &NeighborsAlgorithm) {
+    inline void setLLEParameters(const float Regularization,
+                                 const std::string &EigenSolver,
+                                 const float Tolerance,
+                                 const int MaxIteration,
+                                 const std::string &Method_s,
+                                 const float HessianTolerance,
+                                 const float ModifiedTolerance,
+                                 const std::string &NeighborsAlgorithm) {
       lle_Regularization = Regularization;
       lle_EigenSolver = EigenSolver;
       lle_Tolerance = Tolerance;
@@ -92,15 +91,14 @@ namespace ttk {
       lle_HessianTolerance = HessianTolerance;
       lle_ModifiedTolerance = ModifiedTolerance;
       lle_NeighborsAlgorithm = NeighborsAlgorithm;
-      return 0;
     }
 
-    inline int setMDSParameters(bool Metric,
-                                int Init,
-                                int MaxIteration,
-                                int Verbose,
-                                float Epsilon,
-                                bool Dissimilarity) {
+    inline void setMDSParameters(const bool Metric,
+                                 const int Init,
+                                 const int MaxIteration,
+                                 const int Verbose,
+                                 const float Epsilon,
+                                 const bool Dissimilarity) {
       mds_Metric = Metric;
       mds_Init = Init;
       mds_MaxIteration = MaxIteration;
@@ -111,20 +109,19 @@ namespace ttk {
       } else {
         mds_Dissimilarity = "euclidean";
       }
-      return 0;
     }
 
-    inline int setTSNEParameters(float Perplexity,
-                                 float Exaggeration,
-                                 float LearningRate,
-                                 int MaxIteration,
-                                 int MaxIterationProgress,
-                                 float GradientThreshold,
-                                 std::string &Metric,
-                                 std::string &Init,
-                                 int Verbose,
-                                 std::string &Method_s,
-                                 float Angle) {
+    inline void setTSNEParameters(const float Perplexity,
+                                  const float Exaggeration,
+                                  const float LearningRate,
+                                  const int MaxIteration,
+                                  const int MaxIterationProgress,
+                                  const float GradientThreshold,
+                                  const std::string &Metric,
+                                  const std::string &Init,
+                                  const int Verbose,
+                                  const std::string &Method_s,
+                                  const float Angle) {
       tsne_Perplexity = Perplexity;
       tsne_Exaggeration = Exaggeration;
       tsne_LearningRate = LearningRate;
@@ -136,65 +133,56 @@ namespace ttk {
       tsne_Verbose = Verbose;
       tsne_Method = Method_s;
       tsne_Angle = Angle;
-      return 0;
     }
 
-    inline int setISOParameters(std::string &EigenSolver,
-                                float Tolerance,
-                                int MaxIteration,
-                                std::string &PathMethod,
-                                std::string &NeighborsAlgorithm) {
+    inline void setISOParameters(const std::string &EigenSolver,
+                                 const float Tolerance,
+                                 const int MaxIteration,
+                                 const std::string &PathMethod,
+                                 const std::string &NeighborsAlgorithm) {
       iso_EigenSolver = EigenSolver;
       iso_Tolerance = Tolerance;
       iso_MaxIteration = MaxIteration;
       iso_PathMethod = PathMethod;
       iso_NeighborsAlgorithm = NeighborsAlgorithm;
-      return 0;
     }
 
-    inline int setPCAParameters(bool Copy,
-                                bool Whiten,
-                                std::string &SVDSolver,
-                                float Tolerance,
-                                std::string &MaxIteration) {
+    inline void setPCAParameters(const bool Copy,
+                                 const bool Whiten,
+                                 const std::string &SVDSolver,
+                                 const float Tolerance,
+                                 const std::string &MaxIteration) {
       pca_Copy = Copy;
       pca_Whiten = Whiten;
       pca_SVDSolver = SVDSolver;
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
-      return 0;
     }
 
-    inline int setInputModulePath(const std::string &modulePath) {
+    inline void setInputModulePath(const std::string &modulePath) {
       ModulePath = modulePath;
-      return 0;
     }
 
-    inline int setInputModuleName(const std::string &moduleName) {
+    inline void setInputModuleName(const std::string &moduleName) {
       ModuleName = moduleName;
-      return 0;
     }
 
-    inline int setInputFunctionName(const std::string &functionName) {
+    inline void setInputFunctionName(const std::string &functionName) {
       FunctionName = functionName;
-      return 0;
     }
 
-    inline int setInputMatrixDimensions(SimplexId numberOfRows,
-                                        SimplexId numberOfColumns) {
+    inline void setInputMatrixDimensions(SimplexId numberOfRows,
+                                         SimplexId numberOfColumns) {
       numberOfRows_ = numberOfRows;
       numberOfColumns_ = numberOfColumns;
-      return 0;
     }
 
-    inline int setInputMatrix(void *data) {
+    inline void setInputMatrix(void *data) {
       matrix_ = data;
-      return 0;
     }
 
-    inline int setInputMethod(METHOD method) {
+    inline void setInputMethod(METHOD method) {
       this->Method = method;
-      return 0;
     }
 
     inline void setInputNumberOfComponents(const int numberOfComponents) {
@@ -209,9 +197,8 @@ namespace ttk {
       this->IsDeterministic = isDeterm;
     }
 
-    inline int setOutputComponents(std::vector<std::vector<double>> *data) {
+    inline void setOutputComponents(std::vector<std::vector<double>> *data) {
       embedding_ = data;
-      return 0;
     }
 
     bool isPythonFound() const;
