@@ -77,10 +77,8 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
 
     outputData_.clear();
 
-    this->setInputMatrixDimensions(numberOfRows, numberOfColumns);
-    this->setInputMatrix(inputData.data());
-    this->setOutputComponents(&outputData_);
-    const int errorCode = this->execute();
+    const int errorCode = this->execute(
+      this->outputData_, inputData, numberOfRows, numberOfColumns);
 
     if(!errorCode) {
       if(KeepAllDataArrays)

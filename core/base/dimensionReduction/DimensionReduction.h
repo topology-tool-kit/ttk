@@ -171,16 +171,6 @@ namespace ttk {
       FunctionName = functionName;
     }
 
-    inline void setInputMatrixDimensions(SimplexId numberOfRows,
-                                         SimplexId numberOfColumns) {
-      numberOfRows_ = numberOfRows;
-      numberOfColumns_ = numberOfColumns;
-    }
-
-    inline void setInputMatrix(void *data) {
-      matrix_ = data;
-    }
-
     inline void setInputMethod(METHOD method) {
       this->Method = method;
     }
@@ -197,13 +187,12 @@ namespace ttk {
       this->IsDeterministic = isDeterm;
     }
 
-    inline void setOutputComponents(std::vector<std::vector<double>> *data) {
-      embedding_ = data;
-    }
-
     bool isPythonFound() const;
 
-    int execute() const;
+    int execute(std::vector<std::vector<double>> &outputEmbedding,
+                const std::vector<double> &inputMatrix,
+                const int nRows,
+                const int nColumns) const;
 
   protected:
     // se
@@ -258,18 +247,14 @@ namespace ttk {
     std::string pca_MaxIteration{"auto"};
 
     // testing
-    std::string ModulePath{};
-    std::string ModuleName{};
-    std::string FunctionName{};
+    std::string ModulePath{"default"};
+    std::string ModuleName{"dimensionReduction"};
+    std::string FunctionName{"doIt"};
 
-    SimplexId numberOfRows_{0};
-    SimplexId numberOfColumns_{0};
     METHOD Method{METHOD::MDS};
     int NumberOfComponents{2};
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
-    void *matrix_{};
-    std::vector<std::vector<double>> *embedding_{};
     char majorVersion_{'0'};
   };
 } // namespace ttk
