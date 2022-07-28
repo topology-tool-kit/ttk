@@ -79,7 +79,6 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
 
     this->setInputMatrixDimensions(numberOfRows, numberOfColumns);
     this->setInputMatrix(inputData.data());
-    this->setInputMethod(Method);
     this->setInputNumberOfComponents(NumberOfComponents);
     this->setInputNumberOfNeighbors(NumberOfNeighbors);
     this->setInputIsDeterministic(IsDeterministic);

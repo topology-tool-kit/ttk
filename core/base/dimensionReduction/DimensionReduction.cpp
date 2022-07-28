@@ -171,7 +171,7 @@ int DimensionReduction::execute() const {
 #endif
   gc.push_back(pNumberOfNeighbors);
 
-  pMethod = PyLong_FromLong(method_);
+  pMethod = PyLong_FromLong(static_cast<long>(this->Method));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pMethod) {
     this->printErr("Python: cannot convert pMethod.");
@@ -180,7 +180,7 @@ int DimensionReduction::execute() const {
 #endif
   gc.push_back(pMethod);
 
-  if(threadNumber_ > 1 && method_ == 2) { // MDS
+  if(threadNumber_ > 1 && this->Method == METHOD::MDS) { // MDS
     this->printWrn(
       "MDS is known to be instable when used with multiple threads");
   }
@@ -353,8 +353,8 @@ int DimensionReduction::execute() const {
   for(auto i : gc)
     Py_DECREF(i);
 
-  this->printMsg("Computed " + methodToString[this->method_], 1.0,
-                 t.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Computed " + methodToString[static_cast<int>(this->Method)],
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 

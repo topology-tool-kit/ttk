@@ -46,6 +46,22 @@ namespace ttk {
   public:
     DimensionReduction();
 
+    /** Scikit-Learn Dimension Reduction algorithms */
+    enum class METHOD {
+      /** Spectral Embedding */
+      SE = 0,
+      /** Locally Linear Embedding */
+      LLE = 1,
+      /** Multi-Dimensional Scaling */
+      MDS = 2,
+      /** t-distributed Stochastic Neighbor Embedding */
+      T_SNE = 3,
+      /** IsoMap Embedding */
+      ISOMAP = 4,
+      /** Principal Component Analysis */
+      PCA = 5,
+    };
+
     inline int setSEParameters(std::string &Affinity,
                                float Gamma,
                                std::string &EigenSolver,
@@ -64,7 +80,7 @@ namespace ttk {
                                 std::string &EigenSolver,
                                 float Tolerance,
                                 int MaxIteration,
-                                std::string &Method,
+                                std::string &Method_s,
                                 float HessianTolerance,
                                 float ModifiedTolerance,
                                 std::string &NeighborsAlgorithm) {
@@ -72,7 +88,7 @@ namespace ttk {
       lle_EigenSolver = EigenSolver;
       lle_Tolerance = Tolerance;
       lle_MaxIteration = MaxIteration;
-      lle_Method = Method;
+      lle_Method = Method_s;
       lle_HessianTolerance = HessianTolerance;
       lle_ModifiedTolerance = ModifiedTolerance;
       lle_NeighborsAlgorithm = NeighborsAlgorithm;
@@ -107,7 +123,7 @@ namespace ttk {
                                  std::string &Metric,
                                  std::string &Init,
                                  int Verbose,
-                                 std::string &Method,
+                                 std::string &Method_s,
                                  float Angle) {
       tsne_Perplexity = Perplexity;
       tsne_Exaggeration = Exaggeration;
@@ -118,7 +134,7 @@ namespace ttk {
       tsne_Metric = Metric;
       tsne_Init = Init;
       tsne_Verbose = Verbose;
-      tsne_Method = Method;
+      tsne_Method = Method_s;
       tsne_Angle = Angle;
       return 0;
     }
@@ -176,8 +192,8 @@ namespace ttk {
       return 0;
     }
 
-    inline int setInputMethod(int method) {
-      method_ = method;
+    inline int setInputMethod(METHOD method) {
+      this->Method = method;
       return 0;
     }
 
@@ -264,7 +280,7 @@ namespace ttk {
 
     SimplexId numberOfRows_{0};
     SimplexId numberOfColumns_{0};
-    int method_{};
+    METHOD Method{METHOD::MDS};
     int numberOfComponents_{0};
     int numberOfNeighbors_{0};
     int randomState_{0};
