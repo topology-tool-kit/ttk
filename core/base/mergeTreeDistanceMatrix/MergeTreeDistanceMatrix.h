@@ -85,8 +85,12 @@ namespace ttk {
 
           BranchMappingDistance branchDist;
           branchDist.setBaseMetric(branchMetric);
+          branchDist.setAssignmentSolver(assignmentSolverID_);
+          branchDist.setSquared(distanceSquared_);
           PathMappingDistance pathDist;
           pathDist.setBaseMetric(pathMetric);
+          pathDist.setAssignmentSolver(assignmentSolverID_);
+          pathDist.setSquared(distanceSquared_);
 
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {

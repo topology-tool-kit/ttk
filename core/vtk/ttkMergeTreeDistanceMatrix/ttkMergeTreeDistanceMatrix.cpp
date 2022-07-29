@@ -161,7 +161,7 @@ int ttkMergeTreeDistanceMatrix::run(
   }
   else{
     int treetype = 0;
-    for(int i=0; i<inputTrees.size(); i++){
+    for(size_t i=0; i<inputTrees.size(); i++){
       vtkSmartPointer<vtkUnstructuredGrid> mt_nodes = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
       int nmax=0;
       int nmin=0;
@@ -182,7 +182,7 @@ int ttkMergeTreeDistanceMatrix::run(
         }
       }
     }
-    for(int i=0; i<inputTrees.size(); i++){
+    for(size_t i=0; i<inputTrees.size(); i++){
       vtkSmartPointer<vtkUnstructuredGrid> mt_nodes = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
       vtkSmartPointer<vtkUnstructuredGrid> mt_arcs = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(1));
       adjacenyLists.push_back(ftmToAdjList(mt_nodes,mt_arcs,treetype,true));
@@ -319,7 +319,7 @@ std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ttkMergeTreeDis
     
     int rootID = -1;
     std::vector<std::vector<int>> children;
-    for (int i=0; i<nodeScalars.size(); i++){
+    for (size_t i=0; i<nodeScalars.size(); i++){
         if(treeType==0 and nodeTypes[i]==3){
             rootID = i;
         }
@@ -328,7 +328,7 @@ std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ttkMergeTreeDis
         }
         children.push_back(std::vector<int>());
     }
-    for (int i=0; i<upIDs.size(); i++){
+    for (size_t i=0; i<upIDs.size(); i++){
         int downId = downIDs[i];
         int upId = upIDs[i];
         children[upId].push_back(downId);
@@ -336,21 +336,21 @@ std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ttkMergeTreeDis
     }
 
     // random edge contractions for testing
-    std::vector<int> contractions(children.size());
-    for(int i=0; i<children.size(); i++) contractions[i] = i;
-    for (int i=0; i<mt->GetNumberOfCells(); i++){
-      int downId = int(mt->GetCellData()->GetArray("downNodeId")->GetComponent(i,0));
-      int upId = contractions[int(mt->GetCellData()->GetArray("upNodeId")->GetComponent(i,0))];
-      float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-      if(r<0.6 && upId!=rootID && children[downId].size()>0){
-        int rIdx;
-        for(int cIdx=0; cIdx<children[upId].size(); cIdx++) if(children[upId][cIdx]==downId) rIdx = cIdx;
-        children[upId][rIdx] = children[upId].back();
-        children[upId].pop_back();
-        for(auto cc : children[downId]) children[upId].push_back(cc);
-        contractions[downId] = upId;
-      }
-    }
+    // std::vector<int> contractions(children.size());
+    // for(int i=0; i<children.size(); i++) contractions[i] = i;
+    // for (int i=0; i<mt->GetNumberOfCells(); i++){
+    //   int downId = int(mt->GetCellData()->GetArray("downNodeId")->GetComponent(i,0));
+    //   int upId = contractions[int(mt->GetCellData()->GetArray("upNodeId")->GetComponent(i,0))];
+    //   float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    //   if(r<0.6 && upId!=rootID && children[downId].size()>0){
+    //     int rIdx;
+    //     for(int cIdx=0; cIdx<children[upId].size(); cIdx++) if(children[upId][cIdx]==downId) rIdx = cIdx;
+    //     children[upId][rIdx] = children[upId].back();
+    //     children[upId].pop_back();
+    //     for(auto cc : children[downId]) children[upId].push_back(cc);
+    //     contractions[downId] = upId;
+    //   }
+    // }
 
 
     // transform to dfs order
@@ -368,7 +368,7 @@ std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ttkMergeTreeDis
           stack.push(cIdx);
         }
     }
-    for(int i=0; i<children.size(); i++){
+    for(size_t i=0; i<children.size(); i++){
       if(dfs_reordering[i]==-1){
         dfs_reordering[i] = currIdx;
         currIdx--;
@@ -377,7 +377,7 @@ std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ttkMergeTreeDis
     std::vector<std::vector<int>> children_dfs(children.size());
     std::vector<float> labels_dfs(nodePersistences.size());
     std::vector<float> scalars_dfs(nodeScalars.size());
-    for(int i=0; i<children.size(); i++){
+    for(size_t i=0; i<children.size(); i++){
         int dfsIdx = dfs_reordering[i];
         labels_dfs[dfsIdx] = nodePersistences[i];
         scalars_dfs[dfsIdx] = nodeScalars[i];
