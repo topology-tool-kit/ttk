@@ -16,11 +16,11 @@
 // ttk common includes
 #include <Debug.h>
 
+#include <BranchMappingDistance.h>
 #include <FTMTree.h>
 #include <FTMTreeUtils.h>
 #include <MergeTreeBase.h>
 #include <MergeTreeDistance.h>
-#include <BranchMappingDistance.h>
 #include <PathMappingDistance.h>
 
 namespace ttk {
@@ -35,6 +35,7 @@ namespace ttk {
     int baseModule = 0;
     int branchMetric = 0;
     int pathMetric = 0;
+
   public:
     MergeTreeDistanceMatrix() {
       this->setDebugMsgPrefix(
@@ -45,15 +46,15 @@ namespace ttk {
     ~MergeTreeDistanceMatrix() override = default;
 
     void setBaseModule(int m) {
-        baseModule = m;
+      baseModule = m;
     }
 
     void setBranchMetric(int m) {
-        branchMetric = m;
+      branchMetric = m;
     }
 
     void setPathMetric(int m) {
-        pathMetric = m;
+      pathMetric = m;
     }
 
     /**
@@ -74,51 +75,54 @@ namespace ttk {
     }
 
     template <class dataType>
-    void execute(std::vector<std::tuple<std::vector<float>,std::vector<std::vector<int>>,int>> &trees,
-                 std::vector<std::vector<double>> &distanceMatrix) {
+    void execute(
+      std::vector<
+        std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>>
+        &trees,
+      std::vector<std::vector<double>> &distanceMatrix) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
-          if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
-            std::stringstream stream;
-            stream << i << " / " << distanceMatrix.size();
-            printMsg(stream.str());
+        if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
+          std::stringstream stream;
+          stream << i << " / " << distanceMatrix.size();
+          printMsg(stream.str());
+        }
+
+        BranchMappingDistance branchDist;
+        branchDist.setBaseMetric(branchMetric);
+        branchDist.setAssignmentSolver(assignmentSolverID_);
+        branchDist.setSquared(distanceSquared_);
+        PathMappingDistance pathDist;
+        pathDist.setBaseMetric(pathMetric);
+        pathDist.setAssignmentSolver(assignmentSolverID_);
+        pathDist.setSquared(distanceSquared_);
+
+        distanceMatrix[i][i] = 0.0;
+        for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
+          // Execute
+          if(baseModule == 0) {
+            distanceMatrix[i][j] = 0;
+          } else if(baseModule == 1) {
+            auto nodes1 = std::get<0>(trees[i]);
+            auto topo1 = std::get<1>(trees[i]);
+            auto rootID1 = std::get<2>(trees[i]);
+            auto nodes2 = std::get<0>(trees[j]);
+            auto topo2 = std::get<1>(trees[j]);
+            auto rootID2 = std::get<2>(trees[j]);
+            distanceMatrix[i][j] = branchDist.editDistance_branch(
+              nodes1, topo1, rootID1, nodes2, topo2, rootID2);
+          } else if(baseModule == 2) {
+            auto nodes1 = std::get<0>(trees[i]);
+            auto topo1 = std::get<1>(trees[i]);
+            auto rootID1 = std::get<2>(trees[i]);
+            auto nodes2 = std::get<0>(trees[j]);
+            auto topo2 = std::get<1>(trees[j]);
+            auto rootID2 = std::get<2>(trees[j]);
+            distanceMatrix[i][j] = pathDist.editDistance_path(
+              nodes1, topo1, rootID1, nodes2, topo2, rootID2);
           }
-
-          BranchMappingDistance branchDist;
-          branchDist.setBaseMetric(branchMetric);
-          branchDist.setAssignmentSolver(assignmentSolverID_);
-          branchDist.setSquared(distanceSquared_);
-          PathMappingDistance pathDist;
-          pathDist.setBaseMetric(pathMetric);
-          pathDist.setAssignmentSolver(assignmentSolverID_);
-          pathDist.setSquared(distanceSquared_);
-
-          distanceMatrix[i][i] = 0.0;
-          for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
-            // Execute
-            if(baseModule==0){
-              distanceMatrix[i][j] = 0;
-            }
-            else if(baseModule==1){
-              auto nodes1 = std::get<0>(trees[i]);
-              auto topo1 = std::get<1>(trees[i]);
-              auto rootID1 = std::get<2>(trees[i]);
-              auto nodes2 = std::get<0>(trees[j]);
-              auto topo2 = std::get<1>(trees[j]);
-              auto rootID2 = std::get<2>(trees[j]);
-              distanceMatrix[i][j] = branchDist.editDistance_branch(nodes1,topo1,rootID1,nodes2,topo2,rootID2);
-            }
-            else if(baseModule==2){
-              auto nodes1 = std::get<0>(trees[i]);
-              auto topo1 = std::get<1>(trees[i]);
-              auto rootID1 = std::get<2>(trees[i]);
-              auto nodes2 = std::get<0>(trees[j]);
-              auto topo2 = std::get<1>(trees[j]);
-              auto rootID2 = std::get<2>(trees[j]);
-              distanceMatrix[i][j] = pathDist.editDistance_path(nodes1,topo1,rootID1,nodes2,topo2,rootID2);
-            }
-            // distance matrix is symmetric
-            distanceMatrix[j][i] = distanceMatrix[i][j];
-          } // end for j
+          // distance matrix is symmetric
+          distanceMatrix[j][i] = distanceMatrix[i][j];
+        } // end for j
       } // end for i
     }
 
@@ -156,7 +160,7 @@ namespace ttk {
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
             // Execute
-            if(baseModule==0){
+            if(baseModule == 0) {
               MergeTreeDistance mergeTreeDistance;
               mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
               mergeTreeDistance.setEpsilonTree1(epsilonTree1_);
@@ -172,7 +176,8 @@ namespace ttk {
               mergeTreeDistance.setPersistenceThreshold(persistenceThreshold_);
               mergeTreeDistance.setDebugLevel(2);
               mergeTreeDistance.setThreadNumber(this->threadNumber_);
-              mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
+              mergeTreeDistance.setNormalizedWasserstein(
+                normalizedWasserstein_);
               mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
               mergeTreeDistance.setNormalizedWassersteinReg(
                 normalizedWassersteinReg_);
@@ -191,8 +196,7 @@ namespace ttk {
               std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
               distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
                 trees[i], trees[j], outputMatching);
-            }
-            else {
+            } else {
               distanceMatrix[i][j] = 0;
             }
             // distance matrix is symmetric

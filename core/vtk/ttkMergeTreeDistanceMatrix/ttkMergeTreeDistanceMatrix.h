@@ -180,7 +180,11 @@ protected:
   ttkMergeTreeDistanceMatrix();
   ~ttkMergeTreeDistanceMatrix() override;
 
-  std::tuple<std::vector<float>,std::vector<std::vector<int>>,int> ftmToAdjList(vtkSmartPointer<vtkUnstructuredGrid> mt_nodes,vtkSmartPointer<vtkUnstructuredGrid> mt, int treeType, bool scalarLabels = false);
+  std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
+    ftmToAdjList(vtkSmartPointer<vtkUnstructuredGrid> mt_nodes,
+                 vtkSmartPointer<vtkUnstructuredGrid> mt,
+                 int treeType,
+                 bool scalarLabels = false);
 
   /**
    * Specify the input data type of each input port
@@ -206,5 +210,4 @@ protected:
   int run(vtkInformationVector *outputVector,
           std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
           std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
-  
 };
