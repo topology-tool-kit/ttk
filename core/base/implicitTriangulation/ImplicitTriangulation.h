@@ -239,68 +239,31 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
+  protected:
+    template <typename Func0, typename Func1, typename Func2>
+    int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
+                                    const Func1 &storeGlobalSimplexId,
+                                    const Func2 &iterCond,
+                                    const int nSimplicesPerCell);
+
+    int preconditionDistributedCellRanges();
+    size_t
+      computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
+
     int preconditionDistributedCells() override;
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
 
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeGlobalId)(
-      const SimplexId &leid) override {
+  public:
+    inline SimplexId
+      getCellGlobalIdInternal(const SimplexId lcid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(leid < 0 || leid >= this->getNumberOfEdgesInternal()) {
+      if(lcid < 0 || lcid >= this->getNumberOfCellsInternal()) {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      return this->edgeLidToGid_[leid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLocalId)(
-      const SimplexId &geid) override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->edgeGidToLid_.find(geid) == this->edgeGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->edgeGidToLid_[geid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleGlobalId)(
-      const SimplexId &ltid) override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid < 0 || ltid >= this->getNumberOfTrianglesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->triangleLidToGid_[ltid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLocalId)(
-      const SimplexId &gtid) override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->triangleGidToLid_.find(gtid) == this->triangleGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->triangleGidToLid_[gtid];
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexGlobalId)(
-      const SimplexId &ltid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid < 0 || ltid >= this->getNumberOfVerticesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexLidToGid_[ltid];
-    }
-    inline const std::unordered_map<SimplexId, SimplexId> *
-      TTK_TRIANGULATION_INTERNAL(getVertexGlobalIdMap)() const override {
-      return &this->vertexGidToLid_;
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLocalId)(
-      const SimplexId &gtid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->vertexGidToLid_.find(gtid) == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_.at(gtid);
+      return this->cellLidToGid_[lcid];
     }
 
 #endif // TTK_ENABLE_MPI

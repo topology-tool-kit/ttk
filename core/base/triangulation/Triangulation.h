@@ -1367,11 +1367,12 @@ namespace ttk {
       return abstractTriangulation_->getVertexEdges();
     }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+
     /// Get the corresponding global id for a given local id of a vertex.
     ///    ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1379,7 +1380,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param leid Input local vertex identifier.
     /// \return vertexId Input global vertex identifier.
-    inline SimplexId getVertexGlobalId(const SimplexId &leid) const override {
+    inline SimplexId getVertexGlobalId(const SimplexId leid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -1390,7 +1391,7 @@ namespace ttk {
     /// Get the global id to local id map for the triangulation.
     ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1398,11 +1399,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if succesful, -1 else.
-    inline const std::unordered_map<SimplexId, SimplexId> *
+    inline const std::unordered_map<SimplexId, SimplexId> &
       getVertexGlobalIdMap() const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return nullptr;
+        return this->getVertexGlobalIdMap();
 #endif
       return abstractTriangulation_->getVertexGlobalIdMap();
     }
@@ -1410,7 +1411,7 @@ namespace ttk {
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1418,7 +1419,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param geid Input global vertex identifier.
     /// \return vertexId Input local vertex identifier.
-    inline SimplexId getVertexLocalId(const SimplexId &geid) const override {
+    inline SimplexId getVertexLocalId(const SimplexId geid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -2415,6 +2416,7 @@ namespace ttk {
     /// Tune the debug level (default: 0)
     inline int setDebugLevel(const int &debugLevel) override {
       explicitTriangulation_.setDebugLevel(debugLevel);
+      compactTriangulation_.setDebugLevel(debugLevel);
       implicitTriangulation_.setDebugLevel(debugLevel);
       implicitPreconditionsTriangulation_.setDebugLevel(debugLevel);
       periodicImplicitTriangulation_.setDebugLevel(debugLevel);
@@ -2680,34 +2682,40 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
-    inline void setGlobalIds(const LongSimplexId *const cellGid,
-                             const unsigned char *const ghostCellMask) {
-      this->abstractTriangulation_->setGlobalIds(cellGid, ghostCellMask);
-    }
 
-    inline void setRankArray(int *rankArray) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setRankArray(rankArray);
-    }
+    // support TriangulationManager by setting "RankArray" & "Global
+    // Ids" arrays in all triangulation instances
 
-    inline int *getRankArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getRankArray();
+#define TTK_GET_SET_ARRAYS(FNAME, TYPE)                         \
+  inline void set##FNAME(const TYPE *const data) {              \
+    if(data == nullptr) {                                       \
+      return;                                                   \
+    }                                                           \
+    this->explicitTriangulation_.set##FNAME(data);              \
+    this->compactTriangulation_.set##FNAME(data);               \
+    this->implicitTriangulation_.set##FNAME(data);              \
+    this->implicitPreconditionsTriangulation_.set##FNAME(data); \
+    this->periodicImplicitTriangulation_.set##FNAME(data);      \
+    this->periodicPreconditionsTriangulation_.set##FNAME(data); \
+  }                                                             \
+  inline const TYPE *get##FNAME() const {                       \
+    if(this->abstractTriangulation_ != nullptr) {               \
+      return this->abstractTriangulation_->get##FNAME();        \
+    }                                                           \
+    return {};                                                  \
+  }
 
-      return nullptr;
-    }
+    // GlobalPointIds, GlobalCellIds
 
-    inline void setGlobalIdsArray(long int *globalIds) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setGlobalIdsArray(globalIds);
-    }
+    TTK_GET_SET_ARRAYS(VertsGlobalIds, LongSimplexId);
+    TTK_GET_SET_ARRAYS(CellsGlobalIds, LongSimplexId);
 
-    inline long int *getGlobalIdsArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getGlobalIdsArray();
+    // RankArray on points & cells
 
-      return nullptr;
-    }
+    TTK_GET_SET_ARRAYS(VertRankArray, int);
+    TTK_GET_SET_ARRAYS(CellRankArray, int);
+
+#undef TTK_GET_SET_ARRAYS
 
 #endif // TTK_ENABLE_MPI
 
