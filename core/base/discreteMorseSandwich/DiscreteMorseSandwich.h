@@ -134,8 +134,6 @@ namespace ttk {
      * @param[in] isOnBoundary Either isEdgeOnBoundary (in 2D) or
      * isTriangleOnBoundary (in 3D)
      * @param[in] triangulation Triangulation
-     * @param[in] ignoreBoundary FTM compatibility (ignore saddles on
-     * boundary)
      *
      * @return a vector of maxima per 2-saddle
      */
@@ -148,8 +146,7 @@ namespace ttk {
                          const GFS &getFaceStar,
                          const GFSN &getFaceStarNumber,
                          const OB &isOnBoundary,
-                         const triangulationType &triangulation,
-                         const bool ignoreBoundary) const;
+                         const triangulationType &triangulation) const;
 
     /**
      * @brief Compute the pairs of dimension 0
@@ -181,7 +178,6 @@ namespace ttk {
      * @param[in] critSaddlesOrder Filtration order on critical saddles
      * @param[in] critMaxsOrder Filtration order on maxima
      * @param[in] triangulation Triangulation
-     * @param[in] ignoreBoundary Ignore the boundary component
      */
     template <typename triangulationType>
     void getMaxSaddlePairs(std::vector<PersistencePair> &pairs,
@@ -190,8 +186,7 @@ namespace ttk {
                            const std::vector<SimplexId> &criticalSaddles,
                            const std::vector<SimplexId> &critSaddlesOrder,
                            const std::vector<SimplexId> &critMaxsOrder,
-                           const triangulationType &triangulation,
-                           const bool ignoreBoundary) const;
+                           const triangulationType &triangulation) const;
 
     /**
      * @brief Compute the saddle-saddle pairs (in 3D)
@@ -488,8 +483,7 @@ std::vector<std::vector<SimplexId>>
     const GFS &getFaceStar,
     const GFSN &getFaceStarNumber,
     const OB &isOnBoundary,
-    const triangulationType &triangulation,
-    const bool ignoreBoundary) const {
+    const triangulationType &triangulation) const {
 
   Timer tm{};
 
@@ -524,8 +518,7 @@ std::vector<std::vector<SimplexId>>
       followVPath(cellId);
     }
 
-    // ignoreBoundary: skip triplets with saddles on boundary
-    if(!ignoreBoundary && isOnBoundary(sid)) {
+    if(isOnBoundary(sid)) {
       // critical saddle is on boundary
       maxs.emplace_back(-1);
     }
@@ -593,8 +586,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
   const std::vector<SimplexId> &criticalSaddles,
   const std::vector<SimplexId> &critSaddlesOrder,
   const std::vector<SimplexId> &critMaxsOrder,
-  const triangulationType &triangulation,
-  const bool ignoreBoundary) const {
+  const triangulationType &triangulation) const {
 
   Timer tm{};
 
@@ -613,7 +605,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
           [&triangulation](const SimplexId a) {
             return triangulation.isTriangleOnBoundary(a);
           },
-          triangulation, ignoreBoundary)
+          triangulation)
         : getSaddle2ToMaxima(
           criticalSaddles,
           [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
@@ -625,7 +617,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
           [&triangulation](const SimplexId a) {
             return triangulation.isEdgeOnBoundary(a);
           },
-          triangulation, ignoreBoundary);
+          triangulation);
 
   Timer tmseq{};
 
@@ -1079,7 +1071,31 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   // saddle - maxima pairs
   this->getMaxSaddlePairs(pairs, pairedMaxima, paired2Saddles,
                           criticalCellsByDim[dim - 1], critCellsOrder[dim - 1],
-                          critCellsOrder[dim], triangulation, ignoreBoundary);
+                          critCellsOrder[dim], triangulation);
+
+  if(ignoreBoundary) {
+    // post-process saddle-max pairs: remove the one with the global
+    // maximum (if it exists) to be (more) compatible with FTM
+    const auto it
+      = std::find_if(pairs.begin(), pairs.end(), [&](const PersistencePair &p) {
+          if(p.type < dim - 1) {
+            return false;
+          }
+          const Cell cmax{dim, p.death};
+          const auto vmax{this->getCellGreaterVertex(cmax, triangulation)};
+          if(offsets[vmax] == triangulation.getNumberOfVertices() - 1) {
+            return true;
+          }
+          return false;
+        });
+
+    if(it != pairs.end()) {
+      // remove saddle-max pair with global maximum
+      paired2Saddles[it->birth] = false;
+      pairedMaxima[it->death] = false;
+      pairs.erase(it);
+    }
+  }
 
   // saddle - saddle pairs
   if(dim == 3 && !criticalCellsByDim[1].empty()
