@@ -238,13 +238,21 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
 
     // put clusterId on FieldData (only 1 tuple)
     vtkNew<vtkIntArray> clusterId{};
-    clusterId->SetName("ClusterID");
+    clusterId->SetName("ClusterId");
     clusterId->SetNumberOfComponents(1);
     clusterId->SetNumberOfTuples(1);
     clusterId->Fill(inv_clustering[i]);
     vtu->GetFieldData()->AddArray(clusterId);
 
-    // add Persistence data array on vertices
+    // add ClusterID also on PointData?
+    vtkNew<vtkIntArray> cidPD{};
+    cidPD->SetName("ClusterID");
+    cidPD->SetNumberOfComponents(1);
+    cidPD->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    cidPD->Fill(inv_clustering[i]);
+    vtu->GetPointData()->AddArray(cidPD);
+
+    // add Persistence also on PointData?
     vtkNew<vtkDoubleArray> pointPers{};
     pointPers->SetName("Persistence");
     pointPers->SetNumberOfTuples(vtu->GetNumberOfPoints());
@@ -344,6 +352,28 @@ void ttkPersistenceDiagramClustering::outputCentroids(
     cid->SetNumberOfTuples(1);
     cid->SetTuple1(0, i);
     vtu->GetFieldData()->AddArray(cid);
+
+    // add ClusterID also on PointData?
+    vtkNew<vtkIntArray> cidPD{};
+    cidPD->SetName("ClusterID");
+    cidPD->SetNumberOfComponents(1);
+    cidPD->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    cidPD->Fill(i);
+    vtu->GetPointData()->AddArray(cidPD);
+
+    // add Persistence also on PointData?
+    vtkNew<vtkDoubleArray> pointPers{};
+    pointPers->SetName("Persistence");
+    pointPers->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    vtu->GetPointData()->AddArray(pointPers);
+
+    // diagonal uses two existing points
+    for(int j = 0; j < vtu->GetNumberOfCells() - 1; ++j) {
+      const auto persArray = vtu->GetCellData()->GetArray("Persistence");
+      const auto pers = persArray->GetTuple1(j);
+      pointPers->SetTuple1(2 * j + 0, pers);
+      pointPers->SetTuple1(2 * j + 1, pers);
+    }
 
     double minSadCost{}, sadSadCost{}, sadMaxCost{};
 
