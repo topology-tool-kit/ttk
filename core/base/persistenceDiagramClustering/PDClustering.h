@@ -225,7 +225,7 @@ namespace ttk {
       std::string msg{};
       for(int c = 0; c < k_; ++c) {
         msg.append(" Cluster " + std::to_string(c) + " = {");
-        for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
+        for(size_t idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
             msg.append(std::to_string(clustering_[c][idx]) + "}");
             this->printMsg(msg);
@@ -244,7 +244,7 @@ namespace ttk {
       std::stringstream msg;
       for(int c = 0; c < k_; ++c) {
         msg << "Cluster " << c << " = {";
-        for(unsigned int idx = 0; idx < old_clustering_[c].size(); ++idx) {
+        for(size_t idx = 0; idx < old_clustering_[c].size(); ++idx) {
           if(idx == old_clustering_[c].size() - 1) {
             msg << old_clustering_[c][idx] << "}" << std::endl;
           } else {

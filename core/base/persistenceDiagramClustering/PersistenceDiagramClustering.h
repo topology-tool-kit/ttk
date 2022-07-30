@@ -226,7 +226,7 @@ namespace ttk {
     std::vector<int> idxInCluster(numberOfInputs_);
 
     for(int j = 0; j < numberOfInputs_; ++j) {
-      unsigned int c = inv_clustering[j];
+      size_t c = inv_clustering[j];
       if(c + 1 > cluster_size.size()) {
         cluster_size.resize(c + 1);
         cluster_size[c] = 1;
@@ -250,10 +250,10 @@ namespace ttk {
       }
     }
     for(int i = 0; i < numberOfInputs_; i++) {
-      unsigned int c = inv_clustering[i];
+      size_t c = inv_clustering[i];
 
       if(do_min) {
-        for(unsigned int j = 0;
+        for(size_t j = 0;
             j
             < all_matchings_per_type_and_cluster[c][0][idxInCluster[i]].size();
             j++) {
@@ -276,7 +276,7 @@ namespace ttk {
       }
 
       if(do_sad) {
-        for(unsigned int j = 0;
+        for(size_t j = 0;
             j
             < all_matchings_per_type_and_cluster[c][1][idxInCluster[i]].size();
             j++) {
@@ -300,7 +300,7 @@ namespace ttk {
       }
 
       if(do_max) {
-        for(unsigned int j = 0;
+        for(size_t j = 0;
             j
             < all_matchings_per_type_and_cluster[c][2][idxInCluster[i]].size();
             j++) {

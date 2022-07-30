@@ -299,7 +299,7 @@ namespace ttk {
       for(int i = 0; i < numberOfInputs_; i++) {
 
         if(do_min) {
-          for(unsigned int j = 0; j < matching_min[i].size(); j++) {
+          for(size_t j = 0; j < matching_min[i].size(); j++) {
             MatchingType t = matching_min[i][j];
             int bidder_id = std::get<0>(t);
             std::get<0>(t) = data_min_idx[i][bidder_id];
@@ -311,7 +311,7 @@ namespace ttk {
         }
 
         if(do_sad) {
-          for(unsigned int j = 0; j < matching_sad[i].size(); j++) {
+          for(size_t j = 0; j < matching_sad[i].size(); j++) {
             MatchingType t = matching_sad[i][j];
             int bidder_id = std::get<0>(t);
             std::get<0>(t) = data_sad_idx[i][bidder_id];
@@ -325,7 +325,7 @@ namespace ttk {
         }
 
         if(do_max) {
-          for(unsigned int j = 0; j < matching_max[i].size(); j++) {
+          for(size_t j = 0; j < matching_max[i].size(); j++) {
             MatchingType t = matching_max[i][j];
             int bidder_id = std::get<0>(t);
             std::get<0>(t) = data_max_idx[i][bidder_id];
@@ -340,15 +340,15 @@ namespace ttk {
         }
       }
       // Reconstruct barcenter
-      for(unsigned int j = 0; j < barycenter_min.size(); j++) {
+      for(size_t j = 0; j < barycenter_min.size(); j++) {
         const auto &dt = barycenter_min[j];
         barycenter.push_back(dt);
       }
-      for(unsigned int j = 0; j < barycenter_sad.size(); j++) {
+      for(size_t j = 0; j < barycenter_sad.size(); j++) {
         const auto &dt = barycenter_sad[j];
         barycenter.push_back(dt);
       }
-      for(unsigned int j = 0; j < barycenter_max.size(); j++) {
+      for(size_t j = 0; j < barycenter_max.size(); j++) {
         const auto &dt = barycenter_max[j];
         barycenter.push_back(dt);
       }
