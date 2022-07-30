@@ -14,22 +14,6 @@
 
 #pragma once
 
-#ifndef diagramTuple
-#define diagramTuple                                                       \
-  std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,            \
-             ttk::CriticalType, dataType, ttk::SimplexId, dataType, float, \
-             float, float, dataType, float, float, float>
-#endif
-
-#ifndef BNodeType
-#define BNodeType ttk::CriticalType
-#define BLocalMax ttk::CriticalType::Local_maximum
-#define BLocalMin ttk::CriticalType::Local_minimum
-#define BSaddle1 ttk::CriticalType::Saddle1
-#define BSaddle2 ttk::CriticalType::Saddle2
-#define BIdVertex ttk::SimplexId
-#endif
-
 // base code includes
 #include <KDTree.h>
 #include <PDBarycenter.h>
@@ -57,9 +41,9 @@ namespace ttk {
     ~PersistenceDiagramBarycenter() override = default;
 
     void execute(
-      std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
-      std::vector<diagramTuple> &barycenter,
-      std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
+      std::vector<DiagramType> &intermediateDiagrams,
+      DiagramType &barycenter,
+      std::vector<std::vector<std::vector<MatchingType>>> &all_matchings);
 
     // 		inline int setDiagram(int idx, void* data){
     // 			if(idx < numberOfInputs_){
@@ -142,8 +126,8 @@ namespace ttk {
 
     std::vector<std::vector<dataType>> all_matchings_;
     std::vector<std::vector<dataType>> all_old_matchings_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_;
-    std::vector<GoodDiagram<dataType>> barycenter_goods_;
+    std::vector<BidderDiagram> bidder_diagrams_;
+    std::vector<GoodDiagram> barycenter_goods_;
 
     bool reinit_prices_;
     bool epsilon_decreases_;
@@ -152,18 +136,18 @@ namespace ttk {
 
   template <typename dataType>
   void PersistenceDiagramBarycenter<dataType>::execute(
-    std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
-    std::vector<diagramTuple> &barycenter,
-    std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
+    std::vector<DiagramType> &intermediateDiagrams,
+    DiagramType &barycenter,
+    std::vector<std::vector<std::vector<MatchingType>>> &all_matchings) {
 
     Timer tm;
     {
       printMsg("Computing Barycenter of " + std::to_string(numberOfInputs_)
                + " diagrams.");
 
-      std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
-      std::vector<std::vector<diagramTuple>> data_sad(numberOfInputs_);
-      std::vector<std::vector<diagramTuple>> data_max(numberOfInputs_);
+      std::vector<DiagramType> data_min(numberOfInputs_);
+      std::vector<DiagramType> data_sad(numberOfInputs_);
+      std::vector<DiagramType> data_max(numberOfInputs_);
 
       std::vector<std::vector<int>> data_min_idx(numberOfInputs_);
       std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
@@ -175,34 +159,39 @@ namespace ttk {
 
       // Create diagrams for min, saddle and max persistence pairs
       for(int i = 0; i < numberOfInputs_; i++) {
-        std::vector<diagramTuple> &CTDiagram = intermediateDiagrams[i];
+        DiagramType &CTDiagram = intermediateDiagrams[i];
 
         for(size_t j = 0; j < CTDiagram.size(); ++j) {
-          diagramTuple t = CTDiagram[j];
+          PersistencePair &t = CTDiagram[j];
 
-          BNodeType nt1 = std::get<1>(t);
-          BNodeType nt2 = std::get<3>(t);
+          ttk::CriticalType nt1 = t.birth.type;
+          ttk::CriticalType nt2 = t.death.type;
 
-          dataType dt = std::get<4>(t);
+          dataType dt = t.persistence;
           // if (abs<dataType>(dt) < zeroThresh) continue;
           if(dt > 0) {
-            if(nt1 == BLocalMin && nt2 == BLocalMax) {
+            if(nt1 == ttk::CriticalType::Local_minimum
+               && nt2 == ttk::CriticalType::Local_maximum) {
               data_max[i].push_back(t);
               data_max_idx[i].push_back(j);
               do_max = true;
             } else {
-              if(nt1 == BLocalMax || nt2 == BLocalMax) {
+              if(nt1 == ttk::CriticalType::Local_maximum
+                 || nt2 == ttk::CriticalType::Local_maximum) {
                 data_max[i].push_back(t);
                 data_max_idx[i].push_back(j);
                 do_max = true;
               }
-              if(nt1 == BLocalMin || nt2 == BLocalMin) {
+              if(nt1 == ttk::CriticalType::Local_minimum
+                 || nt2 == ttk::CriticalType::Local_minimum) {
                 data_min[i].push_back(t);
                 data_min_idx[i].push_back(j);
                 do_min = true;
               }
-              if((nt1 == BSaddle1 && nt2 == BSaddle2)
-                 || (nt1 == BSaddle2 && nt2 == BSaddle1)) {
+              if((nt1 == ttk::CriticalType::Saddle1
+                  && nt2 == ttk::CriticalType::Saddle2)
+                 || (nt1 == ttk::CriticalType::Saddle2
+                     && nt2 == ttk::CriticalType::Saddle1)) {
                 data_sad[i].push_back(t);
                 data_sad_idx[i].push_back(j);
                 do_sad = true;
@@ -212,11 +201,11 @@ namespace ttk {
         }
       }
 
-      std::vector<diagramTuple> barycenter_min;
-      std::vector<diagramTuple> barycenter_sad;
-      std::vector<diagramTuple> barycenter_max;
+      DiagramType barycenter_min;
+      DiagramType barycenter_sad;
+      DiagramType barycenter_max;
 
-      std::vector<std::vector<matchingTuple>> matching_min, matching_sad,
+      std::vector<std::vector<MatchingType>> matching_min, matching_sad,
         matching_max;
 
       dataType total_cost = 0;
@@ -311,7 +300,7 @@ namespace ttk {
 
         if(do_min) {
           for(unsigned int j = 0; j < matching_min[i].size(); j++) {
-            matchingTuple t = matching_min[i][j];
+            MatchingType t = matching_min[i][j];
             int bidder_id = std::get<0>(t);
             std::get<0>(t) = data_min_idx[i][bidder_id];
             if(std::get<1>(t) < 0) {
@@ -323,7 +312,7 @@ namespace ttk {
 
         if(do_sad) {
           for(unsigned int j = 0; j < matching_sad[i].size(); j++) {
-            matchingTuple t = matching_sad[i][j];
+            MatchingType t = matching_sad[i][j];
             int bidder_id = std::get<0>(t);
             std::get<0>(t) = data_sad_idx[i][bidder_id];
             if(std::get<1>(t) >= 0) {
@@ -337,7 +326,7 @@ namespace ttk {
 
         if(do_max) {
           for(unsigned int j = 0; j < matching_max[i].size(); j++) {
-            matchingTuple t = matching_max[i][j];
+            MatchingType t = matching_max[i][j];
             int bidder_id = std::get<0>(t);
             std::get<0>(t) = data_max_idx[i][bidder_id];
             if(std::get<1>(t) >= 0) {
@@ -352,15 +341,15 @@ namespace ttk {
       }
       // Reconstruct barcenter
       for(unsigned int j = 0; j < barycenter_min.size(); j++) {
-        diagramTuple dt = barycenter_min[j];
+        const auto &dt = barycenter_min[j];
         barycenter.push_back(dt);
       }
       for(unsigned int j = 0; j < barycenter_sad.size(); j++) {
-        diagramTuple dt = barycenter_sad[j];
+        const auto &dt = barycenter_sad[j];
         barycenter.push_back(dt);
       }
       for(unsigned int j = 0; j < barycenter_max.size(); j++) {
-        diagramTuple dt = barycenter_max[j];
+        const auto &dt = barycenter_max[j];
         barycenter.push_back(dt);
       }
 
@@ -383,36 +372,36 @@ namespace ttk {
       }
 
       for(unsigned i = 0; i < all_matchings[0].size(); i++) {
-        std::vector<diagramTuple> &CTDiagram = intermediateDiagrams[i];
+        DiagramType &CTDiagram = intermediateDiagrams[i];
         for(unsigned j = 0; j < all_matchings[0][i].size(); j++) {
-          matchingTuple t = all_matchings[0][i][j];
+          MatchingType t = all_matchings[0][i][j];
           int bidder_id = std::get<0>(t);
           int bary_id = std::get<1>(t);
 
-          diagramTuple &bidder = CTDiagram[bidder_id];
+          const auto &bidder = CTDiagram[bidder_id];
           number_of_matchings_for_point[bary_id] += 1;
-          cords_x1[bary_id] += std::get<7>(bidder);
-          cords_y1[bary_id] += std::get<8>(bidder);
-          cords_z1[bary_id] += std::get<9>(bidder);
-          cords_x2[bary_id] += std::get<11>(bidder);
-          cords_y2[bary_id] += std::get<12>(bidder);
-          cords_z2[bary_id] += std::get<13>(bidder);
+          cords_x1[bary_id] += bidder.birth.coords[0];
+          cords_y1[bary_id] += bidder.birth.coords[1];
+          cords_z1[bary_id] += bidder.birth.coords[2];
+          cords_x2[bary_id] += bidder.death.coords[0];
+          cords_y2[bary_id] += bidder.death.coords[1];
+          cords_z2[bary_id] += bidder.death.coords[2];
         }
       }
 
       for(unsigned i = 0; i < barycenter.size(); i++) {
         if(number_of_matchings_for_point[i] > 0) {
-          std::get<7>(barycenter[i])
+          barycenter[i].birth.coords[0]
             = cords_x1[i] / number_of_matchings_for_point[i];
-          std::get<8>(barycenter[i])
+          barycenter[i].birth.coords[1]
             = cords_y1[i] / number_of_matchings_for_point[i];
-          std::get<9>(barycenter[i])
+          barycenter[i].birth.coords[2]
             = cords_z1[i] / number_of_matchings_for_point[i];
-          std::get<11>(barycenter[i])
+          barycenter[i].death.coords[0]
             = cords_x2[i] / number_of_matchings_for_point[i];
-          std::get<12>(barycenter[i])
+          barycenter[i].death.coords[1]
             = cords_y2[i] / number_of_matchings_for_point[i];
-          std::get<13>(barycenter[i])
+          barycenter[i].death.coords[2]
             = cords_z2[i] / number_of_matchings_for_point[i];
         }
       }

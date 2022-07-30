@@ -51,8 +51,8 @@ namespace ttk {
     ~PDClustering() override = default;
 
     std::vector<int>
-      execute(std::vector<std::vector<diagramTuple>> &final_centroids,
-              std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
+      execute(std::vector<DiagramType> &final_centroids,
+              std::vector<std::vector<std::vector<std::vector<MatchingType>>>>
                 &all_matchings);
 
     std::array<double, 3> getDistances() const {
@@ -66,30 +66,26 @@ namespace ttk {
     std::vector<std::vector<dataType>> getMinPrices();
 
     void correctMatchings(
-      std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
+      std::vector<std::vector<std::vector<std::vector<MatchingType>>>>
         &previous_matchings);
 
-    dataType computeDistance(const BidderDiagram<dataType> &D1,
-                             const BidderDiagram<dataType> &D2,
+    dataType computeDistance(const BidderDiagram &D1,
+                             const BidderDiagram &D2,
                              const double delta_lim);
-    dataType computeDistance(const BidderDiagram<dataType> D1,
-                             const GoodDiagram<dataType> D2,
+    dataType computeDistance(const BidderDiagram D1,
+                             const GoodDiagram D2,
                              const double delta_lim);
-    dataType computeDistance(BidderDiagram<dataType> *const D1,
-                             const GoodDiagram<dataType> *const D2,
+    dataType computeDistance(BidderDiagram *const D1,
+                             const GoodDiagram *const D2,
                              const double delta_lim);
-    dataType computeDistance(const GoodDiagram<dataType> &D1,
-                             const GoodDiagram<dataType> &D2,
+    dataType computeDistance(const GoodDiagram &D1,
+                             const GoodDiagram &D2,
                              const double delta_lim);
 
-    GoodDiagram<dataType>
-      centroidWithZeroPrices(const GoodDiagram<dataType> centroid);
-    BidderDiagram<dataType>
-      centroidToDiagram(const GoodDiagram<dataType> centroid);
-    GoodDiagram<dataType>
-      diagramToCentroid(const BidderDiagram<dataType> diagram);
-    BidderDiagram<dataType>
-      diagramWithZeroPrices(const BidderDiagram<dataType> diagram);
+    GoodDiagram centroidWithZeroPrices(const GoodDiagram &centroid);
+    BidderDiagram centroidToDiagram(const GoodDiagram &centroid);
+    GoodDiagram diagramToCentroid(const BidderDiagram &diagram);
+    BidderDiagram diagramWithZeroPrices(const BidderDiagram &diagram);
 
     void setBidderDiagrams();
     void initializeEmptyClusters();
@@ -98,7 +94,7 @@ namespace ttk {
     void initializeAcceleratedKMeans();
     void initializeBarycenterComputers(std::vector<dataType> min_persistence);
     void printDistancesToFile();
-    void printMatchings(std::vector<std::vector<std::vector<matchingTuple>>>);
+    void printMatchings(std::vector<std::vector<std::vector<MatchingType>>>);
     void printRealDistancesToFile();
     void printPricesToFile(int);
     dataType computeRealCost();
@@ -107,7 +103,7 @@ namespace ttk {
       std::vector<dataType> previous_min_persistence,
       std::vector<dataType> min_persistence,
       std::vector<std::vector<dataType>> initial_diagonal_prices,
-      std::vector<std::vector<dataType>> initial_off_diagonal_points,
+      std::vector<std::vector<dataType>> initial_off_diagonal_prices,
       std::vector<int> min_points_to_add,
       bool add_points_to_barycenter,
       bool first_enrichment);
@@ -120,20 +116,20 @@ namespace ttk {
     void invertClusters();
     void invertInverseClusters();
     void computeBarycenterForTwoGlobal(
-      std::vector<std::vector<std::vector<std::vector<matchingTuple>>>> &);
+      std::vector<std::vector<std::vector<std::vector<MatchingType>>>> &);
 
     void computeBarycenterForTwo(
-      std::vector<std::vector<matchingTuple>> &matchings,
+      std::vector<std::vector<MatchingType>> &matchings,
       std::vector<std::vector<int>> &bidders_ids,
-      std::vector<BidderDiagram<dataType>> &current_bidder_diagrams,
-      std::vector<BidderDiagram<dataType>> &bidder_diagrams,
-      GoodDiagram<dataType> &barycenter);
+      std::vector<BidderDiagram> &current_bidder_diagrams,
+      std::vector<BidderDiagram> &bidder_diagrams,
+      GoodDiagram &barycenter);
 
     void acceleratedUpdateClusters();
     std::vector<dataType> updateCentroidsPosition(
       std::vector<std::vector<dataType>> *min_price,
       std::vector<std::vector<dataType>> *min_diag_price,
-      std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
+      std::vector<std::vector<std::vector<std::vector<MatchingType>>>>
         &all_matchings,
       int only_matchings);
 
@@ -142,9 +138,9 @@ namespace ttk {
       do_sad_ = original_dos[1];
       do_max_ = original_dos[2];
     }
-    inline int setDiagrams(std::vector<std::vector<diagramTuple>> *data_min,
-                           std::vector<std::vector<diagramTuple>> *data_saddle,
-                           std::vector<std::vector<diagramTuple>> *data_max) {
+    inline int setDiagrams(std::vector<DiagramType> *data_min,
+                           std::vector<DiagramType> *data_saddle,
+                           std::vector<DiagramType> *data_max) {
       inputDiagramsMin_ = data_min;
       inputDiagramsSaddle_ = data_saddle;
       inputDiagramsMax_ = data_max;
@@ -226,7 +222,7 @@ namespace ttk {
     }
 
     inline void printClustering() {
-      std::string msg = "";
+      std::string msg{};
       for(int c = 0; c < k_; ++c) {
         msg.append(" Cluster " + std::to_string(c) + " = {");
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
@@ -306,29 +302,29 @@ namespace ttk {
     std::vector<std::vector<int>> current_bidder_ids_min_;
     std::vector<std::vector<int>> current_bidder_ids_sad_;
     std::vector<std::vector<int>> current_bidder_ids_max_;
-    std::vector<std::vector<diagramTuple>> *inputDiagramsMin_;
-    std::vector<std::vector<diagramTuple>> *inputDiagramsSaddle_;
-    std::vector<std::vector<diagramTuple>> *inputDiagramsMax_;
+    std::vector<DiagramType> *inputDiagramsMin_;
+    std::vector<DiagramType> *inputDiagramsSaddle_;
+    std::vector<DiagramType> *inputDiagramsMax_;
 
     std::array<bool, 3> original_dos;
 
     bool do_min_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_min_;
-    std::vector<BidderDiagram<dataType>> current_bidder_diagrams_min_;
-    std::vector<GoodDiagram<dataType>> centroids_min_;
-    std::vector<GoodDiagram<dataType>> centroids_with_price_min_;
+    std::vector<BidderDiagram> bidder_diagrams_min_;
+    std::vector<BidderDiagram> current_bidder_diagrams_min_;
+    std::vector<GoodDiagram> centroids_min_;
+    std::vector<GoodDiagram> centroids_with_price_min_;
 
     bool do_sad_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_saddle_;
-    std::vector<BidderDiagram<dataType>> current_bidder_diagrams_saddle_;
-    std::vector<GoodDiagram<dataType>> centroids_saddle_;
-    std::vector<GoodDiagram<dataType>> centroids_with_price_saddle_;
+    std::vector<BidderDiagram> bidder_diagrams_saddle_;
+    std::vector<BidderDiagram> current_bidder_diagrams_saddle_;
+    std::vector<GoodDiagram> centroids_saddle_;
+    std::vector<GoodDiagram> centroids_with_price_saddle_;
 
     bool do_max_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_max_;
-    std::vector<BidderDiagram<dataType>> current_bidder_diagrams_max_;
-    std::vector<GoodDiagram<dataType>> centroids_max_;
-    std::vector<GoodDiagram<dataType>> centroids_with_price_max_;
+    std::vector<BidderDiagram> bidder_diagrams_max_;
+    std::vector<BidderDiagram> current_bidder_diagrams_max_;
+    std::vector<GoodDiagram> centroids_max_;
+    std::vector<GoodDiagram> centroids_with_price_max_;
 
     std::vector<std::vector<int>> clustering_;
     std::vector<std::vector<int>> old_clustering_;

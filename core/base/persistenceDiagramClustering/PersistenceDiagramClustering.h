@@ -26,22 +26,6 @@
 
 #pragma once
 
-#ifndef diagramTuple
-#define diagramTuple                                                       \
-  std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,            \
-             ttk::CriticalType, dataType, ttk::SimplexId, dataType, float, \
-             float, float, dataType, float, float, float>
-#endif
-
-#ifndef BNodeType
-#define BNodeType ttk::CriticalType
-#define BLocalMax ttk::CriticalType::Local_maximum
-#define BLocalMin ttk::CriticalType::Local_minimum
-#define BSaddle1 ttk::CriticalType::Saddle1
-#define BSaddle2 ttk::CriticalType::Saddle2
-#define BIdVertex ttk::SimplexId
-#endif
-
 // base code includes
 #include <PDClustering.h>
 #include <PersistenceDiagramBarycenter.h>
@@ -59,9 +43,9 @@ namespace ttk {
 
     template <class dataType>
     std::vector<int> execute(
-      std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
-      std::vector<std::vector<diagramTuple>> &centroids,
-      std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
+      std::vector<DiagramType> &intermediateDiagrams,
+      std::vector<DiagramType> &centroids,
+      std::vector<std::vector<std::vector<MatchingType>>> &all_matchings);
 
     std::array<double, 3> getDistances() const {
       return this->distances;
@@ -107,9 +91,9 @@ namespace ttk {
 
   template <class dataType>
   std::vector<int> PersistenceDiagramClustering::execute(
-    std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
-    std::vector<std::vector<diagramTuple>> &final_centroids,
-    std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
+    std::vector<DiagramType> &intermediateDiagrams,
+    std::vector<DiagramType> &final_centroids,
+    std::vector<std::vector<std::vector<MatchingType>>> &all_matchings) {
 
     const int numberOfInputs_ = intermediateDiagrams.size();
     Timer tm;
@@ -118,9 +102,9 @@ namespace ttk {
                + std::to_string(NumberOfClusters) + " cluster(s).");
     }
 
-    std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
-    std::vector<std::vector<diagramTuple>> data_sad(numberOfInputs_);
-    std::vector<std::vector<diagramTuple>> data_max(numberOfInputs_);
+    std::vector<DiagramType> data_min(numberOfInputs_);
+    std::vector<DiagramType> data_sad(numberOfInputs_);
+    std::vector<DiagramType> data_max(numberOfInputs_);
 
     std::vector<std::vector<int>> data_min_idx(numberOfInputs_);
     std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
@@ -134,18 +118,19 @@ namespace ttk {
 
     // Create diagrams for min, saddle and max persistence pairs
     for(int i = 0; i < numberOfInputs_; i++) {
-      std::vector<diagramTuple> &CTDiagram = intermediateDiagrams[i];
+      DiagramType &CTDiagram = intermediateDiagrams[i];
 
       for(size_t j = 0; j < CTDiagram.size(); ++j) {
-        diagramTuple t = CTDiagram[j];
+        auto &t = CTDiagram[j];
 
-        BNodeType nt1 = std::get<1>(t);
-        BNodeType nt2 = std::get<3>(t);
+        ttk::CriticalType nt1 = t.birth.type;
+        ttk::CriticalType nt2 = t.death.type;
 
-        dataType dt = std::get<4>(t);
+        dataType dt = t.persistence;
         // if (abs<dataType>(dt) < zeroThresh) continue;
         if(dt > 0) {
-          if(nt1 == BLocalMin && nt2 == BLocalMax) {
+          if(nt1 == ttk::CriticalType::Local_minimum
+             && nt2 == ttk::CriticalType::Local_maximum) {
             if(PairTypeClustering == 2) {
               data_max[i].push_back(t);
               data_max_idx[i].push_back(j);
@@ -156,18 +141,22 @@ namespace ttk {
               do_min = true;
             }
           } else {
-            if(nt1 == BLocalMax || nt2 == BLocalMax) {
+            if(nt1 == ttk::CriticalType::Local_maximum
+               || nt2 == ttk::CriticalType::Local_maximum) {
               data_max[i].push_back(t);
               data_max_idx[i].push_back(j);
               do_max = true;
             }
-            if(nt1 == BLocalMin || nt2 == BLocalMin) {
+            if(nt1 == ttk::CriticalType::Local_minimum
+               || nt2 == ttk::CriticalType::Local_minimum) {
               data_min[i].push_back(t);
               data_min_idx[i].push_back(j);
               do_min = true;
             }
-            if((nt1 == BSaddle1 && nt2 == BSaddle2)
-               || (nt1 == BSaddle2 && nt2 == BSaddle1)) {
+            if((nt1 == ttk::CriticalType::Saddle1
+                && nt2 == ttk::CriticalType::Saddle2)
+               || (nt1 == ttk::CriticalType::Saddle2
+                   && nt2 == ttk::CriticalType::Saddle1)) {
               data_sad[i].push_back(t);
               data_sad_idx[i].push_back(j);
               do_sad = true;
@@ -203,7 +192,7 @@ namespace ttk {
       printMsg(msg.str());
     }
 
-    std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
+    std::vector<std::vector<std::vector<std::vector<MatchingType>>>>
       all_matchings_per_type_and_cluster;
     PDClustering<dataType> KMeans = PDClustering<dataType>();
     KMeans.setNumberOfInputs(numberOfInputs_);
@@ -268,7 +257,7 @@ namespace ttk {
             j
             < all_matchings_per_type_and_cluster[c][0][idxInCluster[i]].size();
             j++) {
-          matchingTuple t
+          MatchingType t
             = all_matchings_per_type_and_cluster[c][0][idxInCluster[i]][j];
           int bidder_id = std::get<0>(t);
           if(bidder_id < (int)data_min[i].size()) {
@@ -291,7 +280,7 @@ namespace ttk {
             j
             < all_matchings_per_type_and_cluster[c][1][idxInCluster[i]].size();
             j++) {
-          matchingTuple t
+          MatchingType t
             = all_matchings_per_type_and_cluster[c][1][idxInCluster[i]][j];
           int bidder_id = std::get<0>(t);
           if(bidder_id < (int)data_sad[i].size()) {
@@ -315,7 +304,7 @@ namespace ttk {
             j
             < all_matchings_per_type_and_cluster[c][2][idxInCluster[i]].size();
             j++) {
-          matchingTuple t
+          MatchingType t
             = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][j];
           int bidder_id = std::get<0>(t);
           if(bidder_id < (int)data_max[i].size()) {
