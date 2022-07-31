@@ -72,8 +72,8 @@ namespace ttk {
     double computeDistance(const BidderDiagram &D1,
                            const BidderDiagram &D2,
                            const double delta_lim);
-    double computeDistance(const BidderDiagram D1,
-                           const GoodDiagram D2,
+    double computeDistance(const BidderDiagram &D1,
+                           const GoodDiagram &D2,
                            const double delta_lim);
     double computeDistance(BidderDiagram *const D1,
                            const GoodDiagram *const D2,
@@ -92,7 +92,7 @@ namespace ttk {
     void initializeCentroids();
     void initializeCentroidsKMeanspp();
     void initializeAcceleratedKMeans();
-    void initializeBarycenterComputers(std::vector<double> min_persistence);
+    void initializeBarycenterComputers(std::vector<double> &min_persistence);
     void printDistancesToFile();
     void printMatchings(std::vector<std::vector<std::vector<MatchingType>>>);
     void printRealDistancesToFile();
@@ -100,11 +100,11 @@ namespace ttk {
     double computeRealCost();
 
     std::vector<double> enrichCurrentBidderDiagrams(
-      std::vector<double> previous_min_persistence,
-      std::vector<double> min_persistence,
-      std::vector<std::vector<double>> initial_diagonal_prices,
-      std::vector<std::vector<double>> initial_off_diagonal_prices,
-      std::vector<int> min_points_to_add,
+      std::vector<double> &previous_min_persistence,
+      std::vector<double> &min_persistence,
+      std::vector<std::vector<double>> &initial_diagonal_prices,
+      std::vector<std::vector<double>> &initial_off_diagonal_prices,
+      std::vector<int> &min_points_to_add,
       bool add_points_to_barycenter,
       bool first_enrichment);
 
@@ -255,11 +255,6 @@ namespace ttk {
       this->printMsg(msg.str());
     }
 
-    template <typename type>
-    static type abs(const type var) {
-      return (var >= 0) ? var : -var;
-    }
-
   protected:
     std::vector<PDBarycenter> barycenter_computer_min_{};
     std::vector<PDBarycenter> barycenter_computer_sad_{};
@@ -341,4 +336,3 @@ namespace ttk {
     int n_iterations_;
   };
 } // namespace ttk
-

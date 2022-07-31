@@ -71,8 +71,6 @@ std::vector<int> ttk::PDClustering::execute(
     for(int c = 0; c < 3; c++) {
       diagrams_complete[c] = (!use_progressive_) || (!original_dos[c]);
     }
-    bool all_diagrams_complete
-      = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
     n_iterations_ = 0;
     double total_time = 0;
 
@@ -142,7 +140,7 @@ std::vector<int> ttk::PDClustering::execute(
         diagrams_complete[c] = true;
       } // max_persistence actually holds 2 times the highest persistence
     }
-    all_diagrams_complete
+    bool all_diagrams_complete
       = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
     if(all_diagrams_complete) {
       use_progressive_ = false;
@@ -941,8 +939,8 @@ double ttk::PDClustering::computeDistance(const BidderDiagram &D1,
   return computeDistance(D1, D2_bis, delta_lim);
 }
 
-double ttk::PDClustering::computeDistance(const BidderDiagram D1,
-                                          const GoodDiagram D2,
+double ttk::PDClustering::computeDistance(const BidderDiagram &D1,
+                                          const GoodDiagram &D2,
                                           const double delta_lim) {
   std::vector<MatchingType> matchings;
   const auto D2_bis = centroidWithZeroPrices(D2);
@@ -1400,7 +1398,7 @@ void ttk::PDClustering::invertInverseClusters() {
 
   // Check if a cluster was left without diagram
   for(int c = 0; c < k_; ++c) {
-    if(clustering_[c].size() == 0) {
+    if(clustering_[c].empty()) {
       std::cout << "Problem in invertInverseClusters()... \nCluster " << c
                 << " was left with no diagram attached to it... " << std::endl;
     }
@@ -1538,7 +1536,7 @@ void ttk::PDClustering::acceleratedUpdateClusters() {
   }
   invertInverseClusters();
   for(int c = 0; c < k_; ++c) {
-    if(clustering_[c].size() == 0) {
+    if(clustering_[c].empty()) {
       std::cout << "Adding artificial centroid because a cluster was empty"
                 << std::endl;
       bool idx_acceptable = false;
@@ -1586,7 +1584,7 @@ void ttk::PDClustering::acceleratedUpdateClusters() {
           } else {
             idx_acceptable = true;
             int cluster_max = 0;
-            if(clustering_[cluster_max].size() > 0) {
+            if(!clustering_[cluster_max].empty()) {
               idx = clustering_[cluster_max][0];
             }
             for(int i_test = 1; i_test < k_; i_test++) {
@@ -1677,9 +1675,6 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
       int count = 0;
       for(int idx : clustering_[c]) {
         // Timer time_first_thing;
-        int number_of_points_min = 0;
-        int number_of_points_max = 0;
-        int number_of_points_sad = 0;
         // Find the position of diagrams[idx] in old cluster c
         std::vector<int>::iterator i = std::find(
           old_clustering_[c].begin(), old_clustering_[c].end(), idx);
@@ -1691,23 +1686,20 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
           if(do_min_) {
             centroids_with_price_min.emplace_back(
               centroids_with_price_min_[idx]);
-            number_of_points_min += centroids_with_price_min_[idx].size()
-                                    + current_bidder_diagrams_min_[idx].size();
           }
           if(do_sad_) {
             centroids_with_price_sad.emplace_back(
               centroids_with_price_saddle_[idx]);
-            number_of_points_sad
-              += centroids_with_price_saddle_[idx].size()
-                 + current_bidder_diagrams_saddle_[idx].size();
           }
           if(do_max_) {
             centroids_with_price_max.emplace_back(
               centroids_with_price_max_[idx]);
-            number_of_points_max += centroids_with_price_max_[idx].size()
-                                    + current_bidder_diagrams_max_[idx].size();
           }
         } else {
+          int number_of_points_min = 0;
+          int number_of_points_max = 0;
+          int number_of_points_sad = 0;
+
           // Otherwise, centroid is given 0 prices and the diagram is given 0
           // diagonal-prices
           if(do_min_) {
@@ -1856,7 +1848,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
         // cout << "min diag prices and all done" << endl;
         KDTreePair pair;
         bool use_kdt = false;
-        if(barycenter_computer_min_[c].getCurrentBarycenter()[0].size() > 0) {
+        if(!barycenter_computer_min_[c].getCurrentBarycenter()[0].empty()) {
           pair = barycenter_computer_min_[c].getKDTree();
           use_kdt = true;
         }
@@ -1979,7 +1971,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
 
         KDTreePair pair;
         bool use_kdt = false;
-        if(barycenter_computer_sad_[c].getCurrentBarycenter()[0].size() > 0) {
+        if(!barycenter_computer_sad_[c].getCurrentBarycenter()[0].empty()) {
           pair = barycenter_computer_sad_[c].getKDTree();
           use_kdt = true;
         }
@@ -2089,7 +2081,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
 
         KDTreePair pair;
         bool use_kdt = false;
-        if(barycenter_computer_max_[c].getCurrentBarycenter()[0].size() > 0) {
+        if(!barycenter_computer_max_[c].getCurrentBarycenter()[0].empty()) {
           pair = barycenter_computer_max_[c].getKDTree();
           use_kdt = true;
         }
@@ -2319,11 +2311,11 @@ void ttk::PDClustering::setBidderDiagrams() {
 }
 
 std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
-  std::vector<double> previous_min_persistence,
-  std::vector<double> min_persistence,
-  std::vector<std::vector<double>> initial_diagonal_prices,
-  std::vector<std::vector<double>> initial_off_diagonal_prices,
-  std::vector<int> min_points_to_add,
+  std::vector<double> &previous_min_persistence,
+  std::vector<double> &min_persistence,
+  std::vector<std::vector<double>> &initial_diagonal_prices,
+  std::vector<std::vector<double>> &initial_off_diagonal_prices,
+  std::vector<int> &min_points_to_add,
   bool add_points_to_barycenter,
   bool first_enrichment) {
 
@@ -2732,7 +2724,7 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
 }
 
 void ttk::PDClustering::initializeBarycenterComputers(
-  std::vector<double> /*min_persistence*/) {
+  std::vector<double> & /*min_persistence*/) {
   // cout<<" initialize barycenter computers "<<geometrical_factor_<<endl;
   if(do_min_) {
     // cout << "here0" << endl;

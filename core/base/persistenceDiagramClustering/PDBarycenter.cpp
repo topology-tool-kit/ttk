@@ -37,7 +37,7 @@ std::vector<std::vector<ttk::MatchingType>>
 void ttk::PDBarycenter::runMatching(
   double *total_cost,
   double epsilon,
-  std::vector<int> sizes,
+  std::vector<int> &sizes,
   KDTree<double> &kdt,
   std::vector<KDTree<double> *> &correspondance_kdt_map,
   std::vector<double> *min_diag_price,
@@ -115,7 +115,7 @@ void ttk::PDBarycenter::runMatching(
 
 void ttk::PDBarycenter::runMatchingAuction(
   double *total_cost,
-  std::vector<int> sizes,
+  std::vector<int> &sizes,
   KDTree<double> &kdt,
   std::vector<KDTree<double> *> &correspondance_kdt_map,
   std::vector<double> *min_diag_price,
@@ -177,7 +177,8 @@ bool ttk::PDBarycenter::hasBarycenterConverged(
 }
 
 std::vector<std::vector<ttk::MatchingType>> ttk::PDBarycenter::correctMatchings(
-  std::vector<std::vector<MatchingType>> previous_matchings) {
+  std::vector<std::vector<MatchingType>> &previous_matchings) {
+
   std::vector<std::vector<MatchingType>> corrected_matchings(numberOfInputs_);
   for(int i = 0; i < numberOfInputs_; i++) {
     // 1. Invert the current_bidder_ids_ vector
@@ -294,8 +295,8 @@ double ttk::PDBarycenter::updateBarycenter(
       // TODO adjust shift with geometrical_factor_
       double dx = barycenter_goods_[0].at(i).x_ - new_x;
       double dy = barycenter_goods_[0].at(i).y_ - new_y;
-      double shift = Geometry::pow(abs(dx), wasserstein_)
-                     + Geometry::pow(abs(dy), wasserstein_);
+      double shift = Geometry::pow(std::abs(dx), wasserstein_)
+                     + Geometry::pow(std::abs(dy), wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -421,8 +422,8 @@ void ttk::PDBarycenter::setBidderDiagrams() {
 double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
   double previous_min_persistence,
   double min_persistence,
-  std::vector<double> initial_diagonal_prices,
-  std::vector<double> initial_off_diagonal_prices,
+  std::vector<double> &initial_diagonal_prices,
+  std::vector<double> &initial_off_diagonal_prices,
   int min_points_to_add,
   bool add_points_to_barycenter) {
 
@@ -570,7 +571,6 @@ void ttk::PDBarycenter::setInitialBarycenter(double min_persistence) {
     random_idx
       = deterministic_ ? iter % numberOfInputs_ : rand() % numberOfInputs_;
     CTDiagram = &((*inputDiagrams_)[random_idx]);
-    size = CTDiagram->size();
     for(int i = 0; i < numberOfInputs_; i++) {
       GoodDiagram goods;
       int count = 0;
@@ -776,9 +776,9 @@ std::vector<std::vector<ttk::MatchingType>>
   }
 
   int min_points_to_add = std::numeric_limits<int>::max();
-  min_persistence = this->enrichCurrentBidderDiagrams(
-    2 * max_persistence, min_persistence, min_diag_price, min_price,
-    min_points_to_add, false);
+  this->enrichCurrentBidderDiagrams(2 * max_persistence, min_persistence,
+                                    min_diag_price, min_price,
+                                    min_points_to_add, false);
 
   bool converged = false;
   bool finished = false;

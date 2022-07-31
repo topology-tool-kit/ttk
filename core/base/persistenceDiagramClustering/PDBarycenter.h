@@ -21,7 +21,7 @@
 #include <limits>
 
 namespace ttk {
-  
+
   class PDBarycenter : public Debug {
 
   public:
@@ -53,8 +53,8 @@ namespace ttk {
     double enrichCurrentBidderDiagrams(
       double previous_min_persistence,
       double min_persistence,
-      std::vector<double> initial_diagonal_prices,
-      std::vector<double> initial_off_diagonal_prices,
+      std::vector<double> &initial_diagonal_prices,
+      std::vector<double> &initial_off_diagonal_prices,
       int min_points_to_add,
       bool add_points_to_barycenter = true);
     void setInitialBarycenter(double min_persistence);
@@ -67,7 +67,7 @@ namespace ttk {
 
     void runMatching(double *total_cost,
                      double epsilon,
-                     std::vector<int> sizes,
+                     std::vector<int> &sizes,
                      KDTree<double> &kdt,
                      std::vector<KDTree<double> *> &correspondance_kdt_map,
                      std::vector<double> *min_diag_price,
@@ -78,7 +78,7 @@ namespace ttk {
 
     void
       runMatchingAuction(double *total_cost,
-                         std::vector<int> sizes,
+                         std::vector<int> &sizes,
                          KDTree<double> &kdt,
                          std::vector<KDTree<double> *> &correspondance_kdt_map,
                          std::vector<double> *min_diag_price,
@@ -93,7 +93,7 @@ namespace ttk {
       std::vector<std::vector<MatchingType>> &matchings,
       std::vector<std::vector<MatchingType>> &previous_matchings);
     std::vector<std::vector<MatchingType>> correctMatchings(
-      std::vector<std::vector<MatchingType>> previous_matchings);
+      std::vector<std::vector<MatchingType>> &previous_matchings);
 
     bool is_matching_stable();
 
@@ -187,11 +187,6 @@ namespace ttk {
 
     double getCost() {
       return cost_;
-    }
-
-    template <typename type>
-    static type abs(const type var) {
-      return (var >= 0) ? var : -var;
     }
 
   protected:
