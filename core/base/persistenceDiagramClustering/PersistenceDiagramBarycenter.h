@@ -21,7 +21,7 @@
 #include <Wrapper.h>
 
 namespace ttk {
-  template <typename dataType>
+
   class PersistenceDiagramBarycenter : public Debug {
 
   public:
@@ -124,8 +124,8 @@ namespace ttk {
     int points_added_;
     int points_deleted_;
 
-    std::vector<std::vector<dataType>> all_matchings_;
-    std::vector<std::vector<dataType>> all_old_matchings_;
+    std::vector<std::vector<double>> all_matchings_;
+    std::vector<std::vector<double>> all_old_matchings_;
     std::vector<BidderDiagram> bidder_diagrams_;
     std::vector<GoodDiagram> barycenter_goods_;
 
@@ -134,8 +134,7 @@ namespace ttk {
     bool early_stoppage_;
   };
 
-  template <typename dataType>
-  void PersistenceDiagramBarycenter<dataType>::execute(
+  void PersistenceDiagramBarycenter::execute(
     std::vector<DiagramType> &intermediateDiagrams,
     DiagramType &barycenter,
     std::vector<std::vector<std::vector<MatchingType>>> &all_matchings) {
@@ -167,8 +166,8 @@ namespace ttk {
           ttk::CriticalType nt1 = t.birth.type;
           ttk::CriticalType nt2 = t.death.type;
 
-          dataType dt = t.persistence;
-          // if (abs<dataType>(dt) < zeroThresh) continue;
+          double dt = t.persistence;
+          // if (abs<double>(dt) < zeroThresh) continue;
           if(dt > 0) {
             if(nt1 == ttk::CriticalType::Local_minimum
                && nt2 == ttk::CriticalType::Local_maximum) {
@@ -208,7 +207,7 @@ namespace ttk {
       std::vector<std::vector<MatchingType>> matching_min, matching_sad,
         matching_max;
 
-      dataType total_cost = 0;
+      double total_cost = 0;
       /*omp_set_num_threads(1);
       #ifdef TTK_ENABLE_OPENMP
       #pragma omp parallel sections
@@ -220,7 +219,7 @@ namespace ttk {
         {*/
       if(do_min) {
         printMsg("Computing Minima barycenter...");
-        PDBarycenter<dataType> bary_min = PDBarycenter<dataType>();
+        PDBarycenter bary_min{};
         bary_min.setThreadNumber(threadNumber_);
         bary_min.setWasserstein(wasserstein_);
         bary_min.setNumberOfInputs(numberOfInputs_);
@@ -246,7 +245,7 @@ namespace ttk {
       {*/
       if(do_sad) {
         printMsg("Computing Saddles barycenter...");
-        PDBarycenter<dataType> bary_sad = PDBarycenter<dataType>();
+        PDBarycenter bary_sad{};
         bary_sad.setThreadNumber(threadNumber_);
         bary_sad.setWasserstein(wasserstein_);
         bary_sad.setNumberOfInputs(numberOfInputs_);
@@ -272,7 +271,7 @@ namespace ttk {
       {*/
       if(do_max) {
         printMsg("Computing Maxima barycenter...");
-        PDBarycenter<dataType> bary_max = PDBarycenter<dataType>();
+        PDBarycenter bary_max{};
         bary_max.setThreadNumber(threadNumber_);
         bary_max.setWasserstein(wasserstein_);
         bary_max.setNumberOfInputs(numberOfInputs_);

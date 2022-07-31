@@ -21,7 +21,7 @@
 #include <limits>
 
 namespace ttk {
-  template <typename dataType>
+  
   class PDBarycenter : public Debug {
 
   public:
@@ -50,46 +50,45 @@ namespace ttk {
       executePartialBiddingBarycenter(DiagramType &barycenter);
 
     void setBidderDiagrams();
-    dataType enrichCurrentBidderDiagrams(
-      dataType previous_min_persistence,
-      dataType min_persistence,
-      std::vector<dataType> initial_diagonal_prices,
-      std::vector<dataType> initial_off_diagonal_prices,
+    double enrichCurrentBidderDiagrams(
+      double previous_min_persistence,
+      double min_persistence,
+      std::vector<double> initial_diagonal_prices,
+      std::vector<double> initial_off_diagonal_prices,
       int min_points_to_add,
       bool add_points_to_barycenter = true);
-    void setInitialBarycenter(dataType min_persistence);
-    dataType getMaxPersistence();
-    dataType getLowestPersistence();
-    dataType getMinimalPrice(int i);
-    using KDTreePair = std::pair<typename KDTree<dataType>::KDTreeRoot,
-                                 typename KDTree<dataType>::KDTreeMap>;
+    void setInitialBarycenter(double min_persistence);
+    double getMaxPersistence();
+    double getLowestPersistence();
+    double getMinimalPrice(int i);
+    using KDTreePair = std::pair<typename KDTree<double>::KDTreeRoot,
+                                 typename KDTree<double>::KDTreeMap>;
     KDTreePair getKDTree() const;
 
-    void runMatching(dataType *total_cost,
-                     dataType epsilon,
+    void runMatching(double *total_cost,
+                     double epsilon,
                      std::vector<int> sizes,
-                     KDTree<dataType> &kdt,
-                     std::vector<KDTree<dataType> *> &correspondance_kdt_map,
-                     std::vector<dataType> *min_diag_price,
-                     std::vector<dataType> *min_price,
+                     KDTree<double> &kdt,
+                     std::vector<KDTree<double> *> &correspondance_kdt_map,
+                     std::vector<double> *min_diag_price,
+                     std::vector<double> *min_price,
                      std::vector<std::vector<MatchingType>> *all_matchings,
                      bool use_kdt,
                      int actual_distance);
 
-    void runMatchingAuction(
-      dataType *total_cost,
-      std::vector<int> sizes,
-      KDTree<dataType> &kdt,
-      std::vector<KDTree<dataType> *> &correspondance_kdt_map,
-      std::vector<dataType> *min_diag_price,
-      std::vector<std::vector<MatchingType>> *all_matchings,
-      bool use_kdt);
+    void
+      runMatchingAuction(double *total_cost,
+                         std::vector<int> sizes,
+                         KDTree<double> &kdt,
+                         std::vector<KDTree<double> *> &correspondance_kdt_map,
+                         std::vector<double> *min_diag_price,
+                         std::vector<std::vector<MatchingType>> *all_matchings,
+                         bool use_kdt);
 
-    dataType
-      updateBarycenter(std::vector<std::vector<MatchingType>> &matchings);
+    double updateBarycenter(std::vector<std::vector<MatchingType>> &matchings);
 
-    dataType computeRealCost();
-    bool isPrecisionObjectiveMet(dataType, int);
+    double computeRealCost();
+    bool isPrecisionObjectiveMet(double, int);
     bool hasBarycenterConverged(
       std::vector<std::vector<MatchingType>> &matchings,
       std::vector<std::vector<MatchingType>> &previous_matchings);
@@ -98,8 +97,8 @@ namespace ttk {
 
     bool is_matching_stable();
 
-    dataType getEpsilon(dataType rho);
-    dataType getRho(dataType epsilon);
+    double getEpsilon(double rho);
+    double getRho(double epsilon);
 
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
@@ -186,7 +185,7 @@ namespace ttk {
       }
     }
 
-    dataType getCost() {
+    double getCost() {
       return cost_;
     }
 
@@ -197,7 +196,7 @@ namespace ttk {
 
   protected:
     // std::vector<bool> precision_objective_;
-    std::vector<dataType> precision_;
+    std::vector<double> precision_;
 
     // to kill any randomness
     bool deterministic_;
@@ -217,7 +216,7 @@ namespace ttk {
     int diagramType_;
     ttk::CriticalType nt1_;
     ttk::CriticalType nt2_;
-    dataType cost_;
+    double cost_;
     int numberOfInputs_;
     bool use_progressive_;
     double epsilon_min_;
@@ -226,8 +225,8 @@ namespace ttk {
     int points_added_;
     int points_deleted_;
 
-    std::vector<std::vector<dataType>> all_matchings_;
-    std::vector<std::vector<dataType>> all_old_matchings_;
+    std::vector<std::vector<double>> all_matchings_;
+    std::vector<std::vector<double>> all_old_matchings_;
     std::vector<BidderDiagram> bidder_diagrams_;
     std::vector<BidderDiagram> current_bidder_diagrams_;
     std::vector<std::vector<int>> current_bidder_ids_;

@@ -41,7 +41,7 @@ namespace ttk {
 
     ~PersistenceDiagramClustering() override = default;
 
-    template <class dataType>
+    
     std::vector<int> execute(
       std::vector<DiagramType> &intermediateDiagrams,
       std::vector<DiagramType> &centroids,
@@ -49,11 +49,6 @@ namespace ttk {
 
     std::array<double, 3> getDistances() const {
       return this->distances;
-    }
-
-    template <class dataType>
-    static dataType abs(const dataType var) {
-      return (var >= 0) ? var : -var;
     }
 
   protected:
@@ -89,7 +84,7 @@ namespace ttk {
     // std::vector<GoodDiagram<void>> barycenter_goods_;
   };
 
-  template <class dataType>
+  
   std::vector<int> PersistenceDiagramClustering::execute(
     std::vector<DiagramType> &intermediateDiagrams,
     std::vector<DiagramType> &final_centroids,
@@ -126,8 +121,8 @@ namespace ttk {
         ttk::CriticalType nt1 = t.birth.type;
         ttk::CriticalType nt2 = t.death.type;
 
-        dataType dt = t.persistence;
-        // if (abs<dataType>(dt) < zeroThresh) continue;
+        double dt = t.persistence;
+        // if (abs<double>(dt) < zeroThresh) continue;
         if(dt > 0) {
           if(nt1 == ttk::CriticalType::Local_minimum
              && nt2 == ttk::CriticalType::Local_maximum) {
@@ -194,7 +189,7 @@ namespace ttk {
 
     std::vector<std::vector<std::vector<std::vector<MatchingType>>>>
       all_matchings_per_type_and_cluster;
-    PDClustering<dataType> KMeans = PDClustering<dataType>();
+    PDClustering KMeans{};
     KMeans.setNumberOfInputs(numberOfInputs_);
     KMeans.setWasserstein(WassersteinMetric);
     KMeans.setUseProgressive(UseProgressive);

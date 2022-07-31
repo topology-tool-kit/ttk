@@ -124,7 +124,7 @@ int ttkPersistenceDiagramClustering::RequestData(
         TimeLimit = 999999999;
       }
 
-      inv_clustering_ = this->execute<double>(
+      inv_clustering_ = this->execute(
         intermediateDiagrams_, final_centroids_, all_matchings_);
       needUpdate_ = false;
 
@@ -135,7 +135,7 @@ int ttkPersistenceDiagramClustering::RequestData(
       for(int i_input = 0; i_input < numInputs; i_input++) {
         inv_clustering_[i_input] = 0;
       }
-      PersistenceDiagramBarycenter<double> pdBarycenter;
+      PersistenceDiagramBarycenter pdBarycenter{};
 
       const auto wassersteinMetric = std::to_string(WassersteinMetric);
       pdBarycenter.setWasserstein(wassersteinMetric);
