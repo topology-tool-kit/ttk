@@ -12,8 +12,6 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#pragma once
-
 #include <PDClustering.h>
 
 #include <algorithm>

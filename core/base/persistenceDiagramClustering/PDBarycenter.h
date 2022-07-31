@@ -237,5 +237,3 @@ namespace ttk {
     bool early_stoppage_;
   };
 } // namespace ttk
-
-#include <PDBarycenterImpl.h>

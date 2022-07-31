@@ -12,8 +12,6 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#pragma once
-
 #include <PersistenceDiagramBarycenter.h>
 
 #include <cmath>

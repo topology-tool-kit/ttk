@@ -342,4 +342,3 @@ namespace ttk {
   };
 } // namespace ttk
 
-#include <PDClusteringImpl.h>
