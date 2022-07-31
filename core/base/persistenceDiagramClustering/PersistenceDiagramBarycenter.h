@@ -26,15 +26,7 @@ namespace ttk {
 
   public:
     PersistenceDiagramBarycenter() {
-      wasserstein_ = 2;
-      alpha_ = 1;
-      lambda_ = 1;
-      numberOfInputs_ = 0;
-      threadNumber_ = 1;
-      deterministic_ = true;
-      reinit_prices_ = true;
-      epsilon_decreases_ = true;
-      use_progressive_ = true;
+      this->threadNumber_ = 1;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     }
 
@@ -45,9 +37,8 @@ namespace ttk {
       DiagramType &barycenter,
       std::vector<std::vector<std::vector<MatchingType>>> &all_matchings);
 
-    inline int setNumberOfInputs(int numberOfInputs) {
+    inline void setNumberOfInputs(const int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
-      return 0;
     }
 
     inline void setDeterministic(const bool deterministic) {
@@ -92,13 +83,13 @@ namespace ttk {
     }
 
   protected:
-    bool deterministic_;
+    bool deterministic_{true};
     int method_;
-    int wasserstein_;
-    int numberOfInputs_;
-    bool use_progressive_;
-    double alpha_;
-    double lambda_;
+    int wasserstein_{2};
+    int numberOfInputs_{0};
+    bool use_progressive_{true};
+    double alpha_{1.0};
+    double lambda_{1.0};
 
     int points_added_;
     int points_deleted_;
@@ -108,8 +99,8 @@ namespace ttk {
     std::vector<BidderDiagram> bidder_diagrams_;
     std::vector<GoodDiagram> barycenter_goods_;
 
-    bool reinit_prices_;
-    bool epsilon_decreases_;
+    bool reinit_prices_{true};
+    bool epsilon_decreases_{true};
     bool early_stoppage_;
   };
 

@@ -27,24 +27,7 @@ namespace ttk {
 
   public:
     PDClustering() {
-      wasserstein_ = 2;
-      geometrical_factor_ = 1;
       threadNumber_ = 1;
-      use_progressive_ = true;
-      forceUseOfAlgorithm_ = false;
-      deterministic_ = true;
-      time_limit_ = std::numeric_limits<double>::max();
-      epsilon_min_ = 1e-8;
-      epsilon_.resize(3);
-      precision_criterion_ = false;
-      precision_min_ = false;
-      precision_sad_ = false;
-      precision_max_ = false;
-      cost_min_ = 0;
-      cost_max_ = 0;
-      cost_sad_ = 0;
-      UseDeltaLim_ = false;
-      distanceWritingOptions_ = 0;
       this->setDebugMsgPrefix("PersistenceDiagramClustering");
     }
 
@@ -261,17 +244,17 @@ namespace ttk {
     std::vector<PDBarycenter> barycenter_computer_max_{};
 
     bool barycenter_inputs_reset_flag;
-    bool precision_criterion_;
-    bool precision_max_;
-    bool precision_min_;
-    bool precision_sad_;
-    bool forceUseOfAlgorithm_;
-    bool deterministic_;
-    int wasserstein_;
-    double geometrical_factor_;
+    bool precision_criterion_{false};
+    bool precision_max_{false};
+    bool precision_min_{false};
+    bool precision_sad_{false};
+    bool forceUseOfAlgorithm_{false};
+    bool deterministic_{true};
+    int wasserstein_{2};
+    double geometrical_factor_{1.0};
     double deltaLim_;
-    bool UseDeltaLim_;
-    int distanceWritingOptions_;
+    bool UseDeltaLim_{false};
+    int distanceWritingOptions_{0};
     // lambda : 0<=lambda<=1
     // parametrizes the point used for the physical (critical) coordinates of
     // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
@@ -281,18 +264,18 @@ namespace ttk {
 
     int k_;
     int numberOfInputs_;
-    bool use_progressive_;
+    bool use_progressive_{true};
     bool use_accelerated_;
     bool use_kmeanspp_;
     bool use_kdtree_;
-    double time_limit_;
+    double time_limit_{std::numeric_limits<double>::max()};
 
-    double epsilon_min_;
-    std::vector<double> epsilon_;
+    double epsilon_min_{1e-8};
+    std::array<double, 3> epsilon_;
     double cost_;
-    double cost_min_;
-    double cost_sad_;
-    double cost_max_;
+    double cost_min_{0.0};
+    double cost_sad_{0.0};
+    double cost_max_{0.0};
 
     std::vector<std::vector<int>> current_bidder_ids_min_;
     std::vector<std::vector<int>> current_bidder_ids_sad_;

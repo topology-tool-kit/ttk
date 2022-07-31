@@ -26,16 +26,7 @@ namespace ttk {
 
   public:
     PDBarycenter() {
-      wasserstein_ = 2;
-      geometrical_factor_ = 1;
-      method_ = "Partial Bidding";
       threadNumber_ = 1;
-      use_progressive_ = true;
-      epsilon_min_ = 1e-5;
-      reinit_prices_ = true;
-      deterministic_ = false;
-      epsilon_decreases_ = true;
-      early_stoppage_ = true;
       this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     }
 
@@ -194,12 +185,12 @@ namespace ttk {
     std::vector<double> precision_;
 
     // to kill any randomness
-    bool deterministic_;
+    bool deterministic_{false};
 
-    std::string method_;
-    int wasserstein_;
+    std::string method_{"Partial Bidding"};
+    int wasserstein_{2};
 
-    double geometrical_factor_;
+    double geometrical_factor_{1.0};
 
     // lambda_ : 0<=lambda<=1
     // parametrizes the point used for the physical (critical) coordinates of
@@ -213,8 +204,8 @@ namespace ttk {
     ttk::CriticalType nt2_;
     double cost_;
     int numberOfInputs_;
-    bool use_progressive_;
-    double epsilon_min_;
+    bool use_progressive_{true};
+    double epsilon_min_{1e-5};
     std::vector<DiagramType> *inputDiagrams_;
 
     int points_added_;
@@ -227,8 +218,8 @@ namespace ttk {
     std::vector<std::vector<int>> current_bidder_ids_;
     std::vector<GoodDiagram> barycenter_goods_;
 
-    bool reinit_prices_;
-    bool epsilon_decreases_;
-    bool early_stoppage_;
+    bool reinit_prices_{true};
+    bool epsilon_decreases_{true};
+    bool early_stoppage_{true};
   };
 } // namespace ttk
