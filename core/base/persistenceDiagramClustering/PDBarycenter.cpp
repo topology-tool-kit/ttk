@@ -20,18 +20,7 @@
 
 std::vector<std::vector<ttk::MatchingType>>
   ttk::PDBarycenter::execute(DiagramType &barycenter) {
-  // if(method_ == "Munkres")
-  //     return executeMunkresBarycenter(barycenter);
-  // else if(method_ == "Auction")
   return executeAuctionBarycenter(barycenter);
-  // else if(method_ == "Partial Bidding")
-  //     return executePartialBiddingBarycenter(barycenter);
-  // else {
-  //     std::cout << "[PersistenceDiagramsBarycenter] Error : you need to
-  //     select a valid matching algorithm" << '\n';
-  //     std::vector<std::vector<MatchingType>> v(0);
-  //     return v;
-  // }
 }
 
 void ttk::PDBarycenter::runMatching(
@@ -46,24 +35,15 @@ void ttk::PDBarycenter::runMatching(
   bool use_kdt,
   int actual_distance) {
   Timer time_matchings;
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
 #endif
-
   for(int i = 0; i < numberOfInputs_; i++) {
-    // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<"
-    // "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
       geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map, epsilon,
       min_diag_price->at(i), use_kdt);
-    // cout<<"\n RUN MATCHINGS : "<<i<<endl;
-    // cout<<use_kdt<<endl;
-    // cout<<epsilon<<endl;
-    // cout<<geometrical_factor_<<endl;
-    // cout<<wasserstein_<<endl;
-    // cout<<min_diag_price->at(i)<<endl;
-    // cout<<min_price->at(i)<<endl;
     int n_biddings = 0;
     auction.buildUnassignedBidders();
     auction.reinitializeGoods();
@@ -80,37 +60,13 @@ void ttk::PDBarycenter::runMatching(
       (*total_cost) += cost * cost;
     }
 
-    // cout<<auction.getMinimalDiagonalPrice()<<endl;
-    // cout<<getMinimalPrice(i)<<endl;
-    // cout<<cost<<endl;
-
-    // if(cost <= ((1.01 * 1.01) * (cost - epsilon *
-    // auction.getAugmentedNumberOfBidders()))) {
-    //     precision_objective_[i] = true;
-    // } else {
-    //     precision_objective_[i] = false;
-    // }
     double quotient = epsilon * auction.getAugmentedNumberOfBidders() / cost;
     precision_[i] = quotient < 1 ? 1. / sqrt(1 - quotient) - 1 : 10;
-    // cout<<" "<<precision_[i];
-    // std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost <<
-    // std::endl; std::cout<< "Number of biddings : " << n_biddings <<
-    // std::endl; Resizes the diagram which was enrich with diagonal bidders
+    // Resizes the diagram which was enrich with diagonal bidders
     // during the auction
     // TODO do this inside the auction !
     current_bidder_diagrams_[i].resize(sizes[i]);
   }
-  // cout<<endl;
-  /* print matchings
-          for(long size_t i=0; i<(*all_matchings).size(); i++){
-              for (long size_t j = 0; j < (*all_matchings)[i].size(); j++)
-     { std::cout << get<0>((*all_matchings)[i][j]) << " " ; std::cout <<
-     get<1>((*all_matchings)[i][j]) << " " ; std::cout <<
-     get<2>((*all_matchings)[i][j]) << "  |   " ;
-              }
-      std::cout << "\n" ;
-          }*/
-  // cout<<time_matchings.getElapsedTime()<<endl;
 }
 
 void ttk::PDBarycenter::runMatchingAuction(
@@ -132,27 +88,13 @@ void ttk::PDBarycenter::runMatchingAuction(
     std::vector<MatchingType> matchings;
     double cost = auction.run(matchings);
     all_matchings->at(i) = matchings;
-    // std::cout << "cost of matching " << i <<" : "<<cost<<std::endl;
-    // std::cout << "now total : " << *total_cost<<std::endl;
 
     (*total_cost) += cost * cost;
-    // std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost <<
-    // std::endl; std::cout<< "Number of biddings : " << n_biddings <<
-    // std::endl; Resizes the diagram which was enrich with diagonal bidders
+    // Resizes the diagram which was enrich with diagonal bidders
     // during the auction
     // TODO do this inside the auction !
     current_bidder_diagrams_[i].resize(sizes[i]);
   }
-  /* to print matchings
-  for(long size_t i=0; i<(*all_matchings).size(); i++){
-              for (long size_t j = 0; j < (*all_matchings)[i].size(); j++)
-  { std::cout << get<0>((*all_matchings)[i][j]) << " " ; std::cout <<
-  get<1>((*all_matchings)[i][j]) << " " ; std::cout <<
-  get<2>((*all_matchings)[i][j]) << "  |   " ;
-              }
-      std::cout << "\n" ;
-          }
-  */
 }
 
 bool ttk::PDBarycenter::hasBarycenterConverged(
@@ -206,7 +148,6 @@ std::vector<std::vector<ttk::MatchingType>> ttk::PDBarycenter::correctMatchings(
 
 double ttk::PDBarycenter::updateBarycenter(
   std::vector<std::vector<MatchingType>> &matchings) {
-  // cout<<"updating barycenter"<<endl;
   // 1. Initialize variables used in the sequel
   Timer t_update;
   size_t n_goods = barycenter_goods_[0].size();
@@ -381,7 +322,6 @@ double ttk::PDBarycenter::updateBarycenter(
     barycenter_goods_[j] = new_barycenter;
   }
 
-  // std::cout<<"TIME OF UPDATE : "<< t_update.getElapsedTime()<<std::endl;
   return max_shift;
 }
 
@@ -591,21 +531,6 @@ void ttk::PDBarycenter::setInitialBarycenter(double min_persistence) {
     size = barycenter_goods_[0].size();
     iter++;
   }
-  // for(int i = 0; i < numberOfInputs_; i++) {
-  //     GoodDiagram goods;
-  //     int count = 0;
-  //     for(size_t j = 0; j < current_bidder_diagrams_[0].size(); j++) {
-  //         // Add bidder to bidders
-  //         Bidder = current_bidder_diagrams_[0].at(j);
-  //         Good g =
-  //         Good(current_bidder_diagrams_[0].at(j), count, lambda_);
-  //         if(g.getPersistence() >= min_persistence) {
-  //             goods.emplace_back(g);
-  //             count++;
-  //         }
-  //     }
-  //         barycenter_goods_.push_back(goods);
-  // }
 }
 
 typename ttk::PDBarycenter::KDTreePair ttk::PDBarycenter::getKDTree() const {
@@ -646,113 +571,6 @@ typename ttk::PDBarycenter::KDTreePair ttk::PDBarycenter::getKDTree() const {
                  debug::LineMode::NEW, debug::Priority::VERBOSE);
   return std::make_pair(std::move(kdt), correspondance_kdt_map);
 }
-
-//
-// std::vector<std::vector<MatchingType>>
-// ttk::PDBarycenter<double>::executeMunkresBarycenter(DiagramType&
-// barycenter)
-// {
-//     double total_time = 0;
-
-//     std::vector<std::vector<MatchingType>> previous_matchings;
-//     double min_persistence = 0;
-//     double min_cost = std::numeric_limits<double>::max();
-//     int last_min_cost_obtained = 0;
-
-//     this->setBidderDiagrams();
-//     this->setInitialBarycenter(min_persistence);  // false for a determinist
-//     initialization
-
-//     double max_persistence = getMaxPersistence();
-
-//     std::vector<double> min_diag_price(numberOfInputs_);
-//     std::vector<double> min_price(numberOfInputs_);
-//     for(int i = 0; i < numberOfInputs_; i++) {
-//         min_diag_price[i] = 0;
-//         min_price[i] = 0;
-//     }
-
-//     int min_points_to_add = std::numeric_limits<int>::max();
-//     min_persistence = this->enrichCurrentBidderDiagrams(2 * max_persistence,
-//     min_persistence, min_diag_price, min_price, min_points_to_add, false);
-
-//     if(debugLevel_ > 1)
-//         std::cout << "Barycenter size : " << barycenter_goods_[0].size() <<
-//         std::endl;
-
-//     int n_iterations = 0;
-
-//     bool converged = false;
-//     bool finished = false;
-//     double total_cost;
-
-//     while(!finished) {
-//         Timer t;
-
-//         n_iterations += 1;
-
-//         std::vector<std::vector<MatchingType>>
-//         all_matchings(numberOfInputs_); std::vector<int>
-//         sizes(numberOfInputs_); for(int i = 0; i < numberOfInputs_; i++) {
-//             sizes[i] = current_bidder_diagrams_[i].size();
-//         }
-//         total_cost = 0;
-
-//         barycenter.resize(0);
-//         for(int j = 0; j < barycenter_goods_[0].size(); j++) {
-//             Good& g = barycenter_goods_[0].at(j);
-//             diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_,
-//             g.getPersistence(), diagramType_, g.x_, 0, 0, 0, g.y_, 0, 0, 0);
-//             barycenter.push_back(t);
-//         }
-
-//         runMatchingMunkres(&total_cost, &all_matchings, barycenter);
-
-//         std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : " <<
-//         total_cost << std::endl;
-
-//         if(converged) {
-//             finished = true;
-//         }
-
-//         if(!finished) {
-//             updateBarycenter(all_matchings);
-//             if(debugLevel_ > 1)
-//                 std::cout << "Barycenter size : " <<
-//                 barycenter_goods_[0].size() << std::endl;
-
-//             if(min_cost > total_cost) {
-//                 min_cost = total_cost;
-//                 last_min_cost_obtained = 0;
-//             } else {
-//                 last_min_cost_obtained += 1;
-//             }
-
-//             converged = converged || last_min_cost_obtained > 1;
-//         }
-
-//         previous_matchings = std::move(all_matchings);
-//         // END OF TIMER
-//         total_time += t.getElapsedTime();
-//     }
-//     barycenter.resize(0);
-//     for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
-//         Good& g = barycenter_goods_[0].at(j);
-//         diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_,
-//         g.getPersistence(), diagramType_, g.x_, 0, 0, 0, g.y_, 0, 0, 0);
-//         barycenter.push_back(t);
-//     }
-
-//     cost_ = total_cost;
-//     std::vector<std::vector<MatchingType>> corrected_matchings =
-//     correctMatchings(previous_matchings); for(size_t d = 0; d <
-//     current_bidder_diagrams_.size(); ++d) {
-//         if(debugLevel_ > 1)
-//             std::cout << "Size of diagram " << d << " : " <<
-//             current_bidder_diagrams_[d].size() << std::endl;
-//     }
-//     return corrected_matchings;
-// }
 
 std::vector<std::vector<ttk::MatchingType>>
   ttk::PDBarycenter::executeAuctionBarycenter(DiagramType &barycenter) {
@@ -865,22 +683,12 @@ std::vector<std::vector<ttk::MatchingType>>
   cost_ = sqrt(total_cost);
   std::vector<std::vector<MatchingType>> corrected_matchings
     = correctMatchings(previous_matchings);
-  // for(size_t d = 0; d < current_bidder_diagrams_.size(); ++d) {
-  //   if(debugLevel_ > 1)
-  //     std::cout << "Size of diagram " << d << " : "
-  //               << current_bidder_diagrams_[d].size() << std::endl;
-  // }
   return corrected_matchings;
 }
 
 double ttk::PDBarycenter::computeRealCost() {
   double total_real_cost = 0;
   std::vector<MatchingType> fake_matchings;
-  // for(size_t j=0; j<barycenter_goods_[0].size(); j++){
-  //     Good good_tmp = barycenter_goods_[0].at(j).copy();
-  //     good_tmp.setPrice(0);
-  //     current_barycenter.emplace_back(good_tmp);
-  // }
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
       wasserstein_, geometrical_factor_, lambda_, 0.01, true);
