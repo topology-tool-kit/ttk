@@ -312,8 +312,8 @@ int ttkMergeTreeDistanceMatrix::RequestData(
 
 std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
   ttkMergeTreeDistanceMatrix::ftmToAdjList(
-    vtkSmartPointer<vtkUnstructuredGrid> mt_nodes,
-    vtkSmartPointer<vtkUnstructuredGrid> mt,
+    vtkSmartPointer<vtkUnstructuredGrid> &mt_nodes,
+    vtkSmartPointer<vtkUnstructuredGrid> &mt,
     int treeType,
     bool scalarLabels) {
   std::map<std::tuple<float, float, float>, float> posToScalarMap;
@@ -354,7 +354,7 @@ std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
     if(treeType == 1 and nodeTypes[i] == 0) {
       rootID = i;
     }
-    children.push_back(std::vector<int>());
+    children.emplace_back(std::vector<int>());
   }
   for(size_t i = 0; i < upIDs.size(); i++) {
     int downId = downIDs[i];

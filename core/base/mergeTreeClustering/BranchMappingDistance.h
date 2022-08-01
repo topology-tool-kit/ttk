@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <float.h>
+#include <cfloat>
 #include <iostream>
 #include <limits>
 #include <set>
