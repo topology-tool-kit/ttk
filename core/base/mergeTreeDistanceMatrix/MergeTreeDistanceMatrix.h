@@ -79,6 +79,7 @@ namespace ttk {
       std::vector<
         std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>>
         &trees,
+      std::vector<ftm::MergeTree<dataType>> &ftmtrees,
       std::vector<std::vector<double>> &distanceMatrix) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
         if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
@@ -119,6 +120,7 @@ namespace ttk {
             auto rootID2 = std::get<2>(trees[j]);
             distanceMatrix[i][j] = pathDist.editDistance_path(
               nodes1, topo1, rootID1, nodes2, topo2, rootID2);
+            std::cout << distanceMatrix[i][j] << " " << pathDist.editDistance_path<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree)) << std::endl;
           }
           // distance matrix is symmetric
           distanceMatrix[j][i] = distanceMatrix[i][j];

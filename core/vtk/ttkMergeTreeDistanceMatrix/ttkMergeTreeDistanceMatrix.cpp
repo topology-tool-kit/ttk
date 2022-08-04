@@ -112,8 +112,14 @@ int ttkMergeTreeDistanceMatrix::run(
       keepSubtree_ = true;
       baseModule = 0;
     } else if(Backend == 3) {
+      branchDecomposition_ = false;
+      keepSubtree_ = true;
+      normalizedWasserstein_ = false;
       baseModule = 1;
     } else if(Backend == 4) {
+      branchDecomposition_ = false;
+      keepSubtree_ = true;
+      normalizedWasserstein_ = false;
       baseModule = 2;
     } else {
       baseModule = 0;
@@ -170,6 +176,7 @@ int ttkMergeTreeDistanceMatrix::run(
     constructTrees(inputTrees2, intermediateTrees2);
   } else {
     int treetype = 0;
+    constructTrees(inputTrees, intermediateTrees);
     for(size_t i = 0; i < inputTrees.size(); i++) {
       vtkSmartPointer<vtkUnstructuredGrid> mt_nodes
         = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
@@ -213,7 +220,7 @@ int ttkMergeTreeDistanceMatrix::run(
   if(baseModule == 0)
     execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
   else
-    execute<float>(adjacenyLists, treesDistMat);
+    execute<dataType>(adjacenyLists, intermediateTrees, treesDistMat);
 
   // --- Create output
   auto treesDistTable = vtkTable::GetData(outputVector);
