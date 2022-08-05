@@ -13,22 +13,26 @@
 
 #pragma once
 
-#include <cstdlib>
+#include <set>
 #include <vector>
+
 #include <algorithm>
 #include <cfloat>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <limits>
+#include <set>
 #include <stack>
 #include <tuple>
+#include <vector>
 
 // ttk common includes
 #include <AssignmentAuction.h>
 #include <AssignmentExhaustive.h>
 #include <AssignmentMunkres.h>
-#include <MergeTreeBase.h>
 #include <Debug.h>
+#include <FTMTree_MT.h>
 
 namespace ttk {
 
@@ -38,39 +42,6 @@ namespace ttk {
     int baseMetric = 0;
     int assignmentSolverID_ = 0;
     bool squared = false;
-
-    // template <class dataType>
-    // inline dataType editCost_Persistence(int n1,
-    //                                      int p1,
-    //                                      int n2,
-    //                                      int p2,
-    //                                      std::vector<dataType> &nodes1,
-    //                                      std::vector<dataType> &nodes2) {
-    //   dataType d;
-    //   if(n1 < 0) {
-    //     dataType b1 = nodes2[n2];
-    //     dataType d1 = nodes2[p2];
-    //     d = std::abs(d1 - b1);
-    //     //d = (d1 > b1) ? (d1 - b1) : (b1 - d1);
-    //   }
-    //   else if(n2 < 0) {
-    //     dataType b1 = nodes1[n1];
-    //     dataType d1 = nodes1[p1];
-    //     d = std::abs(d1 - b1);
-    //     //d = (d1 > b1) ? (d1 - b1) : (b1 - d1);
-    //   }
-    //   else{
-    //     dataType b1 = nodes1[n1];
-    //     dataType d1 = nodes1[p1];
-    //     dataType b2 = nodes2[n2];
-    //     dataType d2 = nodes2[p2];
-    //     d = std::abs(std::abs(b1 - d1) - std::abs(b2 - d2));
-    //     // dataType dist1 = (d1 > b1) ? (d1 - b1) : (b1 - d1);
-    //     // dataType dist2 = (d2 > b2) ? (d2 - b2) : (b2 - d2);
-    //     // d = (dist1 > dist2) ? (dist1 - dist2) : (dist2 - dist1);
-    //   }
-    //   return squared ? d * d : d;
-    // }
 
     template <class dataType>
     inline dataType editCost_Persistence(int n1,
@@ -83,17 +54,24 @@ namespace ttk {
       if(n1 < 0) {
         dataType b1 = nodes2[n2];
         dataType d1 = nodes2[p2];
-        d = std::abs(d1 - b1);
-      } else if(n2 < 0) {
+        // d = std::abs(d1 - b1);
+        d = d1>b1 ? d1-b1 : b1-d1;
+      }
+      else if(n2 < 0) {
         dataType b1 = nodes1[n1];
         dataType d1 = nodes1[p1];
-        d = std::abs(d1 - b1);
-      } else {
+        // d = std::abs(d1 - b1);
+        d = d1>b1 ? d1-b1 : b1-d1;
+      }
+      else{
         dataType b1 = nodes1[n1];
         dataType d1 = nodes1[p1];
         dataType b2 = nodes2[n2];
         dataType d2 = nodes2[p2];
-        d = std::abs(std::abs(b1 - d1) - std::abs(b2 - d2));
+        // d = std::abs(std::abs(b1 - d1) - std::abs(b2 - d2));
+        dataType dist1 = d1>b1 ? d1-b1 : b1-d1;
+        dataType dist2 = d2>b2 ? d2-b2 : b2-d2;
+        d = dist1>dist2 ? dist1-dist2 : dist2-dist1;
       }
       return squared ? d * d : d;
     }
@@ -213,13 +191,14 @@ namespace ttk {
 
       memT[nn1 + 0 * dim2 + nn2 * dim3 + 0 * dim4] = 0;
       for(size_t i = 0; i < nn1; i++) {
+        int curr1 = i;
         for(size_t l = 1; l <= predecessors1[i].size(); l++) {
-
-          int curr1 = i;
           int parent1 = predecessors1[i][predecessors1[i].size() - l];
 
           //-----------------------------------------------------------------------
-          // Delete curr path and full subtree rooted in pathint
+          // Delete curr path and full subtree rooted in path
+          memT[curr1 + l * dim2 + nn2 * dim3 + 0 * dim4]
+            = editCost_Persistence(curr1, parent1, -1, -1, nodes1, nodes2);
           for(auto child1 : topo1[curr1]) {
             memT[curr1 + l * dim2 + nn2 * dim3 + 0 * dim4]
               += memT[child1 + 1 * dim2 + nn2 * dim3 + 0 * dim4];
@@ -227,15 +206,14 @@ namespace ttk {
         }
       }
       for(size_t j = 0; j < nn2; j++) {
+        int curr2 = j;
         for(size_t l = 1; l <= predecessors2[j].size(); l++) {
-
-          int curr2 = j;
           int parent2 = predecessors2[j][predecessors2[j].size() - l];
 
           //-----------------------------------------------------------------------
           // Delete curr path and full subtree rooted in path
           memT[nn1 + 0 * dim2 + curr2 * dim3 + l * dim4]
-            = editCost_Persistence<dataType>(-1, -1, curr2, parent2, nodes1, nodes2);
+            = editCost_Persistence(-1, -1, curr2, parent2, nodes1, nodes2);
           for(auto child2 : topo2[curr2]) {
             memT[nn1 + 0 * dim2 + curr2 * dim3 + l * dim4]
               += memT[nn1 + 0 * dim2 + child2 * dim3 + 1 * dim4];
@@ -244,14 +222,12 @@ namespace ttk {
       }
 
       for(size_t i = 0; i < nn1; i++) {
+        int curr1 = i;
         for(size_t j = 0; j < nn2; j++) {
+          int curr2 = j;
           for(size_t l1 = 1; l1 <= predecessors1[i].size(); l1++) {
+            int parent1 = predecessors1[i][predecessors1[i].size() - l1];
             for(size_t l2 = 1; l2 <= predecessors2[j].size(); l2++) {
-
-              int curr1 = i;
-              int parent1 = predecessors1[i][predecessors1[i].size() - l1];
-
-              int curr2 = j;
               int parent2 = predecessors2[j][predecessors2[j].size() - l2];
 
               //===============================================================================
@@ -262,14 +238,14 @@ namespace ttk {
               // the two branches
               if(topo1[curr1].size() == 0 and topo2[curr2].size() == 0) {
                 memT[curr1 + l1 * dim2 + curr2 * dim3 + l2 * dim4]
-                  = editCost_Persistence<dataType>(
+                  = editCost_Persistence(
                     curr1, parent1, curr2, parent2, nodes1, nodes2);
               }
               //---------------------------------------------------------------------------
               // If first tree only has one branch, try all decompositions of
               // second tree
               else if(topo1[curr1].size() == 0) {
-                dataType d = FLT_MAX;
+                dataType d = std::numeric_limits<dataType>::max();
                 for(auto child2_mb : topo2[curr2]) {
                   dataType d_ = memT[curr1 + l1 * dim2 + child2_mb * dim3
                                      + (l2 + 1) * dim4];
@@ -287,7 +263,7 @@ namespace ttk {
               // If second tree only has one branch, try all decompositions of
               // first tree
               else if(topo2[curr2].size() == 0) {
-                dataType d = FLT_MAX;
+                dataType d = std::numeric_limits<dataType>::max();
                 for(auto child1_mb : topo1[curr1]) {
                   dataType d_ = memT[child1_mb + (l1 + 1) * dim2 + curr2 * dim3
                                      + l2 * dim4];
@@ -305,7 +281,7 @@ namespace ttk {
               // If both trees have more than one branch, try all decompositions
               // of both trees
               else {
-                dataType d = FLT_MAX;
+                dataType d = std::numeric_limits<dataType>::max();
                 //-----------------------------------------------------------------------
                 // Try all possible main branches of first tree (child1_mb) and
                 // all possible main branches of second tree (child2_mb) Then
@@ -315,15 +291,15 @@ namespace ttk {
                   int child12 = topo1[curr1][1];
                   int child21 = topo2[curr2][0];
                   int child22 = topo2[curr2][1];
-                  d = std::min(
+                  d = std::min<dataType>(
                     d, memT[child11 + 1 * dim2 + child21 * dim3 + 1 * dim4]
                          + memT[child12 + 1 * dim2 + child22 * dim3 + 1 * dim4]
-                         + editCost_Persistence<dataType>(
+                         + editCost_Persistence(
                            curr1, parent1, curr2, parent2, nodes1, nodes2));
-                  d = std::min(
+                  d = std::min<dataType>(
                     d, memT[child11 + 1 * dim2 + child22 * dim3 + 1 * dim4]
                          + memT[child12 + 1 * dim2 + child21 * dim3 + 1 * dim4]
-                         + editCost_Persistence<dataType>(
+                         + editCost_Persistence(
                            curr1, parent1, curr2, parent2, nodes1, nodes2));
                 } else {
                   auto f = [&](unsigned r, unsigned c) {
@@ -368,7 +344,7 @@ namespace ttk {
                   assignmentSolver->setInput(costMatrix);
                   assignmentSolver->setBalanced(true);
                   assignmentSolver->run(matching);
-                  dataType d_ = editCost_Persistence<dataType>(
+                  dataType d_ = editCost_Persistence(
                     curr1, parent1, curr2, parent2, nodes1, nodes2);
                   for(auto m : matching)
                     d_ += std::get<2>(m);
@@ -434,12 +410,12 @@ namespace ttk {
       int depth2 = 0;
       std::stack<int> stack;
       stack.push(rootID1);
-      int count = 0;
+      int count = tree1->getNumberOfNodes()-1;
       while(!stack.empty()) {
         int nIdx = stack.top();
         stack.pop();
         preorder1[count] = nIdx;
-        count ++;
+        count --;
         depth1 = std::max((int)predecessors1[nIdx].size(), depth1);
         std::vector<ftm::idNode> children;
         tree1->getChildren(nIdx,children);
@@ -453,12 +429,12 @@ namespace ttk {
         }
       }
       stack.push(rootID2);
-      count = 0;
+      count = tree2->getNumberOfNodes()-1;
       while(!stack.empty()) {
         int nIdx = stack.top();
         stack.pop();
         preorder2[count] = nIdx;
-        count ++;
+        count --;
         depth2 = std::max((int)predecessors2[nIdx].size(), depth2);
         std::vector<ftm::idNode> children;
         tree2->getChildren(nIdx,children);
@@ -489,13 +465,11 @@ namespace ttk {
 
       memT[nn1 + 0 * dim2 + nn2 * dim3 + 0 * dim4] = 0;
       for(size_t i = 0; i < nn1; i++) {
+        int curr1 = preorder1[i];
+        std::vector<ftm::idNode> children1;
+        tree1->getChildren(curr1,children1);
         for(size_t l = 1; l <= predecessors1[preorder1[i]].size(); l++) {
-
-          int curr1 = preorder1[i];
           int parent1 = predecessors1[preorder1[i]][predecessors1[preorder1[i]].size() - l];
-          
-          std::vector<ftm::idNode> children1;
-          tree1->getChildren(curr1,children1);
 
           //-----------------------------------------------------------------------
           // Delete curr path and full subtree rooted in path
@@ -508,13 +482,11 @@ namespace ttk {
         }
       }
       for(size_t j = 0; j < nn2; j++) {
+        int curr2 = preorder2[j];
+        std::vector<ftm::idNode> children2;
+        tree2->getChildren(curr2,children2);
         for(size_t l = 1; l <= predecessors2[preorder2[j]].size(); l++) {
-
-          int curr2 = preorder2[j];
           int parent2 = predecessors2[preorder2[j]][predecessors2[preorder2[j]].size() - l];
-          
-          std::vector<ftm::idNode> children2;
-          tree2->getChildren(curr2,children2);
 
           //-----------------------------------------------------------------------
           // Delete curr path and full subtree rooted in path
@@ -528,21 +500,17 @@ namespace ttk {
       }
 
       for(size_t i = 0; i < nn1; i++) {
+        int curr1 = preorder1[i];
+        std::vector<ftm::idNode> children1;
+        tree1->getChildren(curr1,children1);
         for(size_t j = 0; j < nn2; j++) {
+          int curr2 = preorder2[j];
+          std::vector<ftm::idNode> children2;
+          tree2->getChildren(curr2,children2);
           for(size_t l1 = 1; l1 <= predecessors1[preorder1[i]].size(); l1++) {
+            int parent1 = predecessors1[preorder1[i]][predecessors1[preorder1[i]].size() - l1];
             for(size_t l2 = 1; l2 <= predecessors2[preorder2[j]].size(); l2++) {
-
-              int curr1 = preorder1[i];
-              int parent1 = predecessors1[preorder1[i]][predecessors1[preorder1[i]].size() - l1];
-
-              int curr2 = preorder2[j];
               int parent2 = predecessors2[preorder2[j]][predecessors2[preorder2[j]].size() - l2];
-          
-              std::vector<ftm::idNode> children1;
-              tree1->getChildren(curr1,children1);
-          
-              std::vector<ftm::idNode> children2;
-              tree2->getChildren(curr2,children2);
 
               //===============================================================================
               // If both trees not empty, find optimal edit operation
@@ -559,7 +527,7 @@ namespace ttk {
               // If first tree only has one branch, try all decompositions of
               // second tree
               else if(tree1->getNumberOfChildren(curr1) == 0) {
-                dataType d = FLT_MAX;
+                dataType d = std::numeric_limits<dataType>::max();
                 for(auto child2_mb : children2) {
                   dataType d_ = memT[curr1 + l1 * dim2 + child2_mb * dim3
                                      + (l2 + 1) * dim4];
@@ -577,7 +545,7 @@ namespace ttk {
               // If second tree only has one branch, try all decompositions of
               // first tree
               else if(tree2->getNumberOfChildren(curr2) == 0) {
-                dataType d = FLT_MAX;
+                dataType d = std::numeric_limits<dataType>::max();
                 for(auto child1_mb : children1) {
                   dataType d_ = memT[child1_mb + (l1 + 1) * dim2 + curr2 * dim3
                                      + l2 * dim4];
@@ -595,7 +563,7 @@ namespace ttk {
               // If both trees have more than one branch, try all decompositions
               // of both trees
               else {
-                dataType d = FLT_MAX;
+                dataType d = std::numeric_limits<dataType>::max();
                 //-----------------------------------------------------------------------
                 // Try all possible main branches of first tree (child1_mb) and
                 // all possible main branches of second tree (child2_mb) Then
@@ -616,7 +584,7 @@ namespace ttk {
                          + editCost_Persistence<dataType>(
                            curr1, parent1, curr2, parent2, tree1, tree2));
                 } else {
-                  auto f = [&](unsigned r, unsigned c) {
+                  auto f = [&](int r, int c) {
                     size_t c1 = r < tree1->getNumberOfChildren(curr1) ? children1[r] : nn1;
                     size_t c2 = c < tree2->getNumberOfChildren(curr2) ? children2[c] : nn2;
                     int l1_ = c1 == nn1 ? 0 : 1;

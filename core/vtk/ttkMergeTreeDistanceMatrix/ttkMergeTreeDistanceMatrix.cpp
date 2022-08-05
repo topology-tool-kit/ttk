@@ -112,14 +112,14 @@ int ttkMergeTreeDistanceMatrix::run(
       keepSubtree_ = true;
       baseModule = 0;
     } else if(Backend == 3) {
-      branchDecomposition_ = false;
-      keepSubtree_ = true;
+      branchDecomposition_ = true;
       normalizedWasserstein_ = false;
+      keepSubtree_ = true;
       baseModule = 1;
     } else if(Backend == 4) {
-      branchDecomposition_ = false;
-      keepSubtree_ = true;
+      branchDecomposition_ = true;
       normalizedWasserstein_ = false;
+      keepSubtree_ = true;
       baseModule = 2;
     } else {
       baseModule = 0;
@@ -169,14 +169,20 @@ int ttkMergeTreeDistanceMatrix::run(
   const int numInputs = inputTrees.size();
   std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
   std::vector<
-    std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>>
+    std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>>
     adjacenyLists;
   if(baseModule == 0) {
     constructTrees(inputTrees, intermediateTrees);
     constructTrees(inputTrees2, intermediateTrees2);
   } else {
-    int treetype = 0;
+    auto start = std::chrono::high_resolution_clock::now();
     constructTrees(inputTrees, intermediateTrees);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Avg time ftm construction: " << duration.count()*0.000001*(1/(float)inputTrees.size()) << " seconds" << std::endl;
+    start = std::chrono::high_resolution_clock::now();
+    constructTrees(inputTrees2, intermediateTrees2);
+    int treetype = 0;
     for(size_t i = 0; i < inputTrees.size(); i++) {
       vtkSmartPointer<vtkUnstructuredGrid> mt_nodes
         = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
@@ -210,8 +216,11 @@ int ttkMergeTreeDistanceMatrix::run(
         = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
       vtkSmartPointer<vtkUnstructuredGrid> mt_arcs
         = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(1));
-      adjacenyLists.push_back(ftmToAdjList(mt_nodes, mt_arcs, treetype, true));
+      adjacenyLists.push_back(ftmToAdjList<dataType>(mt_nodes, mt_arcs, treetype, true));
     }
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Avg time adj list construction: " << duration.count()*0.000001*(1/(float)inputTrees.size()) << " seconds" << std::endl;
   }
 
   // --- Call base
@@ -317,25 +326,26 @@ int ttkMergeTreeDistanceMatrix::RequestData(
   return res;
 }
 
-std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
+template<class dataType>
+std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>
   ttkMergeTreeDistanceMatrix::ftmToAdjList(
     vtkSmartPointer<vtkUnstructuredGrid> &mt_nodes,
     vtkSmartPointer<vtkUnstructuredGrid> &mt,
     int treeType,
     bool scalarLabels) {
-  std::map<std::tuple<float, float, float>, float> posToScalarMap;
-  std::vector<float> nodeScalars(mt->GetNumberOfPoints());
+  std::map<std::tuple<float, float, float>, dataType> posToScalarMap;
+  std::vector<dataType> nodeScalars(mt->GetNumberOfPoints());
   std::vector<int> nodeTypes(mt->GetNumberOfPoints());
   std::vector<int> upIDs(mt->GetNumberOfCells());
   std::vector<int> downIDs(mt->GetNumberOfCells());
   std::vector<float> regionSizes(mt->GetNumberOfCells());
-  std::vector<float> persistences(mt->GetNumberOfCells());
-  std::vector<float> nodePersistences(mt->GetNumberOfPoints(), 1000.);
+  std::vector<dataType> persistences(mt->GetNumberOfCells());
+  std::vector<dataType> nodePersistences(mt->GetNumberOfPoints(), static_cast<dataType>(1000.));
   for(int i = 0; i < mt->GetNumberOfPoints(); i++) {
     int nid = mt_nodes->GetPointData()->GetArray("NodeId")->GetComponent(i, 0);
     int nt
       = mt_nodes->GetPointData()->GetArray("CriticalType")->GetComponent(i, 0);
-    float ns
+    dataType ns
       = mt_nodes->GetPointData()->GetArray("Scalar")->GetComponent(nid, 0);
     nodeTypes[nid] = nt;
     nodeScalars[nid] = ns;
@@ -345,7 +355,7 @@ std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
       = int(mt->GetCellData()->GetArray("downNodeId")->GetComponent(i, 0));
     int upId = int(mt->GetCellData()->GetArray("upNodeId")->GetComponent(i, 0));
     float rs = mt->GetCellData()->GetArray("RegionSize")->GetComponent(i, 0);
-    float pers = abs(nodeScalars[upId] - nodeScalars[downId]);
+    dataType pers = abs(nodeScalars[upId] - nodeScalars[downId]);
     upIDs[i] = upId;
     downIDs[i] = downId;
     regionSizes[i] = rs;
@@ -412,8 +422,8 @@ std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
     }
   }
   std::vector<std::vector<int>> children_dfs(children.size());
-  std::vector<float> labels_dfs(nodePersistences.size());
-  std::vector<float> scalars_dfs(nodeScalars.size());
+  std::vector<dataType> labels_dfs(nodePersistences.size());
+  std::vector<dataType> scalars_dfs(nodeScalars.size());
   for(size_t i = 0; i < children.size(); i++) {
     int dfsIdx = dfs_reordering[i];
     labels_dfs[dfsIdx] = nodePersistences[i];

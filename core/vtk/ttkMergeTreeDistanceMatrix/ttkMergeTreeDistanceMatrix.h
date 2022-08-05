@@ -180,7 +180,8 @@ protected:
   ttkMergeTreeDistanceMatrix();
   ~ttkMergeTreeDistanceMatrix() override;
 
-  std::tuple<std::vector<float>, std::vector<std::vector<int>>, int>
+  template <class dataType>
+  std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>
     ftmToAdjList(vtkSmartPointer<vtkUnstructuredGrid> &mt_nodes,
                  vtkSmartPointer<vtkUnstructuredGrid> &mt,
                  int treeType,
