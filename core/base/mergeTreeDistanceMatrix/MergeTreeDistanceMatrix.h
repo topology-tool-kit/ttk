@@ -163,6 +163,7 @@ namespace ttk {
         pathDist.setBaseMetric(pathMetric);
         pathDist.setAssignmentSolver(assignmentSolverID_);
         pathDist.setSquared(distanceSquared_);
+        pathDist.setComputeMapping(true);
 
         distanceMatrix[i][i] = 0.0;
         //compareTrees(trees[i],&(ftmtrees[i].tree));
