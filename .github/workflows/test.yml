@@ -182,6 +182,7 @@ jobs:
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
 
     - name: Run ttk-data Python scripts
       run: |
@@ -307,6 +308,7 @@ jobs:
       with:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
 
     - name: Run ttk-data Python scripts
       run: |
