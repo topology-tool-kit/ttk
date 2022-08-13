@@ -123,7 +123,7 @@ namespace ttk {
      */
     struct ProjectionInput {
       /** Input point coordinates */
-      Point pt;
+      Point &pt;
       /** Nearest vertex in the surface */
       SimplexId nearestVertex;
     };
@@ -349,7 +349,15 @@ ttk::SurfaceGeometrySmoother::ProjectionResult
       // the relaxed point is probably over the edge separating the
       // current and the last visited triangles
       res.pt = this->projectOnEdge(pi.pt, mno[vid[0]], mno[vid[1]]);
-      res.projSuccess = true;
+      // check that projected point is indeed on segment
+      res.projSuccess = Geometry::isPointOnSegment(
+        res.pt.data(), mno[vid[0]].data(), mno[vid[1]].data());
+      if(!res.projSuccess) {
+        // if not, replace with nearest triangle vertex
+        triangulation.getVertexPoint(
+          tverts[vid[0]], res.pt[0], res.pt[1], res.pt[2]);
+        res.projSuccess = true;
+      }
       break;
     }
 
@@ -447,7 +455,7 @@ int ttk::SurfaceGeometrySmoother::execute(
   }
 
   Timer tm{};
-  this->printMsg("Smoothing " + std::to_string(nPoints) + " in "
+  this->printMsg("Smoothing " + std::to_string(nPoints) + " points in "
                  + std::to_string(nIter) + " iterations...");
 
   // list of triangle IDs already tested
