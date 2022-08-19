@@ -66,7 +66,6 @@ namespace ttk {
                 const triangulationType0 &triangulationToSmooth,
                 const triangulationType1 &triangulationSurface) const;
 
-  protected:
     struct Point : public std::array<float, 3> {
       Point operator+(const Point other) const {
         Point res{};
@@ -93,6 +92,7 @@ namespace ttk {
       }
     };
 
+  protected:
     template <typename triangulationType0, typename triangulationType1>
     int relaxProject(std::vector<Point> &outputPoints,
                      std::vector<Point> &tmpStorage,
