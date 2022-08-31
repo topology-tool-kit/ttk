@@ -85,7 +85,6 @@ namespace ttk {
             stream << i << " / " << distanceMatrix.size();
             printMsg(stream.str());
           }
-
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
             // Execute
@@ -115,6 +114,7 @@ namespace ttk {
             mergeTreeDistance.setCleanTree(true);
             mergeTreeDistance.setIsCalled(true);
             mergeTreeDistance.setPostprocess(false);
+            mergeTreeDistance.setIsPersistenceDiagram(isPersistenceDiagram_);
             if(useDoubleInput_) {
               double weight = mixDistancesMinMaxPairWeight(isFirstInput);
               mergeTreeDistance.setMinMaxPairWeight(weight);

@@ -102,8 +102,15 @@ int ttkMergeTreeDistanceMatrix::run(
   // Construct trees
   const int numInputs = inputTrees.size();
   std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
-  constructTrees(inputTrees, intermediateTrees);
-  constructTrees(inputTrees2, intermediateTrees2);
+  bool useSadMaxPairs = (mixtureCoefficient_ == 0);
+  isPersistenceDiagram_
+    = constructTrees(inputTrees, intermediateTrees, useSadMaxPairs);
+  if(not isPersistenceDiagram_
+     or (mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1)) {
+    auto &inputTrees2ToUse
+      = (not isPersistenceDiagram_ ? inputTrees2 : inputTrees);
+    constructTrees(inputTrees2ToUse, intermediateTrees2, !useSadMaxPairs);
+  }
 
   // Verify parameters
   if(not UseFieldDataParameters) {
@@ -117,12 +124,19 @@ int ttkMergeTreeDistanceMatrix::run(
       keepSubtree_ = true;
     }
   }
+  if(isPersistenceDiagram_) {
+    branchDecomposition_ = true;
+  }
   if(not branchDecomposition_) {
     if(normalizedWasserstein_)
       printMsg("NormalizedWasserstein is set to false since branch "
                "decomposition is not asked.");
     normalizedWasserstein_ = false;
   }
+  if(normalizedWasserstein_)
+    printMsg("Computation with normalized Wasserstein.");
+  else
+    printMsg("Computation without normalized Wasserstein.");
   epsilonTree2_ = epsilonTree1_;
   epsilon2Tree2_ = epsilon2Tree1_;
   epsilon3Tree2_ = epsilon3Tree1_;
@@ -202,7 +216,7 @@ int ttkMergeTreeDistanceMatrix::RequestData(
         ->GetArray("Scalar");
   if(arrayToGet == nullptr)
     arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-                   ->GetPointData()
+                   ->GetCellData()
                    ->GetArray("Birth");
   int dataTypeInt = arrayToGet->GetDataType();
 

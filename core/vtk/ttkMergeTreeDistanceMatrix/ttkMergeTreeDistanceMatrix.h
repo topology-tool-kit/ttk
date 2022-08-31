@@ -50,6 +50,9 @@ private:
    */
   // Execution Options
   int Backend = 0;
+  bool oldBD = branchDecomposition_;
+  bool oldNW = normalizedWasserstein_;
+  bool oldKS = keepSubtree_;
 
   bool UseFieldDataParameters = false;
 
@@ -108,7 +111,20 @@ public:
   }
 
   // Execution Options
-  vtkSetMacro(Backend, int);
+  void SetBackend(int newBackend) {
+    if(Backend == 2) { // Custom
+      oldBD = branchDecomposition_;
+      oldNW = normalizedWasserstein_;
+      oldKS = keepSubtree_;
+    }
+    if(newBackend == 2) { // Custom
+      branchDecomposition_ = oldBD;
+      normalizedWasserstein_ = oldNW;
+      keepSubtree_ = oldKS;
+    }
+    Backend = newBackend;
+    Modified();
+  }
   vtkGetMacro(Backend, int);
 
   void SetAssignmentSolver(int assignmentSolver) {
@@ -153,6 +169,9 @@ public:
 
   vtkSetMacro(UseFieldDataParameters, bool);
   vtkGetMacro(UseFieldDataParameters, bool);
+
+  vtkSetMacro(mixtureCoefficient_, double);
+  vtkGetMacro(mixtureCoefficient_, double);
 
   /**
    * This static method and the macro below are VTK conventions on how to
