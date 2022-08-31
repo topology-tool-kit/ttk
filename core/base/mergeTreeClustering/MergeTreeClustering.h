@@ -760,7 +760,8 @@ namespace ttk {
                  std::vector<int> &clusteringAssignment,
                  std::vector<ftm::MergeTree<dataType>> &trees2,
                  matchingVector &outputMatching2,
-                 std::vector<ftm::MergeTree<dataType>> &centroids) {
+                 std::vector<ftm::MergeTree<dataType>> &centroids,
+                 std::vector<ftm::MergeTree<dataType>> &centroids2) {
       // --- Preprocessing
       // std::vector<ftm::FTMTree_MT*> oldTrees, oldTrees2;
       treesNodeCorr_ = std::vector<std::vector<int>>(trees.size());
@@ -779,7 +780,6 @@ namespace ttk {
       std::vector<std::vector<ftm::MergeTree<dataType>>> allCentroids;
       initCentroids<dataType>(treesT, treesT2, allCentroids);
       centroids = allCentroids[0];
-      std::vector<ftm::MergeTree<dataType>> centroids2;
       if(trees2.size() != 0)
         centroids2 = allCentroids[1];
       /*for(unsigned int i = 0; i < centroids.size(); ++i){
@@ -815,7 +815,8 @@ namespace ttk {
                  std::vector<int> &clusteringAssignment,
                  std::vector<ftm::MergeTree<dataType>> &trees2,
                  matchingVector &outputMatching2,
-                 std::vector<ftm::MergeTree<dataType>> &centroids) {
+                 std::vector<ftm::MergeTree<dataType>> &centroids,
+                 std::vector<ftm::MergeTree<dataType>> &centroids2) {
       if(trees2.size() != 0)
         printMsg("Use join and split trees");
 
@@ -824,7 +825,7 @@ namespace ttk {
         alphas.push_back(1.0 / trees.size());
 
       execute<dataType>(trees, outputMatching, alphas, clusteringAssignment,
-                        trees2, outputMatching2, centroids);
+                        trees2, outputMatching2, centroids, centroids2);
     }
 
     template <class dataType>
@@ -832,11 +833,10 @@ namespace ttk {
                  matchingVector &outputMatching,
                  std::vector<int> &clusteringAssignment,
                  std::vector<ftm::MergeTree<dataType>> &centroids) {
-      std::vector<ftm::MergeTree<dataType>> trees2
-        = std::vector<ftm::MergeTree<dataType>>();
+      std::vector<ftm::MergeTree<dataType>> trees2, centroids2;
       matchingVector outputMatching2 = matchingVector();
       execute<dataType>(trees, outputMatching, clusteringAssignment, trees2,
-                        outputMatching2, centroids);
+                        outputMatching2, centroids, centroids2);
     }
 
     // ------------------------------------------------------------------------
