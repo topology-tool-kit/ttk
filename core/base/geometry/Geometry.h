@@ -178,12 +178,14 @@ namespace ttk {
     template <typename T>
     T dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
 
-    /// Compute the dot product of two 3D std::vectors
-    /// \param vA xyz coordinates of vA std::vector
-    /// \param vB xyz coordinates of vB std::vector
+    /// Compute the dot product of two std::vectors
+    /// \param vA coordinates of vA std::vector
+    /// \param vB coordinates of vB std::vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
     /// \return Returns Output dot product
     template <typename T>
-    T dotProduct(const T *vA, const T *vB);
+    T dotProduct(const T *vA, const T *vB, const int &dimension = 3);
 
     /// Compute the bounding box of a point set.
     /// \param points Vector of points. Each entry is a
@@ -274,11 +276,13 @@ namespace ttk {
                             const T *p2,
                             const T *tolerance = nullptr);
 
-    /// Compute the magnitude of a 3D std::vector \p v.
-    /// \param v xyz coordinates of the input std::vector.
+    /// Compute the magnitude of a std::vector \p v.
+    /// \param v coordinates of the input std::vector.
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
     /// \return Returns the magnitude upon success, negative values otherwise.
     template <typename T>
-    T magnitude(const T *v);
+    T magnitude(const T *v, const int &dimension = 3);
 
     /// Compute the magnitude of a 3D std::vector.
     /// \param o xyz coordinates of the std::vector's origin
@@ -334,13 +338,50 @@ namespace ttk {
       return T1{};
     }
 
-    /// Computes the difference between two vectors.
-    /// \param a xyz coordinates of the first vector
-    /// \param b xyz coordinates of the second vector
+    /// Computes the difference between two vectors (\p b subtracted by \p a).
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
     /// \param out the difference between the two vectors
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
     /// \return Returns 0 for success, negative otherwise.
     template <typename T>
-    int subtractVectors(const T *a, const T *b, T *out);
+    int
+      subtractVectors(const T *a, const T *b, T *out, const int &dimension = 3);
+
+    /// Computes the addition of two vectors.
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the addition between the two vectors
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int addVectors(const T *a, const T *b, T *out, const int &dimension = 3);
+
+    /// Scale a vector by a scalar value..
+    /// \param a coordinates of the first vector
+    /// \param factor scale factor
+    /// \param out the scaled vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int
+      scaleVector(const T *a, const T factor, T *out, const int &dimension = 3);
+
+    /// Computes the projection of vector \p a onto the vector \p b
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the projected vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int vectorProjection(const T *a,
+                         const T *b,
+                         T *out,
+                         const int &dimension = 3);
 
   } // namespace Geometry
 } // namespace ttk

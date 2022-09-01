@@ -752,6 +752,32 @@ namespace ttk {
       treePlanarLayoutImpl<dataType>(tree, oldBounds, refPersistence, res);
     }
 
+    template <class dataType>
+    void persistenceDiagramPlanarLayout(ftm::FTMTree_MT *tree,
+                                        std::vector<float> &res) {
+      res = std::vector<float>(tree->getRealNumberOfNodes() * 2);
+      int cptNode = 0;
+      std::queue<ftm::idNode> queue;
+      ftm::idNode treeRoot = tree->getRoot();
+      queue.emplace(treeRoot);
+      while(!queue.empty()) {
+        ftm::idNode node = queue.front();
+        queue.pop();
+
+        // Get and insert point
+        auto birthDeath = tree->getBirthDeath<dataType>(node);
+        res[cptNode * 2] = std::get<0>(birthDeath);
+        res[cptNode * 2 + 1] = std::get<1>(birthDeath);
+        ++cptNode;
+
+        // Push children to the queue
+        std::vector<ftm::idNode> children;
+        tree->getChildren(node, children);
+        for(auto child : children)
+          queue.emplace(child);
+      }
+    }
+
     // ==========================================================================
     // Bounds Utils
     // ==========================================================================
@@ -960,10 +986,6 @@ namespace ttk {
         s.erase(0, pos + delimiter.length());
       }
       excludeVector.emplace_back(std::stod(s));
-
-      for(auto v : excludeVector)
-        std::cout << v << " ";
-      std::cout << std::endl;
     }
   };
 

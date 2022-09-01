@@ -364,8 +364,11 @@ T Geometry::dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
 }
 
 template <typename T>
-T Geometry::dotProduct(const T *vA, const T *vB) {
-  return vA[0] * vB[0] + vA[1] * vB[1] + vA[2] * vB[2];
+T Geometry::dotProduct(const T *vA, const T *vB, const int &dimension) {
+  T dotProduct = 0;
+  for(int i = 0; i < dimension; ++i)
+    dotProduct += vA[i] * vB[i];
+  return dotProduct;
 }
 
 template <typename T>
@@ -457,15 +460,8 @@ bool Geometry::isTriangleColinear(const T *p0,
 }
 
 template <typename T>
-T Geometry::magnitude(const T *v) {
-
-  T mag = 0;
-
-  for(int i = 0; i < 3; i++) {
-    mag += v[i] * v[i];
-  }
-
-  return sqrt(mag);
+T Geometry::magnitude(const T *v, const int &dimension) {
+  return sqrt(dotProduct(v, v, dimension));
 }
 
 template <typename T>
@@ -481,10 +477,45 @@ T Geometry::magnitude(const T *o, const T *d) {
 }
 
 template <typename T>
-int Geometry::subtractVectors(const T *a, const T *b, T *out) {
-  out[0] = b[0] - a[0];
-  out[1] = b[1] - a[1];
-  out[2] = b[2] - a[2];
+int Geometry::subtractVectors(const T *a,
+                              const T *b,
+                              T *out,
+                              const int &dimension) {
+  for(int i = 0; i < dimension; ++i)
+    out[i] = b[i] - a[i];
+  return 0;
+}
+
+template <typename T>
+int Geometry::addVectors(const T *a, const T *b, T *out, const int &dimension) {
+  for(int i = 0; i < dimension; ++i)
+    out[i] = b[i] + a[i];
+  return 0;
+}
+
+template <typename T>
+int Geometry::scaleVector(const T *a,
+                          const T factor,
+                          T *out,
+                          const int &dimension) {
+  for(int i = 0; i < dimension; ++i)
+    out[i] = a[i] * factor;
+  return 0;
+}
+
+template <typename T>
+int Geometry::vectorProjection(const T *a,
+                               const T *b,
+                               T *out,
+                               const int &dimension) {
+  T dotProdBB = dotProduct(b, b, dimension);
+  if(dotProdBB > 1e-12) {
+    T dotProdAB = dotProduct(a, b, dimension);
+    dotProdAB /= dotProdBB;
+    for(int i = 0; i < dimension; ++i)
+      out[i] = b[i] * dotProdAB;
+  } else
+    return -1;
   return 0;
 }
 
@@ -520,7 +551,8 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
     TYPE const *, TYPE const *, int const &);                                 \
   template TYPE Geometry::dotProduct<TYPE>(                                   \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
-  template TYPE Geometry::dotProduct<TYPE>(TYPE const *, TYPE const *);       \
+  template TYPE Geometry::dotProduct<TYPE>(                                   \
+    TYPE const *, TYPE const *, int const &);                                 \
   template bool Geometry::isPointInTriangle<TYPE>(                            \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template bool Geometry::isPointOnSegment<TYPE>(TYPE const &, TYPE const &,  \
@@ -530,10 +562,16 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
     TYPE const *, TYPE const *, TYPE const *, int const &);                   \
   template bool Geometry::isTriangleColinear<TYPE>(                           \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
-  template TYPE Geometry::magnitude<TYPE>(TYPE const *);                      \
+  template TYPE Geometry::magnitude<TYPE>(TYPE const *, int const &);         \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);        \
   template int Geometry::subtractVectors<TYPE>(                               \
-    TYPE const *, TYPE const *, TYPE *)
+    TYPE const *, TYPE const *, TYPE *, int const &);                         \
+  template int Geometry::addVectors<TYPE>(                                    \
+    TYPE const *, TYPE const *, TYPE *, int const &);                         \
+  template int Geometry::scaleVector<TYPE>(                                   \
+    TYPE const *, TYPE const, TYPE *, int const &);                           \
+  template int Geometry::vectorProjection<TYPE>(                              \
+    TYPE const *, TYPE const *, TYPE *, int const &)
 
 // explicit specializations for float and double
 GEOMETRY_SPECIALIZE(float);

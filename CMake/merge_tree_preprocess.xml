@@ -1,17 +1,4 @@
 <IntVectorProperty
-name="DeleteMultiPersPairs"
-command="SetDeleteMultiPersPairs"
-label="Delete Multi Persistence Pairs"
-number_of_elements="1"
-default_values="0"
-panel_visibility="advanced">
-  <Documentation>
-    Delete persistence pairs for which the saddle point is involved in more than one pair.
-  </Documentation>
-  <BooleanDomain name="bool"/>
-</IntVectorProperty>
-
-<IntVectorProperty
 name="Epsilon1UseFarthestSaddle"
 command="SetEpsilon1UseFarthestSaddle"
 label="Epsilon1 Use Farthest Saddle"
@@ -114,11 +101,24 @@ default_values="0">
   <DoubleRangeDomain name="range" min="0" max="100" />
 </DoubleVectorProperty>
 
+<IntVectorProperty
+name="DeleteMultiPersPairs"
+command="SetDeleteMultiPersPairs"
+label="Delete Multi Persistence Pairs"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Documentation>
+    Delete persistence pairs for which the saddle point is involved in more than one pair.
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
 <PropertyGroup panel_widget="Line" label="Input options">
-  <Property name="DeleteMultiPersPairs"/>
   <Property name="Epsilon1UseFarthestSaddle"/>
   <Property name="EpsilonTree1"/>
   <Property name="Epsilon2Tree1"/>
   <Property name="Epsilon3Tree1"/>
   <Property name="PersistenceThreshold"/>
+  <Property name="DeleteMultiPersPairs"/>
 </PropertyGroup>
