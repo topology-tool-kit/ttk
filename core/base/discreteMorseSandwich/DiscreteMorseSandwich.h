@@ -1060,18 +1060,12 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
     }
   }
 
-  if(dim == 1) {
-    // early return in 1D
-    this->printMsg(
-      "Computed " + std::to_string(pairs.size()) + " persistence pairs", 1.0,
-      tm.getElapsedTime(), this->threadNumber_);
-    return 0;
+  if(dim > 1) {
+    // saddle - maxima pairs
+    this->getMaxSaddlePairs(
+      pairs, pairedMaxima, paired2Saddles, criticalCellsByDim[dim - 1],
+      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation);
   }
-
-  // saddle - maxima pairs
-  this->getMaxSaddlePairs(pairs, pairedMaxima, paired2Saddles,
-                          criticalCellsByDim[dim - 1], critCellsOrder[dim - 1],
-                          critCellsOrder[dim], triangulation);
 
   if(ignoreBoundary) {
     // post-process saddle-max pairs: remove the one with the global
