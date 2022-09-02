@@ -365,7 +365,7 @@ jobs:
   - script: |
       brew install --cask xquartz
       brew install wget libomp mesa glew boost ccache ninja python
-      python3 -m pip install scikit-learn packaging
+      python3.8 -m pip install scikit-learn packaging
     displayName: 'Install dependencies'
 
   - script: |
@@ -468,7 +468,7 @@ jobs:
     displayName: 'Test TTKVTK Example'
 
   - script: |
-      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.9/site-packages:$(Build.ArtifactStagingDirectory)/pv-install/lib/python3.9/site-packages
+      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages:$(Build.ArtifactStagingDirectory)/pv-install/lib/python3.8/site-packages
       export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
