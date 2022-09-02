@@ -347,7 +347,7 @@ jobs:
 - job:
   condition: true
   displayName: MacOS-PV-Python3-OpenMP-Ninja
-  timeoutInMinutes: 180
+  timeoutInMinutes: 240
 
   variables:
     CMakeArgs: ''
