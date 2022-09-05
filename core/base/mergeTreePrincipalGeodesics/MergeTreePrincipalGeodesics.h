@@ -99,16 +99,6 @@ namespace ttk {
         bestMatching2;
       int bestIndex = 0;
     };
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp declare reduction( \
-  minimum                      \
-  : struct Compare             \
-  : omp_out = omp_in.bestDistance < omp_out.bestDistance ? omp_in : omp_out)
-#pragma omp declare reduction( \
-  maximum                      \
-  : struct Compare             \
-  : omp_out = omp_in.bestDistance > omp_out.bestDistance ? omp_in : omp_out)
-#endif
 
     //----------------------------------------------------------------------------
     // Init
