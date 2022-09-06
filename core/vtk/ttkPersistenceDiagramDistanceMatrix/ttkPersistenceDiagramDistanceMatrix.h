@@ -20,7 +20,6 @@
 // VTK includes
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkPersistenceDiagramDistanceMatrixModule.h>
@@ -125,9 +124,6 @@ public:
 protected:
   ttkPersistenceDiagramDistanceMatrix();
   ~ttkPersistenceDiagramDistanceMatrix() override = default;
-
-  double getPersistenceDiagram(ttk::Diagram &diagram,
-                               vtkUnstructuredGrid *CTPersistenceDiagram_);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
