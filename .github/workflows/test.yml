@@ -206,13 +206,10 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew uninstall --ignore-dependencies python@3.10
-        brew install wget libomp ninja python@3.9 open-mpi
-        # force brew's Python 3.9 as default Python
-        echo "$(brew --prefix)/opt/python@3.9/libexec/bin" >> $GITHUB_PATH
+        brew install wget libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
-        python3.9 -m pip install scikit-learn packaging
+        python3 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
