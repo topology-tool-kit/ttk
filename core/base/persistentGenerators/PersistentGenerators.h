@@ -458,7 +458,7 @@ int ttk::PersistentGenerators::computePersistentGenerators(
     std::vector<PersistencePair> sadMaxPairs{};
     this->getMaxSaddlePairs(
       sadMaxPairs, pairedMaxima, paired2Saddles, criticalCellsByDim[dim - 1],
-      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation, false);
+      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation);
   }
 
   if(!criticalCellsByDim[1].empty() && !criticalCellsByDim[2].empty()) {
