@@ -17,7 +17,6 @@
 #include <DiscreteGradient.h>
 
 using ttk::SimplexId;
-using ttk::VisitedMask;
 using ttk::dcg::Cell;
 using ttk::dcg::CellExt;
 using ttk::dcg::CriticalPoint;
@@ -1938,8 +1937,6 @@ inline void
       }
     }
   }
-
-  return;
 }
 
 template <typename triangulationType>
@@ -3090,6 +3087,8 @@ int DiscreteGradient::setGradientGlyphs(
   std::vector<std::array<float, 3>> &points,
   std::vector<char> &points_pairOrigins,
   std::vector<char> &cells_pairTypes,
+  std::vector<SimplexId> &cellIds,
+  std::vector<char> &cellDimensions,
   const triangulationType &triangulation) const {
 
   const auto nDims = this->getNumberOfDimensions();
@@ -3122,6 +3121,8 @@ int DiscreteGradient::setGradientGlyphs(
   points.resize(2 * nGlyphs);
   points_pairOrigins.resize(2 * nGlyphs);
   cells_pairTypes.resize(nGlyphs);
+  cellIds.resize(2 * nGlyphs);
+  cellDimensions.resize(2 * nGlyphs);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -3141,6 +3142,10 @@ int DiscreteGradient::setGradientGlyphs(
         points_pairOrigins[2 * nProcessedGlyphs] = 0;
         points_pairOrigins[2 * nProcessedGlyphs + 1] = 1;
         cells_pairTypes[nProcessedGlyphs] = i;
+        cellIds[2 * nProcessedGlyphs + 0] = j;
+        cellIds[2 * nProcessedGlyphs + 1] = pcid;
+        cellDimensions[2 * nProcessedGlyphs + 0] = i;
+        cellDimensions[2 * nProcessedGlyphs + 1] = i + 1;
         nProcessedGlyphs++;
       }
     }
