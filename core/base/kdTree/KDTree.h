@@ -18,11 +18,11 @@
 
 namespace ttk {
   template <typename dataType>
-  class KDTree : public Debug {
+  class KDTree {
 
   protected:
     // Boolean indicating if the current node is a left node of its parent
-    bool is_left_;
+    bool is_left_{};
     // Indicates according to which coordinate the tree splits its elements
     int coords_number_{0};
     // Power used for the computation of distances. p=2 yields euclidean
@@ -42,20 +42,20 @@ namespace ttk {
     // ID of the object saved here. The whole object is not kept in the KDTree
     // Users should keep track of them in a table for instance
     int id_{};
-    std::vector<dataType> coordinates_{};
-    std::vector<dataType> coords_min_{};
-    std::vector<dataType> coords_max_{};
+    std::array<dataType, 5> coordinates_{};
+    std::array<dataType, 5> coords_min_{};
+    std::array<dataType, 5> coords_max_{};
     int level_{};
 
     std::vector<dataType> weight_{};
     std::vector<dataType> min_subweights_{};
 
     KDTree() = default;
-    KDTree(bool include_weights, int p)
+    KDTree(const bool include_weights, const int p)
       : p_{p}, include_weights_{include_weights} {
     }
 
-    KDTree(KDTree *father, int coords_number, bool is_left)
+    KDTree(KDTree *const father, const int coords_number, const bool is_left)
       : is_left_{is_left}, coords_number_{coords_number},
         include_weights_{father->include_weights_}, parent_{father} {
     }
@@ -63,346 +63,343 @@ namespace ttk {
     KDTreeMap build(dataType *data,
                     const int &ptNumber,
                     const int &dimension,
-                    const int weight_number = 1);
-    KDTreeMap build(dataType *data,
-                    const int &ptNumber,
-                    const int &dimension,
-                    std::vector<std::vector<dataType>> &weights,
+                    const std::vector<std::vector<dataType>> &weights = {},
                     const int weight_number = 1);
 
     void buildRecursive(dataType *data,
-                        std::vector<int> idx_side,
+                        std::vector<int> &idx_side,
                         const int &ptNumber,
                         const int &dimension,
                         KDTree<dataType> *parent,
                         KDTreeMap &correspondance_map,
-                        std::vector<std::vector<dataType>> &weights,
-                        const int weight_number = 1);
-    void buildRecursive(dataType *data,
-                        std::vector<int> idx_side,
-                        const int &ptNumber,
-                        const int &dimension,
-                        KDTree<dataType> *parent,
-                        KDTreeMap &correspondance_map,
+                        const std::vector<std::vector<dataType>> &weights = {},
                         const int weight_number = 1);
 
-    void updateWeight(dataType new_weight, const int weight_index = 0);
+    inline void updateWeight(const dataType new_weight,
+                             const int weight_index = 0) {
+      weight_[weight_index] = new_weight;
+      updateMinSubweight(weight_index);
+    }
+
     void updateMinSubweight(const int weight_index = 0);
     void getKClosest(const unsigned int k,
-                     const std::vector<dataType> &coordinates,
+                     const std::array<dataType, 5> &coordinates,
                      KDTreeMap &neighbours,
                      std::vector<dataType> &costs,
                      const int weight_index = 0);
     void recursiveGetKClosest(const unsigned int k,
-                              const std::vector<dataType> &coordinates,
+                              const std::array<dataType, 5> &coordinates,
                               KDTreeMap &neighbours,
                               std::vector<dataType> &costs,
                               const int weight_index = 0);
 
-    dataType cost(const std::vector<dataType> &coordinates);
-    dataType distanceToBox(const KDTree<dataType> &subtree,
-                           const std::vector<dataType> &coordinates);
-    std::vector<dataType> getCoordinates();
-    dataType getWeight(const int weight_index = 0);
-    dataType getMinSubWeight(const int weight_index = 0);
+    inline dataType cost(const std::array<dataType, 5> &coordinates) const {
+      dataType cost = 0;
+      for(size_t i = 0; i < coordinates.size(); i++) {
+        cost += Geometry::pow(std::abs(coordinates[i] - coordinates_[i]), p_);
+      }
+      return cost;
+    }
 
-    bool isLeaf();
-    bool isRoot();
+    inline dataType
+      distanceToBox(const KDTree<dataType> &subtree,
+                    const std::array<dataType, 5> &coordinates) const {
+      dataType d_min = 0;
+      for(size_t axis = 0; axis < coordinates.size(); axis++) {
+        if(subtree.coords_min_[axis] > coordinates[axis]) {
+          d_min
+            += Geometry::pow(subtree.coords_min_[axis] - coordinates[axis], p_);
+        } else if(subtree.coords_max_[axis] < coordinates[axis]) {
+          d_min
+            += Geometry::pow(coordinates[axis] - subtree.coords_max_[axis], p_);
+        }
+      }
+      return d_min;
+    }
+
+    inline const std::vector<dataType> &getCoordinates() const {
+      return coordinates_;
+    }
+    inline dataType getWeight(const int weight_index = 0) const {
+      return weight_[weight_index];
+    }
+    inline dataType getMinSubWeight(const int weight_index = 0) const {
+      return min_subweights_[weight_index];
+    }
+    inline bool isLeaf() const {
+      return left_ == nullptr && right_ == nullptr;
+    }
+    inline bool isRoot() const {
+      return parent_ == nullptr;
+    }
   };
+} // namespace ttk
 
-  template <typename dataType>
-  std::vector<dataType> KDTree<dataType>::getCoordinates() {
-    return coordinates_;
+template <typename dataType>
+typename ttk::KDTree<dataType>::KDTreeMap ttk::KDTree<dataType>::build(
+  dataType *data,
+  const int &ptNumber,
+  const int &dimension,
+  const std::vector<std::vector<dataType>> &weights,
+  const int weight_number) {
+
+  KDTreeMap correspondance_map(ptNumber);
+  // First, perform a argsort on the data
+  // initialize original index locations
+  for(int axis = 0; axis < dimension; axis++) {
+    coords_min_[axis] = std::numeric_limits<dataType>::lowest();
+    coords_max_[axis] = std::numeric_limits<dataType>::max();
+  }
+  std::vector<int> idx(ptNumber);
+  for(int i = 0; i < ptNumber; i++) {
+    idx[i] = i;
+  }
+  // sort indexes based on comparing values in coordinates
+  sort(idx.begin(), idx.end(), [&](int i1, int i2) {
+    return data[dimension * i1 + coords_number_]
+           < data[dimension * i2 + coords_number_];
+  });
+  int median_loc = (int)(ptNumber - 1) / 2;
+  int median_idx = idx[median_loc];
+  correspondance_map[median_idx] = this;
+
+  for(int axis = 0; axis < dimension; axis++) {
+    coordinates_[axis] = data[dimension * median_idx + axis];
   }
 
-  template <typename dataType>
-  dataType KDTree<dataType>::getWeight(const int weight_index) {
-    return weight_[weight_index];
+  id_ = median_idx;
+  parent_ = nullptr;
+  level_ = 0;
+
+  this->weight_.clear();
+  this->min_subweights_.clear();
+
+  if(weights.empty()) {
+    this->weight_.resize(weight_number);
+    this->min_subweights_.resize(weight_number);
+  } else {
+    for(int i = 0; i < weight_number; i++) {
+      weight_.push_back(weights[i][median_idx]);
+      min_subweights_.push_back(weights[i][median_idx]);
+    }
   }
 
-  template <typename dataType>
-  dataType KDTree<dataType>::getMinSubWeight(const int weight_index) {
-    return min_subweights_[weight_index];
+  if(idx.size() > 2) {
+    // Build left leaf
+    std::vector<int> idx_left(median_loc);
+    for(int i = 0; i < median_loc; i++) {
+      idx_left[i] = idx[i];
+    }
+
+    this->left_ = std::unique_ptr<KDTree>(
+      new KDTree(this, (coords_number_ + 1) % dimension, true));
+    this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
+                                correspondance_map, weights, weight_number);
   }
 
-  template <typename dataType>
-  typename KDTree<dataType>::KDTreeMap
-    KDTree<dataType>::build(dataType *data,
-                            const int &ptNumber,
-                            const int &dimension,
-                            const int weight_number) {
-    KDTreeMap correspondance_map(ptNumber);
-    // First, perform a argsort on the data
-    // initialize original index locations
-    for(int axis = 0; axis < dimension; axis++) {
-      coords_min_.push_back(std::numeric_limits<dataType>::lowest());
-      coords_max_.push_back(std::numeric_limits<dataType>::max());
+  if(idx.size() > 1) {
+    // Build right leaf
+    std::vector<int> idx_right(ptNumber - median_loc - 1);
+    for(int i = 0; i < ptNumber - median_loc - 1; i++) {
+      idx_right[i] = idx[i + median_loc + 1];
     }
-    std::vector<int> idx(ptNumber);
-    for(int i = 0; i < ptNumber; i++) {
-      idx[i] = i;
-    }
-    // sort indexes based on comparing values in coordinates
-    sort(idx.begin(), idx.end(), [&](int i1, int i2) {
-      return data[dimension * i1 + coords_number_]
-             < data[dimension * i2 + coords_number_];
-    });
-    int median_loc = (int)(ptNumber - 1) / 2;
-    int median_idx = idx[median_loc];
-    correspondance_map[median_idx] = this;
-
-    for(int axis = 0; axis < dimension; axis++) {
-      coordinates_.push_back(data[dimension * median_idx + axis]);
-    }
-    for(int w = 0; w < weight_number; w++) {
-      weight_.push_back(0);
-      min_subweights_.push_back(0);
-    }
-    id_ = median_idx;
-    parent_ = nullptr;
-    level_ = 0;
-
-    if(idx.size() > 2) {
-      // Build left leaf
-      std::vector<int> idx_left(median_loc);
-      for(int i = 0; i < median_loc; i++) {
-        idx_left[i] = idx[i];
-      }
-
-      this->left_ = std::unique_ptr<KDTree>(
-        new KDTree(this, (coords_number_ + 1) % dimension, true));
-      this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
-                                  correspondance_map, weight_number);
-    }
-
-    if(idx.size() > 1) {
-      // Build right leaf
-      std::vector<int> idx_right(ptNumber - median_loc - 1);
-      for(int i = 0; i < ptNumber - median_loc - 1; i++) {
-        idx_right[i] = idx[i + median_loc + 1];
-      }
-      this->right_ = std::unique_ptr<KDTree>(
-        new KDTree(this, (coords_number_ + 1) % dimension, false));
-      this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
-                                   correspondance_map, weight_number);
-    }
-
-    return correspondance_map;
+    this->right_ = std::unique_ptr<KDTree>(
+      new KDTree(this, (coords_number_ + 1) % dimension, false));
+    this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
+                                 correspondance_map, weights, weight_number);
   }
 
-  template <typename dataType>
-  void KDTree<dataType>::buildRecursive(dataType *data,
-                                        std::vector<int> idx_side,
-                                        const int &ptNumber,
-                                        const int &dimension,
-                                        KDTree<dataType> *parent,
-                                        KDTreeMap &correspondance_map,
-                                        const int weight_number) {
+  return correspondance_map;
+}
 
-    // First, perform a argsort on the data
-    sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {
-      return data[dimension * i1 + coords_number_]
-             < data[dimension * i2 + coords_number_];
-    });
-    int median_loc = (int)(idx_side.size() - 1) / 2;
-    int median_idx = idx_side[median_loc];
-    correspondance_map[median_idx] = this;
+template <typename dataType>
+void ttk::KDTree<dataType>::buildRecursive(
+  dataType *data,
+  std::vector<int> &idx_side,
+  const int &ptNumber,
+  const int &dimension,
+  KDTree<dataType> *parent,
+  KDTreeMap &correspondance_map,
+  const std::vector<std::vector<dataType>> &weights,
+  const int weight_number) {
 
-    for(int axis = 0; axis < dimension; axis++) {
-      coordinates_.push_back(data[dimension * median_idx + axis]);
-    }
-    for(int w = 0; w < weight_number; w++) {
-      weight_.push_back(0);
-      min_subweights_.push_back(0);
-    }
-    id_ = median_idx;
-    parent_ = parent;
-    level_ = parent->level_ + 1;
+  // First, perform a argsort on the data
+  sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {
+    return data[dimension * i1 + coords_number_]
+           < data[dimension * i2 + coords_number_];
+  });
+  int median_loc = (int)(idx_side.size() - 1) / 2;
+  int median_idx = idx_side[median_loc];
+  correspondance_map[median_idx] = this;
 
-    // Create bounding box
-    for(int axis = 0; axis < dimension; axis++) {
-      coords_min_.push_back(parent_->coords_min_[axis]);
-      coords_max_.push_back(parent_->coords_max_[axis]);
-    }
-    if(is_left_ && !this->isRoot()) {
-      coords_max_[parent_->coords_number_]
-        = parent_->coordinates_[parent_->coords_number_];
-    } else if(!is_left_ && !this->isRoot()) {
-      coords_min_[parent_->coords_number_]
-        = parent_->coordinates_[parent_->coords_number_];
-    }
+  for(int axis = 0; axis < dimension; axis++) {
+    coordinates_[axis] = data[dimension * median_idx + axis];
+  }
 
-    if(idx_side.size() > 2) {
-      // Build left leaf
-      std::vector<int> idx_left(median_loc);
-      for(int i = 0; i < median_loc; i++) {
-        idx_left[i] = idx_side[i];
-      }
+  id_ = median_idx;
+  parent_ = parent;
+  level_ = parent->level_ + 1;
 
-      this->left_ = std::unique_ptr<KDTree>(
-        new KDTree(this, (coords_number_ + 1) % dimension, true));
-      this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
-                                  correspondance_map, weight_number);
+  this->weight_.clear();
+  this->min_subweights_.clear();
+
+  if(weights.empty()) {
+    this->weight_.resize(weight_number);
+    this->min_subweights_.resize(weight_number);
+  } else {
+    for(int i = 0; i < weight_number; i++) {
+      weight_.push_back(weights[i][median_idx]);
+      min_subweights_.push_back(weights[i][median_idx]);
     }
 
     if(idx_side.size() > 1) {
-      // Build right leaf
-      std::vector<int> idx_right(idx_side.size() - median_loc - 1);
-      for(unsigned int i = 0; i < idx_side.size() - median_loc - 1; i++) {
-        idx_right[i] = idx_side[i + median_loc + 1];
-      }
-      this->right_ = std::unique_ptr<KDTree>(
-        new KDTree(this, (coords_number_ + 1) % dimension, false));
-      this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
-                                   correspondance_map, weight_number);
-    }
-  }
-
-  template <typename dataType>
-  void KDTree<dataType>::updateWeight(dataType new_weight,
-                                      const int weight_index) {
-    weight_[weight_index] = new_weight;
-    updateMinSubweight(weight_index);
-  }
-
-  template <typename dataType>
-  void KDTree<dataType>::updateMinSubweight(const int weight_index) {
-    dataType new_min_subweight;
-    if(this->isLeaf()) {
-      new_min_subweight = weight_[weight_index];
-    } else if(!left_) {
-      new_min_subweight = std::min(
-        right_->min_subweights_[weight_index], weight_[weight_index]);
-    } else if(!right_) {
-      new_min_subweight
-        = std::min(left_->min_subweights_[weight_index], weight_[weight_index]);
-    } else {
-      new_min_subweight
-        = std::min(std::min(left_->min_subweights_[weight_index],
-                            right_->min_subweights_[weight_index]),
-                   weight_[weight_index]);
-    }
-
-    if(new_min_subweight != min_subweights_[weight_index]) {
-      min_subweights_[weight_index] = new_min_subweight;
-      if(!this->isRoot()) {
-        parent_->updateMinSubweight(weight_index);
+      // Once we get to a leaf, update min_subweights of the parents
+      for(int w = 0; w < weight_number; w++) {
+        this->updateMinSubweight(w);
       }
     }
   }
 
-  template <typename dataType>
-  void KDTree<dataType>::getKClosest(const unsigned int k,
-                                     const std::vector<dataType> &coordinates,
-                                     KDTreeMap &neighbours,
-                                     std::vector<dataType> &costs,
-                                     const int weight_index) {
-    /// Puts the k closest points to the given coordinates in the "neighbours"
-    /// vector along with their costs in the "costs" vector The output is not
-    /// sorted, if you are interested in the k nearest neighbours in the order,
-    /// will need to sort them according to their cost.
-    if(this->isLeaf()) {
-      dataType cost = this->cost(coordinates);
-      cost += weight_[weight_index];
-      neighbours.push_back(this);
-      costs.push_back(cost);
-    } else {
-      this->recursiveGetKClosest(
-        k, coordinates, neighbours, costs, weight_index);
-    }
-    // TODO sort neighbours and costs !
+  // Create bounding box
+  for(int axis = 0; axis < dimension; axis++) {
+    coords_min_[axis] = parent_->coords_min_[axis];
+    coords_max_[axis] = parent_->coords_max_[axis];
+  }
+  if(is_left_ && !this->isRoot()) {
+    coords_max_[parent_->coords_number_]
+      = parent_->coordinates_[parent_->coords_number_];
+  } else if(!is_left_ && !this->isRoot()) {
+    coords_min_[parent_->coords_number_]
+      = parent_->coordinates_[parent_->coords_number_];
   }
 
-  template <typename dataType>
-  void KDTree<dataType>::recursiveGetKClosest(
-    const unsigned int k,
-    const std::vector<dataType> &coordinates,
-    KDTreeMap &neighbours,
-    std::vector<dataType> &costs,
-    const int weight_index) {
-    // 1- Look wether or not to include the current point in the nearest
-    // neighbours
+  if(idx_side.size() > 2) {
+    // Build left leaf
+    std::vector<int> idx_left(median_loc);
+    for(int i = 0; i < median_loc; i++) {
+      idx_left[i] = idx_side[i];
+    }
+
+    this->left_ = std::unique_ptr<KDTree>(
+      new KDTree(this, (coords_number_ + 1) % dimension, true));
+    this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
+                                correspondance_map, weights, weight_number);
+  }
+
+  if(idx_side.size() > 1) {
+    // Build right leaf
+    std::vector<int> idx_right(idx_side.size() - median_loc - 1);
+    for(unsigned int i = 0; i < idx_side.size() - median_loc - 1; i++) {
+      idx_right[i] = idx_side[i + median_loc + 1];
+    }
+    this->right_ = std::unique_ptr<KDTree>(
+      new KDTree(this, (coords_number_ + 1) % dimension, false));
+    this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
+                                 correspondance_map, weights, weight_number);
+  }
+}
+
+template <typename dataType>
+void ttk::KDTree<dataType>::updateMinSubweight(const int weight_index) {
+  dataType new_min_subweight;
+  if(this->isLeaf()) {
+    new_min_subweight = weight_[weight_index];
+  } else if(!left_) {
+    new_min_subweight
+      = std::min(right_->min_subweights_[weight_index], weight_[weight_index]);
+  } else if(!right_) {
+    new_min_subweight
+      = std::min(left_->min_subweights_[weight_index], weight_[weight_index]);
+  } else {
+    new_min_subweight
+      = std::min(std::min(left_->min_subweights_[weight_index],
+                          right_->min_subweights_[weight_index]),
+                 weight_[weight_index]);
+  }
+
+  if(new_min_subweight != min_subweights_[weight_index]) {
+    min_subweights_[weight_index] = new_min_subweight;
+    if(!this->isRoot()) {
+      parent_->updateMinSubweight(weight_index);
+    }
+  }
+}
+
+template <typename dataType>
+void ttk::KDTree<dataType>::getKClosest(
+  const unsigned int k,
+  const std::array<dataType, 5> &coordinates,
+  KDTreeMap &neighbours,
+  std::vector<dataType> &costs,
+  const int weight_index) {
+  /// Puts the k closest points to the given coordinates in the "neighbours"
+  /// vector along with their costs in the "costs" vector The output is not
+  /// sorted, if you are interested in the k nearest neighbours in the order,
+  /// will need to sort them according to their cost.
+  if(this->isLeaf()) {
     dataType cost = this->cost(coordinates);
     cost += weight_[weight_index];
+    neighbours.push_back(this);
+    costs.push_back(cost);
+  } else {
+    neighbours.reserve(k);
+    costs.reserve(k);
+    this->recursiveGetKClosest(k, coordinates, neighbours, costs, weight_index);
+  }
+  // TODO sort neighbours and costs !
+}
 
-    if(costs.size() < k) {
-      neighbours.push_back(this);
-      costs.push_back(cost);
-    } else {
-      // 1.1- Find the most costly amongst neighbours
-      const auto idx_max_cost = std::distance(
-        costs.begin(), std::max_element(costs.begin(), costs.begin() + k));
-      dataType max_cost = costs[idx_max_cost];
+template <typename dataType>
+void ttk::KDTree<dataType>::recursiveGetKClosest(
+  const unsigned int k,
+  const std::array<dataType, 5> &coordinates,
+  KDTreeMap &neighbours,
+  std::vector<dataType> &costs,
+  const int weight_index) {
+  // 1- Look wether or not to include the current point in the nearest
+  // neighbours
+  dataType cost = this->cost(coordinates);
+  cost += weight_[weight_index];
 
-      // 1.2- If the current KDTree is less costly, put it in the neighbours and
-      // update costs.
-      if(cost < max_cost) {
-        costs[idx_max_cost] = cost;
-        neighbours[idx_max_cost] = this;
-      }
-    }
+  if(costs.size() < k) {
+    neighbours.push_back(this);
+    costs.push_back(cost);
+  } else {
+    // 1.1- Find the most costly amongst neighbours
+    const auto idx_max_cost = std::distance(
+      costs.begin(), std::max_element(costs.begin(), costs.begin() + k));
+    const dataType max_cost = costs[idx_max_cost];
 
-    // 2- Recursively visit KDTrees that are worth it
-    if(left_) {
-      dataType max_cost = *std::max_element(costs.begin(), costs.end());
-      dataType &min_subweight = left_->min_subweights_[weight_index];
-      dataType d_min = this->distanceToBox(*left_, coordinates);
-      if(costs.size() < k || d_min + min_subweight < max_cost) {
-        // 2.2- It is possible that there exists a point in this subtree that is
-        // less costly than max_cost
-        left_->recursiveGetKClosest(
-          k, coordinates, neighbours, costs, weight_index);
-      }
-    }
-
-    if(right_) {
-      dataType max_cost = *std::max_element(costs.begin(), costs.end());
-      dataType &min_subweight = right_->min_subweights_[weight_index];
-      dataType d_min = this->distanceToBox(*right_, coordinates);
-      if(costs.size() < k || d_min + min_subweight < max_cost) {
-        // 2.2- It is possible that there exists a point in this subtree that is
-        // less costly than max_cost
-        right_->recursiveGetKClosest(
-          k, coordinates, neighbours, costs, weight_index);
-      }
+    // 1.2- If the current KDTree is less costly, put it in the neighbours and
+    // update costs.
+    if(cost < max_cost) {
+      costs[idx_max_cost] = cost;
+      neighbours[idx_max_cost] = this;
     }
   }
 
-  template <typename dataType>
-  dataType KDTree<dataType>::cost(const std::vector<dataType> &coordinates) {
-    dataType cost = 0;
-    for(size_t i = 0; i < coordinates.size(); i++) {
-      cost += Geometry::pow(std::abs(coordinates[i] - coordinates_[i]), p_);
+  // 2- Recursively visit KDTrees that are worth it
+  if(left_) {
+    const dataType max_cost = *std::max_element(costs.begin(), costs.end());
+    const dataType min_subweight = left_->min_subweights_[weight_index];
+    const dataType d_min = this->distanceToBox(*left_, coordinates);
+    if(costs.size() < k || d_min + min_subweight < max_cost) {
+      // 2.2- It is possible that there exists a point in this subtree that is
+      // less costly than max_cost
+      left_->recursiveGetKClosest(
+        k, coordinates, neighbours, costs, weight_index);
     }
-    return cost;
   }
 
-  template <typename dataType>
-  dataType
-    KDTree<dataType>::distanceToBox(const KDTree<dataType> &subtree,
-                                    const std::vector<dataType> &coordinates) {
-    dataType d_min = 0;
-    for(size_t axis = 0; axis < coordinates.size(); axis++) {
-      if(subtree.coords_min_[axis] > coordinates[axis]) {
-        d_min
-          += Geometry::pow(subtree.coords_min_[axis] - coordinates[axis], p_);
-      } else if(subtree.coords_max_[axis] < coordinates[axis]) {
-        d_min
-          += Geometry::pow(coordinates[axis] - subtree.coords_max_[axis], p_);
-      }
+  if(right_) {
+    const dataType max_cost = *std::max_element(costs.begin(), costs.end());
+    const dataType min_subweight = right_->min_subweights_[weight_index];
+    const dataType d_min = this->distanceToBox(*right_, coordinates);
+    if(costs.size() < k || d_min + min_subweight < max_cost) {
+      // 2.2- It is possible that there exists a point in this subtree that is
+      // less costly than max_cost
+      right_->recursiveGetKClosest(
+        k, coordinates, neighbours, costs, weight_index);
     }
-    return d_min;
   }
-
-  template <typename dataType>
-  bool KDTree<dataType>::isLeaf() {
-    return left_ == nullptr && right_ == nullptr;
-  }
-
-  template <typename dataType>
-  bool KDTree<dataType>::isRoot() {
-    return parent_ == nullptr;
-  }
-} // namespace ttk
-
-#include <buildWeights.h>
+}

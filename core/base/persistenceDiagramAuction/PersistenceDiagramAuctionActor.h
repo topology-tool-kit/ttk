@@ -17,7 +17,7 @@ namespace ttk {
     }
   };
 
-  class PersistenceDiagramAuctionActor : public Debug {
+  class PersistenceDiagramAuctionActor {
   public:
     PersistenceDiagramAuctionActor() = default;
 
