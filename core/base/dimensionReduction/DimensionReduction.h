@@ -187,6 +187,20 @@ namespace ttk {
       this->IsDeterministic = isDeterm;
     }
 
+    inline void setIsInputDistanceMatrix(const bool data) {
+      if(data) {
+        this->se_Affinity = "precomputed";
+        this->mds_Dissimilarity = "precomputed";
+        this->tsne_Metric = "precomputed";
+        this->iso_Metric = "precomputed";
+      } else {
+        this->se_Affinity = "nearest_neighbors";
+        this->mds_Dissimilarity = "euclidean";
+        this->tsne_Metric = "euclidean";
+        this->iso_Metric = "euclidean";
+      }
+    }
+
     bool isPythonFound() const;
 
     int execute(std::vector<std::vector<double>> &outputEmbedding,

@@ -93,12 +93,7 @@ public:
   // SE && MDS
   void SetInputIsADistanceMatrix(const bool b) {
     this->InputIsADistanceMatrix = b;
-    if(b) {
-      this->mds_Dissimilarity = "precomputed";
-      this->se_Affinity = "precomputed";
-      this->tsne_Metric = "precomputed";
-      this->iso_Metric = "precomputed";
-    }
+    this->setIsInputDistanceMatrix(b);
     Modified();
   }
   vtkGetMacro(InputIsADistanceMatrix, bool);
