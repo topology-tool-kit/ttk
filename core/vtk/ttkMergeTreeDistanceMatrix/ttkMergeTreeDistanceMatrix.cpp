@@ -168,16 +168,18 @@ int ttkMergeTreeDistanceMatrix::run(
   treesDistTable->AddColumn(treeIds);
 
   // aggregate input field data
-  vtkNew<vtkFieldData> fd{};
-  fd->CopyStructure(inputTrees[0]->GetBlock(0)->GetFieldData());
-  fd->SetNumberOfTuples(inputTrees.size());
-  for(size_t i = 0; i < inputTrees.size(); ++i) {
-    fd->SetTuple(i, 0, inputTrees[i]->GetBlock(0)->GetFieldData());
-  }
+  for(unsigned int b = 0; b < inputTrees[0]->GetNumberOfBlocks(); ++b) {
+    vtkNew<vtkFieldData> fd{};
+    fd->CopyStructure(inputTrees[0]->GetBlock(b)->GetFieldData());
+    fd->SetNumberOfTuples(inputTrees.size());
+    for(size_t i = 0; i < inputTrees.size(); ++i) {
+      fd->SetTuple(i, 0, inputTrees[i]->GetBlock(b)->GetFieldData());
+    }
 
-  // copy input field data to output row data
-  for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
-    treesDistTable->AddColumn(fd->GetAbstractArray(i));
+    // copy input field data to output row data
+    for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
+      treesDistTable->AddColumn(fd->GetAbstractArray(i));
+    }
   }
 
   return 1;
