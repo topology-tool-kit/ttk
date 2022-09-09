@@ -281,14 +281,16 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
         continue;
       }
 
-      const auto &p1{diag[bidderId]};
-      if(p1.birth.type == ttk::CriticalType::Local_minimum) {
-        minSadCost += std::get<2>(m);
-      } else if(p1.birth.type == ttk::CriticalType::Saddle1
-                && p1.death.type == ttk::CriticalType::Saddle2) {
-        sadSadCost += std::get<2>(m);
-      } else if(p1.death.type == ttk::CriticalType::Local_maximum) {
-        sadMaxCost += std::get<2>(m);
+      if(bidderId > 0) {
+        const auto &p1{diag[bidderId]};
+        if(p1.birth.type == ttk::CriticalType::Local_minimum) {
+          minSadCost += std::get<2>(m);
+        } else if(p1.birth.type == ttk::CriticalType::Saddle1
+                  && p1.death.type == ttk::CriticalType::Saddle2) {
+          sadSadCost += std::get<2>(m);
+        } else if(p1.death.type == ttk::CriticalType::Local_maximum) {
+          sadMaxCost += std::get<2>(m);
+        }
       }
     }
 

@@ -359,8 +359,7 @@ namespace ttk {
                                unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox) {
-    std::vector<std::array<double, 6>> rankBoundingBoxes(
-      ttk::MPIsize_, std::array<double, 6>({}));
+    std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
     for(int r = 0; r < ttk::MPIsize_; r++) {
@@ -384,7 +383,7 @@ namespace ttk {
         }
       }
     }
-    MPI_Datatype MIT = ttk::getMPIType(static_cast<ttk::SimplexId>(0));
+    MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
     std::vector<ttk::SimplexId> currentRankUnknownIds;
     std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);
     std::unordered_set<ttk::SimplexId> gIdSet;
