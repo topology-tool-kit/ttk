@@ -2160,47 +2160,8 @@ bool DiscreteGradient::isBoundary(
     return false;
   }
 
-  if(cell.dim_ == 0) {
-    return triangulation.isVertexOnBoundary(cell.id_);
-  }
-
-  if(cell.dim_ == 1) {
-    if(this->dimensionality_ > 1) {
-      return triangulation.isEdgeOnBoundary(cell.id_);
-    }
-    for(int i = 0; i < 2; ++i) {
-      SimplexId v{};
-      triangulation.getEdgeVertex(cell.id_, i, v);
-      if(triangulation.isVertexOnBoundary(v)) {
-        return true;
-      }
-    }
-  }
-
-  if(cell.dim_ == 2) {
-    if(this->dimensionality_ > 2) {
-      return triangulation.isTriangleOnBoundary(cell.id_);
-    }
-    for(int i = 0; i < 3; ++i) {
-      SimplexId e{};
-      triangulation.getCellEdge(cell.id_, i, e);
-      if(triangulation.isEdgeOnBoundary(e)) {
-        return true;
-      }
-    }
-  }
-
-  if(cell.dim_ == 3) {
-    for(int i = 0; i < 4; ++i) {
-      SimplexId t{};
-      triangulation.getCellTriangle(cell.id_, i, t);
-      if(triangulation.isTriangleOnBoundary(t)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  const auto vert{this->getCellGreaterVertex(cell, triangulation)};
+  return triangulation.isVertexOnBoundary(vert);
 }
 
 template <typename triangulationType>
