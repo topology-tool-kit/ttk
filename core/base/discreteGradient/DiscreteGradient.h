@@ -594,6 +594,8 @@ in the gradient.
       int setGradientGlyphs(std::vector<std::array<float, 3>> &points,
                             std::vector<char> &points_pairOrigins,
                             std::vector<char> &cells_pairTypes,
+                            std::vector<SimplexId> &cellsIds,
+                            std::vector<char> &cellsDimensions,
                             const triangulationType &triangulation) const;
 
     private:

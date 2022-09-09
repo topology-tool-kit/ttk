@@ -136,10 +136,13 @@ int ttkDiscreteGradient::fillGradientGlyphs(
   std::vector<std::array<float, 3>> gradientGlyphs_points;
   std::vector<char> gradientGlyphs_points_pairOrigins;
   std::vector<char> gradientGlyphs_cells_pairTypes;
+  std::vector<SimplexId> gradientGlyphs_point_ids{};
+  std::vector<char> gradientGlyphs_point_dimensions{};
 
-  this->setGradientGlyphs(gradientGlyphs_points,
-                          gradientGlyphs_points_pairOrigins,
-                          gradientGlyphs_cells_pairTypes, triangulation);
+  this->setGradientGlyphs(
+    gradientGlyphs_points, gradientGlyphs_points_pairOrigins,
+    gradientGlyphs_cells_pairTypes, gradientGlyphs_point_ids,
+    gradientGlyphs_point_dimensions, triangulation);
 
   const auto nPoints = gradientGlyphs_points.size();
 
@@ -170,6 +173,14 @@ int ttkDiscreteGradient::fillGradientGlyphs(
   pairTypes->SetNumberOfComponents(1);
   pairTypes->SetName("PairType");
   pairTypes->SetNumberOfTuples(nCells);
+  vtkNew<ttkSimplexIdTypeArray> cellIds{};
+  cellIds->SetNumberOfComponents(1);
+  cellIds->SetName("CellId");
+  cellIds->SetNumberOfTuples(2 * nCells);
+  vtkNew<vtkSignedCharArray> cellDimensions{};
+  cellDimensions->SetNumberOfComponents(1);
+  cellDimensions->SetName("CellDimension");
+  cellDimensions->SetNumberOfTuples(2 * nCells);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -180,6 +191,12 @@ int ttkDiscreteGradient::fillGradientGlyphs(
     connectivity->SetTuple1(2 * i, 2 * i);
     connectivity->SetTuple1(2 * i + 1, 2 * i + 1);
     pairTypes->SetTuple1(i, gradientGlyphs_cells_pairTypes[i]);
+    cellIds->SetTuple1(2 * i + 0, gradientGlyphs_point_ids[2 * i + 0]);
+    cellIds->SetTuple1(2 * i + 1, gradientGlyphs_point_ids[2 * i + 1]);
+    cellDimensions->SetTuple1(
+      2 * i + 0, gradientGlyphs_point_dimensions[2 * i + 0]);
+    cellDimensions->SetTuple1(
+      2 * i + 1, gradientGlyphs_point_dimensions[2 * i + 1]);
   }
   offsets->SetTuple1(nCells, connectivity->GetNumberOfTuples());
 
@@ -198,6 +215,8 @@ int ttkDiscreteGradient::fillGradientGlyphs(
 #endif
 
   pointData->AddArray(pairOrigins);
+  pointData->AddArray(cellIds);
+  pointData->AddArray(cellDimensions);
   cellData->SetScalars(pairTypes);
 
   this->printMsg(
