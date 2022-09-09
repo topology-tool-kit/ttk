@@ -1222,9 +1222,10 @@ const unsigned long ExplicitTriangulation::formatVersion_ = 1;
 int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
 
   // 1. magic bytes (char *)
-  stream.write(this->magicBytes_, std::strlen(this->magicBytes_));
+  stream.write(ttk::ExplicitTriangulation::magicBytes_,
+               std::strlen(ttk::ExplicitTriangulation::magicBytes_));
   // 2. format version (unsigned long)
-  writeBin(stream, this->formatVersion_);
+  writeBin(stream, ttk::ExplicitTriangulation::formatVersion_);
   // 3. dimensionality (int)
   const auto dim = this->getDimensionality();
   writeBin(stream, dim);
@@ -1353,10 +1354,12 @@ void readBinArray(std::ifstream &stream, T *const res, const size_t size) {
 int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
 
   // 1. magic bytes (char *)
-  const auto magicBytesLen = std::strlen(this->magicBytes_);
+  const auto magicBytesLen
+    = std::strlen(ttk::ExplicitTriangulation::magicBytes_);
   std::vector<char> mBytes(magicBytesLen + 1);
   stream.read(mBytes.data(), magicBytesLen);
-  const auto hasMagicBytes = std::strcmp(mBytes.data(), this->magicBytes_) == 0;
+  const auto hasMagicBytes
+    = std::strcmp(mBytes.data(), ttk::ExplicitTriangulation::magicBytes_) == 0;
   if(!hasMagicBytes) {
     this->printErr("Could not find magic bytes in input files!");
     this->printErr("Aborting...");
@@ -1365,10 +1368,11 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
   // 2. format version (unsigned long)
   unsigned long version{};
   readBin(stream, version);
-  if(version != this->formatVersion_) {
+  if(version != ttk::ExplicitTriangulation::formatVersion_) {
     this->printWrn("File format version (" + std::to_string(version)
                    + ") and software version ("
-                   + std::to_string(this->formatVersion_) + ") are different!");
+                   + std::to_string(ttk::ExplicitTriangulation::formatVersion_)
+                   + ") are different!");
   }
 
   int dim{};
@@ -1404,10 +1408,7 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
   const auto read_guard = [&stream]() {
     char g{};
     readBin(stream, g);
-    if(g == 0) {
-      return true;
-    }
-    return false;
+    return g == 0;
   };
 
 #define READ_FIXED(ARRAY, N_ITEMS)               \
