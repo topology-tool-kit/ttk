@@ -163,6 +163,16 @@ namespace ttk {
       this->BackEnd = be;
     }
 
+    inline void setComputeMinSad(const bool data) {
+      this->dms_.setComputeMinSad(data);
+    }
+    inline void setComputeSadSad(const bool data) {
+      this->dms_.setComputeSadSad(data);
+    }
+    inline void setComputeSadMax(const bool data) {
+      this->dms_.setComputeSadMax(data);
+    }
+
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
                                   ftm::TreeType treeType,
                                   const SimplexId vertexId) const;

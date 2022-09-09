@@ -196,6 +196,19 @@ public:
   vtkSetMacro(IgnoreBoundary, bool);
   vtkGetMacro(IgnoreBoundary, bool);
 
+  inline void SetComputeMinSad(const bool data) {
+    this->setComputeMinSad(data);
+    this->Modified();
+  }
+  inline void SetComputeSadSad(const bool data) {
+    this->setComputeSadSad(data);
+    this->Modified();
+  }
+  inline void SetComputeSadMax(const bool data) {
+    this->setComputeSadMax(data);
+    this->Modified();
+  }
+
 protected:
   ttkPersistenceDiagram();
 
