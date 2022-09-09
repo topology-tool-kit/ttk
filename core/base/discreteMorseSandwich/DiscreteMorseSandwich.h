@@ -22,6 +22,7 @@
 
 #include <DiscreteGradient.h>
 
+#include <algorithm>
 #include <numeric>
 
 namespace ttk {
@@ -1076,6 +1077,16 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
         nConnComp++;
       }
     }
+  } else {
+    // still extract the global pair
+    const auto globMin{*std::min_element(
+      criticalCellsByDim[0].begin(), criticalCellsByDim[0].end(),
+      [offsets](const SimplexId a, const SimplexId b) {
+        return offsets[a] < offsets[b];
+      })};
+    pairs.emplace_back(globMin, -1, 0);
+    pairedMinima[globMin] = true;
+    nConnComp++;
   }
 
   if(dim > 1 && this->ComputeSadMax) {
