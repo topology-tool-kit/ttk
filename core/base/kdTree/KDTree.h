@@ -87,31 +87,35 @@ namespace ttk {
                      KDTreeMap &neighbours,
                      std::vector<dataType> &costs,
                      const int weight_index = 0);
+
+    template <typename PowerFunc>
     void recursiveGetKClosest(const unsigned int k,
                               const std::array<dataType, 5> &coordinates,
                               KDTreeMap &neighbours,
                               std::vector<dataType> &costs,
-                              const int weight_index = 0);
+                              const int weight_index,
+                              const PowerFunc &power);
 
-    inline dataType cost(const std::array<dataType, 5> &coordinates) const {
+    template <typename PowerFunc>
+    inline dataType cost(const std::array<dataType, 5> &coordinates,
+                         const PowerFunc &power) const {
       dataType cost = 0;
       for(size_t i = 0; i < coordinates.size(); i++) {
-        cost += Geometry::pow(std::abs(coordinates[i] - coordinates_[i]), p_);
+        cost += power(std::abs(coordinates[i] - coordinates_[i]));
       }
       return cost;
     }
 
-    inline dataType
-      distanceToBox(const KDTree<dataType> &subtree,
-                    const std::array<dataType, 5> &coordinates) const {
+    template <typename PowerFunc>
+    inline dataType distanceToBox(const KDTree<dataType> &subtree,
+                                  const std::array<dataType, 5> &coordinates,
+                                  const PowerFunc &power) const {
       dataType d_min = 0;
       for(size_t axis = 0; axis < coordinates.size(); axis++) {
         if(subtree.coords_min_[axis] > coordinates[axis]) {
-          d_min
-            += Geometry::pow(subtree.coords_min_[axis] - coordinates[axis], p_);
+          d_min += power(subtree.coords_min_[axis] - coordinates[axis]);
         } else if(subtree.coords_max_[axis] < coordinates[axis]) {
-          d_min
-            += Geometry::pow(coordinates[axis] - subtree.coords_max_[axis], p_);
+          d_min += power(coordinates[axis] - subtree.coords_max_[axis]);
         }
       }
       return d_min;
@@ -332,33 +336,40 @@ void ttk::KDTree<dataType>::getKClosest(
   KDTreeMap &neighbours,
   std::vector<dataType> &costs,
   const int weight_index) {
+
+  const auto p{this->p_};
+
   /// Puts the k closest points to the given coordinates in the "neighbours"
   /// vector along with their costs in the "costs" vector The output is not
   /// sorted, if you are interested in the k nearest neighbours in the order,
   /// will need to sort them according to their cost.
   if(this->isLeaf()) {
-    dataType cost = this->cost(coordinates);
+    dataType cost{};
+    TTK_POW_LAMBDA(cost = this->cost, dataType, p, coordinates);
     cost += weight_[weight_index];
     neighbours.push_back(this);
     costs.push_back(cost);
   } else {
     neighbours.reserve(k);
     costs.reserve(k);
-    this->recursiveGetKClosest(k, coordinates, neighbours, costs, weight_index);
+    TTK_POW_LAMBDA(this->recursiveGetKClosest, dataType, p, k, coordinates,
+                   neighbours, costs, weight_index);
   }
   // TODO sort neighbours and costs !
 }
 
 template <typename dataType>
+template <typename PowerFunc>
 void ttk::KDTree<dataType>::recursiveGetKClosest(
   const unsigned int k,
   const std::array<dataType, 5> &coordinates,
   KDTreeMap &neighbours,
   std::vector<dataType> &costs,
-  const int weight_index) {
+  const int weight_index,
+  const PowerFunc &power) {
   // 1- Look wether or not to include the current point in the nearest
   // neighbours
-  dataType cost = this->cost(coordinates);
+  dataType cost = this->cost(coordinates, power);
   cost += weight_[weight_index];
 
   if(costs.size() < k) {
@@ -382,24 +393,24 @@ void ttk::KDTree<dataType>::recursiveGetKClosest(
   if(left_) {
     const dataType max_cost = *std::max_element(costs.begin(), costs.end());
     const dataType min_subweight = left_->min_subweights_[weight_index];
-    const dataType d_min = this->distanceToBox(*left_, coordinates);
+    const dataType d_min = this->distanceToBox(*left_, coordinates, power);
     if(costs.size() < k || d_min + min_subweight < max_cost) {
       // 2.2- It is possible that there exists a point in this subtree that is
       // less costly than max_cost
       left_->recursiveGetKClosest(
-        k, coordinates, neighbours, costs, weight_index);
+        k, coordinates, neighbours, costs, weight_index, power);
     }
   }
 
   if(right_) {
     const dataType max_cost = *std::max_element(costs.begin(), costs.end());
     const dataType min_subweight = right_->min_subweights_[weight_index];
-    const dataType d_min = this->distanceToBox(*right_, coordinates);
+    const dataType d_min = this->distanceToBox(*right_, coordinates, power);
     if(costs.size() < k || d_min + min_subweight < max_cost) {
       // 2.2- It is possible that there exists a point in this subtree that is
       // less costly than max_cost
       right_->recursiveGetKClosest(
-        k, coordinates, neighbours, costs, weight_index);
+        k, coordinates, neighbours, costs, weight_index, power);
     }
   }
 }
