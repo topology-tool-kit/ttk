@@ -268,6 +268,11 @@ jobs:
         cmake --build . --parallel
         sudo cmake --build . --target install
 
+    - name: Set PYTHONPATH for macOS pvpython
+      run: |
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
