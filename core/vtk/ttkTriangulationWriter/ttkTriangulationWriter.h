@@ -25,6 +25,9 @@ public:
   vtkSetStringMacro(Filename);
   vtkGetStringMacro(Filename);
 
+  vtkSetMacro(UseASCIIFormat, bool);
+  vtkGetMacro(UseASCIIFormat, bool);
+
   // expose vtkWriter methods (duck-typing)
   int Write();
   vtkDataObject *GetInput();
@@ -39,6 +42,7 @@ protected:
 
   char *Filename{};
   std::ofstream Stream{};
+  bool UseASCIIFormat{false};
 
 private:
   ttkTriangulationWriter(const ttkTriangulationWriter &) = delete;
