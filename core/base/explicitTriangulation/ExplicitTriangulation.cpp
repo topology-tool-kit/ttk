@@ -1341,6 +1341,96 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   return 0;
 }
 
+int ExplicitTriangulation::writeToFileASCII(std::ofstream &stream) const {
+  // 1. magic bytes
+  stream << ttk::ExplicitTriangulation::magicBytes_ << '\n';
+  // 2. format version
+  stream << ttk::ExplicitTriangulation::formatVersion_ + 1 << '\n';
+  // 3. dimensionality
+  const auto dim = this->getDimensionality();
+  stream << "dim " << dim << '\n';
+  // 4. -> 7. number of simplices
+  const auto nVerts = this->getNumberOfVertices();
+  const auto edgesNumber = [this, dim]() -> SimplexId {
+    if(dim == 1) {
+      return this->getNumberOfCells();
+    } else if(dim > 1) {
+      return this->edgeList_.size();
+    }
+    return 0;
+  };
+  const auto nEdges = edgesNumber();
+  const auto trianglesNumber = [this, dim]() -> SimplexId {
+    if(dim == 2) {
+      return this->getNumberOfCells();
+    } else if(dim == 3) {
+      return this->triangleList_.size();
+    }
+    return 0;
+  };
+  const auto nTriangles = trianglesNumber();
+  const auto nTetras = dim > 2 ? this->getNumberOfCells() : 0;
+  stream << nVerts << ' ' << nEdges << ' ' << nTriangles << ' ' << nTetras
+         << '\n';
+
+#define WRITE_ASCII(ARRAY)                     \
+  stream << #ARRAY << '\n';                    \
+  for(const auto &slice : ARRAY) {             \
+    for(size_t i = 0; i < slice.size(); ++i) { \
+      if(i > 0) {                              \
+        stream << ' ';                         \
+      }                                        \
+      stream << slice[i];                      \
+    }                                          \
+    stream << '\n';                            \
+  }
+
+  const auto writeCellArray = [this, &stream]() {
+    stream << "this->cellArray_\n";
+    for(SimplexId i = 0; i < this->cellNumber_; ++i) {
+      for(SimplexId j = 0; j < this->cellArray_->getCellVertexNumber(i); ++j) {
+        stream << this->cellArray_->getCellVertex(i, j) << ' ';
+      }
+      stream << '\n';
+    }
+  };
+
+  // ?. cellArray_
+  writeCellArray();
+
+  // 8. -> 12. fixed-size arrays
+  WRITE_ASCII(this->edgeList_);
+  WRITE_ASCII(this->triangleList_);
+  WRITE_ASCII(this->triangleEdgeList_);
+  WRITE_ASCII(this->tetraEdgeList_);
+
+  // 13. -> 23. variable-size arrays
+  WRITE_ASCII(this->vertexNeighborData_);
+  WRITE_ASCII(this->cellNeighborData_);
+  WRITE_ASCII(this->vertexEdgeData_);
+  WRITE_ASCII(this->vertexTriangleData_);
+  WRITE_ASCII(this->edgeTriangleData_);
+  WRITE_ASCII(this->vertexStarData_);
+  WRITE_ASCII(this->edgeStarData_);
+  WRITE_ASCII(this->triangleStarData_);
+  WRITE_ASCII(this->vertexLinkData_);
+  WRITE_ASCII(this->edgeLinkData_);
+  WRITE_ASCII(this->triangleLinkData_);
+
+#define WRITE_BOOL(ARRAY)      \
+  stream << #ARRAY << '\n';    \
+  for(const auto el : ARRAY) { \
+    stream << el << '\n';      \
+  }
+
+  // 24. -> 26. boolean arrays
+  WRITE_BOOL(this->boundaryVertices_);
+  WRITE_BOOL(this->boundaryEdges_);
+  WRITE_BOOL(this->boundaryTriangles_);
+
+  return 0;
+}
+
 template <typename T>
 void readBin(std::ifstream &stream, T &res) {
   stream.read(reinterpret_cast<char *>(&res), sizeof(res));
