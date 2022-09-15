@@ -198,14 +198,23 @@ public:
 
   inline void SetComputeMinSad(const bool data) {
     this->setComputeMinSad(data);
+    this->dmsDimsCache[0] = data;
     this->Modified();
   }
   inline void SetComputeSadSad(const bool data) {
     this->setComputeSadSad(data);
+    this->dmsDimsCache[1] = data;
     this->Modified();
   }
   inline void SetComputeSadMax(const bool data) {
     this->setComputeSadMax(data);
+    this->dmsDimsCache[2] = data;
+    this->Modified();
+  }
+  inline void SetDMSDimensions(const int data) {
+    this->setComputeMinSad(data == 0 ? true : this->dmsDimsCache[0]);
+    this->setComputeSadSad(data == 0 ? true : this->dmsDimsCache[1]);
+    this->setComputeSadMax(data == 0 ? true : this->dmsDimsCache[2]);
     this->Modified();
   }
 
@@ -232,4 +241,7 @@ private:
 
   bool ForceInputOffsetScalarField{false};
   bool ShowInsideDomain{false};
+  // stores the values of Compute[Min|Sad][Sad|Max] GUI checkboxes
+  // when "All Dimensions" is selected
+  std::array<bool, 3> dmsDimsCache{true, true, true};
 };

@@ -374,6 +374,7 @@
       <IntVectorProperty
           name="DMSDimensions"
           label="Dimensions"
+          command="SetDMSDimensions"
           number_of_elements="1"
           default_values="0"
           panel_visibility="advanced" >
