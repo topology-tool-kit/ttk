@@ -83,6 +83,7 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
 ///   Learning Circles example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
 ///   2-Manifold Learning example</a> \n
 ///   - <a
