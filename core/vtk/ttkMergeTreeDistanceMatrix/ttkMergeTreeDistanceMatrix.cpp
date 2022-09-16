@@ -8,6 +8,7 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkStringArray.h>
 #include <vtkTable.h>
 
 using namespace ttk;
@@ -168,18 +169,46 @@ int ttkMergeTreeDistanceMatrix::run(
   treesDistTable->AddColumn(treeIds);
 
   // aggregate input field data
-  for(unsigned int b = 0; b < inputTrees[0]->GetNumberOfBlocks(); ++b) {
-    vtkNew<vtkFieldData> fd{};
-    fd->CopyStructure(inputTrees[0]->GetBlock(b)->GetFieldData());
-    fd->SetNumberOfTuples(inputTrees.size());
-    for(size_t i = 0; i < inputTrees.size(); ++i) {
-      fd->SetTuple(i, 0, inputTrees[i]->GetBlock(b)->GetFieldData());
+  vtkNew<vtkFieldData> allFieldData{}, allFieldDataCopy{};
+  for(unsigned int i = 0; i < inputTrees.size(); ++i) {
+    for(unsigned int j = 0; j < inputTrees[i]->GetNumberOfBlocks(); ++j) {
+      auto fd = inputTrees[i]->GetBlock(j)->GetFieldData();
+      for(int k = 0; k < fd->GetNumberOfArrays(); ++k) {
+        auto array = fd->GetAbstractArray(k);
+        auto dataArray = vtkDataArray::SafeDownCast(array);
+        auto stringArray = vtkStringArray::SafeDownCast(array);
+        if(dataArray or stringArray)
+          allFieldData->AddArray(array);
+      }
     }
+  }
+  allFieldDataCopy->DeepCopy(allFieldData); // to not modify original field data
 
-    // copy input field data to output row data
-    for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
-      treesDistTable->AddColumn(fd->GetAbstractArray(i));
+  for(int k = 0; k < allFieldDataCopy->GetNumberOfArrays(); ++k) {
+    auto array = allFieldDataCopy->GetAbstractArray(k);
+    array->SetNumberOfTuples(inputTrees.size());
+    auto dataArray = vtkDataArray::SafeDownCast(array);
+    auto stringArray = vtkStringArray::SafeDownCast(array);
+    auto name = array->GetName();
+    for(unsigned int i = 0; i < inputTrees.size(); ++i) {
+      bool foundArray = false;
+      for(unsigned int j = 0; j < inputTrees[i]->GetNumberOfBlocks(); ++j) {
+        auto inputArray
+          = inputTrees[i]->GetBlock(j)->GetFieldData()->GetAbstractArray(name);
+        if(inputArray) {
+          array->SetTuple(i, 0, inputArray);
+          foundArray = true;
+        } else if(not foundArray) {
+          if(dataArray) {
+            const double val = std::nan("");
+            dataArray->SetTuple(i, &val);
+          } else if(stringArray) {
+            stringArray->SetValue(i, "");
+          }
+        }
+      }
     }
+    treesDistTable->AddColumn(array);
   }
 
   return 1;
