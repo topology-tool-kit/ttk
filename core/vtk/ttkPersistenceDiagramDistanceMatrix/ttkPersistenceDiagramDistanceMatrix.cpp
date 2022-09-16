@@ -13,6 +13,7 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkStringArray.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -131,17 +132,42 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     diagramsDistTable->AddColumn(col);
   }
 
-  // aggregate input field data
-  vtkNew<vtkFieldData> fd{};
-  fd->CopyStructure(inputDiagrams[0]->GetFieldData());
-  fd->SetNumberOfTuples(nTuples);
-  for(size_t i = 0; i < nTuples; ++i) {
-    fd->SetTuple(i, 0, inputDiagrams[i]->GetFieldData());
+  // aggregate the field data arrays from all input diagrams
+  vtkNew<vtkFieldData> inputFdA{};
+
+  for(const auto diag : inputDiagrams) {
+    const auto fd{diag->GetFieldData()};
+    for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
+      const auto array{fd->GetAbstractArray(i)};
+      if(array->IsA("vtkDataArray") || array->IsA("vtkStringArray")) {
+        inputFdA->AddArray(array);
+      }
+    }
   }
 
-  // copy input field data to output row data
-  for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
-    diagramsDistTable->AddColumn(fd->GetAbstractArray(i));
+  // avoid modifying input field data
+  vtkNew<vtkFieldData> outputFda{};
+  outputFda->DeepCopy(inputFdA);
+
+  for(int i = 0; i < outputFda->GetNumberOfArrays(); ++i) {
+    const auto array{outputFda->GetAbstractArray(i)};
+    array->SetNumberOfTuples(inputDiagrams.size());
+    const auto name{array->GetName()};
+    for(size_t j = 0; j < inputDiagrams.size(); ++j) {
+      const auto fd{inputDiagrams[j]->GetFieldData()};
+      const auto inputArray{fd->GetAbstractArray(name)};
+      if(inputArray != nullptr) {
+        array->SetTuple(j, 0, inputArray);
+      } else {
+        if(array->IsA("vtkDataArray")) {
+          vtkDataArray::SafeDownCast(array)->SetTuple1(j, NAN);
+        } else if(array->IsA("vtkStringArray")) {
+          vtkStringArray::SafeDownCast(array)->SetValue(j, "");
+        }
+      }
+    }
+    // copy "extended" input field data array to output row data
+    diagramsDistTable->AddColumn(array);
   }
 
   return 1;
