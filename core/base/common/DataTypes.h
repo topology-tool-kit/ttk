@@ -30,6 +30,9 @@ namespace ttk {
   /// default name for vertex scalar field
   const char VertexScalarFieldName[] = "ttkVertexScalarField";
 
+  /// default name for cell scalar field
+  const char CellScalarFieldName[] = "ttkCellScalarField";
+
   /// default name for offset scalar field
   const char OffsetScalarFieldName[] = "ttkOffsetScalarField";
 
