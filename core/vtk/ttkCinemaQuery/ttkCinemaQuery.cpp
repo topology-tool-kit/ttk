@@ -177,6 +177,8 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
                 // convert char/signed char to int to get its value
                 // instead of its char representation
                 sqlInsertStatement += std::to_string(var.ToInt());
+              } else if(std::isnan(var.ToDouble())) {
+                sqlInsertStatement += "'NaN'";
               } else {
                 sqlInsertStatement += var.ToString();
               }
