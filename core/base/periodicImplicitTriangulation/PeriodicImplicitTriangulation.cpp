@@ -1798,14 +1798,14 @@ const vector<vector<SimplexId>> *
 
 int ttk::PeriodicImplicitTriangulation::getCellVTKIDInternal(const int &ttkId,
                                                              int &vtkId) const {
-#ifdef TTK_ENABLE_KAMIZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ttkId < 0) {
     return -1;
   }
 #endif
-  const int nTetraPerCube{
+  const int nSimplexPerCell{
     PeriodicImplicitTriangulation::getDimensionality() == 3 ? 6 : 2};
-  vtkId = ttkId / nTetraPerCube;
+  vtkId = ttkId / nSimplexPerCell;
   return 0;
 }
 

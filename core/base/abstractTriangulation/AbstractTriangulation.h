@@ -3490,7 +3490,7 @@ namespace ttk {
 
     virtual inline int getCellVTKIDInternal(const int &ttkId,
                                             int &vtkId) const {
-#ifdef TTK_ENABLE_KAMIZE
+#ifndef TTK_ENABLE_KAMIKAZE
       if(ttkId < 0) {
         return -1;
       }
