@@ -2280,7 +2280,7 @@ namespace ttk {
     }
 
     ///
-    /// \pre Get the VTK ID of a cell using the TTK ID of a cell.
+    /// \pre Get the VTK id of a cell using the TTK id of a cell.
     /// For implicit triangulations, VTK cells are squares or cubes,
     /// whereas TTK cells are triangles and tetrahedron.
     /// For other triangulations, the TTK and VTK cells coincide.
