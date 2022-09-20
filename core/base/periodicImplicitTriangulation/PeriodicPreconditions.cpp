@@ -315,3 +315,29 @@ std::array<ttk::SimplexId, 3>
   }
   return p;
 }
+
+int ttk::PeriodicNoPreconditions::getCellVTKIDInternal(const int &ttkId,
+                                                       int &vtkId) const {
+#ifdef TTK_ENABLE_KAMIZE
+  if(ttkId < 0) {
+    return -1;
+  }
+#endif
+  const int nTetraPerCube{
+    PeriodicNoPreconditions::getDimensionality() == 3 ? 6 : 2};
+  vtkId = ttkId / nTetraPerCube;
+  return 0;
+}
+
+int ttk::PeriodicWithPreconditions::getCellVTKIDInternal(const int &ttkId,
+                                                         int &vtkId) const {
+#ifdef TTK_ENABLE_KAMIZE
+  if(ttkId < 0) {
+    return -1;
+  }
+#endif
+  const int nTetraPerCube{
+    PeriodicWithPreconditions::getDimensionality() == 3 ? 6 : 2};
+  vtkId = ttkId / nTetraPerCube;
+  return 0;
+}
