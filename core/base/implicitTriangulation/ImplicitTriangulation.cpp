@@ -3053,8 +3053,10 @@ int ImplicitTriangulation::getCellVTKIDInternal(const int &ttkId,
     return -1;
   }
 #endif
-  const int nSimplexPerCell{
-    ImplicitTriangulation::getDimensionality() == 3 ? 6 : 2};
+  const int nSimplexPerCell{ImplicitTriangulation::getDimensionality() == 3 ? 6
+                            : ImplicitTriangulation::getDimensionality() == 2
+                              ? 2
+                              : 1};
   vtkId = ttkId / nSimplexPerCell;
   return 0;
 }

@@ -1804,7 +1804,9 @@ int ttk::PeriodicImplicitTriangulation::getCellVTKIDInternal(const int &ttkId,
   }
 #endif
   const int nSimplexPerCell{
-    PeriodicImplicitTriangulation::getDimensionality() == 3 ? 6 : 2};
+    PeriodicImplicitTriangulation::getDimensionality() == 3   ? 6
+    : PeriodicImplicitTriangulation::getDimensionality() == 2 ? 2
+                                                              : 1};
   vtkId = ttkId / nSimplexPerCell;
   return 0;
 }

@@ -324,7 +324,9 @@ int ttk::PeriodicNoPreconditions::getCellVTKIDInternal(const int &ttkId,
   }
 #endif
   const int nSimplexPerCell{
-    PeriodicNoPreconditions::getDimensionality() == 3 ? 6 : 2};
+    PeriodicNoPreconditions::getDimensionality() == 3   ? 6
+    : PeriodicNoPreconditions::getDimensionality() == 2 ? 2
+                                                        : 1};
   vtkId = ttkId / nSimplexPerCell;
   return 0;
 }
@@ -337,7 +339,9 @@ int ttk::PeriodicWithPreconditions::getCellVTKIDInternal(const int &ttkId,
   }
 #endif
   const int nSimplexPerCell{
-    PeriodicWithPreconditions::getDimensionality() == 3 ? 6 : 2};
+    PeriodicWithPreconditions::getDimensionality() == 3   ? 6
+    : PeriodicWithPreconditions::getDimensionality() == 2 ? 2
+                                                          : 1};
   vtkId = ttkId / nSimplexPerCell;
   return 0;
 }
