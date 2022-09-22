@@ -3183,21 +3183,6 @@ int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
   return 0;
 }
 
-int ImplicitTriangulation::getCellVTKIDInternal(const int &ttkId,
-                                                int &vtkId) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ttkId < 0) {
-    return -1;
-  }
-#endif
-  const int nSimplexPerCell{ImplicitTriangulation::getDimensionality() == 3 ? 6
-                            : ImplicitTriangulation::getDimensionality() == 2
-                              ? 2
-                              : 1};
-  vtkId = ttkId / nSimplexPerCell;
-  return 0;
-}
-
 #ifdef TTK_ENABLE_MPI
 
 int ttk::ImplicitTriangulation::preconditionDistributedCells() {
