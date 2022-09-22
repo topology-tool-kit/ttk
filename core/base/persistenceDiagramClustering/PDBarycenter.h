@@ -52,15 +52,17 @@ namespace ttk {
     double getMaxPersistence();
     double getLowestPersistence();
     double getMinimalPrice(int i);
-    using KDTreePair = std::pair<typename KDTree<double>::KDTreeRoot,
-                                 typename KDTree<double>::KDTreeMap>;
+
+    using KDT = PersistenceDiagramAuction::KDT;
+    using KDTreePair
+      = std::pair<typename KDT::KDTreeRoot, typename KDT::KDTreeMap>;
     KDTreePair getKDTree() const;
 
     void runMatching(double *total_cost,
                      double epsilon,
                      std::vector<int> &sizes,
-                     KDTree<double> &kdt,
-                     std::vector<KDTree<double> *> &correspondance_kdt_map,
+                     KDT &kdt,
+                     std::vector<KDT *> &correspondance_kdt_map,
                      std::vector<double> *min_diag_price,
                      std::vector<double> *min_price,
                      std::vector<std::vector<MatchingType>> *all_matchings,
@@ -70,8 +72,8 @@ namespace ttk {
     void
       runMatchingAuction(double *total_cost,
                          std::vector<int> &sizes,
-                         KDTree<double> &kdt,
-                         std::vector<KDTree<double> *> &correspondance_kdt_map,
+                         KDT &kdt,
+                         std::vector<KDT *> &correspondance_kdt_map,
                          std::vector<double> *min_diag_price,
                          std::vector<std::vector<MatchingType>> *all_matchings,
                          bool use_kdt);

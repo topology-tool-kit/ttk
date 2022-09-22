@@ -228,6 +228,8 @@ namespace ttk {
                            < Geometry::powIntTen<double>(-12);
     }
 
+    using KDT = KDTree<double, std::array<double, 5>>;
+
     // Off-diagonal Bidding (with or without the use of a KD-Tree
     int runBidding(GoodDiagram *goods,
                    Good &diagonalGood,
@@ -239,7 +241,7 @@ namespace ttk {
                       int wasserstein,
                       double epsilon,
                       double geometricalFactor,
-                      KDTree<double> *kdt,
+                      KDT *kdt,
                       const int kdt_index = 0);
 
     // Diagonal Bidding (with or without the use of a KD-Tree
@@ -258,7 +260,7 @@ namespace ttk {
       int wasserstein,
       double epsilon,
       double geometricalFactor,
-      std::vector<KDTree<double> *> &correspondance_kdt_map,
+      std::vector<KDT *> &correspondance_kdt_map,
       std::priority_queue<std::pair<int, double>,
                           std::vector<std::pair<int, double>>,
                           Compare> &diagonal_queue,

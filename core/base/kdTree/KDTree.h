@@ -17,7 +17,7 @@
 #include <memory>
 
 namespace ttk {
-  template <typename dataType>
+  template <typename dataType, typename Container>
   class KDTree {
 
   protected:
@@ -42,9 +42,9 @@ namespace ttk {
     // ID of the object saved here. The whole object is not kept in the KDTree
     // Users should keep track of them in a table for instance
     int id_{};
-    std::array<dataType, 5> coordinates_{};
-    std::array<dataType, 5> coords_min_{};
-    std::array<dataType, 5> coords_max_{};
+    Container coordinates_{};
+    Container coords_min_{};
+    Container coords_max_{};
     int level_{};
 
     std::vector<dataType> weight_{};
@@ -70,7 +70,7 @@ namespace ttk {
                         std::vector<int> &idx_side,
                         const int &ptNumber,
                         const int &dimension,
-                        KDTree<dataType> *parent,
+                        KDTree<dataType, Container> *parent,
                         KDTreeMap &correspondance_map,
                         const std::vector<std::vector<dataType>> &weights = {},
                         const int weight_number = 1);
@@ -83,21 +83,21 @@ namespace ttk {
 
     void updateMinSubweight(const int weight_index = 0);
     void getKClosest(const unsigned int k,
-                     const std::array<dataType, 5> &coordinates,
+                     const Container &coordinates,
                      KDTreeMap &neighbours,
                      std::vector<dataType> &costs,
                      const int weight_index = 0);
 
     template <typename PowerFunc>
     void recursiveGetKClosest(const unsigned int k,
-                              const std::array<dataType, 5> &coordinates,
+                              const Container &coordinates,
                               KDTreeMap &neighbours,
                               std::vector<dataType> &costs,
                               const int weight_index,
                               const PowerFunc &power);
 
     template <typename PowerFunc>
-    inline dataType cost(const std::array<dataType, 5> &coordinates,
+    inline dataType cost(const Container &coordinates,
                          const PowerFunc &power) const {
       dataType cost = 0;
       for(size_t i = 0; i < coordinates.size(); i++) {
@@ -107,8 +107,8 @@ namespace ttk {
     }
 
     template <typename PowerFunc>
-    inline dataType distanceToBox(const KDTree<dataType> &subtree,
-                                  const std::array<dataType, 5> &coordinates,
+    inline dataType distanceToBox(const KDTree<dataType, Container> &subtree,
+                                  const Container &coordinates,
                                   const PowerFunc &power) const {
       dataType d_min = 0;
       for(size_t axis = 0; axis < coordinates.size(); axis++) {
@@ -139,13 +139,14 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType>
-typename ttk::KDTree<dataType>::KDTreeMap ttk::KDTree<dataType>::build(
-  dataType *data,
-  const int &ptNumber,
-  const int &dimension,
-  const std::vector<std::vector<dataType>> &weights,
-  const int weight_number) {
+template <typename dataType, typename Container>
+typename ttk::KDTree<dataType, Container>::KDTreeMap
+  ttk::KDTree<dataType, Container>::build(
+    dataType *data,
+    const int &ptNumber,
+    const int &dimension,
+    const std::vector<std::vector<dataType>> &weights,
+    const int weight_number) {
 
   KDTreeMap correspondance_map(ptNumber);
   // First, perform a argsort on the data
@@ -216,13 +217,13 @@ typename ttk::KDTree<dataType>::KDTreeMap ttk::KDTree<dataType>::build(
   return correspondance_map;
 }
 
-template <typename dataType>
-void ttk::KDTree<dataType>::buildRecursive(
+template <typename dataType, typename Container>
+void ttk::KDTree<dataType, Container>::buildRecursive(
   dataType *data,
   std::vector<int> &idx_side,
   const int &ptNumber,
   const int &dimension,
-  KDTree<dataType> *parent,
+  KDTree<dataType, Container> *parent,
   KDTreeMap &correspondance_map,
   const std::vector<std::vector<dataType>> &weights,
   const int weight_number) {
@@ -303,8 +304,9 @@ void ttk::KDTree<dataType>::buildRecursive(
   }
 }
 
-template <typename dataType>
-void ttk::KDTree<dataType>::updateMinSubweight(const int weight_index) {
+template <typename dataType, typename Container>
+void ttk::KDTree<dataType, Container>::updateMinSubweight(
+  const int weight_index) {
   dataType new_min_subweight;
   if(this->isLeaf()) {
     new_min_subweight = weight_[weight_index];
@@ -329,13 +331,12 @@ void ttk::KDTree<dataType>::updateMinSubweight(const int weight_index) {
   }
 }
 
-template <typename dataType>
-void ttk::KDTree<dataType>::getKClosest(
-  const unsigned int k,
-  const std::array<dataType, 5> &coordinates,
-  KDTreeMap &neighbours,
-  std::vector<dataType> &costs,
-  const int weight_index) {
+template <typename dataType, typename Container>
+void ttk::KDTree<dataType, Container>::getKClosest(const unsigned int k,
+                                                   const Container &coordinates,
+                                                   KDTreeMap &neighbours,
+                                                   std::vector<dataType> &costs,
+                                                   const int weight_index) {
 
   const auto p{this->p_};
 
@@ -358,11 +359,11 @@ void ttk::KDTree<dataType>::getKClosest(
   // TODO sort neighbours and costs !
 }
 
-template <typename dataType>
+template <typename dataType, typename Container>
 template <typename PowerFunc>
-void ttk::KDTree<dataType>::recursiveGetKClosest(
+void ttk::KDTree<dataType, Container>::recursiveGetKClosest(
   const unsigned int k,
-  const std::array<dataType, 5> &coordinates,
+  const Container &coordinates,
   KDTreeMap &neighbours,
   std::vector<dataType> &costs,
   const int weight_index,

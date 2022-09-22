@@ -327,7 +327,7 @@ int ttk::Bidder::runDiagonalKDTBidding(
   int wasserstein,
   double epsilon,
   double geometricalFactor,
-  std::vector<KDTree<double> *> &correspondance_kdt_map,
+  std::vector<KDT *> &correspondance_kdt_map,
   std::priority_queue<std::pair<int, double>,
                       std::vector<std::pair<int, double>>,
                       Compare> &diagonal_queue,
@@ -447,11 +447,11 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
                                int wasserstein,
                                double epsilon,
                                double geometricalFactor,
-                               KDTree<double> *kdt,
+                               KDT *kdt,
                                const int kdt_index) {
 
   /// Runs bidding of a non-diagonal bidder
-  std::vector<KDTree<double> *> neighbours;
+  std::vector<KDT *> neighbours;
   std::vector<double> costs;
 
   std::array<double, 5> coordinates{
@@ -465,7 +465,7 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
 
   kdt->getKClosest(2, coordinates, neighbours, costs, kdt_index);
   double best_val, second_val;
-  KDTree<double> *closest_kdt;
+  KDT *closest_kdt;
   Good *best_good{};
   if(costs.size() == 2) {
     std::array<int, 2> idx{0, 1};

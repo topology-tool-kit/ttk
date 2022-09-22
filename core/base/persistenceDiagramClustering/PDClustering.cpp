@@ -1621,8 +1621,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
       double total_cost = 0;
       double wasserstein_shift = 0;
 
-      using KDTreePair = std::pair<typename KDTree<double>::KDTreeRoot,
-                                   typename KDTree<double>::KDTreeMap>;
+      using KDTreePair = PDBarycenter::KDTreePair;
 
       if(do_min_) {
         std::vector<std::vector<MatchingType>> all_matchings;

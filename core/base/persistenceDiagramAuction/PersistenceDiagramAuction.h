@@ -12,10 +12,12 @@ namespace ttk {
       return bidders_.size();
     }
 
-    KDTree<double> default_kdt_{};
-    KDTree<double> &kdt_{default_kdt_};
-    std::vector<KDTree<double> *> default_correspondance_kdt_map_{};
-    std::vector<KDTree<double> *> &correspondance_kdt_map_{
+    using KDT = Bidder::KDT;
+
+    KDT default_kdt_{};
+    KDT &kdt_{default_kdt_};
+    std::vector<KDT *> default_correspondance_kdt_map_{};
+    std::vector<KDT *> &correspondance_kdt_map_{
       default_correspondance_kdt_map_};
 
     PersistenceDiagramAuction(int wasserstein,
@@ -27,18 +29,17 @@ namespace ttk {
         lambda_{lambda}, delta_lim_{delta_lim}, use_kdt_{use_kdTree} {
     }
 
-    PersistenceDiagramAuction(
-      BidderDiagram &bidders,
-      GoodDiagram &goods,
-      int wasserstein,
-      double geometricalFactor,
-      double lambda,
-      double delta_lim,
-      KDTree<double> &kdt,
-      std::vector<KDTree<double> *> &correspondance_kdt_map,
-      double epsilon = {},
-      double initial_diag_price = {},
-      bool use_kdTree = true)
+    PersistenceDiagramAuction(BidderDiagram &bidders,
+                              GoodDiagram &goods,
+                              int wasserstein,
+                              double geometricalFactor,
+                              double lambda,
+                              double delta_lim,
+                              KDT &kdt,
+                              std::vector<KDT *> &correspondance_kdt_map,
+                              double epsilon = {},
+                              double initial_diag_price = {},
+                              bool use_kdTree = true)
       : kdt_{kdt}, correspondance_kdt_map_{correspondance_kdt_map},
         bidders_{bidders}, goods_{goods} {
 
@@ -171,7 +172,7 @@ namespace ttk {
 
     void buildKDTree() {
       Timer t;
-      default_kdt_ = KDTree<double>(true, wasserstein_);
+      default_kdt_ = KDT{true, wasserstein_};
       const int dimension
         = geometricalFactor_ >= 1 ? (geometricalFactor_ <= 0 ? 3 : 2) : 5;
       std::vector<double> coordinates;
