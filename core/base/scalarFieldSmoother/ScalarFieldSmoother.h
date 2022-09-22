@@ -172,7 +172,8 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
       exchangeGhostCells<dataType, SimplexId>(
         outputData, triangulation->getVertRankArray(),
         triangulation->getVertsGlobalIds(),
-        triangulation->getVertexGlobalIdMap(), vertexNumber, ttk::MPIcomm_);
+        triangulation->getVertexGlobalIdMap(), vertexNumber, ttk::MPIcomm_,
+        dimensionNumber_);
     }
 #endif
 
