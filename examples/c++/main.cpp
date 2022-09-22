@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
   std::vector<float> simplifiedHeight = height;
   std::vector<ttk::SimplexId> authorizedCriticalPoints, simplifiedOrder = order;
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
-    if(diagramOutput[i].persistence > 0.05) {
+    if(diagramOutput[i].persistence() > 0.05) {
       // 5. selecting the most persistent pairs
       authorizedCriticalPoints.push_back(diagramOutput[i].birth.id);
       authorizedCriticalPoints.push_back(diagramOutput[i].death.id);

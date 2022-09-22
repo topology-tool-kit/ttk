@@ -212,9 +212,8 @@ namespace ttk {
                    const SimplexId *inputOffsets,
                    const triangulationType *triangulation);
 
-    template <typename scalarType, class triangulationType>
+    template <class triangulationType>
     int executeProgressiveTopology(std::vector<PersistencePair> &CTDiagram,
-                                   const scalarType *inputScalars,
                                    const SimplexId *inputOffsets,
                                    const triangulationType *triangulation);
     template <typename scalarType, class triangulationType>
@@ -222,9 +221,8 @@ namespace ttk {
                                    const scalarType *inputScalars,
                                    const triangulationType *triangulation);
 
-    template <typename scalarType, class triangulationType>
+    template <class triangulationType>
     int executePersistentSimplex(std::vector<PersistencePair> &CTDiagram,
-                                 const scalarType *inputScalars,
                                  const SimplexId *inputOffsets,
                                  const triangulationType *triangulation);
 
@@ -317,7 +315,6 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
     const ttk::SimplexId v0 = std::get<0>(pairs[i]);
     const ttk::SimplexId v1 = std::get<1>(pairs[i]);
-    const auto persistenceValue = static_cast<double>(std::get<2>(pairs[i]));
     const bool type = std::get<3>(pairs[i]);
 
     if(type == true) {
@@ -326,7 +323,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
           v0, getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0), {}, {}},
         CriticalVertex{
           v1, getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1), {}, {}},
-        persistenceValue, 0, true};
+        0, true};
     } else {
       diagram[i] = PersistencePair{
         CriticalVertex{
@@ -339,7 +336,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
           getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0),
           {},
           {}},
-        persistenceValue, 2, true};
+        2, true};
     }
   }
 
@@ -363,16 +360,14 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   switch(BackEnd) {
     case BACKEND::PERSISTENT_SIMPLEX:
-      executePersistentSimplex(
-        CTDiagram, inputScalars, inputOffsets, triangulation);
+      executePersistentSimplex(CTDiagram, inputOffsets, triangulation);
       break;
     case BACKEND::DISCRETE_MORSE_SANDWICH:
       executeDiscreteMorseSandwich(
         CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
       break;
     case BACKEND::PROGRESSIVE_TOPOLOGY:
-      executeProgressiveTopology(
-        CTDiagram, inputScalars, inputOffsets, triangulation);
+      executeProgressiveTopology(CTDiagram, inputOffsets, triangulation);
       break;
     case BACKEND::APPROXIMATE_TOPOLOGY:
       executeApproximateTopology(CTDiagram, inputScalars, triangulation);
@@ -396,10 +391,9 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
   return 0;
 }
 
-template <typename scalarType, class triangulationType>
+template <class triangulationType>
 int ttk::PersistenceDiagram::executePersistentSimplex(
   std::vector<PersistencePair> &CTDiagram,
-  const scalarType *inputScalars,
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
@@ -444,15 +438,13 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   for(const auto &p : pairs) {
     const auto isFinite = (p.death >= 0);
     const auto death = isFinite ? p.death : globmax;
-    const auto pers
-      = static_cast<double>(inputScalars[death] - inputScalars[p.birth]);
     if(p.type == 0) {
       const auto deathType = (isFinite && dim > 1)
                                ? CriticalType::Saddle1
                                : CriticalType::Local_maximum;
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{death, deathType, {}, {}}, pers, p.type, isFinite});
+        CriticalVertex{death, deathType, {}, {}}, p.type, isFinite});
     } else if(p.type == 1) {
       const auto birthType
         = (dim == 3) ? CriticalType::Saddle1 : CriticalType::Saddle2;
@@ -461,12 +453,12 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
                                : CriticalType::Local_maximum;
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, birthType, {}, {}},
-        CriticalVertex{death, deathType, {}, {}}, pers, p.type, isFinite});
+        CriticalVertex{death, deathType, {}, {}}, p.type, isFinite});
     } else if(p.type == 2) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
-        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, pers,
-        p.type, isFinite});
+        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, p.type,
+        isFinite});
     }
   }
 
@@ -521,29 +513,28 @@ int ttk::PersistenceDiagram::executeDiscreteMorseSandwich(
     const auto &p{dms_pairs[i]};
     const auto isFinite = (p.death >= 0);
     const auto death = isFinite ? p.death : globmax;
-    const double pers = inputScalars[death] - inputScalars[p.birth];
 
     if(p.type == 0) {
       const auto dtype = (isFinite && dim > 1) ? CriticalType::Saddle1
                                                : CriticalType::Local_maximum;
       CTDiagram[i] = PersistencePair{
         CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{death, dtype, {}, {}}, pers, p.type, isFinite};
+        CriticalVertex{death, dtype, {}, {}}, p.type, isFinite};
     } else if(p.type == 1) {
       const auto btype
         = (dim == 3) ? CriticalType::Saddle1 : CriticalType::Saddle2;
       const auto dtype = (isFinite && dim == 3) ? CriticalType::Saddle2
                                                 : CriticalType::Local_maximum;
       CTDiagram[i] = PersistencePair{CriticalVertex{p.birth, btype, {}, {}},
-                                     CriticalVertex{death, dtype, {}, {}}, pers,
+                                     CriticalVertex{death, dtype, {}, {}},
                                      p.type, isFinite};
     } else if(p.type == 2) {
       const auto btype = (isFinite || dim == 3) ? CriticalType::Saddle2
                                                 : CriticalType::Local_maximum;
       CTDiagram[i] = PersistencePair{
         CriticalVertex{p.birth, btype, {}, {}},
-        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, pers,
-        p.type, isFinite};
+        CriticalVertex{death, CriticalType::Local_maximum, {}, {}}, p.type,
+        isFinite};
     }
   }
 
@@ -572,23 +563,20 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
 
   // create the final diagram
   for(const auto &p : resultDiagram) {
-    const auto pers
-      = static_cast<double>(inputScalars[p.death] - inputScalars[p.birth]);
-
     if(p.pairType == 0) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, pers,
-        p.pairType, true});
+        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, p.pairType,
+        true});
     } else if(p.pairType == 2) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
-        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers,
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
         p.pairType, true});
     } else if(p.pairType == -1) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers,
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
         p.pairType, false});
     }
   }
@@ -596,10 +584,9 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
   return 0;
 }
 
-template <typename scalarType, class triangulationType>
+template <class triangulationType>
 int ttk::PersistenceDiagram::executeProgressiveTopology(
   std::vector<PersistencePair> &CTDiagram,
-  const scalarType *inputScalars,
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
@@ -618,23 +605,20 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
 
   // create the final diagram
   for(const auto &p : resultDiagram) {
-    const auto pers
-      = static_cast<double>(inputScalars[p.death] - inputScalars[p.birth]);
-
     if(p.pairType == 0) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, pers,
-        p.pairType, true});
+        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, p.pairType,
+        true});
     } else if(p.pairType == 2) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
-        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers,
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
         p.pairType, true});
     } else if(p.pairType == -1) {
       CTDiagram.emplace_back(PersistencePair{
         CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, pers, 0,
+        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}}, 0,
         false});
     }
   }
@@ -707,12 +691,10 @@ int ttk::PersistenceDiagram::executeFTM(
     for(const auto &i : pl_saddleSaddlePairs) {
       const ttk::SimplexId v0 = std::get<0>(i);
       const ttk::SimplexId v1 = std::get<1>(i);
-      const auto persistenceValue = static_cast<double>(std::get<2>(i));
 
-      CTDiagram.emplace_back(
-        PersistencePair{CriticalVertex{v0, ttk::CriticalType::Saddle1, {}, {}},
-                        CriticalVertex{v1, ttk::CriticalType::Saddle2, {}, {}},
-                        persistenceValue, 1, true});
+      CTDiagram.emplace_back(PersistencePair{
+        CriticalVertex{v0, ttk::CriticalType::Saddle1, {}, {}},
+        CriticalVertex{v1, ttk::CriticalType::Saddle2, {}, {}}, 1, true});
     }
   }
   return 0;

@@ -96,7 +96,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
   int sadI = 0, sadJ = 0;
 
   for(const auto &p1 : CTDiagram1) {
-    if(std::abs(p1.persistence) < zeroThresh)
+    if(std::abs(p1.persistence()) < zeroThresh)
       continue;
 
     bool isMin1 = (p1.birth.type == CriticalType::Local_minimum
@@ -118,7 +118,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
     sadJ = 0;
 
     for(const auto &p2 : CTDiagram2) {
-      if(std::abs(p2.persistence) < zeroThresh)
+      if(std::abs(p2.persistence()) < zeroThresh)
         continue;
 
       bool isMin2 = (p2.birth.type == CriticalType::Local_minimum
@@ -196,7 +196,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
 
   // Last row: match remaining J components with diagonal.
   for(const auto &p3 : CTDiagram2) {
-    if(std::abs(p3.persistence) < zeroThresh)
+    if(std::abs(p3.persistence()) < zeroThresh)
       continue;
 
     bool isMin2 = (p3.birth.type == CriticalType::Local_minimum
@@ -309,11 +309,11 @@ double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
   std::vector<double> toSort(CTDiagram1.size() + CTDiagram2.size());
   for(size_t i = 0; i < CTDiagram1.size(); ++i) {
     const auto &t = CTDiagram1[i];
-    toSort[i] = std::abs(t.persistence);
+    toSort[i] = std::abs(t.persistence());
   }
   for(size_t i = 0; i < CTDiagram2.size(); ++i) {
     const auto &t = CTDiagram2[i];
-    toSort[CTDiagram1.size() + i] = std::abs(t.persistence);
+    toSort[CTDiagram1.size() + i] = std::abs(t.persistence());
   }
 
   const auto minVal = *std::min_element(toSort.begin(), toSort.end());
@@ -335,7 +335,7 @@ void ttk::BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
     const auto &t = CTDiagram[i];
     const auto nt1 = t.birth.type;
     const auto nt2 = t.death.type;
-    const auto dt = t.persistence;
+    const auto dt = t.persistence();
     if(std::abs(dt) < zeroThresh)
       continue;
 
@@ -479,7 +479,7 @@ double ttk::BottleneckDistance::diagonalDistanceFunction(
   const bool isMin1 = a.birth.type == CriticalType::Local_minimum;
   const bool isMax1 = a.death.type == CriticalType::Local_maximum;
   const double infDistance = (isMin1 || isMax1 ? this->PE : this->PS)
-                             * Geometry::pow(std::abs(a.persistence), w);
+                             * Geometry::pow(std::abs(a.persistence()), w);
   const double geoDistance
     = (this->PX
          * Geometry::pow(std::abs(a.death.coords[0] - a.birth.coords[0]), w)

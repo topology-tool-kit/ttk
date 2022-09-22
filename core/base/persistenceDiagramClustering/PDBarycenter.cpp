@@ -626,9 +626,9 @@ std::vector<std::vector<ttk::MatchingType>>
     barycenter.clear();
     for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
       Good &g = barycenter_goods_[0].at(j);
-      barycenter.emplace_back(PersistencePair{
-        CriticalVertex{0, nt1_, g.x_, {}}, CriticalVertex{0, nt2_, g.y_, {}},
-        g.getPersistence(), diagramType_, true});
+      barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
+                                              CriticalVertex{0, nt2_, g.y_, {}},
+                                              diagramType_, true});
     }
 
     runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
@@ -675,9 +675,9 @@ std::vector<std::vector<ttk::MatchingType>>
   barycenter.resize(0);
   for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
     Good &g = barycenter_goods_[0].at(j);
-    barycenter.emplace_back(PersistencePair{
-      CriticalVertex{0, nt1_, g.x_, {}}, CriticalVertex{0, nt2_, g.y_, {}},
-      g.getPersistence(), diagramType_, true});
+    barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
+                                            CriticalVertex{0, nt2_, g.y_, {}},
+                                            diagramType_, true});
   }
 
   cost_ = sqrt(total_cost);

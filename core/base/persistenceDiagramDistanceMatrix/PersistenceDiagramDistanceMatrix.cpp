@@ -43,9 +43,9 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDiags; i++) {
     for(const auto &p : intermediateDiagrams[i]) {
-      maxDiagPersistence[i] = std::max(p.persistence, maxDiagPersistence[i]);
+      maxDiagPersistence[i] = std::max(p.persistence(), maxDiagPersistence[i]);
 
-      if(p.persistence > 0) {
+      if(p.persistence() > 0) {
         if(p.birth.type == CriticalType::Local_minimum
            && p.death.type == CriticalType::Local_maximum) {
           inputDiagramsMax[i].emplace_back(p);

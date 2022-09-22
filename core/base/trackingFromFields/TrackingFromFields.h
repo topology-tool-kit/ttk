@@ -128,7 +128,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
       persistenceDiagrams[i][j] = PersistencePair{
         CriticalVertex{currentTuple.birth.id, currentTuple.birth.type, sa, p},
         CriticalVertex{currentTuple.death.id, currentTuple.death.type, sb, q},
-        currentTuple.persistence, currentTuple.dim, true};
+        currentTuple.dim, true};
     }
   }
 
