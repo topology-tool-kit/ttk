@@ -182,8 +182,6 @@ jobs:
       run: |
         cd ttk-data
         python3 -u python/run.py
-      env:
-        OMP_NUM_THREADS: 1
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
@@ -302,7 +300,6 @@ jobs:
         python3 -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
-        OMP_NUM_THREADS: 1
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
@@ -455,8 +452,6 @@ jobs:
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         python -u python\run.py
-      env:
-        OMP_NUM_THREADS: 1
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
