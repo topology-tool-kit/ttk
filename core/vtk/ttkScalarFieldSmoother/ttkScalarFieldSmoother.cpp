@@ -17,6 +17,9 @@ vtkStandardNewMacro(ttkScalarFieldSmoother);
 ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 ttkScalarFieldSmoother::~ttkScalarFieldSmoother() = default;

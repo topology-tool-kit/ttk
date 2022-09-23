@@ -15,6 +15,7 @@
 vtkStandardNewMacro(ttkArrayPreconditioning);
 
 ttkArrayPreconditioning::ttkArrayPreconditioning() {
+  hasMPISupport_ = true;
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 

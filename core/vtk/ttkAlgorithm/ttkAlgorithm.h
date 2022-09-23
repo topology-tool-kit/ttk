@@ -208,6 +208,9 @@ public:
 protected:
   ttkAlgorithm();
   ~ttkAlgorithm() override;
+#ifdef TTK_ENABLE_MPI
+  bool hasMPISupport_{false};
+#endif
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been

@@ -20,7 +20,9 @@ using namespace ttk;
 vtkStandardNewMacro(ttkScalarFieldCriticalPoints);
 
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
-
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
