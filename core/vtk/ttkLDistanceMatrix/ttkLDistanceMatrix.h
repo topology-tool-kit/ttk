@@ -7,6 +7,11 @@
 /// input datasets with the same number of points
 ///
 /// \sa LDistanceMatrix
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
 #pragma once
 

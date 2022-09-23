@@ -11,6 +11,11 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2019.
 ///
 /// \sa PersistenceDiagramClustering
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
 #pragma once
 

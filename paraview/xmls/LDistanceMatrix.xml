@@ -8,6 +8,11 @@
        long_help="Computes distance matrix between datasets with the same number of points."
        shorthelp="LDiagrams Distance Matrix."
        >
+       This filter computes a matrix of Lp distances between scalar fields.
+       
+       Online examples:
+       
+       - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
     </Documentation>
 
      <InputProperty
