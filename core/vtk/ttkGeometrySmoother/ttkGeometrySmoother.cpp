@@ -11,9 +11,7 @@ vtkStandardNewMacro(ttkGeometrySmoother);
 
 ttkGeometrySmoother::ttkGeometrySmoother() {
   this->setDebugMsgPrefix("GeometrySmoother");
-#ifdef TTK_ENABLE_MPI
-  hasMPISupport_ = true;
-#endif
+
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }

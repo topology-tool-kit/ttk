@@ -17,9 +17,7 @@ ttkGhostCellPreconditioning::ttkGhostCellPreconditioning() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
   this->setDebugMsgPrefix("GhostCellPreconditioning");
-#ifdef TTK_ENABLE_MPI
-  hasMPISupport_ = true;
-#endif
+
   // ensure that modifying the selection re-triggers the filter
   // (c.f. vtkPassSelectedArrays.cxx)
   this->ArraySelection->AddObserver(
