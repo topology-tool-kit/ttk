@@ -48,7 +48,7 @@ inputData = XMLUnstructuredGridReader(FileName=[inputFilePath])
 persistenceCurve = TTKPersistenceCurve(inputData)
 persistenceCurve.ScalarField = ["POINTS", "data"]
 
-# 3. computing the persitence diagram
+# 3. computing the persistence diagram
 persistenceDiagram = TTKPersistenceDiagram(inputData)
 persistenceDiagram.ScalarField = ["POINTS", "data"]
 

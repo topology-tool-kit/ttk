@@ -53,7 +53,7 @@ curve.SetInputConnection(reader.GetOutputPort())
 curve.SetInputArrayToProcess(0, 0, 0, 0, "data")
 curve.SetDebugLevel(3)
 
-# 3. computing the persitence diagram
+# 3. computing the persistence diagram
 diagram = ttkPersistenceDiagram()
 diagram.SetInputConnection(reader.GetOutputPort())
 diagram.SetInputArrayToProcess(0, 0, 0, 0, "data")

@@ -4,8 +4,8 @@
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date March 2020
 ///
-/// \brief TTK processing package for the computation of Wasserstein barycenters
-/// and K-Means clusterings of a set of persistence diagrams.
+/// \brief TTK processing package for the computation of a matrix of Wasserstein
+/// distances between persistence diagrams.
 ///
 /// \b Related \b publication \n
 /// "Progressive Wasserstein Barycenters of Persistence Diagrams" \n

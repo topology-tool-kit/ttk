@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
   curve.setOutputCTPlot(&outputCurve);
   curve.execute<float>(height.data(), 0, order.data(), &triangulation);
 
-  // 3. computing the persitence diagram
+  // 3. computing the persistence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<ttk::PersistencePair> diagramOutput;
   diagram.preconditionTriangulation(&triangulation);

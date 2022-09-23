@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   curve->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
-  // 3. computing the persitence diagram
+  // 3. computing the persistence diagram
   vtkNew<ttkPersistenceDiagram> diagram{};
   diagram->SetInputConnection(reader->GetOutputPort());
   diagram->SetInputArrayToProcess(
