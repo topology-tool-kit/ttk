@@ -12,6 +12,11 @@ int ttk::BottleneckDistance::execute(const ttk::DiagramType &diag0,
                                      std::vector<MatchingType> &matchings) {
   Timer t;
 
+  if(diag0.empty() || diag1.empty()) {
+    this->printErr("Empty input diagrams");
+    return -1;
+  }
+
   bool fromParaView = this->PVAlgorithm >= 0;
   if(fromParaView) {
     switch(this->PVAlgorithm) {
