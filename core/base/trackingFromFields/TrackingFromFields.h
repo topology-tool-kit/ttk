@@ -98,7 +98,6 @@ int ttk::TrackingFromFields::performDiagramComputation(
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram;
     persistenceDiagram.setThreadNumber(1);
-    persistenceDiagram.setBackend(PersistenceDiagram::BACKEND::FTM);
 
     // std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
     // persistenceDiagram.setDMTPairs(&dmt_pairs);
