@@ -13,6 +13,8 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
                                       const Debug &dbg,
                                       const TriangulationType &triangulation) {
 
+  Timer tm{};
+
   using Triplet = Eigen::Triplet<T>;
   const auto vertexNumber = triangulation.getNumberOfVertices();
   const auto edgeNumber = triangulation.getNumberOfEdges();
@@ -22,9 +24,7 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
     return -1;
   }
 
-#ifdef TTK_ENABLE_OPENMP
   const auto threadNumber = dbg.getThreadNumber();
-#endif // TTK_ENABLE_OPENMP
 
   // clear output
   output.resize(vertexNumber, vertexNumber);
@@ -64,6 +64,9 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
   output.setFromTriplets(triplets.begin(), triplets.end());
 #endif // __clang_analyzer__
 
+  dbg.printMsg(
+    "Computed Discrete Laplacian", 1.0, tm.getElapsedTime(), threadNumber);
+
   return 0;
 }
 
@@ -74,13 +77,13 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
                                  const Debug &dbg,
                                  const TriangulationType &triangulation) {
 
+  Timer tm{};
+
   using Triplet = Eigen::Triplet<T>;
   const auto vertexNumber = triangulation.getNumberOfVertices();
   const auto edgeNumber = triangulation.getNumberOfEdges();
 
-#ifdef TTK_ENABLE_OPENMP
   const auto threadNumber = dbg.getThreadNumber();
-#endif // TTK_ENABLE_OPENMP
 
   // early return when input graph is empty
   if(vertexNumber <= 0) {
@@ -183,6 +186,9 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
 #ifndef __clang_analyzer__
   output.setFromTriplets(triplets.begin(), triplets.end());
 #endif // __clang_analyzer__
+
+  dbg.printMsg("Computed Laplacian with Cotan Weights", 1.0,
+               tm.getElapsedTime(), threadNumber);
 
   return 0;
 }
