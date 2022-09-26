@@ -98,9 +98,6 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
   // values on the diagonal + 2 values per edge
   std::vector<Triplet> triplets(vertexNumber + 2 * edgeNumber);
 
-  // hold sum of cotan weights for every vertex
-  std::vector<T> vertexWeightSum(vertexNumber, T(0.0));
-
   std::vector<SimplexId> edgeTriangles{};
   std::vector<T> angles{};
 
@@ -171,17 +168,6 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
     triplets[2 * i] = Triplet(edgeVertices[0], edgeVertices[1], -cotan_weight);
     triplets[2 * i + 1]
       = Triplet(edgeVertices[1], edgeVertices[0], -cotan_weight);
-
-    // store the cotan weight sum for the two vertices of the current edge
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif // TTK_ENABLE_OPENMP
-    vertexWeightSum[edgeVertices[0]] += cotan_weight;
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif // TTK_ENABLE_OPENMP
-    vertexWeightSum[edgeVertices[1]] += cotan_weight;
   }
 
   // on the diagonal: sum of cotan weights for every vertex
@@ -189,7 +175,16 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
 #pragma omp parallel for num_threads(threadNumber)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber; ++i) {
-    triplets[2 * edgeNumber + i] = Triplet(i, i, vertexWeightSum[i]);
+    T vertWeightSum{};
+    const auto nEdges{triangulation.getVertexEdgeNumber(i)};
+    // get the (-) cotan weights from the edges triplets
+    for(SimplexId j = 0; j < nEdges; ++j) {
+      SimplexId e{};
+      triangulation.getVertexEdge(i, j, e);
+      vertWeightSum += triplets[2 * e].value();
+    }
+
+    triplets[2 * edgeNumber + i] = Triplet(i, i, -vertWeightSum);
   }
 
 #ifndef __clang_analyzer__
