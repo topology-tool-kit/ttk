@@ -101,14 +101,21 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
   // hold sum of cotan weights for every vertex
   std::vector<T> vertexWeightSum(vertexNumber, T(0.0));
 
+  std::vector<SimplexId> edgeTriangles{};
+  std::vector<T> angles{};
+
   // iterate over all edges
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber)
+#pragma omp parallel for num_threads(threadNumber) \
+  firstprivate(edgeTriangles, angles)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < edgeNumber; ++i) {
 
+    edgeTriangles.clear();
+    angles.clear();
+
     // the two vertices of the current edge (+ a third)
-    std::vector<SimplexId> edgeVertices(3);
+    std::array<SimplexId, 3> edgeVertices{};
     for(SimplexId j = 0; j < 2; ++j) {
       triangulation.getEdgeVertex(i, j, edgeVertices[j]);
     }
@@ -117,13 +124,13 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
     // in 2D only 2, in 3D, maybe more...
     const auto trianglesNumber = triangulation.getEdgeTriangleNumber(i);
     // stores the triangles ID for every triangle around the current edge
-    std::vector<SimplexId> edgeTriangles(trianglesNumber);
+    edgeTriangles.resize(trianglesNumber);
     for(SimplexId j = 0; j < trianglesNumber; ++j) {
       triangulation.getEdgeTriangle(i, j, edgeTriangles[j]);
     }
 
     // iterate over current edge triangles
-    std::vector<T> angles{};
+    angles.reserve(trianglesNumber);
 
     for(const auto &j : edgeTriangles) {
 
@@ -167,12 +174,14 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
 
     // store the cotan weight sum for the two vertices of the current edge
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
+#pragma omp atomic update
 #endif // TTK_ENABLE_OPENMP
-    {
-      vertexWeightSum[edgeVertices[0]] += cotan_weight;
-      vertexWeightSum[edgeVertices[1]] += cotan_weight;
-    }
+    vertexWeightSum[edgeVertices[0]] += cotan_weight;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif // TTK_ENABLE_OPENMP
+    vertexWeightSum[edgeVertices[1]] += cotan_weight;
   }
 
   // on the diagonal: sum of cotan weights for every vertex
