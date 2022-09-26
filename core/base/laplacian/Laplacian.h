@@ -4,6 +4,18 @@
 
 namespace ttk {
   namespace Laplacian {
+
+    /**
+     * @brief Triangulation precondition function
+     */
+    inline void
+      preconditionTriangulation(AbstractTriangulation &triangulation) {
+      triangulation.preconditionVertexNeighbors();
+      triangulation.preconditionVertexEdges();
+      triangulation.preconditionTriangles();
+      triangulation.preconditionEdgeTriangles();
+    }
+
     /**
      * @brief Compute the Laplacian matrix of the graph
      *

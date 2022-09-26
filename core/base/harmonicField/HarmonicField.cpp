@@ -1,5 +1,4 @@
 #include <HarmonicField.h>
-#include <Laplacian.h>
 #include <set>
 
 #ifdef TTK_ENABLE_EIGEN
