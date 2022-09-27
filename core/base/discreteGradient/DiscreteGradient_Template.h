@@ -2189,7 +2189,10 @@ SimplexId
   if(cell.dim_ == 0) {
     if(!isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      triangulation.getVertexEdge(cell.id_, (*gradient_)[0][cell.id_], id);
+      const auto locId{(*gradient_)[0][cell.id_]};
+      if(locId != -1) {
+        triangulation.getVertexEdge(cell.id_, locId, id);
+      }
 #else
       id = (*gradient_)[0][cell.id_];
 #endif
@@ -2199,13 +2202,19 @@ SimplexId
   else if(cell.dim_ == 1) {
     if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      triangulation.getEdgeVertex(cell.id_, (*gradient_)[1][cell.id_], id);
+      const auto locId{(*gradient_)[1][cell.id_]};
+      if(locId != -1) {
+        triangulation.getEdgeVertex(cell.id_, locId, id);
+      }
 #else
       id = (*gradient_)[1][cell.id_];
 #endif
     } else {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      triangulation.getEdgeTriangle(cell.id_, (*gradient_)[2][cell.id_], id);
+      const auto locId{(*gradient_)[2][cell.id_]};
+      if(locId != -1) {
+        triangulation.getEdgeTriangle(cell.id_, locId, id);
+      }
 #else
       id = (*gradient_)[2][cell.id_];
 #endif
@@ -2215,13 +2224,19 @@ SimplexId
   else if(cell.dim_ == 2) {
     if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      triangulation.getTriangleEdge(cell.id_, (*gradient_)[3][cell.id_], id);
+      const auto locId{(*gradient_)[3][cell.id_]};
+      if(locId != -1) {
+        triangulation.getTriangleEdge(cell.id_, locId, id);
+      }
 #else
       id = (*gradient_)[3][cell.id_];
 #endif
     } else {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      triangulation.getTriangleStar(cell.id_, (*gradient_)[4][cell.id_], id);
+      const auto locId{(*gradient_)[4][cell.id_]};
+      if(locId != -1) {
+        triangulation.getTriangleStar(cell.id_, locId, id);
+      }
 #else
       id = (*gradient_)[4][cell.id_];
 #endif
@@ -2231,7 +2246,10 @@ SimplexId
   else if(cell.dim_ == 3) {
     if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      triangulation.getCellTriangle(cell.id_, (*gradient_)[5][cell.id_], id);
+      const auto locId{(*gradient_)[5][cell.id_]};
+      if(locId != -1) {
+        triangulation.getCellTriangle(cell.id_, locId, id);
+      }
 #else
       id = (*gradient_)[5][cell.id_];
 #endif
