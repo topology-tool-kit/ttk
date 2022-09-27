@@ -204,8 +204,8 @@ target_link_options(<module> PUBLIC -fsanitize=address)
 The `LD_PRELOAD` environment variable should be set to preload the
 ASan libraries at run-time.
 
-The Address Sanitizer really shines in conjuction with GDB. With those
-lines in `$HOME/.gdbinit`:
+The Address Sanitizer really shines in conjunction with GDB. With
+those lines in `$HOME/.gdbinit`:
 
 ```
 set environment ASAN_OPTIONS=abort_on_error=1:detect_leaks=0
