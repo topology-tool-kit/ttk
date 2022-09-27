@@ -435,6 +435,19 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
+    - name: Resample large datasets
+      shell: python
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+      env:
+        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages
+
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
