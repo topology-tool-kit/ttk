@@ -1960,6 +1960,7 @@ inline void DiscreteGradient::pairCells(
       triangulation.getVertexEdge(alpha.id_, i, b);
       if(b == beta.id_) {
         localBId = i;
+        break;
       }
     }
   } else if(beta.dim_ == 2) {
@@ -1975,6 +1976,7 @@ inline void DiscreteGradient::pairCells(
       triangulation.getEdgeTriangle(alpha.id_, i, b);
       if(b == beta.id_) {
         localBId = i;
+        break;
       }
     }
   } else {
@@ -1990,6 +1992,7 @@ inline void DiscreteGradient::pairCells(
       triangulation.getTriangleStar(alpha.id_, i, b);
       if(b == beta.id_) {
         localBId = i;
+        break;
       }
     }
   }
