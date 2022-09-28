@@ -257,12 +257,12 @@ namespace ttk {
             mapping.push_back(std::make_pair(
               std::make_pair(curr1, parent1), std::make_pair(curr2, parent2)));
             for(auto m : matching) {
-              auto n1 = std::get<0>(m) < tree1->getNumberOfChildren(curr1)
-                          ? children1[std::get<0>(m)]
-                          : -1;
-              auto n2 = std::get<1>(m) < tree2->getNumberOfChildren(curr2)
-                          ? children2[std::get<1>(m)]
-                          : -1;
+              int n1 = std::get<0>(m) < tree1->getNumberOfChildren(curr1)
+                         ? children1[std::get<0>(m)]
+                         : -1;
+              int n2 = std::get<1>(m) < tree2->getNumberOfChildren(curr2)
+                         ? children2[std::get<1>(m)]
+                         : -1;
               if(n1 >= 0 && n2 >= 0)
                 traceMapping_path(tree1, tree2, n1, 1, n2, 1, predecessors1,
                                   predecessors2, depth1, depth2, memT, mapping);
