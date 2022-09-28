@@ -353,19 +353,8 @@ namespace ttk {
     );
   }
 
-  /**
-   * @brief produce the RankArray array, that stores rank ownership information
-   *
-   * @param[out] rankArray the owner array for the scalar data
-   * @param[in] globalIds the global id array for the scalar data
-   * @param[in] ghostCells the ghost array for the scalar data
-   * @param[in] nVertices number of vertices in the arrays
-   */
-  void inline produceRankArray(std::vector<int> &rankArray,
-                               LongSimplexId *globalIds,
-                               unsigned char *ghostCells,
-                               int nVertices,
-                               double *boundingBox) {
+  void inline getNeighborsUsingBoundingBox(double *boundingBox,
+                                           std::vector<int> &neighbors) {
     std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
@@ -381,7 +370,7 @@ namespace ttk {
       if(i % 2 == 1)
         boundingBox[i] += epsilon;
     }
-    std::vector<int> neighbors;
+
     for(int i = 0; i < ttk::MPIsize_; i++) {
       if(i != ttk::MPIrank_) {
         double *theirBoundingBox = rankBoundingBoxes[i].data();
@@ -390,6 +379,23 @@ namespace ttk {
         }
       }
     }
+  }
+
+  /**
+   * @brief produce the RankArray array, that stores rank ownership information
+   *
+   * @param[out] rankArray the owner array for the scalar data
+   * @param[in] globalIds the global id array for the scalar data
+   * @param[in] ghostCells the ghost array for the scalar data
+   * @param[in] nVertices number of vertices in the arrays
+   */
+  void inline produceRankArray(std::vector<int> &rankArray,
+                               LongSimplexId *globalIds,
+                               unsigned char *ghostCells,
+                               int nVertices,
+                               double *boundingBox) {
+    std::vector<int> neighbors;
+    getNeighborsUsingBoundingBox(boundingBox, neighbors);
     MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
     std::vector<ttk::SimplexId> currentRankUnknownIds;
     std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);

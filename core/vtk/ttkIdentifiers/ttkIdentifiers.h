@@ -43,6 +43,17 @@
 // class your wrapper should inherit.
 class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
 
+  struct Point {
+    double x;
+    double y;
+    double z;
+  };
+
+  struct Response {
+    ttk::SimplexId id;
+    ttk::SimplexId globalId;
+  };
+
 public:
   static ttkIdentifiers *New();
 
@@ -53,6 +64,8 @@ public:
 
   vtkSetMacro(VertexFieldName, const std::string &);
   vtkGetMacro(VertexFieldName, std::string);
+  void createMPIPointType(MPI_Datatype *mpiPointType);
+  void createMPIResponseType(MPI_Datatype *mpiResponseType);
 
 protected:
   ttkIdentifiers();
