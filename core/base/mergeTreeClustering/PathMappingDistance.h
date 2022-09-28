@@ -39,10 +39,10 @@ namespace ttk {
   class PathMappingDistance : virtual public Debug {
 
   private:
-    int baseMetric = 0;
+    int baseMetric_ = 0;
     int assignmentSolverID_ = 0;
-    bool squared = false;
-    bool computeMapping = false;
+    bool squared_ = false;
+    bool computeMapping_ = false;
 
     template <class dataType>
     inline dataType editCost_Persistence(int n1,
@@ -72,7 +72,7 @@ namespace ttk {
         dataType dist2 = (d2 > b2) ? (d2 - b2) : (b2 - d2);
         d = (dist1 > dist2) ? (dist1 - dist2) : (dist2 - dist1);
       }
-      return squared ? d * d : d;
+      return squared_ ? d * d : d;
     }
 
     template <class dataType>
@@ -322,7 +322,7 @@ namespace ttk {
     ~PathMappingDistance() override = default;
 
     void setBaseMetric(int m) {
-      baseMetric = m;
+      baseMetric_ = m;
     }
 
     void setAssignmentSolver(int assignmentSolver) {
@@ -330,11 +330,11 @@ namespace ttk {
     }
 
     void setSquared(bool s) {
-      squared = s;
+      squared_ = s;
     }
 
     void setComputeMapping(bool m) {
-      computeMapping = m;
+      computeMapping_ = m;
     }
 
     template <class dataType>
@@ -646,7 +646,7 @@ namespace ttk {
       //   << m.second.first << "," << m.second.second << ")\n";
       // }
 
-      return squared ? std::sqrt(res) : res;
+      return squared_ ? std::sqrt(res) : res;
     }
   };
 } // namespace ttk

@@ -39,9 +39,9 @@ namespace ttk {
   class BranchMappingDistance : virtual public Debug {
 
   private:
-    int baseMetric = 0;
+    int baseMetric_ = 0;
     int assignmentSolverID_ = 0;
-    bool squared = false;
+    bool squared_ = false;
 
     template <class dataType>
     inline dataType editCost_Wasserstein1(int n1,
@@ -82,7 +82,7 @@ namespace ttk {
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = db + dd;
       }
-      return squared ? d * d : d;
+      return squared_ ? d * d : d;
     }
 
     template <class dataType>
@@ -130,7 +130,7 @@ namespace ttk {
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = std::sqrt(db * db + dd * dd);
       }
-      return squared ? d * d : d;
+      return squared_ ? d * d : d;
     }
 
     template <class dataType>
@@ -162,7 +162,7 @@ namespace ttk {
         dataType dist2 = d2 > b2 ? d2 - b2 : b2 - d2;
         d = dist1 > dist2 ? dist1 - dist2 : dist2 - dist1;
       }
-      return squared ? d * d : d;
+      return squared_ ? d * d : d;
     }
 
     template <class dataType>
@@ -198,7 +198,7 @@ namespace ttk {
         dataType dp = pers1 > pers2 ? pers1 - pers2 : pers2 - pers1;
         d = db + dp;
       }
-      return squared ? d * d : d;
+      return squared_ ? d * d : d;
     }
 
   public:
@@ -210,7 +210,7 @@ namespace ttk {
     ~BranchMappingDistance() override = default;
 
     void setBaseMetric(int m) {
-      baseMetric = m;
+      baseMetric_ = m;
     }
 
     void setAssignmentSolver(int assignmentSolver) {
@@ -218,7 +218,7 @@ namespace ttk {
     }
 
     void setSquared(bool s) {
-      squared = s;
+      squared_ = s;
     }
 
     template <class dataType>
@@ -306,14 +306,15 @@ namespace ttk {
           // branch
           if(tree1->getNumberOfChildren(curr1) == 0) {
             memT[curr1 + l * dim2 + nn2 * dim3 + 0 * dim4]
-              = this->baseMetric == 0 ? editCost_Wasserstein1<dataType>(
+              = this->baseMetric_ == 0 ? editCost_Wasserstein1<dataType>(
                   curr1, parent1, -1, -1, tree1, tree2)
-                : this->baseMetric == 1 ? editCost_Wasserstein2<dataType>(
+                : this->baseMetric_ == 1 ? editCost_Wasserstein2<dataType>(
                     curr1, parent1, -1, -1, tree1, tree2)
-                : this->baseMetric == 2 ? editCost_Persistence<dataType>(
+                : this->baseMetric_ == 2
+                  ? editCost_Persistence<dataType>(
                     curr1, parent1, -1, -1, tree1, tree2)
-                                        : editCost_Shifting<dataType>(
-                                          curr1, parent1, -1, -1, tree1, tree2);
+                  : editCost_Shifting<dataType>(
+                    curr1, parent1, -1, -1, tree1, tree2);
           }
           //-----------------------------------------------------------------------
           // If first subtree has more than one branch, try all decompositions
@@ -347,14 +348,15 @@ namespace ttk {
           // branch
           if(tree2->getNumberOfChildren(curr2) == 0) {
             memT[nn1 + 0 * dim2 + curr2 * dim3 + l * dim4]
-              = this->baseMetric == 0 ? editCost_Wasserstein1<dataType>(
+              = this->baseMetric_ == 0 ? editCost_Wasserstein1<dataType>(
                   -1, -1, curr2, parent2, tree1, tree2)
-                : this->baseMetric == 1 ? editCost_Wasserstein2<dataType>(
+                : this->baseMetric_ == 1 ? editCost_Wasserstein2<dataType>(
                     -1, -1, curr2, parent2, tree1, tree2)
-                : this->baseMetric == 2 ? editCost_Persistence<dataType>(
+                : this->baseMetric_ == 2
+                  ? editCost_Persistence<dataType>(
                     -1, -1, curr2, parent2, tree1, tree2)
-                                        : editCost_Shifting<dataType>(
-                                          -1, -1, curr2, parent2, tree1, tree2);
+                  : editCost_Shifting<dataType>(
+                    -1, -1, curr2, parent2, tree1, tree2);
           }
           //-----------------------------------------------------------------------
           // If first subtree has more than one branch, try all decompositions
@@ -402,11 +404,11 @@ namespace ttk {
               if(tree1->getNumberOfChildren(curr1) == 0
                  and tree2->getNumberOfChildren(curr2) == 0) {
                 memT[curr1 + l1 * dim2 + curr2 * dim3 + l2 * dim4]
-                  = this->baseMetric == 0 ? editCost_Wasserstein1<dataType>(
+                  = this->baseMetric_ == 0 ? editCost_Wasserstein1<dataType>(
                       curr1, parent1, curr2, parent2, tree1, tree2)
-                    : this->baseMetric == 1 ? editCost_Wasserstein2<dataType>(
+                    : this->baseMetric_ == 1 ? editCost_Wasserstein2<dataType>(
                         curr1, parent1, curr2, parent2, tree1, tree2)
-                    : this->baseMetric == 2
+                    : this->baseMetric_ == 2
                       ? editCost_Persistence<dataType>(
                         curr1, parent1, curr2, parent2, tree1, tree2)
                       : editCost_Shifting<dataType>(
@@ -586,7 +588,7 @@ namespace ttk {
       dataType res
         = memT[children1[0] + 1 * dim2 + children2[0] * dim3 + 1 * dim4];
       // delete[] memT;
-      return squared ? std::sqrt(res) : res;
+      return squared_ ? std::sqrt(res) : res;
     }
   };
 
