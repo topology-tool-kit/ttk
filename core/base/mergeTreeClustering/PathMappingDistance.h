@@ -112,7 +112,7 @@ namespace ttk {
       // the two branches
       if(tree1->getNumberOfChildren(curr1) == 0
          and tree2->getNumberOfChildren(curr2) == 0) {
-        mapping.push_back(std::make_pair(
+        mapping.emplace_back(std::make_pair(
           std::make_pair(curr1, parent1), std::make_pair(curr2, parent2)));
         return;
       }
@@ -179,7 +179,7 @@ namespace ttk {
                   + memT[child12 + 1 * dim2 + child22 * dim3 + 1 * dim4]
                   + editCost_Persistence<dataType>(
                     curr1, parent1, curr2, parent2, tree1, tree2)) {
-            mapping.push_back(std::make_pair(
+            mapping.emplace_back(std::make_pair(
               std::make_pair(curr1, parent1), std::make_pair(curr2, parent2)));
             traceMapping_path(tree1, tree2, child11, 1, child21, 1,
                               predecessors1, predecessors2, depth1, depth2,
@@ -193,7 +193,7 @@ namespace ttk {
                   + memT[child12 + 1 * dim2 + child21 * dim3 + 1 * dim4]
                   + editCost_Persistence<dataType>(
                     curr1, parent1, curr2, parent2, tree1, tree2)) {
-            mapping.push_back(std::make_pair(
+            mapping.emplace_back(std::make_pair(
               std::make_pair(curr1, parent1), std::make_pair(curr2, parent2)));
             traceMapping_path(tree1, tree2, child11, 1, child22, 1,
                               predecessors1, predecessors2, depth1, depth2,
@@ -254,7 +254,7 @@ namespace ttk {
           for(auto m : matching)
             d_ += std::get<2>(m);
           if(memT[curr1 + l1 * dim2 + curr2 * dim3 + l2 * dim4] == d_) {
-            mapping.push_back(std::make_pair(
+            mapping.emplace_back(std::make_pair(
               std::make_pair(curr1, parent1), std::make_pair(curr2, parent2)));
             for(auto m : matching) {
               int n1 = std::get<0>(m) < tree1->getNumberOfChildren(curr1)
