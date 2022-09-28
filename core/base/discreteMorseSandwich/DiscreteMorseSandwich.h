@@ -22,6 +22,7 @@
 
 #include <DiscreteGradient.h>
 
+#include <algorithm>
 #include <numeric>
 
 namespace ttk {
@@ -51,6 +52,16 @@ namespace ttk {
 
     inline void setInputOffsets(const SimplexId *const offsets) {
       this->dg_.setInputOffsets(offsets);
+    }
+
+    inline void setComputeMinSad(const bool data) {
+      this->ComputeMinSad = data;
+    }
+    inline void setComputeSadSad(const bool data) {
+      this->ComputeSadSad = data;
+    }
+    inline void setComputeSadMax(const bool data) {
+      this->ComputeSadMax = data;
     }
 
     template <typename triangulationType>
@@ -134,8 +145,6 @@ namespace ttk {
      * @param[in] isOnBoundary Either isEdgeOnBoundary (in 2D) or
      * isTriangleOnBoundary (in 3D)
      * @param[in] triangulation Triangulation
-     * @param[in] ignoreBoundary FTM compatibility (ignore saddles on
-     * boundary)
      *
      * @return a vector of maxima per 2-saddle
      */
@@ -148,8 +157,7 @@ namespace ttk {
                          const GFS &getFaceStar,
                          const GFSN &getFaceStarNumber,
                          const OB &isOnBoundary,
-                         const triangulationType &triangulation,
-                         const bool ignoreBoundary) const;
+                         const triangulationType &triangulation) const;
 
     /**
      * @brief Compute the pairs of dimension 0
@@ -181,7 +189,6 @@ namespace ttk {
      * @param[in] critSaddlesOrder Filtration order on critical saddles
      * @param[in] critMaxsOrder Filtration order on maxima
      * @param[in] triangulation Triangulation
-     * @param[in] ignoreBoundary Ignore the boundary component
      */
     template <typename triangulationType>
     void getMaxSaddlePairs(std::vector<PersistencePair> &pairs,
@@ -190,8 +197,7 @@ namespace ttk {
                            const std::vector<SimplexId> &criticalSaddles,
                            const std::vector<SimplexId> &critSaddlesOrder,
                            const std::vector<SimplexId> &critMaxsOrder,
-                           const triangulationType &triangulation,
-                           const bool ignoreBoundary) const;
+                           const triangulationType &triangulation) const;
 
     /**
      * @brief Compute the saddle-saddle pairs (in 3D)
@@ -435,6 +441,10 @@ namespace ttk {
     mutable std::array<std::vector<bool>, 4> pairedCritCells_{};
     mutable std::vector<bool> onBoundary_{};
     mutable std::array<std::vector<SimplexId>, 4> critCellsOrder_{};
+
+    bool ComputeMinSad{true};
+    bool ComputeSadSad{true};
+    bool ComputeSadMax{true};
   };
 } // namespace ttk
 
@@ -488,8 +498,7 @@ std::vector<std::vector<SimplexId>>
     const GFS &getFaceStar,
     const GFSN &getFaceStarNumber,
     const OB &isOnBoundary,
-    const triangulationType &triangulation,
-    const bool ignoreBoundary) const {
+    const triangulationType &triangulation) const {
 
   Timer tm{};
 
@@ -524,8 +533,7 @@ std::vector<std::vector<SimplexId>>
       followVPath(cellId);
     }
 
-    // ignoreBoundary: skip triplets with saddles on boundary
-    if(!ignoreBoundary && isOnBoundary(sid)) {
+    if(isOnBoundary(sid)) {
       // critical saddle is on boundary
       maxs.emplace_back(-1);
     }
@@ -593,8 +601,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
   const std::vector<SimplexId> &criticalSaddles,
   const std::vector<SimplexId> &critSaddlesOrder,
   const std::vector<SimplexId> &critMaxsOrder,
-  const triangulationType &triangulation,
-  const bool ignoreBoundary) const {
+  const triangulationType &triangulation) const {
 
   Timer tm{};
 
@@ -613,7 +620,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
           [&triangulation](const SimplexId a) {
             return triangulation.isTriangleOnBoundary(a);
           },
-          triangulation, ignoreBoundary)
+          triangulation)
         : getSaddle2ToMaxima(
           criticalSaddles,
           [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
@@ -625,7 +632,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
           [&triangulation](const SimplexId a) {
             return triangulation.isEdgeOnBoundary(a);
           },
-          triangulation, ignoreBoundary);
+          triangulation);
 
   Timer tmseq{};
 
@@ -1053,37 +1060,66 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   // if maxima are paired
   auto &pairedMaxima{this->pairedCritCells_[dim]};
 
-  // minima - saddle pairs
-  this->getMinSaddlePairs(pairs, pairedMinima, paired1Saddles,
-                          criticalCellsByDim[1], critCellsOrder[1], offsets,
-                          triangulation);
-
   // connected components (global min/max pair)
   size_t nConnComp{};
-  for(const auto min : criticalCellsByDim[0]) {
-    if(!pairedMinima[min]) {
-      pairs.emplace_back(min, -1, 0);
-      pairedMinima[min] = true;
-      nConnComp++;
+
+  if(this->ComputeMinSad) {
+    // minima - saddle pairs
+    this->getMinSaddlePairs(pairs, pairedMinima, paired1Saddles,
+                            criticalCellsByDim[1], critCellsOrder[1], offsets,
+                            triangulation);
+
+    // non-paired minima
+    for(const auto min : criticalCellsByDim[0]) {
+      if(!pairedMinima[min]) {
+        pairs.emplace_back(min, -1, 0);
+        pairedMinima[min] = true;
+        nConnComp++;
+      }
+    }
+  } else {
+    // still extract the global pair
+    const auto globMin{*std::min_element(
+      criticalCellsByDim[0].begin(), criticalCellsByDim[0].end(),
+      [offsets](const SimplexId a, const SimplexId b) {
+        return offsets[a] < offsets[b];
+      })};
+    pairs.emplace_back(globMin, -1, 0);
+    pairedMinima[globMin] = true;
+    nConnComp++;
+  }
+
+  if(dim > 1 && this->ComputeSadMax) {
+    // saddle - maxima pairs
+    this->getMaxSaddlePairs(
+      pairs, pairedMaxima, paired2Saddles, criticalCellsByDim[dim - 1],
+      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation);
+  }
+
+  if(ignoreBoundary) {
+    // post-process saddle-max pairs: remove the one with the global
+    // maximum (if it exists) to be (more) compatible with FTM
+    const auto it
+      = std::find_if(pairs.begin(), pairs.end(), [&](const PersistencePair &p) {
+          if(p.type < dim - 1) {
+            return false;
+          }
+          const Cell cmax{dim, p.death};
+          const auto vmax{this->getCellGreaterVertex(cmax, triangulation)};
+          return offsets[vmax] == triangulation.getNumberOfVertices() - 1;
+        });
+
+    if(it != pairs.end()) {
+      // remove saddle-max pair with global maximum
+      paired2Saddles[it->birth] = false;
+      pairedMaxima[it->death] = false;
+      pairs.erase(it);
     }
   }
 
-  if(dim == 1) {
-    // early return in 1D
-    this->printMsg(
-      "Computed " + std::to_string(pairs.size()) + " persistence pairs", 1.0,
-      tm.getElapsedTime(), this->threadNumber_);
-    return 0;
-  }
-
-  // saddle - maxima pairs
-  this->getMaxSaddlePairs(pairs, pairedMaxima, paired2Saddles,
-                          criticalCellsByDim[dim - 1], critCellsOrder[dim - 1],
-                          critCellsOrder[dim], triangulation, ignoreBoundary);
-
   // saddle - saddle pairs
   if(dim == 3 && !criticalCellsByDim[1].empty()
-     && !criticalCellsByDim[2].empty()) {
+     && !criticalCellsByDim[2].empty() && this->ComputeSadSad) {
     std::vector<GeneratorType> tmp{};
     this->getSaddleSaddlePairs(
       pairs, paired1Saddles, paired2Saddles, false, tmp, criticalCellsByDim[1],
@@ -1091,9 +1127,12 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   }
 
   if(std::is_same<triangulationType, ttk::ExplicitTriangulation>::value) {
-    // create infinite pairs from non-paired 1-saddles
+    // create infinite pairs from non-paired 1-saddles, 2-saddles and maxima
     size_t nHandles{}, nCavities{}, nNonPairedMax{};
-    if((dim == 2 && !ignoreBoundary) || dim == 3) {
+    if((dim == 2 && !ignoreBoundary && this->ComputeMinSad
+        && this->ComputeSadMax)
+       || (dim == 3 && this->ComputeMinSad && this->ComputeSadSad)) {
+      // non-paired 1-saddles
       for(const auto s1 : criticalCellsByDim[1]) {
         if(!paired1Saddles[s1]) {
           paired1Saddles[s1] = true;
@@ -1103,7 +1142,9 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
         }
       }
     }
-    if(dim == 3 && !ignoreBoundary) {
+    if(dim == 3 && !ignoreBoundary && this->ComputeSadMax
+       && this->ComputeSadSad) {
+      // non-paired 2-saddles
       for(const auto s2 : criticalCellsByDim[2]) {
         if(!paired2Saddles[s2]) {
           paired2Saddles[s2] = true;
@@ -1113,7 +1154,8 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
         }
       }
     }
-    if(dim == 2 && !ignoreBoundary) {
+    if(dim == 2 && !ignoreBoundary && this->ComputeSadMax) {
+      // non-paired maxima
       for(const auto max : criticalCellsByDim[dim]) {
         if(!pairedMaxima[max]) {
           pairs.emplace_back(max, -1, 2);

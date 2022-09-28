@@ -154,12 +154,16 @@ jobs:
             # Ubuntu 22.04 performs more iterations in
             # PersistenceDiagramClustering than older Ubuntu VMs
             rm -f output_screenshots/persistenceDiagramClustering*.png
+            # EigenField output not deterministic...
+            rm -f output_screenshots/persistentGenerators_skull_1.png
           fi
           # HarmonicField output not deterministic...
           rm -f output_screenshots/harmonicSkeleton_0.png
           rm -f output_screenshots/harmonicSkeleton_1.png
           # ViscousFingering plot rendering issues
           rm -rf output_screenshots/viscousFingering_0.png
+          # EigenField output not deterministic...
+          rm -rf output_screenshots/persistentGenerators_fertility_1.png
 
           if [ "$(ls -A output_screenshots)" ]; then
             tar zcf screenshots.tar.gz output_screenshots
@@ -174,15 +178,19 @@ jobs:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
-      continue-on-error: true
+    - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
         python3 -u python/run.py
-        cat python/res.json
-        diff python/hashes/${{ matrix.os }}.json python/res.json
       env:
         OMP_NUM_THREADS: 1
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        cat python/res.json
+        diff python/hashes/${{ matrix.os }}.json python/res.json
 
 
   # -----------------#
@@ -196,18 +204,17 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout TTK source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /usr/local/Frameworks/Python.framework
-
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp ninja python open-mpi
+        brew uninstall --ignore-dependencies python@3.10
+        brew install wget libomp ninja python@3.9 open-mpi
+        # force brew's Python 3.9 as default Python
+        echo "$(brew --prefix)/opt/python@3.9/libexec/bin" >> $GITHUB_PATH
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
-        python3 -m pip install scikit-learn packaging
+        python3.9 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
@@ -289,16 +296,20 @@ jobs:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
-      continue-on-error: true
+    - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
         python3 -u python/run.py
-        cat python/res.json
-        diff python/hashes/macOS.json python/res.json
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
         OMP_NUM_THREADS: 1
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        cat python/res.json
+        diff python/hashes/macOS.json python/res.json
 
 
   # ------------------ #
@@ -424,15 +435,20 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
-      continue-on-error: true
+    - name: Run ttk-data Python scripts
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         python -u python\run.py
-        type python\res.json
-        FC python\hashes\windows.json python\res.json
       env:
         OMP_NUM_THREADS: 1
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      shell: cmd
+      run: |
+        cd ttk-data
+        type python\res.json
+        FC python\hashes\windows.json python\res.json

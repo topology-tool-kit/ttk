@@ -21,6 +21,9 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
   setDebugMsgPrefix("ScalarFieldNormalizer");
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() = default;

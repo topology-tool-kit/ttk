@@ -2,6 +2,11 @@
 /// \class ttk::LDistanceMatrix
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date May 2020
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
 #pragma once
 

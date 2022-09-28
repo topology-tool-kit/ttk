@@ -67,11 +67,15 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
 ///   Learning Circles example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
 ///   2-Manifold Learning example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
 ///   </a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
@@ -160,6 +164,16 @@ namespace ttk {
     }
     inline void setBackend(const BACKEND be) {
       this->BackEnd = be;
+    }
+
+    inline void setComputeMinSad(const bool data) {
+      this->dms_.setComputeMinSad(data);
+    }
+    inline void setComputeSadSad(const bool data) {
+      this->dms_.setComputeSadSad(data);
+    }
+    inline void setComputeSadMax(const bool data) {
+      this->dms_.setComputeSadMax(data);
     }
 
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,

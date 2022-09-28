@@ -18,6 +18,9 @@
 ///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
 ///   IO example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
 ///   Tree Alignment example</a> \n
 ///   - <a

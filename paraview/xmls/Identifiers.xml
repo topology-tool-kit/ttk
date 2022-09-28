@@ -38,7 +38,7 @@
         command="SetCellFieldName"
         label="Cell Field Name"
         number_of_elements="1"
-        default_values="CellIdentifiers">
+        default_values="ttkCellScalarField">
         <Documentation>
           Name of the output cell identifier field.
         </Documentation>

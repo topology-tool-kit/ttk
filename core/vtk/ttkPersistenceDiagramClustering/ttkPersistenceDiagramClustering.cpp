@@ -55,8 +55,6 @@ int ttkPersistenceDiagramClustering::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
-  Memory m;
-
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
 
   // Flat storage for diagrams extracted from blocks
@@ -74,6 +72,11 @@ int ttkPersistenceDiagramClustering::RequestData(
         needUpdate_ = true;
       }
     }
+  }
+
+  if(numInputs == 0) {
+    this->printErr("No input detected");
+    return 0;
   }
 
   // Get output pointers
@@ -94,8 +97,22 @@ int ttkPersistenceDiagramClustering::RequestData(
     std::vector<double> max_persistences(numInputs);
 
     for(int i = 0; i < numInputs; i++) {
-      this->VTUToDiagram(this->intermediateDiagrams_[i], input[i]);
-      max_persistences[i] = std::get<4>(intermediateDiagrams_[i][0]);
+      auto &diag{this->intermediateDiagrams_[i]};
+      const auto ret = VTUToDiagram(diag, input[i], *this);
+      if(ret < 0) {
+        this->printErr("Could not read Persistence Diagram");
+        return 0;
+      }
+      if(this->NumberOfClusters > 1) {
+        // duplicate the global min-max pair in 2: one min-saddle pair and
+        // one saddle-max pair
+        diag[0].death.type = ttk::CriticalType::Saddle1;
+        // store the saddle max pair at the vector end
+        diag.emplace_back(diag[0]);
+        diag.back().birth.type = ttk::CriticalType::Saddle1;
+        diag.back().death.type = ttk::CriticalType::Local_maximum;
+      }
+      max_persistences[i] = diag[0].persistence;
     }
 
     this->max_dimension_total_
@@ -107,7 +124,7 @@ int ttkPersistenceDiagramClustering::RequestData(
         TimeLimit = 999999999;
       }
 
-      inv_clustering_ = this->execute<double>(
+      inv_clustering_ = this->execute(
         intermediateDiagrams_, final_centroids_, all_matchings_);
       needUpdate_ = false;
 
@@ -118,13 +135,12 @@ int ttkPersistenceDiagramClustering::RequestData(
       for(int i_input = 0; i_input < numInputs; i_input++) {
         inv_clustering_[i_input] = 0;
       }
-      PersistenceDiagramBarycenter<double> pdBarycenter;
+      PersistenceDiagramBarycenter pdBarycenter{};
 
       const auto wassersteinMetric = std::to_string(WassersteinMetric);
       pdBarycenter.setWasserstein(wassersteinMetric);
       pdBarycenter.setMethod(2);
       pdBarycenter.setNumberOfInputs(numInputs);
-      pdBarycenter.setTimeLimit(TimeLimit);
       pdBarycenter.setDeterministic(Deterministic);
       pdBarycenter.setUseProgressive(UseProgressive);
       pdBarycenter.setDebugLevel(debugLevel_);
@@ -138,333 +154,58 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
-  outputClusteredDiagrams(output_clusters, input, this->inv_clustering_,
+  outputClusteredDiagrams(output_clusters, input, this->intermediateDiagrams_,
+                          this->all_matchings_, this->inv_clustering_,
                           this->DisplayMethod, this->Spacing,
                           this->max_dimension_total_);
-  outputCentroids(output_centroids, this->final_centroids_, this->DisplayMethod,
+  outputCentroids(output_centroids, this->final_centroids_,
+                  this->all_matchings_, input[0], this->DisplayMethod,
                   this->Spacing, this->max_dimension_total_);
   outputMatchings(
     output_matchings, this->NumberOfClusters, this->intermediateDiagrams_,
     this->all_matchings_, this->final_centroids_, this->inv_clustering_,
     this->DisplayMethod, this->Spacing, this->max_dimension_total_);
 
-  // forward input diagrams FieldData to output_clusters blocks
-  for(size_t i = 0; i < input.size(); ++i) {
-    const auto diag{input[i]};
-    const auto block{
-      vtkUnstructuredGrid::SafeDownCast(output_clusters->GetBlock(i))};
-    if(block != nullptr && block->GetFieldData() != nullptr
-       && diag->GetFieldData() != nullptr) {
-      block->GetFieldData()->ShallowCopy(diag->GetFieldData());
-      // add clusterId to FieldData
-      vtkNew<vtkIntArray> cid{};
-      cid->SetName("ClusterId");
-      cid->SetNumberOfTuples(1);
-      cid->SetTuple1(0, this->inv_clustering_[i]);
-      block->GetFieldData()->AddArray(cid);
-    }
-  }
+  return 1;
+}
 
-  // add distance results to output_matchings FieldData
+void addCostsAsFieldData(vtkUnstructuredGrid *vtu,
+                         const double minSadCost,
+                         const double sadSadCost,
+                         const double sadMaxCost) {
+
+  // add global matchings cost as FieldData (only 1 tuple per array)
   vtkNew<vtkDoubleArray> minSad{};
   minSad->SetName("MinSaddleCost");
   minSad->SetNumberOfTuples(1);
-  minSad->SetTuple1(0, this->distances[0]);
+  minSad->SetTuple1(0, minSadCost);
+  vtu->GetFieldData()->AddArray(minSad);
 
   vtkNew<vtkDoubleArray> sadSad{};
   sadSad->SetName("SaddleSaddleCost");
   sadSad->SetNumberOfTuples(1);
-  sadSad->SetTuple1(0, this->distances[1]);
+  sadSad->SetTuple1(0, sadSadCost);
+  vtu->GetFieldData()->AddArray(sadSad);
 
   vtkNew<vtkDoubleArray> sadMax{};
   sadMax->SetName("SaddleMaxCost");
   sadMax->SetNumberOfTuples(1);
-  sadMax->SetTuple1(0, this->distances[2]);
+  sadMax->SetTuple1(0, sadMaxCost);
+  vtu->GetFieldData()->AddArray(sadMax);
 
   vtkNew<vtkDoubleArray> wass{};
   wass->SetName("WassersteinDistance");
   wass->SetNumberOfTuples(1);
-  wass->SetTuple1(
-    0, std::accumulate(this->distances.begin(), this->distances.end(), 0.0));
-
-  for(size_t i = 0; i < output_matchings->GetNumberOfBlocks(); ++i) {
-    const auto block{
-      vtkUnstructuredGrid::SafeDownCast(output_matchings->GetBlock(i))};
-    if(block != nullptr && block->GetFieldData() != nullptr) {
-      block->GetFieldData()->AddArray(minSad);
-      block->GetFieldData()->AddArray(sadSad);
-      block->GetFieldData()->AddArray(sadMax);
-      block->GetFieldData()->AddArray(wass);
-    }
-  }
-
-  return 1;
-}
-
-void ttkPersistenceDiagramClustering::VTUToDiagram(
-  diagramType &diagram, vtkUnstructuredGrid *vtu) const {
-
-  const auto pd = vtu->GetPointData();
-  const auto cd = vtu->GetCellData();
-
-  if(pd == nullptr) {
-    this->printErr("VTU diagram with NULL Point Data");
-    return;
-  }
-  if(cd == nullptr) {
-    this->printErr("VTU diagram with NULL Cell Data");
-    return;
-  }
-
-  // cell data
-  const auto pairId = vtkIntArray::SafeDownCast(cd->GetArray("PairIdentifier"));
-  const auto pairType = vtkIntArray::SafeDownCast(cd->GetArray("PairType"));
-  const auto pairPers = cd->GetArray("Persistence");
-  const auto birthScalars = cd->GetArray("Birth");
-
-  // point data
-  const auto vertexId
-    = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
-  const auto critType = vtkIntArray::SafeDownCast(pd->GetArray("CriticalType"));
-  const auto coords = vtkFloatArray::SafeDownCast(pd->GetArray("Coordinates"));
-
-  const auto points = vtu->GetPoints();
-
-  const bool embed = coords == nullptr;
-
-  int nPairs = pairId->GetNumberOfTuples();
-
-  // compact pairIds in [0, nPairs - 1] (diagonal excepted)
-  for(int i = 0; i < nPairs; i++) {
-    if(pairId->GetTuple1(i) != -1) {
-      pairId->SetTuple1(i, i);
-    }
-  }
-
-  // skip diagram diagonal if present (assuming it's the last pair in the
-  // diagram)
-  if(pairId->GetTuple1(nPairs - 1) == -1)
-    nPairs -= 1;
-
-  if(nPairs < 1 || vertexId == nullptr || pairId == nullptr
-     || critType == nullptr || pairPers == nullptr || pairType == nullptr
-     || points == nullptr) {
-    this->printErr("Either no pairs in diagram or some array is NULL");
-    return;
-  }
-
-  if(NumberOfClusters == 1) {
-    diagram.resize(nPairs);
-  } else {
-    diagram.resize(nPairs + 1);
-  }
-
-  // count the number of pairs whose index is >= nPairs
-  int nbNonCompact = 0;
-
-  // skip diagonal cell (corresponding points already dealt with)
-  for(int i = 0; i < nPairs; ++i) {
-
-    const int v0 = vertexId->GetValue(2 * i);
-    const int v1 = vertexId->GetValue(2 * i + 1);
-    const int ct0 = critType->GetValue(2 * i);
-    const int ct1 = critType->GetValue(2 * i + 1);
-
-    const int pId = pairId->GetValue(i);
-    const int pType = pairType->GetValue(i);
-    const auto pers = pairPers->GetTuple1(i);
-    const auto birth = birthScalars->GetTuple1(i);
-    const auto death = birth + pers;
-
-    std::array<double, 3> coordsBirth{}, coordsDeath{};
-
-    if(embed) {
-      points->GetPoint(2 * i + 0, coordsBirth.data());
-      points->GetPoint(2 * i + 1, coordsDeath.data());
-    } else {
-      coords->GetTuple(2 * i + 0, coordsBirth.data());
-      coords->GetTuple(2 * i + 1, coordsDeath.data());
-    }
-
-    if(pId != -1 && pId < nPairs) {
-
-      if(pId == 0) {
-        // deal with the global min-max pair separately
-        // (what do we do with other infinite pairs?)
-
-        if(NumberOfClusters == 1) {
-          diagram[0] = std::make_tuple(
-            v0, CriticalType::Local_minimum, v1, CriticalType::Local_maximum,
-            pers, pType, birth, coordsBirth[0], coordsBirth[1], coordsBirth[2],
-            death, coordsDeath[0], coordsDeath[1], coordsDeath[2]);
-        } else {
-          // duplicate the global min-max pair into two: one min-saddle pair and
-          // one saddle-max pair
-          diagram[0] = std::make_tuple(
-            v0, CriticalType::Local_minimum, v1, CriticalType::Saddle1, pers,
-            pType, birth, coordsBirth[0], coordsBirth[1], coordsBirth[2], death,
-            coordsDeath[0], coordsDeath[1], coordsDeath[2]);
-          // store the saddle max pair at the vector end
-          diagram[nPairs] = std::make_tuple(
-            v0, CriticalType::Saddle1, v1, CriticalType::Local_maximum, pers,
-            pType, birth, coordsBirth[0], coordsBirth[1], coordsBirth[2], death,
-            coordsDeath[0], coordsDeath[1], coordsDeath[2]);
-        }
-
-      } else {
-        // all other pairs
-        diagram[pId] = std::make_tuple(
-          v0, static_cast<CriticalType>(ct0), v1,
-          static_cast<CriticalType>(ct1), pers, pType, birth, coordsBirth[0],
-          coordsBirth[1], coordsBirth[2], death, coordsDeath[0], coordsDeath[1],
-          coordsDeath[2]);
-      }
-    }
-
-    if(pId >= nPairs) {
-      nbNonCompact++;
-    }
-  }
-
-  if(nbNonCompact > 0) {
-    this->printWrn("Missed " + std::to_string(nbNonCompact)
-                   + " pairs due to non-compactness.");
-  }
-}
-
-void ttkPersistenceDiagramClustering::diagramToVTU(
-  vtkUnstructuredGrid *output,
-  const diagramType &diagram,
-  const int cid,
-  const double max_persistence) const {
-
-  const auto nPoints = 2 * diagram.size();
-  if(nPoints == 0) {
-    this->printWrn("Diagram with no points");
-    return;
-  }
-
-  vtkNew<vtkPoints> points{};
-  points->SetNumberOfPoints(nPoints);
-  output->SetPoints(points);
-
-  // point data
-  vtkNew<vtkIntArray> critType{};
-  critType->SetName("CriticalType");
-  critType->SetNumberOfTuples(nPoints);
-  output->GetPointData()->AddArray(critType);
-
-  vtkNew<vtkIntArray> clusterId{};
-  clusterId->SetName("ClusterID");
-  clusterId->SetNumberOfComponents(1);
-  clusterId->SetNumberOfTuples(nPoints);
-  clusterId->Fill(cid);
-  output->GetPointData()->AddArray(clusterId);
-
-  vtkNew<vtkFloatArray> coords{};
-  coords->SetNumberOfComponents(3);
-  coords->SetName("Coordinates");
-  coords->SetNumberOfTuples(nPoints);
-  output->GetPointData()->AddArray(coords);
-
-  vtkNew<vtkDoubleArray> pointPers{};
-  pointPers->SetName("Persistence");
-  pointPers->SetNumberOfTuples(nPoints);
-  output->GetPointData()->AddArray(pointPers);
-
-  vtkNew<ttkSimplexIdTypeArray> vsf{};
-  vsf->SetName(ttk::VertexScalarFieldName);
-  vsf->SetNumberOfTuples(nPoints);
-  output->GetPointData()->AddArray(vsf);
-
-  // cell data
-  vtkNew<vtkIntArray> pairId{};
-  pairId->SetName("PairIdentifier");
-  pairId->SetNumberOfTuples(diagram.size() + 1);
-  output->GetCellData()->AddArray(pairId);
-
-  vtkNew<vtkIntArray> pairType{};
-  pairType->SetName("PairType");
-  pairType->SetNumberOfTuples(diagram.size() + 1);
-  output->GetCellData()->AddArray(pairType);
-
-  vtkNew<vtkDoubleArray> pairPers{};
-  pairPers->SetName("Persistence");
-  pairPers->SetNumberOfTuples(diagram.size() + 1);
-  output->GetCellData()->AddArray(pairPers);
-
-  vtkNew<vtkDoubleArray> birthScalars{};
-  birthScalars->SetName(ttk::PersistenceBirthName);
-  birthScalars->SetNumberOfTuples(diagram.size() + 1);
-  output->GetCellData()->AddArray(birthScalars);
-
-  vtkNew<vtkUnsignedCharArray> isFinite{};
-  isFinite->SetName(ttk::PersistenceIsFinite);
-  isFinite->SetNumberOfTuples(diagram.size() + 1);
-  output->GetCellData()->AddArray(isFinite);
-
-  for(size_t j = 0; j < diagram.size(); ++j) {
-    const auto &pair{diagram[j]};
-    const auto birth{std::get<6>(pair)};
-    const auto death{std::get<10>(pair)};
-    const auto birtVertId{std::get<0>(pair)};
-    const auto deathVertId{std::get<2>(pair)};
-    const auto pType{std::get<5>(pair)};
-    const auto birthType{std::get<1>(pair)};
-    const auto deathType{std::get<3>(pair)};
-    std::array<float, 3> coordsBirth{
-      std::get<7>(pair), std::get<8>(pair), std::get<9>(pair)};
-    std::array<float, 3> coordsDeath{
-      std::get<11>(pair), std::get<12>(pair), std::get<13>(pair)};
-
-    // cell data
-    pairId->SetTuple1(j, j);
-    pairType->SetTuple1(j, pType);
-    pairPers->SetTuple1(j, death - birth);
-    birthScalars->SetTuple1(j, birth);
-    isFinite->SetTuple1(j, j == 0 ? 0 : 1);
-
-    // point data
-    coords->SetTuple(2 * j + 0, coordsBirth.data());
-    coords->SetTuple(2 * j + 1, coordsDeath.data());
-    pointPers->SetTuple1(2 * j + 0, death - birth);
-    pointPers->SetTuple1(2 * j + 1, death - birth);
-    critType->SetTuple1(2 * j + 0, static_cast<int>(birthType));
-    critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
-    vsf->SetTuple1(2 * j + 0, birtVertId);
-    vsf->SetTuple1(2 * j + 1, deathVertId);
-
-    points->SetPoint(2 * j + 0, birth, birth, 0);
-    points->SetPoint(2 * j + 1, birth, death, 0);
-
-    const std::array<vtkIdType, 2> ids{
-      2 * static_cast<vtkIdType>(j) + 0,
-      2 * static_cast<vtkIdType>(j) + 1,
-    };
-    output->InsertNextCell(VTK_LINE, 2, ids.data());
-  }
-
-  // add diagonal
-  const auto minmax_birth = std::minmax_element(
-    diagram.begin(), diagram.end(), [](const pairTuple &a, const pairTuple &b) {
-      return std::get<6>(a) < std::get<6>(b);
-    });
-  const std::array<vtkIdType, 2> ids{
-    2 * (minmax_birth.first - diagram.begin()),
-    2 * (minmax_birth.second - diagram.begin()),
-  };
-  output->InsertNextCell(VTK_LINE, 2, ids.data());
-  pairId->SetTuple1(diagram.size(), -1);
-  pairType->SetTuple1(diagram.size(), -1);
-  // use twice the max persistence of all input diagrams...
-  pairPers->SetTuple1(diagram.size(), 2.0 * max_persistence);
-  birthScalars->SetTuple1(diagram.size(), std::get<6>(*minmax_birth.first));
-  isFinite->SetTuple1(diagram.size(), 0);
+  wass->SetTuple1(0, minSadCost + sadSadCost + sadMaxCost);
+  vtu->GetFieldData()->AddArray(wass);
 }
 
 void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
-  const std::vector<vtkUnstructuredGrid *> &diags,
+  const std::vector<vtkUnstructuredGrid *> &diagsVTU,
+  const std::vector<ttk::DiagramType> &diags,
+  const std::vector<std::vector<std::vector<ttk::MatchingType>>>
+    &matchingsPerCluster,
   const std::vector<int> &inv_clustering,
   const DISPLAY dm,
   const double spacing,
@@ -481,7 +222,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     const auto nClusters
       = 1 + *std::max_element(inv_clustering.begin(), inv_clustering.end());
     clustSize.resize(nClusters, 0);
-    diagIdInClust.resize(diags.size());
+    diagIdInClust.resize(diagsVTU.size());
     for(size_t i = 0; i < inv_clustering.size(); ++i) {
       auto &diagsInClust = clustSize[inv_clustering[i]];
       diagIdInClust[i] = diagsInClust;
@@ -489,20 +230,29 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     }
   }
 
-  output->SetNumberOfBlocks(diags.size());
+  output->SetNumberOfBlocks(diagsVTU.size());
 
-  for(size_t i = 0; i < diags.size(); ++i) {
+  for(size_t i = 0; i < diagsVTU.size(); ++i) {
     vtkNew<vtkUnstructuredGrid> vtu{};
-    vtu->ShallowCopy(diags[i]);
+    vtu->ShallowCopy(diagsVTU[i]);
 
+    // put clusterId on FieldData (only 1 tuple)
     vtkNew<vtkIntArray> clusterId{};
-    clusterId->SetName("ClusterID");
+    clusterId->SetName("ClusterId");
     clusterId->SetNumberOfComponents(1);
-    clusterId->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    clusterId->SetNumberOfTuples(1);
     clusterId->Fill(inv_clustering[i]);
-    vtu->GetPointData()->AddArray(clusterId);
+    vtu->GetFieldData()->AddArray(clusterId);
 
-    // add Persistence data array on vertices
+    // add ClusterID also on PointData?
+    vtkNew<vtkIntArray> cidPD{};
+    cidPD->SetName("ClusterID");
+    cidPD->SetNumberOfComponents(1);
+    cidPD->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    cidPD->Fill(inv_clustering[i]);
+    vtu->GetPointData()->AddArray(cidPD);
+
+    // add Persistence also on PointData?
     vtkNew<vtkDoubleArray> pointPers{};
     pointPers->SetName("Persistence");
     pointPers->SetNumberOfTuples(vtu->GetNumberOfPoints());
@@ -515,6 +265,36 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
       pointPers->SetTuple1(2 * j + 0, pers);
       pointPers->SetTuple1(2 * j + 1, pers);
     }
+
+    const auto cid = inv_clustering[i];
+    const auto &matchings{matchingsPerCluster[cid][i]};
+    double minSadCost{}, sadSadCost{}, sadMaxCost{};
+    const auto &diag{diags[i]};
+
+    for(size_t j = 0; j < matchings.size(); ++j) {
+      const auto &m{matchings[j]};
+      const auto bidderId{std::get<0>(m)};
+
+      // avoid out-of-bound accesses
+      if(bidderId >= static_cast<ttk::SimplexId>(diag.size())) {
+        this->printWrn("Out-of-bounds access averted");
+        continue;
+      }
+
+      if(bidderId > 0) {
+        const auto &p1{diag[bidderId]};
+        if(p1.birth.type == ttk::CriticalType::Local_minimum) {
+          minSadCost += std::get<2>(m);
+        } else if(p1.birth.type == ttk::CriticalType::Saddle1
+                  && p1.death.type == ttk::CriticalType::Saddle2) {
+          sadSadCost += std::get<2>(m);
+        } else if(p1.death.type == ttk::CriticalType::Local_maximum) {
+          sadMaxCost += std::get<2>(m);
+        }
+      }
+    }
+
+    addCostsAsFieldData(vtu, minSadCost, sadSadCost, sadMaxCost);
 
     // translate diagram back to canonical representation
     ResetDiagramPosition(vtu, *this);
@@ -545,20 +325,76 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
 
 void ttkPersistenceDiagramClustering::outputCentroids(
   vtkMultiBlockDataSet *output,
-  const std::vector<diagramType> &final_centroids,
+  const std::vector<DiagramType> &final_centroids,
+  const std::vector<std::vector<std::vector<ttk::MatchingType>>>
+    &matchingsPerCluster,
+  vtkUnstructuredGrid *const someInputDiag,
   const DISPLAY dm,
   const double spacing,
   const double max_persistence) const {
 
+  if(final_centroids.size() != matchingsPerCluster.size()) {
+    this->printWrn("Inconsistent matchings vector size");
+  }
+
+  const auto da{
+    someInputDiag->GetCellData()->GetArray(ttk::PersistenceBirthName)};
+  const auto dim{static_cast<int>(someInputDiag->GetCellData()
+                                    ->GetArray(ttk::PersistencePairTypeName)
+                                    ->GetRange()[1])
+                 + 1};
+
   for(size_t i = 0; i < final_centroids.size(); ++i) {
     vtkNew<vtkUnstructuredGrid> vtu{};
-    this->diagramToVTU(vtu, final_centroids[i], i, this->max_dimension_total_);
+    DiagramToVTU(vtu, final_centroids[i], da, *this, dim, false);
 
+    // put clusterId on FieldData (only 1 tuple)
     vtkNew<vtkIntArray> cid{};
     cid->SetName("ClusterId");
     cid->SetNumberOfTuples(1);
     cid->SetTuple1(0, i);
     vtu->GetFieldData()->AddArray(cid);
+
+    // add ClusterID also on PointData?
+    vtkNew<vtkIntArray> cidPD{};
+    cidPD->SetName("ClusterID");
+    cidPD->SetNumberOfComponents(1);
+    cidPD->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    cidPD->Fill(i);
+    vtu->GetPointData()->AddArray(cidPD);
+
+    // add Persistence also on PointData?
+    vtkNew<vtkDoubleArray> pointPers{};
+    pointPers->SetName("Persistence");
+    pointPers->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    vtu->GetPointData()->AddArray(pointPers);
+
+    // diagonal uses two existing points
+    for(int j = 0; j < vtu->GetNumberOfCells() - 1; ++j) {
+      const auto persArray = vtu->GetCellData()->GetArray("Persistence");
+      const auto pers = persArray->GetTuple1(j);
+      pointPers->SetTuple1(2 * j + 0, pers);
+      pointPers->SetTuple1(2 * j + 1, pers);
+    }
+
+    double minSadCost{}, sadSadCost{}, sadMaxCost{};
+
+    for(const auto &matchingsPerDiag : matchingsPerCluster[i]) {
+      for(const auto &m : matchingsPerDiag) {
+        const auto goodId{std::get<1>(m)};
+        const auto &p0{final_centroids[i][goodId]};
+        if(p0.birth.type == ttk::CriticalType::Local_minimum) {
+          minSadCost += std::get<2>(m);
+        } else if(p0.birth.type == ttk::CriticalType::Saddle1
+                  && p0.death.type == ttk::CriticalType::Saddle2) {
+          sadSadCost += std::get<2>(m);
+        } else if(p0.death.type == ttk::CriticalType::Local_maximum) {
+          sadMaxCost += std::get<2>(m);
+        }
+      }
+    }
+
+    addCostsAsFieldData(vtu, minSadCost, sadSadCost, sadMaxCost);
 
     if(dm == DISPLAY::STARS && spacing > 0) {
       // shift centroid along the X axis
@@ -577,10 +413,10 @@ void ttkPersistenceDiagramClustering::outputCentroids(
 void ttkPersistenceDiagramClustering::outputMatchings(
   vtkMultiBlockDataSet *output,
   const size_t nClusters,
-  const std::vector<diagramType> &diags,
-  const std::vector<std::vector<std::vector<matchingType>>>
+  const std::vector<DiagramType> &diags,
+  const std::vector<std::vector<std::vector<ttk::MatchingType>>>
     &matchingsPerCluster,
-  const std::vector<diagramType> &centroids,
+  const std::vector<DiagramType> &centroids,
   const std::vector<int> &inv_clustering,
   const DISPLAY dm,
   const double spacing,
@@ -677,18 +513,18 @@ void ttkPersistenceDiagramClustering::outputMatchings(
       }
 
       const auto &p0{centroids[cid][goodId]};
-      std::array<double, 3> coords0{std::get<6>(p0), std::get<10>(p0), 0};
-
       std::array<double, 3> coords1{};
+      std::array<double, 3> coords0{p0.birth.sfValue, p0.death.sfValue, 0};
 
       if(bidderId >= 0) {
-        const auto &p1{diag[bidderId]};
-        coords1[0] = std::get<6>(p1);
-        coords1[1] = std::get<10>(p1);
+        const auto &p{diag[bidderId]};
+        coords1[0] = p.birth.sfValue;
+        coords1[1] = p.death.sfValue;
         coords1[2] = 0;
         isDiagonal->SetTuple1(j, 0);
       } else {
-        double diagonal_projection = (std::get<6>(p0) + std::get<10>(p0)) / 2;
+        const double diagonal_projection
+          = (p0.birth.sfValue + p0.death.sfValue) / 2.0;
         coords1[0] = diagonal_projection;
         coords1[1] = diagonal_projection;
         coords1[2] = 0;
@@ -722,9 +558,19 @@ void ttkPersistenceDiagramClustering::outputMatchings(
       diagIdVerts->SetTuple1(2 * j + 1, i);
       pointId->SetTuple1(2 * j + 0, goodId);
       pointId->SetTuple1(2 * j + 1, bidderId);
-      pairType->SetTuple1(j, std::get<5>(p0));
+
+      if(bidderId >= 0) {
+        const auto &p1{diag[bidderId]};
+        pairType->SetTuple1(j, p1.isFinite ? p1.dim : -1);
+      } else {
+        pairType->SetTuple1(j, p0.dim);
+      }
     }
 
+    addCostsAsFieldData(matchingsGrid, this->distances[0], this->distances[1],
+                        this->distances[2]);
+
+    // add diagram matchings to multi-block
     output->SetBlock(i, matchingsGrid);
   }
 

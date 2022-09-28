@@ -356,6 +356,14 @@ int ttkMergeTreeClustering::runCompute(
   return 1;
 }
 
+void addFieldData(vtkDataSet *in, vtkDataSet *out) {
+  auto inFieldData = in->GetFieldData();
+  auto outFieldData = out->GetFieldData();
+  for(int i = 0; i < inFieldData->GetNumberOfArrays(); ++i) {
+    outFieldData->AddArray(inFieldData->GetAbstractArray(i));
+  }
+}
+
 template <class dataType>
 int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
@@ -471,6 +479,10 @@ int ttkMergeTreeClustering::runOutput(
         treesNodes[1]->GetFieldData());
       vtkOutputArc1->GetFieldData()->ShallowCopy(treesArcs[0]->GetFieldData());
       vtkOutputArc2->GetFieldData()->ShallowCopy(treesArcs[1]->GetFieldData());
+      if(treesSegmentation[0])
+        addFieldData(treesSegmentation[0], vtkOutputNode1);
+      if(treesSegmentation[1])
+        addFieldData(treesSegmentation[1], vtkOutputNode2);
       if(OutputSegmentation) {
         vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
           treesSegmentation[0]->GetFieldData());
@@ -612,6 +624,8 @@ int ttkMergeTreeClustering::runOutput(
             treesNodes[i]->GetFieldData());
           vtkOutputArc1->GetFieldData()->ShallowCopy(
             treesArcs[i]->GetFieldData());
+          if(treesSegmentation[i])
+            addFieldData(treesSegmentation[i], vtkOutputNode1);
           if(OutputSegmentation)
             vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
               treesSegmentation[i]->GetFieldData());

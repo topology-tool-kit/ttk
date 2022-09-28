@@ -20,8 +20,8 @@ ttkIdentifiers::ttkIdentifiers() {
 
   setDebugMsgPrefix("Identifiers");
 
-  vtkWarningMacro("`TTK Identifiers' is now deprecated. Please use "
-                  "`Generate Ids' instead.");
+  //   vtkWarningMacro("`TTK Identifiers' is now deprecated. Please use "
+  //                   "`Generate Ids' instead.");
 }
 
 ttkIdentifiers::~ttkIdentifiers() = default;
