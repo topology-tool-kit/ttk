@@ -8,7 +8,7 @@
 ///
 /// \b Related \b publication \n
 /// "Branch Decomposition-Independent Edit Distances for Merge Trees." \n
-/// Florian Wetzels, Heike Leitte, and Christoph Garth.\n
+/// Florian Wetzels, Heike Leitte, and Christoph Garth. \n
 /// Computer Graphics Forum, 2022.
 
 #pragma once

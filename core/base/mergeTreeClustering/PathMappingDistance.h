@@ -8,8 +8,8 @@
 ///
 /// \b Related \b publication \n
 /// "A Deformation-based Edit Distance for Merge Trees" \n
-/// Florian Wetzels, Christoph Garth.\n
-/// TBP.
+/// Florian Wetzels, Christoph Garth. \n
+/// TopoInVis 2022.
 
 #pragma once
 

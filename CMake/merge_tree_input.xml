@@ -8,7 +8,7 @@ default_values="0">
     <Entry value="0" text="Wasserstein Distance (IEEE TVCG 2021)"/>
     <Entry value="1" text="Edit Distance (IEEE TVCG 2019)"/>
     <Entry value="3" text="Branch Mapping Distance (EuroVis 2022)"/>
-    <Entry value="4" text="Path Mapping Distance (TBP)"/>
+    <Entry value="4" text="Path Mapping Distance (TopoInVis 2022)"/>
     <Entry value="2" text="Custom"/>
 </EnumerationDomain>
   <Documentation>
