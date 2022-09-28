@@ -168,60 +168,8 @@ int ttkMergeTreeDistanceMatrix::run(
   // Construct trees
   const int numInputs = inputTrees.size();
   std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
-  std::vector<
-    std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>>
-    adjacenyLists;
-  if(baseModule == 0) {
-    constructTrees(inputTrees, intermediateTrees);
-    constructTrees(inputTrees2, intermediateTrees2);
-  } else {
-    auto start = std::chrono::high_resolution_clock::now();
-    constructTrees(inputTrees, intermediateTrees);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Avg time ftm construction: " << duration.count()*0.000001*(1/(float)inputTrees.size()) << " seconds" << std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    constructTrees(inputTrees2, intermediateTrees2);
-    int treetype = 0;
-    for(size_t i = 0; i < inputTrees.size(); i++) {
-      vtkSmartPointer<vtkUnstructuredGrid> mt_nodes
-        = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
-      int nmax = 0;
-      int nmin = 0;
-      for(int j = 0; j < mt_nodes->GetNumberOfPoints(); j++) {
-        if(mt_nodes->GetPointData()
-             ->GetArray("CriticalType")
-             ->GetComponent(j, 0)
-           == 3) {
-          nmax++;
-          if(nmax > 1) {
-            treetype = 1;
-            break;
-          }
-        }
-        if(mt_nodes->GetPointData()
-             ->GetArray("CriticalType")
-             ->GetComponent(j, 0)
-           == 0) {
-          nmin++;
-          if(nmin > 1) {
-            treetype = 0;
-            break;
-          }
-        }
-      }
-    }
-    for(size_t i = 0; i < inputTrees.size(); i++) {
-      vtkSmartPointer<vtkUnstructuredGrid> mt_nodes
-        = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
-      vtkSmartPointer<vtkUnstructuredGrid> mt_arcs
-        = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(1));
-      adjacenyLists.push_back(ftmToAdjList<dataType>(mt_nodes, mt_arcs, treetype, true));
-    }
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Avg time adj list construction: " << duration.count()*0.000001*(1/(float)inputTrees.size()) << " seconds" << std::endl;
-  }
+  constructTrees(inputTrees, intermediateTrees);
+  constructTrees(inputTrees2, intermediateTrees2);
 
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(
@@ -229,7 +177,7 @@ int ttkMergeTreeDistanceMatrix::run(
   if(baseModule == 0)
     execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
   else
-    execute<dataType>(adjacenyLists, intermediateTrees, treesDistMat);
+    execute<dataType>(intermediateTrees, treesDistMat);
 
   // --- Create output
   auto treesDistTable = vtkTable::GetData(outputVector);
@@ -324,115 +272,4 @@ int ttkMergeTreeDistanceMatrix::RequestData(
   }
 
   return res;
-}
-
-template<class dataType>
-std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>
-  ttkMergeTreeDistanceMatrix::ftmToAdjList(
-    vtkSmartPointer<vtkUnstructuredGrid> &mt_nodes,
-    vtkSmartPointer<vtkUnstructuredGrid> &mt,
-    int treeType,
-    bool scalarLabels) {
-  std::map<std::tuple<float, float, float>, dataType> posToScalarMap;
-  std::vector<dataType> nodeScalars(mt->GetNumberOfPoints());
-  std::vector<int> nodeTypes(mt->GetNumberOfPoints());
-  std::vector<int> upIDs(mt->GetNumberOfCells());
-  std::vector<int> downIDs(mt->GetNumberOfCells());
-  std::vector<float> regionSizes(mt->GetNumberOfCells());
-  std::vector<dataType> persistences(mt->GetNumberOfCells());
-  std::vector<dataType> nodePersistences(mt->GetNumberOfPoints(), static_cast<dataType>(1000.));
-  for(int i = 0; i < mt->GetNumberOfPoints(); i++) {
-    int nid = mt_nodes->GetPointData()->GetArray("NodeId")->GetComponent(i, 0);
-    int nt
-      = mt_nodes->GetPointData()->GetArray("CriticalType")->GetComponent(i, 0);
-    dataType ns
-      = mt_nodes->GetPointData()->GetArray("Scalar")->GetComponent(nid, 0);
-    nodeTypes[nid] = nt;
-    nodeScalars[nid] = ns;
-  }
-  for(int i = 0; i < mt->GetNumberOfCells(); i++) {
-    int downId
-      = int(mt->GetCellData()->GetArray("downNodeId")->GetComponent(i, 0));
-    int upId = int(mt->GetCellData()->GetArray("upNodeId")->GetComponent(i, 0));
-    float rs = mt->GetCellData()->GetArray("RegionSize")->GetComponent(i, 0);
-    dataType pers = abs(nodeScalars[upId] - nodeScalars[downId]);
-    upIDs[i] = upId;
-    downIDs[i] = downId;
-    regionSizes[i] = rs;
-    persistences[i] = pers;
-  }
-
-  int rootID = -1;
-  std::vector<std::vector<int>> children;
-  for(size_t i = 0; i < nodeScalars.size(); i++) {
-    if(treeType == 0 and nodeTypes[i] == 3) {
-      rootID = i;
-    }
-    if(treeType == 1 and nodeTypes[i] == 0) {
-      rootID = i;
-    }
-    children.emplace_back(std::vector<int>());
-  }
-  for(size_t i = 0; i < upIDs.size(); i++) {
-    int downId = downIDs[i];
-    int upId = upIDs[i];
-    children[upId].push_back(downId);
-    nodePersistences[downId]
-      = persistences[i]; // std::abs(nodeScalars[downId]-nodeScalars[upId]);
-  }
-
-  // random edge contractions for testing
-  // std::vector<int> contractions(children.size());
-  // for(int i=0; i<children.size(); i++) contractions[i] = i;
-  // for (int i=0; i<mt->GetNumberOfCells(); i++){
-  //   int downId =
-  //   int(mt->GetCellData()->GetArray("downNodeId")->GetComponent(i,0)); int
-  //   upId =
-  //   contractions[int(mt->GetCellData()->GetArray("upNodeId")->GetComponent(i,0))];
-  //   float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-  //   if(r<0.6 && upId!=rootID && children[downId].size()>0){
-  //     int rIdx;
-  //     for(int cIdx=0; cIdx<children[upId].size(); cIdx++)
-  //     if(children[upId][cIdx]==downId) rIdx = cIdx; children[upId][rIdx] =
-  //     children[upId].back(); children[upId].pop_back(); for(auto cc :
-  //     children[downId]) children[upId].push_back(cc); contractions[downId] =
-  //     upId;
-  //   }
-  // }
-
-  // transform to dfs order
-  std::vector<int> dfs_reordering(children.size(), -1);
-  // for(int i=0; i<children.size(); i++) dfs_reordering[i] = i;
-  std::stack<int> stack;
-  stack.push(rootID);
-  int currIdx = children.size() - 1;
-  while(!stack.empty()) {
-    int nIdx = stack.top();
-    stack.pop();
-    dfs_reordering[nIdx] = currIdx;
-    currIdx--;
-    for(int cIdx : children[nIdx]) {
-      stack.push(cIdx);
-    }
-  }
-  for(size_t i = 0; i < children.size(); i++) {
-    if(dfs_reordering[i] == -1) {
-      dfs_reordering[i] = currIdx;
-      currIdx--;
-    }
-  }
-  std::vector<std::vector<int>> children_dfs(children.size());
-  std::vector<dataType> labels_dfs(nodePersistences.size());
-  std::vector<dataType> scalars_dfs(nodeScalars.size());
-  for(size_t i = 0; i < children.size(); i++) {
-    int dfsIdx = dfs_reordering[i];
-    labels_dfs[dfsIdx] = nodePersistences[i];
-    scalars_dfs[dfsIdx] = nodeScalars[i];
-    for(int c : children[i]) {
-      children_dfs[dfsIdx].push_back(dfs_reordering[c]);
-    }
-  }
-
-  return std::make_tuple(scalarLabels ? scalars_dfs : labels_dfs, children_dfs,
-                         labels_dfs.size() - 1);
 }

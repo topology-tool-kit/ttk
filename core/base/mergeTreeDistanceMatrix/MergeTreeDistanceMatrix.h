@@ -57,73 +57,6 @@ namespace ttk {
       pathMetric = m;
     }
 
-    template <class dataType>
-    void compareTrees(
-      std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>
-        &adjList,
-      ftm::FTMTree_MT* ftmtree) {
-      auto nodeScalars = std::get<0>(adjList);
-      auto childrenLists = std::get<1>(adjList);
-      auto rootID = std::get<2>(adjList);
-
-      std::cout << "\n-------------------\n";
-      std::cout << "Adjacency list:\n";
-      for(int nIdx=0; nIdx<nodeScalars.size(); nIdx++){
-        std::cout << nIdx << ": " << nodeScalars[nIdx] << ", ";
-        for(int cIdx : childrenLists[nIdx]){
-          std::cout << cIdx << " ";
-        }
-        std::cout << "\n";
-      }
-      std::cout << "\n-------------------\n" << std::endl;
-      std::cout << "FTM:\n";
-      for(int nIdx=0; nIdx<ftmtree->getNumberOfNodes(); nIdx++){
-        double v = ftmtree->getValue<dataType>(nIdx);
-        std::cout << nIdx << ": " << v << ", ";
-        std::vector<ftm::idNode> children;
-        ftmtree->getChildren(nIdx,children);
-        for(int cIdx : children){
-          std::cout << cIdx << " ";
-        }
-        std::cout << "\n";
-      }
-      std::cout << "\n-------------------\n" << std::endl;
-      std::stack<std::pair<int,int>> stack;
-      stack.push(std::make_pair(rootID,ftmtree->getRoot()));
-      while(!stack.empty()) {
-        int n1 = stack.top().first;
-        int n2 = stack.top().second;
-        stack.pop();
-        std::cout << nodeScalars[n1] << " " << ftmtree->getValue<dataType>(n2) << "\n";
-        auto children1 = childrenLists[n1];
-        if(children1.size()==2){
-          if(nodeScalars[children1[0]]>nodeScalars[children1[1]]){
-            int temp = children1[0];
-            children1[0] = children1[1];
-            children1[0] = temp;
-          }
-        }
-        std::vector<ftm::idNode> children2;
-        ftmtree->getChildren(n2,children2);
-        if(children2.size()==2){
-          auto v1 = ftmtree->getValue<dataType>(children2[0]);
-          auto v2 = ftmtree->getValue<dataType>(children2[1]);
-          if(v1>v2){
-            int temp = children2[0];
-            children2[0] = children2[1];
-            children2[0] = temp;
-          }
-          stack.push(std::make_pair(children1[0],children2[0]));
-          stack.push(std::make_pair(children1[1],children2[1]));
-        }
-        if(children2.size()==1){
-          
-          stack.push(std::make_pair(children1[0],children2[0]));
-        }
-      }
-      std::cout << "\n-------------------\n" << std::endl;
-    }
-
     /**
      * Implementation of the algorithm.
      */
@@ -143,9 +76,6 @@ namespace ttk {
 
     template <class dataType>
     void execute(
-      std::vector<
-        std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>>
-        &trees,
       std::vector<ftm::MergeTree<dataType>> &ftmtrees,
       std::vector<std::vector<double>> &distanceMatrix) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
@@ -172,43 +102,11 @@ namespace ttk {
           if(baseModule == 0) {
             distanceMatrix[i][j] = 0;
           } else if(baseModule == 1) {
-            auto nodes1 = std::get<0>(trees[i]);
-            auto topo1 = std::get<1>(trees[i]);
-            auto rootID1 = std::get<2>(trees[i]);
-            auto nodes2 = std::get<0>(trees[j]);
-            auto topo2 = std::get<1>(trees[j]);
-            auto rootID2 = std::get<2>(trees[j]);
-            auto start = std::chrono::high_resolution_clock::now();
-            dataType dist = branchDist.editDistance_branch<dataType>(
-              nodes1, topo1, rootID1, nodes2, topo2, rootID2);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            start = std::chrono::high_resolution_clock::now();
-            dataType dist_ftm = branchDist.editDistance_branch<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree));
-            end = std::chrono::high_resolution_clock::now();
-            auto duration_ftm = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            dataType dist = branchDist.editDistance_branch<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree));
             distanceMatrix[i][j] = static_cast<double>(dist);
-            std::cout << dist << " ; " << dist_ftm  << std::endl;
-            std::cout << duration.count()*0.000001 << " seconds" << " ; " << duration_ftm.count()*0.000001 << " seconds"  << std::endl;
           } else if(baseModule == 2) {
-            auto nodes1 = std::get<0>(trees[i]);
-            auto topo1 = std::get<1>(trees[i]);
-            auto rootID1 = std::get<2>(trees[i]);
-            auto nodes2 = std::get<0>(trees[j]);
-            auto topo2 = std::get<1>(trees[j]);
-            auto rootID2 = std::get<2>(trees[j]);
-            auto start = std::chrono::high_resolution_clock::now();
-            dataType dist = pathDist.editDistance_path<dataType>(
-              nodes1, topo1, rootID1, nodes2, topo2, rootID2);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            start = std::chrono::high_resolution_clock::now();
-            dataType dist_ftm = pathDist.editDistance_path<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree));
-            end = std::chrono::high_resolution_clock::now();
-            auto duration_ftm = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            dataType dist = pathDist.editDistance_path<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree));
             distanceMatrix[i][j] = static_cast<double>(dist);
-            std::cout << dist << " ; " << dist_ftm  << std::endl;
-            std::cout << duration.count()*0.000001 << " seconds" << " ; " << duration_ftm.count()*0.000001 << " seconds"  << std::endl;
           }
           // distance matrix is symmetric
           distanceMatrix[j][i] = distanceMatrix[i][j];

@@ -180,13 +180,6 @@ protected:
   ttkMergeTreeDistanceMatrix();
   ~ttkMergeTreeDistanceMatrix() override;
 
-  template <class dataType>
-  std::tuple<std::vector<dataType>, std::vector<std::vector<int>>, int>
-    ftmToAdjList(vtkSmartPointer<vtkUnstructuredGrid> &mt_nodes,
-                 vtkSmartPointer<vtkUnstructuredGrid> &mt,
-                 int treeType,
-                 bool scalarLabels = false);
-
   /**
    * Specify the input data type of each input port
    *         (see cpp file)
