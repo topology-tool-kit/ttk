@@ -48,36 +48,39 @@ namespace ttk {
                                           int p1,
                                           int n2,
                                           int p2,
-                                          ftm::FTMTree_MT* tree1,
-                                          ftm::FTMTree_MT* tree2) {
+                                          ftm::FTMTree_MT *tree1,
+                                          ftm::FTMTree_MT *tree2) {
       dataType d;
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        //d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 - (double)d2);
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dd = d1>d2 ? d1-d2 : d2-d1;
-        d = db+dd;
+        // d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 -
+        // (double)d2);
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
+        d = db + dd;
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        //d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 - (double)d2);
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dd = d1>d2 ? d1-d2 : d2-d1;
-        d = db+dd;
+        // d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 -
+        // (double)d2);
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
+        d = db + dd;
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        //d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 - (double)d2);
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dd = d1>d2 ? d1-d2 : d2-d1;
-        d = db+dd;
+        // d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 -
+        // (double)d2);
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
+        d = db + dd;
       }
       return squared ? d * d : d;
     }
@@ -87,39 +90,45 @@ namespace ttk {
                                           int p1,
                                           int n2,
                                           int p2,
-                                          ftm::FTMTree_MT* tree1,
-                                          ftm::FTMTree_MT* tree2) {
+                                          ftm::FTMTree_MT *tree1,
+                                          ftm::FTMTree_MT *tree2) {
       dataType d;
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1 - (double)b2)
-        //               + std::abs((double)d1 - (double)d2) * std::abs((double)d1 - (double)d2));
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dd = d1>d2 ? d1-d2 : d2-d1;
-        d = std::sqrt(db*db+dd*dd);
+        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1
+        // - (double)b2)
+        //               + std::abs((double)d1 - (double)d2) *
+        //               std::abs((double)d1 - (double)d2));
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
+        d = std::sqrt(db * db + dd * dd);
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1 - (double)b2)
-        //               + std::abs((double)d1 - (double)d2) * std::abs((double)d1 - (double)b2));
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dd = d1>d2 ? d1-d2 : d2-d1;
-        d = std::sqrt(db*db+dd*dd);
+        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1
+        // - (double)b2)
+        //               + std::abs((double)d1 - (double)d2) *
+        //               std::abs((double)d1 - (double)b2));
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
+        d = std::sqrt(db * db + dd * dd);
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1 - (double)b2)
-        //               + std::abs((double)d1 - (double)d2) * std::abs((double)d1 - (double)d2));
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dd = d1>d2 ? d1-d2 : d2-d1;
-        d = std::sqrt(db*db+dd*dd);
+        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1
+        // - (double)b2)
+        //               + std::abs((double)d1 - (double)d2) *
+        //               std::abs((double)d1 - (double)d2));
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
+        d = std::sqrt(db * db + dd * dd);
       }
       return squared ? d * d : d;
     }
@@ -129,28 +138,29 @@ namespace ttk {
                                          int p1,
                                          int n2,
                                          int p2,
-                                         ftm::FTMTree_MT* tree1,
-                                         ftm::FTMTree_MT* tree2) {
+                                         ftm::FTMTree_MT *tree1,
+                                         ftm::FTMTree_MT *tree2) {
       dataType d;
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
-        //d = std::abs((double)d1 - (double)b1);
-        d = d1>b1 ? d1-b1 : b1-d1;
+        // d = std::abs((double)d1 - (double)b1);
+        d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
-        //d = std::abs((double)d1 - (double)b1);
-        d = d1>b1 ? d1-b1 : b1-d1;
+        // d = std::abs((double)d1 - (double)b1);
+        d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        //d = std::abs(std::abs((double)b1 - (double)d1) - std::abs((double)b2 - (double)d2));
-        dataType dist1 = d1>b1 ? d1-b1 : b1-d1;
-        dataType dist2 = d2>b2 ? d2-b2 : b2-d2;
-        d = dist1>dist2 ? dist1-dist2 : dist2-dist1;
+        // d = std::abs(std::abs((double)b1 - (double)d1) - std::abs((double)b2
+        // - (double)d2));
+        dataType dist1 = d1 > b1 ? d1 - b1 : b1 - d1;
+        dataType dist2 = d2 > b2 ? d2 - b2 : b2 - d2;
+        d = dist1 > dist2 ? dist1 - dist2 : dist2 - dist1;
       }
       return squared ? d * d : d;
     }
@@ -160,19 +170,19 @@ namespace ttk {
                                       int p1,
                                       int n2,
                                       int p2,
-                                      ftm::FTMTree_MT* tree1,
-                                      ftm::FTMTree_MT* tree2) {
+                                      ftm::FTMTree_MT *tree1,
+                                      ftm::FTMTree_MT *tree2) {
       dataType d;
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
-        //d = std::abs((double)d1 - (double)b1);
-        d = d1>b1 ? d1-b1 : b1-d1;
+        // d = std::abs((double)d1 - (double)b1);
+        d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
-        //d = std::abs((double)d1 - (double)b1);
-        d = d1>b1 ? d1-b1 : b1-d1;
+        // d = std::abs((double)d1 - (double)b1);
+        d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
@@ -180,12 +190,13 @@ namespace ttk {
         dataType d2 = tree2->getValue<dataType>(p2);
         // dataType pers1 = std::abs((double)b1 - (double)d1);
         // dataType pers2 = std::abs((double)b2 - (double)d2);
-        // d = std::abs((double)b1 - (double)b2) + std::abs((double)pers1 - (double)pers2);
-        dataType pers1 = d1>b1 ? d1-b1 : b1-d1;
-        dataType pers2 = d2>b2 ? d2-b2 : b2-d2;
-        dataType db = b1>b2 ? b1-b2 : b2-b1;
-        dataType dp = pers1>pers2 ? pers1-pers2 : pers2-pers1;
-        d = db+dp;
+        // d = std::abs((double)b1 - (double)b2) + std::abs((double)pers1 -
+        // (double)pers2);
+        dataType pers1 = d1 > b1 ? d1 - b1 : b1 - d1;
+        dataType pers2 = d2 > b2 ? d2 - b2 : b2 - d2;
+        dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
+        dataType dp = pers1 > pers2 ? pers1 - pers2 : pers2 - pers1;
+        d = db + dp;
       }
       return squared ? d * d : d;
     }
@@ -211,8 +222,8 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType editDistance_branch(ftm::FTMTree_MT* tree1,
-                                 ftm::FTMTree_MT* tree2) {
+    dataType editDistance_branch(ftm::FTMTree_MT *tree1,
+                                 ftm::FTMTree_MT *tree2) {
 
       // initialize memoization tables
 
@@ -227,15 +238,15 @@ namespace ttk {
       int depth2 = 0;
       std::stack<int> stack;
       stack.push(rootID1);
-      int count = tree1->getNumberOfNodes()-1;
+      int count = tree1->getNumberOfNodes() - 1;
       while(!stack.empty()) {
         int nIdx = stack.top();
         stack.pop();
         preorder1[count] = nIdx;
-        count --;
+        count--;
         depth1 = std::max((int)predecessors1[nIdx].size(), depth1);
         std::vector<ftm::idNode> children;
-        tree1->getChildren(nIdx,children);
+        tree1->getChildren(nIdx, children);
         for(int cIdx : children) {
           stack.push(cIdx);
           predecessors1[cIdx].reserve(predecessors1[nIdx].size() + 1);
@@ -246,15 +257,15 @@ namespace ttk {
         }
       }
       stack.push(rootID2);
-      count = tree2->getNumberOfNodes()-1;
+      count = tree2->getNumberOfNodes() - 1;
       while(!stack.empty()) {
         int nIdx = stack.top();
         stack.pop();
         preorder2[count] = nIdx;
-        count --;
+        count--;
         depth2 = std::max((int)predecessors2[nIdx].size(), depth2);
         std::vector<ftm::idNode> children;
-        tree2->getChildren(nIdx,children);
+        tree2->getChildren(nIdx, children);
         for(int cIdx : children) {
           stack.push(cIdx);
           predecessors2[cIdx].reserve(predecessors2[nIdx].size() + 1);
@@ -276,17 +287,19 @@ namespace ttk {
       // size_t dim3_ = (nn1 + 1) * dim2;
       // size_t dim4_ = (nn2 + 1) * dim3;
 
-      //std::unique_ptr<dataType[]> memT(
+      // std::unique_ptr<dataType[]> memT(
       //  new dataType[(nn1 + 1) * (depth1 + 1) * (nn2 + 1) * (depth2 + 1)]);
-      std::vector<dataType> memT((nn1+1)*(depth1+1)*(nn2+1)*(depth2+1));
+      std::vector<dataType> memT((nn1 + 1) * (depth1 + 1) * (nn2 + 1)
+                                 * (depth2 + 1));
 
       memT[nn1 + 0 * dim2 + nn2 * dim3 + 0 * dim4] = 0;
       for(size_t i = 0; i < nn1; i++) {
         int curr1 = preorder1[i];
         std::vector<ftm::idNode> children1;
-        tree1->getChildren(curr1,children1);
+        tree1->getChildren(curr1, children1);
         for(size_t l = 1; l <= predecessors1[preorder1[i]].size(); l++) {
-          int parent1 = predecessors1[preorder1[i]][predecessors1[preorder1[i]].size() - l];
+          int parent1 = predecessors1[preorder1[i]]
+                                     [predecessors1[preorder1[i]].size() - l];
 
           //-----------------------------------------------------------------------
           // If first subtree has only one branch, return deletion cost of this
@@ -297,9 +310,10 @@ namespace ttk {
                   curr1, parent1, -1, -1, tree1, tree2)
                 : this->baseMetric == 1 ? editCost_Wasserstein2<dataType>(
                     curr1, parent1, -1, -1, tree1, tree2)
-                : this->baseMetric == 2
-                  ? editCost_Persistence<dataType>(curr1, parent1, -1, -1, tree1, tree2)
-                  : editCost_Shifting<dataType>(curr1, parent1, -1, -1, tree1, tree2);
+                : this->baseMetric == 2 ? editCost_Persistence<dataType>(
+                    curr1, parent1, -1, -1, tree1, tree2)
+                                        : editCost_Shifting<dataType>(
+                                          curr1, parent1, -1, -1, tree1, tree2);
           }
           //-----------------------------------------------------------------------
           // If first subtree has more than one branch, try all decompositions
@@ -323,9 +337,10 @@ namespace ttk {
       for(size_t j = 0; j < nn2; j++) {
         int curr2 = preorder2[j];
         std::vector<ftm::idNode> children2;
-        tree2->getChildren(curr2,children2);
+        tree2->getChildren(curr2, children2);
         for(size_t l = 1; l <= predecessors2[preorder2[j]].size(); l++) {
-          int parent2 = predecessors2[preorder2[j]][predecessors2[preorder2[j]].size() - l];
+          int parent2 = predecessors2[preorder2[j]]
+                                     [predecessors2[preorder2[j]].size() - l];
 
           //-----------------------------------------------------------------------
           // If first subtree has only one branch, return deletion cost of this
@@ -336,9 +351,10 @@ namespace ttk {
                   -1, -1, curr2, parent2, tree1, tree2)
                 : this->baseMetric == 1 ? editCost_Wasserstein2<dataType>(
                     -1, -1, curr2, parent2, tree1, tree2)
-                : this->baseMetric == 2
-                  ? editCost_Persistence<dataType>(-1, -1, curr2, parent2, tree1, tree2)
-                  : editCost_Shifting<dataType>(-1, -1, curr2, parent2, tree1, tree2);
+                : this->baseMetric == 2 ? editCost_Persistence<dataType>(
+                    -1, -1, curr2, parent2, tree1, tree2)
+                                        : editCost_Shifting<dataType>(
+                                          -1, -1, curr2, parent2, tree1, tree2);
           }
           //-----------------------------------------------------------------------
           // If first subtree has more than one branch, try all decompositions
@@ -363,15 +379,19 @@ namespace ttk {
       for(size_t i = 0; i < nn1; i++) {
         int curr1 = preorder1[i];
         std::vector<ftm::idNode> children1;
-        tree1->getChildren(curr1,children1);
+        tree1->getChildren(curr1, children1);
         for(size_t j = 0; j < nn2; j++) {
           int curr2 = preorder2[j];
           std::vector<ftm::idNode> children2;
-          tree2->getChildren(curr2,children2);
+          tree2->getChildren(curr2, children2);
           for(size_t l1 = 1; l1 <= predecessors1[preorder1[i]].size(); l1++) {
-            int parent1 = predecessors1[preorder1[i]][predecessors1[preorder1[i]].size() - l1];
+            int parent1
+              = predecessors1[preorder1[i]]
+                             [predecessors1[preorder1[i]].size() - l1];
             for(size_t l2 = 1; l2 <= predecessors2[preorder2[j]].size(); l2++) {
-              int parent2 = predecessors2[preorder2[j]][predecessors2[preorder2[j]].size() - l2];
+              int parent2
+                = predecessors2[preorder2[j]]
+                               [predecessors2[preorder2[j]].size() - l2];
 
               //===============================================================================
               // If both trees not empty, find optimal edit operation
@@ -379,7 +399,8 @@ namespace ttk {
               //---------------------------------------------------------------------------
               // If both trees only have one branch, return edit cost between
               // the two branches
-              if(tree1->getNumberOfChildren(curr1) == 0 and tree2->getNumberOfChildren(curr2) == 0) {
+              if(tree1->getNumberOfChildren(curr1) == 0
+                 and tree2->getNumberOfChildren(curr2) == 0) {
                 memT[curr1 + l1 * dim2 + curr2 * dim3 + l2 * dim4]
                   = this->baseMetric == 0 ? editCost_Wasserstein1<dataType>(
                       curr1, parent1, curr2, parent2, tree1, tree2)
@@ -558,12 +579,12 @@ namespace ttk {
       }
 
       std::vector<ftm::idNode> children1;
-      tree1->getChildren(rootID1,children1);
+      tree1->getChildren(rootID1, children1);
       std::vector<ftm::idNode> children2;
-      tree2->getChildren(rootID2,children2);
+      tree2->getChildren(rootID2, children2);
 
-      dataType res = memT[children1[0] + 1 * dim2
-                          + children2[0] * dim3 + 1 * dim4];
+      dataType res
+        = memT[children1[0] + 1 * dim2 + children2[0] * dim3 + 1 * dim4];
       // delete[] memT;
       return squared ? std::sqrt(res) : res;
     }

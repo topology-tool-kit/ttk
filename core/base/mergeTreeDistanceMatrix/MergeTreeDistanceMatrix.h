@@ -75,9 +75,8 @@ namespace ttk {
     }
 
     template <class dataType>
-    void execute(
-      std::vector<ftm::MergeTree<dataType>> &ftmtrees,
-      std::vector<std::vector<double>> &distanceMatrix) {
+    void execute(std::vector<ftm::MergeTree<dataType>> &ftmtrees,
+                 std::vector<std::vector<double>> &distanceMatrix) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
         if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
           std::stringstream stream;
@@ -96,16 +95,18 @@ namespace ttk {
         pathDist.setComputeMapping(true);
 
         distanceMatrix[i][i] = 0.0;
-        //compareTrees(trees[i],&(ftmtrees[i].tree));
+        // compareTrees(trees[i],&(ftmtrees[i].tree));
         for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
           // Execute
           if(baseModule == 0) {
             distanceMatrix[i][j] = 0;
           } else if(baseModule == 1) {
-            dataType dist = branchDist.editDistance_branch<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree));
+            dataType dist = branchDist.editDistance_branch<dataType>(
+              &(ftmtrees[i].tree), &(ftmtrees[j].tree));
             distanceMatrix[i][j] = static_cast<double>(dist);
           } else if(baseModule == 2) {
-            dataType dist = pathDist.editDistance_path<dataType>(&(ftmtrees[i].tree),&(ftmtrees[j].tree));
+            dataType dist = pathDist.editDistance_path<dataType>(
+              &(ftmtrees[i].tree), &(ftmtrees[j].tree));
             distanceMatrix[i][j] = static_cast<double>(dist);
           }
           // distance matrix is symmetric
