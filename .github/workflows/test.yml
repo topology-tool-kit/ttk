@@ -328,12 +328,35 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz
+          scikit-learn packaging openmp graphviz ninja sccache
+        # add sccache to PATH
+        echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
+        # add TTK & ParaView install folders to PATH
+        echo "$PV_DIR/bin" >> $GITHUB_PATH
+        echo "$TTK_DIR/bin" >> $GITHUB_PATH
 
     - name: Remove hosted Python
       shell: bash
       run: |
         rm -rf C:/hostedtoolcache/windows/Python
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      continue-on-error: true
+      name: Fetch archived ccache
+      with:
+        repo: "topology-tool-kit/ttk"
+        version: "tags/ccache"
+        file: "ttk-sccache-windows.tar.gz"
+        target: "ttk-sccache.tar.gz"
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Decompress ccache archive
+      continue-on-error: true
+      shell: bash
+      run: |
+        tar xzf ttk-sccache.tar.gz
+        mkdir -p /c/Users/runneradmin/AppData/Local/Mozilla/sccache
+        mv cache /c/Users/runneradmin/AppData/Local/Mozilla/sccache
 
     - name: Fetch TTK-ParaView headless Windows installer
       run: |
@@ -350,11 +373,19 @@ jobs:
       shell: cmd
       run: |
         set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        sccache --stop-server
+        sccache --start-server
         mkdir build
         cd build
         cmake ^
+          -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
           -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
@@ -369,40 +400,48 @@ jobs:
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
-          -G"Visual Studio 17 2022" ^
-          -Tclangcl ^
+          -GNinja ^
           ..
 
-    - name: Build & install TTK
+    - name: Fix clang-cl OpenMP flags in build.ninja
       shell: bash
       run: |
+        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
+
+    - name: Build & install TTK
+      shell: cmd
+      run: |
         cd build
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake --build . --config Release --parallel --target install
-        # set PATH environment variable
-        echo "$PV_DIR/bin" >> $GITHUB_PATH
-        echo "$TTK_DIR/bin" >> $GITHUB_PATH
 
     - name: Test C++ example
       shell: cmd
       run: |
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake -G"Visual Studio 17 2022" -Tclangcl ..
+        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
         cmake --build . --config Release --parallel
-        Release\ttkExample-c++.exe -i ..\..\data\inputData.off
+        ttkExample-c++.exe -i ..\..\data\inputData.off
 
     - name: Test VTK-C++ example
       shell: cmd
       run: |
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake -G"Visual Studio 17 2022" -Tclangcl ..
+        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
         cmake --build . --config Release --parallel
-        Release\ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
+        ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
     - name: Test Python example
       shell: cmd
