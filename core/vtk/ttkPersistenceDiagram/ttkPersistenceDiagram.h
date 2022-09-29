@@ -172,9 +172,6 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(ComputeSaddleConnectors, bool);
-  vtkGetMacro(ComputeSaddleConnectors, bool);
-
   vtkSetMacro(ShowInsideDomain, bool);
   vtkGetMacro(ShowInsideDomain, bool);
 
