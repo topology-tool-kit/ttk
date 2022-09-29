@@ -48,6 +48,7 @@ jobs:
           libosmesa-dev \
           libopenmpi-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           ninja-build \
           zlib1g-dev \
@@ -211,7 +212,7 @@ jobs:
         brew install --cask xquartz
         brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
-        brew install boost eigen graphviz numpy embree ccache
+        brew install boost eigen graphviz numpy embree websocketpp ccache
         python3.10 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
@@ -339,7 +340,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz ninja sccache
+          scikit-learn packaging openmp graphviz ninja websocketpp sccache
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH

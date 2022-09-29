@@ -24,12 +24,3 @@ runs:
           -DBUILD_TESTING=OFF \
           ../zfp-0.5.5
         sudo cmake --build . --target install --parallel
-
-    - name: Install WebSocket++ dependency
-      shell: bash
-      run: |
-        wget https://github.com/zaphoyd/websocketpp/archive/0.8.2.tar.gz
-        tar xvf 0.8.2.tar.gz
-        mkdir build_websocketpp && cd build_websocketpp
-        cmake ../websocketpp-0.8.2
-        sudo cmake --build . --target install --parallel
