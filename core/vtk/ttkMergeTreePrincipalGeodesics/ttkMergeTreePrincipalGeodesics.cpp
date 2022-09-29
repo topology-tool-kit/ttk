@@ -279,9 +279,6 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
     makeBarycenterOutput<dataType>(barycenter2T, 1, output_barycenter);
   }
 
-  /*printMsg(barycenterT.tree.printTree().str());
-  printMsg(barycenterT.tree.template printTreeScalars<dataType>().str());*/
-
   // ------------------------------------------
   // --- Coefficients
   // ------------------------------------------
@@ -436,24 +433,6 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
     baryNodePers->SetTuple1(i, nodePers);
   }
   output_corrMatrix->AddColumn(baryNodePers);
-
-  // Trees node persistence
-  /*for(unsigned int j = 0; j < intermediateDTrees.size(); ++j) {
-    vtkNew<vtkDoubleArray> treeNodePers{};
-    std::string name
-      = getTableCorrelationTreeName(intermediateDTrees.size(), j) + "NodePers";
-    treeNodePers->SetName(name.c_str());
-    treeNodePers->SetNumberOfTuples(noRows);
-    for(unsigned int i = 0; i < noRows; ++i) {
-      double nodePers = -1;
-      if(int(matchingMatrix[i][j]) != -1)
-        nodePers
-          = intermediateDTrees[j].tree.template getNodePersistence<double>(
-            matchingMatrix[i][j]);
-      treeNodePers->SetTuple1(i, nodePers);
-    }
-    output_corrMatrix->AddColumn(treeNodePers);
-  }*/
 
   // Trees persistence order
   std::vector<std::vector<int>> treesOrder(intermediateDTrees.size());

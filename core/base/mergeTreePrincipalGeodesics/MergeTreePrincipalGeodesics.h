@@ -34,33 +34,15 @@ namespace ttk {
     bool deterministic_ = true;
     unsigned int numberOfGeodesics_ = 1;
     unsigned int noProjectionStep_ = 2;
-    // bool rebootDegeneratedGeod_ = true;
     bool doComputeReconstructionError_ = false;
     double barycenterSizeLimitPercent_ = 0.0;
     // TODO keepState works only when enabled before first computation
     bool keepState_ = false;
 
-    // Gradient descent [Seguy and Cuturi, 2015]
-    // gradient descent does not work anymore
-    bool useGradientDescent_ = false;
-    double beta_ = 1e-3; // gradient step
-    double lambda_ = 1; // regularizer
-
-    // Proximal Gradient Descent [Cazelles et al., 2018]
-    // not implemented
-    bool useProximalGradientDescent_ = false;
-    double t0_ = 0.0;
-
     // Advanced parameters
     bool projectInitializedVectors_ = true;
-    int parallelMode_ = 0; // 0 : Double _ 1 : Simple _ 3 : Double triangle
-                           // inequality _ 2 : Simple triangle inequality
 
     // Old/Testing
-    bool moveVectorsAlongGeodesics_ = true;
-    double weightPropCost_ = 1.0;
-    double weightOrthoCost_ = 1.0;
-    double weightMapCost_ = 1.0;
     double t_vectorCopy_time_ = 0.0, t_allVectorCopy_time_ = 0.0;
 
     // Filled by the algorithm
@@ -263,12 +245,6 @@ namespace ttk {
           }
         }
 
-        // Verify that the two highest persistence pairs are not destroyed
-        /*verifyExtremitiesValidity<dataType>(barycenter, trees, v1, v2);
-        if(trees2.size() != 0)
-          verifyExtremitiesValidity<dataType>(
-            barycenter, trees2, trees2V1, trees2V2);*/
-
         // Project initialized vectors to satisfy constraints
         if(projectInitializedVectors_) {
           projectionStep<dataType>(
@@ -313,14 +289,12 @@ namespace ttk {
       bool isFirstInput = true) {
       MergeTreeBarycenter mergeTreeBary;
       mergeTreeBary.setDebugLevel(2);
-      // mergeTreeBary.setDebugLevel(4);
       mergeTreeBary.setPreprocess(false);
       mergeTreeBary.setPostprocess(false);
       mergeTreeBary.setBranchDecomposition(true);
       mergeTreeBary.setNormalizedWasserstein(normalizedWasserstein_);
       mergeTreeBary.setKeepSubtree(false);
       mergeTreeBary.setAssignmentSolver(assignmentSolverID_);
-      // mergeTreeBary.setIsCalled(true);
       mergeTreeBary.setThreadNumber(this->threadNumber_);
       mergeTreeBary.setDeterministic(deterministic_);
       mergeTreeBary.setBarycenterSizeLimitPercent(barycenterSizeLimitPercent_);
@@ -352,22 +326,6 @@ namespace ttk {
       computeOneBarycenter<dataType>(trees, baryMergeTree, matchings);
     }
 
-    template <class dataType>
-    void getParametrizedInterpolation(
-      ftm::MergeTree<dataType> &barycenter,
-      std::vector<std::vector<std::vector<double>>> &vS,
-      std::vector<std::vector<std::vector<double>>> &v2s,
-      std::vector<std::vector<double>> &v,
-      std::vector<std::vector<double>> &v2,
-      std::vector<double> &ts,
-      double t,
-      ftm::MergeTree<dataType> &interpolated) {
-      if(not moveVectorsAlongGeodesics_)
-        getInterpolation<dataType>(barycenter, v, v2, t, interpolated);
-      else
-        getMultiInterpolation(barycenter, vS, v2s, v, v2, ts, t, interpolated);
-    }
-
     //----------------------------------------------------------------------------
     // Costs
     //----------------------------------------------------------------------------
@@ -389,9 +347,8 @@ namespace ttk {
                           std::vector<std::vector<std::vector<double>>> &vS,
                           std::vector<std::vector<std::vector<double>>> &v2s,
                           double optMapCost) {
-      return weightPropCost_ * regularizerCost(v, v2)
-             + weightOrthoCost_ * orthogonalCost(vS, v2s, v, v2)
-             + weightMapCost_ * optMapCost;
+      return regularizerCost(v, v2) + orthogonalCost(vS, v2s, v, v2)
+             + optMapCost;
     }
 
     //----------------------------------------------------------------------------
@@ -547,50 +504,6 @@ namespace ttk {
       unflatten(v2_proj, v2);
     }
 
-    bool projectionStepConvergence(
-      std::vector<std::vector<double>> &v,
-      std::vector<std::vector<double>> &v2,
-      std::vector<std::vector<std::vector<double>>> &vS,
-      std::vector<std::vector<std::vector<double>>> &v2s,
-      std::vector<std::vector<double>> &vOld,
-      std::vector<std::vector<double>> &v2Old,
-      double optMapCost,
-      double &oldCost,
-      double &oldCost2) {
-      bool converged = false;
-
-      // Cost 1
-      std::vector<double> v_flat, v2_flat, vOld_flat, v2Old_flat;
-      flatten(v, v_flat);
-      flatten(v2, v2_flat);
-      flatten(vOld, vOld_flat);
-      flatten(v2Old, v2Old_flat);
-      std::vector<double> subV, subV2;
-      subVector(v_flat, vOld_flat, subV);
-      subVector(v2_flat, v2Old_flat, subV2);
-      double cost
-        = norm(subV) / norm(vOld_flat) + norm(subV2) / norm(v2Old_flat);
-      // std::cout << "cost = " << cost << std::endl;
-      double tol = oldCost / 125.0;
-      if(std::abs(cost - oldCost) < tol) {
-        // std::cout << "converged cost" << std::endl;
-        converged = true;
-      }
-      oldCost = cost;
-
-      // Cost 2
-      double cost2 = projectionCost(v, v2, vS, v2s, optMapCost);
-      // std::cout << "cost2 = " << cost2 << std::endl;
-      double tol2 = oldCost2 / 125.0;
-      if(std::abs(cost2 - oldCost2) < tol2) {
-        // std::cout << "converged cost2" << std::endl;
-        converged = true;
-      }
-      oldCost2 = cost2;
-
-      return converged;
-    }
-
     // TODO avoid copying vectors
     template <class dataType>
     double
@@ -647,17 +560,15 @@ namespace ttk {
         }
 
         // --- True generalized geodesic projection
-        if(not useGradientDescent_) {
-          printMsg("TGG Proj.", 0, 0, threadNumber_, debug::LineMode::REPLACE,
-                   debug::Priority::DETAIL);
-          Timer t_trueGeod;
-          if(useSecondInput)
-            trueGeneralizedGeodesicProjection(vConcat, v2Concat);
-          else
-            trueGeneralizedGeodesicProjection(v, v2);
-          printMsg("TGG Proj.", 1, t_trueGeod.getElapsedTime(), threadNumber_,
-                   debug::LineMode::NEW, debug::Priority::DETAIL);
-        }
+        printMsg("TGG Proj.", 0, 0, threadNumber_, debug::LineMode::REPLACE,
+                 debug::Priority::DETAIL);
+        Timer t_trueGeod;
+        if(useSecondInput)
+          trueGeneralizedGeodesicProjection(vConcat, v2Concat);
+        else
+          trueGeneralizedGeodesicProjection(v, v2);
+        printMsg("TGG Proj.", 1, t_trueGeod.getElapsedTime(), threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 
         // --- Orthogonal projection
         if(geodesicNumber != 0) {
@@ -685,11 +596,6 @@ namespace ttk {
           }
           t_vectorCopy_time_ += t_vectorCopy.getElapsedTime();
         }
-
-        // --- Projection convergence
-        /*if(projectionStepConvergence(geodesicNumber, v, v2, vS, v2s, vOld,
-                                     v2Old, optMapCost, oldCost, oldCost2))
-          break;*/
       }
       return optMapCost;
     }
@@ -721,29 +627,6 @@ namespace ttk {
       std::vector<std::vector<Compare>> best(
         trees.size(), std::vector<Compare>(k_));
 
-      std::vector<double> tMin(trees.size(), 0.0), tMax(trees.size(), 1.0);
-      dataType geodDistance;
-      if(parallelMode_ == 2) {
-        ttk::ftm::MergeTree<dataType> extremity1, extremity2;
-        getInterpolation<dataType>(barycenter, v, v2, 0.0, extremity1);
-        getInterpolation<dataType>(barycenter, v, v2, 1.0, extremity2);
-        computeOneDistance<dataType>(
-          extremity1, extremity2, geodDistance, false, useDoubleInput_);
-        if(trees2.size() != 0) {
-          dataType geodDistance2;
-          ttk::ftm::MergeTree<dataType> extremity1_2, extremity2_2;
-          getInterpolation<dataType>(
-            barycenter2, trees2V, trees2V2, 0.0, extremity1_2);
-          getInterpolation<dataType>(
-            barycenter2, trees2V, trees2V2, 1.0, extremity2_2);
-          computeOneDistance<dataType>(extremity1_2, extremity2_2,
-                                       geodDistance2, false, useDoubleInput_,
-                                       false);
-          geodDistance = mixDistances(geodDistance, geodDistance2);
-        }
-      }
-
-      // Timer t_para;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(this->threadNumber_) if(parallelize_) \
   shared(best)
@@ -754,54 +637,34 @@ namespace ttk {
           for(unsigned int k = 0; k < k_; ++k) {
             for(unsigned int i = 0; i < trees.size(); ++i) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task shared(best, tMin, tMax) firstprivate(i, k)
+#pragma omp task shared(best) firstprivate(i, k)
               {
 #endif
                 double kT = (k % 2 == 0 ? k / 2 : k_ - 1 - (int)(k / 2));
                 double t = 1.0 / (k_ - 1) * kT;
 
-                if(parallelMode_ == 2 and (t < tMin[i] or t > tMax[i])) {
-                  std::stringstream ss;
-                  ss << i << " _ " << kT << " skipped" << std::endl;
-                  printMsg(ss.str());
-                } else {
-                  dataType distance, distance2;
-                  ftm::MergeTree<dataType> interpolated;
-                  auto tsToUse = (allTreesTs.size() == 0 ? std::vector<double>()
-                                                         : allTreesTs[i]);
-                  getParametrizedInterpolation(
-                    barycenter, vS, v2s, v, v2, tsToUse, t, interpolated);
-                  if(interpolated.tree.getRealNumberOfNodes() != 0) {
+                dataType distance, distance2;
+                ftm::MergeTree<dataType> interpolated;
+                auto tsToUse = (allTreesTs.size() == 0 ? std::vector<double>()
+                                                       : allTreesTs[i]);
+                getMultiInterpolation(
+                  barycenter, vS, v2s, v, v2, tsToUse, t, interpolated);
+                if(interpolated.tree.getRealNumberOfNodes() != 0) {
+                  computeOneDistance<dataType>(interpolated, trees[i],
+                                               best[i][kT].bestMatching,
+                                               distance, true, useDoubleInput_);
+                  if(trees2.size() != 0) {
+                    ftm::MergeTree<dataType> interpolated2;
+                    getMultiInterpolation(barycenter2, trees2Vs, trees2V2s,
+                                          trees2V, trees2V2, tsToUse, t,
+                                          interpolated2);
                     computeOneDistance<dataType>(
-                      interpolated, trees[i], best[i][kT].bestMatching,
-                      distance, true, useDoubleInput_);
-                    if(trees2.size() != 0) {
-                      ftm::MergeTree<dataType> interpolated2;
-                      getParametrizedInterpolation(barycenter2, trees2Vs,
-                                                   trees2V2s, trees2V, trees2V2,
-                                                   tsToUse, t, interpolated2);
-                      computeOneDistance<dataType>(
-                        interpolated2, trees2[i], best[i][kT].bestMatching2,
-                        distance2, true, useDoubleInput_, false);
-                      distance = mixDistances(distance, distance2);
-                    }
-                    best[i][kT].bestDistance = distance;
-                    best[i][kT].bestIndex = kT;
-
-                    if(parallelMode_ == 2) {
-                      auto bound
-                        = (2 * distance + t * geodDistance) / geodDistance;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-                      {
-#endif
-                        tMin[i] = std::max(tMin[i], -bound);
-                        tMax[i] = std::min(tMax[i], bound);
-#ifdef TTK_ENABLE_OPENMP
-                      } // pragma omp critical
-#endif
-                    }
+                      interpolated2, trees2[i], best[i][kT].bestMatching2,
+                      distance2, true, useDoubleInput_, false);
+                    distance = mixDistances(distance, distance2);
                   }
+                  best[i][kT].bestDistance = distance;
+                  best[i][kT].bestIndex = kT;
                 }
 #ifdef TTK_ENABLE_OPENMP
               } // pragma omp task
@@ -839,139 +702,6 @@ namespace ttk {
         } // pragma omp single nowait
       } // pragma omp parallel
 #endif
-
-      // std::cout << "t_para : " << t_para.getElapsedTime() << std::endl;
-    }
-
-    template <class dataType>
-    void assignmentSimplePara(
-      ftm::MergeTree<dataType> &barycenter,
-      std::vector<ftm::MergeTree<dataType>> &trees,
-      std::vector<std::vector<double>> &v,
-      std::vector<std::vector<double>> &v2,
-      ftm::MergeTree<dataType> &barycenter2,
-      std::vector<ftm::MergeTree<dataType>> &trees2,
-      std::vector<std::vector<double>> &trees2V,
-      std::vector<std::vector<double>> &trees2V2,
-      std::vector<std::vector<double>> &allTreesTs,
-      std::vector<std::vector<std::vector<double>>> &vS,
-      std::vector<std::vector<std::vector<double>>> &v2s,
-      std::vector<std::vector<std::vector<double>>> &trees2Vs,
-      std::vector<std::vector<std::vector<double>>> &trees2V2s,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &matchings,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &matchings2,
-      std::vector<double> &ts,
-      std::vector<double> &distances) {
-
-      dataType geodDistance;
-      if(parallelMode_ == 3) {
-        ttk::ftm::MergeTree<dataType> extremity1, extremity2;
-        getInterpolation<dataType>(barycenter, v, v2, 0.0, extremity1);
-        getInterpolation<dataType>(barycenter, v, v2, 1.0, extremity2);
-        computeOneDistance<dataType>(
-          extremity1, extremity2, geodDistance, false, useDoubleInput_);
-        if(trees2.size() != 0) {
-          dataType geodDistance2;
-          ttk::ftm::MergeTree<dataType> extremity1_2, extremity2_2;
-          getInterpolation<dataType>(
-            barycenter2, trees2V, trees2V2, 0.0, extremity1_2);
-          getInterpolation<dataType>(
-            barycenter2, trees2V, trees2V2, 1.0, extremity2_2);
-          computeOneDistance<dataType>(extremity1_2, extremity2_2,
-                                       geodDistance2, false, useDoubleInput_,
-                                       false);
-          geodDistance = mixDistances(geodDistance, geodDistance2);
-        }
-      }
-
-      // Timer t_para;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(this->threadNumber_) if(parallelize_)
-      {
-#pragma omp single nowait
-        {
-#endif
-          for(unsigned int i = 0; i < trees.size(); ++i) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(i)
-            {
-#endif
-              int noSkipped = 0;
-              dataType bestDistance = std::numeric_limits<dataType>::max();
-              std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
-                bestMatching, bestMatching2;
-              double bestT = 0.0;
-
-              double tMin = 0.0, tMax = 1.0;
-
-              for(unsigned int k = 0; k < k_; ++k) {
-                double kT = (k % 2 == 0 ? k / 2 : k_ - 1 - (int)(k / 2));
-                double t = 1.0 / (k_ - 1) * kT;
-
-                if(parallelMode_ == 3 and (t < tMin or t > tMax)) {
-                  ++noSkipped;
-                  continue;
-                }
-
-                std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
-                  matching, matching2;
-                dataType distance, distance2;
-                ftm::MergeTree<dataType> interpolated;
-                auto tsToUse = (allTreesTs.size() == 0 ? std::vector<double>()
-                                                       : allTreesTs[i]);
-                getParametrizedInterpolation(
-                  barycenter, vS, v2s, v, v2, tsToUse, t, interpolated);
-                if(interpolated.tree.getRealNumberOfNodes() != 0) {
-                  computeOneDistance<dataType>(interpolated, trees[i], matching,
-                                               distance, true, useDoubleInput_);
-                  if(trees2.size() != 0) {
-                    ftm::MergeTree<dataType> interpolated2;
-                    getParametrizedInterpolation(barycenter2, trees2Vs,
-                                                 trees2V2s, trees2V, trees2V2,
-                                                 tsToUse, t, interpolated2);
-                    computeOneDistance<dataType>(interpolated2, trees2[i],
-                                                 matching2, distance2, true,
-                                                 useDoubleInput_, false);
-                    distance = mixDistances(distance, distance2);
-                  }
-                  if(distance < bestDistance) {
-                    bestDistance = distance;
-                    bestMatching = matching;
-                    bestMatching2 = matching2;
-                    bestT = t;
-                  }
-
-                  if(parallelMode_ == 3) {
-                    auto bound
-                      = (2 * distance + t * geodDistance) / geodDistance;
-                    tMin = std::max(tMin, -bound);
-                    tMax = std::min(tMax, bound);
-                  }
-                }
-              }
-              matchings[i] = bestMatching;
-              if(trees2.size() != 0)
-                matchings2[i] = bestMatching2;
-              ts[i] = bestT;
-              distances[i] = bestDistance;
-
-              std::stringstream ss;
-              ss << i << " _ noSkipped = " << noSkipped << " / " << k_
-                 << std::endl;
-              printMsg(ss.str());
-#ifdef TTK_ENABLE_OPENMP
-            } // pragma omp task
-#endif
-          } // end first for loop
-#ifdef TTK_ENABLE_OPENMP
-        } // pragma omp single nowait
-#pragma omp taskwait
-      } // pragma omp parallel
-#endif
-
-      // std::cout << "t_para : " << t_para.getElapsedTime() << std::endl;
     }
 
     template <class dataType>
@@ -1007,152 +737,15 @@ namespace ttk {
       distances = std::vector<double>(trees.size());
 
       // Assignment
-      if(parallelMode_ == 0 or parallelMode_ == 2)
-        assignmentDoublePara<dataType>(barycenter, trees, v, v2, barycenter2,
-                                       trees2, trees2V, trees2V2, allTreesTs,
-                                       vS, v2s, trees2Vs, trees2V2s, matchings,
-                                       matchings2, ts, distances);
-      else
-        assignmentSimplePara<dataType>(barycenter, trees, v, v2, barycenter2,
-                                       trees2, trees2V, trees2V2, allTreesTs,
-                                       vS, v2s, trees2Vs, trees2V2s, matchings,
-                                       matchings2, ts, distances);
+      assignmentDoublePara<dataType>(barycenter, trees, v, v2, barycenter2,
+                                     trees2, trees2V, trees2V2, allTreesTs, vS,
+                                     v2s, trees2Vs, trees2V2s, matchings,
+                                     matchings2, ts, distances);
     }
 
     //----------------------------------------------------------------------------
     // Update
     //----------------------------------------------------------------------------
-    void diagramAugmentation(std::vector<std::vector<double>> &tree1Matrix,
-                             std::vector<std::vector<double>> &tree2Matrix) {
-      unsigned int oriTree1Size = tree1Matrix.size(),
-                   oriTree2Size = tree2Matrix.size();
-      tree1Matrix.resize(oriTree1Size + oriTree2Size);
-      for(unsigned int j = 0; j < oriTree2Size; ++j) {
-        double projec = (tree2Matrix[j][0] + tree2Matrix[j][1]) / 2.0;
-        tree1Matrix[oriTree1Size + j] = std::vector<double>{projec, projec};
-      }
-      tree2Matrix.resize(oriTree1Size + oriTree2Size);
-      for(unsigned int j = 0; j < oriTree1Size; ++j) {
-        double projec = (tree1Matrix[j][0] + tree1Matrix[j][1]) / 2.0;
-        tree2Matrix[oriTree2Size + j] = std::vector<double>{projec, projec};
-      }
-    }
-
-    template <class dataType>
-    void updateGradientDescent(
-      ftm::MergeTree<dataType> &barycenter,
-      std::vector<ftm::MergeTree<dataType>> &trees,
-      std::vector<std::vector<double>> &v,
-      std::vector<std::vector<double>> &v2,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &matchings,
-      std::vector<double> &ts) {
-      std::vector<double> v_flat, v2_flat;
-      flatten(v, v_flat);
-      flatten(v2, v2_flat);
-
-      // Gradient
-      // std::cout << "// Gradient" << std::endl;
-      std::vector<std::vector<double>> gradientV1(
-        v.size(), std::vector<double>(v[0].size(), 0.0)),
-        gradientV2(v2.size(), std::vector<double>(v2[0].size(), 0.0));
-      for(unsigned int i = 0; i < trees.size(); ++i) {
-        // Matrices
-        // std::cout << "// Matrices" << std::endl;
-        ftm::MergeTree<dataType> interpolated;
-        getInterpolation<dataType>(barycenter, v, v2, ts[i], interpolated);
-
-        std::vector<std::vector<double>> interpolatedMatrix, treeMatrix;
-        std::vector<int> interpolatedCorr, treeCorr;
-        getTreeMatrix(interpolated, interpolatedMatrix, interpolatedCorr);
-        getTreeMatrix(trees[i], treeMatrix, treeCorr);
-
-        std::vector<std::vector<double>> transportationMatrix;
-        getTransportationMatrix(interpolated, trees[i], interpolatedCorr,
-                                treeCorr, matchings[i], transportationMatrix);
-
-        std::vector<std::vector<double>> weightMatrix(
-          transportationMatrix.size(),
-          std::vector<double>(transportationMatrix.size(), 0));
-        for(unsigned int j = 0; j < transportationMatrix.size(); ++j)
-          weightMatrix[j][j] = transportationMatrix.size();
-
-        diagramAugmentation(interpolatedMatrix, treeMatrix);
-
-        // Gradient update
-        // std::cout << "// Gradient update" << std::endl;
-        std::vector<std::vector<double>> interpolatedMatrixT, treeMatrixT,
-          transportationMatrixT, multiplier, temp, temp2;
-        transpose(treeMatrix, treeMatrixT);
-        transpose(transportationMatrix, transportationMatrixT);
-        transpose(interpolatedMatrix, interpolatedMatrixT);
-        matrixDot(treeMatrixT, transportationMatrixT, temp);
-        matrixDot(temp, weightMatrix, temp2);
-        subMatrix(interpolatedMatrixT, temp2, multiplier);
-
-        std::vector<std::vector<double>> updateGradV1, updateGradV2,
-          updateGradV1T, updateGradV2T;
-        multMatrix(multiplier, 2.0 * (ts[i] - 1), updateGradV1);
-        multMatrix(multiplier, 2.0 * ts[i], updateGradV2);
-        transpose(updateGradV1, updateGradV1T);
-        transpose(updateGradV2, updateGradV2T);
-
-        std::vector<std::vector<double>> realUpdateGradV1(
-          v.size(), std::vector<double>(v[0].size(), 0.0)),
-          realUpdateGradV2(v2.size(), std::vector<double>(v2[0].size(), 0.0));
-        int cpt = 0;
-        for(unsigned int j = 0; j < barycenter.tree.getNumberOfNodes(); ++j) {
-          if(barycenter.tree.isNodeAlone(j))
-            continue;
-          /*std::cout << realUpdateGradV1.size() << " _ " << j << std::endl;
-          std::cout << realUpdateGradV2.size() << " _ " << j << std::endl;
-          std::cout << updateGradV1T.size() << " _ " << cpt << std::endl;
-          std::cout << updateGradV2T.size() << " _ " << cpt << std::endl;*/
-          realUpdateGradV1[j] = updateGradV1T[cpt];
-          realUpdateGradV2[j] = updateGradV2T[cpt];
-          ++cpt;
-        }
-
-        std::vector<std::vector<double>> tempGradV1 = gradientV1,
-                                         tempGradV2 = gradientV2;
-        sumMatrix(tempGradV1, realUpdateGradV1, gradientV1);
-        sumMatrix(tempGradV2, realUpdateGradV2, gradientV2);
-      }
-
-      // Regularizer
-      // std::cout << "// Regularizer" << std::endl;
-      std::vector<std::vector<double>> regV1(
-        v.size(), std::vector<double>(v[0].size(), 0.0)),
-        regV2(v2.size(), std::vector<double>(v2[0].size(), 0.0));
-      double v1_norm = norm(v_flat);
-      double v2_norm = norm(v2_flat);
-      double regularizerMult
-        = scalarProduct(v_flat, v2_flat) - v1_norm * v2_norm;
-      double normDivV1 = v2_norm / v1_norm;
-      double normDivV2 = v1_norm / v2_norm;
-
-      std::vector<std::vector<double>> v1_mult, v2_mult, v2_min_v1, v1_min_v2;
-      multMatrix(v, normDivV1, v1_mult);
-      multMatrix(v2, normDivV2, v2_mult);
-      subMatrix(v2, v1_mult, v2_min_v1);
-      subMatrix(v, v2_mult, v1_min_v2);
-      multMatrix(v2_min_v1, lambda_ * 2 * regularizerMult, regV1);
-      multMatrix(v1_min_v2, lambda_ * 2 * regularizerMult, regV2);
-
-      std::vector<std::vector<double>> tempGradV1 = gradientV1,
-                                       tempGradV2 = gradientV2;
-      sumMatrix(tempGradV1, regV1, gradientV1);
-      sumMatrix(tempGradV2, regV2, gradientV2);
-
-      // Vector update
-      // std::cout << "// Vector update" << std::endl;
-      multMatrix(gradientV1, beta_, gradientV1);
-      multMatrix(gradientV2, beta_, gradientV2);
-      std::vector<std::vector<double>> tempV = v, tempV2 = v2;
-      subMatrix(tempV, gradientV1, v);
-      subMatrix(tempV2, gradientV2, v2);
-    }
-
     template <class dataType>
     void updateClosedForm(
       int geodesicNumber,
@@ -1172,7 +765,7 @@ namespace ttk {
       ftm::FTMTree_MT *barycenterTree = &(barycenter.tree);
       std::vector<ftm::FTMTree_MT *> ftmTrees, allInterpolatedTrees;
       ttk::ftm::mergeTreeToFTMTree<dataType>(trees, ftmTrees);
-      if(moveVectorsAlongGeodesics_ and geodesicNumber != 0) {
+      if(geodesicNumber != 0) {
         ttk::ftm::mergeTreeToFTMTree<dataType>(
           allInterpolated, allInterpolatedTrees);
       }
@@ -1203,7 +796,7 @@ namespace ttk {
         std::vector<dataType> allDeathBary(trees.size(), deathBary);
         std::vector<dataType> allProjec(trees.size(), projec);
 
-        if(moveVectorsAlongGeodesics_ and geodesicNumber != 0)
+        if(geodesicNumber != 0)
           for(unsigned int j = 0; j < trees.size(); ++j) {
             auto birthDeathInterpol
               = getParametrizedBirthDeath<dataType>(allInterpolatedTrees[j], i);
@@ -1300,7 +893,7 @@ namespace ttk {
                          bool &foundAllUniform) {
       // Get multi interpolation
       allInterpolated = std::vector<ftm::MergeTree<dataType>>(trees.size());
-      if(moveVectorsAlongGeodesics_ and geodesicNumber != 0) {
+      if(geodesicNumber != 0) {
         for(unsigned int i = 0; i < trees.size(); ++i)
           getMultiInterpolation(
             barycenter, vS, v2s, allTreesTs[i], allInterpolated[i]);
@@ -1317,9 +910,8 @@ namespace ttk {
           continue;
         tss[i] = ts;
         for(unsigned int j = 0; j < tss[i].size(); ++j) {
-          auto &treeToUse = (moveVectorsAlongGeodesics_ and geodesicNumber != 0
-                               ? allInterpolated[j]
-                               : barycenter);
+          auto &treeToUse
+            = (geodesicNumber != 0 ? allInterpolated[j] : barycenter);
           tss[i][j] = getTNew<dataType>(treeToUse, v, v2, i, ts[j]);
         }
         isUniform[i] = isVectorUniform(tss[i]);
@@ -1417,15 +1009,10 @@ namespace ttk {
       std::vector<std::vector<std::vector<double>>> &trees2V2s,
       std::vector<double> &ts,
       std::vector<std::vector<double>> &allTreesTs) {
-      if(useGradientDescent_) {
-        updateGradientDescent<dataType>(
-          barycenter, trees, v, v2, matchings, ts);
-        return false;
-      } else
-        return updateClosedFormStep<dataType>(
-          geodesicNumber, barycenter, trees, v, v2, matchings, vS, v2s,
-          barycenter2, trees2, trees2V, trees2V2, matchings2, trees2Vs,
-          trees2V2s, ts, allTreesTs);
+      return updateClosedFormStep<dataType>(
+        geodesicNumber, barycenter, trees, v, v2, matchings, vS, v2s,
+        barycenter2, trees2, trees2V, trees2V2, matchings2, trees2Vs, trees2V2s,
+        ts, allTreesTs);
     }
 
     //----------------------------------------------------------------------------
@@ -1452,31 +1039,20 @@ namespace ttk {
 
       // Prop. cost
       std::stringstream ssReg;
-      double lambda = (useGradientDescent_ ? lambda_ : weightPropCost_);
-      auto reg = lambda * regularizerCost(v, v2);
+      auto reg = regularizerCost(v, v2);
       ssReg << "Prop. cost  = " << reg;
       printMsg(ssReg.str());
-      if(useGradientDescent_)
-        frechetEnergy += reg;
 
       // Ortho. cost
       std::stringstream ssOrthoCost;
-      auto orthoCost = weightOrthoCost_ * orthogonalCost(vS_, v2s_, v, v2);
+      auto orthoCost = orthogonalCost(vS_, v2s_, v, v2);
       ssOrthoCost << "Ortho. cost = " << orthoCost;
       printMsg(ssOrthoCost.str());
 
       // Map. cost
       std::stringstream ssOptMapCost;
-      optMapCost *= weightMapCost_;
       ssOptMapCost << "Map. cost   = " << optMapCost;
       printMsg(ssOptMapCost.str());
-
-      // Total cost
-      if(useGradientDescent_) {
-        std::stringstream ssTotal;
-        ssTotal << "Total       = " << frechetEnergy;
-        printMsg(ssTotal.str());
-      }
 
       // Detect convergence
       double tol = 0.01;
@@ -1731,12 +1307,6 @@ namespace ttk {
     template <class dataType>
     void execute(std::vector<ftm::MergeTree<dataType>> &trees,
                  std::vector<ftm::MergeTree<dataType>> &trees2) {
-      // --- Testing
-      // makeMyTest<dataType>(trees, trees2);
-      // normalizedWasserstein_ = false;
-      // normalizedWasserstein_ = true;
-      // this->threadNumber_ = 1;
-
       // --- Preprocessing
       Timer t_preprocess;
       treesNodeCorr_ = std::vector<std::vector<int>>(trees.size());
@@ -1988,20 +1558,6 @@ namespace ttk {
     //----------------------------------------------------------------------------
     // Utils
     //----------------------------------------------------------------------------
-    template <class dataType>
-    void getTransportationMatrix(
-      ftm::MergeTree<dataType> &tree1,
-      ftm::MergeTree<dataType> &tree2,
-      std::vector<int> &tree1Corr,
-      std::vector<int> &tree2Corr,
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
-      std::vector<std::vector<double>> &transportationMatrix);
-
-    template <class dataType>
-    void getTreeMatrix(ftm::MergeTree<dataType> &tree,
-                       std::vector<std::vector<double>> &treeMatrix,
-                       std::vector<int> &treeCorr);
-
     double
       verifyOrthogonality(std::vector<std::vector<std::vector<double>>> &vS,
                           std::vector<std::vector<std::vector<double>>> &v2s,
@@ -2069,82 +1625,6 @@ namespace ttk {
     // Testing
     // ----------------------------------------
     template <class dataType>
-    void verifyExtremitiesValidity(ftm::MergeTree<dataType> &barycenter,
-                                   std::vector<ftm::MergeTree<dataType>> &trees,
-                                   std::vector<std::vector<double>> &v1,
-                                   std::vector<std::vector<double>> &v2) {
-      auto verifyPair = [&](ttk::ftm::FTMTree_MT *tree, ftm::idNode node,
-                            double &alphaV1, double &alphaV2) {
-        std::tuple<dataType, dataType> bd;
-        if(tree->isRoot(node))
-          bd = tree->getBirthDeath<dataType>(node);
-        else
-          bd = getParametrizedBirthDeath<dataType>(tree, node);
-        auto newBirthV1 = std::get<0>(bd) - v1[node][0];
-        auto newDeathV1 = std::get<1>(bd) - v1[node][1];
-        auto newBirthV2 = std::get<0>(bd) + v2[node][0];
-        auto newDeathV2 = std::get<1>(bd) + v2[node][1];
-
-        std::cout << newBirthV1 << " _ " << newDeathV1 << std::endl;
-        std::cout << newBirthV2 << " _ " << newDeathV2 << std::endl;
-
-        if(newBirthV1 >= newDeathV1) {
-          std::cout << "newBirthV1 >= newDeathV1" << std::endl;
-          double alpha
-            = (std::get<1>(bd) - std::get<0>(bd)) / (v1[node][1] - v1[node][0]);
-          alpha /= 2;
-          alphaV1 = std::min(alphaV1, alpha);
-
-          std::cout << "    alpha : " << alpha << std::endl;
-          std::cout << "    " << std::get<0>(bd) - alpha * v1[node][0] << " _ "
-                    << std::get<1>(bd) - alpha * v1[node][1] << std::endl;
-        }
-        if(newBirthV2 >= newDeathV2) {
-          std::cout << "newBirthV2 >= newDeathV2" << std::endl;
-          double alpha
-            = (std::get<1>(bd) - std::get<0>(bd)) / (v2[node][0] - v2[node][1]);
-          alpha /= 2;
-          alphaV2 = std::min(alphaV2, alpha);
-        }
-      };
-
-      double alphaV1 = 1.0, alphaV2 = 1.0;
-      for(unsigned int i = 0; i < trees.size(); ++i) {
-        ftm::MergeTree<dataType> interpolated;
-        ttk::ftm::FTMTree_MT *tree = &(barycenter.tree);
-        if(allTreesTs_.size() != 0) {
-          getMultiInterpolation(
-            barycenter, vS_, v2s_, allTreesTs_[i], interpolated);
-          tree = &(interpolated.tree);
-
-          std::cout << "i : " << i << std::endl;
-          printMsg(interpolated.tree.printTree().str());
-          printMsg(interpolated.tree.template printPairsFromTree<dataType>(true)
-                     .str());
-        }
-        auto nodeSecMax = tree->getSecondMaximumPersistenceNode<dataType>();
-        verifyPair(tree, tree->getRoot(), alphaV1, alphaV2);
-        verifyPair(tree, nodeSecMax, alphaV1, alphaV2);
-
-        if(allTreesTs_.size() != 0) {
-          persistenceThresholding<dataType>(tree, 0.001);
-          printMsg(tree->printTree().str());
-        }
-
-        if(allTreesTs_.size() == 0)
-          break;
-      }
-
-      std::cout << "alphaV1 : " << alphaV1 << " _ alphaV2 : " << alphaV2
-                << std::endl;
-      multVectorByScalarFlatten(v1, alphaV1, v1);
-      multVectorByScalarFlatten(v2, alphaV2, v2);
-
-      printVectorOfVector(v1);
-      printVectorOfVector(v2);
-    }
-
-    template <class dataType>
     void verifyMinMaxPair(ftm::MergeTree<dataType> &mTree1,
                           ftm::MergeTree<dataType> &mTree) {
       if(not normalizedWasserstein_) // isPersistenceDiagram
@@ -2178,89 +1658,6 @@ namespace ttk {
         printMsg("Bad pairs:");
         printMsg(ss.str());
         printErr("[computePrincipalGeodesics] tree root is not min max.");
-      }
-    }
-
-    template <class dataType>
-    void isSomePointsBelowDiagonal(ftm::MergeTree<dataType> &barycenter,
-                                   std::vector<std::vector<double>> &v,
-                                   std::vector<std::vector<double>> &v2,
-                                   double t) {
-      ftm::FTMTree_MT *barycenterTree = &(barycenter.tree);
-      std::vector<dataType> scalarsVector;
-      ttk::ftm::getTreeScalars<dataType>(barycenter, scalarsVector);
-      std::vector<dataType> interpolationVector(scalarsVector.size());
-      int cptBelowDiagonal = 0;
-
-      for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
-        if(barycenter.tree.isNodeAlone(i))
-          continue;
-        auto iOrigin = barycenterTree->getNode(i)->getOrigin();
-        auto iValue = barycenterTree->getValue<dataType>(i);
-        auto iOriginValue = barycenterTree->getValue<dataType>(iOrigin);
-        auto nodeBirth = (iValue < iOriginValue ? i : iOrigin);
-        auto nodeDeath = (iValue < iOriginValue ? iOrigin : i);
-        interpolationVector[nodeBirth]
-          = scalarsVector[nodeBirth] - v[i][0] + t * (v[i][0] + v2[i][0]);
-        interpolationVector[nodeDeath]
-          = scalarsVector[nodeDeath] - v[i][1] + t * (v[i][1] + v2[i][1]);
-        if(interpolationVector[nodeBirth] > interpolationVector[nodeDeath]) {
-          printErr(std::to_string(interpolationVector[nodeBirth]) + " > "
-                   + std::to_string(interpolationVector[nodeDeath]));
-          ++cptBelowDiagonal;
-        }
-      }
-
-      if(cptBelowDiagonal != 0)
-        printErr(std::to_string(cptBelowDiagonal)
-                 + " points in interpolation below diagonal.");
-    }
-
-    template <class dataType>
-    void makeMyTest(std::vector<ftm::MergeTree<dataType>> &trees,
-                    std::vector<ftm::MergeTree<dataType>> &trees2) {
-      trees.clear();
-      trees2.clear();
-      std::vector<std::vector<double>> allScalarsVector;
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>> allArcs;
-
-      int example = 0;
-
-      // Example 1.2
-      if(example == 0) {
-        int noTrees = 5;
-        allScalarsVector = std::vector<std::vector<double>>(noTrees);
-        allArcs
-          = std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>(
-            noTrees);
-        for(int i = 0; i < noTrees; ++i)
-          allArcs[i] = std::vector<std::tuple<ftm::idNode, ftm::idNode>>{
-            std::make_tuple(1, 0), std::make_tuple(2, 1), std::make_tuple(3, 1),
-            std::make_tuple(4, 3), std::make_tuple(5, 3)};
-        allScalarsVector[0] = std::vector<double>{
-          1.8800202512849888, 2.9551038837928356, 8.642432224416988,
-          2.001355144655213,  9.744227844325652,  10.48293106347959};
-        allScalarsVector[1] = std::vector<double>{
-          0.910762771193335, 2.6194811162215252, 9.405209753906986,
-          2.818094257015912, 9.952873224743906,  10.38959595264684};
-        allScalarsVector[2] = std::vector<double>{
-          1.689474497866048, 3.114915658665831, 9.273077611933017,
-          2.578954627292262, 9.580422748247427, 9.871009661747955};
-        allScalarsVector[3] = std::vector<double>{
-          1.9153721495469198, 3.9100959288339396, 9.278534823150661,
-          4.5328469743884945, 9.253373026738721,  9.648281581657754};
-        allScalarsVector[4] = std::vector<double>{
-          -0.2205962234257033, 3.914344539876729, 8.917818621169264,
-          2.281341122587819,   9.045743067198401, 10.450424079708139};
-      }
-
-      // Create trees
-      trees = std::vector<ftm::MergeTree<dataType>>(allScalarsVector.size());
-      for(unsigned int i = 0; i < allScalarsVector.size(); ++i) {
-        std::vector<dataType> scalarsVector(allScalarsVector[i].size());
-        for(unsigned int j = 0; j < allScalarsVector[i].size(); ++j)
-          scalarsVector[j] = allScalarsVector[i][j];
-        trees[i] = makeFakeMergeTree(scalarsVector, allArcs[i]);
       }
     }
 

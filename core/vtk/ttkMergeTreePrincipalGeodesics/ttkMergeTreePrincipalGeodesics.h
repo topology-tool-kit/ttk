@@ -102,33 +102,6 @@ public:
    * parameters via vtkMacros.
    */
   // Input Options
-  void SetBackendGeod(int backend) {
-    useGradientDescent_ = (backend == 1);
-    Modified();
-    resetDataVisualization();
-  }
-  int GetBackendGeod() {
-    return (useGradientDescent_ ? 1 : 0);
-  }
-
-  void SetGradientStep(double gradientStep) {
-    beta_ = gradientStep;
-    Modified();
-    resetDataVisualization();
-  }
-  double GetGradientStep() {
-    return beta_;
-  }
-
-  void SetRegularizer(double regularizer) {
-    lambda_ = regularizer;
-    Modified();
-    resetDataVisualization();
-  }
-  double GetRegularizer() {
-    return lambda_;
-  }
-
   void SetNormalizedWasserstein(bool nW) {
     normalizedWasserstein_ = nW;
     Modified();

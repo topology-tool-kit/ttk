@@ -49,7 +49,6 @@ namespace ttk {
       bool isCalled = false,
       bool useDoubleInput = false,
       bool isFirstInput = true) {
-      // Timer t_distance;
       MergeTreeDistance mergeTreeDistance;
       mergeTreeDistance.setDebugLevel(2);
       mergeTreeDistance.setPreprocess(false);
@@ -180,13 +179,11 @@ namespace ttk {
     void updateT(
       double newT, double m, double &tMin, double &tMax, bool updateTMin) {
       if(updateTMin) {
-        // newT *= (1 + 1e-6);
         tMin = std::max(newT, tMin);
         auto adjustedTMax = getAdjustedTMax(newT, m);
         if(adjustedTMax > tMin)
           tMax = std::min(adjustedTMax, tMax);
       } else {
-        // newT *= (1 - 1e-6);
         tMax = std::min(newT, tMax);
         auto adjustedTMin = getAdjustedTMin(newT, m);
         if(adjustedTMin < tMax)
@@ -249,12 +246,6 @@ namespace ttk {
                         double &tMax) {
       bool shortener = false;
 
-      // ftm::FTMTree_MT *barycenterTree = &(barycenter.tree);
-      // ftm::idNode parent = barycenterTree->getParentSafe(node);
-      /*auto birthDeathParent
-        = getParametrizedBirthDeath<dataType>(barycenterTree, parent);
-      dataType birthParent = std::get<0>(birthDeathParent);
-      dataType deathParent = std::get<1>(birthDeathParent);*/
       dataType birthParent = 0.0;
       dataType deathParent = 1.0;
 
@@ -265,16 +256,12 @@ namespace ttk {
       // Compute V1 extremity
       auto newBirthV1 = baryBirth + interpolant(0, tMin);
       auto newDeathV1 = baryDeath + interpolant(1, tMin);
-      // auto parentBirthV1 = birthParent - vNew[parent][0];
-      // auto parentDeathV1 = deathParent - vNew[parent][1];
       auto parentBirthV1 = 0.0;
       auto parentDeathV1 = 1.0;
 
       // Compute V2 extremity
       auto newBirthV2 = baryBirth + interpolant(0, tMax);
       auto newDeathV2 = baryDeath + interpolant(1, tMax);
-      // auto parentBirthV2 = birthParent + v2New[parent][0];
-      // auto parentDeathV2 = deathParent + v2New[parent][1];
       auto parentBirthV2 = 0.0;
       auto parentDeathV2 = 1.0;
 
@@ -601,10 +588,6 @@ namespace ttk {
         for(auto child : children)
           queue.emplace(child);
       }
-      /*if(noDiagonalShortener != 0)
-        printWrn("[getInterpolationVector] "
-                 + std::to_string(noDiagonalShortener)
-                 + " diagonal vector shortener.");*/
       if(noNestingShortener != 0)
         printWrn("[getInterpolationVector] "
                  + std::to_string(noNestingShortener)

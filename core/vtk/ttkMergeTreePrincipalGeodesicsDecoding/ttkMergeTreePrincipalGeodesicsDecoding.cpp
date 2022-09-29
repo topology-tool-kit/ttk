@@ -350,16 +350,6 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runCompute(
       mtsFlattening(inputDTrees);
   }
 
-  /*for(unsigned int i = 0; i < baryDTree.size(); ++i) {
-    printMsg(baryDTree[i].tree.printTree().str());
-    if(not isPersistenceDiagram_)
-      ttk::ftm::computePersistencePairs<dataType>(&(baryDTree[i].tree));
-    printMsg(
-      baryDTree[i]
-        .tree.template printPairsFromTree<dataType>(isPersistenceDiagram_)
-        .str());
-  }*/
-
   //------------------------------------------------------------------------------------
   // --- Call base
   //------------------------------------------------------------------------------------
