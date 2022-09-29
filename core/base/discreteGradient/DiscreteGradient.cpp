@@ -23,10 +23,6 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
     numberOfCells[i] = this->getNumberOfCells(i, triangulation);
   }
 
-  dmtMax2PL_.clear();
-  dmt1Saddle2PL_.clear();
-  dmt2Saddle2PL_.clear();
-
   // clear & init gradient memory
   for(int i = 0; i < dimensionality_; ++i) {
     (*gradient_)[2 * i].clear();
@@ -190,20 +186,6 @@ bool DiscreteGradient::isCellCritical(const int cellDim,
 
 bool DiscreteGradient::isCellCritical(const Cell &cell) const {
   return isCellCritical(cell.dim_, cell.id_);
-}
-
-int DiscreteGradient::getCriticalPointMap(
-  const vector<pair<SimplexId, char>> &criticalPoints, vector<char> &isPL) {
-  isPL.resize(numberOfVertices_);
-  std::fill(isPL.begin(), isPL.end(), 0);
-  for(pair<SimplexId, char> criticalPoint : criticalPoints) {
-    const SimplexId criticalPointId = criticalPoint.first;
-    const char criticalPointType = criticalPoint.second;
-
-    isPL[criticalPointId] = criticalPointType;
-  }
-
-  return 0;
 }
 
 int DiscreteGradient::setManifoldSize(
