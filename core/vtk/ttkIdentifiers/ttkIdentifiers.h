@@ -47,6 +47,7 @@ class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
     double x;
     double y;
     double z;
+    ttk::SimplexId localId;
   };
 
   struct Response {
