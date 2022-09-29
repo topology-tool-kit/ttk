@@ -535,7 +535,11 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
       // Barycenter
       ttk::ftm::mergeTreeDoubleToTemplate<dataType>(baryMTree[0], mt);
       treeType = 1;
-      getGeodesicsMiddle<dataType>(mt, pVS_, pV2s_, vSize_, ts);
+      std::array<double, 2> middle;
+      getGeodesicsMiddle<dataType>(mt, pVS_, pV2s_, vSize_, middle);
+      ts.resize(2);
+      ts[0] = middle[0];
+      ts[1] = middle[1];
     } else if(i < steps[3]) {
       // Geodesics Trees
       index = i - steps[2];

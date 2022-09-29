@@ -1309,9 +1309,7 @@ namespace ttk {
                  std::vector<ftm::MergeTree<dataType>> &trees2) {
       // --- Preprocessing
       Timer t_preprocess;
-      treesNodeCorr_ = std::vector<std::vector<int>>(trees.size());
       preprocessingTrees<dataType>(trees, treesNodeCorr_);
-      trees2NodeCorr_ = std::vector<std::vector<int>>(trees2.size());
       if(trees2.size() != 0)
         preprocessingTrees<dataType>(trees2, trees2NodeCorr_);
       printMsg(

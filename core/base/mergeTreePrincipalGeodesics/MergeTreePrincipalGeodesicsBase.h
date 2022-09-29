@@ -93,7 +93,7 @@ namespace ttk {
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
       bool transposeVector = true) {
-      reconstructionErrors = std::vector<double>(inputTrees.size());
+      reconstructionErrors.resize(inputTrees.size());
       matchings.resize(inputTrees.size());
       dataType reconstructionError = 0.0;
 #ifdef TTK_ENABLE_OPENMP
@@ -549,7 +549,6 @@ namespace ttk {
         }
         // - Verify nesting condition
         bool verifyNesting = !baryTree->notNeedToNormalize(i);
-        // verifyNesting = !baryTree->isRoot(i);
         if(normalizedWasserstein_ and verifyNesting) {
           if(interpolationVector[nodeBirth] < interParentBirth
              and (interParentBirth - interpolationVector[nodeBirth]) < eps)
@@ -596,7 +595,7 @@ namespace ttk {
         printErr("[getInterpolationVector] point below diagonal.");
       if(cptNotNesting != 0)
         printErr("[getInterpolationVector] nesting condition not ok.");
-
+      
       interpolationVectorT = std::vector<dataType>(scalarsVector.size());
       for(unsigned int i = 0; i < interpolationVectorT.size(); ++i)
         interpolationVectorT[i] = interpolationVector[i];
@@ -703,6 +702,7 @@ namespace ttk {
     void preprocessingTrees(std::vector<ftm::MergeTree<dataType>> &trees,
                             std::vector<std::vector<int>> &nodeCorr,
                             bool useMinMaxPairT = true) {
+      nodeCorr.resize(trees.size());
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif

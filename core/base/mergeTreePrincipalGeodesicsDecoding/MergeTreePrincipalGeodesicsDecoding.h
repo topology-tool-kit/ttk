@@ -68,7 +68,6 @@ namespace ttk {
     template <class dataType>
     void processInputTrees(
       std::vector<ttk::ftm::MergeTree<dataType>> &inputTrees) {
-      treesNodeCorr_ = std::vector<std::vector<int>>(inputTrees.size());
       preprocessingTrees<dataType>(inputTrees, treesNodeCorr_);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
@@ -82,7 +81,7 @@ namespace ttk {
                             std::vector<std::vector<double *>> &vS,
                             std::vector<std::vector<double *>> &v2s,
                             size_t vSize,
-                            std::vector<double> &middle) {
+                            std::array<double, 2> &middle) {
       int cptDivide = 0;
       std::vector<double> alpha(2, 0.0);
       for(unsigned int i = 0; i < 2; ++i) {
@@ -100,7 +99,6 @@ namespace ttk {
         alpha[i] /= cptDivide;
       }
 
-      middle = std::vector<double>(2, 0.0);
       for(unsigned int i = 0; i < 2; ++i)
         middle[i] = alpha[i] / (1 + alpha[i]);
     }
@@ -114,7 +112,7 @@ namespace ttk {
         preprocessBarycenter<dataType>(barycenters[1]);
 
       // Compute
-      geodesicsDistances_ = std::vector<double>(pVS_.size());
+      geodesicsDistances_.resize(pVS_.size());
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif
@@ -175,8 +173,7 @@ namespace ttk {
         preprocessingTrees<dataType>(inputTrees);
 
       // Reconstruction
-      reconstructedTrees
-        = std::vector<ftm::MergeTree<dataType>>(allTreesTs_.size());
+      reconstructedTrees.resize(allTreesTs_.size());
       if(transferBarycenterInformations_)
         recBaryMatchings.resize(reconstructedTrees.size());
 #ifdef TTK_ENABLE_OPENMP
@@ -244,14 +241,14 @@ namespace ttk {
       // Preprocessing
       preprocessBarycenter<dataType>(barycenter);
 
-      std::vector<double> middle;
+      std::array<double, 2> middle;
       getGeodesicsMiddle<dataType>(
         barycenter, vSToUse, v2sToUse, vSizeToUse, middle);
 
       // Construct geodesics trees
-      geodesicsTrees = std::vector<std::vector<ftm::MergeTree<dataType>>>(
+      geodesicsTrees.resize(
         vSToUse.size(), std::vector<ftm::MergeTree<dataType>>(k_));
-      tGeodesics_ = std::vector<std::vector<std::vector<double>>>(
+      tGeodesics_.resize(
         geodesicsTrees.size(),
         std::vector<std::vector<double>>(
           geodesicsTrees[0].size(), std::vector<double>(vSToUse.size(), 0.0)));
@@ -292,8 +289,8 @@ namespace ttk {
 
       // Init
       unsigned int noSample = k_ * 2;
-      geodesicsEllipses = std::vector<ftm::MergeTree<dataType>>(noSample);
-      tEllipses_ = std::vector<std::vector<double>>(geodesicsEllipses.size());
+      geodesicsEllipses.resize(noSample);
+      tEllipses_.resize(geodesicsEllipses.size());
 
       std::vector<std::vector<double *>> vS(2), v2s(2);
       vS[0] = vSToUse[0];
@@ -302,7 +299,7 @@ namespace ttk {
       v2s[1] = v2sToUse[1];
 
       // Get middle of geodesic
-      std::vector<double> middle;
+      std::array<double, 2> middle;
       getGeodesicsMiddle<dataType>(barycenter, vS, v2s, vSizeToUse, middle);
 
       // Get ellipses
@@ -364,8 +361,8 @@ namespace ttk {
 
       // Init
       unsigned int noSample = getNumberOfRectangles(rectangleMultiplier);
-      geodesicsRectangle = std::vector<ftm::MergeTree<dataType>>(noSample);
-      tRectangle_ = std::vector<std::vector<double>>(geodesicsRectangle.size());
+      geodesicsRectangle.resize(noSample);
+      tRectangle_.resize(geodesicsRectangle.size());
 
       std::vector<std::vector<double *>> vS(2), v2s(2);
       vS[0] = vSToUse[0];
@@ -432,10 +429,10 @@ namespace ttk {
 
       // Init
       unsigned int noSample = k_ * k_;
-      geodesicsSurface = std::vector<ftm::MergeTree<dataType>>(noSample);
-      tSurface_ = std::vector<std::vector<double>>(geodesicsSurface.size());
-      surfaceIsBoundary_ = std::vector<bool>(geodesicsSurface.size(), false);
-      surfaceBoundaryID_ = std::vector<int>(geodesicsSurface.size(), -1);
+      geodesicsSurface.resize(noSample);
+      tSurface_.resize(geodesicsSurface.size());
+      surfaceIsBoundary_.resize(geodesicsSurface.size(), false);
+      surfaceBoundaryID_.resize(geodesicsSurface.size(), -1);
 
       std::vector<std::vector<double *>> vS(2), v2s(2);
       vS[0] = vSToUse[0];

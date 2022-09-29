@@ -52,7 +52,7 @@ namespace ttk {
     std::vector<double> &v1,
     std::vector<double> &v2,
     std::vector<double> &projec) {
-    projec = std::vector<double>(v1.size(), 0.0);
+    projec.resize(v1.size(), 0.0);
     ttk::Geometry::vectorProjection(
       v2.data(), v1.data(), projec.data(), v1.size());
   }
@@ -92,15 +92,14 @@ namespace ttk {
   void MergeTreePrincipalGeodesicsBase::sumVector(std::vector<double> &v1,
                                                   std::vector<double> &v2,
                                                   std::vector<double> &sumV) {
-    if(sumV.size() != v1.size())
-      sumV = std::vector<double>(v1.size());
+    sumV.resize(v1.size());
     ttk::Geometry::addVectors(v1.data(), v2.data(), sumV.data(), v1.size());
   }
 
   void MergeTreePrincipalGeodesicsBase::subVector(std::vector<double> &v1,
                                                   std::vector<double> &v2,
                                                   std::vector<double> &subV) {
-    subV = std::vector<double>(v1.size());
+    subV.resize(v1.size());
     ttk::Geometry::subtractVectors(
       v2.data(), v1.data(), subV.data(), v1.size());
   }
@@ -140,7 +139,7 @@ namespace ttk {
     std::vector<std::vector<double>> &v1,
     std::vector<std::vector<double>> &v2,
     std::vector<std::vector<double>> &sumV) {
-    sumV = std::vector<std::vector<double>>(v1.size());
+    sumV.resize(v1.size());
     for(unsigned int i = 0; i < v1.size(); ++i)
       sumVector(v1[i], v2[i], sumV[i]);
   }
@@ -157,7 +156,7 @@ namespace ttk {
 
   void MergeTreePrincipalGeodesicsBase::flatten(
     std::vector<std::vector<double>> &v, std::vector<double> &newV) {
-    newV = std::vector<double>(v.size() * v[0].size());
+    newV.resize(v.size() * v[0].size());
     for(unsigned int i = 0; i < v.size(); ++i)
       for(unsigned int j = 0; j < v[0].size(); ++j)
         newV[i * v[0].size() + j] = v[i][j];
@@ -166,14 +165,14 @@ namespace ttk {
   void MergeTreePrincipalGeodesicsBase::multiFlatten(
     std::vector<std::vector<std::vector<double>>> &v,
     std::vector<std::vector<double>> &newV) {
-    newV = std::vector<std::vector<double>>(v.size());
+    newV.resize(v.size());
     for(unsigned int i = 0; i < v.size(); ++i)
       flatten(v[i], newV[i]);
   }
 
   void MergeTreePrincipalGeodesicsBase::unflatten(
     std::vector<double> &v, std::vector<std::vector<double>> &newV) {
-    newV = std::vector<std::vector<double>>(v.size() / 2);
+    newV.resize(v.size() / 2);
     for(unsigned int i = 0; i < v.size(); i += 2)
       newV[i / 2] = std::vector<double>{v[i], v[i + 1]};
   }
@@ -208,7 +207,7 @@ namespace ttk {
 
   void MergeTreePrincipalGeodesicsBase::vectorsToPointers(
     std::vector<std::vector<double>> &vec, std::vector<double *> &pVec) {
-    pVec = std::vector<double *>(vec.size());
+    pVec.resize(vec.size());
     for(unsigned int i = 0; i < vec.size(); ++i)
       vectorToPointer(vec[i], pVec[i]);
   }
@@ -216,14 +215,14 @@ namespace ttk {
   void MergeTreePrincipalGeodesicsBase::vectorOfVectorsToPointers(
     std::vector<std::vector<std::vector<double>>> &vS,
     std::vector<std::vector<double *>> &pVS) {
-    pVS = std::vector<std::vector<double *>>(vS.size());
+    pVS.resize(vS.size());
     for(unsigned int i = 0; i < vS.size(); ++i)
       vectorsToPointers(vS[i], pVS[i]);
   }
 
   void MergeTreePrincipalGeodesicsBase::pointerToVector(
     double *pVec, size_t size, std::vector<double> &vec) {
-    vec = std::vector<double>(size);
+    vec.resize(size);
     for(unsigned int i = 0; i < size; ++i)
       vec[i] = pVec[i];
   }
@@ -232,7 +231,7 @@ namespace ttk {
     std::vector<double *> &pVec,
     std::vector<size_t> sizes,
     std::vector<std::vector<double>> &vec) {
-    vec = std::vector<std::vector<double>>(pVec.size());
+    vec.resize(pVec.size());
     for(unsigned int i = 0; i < pVec.size(); ++i)
       pointerToVector(pVec[i], sizes[i], vec[i]);
   }
@@ -252,8 +251,7 @@ namespace ttk {
     std::vector<std::vector<double>> &m1,
     std::vector<std::vector<double>> &m2,
     std::vector<std::vector<double>> &newM) {
-    newM = std::vector<std::vector<double>>(
-      m1.size(), std::vector<double>(m2[0].size(), 0.0));
+    newM.resize(m1.size(), std::vector<double>(m2[0].size(), 0.0));
     for(unsigned int i = 0; i < newM.size(); ++i)
       for(unsigned int j = 0; j < newM[i].size(); ++j)
         for(unsigned int k = 0; k < m1[i].size(); ++k)
@@ -264,8 +262,7 @@ namespace ttk {
     std::vector<std::vector<double>> &m1,
     std::vector<std::vector<double>> &m2,
     std::vector<std::vector<double>> &newM) {
-    newM = std::vector<std::vector<double>>(
-      m1.size(), std::vector<double>(m1[0].size()));
+    newM.resize(m1.size(), std::vector<double>(m1[0].size()));
     for(unsigned int i = 0; i < m1.size(); ++i)
       for(unsigned int j = 0; j < m1[0].size(); ++j)
         newM[i][j] = m1[i][j] - m2[i][j];
@@ -275,8 +272,7 @@ namespace ttk {
     std::vector<std::vector<double>> &m1,
     std::vector<std::vector<double>> &m2,
     std::vector<std::vector<double>> &newM) {
-    newM = std::vector<std::vector<double>>(
-      m1.size(), std::vector<double>(m1[0].size()));
+    newM.resize(m1.size(), std::vector<double>(m1[0].size()));
     for(unsigned int i = 0; i < m1.size(); ++i)
       for(unsigned int j = 0; j < m1[0].size(); ++j)
         newM[i][j] = m1[i][j] + m2[i][j];
