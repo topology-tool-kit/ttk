@@ -2756,7 +2756,8 @@ int DiscreteGradient::getAscendingWall(
 
 template <typename triangulationType>
 int DiscreteGradient::reverseAscendingPath(
-  const std::vector<Cell> &vpath, const triangulationType &triangulation) {
+  const std::vector<Cell> &vpath,
+  const triangulationType &triangulation) const {
 
   if(dimensionality_ == 2) {
     // assume that the first cell is an edge
@@ -2824,7 +2825,8 @@ int DiscreteGradient::reverseAscendingPath(
 
 template <typename triangulationType>
 int DiscreteGradient::reverseDescendingPath(
-  const std::vector<Cell> &vpath, const triangulationType &triangulation) {
+  const std::vector<Cell> &vpath,
+  const triangulationType &triangulation) const {
 
   // assume that the first cell is an edge
   for(size_t i = 0; i < vpath.size(); i += 2) {
@@ -2862,7 +2864,8 @@ int DiscreteGradient::reverseDescendingPath(
 
 template <typename triangulationType>
 int DiscreteGradient::reverseAscendingPathOnWall(
-  const std::vector<Cell> &vpath, const triangulationType &triangulation) {
+  const std::vector<Cell> &vpath,
+  const triangulationType &triangulation) const {
 
   if(dimensionality_ == 3) {
     // assume that the first cell is an edge
@@ -2901,7 +2904,8 @@ int DiscreteGradient::reverseAscendingPathOnWall(
 
 template <typename triangulationType>
 int DiscreteGradient::reverseDescendingPathOnWall(
-  const std::vector<Cell> &vpath, const triangulationType &triangulation) {
+  const std::vector<Cell> &vpath,
+  const triangulationType &triangulation) const {
 
   if(dimensionality_ == 3) {
     // assume that the first cell is a triangle
