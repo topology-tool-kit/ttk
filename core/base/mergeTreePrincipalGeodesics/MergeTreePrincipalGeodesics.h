@@ -18,6 +18,7 @@
 #include <Debug.h>
 #include <MergeTreeBarycenter.h>
 #include <MergeTreePrincipalGeodesicsBase.h>
+#include <Statistics.h>
 
 namespace ttk {
 
@@ -1452,9 +1453,9 @@ namespace ttk {
 
         // Compute correlations
         for(unsigned int g = 0; g < numberOfGeodesics_; ++g) {
-          double birthCorr = corr(births, allTs_[g]);
-          double deathCorr = corr(deaths, allTs_[g]);
-          double persCorr = corr(pers, allTs_[g]);
+          double birthCorr = Statistics::corr(births, allTs_[g]);
+          double deathCorr = Statistics::corr(deaths, allTs_[g]);
+          double persCorr = Statistics::corr(pers, allTs_[g]);
 
           if(std::isnan(birthCorr))
             birthCorr = 0.0;

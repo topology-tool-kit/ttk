@@ -298,33 +298,4 @@ namespace ttk {
         mTemp[j][i] = m[i][j];
     newM = mTemp;
   }
-
-  // ----------------------------------------------------------------------------
-  // Statistics Utils
-  // ----------------------------------------------------------------------------
-  double MergeTreePrincipalGeodesicsBase::mean(std::vector<double> &v) {
-    double mean = 0.0;
-    for(auto e : v)
-      mean += e;
-    return mean / v.size();
-  }
-
-  double MergeTreePrincipalGeodesicsBase::var(std::vector<double> &v) {
-    return cov(v, v);
-  }
-
-  double MergeTreePrincipalGeodesicsBase::cov(std::vector<double> &v1,
-                                              std::vector<double> &v2) {
-    double cov = 0.0;
-    double meanV1 = mean(v1);
-    double meanV2 = mean(v2);
-    for(unsigned int i = 0; i < v1.size(); ++i)
-      cov += (v1[i] - meanV1) * (v2[i] - meanV2);
-    return cov / (v1.size() - 1);
-  }
-
-  double MergeTreePrincipalGeodesicsBase::corr(std::vector<double> &v1,
-                                               std::vector<double> &v2) {
-    return cov(v1, v2) / (std::sqrt(var(v1)) * std::sqrt(var(v2)));
-  }
 } // namespace ttk

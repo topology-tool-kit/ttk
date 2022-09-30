@@ -595,7 +595,7 @@ namespace ttk {
         printErr("[getInterpolationVector] point below diagonal.");
       if(cptNotNesting != 0)
         printErr("[getInterpolationVector] nesting condition not ok.");
-      
+
       interpolationVectorT = std::vector<dataType>(scalarsVector.size());
       for(unsigned int i = 0; i < interpolationVectorT.size(); ++i)
         interpolationVectorT[i] = interpolationVector[i];
@@ -953,18 +953,6 @@ namespace ttk {
 
     void transpose(std::vector<std::vector<double>> &m,
                    std::vector<std::vector<double>> &newM);
-
-    // ----------------------------------------------------------------------------
-    // Statistics Utils
-    // ----------------------------------------------------------------------------
-
-    double mean(std::vector<double> &v);
-
-    double var(std::vector<double> &v);
-
-    double cov(std::vector<double> &v1, std::vector<double> &v2);
-
-    double corr(std::vector<double> &v1, std::vector<double> &v2);
 
     //----------------------------------------------------------------------------
     // Testing

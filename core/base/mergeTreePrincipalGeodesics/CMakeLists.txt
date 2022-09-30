@@ -10,4 +10,5 @@ ttk_add_base_library(mergeTreePrincipalGeodesics
     triangulation
     mergeTreeClustering
     geometry
+    statistics
 )
