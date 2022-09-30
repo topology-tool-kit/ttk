@@ -54,6 +54,11 @@ class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
     ttk::SimplexId id;
     ttk::SimplexId globalId;
   };
+  struct ResponseCell {
+    ttk::SimplexId localId;
+    ttk::SimplexId vectorId;
+    ttk::SimplexId globalId;
+  };
 
 public:
   static ttkIdentifiers *New();
@@ -67,6 +72,7 @@ public:
   vtkGetMacro(VertexFieldName, std::string);
   void createMPIPointType(MPI_Datatype *mpiPointType);
   void createMPIResponseType(MPI_Datatype *mpiResponseType);
+  void createMPIResponseCellType(MPI_Datatype *mpiResponseType);
 
 protected:
   ttkIdentifiers();
