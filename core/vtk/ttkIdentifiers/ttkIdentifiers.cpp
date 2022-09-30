@@ -166,12 +166,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::SimplexId nbPoints;
   input->GetCellPoints(0, points);
   nbPoints = points->GetNumberOfIds();
-  // printMsg("nbPoints: "+std::to_string(nbPoints));
   input->GetBounds(bounds);
-  printMsg("bounds: " + std::to_string(bounds[0]) + ", "
-           + std::to_string(bounds[1]) + ", " + std::to_string(bounds[2]) + ", "
-           + std::to_string(bounds[3]) + ", " + std::to_string(bounds[4]) + ", "
-           + std::to_string(bounds[5]));
   if(vertRankArray != nullptr) {
     for(SimplexId i = 0; i < vertexNumber; i++) {
       if(vertRankArray->GetTuple1(i) != ttk::MPIrank_) {
@@ -233,13 +228,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       if(vertGhost->GetTuple1(i) == 0) {
         vertexIdentifiers->SetTuple1(i, vertIndex);
         vertGtoL[vertIndex] = i;
-        if(ttk::MPIrank_ == 1) {
-          if(vertIndex == 40 || vertIndex == 55 || vertIndex == 65
-             || vertIndex == 66) {
-            printMsg("local index: " + std::to_string(i)
-                     + " for global index: " + std::to_string(vertIndex));
-          }
-        }
 
         vertIndex++;
       }
@@ -308,12 +296,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
         if(id >= 0) {
           globalId = vertexIdentifiers->GetTuple1(id);
-          if(globalId == 4641) {
-            printMsg("PROBLEM, local id: " + std::to_string(id)
-                     + " with coord: x:" + std::to_string(receivedPoints[n].x)
-                     + " y: " + std::to_string(receivedPoints[n].y)
-                     + " z:" + std::to_string(receivedPoints[n].z));
-          }
           if(globalId >= 0) {
             locatedPoints.push_back(
               Response{receivedPoints[n].localId, globalId});
@@ -343,9 +325,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
            || receivedResponse[n].globalId == 55
            || receivedResponse[n].globalId == 65
            || receivedResponse[n].globalId == 66) {
-          printMsg("local index: " + std::to_string(receivedResponse[n].id)
-                   + " for global index: "
-                   + std::to_string(receivedResponse[n].globalId));
         }
       }
     }
@@ -359,7 +338,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       }
     }
   }
-  // printMsg("vertGhostSize: " + std::to_string(vertGhostCoordinates.size()));
   printMsg("POINTS DONE, START CELLS");
 
   std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber);
@@ -372,7 +350,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       }
     }
   }
-  printMsg("PointsToCell done");
   if(cellRankArray != nullptr) {
     for(SimplexId i = 0; i < cellNumber; i++) {
       if(cellRankArray->GetTuple1(i) != ttk::MPIrank_) {
@@ -381,12 +358,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
         for(int k = 0; k < nbPoints; k++) {
           cellGhostGlobalVertexIds.push_back(
             vertexIdentifiers->GetTuple1(points->GetId(k)));
-          if(i == 100 && ttk::MPIrank_ == 3) {
-            printMsg(
-              "Global id points: "
-              + std::to_string(vertexIdentifiers->GetTuple1(points->GetId(k))));
-            printMsg("Local id points: " + std::to_string(points->GetId(k)));
-          }
         }
       }
     }
@@ -398,14 +369,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
         for(int k = 0; k < nbPoints; k++) {
           cellGhostGlobalVertexIds.push_back(
             vertexIdentifiers->GetTuple1(points->GetId(k)));
-          if(i == 100 && ttk::MPIrank_ == 3) {
-            printMsg(
-              "Global id points: "
-              + std::to_string(vertexIdentifiers->GetTuple1(points->GetId(k))));
-            printMsg("Local id points: " + std::to_string(points->GetId(k)));
-          }
-          // printMsg("point to send
-          // :"+std::to_string(cellGhostGlobalVertexIds.back()));
         }
       }
     }
@@ -413,75 +376,42 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   MPI_Barrier(ttk::MPIcomm_);
   printMsg("Start communication phase");
   std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
-  // printMsg("number of cells: "+std::to_string(input->GetNumberOfCells()));
   globalId = -1;
-  // MPI_Barrier(ttk::MPIcomm_);
   std::vector<ttk::SimplexId> localPointIds;
   localPointIds.reserve(nbPoints);
   for(int i = 0; i < neighborNumber; i++) {
-    std::string s = "";
-    for(int h = 0; h < cellGhostGlobalVertexIds.size(); h += nbPoints + 1) {
-      for(int g = 0; g < nbPoints + 1; g++) {
-        s += std::to_string(cellGhostGlobalVertexIds[h + g]) + ", ";
-      }
-      s += "\n";
-    }
-    if(ttk::MPIrank_ == 3)
-      printMsg(s);
-    printMsg("Round: " + std::to_string(i)
-             + ", neighbor: " + std::to_string(neighbors[i]));
     receivedCells.clear();
     receivedResponseCell.clear();
     locatedCells.clear();
     cellGhostNumber = cellGhostGlobalVertexIds.size();
-    printMsg("cellGhostNumber: " + std::to_string(cellGhostNumber));
     MPI_Sendrecv(&cellGhostNumber, 1, getMPIType(cellGhostNumber), neighbors[i],
                  ttk::MPIrank_, &recvMessageSize, 1,
                  getMPIType(cellGhostNumber), neighbors[i], neighbors[i],
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
-    // MPI_Barrier(ttk::MPIcomm_);
-    // printMsg("recvMessageSize for cellGhostGlobalVertexIds: "
-    //            + std::to_string(recvMessageSize));
+
     receivedCells.resize(recvMessageSize);
-    // printMsg("Message size sent for ghost cells");
     MPI_Sendrecv(cellGhostGlobalVertexIds.data(), cellGhostNumber,
                  getMPIType(realVertexNumber), neighbors[i], ttk::MPIrank_,
                  receivedCells.data(), recvMessageSize,
                  getMPIType(realVertexNumber), neighbors[i], neighbors[i],
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
-    // printMsg("Data sent");
+
     for(int n = 0; n < recvMessageSize; n += (nbPoints + 1)) {
       int localCellId = receivedCells[n];
-      // if(localCellId == 100 && neighbors[i] == 3) {
-      //   printMsg("DAAAAAAA");
-      // }
+
       localPointIds.clear();
       for(int k = 1; k < nbPoints + 1; k++) {
         search = vertGtoL.find(receivedCells[n + k]);
-        if(localCellId == 100 && neighbors[i] == 3) {
-          printMsg("received global id[" + std::to_string(receivedCells[n + k])
-                   + "]: " + std::to_string(receivedCells[n + k]));
-        }
 
         if(search != vertGtoL.end()) {
           localPointIds.push_back(search->second);
         } else {
-          // if(localCellId == 100 && neighbors[i] == 3) {
-          //   printMsg("WE GOT A PROBLEM1");
-          // }
           break;
         }
       }
       if(localPointIds.size() != static_cast<size_t>(nbPoints)) {
-        // if(localCellId == 12000 && neighbors[i] == 0) {
-        //   printMsg("WE GOT A PROBLEM2");
-        // }
         break;
-        // printMsg("Da0");
       }
-      // else {
-      //   printMsg("OK");
-      // }
 
       bool foundIt = false;
       int k = 0;
@@ -491,8 +421,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
         int size = pointsToCells[localPointIds[m]].size();
         k = 0;
         while(!foundIt && k < size) {
-          // printMsg("local cell id here:
-          // "+std::to_string(pointsToCells[localPointIds[m]][k]));
           input->GetCellPoints(pointsToCells[localPointIds[m]][k], points);
           l = 0;
           while(l < nbPoints) {
@@ -508,50 +436,12 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
             locatedCells.push_back(ResponseCell{
               localCellId, n,
               cellIdentifiers->GetTuple1(pointsToCells[localPointIds[m]][k])});
-            // if(localCellId == 100 && neighbors[i] == 3) {
-            // //   printMsg("Found it");
-            //   printMsg("Global cell id:
-            //   "+std::to_string(locatedCells.back().globalId));
-            // }
-          } else {
-            if(localCellId == 100 && neighbors[i] == 3) {
-              // //   printMsg("Not found: ");
-              //    printMsg("local cell id here: "
-              //             +
-              //             std::to_string(pointsToCells[localPointIds[m]][k]));
-              if(pointsToCells[localPointIds[m]][k] == 44) {
-                for(int f = 0; f < localPointIds.size(); f++) {
-                  printMsg("localPointIds[" + std::to_string(f)
-                           + "]: " + std::to_string(localPointIds[f]));
-                }
-              }
-            }
-            //   for(int f = 0; f < points->GetNumberOfIds(); f++) {
-            //     printMsg("points[" + std::to_string(f)
-            //              + "]: " + std::to_string(points->GetId(f)));
-            //   }
-            //   }
-            //   for(int f = 0; f < localPointIds.size(); f++) {
-            //     printMsg("localPointIds[" + std::to_string(f)
-            //              + "]: " + std::to_string(localPointIds[f]));
-            //   }
-
-            //   printMsg("local cell id: " + std::to_string(localCellId));
-            //   for(int f = 0; f < points->GetNumberOfIds(); f++) {
-            //     printMsg("points[" + std::to_string(f)
-            //              + "]: " + std::to_string(points->GetId(f)));
-            //   }
-            // }
-            // if(localCellId == 100 && neighbors[i] == 3) {
-            //  printMsg("Didn't find it");
-            //}
           }
           k++;
         }
         m++;
       }
     }
-    // printMsg("Cells located");
     ttk::SimplexId locatedPointNumber = locatedCells.size();
     MPI_Sendrecv(&locatedPointNumber, 1, getMPIType(locatedPointNumber),
                  neighbors[i], ttk::MPIrank_, &recvMessageSize, 1,
@@ -564,15 +454,11 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
                  neighbors[i], ttk::MPIrank_, receivedResponseCell.data(),
                  recvMessageSize, mpiResponseCellType, neighbors[i],
                  neighbors[i], ttk::MPIcomm_, MPI_STATUS_IGNORE);
-    // printMsg("recvMessageSize for located cells: " +
-    // std::to_string(recvMessageSize));
+
     for(int n = 0; n < recvMessageSize; n++) {
       cellIdentifiers->SetTuple1(
         receivedResponseCell[n].localId, receivedResponseCell[n].globalId);
-      // if(receivedResponseCell[n].id == 100 && ttk::MPIrank_ == 3) {
-      //   printMsg("Here's your associated global id:
-      //   "+std::to_string(receivedResponseCell[n].globalId));
-      // }
+
       cellGhostGlobalVertexIds.erase(
         cellGhostGlobalVertexIds.begin() + receivedResponseCell[n].vectorId
           - n * (nbPoints + 1),
@@ -580,25 +466,10 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
           - n * (nbPoints + 1) + nbPoints + 1);
     }
 
-    // printMsg("About to delete");
-    // int count = 0;
-    // for(int n = 0; n < cellGhostGlobalVertexIds.size(); n++) {
-    //      if(receivedResponse[count].id == 100 && ttk::MPIrank_ == 3) {
-    //        printMsg("WE GOT A PROBLEM3");
-    //      }
-    //   if(cellGhostGlobalVertexIds[n - count*(nbPoints + 1)] ==
-    //   receivedResponse[count].id) {
-
-    //     count++;
-    //   }
-    // }
   }
   MPI_Barrier(ttk::MPIcomm_);
   printMsg("cellGhostGlobalVertexIds size: "
            + std::to_string(cellGhostGlobalVertexIds.size()));
-  // / printMsg("first : "+std::to_string(cellGhostGlobalVertexIds[0].x)+"
-  // / "+std::to_string(cellGhostGlobalVertexIds[0].y)+"
-  // / "+std::to_string(cellGhostGlobalVertexIds[0].z));
 
   // #ifdef TTK_ENABLE_OPENMP
   // #pragma omp parallel for num_threads(threadNumber_)
