@@ -1605,14 +1605,14 @@ int DiscreteGradient::filterSaddleConnectors(
     = static_cast<const dataType *>(inputScalarField_.first);
   const auto *const offsets = inputOffsets_;
 
-  contourTree_.setDebugLevel(debugLevel_);
-  contourTree_.setVertexScalars(scalars);
-  contourTree_.setTreeType(ftm::TreeType::Contour);
-  contourTree_.setVertexSoSoffsets(offsets);
-  contourTree_.setThreadNumber(threadNumber_);
-  contourTree_.setSegmentation(false);
-  contourTree_.build<dataType>(&triangulation);
-  ftm::FTMTree_MT *tree = contourTree_.getTree(ftm::TreeType::Contour);
+  contourTree_->setDebugLevel(debugLevel_);
+  contourTree_->setVertexScalars(scalars);
+  contourTree_->setTreeType(ftm::TreeType::Contour);
+  contourTree_->setVertexSoSoffsets(offsets);
+  contourTree_->setThreadNumber(threadNumber_);
+  contourTree_->setSegmentation(false);
+  contourTree_->build<dataType>(&triangulation);
+  ftm::FTMTree_MT *tree = contourTree_->getTree(ftm::TreeType::Contour);
 
   const SimplexId numberOfNodes = tree->getNumberOfNodes();
   for(SimplexId nodeId = 0; nodeId < numberOfNodes; ++nodeId) {

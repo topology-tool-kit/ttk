@@ -442,9 +442,8 @@ namespace ttk {
     template <typename dataType, typename triangulationType>
     int returnSaddleConnectors(const double persistenceThreshold,
                                const dataType *const scalars,
-                               const size_t scalarsMTime,
                                const SimplexId *const offsets,
-                               const triangulationType &triangulation) const;
+                               const triangulationType &triangulation);
 
     dcg::DiscreteGradient discreteGradient_{};
 
@@ -503,7 +502,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
 
   if(this->ReturnSaddleConnectors) {
     this->returnSaddleConnectors(this->SaddleConnectorsPersistenceThreshold,
-                                 scalars, scalarsMTime, offsets, triangulation);
+                                 scalars, offsets, triangulation);
   }
 
   std::vector<dcg::Cell> criticalPoints{};
@@ -1829,9 +1828,8 @@ template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex::returnSaddleConnectors(
   const double persistenceThreshold,
   const dataType *const scalars,
-  const size_t scalarsMTime,
   const SimplexId *const offsets,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   Timer tm{};
 
@@ -1845,12 +1843,15 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
   ttk::DiscreteMorseSandwich dms{};
   dms.setThreadNumber(this->threadNumber_);
   dms.setDebugLevel(this->debugLevel_);
-  dms.buildGradient(scalars, scalarsMTime, offsets, triangulation);
+  dms.setGradient(std::move(this->discreteGradient_));
 
   using PersPairType = DiscreteMorseSandwich::PersistencePair;
 
   std::vector<PersPairType> dms_pairs{};
   dms.computePersistencePairs(dms_pairs, offsets, triangulation, false);
+  this->discreteGradient_ = dms.getGradient();
+  // reset gradient pointer to local storage
+  this->discreteGradient_.setLocalGradient();
 
   const auto getPersistence
     = [this, &triangulation, scalars](const PersPairType &p) {

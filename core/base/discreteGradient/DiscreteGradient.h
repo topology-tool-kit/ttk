@@ -398,7 +398,8 @@ according to them.
             data->preconditionTriangleStars();
             data->preconditionCellTriangles();
             // for filterSaddleConnectors
-            contourTree_.preconditionTriangulation(data);
+            contourTree_ = std::make_shared<ftm::FTMTree>();
+            contourTree_->preconditionTriangulation(data);
           }
         }
       }
@@ -406,6 +407,13 @@ according to them.
       static inline void
         clearCache(const AbstractTriangulation &triangulation) {
         triangulation.gradientCache_.clear();
+      }
+
+      /**
+       * @brief Use local storage instead of cache
+       */
+      inline void setLocalGradient() {
+        this->gradient_ = &this->localGradient_;
       }
 
       /**
@@ -912,7 +920,7 @@ gradient, false otherwise.
         const triangulationType &triangulation) const;
 
     protected:
-      ftm::FTMTree contourTree_{};
+      std::shared_ptr<ftm::FTMTree> contourTree_{};
 
       int IterationThreshold{-1};
       bool CollectPersistencePairs{false};
