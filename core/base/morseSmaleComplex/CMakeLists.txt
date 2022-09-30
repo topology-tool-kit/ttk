@@ -5,4 +5,5 @@ ttk_add_base_library(morseSmaleComplex
     MorseSmaleComplex.h
   DEPENDS
     discreteGradient
+    discreteMorseSandwich
     )
