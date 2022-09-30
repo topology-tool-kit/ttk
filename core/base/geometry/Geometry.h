@@ -169,6 +169,20 @@ namespace ttk {
     template <typename T>
     T distance(const T *p0, const T *p1, const int &dimension = 3);
 
+    /// Compute the Euclidean distance between two points
+    /// \param p0 xyz coordinates of the first input point.
+    /// \param p1 xyz coordinates of the second input point.
+    template <typename T>
+    T distance(const std::vector<T> &p1, const std::vector<T> &p2);
+
+    /// Compute the Euclidean distance between two vectors by first flattening
+    /// them
+    /// \param p0 xyz coordinates of the first input point. \param p1 xyz
+    /// coordinates of the second input point.
+    template <typename T>
+    T distanceFlatten(const std::vector<std::vector<T>> &p1,
+                      const std::vector<std::vector<T>> &p2);
+
     /// Compute the dot product of two 3D std::vectors
     /// \param vA0 xyz coordinates of vA's origin
     /// \param vA1 xyz coordinates of vA's destination
@@ -186,6 +200,21 @@ namespace ttk {
     /// \return Returns Output dot product
     template <typename T>
     T dotProduct(const T *vA, const T *vB, const int &dimension = 3);
+
+    /// Compute the dot product of two std::vectors
+    /// \param vA coordinates of vA std::vector
+    /// \param vB coordinates of vB std::vector
+    /// \return Returns Output dot product
+    template <typename T>
+    T dotProduct(const std::vector<T> &vA, const std::vector<T> &vB);
+
+    /// Compute the dot product of two multi dimensional std::vectors by first
+    /// flattening them
+    /// \param vA coordinates of vA std::vector \param vB
+    /// coordinates of vB std::vector \return Returns Output dot product
+    template <typename T>
+    T dotProductFlatten(const std::vector<std::vector<T>> &vA,
+                        const std::vector<std::vector<T>> &vB);
 
     /// Compute the bounding box of a point set.
     /// \param points Vector of points. Each entry is a
@@ -284,6 +313,23 @@ namespace ttk {
     template <typename T>
     T magnitude(const T *v, const int &dimension = 3);
 
+    /// Compute the magnitude of a std::vector \p v.
+    /// \param v coordinates of the input std::vector.
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns the magnitude upon success, negative values otherwise.
+    template <typename T>
+    T magnitude(const std::vector<T> &v);
+
+    /// Compute the magnitude of a multi dimensional std::vector \p v by first
+    /// flattening it
+    /// \param v coordinates of the input std::vector.
+    /// \param dimension Optional parameter that specifies the dimension of the
+    /// point set (by default 3). \return Returns the magnitude upon success,
+    /// negative values otherwise.
+    template <typename T>
+    T magnitudeFlatten(const std::vector<std::vector<T>> &v);
+
     /// Compute the magnitude of a 3D std::vector.
     /// \param o xyz coordinates of the std::vector's origin
     /// \param d xyz coordinates of the std::vector's destination
@@ -349,6 +395,16 @@ namespace ttk {
     int
       subtractVectors(const T *a, const T *b, T *out, const int &dimension = 3);
 
+    /// Computes the difference between two vectors (\p b subtracted by \p a).
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the difference between the two vectors
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int subtractVectors(const std::vector<T> &a,
+                        const std::vector<T> &b,
+                        std::vector<T> &out);
+
     /// Computes the addition of two vectors.
     /// \param a coordinates of the first vector
     /// \param b coordinates of the second vector
@@ -358,6 +414,16 @@ namespace ttk {
     /// \return Returns 0 for success, negative otherwise.
     template <typename T>
     int addVectors(const T *a, const T *b, T *out, const int &dimension = 3);
+
+    /// Computes the addition of two vectors.
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the addition between the two vectors
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int addVectors(const std::vector<T> &a,
+                   const std::vector<T> &b,
+                   std::vector<T> &out);
 
     /// Scale a vector by a scalar value..
     /// \param a coordinates of the first vector
@@ -369,6 +435,15 @@ namespace ttk {
     template <typename T>
     int
       scaleVector(const T *a, const T factor, T *out, const int &dimension = 3);
+
+    /// Scale a vector by a scalar value..
+    /// \param a coordinates of the first vector
+    /// \param factor scale factor
+    /// \param out the scaled vector
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int
+      scaleVector(const std::vector<T> &a, const T factor, std::vector<T> &out);
 
     /// Computes the projection of vector \p a onto the vector \p b
     /// \param a coordinates of the first vector
@@ -382,6 +457,26 @@ namespace ttk {
                          const T *b,
                          T *out,
                          const int &dimension = 3);
+
+    /// Computes the projection of vector \p a onto the vector \p b
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the projected vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int vectorProjection(const std::vector<T> &a,
+                         const std::vector<T> &b,
+                         std::vector<T> &out);
+
+    /// Flatten a multi dimensional vector (representing a rectangular/square
+    /// matrix)
+    /// \param a multi dimensional vector \param out flattened vector
+    /// \return Returns 0 for success, negative otherwise
+    template <typename T>
+    int flattenMultiDimensionalVector(const std::vector<std::vector<T>> &a,
+                                      std::vector<T> &out);
 
   } // namespace Geometry
 } // namespace ttk

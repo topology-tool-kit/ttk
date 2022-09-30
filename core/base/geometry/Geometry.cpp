@@ -353,6 +353,20 @@ T Geometry::distance(const T *p0, const T *p1, const int &dimension) {
 }
 
 template <typename T>
+T Geometry::distance(const std::vector<T> &p1, const std::vector<T> &p2) {
+  return distance(p1.data(), p2.data(), p1.size());
+}
+
+template <typename T>
+T Geometry::distanceFlatten(const std::vector<std::vector<T>> &p1,
+                            const std::vector<std::vector<T>> &p2) {
+  std::vector<T> p1_flatten, p2_flatten;
+  flattenMultiDimensionalVector(p1, p1_flatten);
+  flattenMultiDimensionalVector(p2, p2_flatten);
+  return distance(p1_flatten, p2_flatten);
+}
+
+template <typename T>
 T Geometry::dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
 
   T dotProduct = 0;
@@ -369,6 +383,20 @@ T Geometry::dotProduct(const T *vA, const T *vB, const int &dimension) {
   for(int i = 0; i < dimension; ++i)
     dotProduct += vA[i] * vB[i];
   return dotProduct;
+}
+
+template <typename T>
+T Geometry::dotProduct(const std::vector<T> &vA, const std::vector<T> &vB) {
+  return dotProduct(vA.data(), vB.data(), vA.size());
+}
+
+template <typename T>
+T Geometry::dotProductFlatten(const std::vector<std::vector<T>> &vA,
+                              const std::vector<std::vector<T>> &vB) {
+  std::vector<T> vA_flatten, vB_flatten;
+  flattenMultiDimensionalVector(vA, vA_flatten);
+  flattenMultiDimensionalVector(vB, vB_flatten);
+  return dotProduct(vA_flatten, vB_flatten);
 }
 
 template <typename T>
@@ -465,6 +493,18 @@ T Geometry::magnitude(const T *v, const int &dimension) {
 }
 
 template <typename T>
+T Geometry::magnitude(const std::vector<T> &v) {
+  return magnitude(v.data(), v.size());
+}
+
+template <typename T>
+T Geometry::magnitudeFlatten(const std::vector<std::vector<T>> &v) {
+  std::vector<T> v_flatten;
+  flattenMultiDimensionalVector(v, v_flatten);
+  return magnitude(v_flatten);
+}
+
+template <typename T>
 T Geometry::magnitude(const T *o, const T *d) {
 
   T mag = 0;
@@ -487,10 +527,26 @@ int Geometry::subtractVectors(const T *a,
 }
 
 template <typename T>
+int Geometry::subtractVectors(const std::vector<T> &a,
+                              const std::vector<T> &b,
+                              std::vector<T> &out) {
+  out.resize(a.size());
+  return subtractVectors(a.data(), b.data(), out.data(), a.size());
+}
+
+template <typename T>
 int Geometry::addVectors(const T *a, const T *b, T *out, const int &dimension) {
   for(int i = 0; i < dimension; ++i)
     out[i] = b[i] + a[i];
   return 0;
+}
+
+template <typename T>
+int Geometry::addVectors(const std::vector<T> &a,
+                         const std::vector<T> &b,
+                         std::vector<T> &out) {
+  out.resize(a.size());
+  return addVectors(a.data(), b.data(), out.data(), a.size());
 }
 
 template <typename T>
@@ -501,6 +557,14 @@ int Geometry::scaleVector(const T *a,
   for(int i = 0; i < dimension; ++i)
     out[i] = a[i] * factor;
   return 0;
+}
+
+template <typename T>
+int Geometry::scaleVector(const std::vector<T> &a,
+                          const T factor,
+                          std::vector<T> &out) {
+  out.resize(a.size());
+  return scaleVector(a.data(), factor, out.data(), a.size());
 }
 
 template <typename T>
@@ -516,6 +580,24 @@ int Geometry::vectorProjection(const T *a,
       out[i] = b[i] * dotProdAB;
   } else
     return -1;
+  return 0;
+}
+
+template <typename T>
+int Geometry::vectorProjection(const std::vector<T> &a,
+                               const std::vector<T> &b,
+                               std::vector<T> &out) {
+  out.resize(a.size(), 0.0);
+  return vectorProjection(a.data(), b.data(), out.data(), a.size());
+}
+
+template <typename T>
+int Geometry::flattenMultiDimensionalVector(
+  const std::vector<std::vector<T>> &a, std::vector<T> &out) {
+  out.resize(a.size() * a[0].size());
+  for(unsigned int i = 0; i < a.size(); ++i)
+    for(unsigned int j = 0; j < a[0].size(); ++j)
+      out[i * a[0].size() + j] = a[i][j];
   return 0;
 }
 
@@ -549,10 +631,20 @@ int Geometry::vectorProjection(const T *a,
     TYPE const *, TYPE const *, TYPE *);                                      \
   template TYPE Geometry::distance<TYPE>(                                     \
     TYPE const *, TYPE const *, int const &);                                 \
+  template TYPE Geometry::distance<TYPE>(                                     \
+    std::vector<TYPE> const &, std::vector<TYPE> const &);                    \
+  template TYPE Geometry::distanceFlatten<TYPE>(                              \
+    std::vector<std::vector<TYPE>> const &,                                   \
+    std::vector<std::vector<TYPE>> const &);                                  \
   template TYPE Geometry::dotProduct<TYPE>(                                   \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template TYPE Geometry::dotProduct<TYPE>(                                   \
     TYPE const *, TYPE const *, int const &);                                 \
+  template TYPE Geometry::dotProduct<TYPE>(                                   \
+    std::vector<TYPE> const &, std::vector<TYPE> const &);                    \
+  template TYPE Geometry::dotProductFlatten<TYPE>(                            \
+    std::vector<std::vector<TYPE>> const &,                                   \
+    std::vector<std::vector<TYPE>> const &);                                  \
   template bool Geometry::isPointInTriangle<TYPE>(                            \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template bool Geometry::isPointOnSegment<TYPE>(TYPE const &, TYPE const &,  \
@@ -563,15 +655,31 @@ int Geometry::vectorProjection(const T *a,
   template bool Geometry::isTriangleColinear<TYPE>(                           \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *, int const &);         \
+  template TYPE Geometry::magnitude<TYPE>(std::vector<TYPE> const &);         \
+  template TYPE Geometry::magnitudeFlatten<TYPE>(                             \
+    std::vector<std::vector<TYPE>> const &);                                  \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);        \
   template int Geometry::subtractVectors<TYPE>(                               \
     TYPE const *, TYPE const *, TYPE *, int const &);                         \
+  template int Geometry::subtractVectors<TYPE>(std::vector<TYPE> const &,     \
+                                               std::vector<TYPE> const &,     \
+                                               std::vector<TYPE> &);          \
   template int Geometry::addVectors<TYPE>(                                    \
     TYPE const *, TYPE const *, TYPE *, int const &);                         \
+  template int Geometry::addVectors<TYPE>(std::vector<TYPE> const &,          \
+                                          std::vector<TYPE> const &,          \
+                                          std::vector<TYPE> &);               \
   template int Geometry::scaleVector<TYPE>(                                   \
     TYPE const *, TYPE const, TYPE *, int const &);                           \
+  template int Geometry::scaleVector<TYPE>(                                   \
+    std::vector<TYPE> const &, TYPE const, std::vector<TYPE> &);              \
   template int Geometry::vectorProjection<TYPE>(                              \
-    TYPE const *, TYPE const *, TYPE *, int const &)
+    TYPE const *, TYPE const *, TYPE *, int const &);                         \
+  template int Geometry::vectorProjection<TYPE>(std::vector<TYPE> const &,    \
+                                                std::vector<TYPE> const &,    \
+                                                std::vector<TYPE> &);         \
+  template int Geometry::flattenMultiDimensionalVector<TYPE>(                 \
+    std::vector<std::vector<TYPE>> const &, std::vector<TYPE> &)
 
 // explicit specializations for float and double
 GEOMETRY_SPECIALIZE(float);

@@ -14,7 +14,8 @@ namespace ttk {
     std::vector<std::vector<double>> sumVs;
     multiSumVectorFlatten(vS, v2s, sumVs);
     for(unsigned int i = 0; i < geodesicNumber; ++i) {
-      double scalarProd = scalarProduct(sumVs[i], sumVs[geodesicNumber]);
+      double scalarProd
+        = ttk::Geometry::dotProduct(sumVs[i], sumVs[geodesicNumber]);
       cost += std::pow(scalarProd, 2);
       if(doPrint and geodesicNumber < 4) {
         std::stringstream ss;

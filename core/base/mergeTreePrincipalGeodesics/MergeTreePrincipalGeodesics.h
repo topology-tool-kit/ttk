@@ -129,7 +129,7 @@ namespace ttk {
       multiSumVectorFlatten(vS, v2s, sumVs);
       double newNorm = 0;
       for(auto sumVi : sumVs)
-        newNorm += norm(sumVi) / sumVs.size();
+        newNorm += ttk::Geometry::magnitude(sumVi) / sumVs.size();
 
       // Generate random vector
       v = std::vector<std::vector<double>>(
@@ -142,7 +142,7 @@ namespace ttk {
       }
 
       // Change the norm of the random vector to be the average norm
-      double normV = normFlatten(v);
+      double normV = ttk::Geometry::magnitudeFlatten(v);
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
         if(barycenter.tree.isNodeAlone(i))
           continue;
@@ -339,8 +339,10 @@ namespace ttk {
 
     double regularizerCost(std::vector<std::vector<double>> &v,
                            std::vector<std::vector<double>> &v2) {
-      return std::pow(
-        (scalarProductFlatten(v, v2) - normFlatten(v) * normFlatten(v2)), 2);
+      return std::pow((ttk::Geometry::dotProductFlatten(v, v2)
+                       - ttk::Geometry::magnitudeFlatten(v)
+                           * ttk::Geometry::magnitudeFlatten(v2)),
+                      2);
     }
 
     double projectionCost(std::vector<std::vector<double>> &v,
@@ -406,7 +408,7 @@ namespace ttk {
       }
 
       // Compute distance between old and new extremity
-      double cost = distanceL2Flatten(v, oriV);
+      double cost = ttk::Geometry::distanceFlatten(v, oriV);
       return cost;
     }
 
@@ -447,37 +449,20 @@ namespace ttk {
       return cost;
     }
 
-    void positivelyProportionnalProjection(std::vector<double> &v1,
-                                           std::vector<double> &v2,
-                                           std::vector<double> &v1_V1OnV2,
-                                           std::vector<double> &v2_V2OnV1,
-                                           std::vector<double> &v1_V1AndV2,
-                                           std::vector<double> &v2_V1AndV2) {
-      // --- Compute all projections
-      // Project V1 on V2
-      vectorProjection(v2, v1, v1_V1OnV2);
-
-      // Project V2 on V1
-      vectorProjection(v1, v2, v2_V2OnV1);
-
-      // Project V1 and V2
-      sumProjection(v1, v2, v1_V1AndV2, v2_V1AndV2);
-    }
-
-    // Colinearity constraint
+    // Collinearity constraint
     void
       trueGeneralizedGeodesicProjection(std::vector<std::vector<double>> &v1,
                                         std::vector<std::vector<double>> &v2) {
       std::vector<double> v1_flatten, v2_flatten;
       flatten(v1, v1_flatten);
       flatten(v2, v2_flatten);
-      double v1_norm = norm(v1_flatten);
-      double v2_norm = norm(v2_flatten);
+      double v1_norm = ttk::Geometry::magnitude(v1_flatten);
+      double v2_norm = ttk::Geometry::magnitude(v2_flatten);
       double beta = v2_norm / (v1_norm + v2_norm);
       std::vector<double> v;
-      sumVector(v1_flatten, v2_flatten, v);
-      multVectorByScalar(v, (1 - beta), v1_flatten);
-      multVectorByScalar(v, beta, v2_flatten);
+      ttk::Geometry::addVectors(v1_flatten, v2_flatten, v);
+      ttk::Geometry::scaleVector(v, (1 - beta), v1_flatten);
+      ttk::Geometry::scaleVector(v, beta, v2_flatten);
       unflatten(v1_flatten, v1);
       unflatten(v2_flatten, v2);
     }

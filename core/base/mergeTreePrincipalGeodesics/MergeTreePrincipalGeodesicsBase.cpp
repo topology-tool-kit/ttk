@@ -8,64 +8,15 @@ namespace ttk {
   // ----------------------------------------------------------------------------
   // Vector Utils
   // ----------------------------------------------------------------------------
-  double MergeTreePrincipalGeodesicsBase::distanceL2(std::vector<double> &v1,
-                                                     std::vector<double> &v2) {
-    return ttk::Geometry::distance<double>(v1.data(), v2.data(), v1.size());
-  }
-
-  double MergeTreePrincipalGeodesicsBase::distanceL2Flatten(
-    std::vector<std::vector<double>> &v1,
-    std::vector<std::vector<double>> &v2) {
-    std::vector<double> v1_flatten, v2_flatten;
-    flatten(v1, v1_flatten);
-    flatten(v2, v2_flatten);
-    return distanceL2(v1_flatten, v2_flatten);
-  }
-
-  double
-    MergeTreePrincipalGeodesicsBase::scalarProduct(std::vector<double> &v1,
-                                                   std::vector<double> &v2) {
-    return ttk::Geometry::dotProduct(v1.data(), v2.data(), v1.size());
-  }
-
-  double MergeTreePrincipalGeodesicsBase::scalarProductFlatten(
-    std::vector<std::vector<double>> &v1,
-    std::vector<std::vector<double>> &v2) {
-    std::vector<double> v1_flatten, v2_flatten;
-    flatten(v1, v1_flatten);
-    flatten(v2, v2_flatten);
-    return scalarProduct(v1_flatten, v2_flatten);
-  }
-
-  double MergeTreePrincipalGeodesicsBase::norm(std::vector<double> &v) {
-    return ttk::Geometry::magnitude(v.data(), v.size());
-  }
-
-  double MergeTreePrincipalGeodesicsBase::normFlatten(
-    std::vector<std::vector<double>> &v) {
-    std::vector<double> v_flatten;
-    flatten(v, v_flatten);
-    return norm(v_flatten);
-  }
-
-  void MergeTreePrincipalGeodesicsBase::vectorProjection(
-    std::vector<double> &v1,
-    std::vector<double> &v2,
-    std::vector<double> &projec) {
-    projec.resize(v1.size(), 0.0);
-    ttk::Geometry::vectorProjection(
-      v2.data(), v1.data(), projec.data(), v1.size());
-  }
-
   void
     MergeTreePrincipalGeodesicsBase::sumProjection(std::vector<double> &v1,
                                                    std::vector<double> &v2,
                                                    std::vector<double> &v1Out,
                                                    std::vector<double> &v2Out) {
     std::vector<double> sumV;
-    sumVector(v1, v2, sumV);
-    vectorProjection(sumV, v1, v1Out);
-    vectorProjection(sumV, v2, v2Out);
+    ttk::Geometry::addVectors(v1, v2, sumV);
+    ttk::Geometry::vectorProjection(v1, sumV, v1Out);
+    ttk::Geometry::vectorProjection(v2, sumV, v2Out);
   }
 
   void MergeTreePrincipalGeodesicsBase::gramSchmidt(
@@ -77,62 +28,16 @@ namespace ttk {
     uS = allVs;
     for(unsigned int i = 1; i < allVs.size(); ++i) {
       std::vector<double> projecSum;
-      vectorProjection(uS[0], allVs[i], projecSum);
+      ttk::Geometry::vectorProjection(allVs[i], uS[0], projecSum);
       for(unsigned int j = 1; j < i; ++j) {
         std::vector<double> projecTemp, projecSumTemp;
-        vectorProjection(uS[j], allVs[i], projecTemp);
-        sumVector(projecSum, projecTemp, projecSumTemp);
+        ttk::Geometry::vectorProjection(allVs[i], uS[j], projecTemp);
+        ttk::Geometry::addVectors(projecSum, projecTemp, projecSumTemp);
         projecSum = projecSumTemp;
       }
-      subVector(allVs[i], projecSum, uS[i]);
+      ttk::Geometry::subtractVectors(allVs[i], projecSum, uS[i]);
     }
     newV = uS[uS.size() - 1];
-  }
-
-  void MergeTreePrincipalGeodesicsBase::sumVector(std::vector<double> &v1,
-                                                  std::vector<double> &v2,
-                                                  std::vector<double> &sumV) {
-    sumV.resize(v1.size());
-    ttk::Geometry::addVectors(v1.data(), v2.data(), sumV.data(), v1.size());
-  }
-
-  void MergeTreePrincipalGeodesicsBase::subVector(std::vector<double> &v1,
-                                                  std::vector<double> &v2,
-                                                  std::vector<double> &subV) {
-    subV.resize(v1.size());
-    ttk::Geometry::subtractVectors(
-      v2.data(), v1.data(), subV.data(), v1.size());
-  }
-
-  void MergeTreePrincipalGeodesicsBase::multVectorByScalar(
-    std::vector<double> &v, double scalar, std::vector<double> &multV) {
-    multV = v;
-    ttk::Geometry::scaleVector(v.data(), scalar, multV.data(), v.size());
-  }
-
-  void MergeTreePrincipalGeodesicsBase::multVectorByScalarFlatten(
-    std::vector<std::vector<double>> &v,
-    double scalar,
-    std::vector<std::vector<double>> &multV) {
-    std::vector<double> v_flat, multV_flat;
-    flatten(v, v_flat);
-    multVectorByScalar(v_flat, scalar, multV_flat);
-    unflatten(multV_flat, multV);
-  }
-
-  double
-    MergeTreePrincipalGeodesicsBase::sumVectorElements(std::vector<double> &v) {
-    double sum = 0;
-    for(auto e : v)
-      sum += e;
-    return sum;
-  }
-
-  double MergeTreePrincipalGeodesicsBase::sumVectorElementsFlatten(
-    std::vector<std::vector<double>> &v) {
-    std::vector<double> v_flatten;
-    flatten(v, v_flatten);
-    return sumVectorElements(v_flatten);
   }
 
   void MergeTreePrincipalGeodesicsBase::multiSumVector(
@@ -141,7 +46,7 @@ namespace ttk {
     std::vector<std::vector<double>> &sumV) {
     sumV.resize(v1.size());
     for(unsigned int i = 0; i < v1.size(); ++i)
-      sumVector(v1[i], v2[i], sumV[i]);
+      ttk::Geometry::addVectors(v1[i], v2[i], sumV[i]);
   }
 
   void MergeTreePrincipalGeodesicsBase::multiSumVectorFlatten(

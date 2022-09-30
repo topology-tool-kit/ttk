@@ -839,26 +839,7 @@ namespace ttk {
     // ----------------------------------------------------------------------------
     // Vector Utils
     // ----------------------------------------------------------------------------
-
-    double distanceL2(std::vector<double> &v1, std::vector<double> &v2);
-
-    double distanceL2Flatten(std::vector<std::vector<double>> &v1,
-                             std::vector<std::vector<double>> &v2);
-
-    double scalarProduct(std::vector<double> &v1, std::vector<double> &v2);
-
-    double scalarProductFlatten(std::vector<std::vector<double>> &v1,
-                                std::vector<std::vector<double>> &v2);
-
-    double norm(std::vector<double> &v);
-
-    double normFlatten(std::vector<std::vector<double>> &v);
-
     // Project v2 on v1
-    void vectorProjection(std::vector<double> &v1,
-                          std::vector<double> &v2,
-                          std::vector<double> &projec);
-
     void sumProjection(std::vector<double> &v1,
                        std::vector<double> &v2,
                        std::vector<double> &v1Out,
@@ -867,26 +848,6 @@ namespace ttk {
     void gramSchmidt(std::vector<std::vector<double>> &vS,
                      std::vector<double> &v,
                      std::vector<double> &newV);
-
-    void sumVector(std::vector<double> &v1,
-                   std::vector<double> &v2,
-                   std::vector<double> &sumV);
-
-    void subVector(std::vector<double> &v1,
-                   std::vector<double> &v2,
-                   std::vector<double> &subV);
-
-    void multVectorByScalar(std::vector<double> &v,
-                            double scalar,
-                            std::vector<double> &multV);
-
-    void multVectorByScalarFlatten(std::vector<std::vector<double>> &v,
-                                   double scalar,
-                                   std::vector<std::vector<double>> &multV);
-
-    double sumVectorElements(std::vector<double> &v);
-
-    double sumVectorElementsFlatten(std::vector<std::vector<double>> &v);
 
     void multiSumVector(std::vector<std::vector<double>> &v1,
                         std::vector<std::vector<double>> &v2,
