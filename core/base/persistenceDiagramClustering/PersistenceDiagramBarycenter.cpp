@@ -32,7 +32,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
       ttk::CriticalType nt1 = t.birth.type;
       ttk::CriticalType nt2 = t.death.type;
 
-      double dt = t.persistence;
+      double dt = t.persistence();
       // if (abs<double>(dt) < zeroThresh) continue;
       if(dt > 0) {
         if(nt1 == ttk::CriticalType::Local_minimum

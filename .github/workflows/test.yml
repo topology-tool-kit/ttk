@@ -149,6 +149,9 @@ jobs:
             # KarhunenLove screenshots
             rm -f output_screenshots/karhunenLoveDigits64Dimensions_1.png
             rm -f output_screenshots/karhunenLoveDigits64Dimensions_2.png
+            # Weird things with HarmonicSkeleton (old GCC version?)
+            rm -f output_screenshots/harmonicSkeleton_0.png
+            rm -f output_screenshots/harmonicSkeleton_1.png
           fi
           if [[ "$VERS" == *"22.04"* ]]; then
             # Ubuntu 22.04 performs more iterations in
@@ -157,9 +160,6 @@ jobs:
             # EigenField output not deterministic...
             rm -f output_screenshots/persistentGenerators_skull_1.png
           fi
-          # HarmonicField output not deterministic...
-          rm -f output_screenshots/harmonicSkeleton_0.png
-          rm -f output_screenshots/harmonicSkeleton_1.png
           # ViscousFingering plot rendering issues
           rm -rf output_screenshots/viscousFingering_0.png
           # EigenField output not deterministic...
@@ -182,8 +182,6 @@ jobs:
       run: |
         cd ttk-data
         python3 -u python/run.py
-      env:
-        OMP_NUM_THREADS: 1
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
@@ -302,7 +300,6 @@ jobs:
         python3 -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
-        OMP_NUM_THREADS: 1
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
@@ -435,6 +432,19 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
+    - name: Resample large datasets
+      shell: python
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+      env:
+        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages
+
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
@@ -442,8 +452,6 @@ jobs:
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         python -u python\run.py
-      env:
-        OMP_NUM_THREADS: 1
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true

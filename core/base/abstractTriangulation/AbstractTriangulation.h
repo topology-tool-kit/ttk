@@ -3642,6 +3642,8 @@ namespace ttk {
     friend class ttk::dcg::DiscreteGradient;
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    // might no be sufficient for Rips complexes, where a vertex can
+    // have more than 128 neighbors
     using gradIdType = char;
 #else
     using gradIdType = SimplexId;

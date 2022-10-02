@@ -21,6 +21,14 @@ void ttk::DiscreteMorseSandwich::tripletsToPersistencePairs(
     const auto s1 = t1[0];
     const auto m0 = t0[2];
     const auto m1 = t1[2];
+
+#ifdef _LIBCPP_VERSION
+    // libc++'s std::sort compares an entry to itself
+    if(&t0 == &t1) {
+      return true;
+    }
+#endif // _LIBCPP_VERSION
+
     if(s0 != s1)
       return saddlesOrder[s0] > saddlesOrder[s1];
     else

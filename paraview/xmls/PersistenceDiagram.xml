@@ -488,6 +488,25 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="ClearDGCache"
+          label="Clear DiscreteGradient Cache"
+          command="SetClearDGCache"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced" >
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          To clear the DiscreteGradient cache after computation (releases memory).
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFieldNew" />
         <Property name="ForceInputOffsetScalarField"/>
@@ -510,6 +529,7 @@
         <Property name="ComputeMinSad" />
         <Property name="ComputeSadSad" />
         <Property name="ComputeSadMax" />
+        <Property name="ClearDGCache" />
         <Property name="ShowInsideDomain" />
       </PropertyGroup>
 
