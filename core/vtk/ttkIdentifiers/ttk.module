@@ -6,3 +6,4 @@ HEADERS
   ttkIdentifiers.h
 DEPENDS
   ttkAlgorithm
+  identifiers

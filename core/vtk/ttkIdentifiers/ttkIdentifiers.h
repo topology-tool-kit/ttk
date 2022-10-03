@@ -35,15 +35,17 @@
 #include <ttkIdentifiersModule.h>
 
 // ttk code includes
+#include <Identifiers.h>
 #include <map>
 #include <ttkAlgorithm.h>
 #include <vtkIntArray.h>
-
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
+
+class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm,
+                                             protected ttk::Identifiers {
 
   struct Point {
     double x;
@@ -69,6 +71,7 @@ public:
   vtkGetMacro(VertexFieldName, std::string);
   void createMPIPointType(MPI_Datatype *mpiPointType);
   void createMPIResponseType(MPI_Datatype *mpiResponseType);
+  template <typename triangulationType>
   void
     exchangeAndLocatePoints(std::vector<Response> &locatedSimplices,
                             std::vector<Point> &simplicesCoordinates,
@@ -81,21 +84,22 @@ public:
                             vtkDataSet *input,
                             double *bounds,
                             vtkIntArray *vertexIdentifiers,
-                            std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL);
-  void exchangeAndLocateCells(
-    std::vector<Response> &locatedSimplices,
-    std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
-    std::vector<ttk::SimplexId> &receivedCells,
-    std::vector<Response> &receivedResponse,
-    int neighbor,
-    MPI_Datatype mpiIdType,
-    MPI_Datatype mpiResponseType,
-    int recvMessageSize,
-    vtkDataSet *input,
-    vtkIntArray *cellIdentifiers,
-    std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
-    int nbPoints,
-    std::vector<std::vector<ttk::SimplexId>> pointsToCells);
+                            std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
+                            triangulationType *triangulation);
+  // void exchangeAndLocateCells(
+  //   std::vector<Response> &locatedSimplices,
+  //   std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
+  //   std::vector<ttk::SimplexId> &receivedCells,
+  //   std::vector<Response> &receivedResponse,
+  //   int neighbor,
+  //   MPI_Datatype mpiIdType,
+  //   MPI_Datatype mpiResponseType,
+  //   int recvMessageSize,
+  //   vtkDataSet *input,
+  //   vtkIntArray *cellIdentifiers,
+  //   std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
+  //   int nbPoints,
+  //   std::vector<std::vector<ttk::SimplexId>> pointsToCells);
   template <typename dataType>
   void SendRecvVector(std::vector<dataType> &vectorToSend,
                       std::vector<dataType> &receiveBuffer,

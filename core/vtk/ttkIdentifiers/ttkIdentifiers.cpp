@@ -84,6 +84,7 @@ void ttkIdentifiers::SendRecvVector(std::vector<dataType> &vectorToSend,
                MPI_STATUS_IGNORE);
 }
 
+template <typename triangulationType>
 void ttkIdentifiers::exchangeAndLocatePoints(
   std::vector<Response> &locatedSimplices,
   std::vector<Point> &simplicesCoordinates,
@@ -96,7 +97,8 @@ void ttkIdentifiers::exchangeAndLocatePoints(
   vtkDataSet *input,
   double *bounds,
   vtkIntArray *vertexIdentifiers,
-  std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL) {
+  std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
+  triangulationType *triangulation) {
   locatedSimplices.clear();
   this->SendRecvVector<Point>(simplicesCoordinates, receivedPoints,
                               recvMessageSize, mpiPointType, neighbor);
@@ -107,9 +109,10 @@ void ttkIdentifiers::exchangeAndLocatePoints(
        && bounds[2] <= receivedPoints[n].y && bounds[3] >= receivedPoints[n].y
        && bounds[4] <= receivedPoints[n].z
        && bounds[5] >= receivedPoints[n].z) {
-      id = input->FindPoint(
-        receivedPoints[n].x, receivedPoints[n].y, receivedPoints[n].z);
-
+      this->findPoint<triangulationType>(id, receivedPoints[n].x,
+                                         receivedPoints[n].y,
+                                         receivedPoints[n].z, triangulation);
+      printMsg("id: " + std::to_string(id));
       if(id >= 0) {
         globalId = vertexIdentifiers->GetTuple1(id);
         if(globalId >= 0) {
@@ -135,6 +138,11 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(!triangulation)
+    return 0;
+
+  this->preconditionTriangulation(triangulation);
   // vtkImageData* data = vtkImageData::SafeDownCast(input);
   // data->ComputeBounds();
   // double* bounds = data->GetBounds();
@@ -293,10 +301,13 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
   for(int i = 0; i < neighborNumber; i++) {
     if(vertRankArray == nullptr) {
-      exchangeAndLocatePoints(locatedSimplices, vertGhostCoordinates,
-                              receivedPoints, receivedResponse, neighbors[i],
-                              mpiPointType, mpiResponseType, recvMessageSize,
-                              input, bounds, vertexIdentifiers, vertGtoL);
+      ttkTemplateMacro(
+        triangulation->getType(),
+        this->exchangeAndLocatePoints(
+          locatedSimplices, vertGhostCoordinates, receivedPoints,
+          receivedResponse, neighbors[i], mpiPointType, mpiResponseType,
+          recvMessageSize, input, bounds, vertexIdentifiers, vertGtoL,
+          (TTK_TT *)triangulation->getData()));
       int count = 0;
       for(int n = 0; n < vertGhostCoordinates.size(); n++) {
         if(vertGhostCoordinates[n - count].localId
@@ -306,10 +317,13 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
         }
       }
     } else {
-      exchangeAndLocatePoints(locatedSimplices, vertGhostCoordinatesPerRank[i],
-                              receivedPoints, receivedResponse, neighbors[i],
-                              mpiPointType, mpiResponseType, recvMessageSize,
-                              input, bounds, vertexIdentifiers, vertGtoL);
+      ttkTemplateMacro(
+        triangulation->getType(),
+        this->exchangeAndLocatePoints(
+          locatedSimplices, vertGhostCoordinatesPerRank[i], receivedPoints,
+          receivedResponse, neighbors[i], mpiPointType, mpiResponseType,
+          recvMessageSize, input, bounds, vertexIdentifiers, vertGtoL,
+          (TTK_TT *)triangulation->getData()));
     }
   }
   printMsg("POINTS DONE, START CELLS");
