@@ -33,7 +33,8 @@
 TTKWRLEXPORTER_EXPORT vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.
-void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
+TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteAnActor(vtkActor *anActor,
+                                                         FILE *fp) {
 
   ttk::Debug debugInfo;
   debugInfo.setDebugMsgPrefix("WRLExporter");
@@ -314,7 +315,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   pm->Delete();
 }
 
-void vtkVRMLExporter::WriteData() {
+TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteData() {
 
   vtkRenderer *ren;
   vtkActorCollection *ac;
@@ -434,11 +435,12 @@ void vtkVRMLExporter::WriteData() {
   }
 }
 
-void vtkVRMLExporter::WritePointData(vtkPoints *points,
-                                     vtkDataArray *normals,
-                                     vtkDataArray *tcoords,
-                                     vtkUnsignedCharArray *colors,
-                                     FILE *fp) {
+TTKWRLEXPORTER_EXPORT void
+  vtkVRMLExporter::WritePointData(vtkPoints *points,
+                                  vtkDataArray *normals,
+                                  vtkDataArray *tcoords,
+                                  vtkUnsignedCharArray *colors,
+                                  FILE *fp) {
 
   double *p;
   unsigned char *c;
