@@ -12,7 +12,7 @@ namespace ttk {
       printMsg("Scalar Products:");
     double cost = 0.0;
     std::vector<std::vector<double>> sumVs;
-    multiSumVectorFlatten(vS, v2s, sumVs);
+    ttk::Geometry::multiAddVectorsFlatten(vS, v2s, sumVs);
     for(unsigned int i = 0; i < geodesicNumber; ++i) {
       double scalarProd
         = ttk::Geometry::dotProduct(sumVs[i], sumVs[geodesicNumber]);

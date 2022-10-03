@@ -126,9 +126,9 @@ namespace ttk {
                           std::vector<std::vector<std::vector<double>>> &v2s) {
       // Get average norm of the previous vectors
       std::vector<std::vector<double>> sumVs;
-      multiSumVectorFlatten(vS, v2s, sumVs);
+      ttk::Geometry::multiAddVectorsFlatten(vS, v2s, sumVs);
       double newNorm = 0;
-      for(auto sumVi : sumVs)
+      for(auto &sumVi : sumVs)
         newNorm += ttk::Geometry::magnitude(sumVi) / sumVs.size();
 
       // Generate random vector
@@ -254,7 +254,8 @@ namespace ttk {
         }
 
         // Check if the initialized vectors are good
-        foundGoodIndex = (geodesicNumber == 0 or not isVectorNullFlatten(v1));
+        foundGoodIndex
+          = (geodesicNumber == 0 or not ttk::Geometry::isVectorNullFlatten(v1));
 
         // Init next bestIndex
         if(not foundGoodIndex) {
@@ -454,8 +455,8 @@ namespace ttk {
       trueGeneralizedGeodesicProjection(std::vector<std::vector<double>> &v1,
                                         std::vector<std::vector<double>> &v2) {
       std::vector<double> v1_flatten, v2_flatten;
-      flatten(v1, v1_flatten);
-      flatten(v2, v2_flatten);
+      ttk::Geometry::flattenMultiDimensionalVector(v1, v1_flatten);
+      ttk::Geometry::flattenMultiDimensionalVector(v2, v2_flatten);
       double v1_norm = ttk::Geometry::magnitude(v1_flatten);
       double v2_norm = ttk::Geometry::magnitude(v2_flatten);
       double beta = v2_norm / (v1_norm + v2_norm);
@@ -463,8 +464,8 @@ namespace ttk {
       ttk::Geometry::addVectors(v1_flatten, v2_flatten, v);
       ttk::Geometry::scaleVector(v, (1 - beta), v1_flatten);
       ttk::Geometry::scaleVector(v, beta, v2_flatten);
-      unflatten(v1_flatten, v1);
-      unflatten(v2_flatten, v2);
+      ttk::Geometry::unflattenMultiDimensionalVector(v1_flatten, v1, 2);
+      ttk::Geometry::unflattenMultiDimensionalVector(v2_flatten, v2, 2);
     }
 
     void
@@ -474,20 +475,20 @@ namespace ttk {
                            std::vector<std::vector<std::vector<double>>> &v2s) {
       // Multi flatten and sum vS and v2s
       std::vector<std::vector<double>> sumVs;
-      multiSumVectorFlatten(vS, v2s, sumVs);
+      ttk::Geometry::multiAddVectorsFlatten(vS, v2s, sumVs);
 
       // Flatten v1 and v2
       std::vector<double> v1_flatten, v2_flatten, v1_proj, v2_proj;
-      flatten(v1, v1_flatten);
-      flatten(v2, v2_flatten);
+      ttk::Geometry::flattenMultiDimensionalVector(v1, v1_flatten);
+      ttk::Geometry::flattenMultiDimensionalVector(v2, v2_flatten);
 
       // Call Gram Schmidt
-      gramSchmidt(sumVs, v1_flatten, v1_proj);
-      gramSchmidt(sumVs, v2_flatten, v2_proj);
+      callGramSchmidt(sumVs, v1_flatten, v1_proj);
+      callGramSchmidt(sumVs, v2_flatten, v2_proj);
 
       // Unflatten the resulting vectors
-      unflatten(v1_proj, v1);
-      unflatten(v2_proj, v2);
+      ttk::Geometry::unflattenMultiDimensionalVector(v1_proj, v1, 2);
+      ttk::Geometry::unflattenMultiDimensionalVector(v2_proj, v2, 2);
     }
 
     // TODO avoid copying vectors
@@ -900,7 +901,7 @@ namespace ttk {
             = (geodesicNumber != 0 ? allInterpolated[j] : barycenter);
           tss[i][j] = getTNew<dataType>(treeToUse, v, v2, i, ts[j]);
         }
-        isUniform[i] = isVectorUniform(tss[i]);
+        isUniform[i] = ttk::Geometry::isVectorUniform(tss[i]);
         noUniform += isUniform[i];
         foundAllUniform &= isUniform[i];
       }
@@ -1178,7 +1179,7 @@ namespace ttk {
       v2s_.push_back(v2);
       trees2Vs_.push_back(trees2V);
       trees2V2s_.push_back(trees2V2);
-      transpose(allTs_, allTreesTs_);
+      ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
       t_allVectorCopy_time_ += t_copy.getElapsedTime();
     }
 
@@ -1263,7 +1264,7 @@ namespace ttk {
         cumulTVariance_ = 0.0;
       } else {
         allTs_.resize(numberOfGeodesics_, std::vector<double>(trees.size()));
-        transpose(allTs_, allTreesTs_);
+        ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
         allDistances_.resize(
           numberOfGeodesics_, std::vector<double>(trees.size()));
         if(oldNoGeod != 0)

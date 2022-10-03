@@ -201,7 +201,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
       std::string normName = getTableCoefficientNormName(numberOfGeodesics, i);
       nonFieldDataNames.push_back(normName);
     }
-  transpose(allTs_, allTreesTs_);
+  ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
 
   // - aggregate input field data
   vtkNew<vtkFieldData> fd{};

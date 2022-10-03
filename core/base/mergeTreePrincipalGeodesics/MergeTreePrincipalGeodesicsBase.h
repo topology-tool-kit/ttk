@@ -149,7 +149,7 @@ namespace ttk {
     double getGeodesicVectorMiddle(std::vector<double> &v,
                                    std::vector<double> &v2) {
       std::vector<double> vProj, v2Proj;
-      sumProjection(v, v2, vProj, v2Proj);
+      ttk::Geometry::addVectorsProjection(v, v2, vProj, v2Proj);
 
       double alpha = 0.0;
       int cptDivide = 0;
@@ -424,8 +424,11 @@ namespace ttk {
       pointersToVectors(v, vSize, vNew);
       pointersToVectors(v2, vSize, v2New);
       if(transposeVector) {
-        transpose(vNew, vNew);
-        transpose(v2New, v2New);
+        std::vector<std::vector<double>> out;
+        ttk::Geometry::transposeMatrix(vNew, out);
+        vNew = out;
+        ttk::Geometry::transposeMatrix(v2New, out);
+        v2New = out;
       }
 
       // --- Tree traversal
@@ -839,39 +842,9 @@ namespace ttk {
     // ----------------------------------------------------------------------------
     // Vector Utils
     // ----------------------------------------------------------------------------
-    // Project v2 on v1
-    void sumProjection(std::vector<double> &v1,
-                       std::vector<double> &v2,
-                       std::vector<double> &v1Out,
-                       std::vector<double> &v2Out);
-
-    void gramSchmidt(std::vector<std::vector<double>> &vS,
-                     std::vector<double> &v,
-                     std::vector<double> &newV);
-
-    void multiSumVector(std::vector<std::vector<double>> &v1,
-                        std::vector<std::vector<double>> &v2,
-                        std::vector<std::vector<double>> &sumV);
-
-    void
-      multiSumVectorFlatten(std::vector<std::vector<std::vector<double>>> &v1,
-                            std::vector<std::vector<std::vector<double>>> &v2,
-                            std::vector<std::vector<double>> &sumV);
-
-    void flatten(std::vector<std::vector<double>> &v,
-                 std::vector<double> &newV);
-
-    void multiFlatten(std::vector<std::vector<std::vector<double>>> &v,
-                      std::vector<std::vector<double>> &newV);
-
-    void unflatten(std::vector<double> &v,
-                   std::vector<std::vector<double>> &newV);
-
-    bool isVectorUniform(std::vector<double> &v);
-
-    bool isVectorNull(std::vector<double> &v);
-
-    bool isVectorNullFlatten(std::vector<std::vector<double>> &v);
+    void callGramSchmidt(std::vector<std::vector<double>> &vS,
+                         std::vector<double> &v,
+                         std::vector<double> &newV);
 
     void vectorToPointer(std::vector<double> &vec, double *&pVec);
 
@@ -891,29 +864,6 @@ namespace ttk {
     void pointersToVectors(std::vector<double *> &pVec,
                            size_t size,
                            std::vector<std::vector<double>> &vec);
-
-    // ----------------------------------------------------------------------------
-    // Matrix Utils
-    // ----------------------------------------------------------------------------
-
-    void matrixDot(std::vector<std::vector<double>> &m1,
-                   std::vector<std::vector<double>> &m2,
-                   std::vector<std::vector<double>> &newM);
-
-    void subMatrix(std::vector<std::vector<double>> &m1,
-                   std::vector<std::vector<double>> &m2,
-                   std::vector<std::vector<double>> &newM);
-
-    void sumMatrix(std::vector<std::vector<double>> &m1,
-                   std::vector<std::vector<double>> &m2,
-                   std::vector<std::vector<double>> &newM);
-
-    void multMatrix(std::vector<std::vector<double>> &m1,
-                    double mult,
-                    std::vector<std::vector<double>> &newM);
-
-    void transpose(std::vector<std::vector<double>> &m,
-                   std::vector<std::vector<double>> &newM);
 
     //----------------------------------------------------------------------------
     // Testing
