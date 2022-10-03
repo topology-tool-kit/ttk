@@ -275,7 +275,7 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
      or (isPersistenceDiagram_ and mixtureCoefficient_ != 0
          and mixtureCoefficient_ != 1)) {
     ttk::ftm::MergeTree<dataType> barycenter2T;
-    mergeTreeDoubleToTemplate(barycenter2_, barycenter2T);
+    mergeTreeDoubleToTemplate(barycenterInput2_, barycenter2T);
     makeBarycenterOutput<dataType>(barycenter2T, 1, output_barycenter);
   }
 

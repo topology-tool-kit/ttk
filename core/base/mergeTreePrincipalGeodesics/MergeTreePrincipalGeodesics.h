@@ -47,10 +47,10 @@ namespace ttk {
     double t_vectorCopy_time_ = 0.0, t_allVectorCopy_time_ = 0.0;
 
     // Filled by the algorithm
-    std::vector<double> baryDistances_;
-    std::vector<std::vector<double>> allDistances_;
-    ftm::MergeTree<double> barycenter_, barycenter2_, barycenterBD_,
-      barycenterBD2_;
+    std::vector<double> inputToBaryDistances_;
+    std::vector<std::vector<double>> inputToGeodesicsDistances_;
+    ftm::MergeTree<double> barycenter_, barycenterInput2_, barycenterBDT_,
+      barycenterInput2BDT_;
     bool barycenterWasComputed_ = false;
 
     int newVectorOffset_ = 0;
@@ -174,7 +174,7 @@ namespace ttk {
         std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching,
           matching2;
         if(geodesicNumber == 0) {
-          if(baryDistances_.size() == 0) {
+          if(inputToBaryDistances_.size() == 0) {
             computeOneDistance<dataType>(
               barycenter, trees[i], matching, distance, false, useDoubleInput_);
             if(trees2.size() != 0) {
@@ -184,14 +184,14 @@ namespace ttk {
               distance = mixDistances(distance, distance2);
             }
           } else {
-            distance = baryDistances_[i];
+            distance = inputToBaryDistances_[i];
             matching = baryMatchings_[i];
             if(trees2.size() != 0)
               matching2 = baryMatchings2_[i];
           }
         } else {
-          for(unsigned j = 0; j < allDistances_.size(); ++j)
-            distance += allDistances_[j][i];
+          for(unsigned j = 0; j < inputToGeodesicsDistances_.size(); ++j)
+            distance += inputToGeodesicsDistances_[j][i];
           distancesAndIndexes[i] = std::make_tuple(distance, i);
         }
         if(distance > bestDistance) {
@@ -591,7 +591,7 @@ namespace ttk {
     // Assignment
     //----------------------------------------------------------------------------
     template <class dataType>
-    void assignmentDoublePara(
+    void assignmentImpl(
       ftm::MergeTree<dataType> &barycenter,
       std::vector<ftm::MergeTree<dataType>> &trees,
       std::vector<std::vector<double>> &v,
@@ -724,10 +724,9 @@ namespace ttk {
       distances = std::vector<double>(trees.size());
 
       // Assignment
-      assignmentDoublePara<dataType>(barycenter, trees, v, v2, barycenter2,
-                                     trees2, trees2V, trees2V2, allTreesTs, vS,
-                                     v2s, trees2Vs, trees2V2s, matchings,
-                                     matchings2, ts, distances);
+      assignmentImpl<dataType>(barycenter, trees, v, v2, barycenter2, trees2,
+                               trees2V, trees2V2, allTreesTs, vS, v2s, trees2Vs,
+                               trees2V2s, matchings, matchings2, ts, distances);
     }
 
     //----------------------------------------------------------------------------
@@ -1110,7 +1109,7 @@ namespace ttk {
         assignmentStep(barycenter, trees, v, v2, barycenter2, trees2, trees2V,
                        trees2V2, allTreesTs_, vS_, v2s_, trees2Vs_, trees2V2s_,
                        matchings, matchings2, ts, distances);
-        allDistances_[geodesicNumber] = distances;
+        inputToGeodesicsDistances_[geodesicNumber] = distances;
         allTs_[geodesicNumber] = ts;
         printMsg("Assignment", 1, t_assignment.getElapsedTime(), threadNumber_);
 
@@ -1172,7 +1171,7 @@ namespace ttk {
       v2 = bestV2;
       trees2V = bestTrees2V;
       trees2V2 = bestTrees2V2;
-      allDistances_[geodesicNumber] = bestDistances;
+      inputToGeodesicsDistances_[geodesicNumber] = bestDistances;
       allTs_[geodesicNumber] = bestTs;
 
       vS_.push_back(v);
@@ -1193,9 +1192,9 @@ namespace ttk {
         Timer t_barycenter;
         printMsg("Barycenter", 0, t_barycenter.getElapsedTime(), threadNumber_,
                  debug::LineMode::REPLACE);
-        computeOneBarycenter<dataType>(
-          trees, barycenter, baryMatchings_, baryDistances_, useDoubleInput_);
-        mergeTreeTemplateToDouble(barycenter, barycenterBD_);
+        computeOneBarycenter<dataType>(trees, barycenter, baryMatchings_,
+                                       inputToBaryDistances_, useDoubleInput_);
+        mergeTreeTemplateToDouble(barycenter, barycenterBDT_);
         if(trees2.size() != 0) {
           std::vector<double> baryDistances2;
           computeOneBarycenter<dataType>(trees2, barycenter2, baryMatchings2_,
@@ -1203,10 +1202,10 @@ namespace ttk {
                                          false);
           // Copy min max pair if not useMinMaxPair
           // copyMinMaxPair(barycenter, barycenter2);
-          mergeTreeTemplateToDouble(barycenter2, barycenterBD2_);
-          for(unsigned int i = 0; i < baryDistances_.size(); ++i)
-            baryDistances_[i]
-              = mixDistances(baryDistances_[i], baryDistances2[i]);
+          mergeTreeTemplateToDouble(barycenter2, barycenterInput2BDT_);
+          for(unsigned int i = 0; i < inputToBaryDistances_.size(); ++i)
+            inputToBaryDistances_[i]
+              = mixDistances(inputToBaryDistances_[i], baryDistances2[i]);
 
           verifyMinMaxPair(barycenter, barycenter2);
         }
@@ -1215,21 +1214,22 @@ namespace ttk {
       } else {
         printMsg("KeepState is enabled and barycenter was already computed");
         ttk::ftm::mergeTreeDoubleToTemplate<dataType>(
-          barycenterBD_, barycenter);
+          barycenterBDT_, barycenter);
         if(trees2.size() != 0) {
           ttk::ftm::mergeTreeDoubleToTemplate<dataType>(
-            barycenterBD2_, barycenter2);
+            barycenterInput2BDT_, barycenter2);
         }
       }
       printMsg(barycenter.tree.printTreeStats().str());
       mergeTreeTemplateToDouble(barycenter, barycenter_);
       if(trees2.size() != 0) {
         printMsg(barycenter2.tree.printTreeStats().str());
-        mergeTreeTemplateToDouble(barycenter2, barycenter2_);
+        mergeTreeTemplateToDouble(barycenter2, barycenterInput2_);
       }
 
       // --- Compute global variance
-      double globalVariance = computeVarianceFromDistances(baryDistances_);
+      double globalVariance
+        = computeVarianceFromDistances(inputToBaryDistances_);
 
       // --- Manage maximum number of geodesics
       unsigned int maxNoGeodesics = barycenter.tree.getRealNumberOfNodes() * 2;
@@ -1250,7 +1250,7 @@ namespace ttk {
       if(not keepState_) {
         allTs_ = std::vector<std::vector<double>>(
           numberOfGeodesics_, std::vector<double>(trees.size()));
-        allDistances_ = std::vector<std::vector<double>>(
+        inputToGeodesicsDistances_ = std::vector<std::vector<double>>(
           numberOfGeodesics_, std::vector<double>(trees.size()));
         vS_.clear();
         v2s_.clear();
@@ -1265,7 +1265,7 @@ namespace ttk {
       } else {
         allTs_.resize(numberOfGeodesics_, std::vector<double>(trees.size()));
         ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
-        allDistances_.resize(
+        inputToGeodesicsDistances_.resize(
           numberOfGeodesics_, std::vector<double>(trees.size()));
         if(oldNoGeod != 0)
           printMsg(
@@ -1331,7 +1331,7 @@ namespace ttk {
       if(normalizedWasserstein_) { // keep BDT if input is a PD
         postprocessingPipeline<double>(&(barycenter_.tree));
         if(trees2.size() != 0)
-          postprocessingPipeline<double>(&(barycenter2_.tree));
+          postprocessingPipeline<double>(&(barycenterInput2_.tree));
       }
 
       ttk::ftm::mergeTreeDoubleToTemplate<dataType>(barycenter_, barycenter);
@@ -1352,7 +1352,7 @@ namespace ttk {
                               std::vector<std::vector<double>> &trees2V,
                               std::vector<std::vector<double>> &trees2V2) {
       auto root = barycenter_.tree.getRoot();
-      auto root2 = barycenter2_.tree.getRoot();
+      auto root2 = barycenterInput2_.tree.getRoot();
       trees2V[root2] = v[root];
       trees2V2[root2] = v2[root];
     }
@@ -1365,7 +1365,7 @@ namespace ttk {
       ttk::ftm::mergeTreeDoubleToTemplate<dataType>(barycenter_, barycenter);
       if(trees2NodeCorr_.size() != 0)
         ttk::ftm::mergeTreeDoubleToTemplate<dataType>(
-          barycenter2_, barycenter2);
+          barycenterInput2_, barycenter2);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) \
   num_threads(this->threadNumber_) if(parallelize_)
