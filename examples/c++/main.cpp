@@ -186,19 +186,17 @@ int main(int argc, char **argv) {
   // precondition/fill in the order array according to the elevation field
   ttk::preconditionOrderArray(height.size(), height.data(), order.data());
 
-  // 2. computing the persistence curve
-  ttk::PersistenceCurve curve;
-  std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
-  curve.preconditionTriangulation(&triangulation);
-  curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float>(height.data(), 0, order.data(), &triangulation);
-
-  // 3. computing the persistence diagram
+  // 2. computing the persistence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<ttk::PersistencePair> diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
   diagram.execute(
     diagramOutput, height.data(), 0, order.data(), &triangulation);
+
+  // 3. computing the persistence curve from the persistence diagram
+  ttk::PersistenceCurve curve;
+  std::array<ttk::PersistenceCurve::PlotType, 4> outputCurve;
+  curve.execute(outputCurve, diagramOutput);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
