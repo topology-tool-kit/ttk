@@ -66,15 +66,22 @@ void ttkIdentifiers::createMPIResponseType(MPI_Datatype *mpiResponseType) {
   MPI_Type_commit(mpiResponseType);
 }
 
-void ttkIdentifiers::createMPIResponseCellType(MPI_Datatype *mpiResponseType) {
-  ttk::SimplexId id = 0;
-  MPI_Datatype types[] = {getMPIType(id), getMPIType(id), getMPIType(id)};
-  int lengths[] = {1, 1, 1};
-  const long int mpi_offsets[]
-    = {offsetof(ResponseCell, localId), offsetof(ResponseCell, vectorId),
-       offsetof(ResponseCell, globalId)};
-  MPI_Type_create_struct(3, lengths, mpi_offsets, types, mpiResponseType);
-  MPI_Type_commit(mpiResponseType);
+template <typename dataType>
+void ttkIdentifiers::SendRecvVector(std::vector<dataType> &vectorToSend,
+                                    std::vector<dataType> &receiveBuffer,
+                                    int &recvMessageSize,
+                                    MPI_Datatype &messageType,
+                                    int neighbor) {
+  ttk::SimplexId dataSize = vectorToSend.size();
+  receiveBuffer.clear();
+  MPI_Sendrecv(&dataSize, 1, getMPIType(dataSize), neighbor, ttk::MPIrank_,
+               &recvMessageSize, 1, getMPIType(dataSize), neighbor, neighbor,
+               ttk::MPIcomm_, MPI_STATUS_IGNORE);
+  receiveBuffer.resize(recvMessageSize);
+  MPI_Sendrecv(vectorToSend.data(), dataSize, messageType, neighbor,
+               ttk::MPIrank_, receiveBuffer.data(), recvMessageSize,
+               messageType, neighbor, neighbor, ttk::MPIcomm_,
+               MPI_STATUS_IGNORE);
 }
 
 int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
@@ -160,10 +167,12 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
   std::vector<Point> vertGhostCoordinates;
   std::vector<ttk::SimplexId> cellGhostGlobalVertexIds;
+  std::vector<ttk::SimplexId> cellGhostLocalIds;
   double bounds[6];
   double p[3];
   vtkIdList *points = vtkIdList::New();
   ttk::SimplexId nbPoints;
+  MPI_Datatype mpiIdType = getMPIType(nbPoints);
   input->GetCellPoints(0, points);
   nbPoints = points->GetNumberOfIds();
   input->GetBounds(bounds);
@@ -200,8 +209,8 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::SimplexId comm_buf[2] = {realVertexNumber, realCellNumber};
   std::vector<ttk::SimplexId> recv_offset(2 * ttk::MPIsize_);
   std::vector<ttk::SimplexId> offset_count(2 * ttk::MPIsize_);
-  MPI_Gather(comm_buf, 2, getMPIType(realVertexNumber), recv_offset.data(), 2,
-             getMPIType(realVertexNumber), 0, ttk::MPIcomm_);
+  MPI_Gather(
+    comm_buf, 2, mpiIdType, recv_offset.data(), 2, mpiIdType, 0, ttk::MPIcomm_);
   offset_count[0] = 0;
   offset_count[1] = 0;
   for(ttk::SimplexId i = 1; i < ttk::MPIsize_; i++) {
@@ -209,8 +218,8 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     offset_count[2 * i + 1] = offset_count[2 * i - 1] + recv_offset[2 * i - 1];
   }
 
-  MPI_Scatter(offset_count.data(), 2, getMPIType(realVertexNumber), comm_buf, 2,
-              getMPIType(realVertexNumber), 0, ttk::MPIcomm_);
+  MPI_Scatter(offset_count.data(), 2, mpiIdType, comm_buf, 2, mpiIdType, 0,
+              ttk::MPIcomm_);
 
   ttk::SimplexId vertIndex = comm_buf[0];
   ttk::SimplexId cellIndex = comm_buf[1];
@@ -254,8 +263,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   createMPIPointType(&mpiPointType);
   MPI_Datatype mpiResponseType;
   createMPIResponseType(&mpiResponseType);
-  MPI_Datatype mpiResponseCellType;
-  createMPIResponseCellType(&mpiResponseCellType);
   ttk::SimplexId vertGhostNumber;
   ttk::SimplexId cellGhostNumber;
   double *boundingBox = input->GetBounds();
@@ -266,26 +273,14 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<Point> receivedPoints;
   std::vector<ttk::SimplexId> receivedCells;
   std::vector<Response> receivedResponse;
-  std::vector<ResponseCell> receivedResponseCell;
-  std::vector<Response> locatedPoints;
-  std::vector<ResponseCell> locatedCells;
+  std::vector<Response> locatedSimplices;
   ttk::SimplexId id = -1;
   ttk::SimplexId globalId = -1;
 
   for(int i = 0; i < neighborNumber; i++) {
-    receivedPoints.clear();
-    locatedPoints.clear();
-    receivedResponse.clear();
-    vertGhostNumber = vertGhostCoordinates.size();
-    MPI_Sendrecv(&vertGhostNumber, 1, getMPIType(vertGhostNumber), neighbors[i],
-                 ttk::MPIrank_, &recvMessageSize, 1,
-                 getMPIType(vertGhostNumber), neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
-    receivedPoints.resize(recvMessageSize);
-    MPI_Sendrecv(vertGhostCoordinates.data(), vertGhostNumber, mpiPointType,
-                 neighbors[i], ttk::MPIrank_, receivedPoints.data(),
-                 recvMessageSize, mpiPointType, neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    locatedSimplices.clear();
+    this->SendRecvVector<Point>(vertGhostCoordinates, receivedPoints,
+                                recvMessageSize, mpiPointType, neighbors[i]);
     for(int n = 0; n < recvMessageSize; n++) {
       if(bounds[0] <= receivedPoints[n].x && bounds[1] >= receivedPoints[n].x
          && bounds[2] <= receivedPoints[n].y && bounds[3] >= receivedPoints[n].y
@@ -297,36 +292,19 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
         if(id >= 0) {
           globalId = vertexIdentifiers->GetTuple1(id);
           if(globalId >= 0) {
-            locatedPoints.push_back(
+            locatedSimplices.push_back(
               Response{receivedPoints[n].localId, globalId});
           }
         }
       }
     }
-    ttk::SimplexId locatedPointNumber = locatedPoints.size();
-    MPI_Sendrecv(&locatedPointNumber, 1, getMPIType(locatedPointNumber),
-                 neighbors[i], ttk::MPIrank_, &recvMessageSize, 1,
-                 getMPIType(locatedPointNumber), neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
-
-    receivedResponse.resize(recvMessageSize);
-
-    MPI_Sendrecv(locatedPoints.data(), locatedPointNumber, mpiResponseType,
-                 neighbors[i], ttk::MPIrank_, receivedResponse.data(),
-                 recvMessageSize, mpiResponseType, neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
-
+    this->SendRecvVector<Response>(locatedSimplices, receivedResponse,
+                                   recvMessageSize, mpiResponseType,
+                                   neighbors[i]);
     for(int n = 0; n < recvMessageSize; n++) {
       vertexIdentifiers->SetTuple1(
         receivedResponse[n].id, receivedResponse[n].globalId);
       vertGtoL[receivedResponse[n].globalId] = receivedResponse[n].id;
-      if(ttk::MPIrank_ == 1) {
-        if(receivedResponse[n].globalId == 40
-           || receivedResponse[n].globalId == 55
-           || receivedResponse[n].globalId == 65
-           || receivedResponse[n].globalId == 66) {
-        }
-      }
     }
 
     int count = 0;
@@ -354,7 +332,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     for(SimplexId i = 0; i < cellNumber; i++) {
       if(cellRankArray->GetTuple1(i) != ttk::MPIrank_) {
         input->GetCellPoints(i, points);
-        cellGhostGlobalVertexIds.push_back(i);
+        cellGhostLocalIds.push_back(i);
         for(int k = 0; k < nbPoints; k++) {
           cellGhostGlobalVertexIds.push_back(
             vertexIdentifiers->GetTuple1(points->GetId(k)));
@@ -365,7 +343,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     for(SimplexId i = 0; i < cellNumber; i++) {
       if(cellGhost->GetTuple1(i) != 0) {
         input->GetCellPoints(i, points);
-        cellGhostGlobalVertexIds.push_back(i);
+        cellGhostLocalIds.push_back(i);
         for(int k = 0; k < nbPoints; k++) {
           cellGhostGlobalVertexIds.push_back(
             vertexIdentifiers->GetTuple1(points->GetId(k)));
@@ -380,27 +358,14 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<ttk::SimplexId> localPointIds;
   localPointIds.reserve(nbPoints);
   for(int i = 0; i < neighborNumber; i++) {
-    receivedCells.clear();
-    receivedResponseCell.clear();
-    locatedCells.clear();
-    cellGhostNumber = cellGhostGlobalVertexIds.size();
-    MPI_Sendrecv(&cellGhostNumber, 1, getMPIType(cellGhostNumber), neighbors[i],
-                 ttk::MPIrank_, &recvMessageSize, 1,
-                 getMPIType(cellGhostNumber), neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    locatedSimplices.clear();
+    this->SendRecvVector<ttk::SimplexId>(cellGhostGlobalVertexIds,
+                                         receivedCells, recvMessageSize,
+                                         mpiIdType, neighbors[i]);
 
-    receivedCells.resize(recvMessageSize);
-    MPI_Sendrecv(cellGhostGlobalVertexIds.data(), cellGhostNumber,
-                 getMPIType(realVertexNumber), neighbors[i], ttk::MPIrank_,
-                 receivedCells.data(), recvMessageSize,
-                 getMPIType(realVertexNumber), neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
-
-    for(int n = 0; n < recvMessageSize; n += (nbPoints + 1)) {
-      int localCellId = receivedCells[n];
-
+    for(int n = 0; n < recvMessageSize; n += nbPoints) {
       localPointIds.clear();
-      for(int k = 1; k < nbPoints + 1; k++) {
+      for(int k = 0; k < nbPoints; k++) {
         search = vertGtoL.find(receivedCells[n + k]);
 
         if(search != vertGtoL.end()) {
@@ -433,8 +398,8 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
           }
           if(l == nbPoints) {
             foundIt = true;
-            locatedCells.push_back(ResponseCell{
-              localCellId, n,
+            locatedSimplices.push_back(Response{
+              n,
               cellIdentifiers->GetTuple1(pointsToCells[localPointIds[m]][k])});
           }
           k++;
@@ -442,28 +407,21 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
         m++;
       }
     }
-    ttk::SimplexId locatedPointNumber = locatedCells.size();
-    MPI_Sendrecv(&locatedPointNumber, 1, getMPIType(locatedPointNumber),
-                 neighbors[i], ttk::MPIrank_, &recvMessageSize, 1,
-                 getMPIType(locatedPointNumber), neighbors[i], neighbors[i],
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
-
-    receivedResponseCell.resize(recvMessageSize);
-
-    MPI_Sendrecv(locatedCells.data(), locatedPointNumber, mpiResponseCellType,
-                 neighbors[i], ttk::MPIrank_, receivedResponseCell.data(),
-                 recvMessageSize, mpiResponseCellType, neighbors[i],
-                 neighbors[i], ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    this->SendRecvVector<Response>(locatedSimplices, receivedResponse,
+                                   recvMessageSize, mpiResponseType,
+                                   neighbors[i]);
 
     for(int n = 0; n < recvMessageSize; n++) {
       cellIdentifiers->SetTuple1(
-        receivedResponseCell[n].localId, receivedResponseCell[n].globalId);
-
-      cellGhostGlobalVertexIds.erase(
-        cellGhostGlobalVertexIds.begin() + receivedResponseCell[n].vectorId
-          - n * (nbPoints + 1),
-        cellGhostGlobalVertexIds.begin() + receivedResponseCell[n].vectorId
-          - n * (nbPoints + 1) + nbPoints + 1);
+        cellGhostLocalIds[receivedResponse[n].id / nbPoints - n],
+        receivedResponse[n].globalId);
+      cellGhostLocalIds.erase(cellGhostLocalIds.begin()
+                              + receivedResponse[n].id / nbPoints - n);
+      cellGhostGlobalVertexIds.erase(cellGhostGlobalVertexIds.begin()
+                                       + receivedResponse[n].id - n * nbPoints,
+                                     cellGhostGlobalVertexIds.begin()
+                                       + receivedResponse[n].id - n * nbPoints
+                                       + nbPoints);
     }
 
   }
