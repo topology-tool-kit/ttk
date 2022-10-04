@@ -105,7 +105,7 @@ namespace ttk {
      *               method must be called after the triangulation has been
      *               preconditioned for the upcoming operations.
      */
-    int execute() {
+    int executePolyData() {
       // start global timer
       ttk::Timer globalTimer;
 
@@ -166,7 +166,7 @@ namespace ttk {
             cellGhostLocalIdsPerRank[neighborToId_[cellRankArray_[i]]]
               .push_back(i);
             for(int k = 0; k < nbPoints_; k++) {
-              connectivity_[i * nbPoints_ + k];
+              id = connectivity_[i * nbPoints_ + k];
               cellGhostGlobalVertexIdsPerRank[neighborToId_[cellRankArray_[i]]]
                 .push_back(vertexIdentifiers_->at(id));
             }

@@ -12,8 +12,25 @@
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkPolyData.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkUnstructuredGrid.h>
+
+vtkCellArray *GetCells(vtkDataSet *dataSet) {
+  switch(dataSet->GetDataObjectType()) {
+    case VTK_UNSTRUCTURED_GRID: {
+      auto dataSetAsUG = static_cast<vtkUnstructuredGrid *>(dataSet);
+      return dataSetAsUG->GetCells();
+    }
+    case VTK_POLY_DATA: {
+      auto dataSetAsPD = static_cast<vtkPolyData *>(dataSet);
+      return dataSetAsPD->GetNumberOfPolys() > 0   ? dataSetAsPD->GetPolys()
+             : dataSetAsPD->GetNumberOfLines() > 0 ? dataSetAsPD->GetLines()
+                                                   : dataSetAsPD->GetVerts();
+    }
+  }
+  return nullptr;
+}
 
 using namespace std;
 using namespace ttk;
@@ -55,48 +72,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  vtkPointSet *pointSet = vtkPointSet::GetData(inputVector[0]);
-  setPointSet(
-    static_cast<float *>(ttkUtils::GetVoidPointer(pointSet->GetPoints())));
-
-  vtkUnstructuredGrid *grid = vtkUnstructuredGrid::SafeDownCast(input);
-  vtkCellArray *cells = grid->GetCells();
-
-  if(!cells->IsStorage64Bit()) {
-    if(cells->CanConvertTo64BitStorage()) {
-      this->printWrn("Converting the cell array to 64-bit storage");
-      bool success = cells->ConvertTo64BitStorage();
-      if(!success) {
-        this->printErr(
-          "Error converting the provided cell array to 64-bit storage");
-        return {};
-      }
-    } else {
-      this->printErr(
-        "Cannot convert the provided cell array to 64-bit storage");
-      return {};
-    }
-  }
-
-  setConnectivity(static_cast<ttk::LongSimplexId *>(
-    ttkUtils::GetVoidPointer(cells->GetConnectivityArray())));
-
-  // vtkImageData* data = vtkImageData::SafeDownCast(input);
-  // data->ComputeBounds();
-  // double* bounds = data->GetBounds();
-  //   cout << "bounds: " << bounds[0] << "," << bounds[1] << "  " << bounds[2]
-  //        << "," << bounds[3] << " " << bounds[4] << "," <<
-  //        bounds[5] << endl;
-  // double* point = data->GetPoint(0);
-  // printMsg("Point: "+std::to_string(point[0])+" "+std::to_string(point[1])+"
-  // "+std::to_string(point[2])); data->SetExtent(wholeExtent); data->Update();
-
-  Timer t;
-
-  // use a pointer-base copy for the input data -- to adapt if your wrapper does
-  // not produce an output of the type of the input.
-  output->ShallowCopy(input);
-
   std::vector<ttk::SimplexId> vertexIdentifiers(input->GetNumberOfPoints(), -1);
   this->setVertexIdentifiers(&vertexIdentifiers);
 
@@ -117,31 +92,84 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     input->GetCellData()->GetArray("vtkGhostType")));
 
   setVertexNumber(input->GetNumberOfPoints());
-  std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber_);
-  vtkIdList *cellList = vtkIdList::New();
-  for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-    input->GetPointCells(i, cellList);
-    for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
-      if(cellGhost_[cellList->GetId(j)] == 0) {
-        pointsToCells[i].push_back(cellList->GetId(j));
+
+  switch(input->GetDataObjectType()) {
+    case VTK_UNSTRUCTURED_GRID:
+    case VTK_POLY_DATA: {
+      vtkPointSet *pointSet = vtkPointSet::GetData(inputVector[0]);
+      setPointSet(
+        static_cast<float *>(ttkUtils::GetVoidPointer(pointSet->GetPoints())));
+      vtkCellArray *cells = GetCells(pointSet);
+
+      if(!cells->IsStorage64Bit()) {
+        if(cells->CanConvertTo64BitStorage()) {
+          this->printWrn("Converting the cell array to 64-bit storage");
+          bool success = cells->ConvertTo64BitStorage();
+          if(!success) {
+            this->printErr(
+              "Error converting the provided cell array to 64-bit storage");
+            return {};
+          }
+        } else {
+          this->printErr(
+            "Cannot convert the provided cell array to 64-bit storage");
+          return {};
+        }
       }
+
+      setConnectivity(static_cast<ttk::LongSimplexId *>(
+        ttkUtils::GetVoidPointer(cells->GetConnectivityArray())));
+
+      std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber_);
+      vtkIdList *cellList = vtkIdList::New();
+      for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
+        input->GetPointCells(i, cellList);
+        for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
+          if(cellGhost_[cellList->GetId(j)] == 0) {
+            pointsToCells[i].push_back(cellList->GetId(j));
+          }
+        }
+      }
+
+      this->setPointsToCells(pointsToCells);
+
+      double *boundingBox = input->GetBounds();
+      initializeNeighbors(boundingBox);
+
+      this->initializeMPITypes();
+
+      vtkIdList *pointCell = vtkIdList::New();
+      input->GetCellPoints(0, pointCell);
+      this->setNbPoints(pointCell->GetNumberOfIds());
+      this->setBounds(boundingBox);
+      setDomainDimension(nbPoints_ - 1);
+
+      this->executePolyData();
+    }
+    case VTK_IMAGE_DATA: {
+      break;
+    }
+    default: {
+      this->printErr("Unable to triangulate `"
+                     + std::string(input->GetClassName()) + "`");
     }
   }
 
-  this->setPointsToCells(pointsToCells);
+  // vtkImageData* data = vtkImageData::SafeDownCast(input);
+  // data->ComputeBounds();
+  // double* bounds = data->GetBounds();
+  //   cout << "bounds: " << bounds[0] << "," << bounds[1] << "  " << bounds[2]
+  //        << "," << bounds[3] << " " << bounds[4] << "," <<
+  //        bounds[5] << endl;
+  // double* point = data->GetPoint(0);
+  // printMsg("Point: "+std::to_string(point[0])+" "+std::to_string(point[1])+"
+  // "+std::to_string(point[2])); data->SetExtent(wholeExtent); data->Update();
 
-  double *boundingBox = input->GetBounds();
-  initializeNeighbors(boundingBox);
+  Timer t;
 
-  this->initializeMPITypes();
-
-  vtkIdList *pointCell = vtkIdList::New();
-  input->GetCellPoints(0, pointCell);
-  this->setNbPoints(pointCell->GetNumberOfIds());
-  this->setBounds(boundingBox);
-  setDomainDimension(nbPoints_ - 1);
-
-  this->execute();
+  // use a pointer-base copy for the input data -- to adapt if your wrapper does
+  // not produce an output of the type of the input.
+  output->ShallowCopy(input);
 
   // #ifdef TTK_ENABLE_OPENMP
   // #pragma omp parallel for num_threads(threadNumber_)
