@@ -79,12 +79,27 @@ namespace ttk {
     unsigned char *cellGhost_{nullptr};
     std::vector<ttk::SimplexId> *vertexIdentifiers_;
     std::vector<ttk::SimplexId> *cellIdentifiers_;
+    std::vector<std::vector<ttk::SimplexId>> pointsToCells_;
 
     void initializeNeighbors(double *boundingBox) {
       getNeighborsUsingBoundingBox(boundingBox, neighbors_);
       neighborNumber_ = neighbors_.size();
       for(int i = 0; i < neighborNumber_; i++) {
         neighborToId_[neighbors_[i]] = i;
+      }
+    }
+    template <class triangulationType>
+    void initializePointsToCells(triangulationType *triangulation) {
+      pointsToCells_.resize(vertexNumber_);
+      int id{-1};
+      for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
+        int starNumber = triangulation->getVertexStarNumber(i);
+        for(int j = 0; j < starNumber; j++) {
+          triangulation->getVertexStar(i, j, id);
+          if(cellGhost_[id] == 0) {
+            pointsToCells_[i].push_back(id);
+          }
+        }
       }
     }
 
@@ -157,17 +172,9 @@ namespace ttk {
       }
       printMsg("POINTS DONE, START CELLS");
 
-      std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber_);
+      initializePointsToCells<triangulationType>(triangulation);
+
       int id{-1};
-      for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-        int starNumber = triangulation->getVertexStarNumber(i);
-        for(int j = 0; j < starNumber; j++) {
-          triangulation->getVertexStar(i, j, id);
-          if(cellGhost_[id] == 0) {
-            pointsToCells[i].push_back(id);
-          }
-        }
-      }
 
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
@@ -198,78 +205,29 @@ namespace ttk {
       printMsg("Start communication phase");
 
       for(int i = 0; i < neighborNumber_; i++) {
-        std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
-        std::vector<ttk::SimplexId> localPointIds;
-        localPointIds.reserve(nbPoints_);
-        locatedSimplices.clear();
-        this->SendRecvVector<ttk::SimplexId>(cellGhostGlobalVertexIds,
-                                             receivedCells, recvMessageSize,
-                                             mpiIdType_, neighbors_[i]);
-        printMsg("size globalVertexIds: "
-                 + std::to_string(cellGhostGlobalVertexIds.size()));
-        printMsg("size receivedCells: " + std::to_string(receivedCells.size()));
-        for(int n = 0; n < recvMessageSize; n += nbPoints_) {
-          localPointIds.clear();
-          for(int k = 0; k < nbPoints_; k++) {
-            search = vertGtoL_.find(receivedCells[n + k]);
+        if(cellRankArray_ == nullptr) {
+          this->exchangeAndLocateCells<triangulationType>(
+            locatedSimplices, cellGhostGlobalVertexIds, cellGhostLocalIds,
+            receivedCells, receivedResponse, neighbors_[i], recvMessageSize,
+            triangulation);
 
-            if(search != vertGtoL_.end()) {
-              localPointIds.push_back(search->second);
-            } else {
-              break;
-            }
+          for(int n = 0; n < recvMessageSize; n++) {
+            cellIdentifiers_->at(
+              cellGhostLocalIds[receivedResponse[n].id / nbPoints_ - n])
+              = receivedResponse[n].globalId;
+            cellGhostLocalIds.erase(cellGhostLocalIds.begin()
+                                    + receivedResponse[n].id / nbPoints_ - n);
+            cellGhostGlobalVertexIds.erase(
+              cellGhostGlobalVertexIds.begin() + receivedResponse[n].id
+                - n * nbPoints_,
+              cellGhostGlobalVertexIds.begin() + receivedResponse[n].id
+                - n * nbPoints_ + nbPoints_);
           }
-          if(localPointIds.size() != static_cast<size_t>(nbPoints_)) {
-            break;
-          }
-
-          bool foundIt = false;
-          int k = 0;
-          int l;
-          int m = 0;
-          while(!foundIt && m < nbPoints_) {
-            int size = pointsToCells[localPointIds[m]].size();
-            k = 0;
-            while(!foundIt && k < size) {
-              int vertexNumber = triangulation->getCellVertexNumber(
-                pointsToCells[localPointIds[m]][k]);
-              l = 0;
-              while(l < vertexNumber) {
-                triangulation->getCellVertex(
-                  pointsToCells[localPointIds[m]][k], l, id);
-                auto it = find(localPointIds.begin(), localPointIds.end(), id);
-                if(it == localPointIds.end()) {
-                  break;
-                }
-                l++;
-              }
-              if(l == vertexNumber) {
-                printMsg("Found");
-                foundIt = true;
-                locatedSimplices.push_back(Response{
-                  n, cellIdentifiers_->at(pointsToCells[localPointIds[m]][k])});
-              }
-              k++;
-            }
-            m++;
-          }
-        }
-        this->SendRecvVector<Response>(locatedSimplices, receivedResponse,
-                                       recvMessageSize, mpiResponseType_,
-                                       neighbors_[i]);
-        printMsg("size: " + std::to_string(locatedSimplices.size()));
-
-        for(int n = 0; n < recvMessageSize; n++) {
-          cellIdentifiers_->at(
-            cellGhostLocalIds[receivedResponse[n].id / nbPoints_ - n])
-            = receivedResponse[n].globalId;
-          cellGhostLocalIds.erase(cellGhostLocalIds.begin()
-                                  + receivedResponse[n].id / nbPoints_ - n);
-          cellGhostGlobalVertexIds.erase(
-            cellGhostGlobalVertexIds.begin() + receivedResponse[n].id
-              - n * nbPoints_,
-            cellGhostGlobalVertexIds.begin() + receivedResponse[n].id
-              - n * nbPoints_ + nbPoints_);
+        } else {
+          this->exchangeAndLocateCells<triangulationType>(
+            locatedSimplices, cellGhostGlobalVertexIdsPerRank[i],
+            cellGhostLocalIdsPerRank[i], receivedCells, receivedResponse,
+            neighbors_[i], recvMessageSize, triangulation);
         }
       }
       // ---------------------------------------------------------------------
@@ -389,7 +347,7 @@ namespace ttk {
           this->findPoint<triangulationType>(
             id, receivedPoints[n].x, receivedPoints[n].y, receivedPoints[n].z,
             triangulation);
-          if(id >= 0) {
+          if(vertGhost_[id] == 0) {
             globalId = vertexIdentifiers_->at(id);
             if(globalId >= 0) {
               locatedSimplices.push_back(
@@ -406,6 +364,74 @@ namespace ttk {
           = receivedResponse[n].globalId;
         vertGtoL_[receivedResponse[n].globalId] = receivedResponse[n].id;
       }
+    }
+
+    template <typename triangulationType>
+    void inline exchangeAndLocateCells(
+      std::vector<Response> &locatedSimplices,
+      std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
+      std::vector<ttk::SimplexId> &cellGhostLocalIds,
+      std::vector<ttk::SimplexId> &receivedCells,
+      std::vector<Response> &receivedResponse,
+      int neighbor,
+      int &recvMessageSize,
+      triangulationType *triangulation) {
+      int id{-1};
+      std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
+      std::vector<ttk::SimplexId> localPointIds;
+      localPointIds.reserve(nbPoints_);
+      locatedSimplices.clear();
+      this->SendRecvVector<ttk::SimplexId>(cellGhostGlobalVertexIds,
+                                           receivedCells, recvMessageSize,
+                                           mpiIdType_, neighbor);
+      for(int n = 0; n < recvMessageSize; n += nbPoints_) {
+        localPointIds.clear();
+        for(int k = 0; k < nbPoints_; k++) {
+          search = vertGtoL_.find(receivedCells[n + k]);
+          if(search != vertGtoL_.end()) {
+            localPointIds.push_back(search->second);
+          } else {
+            break;
+          }
+        }
+        if(localPointIds.size() != static_cast<size_t>(nbPoints_)) {
+          break;
+        }
+
+        bool foundIt = false;
+        int k = 0;
+        int l;
+        int m = 0;
+        while(!foundIt && m < nbPoints_) {
+          int size = pointsToCells_[localPointIds[m]].size();
+          k = 0;
+          while(!foundIt && k < size) {
+            int vertexNumber = triangulation->getCellVertexNumber(
+              pointsToCells_[localPointIds[m]][k]);
+            l = 0;
+            while(l < vertexNumber) {
+              triangulation->getCellVertex(
+                pointsToCells_[localPointIds[m]][k], l, id);
+              auto it = find(localPointIds.begin(), localPointIds.end(), id);
+              if(it == localPointIds.end()) {
+                break;
+              }
+              l++;
+            }
+            if(l == vertexNumber) {
+              foundIt = true;
+              locatedSimplices.push_back(Response{
+                n, cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
+            }
+            k++;
+          }
+          m++;
+        }
+      }
+      this->SendRecvVector<Response>(locatedSimplices, receivedResponse,
+                                     recvMessageSize, mpiResponseType_,
+                                     neighbor);
+      printMsg("size: " + std::to_string(locatedSimplices.size()));
     }
 
     template <typename dataType>
