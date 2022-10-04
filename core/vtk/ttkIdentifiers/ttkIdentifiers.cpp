@@ -11,7 +11,9 @@
 #include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
+#include <vtkPointSet.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 using namespace ttk;
@@ -53,10 +55,32 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(!triangulation)
-    return 0;
-  this->preconditionTriangulation(triangulation);
+  vtkPointSet *pointSet = vtkPointSet::GetData(inputVector[0]);
+  setPointSet(
+    static_cast<float *>(ttkUtils::GetVoidPointer(pointSet->GetPoints())));
+
+  vtkUnstructuredGrid *grid = vtkUnstructuredGrid::SafeDownCast(input);
+  vtkCellArray *cells = grid->GetCells();
+
+  if(!cells->IsStorage64Bit()) {
+    if(cells->CanConvertTo64BitStorage()) {
+      this->printWrn("Converting the cell array to 64-bit storage");
+      bool success = cells->ConvertTo64BitStorage();
+      if(!success) {
+        this->printErr(
+          "Error converting the provided cell array to 64-bit storage");
+        return {};
+      }
+    } else {
+      this->printErr(
+        "Cannot convert the provided cell array to 64-bit storage");
+      return {};
+    }
+  }
+
+  setConnectivity(static_cast<ttk::LongSimplexId *>(
+    ttkUtils::GetVoidPointer(cells->GetConnectivityArray())));
+
   // vtkImageData* data = vtkImageData::SafeDownCast(input);
   // data->ComputeBounds();
   // double* bounds = data->GetBounds();
@@ -92,18 +116,32 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   this->setCellGhost(ttkUtils::GetPointer<unsigned char>(
     input->GetCellData()->GetArray("vtkGhostType")));
 
+  setVertexNumber(input->GetNumberOfPoints());
+  std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber_);
+  vtkIdList *cellList = vtkIdList::New();
+  for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
+    input->GetPointCells(i, cellList);
+    for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
+      if(cellGhost_[cellList->GetId(j)] == 0) {
+        pointsToCells[i].push_back(cellList->GetId(j));
+      }
+    }
+  }
+
+  this->setPointsToCells(pointsToCells);
+
   double *boundingBox = input->GetBounds();
   initializeNeighbors(boundingBox);
 
   this->initializeMPITypes();
 
-  vtkIdList *points = vtkIdList::New();
-  input->GetCellPoints(0, points);
-  this->setNbPoints(points->GetNumberOfIds());
+  vtkIdList *pointCell = vtkIdList::New();
+  input->GetCellPoints(0, pointCell);
+  this->setNbPoints(pointCell->GetNumberOfIds());
   this->setBounds(boundingBox);
+  setDomainDimension(nbPoints_ - 1);
 
-  ttkTemplateMacro(triangulation->getType(),
-                   this->execute((TTK_TT *)triangulation->getData()));
+  this->execute();
 
   // #ifdef TTK_ENABLE_OPENMP
   // #pragma omp parallel for num_threads(threadNumber_)

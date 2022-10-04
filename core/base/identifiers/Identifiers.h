@@ -60,6 +60,11 @@ namespace ttk {
       dimension_ = dimension;
     }
 
+    inline void setPointsToCells(
+      const std::vector<std::vector<ttk::SimplexId>> pointsToCells) {
+      pointsToCells_ = pointsToCells;
+    }
+
   protected:
     int nbPoints_{0};
     std::map<ttk::SimplexId, ttk::SimplexId> vertGtoL_;
@@ -80,6 +85,8 @@ namespace ttk {
     std::vector<ttk::SimplexId> *vertexIdentifiers_;
     std::vector<ttk::SimplexId> *cellIdentifiers_;
     std::vector<std::vector<ttk::SimplexId>> pointsToCells_;
+    float *pointSet_;
+    ttk::LongSimplexId *connectivity_;
 
     void initializeNeighbors(double *boundingBox) {
       getNeighborsUsingBoundingBox(boundingBox, neighbors_);
@@ -88,36 +95,8 @@ namespace ttk {
         neighborToId_[neighbors_[i]] = i;
       }
     }
-    template <class triangulationType>
-    void initializePointsToCells(triangulationType *triangulation) {
-      pointsToCells_.resize(vertexNumber_);
-      int id{-1};
-      for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-        int starNumber = triangulation->getVertexStarNumber(i);
-        for(int j = 0; j < starNumber; j++) {
-          triangulation->getVertexStar(i, j, id);
-          if(cellGhost_[id] == 0) {
-            pointsToCells_[i].push_back(id);
-          }
-        }
-      }
-    }
 
   public:
-    /**
-     * TODO 2: This method preconditions the triangulation for all operations
-     *         the algorithm of this module requires. For instance,
-     *         preconditionVertexNeighbors, preconditionBoundaryEdges, ...
-     *
-     *         Note: If the algorithm does not require a triangulation then
-     *               this method can be deleted.
-     */
-    int preconditionTriangulation(ttk::AbstractTriangulation *triangulation) {
-      setDomainDimension(triangulation->getDimensionality());
-      setVertexNumber(triangulation->getNumberOfVertices());
-      return triangulation->preconditionVertexStars();
-      ;
-    }
 
     /**
      * TODO 3: Implmentation of the algorithm.
@@ -126,8 +105,7 @@ namespace ttk {
      *               method must be called after the triangulation has been
      *               preconditioned for the upcoming operations.
      */
-    template <class triangulationType = ttk::AbstractTriangulation>
-    int execute(triangulationType *triangulation) {
+    int execute() {
       // start global timer
       ttk::Timer globalTimer;
 
@@ -149,8 +127,8 @@ namespace ttk {
         cellGhostLocalIdsPerRank.resize(neighborNumber_);
       }
 
-      this->generateGlobalIds<triangulationType>(
-        triangulation, vertGhostCoordinatesPerRank, vertGhostCoordinates);
+      this->generateGlobalIds(
+        vertGhostCoordinatesPerRank, vertGhostCoordinates);
 
       ttk::SimplexId recvMessageSize{0};
       std::vector<Point> receivedPoints;
@@ -160,9 +138,9 @@ namespace ttk {
 
       for(int i = 0; i < neighborNumber_; i++) {
         if(vertRankArray_ == nullptr) {
-          this->exchangeAndLocatePoints<triangulationType>(
-            locatedSimplices, vertGhostCoordinates, receivedPoints,
-            receivedResponse, neighbors_[i], recvMessageSize, triangulation);
+          this->exchangeAndLocatePoints(locatedSimplices, vertGhostCoordinates,
+                                        receivedPoints, receivedResponse,
+                                        neighbors_[i], recvMessageSize);
           int count = 0;
           for(int n = 0; n < vertGhostCoordinates.size(); n++) {
             if(vertGhostCoordinates[n - count].localId
@@ -173,25 +151,22 @@ namespace ttk {
             }
           }
         } else {
-          this->exchangeAndLocatePoints<triangulationType>(
+          this->exchangeAndLocatePoints(
             locatedSimplices, vertGhostCoordinatesPerRank[i], receivedPoints,
-            receivedResponse, neighbors_[i], recvMessageSize, triangulation);
+            receivedResponse, neighbors_[i], recvMessageSize);
         }
       }
       printMsg("POINTS DONE, START CELLS");
-
-      initializePointsToCells<triangulationType>(triangulation);
 
       int id{-1};
 
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellRankArray_[i] != ttk::MPIrank_) {
-            int vertexNumber = triangulation->getCellVertexNumber(i);
             cellGhostLocalIdsPerRank[neighborToId_[cellRankArray_[i]]]
               .push_back(i);
-            for(int k = 0; k < vertexNumber; k++) {
-              triangulation->getCellVertex(i, k, id);
+            for(int k = 0; k < nbPoints_; k++) {
+              connectivity_[i * nbPoints_ + k];
               cellGhostGlobalVertexIdsPerRank[neighborToId_[cellRankArray_[i]]]
                 .push_back(vertexIdentifiers_->at(id));
             }
@@ -200,10 +175,9 @@ namespace ttk {
       } else {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellGhost_[i] != 0) {
-            int vertexNumber = triangulation->getCellVertexNumber(i);
             cellGhostLocalIds.push_back(i);
-            for(int k = 0; k < vertexNumber; k++) {
-              triangulation->getCellVertex(i, k, id);
+            for(int k = 0; k < nbPoints_; k++) {
+              id = connectivity_[i * nbPoints_ + k];
               cellGhostGlobalVertexIds.push_back(vertexIdentifiers_->at(id));
             }
           }
@@ -214,10 +188,9 @@ namespace ttk {
 
       for(int i = 0; i < neighborNumber_; i++) {
         if(cellRankArray_ == nullptr) {
-          this->exchangeAndLocateCells<triangulationType>(
+          this->exchangeAndLocateCells(
             locatedSimplices, cellGhostGlobalVertexIds, cellGhostLocalIds,
-            receivedCells, receivedResponse, neighbors_[i], recvMessageSize,
-            triangulation);
+            receivedCells, receivedResponse, neighbors_[i], recvMessageSize);
 
           for(int n = 0; n < recvMessageSize; n++) {
             cellIdentifiers_->at(
@@ -232,10 +205,10 @@ namespace ttk {
                 - n * nbPoints_ + nbPoints_);
           }
         } else {
-          this->exchangeAndLocateCells<triangulationType>(
+          this->exchangeAndLocateCells(
             locatedSimplices, cellGhostGlobalVertexIdsPerRank[i],
             cellGhostLocalIdsPerRank[i], receivedCells, receivedResponse,
-            neighbors_[i], recvMessageSize, triangulation);
+            neighbors_[i], recvMessageSize);
           for(int n = 0; n < recvMessageSize; n++) {
             cellIdentifiers_->at(
               cellGhostLocalIdsPerRank[i][receivedResponse[n].id / nbPoints_])
@@ -281,6 +254,14 @@ namespace ttk {
       this->bounds_ = bounds;
     }
 
+    void setPointSet(float *pointSet) {
+      pointSet_ = pointSet;
+    }
+
+    void setConnectivity(ttk::LongSimplexId *connectivity) {
+      connectivity_ = connectivity;
+    }
+
     void setVertexIdentifiers(std::vector<ttk::SimplexId> *vertexIdentifiers) {
       this->vertexIdentifiers_ = vertexIdentifiers;
     }
@@ -313,20 +294,19 @@ namespace ttk {
       MPI_Type_commit(&mpiResponseType_);
     }
 
-    template <class triangulationType>
-    void inline findPoint(ttk::SimplexId &id,
-                          float x,
-                          float y,
-                          float z,
-                          triangulationType *triangulation) {
+    void inline findPoint(ttk::SimplexId &id, float x, float y, float z) {
       float pointToFind[3] = {x, y, z};
       float dist{0};
       float p[3];
-      triangulation->getVertexPoint(0, p[0], p[1], p[2]);
+      p[0] = pointSet_[0];
+      p[1] = pointSet_[1];
+      p[2] = pointSet_[2];
       float minDist = Geometry::distance(pointToFind, p);
       ttk::SimplexId indexMin = 0;
       for(int i = 1; i < vertexNumber_; i++) {
-        triangulation->getVertexPoint(i, p[0], p[1], p[2]);
+        p[0] = pointSet_[i * 3];
+        p[1] = pointSet_[i * 3 + 1];
+        p[2] = pointSet_[i * 3 + 2];
         dist = Geometry::distance(pointToFind, p, dimension_);
         if(dist < minDist) {
           minDist = dist;
@@ -336,15 +316,13 @@ namespace ttk {
       id = indexMin;
     }
 
-    template <typename triangulationType>
     void inline exchangeAndLocatePoints(
       std::vector<Response> &locatedSimplices,
       std::vector<Point> &simplicesCoordinates,
       std::vector<Point> &receivedPoints,
       std::vector<Response> &receivedResponse,
       int neighbor,
-      int &recvMessageSize,
-      triangulationType *triangulation) {
+      int &recvMessageSize) {
       locatedSimplices.clear();
       this->SendRecvVector<Point>(simplicesCoordinates, receivedPoints,
                                   recvMessageSize, mpiPointType_, neighbor);
@@ -357,9 +335,8 @@ namespace ttk {
            && bounds_[3] >= receivedPoints[n].y
            && bounds_[4] <= receivedPoints[n].z
            && bounds_[5] >= receivedPoints[n].z) {
-          this->findPoint<triangulationType>(
-            id, receivedPoints[n].x, receivedPoints[n].y, receivedPoints[n].z,
-            triangulation);
+          this->findPoint(
+            id, receivedPoints[n].x, receivedPoints[n].y, receivedPoints[n].z);
           if(vertGhost_[id] == 0) {
             globalId = vertexIdentifiers_->at(id);
             if(globalId >= 0) {
@@ -379,7 +356,6 @@ namespace ttk {
       }
     }
 
-    template <typename triangulationType>
     void inline exchangeAndLocateCells(
       std::vector<Response> &locatedSimplices,
       std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
@@ -387,8 +363,7 @@ namespace ttk {
       std::vector<ttk::SimplexId> &receivedCells,
       std::vector<Response> &receivedResponse,
       int neighbor,
-      int &recvMessageSize,
-      triangulationType *triangulation) {
+      int &recvMessageSize) {
       int id{-1};
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
@@ -419,19 +394,17 @@ namespace ttk {
           int size = pointsToCells_[localPointIds[m]].size();
           k = 0;
           while(!foundIt && k < size) {
-            int vertexNumber = triangulation->getCellVertexNumber(
-              pointsToCells_[localPointIds[m]][k]);
             l = 0;
-            while(l < vertexNumber) {
-              triangulation->getCellVertex(
-                pointsToCells_[localPointIds[m]][k], l, id);
+            while(l < nbPoints_) {
+              id = connectivity_[pointsToCells_[localPointIds[m]][k] * nbPoints_
+                                 + l];
               auto it = find(localPointIds.begin(), localPointIds.end(), id);
               if(it == localPointIds.end()) {
                 break;
               }
               l++;
             }
-            if(l == vertexNumber) {
+            if(l == nbPoints_) {
               foundIt = true;
               locatedSimplices.push_back(Response{
                 n, cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
@@ -465,9 +438,7 @@ namespace ttk {
                    MPI_STATUS_IGNORE);
     }
 
-    template <typename triangulationType>
     void generateGlobalIds(
-      triangulationType *triangulation,
       std::vector<std::vector<Point>> &vertGhostCoordinatesPerRank,
       std::vector<Point> &vertGhostCoordinates) {
       ttk::SimplexId realVertexNumber = vertexNumber_;
@@ -477,7 +448,9 @@ namespace ttk {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertRankArray_[i] != ttk::MPIrank_) {
             realVertexNumber--;
-            triangulation->getVertexPoint(i, p[0], p[1], p[2]);
+            p[0] = pointSet_[i * 3];
+            p[1] = pointSet_[i * 3 + 1];
+            p[2] = pointSet_[i * 3 + 2];
             vertGhostCoordinatesPerRank[neighborToId_[vertRankArray_[i]]]
               .push_back(Point{p[0], p[1], p[2], i});
           }
@@ -486,7 +459,9 @@ namespace ttk {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertGhost_[i] != 0) {
             realVertexNumber--;
-            triangulation->getVertexPoint(i, p[0], p[1], p[2]);
+            p[0] = pointSet_[i * 3];
+            p[1] = pointSet_[i * 3 + 1];
+            p[2] = pointSet_[i * 3 + 2];
             vertGhostCoordinates.push_back(Point{p[0], p[1], p[2], i});
           }
         }
