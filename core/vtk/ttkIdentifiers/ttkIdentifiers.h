@@ -36,7 +36,6 @@
 
 // ttk code includes
 #include <Identifiers.h>
-#include <map>
 #include <ttkAlgorithm.h>
 #include <vtkIntArray.h>
 // in this example, this wrapper takes a data-set on the input and produces a
@@ -57,23 +56,6 @@ public:
 
   vtkSetMacro(VertexFieldName, const std::string &);
   vtkGetMacro(VertexFieldName, std::string);
-  void createMPIPointType(MPI_Datatype *mpiPointType);
-  void createMPIResponseType(MPI_Datatype *mpiResponseType);
-
-  // void exchangeAndLocateCells(
-  //   std::vector<Response> &locatedSimplices,
-  //   std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
-  //   std::vector<ttk::SimplexId> &receivedCells,
-  //   std::vector<Response> &receivedResponse,
-  //   int neighbor,
-  //   MPI_Datatype mpiIdType,
-  //   MPI_Datatype mpiResponseType,
-  //   int recvMessageSize,
-  //   vtkDataSet *input,
-  //   vtkIntArray *cellIdentifiers,
-  //   std::map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
-  //   int nbPoints,
-  //   std::vector<std::vector<ttk::SimplexId>> pointsToCells);
 
 protected:
   ttkIdentifiers();

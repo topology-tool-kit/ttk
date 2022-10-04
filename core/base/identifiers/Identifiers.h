@@ -125,7 +125,7 @@ namespace ttk {
       std::vector<ttk::SimplexId> cellGhostLocalIds;
       std::vector<std::vector<ttk::SimplexId>> cellGhostLocalIdsPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostGlobalVertexIdsPerRank;
-      printMsg("Before generateGlobalIds");
+
       this->generateGlobalIds<triangulationType>(
         triangulation, vertGhostCoordinatesPerRank, vertGhostCoordinates);
 
@@ -173,11 +173,12 @@ namespace ttk {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellRankArray_[i] != ttk::MPIrank_) {
             int vertexNumber = triangulation->getCellVertexNumber(i);
-            // cellGhostLocalIdsPerRank[neighborToId_[cellRankArray_[i]]].push_back(i);
+            cellGhostLocalIdsPerRank[neighborToId_[cellRankArray_[i]]]
+              .push_back(i);
             for(int k = 0; k < vertexNumber; k++) {
               triangulation->getCellVertex(i, k, id);
-              // cellGhostGlobalVertexIdsPerRank[neighborToId_[cellRankArray_[i]]]
-              //  .push_back(vertexIdentifiers_->at(id));
+              cellGhostGlobalVertexIdsPerRank[neighborToId_[cellRankArray_[i]]]
+                .push_back(vertexIdentifiers_->at(id));
             }
           }
         }
@@ -243,6 +244,7 @@ namespace ttk {
                 l++;
               }
               if(l == vertexNumber) {
+                printMsg("Found");
                 foundIt = true;
                 locatedSimplices.push_back(Response{
                   n, cellIdentifiers_->at(pointsToCells[localPointIds[m]][k])});
@@ -258,9 +260,9 @@ namespace ttk {
         printMsg("size: " + std::to_string(locatedSimplices.size()));
 
         for(int n = 0; n < recvMessageSize; n++) {
-          cellIdentifiers_[cellGhostLocalIds[receivedResponse[n].id / nbPoints_
-                                             - n],
-                           receivedResponse[n].globalId];
+          cellIdentifiers_->at(
+            cellGhostLocalIds[receivedResponse[n].id / nbPoints_ - n])
+            = receivedResponse[n].globalId;
           cellGhostLocalIds.erase(cellGhostLocalIds.begin()
                                   + receivedResponse[n].id / nbPoints_ - n);
           cellGhostGlobalVertexIds.erase(
@@ -437,8 +439,8 @@ namespace ttk {
           if(vertRankArray_[i] != ttk::MPIrank_) {
             realVertexNumber--;
             triangulation->getVertexPoint(i, p[0], p[1], p[2]);
-            // vertGhostCoordinatesPerRank[neighborToId_[vertRankArray_[i]]]
-            // .push_back(Point{p[0], p[1], p[2], i});
+            vertGhostCoordinatesPerRank[neighborToId_[vertRankArray_[i]]]
+              .push_back(Point{p[0], p[1], p[2], i});
           }
         }
       } else {
@@ -466,13 +468,12 @@ namespace ttk {
 
       ttk::SimplexId vertIndex;
       ttk::SimplexId cellIndex;
-      printMsg("About to perform prefix sum");
+
       // Perform exclusive prefix sum
       MPI_Exscan(
         &realVertexNumber, &vertIndex, 1, mpiIdType_, MPI_SUM, ttk::MPIcomm_);
       MPI_Exscan(
         &realCellNumber, &cellIndex, 1, mpiIdType_, MPI_SUM, ttk::MPIcomm_);
-      printMsg("Prefix sum done");
 
       if(ttk::MPIrank_ == 0) {
         vertIndex = 0;
@@ -511,7 +512,6 @@ namespace ttk {
           }
         }
       }
-      printMsg("GenerateGlobalIds done");
     }
 
   }; // Identifiers class
