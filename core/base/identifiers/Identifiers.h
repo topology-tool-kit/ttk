@@ -135,11 +135,19 @@ namespace ttk {
       this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
       std::vector<Point> vertGhostCoordinates;
-      std::vector<std::vector<Point>> vertGhostCoordinatesPerRank;
       std::vector<ttk::SimplexId> cellGhostGlobalVertexIds;
       std::vector<ttk::SimplexId> cellGhostLocalIds;
+      std::vector<std::vector<Point>> vertGhostCoordinatesPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostLocalIdsPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostGlobalVertexIdsPerRank;
+
+      if(vertRankArray_ != nullptr) {
+        vertGhostCoordinatesPerRank.resize(neighborNumber_);
+      }
+      if(cellRankArray_ != nullptr) {
+        cellGhostGlobalVertexIdsPerRank.resize(neighborNumber_);
+        cellGhostLocalIdsPerRank.resize(neighborNumber_);
+      }
 
       this->generateGlobalIds<triangulationType>(
         triangulation, vertGhostCoordinatesPerRank, vertGhostCoordinates);
@@ -228,6 +236,11 @@ namespace ttk {
             locatedSimplices, cellGhostGlobalVertexIdsPerRank[i],
             cellGhostLocalIdsPerRank[i], receivedCells, receivedResponse,
             neighbors_[i], recvMessageSize, triangulation);
+          for(int n = 0; n < recvMessageSize; n++) {
+            cellIdentifiers_->at(
+              cellGhostLocalIdsPerRank[i][receivedResponse[n].id / nbPoints_])
+              = receivedResponse[n].globalId;
+          }
         }
       }
       // ---------------------------------------------------------------------
@@ -428,10 +441,10 @@ namespace ttk {
           m++;
         }
       }
-      this->SendRecvVector<Response>(locatedSimplices, receivedResponse,
-                                     recvMessageSize, mpiResponseType_,
-                                     neighbor);
-      printMsg("size: " + std::to_string(locatedSimplices.size()));
+      if(recvMessageSize > 0 && cellGhostGlobalVertexIds.size() > 0)
+        this->SendRecvVector<Response>(locatedSimplices, receivedResponse,
+                                       recvMessageSize, mpiResponseType_,
+                                       neighbor);
     }
 
     template <typename dataType>
