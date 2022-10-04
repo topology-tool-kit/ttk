@@ -275,6 +275,19 @@ jobs:
     needs: [ccache-ubuntu, ccache-macos, ccache-windows]
     steps:
 
+    - name: Delete previous release
+      uses: actions/github-script@v6
+      continue-on-error: true
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          const { data: { id } } = await github.rest.repos.getReleaseByTag({
+            owner,
+            repo,
+            tag: "ccache"
+          })
+          await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
