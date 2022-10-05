@@ -93,6 +93,9 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
   setVertexNumber(input->GetNumberOfPoints());
 
+  double *boundingBox = input->GetBounds();
+  this->setBounds(boundingBox);
+
   switch(input->GetDataObjectType()) {
     case VTK_UNSTRUCTURED_GRID:
     case VTK_POLY_DATA: {
@@ -133,7 +136,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
       this->setPointsToCells(pointsToCells);
 
-      double *boundingBox = input->GetBounds();
       initializeNeighbors(boundingBox);
 
       this->initializeMPITypes();
@@ -141,12 +143,20 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       vtkIdList *pointCell = vtkIdList::New();
       input->GetCellPoints(0, pointCell);
       this->setNbPoints(pointCell->GetNumberOfIds());
-      this->setBounds(boundingBox);
       setDomainDimension(nbPoints_ - 1);
 
       this->executePolyData();
+      break;
     }
     case VTK_IMAGE_DATA: {
+      vtkImageData *data = vtkImageData::SafeDownCast(input);
+      double globalBounds[6];
+      setGlobalBounds(globalBounds);
+      setDims(data->GetDimensions());
+      setSpacing(data->GetSpacing());
+
+      this->executeImageData();
+
       break;
     }
     default: {
@@ -154,7 +164,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
                      + std::string(input->GetClassName()) + "`");
     }
   }
-
   // vtkImageData* data = vtkImageData::SafeDownCast(input);
   // data->ComputeBounds();
   // double* bounds = data->GetBounds();

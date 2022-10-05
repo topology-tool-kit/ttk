@@ -72,6 +72,9 @@ namespace ttk {
     std::map<int, int> neighborToId_;
     int neighborNumber_;
     double *bounds_;
+    int *dims_;
+    double *globalBounds_;
+    double *spacing_;
     ttk::SimplexId vertexNumber_{};
     ttk::SimplexId cellNumber_{};
     MPI_Datatype mpiIdType_;
@@ -105,6 +108,7 @@ namespace ttk {
      *               method must be called after the triangulation has been
      *               preconditioned for the upcoming operations.
      */
+
     int executePolyData() {
       // start global timer
       ttk::Timer globalTimer;
@@ -230,6 +234,59 @@ namespace ttk {
       return 1; // return success
     }
 
+    int executeImageData() {
+      // start global timer
+      ttk::Timer globalTimer;
+
+      // print horizontal separator
+      this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
+
+      for(int i = 0; i < 3; i++) {
+        MPI_Allreduce(bounds_ + 2 * i, globalBounds_ + 2 * i, 1, MPI_DOUBLE,
+                      MPI_MIN, ttk::MPIcomm_);
+        MPI_Allreduce(bounds_ + 2 * i + 1, globalBounds_ + 2 * i + 1, 1,
+                      MPI_DOUBLE, MPI_MAX, ttk::MPIcomm_);
+      }
+      int width
+        = static_cast<int>((globalBounds_[1] - globalBounds_[0]) / spacing_[0])
+          + 1;
+      int height
+        = static_cast<int>((globalBounds_[3] - globalBounds_[2]) / spacing_[1])
+          + 1;
+      int length
+        = static_cast<int>((globalBounds_[5] - globalBounds_[4]) / spacing_[2])
+          + 1;
+
+      int offsetWidth
+        = static_cast<int>((bounds_[0] - globalBounds_[0]) / spacing_[0]);
+      int offsetHeight
+        = static_cast<int>((bounds_[2] - globalBounds_[2]) / spacing_[1]);
+      int offsetLength
+        = static_cast<int>((bounds_[4] - globalBounds_[4]) / spacing_[2]);
+
+      for(int k = 0; k < dims_[2]; k++) {
+        for(int j = 0; j < dims_[1]; j++) {
+          for(int i = 0; i < dims_[0]; i++) {
+            vertexIdentifiers_->at(k * dims_[0] * dims_[1] + j * dims_[0] + i)
+              = i + offsetWidth + (j + offsetHeight) * width
+                + (k + offsetLength) * width * height;
+          }
+        }
+      }
+      // ---------------------------------------------------------------------
+      // print global performance
+      // ---------------------------------------------------------------------
+      {
+        this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+        this->printMsg(
+          "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+        );
+        this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+      }
+
+      return 1; // return success
+    }
+
     void setVertRankArray(ttk::SimplexId *vertRankArray) {
       this->vertRankArray_ = vertRankArray;
     }
@@ -252,6 +309,18 @@ namespace ttk {
 
     void setBounds(double *bounds) {
       this->bounds_ = bounds;
+    }
+
+    void setGlobalBounds(double *bounds) {
+      this->globalBounds_ = bounds;
+    }
+
+    void setSpacing(double *spacing) {
+      this->spacing_ = spacing;
+    }
+
+    void setDims(int *dims) {
+      this->dims_ = dims;
     }
 
     void setPointSet(float *pointSet) {
