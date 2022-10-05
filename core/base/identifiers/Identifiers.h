@@ -186,8 +186,8 @@ namespace ttk {
           }
         }
       }
-      MPI_Barrier(ttk::MPIcomm_);
       printMsg("Start communication phase");
+      MPI_Barrier(ttk::MPIcomm_);
 
       for(int i = 0; i < neighborNumber_; i++) {
         if(cellRankArray_ == nullptr) {
@@ -219,6 +219,8 @@ namespace ttk {
           }
         }
       }
+
+      MPI_Barrier(ttk::MPIcomm_);
       // ---------------------------------------------------------------------
       // print global performance
       // ---------------------------------------------------------------------
@@ -234,8 +236,6 @@ namespace ttk {
     }
 
     int executeImageData() {
-      // start global timer
-      ttk::Timer globalTimer;
 
       // print horizontal separator
       this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
@@ -290,16 +290,6 @@ namespace ttk {
                 + (k + offsetLength) * (width - 1) * (height - 1);
           }
         }
-      }
-      // ---------------------------------------------------------------------
-      // print global performance
-      // ---------------------------------------------------------------------
-      {
-        this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-        this->printMsg(
-          "Complete", 1, globalTimer.getElapsedTime() // global progress, time
-        );
-        this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
       }
 
       return 1; // return success
@@ -465,36 +455,36 @@ namespace ttk {
             break;
           }
         }
-        if(localPointIds.size() != static_cast<size_t>(nbPoints_)) {
-          break;
-        }
-
-        bool foundIt = false;
-        int k = 0;
-        int l;
-        int m = 0;
-        while(!foundIt && m < nbPoints_) {
-          int size = pointsToCells_[localPointIds[m]].size();
-          k = 0;
-          while(!foundIt && k < size) {
-            l = 0;
-            while(l < nbPoints_) {
-              id = connectivity_[pointsToCells_[localPointIds[m]][k] * nbPoints_
-                                 + l];
-              auto it = find(localPointIds.begin(), localPointIds.end(), id);
-              if(it == localPointIds.end()) {
-                break;
+        if(localPointIds.size() == static_cast<size_t>(nbPoints_)) {
+          bool foundIt = false;
+          int k = 0;
+          int l;
+          int m = 0;
+          while(!foundIt && m < nbPoints_) {
+            int size = pointsToCells_[localPointIds[m]].size();
+            k = 0;
+            while(!foundIt && k < size) {
+              l = 0;
+              while(l < nbPoints_) {
+                id = connectivity_[pointsToCells_[localPointIds[m]][k]
+                                     * nbPoints_
+                                   + l];
+                auto it = find(localPointIds.begin(), localPointIds.end(), id);
+                if(it == localPointIds.end()) {
+                  break;
+                }
+                l++;
               }
-              l++;
+              if(l == nbPoints_) {
+                foundIt = true;
+                locatedSimplices.push_back(Response{
+                  n,
+                  cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
+              }
+              k++;
             }
-            if(l == nbPoints_) {
-              foundIt = true;
-              locatedSimplices.push_back(Response{
-                n, cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
-            }
-            k++;
+            m++;
           }
-          m++;
         }
       }
       if(recvMessageSize > 0 && cellGhostGlobalVertexIds.size() > 0)
