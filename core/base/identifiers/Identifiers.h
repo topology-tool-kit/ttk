@@ -73,7 +73,6 @@ namespace ttk {
     int neighborNumber_;
     double *bounds_;
     int *dims_;
-    double *globalBounds_;
     double *spacing_;
     ttk::SimplexId vertexNumber_{};
     ttk::SimplexId cellNumber_{};
@@ -241,35 +240,54 @@ namespace ttk {
       // print horizontal separator
       this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
-      for(int i = 0; i < 3; i++) {
-        MPI_Allreduce(bounds_ + 2 * i, globalBounds_ + 2 * i, 1, MPI_DOUBLE,
-                      MPI_MIN, ttk::MPIcomm_);
-        MPI_Allreduce(bounds_ + 2 * i + 1, globalBounds_ + 2 * i + 1, 1,
-                      MPI_DOUBLE, MPI_MAX, ttk::MPIcomm_);
-      }
+      double tempBounds[6] = {
+        bounds_[0], bounds_[2], bounds_[4], bounds_[1], bounds_[3], bounds_[5]};
+      double tempGlobalBounds[6];
+      MPI_Allreduce(
+        tempBounds, tempGlobalBounds, 3, MPI_DOUBLE, MPI_MIN, ttk::MPIcomm_);
+      MPI_Allreduce(bounds_ + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE, MPI_MAX,
+                    ttk::MPIcomm_);
+      double globalBounds[6]
+        = {tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
+           tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5]};
+
       int width
-        = static_cast<int>((globalBounds_[1] - globalBounds_[0]) / spacing_[0])
+        = static_cast<int>((globalBounds[1] - globalBounds[0]) / spacing_[0])
           + 1;
       int height
-        = static_cast<int>((globalBounds_[3] - globalBounds_[2]) / spacing_[1])
-          + 1;
-      int length
-        = static_cast<int>((globalBounds_[5] - globalBounds_[4]) / spacing_[2])
+        = static_cast<int>((globalBounds[3] - globalBounds[2]) / spacing_[1])
           + 1;
 
       int offsetWidth
-        = static_cast<int>((bounds_[0] - globalBounds_[0]) / spacing_[0]);
+        = static_cast<int>((bounds_[0] - globalBounds[0]) / spacing_[0]);
       int offsetHeight
-        = static_cast<int>((bounds_[2] - globalBounds_[2]) / spacing_[1]);
+        = static_cast<int>((bounds_[2] - globalBounds[2]) / spacing_[1]);
       int offsetLength
-        = static_cast<int>((bounds_[4] - globalBounds_[4]) / spacing_[2]);
+        = static_cast<int>((bounds_[4] - globalBounds[4]) / spacing_[2]);
 
+      // Generate global ids for vertices
       for(int k = 0; k < dims_[2]; k++) {
         for(int j = 0; j < dims_[1]; j++) {
           for(int i = 0; i < dims_[0]; i++) {
             vertexIdentifiers_->at(k * dims_[0] * dims_[1] + j * dims_[0] + i)
               = i + offsetWidth + (j + offsetHeight) * width
                 + (k + offsetLength) * width * height;
+          }
+        }
+      }
+
+      // Generate global ids for cells
+      dims_[0] -= 1;
+      dims_[1] -= 1;
+      dims_[2] -= 1;
+      width -= 1;
+      height -= 1;
+      for(int k = 0; k < dims_[2]; k++) {
+        for(int j = 0; j < dims_[1]; j++) {
+          for(int i = 0; i < dims_[0]; i++) {
+            cellIdentifiers_->at(k * dims_[0] * dims_[1] + j * dims_[0] + i)
+              = i + offsetWidth + (j + offsetHeight) * (width - 1)
+                + (k + offsetLength) * (width - 1) * (height - 1);
           }
         }
       }
@@ -309,10 +327,6 @@ namespace ttk {
 
     void setBounds(double *bounds) {
       this->bounds_ = bounds;
-    }
-
-    void setGlobalBounds(double *bounds) {
-      this->globalBounds_ = bounds;
     }
 
     void setSpacing(double *spacing) {

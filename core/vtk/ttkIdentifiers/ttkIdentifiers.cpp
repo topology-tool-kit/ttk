@@ -150,8 +150,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     }
     case VTK_IMAGE_DATA: {
       vtkImageData *data = vtkImageData::SafeDownCast(input);
-      double globalBounds[6];
-      setGlobalBounds(globalBounds);
       setDims(data->GetDimensions());
       setSpacing(data->GetSpacing());
 
