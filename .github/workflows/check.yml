@@ -30,19 +30,17 @@ jobs:
   # ----------------------- #
   check-formatting:
     runs-on: ubuntu-22.04
-    env:
-      CLANG_FORMAT: clang-format-11
     steps:
     - uses: actions/checkout@v2
 
     - name: Install latest clang-format
       run: |
         sudo apt update
-        sudo apt install -y $CLANG_FORMAT
+        sudo apt install -y clang-format
 
     - name: Use clang-format to detect formatting issues
       run: |
-        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs $CLANG_FORMAT -n -Werror
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n -Werror
 
     - name: Check line endings (Unix rather than DOS)
       run: |
@@ -85,8 +83,6 @@ jobs:
   # ------------- #
   lint-code:
     runs-on: ubuntu-22.04
-    env:
-      CLANG_TIDY: clang-tidy-12
     strategy:
       matrix:
         config:
@@ -111,7 +107,7 @@ jobs:
           python3-sklearn \
           zlib1g-dev \
           doxygen \
-          $CLANG_TIDY
+          clang-tidy
 
     - uses: dsaltares/fetch-gh-release-asset@master
       with:
@@ -145,7 +141,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) clang-tidy -p build --warnings-as-errors="*" 2> /dev/null
 
     - name: Use Clang static analyzer
       if: matrix.config.sa
@@ -153,7 +149,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) clang-tidy -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
       if: matrix.config.dox
@@ -190,7 +186,8 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          clang-tools-11
+          clang-tools \
+          libomp-dev
 
     - uses: dsaltares/fetch-gh-release-asset@master
       with:
@@ -225,4 +222,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P$(nproc) clang-check-11 -p build --extra-arg=-Werror
+        | xargs -n1 -P$(nproc) clang-check -p build --extra-arg=-Werror
