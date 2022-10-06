@@ -81,24 +81,25 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   this->setVertexNumber(input->GetNumberOfPoints());
   this->setCellNumber(input->GetNumberOfCells());
 
-  this->setVertRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
-    input->GetPointData()->GetArray("RankArray")));
-  this->setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
-    input->GetCellData()->GetArray("RankArray")));
+  Timer t;
 
-  this->setVertGhost(ttkUtils::GetPointer<unsigned char>(
-    input->GetPointData()->GetArray("vtkGhostType")));
-  this->setCellGhost(ttkUtils::GetPointer<unsigned char>(
-    input->GetCellData()->GetArray("vtkGhostType")));
-
-  setVertexNumber(input->GetNumberOfPoints());
-
+#ifdef TTK_ENABLE_MPI
   double *boundingBox = input->GetBounds();
   this->setBounds(boundingBox);
 
   switch(input->GetDataObjectType()) {
     case VTK_UNSTRUCTURED_GRID:
     case VTK_POLY_DATA: {
+
+      this->setVertRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+        input->GetPointData()->GetArray("RankArray")));
+      this->setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+        input->GetCellData()->GetArray("RankArray")));
+
+      this->setVertGhost(ttkUtils::GetPointer<unsigned char>(
+        input->GetPointData()->GetArray("vtkGhostType")));
+      this->setCellGhost(ttkUtils::GetPointer<unsigned char>(
+        input->GetCellData()->GetArray("vtkGhostType")));
       vtkPointSet *pointSet = vtkPointSet::GetData(inputVector[0]);
       setPointSet(
         static_cast<float *>(ttkUtils::GetVoidPointer(pointSet->GetPoints())));
@@ -144,7 +145,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       input->GetCellPoints(0, pointCell);
       this->setNbPoints(pointCell->GetNumberOfIds());
       setDomainDimension(nbPoints_ - 1);
-
       this->executePolyData();
       break;
     }
@@ -162,37 +162,14 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
                      + std::string(input->GetClassName()) + "`");
     }
   }
-  // vtkImageData* data = vtkImageData::SafeDownCast(input);
-  // data->ComputeBounds();
-  // double* bounds = data->GetBounds();
-  //   cout << "bounds: " << bounds[0] << "," << bounds[1] << "  " << bounds[2]
-  //        << "," << bounds[3] << " " << bounds[4] << "," <<
-  //        bounds[5] << endl;
-  // double* point = data->GetPoint(0);
-  // printMsg("Point: "+std::to_string(point[0])+" "+std::to_string(point[1])+"
-  // "+std::to_string(point[2])); data->SetExtent(wholeExtent); data->Update();
 
-  Timer t;
-
+#else
+  this->execute();
+#endif
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
 
-  // #ifdef TTK_ENABLE_OPENMP
-  // #pragma omp parallel for num_threads(threadNumber_)
-  // #endif
-  //   for(SimplexId i = 0; i < vertexNumber; i++) {
-  //     // avoid any processing if the abort signal is sent
-  //     vertexIdentifiers->SetTuple1(i, i);
-  //   }
-
-  // #ifdef TTK_ENABLE_OPENMP
-  // #pragma omp parallel for num_threads(threadNumber_)
-  // #endif
-  //   for(SimplexId i = 0; i < cellNumber; i++) {
-  //     // avoid any processing if the abort signal is sent
-  //     cellIdentifiers->SetTuple1(i, i);
-  //   }
   vtkSmartPointer<ttkSimplexIdTypeArray> vtkVertexIdentifiers
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   vtkSmartPointer<ttkSimplexIdTypeArray> vtkCellIdentifiers
