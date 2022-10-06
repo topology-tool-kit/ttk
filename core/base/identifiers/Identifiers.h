@@ -44,14 +44,12 @@ namespace ttk {
   public:
     Identifiers();
 
-    int setVertexNumber(const SimplexId &vertexNumber) {
+    void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
-      return 0;
     }
 
-    int setCellNumber(const SimplexId &cellNumber) {
+    void setCellNumber(const SimplexId &cellNumber) {
       cellNumber_ = cellNumber;
-      return 0;
     }
 
     void setVertexIdentifiers(std::vector<ttk::SimplexId> *vertexIdentifiers) {
@@ -209,7 +207,6 @@ namespace ttk {
     void inline exchangeAndLocateCells(
       std::vector<Response> &locatedSimplices,
       std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
-      std::vector<ttk::SimplexId> &cellGhostLocalIds,
       std::vector<ttk::SimplexId> &receivedCells,
       std::vector<Response> &receivedResponse,
       int neighbor,
@@ -379,11 +376,6 @@ namespace ttk {
     }
 
     int executePolyData() {
-      // start global timer
-      ttk::Timer globalTimer;
-
-      // print horizontal separator
-      this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
       std::vector<Point> vertGhostCoordinates;
       std::vector<ttk::SimplexId> cellGhostGlobalVertexIds;
@@ -415,7 +407,8 @@ namespace ttk {
                                         receivedPoints, receivedResponse,
                                         neighbors_[i], recvMessageSize);
           int count = 0;
-          for(int n = 0; n < vertGhostCoordinates.size(); n++) {
+          int size = static_cast<int>(vertGhostCoordinates.size());
+          for(int n = 0; n < size; n++) {
             if(vertGhostCoordinates[n - count].localId
                == receivedResponse[count].id) {
               vertGhostCoordinates.erase(vertGhostCoordinates.begin() + n
@@ -429,7 +422,6 @@ namespace ttk {
             receivedResponse, neighbors_[i], recvMessageSize);
         }
       }
-      printMsg("POINTS DONE, START CELLS");
 
       int id{-1};
 
@@ -456,14 +448,12 @@ namespace ttk {
           }
         }
       }
-      printMsg("Start communication phase");
-      MPI_Barrier(ttk::MPIcomm_);
 
       for(int i = 0; i < neighborNumber_; i++) {
         if(cellRankArray_ == nullptr) {
           this->exchangeAndLocateCells(
-            locatedSimplices, cellGhostGlobalVertexIds, cellGhostLocalIds,
-            receivedCells, receivedResponse, neighbors_[i], recvMessageSize);
+            locatedSimplices, cellGhostGlobalVertexIds, receivedCells,
+            receivedResponse, neighbors_[i], recvMessageSize);
 
           for(int n = 0; n < recvMessageSize; n++) {
             cellIdentifiers_->at(
@@ -479,27 +469,14 @@ namespace ttk {
           }
         } else {
           this->exchangeAndLocateCells(
-            locatedSimplices, cellGhostGlobalVertexIdsPerRank[i],
-            cellGhostLocalIdsPerRank[i], receivedCells, receivedResponse,
-            neighbors_[i], recvMessageSize);
+            locatedSimplices, cellGhostGlobalVertexIdsPerRank[i], receivedCells,
+            receivedResponse, neighbors_[i], recvMessageSize);
           for(int n = 0; n < recvMessageSize; n++) {
             cellIdentifiers_->at(
               cellGhostLocalIdsPerRank[i][receivedResponse[n].id / nbPoints_])
               = receivedResponse[n].globalId;
           }
         }
-      }
-
-      MPI_Barrier(ttk::MPIcomm_);
-      // ---------------------------------------------------------------------
-      // print global performance
-      // ---------------------------------------------------------------------
-      {
-        this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-        this->printMsg(
-          "Complete", 1, globalTimer.getElapsedTime() // global progress, time
-        );
-        this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
       }
 
       return 1; // return success

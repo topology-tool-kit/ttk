@@ -72,6 +72,8 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
+  Timer t;
+
   std::vector<ttk::SimplexId> vertexIdentifiers(input->GetNumberOfPoints(), -1);
   this->setVertexIdentifiers(&vertexIdentifiers);
 
@@ -81,12 +83,13 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   this->setVertexNumber(input->GetNumberOfPoints());
   this->setCellNumber(input->GetNumberOfCells());
 
-  Timer t;
-
 #ifdef TTK_ENABLE_MPI
   double *boundingBox = input->GetBounds();
   this->setBounds(boundingBox);
-
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::Timer t_mpi;
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
   switch(input->GetDataObjectType()) {
     case VTK_UNSTRUCTURED_GRID:
     case VTK_POLY_DATA: {
@@ -145,15 +148,36 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       input->GetCellPoints(0, pointCell);
       this->setNbPoints(pointCell->GetNumberOfIds());
       setDomainDimension(nbPoints_ - 1);
+#ifdef TTK_ENABLE_MPI_TIME
+      ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
       this->executePolyData();
+#ifdef TTK_ENABLE_MPI_TIME
+      double elapsedTime
+        = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+      if(ttk::MPIrank_ == 0) {
+        printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+                 + " MPI processes lasted :" + std::to_string(elapsedTime));
+      }
+#endif
       break;
     }
     case VTK_IMAGE_DATA: {
       vtkImageData *data = vtkImageData::SafeDownCast(input);
       setDims(data->GetDimensions());
       setSpacing(data->GetSpacing());
-
+#ifdef TTK_ENABLE_MPI_TIME
+      ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
       this->executeImageData();
+#ifdef TTK_ENABLE_MPI_TIME
+      double elapsedTime
+        = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+      if(ttk::MPIrank_ == 0) {
+        printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+                 + " MPI processes lasted :" + std::to_string(elapsedTime));
+      }
+#endif
 
       break;
     }
