@@ -94,6 +94,10 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     case VTK_UNSTRUCTURED_GRID:
     case VTK_POLY_DATA: {
 
+      this->setOutdatedGlobalPointIds(ttkUtils::GetPointer<ttk::LongSimplexId>(
+        input->GetPointData()->GetArray("GlobalPointIds")));
+      this->setOutdatedGlobalCellIds(ttkUtils::GetPointer<ttk::LongSimplexId>(
+        input->GetCellData()->GetArray("GlobalCellIds")));
       this->setVertRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
         input->GetPointData()->GetArray("RankArray")));
       this->setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
