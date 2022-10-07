@@ -5,4 +5,5 @@ ttk_add_base_library(identifiers
     Identifiers.h
   DEPENDS
     triangulation
+    kdTree
 )

@@ -15,6 +15,7 @@
 #include <Debug.h>
 #ifdef TTK_ENABLE_MPI
 #include <Geometry.h>
+#include <KDTree.h>
 #include <map>
 #endif
 
@@ -114,6 +115,11 @@ namespace ttk {
       outdatedGlobalPointIds_ = outdatedGlobalPointIds;
     }
 
+    void buildKDTree() {
+      kdt_ = KDTree<float>(false, 2);
+      kdt_.build(pointSet_, vertexNumber_, dimension_);
+    }
+
     void setOutdatedGlobalCellIds(ttk::LongSimplexId *outdatedGlobalCellIds) {
       outdatedGlobalCellIds_ = outdatedGlobalCellIds;
     }
@@ -143,25 +149,11 @@ namespace ttk {
     }
 
     void inline findPoint(ttk::SimplexId &id, float x, float y, float z) {
-      float pointToFind[3] = {x, y, z};
-      float dist{0};
-      float p[3];
-      p[0] = pointSet_[0];
-      p[1] = pointSet_[1];
-      p[2] = pointSet_[2];
-      float minDist = Geometry::distance(pointToFind, p);
-      ttk::SimplexId indexMin = 0;
-      for(int i = 1; i < vertexNumber_; i++) {
-        p[0] = pointSet_[i * 3];
-        p[1] = pointSet_[i * 3 + 1];
-        p[2] = pointSet_[i * 3 + 2];
-        dist = Geometry::distance(pointToFind, p, dimension_);
-        if(dist < minDist) {
-          minDist = dist;
-          indexMin = i;
-        }
-      }
-      id = indexMin;
+      std::vector<float> coordinates = {x, y, z};
+      std::vector<KDTree<float> *> neighbours;
+      std::vector<float> costs;
+      kdt_.getKClosest(1, coordinates, neighbours, costs);
+      id = neighbours[0]->id_;
     }
 
     void initializeNeighbors(double *boundingBox) {
@@ -622,7 +614,8 @@ namespace ttk {
                 = receivedResponse[n].globalId;
             }
             int count = 0;
-            for(int n = 0; n < cellGhostGlobalIds.size(); n++) {
+            int size = static_cast<int>(cellGhostGlobalIds.size());
+            for(int n = 0; n < size; n++) {
               if(cellGhostGlobalIds[n - count] == receivedResponse[count].id) {
                 cellGhostGlobalIds.erase(cellGhostGlobalIds.begin() + n
                                          - count);
@@ -764,6 +757,7 @@ namespace ttk {
     ttk::LongSimplexId *outdatedGlobalCellIds_{nullptr};
     std::map<ttk::LongSimplexId, ttk::SimplexId> vertOutdatedGtoL_;
     std::map<ttk::LongSimplexId, ttk::SimplexId> cellOutdatedGtoL_;
+    KDTree<float> kdt_;
 
 #endif
   }; // Identifiers class

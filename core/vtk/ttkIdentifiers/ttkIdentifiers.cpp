@@ -152,6 +152,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
       input->GetCellPoints(0, pointCell);
       this->setNbPoints(pointCell->GetNumberOfIds());
       setDomainDimension(nbPoints_ - 1);
+      this->buildKDTree();
 #ifdef TTK_ENABLE_MPI_TIME
       ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
