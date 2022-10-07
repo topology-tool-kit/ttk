@@ -170,7 +170,7 @@ namespace ttk {
       std::vector<Point> &receivedPoints,
       std::vector<Response> &receivedResponse,
       int neighbor,
-      int &recvMessageSize) {
+      ttk::SimplexId &recvMessageSize) {
       locatedSimplices.clear();
       this->SendRecvVector<Point>(simplicesCoordinates, receivedPoints,
                                   recvMessageSize, mpiPointType_, neighbor);
@@ -208,16 +208,16 @@ namespace ttk {
 
     void inline exchangeAndIdentifyPoints(
       std::vector<Response> &locatedSimplices,
-      std::vector<ttk::LongSimplexId> &simplicesOutdatedGlobalIds,
-      std::vector<ttk::LongSimplexId> &receivedOutdatedGlobalIds,
+      std::vector<ttk::SimplexId> &simplicesOutdatedGlobalIds,
+      std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       std::vector<Response> &receivedResponse,
       int neighbor,
-      int &recvMessageSize) {
+      ttk::SimplexId &recvMessageSize) {
 
       locatedSimplices.clear();
-      this->SendRecvVector<ttk::LongSimplexId>(
+      this->SendRecvVector<ttk::SimplexId>(
         simplicesOutdatedGlobalIds, receivedOutdatedGlobalIds, recvMessageSize,
-        getMPIType(simplicesOutdatedGlobalIds[0]), neighbor);
+        mpiIdType_, neighbor);
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
       for(int n = 0; n < recvMessageSize; n++) {
@@ -246,7 +246,7 @@ namespace ttk {
       std::vector<ttk::SimplexId> &receivedCells,
       std::vector<Response> &receivedResponse,
       int neighbor,
-      int &recvMessageSize) {
+      ttk::SimplexId &recvMessageSize) {
       int id{-1};
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
@@ -304,24 +304,25 @@ namespace ttk {
 
     void inline exchangeAndIdentifyCells(
       std::vector<Response> &locatedSimplices,
-      std::vector<ttk::LongSimplexId> &cellGhostGlobalIds,
-      std::vector<ttk::LongSimplexId> &receivedOutdatedGlobalIds,
+      std::vector<ttk::SimplexId> &cellGhostGlobalIds,
+      std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       std::vector<Response> &receivedResponse,
       int neighbor,
-      int &recvMessageSize) {
+      ttk::SimplexId &recvMessageSize) {
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
       locatedSimplices.clear();
-      this->SendRecvVector<ttk::LongSimplexId>(
+      this->SendRecvVector<ttk::SimplexId>(
         cellGhostGlobalIds, receivedOutdatedGlobalIds, recvMessageSize,
-        getMPIType(cellGhostGlobalIds[0]), neighbor);
+        mpiIdType_, neighbor);
       for(int n = 0; n < recvMessageSize; n++) {
         search = cellOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
         if(search != cellOutdatedGtoL_.end()) {
           globalId = cellIdentifiers_->at(search->second);
           if(globalId >= 0) {
             locatedSimplices.push_back(
-              Response{receivedOutdatedGlobalIds[n], globalId});
+              Response{receivedOutdatedGlobalIds[n],
+                       static_cast<ttk::SimplexId>(globalId)});
           }
         }
       }
@@ -333,7 +334,7 @@ namespace ttk {
     template <typename dataType>
     void SendRecvVector(std::vector<dataType> &vectorToSend,
                         std::vector<dataType> &receiveBuffer,
-                        int &recvMessageSize,
+                        ttk::SimplexId &recvMessageSize,
                         MPI_Datatype messageType,
                         int neighbor) const {
       ttk::SimplexId dataSize = vectorToSend.size();
@@ -351,8 +352,8 @@ namespace ttk {
     void generateGlobalIds(
       std::vector<std::vector<Point>> &vertGhostCoordinatesPerRank,
       std::vector<Point> &vertGhostCoordinates,
-      std::vector<std::vector<ttk::LongSimplexId>> &vertGhostGlobalIdsPerRank,
-      std::vector<ttk::LongSimplexId> &vertGhostGlobalIds) {
+      std::vector<std::vector<ttk::SimplexId>> &vertGhostGlobalIdsPerRank,
+      std::vector<ttk::SimplexId> &vertGhostGlobalIds) {
       ttk::SimplexId realVertexNumber = vertexNumber_;
       ttk::SimplexId realCellNumber = cellNumber_;
       float p[3];
@@ -368,7 +369,8 @@ namespace ttk {
                 .push_back(Point{p[0], p[1], p[2], i});
             } else {
               vertGhostGlobalIdsPerRank[neighborToId_[vertRankArray_[i]]]
-                .push_back(outdatedGlobalPointIds_[i]);
+                .push_back(
+                  static_cast<ttk::SimplexId>(outdatedGlobalPointIds_[i]));
             }
           }
         }
@@ -383,7 +385,8 @@ namespace ttk {
               p[2] = pointSet_[i * 3 + 2];
               vertGhostCoordinates.push_back(Point{p[0], p[1], p[2], i});
             } else {
-              vertGhostGlobalIds.push_back(outdatedGlobalPointIds_[i]);
+              vertGhostGlobalIds.push_back(
+                static_cast<ttk::SimplexId>(outdatedGlobalPointIds_[i]));
             }
           }
         }
@@ -464,15 +467,15 @@ namespace ttk {
     int executePolyData() {
 
       std::vector<Point> vertGhostCoordinates;
-      std::vector<ttk::LongSimplexId> vertGhostGlobalIds;
+      std::vector<ttk::SimplexId> vertGhostGlobalIds;
       std::vector<ttk::SimplexId> cellGhostGlobalVertexIds;
-      std::vector<ttk::LongSimplexId> cellGhostGlobalIds;
+      std::vector<ttk::SimplexId> cellGhostGlobalIds;
       std::vector<ttk::SimplexId> cellGhostLocalIds;
       std::vector<std::vector<Point>> vertGhostCoordinatesPerRank;
-      std::vector<std::vector<ttk::LongSimplexId>> vertGhostGlobalIdsPerRank;
+      std::vector<std::vector<ttk::SimplexId>> vertGhostGlobalIdsPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostLocalIdsPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostGlobalVertexIdsPerRank;
-      std::vector<std::vector<ttk::LongSimplexId>> cellGhostGlobalIdsPerRank;
+      std::vector<std::vector<ttk::SimplexId>> cellGhostGlobalIdsPerRank;
       if(vertRankArray_ != nullptr) {
         vertGhostCoordinatesPerRank.resize(neighborNumber_);
         vertGhostGlobalIdsPerRank.resize(neighborNumber_);
@@ -487,7 +490,7 @@ namespace ttk {
 
       ttk::SimplexId recvMessageSize{0};
       std::vector<Point> receivedPoints;
-      std::vector<ttk::LongSimplexId> receivedGlobalIds;
+      std::vector<ttk::SimplexId> receivedGlobalIds;
       std::vector<ttk::SimplexId> receivedCells;
       std::vector<Response> receivedResponse;
       std::vector<Response> locatedSimplices;
@@ -553,7 +556,8 @@ namespace ttk {
               }
             } else {
               cellGhostGlobalIdsPerRank[neighborToId_[cellRankArray_[i]]]
-                .push_back(outdatedGlobalCellIds_[i]);
+                .push_back(
+                  static_cast<ttk::SimplexId>(outdatedGlobalCellIds_[i]));
             }
           }
         }
@@ -567,7 +571,8 @@ namespace ttk {
                 cellGhostGlobalVertexIds.push_back(vertexIdentifiers_->at(id));
               }
             } else {
-              cellGhostGlobalIds.push_back(outdatedGlobalCellIds_[i]);
+              cellGhostGlobalIds.push_back(
+                static_cast<ttk::SimplexId>(outdatedGlobalCellIds_[i]));
             }
           }
         }
