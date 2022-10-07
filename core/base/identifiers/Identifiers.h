@@ -652,8 +652,8 @@ namespace ttk {
       double tempGlobalBounds[6];
       MPI_Allreduce(
         tempBounds, tempGlobalBounds, 3, MPI_DOUBLE, MPI_MIN, ttk::MPIcomm_);
-      MPI_Allreduce(bounds_ + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE, MPI_MAX,
-                    ttk::MPIcomm_);
+      MPI_Allreduce(tempBounds + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE,
+                    MPI_MAX, ttk::MPIcomm_);
       double globalBounds[6]
         = {tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
            tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5]};
