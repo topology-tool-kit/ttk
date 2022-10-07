@@ -297,9 +297,12 @@ namespace ttk {
      * @param[in] s2 Input 2-saddle (critical triangle)
      * @param[in,out] onBoundary Propagation mask
      * @param[in,out] s2Boundaries Boundaries storage (compact)
-     * @param[in] s2Mapping From (critical) triangle id to compact id in
-     * s2Boundaries
+     * @param[in] s1Mapping From edge id to 1-saddle compact id in @p s1Locks
+     * @param[in] s2Mapping From triangle id to compact id
+     *   in @p s2Boundaries and @p s2Locks
      * @param[in] partners Get 2-saddles paired to 1-saddles on boundary
+     * @param[in] s1Locks Vector of locks over 1-saddles
+     * @param[in] s2Locks Vector of locks over 2-saddles
      * @param[in] triangulation Simplicial complex
      *
      * @return Identifier of paired 1-saddle or -1
@@ -310,7 +313,10 @@ namespace ttk {
                                   std::vector<bool> &onBoundary,
                                   std::vector<Container> &s2Boundaries,
                                   const std::vector<SimplexId> &s2Mapping,
-                                  const std::vector<SimplexId> &partners,
+                                  const std::vector<SimplexId> &s1Mapping,
+                                  std::vector<SimplexId> &partners,
+                                  std::vector<Lock> &s1Locks,
+                                  std::vector<Lock> &s2Locks,
                                   const triangulationType &triangulation) const;
 
     /**
@@ -405,6 +411,7 @@ namespace ttk {
         this->edgeTrianglePartner_.resize(triangulation.getNumberOfEdges(), -1);
         this->onBoundary_.resize(triangulation.getNumberOfEdges(), false);
         this->s2Mapping_.resize(triangulation.getNumberOfTriangles(), -1);
+        this->s1Mapping_.resize(triangulation.getNumberOfEdges(), -1);
       }
       for(int i = 0; i < dim + 1; ++i) {
         this->pairedCritCells_[i].resize(
@@ -424,6 +431,7 @@ namespace ttk {
       this->firstRepMax_ = {};
       this->edgeTrianglePartner_ = {};
       this->s2Mapping_ = {};
+      this->s1Mapping_ = {};
       this->critEdges_ = {};
       this->pairedCritCells_ = {};
       this->onBoundary_ = {};
@@ -436,7 +444,7 @@ namespace ttk {
 
     // factor memory allocations outside computation loops
     mutable std::vector<SimplexId> firstRepMin_{}, firstRepMax_{},
-      edgeTrianglePartner_{}, s2Mapping_{};
+      edgeTrianglePartner_{}, s2Mapping_{}, s1Mapping_{};
     mutable std::vector<EdgeSimplex> critEdges_{};
     mutable std::array<std::vector<bool>, 4> pairedCritCells_{};
     mutable std::vector<bool> onBoundary_{};
@@ -691,10 +699,14 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
   std::vector<bool> &onBoundary,
   std::vector<Container> &s2Boundaries,
   const std::vector<SimplexId> &s2Mapping,
-  const std::vector<SimplexId> &partners,
+  const std::vector<SimplexId> &s1Mapping,
+  std::vector<SimplexId> &partners,
+  std::vector<Lock> &s1Locks,
+  std::vector<Lock> &s2Locks,
   const triangulationType &triangulation) const {
 
   auto &boundaryIds{s2Boundaries[s2Mapping[s2]]};
+
   const auto addBoundary = [&boundaryIds, &onBoundary](const SimplexId e) {
     // add edge e to boundaryIds/onBoundary modulo 2
     if(!onBoundary[e]) {
@@ -703,6 +715,13 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
     } else {
       const auto it = boundaryIds.find(e);
       boundaryIds.erase(it);
+      onBoundary[e] = false;
+    }
+  };
+
+  const auto clearOnBoundary = [&boundaryIds, &onBoundary]() {
+    // clear the onBoundary vector (set everything to false)
+    for(const auto e : boundaryIds) {
       onBoundary[e] = false;
     }
   };
@@ -721,6 +740,10 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
     }
   }
 
+  // lock the 2-saddle to ensure that only one thread can perform the
+  // boundary expansion
+  s2Locks[s2Mapping[s2]].lock();
+
   while(!boundaryIds.empty()) {
     // tau: youngest edge on boundary
     const auto tau{*boundaryIds.begin()};
@@ -729,29 +752,90 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
     bool critical{false};
     if(pTau == -1) {
       // maybe tau is critical and paired to a critical triangle
-      pTau = partners[tau];
+      do {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif // TTK_ENABLE_OPENMP
+        pTau = partners[tau];
+        if(pTau == -1 || s2Boundaries[s2Mapping[pTau]].empty()) {
+          break;
+        }
+      } while(*s2Boundaries[s2Mapping[pTau]].begin() != tau);
+
       critical = true;
     }
     if(pTau == -1) {
       // tau is critical and not paired
-      return tau;
-    }
-    // expand boundary
-    if(critical && s2Mapping[pTau] != -1) { // pTau is a non-paired 2-saddle
-      // merge pTau boundary into s2 boundary
-      for(const auto e : s2Boundaries[s2Mapping[pTau]]) {
-        addBoundary(e);
+
+      // compare-and-swap from "Towards Lockfree Persistent Homology"
+      // using locks over 1-saddles instead of atomics (OpenMP compatibility)
+      s1Locks[s1Mapping[tau]].lock();
+      const auto cap = partners[tau];
+      if(partners[tau] == -1) {
+        partners[tau] = s2;
       }
-    } else { // pTau is a regular triangle
-      // add pTau triangle boundary (3 edges)
-      for(SimplexId i = 0; i < 3; ++i) {
-        SimplexId e{};
-        triangulation.getTriangleEdge(pTau, i, e);
-        addBoundary(e);
+      s1Locks[s1Mapping[tau]].unlock();
+
+      // cleanup before exiting
+      clearOnBoundary();
+      s2Locks[s2Mapping[s2]].unlock();
+      if(cap == -1) {
+        return tau;
+      } else {
+        return this->eliminateBoundariesSandwich(
+          s2, onBoundary, s2Boundaries, s2Mapping, s1Mapping, partners, s1Locks,
+          s2Locks, triangulation);
+      }
+
+    } else {
+      // expand boundary
+      if(critical && s2Mapping[pTau] != -1) {
+        if(s2Mapping[pTau] < s2Mapping[s2]) {
+          // pTau is an already-paired 2-saddle
+          // merge pTau boundary into s2 boundary
+
+          // make sure that pTau boundary is not modified by another
+          // thread while we merge the two boundaries...
+          s2Locks[s2Mapping[pTau]].lock();
+          for(const auto e : s2Boundaries[s2Mapping[pTau]]) {
+            addBoundary(e);
+          }
+          s2Locks[s2Mapping[pTau]].unlock();
+
+        } else if(s2Mapping[pTau] > s2Mapping[s2]) {
+
+          // compare-and-swap from "Towards Lockfree Persistent
+          // Homology" using locks over 1-saddles
+          s1Locks[s1Mapping[tau]].lock();
+          const auto cap = partners[tau];
+          if(partners[tau] == pTau) {
+            partners[tau] = s2;
+          }
+          s1Locks[s1Mapping[tau]].unlock();
+
+          if(cap == pTau) {
+            // cleanup before exiting
+            clearOnBoundary();
+            s2Locks[s2Mapping[s2]].unlock();
+            return this->eliminateBoundariesSandwich(
+              pTau, onBoundary, s2Boundaries, s2Mapping, s1Mapping, partners,
+              s1Locks, s2Locks, triangulation);
+          }
+        }
+      } else { // pTau is a regular triangle
+        // add pTau triangle boundary (3 edges)
+        for(SimplexId i = 0; i < 3; ++i) {
+          SimplexId e{};
+          triangulation.getTriangleEdge(pTau, i, e);
+          addBoundary(e);
+        }
       }
     }
   }
 
+  // cleanup before exiting
+  clearOnBoundary();
+  s2Locks[s2Mapping[s2]].unlock();
   return -1;
 }
 
@@ -799,6 +883,7 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
       };
   using Container = std::set<SimplexId, decltype(cmpEdges)>;
   std::vector<Container> s2Boundaries(saddles2.size(), Container(cmpEdges));
+
   // unpaired critical triangle id -> index in saddle2 vector
   auto &s2Mapping{this->s2Mapping_};
 #ifdef TTK_ENABLE_OPENMP
@@ -808,8 +893,22 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     s2Mapping[saddles2[i]] = i;
   }
 
-  // first parallel pass to pre-determine the boundary of every
-  // unpaired 2-saddle to the first unpaired 1-saddle on its wall
+  // unpaired critical edge id -> index in saddle1 vector
+  auto &s1Mapping{this->s1Mapping_};
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < saddles1.size(); ++i) {
+    s1Mapping[saddles1[i]] = i;
+  }
+
+  // one lock per 1-saddle
+  std::vector<Lock> s1Locks(saddles1.size());
+  // one lock per 2-saddle
+  std::vector<Lock> s2Locks(saddles2.size());
+
+  // compute 2-saddles boundaries in parallel
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
   firstprivate(onBoundary)
@@ -818,44 +917,21 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     // 2-saddles sorted in increasing order
     const auto s2 = saddles2[i];
     this->eliminateBoundariesSandwich(s2, onBoundary, s2Boundaries, s2Mapping,
-                                      edgeTrianglePartner, triangulation);
-    // reset onBoundary to false
-    for(const auto e : s2Boundaries[i]) {
-      onBoundary[e] = false;
-    }
+                                      s1Mapping, edgeTrianglePartner, s1Locks,
+                                      s2Locks, triangulation);
   }
-
-  this->printMsg("Precomputed 2-saddle boundaries", 1.0, tmpar.getElapsedTime(),
-                 this->threadNumber_, debug::LineMode::NEW,
-                 debug::Priority::DETAIL);
 
   Timer tmseq{};
 
+  // extract saddle-saddle pairs from computed boundaries
   for(size_t i = 0; i < saddles2.size(); ++i) {
-    // 2-saddles sorted in increasing order
-    const auto s2 = saddles2[i];
-    SimplexId s1{-1};
-
-    if(!s2Boundaries[i].empty()
-       && edgeTrianglePartner[*s2Boundaries[i].begin()] == -1) {
-      // use shortcut if first 1-saddle on wall is non-paired
-      s1 = *s2Boundaries[i].begin();
-    } else {
-      s1 = this->eliminateBoundariesSandwich(s2, onBoundary, s2Boundaries,
-                                             s2Mapping, edgeTrianglePartner,
-                                             triangulation);
-    }
-
-    if(s1 != -1) {
+    if(!s2Boundaries[i].empty()) {
+      const auto s2 = saddles2[i];
+      const auto s1 = *s2Boundaries[i].begin();
       // we found a pair
       pairs.emplace_back(s1, s2, 1);
       paired1Saddles[s1] = true;
       paired2Saddles[s2] = true;
-      edgeTrianglePartner[s1] = s2;
-      // reset onBoundary to false
-      for(const auto e : s2Boundaries[i]) {
-        onBoundary[e] = false;
-      }
     }
   }
 
