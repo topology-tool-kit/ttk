@@ -699,8 +699,8 @@ namespace ttk {
         for(int j = 0; j < dims_[1]; j++) {
           for(int i = 0; i < dims_[0]; i++) {
             cellIdentifiers_->at(k * dims_[0] * dims_[1] + j * dims_[0] + i)
-              = i + offsetWidth + (j + offsetHeight) * (width - 1)
-                + (k + offsetLength) * (width - 1) * (height - 1);
+              = i + offsetWidth + (j + offsetHeight) * width
+                + (k + offsetLength) * width * height;
           }
         }
       }
