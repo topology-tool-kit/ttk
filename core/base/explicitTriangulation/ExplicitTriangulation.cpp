@@ -309,6 +309,7 @@ int ExplicitTriangulation::preconditionEdgesInternal() {
 
 #ifdef TTK_ENABLE_MPI
     if(this->getDimensionality() == 2 || this->getDimensionality() == 3) {
+      this->preconditionTriangleEdges();
       return this->preconditionDistributedEdges();
     }
 #endif // TTK_ENABLE_MPI
