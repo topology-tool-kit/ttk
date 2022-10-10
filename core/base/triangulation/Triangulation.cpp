@@ -3,8 +3,7 @@
 using namespace std;
 using namespace ttk;
 
-Triangulation::Triangulation()
-  : AbstractTriangulation{}, abstractTriangulation_{nullptr} {
+Triangulation::Triangulation() : abstractTriangulation_{nullptr} {
   debugLevel_ = 0; // overrides the global debug level.
   gridDimensions_ = {-1, -1, -1};
   hasPeriodicBoundaries_ = false;
@@ -32,8 +31,10 @@ Triangulation::Triangulation(const Triangulation &rhs)
 }
 
 Triangulation::Triangulation(Triangulation &&rhs) noexcept
-  : AbstractTriangulation(std::move(rhs)), abstractTriangulation_{nullptr},
-    explicitTriangulation_{std::move(rhs.explicitTriangulation_)},
+  : AbstractTriangulation(
+    std::move(*static_cast<AbstractTriangulation *>(&rhs))),
+    abstractTriangulation_{nullptr}, explicitTriangulation_{std::move(
+                                       rhs.explicitTriangulation_)},
     implicitTriangulation_{std::move(rhs.implicitTriangulation_)},
     periodicImplicitTriangulation_{
       std::move(rhs.periodicImplicitTriangulation_)},
