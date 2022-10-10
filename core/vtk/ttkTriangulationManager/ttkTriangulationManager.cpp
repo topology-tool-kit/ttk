@@ -57,7 +57,7 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
   if(prevPeriodic != periodic) {
 
 #ifdef TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI() && periodic) {
+    if(ttk::hasInitializedMPI() && periodic) {
       dbg.printErr("Periodic implicit triangulation not (yet) supported in "
                    "an MPI context!");
       dbg.printErr("Keeping the Implicit triangulation.");
@@ -113,7 +113,7 @@ int ttkTriangulationManager::processExplicit(
   ttk::Timer tm{};
 
 #ifdef TTK_ENABLE_MPI
-  if(ttk::isRunningWithMPI()) {
+  if(ttk::hasInitializedMPI()) {
     this->printErr(
       "Compact triangulation not (yet) supported in an MPI context!");
     this->printErr("Keeping the Explicit triangulation.");

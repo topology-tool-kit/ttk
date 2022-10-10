@@ -41,17 +41,21 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
 #if TTK_ENABLE_MPI
-  if(!hasMPISupport_) {
-    printErr(
-      "MPI is not supported for this filter, the results will be incorrect");
+  if(ttk::hasInitializedMPI()) {
+    if(!hasMPISupport_) {
+      printErr(
+        "MPI is not supported for this filter, the results will be incorrect");
+    }
+    this->MPIPipelinePreconditioning(dataSet);
   }
-  this->MPIPipelinePreconditioning(dataSet);
 #endif
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
 #if TTK_ENABLE_MPI
-  if(triangulation) {
-    this->MPITriangulationPreconditioning(triangulation, dataSet);
+  if(ttk::hasInitializedMPI()) {
+    if(triangulation) {
+      this->MPITriangulationPreconditioning(triangulation, dataSet);
+    }
   }
 #endif
   if(triangulation)
@@ -173,7 +177,7 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetNumberOfComponents(1);
       newOrderArray->SetNumberOfTuples(nVertices);
 #if TTK_ENABLE_MPI
-      if(ttk::isRunningWithMPI()) {
+      if(ttk::hasInitializedMPI()) {
         this->MPIPipelinePreconditioning(inputData);
         auto vtkGlobalPointIds = inputData->GetPointData()->GetGlobalIds();
         auto rankArray = inputData->GetPointData()->GetArray("RankArray");

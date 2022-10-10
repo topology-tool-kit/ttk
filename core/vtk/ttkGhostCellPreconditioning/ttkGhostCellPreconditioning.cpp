@@ -76,7 +76,7 @@ int ttkGhostCellPreconditioning::RequestData(
   if(verticesGlobalIds != nullptr && verticesGhostCells != nullptr
      && cellsGlobalIds != nullptr && cellsGhostCells != nullptr) {
 #ifdef TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI()) {
+    if(ttk::hasInitializedMPI()) {
       if(ttk::MPIrank_ == 0)
         this->printMsg(
           "Global Point Ids and Ghost Cells exist, therefore we can continue!");

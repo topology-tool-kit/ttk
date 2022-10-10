@@ -157,7 +157,11 @@ int ttkScalarFieldCriticalPoints::RequestData(
 #endif
     for(size_t i = 0; i < criticalPoints_.size(); i++) {
 #if TTK_ENABLE_MPI
-      vertexIds->SetTuple1(i, globalIds[criticalPoints_[i].first]);
+      if(hasInitializedMPI()) {
+        vertexIds->SetTuple1(i, globalIds[criticalPoints_[i].first]);
+      } else {
+        vertexIds->SetTuple1(i, criticalPoints_[i].first);
+      }
 #else
       vertexIds->SetTuple1(i, criticalPoints_[i].first);
 #endif
