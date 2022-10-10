@@ -41,21 +41,17 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
 #if TTK_ENABLE_MPI
-  if(ttk::isRunningWithMPI()) {
-    if(!hasMPISupport_) {
-      printErr(
-        "MPI is not supported for this filter, the results will be incorrect");
-    }
-    this->MPIPipelinePreconditioning(dataSet);
+  if(!hasMPISupport_) {
+    printErr(
+      "MPI is not supported for this filter, the results will be incorrect");
   }
+  this->MPIPipelinePreconditioning(dataSet);
 #endif
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
 #if TTK_ENABLE_MPI
-  if(ttk::isRunningWithMPI()) {
-    if(triangulation) {
-      this->MPITriangulationPreconditioning(triangulation, dataSet);
-    }
+  if(triangulation) {
+    this->MPITriangulationPreconditioning(triangulation, dataSet);
   }
 #endif
   if(triangulation)

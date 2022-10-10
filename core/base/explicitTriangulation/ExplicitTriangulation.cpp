@@ -591,9 +591,7 @@ int ExplicitTriangulation::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
-    return -1;
-  }
+
   if(this->cellGid_ == nullptr) {
     this->printWrn("Missing global identifiers on cells");
     return -2;
@@ -909,9 +907,7 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
   if(this->hasPreconditionedDistributedEdges_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
-    return -1;
-  }
+
   if(this->cellGid_ == nullptr) {
     this->printWrn("Missing global identifiers on cells");
     return -2;
@@ -1048,9 +1044,7 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
   if(this->hasPreconditionedDistributedTriangles_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
-    return -1;
-  }
+
   if(this->cellGid_ == nullptr) {
     this->printWrn("Missing global identifiers on cells");
     return -2;
@@ -1181,9 +1175,7 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
   if(this->hasPreconditionedDistributedVertices_) {
     return 0;
   }
-  if(!isRunningWithMPI()) {
-    return -1;
-  }
+
   if(this->vertGid_ == nullptr) {
     this->printWrn("Missing global identifiers array!");
     return -2;
