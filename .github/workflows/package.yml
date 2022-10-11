@@ -320,7 +320,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn packaging openmp "graphviz>=2.50"
+          scikit-learn packaging openmp graphviz
 
     - name: Remove hosted Python
       shell: bash
@@ -410,7 +410,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn packaging openmp "graphviz>=2.50"
+          scikit-learn packaging openmp graphviz
 
     - name: Remove hosted Python
       shell: bash
