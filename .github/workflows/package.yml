@@ -26,7 +26,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - name: Install Ubuntu dependencies
@@ -88,7 +88,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload TTK .deb package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-${{ matrix.os }}.deb
         path: build/ttk.deb
@@ -103,7 +103,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - uses: dsaltares/fetch-gh-release-asset@master
@@ -116,7 +116,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Fetch TTK .deb artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ttk-${{ matrix.os }}.deb
 
@@ -135,7 +135,7 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -159,7 +159,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -213,7 +213,7 @@ jobs:
         cpack -G productbuild
 
     - name: Upload .pkg package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk.pkg
         path: build/ttk.pkg
@@ -225,7 +225,7 @@ jobs:
     needs: build-macos
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -246,7 +246,7 @@ jobs:
         wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
 
     - name: Fetch TTK .pkg artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ttk.pkg
 
@@ -283,7 +283,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         ttkHelloWorldCmd -i examples/data/inputData.vtu
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -311,7 +311,7 @@ jobs:
     env:
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -385,7 +385,7 @@ jobs:
         cpack -C Release -G NSIS64
 
     - name: Upload TTK .exe package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk.exe
         path: build/ttk.exe
@@ -401,7 +401,7 @@ jobs:
       TTK_DIR: C:\Program Files\TTK
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -424,7 +424,7 @@ jobs:
         -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
 
     - name: Fetch TTK .exe artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: ttk.exe
 
@@ -483,7 +483,7 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -524,7 +524,7 @@ jobs:
         prerelease: true
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2

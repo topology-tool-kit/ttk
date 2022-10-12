@@ -31,7 +31,7 @@ jobs:
   check-formatting:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install latest clang-format
       run: |
@@ -93,7 +93,7 @@ jobs:
       CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu dependencies
       run: |
@@ -175,7 +175,7 @@ jobs:
       CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu dependencies
       run: |

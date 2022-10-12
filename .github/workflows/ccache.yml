@@ -25,7 +25,7 @@ jobs:
       CCACHE_DIR: /home/runner/.ccache
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - name: Install Ubuntu dependencies
@@ -92,7 +92,7 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-${{ matrix.os }}
         path: /home/runner/ttk-ccache.tar.gz
@@ -106,7 +106,7 @@ jobs:
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -166,7 +166,7 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-macOS
         path: /Users/runner/work/ttk/ttk-ccache.tar.gz
@@ -179,7 +179,7 @@ jobs:
     env:
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -261,7 +261,7 @@ jobs:
         tar czf ttk-sccache.tar.gz cache
 
     - name: Upload sccache archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-sccache-windows
         path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
@@ -300,7 +300,7 @@ jobs:
         prerelease: true
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
 
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: svenstaro/upload-release-action@v2

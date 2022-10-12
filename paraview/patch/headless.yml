@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
 
     - name: Install Ubuntu dependencies
@@ -59,7 +59,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload Debian package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-headless-${{ matrix.os }}
         path: build/ttk-paraview.deb
@@ -71,7 +71,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
 
     - name: Remove hosted Python
@@ -107,7 +107,7 @@ jobs:
         sudo cpack -G TGZ
 
     - name: Upload compressed binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-headless-macOS
         path: build/ttk-paraview.tar.gz
@@ -122,7 +122,7 @@ jobs:
       CONDA_ROOT: C:\Miniconda
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
 
     - uses: s-weigand/setup-conda@v1
@@ -164,7 +164,7 @@ jobs:
         mv ttk-paraview.exe $GITHUB_WORKSPACE
 
     - name: Upload install executable
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-headless-windows
         path: ttk-paraview.exe
@@ -189,7 +189,7 @@ jobs:
         prerelease: true
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
 
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
