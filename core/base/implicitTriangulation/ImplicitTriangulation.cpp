@@ -3414,6 +3414,10 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
     return -3;
   }
 
+  if(this->getDimensionality() == 2) {
+    this->preconditionTriangleEdges();
+  }
+
   Timer tm{};
 
   this->preconditionDistributedCells();
