@@ -157,6 +157,8 @@ namespace ttk {
     }
 
     void initializeNeighbors(double *boundingBox) {
+      neighbors_.clear();
+      neighborToId_.clear();
       getNeighborsUsingBoundingBox(boundingBox, neighbors_);
       neighborNumber_ = neighbors_.size();
       for(int i = 0; i < neighborNumber_; i++) {
@@ -232,7 +234,6 @@ namespace ttk {
       std::vector<ttk::SimplexId> &receivedCells,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
-      send_buf.clear();
       int id{-1};
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
@@ -280,6 +281,7 @@ namespace ttk {
           }
         }
       }
+      send_buf.clear();
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
@@ -294,7 +296,6 @@ namespace ttk {
       std::vector<Response> &send_buf) {
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
-      send_buf.clear();
 #pragma omp parallel for num_threads(threadNumber_)
       for(int n = 0; n < recvMessageSize; n++) {
         search = cellOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
@@ -307,6 +308,7 @@ namespace ttk {
           }
         }
       }
+      send_buf.clear();
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
@@ -346,7 +348,6 @@ namespace ttk {
     template <typename dataType>
     void sendToAllNeighbors(std::vector<dataType> &vectorToSend,
                             MPI_Datatype messageType) const {
-
       for(int j = 0; j < neighborNumber_; j++) {
         sendVector<dataType>(vectorToSend, messageType, neighbors_[j]);
       }
@@ -491,7 +492,7 @@ namespace ttk {
     }
 
     int executePolyData() {
-
+      vertGtoL_.clear();
       std::vector<Point> vertGhostCoordinates;
       std::vector<ttk::SimplexId> vertGhostGlobalIds;
       std::vector<ttk::SimplexId> cellGhostGlobalVertexIds;
@@ -511,8 +512,8 @@ namespace ttk {
 
       this->generateGlobalIds(vertGhostCoordinatesPerRank, vertGhostCoordinates,
                               vertGhostGlobalIdsPerRank, vertGhostGlobalIds);
-
-      ttk::SimplexId recvMessageSize{0};
+      hasSentData_ = 0;
+      ttk::SimplexId recvMessageSize = 0;
       std::vector<Point> receivedPoints;
       std::vector<ttk::SimplexId> receivedIds;
       std::vector<Response> receivedResponse;
