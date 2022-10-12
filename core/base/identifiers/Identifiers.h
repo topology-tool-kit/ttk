@@ -164,16 +164,11 @@ namespace ttk {
       }
     }
 
-    void inline exchangeAndLocatePoints(
+    void inline locatePoints(
       std::vector<std::vector<Response>> &locatedSimplices,
-      std::vector<Point> &simplicesCoordinates,
       std::vector<Point> &receivedPoints,
-      std::vector<Response> &receivedResponse,
-      int neighbor,
-      ttk::SimplexId &recvMessageSize) {
-      std::vector<Response> send_buf;
-      this->SendRecvVector<Point>(simplicesCoordinates, receivedPoints,
-                                  recvMessageSize, mpiPointType_, neighbor);
+      ttk::SimplexId &recvMessageSize,
+      std::vector<Response> &send_buf) {
       ttk::SimplexId globalId{-1};
       ttk::SimplexId id{-1};
 #pragma omp parallel for num_threads(threadNumber_) firstprivate(globalId, id) \
@@ -198,32 +193,19 @@ namespace ttk {
           }
         }
       }
+      send_buf.clear();
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
-      this->SendRecvVector<Response>(send_buf, receivedResponse,
-                                     recvMessageSize, mpiResponseType_,
-                                     neighbor);
-      for(int n = 0; n < recvMessageSize; n++) {
-        vertexIdentifiers_->at(receivedResponse[n].id)
-          = receivedResponse[n].globalId;
-        vertGtoL_[receivedResponse[n].globalId] = receivedResponse[n].id;
-      }
     }
 
-    void inline exchangeAndIdentifyPoints(
+    void inline identifyPoints(
       std::vector<std::vector<Response>> &locatedSimplices,
-      std::vector<ttk::SimplexId> &simplicesOutdatedGlobalIds,
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
-      std::vector<Response> &receivedResponse,
-      int neighbor,
-      ttk::SimplexId &recvMessageSize) {
-      std::vector<Response> send_buf;
-      this->SendRecvVector<ttk::SimplexId>(
-        simplicesOutdatedGlobalIds, receivedOutdatedGlobalIds, recvMessageSize,
-        mpiIdType_, neighbor);
+      ttk::SimplexId &recvMessageSize,
+      std::vector<Response> &send_buf) {
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
 #pragma omp parallel for num_threads(threadNumber_)
@@ -237,37 +219,24 @@ namespace ttk {
           }
         }
       }
-
+      send_buf.clear();
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
-      this->SendRecvVector<Response>(send_buf, receivedResponse,
-                                     recvMessageSize, mpiResponseType_,
-                                     neighbor);
-      for(int n = 0; n < recvMessageSize; n++) {
-        vertexIdentifiers_->at(vertOutdatedGtoL_[receivedResponse[n].id])
-          = receivedResponse[n].globalId;
-        vertGtoL_[receivedResponse[n].globalId] = receivedResponse[n].id;
-      }
     }
 
-    void inline exchangeAndLocateCells(
+    void inline locateCells(
       std::vector<std::vector<Response>> &locatedSimplices,
-      std::vector<ttk::SimplexId> &cellGhostGlobalVertexIds,
       std::vector<ttk::SimplexId> &receivedCells,
-      std::vector<Response> &receivedResponse,
-      int neighbor,
-      ttk::SimplexId &recvMessageSize) {
-      std::vector<Response> send_buf;
+      ttk::SimplexId &recvMessageSize,
+      std::vector<Response> &send_buf) {
+      send_buf.clear();
       int id{-1};
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
       localPointIds.reserve(nbPoints_);
-      this->SendRecvVector<ttk::SimplexId>(cellGhostGlobalVertexIds,
-                                           receivedCells, recvMessageSize,
-                                           mpiIdType_, neighbor);
 #pragma omp parallel for num_threads(threadNumber_) firstprivate(localPointIds)
       for(int n = 0; n < recvMessageSize; n += nbPoints_ + 1) {
         localPointIds.clear();
@@ -316,25 +285,16 @@ namespace ttk {
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
-      this->SendRecvVector<Response>(send_buf, receivedResponse,
-                                     recvMessageSize, mpiResponseType_,
-                                     neighbor);
     }
 
-    void inline exchangeAndIdentifyCells(
+    void inline identifyCells(
       std::vector<std::vector<Response>> &locatedSimplices,
-      std::vector<ttk::SimplexId> &cellGhostGlobalIds,
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
-      std::vector<Response> &receivedResponse,
-      int neighbor,
-      ttk::SimplexId &recvMessageSize) {
-      std::vector<Response> send_buf;
+      ttk::SimplexId &recvMessageSize,
+      std::vector<Response> &send_buf) {
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
-
-      this->SendRecvVector<ttk::SimplexId>(
-        cellGhostGlobalIds, receivedOutdatedGlobalIds, recvMessageSize,
-        mpiIdType_, neighbor);
+      send_buf.clear();
 #pragma omp parallel for num_threads(threadNumber_)
       for(int n = 0; n < recvMessageSize; n++) {
         search = cellOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
@@ -352,9 +312,6 @@ namespace ttk {
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
-      this->SendRecvVector<Response>(send_buf, receivedResponse,
-                                     recvMessageSize, mpiResponseType_,
-                                     neighbor);
     }
 
     template <typename dataType>
@@ -373,6 +330,49 @@ namespace ttk {
                    ttk::MPIrank_, receiveBuffer.data(), recvMessageSize,
                    messageType, neighbor, neighbor, ttk::MPIcomm_,
                    MPI_STATUS_IGNORE);
+    }
+
+    template <typename dataType>
+    void sendVector(std::vector<dataType> &vectorToSend,
+                    MPI_Datatype messageType,
+                    int neighbor) const {
+      ttk::SimplexId dataSize = vectorToSend.size();
+      MPI_Send(&dataSize, 1, getMPIType(dataSize), neighbor, ttk::MPIrank_,
+               ttk::MPIcomm_);
+      MPI_Send(vectorToSend.data(), dataSize, messageType, neighbor,
+               ttk::MPIrank_, ttk::MPIcomm_);
+    }
+
+    template <typename dataType>
+    void sendToAllNeighbors(std::vector<dataType> &vectorToSend,
+                            MPI_Datatype messageType) const {
+
+      for(int j = 0; j < neighborNumber_; j++) {
+        sendVector<dataType>(vectorToSend, messageType, neighbors_[j]);
+      }
+    }
+
+    template <typename dataType>
+    void sendToAllNeighborsUsingRankArray(
+      std::vector<std::vector<dataType>> &vectorToSend,
+      MPI_Datatype messageType) {
+
+      for(int j = 0; j < neighborNumber_; j++) {
+        sendVector<dataType>(vectorToSend[neighborToId_[neighbors_[j]]],
+                             messageType, neighbors_[j]);
+      }
+    }
+
+    template <typename dataType>
+    void recvVector(std::vector<dataType> &receiveBuffer,
+                    ttk::SimplexId &recvMessageSize,
+                    MPI_Datatype messageType,
+                    int neighbor) const {
+      MPI_Recv(&recvMessageSize, 1, getMPIType(recvMessageSize), neighbor,
+               neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+      receiveBuffer.resize(recvMessageSize);
+      MPI_Recv(receiveBuffer.data(), recvMessageSize, messageType, neighbor,
+               neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
     }
 
     void generateGlobalIds(
@@ -514,55 +514,66 @@ namespace ttk {
 
       ttk::SimplexId recvMessageSize{0};
       std::vector<Point> receivedPoints;
-      std::vector<ttk::SimplexId> receivedGlobalIds;
-      std::vector<ttk::SimplexId> receivedCells;
+      std::vector<ttk::SimplexId> receivedIds;
       std::vector<Response> receivedResponse;
+      std::vector<Response> send_buf;
       std::vector<std::vector<Response>> locatedSimplices(threadNumber_);
-      if(outdatedGlobalPointIds_ == nullptr) {
-        for(int i = 0; i < neighborNumber_; i++) {
-          if(vertRankArray_ == nullptr) {
-            this->exchangeAndLocatePoints(
-              locatedSimplices, vertGhostCoordinates, receivedPoints,
-              receivedResponse, neighbors_[i], recvMessageSize);
-            int size = static_cast<int>(receivedResponse.size());
-            for(int n = 0; n < size; n++) {
-              int sizeGhost = vertGhostCoordinates.size();
-              for(int m = 0; m < sizeGhost; m++) {
-                if(vertGhostCoordinates[m].localId == receivedResponse[n].id) {
-                  vertGhostCoordinates.erase(vertGhostCoordinates.begin() + m);
-                }
-              }
+      for(int i = 0; i < neighborNumber_ + 1; i++) {
+        if((i == neighborNumber_ && !hasSentData_)
+           || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+          if(outdatedGlobalPointIds_ == nullptr) {
+            if(vertRankArray_ == nullptr) {
+              sendToAllNeighbors<Point>(vertGhostCoordinates, mpiPointType_);
+            } else {
+              sendToAllNeighborsUsingRankArray<Point>(
+                vertGhostCoordinatesPerRank, mpiPointType_);
             }
           } else {
-            this->exchangeAndLocatePoints(
-              locatedSimplices, vertGhostCoordinatesPerRank[i], receivedPoints,
-              receivedResponse, neighbors_[i], recvMessageSize);
+            if(vertRankArray_ == nullptr) {
+              sendToAllNeighbors<ttk::SimplexId>(
+                vertGhostGlobalIds, mpiIdType_);
+            } else {
+              sendToAllNeighborsUsingRankArray<ttk::SimplexId>(
+                vertGhostGlobalIdsPerRank, mpiIdType_);
+            }
           }
-        }
-      } else {
-        for(int i = 0; i < neighborNumber_; i++) {
-          if(vertRankArray_ == nullptr) {
-            this->exchangeAndIdentifyPoints(
-              locatedSimplices, vertGhostGlobalIds, receivedGlobalIds,
-              receivedResponse, neighbors_[i], recvMessageSize);
-            int size = static_cast<int>(receivedResponse.size());
-            for(int n = 0; n < size; n++) {
-              int sizeGhost = vertGhostCoordinates.size();
-              for(int m = 0; m < sizeGhost; m++) {
-                if(vertGhostCoordinates[m].localId == receivedResponse[n].id) {
-                  vertGhostCoordinates.erase(vertGhostCoordinates.begin() + m);
-                  break;
-                }
+          for(int j = 0; j < neighborNumber_; j++) {
+            recvVector<Response>(receivedResponse, recvMessageSize,
+                                 mpiResponseType_, neighbors_[j]);
+            if(outdatedGlobalPointIds_ == nullptr) {
+              for(int n = 0; n < recvMessageSize; n++) {
+                vertexIdentifiers_->at(receivedResponse[n].id)
+                  = receivedResponse[n].globalId;
+                vertGtoL_[receivedResponse[n].globalId]
+                  = receivedResponse[n].id;
+              }
+            } else {
+              for(int n = 0; n < recvMessageSize; n++) {
+                vertexIdentifiers_->at(
+                  vertOutdatedGtoL_[receivedResponse[n].id])
+                  = receivedResponse[n].globalId;
+                vertGtoL_[receivedResponse[n].globalId]
+                  = receivedResponse[n].id;
               }
             }
-          } else {
-            this->exchangeAndIdentifyPoints(
-              locatedSimplices, vertGhostGlobalIdsPerRank[i], receivedGlobalIds,
-              receivedResponse, neighbors_[i], recvMessageSize);
           }
+          hasSentData_ = 1;
+        } else {
+          if(outdatedGlobalPointIds_ == nullptr) {
+            recvVector<Point>(receivedPoints, recvMessageSize, mpiPointType_,
+                              neighbors_[i - hasSentData_]);
+            locatePoints(
+              locatedSimplices, receivedPoints, recvMessageSize, send_buf);
+          } else {
+            recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
+                                       neighbors_[i - hasSentData_]);
+            identifyPoints(
+              locatedSimplices, receivedIds, recvMessageSize, send_buf);
+          }
+          sendVector<Response>(
+            send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
         }
       }
-
       int id{-1};
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
@@ -599,64 +610,57 @@ namespace ttk {
           }
         }
       }
-      printMsg("Cells preparation done");
-      if(outdatedGlobalCellIds_ == nullptr) {
-        for(int i = 0; i < neighborNumber_; i++) {
-          if(cellRankArray_ == nullptr) {
-            this->exchangeAndLocateCells(
-              locatedSimplices, cellGhostGlobalVertexIds, receivedCells,
-              receivedResponse, neighbors_[i], recvMessageSize);
-            // printMsg("Cells exchanged");
-            int size = static_cast<int>(receivedResponse.size());
-            for(int n = 0; n < size; n++) {
-              int sizeGhost = cellGhostGlobalVertexIds.size();
-              for(int m = 0; m < sizeGhost; m += nbPoints_ + 1) {
-                if(cellGhostGlobalVertexIds[m] == receivedResponse[n].id) {
-                  cellIdentifiers_->at(receivedResponse[n].id)
-                    = receivedResponse[n].globalId;
-                  cellGhostGlobalVertexIds.erase(
-                    cellGhostGlobalVertexIds.begin() + m,
-                    cellGhostGlobalVertexIds.begin() + m + nbPoints_ + 1);
-                  break;
-                }
-              }
+      hasSentData_ = 0;
+
+      // Exchange cells
+      for(int i = 0; i < neighborNumber_ + 1; i++) {
+        if((i == neighborNumber_ && !hasSentData_)
+           || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+          if(outdatedGlobalCellIds_ == nullptr) {
+            if(cellRankArray_ == nullptr) {
+              sendToAllNeighbors<ttk::SimplexId>(
+                cellGhostGlobalVertexIds, mpiIdType_);
+            } else {
+              sendToAllNeighborsUsingRankArray<ttk::SimplexId>(
+                cellGhostGlobalVertexIdsPerRank, mpiIdType_);
             }
           } else {
-            this->exchangeAndLocateCells(
-              locatedSimplices, cellGhostGlobalVertexIdsPerRank[i],
-              receivedCells, receivedResponse, neighbors_[i], recvMessageSize);
-            for(int n = 0; n < recvMessageSize; n++) {
-              cellIdentifiers_->at(receivedResponse[n].id)
-                = receivedResponse[n].globalId;
+            if(cellRankArray_ == nullptr) {
+              sendToAllNeighbors<ttk::SimplexId>(
+                cellGhostGlobalIds, mpiIdType_);
+            } else {
+              sendToAllNeighborsUsingRankArray<ttk::SimplexId>(
+                cellGhostGlobalIdsPerRank, mpiIdType_);
             }
           }
-        }
-      } else {
-        for(int i = 0; i < neighborNumber_; i++) {
-          if(cellRankArray_ == nullptr) {
-            this->exchangeAndIdentifyCells(locatedSimplices, cellGhostGlobalIds,
-                                           receivedGlobalIds, receivedResponse,
-                                           neighbors_[i], recvMessageSize);
-            for(int n = 0; n < recvMessageSize; n++) {
-              cellIdentifiers_->at(cellOutdatedGtoL_[receivedResponse[n].id])
-                = receivedResponse[n].globalId;
-              int sizeGhost = cellGhostGlobalIds.size();
-              for(int m = 0; m < sizeGhost; m++) {
-                if(cellGhostGlobalIds[m] == receivedResponse[n].id) {
-                  cellGhostGlobalIds.erase(cellGhostGlobalIds.begin() + m);
-                  break;
-                }
+          for(int j = 0; j < neighborNumber_; j++) {
+            recvVector<Response>(receivedResponse, recvMessageSize,
+                                 mpiResponseType_, neighbors_[j]);
+            if(outdatedGlobalCellIds_ == nullptr) {
+              for(int n = 0; n < recvMessageSize; n++) {
+                cellIdentifiers_->at(receivedResponse[n].id)
+                  = receivedResponse[n].globalId;
+              }
+            } else {
+              for(int n = 0; n < recvMessageSize; n++) {
+                cellIdentifiers_->at(cellOutdatedGtoL_[receivedResponse[n].id])
+                  = receivedResponse[n].globalId;
               }
             }
-          } else {
-            this->exchangeAndIdentifyCells(
-              locatedSimplices, cellGhostGlobalIdsPerRank[i], receivedGlobalIds,
-              receivedResponse, neighbors_[i], recvMessageSize);
-            for(int n = 0; n < recvMessageSize; n++) {
-              cellIdentifiers_->at(cellOutdatedGtoL_[receivedResponse[n].id])
-                = receivedResponse[n].globalId;
-            }
           }
+          hasSentData_ = 1;
+        } else {
+          recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
+                                     neighbors_[i - hasSentData_]);
+          if(outdatedGlobalCellIds_ == nullptr) {
+            locateCells(
+              locatedSimplices, receivedIds, recvMessageSize, send_buf);
+          } else {
+            identifyCells(
+              locatedSimplices, receivedIds, recvMessageSize, send_buf);
+          }
+          sendVector<Response>(
+            send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
         }
       }
 
@@ -772,6 +776,7 @@ namespace ttk {
     MPI_Datatype mpiResponseType_;
     MPI_Datatype mpiPointType_;
     int dimension_{};
+    int hasSentData_{0};
     ttk::SimplexId *vertRankArray_{nullptr};
     ttk::SimplexId *cellRankArray_{nullptr};
     unsigned char *vertGhost_{nullptr};
