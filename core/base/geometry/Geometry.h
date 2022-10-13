@@ -315,6 +315,49 @@ namespace ttk {
       return powInt(static_cast<T>(10), n);
     }
 
+    /**
+     * @brief Optimized Power function with lambdas.
+     *
+     * If ttk::Geometry::powInt, the integer power function, is called
+     * in a hot path, the if statements on the integer exponent can
+     * limit the performance. This macro helps by extracting the
+     * specialized computations for a given integer exponent into
+     * lambdas. These lambdas can be passed as arguments to a
+     * templated function outside the hot path to bypass the if
+     * statements.
+     *
+     * @param[in] CALLEXPR Expression containing the call to a
+     * templated function/method. This templated function should take
+     * one of the lambdas as last parameter.
+     * @param[in] TYPE Data type (template parameter).
+     * @param[in] EXPN Local variable containing the integer exponent.
+     * @param[in] ... List of @p CALLEXPR arguments before the lambda
+     * placeholder.
+     *
+     * c.f. @ref ttk::LDistance or @ref ttk::KDTree for example uses.
+     */
+#define TTK_POW_LAMBDA(CALLEXPR, TYPE, EXPN, ...)                      \
+  {                                                                    \
+    const auto one = [](const TYPE ttkNotUsed(a)) { return TYPE{1}; }; \
+    const auto id = [](const TYPE a) { return a; };                    \
+    const auto square = [](const TYPE a) { return a * a; };            \
+    const auto cube = [](const TYPE a) { return a * a * a; };          \
+    const auto powInt                                                  \
+      = [EXPN](const TYPE a) { return Geometry::powInt(a, EXPN); };    \
+                                                                       \
+    if(EXPN == 0) {                                                    \
+      CALLEXPR(__VA_ARGS__, one);                                      \
+    } else if(EXPN == 1) {                                             \
+      CALLEXPR(__VA_ARGS__, id);                                       \
+    } else if(EXPN == 2) {                                             \
+      CALLEXPR(__VA_ARGS__, square);                                   \
+    } else if(EXPN == 3) {                                             \
+      CALLEXPR(__VA_ARGS__, cube);                                     \
+    } else {                                                           \
+      CALLEXPR(__VA_ARGS__, powInt);                                   \
+    }                                                                  \
+  }
+
     /// Compute the power of an arithmetic value
     /// (redirect to std::pow with a floating-point exponent and to
     /// Geometry::powInt with an integer exponent)

@@ -34,12 +34,13 @@ namespace ttk {
                 const std::string &distanceType,
                 const SimplexId vertexNumber);
 
-    template <class dataType>
+    template <class dataType, typename PowerFunc>
     int computeLn(const dataType *const input1,
                   const dataType *const input2,
                   dataType *const output,
                   const int n,
-                  const SimplexId vertexNumber);
+                  const SimplexId vertexNumber,
+                  const PowerFunc &powerFunc);
 
     template <class dataType>
     int computeLinf(const dataType *const input1,
@@ -91,7 +92,8 @@ int ttk::LDistance::execute(const dataType *const inputData1,
     if(n < 1)
       return -4;
 
-    status = computeLn(inputData1, inputData2, outputData, n, vertexNumber);
+    TTK_POW_LAMBDA(status = computeLn, dataType, n, inputData1, inputData2,
+                   outputData, n, vertexNumber);
   }
 
   if(this->printRes) {
@@ -102,12 +104,13 @@ int ttk::LDistance::execute(const dataType *const inputData1,
   return status;
 }
 
-template <class dataType>
+template <class dataType, typename PowerFunc>
 int ttk::LDistance::computeLn(const dataType *const input1,
                               const dataType *const input2,
                               dataType *const output,
                               const int n,
-                              const ttk::SimplexId vertexNumber) {
+                              const ttk::SimplexId vertexNumber,
+                              const PowerFunc &powerFunc) {
   dataType sum = 0;
 
 // Compute difference for each point.
@@ -116,7 +119,7 @@ int ttk::LDistance::computeLn(const dataType *const input1,
 #endif
   for(ttk::SimplexId i = 0; i < vertexNumber; ++i) {
     const dataType diff = abs_diff<dataType>(input1[i], input2[i]);
-    const dataType power = Geometry::pow(diff, n);
+    const dataType power = powerFunc(diff);
 
     // Careful: huge dataset + huge values
     // may exceed double capacity.

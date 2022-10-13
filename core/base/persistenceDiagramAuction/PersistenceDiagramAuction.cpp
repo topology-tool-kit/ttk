@@ -327,7 +327,7 @@ int ttk::Bidder::runDiagonalKDTBidding(
   int wasserstein,
   double epsilon,
   double geometricalFactor,
-  std::vector<KDTree<double> *> &correspondance_kdt_map,
+  std::vector<KDT *> &correspondance_kdt_map,
   std::priority_queue<std::pair<int, double>,
                       std::vector<std::pair<int, double>>,
                       Compare> &diagonal_queue,
@@ -447,32 +447,30 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
                                int wasserstein,
                                double epsilon,
                                double geometricalFactor,
-                               KDTree<double> *kdt,
+                               KDT *kdt,
                                const int kdt_index) {
 
   /// Runs bidding of a non-diagonal bidder
-  std::vector<KDTree<double> *> neighbours;
+  std::vector<KDT *> neighbours;
   std::vector<double> costs;
 
-  std::vector<double> coordinates;
-  coordinates.push_back(geometricalFactor * this->x_);
-  coordinates.push_back(geometricalFactor * this->y_);
+  std::array<double, 5> coordinates{
+    geometricalFactor * this->x_, geometricalFactor * this->y_, 0.0, 0.0, 0.0,
+  };
   if(geometricalFactor < 1) {
-    coordinates.push_back((1 - geometricalFactor) * this->coords_[0]);
-    coordinates.push_back((1 - geometricalFactor) * this->coords_[1]);
-    coordinates.push_back((1 - geometricalFactor) * this->coords_[2]);
+    coordinates[2] = (1 - geometricalFactor) * this->coords_[0];
+    coordinates[3] = (1 - geometricalFactor) * this->coords_[1];
+    coordinates[4] = (1 - geometricalFactor) * this->coords_[2];
   }
 
   kdt->getKClosest(2, coordinates, neighbours, costs, kdt_index);
   double best_val, second_val;
-  KDTree<double> *closest_kdt;
+  KDT *closest_kdt;
   Good *best_good{};
   if(costs.size() == 2) {
-    std::vector<int> idx(2);
-    idx[0] = 0;
-    idx[1] = 1;
-    sort(idx.begin(), idx.end(),
-         [&costs](int &a, int &b) { return costs[a] < costs[b]; });
+    std::array<int, 2> idx{0, 1};
+    std::sort(idx.begin(), idx.end(),
+              [&costs](int &a, int &b) { return costs[a] < costs[b]; });
 
     closest_kdt = neighbours[idx[0]];
     best_good = &(*goods)[closest_kdt->id_];

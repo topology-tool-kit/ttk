@@ -300,8 +300,10 @@ double ttk::BottleneckDistance::computeGeometricalRange(
   maxY = std::max(max1[1], max2[1]);
   maxZ = std::max(max1[2], max2[2]);
 
-  return std::sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
-                   + Geometry::pow(maxZ - minZ, 2));
+  const auto square = [](const double a) { return a * a; };
+
+  return std::sqrt(square(maxX - minX) + square(maxY - minY)
+                   + square(maxZ - minZ));
 }
 
 double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
