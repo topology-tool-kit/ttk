@@ -53,22 +53,6 @@ int VTUToDiagram(ttk::DiagramType &diagram,
 
   const bool embed = coords == nullptr;
 
-  int nPairs = pairId->GetNumberOfTuples();
-
-  // compact pairIds in [0, nPairs - 1] (diagonal excepted)
-  for(int i = 0; i < nPairs; i++) {
-    if(pairId->GetTuple1(i) != -1) {
-      pairId->SetTuple1(i, i);
-    } else {
-      // detect diagram diagonal
-      nPairs -= 1;
-    }
-  }
-
-  if(nPairs < 1) {
-    dbg.printErr("Diagram has no pairs");
-    return -4;
-  }
   if(pairId == nullptr) {
     dbg.printErr("Missing PairIdentifier cell data array");
     return -5;
@@ -96,6 +80,23 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   if(isFinite == nullptr) {
     dbg.printErr("Missing IsFinite cell data array");
     return -12;
+  }
+
+  int nPairs = pairId->GetNumberOfTuples();
+
+  // compact pairIds in [0, nPairs - 1] (diagonal excepted)
+  for(int i = 0; i < nPairs; i++) {
+    if(pairId->GetTuple1(i) != -1) {
+      pairId->SetTuple1(i, i);
+    } else {
+      // detect diagram diagonal
+      nPairs -= 1;
+    }
+  }
+
+  if(nPairs < 1) {
+    dbg.printErr("Diagram has no pairs");
+    return -4;
   }
 
   diagram.resize(nPairs);
