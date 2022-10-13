@@ -67,6 +67,10 @@ namespace ttk {
     return ttk::MPIsize_ > 1;
   };
 
+  inline bool hasInitializedMPI() {
+    return ttk::MPIsize_ > 0;
+  };
+
   inline int startMPITimer(Timer &t, int rank, int size) {
     if(size > 0) {
       MPI_Barrier(ttk::MPIcomm_);
