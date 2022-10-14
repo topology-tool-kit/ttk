@@ -45,6 +45,8 @@ namespace ttk {
   public:
     Identifiers();
 
+    ~Identifiers() override = default;
+
     void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
     }
@@ -67,7 +69,7 @@ namespace ttk {
     }
 
     inline void setPointsToCells(
-      const std::vector<std::vector<ttk::SimplexId>> pointsToCells) {
+      const std::vector<std::vector<ttk::SimplexId>> &pointsToCells) {
       pointsToCells_ = pointsToCells;
     }
 

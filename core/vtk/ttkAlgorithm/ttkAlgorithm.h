@@ -216,6 +216,8 @@ protected:
    */
   void MPIPipelinePreconditioning(vtkDataSet *input);
 
+  void GenerateGlobalIds(vtkDataSet *input);
+
   /**
    * This method is called in GetTriangulation, after the triangulation as been
    * created. It retrieves several attributes from the pipeline to precondition

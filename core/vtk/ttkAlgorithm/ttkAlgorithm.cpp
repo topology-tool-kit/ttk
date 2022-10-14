@@ -10,6 +10,7 @@
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
 #if TTK_ENABLE_MPI
+#include <Identifiers.h>
 #include <vtkCellData.h>
 #include <vtkGenerateGlobalIds.h>
 #include <vtkGhostCellsGenerator.h>
@@ -422,17 +423,159 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 }
 
 #if TTK_ENABLE_MPI
+
+void ttkAlgorithm::GenerateGlobalIds(vtkDataSet *input) {
+  ttk::Identifiers identifiers;
+  identifiers.setDebugMsgPrefix("Identifiers");
+  std::vector<ttk::SimplexId> vertexIdentifiers(input->GetNumberOfPoints(), -1);
+  identifiers.setVertexIdentifiers(&vertexIdentifiers);
+  std::vector<ttk::SimplexId> cellIdentifiers(input->GetNumberOfCells(), -1);
+  identifiers.setCellIdentifiers(&cellIdentifiers);
+  int vertexNumber = input->GetNumberOfPoints();
+  identifiers.setVertexNumber(vertexNumber);
+  int cellNumber = input->GetNumberOfCells();
+  identifiers.setCellNumber(cellNumber);
+
+#ifdef TTK_ENABLE_MPI
+  double *boundingBox = input->GetBounds();
+  identifiers.setBounds(boundingBox);
+  switch(input->GetDataObjectType()) {
+    case VTK_UNSTRUCTURED_GRID:
+    case VTK_POLY_DATA: {
+
+      identifiers.setOutdatedGlobalPointIds(
+        ttkUtils::GetPointer<ttk::LongSimplexId>(
+          input->GetPointData()->GetArray("GlobalPointIds")));
+      identifiers.setOutdatedGlobalCellIds(
+        ttkUtils::GetPointer<ttk::LongSimplexId>(
+          input->GetCellData()->GetArray("GlobalCellIds")));
+      identifiers.setVertRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+        input->GetPointData()->GetArray("RankArray")));
+      identifiers.setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+        input->GetCellData()->GetArray("RankArray")));
+      identifiers.setVertGhost(ttkUtils::GetPointer<unsigned char>(
+        input->GetPointData()->GetArray("vtkGhostType")));
+      unsigned char *cellGhost = ttkUtils::GetPointer<unsigned char>(
+        input->GetCellData()->GetArray("vtkGhostType"));
+      identifiers.setCellGhost(cellGhost);
+      vtkPointSet *pointSet = vtkPointSet::SafeDownCast(input);
+      identifiers.setPointSet(
+        static_cast<float *>(ttkUtils::GetVoidPointer(pointSet->GetPoints())));
+      vtkCellArray *cells = nullptr;
+      switch(pointSet->GetDataObjectType()) {
+        case VTK_UNSTRUCTURED_GRID: {
+          auto dataSetAsUG = static_cast<vtkUnstructuredGrid *>(pointSet);
+          cells = dataSetAsUG->GetCells();
+        }
+        case VTK_POLY_DATA: {
+          auto dataSetAsPD = static_cast<vtkPolyData *>(pointSet);
+          cells = dataSetAsPD->GetNumberOfPolys() > 0 ? dataSetAsPD->GetPolys()
+                  : dataSetAsPD->GetNumberOfLines() > 0
+                    ? dataSetAsPD->GetLines()
+                    : dataSetAsPD->GetVerts();
+        }
+      }
+      if(!cells->IsStorage64Bit()) {
+        if(cells->CanConvertTo64BitStorage()) {
+          this->printWrn("Converting the cell array to 64-bit storage");
+          bool success = cells->ConvertTo64BitStorage();
+          if(!success) {
+            this->printErr(
+              "Error converting the provided cell array to 64-bit storage");
+            return;
+          }
+        } else {
+          this->printErr(
+            "Cannot convert the provided cell array to 64-bit storage");
+          return;
+        }
+      }
+
+      identifiers.setConnectivity(static_cast<ttk::LongSimplexId *>(
+        ttkUtils::GetVoidPointer(cells->GetConnectivityArray())));
+
+      std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber);
+      vtkIdList *cellList = vtkIdList::New();
+      for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
+        input->GetPointCells(i, cellList);
+        for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
+          if(cellGhost[cellList->GetId(j)] == 0) {
+            pointsToCells[i].push_back(cellList->GetId(j));
+          }
+        }
+      }
+
+      identifiers.setPointsToCells(pointsToCells);
+
+      identifiers.initializeNeighbors(boundingBox);
+
+      identifiers.initializeMPITypes();
+
+      vtkIdList *pointCell = vtkIdList::New();
+      input->GetCellPoints(0, pointCell);
+      int nbPoints = pointCell->GetNumberOfIds();
+      identifiers.setNbPoints(nbPoints);
+      identifiers.setDomainDimension(nbPoints - 1);
+      identifiers.buildKDTree();
+      identifiers.executePolyData();
+      break;
+    }
+    case VTK_IMAGE_DATA: {
+      vtkImageData *data = vtkImageData::SafeDownCast(input);
+      identifiers.setDims(data->GetDimensions());
+      identifiers.setSpacing(data->GetSpacing());
+      identifiers.executeImageData();
+      break;
+    }
+    default: {
+      this->printErr("Unable to triangulate `"
+                     + std::string(input->GetClassName()) + "`");
+    }
+  }
+
+#else
+  identifiers->execute();
+#endif
+  // use a pointer-base copy for the input data -- to adapt if your wrapper does
+  // not produce an output of the type of the input.
+
+  vtkSmartPointer<ttkSimplexIdTypeArray> vtkVertexIdentifiers
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> vtkCellIdentifiers
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkVertexIdentifiers->SetName("GlobalPointIds");
+  vtkVertexIdentifiers->SetNumberOfComponents(1);
+  vtkVertexIdentifiers->SetNumberOfTuples(input->GetNumberOfPoints());
+
+  vtkCellIdentifiers->SetName("GlobalCellIds");
+  vtkCellIdentifiers->SetNumberOfComponents(1);
+  vtkCellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells());
+
+#pragma omp parallel for
+  for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
+    vtkVertexIdentifiers->SetTuple1(i, vertexIdentifiers[i]);
+  }
+
+#pragma omp parallel for
+  for(ttk::SimplexId i = 0; i < cellNumber; i++) {
+    vtkCellIdentifiers->SetTuple1(i, cellIdentifiers[i]);
+  }
+
+  input->GetPointData()->AddArray(vtkVertexIdentifiers);
+  input->GetCellData()->AddArray(vtkCellIdentifiers);
+}
+
 void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
-  vtkNew<vtkGenerateGlobalIds> globalIds;
-  // If the global point id array doesn't exist, it is created
-  if(input->GetPointData()->GetGlobalIds() == nullptr) {
-    printWrn("Global ids haven't been produced in sequential, the parallel "
-             "result may be different");
-    globalIds->SetInputData(input);
-    globalIds->Update();
-    input->ShallowCopy(globalIds->GetOutputDataObject(0));
-  }
+  // vtkNew<vtkGenerateGlobalIds> globalIds;
+  // // If the global point id array doesn't exist, it is created
+  // if(input->GetPointData()->GetGlobalIds() == nullptr) {
+  //   printWrn("Global ids haven't been produced in sequential, the parallel "
+  //            "result may be different");
+  //   globalIds->SetInputData(input);
+  //   globalIds->Update();
+  //   input->ShallowCopy(globalIds->GetOutputDataObject(0));
+  // }
 
   vtkNew<vtkGhostCellsGenerator> generator;
   if(!input->HasAnyGhostCells()) {
@@ -447,6 +590,8 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
       generator->GetOutputDataObject(0)->GetGhostArray(1));
   }
 
+  this->GenerateGlobalIds(input);
+
   // If the RankArray array doesn't exist for pointdata, it is created
   if(input->GetPointData()->GetArray("RankArray") == nullptr) {
     int vertexNumber = input->GetNumberOfPoints();
@@ -454,7 +599,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     double *boundingBox = input->GetBounds();
     ttk::produceRankArray(rankArray,
                           ttkUtils::GetPointer<ttk::LongSimplexId>(
-                            input->GetPointData()->GetGlobalIds()),
+                            input->GetPointData()->GetArray("GlobalPointIds")),
                           ttkUtils::GetPointer<unsigned char>(
                             input->GetPointData()->GetArray("vtkGhostType")),
                           vertexNumber, boundingBox);
@@ -478,7 +623,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     double *boundingBox = input->GetBounds();
     ttk::produceRankArray(cellsRankArray,
                           ttkUtils::GetPointer<ttk::LongSimplexId>(
-                            input->GetCellData()->GetGlobalIds()),
+                            input->GetCellData()->GetArray("GlobalCellIds")),
                           ttkUtils::GetPointer<unsigned char>(
                             input->GetCellData()->GetArray("vtkGhostType")),
                           cellNumber, boundingBox);
