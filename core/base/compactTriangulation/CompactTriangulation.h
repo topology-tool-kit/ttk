@@ -1493,6 +1493,8 @@ namespace ttk {
      */
     inline void initCache(const float ratio = 0.2) {
       cacheSize_ = nodeNumber_ * ratio + 1;
+      caches_.resize(threadNumber_);
+      cacheMaps_.resize(threadNumber_);
       for(int i = 0; i < threadNumber_; i++) {
         caches_[i].clear();
         cacheMaps_[i].clear();
