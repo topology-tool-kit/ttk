@@ -57,15 +57,11 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - uses: dsaltares/fetch-gh-release-asset@master
+    - name: Fetch archived ccache
       continue-on-error: true
-      name: Fetch archived ccache
-      with:
-        repo: "topology-tool-kit/ttk"
-        version: "tags/ccache"
-        file: "ttk-ccache-${{ matrix.os }}.tar.gz"
-        target: "ttk-ccache.tar.gz"
-        token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        wget -O ttk-ccache.tar.gz \
+          https://github.com/${{ github.repository }}/releases/download/ccache/ttk-ccache-${{ matrix.os }}.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
@@ -73,14 +69,10 @@ jobs:
         tar xzf ttk-ccache.tar.gz
         mv .ccache /home/runner/
 
-    - uses: dsaltares/fetch-gh-release-asset@master
-      name: Fetch TTK-ParaView headless Debian package
-      with:
-        repo: "${{ env.PV_REPO }}"
-        version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-headless-${{ matrix.os }}.deb"
-        target: "ttk-paraview-headless.deb"
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.deb
 
     - name: Install ParaView .deb
       run: |
@@ -232,7 +224,7 @@ jobs:
     - name: Fetch archived ccache
       continue-on-error: true
       run: |
-        wget https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-ccache-macOS.tar.gz
+        wget https://github.com/${{ github.repository }}/releases/download/ccache/ttk-ccache-macOS.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
@@ -359,15 +351,12 @@ jobs:
       run: |
         rm -rf C:/hostedtoolcache/windows/Python
 
-    - uses: dsaltares/fetch-gh-release-asset@master
+    - name: Fetch archived ccache
       continue-on-error: true
-      name: Fetch archived ccache
-      with:
-        repo: "topology-tool-kit/ttk"
-        version: "tags/ccache"
-        file: "ttk-sccache-windows.tar.gz"
-        target: "ttk-sccache.tar.gz"
-        token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        Invoke-WebRequest `
+        -OutFile ttk-sccache.tar.gz `
+        -Uri https://github.com/${{ github.repository }}/releases/download/ccache/ttk-sccache-windows.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
