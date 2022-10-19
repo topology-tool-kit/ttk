@@ -36,6 +36,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+    env:
+      CCACHE_DIR: /home/runner/.ccache
+      CCACHE_MAXSIZE: 500M
+
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
@@ -201,6 +205,21 @@ jobs:
         cat python/res.json
         diff python/hashes/${{ matrix.os }}.json python/res.json
 
+    - name: Archive cache
+      run: |
+        ccache -s
+        ccache -c
+        cd /home/runner
+        tar czf ttk-ccache.tar.gz .ccache
+
+    - name: Upload ccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-ccache-${{ matrix.os }}
+        path: /home/runner/ttk-ccache.tar.gz
+        retention-days: 2
+
 
   # -----------------#
   # Test macOS build #
@@ -210,6 +229,7 @@ jobs:
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
+      CCACHE_MAXSIZE: 200M
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
@@ -333,6 +353,21 @@ jobs:
         cat python/res.json
         diff python/hashes/macOS.json python/res.json
 
+    - name: Archive cache
+      run: |
+        ccache -s
+        ccache -c
+        cd /Users/runner/work/ttk
+        tar czf ttk-ccache.tar.gz .ccache
+
+    - name: Upload ccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-ccache-macOS
+        path: /Users/runner/work/ttk/ttk-ccache.tar.gz
+        retention-days: 2
+
 
   # ------------------ #
   # Test Windows build #
@@ -344,6 +379,7 @@ jobs:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk
       CONDA_ROOT: C:\Miniconda
+      SCCACHE_CACHE_SIZE: 200M
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
@@ -524,3 +560,107 @@ jobs:
         cd ttk-data
         type python\res.json
         FC python\hashes\windows.json python\res.json
+
+    - name: Archive cache
+      shell: bash
+      run: |
+        sccache -s
+        cd /c/Users/runneradmin/AppData/Local/Mozilla/sccache
+        tar czf ttk-sccache.tar.gz cache
+
+    - name: Upload sccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-sccache-windows
+        path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
+        retention-days: 2
+
+
+  # ---------------------------------------- #
+  # Upload ccache archives as release assets #
+  # ---------------------------------------- #
+  ccache-release:
+    runs-on: ubuntu-latest
+    needs: [test-build-ubuntu, test-build-macos, test-build-windows]
+    # trigger job only on the "topology-tool-kit" repository in case
+    # of a branch push (pull requests and tags not affected)
+    if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+    steps:
+
+    - name: Delete previous release
+      uses: actions/github-script@v6
+      continue-on-error: true
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          const { data: { id } } = await github.rest.repos.getReleaseByTag({
+            owner,
+            repo,
+            tag: "ccache"
+          })
+          await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
+
+    - name: Create Release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: "ccache",
+            name: "ccache archives",
+            body: "Holds ccache archives to speed up build jobs",
+            draft: false,
+            prerelease: true
+          })
+
+    - name: Fetch all uploaded artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Upload Ubuntu Bionic .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-ubuntu-18.04/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-ubuntu-18.04.tar.gz
+
+    - name: Upload Ubuntu Focal .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-ubuntu-20.04/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-ubuntu-20.04.tar.gz
+
+    - name: Upload Ubuntu Jammy .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-ubuntu-22.04/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-ubuntu-22.04.tar.gz
+
+    - name: Upload .pkg as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-macOS/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-macOS.tar.gz
+
+    - name: Upload sccache Windows archive
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-sccache-windows/ttk-sccache.tar.gz
+        asset_name: ttk-sccache-windows.tar.gz
+
+    - name: Delete ccache artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-*ccache*
