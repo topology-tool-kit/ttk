@@ -206,7 +206,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp ninja python open-mpi
+        brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
         python3 -m pip install scikit-learn packaging
@@ -236,6 +236,11 @@ jobs:
       run: |
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
+
+    - name: Set compilers as environment variables
+      run: |
+        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
 
     - name: Create & configure TTK build directory
       run: |
