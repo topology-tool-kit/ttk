@@ -56,13 +56,6 @@ namespace ttk {
 
       Timer buildTime;
       leafGrowth(mesh);
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-      // count process
-      for(SimplexId i = 0; i < scalars_->size; i++) {
-        if((*mt_data_.vert2tree)[i] != nullCorresp)
-          ++nbProcessed;
-      }
-#endif
       printTime(buildTime, "leafGrowth " + treeString, 3);
 
       Timer bbTime;
