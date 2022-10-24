@@ -308,7 +308,7 @@ namespace ttk {
 #endif
       for(unsigned int i = 0; i < noSample; ++i) {
         double angle = 360.0 / noSample * i;
-        double pi = 3.14159265359;
+        double pi = M_PI;
         double radius = 1.0;
         double x = -1 * radius * std::cos(-1 * angle * pi / 180);
         double y = -1 * radius * std::sin(-1 * angle * pi / 180);

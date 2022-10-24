@@ -876,7 +876,7 @@ public:
         // Get shift
         printMsg("// Get shift", ttk::debug::Priority::VERBOSE);
         double angle = 360.0 / noSample * iSample;
-        double pi = 3.14159265359;
+        double pi = M_PI;
         double diff_x = 0, diff_y = 0;
         double alphaShift
           = BarycenterPositionAlpha ? (-radius + 2 * radius * Alpha) * -1 : 0;
