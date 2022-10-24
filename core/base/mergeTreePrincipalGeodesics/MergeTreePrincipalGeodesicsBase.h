@@ -50,7 +50,7 @@ namespace ttk {
       bool useDoubleInput = false,
       bool isFirstInput = true) {
       MergeTreeDistance mergeTreeDistance;
-      mergeTreeDistance.setDebugLevel(2);
+      mergeTreeDistance.setDebugLevel(std::min(debugLevel_, 2));
       mergeTreeDistance.setPreprocess(false);
       mergeTreeDistance.setPostprocess(false);
       mergeTreeDistance.setBranchDecomposition(true);

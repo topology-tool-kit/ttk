@@ -102,7 +102,7 @@ namespace ttk {
             mergeTreeDistance.setBranchDecomposition(branchDecomposition_);
             mergeTreeDistance.setParallelize(parallelize_);
             mergeTreeDistance.setPersistenceThreshold(persistenceThreshold_);
-            mergeTreeDistance.setDebugLevel(2);
+            mergeTreeDistance.setDebugLevel(std::min(debugLevel_, 2));
             mergeTreeDistance.setThreadNumber(this->threadNumber_);
             mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
             mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);

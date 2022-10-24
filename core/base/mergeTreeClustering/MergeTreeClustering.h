@@ -612,7 +612,7 @@ namespace ttk {
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &finalMatchings) {
       MergeTreeBarycenter mergeTreeBary;
-      mergeTreeBary.setDebugLevel(2);
+      mergeTreeBary.setDebugLevel(std::min(debugLevel_, 2));
       mergeTreeBary.setProgressiveComputation(false);
       mergeTreeBary.setBranchDecomposition(true);
       mergeTreeBary.setNormalizedWasserstein(normalizedWasserstein_);

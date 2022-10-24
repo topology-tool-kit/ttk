@@ -830,7 +830,7 @@ namespace ttk {
       bool isFirstInput = true) {
       // Timer t_distance;
       MergeTreeDistance mergeTreeDistance;
-      mergeTreeDistance.setDebugLevel(2);
+      mergeTreeDistance.setDebugLevel(std::min(debugLevel_, 2));
       mergeTreeDistance.setProgressiveComputation(false);
       mergeTreeDistance.setPreprocess(false);
       mergeTreeDistance.setPostprocess(false);

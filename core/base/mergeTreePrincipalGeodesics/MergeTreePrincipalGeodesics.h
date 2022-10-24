@@ -290,7 +290,7 @@ namespace ttk {
       bool useDoubleInput = false,
       bool isFirstInput = true) {
       MergeTreeBarycenter mergeTreeBary;
-      mergeTreeBary.setDebugLevel(2);
+      mergeTreeBary.setDebugLevel(std::min(debugLevel_, 2));
       mergeTreeBary.setPreprocess(false);
       mergeTreeBary.setPostprocess(false);
       mergeTreeBary.setBranchDecomposition(true);
