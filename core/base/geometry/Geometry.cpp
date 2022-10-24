@@ -595,13 +595,14 @@ int Geometry::vectorProjection(const T *a,
                                T *out,
                                const int &dimension) {
   T dotProdBB = dotProduct(b, b, dimension);
-  if(dotProdBB > 1e-12) {
-    T dotProdAB = dotProduct(a, b, dimension);
+  T dotProdAB;
+  if(dotProdBB > PREC_DBL) {
+    dotProdAB = dotProduct(a, b, dimension);
     dotProdAB /= dotProdBB;
-    for(int i = 0; i < dimension; ++i)
-      out[i] = b[i] * dotProdAB;
   } else
-    return -1;
+    dotProdAB = 0; // Gram-Schmidt convention
+  for(int i = 0; i < dimension; ++i)
+    out[i] = b[i] * dotProdAB;
   return 0;
 }
 

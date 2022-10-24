@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <Geometry.h>
 #include <MergeTreeBase.h>
 #include <MergeTreeDistance.h>
 #include <cmath>
@@ -154,7 +155,7 @@ namespace ttk {
       double alpha = 0.0;
       int cptDivide = 0;
       for(unsigned int i = 0; i < vProj.size(); ++i) {
-        if(std::abs(v2Proj[i]) < 1e-12)
+        if(std::abs(v2Proj[i]) < Geometry::pow(10.0, -DBL_DIG))
           continue;
         alpha += (vProj[i] / v2Proj[i]);
         ++cptDivide;
