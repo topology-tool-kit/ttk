@@ -1433,9 +1433,9 @@ namespace ttk {
 
         // Compute correlations
         for(unsigned int g = 0; g < numberOfGeodesics_; ++g) {
-          double birthCorr = Statistics::corr(births, allTs_[g]);
-          double deathCorr = Statistics::corr(deaths, allTs_[g]);
-          double persCorr = Statistics::corr(pers, allTs_[g]);
+          double birthCorr = ttk::Statistics::corr(births, allTs_[g]);
+          double deathCorr = ttk::Statistics::corr(deaths, allTs_[g]);
+          double persCorr = ttk::Statistics::corr(pers, allTs_[g]);
 
           if(std::isnan(birthCorr))
             birthCorr = 0.0;
