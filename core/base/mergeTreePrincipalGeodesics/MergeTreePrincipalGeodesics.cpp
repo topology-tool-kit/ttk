@@ -16,7 +16,7 @@ namespace ttk {
     for(unsigned int i = 0; i < geodesicNumber; ++i) {
       double scalarProd
         = ttk::Geometry::dotProduct(sumVs[i], sumVs[geodesicNumber]);
-      cost += std::pow(scalarProd, 2);
+      cost += scalarProd * scalarProd;
       if(doPrint and geodesicNumber < 4) {
         std::stringstream ss;
         ss << " - " << i << " _ " << scalarProd;

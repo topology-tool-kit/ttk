@@ -340,10 +340,10 @@ namespace ttk {
 
     double regularizerCost(std::vector<std::vector<double>> &v,
                            std::vector<std::vector<double>> &v2) {
-      return std::pow((ttk::Geometry::dotProductFlatten(v, v2)
-                       - ttk::Geometry::magnitudeFlatten(v)
-                           * ttk::Geometry::magnitudeFlatten(v2)),
-                      2);
+      auto cost = ttk::Geometry::dotProductFlatten(v, v2)
+                  - ttk::Geometry::magnitudeFlatten(v)
+                      * ttk::Geometry::magnitudeFlatten(v2);
+      return cost * cost;
     }
 
     double projectionCost(std::vector<std::vector<double>> &v,
