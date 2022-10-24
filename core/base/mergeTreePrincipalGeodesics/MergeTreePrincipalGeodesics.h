@@ -521,7 +521,6 @@ namespace ttk {
         t_vectorCopy_time_ += t_vectorCopy.getElapsedTime();
       }
 
-      // double oldCost = -1, oldCost2 = -1;
       double optMapCost = 0.0;
       for(unsigned i = 0; i < noProjectionStep; ++i) {
         std::vector<std::vector<double>> vOld = v, v2Old = v2;
@@ -1043,7 +1042,6 @@ namespace ttk {
       // Detect convergence
       double tol = 0.01;
       tol = oldFrechetEnergy / 125.0;
-      // tol = oldFrechetEnergy / 200.0;
       converged = std::abs(frechetEnergy - oldFrechetEnergy) < tol;
       oldFrechetEnergy = frechetEnergy;
 
@@ -1159,7 +1157,6 @@ namespace ttk {
 
         ++iteration;
       }
-      //--iteration;
       printMsg(debug::Separator::L2);
       printMsg("Best energy is " + std::to_string(minFrechetEnergy)
                + " (iteration " + std::to_string(bestIteration) + " / "
@@ -1200,8 +1197,6 @@ namespace ttk {
           computeOneBarycenter<dataType>(trees2, barycenter2, baryMatchings2_,
                                          baryDistances2, useDoubleInput_,
                                          false);
-          // Copy min max pair if not useMinMaxPair
-          // copyMinMaxPair(barycenter, barycenter2);
           mergeTreeTemplateToDouble(barycenter2, barycenterInput2BDT_);
           for(unsigned int i = 0; i < inputToBaryDistances_.size(); ++i)
             inputToBaryDistances_[i]
@@ -1392,7 +1387,6 @@ namespace ttk {
                              useDoubleInput_, false);
           distance = mixDistances(distance, distance2);
         }
-        // std::cout << distance << std::endl;
         for(unsigned int j = 0; j < allTs_[i].size(); ++j)
           allScaledTs_[i][j] = allTs_[i][j] * distance;
       }
