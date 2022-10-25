@@ -550,7 +550,7 @@ namespace ttk {
 
       dataType res
         = memT[children1[0] + 1 * dim2 + children2[0] * dim3 + 1 * dim4];
-      
+
       return squared_ ? std::sqrt(res) : res;
     }
   };
