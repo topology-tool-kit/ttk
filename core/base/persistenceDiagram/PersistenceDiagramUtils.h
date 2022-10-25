@@ -30,8 +30,6 @@ namespace ttk {
     ttk::CriticalVertex birth;
     /** pair death */
     ttk::CriticalVertex death;
-    /** pair persistence (death.sfValue - birth.sfValue) */
-    double persistence;
     /** pair dimension */
     ttk::SimplexId dim;
     /** to help distinguish homology classes with infinite persistence
@@ -44,6 +42,13 @@ namespace ttk {
      */
     bool operator<(const PersistencePair &rhs) const {
       return this->birth.sfValue < rhs.birth.sfValue;
+    }
+
+    /**
+     * @brief Return the topological persistence of the pair
+     */
+    inline double persistence() const {
+      return this->death.sfValue - this->birth.sfValue;
     }
   };
 

@@ -112,7 +112,7 @@ int ttkPersistenceDiagramClustering::RequestData(
         diag.back().birth.type = ttk::CriticalType::Saddle1;
         diag.back().death.type = ttk::CriticalType::Local_maximum;
       }
-      max_persistences[i] = diag[0].persistence;
+      max_persistences[i] = diag[0].persistence();
     }
 
     this->max_dimension_total_

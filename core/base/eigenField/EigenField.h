@@ -41,9 +41,7 @@ namespace ttk {
 
     inline void
       preconditionTriangulation(AbstractTriangulation &triangulation) const {
-      triangulation.preconditionVertexNeighbors();
-      // cotan weights method needs more pre-processing
-      triangulation.preconditionEdgeTriangles();
+      Laplacian::preconditionTriangulation(triangulation);
     }
 
     template <typename T, class TriangulationType = AbstractTriangulation>

@@ -27,8 +27,8 @@ void ttk::PDBarycenter::runMatching(
   double *total_cost,
   double epsilon,
   std::vector<int> &sizes,
-  KDTree<double> &kdt,
-  std::vector<KDTree<double> *> &correspondance_kdt_map,
+  KDT &kdt,
+  std::vector<KDT *> &correspondance_kdt_map,
   std::vector<double> *min_diag_price,
   std::vector<double> *min_price,
   std::vector<std::vector<MatchingType>> *all_matchings,
@@ -72,8 +72,8 @@ void ttk::PDBarycenter::runMatching(
 void ttk::PDBarycenter::runMatchingAuction(
   double *total_cost,
   std::vector<int> &sizes,
-  KDTree<double> &kdt,
-  std::vector<KDTree<double> *> &correspondance_kdt_map,
+  KDT &kdt,
+  std::vector<KDT *> &correspondance_kdt_map,
   std::vector<double> *min_diag_price,
   std::vector<std::vector<MatchingType>> *all_matchings,
   bool use_kdt) {
@@ -535,8 +535,7 @@ void ttk::PDBarycenter::setInitialBarycenter(double min_persistence) {
 
 typename ttk::PDBarycenter::KDTreePair ttk::PDBarycenter::getKDTree() const {
   Timer tm;
-  auto kdt
-    = std::unique_ptr<KDTree<double>>(new KDTree<double>{true, wasserstein_});
+  auto kdt = std::unique_ptr<KDT>(new KDT{true, wasserstein_});
 
   const int dimension = geometrical_factor_ >= 1 ? 2 : 5;
 
@@ -605,8 +604,7 @@ std::vector<std::vector<ttk::MatchingType>>
   while(!finished) {
     Timer tm;
 
-    std::pair<std::unique_ptr<KDTree<double>>, std::vector<KDTree<double> *>>
-      pair;
+    std::pair<std::unique_ptr<KDT>, std::vector<KDT *>> pair;
     bool use_kdt = false;
     // If the barycenter is empty, do not compute the kdt (or it will crash :/)
     // TODO Fix KDTree to handle empty inputs...
@@ -626,9 +624,9 @@ std::vector<std::vector<ttk::MatchingType>>
     barycenter.clear();
     for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
       Good &g = barycenter_goods_[0].at(j);
-      barycenter.emplace_back(PersistencePair{
-        CriticalVertex{0, nt1_, g.x_, {}}, CriticalVertex{0, nt2_, g.y_, {}},
-        g.getPersistence(), diagramType_, true});
+      barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
+                                              CriticalVertex{0, nt2_, g.y_, {}},
+                                              diagramType_, true});
     }
 
     runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
@@ -675,9 +673,9 @@ std::vector<std::vector<ttk::MatchingType>>
   barycenter.resize(0);
   for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
     Good &g = barycenter_goods_[0].at(j);
-    barycenter.emplace_back(PersistencePair{
-      CriticalVertex{0, nt1_, g.x_, {}}, CriticalVertex{0, nt2_, g.y_, {}},
-      g.getPersistence(), diagramType_, true});
+    barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
+                                            CriticalVertex{0, nt2_, g.y_, {}},
+                                            diagramType_, true});
   }
 
   cost_ = sqrt(total_cost);

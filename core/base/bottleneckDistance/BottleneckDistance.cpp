@@ -12,6 +12,11 @@ int ttk::BottleneckDistance::execute(const ttk::DiagramType &diag0,
                                      std::vector<MatchingType> &matchings) {
   Timer t;
 
+  if(diag0.empty() || diag1.empty()) {
+    this->printErr("Empty input diagrams");
+    return -1;
+  }
+
   bool fromParaView = this->PVAlgorithm >= 0;
   if(fromParaView) {
     switch(this->PVAlgorithm) {
@@ -96,7 +101,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
   int sadI = 0, sadJ = 0;
 
   for(const auto &p1 : CTDiagram1) {
-    if(std::abs(p1.persistence) < zeroThresh)
+    if(std::abs(p1.persistence()) < zeroThresh)
       continue;
 
     bool isMin1 = (p1.birth.type == CriticalType::Local_minimum
@@ -118,7 +123,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
     sadJ = 0;
 
     for(const auto &p2 : CTDiagram2) {
-      if(std::abs(p2.persistence) < zeroThresh)
+      if(std::abs(p2.persistence()) < zeroThresh)
         continue;
 
       bool isMin2 = (p2.birth.type == CriticalType::Local_minimum
@@ -196,7 +201,7 @@ void ttk::BottleneckDistance::buildCostMatrices(
 
   // Last row: match remaining J components with diagonal.
   for(const auto &p3 : CTDiagram2) {
-    if(std::abs(p3.persistence) < zeroThresh)
+    if(std::abs(p3.persistence()) < zeroThresh)
       continue;
 
     bool isMin2 = (p3.birth.type == CriticalType::Local_minimum
@@ -295,8 +300,10 @@ double ttk::BottleneckDistance::computeGeometricalRange(
   maxY = std::max(max1[1], max2[1]);
   maxZ = std::max(max1[2], max2[2]);
 
-  return std::sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
-                   + Geometry::pow(maxZ - minZ, 2));
+  const auto square = [](const double a) { return a * a; };
+
+  return std::sqrt(square(maxX - minX) + square(maxY - minY)
+                   + square(maxZ - minZ));
 }
 
 double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
@@ -309,11 +316,11 @@ double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
   std::vector<double> toSort(CTDiagram1.size() + CTDiagram2.size());
   for(size_t i = 0; i < CTDiagram1.size(); ++i) {
     const auto &t = CTDiagram1[i];
-    toSort[i] = std::abs(t.persistence);
+    toSort[i] = std::abs(t.persistence());
   }
   for(size_t i = 0; i < CTDiagram2.size(); ++i) {
     const auto &t = CTDiagram2[i];
-    toSort[CTDiagram1.size() + i] = std::abs(t.persistence);
+    toSort[CTDiagram1.size() + i] = std::abs(t.persistence());
   }
 
   const auto minVal = *std::min_element(toSort.begin(), toSort.end());
@@ -335,7 +342,7 @@ void ttk::BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
     const auto &t = CTDiagram[i];
     const auto nt1 = t.birth.type;
     const auto nt2 = t.death.type;
-    const auto dt = t.persistence;
+    const auto dt = t.persistence();
     if(std::abs(dt) < zeroThresh)
       continue;
 
@@ -479,7 +486,7 @@ double ttk::BottleneckDistance::diagonalDistanceFunction(
   const bool isMin1 = a.birth.type == CriticalType::Local_minimum;
   const bool isMax1 = a.death.type == CriticalType::Local_maximum;
   const double infDistance = (isMin1 || isMax1 ? this->PE : this->PS)
-                             * Geometry::pow(std::abs(a.persistence), w);
+                             * Geometry::pow(std::abs(a.persistence()), w);
   const double geoDistance
     = (this->PX
          * Geometry::pow(std::abs(a.death.coords[0] - a.birth.coords[0]), w)

@@ -89,6 +89,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
 ///   </a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
@@ -218,6 +221,9 @@ public:
     this->Modified();
   }
 
+  vtkSetMacro(ClearDGCache, bool);
+  vtkGetMacro(ClearDGCache, bool);
+
 protected:
   ttkPersistenceDiagram();
 
@@ -244,4 +250,6 @@ private:
   // stores the values of Compute[Min|Sad][Sad|Max] GUI checkboxes
   // when "All Dimensions" is selected
   std::array<bool, 3> dmsDimsCache{true, true, true};
+  // clear DiscreteGradient cache after computation
+  bool ClearDGCache{false};
 };

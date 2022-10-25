@@ -17,6 +17,9 @@
 ///
 /// \b Online \b examples: \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
 ///   Diagram Clustering example</a> \n
 ///   - <a

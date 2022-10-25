@@ -8,6 +8,11 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
 #pragma once
 

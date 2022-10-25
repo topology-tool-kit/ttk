@@ -4,7 +4,6 @@ ttk_add_base_library(persistenceCurve
   HEADERS
     PersistenceCurve.h
   DEPENDS
-    discreteGradient
-    triangulation
-    ftmTreePP
+    persistenceDiagram
+    geometry
     )

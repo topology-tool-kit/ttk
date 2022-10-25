@@ -24,8 +24,7 @@ BaseClass::BaseClass() : lastObject_{false}, wrapper_{nullptr} {
     if(flag) {
       MPI_Comm_rank(MPI_COMM_WORLD, &ttk::MPIrank_);
       MPI_Comm_size(MPI_COMM_WORLD, &ttk::MPIsize_);
-      if(ttk::MPIsize_ > 1)
-        MPI_Comm_dup(MPI_COMM_WORLD, &ttk::MPIcomm_);
+      MPI_Comm_dup(MPI_COMM_WORLD, &ttk::MPIcomm_);
     } else {
       ttk::MPIrank_ = 0;
       ttk::MPIsize_ = 0;
