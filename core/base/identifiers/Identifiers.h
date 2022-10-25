@@ -118,7 +118,7 @@ namespace ttk {
     }
 
     void buildKDTree() {
-      kdt_ = KDTree<float>(false, 2);
+      kdt_ = KDTree<float, std::array<float, 3>>(false, 2);
       kdt_.build(pointSet_, vertexNumber_, dimension_);
     }
 
@@ -151,8 +151,8 @@ namespace ttk {
     }
 
     void inline findPoint(ttk::SimplexId &id, float x, float y, float z) {
-      std::vector<float> coordinates = {x, y, z};
-      std::vector<KDTree<float> *> neighbours;
+      std::array<float, 3> coordinates = {x, y, z};
+      std::vector<KDTree<float, std::array<float, 3>> *> neighbours;
       std::vector<float> costs;
       kdt_.getKClosest(1, coordinates, neighbours, costs);
       id = neighbours[0]->id_;
@@ -791,7 +791,7 @@ namespace ttk {
     ttk::LongSimplexId *outdatedGlobalCellIds_{nullptr};
     std::map<ttk::LongSimplexId, ttk::SimplexId> vertOutdatedGtoL_;
     std::map<ttk::LongSimplexId, ttk::SimplexId> cellOutdatedGtoL_;
-    KDTree<float> kdt_;
+    KDTree<float, std::array<float, 3>> kdt_;
 
 #endif
   }; // Identifiers class
