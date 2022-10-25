@@ -286,15 +286,19 @@ jobs:
           await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
 
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v6
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: true
+        script: |
+          const { owner, repo } = context.repo
+          await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: "ccache",
+            name: "ccache archives",
+            body: "Holds ccache archives to speed up build jobs",
+            draft: false,
+            prerelease: true
+          })
 
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v3
