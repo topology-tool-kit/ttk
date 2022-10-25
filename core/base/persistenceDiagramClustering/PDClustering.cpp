@@ -84,11 +84,13 @@ std::vector<int> ttk::PDClustering::execute(
     std::vector<double> lowest_persistence(3);
     std::vector<double> min_persistence(3);
 
+    const auto square = [](const double a) { return a * a; };
+
     for(int i_crit = 0; i_crit < 3; i_crit++) {
       max_persistence[i_crit] = 2 * getMostPersistent(i_crit);
       lowest_persistence[i_crit] = getLessPersistent(i_crit);
       min_persistence[i_crit] = 0;
-      epsilon_[i_crit] = Geometry::pow(0.5 * max_persistence[i_crit], 2)
+      epsilon_[i_crit] = square(0.5 * max_persistence[i_crit])
                          / 8.; // max_persistence actually holds 2 times the
                                // highest persistence
       epsilon0[i_crit] = epsilon_[i_crit];
@@ -169,8 +171,7 @@ std::vector<int> ttk::PDClustering::execute(
 
           for(int i_crit = 0; i_crit < 3; i_crit++) {
             if(*(current_dos[i_crit])) {
-              epsilon_candidate[i_crit]
-                = Geometry::pow(min_persistence[i_crit], 2) / 8.;
+              epsilon_candidate[i_crit] = square(min_persistence[i_crit]) / 8.;
               if(epsilon_candidate[i_crit] > epsilon_[i_crit]) {
                 // Should always be the case except if min_persistence is
                 // equal to zero
@@ -238,7 +239,7 @@ std::vector<int> ttk::PDClustering::execute(
           if(*(current_dos[i_crit]) /*&& (!*(current_prec[i_crit]) || !diagrams_complete[i_crit] ) */) {
             epsilon_candidate[i_crit] = std::min(
               std::max(max_shift_vec[i_crit] / 8., epsilon_[i_crit] / 5.),
-              epsilon0[i_crit] / Geometry::pow(n_iterations_, 2));
+              epsilon0[i_crit] / square(n_iterations_));
 
             if((epsilon_candidate[i_crit] < epsilon_[i_crit]
                 && !diagrams_complete[i_crit])
@@ -427,16 +428,16 @@ std::vector<int> ttk::PDClustering::execute(
       const auto &critCoords = g.GetCriticalCoordinates();
       final_centroids[c].emplace_back(PersistencePair{
         CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
-        CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords},
-        g.getPersistence(), 0, false});
+        CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords}, 0,
+        false});
       addedFirstPairMax = 1;
     } else if(do_min_) {
       Good &g = centroids_min_[c].at(0);
       const auto &critCoords = g.GetCriticalCoordinates();
       final_centroids[c].emplace_back(PersistencePair{
         CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
-        CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords},
-        g.getPersistence(), 0, false});
+        CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords}, 0,
+        false});
       addedFirstPairMin = 1;
     }
 
@@ -446,8 +447,7 @@ std::vector<int> ttk::PDClustering::execute(
         const auto &critCoords = g.GetCriticalCoordinates();
         final_centroids[c].emplace_back(PersistencePair{
           CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
-          CriticalVertex{0, CriticalType::Saddle1, g.y_, critCoords},
-          g.getPersistence(), 0, true});
+          CriticalVertex{0, CriticalType::Saddle1, g.y_, critCoords}, 0, true});
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a anormally high persistence in min diagram",
                          debug::Priority::WARNING);
@@ -461,8 +461,7 @@ std::vector<int> ttk::PDClustering::execute(
         const auto &critCoords = g.GetCriticalCoordinates();
         final_centroids[c].emplace_back(PersistencePair{
           CriticalVertex{0, CriticalType::Saddle1, g.x_, critCoords},
-          CriticalVertex{0, CriticalType::Saddle2, g.y_, critCoords},
-          g.getPersistence(), 1, true});
+          CriticalVertex{0, CriticalType::Saddle2, g.y_, critCoords}, 1, true});
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a anormally high persistence in sad diagram",
                          debug::Priority::WARNING);
@@ -482,8 +481,8 @@ std::vector<int> ttk::PDClustering::execute(
 
         final_centroids[c].emplace_back(PersistencePair{
           CriticalVertex{0, saddle_type, g.x_, critCoords},
-          CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords},
-          g.getPersistence(), 2, true});
+          CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords}, 2,
+          true});
 
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a anormally high persistence in min diagram",
@@ -962,6 +961,8 @@ void ttk::PDClustering::initializeCentroidsKMeanspp() {
     centroids_max_.emplace_back(centroid_max);
   }
 
+  const auto square = [](const double a) { return a * a; };
+
   while((int)indexes_clusters.size() < k_) {
     std::vector<double> min_distance_to_centroid(numberOfInputs_);
     std::vector<double> probabilities(numberOfInputs_);
@@ -1005,7 +1006,7 @@ void ttk::PDClustering::initializeCentroidsKMeanspp() {
           }
         }
       }
-      probabilities[i] = Geometry::pow(min_distance_to_centroid[i], 2);
+      probabilities[i] = square(min_distance_to_centroid[i]);
 
       // The following block is useful in case of need for a deterministic
       // algoritm
@@ -1623,8 +1624,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
       double total_cost = 0;
       double wasserstein_shift = 0;
 
-      using KDTreePair = std::pair<typename KDTree<double>::KDTreeRoot,
-                                   typename KDTree<double>::KDTreeMap>;
+      using KDTreePair = PDBarycenter::KDTreePair;
 
       if(do_min_) {
         std::vector<std::vector<MatchingType>> all_matchings;

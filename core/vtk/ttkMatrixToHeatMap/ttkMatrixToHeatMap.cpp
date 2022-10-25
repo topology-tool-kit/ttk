@@ -58,6 +58,14 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
         ScalarFields.emplace_back(name);
       }
     }
+  } else {
+    // Remove manually selected arrays that are not present in the input table
+    ScalarFields.erase(
+      std::remove_if(ScalarFields.begin(), ScalarFields.end(),
+                     [&input](const std::string &name) {
+                       return not input->GetColumnByName(name.data());
+                     }),
+      ScalarFields.end());
   }
 
   const auto nInputs = ScalarFields.size();

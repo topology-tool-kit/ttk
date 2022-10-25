@@ -82,6 +82,11 @@ int ttkPersistenceDiagram::dispatch(
 
   outputCTPersistenceDiagram->ShallowCopy(vtu);
 
+  if(this->ClearDGCache && this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
+    this->printMsg("Clearing DiscreteGradient cache...");
+    ttk::dcg::DiscreteGradient::clearCache(*triangulation);
+  }
+
   return 1;
 }
 

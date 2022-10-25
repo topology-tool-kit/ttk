@@ -1,25 +1,28 @@
 /// \ingroup vtk
 /// \class ttkPersistenceCurve
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date September 2016.
 ///
 /// \brief TTK VTK-filter for the computation of persistence curves.
 ///
-/// This filter computes the list of extremum-saddle pairs and computes the
-/// number of pairs as a function of persistence (i.e. the number of pairs
-/// whose persistence is higher than a threshold).
+/// This filter takes a persistence diagram as input and computes the
+/// number of pairs as a function of persistence (i.e. the number of
+/// pairs whose persistence is higher than a threshold).
 ///
 /// These curves provide useful visual clues in order to fine-tune persistence
 /// simplification thresholds.
 ///
-/// \param Input Input scalar field, either 2D or 3D, regular grid or
-/// triangulation (vtkDataSet)
+/// \param Input Input Persistence Diagram as computed by the
+/// \ref ttkPersistenceDiagram module
 /// \param Output0 Table giving the number of persistent minimum-saddle pairs
 /// as a function of persistence (vtkTable)
-/// \param Output1 Table giving the number of persistent saddle-maximum pairs
+/// \param Output1 Table giving the number of persistent saddle-saddle pairs
 /// as a function of persistence (vtkTable)
-/// \param Output2 Table giving the number of persistent all extremum-saddle
-/// pairs as a function of persistence (vtkTable)
+/// \param Output2 Table giving the number of persistent saddle-maximum pairs
+/// as a function of persistence (vtkTable)
+/// \param Output3 Table giving the number of all persistent pairs as
+/// a function of persistence (vtkTable)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -49,13 +52,8 @@
 #pragma once
 
 // VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
 // VTK Module
@@ -74,18 +72,12 @@ public:
 
   vtkTypeMacro(ttkPersistenceCurve, ttkAlgorithm);
 
-  vtkSetMacro(ForceInputOffsetScalarField, bool);
-  vtkGetMacro(ForceInputOffsetScalarField, bool);
-
-  vtkSetMacro(ComputeSaddleConnectors, bool);
-  vtkGetMacro(ComputeSaddleConnectors, bool);
-
   vtkTable *GetOutput();
   vtkTable *GetOutput(int);
 
 protected:
   ttkPersistenceCurve();
-  ~ttkPersistenceCurve() override;
+  ~ttkPersistenceCurve() override = default;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -94,28 +86,4 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-
-  template <typename vtkArrayType, typename scalarType>
-  int getPersistenceCurve(
-    vtkTable *outputCurve,
-    ttk::ftm::TreeType treeType,
-    const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot);
-
-  template <typename vtkArrayType, typename scalarType>
-  int getMSCPersistenceCurve(
-    vtkTable *outputCurve,
-    const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot);
-
-private:
-  bool ForceInputOffsetScalarField{false};
-
-  template <typename VTK_TT, typename TTK_TT>
-  int dispatch(vtkTable *outputJTPersistenceCurve,
-               vtkTable *outputMSCPersistenceCurve,
-               vtkTable *outputSTPersistenceCurve,
-               vtkTable *outputCTPersistenceCurve,
-               const VTK_TT *inputScalars,
-               const size_t scalarsMTime,
-               const void *inputOffsets,
-               const TTK_TT *triangulation);
 };

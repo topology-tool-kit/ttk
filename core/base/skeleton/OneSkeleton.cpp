@@ -125,6 +125,75 @@ int OneSkeleton::buildEdgeLinks(
   return 0;
 }
 
+using edgeType = std::array<SimplexId, 2>;
+
+template <std::size_t n>
+std::array<edgeType, n> getLocalEdges(const CellArray &ttkNotUsed(cellArray),
+                                      const SimplexId ttkNotUsed(cid)) {
+  return {};
+}
+
+template <>
+std::array<edgeType, 1> getLocalEdges(const CellArray &cellArray,
+                                      const SimplexId cid) {
+  return {
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))},
+  };
+}
+
+template <>
+std::array<edgeType, 3> getLocalEdges(const CellArray &cellArray,
+                                      const SimplexId cid) {
+  // triangle case: {0-1}, {0-2}, {1-2}
+  return {
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))},
+
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))},
+
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))},
+  };
+}
+
+template <>
+std::array<edgeType, 4> getLocalEdges(const CellArray &cellArray,
+                                      const SimplexId cid) {
+  // quad case: {0-1}, {1-2}, {2-3}, {3-0}
+  return {
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 2)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 3)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 0))},
+  };
+}
+
+template <>
+std::array<edgeType, 6> getLocalEdges(const CellArray &cellArray,
+                                      const SimplexId cid) {
+  // tet case: {0-1}, {0-2}, {0-3}, {1-2}, {1-3}, {2-3}
+  return {
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))},
+    edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 2)),
+             static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))},
+  };
+}
+
 template <std::size_t n>
 int OneSkeleton::buildEdgeList(
   const SimplexId &vertexNumber,
@@ -171,59 +240,7 @@ int OneSkeleton::buildEdgeList(
 
     // id of edge in cell
     SimplexId ecid{};
-
-    using edgeType = std::array<SimplexId, 2>;
-    std::array<edgeType, n> localEdges{};
-    if(n == 1) {
-      localEdges[0]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
-    } else if(n == 3) {
-      // triangle case: {0-1}, {0-2}, {1-2}
-      localEdges[0]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
-      localEdges[1]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
-      localEdges[2]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
-    } else if(n == 4) {
-      // quad case: {0-1}, {1-2}, {2-3}, {3-0}
-      localEdges[0]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
-      localEdges[1]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
-      localEdges[2]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 2)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
-      localEdges[3]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 3)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 0))};
-    } else if(n == 6) {
-      // tet case: {0-1}, {0-2}, {0-3}, {1-2}, {1-3}, {2-3}
-      localEdges[0]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 1))};
-      localEdges[1]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
-      localEdges[2]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 0)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
-      localEdges[3]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 2))};
-      localEdges[4]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 1)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
-      localEdges[5]
-        = edgeType{static_cast<SimplexId>(cellArray.getCellVertex(cid, 2)),
-                   static_cast<SimplexId>(cellArray.getCellVertex(cid, 3))};
-    }
+    const auto localEdges{getLocalEdges<n>(cellArray, cid)};
 
     for(const auto &le : localEdges) {
       // edge processing

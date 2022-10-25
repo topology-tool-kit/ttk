@@ -403,6 +403,11 @@ according to them.
         }
       }
 
+      static inline void
+        clearCache(const AbstractTriangulation &triangulation) {
+        triangulation.gradientCache_.clear();
+      }
+
       /**
        * Set the input offset function.
        *

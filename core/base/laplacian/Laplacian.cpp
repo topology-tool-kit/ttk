@@ -10,7 +10,10 @@ template <typename T,
           class TriangulationType,
           typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
+                                      const Debug &dbg,
                                       const TriangulationType &triangulation) {
+
+  Timer tm{};
 
   using Triplet = Eigen::Triplet<T>;
   const auto vertexNumber = triangulation.getNumberOfVertices();
@@ -21,10 +24,7 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
     return -1;
   }
 
-#ifdef TTK_ENABLE_OPENMP
-  // get thread number from triangulation?
-  const auto threadNumber = triangulation.getThreadNumber();
-#endif // TTK_ENABLE_OPENMP
+  const auto threadNumber = dbg.getThreadNumber();
 
   // clear output
   output.resize(vertexNumber, vertexNumber);
@@ -64,6 +64,9 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
   output.setFromTriplets(triplets.begin(), triplets.end());
 #endif // __clang_analyzer__
 
+  dbg.printMsg(
+    "Computed Discrete Laplacian", 1.0, tm.getElapsedTime(), threadNumber);
+
   return 0;
 }
 
@@ -71,16 +74,16 @@ template <typename T,
           class TriangulationType,
           typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
+                                 const Debug &dbg,
                                  const TriangulationType &triangulation) {
+
+  Timer tm{};
 
   using Triplet = Eigen::Triplet<T>;
   const auto vertexNumber = triangulation.getNumberOfVertices();
   const auto edgeNumber = triangulation.getNumberOfEdges();
 
-#ifdef TTK_ENABLE_OPENMP
-  // get thread number from triangulation?
-  const auto threadNumber = triangulation.getThreadNumber();
-#endif // TTK_ENABLE_OPENMP
+  const auto threadNumber = dbg.getThreadNumber();
 
   // early return when input graph is empty
   if(vertexNumber <= 0) {
@@ -95,17 +98,21 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
   // values on the diagonal + 2 values per edge
   std::vector<Triplet> triplets(vertexNumber + 2 * edgeNumber);
 
-  // hold sum of cotan weights for every vertex
-  std::vector<T> vertexWeightSum(vertexNumber, T(0.0));
+  std::vector<SimplexId> edgeTriangles{};
+  std::vector<T> angles{};
 
   // iterate over all edges
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber)
+#pragma omp parallel for num_threads(threadNumber) \
+  firstprivate(edgeTriangles, angles)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < edgeNumber; ++i) {
 
+    edgeTriangles.clear();
+    angles.clear();
+
     // the two vertices of the current edge (+ a third)
-    std::vector<SimplexId> edgeVertices(3);
+    std::array<SimplexId, 3> edgeVertices{};
     for(SimplexId j = 0; j < 2; ++j) {
       triangulation.getEdgeVertex(i, j, edgeVertices[j]);
     }
@@ -114,13 +121,13 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
     // in 2D only 2, in 3D, maybe more...
     const auto trianglesNumber = triangulation.getEdgeTriangleNumber(i);
     // stores the triangles ID for every triangle around the current edge
-    std::vector<SimplexId> edgeTriangles(trianglesNumber);
+    edgeTriangles.resize(trianglesNumber);
     for(SimplexId j = 0; j < trianglesNumber; ++j) {
       triangulation.getEdgeTriangle(i, j, edgeTriangles[j]);
     }
 
     // iterate over current edge triangles
-    std::vector<T> angles{};
+    angles.reserve(trianglesNumber);
 
     for(const auto &j : edgeTriangles) {
 
@@ -161,15 +168,6 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
     triplets[2 * i] = Triplet(edgeVertices[0], edgeVertices[1], -cotan_weight);
     triplets[2 * i + 1]
       = Triplet(edgeVertices[1], edgeVertices[0], -cotan_weight);
-
-    // store the cotan weight sum for the two vertices of the current edge
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
-    {
-      vertexWeightSum[edgeVertices[0]] += cotan_weight;
-      vertexWeightSum[edgeVertices[1]] += cotan_weight;
-    }
   }
 
   // on the diagonal: sum of cotan weights for every vertex
@@ -177,21 +175,33 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
 #pragma omp parallel for num_threads(threadNumber)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber; ++i) {
-    triplets[2 * edgeNumber + i] = Triplet(i, i, vertexWeightSum[i]);
+    T vertWeightSum{};
+    const auto nEdges{triangulation.getVertexEdgeNumber(i)};
+    // get the (-) cotan weights from the edges triplets
+    for(SimplexId j = 0; j < nEdges; ++j) {
+      SimplexId e{};
+      triangulation.getVertexEdge(i, j, e);
+      vertWeightSum += triplets[2 * e].value();
+    }
+
+    triplets[2 * edgeNumber + i] = Triplet(i, i, -vertWeightSum);
   }
 
 #ifndef __clang_analyzer__
   output.setFromTriplets(triplets.begin(), triplets.end());
 #endif // __clang_analyzer__
 
+  dbg.printMsg("Computed Laplacian with Cotan Weights", 1.0,
+               tm.getElapsedTime(), threadNumber);
+
   return 0;
 }
 
-#define LAPLACIAN_SPECIALIZE(TYPE)                       \
-  template int ttk::Laplacian::discreteLaplacian<TYPE>(  \
-    Eigen::SparseMatrix<TYPE> &, const Triangulation &); \
-  template int ttk::Laplacian::cotanWeights<TYPE>(       \
-    Eigen::SparseMatrix<TYPE> &, const Triangulation &)
+#define LAPLACIAN_SPECIALIZE(TYPE)                                         \
+  template int ttk::Laplacian::discreteLaplacian<TYPE>(                    \
+    Eigen::SparseMatrix<TYPE> &, const Debug &dbg, const Triangulation &); \
+  template int ttk::Laplacian::cotanWeights<TYPE>(                         \
+    Eigen::SparseMatrix<TYPE> &, const Debug &dbg, const Triangulation &)
 
 // explicit intantiations for floating-point types
 LAPLACIAN_SPECIALIZE(float);
