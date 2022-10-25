@@ -109,12 +109,12 @@ public:
   }
 
   void SetBranchMetric(int m) {
-    branchMetric = m;
+    branchMetric_ = m;
     Modified();
   }
 
   void SetPathMetric(int m) {
-    pathMetric = m;
+    pathMetric_ = m;
     Modified();
   }
 

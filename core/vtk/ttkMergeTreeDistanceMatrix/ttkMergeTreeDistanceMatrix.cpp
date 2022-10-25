@@ -106,27 +106,27 @@ int ttkMergeTreeDistanceMatrix::run(
       branchDecomposition_ = true;
       normalizedWasserstein_ = true;
       keepSubtree_ = false;
-      baseModule = 0;
+      baseModule_ = 0;
     } else if(Backend == 1) {
       branchDecomposition_ = false;
       normalizedWasserstein_ = false;
       keepSubtree_ = true;
-      baseModule = 0;
+      baseModule_ = 0;
     } else if(Backend == 3) {
       branchDecomposition_ = true;
       normalizedWasserstein_ = false;
       keepSubtree_ = true;
-      baseModule = 1;
+      baseModule_ = 1;
     } else if(Backend == 4) {
       branchDecomposition_ = true;
       normalizedWasserstein_ = false;
       keepSubtree_ = true;
-      baseModule = 2;
+      baseModule_ = 2;
     } else {
-      baseModule = 0;
+      baseModule_ = 0;
     }
   }
-  if(baseModule == 0) {
+  if(baseModule_ == 0) {
     if(not branchDecomposition_) {
       if(normalizedWasserstein_)
         printMsg("NormalizedWasserstein is set to false since branch "
@@ -141,25 +141,25 @@ int ttkMergeTreeDistanceMatrix::run(
              + std::to_string(normalizedWasserstein_));
     printMsg("KeepSubtree: " + std::to_string(keepSubtree_));
   }
-  if(baseModule == 1) {
+  if(baseModule_ == 1) {
     printMsg("Using Branch Mapping Distance.");
     std::string metric;
-    if(branchMetric == 0)
+    if(branchMetric_ == 0)
       metric = "Wasserstein Distance first degree";
-    else if(branchMetric == 1)
+    else if(branchMetric_ == 1)
       metric = "Wasserstein Distance second degree";
-    else if(branchMetric == 2)
+    else if(branchMetric_ == 2)
       metric = "Persistence difference";
-    else if(branchMetric == 3)
+    else if(branchMetric_ == 3)
       metric = "Shifting cost";
     else
       return 1;
     printMsg("BranchMetric: " + metric);
   }
-  if(baseModule == 2) {
+  if(baseModule_ == 2) {
     printMsg("Using Path Mapping Distance.");
     std::string metric;
-    if(pathMetric == 0)
+    if(pathMetric_ == 0)
       metric = "Persistence difference";
     else
       return 1;
@@ -175,7 +175,7 @@ int ttkMergeTreeDistanceMatrix::run(
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(
     numInputs, std::vector<double>(numInputs));
-  if(baseModule == 0)
+  if(baseModule_ == 0)
     execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
   else
     execute<dataType>(intermediateTrees, treesDistMat);

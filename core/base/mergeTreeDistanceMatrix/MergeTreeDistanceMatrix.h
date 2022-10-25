@@ -32,9 +32,9 @@ namespace ttk {
   class MergeTreeDistanceMatrix : virtual public Debug,
                                   virtual public MergeTreeBase {
   protected:
-    int baseModule = 0;
-    int branchMetric = 0;
-    int pathMetric = 0;
+    int baseModule_ = 0;
+    int branchMetric_ = 0;
+    int pathMetric_ = 0;
 
   public:
     MergeTreeDistanceMatrix() {
@@ -46,15 +46,15 @@ namespace ttk {
     ~MergeTreeDistanceMatrix() override = default;
 
     void setBaseModule(int m) {
-      baseModule = m;
+      baseModule_ = m;
     }
 
     void setBranchMetric(int m) {
-      branchMetric = m;
+      branchMetric_ = m;
     }
 
     void setPathMetric(int m) {
-      pathMetric = m;
+      pathMetric_ = m;
     }
 
     /**
@@ -85,11 +85,11 @@ namespace ttk {
         }
 
         BranchMappingDistance branchDist;
-        branchDist.setBaseMetric(branchMetric);
+        branchDist.setBaseMetric(branchMetric_);
         branchDist.setAssignmentSolver(assignmentSolverID_);
         branchDist.setSquared(distanceSquared_);
         PathMappingDistance pathDist;
-        pathDist.setBaseMetric(pathMetric);
+        pathDist.setBaseMetric(pathMetric_);
         pathDist.setAssignmentSolver(assignmentSolverID_);
         pathDist.setSquared(distanceSquared_);
         pathDist.setComputeMapping(true);
@@ -98,13 +98,13 @@ namespace ttk {
         // compareTrees(trees[i],&(ftmtrees[i].tree));
         for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
           // Execute
-          if(baseModule == 0) {
+          if(baseModule_ == 0) {
             distanceMatrix[i][j] = 0;
-          } else if(baseModule == 1) {
+          } else if(baseModule_ == 1) {
             dataType dist = branchDist.editDistance_branch<dataType>(
               &(ftmtrees[i].tree), &(ftmtrees[j].tree));
             distanceMatrix[i][j] = static_cast<double>(dist);
-          } else if(baseModule == 2) {
+          } else if(baseModule_ == 2) {
             dataType dist = pathDist.editDistance_path<dataType>(
               &(ftmtrees[i].tree), &(ftmtrees[j].tree));
             distanceMatrix[i][j] = static_cast<double>(dist);
@@ -149,7 +149,7 @@ namespace ttk {
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
             // Execute
-            if(baseModule == 0) {
+            if(baseModule_ == 0) {
               MergeTreeDistance mergeTreeDistance;
               mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
               mergeTreeDistance.setEpsilonTree1(epsilonTree1_);

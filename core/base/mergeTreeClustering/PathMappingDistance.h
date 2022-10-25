@@ -55,19 +55,16 @@ namespace ttk {
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
-        // d = std::abs(d1 - b1);
         d = (d1 > b1) ? (d1 - b1) : (b1 - d1);
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
-        // d = std::abs(d1 - b1);
         d = (d1 > b1) ? (d1 - b1) : (b1 - d1);
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        // d = std::abs(std::abs(b1 - d1) - std::abs(b2 - d2));
         dataType dist1 = (d1 > b1) ? (d1 - b1) : (b1 - d1);
         dataType dist2 = (d2 > b2) ? (d2 - b2) : (b2 - d2);
         d = (dist1 > dist2) ? (dist1 - dist2) : (dist2 - dist1);
@@ -241,9 +238,6 @@ namespace ttk {
             case 0:
             default:
               solverAuction = AssignmentAuction<dataType>();
-              // solverAuction.setEpsilon(auctionEpsilon_);
-              // solverAuction.setEpsilonDiviserMultiplier(auctionEpsilonDiviser_);
-              // solverAuction.setNumberOfRounds(auctionRound_);
               assignmentSolver = &solverAuction;
           }
           assignmentSolver->setInput(costMatrix);
@@ -397,13 +391,7 @@ namespace ttk {
       size_t dim2 = (nn1 + 1) * dim1;
       size_t dim3 = (depth1 + 1) * dim2;
       size_t dim4 = (nn2 + 1) * dim3;
-      // size_t dim1_ = 1;
-      // size_t dim2_ = (nn1 + 1) * dim1;
-      // size_t dim3_ = (nn1 + 1) * dim2;
-      // size_t dim4_ = (nn2 + 1) * dim3;
 
-      // std::unique_ptr<dataType[]> memT(
-      //  new dataType[(nn1 + 1) * (depth1 + 1) * (nn2 + 1) * (depth2 + 1)]);
       std::vector<dataType> memT((nn1 + 1) * (depth1 + 1) * (nn2 + 1)
                                  * (depth2 + 1));
 
@@ -577,9 +565,6 @@ namespace ttk {
                     case 0:
                     default:
                       solverAuction = AssignmentAuction<dataType>();
-                      // solverAuction.setEpsilon(auctionEpsilon_);
-                      // solverAuction.setEpsilonDiviserMultiplier(auctionEpsilonDiviser_);
-                      // solverAuction.setNumberOfRounds(auctionRound_);
                       assignmentSolver = &solverAuction;
                   }
                   assignmentSolver->setInput(costMatrix);
@@ -635,16 +620,6 @@ namespace ttk {
 
       dataType res
         = memT[children1[0] + 1 * dim2 + children2[0] * dim3 + 1 * dim4];
-      // delete[] memT;
-
-      // std::vector<std::pair<std::pair<ftm::idNode,ftm::idNode>,std::pair<ftm::idNode,ftm::idNode>>>
-      // mapping; if(computeMapping){
-      //   traceMapping_path<dataType>(tree1,tree2,children1[0],1,children2[0],1,predecessors1,predecessors2,depth1,depth2,memT.get(),mapping);
-      // }
-      // for(auto m : mapping){
-      //   std::cout << "(" << m.first.first << "," << m.first.second << ")-("
-      //   << m.second.first << "," << m.second.second << ")\n";
-      // }
 
       return squared_ ? std::sqrt(res) : res;
     }

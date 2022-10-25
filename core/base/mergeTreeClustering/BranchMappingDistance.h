@@ -56,8 +56,6 @@ namespace ttk {
         dataType d1 = tree2->getValue<dataType>(p2);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        // d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 -
-        // (double)d2);
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = db + dd;
@@ -66,8 +64,6 @@ namespace ttk {
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        // d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 -
-        // (double)d2);
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = db + dd;
@@ -76,8 +72,6 @@ namespace ttk {
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        // d = std::abs((double)b1 - (double)b2) + std::abs((double)d1 -
-        // (double)d2);
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = db + dd;
@@ -98,10 +92,6 @@ namespace ttk {
         dataType d1 = tree2->getValue<dataType>(p2);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1
-        // - (double)b2)
-        //               + std::abs((double)d1 - (double)d2) *
-        //               std::abs((double)d1 - (double)d2));
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = std::sqrt(db * db + dd * dd);
@@ -110,10 +100,6 @@ namespace ttk {
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = (b1 + d1) * 0.5;
         dataType d2 = (b1 + d1) * 0.5;
-        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1
-        // - (double)b2)
-        //               + std::abs((double)d1 - (double)d2) *
-        //               std::abs((double)d1 - (double)b2));
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = std::sqrt(db * db + dd * dd);
@@ -122,10 +108,6 @@ namespace ttk {
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        // d = std::sqrt(std::abs((double)b1 - (double)b2) * std::abs((double)b1
-        // - (double)b2)
-        //               + std::abs((double)d1 - (double)d2) *
-        //               std::abs((double)d1 - (double)d2));
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
         dataType dd = d1 > d2 ? d1 - d2 : d2 - d1;
         d = std::sqrt(db * db + dd * dd);
@@ -144,20 +126,16 @@ namespace ttk {
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
-        // d = std::abs((double)d1 - (double)b1);
         d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
-        // d = std::abs((double)d1 - (double)b1);
         d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        // d = std::abs(std::abs((double)b1 - (double)d1) - std::abs((double)b2
-        // - (double)d2));
         dataType dist1 = d1 > b1 ? d1 - b1 : b1 - d1;
         dataType dist2 = d2 > b2 ? d2 - b2 : b2 - d2;
         d = dist1 > dist2 ? dist1 - dist2 : dist2 - dist1;
@@ -176,22 +154,16 @@ namespace ttk {
       if(n1 < 0) {
         dataType b1 = tree2->getValue<dataType>(n2);
         dataType d1 = tree2->getValue<dataType>(p2);
-        // d = std::abs((double)d1 - (double)b1);
         d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else if(n2 < 0) {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
-        // d = std::abs((double)d1 - (double)b1);
         d = d1 > b1 ? d1 - b1 : b1 - d1;
       } else {
         dataType b1 = tree1->getValue<dataType>(n1);
         dataType d1 = tree1->getValue<dataType>(p1);
         dataType b2 = tree2->getValue<dataType>(n2);
         dataType d2 = tree2->getValue<dataType>(p2);
-        // dataType pers1 = std::abs((double)b1 - (double)d1);
-        // dataType pers2 = std::abs((double)b2 - (double)d2);
-        // d = std::abs((double)b1 - (double)b2) + std::abs((double)pers1 -
-        // (double)pers2);
         dataType pers1 = d1 > b1 ? d1 - b1 : b1 - d1;
         dataType pers2 = d2 > b2 ? d2 - b2 : b2 - d2;
         dataType db = b1 > b2 ? b1 - b2 : b2 - b1;
@@ -282,13 +254,7 @@ namespace ttk {
       size_t dim2 = (nn1 + 1) * dim1;
       size_t dim3 = (depth1 + 1) * dim2;
       size_t dim4 = (nn2 + 1) * dim3;
-      // size_t dim1_ = 1;
-      // size_t dim2_ = (nn1 + 1) * dim1;
-      // size_t dim3_ = (nn1 + 1) * dim2;
-      // size_t dim4_ = (nn2 + 1) * dim3;
 
-      // std::unique_ptr<dataType[]> memT(
-      //  new dataType[(nn1 + 1) * (depth1 + 1) * (nn2 + 1) * (depth2 + 1)]);
       std::vector<dataType> memT((nn1 + 1) * (depth1 + 1) * (nn2 + 1)
                                  * (depth2 + 1));
 
@@ -527,9 +493,6 @@ namespace ttk {
                         case 0:
                         default:
                           solverAuction = AssignmentAuction<dataType>();
-                          // solverAuction.setEpsilon(auctionEpsilon_);
-                          // solverAuction.setEpsilonDiviserMultiplier(auctionEpsilonDiviser_);
-                          // solverAuction.setNumberOfRounds(auctionRound_);
                           assignmentSolver = &solverAuction;
                       }
                       assignmentSolver->setInput(costMatrix);
@@ -587,7 +550,7 @@ namespace ttk {
 
       dataType res
         = memT[children1[0] + 1 * dim2 + children2[0] * dim3 + 1 * dim4];
-      // delete[] memT;
+      
       return squared_ ? std::sqrt(res) : res;
     }
   };
