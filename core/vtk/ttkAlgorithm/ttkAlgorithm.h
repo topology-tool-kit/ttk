@@ -216,6 +216,10 @@ protected:
    */
   void MPIPipelinePreconditioning(vtkDataSet *input);
 
+  bool checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
+                             ttk::SimplexId simplexNumber,
+                             unsigned char *ghost);
+
   void GenerateGlobalIds(vtkDataSet *input);
 
   /**

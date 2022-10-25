@@ -70,6 +70,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
                                 vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   Timer t;
 
@@ -78,6 +79,8 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Triangulation is NULL");
     return 0;
   }
+
+  output->ShallowCopy(input);
 
   printMsg(ttk::debug::Separator::L1);
 
