@@ -82,7 +82,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
-  auto vtkGlobalPointIds = pointData->GetGlobalIds();
+  auto vtkGlobalPointIds = pointData->GetArray("GlobalPointIds");
   auto rankArray = pointData->GetArray("RankArray");
   if(vtkGlobalPointIds != nullptr && rankArray != nullptr) {
 #ifdef TTK_ENABLE_MPI

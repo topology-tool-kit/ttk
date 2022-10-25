@@ -182,7 +182,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
         this->MPIPipelinePreconditioning(inputData);
       }
       if(ttk::isRunningWithMPI()) {
-        auto vtkGlobalPointIds = inputData->GetPointData()->GetGlobalIds();
+        auto vtkGlobalPointIds
+          = inputData->GetPointData()->GetArray("GlobalPointIds");
         auto rankArray = inputData->GetPointData()->GetArray("RankArray");
         ttkTypeMacroA(
           scalarArray->GetDataType(),
@@ -717,7 +718,7 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     // provide "GlobalPointIds" & "RankArray" point data arrays to the
     // triangulation
     triangulation->setVertsGlobalIds(
-      ttkUtils::GetPointer<ttk::LongSimplexId>(pd->GetGlobalIds()));
+      ttkUtils::GetPointer<ttk::LongSimplexId>(pd->GetArray("GlobalPointIds")));
     triangulation->setVertRankArray(
       ttkUtils::GetPointer<int>(pd->GetArray("RankArray")));
     triangulation->preconditionDistributedVertices();
@@ -730,7 +731,7 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     // provide "GlobalCellIds" & "RankArray" cell data arrays to the
     // triangulation
     triangulation->setCellsGlobalIds(
-      ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()));
+      ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetArray("GlobalPointIds")));
     triangulation->setCellRankArray(
       ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
   }
