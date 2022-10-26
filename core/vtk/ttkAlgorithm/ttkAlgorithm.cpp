@@ -668,11 +668,8 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
       input->GetCellData()->GetArray("vtkGhostType"));
     cellValidity = checkGlobalIdValidity(globalCellIds, cellNumber, ghostCells);
   }
-  printMsg("pointValidity: " + std::to_string(pointValidity)
-           + ", cellValidity: " + std::to_string(cellValidity));
   // If the global ids are not valid, they are computed again
   if(!pointValidity || !cellValidity) {
-    printMsg("GenerateGlobalIds");
     this->GenerateGlobalIds(input);
   }
 
