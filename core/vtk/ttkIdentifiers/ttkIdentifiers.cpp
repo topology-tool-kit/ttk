@@ -14,9 +14,6 @@ vtkStandardNewMacro(ttkIdentifiers);
 ttkIdentifiers::ttkIdentifiers() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
-
-  setDebugMsgPrefix("Identifiers");
-
 }
 
 ttkIdentifiers::~ttkIdentifiers() = default;
