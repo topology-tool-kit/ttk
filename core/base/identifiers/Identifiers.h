@@ -220,8 +220,11 @@ namespace ttk {
       std::vector<Response> &send_buf) {
       ttk::SimplexId globalId{-1};
       ttk::SimplexId id{-1};
+      send_buf.clear();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) firstprivate(globalId, id) \
   shared(locatedSimplices)
+#endif
       for(int n = 0; n < recvMessageSize; n++) {
         if(bounds_[0] <= receivedPoints[n].x
            && bounds_[1] >= receivedPoints[n].x
@@ -236,20 +239,24 @@ namespace ttk {
                  && vertRankArray_[id] == ttk::MPIrank_)) {
             globalId = vertexIdentifiers_->at(id);
             if(globalId >= 0) {
+#ifdef TTK_ENABLE_OPENMP
               locatedSimplices[omp_get_thread_num()].push_back(
                 Response{receivedPoints[n].localId, globalId});
+#else
+              send_buf.push_back(Response{receivedPoints[n].localId, globalId});
+#endif
             }
           }
         }
       }
-      send_buf.clear();
+#ifdef TTK_ENABLE_OPENMP
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
+#endif
     }
-
     /**
      * @brief Identifies the local point corresponding to the received point
      * using its outdated global identifier. The valid global identifier is then
@@ -268,25 +275,34 @@ namespace ttk {
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
+      send_buf.clear();
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
+#endif
       for(int n = 0; n < recvMessageSize; n++) {
         search = vertOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
         if(search != vertOutdatedGtoL_.end()) {
           globalId = vertexIdentifiers_->at(search->second);
           if(globalId >= 0) {
+#ifdef TTK_ENABLE_OPENMP
             locatedSimplices[omp_get_thread_num()].push_back(
               Response{receivedOutdatedGlobalIds[n], globalId});
+#else
+            send_buf.push_back(
+              Response{receivedOutdatedGlobalIds[n], globalId});
+#endif
           }
         }
       }
-      send_buf.clear();
+#ifdef TTK_ENABLE_OPENMP
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
+#endif
     }
     /**
      * @brief Finds the local cell for which the vertices have the same global
@@ -307,11 +323,14 @@ namespace ttk {
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
       int id{-1};
+      send_buf.clear();
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
       localPointIds.reserve(dimension_ + 1);
       size_t expectedSize = static_cast<size_t>(dimension_ + 1);
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) firstprivate(localPointIds)
+#endif
       for(int n = 0; n < recvMessageSize; n += dimension_ + 2) {
         localPointIds.clear();
         for(int k = 1; k < dimension_ + 2; k++) {
@@ -344,9 +363,15 @@ namespace ttk {
               }
               if(l == dimension_ + 1) {
                 foundIt = true;
+#ifdef TTK_ENABLE_OPENMP
                 locatedSimplices[omp_get_thread_num()].push_back(Response{
                   receivedCells[n],
                   cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
+#else
+                send_buf.push_back(Response{
+                  receivedCells[n],
+                  cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
+#endif
               }
               k++;
             }
@@ -354,12 +379,13 @@ namespace ttk {
           }
         }
       }
-      send_buf.clear();
+#ifdef TTK_ENABLE_OPENMP
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
+#endif
     }
     /**
      * @brief Identifies the local cell corresponding to the received cell using
@@ -381,24 +407,33 @@ namespace ttk {
       std::vector<Response> &send_buf) {
       ttk::SimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
+      send_buf.clear();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
+#endif
       for(int n = 0; n < recvMessageSize; n++) {
         search = cellOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
         if(search != cellOutdatedGtoL_.end()) {
           globalId = cellIdentifiers_->at(search->second);
           if(globalId >= 0) {
+#ifdef TTK_ENABLE_OPENMP
             locatedSimplices[omp_get_thread_num()].push_back(
               Response{receivedOutdatedGlobalIds[n],
                        static_cast<ttk::SimplexId>(globalId)});
+#else
+            send_buf.push_back(Response{receivedOutdatedGlobalIds[n],
+                                        static_cast<ttk::SimplexId>(globalId)});
+#endif
           }
         }
       }
-      send_buf.clear();
+#ifdef TTK_ENABLE_OPENMP
       for(int n = 0; n < threadNumber_; n++) {
         send_buf.insert(send_buf.end(), locatedSimplices[n].begin(),
                         locatedSimplices[n].end());
         locatedSimplices[n].clear();
       }
+#endif
     }
 
     template <typename dataType>

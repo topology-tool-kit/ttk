@@ -434,7 +434,9 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                                          ttk::SimplexId simplexNumber,
                                          unsigned char *ghost) {
   ttk::SimplexId ghostNumber = 0;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for reduction(+ : ghostNumber)
+#endif
   for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
     if(ghost[i] == 1) {
       ghostNumber++;
@@ -596,12 +598,16 @@ void ttkAlgorithm::GenerateGlobalIds(vtkDataSet *input) {
   vtkCellIdentifiers->SetNumberOfComponents(1);
   vtkCellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells());
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
   for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
     vtkVertexIdentifiers->SetTuple1(i, vertexIdentifiers[i]);
   }
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
   for(ttk::SimplexId i = 0; i < cellNumber; i++) {
     vtkCellIdentifiers->SetTuple1(i, cellIdentifiers[i]);
   }
