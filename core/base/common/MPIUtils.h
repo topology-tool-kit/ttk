@@ -812,5 +812,46 @@ namespace ttk {
       orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_);
   }
 
+  /**
+   * @brief sends the content of a vector to a neighbor.
+   *
+   * @tparam dataType data type of the vector
+   * @param sendBuffer vector to send
+   * @param messageType MPI data type of the vector
+   * @param neighbor rank of the process to send the vector to
+   */
+
+  template <typename dataType>
+  void sendVector(std::vector<dataType> &sendBuffer,
+                  MPI_Datatype messageType,
+                  int neighbor) {
+    ttk::SimplexId dataSize = sendBuffer.size();
+    MPI_Send(&dataSize, 1, getMPIType(dataSize), neighbor, ttk::MPIrank_,
+             ttk::MPIcomm_);
+    MPI_Send(sendBuffer.data(), dataSize, messageType, neighbor, ttk::MPIrank_,
+             ttk::MPIcomm_);
+  }
+
+  /**
+   * @brief receives the content of a vector from a neighbor.
+   *
+   * @tparam dataType data type of the vector
+   * @param receiveBuffer vector to receive
+   * @param messageType MPI data type of the vector
+   * @param neighbor rank of the process to receive the vector from
+   */
+
+  template <typename dataType>
+  void recvVector(std::vector<dataType> &receiveBuffer,
+                  ttk::SimplexId &recvMessageSize,
+                  MPI_Datatype messageType,
+                  int neighbor) {
+    MPI_Recv(&recvMessageSize, 1, getMPIType(recvMessageSize), neighbor,
+             neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    receiveBuffer.resize(recvMessageSize);
+    MPI_Recv(receiveBuffer.data(), recvMessageSize, messageType, neighbor,
+             neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+  }
+
 } // namespace ttk
 #endif

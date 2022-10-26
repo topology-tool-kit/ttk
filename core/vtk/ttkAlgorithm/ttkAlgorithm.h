@@ -216,9 +216,21 @@ protected:
    */
   void MPIPipelinePreconditioning(vtkDataSet *input);
 
+  /**
+   * This method checks the validity of the global identifiers given in
+   * argument. A set of global identifiers is valid if the highest global id is
+   * equal to the global number of simplices (without ghosts) + 1 and if the
+   * lowest global id is equal to 0.
+   */
+
   bool checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                              ttk::SimplexId simplexNumber,
                              unsigned char *ghost);
+  /**
+   * This methods generates global ids and is called during the MPI
+   * preconditioning. It behaves differently for PolyData and ImageData
+   * datasets.
+   */
 
   void GenerateGlobalIds(vtkDataSet *input);
 

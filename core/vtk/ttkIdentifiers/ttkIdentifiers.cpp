@@ -1,36 +1,10 @@
 #include <ttkIdentifiers.h>
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
-#include <map>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdTypeArray.h>
-#include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
 #include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkPolyData.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkUnstructuredGrid.h>
-
-vtkCellArray *GetCells(vtkDataSet *dataSet) {
-  switch(dataSet->GetDataObjectType()) {
-    case VTK_UNSTRUCTURED_GRID: {
-      auto dataSetAsUG = static_cast<vtkUnstructuredGrid *>(dataSet);
-      return dataSetAsUG->GetCells();
-    }
-    case VTK_POLY_DATA: {
-      auto dataSetAsPD = static_cast<vtkPolyData *>(dataSet);
-      return dataSetAsPD->GetNumberOfPolys() > 0   ? dataSetAsPD->GetPolys()
-             : dataSetAsPD->GetNumberOfLines() > 0 ? dataSetAsPD->GetLines()
-                                                   : dataSetAsPD->GetVerts();
-    }
-  }
-  return nullptr;
-}
 
 using namespace std;
 using namespace ttk;
@@ -43,8 +17,6 @@ ttkIdentifiers::ttkIdentifiers() {
 
   setDebugMsgPrefix("Identifiers");
 
-  //   vtkWarningMacro("`TTK Identifiers' is now deprecated. Please use "
-  //                   "`Generate Ids' instead.");
 }
 
 ttkIdentifiers::~ttkIdentifiers() = default;
@@ -79,8 +51,38 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Triangulation is NULL");
     return 0;
   }
-
   output->ShallowCopy(input);
+
+#ifndef TTK_ENABLE_MPI
+  // In case TTK is not compiled with MPI, the user can still create Global Ids
+  int vertexNumber = input->GetNumberOfPoints();
+  int cellNumber = input->GetNumberOfCells();
+
+  vtkSmartPointer<vtkIdTypeArray> vtkVertexIdentifiers
+    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> vtkCellIdentifiers
+    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkVertexIdentifiers->SetName("GlobalPointIds");
+  vtkVertexIdentifiers->SetNumberOfComponents(1);
+  vtkVertexIdentifiers->SetNumberOfTuples(input->GetNumberOfPoints());
+
+  vtkCellIdentifiers->SetName("GlobalCellIds");
+  vtkCellIdentifiers->SetNumberOfComponents(1);
+  vtkCellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells());
+
+#pragma omp parallel for
+  for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
+    vtkVertexIdentifiers->SetTuple1(i, i);
+  }
+
+#pragma omp parallel for
+  for(ttk::SimplexId i = 0; i < cellNumber; i++) {
+    vtkCellIdentifiers->SetTuple1(i, i);
+  }
+
+  output->GetPointData()->AddArray(vtkVertexIdentifiers);
+  output->GetCellData()->AddArray(vtkCellIdentifiers);
+#endif
 
   printMsg(ttk::debug::Separator::L1);
 

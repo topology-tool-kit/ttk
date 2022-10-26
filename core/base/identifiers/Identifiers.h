@@ -37,8 +37,10 @@ namespace ttk {
 #endif
 
   /**
-   * The Identifiers class provides methods to compute for each vertex of a
-   * triangulation the average scalar value of itself and its direct neighbors.
+   * The Identifiers class provides methods to compute for each vertex and
+   * cell of a data set a global id. It uses RankArray and outdated global
+   * identifiers if they are defined to accelerate computation for data sets
+   * of PolyData type.
    */
   class Identifiers : virtual public Debug {
 
@@ -47,6 +49,39 @@ namespace ttk {
 
     ~Identifiers() override = default;
 
+  protected:
+    ttk::SimplexId vertexNumber_{};
+    ttk::SimplexId cellNumber_{};
+    std::vector<ttk::SimplexId> *vertexIdentifiers_;
+    std::vector<ttk::SimplexId> *cellIdentifiers_;
+#ifdef TTK_ENABLE_MPI
+    std::map<ttk::SimplexId, ttk::SimplexId> vertGtoL_;
+    std::vector<int> neighbors_;
+    std::map<int, int> neighborToId_;
+    int neighborNumber_;
+    double *bounds_;
+    int *dims_;
+    double *spacing_;
+    MPI_Datatype mpiIdType_;
+    MPI_Datatype mpiResponseType_;
+    MPI_Datatype mpiPointType_;
+    int dimension_{};
+    int hasSentData_{0};
+    ttk::SimplexId *vertRankArray_{nullptr};
+    ttk::SimplexId *cellRankArray_{nullptr};
+    unsigned char *vertGhost_{nullptr};
+    unsigned char *cellGhost_{nullptr};
+    std::vector<std::vector<ttk::SimplexId>> pointsToCells_;
+    float *pointSet_;
+    ttk::LongSimplexId *connectivity_;
+    ttk::LongSimplexId *outdatedGlobalPointIds_{nullptr};
+    ttk::LongSimplexId *outdatedGlobalCellIds_{nullptr};
+    std::map<ttk::LongSimplexId, ttk::SimplexId> vertOutdatedGtoL_;
+    std::map<ttk::LongSimplexId, ttk::SimplexId> cellOutdatedGtoL_;
+    KDTree<float, std::array<float, 3>> kdt_;
+#endif
+
+  public:
     void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
     }
@@ -87,10 +122,6 @@ namespace ttk {
 
     void setCellGhost(unsigned char *cellGhost) {
       this->cellGhost_ = cellGhost;
-    }
-
-    void setNbPoints(int nbPoints) {
-      this->nbPoints_ = nbPoints;
     }
 
     void setBounds(double *bounds) {
@@ -168,6 +199,20 @@ namespace ttk {
       }
     }
 
+    /**
+     * @brief Finds the local point closest to the point coordinates using a
+     * kd-tree, if the coordinates of the received point are within the bounds
+     * of the process. The global identifier is then stored in the vector
+     * locatedSimplices for each thread. The data is then copied to a simple
+     * vector to send it back to the neighbor.
+     *
+     * @param locatedSimplices for each thread, stores the global id and local
+     * id of the located points.
+     * @param receivedPoints points to be located received from a neighbor
+     * @param recvMessageSize size of the receivedPoints vector
+     * @param send_buf send buffer
+     */
+
     void inline locatePoints(
       std::vector<std::vector<Response>> &locatedSimplices,
       std::vector<Point> &receivedPoints,
@@ -205,6 +250,19 @@ namespace ttk {
       }
     }
 
+    /**
+     * @brief Identifies the local point corresponding to the received point
+     * using its outdated global identifier. The valid global identifier is then
+     * stored in the vector locatedSimplices for each thread. The data is then
+     * copied to a simple vector to send it back to the neighbor.
+     *
+     * @param locatedSimplices for each thread, stores the global id and local
+     * id of the located points.
+     * @param receivedOutdatedGlobalIds outdated global ids to be identified
+     * @param recvMessageSize size of the receivedOutdatedGlobalIds vector
+     * @param send_buf send buffer
+     */
+
     void inline identifyPoints(
       std::vector<std::vector<Response>> &locatedSimplices,
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
@@ -230,6 +288,18 @@ namespace ttk {
         locatedSimplices[n].clear();
       }
     }
+    /**
+     * @brief Finds the local cell for which the vertices have the same global
+     * ids as the vertices of the received cell. The global identifier is then
+     * stored in the vector locatedSimplices for each thread. The data is then
+     * copied to a simple vector to send it back to the neighbor.
+     *
+     * @param locatedSimplices for each thread, stores the global id and local
+     * id of the located cells.
+     * @param receivedCells cells to be located received from a neighbor
+     * @param recvMessageSize size of the receivedCells vector
+     * @param send_buf send buffer
+     */
 
     void inline locateCells(
       std::vector<std::vector<Response>> &locatedSimplices,
@@ -239,11 +309,12 @@ namespace ttk {
       int id{-1};
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
-      localPointIds.reserve(nbPoints_);
+      localPointIds.reserve(dimension_ + 1);
+      size_t expectedSize = static_cast<size_t>(dimension_ + 1);
 #pragma omp parallel for num_threads(threadNumber_) firstprivate(localPointIds)
-      for(int n = 0; n < recvMessageSize; n += nbPoints_ + 1) {
+      for(int n = 0; n < recvMessageSize; n += dimension_ + 2) {
         localPointIds.clear();
-        for(int k = 1; k < nbPoints_ + 1; k++) {
+        for(int k = 1; k < dimension_ + 2; k++) {
           search = vertGtoL_.find(receivedCells[n + k]);
           if(search != vertGtoL_.end()) {
             localPointIds.push_back(search->second);
@@ -251,19 +322,19 @@ namespace ttk {
             break;
           }
         }
-        if(localPointIds.size() == static_cast<size_t>(nbPoints_)) {
+        if(localPointIds.size() == expectedSize) {
           bool foundIt = false;
           int k = 0;
           int l;
           int m = 0;
-          while(!foundIt && m < nbPoints_) {
+          while(!foundIt && m < dimension_ + 1) {
             int size = pointsToCells_[localPointIds[m]].size();
             k = 0;
             while(!foundIt && k < size) {
               l = 0;
-              while(l < nbPoints_) {
+              while(l < dimension_ + 1) {
                 id = connectivity_[pointsToCells_[localPointIds[m]][k]
-                                     * nbPoints_
+                                     * (dimension_ + 1)
                                    + l];
                 auto it = find(localPointIds.begin(), localPointIds.end(), id);
                 if(it == localPointIds.end()) {
@@ -271,7 +342,7 @@ namespace ttk {
                 }
                 l++;
               }
-              if(l == nbPoints_) {
+              if(l == dimension_ + 1) {
                 foundIt = true;
                 locatedSimplices[omp_get_thread_num()].push_back(Response{
                   receivedCells[n],
@@ -290,6 +361,18 @@ namespace ttk {
         locatedSimplices[n].clear();
       }
     }
+    /**
+     * @brief Identifies the local cell corresponding to the received cell using
+     * its outdated global identifier. The valid global identifier is then
+     * stored in the vector locatedSimplices for each thread. The data is then
+     * copied to a simple vector to send it back to the neighbor.
+     *
+     * @param locatedSimplices for each thread, stores the global id and local
+     * id of the located points.
+     * @param receivedOutdatedGlobalIds outdated global ids to be identified
+     * @param recvMessageSize size of the receivedOutdatedGlobalIds vector
+     * @param send_buf send buffer
+     */
 
     void inline identifyCells(
       std::vector<std::vector<Response>> &locatedSimplices,
@@ -319,35 +402,6 @@ namespace ttk {
     }
 
     template <typename dataType>
-    void SendRecvVector(std::vector<dataType> &vectorToSend,
-                        std::vector<dataType> &receiveBuffer,
-                        ttk::SimplexId &recvMessageSize,
-                        MPI_Datatype messageType,
-                        int neighbor) const {
-      ttk::SimplexId dataSize = vectorToSend.size();
-      receiveBuffer.clear();
-      MPI_Sendrecv(&dataSize, 1, getMPIType(dataSize), neighbor, ttk::MPIrank_,
-                   &recvMessageSize, 1, getMPIType(dataSize), neighbor,
-                   neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      receiveBuffer.resize(recvMessageSize);
-      MPI_Sendrecv(vectorToSend.data(), dataSize, messageType, neighbor,
-                   ttk::MPIrank_, receiveBuffer.data(), recvMessageSize,
-                   messageType, neighbor, neighbor, ttk::MPIcomm_,
-                   MPI_STATUS_IGNORE);
-    }
-
-    template <typename dataType>
-    void sendVector(std::vector<dataType> &vectorToSend,
-                    MPI_Datatype messageType,
-                    int neighbor) const {
-      ttk::SimplexId dataSize = vectorToSend.size();
-      MPI_Send(&dataSize, 1, getMPIType(dataSize), neighbor, ttk::MPIrank_,
-               ttk::MPIcomm_);
-      MPI_Send(vectorToSend.data(), dataSize, messageType, neighbor,
-               ttk::MPIrank_, ttk::MPIcomm_);
-    }
-
-    template <typename dataType>
     void sendToAllNeighbors(std::vector<dataType> &vectorToSend,
                             MPI_Datatype messageType) const {
       for(int j = 0; j < neighborNumber_; j++) {
@@ -366,18 +420,24 @@ namespace ttk {
       }
     }
 
-    template <typename dataType>
-    void recvVector(std::vector<dataType> &receiveBuffer,
-                    ttk::SimplexId &recvMessageSize,
-                    MPI_Datatype messageType,
-                    int neighbor) const {
-      MPI_Recv(&recvMessageSize, 1, getMPIType(recvMessageSize), neighbor,
-               neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      receiveBuffer.resize(recvMessageSize);
-      MPI_Recv(receiveBuffer.data(), recvMessageSize, messageType, neighbor,
-               neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-    }
-
+    /**
+     * @brief Computes the number of vertices owned by the current process and
+     * stores ghost points. An exclusive prefix sum is performed to compute the
+     * offset of each process and the value is used to generate the global ids.
+     * Then global ids are generated.
+     *
+     * @param vertGhostCoordinatesPerRank similar to `vertGhostCoordinates`,
+     * useful when RankArray is defined for vertices.
+     * vertGhostCoordinatesPerRank[i] stores the vertices of process
+     * neighbors_[i]
+     * @param vertGhostCoordinates stores a Point struct for each ghost point
+     * @param vertGhostGlobalIdsPerRank similar to `vertGhostGlobalIds`, useful
+     * when RankArray and outdatedGlobalPointIds are defined for points.
+     * vertGhostGlobalIdsPerRank[i] stores the vertex data of process
+     * neighbors_[i]
+     * @param vertGhostGlobalIds stores the global id of a ghost point, in case
+     * outdatedGlobalPointIds_ is defined.
+     */
     void generateGlobalIds(
       std::vector<std::vector<Point>> &vertGhostCoordinatesPerRank,
       std::vector<Point> &vertGhostCoordinates,
@@ -386,6 +446,11 @@ namespace ttk {
       ttk::SimplexId realVertexNumber = vertexNumber_;
       ttk::SimplexId realCellNumber = cellNumber_;
       float p[3];
+
+      // Computes the number of vertices owned by the current process
+      // If the vertex is not owned, it will be added to the vector of
+      // ghosts.
+
       if(vertRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertRankArray_[i] != ttk::MPIrank_) {
@@ -420,6 +485,8 @@ namespace ttk {
           }
         }
       }
+
+      // The number of cells owned by the process is computed
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellRankArray_[i] != ttk::MPIrank_) {
@@ -437,16 +504,21 @@ namespace ttk {
       ttk::SimplexId vertIndex;
       ttk::SimplexId cellIndex;
 
-      // Perform exclusive prefix sum
+      // Perform exclusive prefix sum to find local offset for vertices and
+      // cells
       MPI_Exscan(
         &realVertexNumber, &vertIndex, 1, mpiIdType_, MPI_SUM, ttk::MPIcomm_);
       MPI_Exscan(
         &realCellNumber, &cellIndex, 1, mpiIdType_, MPI_SUM, ttk::MPIcomm_);
 
+      // Rank 0 received garbage values, it is replaced by the correct offset
+      // (always 0)
       if(ttk::MPIrank_ == 0) {
         vertIndex = 0;
         cellIndex = 0;
       }
+
+      // Generate global ids for vertices
       if(vertRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertRankArray_[i] == ttk::MPIrank_) {
@@ -470,6 +542,8 @@ namespace ttk {
           }
         }
       }
+
+      // Generate global ids for cells
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellRankArray_[i] == ttk::MPIrank_) {
@@ -493,6 +567,12 @@ namespace ttk {
       }
     }
 
+    /**
+     * @brief Generates global ids for the PolyData data set type
+     *
+     * @return int: 1 for success
+     */
+
     int executePolyData() {
       vertGtoL_.clear();
       std::vector<Point> vertGhostCoordinates;
@@ -503,17 +583,34 @@ namespace ttk {
       std::vector<std::vector<ttk::SimplexId>> vertGhostGlobalIdsPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostGlobalVertexIdsPerRank;
       std::vector<std::vector<ttk::SimplexId>> cellGhostGlobalIdsPerRank;
+      // In case RankArray is defined for vertices, a vector needs to be resized
+      // In case outdated global point ids are defined, then it is
+      // vertGhostGlobalIdsPerRank that need to be resized. This vector will
+      // store the outdated global ids of ghost points and their local id.
+      // Otherwise, vertGhostCoordinatesPerRank needs to be resized. This vector
+      // will store the coordinates of a ghost point and its local id.
       if(vertRankArray_ != nullptr) {
-        vertGhostCoordinatesPerRank.resize(neighborNumber_);
-        vertGhostGlobalIdsPerRank.resize(neighborNumber_);
+        if(outdatedGlobalPointIds_ == nullptr) {
+          vertGhostCoordinatesPerRank.resize(neighborNumber_);
+        } else {
+          vertGhostGlobalIdsPerRank.resize(neighborNumber_);
+        }
       }
+
+      // Similar as above, but with cells
       if(cellRankArray_ != nullptr) {
-        cellGhostGlobalVertexIdsPerRank.resize(neighborNumber_);
-        cellGhostGlobalIdsPerRank.resize(neighborNumber_);
+        if(outdatedGlobalCellIds_ == nullptr) {
+          cellGhostGlobalVertexIdsPerRank.resize(neighborNumber_);
+        } else {
+          cellGhostGlobalIdsPerRank.resize(neighborNumber_);
+        }
       }
 
       this->generateGlobalIds(vertGhostCoordinatesPerRank, vertGhostCoordinates,
                               vertGhostGlobalIdsPerRank, vertGhostGlobalIds);
+
+      // Start exchange of data to identify the global ids of ghost simplices
+      // records whether the process has sent its ghost simplices
       hasSentData_ = 0;
       ttk::SimplexId recvMessageSize = 0;
       std::vector<Point> receivedPoints;
@@ -521,9 +618,13 @@ namespace ttk {
       std::vector<Response> receivedResponse;
       std::vector<Response> send_buf;
       std::vector<std::vector<Response>> locatedSimplices(threadNumber_);
+      // For each neighbor, a process will receive the ghost points of all its
+      // neighbors or, if it is its turn, will receive the ghost points of all
+      // its neighbors
       for(int i = 0; i < neighborNumber_ + 1; i++) {
         if((i == neighborNumber_ && !hasSentData_)
            || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+          // it is the turn of the current process to send its ghosts
           if(outdatedGlobalPointIds_ == nullptr) {
             if(vertRankArray_ == nullptr) {
               sendToAllNeighbors<Point>(vertGhostCoordinates, mpiPointType_);
@@ -540,6 +641,8 @@ namespace ttk {
                 vertGhostGlobalIdsPerRank, mpiIdType_);
             }
           }
+          // The current process receives the responses of all the processes
+          // and associates its ghosts with the right global identifier
           for(int j = 0; j < neighborNumber_; j++) {
             recvVector<Response>(receivedResponse, recvMessageSize,
                                  mpiResponseType_, neighbors_[j]);
@@ -562,30 +665,40 @@ namespace ttk {
           }
           hasSentData_ = 1;
         } else {
+          // It is not the turn of the current process to send its data.
           if(outdatedGlobalPointIds_ == nullptr) {
             recvVector<Point>(receivedPoints, recvMessageSize, mpiPointType_,
                               neighbors_[i - hasSentData_]);
+            // Point coordinates are matched to a local point using a kd-tree
+            // and its global id is added to the vector send_buf
             locatePoints(
               locatedSimplices, receivedPoints, recvMessageSize, send_buf);
           } else {
             recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
                                        neighbors_[i - hasSentData_]);
+            // Outdated global ids are matched to a local point
+            // and its global id is added to the vector send_buf
             identifyPoints(
               locatedSimplices, receivedIds, recvMessageSize, send_buf);
           }
+          // The points founds are sent back to the neighbor with their global
+          // ids
           sendVector<Response>(
             send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
         }
       }
+      // Start of computation of ghost information for cells
       int id{-1};
+      // If outdated global ids exist, for each ghost cell is added its local id
+      // and its outdated global id
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellRankArray_[i] != ttk::MPIrank_) {
             if(outdatedGlobalCellIds_ == nullptr) {
               cellGhostGlobalVertexIdsPerRank[neighborToId_[cellRankArray_[i]]]
                 .push_back(i);
-              for(int k = 0; k < nbPoints_; k++) {
-                id = connectivity_[i * nbPoints_ + k];
+              for(int k = 0; k < dimension_ + 1; k++) {
+                id = connectivity_[i * (dimension_ + 1) + k];
                 cellGhostGlobalVertexIdsPerRank
                   [neighborToId_[cellRankArray_[i]]]
                     .push_back(vertexIdentifiers_->at(id));
@@ -598,12 +711,14 @@ namespace ttk {
           }
         }
       } else {
+        // If no outdated global ids exist, for each ghost cell is added its
+        // local id and the global id of all of its vertices
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellGhost_[i] != 0) {
             if(outdatedGlobalCellIds_ == nullptr) {
               cellGhostGlobalVertexIds.push_back(i);
-              for(int k = 0; k < nbPoints_; k++) {
-                id = connectivity_[i * nbPoints_ + k];
+              for(int k = 0; k < dimension_ + 1; k++) {
+                id = connectivity_[i * (dimension_ + 1) + k];
                 cellGhostGlobalVertexIds.push_back(vertexIdentifiers_->at(id));
               }
             } else {
@@ -615,10 +730,13 @@ namespace ttk {
       }
       hasSentData_ = 0;
 
-      // Exchange cells
+      // Exchange cells similarly to what is done for vertices
       for(int i = 0; i < neighborNumber_ + 1; i++) {
         if((i == neighborNumber_ && !hasSentData_)
            || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+          // For each neighbor, a process will receive the ghost cells of all
+          // its neighbors or, if it is its turn, will receive the ghost cells
+          // of all its neighbors
           if(outdatedGlobalCellIds_ == nullptr) {
             if(cellRankArray_ == nullptr) {
               sendToAllNeighbors<ttk::SimplexId>(
@@ -636,6 +754,8 @@ namespace ttk {
                 cellGhostGlobalIdsPerRank, mpiIdType_);
             }
           }
+          // The current process receives the responses of all the processes
+          // and associates its ghosts with the right global identifier
           for(int j = 0; j < neighborNumber_; j++) {
             recvVector<Response>(receivedResponse, recvMessageSize,
                                  mpiResponseType_, neighbors_[j]);
@@ -653,15 +773,22 @@ namespace ttk {
           }
           hasSentData_ = 1;
         } else {
+          // It is not the turn of the current process to send its data.
           recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
                                      neighbors_[i - hasSentData_]);
           if(outdatedGlobalCellIds_ == nullptr) {
+            // Point global ids are matched to a local cell and the global
+            // id of the cell is added to the vector send_buf
             locateCells(
               locatedSimplices, receivedIds, recvMessageSize, send_buf);
           } else {
+            // Outdated global ids are matched to a local cell
+            // and its global id is added to the vector send_buf
             identifyCells(
               locatedSimplices, receivedIds, recvMessageSize, send_buf);
           }
+          // The cells founds are sent back to the neighbor with their global
+          // ids
           sendVector<Response>(
             send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
         }
@@ -670,22 +797,32 @@ namespace ttk {
       return 1; // return success
     }
 
+    /**
+     * @brief Generates global ids for the ImageData data set type
+     *
+     * @return int: 1 for success
+     */
     int executeImageData() {
 
       // print horizontal separator
       this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
+      // Reorganize bounds to only execute Allreduce twice
       double tempBounds[6] = {
         bounds_[0], bounds_[2], bounds_[4], bounds_[1], bounds_[3], bounds_[5]};
       double tempGlobalBounds[6];
+      // Compute and send to all processes the lower bounds of the data set
       MPI_Allreduce(
         tempBounds, tempGlobalBounds, 3, MPI_DOUBLE, MPI_MIN, ttk::MPIcomm_);
+
+      // Compute and send to all processes the higher bounds of the data set
       MPI_Allreduce(tempBounds + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE,
                     MPI_MAX, ttk::MPIcomm_);
+      // Global bounds
       double globalBounds[6]
         = {tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
            tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5]};
-
+      // Compute global width and height of the data set
       int width
         = static_cast<int>((globalBounds[1] - globalBounds[0]) / spacing_[0])
           + 1;
@@ -693,13 +830,13 @@ namespace ttk {
         = static_cast<int>((globalBounds[3] - globalBounds[2]) / spacing_[1])
           + 1;
 
-      int offsetWidth
-        = static_cast<int>((bounds_[0] - globalBounds[0]) / spacing_[0]);
-      int offsetHeight
-        = static_cast<int>((bounds_[2] - globalBounds[2]) / spacing_[1]);
-      int offsetLength
-        = static_cast<int>((bounds_[4] - globalBounds[4]) / spacing_[2]);
-
+      // Compute offset of the current process for each direction
+      int offsetWidth = static_cast<int>(
+        std::round((bounds_[0] - globalBounds[0]) / spacing_[0]));
+      int offsetHeight = static_cast<int>(
+        std::round((bounds_[2] - globalBounds[2]) / spacing_[1]));
+      int offsetLength = static_cast<int>(
+        std::round((bounds_[4] - globalBounds[4]) / spacing_[2]));
       // Generate global ids for vertices
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -738,62 +875,6 @@ namespace ttk {
 
 #endif
 
-    int execute() {
-      // print horizontal separator
-      this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-      for(SimplexId i = 0; i < vertexNumber_; i++) {
-        // avoid any processing if the abort signal is sent
-        vertexIdentifiers_->at(i) = i;
-      }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-      for(SimplexId i = 0; i < cellNumber_; i++) {
-        // avoid any processing if the abort signal is sent
-        cellIdentifiers_->at(i) = i;
-      }
-
-      return 1; // return success
-    }
-
-  protected:
-    ttk::SimplexId vertexNumber_{};
-    ttk::SimplexId cellNumber_{};
-    std::vector<ttk::SimplexId> *vertexIdentifiers_;
-    std::vector<ttk::SimplexId> *cellIdentifiers_;
-#ifdef TTK_ENABLE_MPI
-    int nbPoints_{0};
-    std::map<ttk::SimplexId, ttk::SimplexId> vertGtoL_;
-    std::vector<int> neighbors_;
-    std::map<int, int> neighborToId_;
-    int neighborNumber_;
-    double *bounds_;
-    int *dims_;
-    double *spacing_;
-    MPI_Datatype mpiIdType_;
-    MPI_Datatype mpiResponseType_;
-    MPI_Datatype mpiPointType_;
-    int dimension_{};
-    int hasSentData_{0};
-    ttk::SimplexId *vertRankArray_{nullptr};
-    ttk::SimplexId *cellRankArray_{nullptr};
-    unsigned char *vertGhost_{nullptr};
-    unsigned char *cellGhost_{nullptr};
-    std::vector<std::vector<ttk::SimplexId>> pointsToCells_;
-    float *pointSet_;
-    ttk::LongSimplexId *connectivity_;
-    ttk::LongSimplexId *outdatedGlobalPointIds_{nullptr};
-    ttk::LongSimplexId *outdatedGlobalCellIds_{nullptr};
-    std::map<ttk::LongSimplexId, ttk::SimplexId> vertOutdatedGtoL_;
-    std::map<ttk::LongSimplexId, ttk::SimplexId> cellOutdatedGtoL_;
-    KDTree<float, std::array<float, 3>> kdt_;
-
-#endif
   }; // Identifiers class
 
 } // namespace ttk
