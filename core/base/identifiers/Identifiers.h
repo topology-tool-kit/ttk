@@ -214,7 +214,11 @@ namespace ttk {
      */
 
     void inline locatePoints(
+#ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
+#else
+      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+#endif
       std::vector<Point> &receivedPoints,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
@@ -271,7 +275,11 @@ namespace ttk {
      */
 
     void inline identifyPoints(
+#ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
+#else
+      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+#endif
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
@@ -318,7 +326,11 @@ namespace ttk {
      */
 
     void inline locateCells(
+#ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
+#else
+      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+#endif
       std::vector<ttk::SimplexId> &receivedCells,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
@@ -401,7 +413,11 @@ namespace ttk {
      */
 
     void inline identifyCells(
+#ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
+#else
+      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+#endif
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
