@@ -530,6 +530,9 @@ void ttkAlgorithm::GenerateGlobalIds(vtkDataSet *input) {
                            + std::string(input->GetClassName()) + "`");
           }
         }
+        if(cells == nullptr) {
+          return;
+        }
         if(!cells->IsStorage64Bit()) {
           if(cells->CanConvertTo64BitStorage()) {
             this->printWrn("Converting the cell array to 64-bit storage");
