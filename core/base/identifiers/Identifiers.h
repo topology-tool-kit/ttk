@@ -926,6 +926,34 @@ namespace ttk {
 
 #endif
 
+    /**
+     * @brief Generates global ids for all data set type in sequential
+     *
+     * @return int
+     */
+    int executeSequential() {
+      // print horizontal separator
+      this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+      for(SimplexId i = 0; i < vertexNumber_; i++) {
+        // avoid any processing if the abort signal is sent
+        vertexIdentifiers_->at(i) = i;
+      }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+      for(SimplexId i = 0; i < cellNumber_; i++) {
+        // avoid any processing if the abort signal is sent
+        cellIdentifiers_->at(i) = i;
+      }
+
+      return 1; // return success
+    }
+
   }; // Identifiers class
 
 } // namespace ttk

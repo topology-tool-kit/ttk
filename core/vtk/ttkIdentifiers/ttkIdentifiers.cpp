@@ -50,36 +50,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   }
   output->ShallowCopy(input);
 
-#ifndef TTK_ENABLE_MPI
-  // In case TTK is not compiled with MPI, the user can still create Global Ids
-  int vertexNumber = input->GetNumberOfPoints();
-  int cellNumber = input->GetNumberOfCells();
-
-  vtkSmartPointer<vtkIdTypeArray> vtkVertexIdentifiers
-    = vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> vtkCellIdentifiers
-    = vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkVertexIdentifiers->SetName("GlobalPointIds");
-  vtkVertexIdentifiers->SetNumberOfComponents(1);
-  vtkVertexIdentifiers->SetNumberOfTuples(input->GetNumberOfPoints());
-
-  vtkCellIdentifiers->SetName("GlobalCellIds");
-  vtkCellIdentifiers->SetNumberOfComponents(1);
-  vtkCellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells());
-
-#pragma omp parallel for
-  for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
-    vtkVertexIdentifiers->SetTuple1(i, i);
-  }
-
-#pragma omp parallel for
-  for(ttk::SimplexId i = 0; i < cellNumber; i++) {
-    vtkCellIdentifiers->SetTuple1(i, i);
-  }
-
-  output->GetPointData()->AddArray(vtkVertexIdentifiers);
-  output->GetCellData()->AddArray(vtkCellIdentifiers);
-#endif
 
   printMsg(ttk::debug::Separator::L1);
 
