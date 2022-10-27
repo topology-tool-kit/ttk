@@ -217,7 +217,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
 #else
-      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+      std::vector<std::vector<Response>> &ttkNotUsed(locatedSimplices),
 #endif
       std::vector<Point> &receivedPoints,
       ttk::SimplexId &recvMessageSize,
@@ -278,7 +278,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
 #else
-      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+      std::vector<std::vector<Response>> &ttkNotUsed(locatedSimplices),
 #endif
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       ttk::SimplexId &recvMessageSize,
@@ -329,7 +329,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
 #else
-      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+      std::vector<std::vector<Response>> &ttkNotUsed(locatedSimplices),
 #endif
       std::vector<ttk::SimplexId> &receivedCells,
       ttk::SimplexId &recvMessageSize,
@@ -416,7 +416,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       std::vector<std::vector<Response>> &locatedSimplices,
 #else
-      std::vector<std::vector<Response>> &ttkNotUse(locatedSimplices),
+      std::vector<std::vector<Response>> &ttkNotUsed(locatedSimplices),
 #endif
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       ttk::SimplexId &recvMessageSize,
