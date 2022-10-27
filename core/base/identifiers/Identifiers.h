@@ -339,7 +339,7 @@ namespace ttk {
       std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
       localPointIds.reserve(dimension_ + 1);
-      size_t expectedSize = static_cast<size_t>(dimension_ + 1);
+      size_t expectedSize = static_cast<size_t>(dimension_) + 1;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) firstprivate(localPointIds)
 #endif
