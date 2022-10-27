@@ -50,7 +50,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   }
   output->ShallowCopy(input);
 
-
   printMsg(ttk::debug::Separator::L1);
 
   return 1;
