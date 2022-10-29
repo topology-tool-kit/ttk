@@ -410,6 +410,7 @@ jobs:
                      -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
+                     -DTTK_ENABLE_OPENMP=OFF
                      $(TTK_MODULE_DISABLE)
                      $(TTK_MODULE_TEST)
                      -GNinja'
