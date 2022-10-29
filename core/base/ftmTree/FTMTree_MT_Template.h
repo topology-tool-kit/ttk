@@ -62,6 +62,10 @@ namespace ttk {
       trunk(mesh, ct);
       printTime(bbTime, "trunk " + treeString, 3);
 
+      if(this->getNumberOfNodes() != this->getNumberOfSuperArcs() + 1) {
+        this->printErr(treeString + " not a tree!");
+      }
+
       // Segmentation
       if(ct && params_->segm) {
         Timer segmTime;
