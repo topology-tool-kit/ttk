@@ -401,7 +401,16 @@ namespace ttk {
       trunkVerts.reserve(std::max(SimplexId{10}, nbScalars / 500));
       for(SimplexId v = 0; v < nbScalars; ++v) {
         if((*mt_data_.openedNodes)[v]) {
-          trunkVerts.emplace_back(v);
+          if(this->isCorrespondingNode(v)) {
+            // parallel leafGrowth can partially build the trunk,
+            // filter out the saddles with an upward arc
+            const auto node{this->getNode(this->getCorrespondingNodeId(v))};
+            if(node->getNumberOfUpSuperArcs() == 0) {
+              trunkVerts.emplace_back(v);
+            }
+          } else {
+            trunkVerts.emplace_back(v);
+          }
         }
       }
       sort(trunkVerts.begin(), trunkVerts.end(), comp_.vertLower);
