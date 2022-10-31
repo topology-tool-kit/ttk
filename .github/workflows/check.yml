@@ -89,6 +89,8 @@ jobs:
           - {tidy: true, sa: false, dox: false}
           - {tidy: false, sa: true, dox: false}
           - {tidy: false, sa: false, dox: true}
+    env:
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
     steps:
     - uses: actions/checkout@v2
@@ -126,7 +128,6 @@ jobs:
         mkdir build
         cd build
         cmake \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -170,6 +171,9 @@ jobs:
         simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
         opt: [Debug, Release]
         mpi: [MPI=TRUE, MPI=FALSE]
+    env:
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
+
     steps:
     - uses: actions/checkout@v2
 
@@ -206,7 +210,6 @@ jobs:
         mkdir build
         cd build
         cmake \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
           -DCMAKE_BUILD_TYPE=${{ matrix.opt }} \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
