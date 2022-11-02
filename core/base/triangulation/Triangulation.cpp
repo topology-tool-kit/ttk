@@ -19,14 +19,25 @@ Triangulation::Triangulation(const Triangulation &rhs)
   gridDimensions_ = rhs.gridDimensions_;
   hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
-  if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
-    abstractTriangulation_ = &explicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.implicitTriangulation_) {
-    abstractTriangulation_ = &implicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation_) {
-    abstractTriangulation_ = &periodicImplicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
-    abstractTriangulation_ = &compactTriangulation_;
+  switch(rhs.getType()) {
+    case Type::EXPLICIT:
+      this->abstractTriangulation_ = &this->explicitTriangulation_;
+      break;
+    case Type::COMPACT:
+      this->abstractTriangulation_ = &this->compactTriangulation_;
+      break;
+    case Type::IMPLICIT:
+      this->abstractTriangulation_ = &this->implicitTriangulation_;
+      break;
+    case Type::HYBRID_IMPLICIT:
+      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation_;
+      break;
+    case Type::PERIODIC:
+      this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+      break;
+    case Type::HYBRID_PERIODIC:
+      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation_;
+      break;
   }
 }
 
@@ -43,15 +54,27 @@ Triangulation::Triangulation(Triangulation &&rhs) noexcept
   gridDimensions_ = rhs.gridDimensions_;
   hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
-  if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
-    abstractTriangulation_ = &explicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.implicitTriangulation_) {
-    abstractTriangulation_ = &implicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation_) {
-    abstractTriangulation_ = &periodicImplicitTriangulation_;
-  } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
-    abstractTriangulation_ = &compactTriangulation_;
+  switch(rhs.getType()) {
+    case Type::EXPLICIT:
+      this->abstractTriangulation_ = &this->explicitTriangulation_;
+      break;
+    case Type::COMPACT:
+      this->abstractTriangulation_ = &this->compactTriangulation_;
+      break;
+    case Type::IMPLICIT:
+      this->abstractTriangulation_ = &this->implicitTriangulation_;
+      break;
+    case Type::HYBRID_IMPLICIT:
+      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation_;
+      break;
+    case Type::PERIODIC:
+      this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+      break;
+    case Type::HYBRID_PERIODIC:
+      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation_;
+      break;
   }
+  rhs.abstractTriangulation_ = nullptr;
 }
 
 Triangulation &Triangulation::operator=(const Triangulation &rhs) {
@@ -65,15 +88,27 @@ Triangulation &Triangulation::operator=(const Triangulation &rhs) {
     compactTriangulation_ = rhs.compactTriangulation_;
     hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
-    if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
-      abstractTriangulation_ = &explicitTriangulation_;
-    } else if(rhs.abstractTriangulation_ == &rhs.implicitTriangulation_) {
-      abstractTriangulation_ = &implicitTriangulation_;
-    } else if(rhs.abstractTriangulation_
-              == &rhs.periodicImplicitTriangulation_) {
-      abstractTriangulation_ = &periodicImplicitTriangulation_;
-    } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
-      abstractTriangulation_ = &compactTriangulation_;
+    switch(rhs.getType()) {
+      case Type::EXPLICIT:
+        this->abstractTriangulation_ = &this->explicitTriangulation_;
+        break;
+      case Type::COMPACT:
+        this->abstractTriangulation_ = &this->compactTriangulation_;
+        break;
+      case Type::IMPLICIT:
+        this->abstractTriangulation_ = &this->implicitTriangulation_;
+        break;
+      case Type::HYBRID_IMPLICIT:
+        this->abstractTriangulation_
+          = &this->implicitPreconditionsTriangulation_;
+        break;
+      case Type::PERIODIC:
+        this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+        break;
+      case Type::HYBRID_PERIODIC:
+        this->abstractTriangulation_
+          = &this->periodicPreconditionsTriangulation_;
+        break;
     }
   }
   return *this;
@@ -90,15 +125,27 @@ Triangulation &Triangulation::operator=(Triangulation &&rhs) noexcept {
     compactTriangulation_ = std::move(rhs.compactTriangulation_);
     hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
-    if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
-      abstractTriangulation_ = &explicitTriangulation_;
-    } else if(rhs.abstractTriangulation_ == &rhs.implicitTriangulation_) {
-      abstractTriangulation_ = &implicitTriangulation_;
-    } else if(rhs.abstractTriangulation_
-              == &rhs.periodicImplicitTriangulation_) {
-      abstractTriangulation_ = &periodicImplicitTriangulation_;
-    } else if(rhs.abstractTriangulation_ == &rhs.compactTriangulation_) {
-      abstractTriangulation_ = &compactTriangulation_;
+    switch(rhs.getType()) {
+      case Type::EXPLICIT:
+        this->abstractTriangulation_ = &this->explicitTriangulation_;
+        break;
+      case Type::COMPACT:
+        this->abstractTriangulation_ = &this->compactTriangulation_;
+        break;
+      case Type::IMPLICIT:
+        this->abstractTriangulation_ = &this->implicitTriangulation_;
+        break;
+      case Type::HYBRID_IMPLICIT:
+        this->abstractTriangulation_
+          = &this->implicitPreconditionsTriangulation_;
+        break;
+      case Type::PERIODIC:
+        this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+        break;
+      case Type::HYBRID_PERIODIC:
+        this->abstractTriangulation_
+          = &this->periodicPreconditionsTriangulation_;
+        break;
     }
   }
   AbstractTriangulation::operator=(std::move(rhs));
