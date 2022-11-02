@@ -25,6 +25,7 @@
 #include <BaseClass.h>
 
 #include <algorithm>
+#include <array>
 #include <cerrno>
 #include <fstream>
 #include <iostream>
@@ -180,7 +181,7 @@ namespace ttk {
          && (globalDebugLevel_ < (int)priority))
         return 0;
 
-      std::vector<std::string> chunks(4);
+      std::array<std::string, 4> chunks{};
       size_t q = 0;
 
       if(memory >= 0)

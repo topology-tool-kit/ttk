@@ -53,22 +53,6 @@ int VTUToDiagram(ttk::DiagramType &diagram,
 
   const bool embed = coords == nullptr;
 
-  int nPairs = pairId->GetNumberOfTuples();
-
-  // compact pairIds in [0, nPairs - 1] (diagonal excepted)
-  for(int i = 0; i < nPairs; i++) {
-    if(pairId->GetTuple1(i) != -1) {
-      pairId->SetTuple1(i, i);
-    } else {
-      // detect diagram diagonal
-      nPairs -= 1;
-    }
-  }
-
-  if(nPairs < 1) {
-    dbg.printErr("Diagram has no pairs");
-    return -4;
-  }
   if(pairId == nullptr) {
     dbg.printErr("Missing PairIdentifier cell data array");
     return -5;
@@ -96,6 +80,23 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   if(isFinite == nullptr) {
     dbg.printErr("Missing IsFinite cell data array");
     return -12;
+  }
+
+  int nPairs = pairId->GetNumberOfTuples();
+
+  // compact pairIds in [0, nPairs - 1] (diagonal excepted)
+  for(int i = 0; i < nPairs; i++) {
+    if(pairId->GetTuple1(i) != -1) {
+      pairId->SetTuple1(i, i);
+    } else {
+      // detect diagram diagonal
+      nPairs -= 1;
+    }
+  }
+
+  if(nPairs < 1) {
+    dbg.printErr("Diagram has no pairs");
+    return -4;
   }
 
   diagram.resize(nPairs);
@@ -146,8 +147,7 @@ int VTUToDiagram(ttk::DiagramType &diagram,
     // put pairs in diagram
     diagram[i] = ttk::PersistencePair{
       ttk::CriticalVertex{v0, ct0, birth, coordsBirth},
-      ttk::CriticalVertex{v1, ct1, birth + pers, coordsDeath}, pers, pType,
-      isFin};
+      ttk::CriticalVertex{v1, ct1, birth + pers, coordsDeath}, pType, isFin};
   }
 
   return 0;
@@ -266,7 +266,7 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
 
     // cell data
     pairsId->SetTuple1(i, i);
-    persistence->SetTuple1(i, pair.persistence);
+    persistence->SetTuple1(i, pair.persistence());
     birthScalars->SetTuple1(i, pair.birth.sfValue);
     isFinite->SetTuple1(i, pair.isFinite);
     pairsDim->SetTuple1(
@@ -290,7 +290,7 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
     pairsDim->InsertTuple1(diagram.size(), -1);
     isFinite->InsertTuple1(diagram.size(), false);
     // persistence of global min-max pair
-    const auto maxPersistence = diagram[0].persistence;
+    const auto maxPersistence = diagram[0].persistence();
     persistence->InsertTuple1(diagram.size(), 2 * maxPersistence);
     // birth == death == 0
     birthScalars->InsertTuple1(diagram.size(), 0);

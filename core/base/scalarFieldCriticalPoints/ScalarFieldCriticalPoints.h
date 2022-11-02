@@ -538,7 +538,7 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
     return (char)(CriticalType::Regular);
   } else {
     // saddles
-    if(dimension_ == 2) {
+    if(dimension_ == 2 || dimension_ == 1) {
       if((lowerComponentNumber == 2 && upperComponentNumber == 1)
          || (lowerComponentNumber == 1 && upperComponentNumber == 2)
          || (lowerComponentNumber == 2 && upperComponentNumber == 2)) {

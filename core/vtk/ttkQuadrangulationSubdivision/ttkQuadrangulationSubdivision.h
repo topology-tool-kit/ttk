@@ -58,9 +58,6 @@ public:
   vtkSetMacro(LockAllInputVertices, bool);
   vtkGetMacro(LockAllInputVertices, bool);
 
-  vtkSetMacro(ReverseProjection, bool);
-  vtkGetMacro(ReverseProjection, bool);
-
   vtkSetMacro(HausdorffLevel, float);
   vtkGetMacro(HausdorffLevel, float);
 

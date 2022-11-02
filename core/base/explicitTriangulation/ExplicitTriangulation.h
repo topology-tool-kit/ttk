@@ -608,6 +608,10 @@ namespace ttk {
      */
     int writeToFile(std::ofstream &stream) const;
     /**
+     * @brief Write internal state to disk using an ASCII format
+     */
+    int writeToFileASCII(std::ofstream &stream) const;
+    /**
      * @brief Read from disk into internal state
      *
      * Use a custom binary format for fast loading

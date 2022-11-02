@@ -171,13 +171,122 @@ jobs:
         name: ttk-ccache-macOS
         path: /Users/runner/work/ttk/ttk-ccache.tar.gz
 
+  # ------- #
+  # Windows #
+  # ------- #
+  ccache-windows:
+    runs-on: windows-latest
+    env:
+      CONDA_ROOT: C:\Miniconda
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout TTK source code
+
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c conda-forge boost glew eigen spectralib zfp \
+          scikit-learn packaging openmp graphviz ninja sccache
+        # add sccache to PATH
+        echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
+
+    - name: Remove hosted Python
+      shell: bash
+      run: |
+        rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Fetch TTK-ParaView headless Windows installer
+      run: |
+        Invoke-WebRequest `
+        -OutFile ttk-paraview-headless.exe `
+        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless.exe
+
+    - name: Install ParaView
+      shell: cmd
+      run: |
+        ttk-paraview-headless.exe /S
+
+    - name: Create & configure TTK build directory
+      shell: cmd
+      run: |
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        sccache --stop-server
+        sccache --start-server
+        mkdir build
+        cd build
+        cmake ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
+          -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
+          -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
+          -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
+          -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
+          -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
+          -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
+          -DTTK_BUILD_STANDALONE_APPS=TRUE ^
+          -DTTK_ENABLE_KAMIKAZE=TRUE ^
+          -DTTK_ENABLE_OPENMP=TRUE ^
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
+          -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
+          -GNinja ^
+          ..
+
+    - name: Fix clang-cl OpenMP flags in build.ninja
+      shell: bash
+      run: |
+        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
+
+    - name: Build & install TTK
+      shell: cmd
+      run: |
+        cd build
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        cmake --build . --config Release --parallel --target install
+
+    - name: Archive cache
+      shell: bash
+      run: |
+        cd /c/Users/runneradmin/AppData/Local/Mozilla/sccache
+        tar czf ttk-sccache.tar.gz cache
+
+    - name: Upload sccache archive
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk-sccache-windows
+        path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
+
+
   # --------------------- #
   # Upload release assets #
   # --------------------- #
   create-release:
     runs-on: ubuntu-latest
-    needs: [ccache-ubuntu, ccache-macos]
+    needs: [ccache-ubuntu, ccache-macos, ccache-windows]
     steps:
+
+    - name: Delete previous release
+      uses: actions/github-script@v6
+      continue-on-error: true
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          const { data: { id } } = await github.rest.repos.getReleaseByTag({
+            owner,
+            repo,
+            tag: "ccache"
+          })
+          await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
 
     - name: Create Release
       id: create_release
@@ -224,3 +333,11 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-ccache-macOS/ttk-ccache.tar.gz
         asset_name: ttk-ccache-macOS.tar.gz
+
+    - name: Upload sccache Windows archive
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-sccache-windows/ttk-sccache.tar.gz
+        asset_name: ttk-sccache-windows.tar.gz

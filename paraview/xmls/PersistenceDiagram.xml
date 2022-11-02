@@ -100,6 +100,8 @@
         - https://topology-tool-kit.github.io/examples/2manifoldLearning/
 
         - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+        
+        - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
 
         - https://topology-tool-kit.github.io/examples/ctBones/
 
@@ -371,6 +373,109 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="DMSDimensions"
+          label="Dimensions"
+          command="SetDMSDimensions"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced" >
+         <EnumerationDomain name="enum">
+          <Entry value="0" text="All Dimensions"/>
+          <Entry value="1" text="Selected Dimensions (no infinite pairs)"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          Should we compute all pairs with DiscreteMorseSandwich or a selection?
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ComputeMinSad"
+          label="Minimum-saddle diagram (dimension 0)"
+          command="SetComputeMinSad"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="BackEnd"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DMSDimensions"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Compute the minimum-saddle pairs.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ComputeSadSad"
+          label="Saddle-saddle diagram (dimension 1, slowest)"
+          command="SetComputeSadSad"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="BackEnd"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DMSDimensions"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Compute the saddle-saddle pairs.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ComputeSadMax"
+          label="Saddle-maximum diagram (dimension d - 1)"
+          command="SetComputeSadMax"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="BackEnd"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DMSDimensions"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Compute the saddle-maximum pairs.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty name="ShowInsideDomain"
                          label="Embed in Domain"
                          command="SetShowInsideDomain"
@@ -380,6 +485,25 @@
         <BooleanDomain name="bool"/>
         <Documentation>
           Embed the persistence pairs in the domain.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ClearDGCache"
+          label="Clear DiscreteGradient Cache"
+          command="SetClearDGCache"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced" >
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          To clear the DiscreteGradient cache after computation (releases memory).
         </Documentation>
       </IntVectorProperty>
 
@@ -401,6 +525,11 @@
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SaddleConnectors" />
         <Property name="Ignore Boundary" />
+        <Property name="DMSDimensions" />
+        <Property name="ComputeMinSad" />
+        <Property name="ComputeSadSad" />
+        <Property name="ComputeSadMax" />
+        <Property name="ClearDGCache" />
         <Property name="ShowInsideDomain" />
       </PropertyGroup>
 

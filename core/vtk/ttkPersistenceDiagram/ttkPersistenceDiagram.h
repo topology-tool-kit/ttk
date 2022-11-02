@@ -83,11 +83,15 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
 ///   Learning Circles example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
 ///   2-Manifold Learning example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
 ///   </a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
@@ -195,6 +199,31 @@ public:
   vtkSetMacro(IgnoreBoundary, bool);
   vtkGetMacro(IgnoreBoundary, bool);
 
+  inline void SetComputeMinSad(const bool data) {
+    this->setComputeMinSad(data);
+    this->dmsDimsCache[0] = data;
+    this->Modified();
+  }
+  inline void SetComputeSadSad(const bool data) {
+    this->setComputeSadSad(data);
+    this->dmsDimsCache[1] = data;
+    this->Modified();
+  }
+  inline void SetComputeSadMax(const bool data) {
+    this->setComputeSadMax(data);
+    this->dmsDimsCache[2] = data;
+    this->Modified();
+  }
+  inline void SetDMSDimensions(const int data) {
+    this->setComputeMinSad(data == 0 ? true : this->dmsDimsCache[0]);
+    this->setComputeSadSad(data == 0 ? true : this->dmsDimsCache[1]);
+    this->setComputeSadMax(data == 0 ? true : this->dmsDimsCache[2]);
+    this->Modified();
+  }
+
+  vtkSetMacro(ClearDGCache, bool);
+  vtkGetMacro(ClearDGCache, bool);
+
 protected:
   ttkPersistenceDiagram();
 
@@ -218,4 +247,9 @@ private:
 
   bool ForceInputOffsetScalarField{false};
   bool ShowInsideDomain{false};
+  // stores the values of Compute[Min|Sad][Sad|Max] GUI checkboxes
+  // when "All Dimensions" is selected
+  std::array<bool, 3> dmsDimsCache{true, true, true};
+  // clear DiscreteGradient cache after computation
+  bool ClearDGCache{false};
 };
