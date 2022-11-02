@@ -128,6 +128,17 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
+    - name: Resample large datasets
+      shell: python3 {0}
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+
     - name: Run ttk-data states [NOT ENFORCED]
       id: validate
       continue-on-error: true
@@ -206,13 +217,10 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew uninstall --ignore-dependencies python@3.10
-        brew install wget libomp ninja python@3.9 open-mpi
-        # force brew's Python 3.9 as default Python
-        echo "$(brew --prefix)/opt/python@3.9/libexec/bin" >> $GITHUB_PATH
+        brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
-        python3.9 -m pip install scikit-learn packaging
+        python3 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
@@ -240,6 +248,11 @@ jobs:
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
 
+    - name: Set compilers as environment variables
+      run: |
+        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+
     - name: Create & configure TTK build directory
       run: |
         mkdir build
@@ -265,6 +278,11 @@ jobs:
         cd build
         cmake --build . --parallel
         sudo cmake --build . --target install
+
+    - name: Set PYTHONPATH for macOS pvpython
+      run: |
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
