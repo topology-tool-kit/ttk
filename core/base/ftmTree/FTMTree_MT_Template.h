@@ -56,18 +56,15 @@ namespace ttk {
 
       Timer buildTime;
       leafGrowth(mesh);
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-      // count process
-      for(SimplexId i = 0; i < scalars_->size; i++) {
-        if((*mt_data_.vert2tree)[i] != nullCorresp)
-          ++nbProcessed;
-      }
-#endif
       printTime(buildTime, "leafGrowth " + treeString, 3);
 
       Timer bbTime;
       trunk(mesh, ct);
       printTime(bbTime, "trunk " + treeString, 3);
+
+      if(this->getNumberOfNodes() != this->getNumberOfSuperArcs() + 1) {
+        this->printErr(treeString + " not a tree!");
+      }
 
       // Segmentation
       if(ct && params_->segm) {
@@ -404,7 +401,16 @@ namespace ttk {
       trunkVerts.reserve(std::max(SimplexId{10}, nbScalars / 500));
       for(SimplexId v = 0; v < nbScalars; ++v) {
         if((*mt_data_.openedNodes)[v]) {
-          trunkVerts.emplace_back(v);
+          if(this->isCorrespondingNode(v)) {
+            // parallel leafGrowth can partially build the trunk,
+            // filter out the saddles with an upward arc
+            const auto node{this->getNode(this->getCorrespondingNodeId(v))};
+            if(node->getNumberOfUpSuperArcs() == 0) {
+              trunkVerts.emplace_back(v);
+            }
+          } else {
+            trunkVerts.emplace_back(v);
+          }
         }
       }
       sort(trunkVerts.begin(), trunkVerts.end(), comp_.vertLower);
