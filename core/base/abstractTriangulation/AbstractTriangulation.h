@@ -2848,11 +2848,13 @@ namespace ttk {
       return it->second;
     }
 
-    inline SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const {
+    virtual inline SimplexId
+      getEdgeGlobalIdInternal(const SimplexId leid) const {
       return this->edgeLidToGid_[leid];
     }
 
-    inline SimplexId getEdgeLocalIdInternal(const SimplexId geid) const {
+    virtual inline SimplexId
+      getEdgeLocalIdInternal(const SimplexId geid) const {
       const auto it = this->edgeGidToLid_.find(geid);
 #ifndef TTK_ENABLE_KAMIKAZE
       if(it == this->edgeGidToLid_.end()) {
@@ -2862,11 +2864,13 @@ namespace ttk {
       return it->second;
     }
 
-    inline SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const {
+    virtual inline SimplexId
+      getTriangleGlobalIdInternal(const SimplexId ltid) const {
       return this->triangleLidToGid_[ltid];
     }
 
-    inline SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const {
+    virtual inline SimplexId
+      getTriangleLocalIdInternal(const SimplexId gtid) const {
       const auto it = this->triangleGidToLid_.find(gtid);
 #ifndef TTK_ENABLE_KAMIKAZE
       if(it == this->triangleGidToLid_.end()) {

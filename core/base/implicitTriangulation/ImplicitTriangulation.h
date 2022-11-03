@@ -15,6 +15,10 @@
 // base code includes
 #include <AbstractTriangulation.h>
 
+#ifdef TTK_ENABLE_MPI
+#include <memory>
+#endif // TTK_ENABLE_MPI
+
 namespace ttk {
 
   class ImplicitTriangulation : public AbstractTriangulation {
@@ -272,6 +276,19 @@ namespace ttk {
       return this->cellLidToGid_[lcid];
     }
 
+    void createMetaGrid(const std::array<int, 3> &dimensions);
+
+    SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
+    SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
+
+    SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
+    SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
+
+  private:
+    SimplexId findEdgeFromVertices(const SimplexId v0,
+                                   const SimplexId v1) const;
+    SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
+
 #endif // TTK_ENABLE_MPI
 
   protected:
@@ -280,7 +297,7 @@ namespace ttk {
     // simplicial ones...
     std::vector<SimplexId> cellLidToGid_{};
     std::array<bool, 6> isOnGlobalBoundary_;
-
+    std::shared_ptr<ImplicitTriangulation> metaGrid_{};
 #endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {

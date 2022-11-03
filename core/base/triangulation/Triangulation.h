@@ -1462,6 +1462,21 @@ namespace ttk {
       return abstractTriangulation_->getVertexLocalId(geid);
     }
 
+    /**
+     * @brief Create a meta grid for implicit triangulations
+     *
+     * In an MPI context, input domains are split into separate,
+     * overlapping local grids. This methods makes each of the local
+     * implicit triangulations aware of the dimensions of the
+     * original, global grid.
+     *
+     * @param[in] dimensions Global grid dimensions
+     */
+    inline void createMetaGrid(const std::array<int, 3> dimensions) {
+      this->implicitPreconditionsTriangulation_.createMetaGrid(dimensions);
+      this->implicitTriangulation_.createMetaGrid(dimensions);
+    }
+
 #endif // TTK_ENABLE_MPI
 
     /// Get the \p localLinkId-th simplex of the link of the \p vertexId-th
