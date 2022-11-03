@@ -157,7 +157,7 @@ namespace ttk {
         fromUp_ = up;
       }
 
-      bool getFromUp(void) const {
+      bool getFromUp() const {
         return fromUp_;
       }
 #endif
