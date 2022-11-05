@@ -117,6 +117,25 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
   auto blocks2 = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
 
+  if(Backend == 0) {
+    baseModule = 0;
+  } else if(Backend == 1) {
+    baseModule = 0;
+  } else if(Backend == 3) {
+    baseModule = 1;
+  } else if(Backend == 4) {
+    baseModule = 2;
+  } else {
+    baseModule = 0;
+  }
+
+  // filter out new backends (not yet supported)
+  if(baseModule != 0) {
+    printErr("Invalid Backend chosen. Path Mapping Distance and Branch Mapping "
+             "Distance not yet supported. Canceling computation.");
+    return 1;
+  }
+
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
