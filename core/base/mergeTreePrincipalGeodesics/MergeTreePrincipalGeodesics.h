@@ -379,7 +379,6 @@ namespace ttk {
         matchingVector.resize(barycenterTree->getNumberOfNodes(), -1);
 
       std::vector<std::vector<double>> oriV = v;
-      bool hasChanged = false;
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
         if(barycenter.tree.isNodeAlone(i))
           continue;
@@ -402,7 +401,6 @@ namespace ttk {
         newV[0] = (newV[0] - birthBary) * t;
         newV[1] = (newV[1] - deathBary) * t;
         v[i] = newV;
-        hasChanged |= (i != matched);
       }
 
       // Compute distance between old and new extremity
