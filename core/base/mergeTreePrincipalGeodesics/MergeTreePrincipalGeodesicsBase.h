@@ -597,6 +597,11 @@ namespace ttk {
         printWrn("[getInterpolationVector] "
                  + std::to_string(noNestingShortener)
                  + " nesting vector shortener.");
+      if(noDiagonalShortener != 0)
+        printMsg("[getInterpolationVector] "
+                   + std::to_string(noDiagonalShortener)
+                   + " diagonal vector shortener.",
+                 debug::Priority::DETAIL);
       if(cptBelowDiagonal != 0)
         printErr("[getInterpolationVector] point below diagonal.");
       if(cptNotNesting != 0)
