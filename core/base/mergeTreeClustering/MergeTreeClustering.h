@@ -97,7 +97,7 @@ namespace ttk {
       std::vector<ftm::FTMTree_MT *> &trees,
       std::vector<ftm::FTMTree_MT *> &trees2,
       std::vector<std::vector<ftm::MergeTree<dataType>>> &allCentroids) {
-      allCentroids = std::vector<std::vector<ftm::MergeTree<dataType>>>(
+      allCentroids.resize(
         2, std::vector<ftm::MergeTree<dataType>>(noCentroids_));
       std::vector<dataType> distances(
         trees.size(), std::numeric_limits<dataType>::max());
@@ -205,15 +205,19 @@ namespace ttk {
       std::vector<ftm::FTMTree_MT *> &trees,
       std::vector<ftm::MergeTree<dataType>> &centroids,
       std::vector<ftm::FTMTree_MT *> &ttkNotUsed(trees2)) {
-      lowerBound_ = std::vector<std::vector<double>>(
+      lowerBound_.clear();
+      lowerBound_.resize(
         trees.size(), std::vector<double>(centroids.size(), 0));
-      upperBound_
-        = std::vector<double>(trees.size(), std::numeric_limits<double>::max());
-      bestCentroid_ = std::vector<int>(trees.size(), -1);
-      oldBestCentroid_ = std::vector<int>(trees.size(), -1);
-      bestDistance_
-        = std::vector<double>(trees.size(), std::numeric_limits<double>::max());
-      recompute_ = std::vector<bool>(trees.size(), true);
+      upperBound_.clear();
+      upperBound_.resize(trees.size(), std::numeric_limits<double>::max());
+      bestCentroid_.clear();
+      bestCentroid_.resize(trees.size(), -1);
+      oldBestCentroid_.clear();
+      oldBestCentroid_.resize(trees.size(), -1);
+      bestDistance_.clear();
+      bestDistance_.resize(trees.size(), std::numeric_limits<double>::max());
+      recompute_.clear();
+      recompute_.resize(trees.size(), true);
     }
 
     template <class dataType>
@@ -712,7 +716,8 @@ namespace ttk {
         // --- Reset vectors
         if(not converged) {
           assignmentC.clear();
-          bestDistanceT = std::vector<dataType>(
+          bestDistanceT.clear();
+          bestDistanceT.resize(
             trees.size(), std::numeric_limits<dataType>::max());
         }
       }
@@ -763,10 +768,10 @@ namespace ttk {
                  std::vector<ftm::MergeTree<dataType>> &centroids) {
       // --- Preprocessing
       // std::vector<ftm::FTMTree_MT*> oldTrees, oldTrees2;
-      treesNodeCorr_ = std::vector<std::vector<int>>(trees.size());
+      treesNodeCorr_.resize(trees.size());
       preprocessingClustering<dataType>(trees, treesNodeCorr_);
       if(trees2.size() != 0) {
-        trees2NodeCorr_ = std::vector<std::vector<int>>(trees2.size());
+        trees2NodeCorr_.resize(trees2.size());
         preprocessingClustering<dataType>(trees2, trees2NodeCorr_, false);
       }
       std::vector<ftm::FTMTree_MT *> treesT;
@@ -832,8 +837,7 @@ namespace ttk {
                  matchingVectorType &outputMatching,
                  std::vector<int> &clusteringAssignment,
                  std::vector<ftm::MergeTree<dataType>> &centroids) {
-      std::vector<ftm::MergeTree<dataType>> trees2
-        = std::vector<ftm::MergeTree<dataType>>();
+      std::vector<ftm::MergeTree<dataType>> trees2;
       matchingVectorType outputMatching2 = matchingVectorType();
       execute<dataType>(trees, outputMatching, clusteringAssignment, trees2,
                         outputMatching2, centroids);

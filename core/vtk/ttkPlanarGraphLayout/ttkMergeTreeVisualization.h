@@ -247,10 +247,8 @@ public:
   }
   void setOutputMatching(
     std::vector<std::tuple<idNode, idNode, double>> &matching) {
-    outputMatchingBarycenter = std::vector<
-      std::vector<std::vector<std::tuple<idNode, idNode, double>>>>(1);
-    outputMatchingBarycenter[0]
-      = std::vector<std::vector<std::tuple<idNode, idNode, double>>>(1);
+    outputMatchingBarycenter.resize(1);
+    outputMatchingBarycenter[0].resize(1);
     outputMatchingBarycenter[0][0] = matching;
   }
 
@@ -325,7 +323,8 @@ public:
     double valueRange[2];
     treeNodeIdArray->GetRange(valueRange);
     int maxValue = valueRange[1];
-    treeNodeIdRev = std::vector<int>(maxValue + 1);
+    treeNodeIdRev.clear();
+    treeNodeIdRev.resize(maxValue + 1);
     for(int i = 0; i < treeNodeIdArray->GetNumberOfValues(); ++i)
       treeNodeIdRev[treeNodeIdArray->GetTuple1(i)] = i;
   }
@@ -562,7 +561,8 @@ public:
   template <class dataType>
   void makeTreesOutput(std::vector<FTMTree_MT *> &trees) {
     std::vector<FTMTree_MT *> barycenters;
-    clusteringAssignment = std::vector<int>(trees.size(), 0);
+    clusteringAssignment.clear();
+    clusteringAssignment.resize(trees.size(), 0);
 
     makeTreesOutput<dataType>(trees, barycenters);
   }
@@ -768,9 +768,12 @@ public:
     int cellCount = 0;
     int pointCount = 0;
     bool foundOneInterpolatedTree = false;
-    nodeCorr = std::vector<std::vector<SimplexId>>(numInputs);
-    clusterShift = std::vector<double>(NumberOfBarycenters, 0);
-    allBaryPercentMatch = std::vector<std::vector<float>>(NumberOfBarycenters);
+    nodeCorr.clear();
+    nodeCorr.resize(numInputs);
+    clusterShift.clear();
+    clusterShift.resize(NumberOfBarycenters, 0);
+    allBaryPercentMatch.clear();
+    allBaryPercentMatch.resize(NumberOfBarycenters);
 
     // --------------------------------------------------------
     // Iterate through all clusters
@@ -782,8 +785,7 @@ public:
       // Get persistence order
       std::vector<int> baryPersistenceOrder;
       if(clusteringOutput and ShiftMode != 1) {
-        baryPersistenceOrder
-          = std::vector<int>(barycenters[c]->getNumberOfNodes(), -1);
+        baryPersistenceOrder.resize(barycenters[c]->getNumberOfNodes(), -1);
         std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, dataType>>
           pairsBary;
         barycenters[c]->getPersistencePairsFromTree<dataType>(pairsBary, false);
@@ -944,7 +946,7 @@ public:
         // Internal arrays
         printMsg("// Internal arrays", ttk::debug::Priority::VERBOSE);
         int cptNode = 0;
-        nodeCorr[i] = std::vector<SimplexId>(trees[i]->getNumberOfNodes());
+        nodeCorr[i].resize(trees[i]->getNumberOfNodes());
         std::vector<SimplexId> treeSimplexId(trees[i]->getNumberOfNodes());
         std::vector<SimplexId> treeDummySimplexId(trees[i]->getNumberOfNodes());
         std::vector<SimplexId> layoutCorr(trees[i]->getNumberOfNodes());
@@ -960,8 +962,7 @@ public:
           for(size_t j = 0; j < outputMatchingBarycenter[c].size(); ++j)
             for(auto match : outputMatchingBarycenter[c][j])
               baryMatching[std::get<0>(match)][j] = std::get<1>(match);
-          allBaryPercentMatch[c]
-            = std::vector<float>(trees[i]->getNumberOfNodes(), 100.0);
+          allBaryPercentMatch[c].resize(trees[i]->getNumberOfNodes(), 100.0);
         }
         double minBirth = std::numeric_limits<double>::max(),
                maxBirth = std::numeric_limits<double>::lowest();

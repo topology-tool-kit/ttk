@@ -437,8 +437,7 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
   // Trees persistence order
   std::vector<std::vector<int>> treesOrder(intermediateDTrees.size());
   for(unsigned int i = 0; i < intermediateDTrees.size(); ++i) {
-    treesOrder[i]
-      = std::vector<int>(intermediateDTrees[i].tree.getNumberOfNodes());
+    treesOrder[i].resize(intermediateDTrees[i].tree.getNumberOfNodes());
     std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>> pairs;
     intermediateDTrees[i].tree.template getPersistencePairsFromTree<double>(
       pairs, false);

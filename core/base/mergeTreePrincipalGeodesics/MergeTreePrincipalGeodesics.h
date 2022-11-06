@@ -98,8 +98,7 @@ namespace ttk {
       std::vector<ftm::idNode> matchingVector;
       getMatchingVector<dataType>(barycenter, tree, matching, matchingVector);
 
-      v = std::vector<std::vector<double>>(
-        barycenter.tree.getNumberOfNodes(), std::vector<double>(2, 0));
+      v.resize(barycenter.tree.getNumberOfNodes(), std::vector<double>(2, 0));
       for(unsigned int j = 0; j < barycenter.tree.getNumberOfNodes(); ++j) {
         if(barycenter.tree.isNodeAlone(j))
           continue;
@@ -132,8 +131,7 @@ namespace ttk {
         newNorm += ttk::Geometry::magnitude(sumVi) / sumVs.size();
 
       // Generate random vector
-      v = std::vector<std::vector<double>>(
-        barycenter.tree.getNumberOfNodes(), std::vector<double>(2, 0));
+      v.resize(barycenter.tree.getNumberOfNodes(), std::vector<double>(2, 0));
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
         if(barycenter.tree.isNodeAlone(i))
           continue;
@@ -301,9 +299,7 @@ namespace ttk {
       mergeTreeBary.setDeterministic(deterministic_);
       mergeTreeBary.setBarycenterSizeLimitPercent(barycenterSizeLimitPercent_);
 
-      matchings = std::vector<
-        std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
-        trees.size());
+      matchings.resize(trees.size());
       mergeTreeBary.execute<dataType>(
         trees, matchings, baryMergeTree, useDoubleInput, isFirstInput);
       finalDistances = mergeTreeBary.getFinalDistances();
@@ -378,8 +374,7 @@ namespace ttk {
                            useDoubleInput, isFirstInput);
         getMatchingVector(barycenter, extremity, matching, matchingVector);
       } else
-        matchingVector
-          = std::vector<ftm::idNode>(barycenterTree->getNumberOfNodes(), -1);
+        matchingVector.resize(barycenterTree->getNumberOfNodes(), -1);
 
       std::vector<std::vector<double>> oriV = v;
       bool hasChanged = false;
@@ -713,14 +708,10 @@ namespace ttk {
       std::vector<double> &distances) {
 
       // Init output
-      matchings = std::vector<
-        std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
-        trees.size());
-      matchings2 = std::vector<
-        std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>(
-        trees2.size());
-      ts = std::vector<double>(trees.size());
-      distances = std::vector<double>(trees.size());
+      matchings.resize(trees.size());
+      matchings2.resize(trees2.size());
+      ts.resize(trees.size());
+      distances.resize(trees.size());
 
       // Assignment
       assignmentImpl<dataType>(barycenter, trees, v, v2, barycenter2, trees2,
@@ -801,7 +792,9 @@ namespace ttk {
             birth = std::get<0>(birthDeath);
             death = std::get<1>(birthDeath);
           }
-          allMatched[j] = std::vector<dataType>{birth, death};
+          allMatched[j].resize(2);
+          allMatched[j][0] = birth;
+          allMatched[j][1] = death;
         }
 
         // Compute general terms
@@ -877,7 +870,7 @@ namespace ttk {
                          unsigned int &noUniform,
                          bool &foundAllUniform) {
       // Get multi interpolation
-      allInterpolated = std::vector<ftm::MergeTree<dataType>>(trees.size());
+      allInterpolated.resize(trees.size());
       if(geodesicNumber != 0) {
         for(unsigned int i = 0; i < trees.size(); ++i)
           getMultiInterpolation(
@@ -887,9 +880,8 @@ namespace ttk {
       // Manage individuals t
       noUniform = 0;
       foundAllUniform = true;
-      isUniform = std::vector<bool>(barycenter.tree.getNumberOfNodes(), false);
-      tss
-        = std::vector<std::vector<double>>(barycenter.tree.getNumberOfNodes());
+      isUniform.resize(barycenter.tree.getNumberOfNodes(), false);
+      tss.resize(barycenter.tree.getNumberOfNodes());
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
         if(barycenter.tree.isNodeAlone(i))
           continue;
@@ -1243,9 +1235,8 @@ namespace ttk {
       // --- Init
       unsigned int oldNoGeod = allTs_.size();
       if(not keepState_) {
-        allTs_ = std::vector<std::vector<double>>(
-          numberOfGeodesics_, std::vector<double>(trees.size()));
-        inputToGeodesicsDistances_ = std::vector<std::vector<double>>(
+        allTs_.resize(numberOfGeodesics_, std::vector<double>(trees.size()));
+        inputToGeodesicsDistances_.resize(
           numberOfGeodesics_, std::vector<double>(trees.size()));
         vS_.clear();
         v2s_.clear();
@@ -1354,8 +1345,7 @@ namespace ttk {
 
     template <class dataType>
     void computeGeodesicExtremities() {
-      allScaledTs_ = std::vector<std::vector<double>>(
-        allTs_.size(), std::vector<double>(allTs_[0].size()));
+      allScaledTs_.resize(allTs_.size(), std::vector<double>(allTs_[0].size()));
       ftm::MergeTree<dataType> barycenter, barycenter2;
       ttk::ftm::mergeTreeDoubleToTemplate<dataType>(barycenter_, barycenter);
       if(trees2NodeCorr_.size() != 0)
@@ -1396,7 +1386,7 @@ namespace ttk {
     void computeBranchesCorrelationMatrix(
       ftm::MergeTree<dataType> &barycenter,
       std::vector<ftm::MergeTree<dataType>> &trees) {
-      branchesCorrelationMatrix_ = std::vector<std::vector<double>>(
+      branchesCorrelationMatrix_.resize(
         barycenter.tree.getNumberOfNodes(),
         std::vector<double>(numberOfGeodesics_, 0.0));
       persCorrelationMatrix_ = branchesCorrelationMatrix_;

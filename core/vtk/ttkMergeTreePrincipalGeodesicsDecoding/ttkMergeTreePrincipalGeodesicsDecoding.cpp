@@ -189,8 +189,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   // -----------------
   // Pointers can't be used because we need to access the rows (VariantArray)
   std::vector<std::string> nonFieldDataNames{"TreeID"};
-  allTs_ = std::vector<std::vector<double>>(
-    numberOfGeodesics, std::vector<double>(numberOfInputs, 0.0));
+  allTs_.resize(numberOfGeodesics, std::vector<double>(numberOfInputs, 0.0));
   for(unsigned int i = 0; i < numberOfGeodesics; ++i)
     for(unsigned int j = 0; j < numberOfInputs; ++j) {
       std::string name = getTableCoefficientName(numberOfGeodesics, i);
@@ -220,12 +219,10 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   // -----------------
   // Vectors
   // -----------------
-  pVS_ = std::vector<std::vector<double *>>(
-    numberOfGeodesics, std::vector<double *>(2));
+  pVS_.resize(numberOfGeodesics, std::vector<double *>(2));
   pV2s_ = pVS_;
   if(inputBary.size() > 1) {
-    pTrees2Vs_ = std::vector<std::vector<double *>>(
-      numberOfGeodesics, std::vector<double *>(2));
+    pTrees2Vs_.resize(numberOfGeodesics, std::vector<double *>(2));
     pTrees2V2s_ = pTrees2Vs_;
   }
   for(unsigned int h = 0; h < inputBary.size(); ++h) {
@@ -252,7 +249,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   // Correlation
   // -----------------
   if(tableCorrelation) {
-    pBranchesCorrelationMatrix_ = std::vector<double *>(numberOfGeodesics);
+    pBranchesCorrelationMatrix_.resize(numberOfGeodesics);
     pPersCorrelationMatrix_ = pBranchesCorrelationMatrix_;
 
     auto tableCorrNoRows = tableCorrelation->GetNumberOfRows();
@@ -271,16 +268,12 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
 
     // Pointers can't be used because processing on these data will be done
     // later
-    baryMatchings_ = std::vector<
-      std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
-      numberOfInputs);
+    baryMatchings_.resize(numberOfInputs);
     for(unsigned int i = 0; i < numberOfInputs; ++i) {
       std::string name = getTableCorrelationTreeName(numberOfInputs, i);
       auto array = tableCorrelation->GetColumnByName(name.c_str());
       if(array) {
-        baryMatchings_[i]
-          = std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>(
-            tableCorrNoRows);
+        baryMatchings_[i].resize(tableCorrNoRows);
         for(unsigned int j = 0; j < tableCorrNoRows; ++j) {
           auto baryNodeId = baryNodeIdArray->GetVariantValue(j).ToInt();
           baryMatchings_[i][j] = std::make_tuple(
@@ -332,7 +325,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runCompute(
 
   std::vector<bool> useSadMaxPairsVec{false, true};
   if(not useDoubleInput_ and mixtureCoefficient_ == 0)
-    useSadMaxPairsVec = std::vector<bool>{true};
+    useSadMaxPairsVec.erase(useSadMaxPairsVec.begin()); // {true}
   ttk::ftm::constructTrees<dataType>(inputBary, baryDTree, baryTreeNodes,
                                      baryTreeArcs, baryTreeSegmentation,
                                      useSadMaxPairsVec);

@@ -220,10 +220,10 @@ namespace ttk {
       std::vector<bool> useSadMaxPairs) {
       bool isPersistenceDiagram = false;
       const int numInputs = inputTrees.size();
-      intermediateTrees = std::vector<MergeTree<dataType>>(numInputs);
-      treesNodes = std::vector<vtkUnstructuredGrid *>(numInputs);
-      treesArcs = std::vector<vtkUnstructuredGrid *>(numInputs);
-      treesSegmentation = std::vector<vtkDataSet *>(numInputs);
+      intermediateTrees.resize(numInputs);
+      treesNodes.resize(numInputs);
+      treesArcs.resize(numInputs);
+      treesSegmentation.resize(numInputs);
       for(int i = 0; i < numInputs; i++) {
         if(inputTrees[i]->GetNumberOfBlocks() >= 2) {
           treesNodes[i]

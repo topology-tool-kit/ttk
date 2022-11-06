@@ -76,12 +76,12 @@ private:
 
   void setDataVisualization(int numInputs, int numInputs2) {
     // Trees
-    treesNodes = std::vector<vtkUnstructuredGrid *>(numInputs);
-    treesNodes2 = std::vector<vtkUnstructuredGrid *>(numInputs2);
-    treesArcs = std::vector<vtkUnstructuredGrid *>(numInputs);
-    treesArcs2 = std::vector<vtkUnstructuredGrid *>(numInputs2);
-    treesSegmentation = std::vector<vtkDataSet *>(numInputs);
-    treesSegmentation2 = std::vector<vtkDataSet *>(numInputs2);
+    treesNodes.resize(numInputs);
+    treesNodes2.resize(numInputs2);
+    treesArcs.resize(numInputs);
+    treesArcs2.resize(numInputs2);
+    treesSegmentation.resize(numInputs);
+    treesSegmentation2.resize(numInputs2);
   }
 
   void resetDataVisualization() {

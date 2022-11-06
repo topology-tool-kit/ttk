@@ -103,7 +103,7 @@ namespace ttk {
     for(auto t : ts)
       tBarycenter += t / ts.size();
 
-    distances = std::vector<double>(ts.size());
+    distances.resize(ts.size());
     for(unsigned int i = 0; i < ts.size(); ++i)
       distances[i] = (ts[i] - tBarycenter) * distance;
   }

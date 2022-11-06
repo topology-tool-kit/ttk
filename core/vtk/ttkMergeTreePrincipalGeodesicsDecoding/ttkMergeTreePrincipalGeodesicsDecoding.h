@@ -93,15 +93,15 @@ private:
 
   void setDataVisualization(int numTrees) {
     // Trees
-    baryMTree = std::vector<ttk::ftm::MergeTree<double>>(1);
-    baryTreeNodes = std::vector<vtkUnstructuredGrid *>(1);
-    baryTreeArcs = std::vector<vtkUnstructuredGrid *>(1);
-    baryTreeSegmentation = std::vector<vtkDataSet *>(1);
+    baryMTree.resize(1);
+    baryTreeNodes.resize(1);
+    baryTreeArcs.resize(1);
+    baryTreeSegmentation.resize(1);
 
-    inputMTrees = std::vector<ttk::ftm::MergeTree<double>>(numTrees);
-    inputTreesNodes = std::vector<vtkUnstructuredGrid *>(numTrees);
-    inputTreesArcs = std::vector<vtkUnstructuredGrid *>(numTrees);
-    inputTreesSegmentation = std::vector<vtkDataSet *>(numTrees);
+    inputMTrees.resize(numTrees);
+    inputTreesNodes.resize(numTrees);
+    inputTreesArcs.resize(numTrees);
+    inputTreesSegmentation.resize(numTrees);
   }
 
   bool isDataVisualizationFilled() {

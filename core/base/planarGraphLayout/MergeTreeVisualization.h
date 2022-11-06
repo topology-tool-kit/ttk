@@ -280,7 +280,7 @@ namespace ttk {
 
       auto nPoints = tree->getRealNumberOfNodes();
       int outNumberOfPoints = nPoints * 2;
-      retVec = std::vector<float>(outNumberOfPoints);
+      retVec.resize(outNumberOfPoints);
 
       int cptNode = 0;
       std::vector<LongSimplexId> treeSimplexId(tree->getNumberOfNodes());
@@ -755,7 +755,7 @@ namespace ttk {
     template <class dataType>
     void persistenceDiagramPlanarLayout(ftm::FTMTree_MT *tree,
                                         std::vector<float> &res) {
-      res = std::vector<float>(tree->getRealNumberOfNodes() * 2);
+      res.resize(tree->getRealNumberOfNodes() * 2);
       int cptNode = 0;
       std::queue<ftm::idNode> queue;
       ftm::idNode treeRoot = tree->getRoot();
