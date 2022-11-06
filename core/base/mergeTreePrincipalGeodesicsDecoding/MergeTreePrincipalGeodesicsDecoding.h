@@ -90,7 +90,7 @@ namespace ttk {
           if(barycenter.tree.isNodeAlone(j))
             continue;
           for(unsigned int k = 0; k < 2; ++k) {
-            if(std::abs(v2s[i][k][j]) < 1e-12)
+            if(std::abs(v2s[i][k][j]) < Geometry::pow(10.0, -DBL_DIG))
               continue;
             alpha[i] += (vS[i][k][j] / v2s[i][k][j]);
             ++cptDivide;

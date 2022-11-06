@@ -20,6 +20,8 @@
 #include <MergeTreePrincipalGeodesicsBase.h>
 #include <Statistics.h>
 
+#define ENERGY_COMPARISON_TOLERANCE 1e-6
+
 namespace ttk {
 
   /**
@@ -1037,7 +1039,7 @@ namespace ttk {
       converged = std::abs(frechetEnergy - oldFrechetEnergy) < tol;
       oldFrechetEnergy = frechetEnergy;
 
-      if(frechetEnergy + 1e-6 < minFrechetEnergy) {
+      if(frechetEnergy + ENERGY_COMPARISON_TOLERANCE < minFrechetEnergy) {
         minFrechetEnergy = frechetEnergy;
         cptBlocked = 0;
         isBestEnergy = true;

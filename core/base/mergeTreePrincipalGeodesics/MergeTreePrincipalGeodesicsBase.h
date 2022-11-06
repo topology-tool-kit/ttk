@@ -14,6 +14,8 @@
 #include <MergeTreeDistance.h>
 #include <cmath>
 
+#define POINTS_BELOW_DIAG_TOLERANCE 1e-4
+
 namespace ttk {
 
   class MergeTreePrincipalGeodesicsBase : virtual public Debug,
@@ -535,7 +537,7 @@ namespace ttk {
           printErr("NOT A NUMBER");
         }
         // - Verify points below diagonal
-        double eps = 1e-4;
+        double eps = POINTS_BELOW_DIAG_TOLERANCE;
         if(interpolationVector[nodeBirth] > interpolationVector[nodeDeath]
            and interpolationVector[nodeBirth] - interpolationVector[nodeDeath]
                  < eps) {
