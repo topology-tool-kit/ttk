@@ -614,14 +614,6 @@ public:
       } else {
         allBounds[i] = allBounds[0];
       }
-      /*if(PlanarLayout){
-        // TODO correctly manage bounds when planar layout
-        std::vector<double> tBound = tupleToVector(allBounds[i]);
-        int level = getTreeDepth(trees[i]);
-        for(int j = 0; j < tBound.size(); ++j)
-          tBound[j] = tBound[j]*level/5;
-        allBounds[i] = vectorToTuple(tBound);
-      }*/
     }
 
     std::vector<std::tuple<double, double, double, double, double, double>>
@@ -987,11 +979,6 @@ public:
           for(auto child : children)
             queue.emplace(child);
 
-          /*if(isPersistenceDiagram) {
-            node = nodeOrigin;
-            nodeOrigin = trees[i]->getNode(node)->getOrigin();
-          }*/
-
           // --------------
           // Insert point
           // --------------
@@ -1060,8 +1047,6 @@ public:
           bool dummyNode
             = PlanarLayout and not branchDecompositionPlanarLayout_
               and (!trees[i]->isRoot(node) or isPersistenceDiagram);
-          /*and !isLeaf(trees[i], node)
-          and isBranchOrigin(trees[i], node);*/
           if(dummyNode) {
             double pointToAdd[3];
             if(not isPersistenceDiagram)
@@ -1590,8 +1575,6 @@ public:
       appendFilter->SetMergePoints(false);
       appendFilter->Update();
       vtkOutputSegmentation->ShallowCopy(appendFilter->GetOutput());
-      // vtkOutputSegmentation =
-      // vtkDataSet::SafeDownCast(appendFilter->GetOutput());
     }
 
     //
