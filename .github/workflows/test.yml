@@ -206,7 +206,7 @@ jobs:
   # Test macOS build #
   # -----------------#
   test-build-macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
     steps:
@@ -220,9 +220,11 @@ jobs:
         brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
-        python3 -m pip install scikit-learn packaging
+        python3.10 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
+        # remove Python 3.11 installation
+        sudo rm -rf /Library/Frameworks/Python.framework/Versions/3.11
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -261,7 +263,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -315,7 +316,7 @@ jobs:
     - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
-        python3 -u python/run.py
+        python3.10 -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
 
