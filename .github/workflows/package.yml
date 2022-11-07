@@ -39,6 +39,7 @@ jobs:
           libgraphviz-dev \
           libsqlite3-dev \
           libgl1-mesa-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
@@ -162,9 +163,9 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp mesa glew qt@5 ninja python
+        brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
-        brew install boost eigen graphviz embree
+        brew install boost eigen graphviz embree websocketpp
         python3 -m pip install scikit-learn packaging
 
     - name: Install optional dependencies
@@ -174,6 +175,11 @@ jobs:
       run: |
         wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
         sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
+
+    - name: Set compilers as environment variables
+      run: |
+        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
 
     - name: Create & configure TTK build directory
       run: |
@@ -228,7 +234,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp mesa glew qt@5 ninja python
+        brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree
         python3 -m pip install scikit-learn packaging
@@ -246,6 +252,11 @@ jobs:
       run: |
         sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
         sudo installer -pkg ttk.pkg -target /
+
+    - name: Set compilers as environment variables
+      run: |
+        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
 
     - name: Test TTK examples
       run: |
@@ -312,7 +323,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz
+          scikit-learn packaging openmp graphviz websocketpp
 
     - name: Remove hosted Python
       shell: bash
