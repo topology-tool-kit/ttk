@@ -219,8 +219,9 @@ protected:
   /**
    * This method checks the validity of the global identifiers given in
    * argument. A set of global identifiers is valid if the highest global id is
-   * equal to the global number of simplices (without ghosts) + 1 and if the
-   * lowest global id is equal to 0.
+   * equal to the global number of simplices (without ghosts) - 1 and if the
+   * lowest global id is equal to 0. Simplices can either be vertices or
+   * simplices of highest dimension.
    */
 
   bool checkGlobalIdValidity(ttk::LongSimplexId *globalIds,

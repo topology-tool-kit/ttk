@@ -31,7 +31,7 @@ namespace ttk {
 
   struct Response {
     ttk::SimplexId id;
-    ttk::SimplexId globalId;
+    ttk::LongSimplexId globalId;
   };
 
 #endif
@@ -52,8 +52,8 @@ namespace ttk {
   protected:
     ttk::SimplexId vertexNumber_{};
     ttk::SimplexId cellNumber_{};
-    std::vector<ttk::SimplexId> *vertexIdentifiers_;
-    std::vector<ttk::SimplexId> *cellIdentifiers_;
+    ttk::LongSimplexId *vertexIdentifiers_;
+    ttk::LongSimplexId *cellIdentifiers_;
 #ifdef TTK_ENABLE_MPI
     std::map<ttk::SimplexId, ttk::SimplexId> vertGtoL_;
     std::vector<int> neighbors_;
@@ -78,7 +78,7 @@ namespace ttk {
     ttk::LongSimplexId *outdatedGlobalCellIds_{nullptr};
     std::map<ttk::LongSimplexId, ttk::SimplexId> vertOutdatedGtoL_;
     std::map<ttk::LongSimplexId, ttk::SimplexId> cellOutdatedGtoL_;
-    KDTree<float, std::array<float, 3>> kdt_;
+    ttk::KDTree<float, std::array<float, 3>> kdt_;
 #endif
 
   public:
@@ -90,11 +90,11 @@ namespace ttk {
       cellNumber_ = cellNumber;
     }
 
-    void setVertexIdentifiers(std::vector<ttk::SimplexId> *vertexIdentifiers) {
+    void setVertexIdentifiers(ttk::LongSimplexId *vertexIdentifiers) {
       this->vertexIdentifiers_ = vertexIdentifiers;
     }
 
-    void setCellIdentifiers(std::vector<ttk::SimplexId> *cellIdentifiers) {
+    void setCellIdentifiers(ttk::LongSimplexId *cellIdentifiers) {
       this->cellIdentifiers_ = cellIdentifiers;
     }
 
@@ -149,7 +149,7 @@ namespace ttk {
     }
 
     void buildKDTree() {
-      kdt_ = KDTree<float, std::array<float, 3>>(false, 2);
+      kdt_ = ttk::KDTree<float, std::array<float, 3>>(false, 2);
       kdt_.build(pointSet_, vertexNumber_, dimension_);
     }
 
@@ -159,6 +159,7 @@ namespace ttk {
 
     void initializeMPITypes() {
       ttk::SimplexId id{-1};
+      ttk::LongSimplexId longId{-1};
       // Initialize id type
       mpiIdType_ = getMPIType(id);
 
@@ -172,7 +173,7 @@ namespace ttk {
       MPI_Type_commit(&mpiPointType_);
 
       // Initialize Response Type
-      MPI_Datatype typesResponse[] = {mpiIdType_, mpiIdType_};
+      MPI_Datatype typesResponse[] = {mpiIdType_, getMPIType(longId)};
       int lengthsResponse[] = {1, 1};
       const long int mpi_offsetsResponse[]
         = {offsetof(Response, id), offsetof(Response, globalId)};
@@ -183,7 +184,7 @@ namespace ttk {
 
     void inline findPoint(ttk::SimplexId &id, float x, float y, float z) {
       std::array<float, 3> coordinates = {x, y, z};
-      std::vector<KDTree<float, std::array<float, 3>> *> neighbours;
+      std::vector<ttk::KDTree<float, std::array<float, 3>> *> neighbours;
       std::vector<float> costs;
       kdt_.getKClosest(1, coordinates, neighbours, costs);
       id = neighbours[0]->id_;
@@ -222,7 +223,7 @@ namespace ttk {
       std::vector<Point> &receivedPoints,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
-      ttk::SimplexId globalId{-1};
+      ttk::LongSimplexId globalId{-1};
       ttk::SimplexId id{-1};
       send_buf.clear();
 #ifdef TTK_ENABLE_OPENMP
@@ -241,7 +242,7 @@ namespace ttk {
           if((vertGhost_ != nullptr && vertGhost_[id] == 0)
              || (vertRankArray_ != nullptr
                  && vertRankArray_[id] == ttk::MPIrank_)) {
-            globalId = vertexIdentifiers_->at(id);
+            globalId = vertexIdentifiers_[id];
             if(globalId >= 0) {
 #ifdef TTK_ENABLE_OPENMP
               locatedSimplices[omp_get_thread_num()].push_back(
@@ -292,7 +293,7 @@ namespace ttk {
       for(int n = 0; n < recvMessageSize; n++) {
         search = vertOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
         if(search != vertOutdatedGtoL_.end()) {
-          globalId = vertexIdentifiers_->at(search->second);
+          globalId = vertexIdentifiers_[search->second];
           if(globalId >= 0) {
 #ifdef TTK_ENABLE_OPENMP
             locatedSimplices[omp_get_thread_num()].push_back(
@@ -378,11 +379,11 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
                 locatedSimplices[omp_get_thread_num()].push_back(Response{
                   receivedCells[n],
-                  cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
+                  cellIdentifiers_[pointsToCells_[localPointIds[m]][k]]});
 #else
                 send_buf.push_back(Response{
                   receivedCells[n],
-                  cellIdentifiers_->at(pointsToCells_[localPointIds[m]][k])});
+                  cellIdentifiers_[pointsToCells_[localPointIds[m]][k]]});
 #endif
               }
               k++;
@@ -421,7 +422,7 @@ namespace ttk {
       std::vector<ttk::SimplexId> &receivedOutdatedGlobalIds,
       ttk::SimplexId &recvMessageSize,
       std::vector<Response> &send_buf) {
-      ttk::SimplexId globalId{-1};
+      ttk::LongSimplexId globalId{-1};
       std::map<ttk::LongSimplexId, ttk::SimplexId>::iterator search;
       send_buf.clear();
 #ifdef TTK_ENABLE_OPENMP
@@ -430,15 +431,14 @@ namespace ttk {
       for(int n = 0; n < recvMessageSize; n++) {
         search = cellOutdatedGtoL_.find(receivedOutdatedGlobalIds[n]);
         if(search != cellOutdatedGtoL_.end()) {
-          globalId = cellIdentifiers_->at(search->second);
+          globalId = cellIdentifiers_[search->second];
           if(globalId >= 0) {
 #ifdef TTK_ENABLE_OPENMP
             locatedSimplices[omp_get_thread_num()].push_back(
-              Response{receivedOutdatedGlobalIds[n],
-                       static_cast<ttk::SimplexId>(globalId)});
+              Response{receivedOutdatedGlobalIds[n], globalId});
 #else
-            send_buf.push_back(Response{receivedOutdatedGlobalIds[n],
-                                        static_cast<ttk::SimplexId>(globalId)});
+            send_buf.push_back(
+              Response{receivedOutdatedGlobalIds[n], globalId});
 #endif
           }
         }
@@ -573,7 +573,7 @@ namespace ttk {
       if(vertRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertRankArray_[i] == ttk::MPIrank_) {
-            vertexIdentifiers_->at(i) = vertIndex;
+            vertexIdentifiers_[i] = vertIndex;
             vertGtoL_[vertIndex] = i;
             vertIndex++;
           }
@@ -584,7 +584,7 @@ namespace ttk {
       } else {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertGhost_[i] == 0) {
-            vertexIdentifiers_->at(i) = vertIndex;
+            vertexIdentifiers_[i] = vertIndex;
             vertGtoL_[vertIndex] = i;
             vertIndex++;
           }
@@ -598,7 +598,7 @@ namespace ttk {
       if(cellRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellRankArray_[i] == ttk::MPIrank_) {
-            cellIdentifiers_->at(i) = cellIndex;
+            cellIdentifiers_[i] = cellIndex;
             cellIndex++;
           }
           if(outdatedGlobalCellIds_ != nullptr) {
@@ -608,7 +608,7 @@ namespace ttk {
       } else {
         for(ttk::SimplexId i = 0; i < cellNumber_; i++) {
           if(cellGhost_[i] == 0) {
-            cellIdentifiers_->at(i) = cellIndex;
+            cellIdentifiers_[i] = cellIndex;
             cellIndex++;
           }
           if(outdatedGlobalCellIds_ != nullptr) {
@@ -699,15 +699,14 @@ namespace ttk {
                                  mpiResponseType_, neighbors_[j]);
             if(outdatedGlobalPointIds_ == nullptr) {
               for(int n = 0; n < recvMessageSize; n++) {
-                vertexIdentifiers_->at(receivedResponse[n].id)
+                vertexIdentifiers_[receivedResponse[n].id]
                   = receivedResponse[n].globalId;
                 vertGtoL_[receivedResponse[n].globalId]
                   = receivedResponse[n].id;
               }
             } else {
               for(int n = 0; n < recvMessageSize; n++) {
-                vertexIdentifiers_->at(
-                  vertOutdatedGtoL_[receivedResponse[n].id])
+                vertexIdentifiers_[vertOutdatedGtoL_[receivedResponse[n].id]]
                   = receivedResponse[n].globalId;
                 vertGtoL_[receivedResponse[n].globalId]
                   = receivedResponse[n].id;
@@ -752,7 +751,7 @@ namespace ttk {
                 id = connectivity_[i * (dimension_ + 1) + k];
                 cellGhostGlobalVertexIdsPerRank
                   [neighborToId_[cellRankArray_[i]]]
-                    .push_back(vertexIdentifiers_->at(id));
+                    .push_back(vertexIdentifiers_[id]);
               }
             } else {
               cellGhostGlobalIdsPerRank[neighborToId_[cellRankArray_[i]]]
@@ -770,7 +769,7 @@ namespace ttk {
               cellGhostGlobalVertexIds.push_back(i);
               for(int k = 0; k < dimension_ + 1; k++) {
                 id = connectivity_[i * (dimension_ + 1) + k];
-                cellGhostGlobalVertexIds.push_back(vertexIdentifiers_->at(id));
+                cellGhostGlobalVertexIds.push_back(vertexIdentifiers_[id]);
               }
             } else {
               cellGhostGlobalIds.push_back(
@@ -812,12 +811,12 @@ namespace ttk {
                                  mpiResponseType_, neighbors_[j]);
             if(outdatedGlobalCellIds_ == nullptr) {
               for(int n = 0; n < recvMessageSize; n++) {
-                cellIdentifiers_->at(receivedResponse[n].id)
+                cellIdentifiers_[receivedResponse[n].id]
                   = receivedResponse[n].globalId;
               }
             } else {
               for(int n = 0; n < recvMessageSize; n++) {
-                cellIdentifiers_->at(cellOutdatedGtoL_[receivedResponse[n].id])
+                cellIdentifiers_[cellOutdatedGtoL_[receivedResponse[n].id]]
                   = receivedResponse[n].globalId;
               }
             }
@@ -895,7 +894,7 @@ namespace ttk {
       for(int k = 0; k < dims_[2]; k++) {
         for(int j = 0; j < dims_[1]; j++) {
           for(int i = 0; i < dims_[0]; i++) {
-            vertexIdentifiers_->at(k * dims_[0] * dims_[1] + j * dims_[0] + i)
+            vertexIdentifiers_[k * dims_[0] * dims_[1] + j * dims_[0] + i]
               = i + offsetWidth + (j + offsetHeight) * width
                 + (k + offsetLength) * width * height;
           }
@@ -914,7 +913,7 @@ namespace ttk {
       for(int k = 0; k < dims_[2]; k++) {
         for(int j = 0; j < dims_[1]; j++) {
           for(int i = 0; i < dims_[0]; i++) {
-            cellIdentifiers_->at(k * dims_[0] * dims_[1] + j * dims_[0] + i)
+            cellIdentifiers_[k * dims_[0] * dims_[1] + j * dims_[0] + i]
               = i + offsetWidth + (j + offsetHeight) * width
                 + (k + offsetLength) * width * height;
           }
@@ -940,7 +939,7 @@ namespace ttk {
 #endif
       for(SimplexId i = 0; i < vertexNumber_; i++) {
         // avoid any processing if the abort signal is sent
-        vertexIdentifiers_->at(i) = i;
+        vertexIdentifiers_[i] = i;
       }
 
 #ifdef TTK_ENABLE_OPENMP
@@ -948,7 +947,7 @@ namespace ttk {
 #endif
       for(SimplexId i = 0; i < cellNumber_; i++) {
         // avoid any processing if the abort signal is sent
-        cellIdentifiers_->at(i) = i;
+        cellIdentifiers_[i] = i;
       }
 
       return 1; // return success

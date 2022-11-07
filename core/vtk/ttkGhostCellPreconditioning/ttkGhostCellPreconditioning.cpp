@@ -65,11 +65,11 @@ int ttkGhostCellPreconditioning::RequestData(
   this->printMsg("#Cells: " + std::to_string(nCells));
 
   auto *verticesGlobalIds = ttkUtils::GetPointer<ttk::LongSimplexId>(
-    pointData->GetArray("GlobalPointIds"));
+    pointData->GetArray(ttk::MPIVertexGlobalIdFieldName_));
   auto *verticesGhostCells
     = ttkUtils::GetPointer<unsigned char>(pointData->GetArray("vtkGhostType"));
   auto *cellsGlobalIds = ttkUtils::GetPointer<ttk::LongSimplexId>(
-    cellData->GetArray("GlobalCellIds"));
+    cellData->GetArray(ttk::MPICellGlobalIdFieldName_));
   auto *cellsGhostCells
     = ttkUtils::GetPointer<unsigned char>(cellData->GetArray("vtkGhostType"));
 

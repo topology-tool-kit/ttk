@@ -84,4 +84,7 @@ namespace ttk {
   /// number of different critical types
   const int CriticalTypeNumber = 6;
 
+  const char MPIVertexGlobalIdFieldName_[] = "GlobalPointIds";
+  const char MPICellGlobalIdFieldName_[] = "GlobalCellIds";
+
 } // namespace ttk
