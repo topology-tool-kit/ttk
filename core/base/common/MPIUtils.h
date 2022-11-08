@@ -67,6 +67,10 @@ namespace ttk {
     return ttk::MPIsize_ > 1;
   };
 
+  inline bool hasInitializedMPI() {
+    return ttk::MPIsize_ > 0;
+  };
+
   inline int startMPITimer(Timer &t, int rank, int size) {
     if(size > 0) {
       MPI_Barrier(ttk::MPIcomm_);
@@ -115,7 +119,8 @@ namespace ttk {
                           const std::unordered_set<int> &neighbors,
                           const int rankToSend,
                           const IT nVerts,
-                          MPI_Comm communicator) {
+                          MPI_Comm communicator,
+                          const int dimensionNumber) {
 
     if(!ttk::isRunningWithMPI()) {
       return -1;
@@ -154,15 +159,17 @@ namespace ttk {
       for(int r = 0; r < ttk::MPIsize_; r++) {
         if(ttk::MPIrank_ != r && neighbors.find(r) != neighbors.end()) {
           IT nValues = rankVectors[r].size();
-          std::vector<DT> receivedValues(nValues);
+          std::vector<DT> receivedValues(nValues * dimensionNumber);
           if(nValues > 0) {
-            MPI_Recv(receivedValues.data(), nValues, MPI_DT, r, valuesTag,
-                     communicator, MPI_STATUS_IGNORE);
+            MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
+                     r, valuesTag, communicator, MPI_STATUS_IGNORE);
             for(IT i = 0; i < nValues; i++) {
-              DT receivedVal = receivedValues[i];
-              IT globalId = rankVectors[r][i];
-              IT localId = gidToLidMap.at(globalId);
-              scalarArray[localId] = receivedVal;
+              for(int j = 0; j < dimensionNumber; j++) {
+                DT receivedVal = receivedValues[i * dimensionNumber + j];
+                IT globalId = rankVectors[r][i];
+                IT localId = gidToLidMap.at(globalId);
+                scalarArray[localId * dimensionNumber + j] = receivedVal;
+              }
             }
           }
         }
@@ -184,16 +191,19 @@ namespace ttk {
                    communicator, MPI_STATUS_IGNORE);
 
           // assemble the scalar values
-          std::vector<DT> valuesToSend(nValues);
+          std::vector<DT> valuesToSend(nValues * dimensionNumber);
           for(IT i = 0; i < nValues; i++) {
-            IT globalId = receivedIds[i];
-            IT localId = gidToLidMap.at(globalId);
-            valuesToSend[i] = scalarArray[localId];
+            for(int j = 0; j < dimensionNumber; j++) {
+              IT globalId = receivedIds[i];
+              IT localId = gidToLidMap.at(globalId);
+              valuesToSend[i * dimensionNumber + j]
+                = scalarArray[localId * dimensionNumber + j];
+            }
           }
 
           // send the scalar values
-          MPI_Send(valuesToSend.data(), nValues, MPI_DT, rankToSend, valuesTag,
-                   communicator);
+          MPI_Send(valuesToSend.data(), nValues * dimensionNumber, MPI_DT,
+                   rankToSend, valuesTag, communicator);
         }
       }
     }
@@ -319,7 +329,8 @@ namespace ttk {
                          const LongSimplexId *const globalIds,
                          const std::unordered_map<IT, IT> &gidToLidMap,
                          const IT nVerts,
-                         MPI_Comm communicator) {
+                         MPI_Comm communicator,
+                         const int dimensionNumber = 1) {
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }
@@ -328,7 +339,7 @@ namespace ttk {
     for(int r = 0; r < ttk::MPIsize_; r++) {
       getGhostCellScalars<DT, IT>(scalarArray, rankArray, globalIds,
                                   gidToLidMap, neighbors, r, nVerts,
-                                  communicator);
+                                  communicator, dimensionNumber);
       MPI_Barrier(communicator);
     }
     return 0;
@@ -359,8 +370,7 @@ namespace ttk {
                                unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox) {
-    std::vector<std::array<double, 6>> rankBoundingBoxes(
-      ttk::MPIsize_, std::array<double, 6>({}));
+    std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
     for(int r = 0; r < ttk::MPIsize_; r++) {
@@ -384,7 +394,7 @@ namespace ttk {
         }
       }
     }
-    MPI_Datatype MIT = ttk::getMPIType(static_cast<ttk::SimplexId>(0));
+    MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
     std::vector<ttk::SimplexId> currentRankUnknownIds;
     std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);
     std::unordered_set<ttk::SimplexId> gIdSet;

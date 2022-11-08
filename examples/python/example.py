@@ -47,17 +47,16 @@ else:
 reader = vtkXMLUnstructuredGridReader()
 reader.SetFileName(inputFilePath)
 
-# 2. computing the persistence curve
-curve = ttkPersistenceCurve()
-curve.SetInputConnection(reader.GetOutputPort())
-curve.SetInputArrayToProcess(0, 0, 0, 0, "data")
-curve.SetDebugLevel(3)
-
-# 3. computing the persitence diagram
+# 2. computing the persistence diagram
 diagram = ttkPersistenceDiagram()
 diagram.SetInputConnection(reader.GetOutputPort())
 diagram.SetInputArrayToProcess(0, 0, 0, 0, "data")
 diagram.SetDebugLevel(3)
+
+# 3. computing the persistence curve from the persistence diagram
+curve = ttkPersistenceCurve()
+curve.SetInputConnection(diagram.GetOutputPort())
+curve.SetDebugLevel(3)
 
 # 4. selecting the critical point pairs
 criticalPairs = vtkThreshold()

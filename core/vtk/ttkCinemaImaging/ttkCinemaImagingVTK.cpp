@@ -162,6 +162,12 @@ int ttk::ttkCinemaImagingVTK::RenderVTKObject(
   auto windowScalars = vtkSmartPointer<vtkRenderWindow>::New();
   this->setupWindow(windowScalars, rendererScalars, resolution);
 
+  if(windowScalars->SupportsOpenGL() == 0) {
+    // MS Windows in a VM does not support OpenGL
+    this->printErr("RenderWindow does not support OpenGL");
+    return 0;
+  }
+
   auto valuePassCollection = vtkSmartPointer<vtkRenderPassCollection>::New();
   std::vector<std::string> valuePassNames;
   size_t firstValuePassIndex = 0;

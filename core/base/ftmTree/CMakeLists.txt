@@ -37,8 +37,10 @@ if (TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
   target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
 endif()
 
+if (TTK_ENABLE_FTM_TREE_STATS_TIME)
+  target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_STATS_TIME)
+endif()
+
 if (TTK_ENABLE_OPENMP AND TTK_ENABLE_OMP_PRIORITY)
   target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_OMP_PRIORITY)
 endif()
-
-# target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_STATS_TIME)

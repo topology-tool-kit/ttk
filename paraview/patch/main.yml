@@ -67,7 +67,7 @@ jobs:
         mv ttk-paraview.deb.new ttk-paraview.deb
 
     - name: Upload .deb package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-${{ matrix.os }}.deb
         path: build/ttk-paraview.deb
@@ -102,7 +102,7 @@ jobs:
         cpack -G productbuild
 
     - name: Upload .pgk package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview.pkg
         path: build/ttk-paraview.pkg
@@ -130,7 +130,7 @@ jobs:
         cpack -G NSIS64
 
     - name: Upload .exe installer
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview.exe
         path: build/ttk-paraview.exe
@@ -151,7 +151,7 @@ jobs:
         prerelease: false
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
 
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: actions/upload-release-asset@v1

@@ -34,6 +34,7 @@
 #include <ttkAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
 #include <MergeTreeDistanceMatrix.h>
@@ -108,6 +109,16 @@ public:
   }
   bool SetDeleteMultiPersPairs() {
     return deleteMultiPersPairs_;
+  }
+
+  void SetBranchMetric(int m) {
+    branchMetric_ = m;
+    Modified();
+  }
+
+  void SetPathMetric(int m) {
+    pathMetric_ = m;
+    Modified();
   }
 
   // Execution Options

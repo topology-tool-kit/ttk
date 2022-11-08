@@ -1,0 +1,11 @@
+NAME
+  ttkMergeTreePrincipalGeodesicsDecoding
+SOURCES
+  ttkMergeTreePrincipalGeodesicsDecoding.cpp
+HEADERS
+  ttkMergeTreePrincipalGeodesicsDecoding.h
+DEPENDS
+  mergeTreePrincipalGeodesicsDecoding
+  ttkFTMTree
+  ttkPlanarGraphLayout
+  ttkAlgorithm

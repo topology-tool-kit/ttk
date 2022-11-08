@@ -68,6 +68,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::string CellFieldName{"CellIdentifiers"},
+  std::string CellFieldName{ttk::CellScalarFieldName},
     VertexFieldName{ttk::VertexScalarFieldName};
 };

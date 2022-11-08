@@ -98,37 +98,18 @@ int ttk::TrackingFromFields::performDiagramComputation(
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram;
     persistenceDiagram.setThreadNumber(1);
-    persistenceDiagram.setBackend(PersistenceDiagram::BACKEND::FTM);
+    persistenceDiagram.execute(persistenceDiagrams[i],
+                               (dataType *)(inputData_[i]), 0, inputOffsets_[i],
+                               triangulation);
 
-    // std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
-    // persistenceDiagram.setDMTPairs(&dmt_pairs);
-    // persistenceDiagram.setInputScalars(inputData_[i]);
-    // persistenceDiagram.setInputOffsets(inputOffsets_);
-    persistenceDiagram.setComputeSaddleConnectors(false);
-    ttk::DiagramType CTDiagram{};
-
-    // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram.execute<dataType, triangulationType>(
-      CTDiagram, (dataType *)(inputData_[i]), 0, inputOffsets_[i],
-      triangulation);
-
-    // Copy diagram into augmented diagram.
-    persistenceDiagrams[i].resize(CTDiagram.size());
-
-    for(int j = 0; j < (int)CTDiagram.size(); ++j) {
-      std::array<float, 3> p{};
-      std::array<float, 3> q{};
-      auto currentTuple = CTDiagram[j];
-      const int a = currentTuple.birth.id;
-      const int b = currentTuple.death.id;
-      triangulation->getVertexPoint(a, p[0], p[1], p[2]);
-      triangulation->getVertexPoint(b, q[0], q[1], q[2]);
-      const double sa = ((double *)inputData_[i])[a];
-      const double sb = ((double *)inputData_[i])[b];
-      persistenceDiagrams[i][j] = PersistencePair{
-        CriticalVertex{currentTuple.birth.id, currentTuple.birth.type, sa, p},
-        CriticalVertex{currentTuple.death.id, currentTuple.death.type, sb, q},
-        currentTuple.persistence, currentTuple.dim, true};
+    // Augment diagram.
+    for(auto &pair : persistenceDiagrams[i]) {
+      triangulation->getVertexPoint(pair.birth.id, pair.birth.coords[0],
+                                    pair.birth.coords[1], pair.birth.coords[2]);
+      triangulation->getVertexPoint(pair.death.id, pair.death.coords[0],
+                                    pair.death.coords[1], pair.death.coords[2]);
+      pair.birth.sfValue = static_cast<double *>(inputData_[i])[pair.birth.id];
+      pair.death.sfValue = static_cast<double *>(inputData_[i])[pair.death.id];
     }
   }
 

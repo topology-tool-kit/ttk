@@ -40,11 +40,6 @@ int ttkTriangulationWriter::OpenFile() {
   return 0;
 }
 
-template <typename T>
-void writeBin(std::ofstream &stream, const T var) {
-  stream.write(reinterpret_cast<const char *>(&var), sizeof(var));
-}
-
 int ttkTriangulationWriter::Write() {
 
   ttk::Timer tm{};
@@ -65,6 +60,12 @@ int ttkTriangulationWriter::Write() {
     return 1;
   }
 
+  // basic preconditions
+  triangulation->preconditionEdges();
+  if(triangulation->getDimensionality() > 2) {
+    triangulation->preconditionTriangles();
+  }
+
   const auto explTri
     = static_cast<ttk::ExplicitTriangulation *>(triangulation->getData());
 
@@ -73,7 +74,11 @@ int ttkTriangulationWriter::Write() {
     return 1;
   }
 
-  explTri->writeToFile(this->Stream);
+  if(this->UseASCIIFormat) {
+    explTri->writeToFileASCII(this->Stream);
+  } else {
+    explTri->writeToFile(this->Stream);
+  }
   this->Stream.flush();
 
   this->printMsg("Wrote triangulation to " + std::string{this->Filename}, 1.0,
