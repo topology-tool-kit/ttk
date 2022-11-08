@@ -292,7 +292,7 @@ int ttkMergeTreeDistanceMatrix::RequestData(
   if(arrayToGet == nullptr)
     arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
                    ->GetCellData()
-                   ->GetArray("Birth");
+                   ->GetArray(PersistenceBirthName);
   int dataTypeInt = arrayToGet->GetDataType();
 
   // --- Load field data parameters
