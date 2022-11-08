@@ -94,6 +94,9 @@ namespace ttk {
     bool lastObject_;
     mutable int threadNumber_;
     Wrapper *wrapper_;
+#ifdef TTK_ENABLE_MPI
+    bool hasMPISupport_{false};
+#endif
   };
 } // namespace ttk
 #include <MPIUtils.h>

@@ -87,6 +87,9 @@ private:
   unsigned int NumberOfBarycenters = 1;
   double BarycenterSizeLimitPercent = 0.0;
   bool Deterministic = false;
+  int pathMetric = 0;
+  int branchMetric = 0;
+  int baseModule = 0;
 
   // Output Options
   bool OutputTrees = true;
@@ -321,6 +324,16 @@ public:
     resetDataVisualization();
   }
   vtkGetMacro(BarycenterSizeLimitPercent, double);
+
+  void SetBranchMetric(int m) {
+    branchMetric = m;
+    Modified();
+  }
+
+  void SetPathMetric(int m) {
+    pathMetric = m;
+    Modified();
+  }
 
   // Output Options
   vtkSetMacro(BarycenterPositionAlpha, bool);

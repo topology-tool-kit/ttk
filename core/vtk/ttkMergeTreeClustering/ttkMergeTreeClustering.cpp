@@ -117,6 +117,25 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
   auto blocks2 = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
 
+  if(Backend == 0) {
+    baseModule = 0;
+  } else if(Backend == 1) {
+    baseModule = 0;
+  } else if(Backend == 3) {
+    baseModule = 1;
+  } else if(Backend == 4) {
+    baseModule = 2;
+  } else {
+    baseModule = 0;
+  }
+
+  // filter out new backends (not yet supported)
+  if(baseModule != 0) {
+    printErr("Invalid Backend chosen. Path Mapping Distance and Branch Mapping "
+             "Distance not yet supported. Canceling computation.");
+    return 1;
+  }
+
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
@@ -346,6 +365,14 @@ int ttkMergeTreeClustering::runCompute(
   return 1;
 }
 
+void addFieldData(vtkDataSet *in, vtkDataSet *out) {
+  auto inFieldData = in->GetFieldData();
+  auto outFieldData = out->GetFieldData();
+  for(int i = 0; i < inFieldData->GetNumberOfArrays(); ++i) {
+    outFieldData->AddArray(inFieldData->GetAbstractArray(i));
+  }
+}
+
 template <class dataType>
 void makeDoubleInputPersistenceDiagramOutput(
   ttkMergeTreeVisualization &visuMaker,
@@ -414,7 +441,6 @@ void makeDoubleInputPersistenceDiagramMatching(
   vtkOutputMatching->ShallowCopy(appendFilter->GetOutput());
 }
 
-// TODO merge min-sad and sad-max diagrams
 template <class dataType>
 int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
@@ -547,6 +573,10 @@ int ttkMergeTreeClustering::runOutput(
         vtkOutputArc2->GetFieldData()->ShallowCopy(
           treesArcs[1]->GetFieldData());
       }
+      if(treesSegmentation[0])
+        addFieldData(treesSegmentation[0], vtkOutputNode1);
+      if(treesSegmentation[1])
+        addFieldData(treesSegmentation[1], vtkOutputNode2);
       if(OutputSegmentation) {
         vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
           treesSegmentation[0]->GetFieldData());
@@ -650,9 +680,9 @@ int ttkMergeTreeClustering::runOutput(
         }
       }
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
-        #ifdef TTK_ENABLE_OPENMP
-        #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) 
-        #endif
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
         for(int i = 0; i < numInputs; ++i) {
           if(clusteringAssignment[i] != (int)c)
             continue;
@@ -719,6 +749,8 @@ int ttkMergeTreeClustering::runOutput(
           if(not IsPersistenceDiagram)
             vtkOutputArc->GetFieldData()->ShallowCopy(
               treesArcs[i]->GetFieldData());
+          if(treesSegmentation[i])
+            addFieldData(treesSegmentation[i], vtkOutputNode);
           if(OutputSegmentation)
             vtkOutputSegmentation->GetFieldData()->ShallowCopy(
               treesSegmentation[i]->GetFieldData());

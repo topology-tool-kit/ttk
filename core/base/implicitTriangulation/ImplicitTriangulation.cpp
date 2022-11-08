@@ -3046,13 +3046,28 @@ int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
   return 0;
 }
 
+int ImplicitTriangulation::getCellVTKIDInternal(const int &ttkId,
+                                                int &vtkId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ttkId < 0) {
+    return -1;
+  }
+#endif
+  const int nSimplexPerCell{ImplicitTriangulation::getDimensionality() == 3 ? 6
+                            : ImplicitTriangulation::getDimensionality() == 2
+                              ? 2
+                              : 1};
+  vtkId = ttkId / nSimplexPerCell;
+  return 0;
+}
+
 #ifdef TTK_ENABLE_MPI
 
 int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
+  if(!ttk::hasInitializedMPI()) {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
@@ -3387,7 +3402,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
   if(this->hasPreconditionedDistributedEdges_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
+  if(!ttk::hasInitializedMPI()) {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
@@ -3397,6 +3412,10 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
 
   if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
     return -3;
+  }
+
+  if(this->getDimensionality() == 2) {
+    this->preconditionTriangleEdges();
   }
 
   Timer tm{};
@@ -3536,7 +3555,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
   if(this->hasPreconditionedDistributedTriangles_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
+  if(!ttk::hasInitializedMPI()) {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
@@ -3673,7 +3692,7 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   if(this->hasPreconditionedDistributedVertices_) {
     return 0;
   }
-  if(!isRunningWithMPI()) {
+  if(!hasInitializedMPI()) {
     return -1;
   }
   if(this->vertGid_ == nullptr) {

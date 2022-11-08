@@ -46,17 +46,15 @@ int main(int argc, char **argv) {
   vtkNew<vtkXMLUnstructuredGridReader> reader{};
   reader->SetFileName(inputFilePath.data());
 
-  // 2. computing the persistence curve
-  vtkNew<ttkPersistenceCurve> curve{};
-  curve->SetInputConnection(reader->GetOutputPort());
-  curve->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
-
-  // 3. computing the persitence diagram
+  // 2. computing the persistence diagram
   vtkNew<ttkPersistenceDiagram> diagram{};
   diagram->SetInputConnection(reader->GetOutputPort());
   diagram->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
+
+  // 3. computing the persistence curve from the persistence diagram
+  vtkNew<ttkPersistenceCurve> curve{};
+  curve->SetInputConnection(diagram->GetOutputPort());
 
   // 4. selecting the critical point pairs
   vtkNew<vtkThreshold> criticalPairs{};

@@ -2,6 +2,11 @@
 /// \class ttk::LDistanceMatrix
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date May 2020
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
 #pragma once
 
@@ -48,8 +53,7 @@ int ttk::LDistanceMatrix::execute(std::vector<std::vector<double>> &output,
 
   // compute matrix upper triangle
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_) schedule(dynamic) \
-  firstprivate(worker)
+#pragma omp parallel for num_threads(this->threadNumber_) firstprivate(worker)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; ++i) {
     for(size_t j = i + 1; j < nInputs; ++j) {

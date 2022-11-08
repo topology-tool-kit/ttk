@@ -208,8 +208,8 @@ namespace ttk {
       bool fullMerge = (epsilon == 100);
       fullMerge &= useFullMerge_;
 
-      treeNodeMerged
-        = std::vector<std::vector<ftm::idNode>>(tree->getNumberOfNodes());
+      treeNodeMerged.clear();
+      treeNodeMerged.resize(tree->getNumberOfNodes());
 
       if(mergeByPersistence)
         ftm::computePersistencePairs<dataType>(

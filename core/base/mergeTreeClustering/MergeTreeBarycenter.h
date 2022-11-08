@@ -131,8 +131,8 @@ namespace ttk {
                            std::vector<std::vector<double>> &distanceMatrix,
                            bool useDoubleInput = false,
                            bool isFirstInput = true) {
-      distanceMatrix = std::vector<std::vector<double>>(
-        trees.size(), std::vector<double>(trees.size(), 0));
+      distanceMatrix.clear();
+      distanceMatrix.resize(trees.size(), std::vector<double>(trees.size(), 0));
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) \
   num_threads(this->threadNumber_) if(parallelize_)
@@ -163,7 +163,7 @@ namespace ttk {
       unsigned int barycenterMaximumNumberOfPairs,
       double sizeLimitPercent,
       std::vector<ftm::MergeTree<dataType>> &mTreesLimited) {
-      mTreesLimited = std::vector<ftm::MergeTree<dataType>>(trees.size());
+      mTreesLimited.resize(trees.size());
       for(unsigned int i = 0; i < trees.size(); ++i) {
         mTreesLimited[i] = ftm::copyMergeTree<dataType>(trees[i]);
         limitSizeBarycenter(mTreesLimited[i], trees,
@@ -326,9 +326,8 @@ namespace ttk {
       ftm::FTMTree_MT *tree1 = &(mTree1.tree);
 
       // Add nodes
-      nodesProcessed
-        = std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode>>>(
-          noTrees);
+      nodesProcessed.clear();
+      nodesProcessed.resize(noTrees);
       for(auto processTuple : nodesToProcess) {
         ftm::idNode parent = std::get<1>(processTuple);
         ftm::idNode nodeTree1 = tree1->getNumberOfNodes();
@@ -386,8 +385,7 @@ namespace ttk {
       std::vector<bool> baryMatched(baryTree->getNumberOfNodes(), false);
       for(unsigned int i = 0; i < matchings.size(); ++i) {
         auto matching = matchings[i];
-        matrixMatchings[i]
-          = std::vector<ftm::idNode>(trees[i]->getNumberOfNodes(), -1);
+        matrixMatchings[i].resize(trees[i]->getNumberOfNodes(), -1);
         for(auto match : matching) {
           matrixMatchings[i][std::get<1>(match)] = std::get<0>(match);
           baryMatched[std::get<0>(match)] = true;
@@ -830,7 +828,7 @@ namespace ttk {
       bool isFirstInput = true) {
       // Timer t_distance;
       MergeTreeDistance mergeTreeDistance;
-      mergeTreeDistance.setDebugLevel(2);
+      mergeTreeDistance.setDebugLevel(std::min(debugLevel_, 2));
       mergeTreeDistance.setProgressiveComputation(false);
       mergeTreeDistance.setPreprocess(false);
       mergeTreeDistance.setPostprocess(false);
@@ -960,7 +958,8 @@ namespace ttk {
                          std::vector<ftm::FTMTree_MT *> &oriTrees,
                          int iterationNumber,
                          std::vector<std::vector<ftm::idNode>> &deletedNodes) {
-      deletedNodes = std::vector<std::vector<ftm::idNode>>(oriTrees.size());
+      deletedNodes.clear();
+      deletedNodes.resize(oriTrees.size());
       unsigned int noTreesUnscaled = 0;
 
       // Scale trees
@@ -996,7 +995,7 @@ namespace ttk {
           persistenceThresholding<dataType>(
             &(mt.tree), persistenceThreshold, deletedNodes[i]);
           if(mergeTrees.size() == 0)
-            mergeTrees = std::vector<ftm::MergeTree<dataType>>(oriTrees.size());
+            mergeTrees.resize(oriTrees.size());
           mergeTrees[i] = mt;
           trees[i] = &(mt.tree);
         } else {
@@ -1166,7 +1165,7 @@ namespace ttk {
       bool finalAsgnFirstInput = true) {
       // --- Preprocessing
       if(preprocess_) {
-        treesNodeCorr_ = std::vector<std::vector<int>>(trees.size());
+        treesNodeCorr_.resize(trees.size());
         for(unsigned int i = 0; i < trees.size(); ++i)
           preprocessingPipeline<dataType>(trees[i], epsilonTree2_,
                                           epsilon2Tree2_, epsilon3Tree2_,

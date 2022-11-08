@@ -12,6 +12,11 @@
 /// on Advances in Geographic Information Systems, 2011.
 ///
 /// \sa ttk::CompactTriangulationPreconditioning
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/compactTriangulation/">
+///   Compact Triangulation example</a> \n
 
 #pragma once
 

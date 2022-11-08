@@ -56,6 +56,8 @@ namespace ttk {
       return AbstractTriangulation::clear();
     }
 
+    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
+
   private:
     // for  every vertex, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> vertexCoords_{};
@@ -127,6 +129,8 @@ namespace ttk {
         return p[1] * this->vshift_[0] + p[2] * this->vshift_[1];
       }
     }
+
+    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
   };
 
 } // namespace ttk

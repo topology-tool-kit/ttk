@@ -8,6 +8,7 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkStringArray.h>
 #include <vtkTable.h>
 
 using namespace ttk;
@@ -99,41 +100,85 @@ int ttkMergeTreeDistanceMatrix::run(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
 
-  // Construct trees
-  const int numInputs = inputTrees.size();
-  std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
-  constructTrees(inputTrees, intermediateTrees);
-  constructTrees(inputTrees2, intermediateTrees2);
-
   // Verify parameters
   if(not UseFieldDataParameters) {
     if(Backend == 0) {
       branchDecomposition_ = true;
       normalizedWasserstein_ = true;
       keepSubtree_ = false;
+      baseModule_ = 0;
     } else if(Backend == 1) {
       branchDecomposition_ = false;
       normalizedWasserstein_ = false;
       keepSubtree_ = true;
+      baseModule_ = 0;
+    } else if(Backend == 3) {
+      branchDecomposition_ = true;
+      normalizedWasserstein_ = false;
+      keepSubtree_ = true;
+      baseModule_ = 1;
+    } else if(Backend == 4) {
+      branchDecomposition_ = true;
+      normalizedWasserstein_ = false;
+      keepSubtree_ = true;
+      baseModule_ = 2;
+    } else {
+      baseModule_ = 0;
     }
   }
-  if(not branchDecomposition_) {
-    if(normalizedWasserstein_)
-      printMsg("NormalizedWasserstein is set to false since branch "
-               "decomposition is not asked.");
-    normalizedWasserstein_ = false;
+  if(baseModule_ == 0) {
+    if(not branchDecomposition_) {
+      if(normalizedWasserstein_)
+        printMsg("NormalizedWasserstein is set to false since branch "
+                 "decomposition is not asked.");
+      normalizedWasserstein_ = false;
+    }
+    epsilonTree2_ = epsilonTree1_;
+    epsilon2Tree2_ = epsilon2Tree1_;
+    epsilon3Tree2_ = epsilon3Tree1_;
+    printMsg("BranchDecomposition: " + std::to_string(branchDecomposition_));
+    printMsg("NormalizedWasserstein: "
+             + std::to_string(normalizedWasserstein_));
+    printMsg("KeepSubtree: " + std::to_string(keepSubtree_));
   }
-  epsilonTree2_ = epsilonTree1_;
-  epsilon2Tree2_ = epsilon2Tree1_;
-  epsilon3Tree2_ = epsilon3Tree1_;
-  printMsg("BranchDecomposition: " + std::to_string(branchDecomposition_));
-  printMsg("NormalizedWasserstein: " + std::to_string(normalizedWasserstein_));
-  printMsg("KeepSubtree: " + std::to_string(keepSubtree_));
+  if(baseModule_ == 1) {
+    printMsg("Using Branch Mapping Distance.");
+    std::string metric;
+    if(branchMetric_ == 0)
+      metric = "Wasserstein Distance first degree";
+    else if(branchMetric_ == 1)
+      metric = "Wasserstein Distance second degree";
+    else if(branchMetric_ == 2)
+      metric = "Persistence difference";
+    else if(branchMetric_ == 3)
+      metric = "Shifting cost";
+    else
+      return 1;
+    printMsg("BranchMetric: " + metric);
+  }
+  if(baseModule_ == 2) {
+    printMsg("Using Path Mapping Distance.");
+    std::string metric;
+    if(pathMetric_ == 0)
+      metric = "Persistence difference";
+    else
+      return 1;
+    printMsg("PathMetric: " + metric);
+  }
+
+  // Construct trees
+  const int numInputs = inputTrees.size();
+  std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
+  constructTrees(inputTrees, intermediateTrees);
+  constructTrees(inputTrees2, intermediateTrees2);
 
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(
     numInputs, std::vector<double>(numInputs));
-  execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
+  if(baseModule_ == 0)
+    execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
+  else
+    execute<dataType>(intermediateTrees, treesDistMat);
 
   // --- Create output
   auto treesDistTable = vtkTable::GetData(outputVector);
@@ -168,16 +213,46 @@ int ttkMergeTreeDistanceMatrix::run(
   treesDistTable->AddColumn(treeIds);
 
   // aggregate input field data
-  vtkNew<vtkFieldData> fd{};
-  fd->CopyStructure(inputTrees[0]->GetBlock(0)->GetFieldData());
-  fd->SetNumberOfTuples(inputTrees.size());
-  for(size_t i = 0; i < inputTrees.size(); ++i) {
-    fd->SetTuple(i, 0, inputTrees[i]->GetBlock(0)->GetFieldData());
+  vtkNew<vtkFieldData> allFieldData{}, allFieldDataCopy{};
+  for(unsigned int i = 0; i < inputTrees.size(); ++i) {
+    for(unsigned int j = 0; j < inputTrees[i]->GetNumberOfBlocks(); ++j) {
+      auto fd = inputTrees[i]->GetBlock(j)->GetFieldData();
+      for(int k = 0; k < fd->GetNumberOfArrays(); ++k) {
+        auto array = fd->GetAbstractArray(k);
+        auto dataArray = vtkDataArray::SafeDownCast(array);
+        auto stringArray = vtkStringArray::SafeDownCast(array);
+        if(dataArray or stringArray)
+          allFieldData->AddArray(array);
+      }
+    }
   }
+  allFieldDataCopy->DeepCopy(allFieldData); // to not modify original field data
 
-  // copy input field data to output row data
-  for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
-    treesDistTable->AddColumn(fd->GetAbstractArray(i));
+  for(int k = 0; k < allFieldDataCopy->GetNumberOfArrays(); ++k) {
+    auto array = allFieldDataCopy->GetAbstractArray(k);
+    array->SetNumberOfTuples(inputTrees.size());
+    auto dataArray = vtkDataArray::SafeDownCast(array);
+    auto stringArray = vtkStringArray::SafeDownCast(array);
+    auto name = array->GetName();
+    for(unsigned int i = 0; i < inputTrees.size(); ++i) {
+      bool foundArray = false;
+      for(unsigned int j = 0; j < inputTrees[i]->GetNumberOfBlocks(); ++j) {
+        auto inputArray
+          = inputTrees[i]->GetBlock(j)->GetFieldData()->GetAbstractArray(name);
+        if(inputArray) {
+          array->SetTuple(i, 0, inputArray);
+          foundArray = true;
+        } else if(not foundArray) {
+          if(dataArray) {
+            const double val = std::nan("");
+            dataArray->SetTuple(i, &val);
+          } else if(stringArray) {
+            stringArray->SetValue(i, "");
+          }
+        }
+      }
+    }
+    treesDistTable->AddColumn(array);
   }
 
   return 1;

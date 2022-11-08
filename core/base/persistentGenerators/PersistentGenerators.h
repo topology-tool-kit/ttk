@@ -424,6 +424,7 @@ int ttk::PersistentGenerators::computePersistentGenerators(
     this->edgeTrianglePartner_.resize(triangulation.getNumberOfEdges(), -1);
     this->onBoundary_.resize(triangulation.getNumberOfEdges(), false);
     this->s2Mapping_.resize(triangulation.getNumberOfTriangles(), -1);
+    this->s1Mapping_.resize(triangulation.getNumberOfEdges(), -1);
   }
 
   // get every critical cell sorted them by dimension
@@ -458,7 +459,7 @@ int ttk::PersistentGenerators::computePersistentGenerators(
     std::vector<PersistencePair> sadMaxPairs{};
     this->getMaxSaddlePairs(
       sadMaxPairs, pairedMaxima, paired2Saddles, criticalCellsByDim[dim - 1],
-      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation, false);
+      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation);
   }
 
   if(!criticalCellsByDim[1].empty() && !criticalCellsByDim[2].empty()) {

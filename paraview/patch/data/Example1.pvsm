@@ -28773,42 +28773,28 @@
         <Element index="0" value="1"/>
         <Domain name="bool" id="17374.Debug_UseAllCores.bool"/>
       </Property>
-      <Property name="ForceInputOffsetScalarField" id="17374.ForceInputOffsetScalarField" number_of_elements="1">
-        <Element index="0" value="0"/>
-        <Domain name="bool" id="17374.ForceInputOffsetScalarField.bool"/>
-      </Property>
       <Property name="Input" id="17374.Input" number_of_elements="1">
-        <Proxy value="15429" output_port="0"/>
+        <Proxy value="15624" output_port="0"/>
         <Domain name="groups" id="17374.Input.groups"/>
         <Domain name="input_scalars" id="17374.Input.input_scalars"/>
         <Domain name="input_type" id="17374.Input.input_type"/>
       </Property>
-      <Property name="InputOffsetScalarFieldNameNew" id="17374.InputOffsetScalarFieldNameNew" number_of_elements="5">
-        <Element index="0" value="1"/>
-        <Element index="1" value=""/>
-        <Element index="2" value=""/>
-        <Element index="3" value="0"/>
-        <Element index="4" value=""/>
-        <Domain name="array_list" id="17374.InputOffsetScalarFieldNameNew.array_list">
-          <String text="myVorticity"/>
-        </Domain>
-      </Property>
-      <Property name="SaddleConnectors" id="17374.SaddleConnectors" number_of_elements="1">
-        <Element index="0" value="0"/>
-        <Domain name="bool" id="17374.SaddleConnectors.bool"/>
-      </Property>
-      <Property name="ScalarFieldNew" id="17374.ScalarFieldNew" number_of_elements="5">
-        <Element index="0" value="0"/>
-        <Element index="1" value=""/>
-        <Element index="2" value=""/>
-        <Element index="3" value="0"/>
-        <Element index="4" value="myVorticity"/>
-        <Domain name="array_list" id="17374.ScalarFieldNew.array_list">
-          <String text="myVorticity"/>
-        </Domain>
-      </Property>
     </Proxy>
     <Proxy group="filters" type="ttkPersistenceDiagram" id="15624" servers="1">
+      <Property name="BackEnd" id="15624.BackEnd" number_of_elements="1">
+        <Element index="0" value="2"/>
+        <Domain name="enum" id="15624.BackEnd.enum">
+          <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
+          <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
+          <Entry value="2" text="Discrete Morse Sandwich"/>
+          <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
+          <Entry value="4" text="Persistent Simplex (Zomorodian 2010)"/>
+        </Domain>
+      </Property>
+      <Property name="Ignore Boundary" id="15624.Ignore Boundary" number_of_elements="1">
+        <Element index="0" value="1"/>
+        <Domain name="bool" id="15624.Ignore Boundary.bool"/>
+      </Property>
       <Property name="Debug_DebugLevel" id="15624.Debug_DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="15624.Debug_DebugLevel.range"/>

@@ -237,6 +237,8 @@ namespace ttk {
       return 0;
     }
 
+    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
+
 #ifdef TTK_ENABLE_MPI
 
   protected:

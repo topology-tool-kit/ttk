@@ -2,6 +2,9 @@
 
 ttk::ScalarFieldCriticalPoints::ScalarFieldCriticalPoints() {
   this->setDebugMsgPrefix("ScalarFieldCriticalPoints");
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 char ttk::ScalarFieldCriticalPoints::getCriticalType(

@@ -4,8 +4,8 @@
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date March 2020
 ///
-/// \brief TTK processing package for the computation of Wasserstein barycenters
-/// and K-Means clusterings of a set of persistence diagrams.
+/// \brief TTK processing package for the computation of a matrix of Wasserstein
+/// distances between persistence diagrams.
 ///
 /// \b Related \b publication \n
 /// "Progressive Wasserstein Barycenters of Persistence Diagrams" \n
@@ -14,13 +14,17 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2019.
 ///
 /// \sa PersistenceDiagramDistanceMatrix
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
 #pragma once
 
 // VTK includes
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkPersistenceDiagramDistanceMatrixModule.h>
@@ -125,9 +129,6 @@ public:
 protected:
   ttkPersistenceDiagramDistanceMatrix();
   ~ttkPersistenceDiagramDistanceMatrix() override = default;
-
-  double getPersistenceDiagram(ttk::Diagram &diagram,
-                               vtkUnstructuredGrid *CTPersistenceDiagram_);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

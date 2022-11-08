@@ -759,9 +759,7 @@ int FTMTree_MT::printTime(Timer &t,
     st << s;
 
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-    if(nbScalars == -1) {
-      nbScalars = scalars_->size;
-    }
+    const auto nbScalars = scalars_->size;
     int speed = nbScalars / t.getElapsedTime();
     st << " at " << speed << " vert/s";
 #endif

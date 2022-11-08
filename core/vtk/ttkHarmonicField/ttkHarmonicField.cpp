@@ -50,7 +50,7 @@ int ttkHarmonicField::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("No triangulation");
     return 0;
   }
-  this->preconditionTriangulation(*triangulation, UseCotanWeights);
+  this->preconditionTriangulation(*triangulation);
 
   vtkDataArray *inputField = this->GetInputArrayToProcess(0, identifiers);
   std::vector<ttk::SimplexId> idSpareStorage{};

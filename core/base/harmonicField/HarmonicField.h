@@ -19,6 +19,7 @@
 #pragma once
 
 // base code includes
+#include <Laplacian.h>
 #include <Triangulation.h>
 
 namespace ttk {
@@ -33,14 +34,9 @@ namespace ttk {
       this->setDebugMsgPrefix("HarmonicField");
     }
 
-    inline void preconditionTriangulation(AbstractTriangulation &triangulation,
-                                          const bool cotanWeights) {
-      triangulation.preconditionVertexNeighbors();
-      triangulation.preconditionEdges();
-      if(cotanWeights) {
-        // cotan weights method needs more pre-processing
-        triangulation.preconditionEdgeTriangles();
-      }
+    inline void
+      preconditionTriangulation(AbstractTriangulation &triangulation) const {
+      Laplacian::preconditionTriangulation(triangulation);
     }
 
     template <class T, class TriangulationType = AbstractTriangulation>

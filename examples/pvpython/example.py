@@ -44,13 +44,12 @@ else:
 # 1. loading the input data
 inputData = XMLUnstructuredGridReader(FileName=[inputFilePath])
 
-# 2. computing the persistence curve
-persistenceCurve = TTKPersistenceCurve(inputData)
-persistenceCurve.ScalarField = ["POINTS", "data"]
-
-# 3. computing the persitence diagram
+# 2. computing the persistence diagram
 persistenceDiagram = TTKPersistenceDiagram(inputData)
 persistenceDiagram.ScalarField = ["POINTS", "data"]
+
+# 3. computing the persistence curve from the persistence diagram
+persistenceCurve = TTKPersistenceCurve(persistenceDiagram)
 
 # 4. selecting the critical point pairs
 criticalPointPairs = Threshold(persistenceDiagram)
