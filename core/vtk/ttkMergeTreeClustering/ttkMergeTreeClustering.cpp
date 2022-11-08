@@ -145,7 +145,7 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   auto *block0 = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0));
   auto arrayToGet = block0->GetPointData()->GetArray("Scalar");
   if(arrayToGet == nullptr)
-    arrayToGet = block0->GetCellData()->GetArray("Birth");
+    arrayToGet = block0->GetCellData()->GetArray(PersistenceBirthName);
   int dataTypeInt = arrayToGet->GetDataType();
 
   // If we have already computed once but the input has changed
