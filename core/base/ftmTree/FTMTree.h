@@ -54,7 +54,7 @@ namespace ttk {
       // -----------------
 
       FTMTree();
-      ~FTMTree() override;
+      ~FTMTree() override = default;
 
       // -------
       // PROCESS

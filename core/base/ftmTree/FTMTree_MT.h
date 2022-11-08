@@ -87,8 +87,8 @@ namespace ttk {
     class FTMTree_MT : virtual public Debug {
     protected:
       // global
-      Params *const params_;
-      Scalars *const scalars_;
+      std::shared_ptr<Params> params_;
+      std::shared_ptr<Scalars> scalars_;
 
       // local
       TreeData mt_data_;
@@ -100,13 +100,24 @@ namespace ttk {
       // -----------
 
       // Tree with global data and partition number
-      FTMTree_MT(Params *const params, Scalars *const scalars, TreeType type);
+      FTMTree_MT(const std::shared_ptr<Params> &params,
+                 const std::shared_ptr<Scalars> &scalars,
+                 TreeType type);
 
       ~FTMTree_MT() override;
+
+      void clear();
 
       // --------------------
       // Init
       // --------------------
+
+      inline void setParamsScalars(const std::shared_ptr<Params> &params,
+                                   const std::shared_ptr<Scalars> &scalars) {
+        this->scalars_ = scalars;
+        this->params_ = params;
+        this->mt_data_.treeType = params->treeType;
+      }
 
       template <class triangulationType>
       void initNbScalars(const triangulationType *triangulation) {
@@ -566,9 +577,9 @@ namespace ttk {
       // Operators : clone/ move & print
       // ---------------------------
 
-      FTMTree_MT *clone() const;
+      std::shared_ptr<FTMTree_MT> clone() const;
 
-      void move(FTMTree_MT *mt);
+      void move(std::shared_ptr<FTMTree_MT> &mt);
 
       // Print
       std::string printArc(idSuperArc a);
@@ -890,64 +901,66 @@ namespace ttk {
 
     template <typename dataType>
     struct MergeTree {
-      ftm::Scalars scalars;
-      std::vector<dataType> scalarsValues;
-      ftm::Params params;
+      std::shared_ptr<ftm::Scalars> scalars;
+      std::shared_ptr<std::vector<dataType>> scalarsValues;
+      std::shared_ptr<ftm::Params> params;
       ftm::FTMTree_MT tree;
 
-      ftm::Scalars emptyScalars() {
-        ftm::Scalars scalarsT;
-        scalarsT.size = 0;
-        dataType *scalarsValuesT = nullptr;
-        scalarsT.values = (void *)scalarsValuesT;
+      std::shared_ptr<ftm::Scalars> emptyScalars() {
+        auto scalarsT = std::make_shared<ftm::Scalars>();
+        scalarsT->size = 0;
+        scalarsT->values = nullptr;
         return scalarsT;
       }
 
-      ftm::Params emptyParams() {
-        ftm::Params paramsT;
-        paramsT.treeType = ftm::Join_Split;
+      std::shared_ptr<ftm::Params> emptyParams() {
+        auto paramsT = std::make_shared<ftm::Params>();
+        paramsT->treeType = ftm::Join_Split;
         return paramsT;
       }
 
       MergeTree() : MergeTree(emptyScalars(), emptyParams()) {
       }
 
-      MergeTree(const ftm::Scalars &scalarsT, ftm::Params paramsT)
+      template <typename T, typename U>
+      MergeTree(const T scalarsT, U paramsT)
         : scalars(scalarsT), params(paramsT),
-          tree(&params, &scalars, params.treeType) {
+          tree(paramsT, scalarsT, params->treeType) {
         tree.makeAlloc();
+        scalarsValues = std::make_shared<std::vector<dataType>>();
         for(unsigned int i = 0; i < tree.getNumberOfNodes(); ++i)
-          scalarsValues.push_back(tree.getValue<dataType>(i));
-        scalars.values = (void *)(scalarsValues.data());
+          scalarsValues->push_back(tree.getValue<dataType>(i));
+        scalars->values = (void *)(scalarsValues->data());
       }
 
-      MergeTree(const ftm::Scalars &scalarsT,
-                std::vector<dataType> scalarValuesT,
-                ftm::Params paramsT)
+      MergeTree(const std::shared_ptr<ftm::Scalars> &scalarsT,
+                const std::shared_ptr<std::vector<dataType>> &scalarValuesT,
+                std::shared_ptr<ftm::Params> &paramsT)
         : scalars(scalarsT), scalarsValues(scalarValuesT), params(paramsT),
-          tree(&params, &scalars, params.treeType) {
+          tree(paramsT, scalarsT, params->treeType) {
         tree.makeAlloc();
-        scalars.values = (void *)(scalarsValues.data());
+        scalars->values = (void *)(scalarsValues->data());
       }
 
       void copy(const MergeTree<dataType> &mt) {
         // Copy scalars
-        scalars.size = mt.scalars.size;
-        scalarsValues = std::vector<dataType>(mt.scalarsValues);
-        scalars.values = (void *)(scalarsValues.data());
+        scalars->size = mt.scalars->size;
+        scalarsValues = mt.scalarsValues;
+        scalars->values = (void *)(scalarsValues->data());
 
         // Copy params
-        params.treeType = mt.params.treeType;
+        params->treeType = mt.params->treeType;
 
         // Copy tree
-        tree.~FTMTree_MT();
+        tree.clear();
+        tree.setParamsScalars(params, scalars);
         tree.makeAlloc();
         tree.copyMergeTreeStructure(const_cast<FTMTree_MT *>(&(mt.tree)));
       }
 
       MergeTree(const MergeTree<dataType> &mt)
         : scalars(mt.scalars), scalarsValues(mt.scalarsValues),
-          params(mt.params), tree(&params, &scalars, params.treeType) {
+          params(mt.params), tree(params, scalars, params->treeType) {
         copy(mt);
       }
 

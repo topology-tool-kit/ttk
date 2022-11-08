@@ -36,7 +36,8 @@ namespace ttk {
       // Constructors
       // -----------------
 
-      FTMTree_CT(Params *const params, Scalars *const scalars);
+      FTMTree_CT(const std::shared_ptr<Params> &params,
+                 const std::shared_ptr<Scalars> &scalars);
       ~FTMTree_CT() override;
 
       // -----------------

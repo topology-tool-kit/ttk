@@ -48,7 +48,7 @@ namespace ttk {
       // This arc will needs to receive both ends before being printed
       SuperArc()
         : downNodeId_(nullNodes), upNodeId_(nullNodes),
-          state_(ComponentState::Visible), lastVisited_(nullVertex), region_(),
+          state_(ComponentState::Visible), lastVisited_(nullVertex),
           verticesSeen_(0), normalizedId_(nullSuperArc) {
       }
 
@@ -56,7 +56,7 @@ namespace ttk {
                idNode u,
                const ComponentState &state = ComponentState::Visible)
         : downNodeId_(d), upNodeId_(u), state_(state), lastVisited_(nullVertex),
-          region_(), verticesSeen_(0), normalizedId_(nullSuperArc) {
+          verticesSeen_(0), normalizedId_(nullSuperArc) {
       }
 
       // ------------------

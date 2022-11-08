@@ -36,8 +36,8 @@ using namespace std;
 using namespace ttk;
 using namespace ftm;
 
-FTMTree_MT::FTMTree_MT(Params *const params,
-                       Scalars *const scalars,
+FTMTree_MT::FTMTree_MT(const std::shared_ptr<Params> &params,
+                       const std::shared_ptr<Scalars> &scalars,
                        TreeType type)
   : params_(params), scalars_(scalars) {
 
@@ -47,6 +47,10 @@ FTMTree_MT::FTMTree_MT(Params *const params,
 }
 
 FTMTree_MT::~FTMTree_MT() {
+  this->clear();
+}
+
+void FTMTree_MT::clear() {
 
   // remove UF data structures
   if(mt_data_.ufs) {
@@ -123,6 +127,9 @@ FTMTree_MT::~FTMTree_MT() {
     mt_data_.activeTasksStats = nullptr;
   }
 #endif
+
+  this->params_.reset();
+  this->scalars_.reset();
 }
 
 void FTMTree_MT::buildSegmentation() {
@@ -220,7 +227,7 @@ void FTMTree_MT::buildSegmentation() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(a) OPTIONAL_PRIORITY(isPrior())
 #endif
-        mt_data_.segments_[a].sort(scalars_);
+        mt_data_.segments_[a].sort(scalars_.get());
       }
     }
 #ifdef TTK_ENABLE_OPENMP
@@ -237,7 +244,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp task firstprivate(a) OPTIONAL_PRIORITY(isPrior())
 #endif
         mt_data_.segments_[a].createFromList(
-          scalars_, (*mt_data_.trunkSegments)[a],
+          scalars_.get(), (*mt_data_.trunkSegments)[a],
           mt_data_.treeType == TreeType::Split);
       }
     }
@@ -274,8 +281,9 @@ void FTMTree_MT::buildSegmentation() {
 #endif
 }
 
-FTMTree_MT *FTMTree_MT::clone() const {
-  FTMTree_MT *newMT = new FTMTree_MT(params_, scalars_, mt_data_.treeType);
+std::shared_ptr<FTMTree_MT> FTMTree_MT::clone() const {
+  auto newMT
+    = std::make_shared<FTMTree_MT>(params_, scalars_, mt_data_.treeType);
 
   newMT->mt_data_.superArcs = mt_data_.superArcs;
   newMT->mt_data_.nodes = mt_data_.nodes;
@@ -370,7 +378,7 @@ void FTMTree_MT::delNode(idNode node) {
 
 void FTMTree_MT::finalizeSegmentation() {
   for(auto &arc : *mt_data_.superArcs) {
-    arc.createSegmentation(scalars_);
+    arc.createSegmentation(scalars_.get());
   }
 }
 
@@ -484,11 +492,11 @@ idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm) {
     if(mt_data_.treeType == TreeType::Split) {
       (*mt_data_.superArcs)[newSA].concat(
         get<1>((*mt_data_.superArcs)[currentSA].splitBack(
-          node->getVertexId(), scalars_)));
+          node->getVertexId(), scalars_.get())));
     } else {
       (*mt_data_.superArcs)[newSA].concat(
         get<1>((*mt_data_.superArcs)[currentSA].splitFront(
-          node->getVertexId(), scalars_)));
+          node->getVertexId(), scalars_.get())));
     }
   }
 
@@ -534,7 +542,7 @@ idSuperArc FTMTree_MT::makeSuperArc(idNode downNodeId, idNode upNodeId)
   return newSuperArcId;
 }
 
-void FTMTree_MT::move(FTMTree_MT *mt) {
+void FTMTree_MT::move(std::shared_ptr<FTMTree_MT> &mt) {
   // we already have common data
   mt_data_.superArcs = mt->mt_data_.superArcs;
   mt->mt_data_.superArcs = nullptr;

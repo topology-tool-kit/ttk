@@ -21,9 +21,8 @@ using namespace ttk;
 
 using namespace ftm;
 
-FTMTree_CT::FTMTree_CT(Params *const params,
-
-                       Scalars *const scalars)
+FTMTree_CT::FTMTree_CT(const std::shared_ptr<Params> &params,
+                       const std::shared_ptr<Scalars> &scalars)
   : FTMTree_MT(params, scalars, TreeType::Contour),
     jt_(new FTMTree_MT(params, scalars, TreeType::Join)),
     st_(new FTMTree_MT(params, scalars, TreeType::Split)) {
@@ -318,7 +317,7 @@ void FTMTree_CT::finalizeSegmentation() {
 #pragma omp parallel for schedule(dynamic)
 #endif
   for(idSuperArc i = 0; i < nbArc; i++) {
-    getSuperArc(i)->createSegmentation(scalars_);
+    getSuperArc(i)->createSegmentation(scalars_.get());
   }
 
   printTime(finSegmTime, "post-process segm", 4);

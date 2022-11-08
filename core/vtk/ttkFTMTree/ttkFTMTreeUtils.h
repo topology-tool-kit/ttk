@@ -28,20 +28,21 @@ namespace ttk {
       auto treeNodeIdArray = treeNodes->GetPointData()->GetArray("TreeNodeId");
 
       // Init Scalars
-      Scalars scalars;
+      auto scalars = std::make_shared<Scalars>();
       vtkSmartPointer<vtkDataArray> nodesScalar
         = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
-      scalars.size = nodesScalar->GetNumberOfTuples();
-      std::vector<dataType> scalarsValues(nodesScalar->GetNumberOfTuples());
+      scalars->size = nodesScalar->GetNumberOfTuples();
+      auto scalarsValues = std::make_shared<std::vector<dataType>>(
+        nodesScalar->GetNumberOfTuples());
       for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i) {
         int index = (treeNodeIdArray ? treeNodeIdArray->GetTuple1(i) : i);
-        scalarsValues[index] = nodesScalar->GetTuple1(i);
+        (*scalarsValues)[index] = nodesScalar->GetTuple1(i);
       }
-      scalars.values = (void *)(scalarsValues.data());
+      scalars->values = (void *)(scalarsValues->data());
 
       // Init Tree
-      Params params;
-      params.treeType = Join_Split;
+      auto params = std::make_shared<Params>();
+      params->treeType = Join_Split;
       MergeTree<dataType> mergeTree(scalars, scalarsValues, params);
 
       // Add Nodes
