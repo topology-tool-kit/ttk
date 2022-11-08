@@ -158,7 +158,7 @@ RegistryTriangulation
   this->printMsg("Initializing Implicit Triangulation", 0, 0,
                  ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-  auto triangulation = RegistryTriangulation(new ttk::Triangulation());
+  auto triangulation = std::make_unique<ttk::Triangulation>();
 
   int extent[6];
   image->GetExtent(extent);
@@ -204,7 +204,7 @@ RegistryTriangulation
     return nullptr;
   }
 
-  auto triangulation = RegistryTriangulation(new ttk::Triangulation());
+  auto triangulation = std::make_unique<ttk::Triangulation>();
   int hasIndexArray
     = pointSet->GetPointData()->HasArray(ttk::compactTriangulationIndex);
 

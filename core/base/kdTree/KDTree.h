@@ -196,8 +196,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
       idx_left[i] = idx[i];
     }
 
-    this->left_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, true));
+    this->left_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
                                 correspondance_map, weights, weight_number);
   }
@@ -208,8 +208,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     for(int i = 0; i < ptNumber - median_loc - 1; i++) {
       idx_right[i] = idx[i + median_loc + 1];
     }
-    this->right_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, false));
+    this->right_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                  correspondance_map, weights, weight_number);
   }
@@ -285,8 +285,8 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
       idx_left[i] = idx_side[i];
     }
 
-    this->left_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, true));
+    this->left_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
                                 correspondance_map, weights, weight_number);
   }
@@ -297,8 +297,8 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
     for(unsigned int i = 0; i < idx_side.size() - median_loc - 1; i++) {
       idx_right[i] = idx_side[i + median_loc + 1];
     }
-    this->right_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, false));
+    this->right_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                  correspondance_map, weights, weight_number);
   }
