@@ -104,7 +104,7 @@ namespace ttk {
                 comp_.vertLower(neigh, v) && ++val;
               }
 
-              (*mt_data_.valences)[v] = val;
+              mt_data_.valences[v] = val;
 
               if(!val) {
                 makeNode(v);
@@ -122,8 +122,8 @@ namespace ttk {
 
       // fill leaves
       const auto &nbLeaves = mt_data_.nodes->size();
-      mt_data_.leaves->resize(nbLeaves);
-      std::iota(mt_data_.leaves->begin(), mt_data_.leaves->end(), 0);
+      mt_data_.leaves.resize(nbLeaves);
+      std::iota(mt_data_.leaves.begin(), mt_data_.leaves.end(), 0);
 
       if(debugLevel_ >= 4) {
         this->printMsg("found " + std::to_string(nbLeaves) + " leaves");
@@ -133,7 +133,7 @@ namespace ttk {
       mt_data_.superArcs->reserve(nbLeaves * 2 + 1);
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
       createVector<ActiveTask>(mt_data_.activeTasksStats);
-      mt_data_.activeTasksStats->resize(nbLeaves * 2 + 1);
+      mt_data_.activeTasksStats.resize(nbLeaves * 2 + 1);
 #endif
 
       return ret;
@@ -145,7 +145,7 @@ namespace ttk {
     void FTMTree_MT::leafGrowth(const triangulationType *mesh) {
       _launchGlobalTime.reStart();
 
-      const auto &nbLeaves = mt_data_.leaves->size();
+      const auto &nbLeaves = mt_data_.leaves.size();
 
       // memory allocation here
       initVectStates(nbLeaves + 2);
@@ -153,8 +153,8 @@ namespace ttk {
       // elevation: backbone only
       if(nbLeaves == 1) {
         const SimplexId v = (*mt_data_.nodes)[0].getVertexId();
-        (*mt_data_.openedNodes)[v] = 1;
-        (*mt_data_.ufs)[v] = new AtomicUF(v);
+        mt_data_.openedNodes[v] = 1;
+        mt_data_.ufs[v] = new AtomicUF(v);
         return;
       }
 
@@ -169,13 +169,14 @@ namespace ttk {
           this->getNode(a)->getVertexId(), this->getNode(b)->getVertexId());
 #endif
       };
-      sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), comp);
+      sort(mt_data_.leaves.begin(), mt_data_.leaves.end(), comp);
 
       for(idNode n = 0; n < nbLeaves; ++n) {
-        const idNode l = (*mt_data_.leaves)[n];
+        const idNode l = mt_data_.leaves[n];
         SimplexId v = getNode(l)->getVertexId();
         // for each node: get vert, create uf and lauch
-        (*mt_data_.ufs)[v] = new AtomicUF(v);
+        mt_data_.storage[n] = AtomicUF{v};
+        mt_data_.ufs[v] = new AtomicUF(v);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task UNTIED() OPTIONAL_PRIORITY(isPrior())
@@ -198,7 +199,7 @@ namespace ttk {
 
       // local order (ignore non regular verts)
       SimplexId localOrder = -1;
-      UF startUF = (*mt_data_.ufs)[startVert]->find();
+      UF startUF = mt_data_.ufs[startVert]->find();
       // get or recover states
       CurrentState *currentState;
       if(startUF->getNbStates()) {
@@ -247,7 +248,7 @@ namespace ttk {
         }
 
         // local order to avoid sort
-        (*mt_data_.visitOrder)[currentVert] = localOrder++;
+        mt_data_.visitOrder[currentVert] = localOrder++;
 
         // Saddle & Last detection + propagation
         bool isSaddle, isLast;
@@ -257,7 +258,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write seq_cst
 #endif
-        (*mt_data_.ufs)[currentVert] = startUF;
+        mt_data_.ufs[currentVert] = startUF;
 
         // Saddle case
         if(isSaddle) {
@@ -270,7 +271,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write seq_cst
 #endif
-          (*mt_data_.openedNodes)[currentVert] = 1;
+          mt_data_.openedNodes[currentVert] = 1;
 
           // If last close all and merge
           if(isLast) {
@@ -292,7 +293,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write seq_cst
 #endif
-            (*mt_data_.openedNodes)[currentVert] = 0;
+            mt_data_.openedNodes[currentVert] = 0;
 
             // recursively continue
 #ifdef TTK_ENABLE_OPENMP
@@ -329,7 +330,7 @@ namespace ttk {
       (*mt_data_.roots)[rootPos] = closeNode;
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-      (*mt_data_.activeTasksStats)[currentArc].end
+      mt_data_.activeTasksStats[currentArc].end
         = _launchGlobalTime.getElapsedTime();
 #endif
     }
@@ -353,7 +354,7 @@ namespace ttk {
         mesh->getVertexNeighbor(currentState.vertex, n, neigh);
 
         if(comp_.vertLower(neigh, currentState.vertex)) {
-          UF neighUF = (*mt_data_.ufs)[neigh];
+          UF neighUF = mt_data_.ufs[neigh];
 
           // is saddle
           if(!neighUF || neighUF->find() != curUFF) {
@@ -363,17 +364,17 @@ namespace ttk {
           }
 
         } else {
-          if(!(*mt_data_.propagation)[neigh]
-             || (*mt_data_.propagation)[neigh]->find() != curUFF) {
+          if(!mt_data_.propagation[neigh]
+             || mt_data_.propagation[neigh]->find() != curUFF) {
             currentState.addNewVertex(neigh);
-            (*mt_data_.propagation)[neigh] = curUFF;
+            mt_data_.propagation[neigh] = curUFF;
           }
         }
       }
 
       // is last
       valence oldVal;
-      valence &tmp = (*mt_data_.valences)[currentState.vertex];
+      valence &tmp = mt_data_.valences[currentState.vertex];
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
@@ -400,7 +401,7 @@ namespace ttk {
       // trunkVerts
       trunkVerts.reserve(std::max(SimplexId{10}, nbScalars / 500));
       for(SimplexId v = 0; v < nbScalars; ++v) {
-        if((*mt_data_.openedNodes)[v]) {
+        if(mt_data_.openedNodes[v]) {
           if(this->isCorrespondingNode(v)) {
             // parallel leafGrowth can partially build the trunk,
             // filter out the saddles with an upward arc
@@ -470,19 +471,18 @@ namespace ttk {
         mesh->getVertexNeighbor(saddleVert, n, neigh);
 
         if(comp_.vertLower(neigh, saddleVert)) {
-          if((*mt_data_.ufs)[neigh]->find()
-             != (*mt_data_.ufs)[saddleVert]->find()) {
-            (*mt_data_.ufs)[saddleVert] = AtomicUF::makeUnion(
-              (*mt_data_.ufs)[saddleVert], (*mt_data_.ufs)[neigh]);
+          if(mt_data_.ufs[neigh]->find() != mt_data_.ufs[saddleVert]->find()) {
+            mt_data_.ufs[saddleVert] = AtomicUF::makeUnion(
+              mt_data_.ufs[saddleVert], mt_data_.ufs[neigh]);
           }
         }
       }
 
       // close arcs on this node
-      closeArcsUF(closeNode, (*mt_data_.ufs)[saddleVert]);
+      closeArcsUF(closeNode, mt_data_.ufs[saddleVert]);
 
-      (*mt_data_.ufs)[saddleVert]->find()->mergeStates();
-      (*mt_data_.ufs)[saddleVert]->find()->setExtrema(saddleVert);
+      mt_data_.ufs[saddleVert]->find()->mergeStates();
+      mt_data_.ufs[saddleVert]->find()->setExtrema(saddleVert);
     }
 
     // ------------------------------------------------------------------------
@@ -499,17 +499,17 @@ namespace ttk {
         mesh->getVertexNeighbor(saddleVert, n, neigh);
 
         if(comp_.vertLower(neigh, saddleVert)) {
-          if((*mt_data_.ufs)[neigh]
-             && (*mt_data_.ufs)[neigh]->find()
-                  != (*mt_data_.ufs)[saddleVert]->find()) {
-            (*mt_data_.ufs)[saddleVert] = AtomicUF::makeUnion(
-              (*mt_data_.ufs)[saddleVert], (*mt_data_.ufs)[neigh]);
+          if(mt_data_.ufs[neigh]
+             && mt_data_.ufs[neigh]->find()
+                  != mt_data_.ufs[saddleVert]->find()) {
+            mt_data_.ufs[saddleVert] = AtomicUF::makeUnion(
+              mt_data_.ufs[saddleVert], mt_data_.ufs[neigh]);
           }
         }
       }
 
       // close arcs on this node
-      closeArcsUF(closeNode, (*mt_data_.ufs)[saddleVert]);
+      closeArcsUF(closeNode, mt_data_.ufs[saddleVert]);
     }
 
     // ------------------------------------------------------------------------

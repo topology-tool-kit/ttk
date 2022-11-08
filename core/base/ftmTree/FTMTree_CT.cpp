@@ -38,7 +38,7 @@ int FTMTree_CT::combine() {
   // Reserve
   mt_data_.nodes->reserve(jt_.getNumberOfNodes());
   mt_data_.superArcs->reserve(jt_.getNumberOfSuperArcs() + 2);
-  mt_data_.leaves->reserve(jt_.getNumberOfLeaves() + st_.getNumberOfLeaves());
+  mt_data_.leaves.reserve(jt_.getNumberOfLeaves() + st_.getNumberOfLeaves());
 
   // Add JT & ST Leaves to growingNodes
 
@@ -70,7 +70,7 @@ int FTMTree_CT::combine() {
 
   // Warning, have a reserve here, can't make it at the begnining, need build
   // output
-  mt_data_.leaves->reserve(jt_.getLeaves().size() + st_.getLeaves().size());
+  mt_data_.leaves.reserve(jt_.getLeaves().size() + st_.getLeaves().size());
   mt_data_.superArcs->reserve(jt_.getNumberOfSuperArcs());
   mt_data_.nodes->reserve(jt_.getNumberOfNodes());
 
@@ -171,7 +171,7 @@ int FTMTree_CT::combine() {
         // check if leaf
         if(!currentNode->getNumberOfDownSuperArcs()
            || !currentNode->getNumberOfUpSuperArcs())
-          mt_data_.leaves->emplace_back(node1);
+          mt_data_.leaves.emplace_back(node1);
       }
 
       // j <- GetAdj(XT, i)
@@ -192,7 +192,7 @@ int FTMTree_CT::combine() {
         // create a new node
         node2 = makeNode(parentNode);
         if(!parentNode->getNumberOfUpSuperArcs())
-          mt_data_.leaves->emplace_back(node2);
+          mt_data_.leaves.emplace_back(node2);
       }
 
       // CREATE ARC
