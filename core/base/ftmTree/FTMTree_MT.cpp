@@ -542,18 +542,18 @@ idSuperArc FTMTree_MT::makeSuperArc(idNode downNodeId, idNode upNodeId)
   return newSuperArcId;
 }
 
-void FTMTree_MT::move(std::shared_ptr<FTMTree_MT> &mt) {
+void FTMTree_MT::move(FTMTree_MT &mt) {
   // we already have common data
-  mt_data_.superArcs = mt->mt_data_.superArcs;
-  mt->mt_data_.superArcs = nullptr;
-  mt_data_.nodes = mt->mt_data_.nodes;
-  mt->mt_data_.nodes = nullptr;
-  mt_data_.leaves = mt->mt_data_.leaves;
-  mt->mt_data_.leaves = nullptr;
-  mt_data_.roots = mt->mt_data_.roots;
-  mt->mt_data_.roots = nullptr;
-  mt_data_.vert2tree = mt->mt_data_.vert2tree;
-  mt->mt_data_.vert2tree = nullptr;
+  mt_data_.superArcs = mt.mt_data_.superArcs;
+  mt.mt_data_.superArcs = nullptr;
+  mt_data_.nodes = mt.mt_data_.nodes;
+  mt.mt_data_.nodes = nullptr;
+  mt_data_.leaves = mt.mt_data_.leaves;
+  mt.mt_data_.leaves = nullptr;
+  mt_data_.roots = mt.mt_data_.roots;
+  mt.mt_data_.roots = nullptr;
+  mt_data_.vert2tree = mt.mt_data_.vert2tree;
+  mt.mt_data_.vert2tree = nullptr;
 }
 
 void FTMTree_MT::normalizeIds() {

@@ -646,7 +646,7 @@ void ttkFTMTree::printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const {
 
 int ttkFTMTree::preconditionTriangulation() {
   triangulation_.resize(nbCC_);
-  ftmTree_.resize(nbCC_);
+  ftmTree_ = std::vector<ttk::ftm::LocalFTM>(nbCC_);
 
   for(int cc = 0; cc < nbCC_; cc++) {
     triangulation_[cc]

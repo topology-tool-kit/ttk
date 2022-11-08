@@ -579,7 +579,7 @@ namespace ttk {
 
       std::shared_ptr<FTMTree_MT> clone() const;
 
-      void move(std::shared_ptr<FTMTree_MT> &mt);
+      void move(FTMTree_MT &mt);
 
       // Print
       std::string printArc(idSuperArc a);
