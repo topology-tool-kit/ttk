@@ -13,6 +13,7 @@
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
@@ -85,59 +86,191 @@ namespace ttk {
       return mergeTree;
     }
 
+    // Returns a branch decomposition tree
+    template <class dataType>
+    MergeTree<dataType>
+      makeBDTreeFromPDGrid(vtkUnstructuredGrid *persistenceDiagram,
+                           bool useSadMaxPairs = true) {
+      auto birthArray
+        = persistenceDiagram->GetCellData()->GetArray(PersistenceBirthName);
+      auto persArray
+        = persistenceDiagram->GetCellData()->GetArray(PersistenceName);
+      auto pairTypeArray
+        = persistenceDiagram->GetCellData()->GetArray(PersistencePairTypeName);
+      auto criticalTypeArray = persistenceDiagram->GetPointData()->GetArray(
+        PersistenceCriticalTypeName);
+
+      auto treeNodeIdArray
+        = persistenceDiagram->GetPointData()->GetArray("TreeNodeId");
+      auto treeNodeId2Array
+        = persistenceDiagram->GetPointData()->GetArray("TreeNodeIdOrigin");
+      bool gotNodeArrays = (treeNodeIdArray and treeNodeId2Array);
+
+      auto noPairs = birthArray->GetNumberOfTuples();
+      int noNodes = noPairs * 2;
+      if(gotNodeArrays) {
+        for(vtkIdType i = 0; i < treeNodeIdArray->GetNumberOfTuples(); ++i) {
+          int val = std::max(treeNodeIdArray->GetTuple1(i),
+                             treeNodeId2Array->GetTuple1(i))
+                    + 1;
+          noNodes = std::max(noNodes, val);
+        }
+      }
+      std::vector<dataType> scalarsVector(noNodes);
+
+      // Init Tree
+      MergeTree<dataType> mergeTree
+        = ttk::ftm::createEmptyMergeTree<dataType>(scalarsVector.size());
+
+      // Init critical type enum values
+      auto locMin = static_cast<int>(CriticalType::Local_minimum);
+      auto locMax = static_cast<int>(CriticalType::Local_maximum);
+
+      // Get Min-Max pair index
+      int minMaxPairIndex = -1;
+      for(vtkIdType i = 0; i < noPairs; ++i) {
+        vtkIdType npts;
+        vtkIdType const *pts;
+        persistenceDiagram->GetCellPoints(i, npts, pts);
+        auto ct1 = criticalTypeArray->GetTuple1(pts[0]);
+        auto ct2 = criticalTypeArray->GetTuple1(pts[1]);
+        if((ct1 == locMin and ct2 == locMax)
+           or (ct1 == locMax and ct2 == locMin))
+          minMaxPairIndex = i;
+      }
+
+      // Init Tree Structure
+      for(vtkIdType i = 0; i < noNodes; ++i)
+        mergeTree.tree.makeNode(i);
+      for(vtkIdType i = 0; i < noPairs; ++i) {
+        auto pairType = pairTypeArray->GetTuple1(i);
+        vtkIdType npts;
+        vtkIdType const *pts;
+        persistenceDiagram->GetCellPoints(i, npts, pts);
+        auto ct1 = criticalTypeArray->GetTuple1(pts[0]);
+        auto ct2 = criticalTypeArray->GetTuple1(pts[1]);
+        if((pairType == -1
+            or (useSadMaxPairs and ct1 != locMax and ct2 != locMax)
+            or (not useSadMaxPairs and ct1 != locMin and ct2 != locMin))
+           and i != minMaxPairIndex)
+          continue;
+        int index1
+          = (gotNodeArrays ? treeNodeId2Array->GetTuple1(pts[0]) : i * 2);
+        int index2
+          = (gotNodeArrays ? treeNodeIdArray->GetTuple1(pts[0]) : i * 2 + 1);
+        mergeTree.tree.getNode(index1)->setOrigin(index2);
+        mergeTree.tree.getNode(index2)->setOrigin(index1);
+        scalarsVector[index1] = birthArray->GetTuple1(i);
+        scalarsVector[index2]
+          = birthArray->GetTuple1(i) + persArray->GetTuple1(i);
+
+        if(i != minMaxPairIndex) {
+          auto up = (gotNodeArrays ? treeNodeIdArray->GetTuple1(minMaxPairIndex)
+                                   : minMaxPairIndex * 2 + 1);
+          // mergeTree.tree.makeSuperArc(index1, up);
+          mergeTree.tree.makeSuperArc(index2, up);
+        }
+      }
+
+      // Init scalars
+      ttk::ftm::setTreeScalars<dataType>(mergeTree, scalarsVector);
+
+      return mergeTree;
+    }
+
     inline void
       loadBlocks(std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
                  vtkMultiBlockDataSet *blocks) {
       if(blocks != nullptr) {
-        inputTrees.resize(
-          vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(0))
-            ->GetNumberOfBlocks());
+        if(blocks->GetBlock(0)->IsA("vtkMultiBlockDataSet"))
+          inputTrees.resize(
+            vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(0))
+              ->GetNumberOfBlocks());
+        else if(blocks->GetBlock(0)->IsA("vtkUnstructuredGrid"))
+          inputTrees.resize(blocks->GetNumberOfBlocks());
         for(size_t i = 0; i < inputTrees.size(); ++i) {
-          vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock
-            = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-          vtkBlock->SetNumberOfBlocks(blocks->GetNumberOfBlocks());
-          for(unsigned int j = 0; j < blocks->GetNumberOfBlocks(); ++j)
+          if(blocks->GetBlock(0)->IsA("vtkMultiBlockDataSet")) {
+            vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock
+              = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+            vtkBlock->SetNumberOfBlocks(blocks->GetNumberOfBlocks());
+            for(unsigned int j = 0; j < blocks->GetNumberOfBlocks(); ++j)
+              vtkBlock->SetBlock(
+                j, vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(j))
+                     ->GetBlock(i));
+            inputTrees[i] = vtkBlock;
+          } else if(blocks->GetBlock(0)->IsA("vtkUnstructuredGrid")) {
+            vtkSmartPointer<vtkMultiBlockDataSet> vtkBlock
+              = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+            vtkBlock->SetNumberOfBlocks(1);
             vtkBlock->SetBlock(
-              j, vtkMultiBlockDataSet::SafeDownCast(blocks->GetBlock(j))
-                   ->GetBlock(i));
-          inputTrees[i] = vtkBlock;
+              0, vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i)));
+            inputTrees[i] = vtkBlock;
+          }
         }
       }
     }
 
     template <class dataType>
-    void constructTrees(
+    bool constructTrees(
       std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
       std::vector<MergeTree<dataType>> &intermediateTrees,
       std::vector<vtkUnstructuredGrid *> &treesNodes,
       std::vector<vtkUnstructuredGrid *> &treesArcs,
-      std::vector<vtkDataSet *> &treesSegmentation) {
+      std::vector<vtkDataSet *> &treesSegmentation,
+      std::vector<bool> useSadMaxPairs) {
+      bool isPersistenceDiagram = false;
       const int numInputs = inputTrees.size();
-      intermediateTrees = std::vector<MergeTree<dataType>>(numInputs);
-      treesNodes = std::vector<vtkUnstructuredGrid *>(numInputs);
-      treesArcs = std::vector<vtkUnstructuredGrid *>(numInputs);
-      treesSegmentation = std::vector<vtkDataSet *>(numInputs);
+      intermediateTrees.resize(numInputs);
+      treesNodes.resize(numInputs);
+      treesArcs.resize(numInputs);
+      treesSegmentation.resize(numInputs);
       for(int i = 0; i < numInputs; i++) {
-        treesNodes[i]
-          = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
-        treesArcs[i]
-          = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(1));
-        if(inputTrees[i]->GetNumberOfBlocks() > 2)
-          treesSegmentation[i]
-            = vtkDataSet::SafeDownCast(inputTrees[i]->GetBlock(2));
-        intermediateTrees[i] = makeTree<dataType>(treesNodes[i], treesArcs[i]);
+        if(inputTrees[i]->GetNumberOfBlocks() >= 2) {
+          treesNodes[i]
+            = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
+          treesArcs[i]
+            = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(1));
+          if(inputTrees[i]->GetNumberOfBlocks() > 2)
+            treesSegmentation[i]
+              = vtkDataSet::SafeDownCast(inputTrees[i]->GetBlock(2));
+          intermediateTrees[i]
+            = makeTree<dataType>(treesNodes[i], treesArcs[i]);
+        } else {
+          treesNodes[i]
+            = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
+          vtkUnstructuredGrid *persistenceDiagram
+            = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
+          intermediateTrees[i] = makeBDTreeFromPDGrid<dataType>(
+            persistenceDiagram, useSadMaxPairs[i]);
+          isPersistenceDiagram = true;
+        }
       }
+      return isPersistenceDiagram;
     }
 
     template <class dataType>
-    void constructTrees(
+    bool constructTrees(
       std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
-      std::vector<MergeTree<dataType>> &intermediateTrees) {
+      std::vector<MergeTree<dataType>> &intermediateTrees,
+      std::vector<vtkUnstructuredGrid *> &treesNodes,
+      std::vector<vtkUnstructuredGrid *> &treesArcs,
+      std::vector<vtkDataSet *> &treesSegmentation,
+      bool useSadMaxPairs = true) {
+      std::vector<bool> useSadMaxPairsVec(inputTrees.size(), useSadMaxPairs);
+      return constructTrees(inputTrees, intermediateTrees, treesNodes,
+                            treesArcs, treesSegmentation, useSadMaxPairsVec);
+    }
+
+    template <class dataType>
+    bool constructTrees(
+      std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
+      std::vector<MergeTree<dataType>> &intermediateTrees,
+      bool useSadMaxPairs = true) {
       std::vector<vtkUnstructuredGrid *> treesNodes;
       std::vector<vtkUnstructuredGrid *> treesArcs;
       std::vector<vtkDataSet *> treesSegmentation;
-      constructTrees(inputTrees, intermediateTrees, treesNodes, treesArcs,
-                     treesSegmentation);
+      return constructTrees(inputTrees, intermediateTrees, treesNodes,
+                            treesArcs, treesSegmentation, useSadMaxPairs);
     }
   } // namespace ftm
 } // namespace ttk

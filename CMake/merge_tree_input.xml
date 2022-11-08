@@ -106,7 +106,7 @@ default_values="1">
 <IntVectorProperty
 name="KeepSubtree"
 command="SetKeepSubtree"
-label="Keep Subtreess"
+label="Keep Subtrees"
 number_of_elements="1"
 default_values="0">
   <Hints>

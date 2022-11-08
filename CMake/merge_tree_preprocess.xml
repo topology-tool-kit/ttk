@@ -187,10 +187,10 @@ default_values="0">
 </DoubleVectorProperty>
 
 <PropertyGroup panel_widget="Line" label="Input options">
-  <Property name="DeleteMultiPersPairs"/>
   <Property name="Epsilon1UseFarthestSaddle"/>
   <Property name="EpsilonTree1"/>
   <Property name="Epsilon2Tree1"/>
   <Property name="Epsilon3Tree1"/>
   <Property name="PersistenceThreshold"/>
+  <Property name="DeleteMultiPersPairs"/>
 </PropertyGroup>
