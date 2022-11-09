@@ -339,24 +339,6 @@
       </DoubleVectorProperty>
 
       <IntVectorProperty
-         name="SaddleConnectors"
-         command="SetComputeSaddleConnectors"
-         label="Compute saddle-saddle pairs (SLOW!)"
-         number_of_elements="1"
-         default_values="0" panel_visibility="advanced">
-          <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="BackEnd"
-                                   value="0" />
-        </Hints>
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Add saddle-saddle pairs in the diagram (SLOW!).
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
           name="Ignore Boundary"
           command="SetIgnoreBoundary"
           number_of_elements="1"
@@ -523,7 +505,6 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="SaddleConnectors" />
         <Property name="Ignore Boundary" />
         <Property name="DMSDimensions" />
         <Property name="ComputeMinSad" />

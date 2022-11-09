@@ -25,10 +25,10 @@ namespace ttk {
   protected:
     int assignmentSolverID_ = 0;
     bool epsilon1UseFarthestSaddle_ = false;
-    double epsilonTree1_ = 5;
-    double epsilonTree2_ = 5;
-    double epsilon2Tree1_ = 95;
-    double epsilon2Tree2_ = 95;
+    double epsilonTree1_ = 0;
+    double epsilonTree2_ = 0;
+    double epsilon2Tree1_ = 100;
+    double epsilon2Tree2_ = 100;
     double epsilon3Tree1_ = 100;
     double epsilon3Tree2_ = 100;
     double persistenceThreshold_ = 0;
@@ -43,6 +43,8 @@ namespace ttk {
 
     bool distanceSquared_ = true; // squared root
     bool useFullMerge_ = false;
+
+    bool isPersistenceDiagram_ = false;
 
     // Double input
     double mixtureCoefficient_ = 0.5;
@@ -156,6 +158,10 @@ namespace ttk {
       cleanTree_ = clean;
     }
 
+    void setIsPersistenceDiagram(bool isPD) {
+      isPersistenceDiagram_ = isPD;
+    }
+
     std::vector<std::vector<int>> getTreesNodeCorr() {
       return treesNodeCorr_;
     }
@@ -202,8 +208,8 @@ namespace ttk {
       bool fullMerge = (epsilon == 100);
       fullMerge &= useFullMerge_;
 
-      treeNodeMerged
-        = std::vector<std::vector<ftm::idNode>>(tree->getNumberOfNodes());
+      treeNodeMerged.clear();
+      treeNodeMerged.resize(tree->getNumberOfNodes());
 
       if(mergeByPersistence)
         ftm::computePersistencePairs<dataType>(
@@ -439,9 +445,6 @@ namespace ttk {
 
     template <class dataType>
     void preprocessTree(ftm::FTMTree_MT *tree,
-                        double epsilon,
-                        double persistenceThreshold,
-                        std::vector<std::vector<ftm::idNode>> &treeNodeMerged,
                         bool deleteInconsistentNodes = true) {
       if(deleteInconsistentNodes) {
         // Manage inconsistent critical points
@@ -466,18 +469,11 @@ namespace ttk {
       }
 
       // Compute persistence pairs
-      auto pairs = ftm::computePersistencePairs<dataType>(tree);
-      // Verify pairs
-      verifyOrigins<dataType>(tree);
-
-      // Delete null persistence pairs and persistence thresholding
-      std::vector<ftm::idNode> deletedNodes;
-      persistenceThresholding<dataType>(
-        tree, persistenceThreshold, deletedNodes);
-
-      // Merge saddle points according epsilon
-      if(epsilon != 0)
-        mergeSaddle<dataType>(tree, epsilon, treeNodeMerged);
+      if(not isPersistenceDiagram_) {
+        auto pairs = ftm::computePersistencePairs<dataType>(tree);
+        // Verify pairs
+        verifyOrigins<dataType>(tree);
+      }
     }
 
     template <class dataType>
@@ -631,71 +627,81 @@ namespace ttk {
     }
 
     template <class dataType>
-    ftm::FTMTree_MT *preprocessingPipeline(ftm::MergeTree<dataType> &mTree,
-                                           double epsilonTree,
-                                           double epsilon2Tree,
-                                           double epsilon3Tree,
-                                           bool branchDecompositionT,
-                                           bool useMinMaxPairT,
-                                           bool cleanTreeT,
-                                           double persistenceThreshold,
-                                           std::vector<int> &nodeCorr,
-                                           bool deleteInconsistentNodes
-                                           = true) {
+    void preprocessingPipeline(ftm::MergeTree<dataType> &mTree,
+                               double epsilonTree,
+                               double epsilon2Tree,
+                               double epsilon3Tree,
+                               bool branchDecompositionT,
+                               bool useMinMaxPairT,
+                               bool cleanTreeT,
+                               double persistenceThreshold,
+                               std::vector<int> &nodeCorr,
+                               bool deleteInconsistentNodes = true) {
       Timer t_proc;
 
       ftm::FTMTree_MT *tree = &(mTree.tree);
 
+      preprocessTree<dataType>(tree, deleteInconsistentNodes);
+
+      // - Delete null persistence pairs and persistence thresholding
+      persistenceThresholding<dataType>(tree, persistenceThreshold);
+
+      // - Merge saddle points according epsilon
       std::vector<std::vector<ftm::idNode>> treeNodeMerged(
         tree->getNumberOfNodes());
-      preprocessTree<dataType>(tree, epsilonTree, persistenceThreshold,
-                               treeNodeMerged, deleteInconsistentNodes);
-      ftm::FTMTree_MT *treeOld = tree;
+      if(not isPersistenceDiagram_) {
+        if(epsilonTree != 0)
+          mergeSaddle<dataType>(tree, epsilonTree, treeNodeMerged);
+      }
 
+      // - Compute branch decomposition
       // verifyPairsTree(tree);
-      if(branchDecompositionT)
+      if(branchDecompositionT and not isPersistenceDiagram_)
         tree = computeBranchDecomposition<dataType>(tree, treeNodeMerged);
 
+      // - Delete multi pers pairs
       if(deleteMultiPersPairs_)
         deleteMultiPersPairs<dataType>(tree, branchDecompositionT);
 
+      // - Remove min max pair
       // verifyPairsTree(tree);
       if(not useMinMaxPairT)
         dontUseMinMaxPair<dataType>(tree);
 
-      if(branchDecompositionT)
+      // - Epsilon 2 and 3 processing
+      if(branchDecompositionT and not isPersistenceDiagram_)
         persistenceMerging<dataType>(tree, epsilon2Tree, epsilon3Tree);
 
+      // - Tree cleaning (remove unused nodes)
       if(cleanTreeT) {
         ftm::cleanMergeTree<dataType>(mTree, nodeCorr, branchDecompositionT);
         tree = &(mTree.tree);
         reverseNodeCorr(tree, nodeCorr);
       }
 
+      // - Root number verification
       if(tree->getNumberOfRoot() != 1)
         printErr("preprocessingPipeline tree->getNumberOfRoot() != 1");
 
+      // - Time printing
       // verifyPairsTree(tree);
       auto t_preproc_time = t_proc.getElapsedTime();
       std::stringstream ss;
       ss << "TIME PREPROC.   = " << t_preproc_time;
       printMsg(ss.str(), debug::Priority::VERBOSE);
-
-      return treeOld;
     }
 
     template <class dataType>
-    ftm::FTMTree_MT *preprocessingPipeline(ftm::MergeTree<dataType> &mTree,
-                                           double epsilonTree,
-                                           double epsilon2Tree,
-                                           double epsilon3Tree,
-                                           bool branchDecompositionT,
-                                           bool useMinMaxPairT,
-                                           bool cleanTreeT,
-                                           std::vector<int> &nodeCorr,
-                                           bool deleteInconsistentNodes
-                                           = true) {
-      return preprocessingPipeline<dataType>(
+    void preprocessingPipeline(ftm::MergeTree<dataType> &mTree,
+                               double epsilonTree,
+                               double epsilon2Tree,
+                               double epsilon3Tree,
+                               bool branchDecompositionT,
+                               bool useMinMaxPairT,
+                               bool cleanTreeT,
+                               std::vector<int> &nodeCorr,
+                               bool deleteInconsistentNodes = true) {
+      preprocessingPipeline<dataType>(
         mTree, epsilonTree, epsilon2Tree, epsilon3Tree, branchDecompositionT,
         useMinMaxPairT, cleanTreeT, persistenceThreshold_, nodeCorr,
         deleteInconsistentNodes);
@@ -787,9 +793,18 @@ namespace ttk {
       return std::make_tuple(maxIndex, oldOriginValue);
     }
 
+    // TODO fix bug when one multi pers. pairs is moved up with epsilon 2 and 3
+    // but not its brothers
     template <class dataType>
     void branchDecompositionToTree(ftm::FTMTree_MT *tree) {
       ftm::idNode treeRoot = tree->getRoot();
+
+      // Get original tree message
+      std::stringstream oriPrintTree = tree->printTree();
+      std::stringstream oriPrintPairs
+        = tree->printPairsFromTree<dataType>(true);
+      std::stringstream oriPrintMultiPers
+        = tree->printMultiPersPairsFromTree<dataType>(true);
 
       // One pair case
       if(tree->isThereOnlyOnePersistencePair()) {
@@ -819,7 +834,7 @@ namespace ttk {
       };
       auto getIndexNotMultiPers = [&](int index, ftm::FTMTree_MT *treeT,
                                       std::vector<ftm::idNode> &children) {
-        while(treeT->isMultiPersPair(children[index]))
+        while(index >= 0 and treeT->isMultiPersPair(children[index]))
           --index;
         return index;
       };
@@ -903,6 +918,9 @@ namespace ttk {
       for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
         if(tree->getNode(i)->getNumberOfDownSuperArcs() == 1
            and tree->getNode(i)->getNumberOfUpSuperArcs() == 1) {
+          printMsg(oriPrintPairs.str());
+          printMsg(oriPrintMultiPers.str());
+          printMsg(oriPrintTree.str());
           printMsg(tree->printTree().str());
           std::stringstream ss;
           auto iOrigin = tree->getNode(i)->getOrigin();
@@ -983,7 +1001,7 @@ namespace ttk {
             "[postprocessingPipeline] mergedRootOrigin inconsistent id.");
       }
       if(branchDecomposition_) {
-        if(tree->getRealNumberOfNodes() != 0)
+        if(not isPersistenceDiagram_ and tree->getRealNumberOfNodes() != 0)
           branchDecompositionToTree<dataType>(tree);
       } else
         putBackMergedNodes<dataType>(tree);
@@ -1215,7 +1233,11 @@ namespace ttk {
                                             "persistenceThreshold",
                                             "branchDecomposition",
                                             "normalizedWasserstein",
-                                            "keepSubtree"};
+                                            "keepSubtree",
+                                            "isPersistenceDiagram",
+                                            "deleteMultiPersPairs",
+                                            "epsilon1UseFarthestSaddle",
+                                            "mixtureCoefficient"};
     }
 
     double getParamValueFromName(std::string &paramName) {
@@ -1234,6 +1256,14 @@ namespace ttk {
         value = normalizedWasserstein_;
       else if(paramName == "keepSubtree")
         value = keepSubtree_;
+      else if(paramName == "isPersistenceDiagram")
+        value = isPersistenceDiagram_;
+      else if(paramName == "deleteMultiPersPairs")
+        value = deleteMultiPersPairs_;
+      else if(paramName == "epsilon1UseFarthestSaddle")
+        value = epsilon1UseFarthestSaddle_;
+      else if(paramName == "mixtureCoefficient")
+        value = mixtureCoefficient_;
       return value;
     }
 
@@ -1252,6 +1282,14 @@ namespace ttk {
         normalizedWasserstein_ = value;
       else if(paramName == "keepSubtree")
         keepSubtree_ = value;
+      else if(paramName == "isPersistenceDiagram")
+        isPersistenceDiagram_ = value;
+      else if(paramName == "deleteMultiPersPairs")
+        deleteMultiPersPairs_ = value;
+      else if(paramName == "epsilon1UseFarthestSaddle")
+        epsilon1UseFarthestSaddle_ = value;
+      else if(paramName == "mixtureCoefficient")
+        mixtureCoefficient_ = value;
     }
 
     void getTreesStats(std::vector<ftm::FTMTree_MT *> &trees,

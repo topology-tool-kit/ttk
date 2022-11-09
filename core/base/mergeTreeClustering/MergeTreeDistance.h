@@ -568,7 +568,7 @@ namespace ttk {
         verifyMergeTreeStructure<dataType>(tree2);
       }
       if(preprocess_) {
-        treesNodeCorr_ = std::vector<std::vector<int>>(2);
+        treesNodeCorr_.resize(2);
         preprocessingPipeline<dataType>(
           mTree1Int, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_,
           branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[0]);

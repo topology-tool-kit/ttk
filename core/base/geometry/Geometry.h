@@ -169,6 +169,20 @@ namespace ttk {
     template <typename T>
     T distance(const T *p0, const T *p1, const int &dimension = 3);
 
+    /// Compute the Euclidean distance between two points
+    /// \param p0 xyz coordinates of the first input point.
+    /// \param p1 xyz coordinates of the second input point.
+    template <typename T>
+    T distance(const std::vector<T> &p0, const std::vector<T> &p1);
+
+    /// Compute the Euclidean distance between two vectors by first flattening
+    /// them
+    /// \param p0 xyz coordinates of the first input point.
+    /// \param p1 xyz coordinates of the second input point.
+    template <typename T>
+    T distanceFlatten(const std::vector<std::vector<T>> &p0,
+                      const std::vector<std::vector<T>> &p1);
+
     /// Compute the dot product of two 3D std::vectors
     /// \param vA0 xyz coordinates of vA's origin
     /// \param vA1 xyz coordinates of vA's destination
@@ -178,12 +192,29 @@ namespace ttk {
     template <typename T>
     T dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
 
-    /// Compute the dot product of two 3D std::vectors
-    /// \param vA xyz coordinates of vA std::vector
-    /// \param vB xyz coordinates of vB std::vector
+    /// Compute the dot product of two std::vectors
+    /// \param vA coordinates of vA std::vector
+    /// \param vB coordinates of vB std::vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
     /// \return Returns Output dot product
     template <typename T>
-    T dotProduct(const T *vA, const T *vB);
+    T dotProduct(const T *vA, const T *vB, const int &dimension = 3);
+
+    /// Compute the dot product of two std::vectors
+    /// \param vA coordinates of vA std::vector
+    /// \param vB coordinates of vB std::vector
+    /// \return Returns Output dot product
+    template <typename T>
+    T dotProduct(const std::vector<T> &vA, const std::vector<T> &vB);
+
+    /// Compute the dot product of two multi dimensional std::vectors by first
+    /// flattening them
+    /// \param vA coordinates of vA std::vector \param vB
+    /// coordinates of vB std::vector \return Returns Output dot product
+    template <typename T>
+    T dotProductFlatten(const std::vector<std::vector<T>> &vA,
+                        const std::vector<std::vector<T>> &vB);
 
     /// Compute the bounding box of a point set.
     /// \param points Vector of points. Each entry is a
@@ -274,11 +305,26 @@ namespace ttk {
                             const T *p2,
                             const T *tolerance = nullptr);
 
-    /// Compute the magnitude of a 3D std::vector \p v.
-    /// \param v xyz coordinates of the input std::vector.
+    /// Compute the magnitude of a std::vector \p v.
+    /// \param v coordinates of the input std::vector.
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
     /// \return Returns the magnitude upon success, negative values otherwise.
     template <typename T>
-    T magnitude(const T *v);
+    T magnitude(const T *v, const int &dimension = 3);
+
+    /// Compute the magnitude of a std::vector \p v.
+    /// \param v coordinates of the input std::vector.
+    /// \return Returns the magnitude upon success, negative values otherwise.
+    template <typename T>
+    T magnitude(const std::vector<T> &v);
+
+    /// Compute the magnitude of a multi dimensional std::vector \p v by first
+    /// flattening it
+    /// \param v coordinates of the input std::vector.
+    /// \return Returns the magnitude upon success, negative values otherwise.
+    template <typename T>
+    T magnitudeFlatten(const std::vector<std::vector<T>> &v);
 
     /// Compute the magnitude of a 3D std::vector.
     /// \param o xyz coordinates of the std::vector's origin
@@ -377,13 +423,222 @@ namespace ttk {
       return T1{};
     }
 
-    /// Computes the difference between two vectors.
-    /// \param a xyz coordinates of the first vector
-    /// \param b xyz coordinates of the second vector
+    /// Computes the difference between two vectors (\p b subtracted by \p a).
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the difference between the two vectors
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int
+      subtractVectors(const T *a, const T *b, T *out, const int &dimension = 3);
+
+    /// Computes the difference between two vectors (\p b subtracted by \p a).
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
     /// \param out the difference between the two vectors
     /// \return Returns 0 for success, negative otherwise.
     template <typename T>
-    int subtractVectors(const T *a, const T *b, T *out);
+    int subtractVectors(const std::vector<T> &a,
+                        const std::vector<T> &b,
+                        std::vector<T> &out);
+
+    /// Computes the addition of two vectors.
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the addition between the two vectors
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int addVectors(const T *a, const T *b, T *out, const int &dimension = 3);
+
+    /// Computes the addition of two vectors.
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the addition between the two vectors
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int addVectors(const std::vector<T> &a,
+                   const std::vector<T> &b,
+                   std::vector<T> &out);
+
+    /// Computes the pairwise addition of pairs of two vectors.
+    /// \param a coordinates of the first vectors
+    /// \param b coordinates of the second vectors
+    /// \param out the pairwise addition between the vectors
+    template <typename T>
+    int multiAddVectors(const std::vector<std::vector<T>> &a,
+                        const std::vector<std::vector<T>> &b,
+                        std::vector<std::vector<T>> &out);
+
+    /// Computes the pairwise addition of pairs of two vectors by first
+    /// flattening them.
+    /// \param a coordinates of the first vectors
+    /// \param b coordinates of the second vectors
+    /// \param out the pairwise addition between the vectors
+    template <typename T>
+    int
+      multiAddVectorsFlatten(const std::vector<std::vector<std::vector<T>>> &a,
+                             const std::vector<std::vector<std::vector<T>>> &b,
+                             std::vector<std::vector<T>> &out);
+
+    /// Scale a vector by a scalar value.
+    /// \param a coordinates of the first vector
+    /// \param factor scale factor
+    /// \param out the scaled vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int
+      scaleVector(const T *a, const T factor, T *out, const int &dimension = 3);
+
+    /// Scale a vector by a scalar value.
+    /// \param a coordinates of the first vector
+    /// \param factor scale factor
+    /// \param out the scaled vector
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int
+      scaleVector(const std::vector<T> &a, const T factor, std::vector<T> &out);
+
+    /// Computes the projection of vector \p a onto the vector \p b
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the projected vector
+    /// \param dimension Optional parameter that specifies the dimension of
+    /// the point set (by default 3).
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int vectorProjection(const T *a,
+                         const T *b,
+                         T *out,
+                         const int &dimension = 3);
+
+    /// Computes the projection of vector \p a onto the vector \p b
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param out the projected vector
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int vectorProjection(const std::vector<T> &a,
+                         const std::vector<T> &b,
+                         std::vector<T> &out);
+
+    /// Adds two vectors and project them into it
+    /// \param a coordinates of the first vector
+    /// \param b coordinates of the second vector
+    /// \param a_out the projection of \p a
+    /// \param b_out the projection of \p b
+    template <typename T>
+    void addVectorsProjection(const std::vector<T> &a,
+                              const std::vector<T> &b,
+                              std::vector<T> &a_out,
+                              std::vector<T> &b_out);
+
+    /// Computes the Gram-Schmidt orthogonalization process. That is, given a
+    /// set of vectors, it returns a set (of same size) of orthogonal vectors
+    /// spanning the same subspace.
+    /// \param a the set of vectors to orthogonalize
+    /// \param out the orthogonalized vectors
+    template <typename T>
+    void gramSchmidt(const std::vector<std::vector<T>> &a,
+                     std::vector<std::vector<T>> &out);
+
+    /// Test if the vector have uniform values
+    /// \param a coordinates of the vector.
+    /// \return Returns true if the vector have uniform values, false otherwise
+    template <typename T>
+    bool isVectorUniform(const std::vector<T> &a);
+
+    /// Test if the vector is null (have all values almost equal to 0)
+    /// \param a coordinates of the vector.
+    /// \return Returns true if the vector is null, false otherwise
+    template <typename T>
+    bool isVectorNull(const std::vector<T> &a);
+
+    /// Test if the vector is null (have all values almost equal to 0) after
+    /// flattening it
+    /// \param a coordinates of the vector.
+    /// \return Returns true if the vector is null, false otherwise
+    template <typename T>
+    bool isVectorNullFlatten(const std::vector<std::vector<T>> &a);
+
+    /// Flatten a multi dimensional vector (representing a rectangular/square
+    /// matrix)
+    /// \param a multi dimensional vector
+    /// \param out flattened vector
+    /// \return Returns 0 for success, negative otherwise
+    template <typename T>
+    int flattenMultiDimensionalVector(const std::vector<std::vector<T>> &a,
+                                      std::vector<T> &out);
+
+    /// Flatten an ensemble of multi dimensional vector (representing a
+    /// rectangular/square matrix)
+    /// \param a multi dimensional vector
+    /// \param out flattened vector
+    template <typename T>
+    int multiFlattenMultiDimensionalVector(
+      const std::vector<std::vector<std::vector<T>>> &a,
+      std::vector<std::vector<T>> &out);
+
+    /// Unflatten a vector to a multi dimensional vector (representing a
+    /// rectangular/square matrix)
+    /// \param a vector
+    /// \param out multi dimensional vector
+    /// \param no_columns number of columns of the output multi dimensional
+    /// vector
+    /// \return Returns 0 for success, negative otherwise
+    template <typename T>
+    int unflattenMultiDimensionalVector(const std::vector<T> &a,
+                                        std::vector<std::vector<T>> &out,
+                                        const int &no_columns = 2);
+
+    /// Computes the matrix multiplication between two matrixes
+    /// \param a the first matrix
+    /// \param b the second matrix
+    /// \param out the resulting matrix
+    template <typename T>
+    void matrixMultiplication(const std::vector<std::vector<T>> &a,
+                              const std::vector<std::vector<T>> &b,
+                              std::vector<std::vector<T>> &out);
+
+    /// Computes the element wise subtraction of two matrices (\p b subtracted
+    /// by \p a)
+    /// \param a the first matrix
+    /// \param b the second matrix
+    /// \param out the resulting matrix
+    template <typename T>
+    void subtractMatrices(const std::vector<std::vector<T>> &a,
+                          const std::vector<std::vector<T>> &b,
+                          std::vector<std::vector<T>> &out);
+
+    /// Computes the element wise addition of two matrices
+    /// \param a the first matrix
+    /// \param b the second matrix
+    /// \param out the resulting matrix
+    template <typename T>
+    void addMatrices(const std::vector<std::vector<T>> &a,
+                     const std::vector<std::vector<T>> &b,
+                     std::vector<std::vector<T>> &out);
+
+    /// Scale a matrix by a scalar value
+    /// \param a the input matrix
+    /// \param factor scale factor
+    /// \param out the resulting matrix
+    template <typename T>
+    void scaleMatrix(const std::vector<std::vector<T>> &a,
+                     const T factor,
+                     std::vector<std::vector<T>> &out);
+
+    /// Transpose a matrix
+    /// \param a the input matrix
+    /// \param out the resulting matrix
+    template <typename T>
+    void transposeMatrix(const std::vector<std::vector<T>> &a,
+                         std::vector<std::vector<T>> &out);
 
   } // namespace Geometry
 } // namespace ttk

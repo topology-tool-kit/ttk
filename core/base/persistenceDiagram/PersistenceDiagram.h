@@ -159,9 +159,6 @@ namespace ttk {
 
     PersistenceDiagram();
 
-    inline void setComputeSaddleConnectors(bool state) {
-      ComputeSaddleConnectors = state;
-    }
     inline void setBackend(const BACKEND be) {
       this->BackEnd = be;
     }
@@ -208,7 +205,6 @@ namespace ttk {
     template <typename scalarType, class triangulationType>
     int executeFTM(std::vector<PersistencePair> &CTDiagram,
                    const scalarType *inputScalars,
-                   const size_t scalarsMTime,
                    const SimplexId *inputOffsets,
                    const triangulationType *triangulation);
 
@@ -246,11 +242,6 @@ namespace ttk {
           contourTree_.setDebugLevel(debugLevel_);
           contourTree_.setThreadNumber(threadNumber_);
           contourTree_.preconditionTriangulation(triangulation);
-          if(this->ComputeSaddleConnectors) {
-            dcg_.setDebugLevel(debugLevel_);
-            dcg_.setThreadNumber(threadNumber_);
-            dcg_.preconditionTriangulation(triangulation);
-          }
         }
         if(this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
           dms_.setDebugLevel(debugLevel_);
@@ -278,7 +269,6 @@ namespace ttk {
 
   protected:
     bool IgnoreBoundary{false};
-    bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};
     PersistentSimplexPairs psp_{};
@@ -372,10 +362,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
     case BACKEND::APPROXIMATE_TOPOLOGY:
       executeApproximateTopology(CTDiagram, inputScalars, triangulation);
       break;
-
     case BACKEND::FTM:
-      executeFTM(
-        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
+      executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
     default:
       printErr("No method was selected");
@@ -630,7 +618,6 @@ template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::executeFTM(
   std::vector<PersistencePair> &CTDiagram,
   const scalarType *inputScalars,
-  const size_t scalarsMTime,
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
@@ -678,25 +665,6 @@ int ttk::PersistenceDiagram::executeFTM(
   // get persistence diagrams
   computeCTPersistenceDiagram<scalarType>(contourTree_, CTPairs, CTDiagram);
 
-  // get the saddle-saddle pairs
-  std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
-    pl_saddleSaddlePairs;
-  if(triangulation->getDimensionality() == 3 and ComputeSaddleConnectors) {
-    dcg_.setInputScalarField(inputScalars, scalarsMTime);
-    dcg_.setInputOffsets(inputOffsets);
-    dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
-      pl_saddleSaddlePairs, *triangulation);
-
-    // add saddle-saddle pairs to the diagram
-    for(const auto &i : pl_saddleSaddlePairs) {
-      const ttk::SimplexId v0 = std::get<0>(i);
-      const ttk::SimplexId v1 = std::get<1>(i);
-
-      CTDiagram.emplace_back(PersistencePair{
-        CriticalVertex{v0, ttk::CriticalType::Saddle1, {}, {}},
-        CriticalVertex{v1, ttk::CriticalType::Saddle2, {}, {}}, 1, true});
-    }
-  }
   return 0;
 }
 

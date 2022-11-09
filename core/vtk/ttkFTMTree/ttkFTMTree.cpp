@@ -602,6 +602,8 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
 void ttkFTMTree::printCSVStats() {
+  using namespace ttk;
+
   for(auto &t : ftmTree_) {
     switch(GetTreeType()) {
       case ftm::TreeType::Join:
@@ -622,7 +624,9 @@ void ttkFTMTree::printCSVStats() {
   }
 }
 
-void ttkFTMTree::printCSVTree(const ftm::FTMTree_MT *const tree) const {
+void ttkFTMTree::printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const {
+  using namespace ttk::ftm;
+
   const idSuperArc nbArc = tree->getNumberOfLeaves();
   cout << "begin; ";
   for(idSuperArc a = 0; a < nbArc; a++) {

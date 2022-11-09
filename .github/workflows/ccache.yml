@@ -23,9 +23,9 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
     env:
       CCACHE_DIR: /home/runner/.ccache
-    steps:
 
-    - uses: actions/checkout@v2
+    steps:
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - name: Install Ubuntu dependencies
@@ -40,6 +40,7 @@ jobs:
           libosmesa-dev \
           libopenmpi-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           ninja-build \
           zlib1g-dev \
@@ -49,14 +50,10 @@ jobs:
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
-    - uses: dsaltares/fetch-gh-release-asset@master
-      name: Fetch TTK-ParaView headless Debian package
-      with:
-        repo: "${{ env.PV_REPO }}"
-        version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-headless-${{ matrix.os }}.deb"
-        target: "ttk-paraview-headless.deb"
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.deb
 
     - name: Install ParaView .deb
       run: |
@@ -78,6 +75,7 @@ jobs:
           -DTTK_ENABLE_MPI=TRUE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
 
@@ -92,7 +90,7 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-${{ matrix.os }}
         path: /home/runner/ttk-ccache.tar.gz
@@ -106,23 +104,21 @@ jobs:
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
-
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp ninja python open-mpi
+        brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
-        brew install boost eigen graphviz numpy embree ccache
-        python3 -m pip install scikit-learn packaging
+        brew install boost eigen graphviz numpy embree websocketpp ccache
+        python3.10 -m pip install scikit-learn packaging
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
+        # remove Python 3.11 installation
+        sudo rm -rf /Library/Frameworks/Python.framework/Versions/3.11
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -136,6 +132,11 @@ jobs:
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
 
+    - name: Set compilers as environment variables
+      run: |
+        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+
     - name: Create & configure TTK build directory
       run: |
         mkdir build
@@ -144,7 +145,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -152,6 +152,7 @@ jobs:
           -DTTK_ENABLE_MPI=TRUE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
 
@@ -166,7 +167,7 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-macOS
         path: /Users/runner/work/ttk/ttk-ccache.tar.gz
@@ -179,7 +180,7 @@ jobs:
     env:
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -188,7 +189,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz ninja sccache
+          scikit-learn packaging openmp graphviz ninja websocketpp sccache
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
 
@@ -261,7 +262,7 @@ jobs:
         tar czf ttk-sccache.tar.gz cache
 
     - name: Upload sccache archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-sccache-windows
         path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
@@ -289,18 +290,28 @@ jobs:
           await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
 
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v6
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: true
+        script: |
+          const { owner, repo } = context.repo
+          await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: "ccache",
+            name: "ccache archives",
+            body: "Holds ccache archives to speed up build jobs",
+            draft: false,
+            prerelease: true
+          })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
+
+    - name: Delete ccache artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-*ccache*
 
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
