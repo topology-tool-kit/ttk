@@ -105,6 +105,7 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
@@ -184,6 +185,7 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
