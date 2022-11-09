@@ -55,7 +55,7 @@ namespace ttk {
     ttk::LongSimplexId *vertexIdentifiers_;
     ttk::LongSimplexId *cellIdentifiers_;
 #ifdef TTK_ENABLE_MPI
-    std::map<ttk::SimplexId, ttk::SimplexId> vertGtoL_;
+    std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL_;
     std::vector<int> neighbors_;
     std::map<int, int> neighborToId_;
     int neighborNumber_;
@@ -126,6 +126,11 @@ namespace ttk {
 
     void setBounds(double *bounds) {
       this->bounds_ = bounds;
+    }
+
+    void setVertGtoL(
+      std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL) {
+      this->vertGtoL_ = vertGtoL;
     }
 
     void setSpacing(double *spacing) {
@@ -337,7 +342,7 @@ namespace ttk {
       std::vector<Response> &send_buf) {
       int id{-1};
       send_buf.clear();
-      std::map<ttk::SimplexId, ttk::SimplexId>::iterator search;
+      std::unordered_map<ttk::SimplexId, ttk::SimplexId>::iterator search;
       std::vector<ttk::SimplexId> localPointIds;
       localPointIds.reserve(dimension_ + 1);
       size_t expectedSize = static_cast<size_t>(dimension_) + 1;
@@ -347,8 +352,8 @@ namespace ttk {
       for(int n = 0; n < recvMessageSize; n += dimension_ + 2) {
         localPointIds.clear();
         for(int k = 1; k < dimension_ + 2; k++) {
-          search = vertGtoL_.find(receivedCells[n + k]);
-          if(search != vertGtoL_.end()) {
+          search = vertGtoL_->find(receivedCells[n + k]);
+          if(search != vertGtoL_->end()) {
             localPointIds.push_back(search->second);
           } else {
             break;
@@ -574,7 +579,7 @@ namespace ttk {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertRankArray_[i] == ttk::MPIrank_) {
             vertexIdentifiers_[i] = vertIndex;
-            vertGtoL_[vertIndex] = i;
+            (*vertGtoL_)[vertIndex] = i;
             vertIndex++;
           }
           if(outdatedGlobalPointIds_ != nullptr) {
@@ -585,7 +590,7 @@ namespace ttk {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
           if(vertGhost_[i] == 0) {
             vertexIdentifiers_[i] = vertIndex;
-            vertGtoL_[vertIndex] = i;
+            (*vertGtoL_)[vertIndex] = i;
             vertIndex++;
           }
           if(outdatedGlobalPointIds_ != nullptr) {
@@ -625,7 +630,7 @@ namespace ttk {
      */
 
     int executePolyData() {
-      vertGtoL_.clear();
+      vertGtoL_->clear();
       std::vector<Point> vertGhostCoordinates;
       std::vector<ttk::SimplexId> vertGhostGlobalIds;
       std::vector<ttk::SimplexId> cellGhostGlobalVertexIds;
@@ -701,14 +706,14 @@ namespace ttk {
               for(int n = 0; n < recvMessageSize; n++) {
                 vertexIdentifiers_[receivedResponse[n].id]
                   = receivedResponse[n].globalId;
-                vertGtoL_[receivedResponse[n].globalId]
+                (*vertGtoL_)[receivedResponse[n].globalId]
                   = receivedResponse[n].id;
               }
             } else {
               for(int n = 0; n < recvMessageSize; n++) {
                 vertexIdentifiers_[vertOutdatedGtoL_[receivedResponse[n].id]]
                   = receivedResponse[n].globalId;
-                vertGtoL_[receivedResponse[n].globalId]
+                (*vertGtoL_)[receivedResponse[n].globalId]
                   = receivedResponse[n].id;
               }
             }

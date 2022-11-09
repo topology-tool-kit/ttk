@@ -2751,6 +2751,12 @@ namespace ttk {
       return this->vertexGidToLid_;
     }
 
+    virtual inline void setVertexGlobalIdMap(
+      std::unordered_map<SimplexId, SimplexId> &vertexGidToLid) {
+      this->vertexGidToLid_ = vertexGidToLid;
+      this->hasPreconditionedDistributedVertices_ = true;
+    }
+
   protected:
     inline SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const {
       return this->vertGid_[lvid];

@@ -82,8 +82,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
-  auto vtkGlobalPointIds
-    = pointData->GetArray(ttk::MPIVertexGlobalIdFieldName_);
+  auto vtkGlobalPointIds = pointData->GetGlobalIds();
   auto rankArray = pointData->GetArray("RankArray");
   if(vtkGlobalPointIds != nullptr && rankArray != nullptr) {
 #ifdef TTK_ENABLE_MPI
@@ -92,11 +91,10 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
       // rankarray and the global ids
       for(auto scalarArray : scalarArrays) {
         int status = 0;
-        const char *arrayName = scalarArray->GetName();
-        if(std::strcmp(arrayName, ttk::MPIVertexGlobalIdFieldName_) != 0
-           && std::strcmp(arrayName, "vtkGhostType") != 0
-           && std::strcmp(arrayName, "RankArray") != 0) {
-          this->printMsg("Arrayname: " + std::string(arrayName));
+        std::string arrayName = std::string(scalarArray->GetName());
+        if(arrayName != "GlobalPointIds" && arrayName != "vtkGhostType"
+           && arrayName != "RankArray") {
+          this->printMsg("Arrayname: " + arrayName);
           vtkNew<ttkSimplexIdTypeArray> orderArray{};
           orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
           orderArray->SetNumberOfComponents(1);

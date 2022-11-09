@@ -1408,6 +1408,11 @@ namespace ttk {
       return abstractTriangulation_->getVertexGlobalIdMap();
     }
 
+    inline void setVertexGlobalIdMap(
+      std::unordered_map<SimplexId, SimplexId> &vertGtoL) override {
+      return abstractTriangulation_->setVertexGlobalIdMap(vertGtoL);
+    }
+
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,

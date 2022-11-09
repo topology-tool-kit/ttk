@@ -211,10 +211,19 @@ protected:
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been
+   * created. It verifies that ghost cells and points are present and if they
+   * are not, computes them.
+   */
+
+  void MPIGhostPipelinePreconditioning(vtkDataSet *input);
+
+  /**
+   * This method is called in GetTriangulation, after the triangulation as been
    * created. It verifies that several attributes necessary for MPI computation
    * are present in the pipeline and if not, computes them.
    */
-  void MPIPipelinePreconditioning(vtkDataSet *input);
+  void MPIPipelinePreconditioning(vtkDataSet *input,
+                                  ttk::Triangulation *triangulation = nullptr);
 
   /**
    * This method checks the validity of the global identifiers given in
@@ -234,7 +243,9 @@ protected:
    * datasets.
    */
 
-  void GenerateGlobalIds(vtkDataSet *input);
+  void GenerateGlobalIds(
+    vtkDataSet *input,
+    std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been
