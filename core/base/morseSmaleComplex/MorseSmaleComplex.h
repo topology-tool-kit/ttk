@@ -459,6 +459,7 @@ namespace ttk {
 
     bool ReturnSaddleConnectors{false};
     double SaddleConnectorsPersistenceThreshold{};
+    bool ThresholdIsAbsolute{true};
   };
 } // namespace ttk
 
@@ -501,8 +502,23 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     triangulation, this->ReturnSaddleConnectors);
 
   if(this->ReturnSaddleConnectors) {
-    this->returnSaddleConnectors(this->SaddleConnectorsPersistenceThreshold,
-                                 scalars, offsets, triangulation);
+    auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};
+    if(!this->ThresholdIsAbsolute) {
+      const auto nVerts{triangulation.getNumberOfVertices()};
+      // global extrema are (generally) faster computed on offsets
+      // than on scalar field
+      const auto pair{std::minmax_element(offsets, offsets + nVerts)};
+      // global extrema vertex ids
+      const auto globmin = std::distance(offsets, pair.first);
+      const auto globmax = std::distance(offsets, pair.second);
+      persistenceThreshold *= (scalars[globmax] - scalars[globmin]);
+      this->printMsg("Absolute saddle connectors persistence threshold is "
+                       + std::to_string(persistenceThreshold),
+                     debug::Priority::DETAIL);
+    }
+
+    this->returnSaddleConnectors(
+      persistenceThreshold, scalars, offsets, triangulation);
   }
 
   std::vector<dcg::Cell> criticalPoints{};
