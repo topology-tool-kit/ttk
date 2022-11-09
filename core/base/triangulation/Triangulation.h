@@ -1408,6 +1408,13 @@ namespace ttk {
       return abstractTriangulation_->getVertexGlobalIdMap();
     }
 
+    /// Set the global id to local id map for the triangulation.
+    ///
+    /// \note This function sets the hasPreconditionedDistributedVertices_
+    /// boolean as true, as there is no longer a need to compute the map.
+    /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
+    /// our GidToLidMap
+
     inline void setVertexGlobalIdMap(
       std::unordered_map<SimplexId, SimplexId> &vertGtoL) override {
       return abstractTriangulation_->setVertexGlobalIdMap(vertGtoL);
