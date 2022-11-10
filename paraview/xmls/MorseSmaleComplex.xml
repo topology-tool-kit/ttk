@@ -275,14 +275,14 @@
             value="1" />
         </Hints>
          <Documentation>
-           Saddle Connectors Persistence Threshold.
+           Saddle Connectors Persistence Threshold (by default relative to the function range, i.e. between 0 and 1).
          </Documentation>
        </DoubleVectorProperty>
 
        <IntVectorProperty name="ThresholdIsAbsolute"
                           command="SetThresholdIsAbsolute"
                           number_of_elements="1"
-                          default_values="1">
+                          default_values="0">
         <BooleanDomain name="bool" />
          <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"

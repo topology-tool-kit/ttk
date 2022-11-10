@@ -459,7 +459,7 @@ namespace ttk {
 
     bool ReturnSaddleConnectors{false};
     double SaddleConnectorsPersistenceThreshold{};
-    bool ThresholdIsAbsolute{true};
+    bool ThresholdIsAbsolute{false};
   };
 } // namespace ttk
 
