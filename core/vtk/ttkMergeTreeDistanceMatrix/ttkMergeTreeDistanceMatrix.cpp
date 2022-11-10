@@ -100,6 +100,19 @@ int ttkMergeTreeDistanceMatrix::run(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
 
+  // Construct trees
+  const int numInputs = inputTrees.size();
+  std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
+  bool useSadMaxPairs = (mixtureCoefficient_ == 0); // only for PD support
+  isPersistenceDiagram_
+    = constructTrees(inputTrees, intermediateTrees, useSadMaxPairs);
+  if(not isPersistenceDiagram_
+     or (mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1)) {
+    auto &inputTrees2ToUse
+      = (not isPersistenceDiagram_ ? inputTrees2 : inputTrees);
+    constructTrees(inputTrees2ToUse, intermediateTrees2, !useSadMaxPairs);
+  }
+
   // Verify parameters
   if(not UseFieldDataParameters) {
     if(Backend == 0) {
@@ -127,12 +140,19 @@ int ttkMergeTreeDistanceMatrix::run(
     }
   }
   if(baseModule_ == 0) {
+    if(isPersistenceDiagram_) {
+      branchDecomposition_ = true;
+    }
     if(not branchDecomposition_) {
       if(normalizedWasserstein_)
         printMsg("NormalizedWasserstein is set to false since branch "
                  "decomposition is not asked.");
       normalizedWasserstein_ = false;
     }
+    if(normalizedWasserstein_)
+      printMsg("Computation with normalized Wasserstein.");
+    else
+      printMsg("Computation without normalized Wasserstein.");
     epsilonTree2_ = epsilonTree1_;
     epsilon2Tree2_ = epsilon2Tree1_;
     epsilon3Tree2_ = epsilon3Tree1_;
@@ -165,12 +185,6 @@ int ttkMergeTreeDistanceMatrix::run(
       return 1;
     printMsg("PathMetric: " + metric);
   }
-
-  // Construct trees
-  const int numInputs = inputTrees.size();
-  std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
-  constructTrees(inputTrees, intermediateTrees);
-  constructTrees(inputTrees2, intermediateTrees2);
 
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(
@@ -277,8 +291,8 @@ int ttkMergeTreeDistanceMatrix::RequestData(
         ->GetArray("Scalar");
   if(arrayToGet == nullptr)
     arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-                   ->GetPointData()
-                   ->GetArray("Birth");
+                   ->GetCellData()
+                   ->GetArray(PersistenceBirthName);
   int dataTypeInt = arrayToGet->GetDataType();
 
   // --- Load field data parameters
