@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MergeTreePrincipalGeodesics.h>
+
 namespace ttk {
   template <class dataType>
   dataType MergeTreePrincipalGeodesics::computeVarianceFromDistances(
@@ -17,10 +19,11 @@ namespace ttk {
     std::vector<std::vector<double>> &v,
     std::vector<std::vector<double>> &v2,
     std::vector<double> &ts,
-    bool computeGlobalVariance) {
+    bool globalVariance) {
+
     std::vector<ftm::MergeTree<dataType>> allInterpolated(trees.size());
     ftm::MergeTree<dataType> barycenterInterpolated;
-    if(not computeGlobalVariance) {
+    if(not globalVariance) {
       for(unsigned int i = 0; i < trees.size(); ++i)
         getInterpolation<dataType>(
           barycenter, v, v2, ts[i], allInterpolated[i]);
@@ -33,7 +36,7 @@ namespace ttk {
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
     for(unsigned int i = 0; i < trees.size(); ++i) {
-      if(computeGlobalVariance) {
+      if(globalVariance) {
         computeOneDistance(barycenter, trees[i], distances[i], true);
       } else {
         computeOneDistance(
