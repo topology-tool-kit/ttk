@@ -2,7 +2,7 @@
 
 ## TTK - The Topology ToolKit 
 
-[![Build Status](https://dev.azure.com/topologytoolkit/TTK/_apis/build/status/topology-tool-kit.ttk?branchName=dev)](https://dev.azure.com/topologytoolkit/TTK/_build/latest?definitionId=1&branchName=dev) [![BSD licensed](https://img.shields.io/badge/license-BSD-blue.svg?maxAge=2592000)](https://github.com/topology-tool-kit/ttk/blob/master/LICENSE) [![Release version](https://img.shields.io/github/release/topology-tool-kit/ttk.svg?maxAge=86400)](https://github.com/topology-tool-kit/ttk/releases/latest) [![Anaconda Cloud](https://anaconda.org/conda-forge/topologytoolkit/badges/version.svg)](https://anaconda.org/conda-forge/topologytoolkit) [![Anaconda downloads](https://anaconda.org/conda-forge/topologytoolkit/badges/downloads.svg)](https://anaconda.org/conda-forge/topologytoolkit)
+[![Build+Test Status](https://github.com/topology-tool-kit/ttk/actions/workflows/test.yml/badge.svg)](https://github.com/topology-tool-kit/ttk/actions/workflows/test.yml/) [![BSD licensed](https://img.shields.io/badge/license-BSD-blue.svg?maxAge=2592000)](https://github.com/topology-tool-kit/ttk/blob/master/LICENSE) [![Release version](https://img.shields.io/github/release/topology-tool-kit/ttk.svg?maxAge=86400)](https://github.com/topology-tool-kit/ttk/releases/latest) [![Anaconda Cloud](https://anaconda.org/conda-forge/topologytoolkit/badges/version.svg)](https://anaconda.org/conda-forge/topologytoolkit) [![Anaconda downloads](https://anaconda.org/conda-forge/topologytoolkit/badges/downloads.svg)](https://anaconda.org/conda-forge/topologytoolkit)
 
 
 An open-source library for efficient, generic and easy topological data 
