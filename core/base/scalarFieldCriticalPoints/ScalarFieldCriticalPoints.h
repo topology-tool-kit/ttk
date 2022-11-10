@@ -29,8 +29,11 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">
 ///   BuiltInExample1</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/compactTriangulation/">
+///   Compact triangulation example</a>\n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
-///   example</a>
+///   example</a>\n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
