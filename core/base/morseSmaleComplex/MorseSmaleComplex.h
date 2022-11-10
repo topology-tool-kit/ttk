@@ -78,6 +78,7 @@
 
 // base code includes
 #include <DiscreteGradient.h>
+#include <DiscreteMorseSandwich.h>
 #include <Triangulation.h>
 
 #include <queue>
@@ -213,9 +214,8 @@ namespace ttk {
      * Set the threshold for the iterative gradient reversal process.
      * Disable thresholding with -1 (default).
      */
-    int setIterationThreshold(const int iterationThreshold) {
+    inline void setIterationThreshold(const int iterationThreshold) {
       discreteGradient_.setIterationThreshold(iterationThreshold);
-      return 0;
     }
 
     /**
@@ -223,10 +223,9 @@ namespace ttk {
      * the (saddle,...,saddle) vpaths under a given persistence
      * threshold (disabled by default).
      */
-    int setReturnSaddleConnectors(const bool state) {
+    inline void setReturnSaddleConnectors(const bool state) {
       ReturnSaddleConnectors = state;
       discreteGradient_.setReturnSaddleConnectors(state);
-      return 0;
     }
 
     /**
@@ -234,10 +233,10 @@ namespace ttk {
      * (saddle,...,saddle) vpaths gradient reversal
      * (default value is 0.0).
      */
-    int setSaddleConnectorsPersistenceThreshold(const double threshold) {
+    inline void
+      setSaddleConnectorsPersistenceThreshold(const double threshold) {
       SaddleConnectorsPersistenceThreshold = threshold;
       discreteGradient_.setSaddleConnectorsPersistenceThreshold(threshold);
-      return 0;
     }
 
     /**
@@ -440,7 +439,12 @@ namespace ttk {
                              SimplexId *const morseSmaleManifold,
                              const triangulationType &triangulation) const;
 
-  protected:
+    template <typename dataType, typename triangulationType>
+    int returnSaddleConnectors(const double persistenceThreshold,
+                               const dataType *const scalars,
+                               const SimplexId *const offsets,
+                               const triangulationType &triangulation);
+
     dcg::DiscreteGradient discreteGradient_{};
 
     bool ComputeCriticalPoints{true};
@@ -455,6 +459,7 @@ namespace ttk {
 
     bool ReturnSaddleConnectors{false};
     double SaddleConnectorsPersistenceThreshold{};
+    bool ThresholdIsAbsolute{true};
   };
 } // namespace ttk
 
@@ -496,8 +501,24 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.buildGradient(
     triangulation, this->ReturnSaddleConnectors);
 
-  if(dim == 3 && ReturnSaddleConnectors) {
-    discreteGradient_.reverseGradient<dataType>(triangulation);
+  if(this->ReturnSaddleConnectors) {
+    auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};
+    if(!this->ThresholdIsAbsolute) {
+      const auto nVerts{triangulation.getNumberOfVertices()};
+      // global extrema are (generally) faster computed on offsets
+      // than on scalar field
+      const auto pair{std::minmax_element(offsets, offsets + nVerts)};
+      // global extrema vertex ids
+      const auto globmin = std::distance(offsets, pair.first);
+      const auto globmax = std::distance(offsets, pair.second);
+      persistenceThreshold *= (scalars[globmax] - scalars[globmin]);
+      this->printMsg("Absolute saddle connectors persistence threshold is "
+                       + std::to_string(persistenceThreshold),
+                     debug::Priority::DETAIL);
+    }
+
+    this->returnSaddleConnectors(
+      persistenceThreshold, scalars, offsets, triangulation);
   }
 
   std::vector<dcg::Cell> criticalPoints{};
@@ -1815,6 +1836,76 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
   this->printMsg("  Final segmentation computed", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
                  debug::Priority::DETAIL);
+
+  return 0;
+}
+
+template <typename dataType, typename triangulationType>
+int ttk::MorseSmaleComplex::returnSaddleConnectors(
+  const double persistenceThreshold,
+  const dataType *const scalars,
+  const SimplexId *const offsets,
+  const triangulationType &triangulation) {
+
+  Timer tm{};
+
+  const auto dim{triangulation.getDimensionality()};
+  if(dim != 3) {
+    this->printWrn("Can't return saddle connectors without a 3D dataset");
+    return 0;
+  }
+
+  // compute saddle-saddle Persistence Pairs from DiscreteMorseSandwich
+  ttk::DiscreteMorseSandwich dms{};
+  dms.setThreadNumber(this->threadNumber_);
+  dms.setDebugLevel(this->debugLevel_);
+  dms.setGradient(std::move(this->discreteGradient_));
+
+  using PersPairType = DiscreteMorseSandwich::PersistencePair;
+
+  std::vector<PersPairType> dms_pairs{};
+  dms.computePersistencePairs(dms_pairs, offsets, triangulation, false);
+  this->discreteGradient_ = dms.getGradient();
+  // reset gradient pointer to local storage
+  this->discreteGradient_.setLocalGradient();
+
+  const auto getPersistence
+    = [this, &triangulation, scalars](const PersPairType &p) {
+        return this->discreteGradient_.getPersistence(
+          Cell{2, p.death}, Cell{1, p.birth}, scalars, triangulation);
+      };
+
+  // only keep saddle-saddle pairs below persistenceThreshold
+  decltype(dms_pairs) sadSadPairs{};
+  sadSadPairs.reserve(dms_pairs.size() / 2); // conservative allocation
+  for(const auto &pair : dms_pairs) {
+    if(pair.type == 1 && getPersistence(pair) <= persistenceThreshold) {
+      sadSadPairs.emplace_back(pair);
+    }
+  }
+
+  // DMS pairs output are already sorted by persistence
+
+  std::vector<bool> isVisited(triangulation.getNumberOfTriangles(), false);
+  std::vector<SimplexId> visitedTriangles{};
+
+  for(const auto &pair : sadSadPairs) {
+    const Cell birth{1, pair.birth};
+    const Cell death{2, pair.death};
+    // 1. get the 2-saddle wall
+    VisitedMask mask{isVisited, visitedTriangles};
+    this->discreteGradient_.getDescendingWall(death, mask, triangulation);
+    // 2. get the saddle connector
+    std::vector<Cell> vpath{};
+    this->discreteGradient_.getAscendingPathThroughWall(
+      birth, death, isVisited, &vpath, triangulation);
+    // 3. reverse the gradient on the saddle connector path
+    this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
+  }
+
+  this->printMsg(
+    "Returned " + std::to_string(sadSadPairs.size()) + " saddle connectors",
+    1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
