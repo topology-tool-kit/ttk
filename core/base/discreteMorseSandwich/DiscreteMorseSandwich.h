@@ -76,6 +76,26 @@ namespace ttk {
       return this->dg_.buildGradient(triangulation);
     }
 
+    /**
+     * @brief Ugly hack to avoid a call to buildGradient()
+     *
+     * An externally computed gradient can be retrofitted into this
+     * class using move semantics with setGradient().
+     * The internal gradient can be fetched back with getGradient()
+     * once the persistence pairs are computed .
+     * c.f. ttk::MorseSmaleComplex::returnSaddleConnectors
+     *
+     * @param[in] dg External gradient instance
+     */
+    inline void setGradient(ttk::dcg::DiscreteGradient &&dg) {
+      this->dg_ = std::move(dg);
+      // reset gradient pointer to local storage
+      this->dg_.setLocalGradient();
+    }
+    inline ttk::dcg::DiscreteGradient &&getGradient() {
+      return std::move(this->dg_);
+    }
+
     template <typename triangulationType>
     inline SimplexId
       getCellGreaterVertex(const dcg::Cell &c,

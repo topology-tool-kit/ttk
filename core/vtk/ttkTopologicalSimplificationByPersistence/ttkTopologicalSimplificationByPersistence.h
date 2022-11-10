@@ -68,7 +68,7 @@ class TTKTOPOLOGICALSIMPLIFICATIONBYPERSISTENCE_EXPORT
     protected ttk::lts::LocalizedTopologicalSimplification {
 private:
   double PersistenceThreshold{0.0};
-  bool ThresholdIsAbsolute{true};
+  bool ThresholdIsAbsolute{false};
   bool ComputePerturbation{false};
   PAIR_TYPE PairType{PAIR_TYPE::EXTREMUM_SADDLE};
 
