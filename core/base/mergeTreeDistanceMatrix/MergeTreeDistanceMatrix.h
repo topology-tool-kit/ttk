@@ -177,6 +177,7 @@ namespace ttk {
               mergeTreeDistance.setCleanTree(true);
               mergeTreeDistance.setIsCalled(true);
               mergeTreeDistance.setPostprocess(false);
+              mergeTreeDistance.setIsPersistenceDiagram(isPersistenceDiagram_);
               if(useDoubleInput_) {
                 double weight = mixDistancesMinMaxPairWeight(isFirstInput);
                 mergeTreeDistance.setMinMaxPairWeight(weight);

@@ -86,7 +86,8 @@ Online examples:
                     <Property name="Input" function="FieldDataSelection" />
                   </InputArrayDomain>
                   <Documentation>
-                    This input is used for the clustering of merge trees that can use join and split tree together. Pass as input either join or split trees in the first input and the other type of trees in the second input.
+                    If input are merge trees, then this input can be used to process join and split trees together (only for clustering). Pass as input either join or split trees in the first input and the other type of trees in the second input.
+                    If input are persistence diagrams, then this has no effect to use this input.
                   </Documentation>
                 </InputProperty>
 
@@ -289,18 +290,13 @@ Online examples:
                 <DoubleVectorProperty
                 name="JoinSplitMixtureCoefficient"
                 command="SetJoinSplitMixtureCoefficient"
-                label="Join Split Mixture Coefficient"
+                label="Pair Type Mixture Coefficient"
                 number_of_elements="1"
                 default_values="0.5"
                 panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="ComputeBarycenter"
-                                           value="1" />
-                  </Hints>
                   <Documentation>
-                    When Input2 is filled, either it contains split tree and Input1 join tree or the other way around. This parameter allows to ponderate more or less the second input or the first one in the computation of the barycenter.
+                    If input are merge trees, this parameter allows to weight between the first input and the second input (only for clustering), typically join and split trees (0 for only the second input and 1 for only the first one).
+                    If input are persistence diagrams, this parameter allows to weight between min-sad and sad-max pairs (0 for only sad-max and 1 for only min-sad).
                   </Documentation>
                   <DoubleRangeDomain name="range" min="0" max="1" />
                 </DoubleVectorProperty>
