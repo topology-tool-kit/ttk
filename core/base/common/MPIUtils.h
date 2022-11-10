@@ -357,19 +357,8 @@ namespace ttk {
     );
   }
 
-  /**
-   * @brief produce the RankArray array, that stores rank ownership information
-   *
-   * @param[out] rankArray the owner array for the scalar data
-   * @param[in] globalIds the global id array for the scalar data
-   * @param[in] ghostCells the ghost array for the scalar data
-   * @param[in] nVertices number of vertices in the arrays
-   */
-  void inline produceRankArray(std::vector<int> &rankArray,
-                               LongSimplexId *globalIds,
-                               unsigned char *ghostCells,
-                               int nVertices,
-                               double *boundingBox) {
+  void inline getNeighborsUsingBoundingBox(double *boundingBox,
+                                           std::vector<int> &neighbors) {
     std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
@@ -385,7 +374,7 @@ namespace ttk {
       if(i % 2 == 1)
         boundingBox[i] += epsilon;
     }
-    std::vector<int> neighbors;
+
     for(int i = 0; i < ttk::MPIsize_; i++) {
       if(i != ttk::MPIrank_) {
         double *theirBoundingBox = rankBoundingBoxes[i].data();
@@ -394,6 +383,23 @@ namespace ttk {
         }
       }
     }
+  }
+
+  /**
+   * @brief produce the RankArray array, that stores rank ownership information
+   *
+   * @param[out] rankArray the owner array for the scalar data
+   * @param[in] globalIds the global id array for the scalar data
+   * @param[in] ghostCells the ghost array for the scalar data
+   * @param[in] nVertices number of vertices in the arrays
+   */
+  void inline produceRankArray(std::vector<int> &rankArray,
+                               LongSimplexId *globalIds,
+                               unsigned char *ghostCells,
+                               int nVertices,
+                               double *boundingBox) {
+    std::vector<int> neighbors;
+    getNeighborsUsingBoundingBox(boundingBox, neighbors);
     MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
     std::vector<ttk::SimplexId> currentRankUnknownIds;
     std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);
@@ -804,6 +810,47 @@ namespace ttk {
     // exchangeGhostCells method
     ttk::exchangeGhostCells<ttk::SimplexId, IT>(
       orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_);
+  }
+
+  /**
+   * @brief sends the content of a vector to a neighbor.
+   *
+   * @tparam dataType data type of the vector
+   * @param sendBuffer vector to send
+   * @param messageType MPI data type of the vector
+   * @param neighbor rank of the process to send the vector to
+   */
+
+  template <typename dataType>
+  void sendVector(std::vector<dataType> &sendBuffer,
+                  MPI_Datatype messageType,
+                  int neighbor) {
+    ttk::SimplexId dataSize = sendBuffer.size();
+    MPI_Send(&dataSize, 1, getMPIType(dataSize), neighbor, ttk::MPIrank_,
+             ttk::MPIcomm_);
+    MPI_Send(sendBuffer.data(), dataSize, messageType, neighbor, ttk::MPIrank_,
+             ttk::MPIcomm_);
+  }
+
+  /**
+   * @brief receives the content of a vector from a neighbor.
+   *
+   * @tparam dataType data type of the vector
+   * @param receiveBuffer vector to receive
+   * @param messageType MPI data type of the vector
+   * @param neighbor rank of the process to receive the vector from
+   */
+
+  template <typename dataType>
+  void recvVector(std::vector<dataType> &receiveBuffer,
+                  ttk::SimplexId &recvMessageSize,
+                  MPI_Datatype messageType,
+                  int neighbor) {
+    MPI_Recv(&recvMessageSize, 1, getMPIType(recvMessageSize), neighbor,
+             neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    receiveBuffer.resize(recvMessageSize);
+    MPI_Recv(receiveBuffer.data(), recvMessageSize, messageType, neighbor,
+             neighbor, ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
 } // namespace ttk

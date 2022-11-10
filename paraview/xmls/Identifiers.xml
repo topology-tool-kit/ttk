@@ -33,34 +33,6 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="CellFieldName"
-        command="SetCellFieldName"
-        label="Cell Field Name"
-        number_of_elements="1"
-        default_values="ttkCellScalarField">
-        <Documentation>
-          Name of the output cell identifier field.
-        </Documentation>
-      </StringVectorProperty>
-
-
-      <StringVectorProperty
-        name="VertexFieldName"
-        command="SetVertexFieldName"
-        label="Vertex Field Name"
-        number_of_elements="1"
-        default_values="ttkVertexScalarField">
-        <Documentation>
-          Name of the output vertex identifier field.
-        </Documentation>
-      </StringVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="CellFieldName" />
-        <Property name="VertexFieldName" />
-      </PropertyGroup>
-
       ${DEBUG_WIDGETS}
 
       <Hints>

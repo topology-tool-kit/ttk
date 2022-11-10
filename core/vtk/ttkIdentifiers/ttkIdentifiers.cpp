@@ -1,12 +1,9 @@
 #include <ttkIdentifiers.h>
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
-#include <vtkIntArray.h>
 #include <vtkPointData.h>
 
 using namespace std;
@@ -17,11 +14,6 @@ vtkStandardNewMacro(ttkIdentifiers);
 ttkIdentifiers::ttkIdentifiers() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
-
-  setDebugMsgPrefix("Identifiers");
-
-  //   vtkWarningMacro("`TTK Identifiers' is now deprecated. Please use "
-  //                   "`Generate Ids' instead.");
 }
 
 ttkIdentifiers::~ttkIdentifiers() = default;
@@ -51,48 +43,12 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
   Timer t;
 
-  // use a pointer-base copy for the input data -- to adapt if your wrapper does
-  // not produce an output of the type of the input.
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    this->printErr("Triangulation is NULL");
+    return 0;
+  }
   output->ShallowCopy(input);
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifiers
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> cellIdentifiers
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-
-  vertexIdentifiers->SetName(VertexFieldName.data());
-  vertexIdentifiers->SetNumberOfComponents(1);
-  vertexIdentifiers->SetNumberOfTuples(input->GetNumberOfPoints());
-
-  cellIdentifiers->SetName(CellFieldName.data());
-  cellIdentifiers->SetNumberOfComponents(1);
-  cellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells());
-
-  SimplexId vertexNumber = input->GetNumberOfPoints();
-  SimplexId cellNumber = input->GetNumberOfCells();
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < vertexNumber; i++) {
-    // avoid any processing if the abort signal is sent
-    vertexIdentifiers->SetTuple1(i, i);
-  }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < cellNumber; i++) {
-    // avoid any processing if the abort signal is sent
-    cellIdentifiers->SetTuple1(i, i);
-  }
-
-  output->GetPointData()->AddArray(vertexIdentifiers);
-  output->GetCellData()->AddArray(cellIdentifiers);
-
-  printMsg("Processed " + std::to_string(vertexNumber) + " vertices and "
-             + std::to_string(cellNumber) + " cells",
-           1, t.getElapsedTime(), threadNumber_);
 
   printMsg(ttk::debug::Separator::L1);
 

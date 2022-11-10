@@ -1,3 +1,4 @@
+#include "DataTypes.h"
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -10,8 +11,8 @@
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
 #if TTK_ENABLE_MPI
+#include <Identifiers.h>
 #include <vtkCellData.h>
-#include <vtkGenerateGlobalIds.h>
 #include <vtkGhostCellsGenerator.h>
 #endif
 #include <vtkImageData.h>
@@ -46,18 +47,20 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       printErr(
         "MPI is not supported for this filter, the results will be incorrect");
     }
-    this->MPIPipelinePreconditioning(dataSet);
+    this->MPIGhostPipelinePreconditioning(dataSet);
   }
 #endif
+
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
+
 #if TTK_ENABLE_MPI
   if(ttk::hasInitializedMPI()) {
-    if(triangulation) {
-      this->MPITriangulationPreconditioning(triangulation, dataSet);
-    }
+    this->MPIPipelinePreconditioning(dataSet, triangulation);
+    this->MPITriangulationPreconditioning(triangulation, dataSet);
   }
 #endif
+
   if(triangulation)
     return triangulation;
 
@@ -178,7 +181,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetNumberOfTuples(nVertices);
 #if TTK_ENABLE_MPI
       if(ttk::hasInitializedMPI()) {
-        this->MPIPipelinePreconditioning(inputData);
+        this->MPIGhostPipelinePreconditioning(inputData);
+        this->MPIPipelinePreconditioning(inputData, nullptr);
       }
       if(ttk::isRunningWithMPI()) {
         auto vtkGlobalPointIds = inputData->GetPointData()->GetGlobalIds();
@@ -428,17 +432,206 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 }
 
 #if TTK_ENABLE_MPI
-void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
-  vtkNew<vtkGenerateGlobalIds> globalIds;
-  // If the global point id array doesn't exist, it is created
-  if(input->GetPointData()->GetGlobalIds() == nullptr) {
-    printWrn("Global ids haven't been produced in sequential, the parallel "
-             "result may be different");
-    globalIds->SetInputData(input);
-    globalIds->Update();
-    input->ShallowCopy(globalIds->GetOutputDataObject(0));
+bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
+                                         ttk::SimplexId simplexNumber,
+                                         unsigned char *ghost,
+                                         int *rankArray) {
+  ttk::SimplexId ghostNumber = 0;
+  if(ghost != nullptr) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for reduction(+ : ghostNumber)
+#endif
+    for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
+      if(ghost[i] == 1) {
+        ghostNumber++;
+      }
+    }
+  } else {
+    if(rankArray != nullptr) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for reduction(+ : ghostNumber)
+#endif
+      for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
+        if(rankArray[i] != ttk::MPIrank_) {
+          ghostNumber++;
+        }
+      }
+    }
   }
+
+  ttk::SimplexId realSimplexNumber = simplexNumber - ghostNumber;
+  auto minmax = std::minmax_element(globalIds, globalIds + simplexNumber);
+  ttk::LongSimplexId min = globalIds[minmax.first - globalIds];
+  ttk::LongSimplexId max = globalIds[minmax.second - globalIds];
+  ttk::SimplexId globalSimplexNumber;
+  ttk::LongSimplexId globalMin;
+  ttk::LongSimplexId globalMax;
+  MPI_Allreduce(&realSimplexNumber, &globalSimplexNumber, 1,
+                ttk::getMPIType(realSimplexNumber), MPI_SUM, ttk::MPIcomm_);
+  MPI_Allreduce(
+    &min, &globalMin, 1, ttk::getMPIType(min), MPI_MIN, ttk::MPIcomm_);
+  MPI_Allreduce(
+    &max, &globalMax, 1, ttk::getMPIType(max), MPI_MAX, ttk::MPIcomm_);
+  return (globalSimplexNumber == globalMax + 1 && globalMin == 0);
+};
+
+bool ttkAlgorithm::GenerateGlobalIds(
+  vtkDataSet *input,
+  std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL) {
+  bool hasPreconditionedVertGtoL = false;
+  ttk::Identifiers identifiers;
+
+  vtkSmartPointer<vtkIdTypeArray> vtkVertexIdentifiers
+    = vtkSmartPointer<vtkIdTypeArray>::New();
+
+  vtkSmartPointer<vtkIdTypeArray> vtkCellIdentifiers
+    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkVertexIdentifiers->SetName("GlobalPointIds");
+  vtkVertexIdentifiers->SetNumberOfComponents(1);
+  vtkVertexIdentifiers->SetNumberOfTuples(input->GetNumberOfPoints());
+  vtkVertexIdentifiers->Fill(-1);
+
+  identifiers.setVertexIdentifiers(
+    ttkUtils::GetPointer<ttk::LongSimplexId>(vtkVertexIdentifiers));
+
+  vtkCellIdentifiers->SetName("GlobalCellIds");
+  vtkCellIdentifiers->SetNumberOfComponents(1);
+  vtkCellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells());
+  vtkCellIdentifiers->Fill(-1);
+
+  identifiers.setCellIdentifiers(
+    ttkUtils::GetPointer<ttk::LongSimplexId>(vtkCellIdentifiers));
+
+  int vertexNumber = input->GetNumberOfPoints();
+  identifiers.setVertexNumber(vertexNumber);
+  int cellNumber = input->GetNumberOfCells();
+  identifiers.setCellNumber(cellNumber);
+  int status = 0;
+#ifdef TTK_ENABLE_MPI
+  double *boundingBox = input->GetBounds();
+  identifiers.setBounds(boundingBox);
+  if(ttk::isRunningWithMPI()) {
+    switch(input->GetDataObjectType()) {
+      case VTK_UNSTRUCTURED_GRID:
+      case VTK_POLY_DATA: {
+
+        identifiers.setOutdatedGlobalPointIds(
+          ttkUtils::GetPointer<ttk::LongSimplexId>(
+            input->GetPointData()->GetGlobalIds()));
+        identifiers.setOutdatedGlobalCellIds(
+          ttkUtils::GetPointer<ttk::LongSimplexId>(
+            input->GetCellData()->GetGlobalIds()));
+        identifiers.setVertRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+          input->GetPointData()->GetArray("RankArray")));
+        identifiers.setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+          input->GetCellData()->GetArray("RankArray")));
+        identifiers.setVertGhost(ttkUtils::GetPointer<unsigned char>(
+          input->GetPointData()->GetArray("vtkGhostType")));
+        unsigned char *cellGhost = ttkUtils::GetPointer<unsigned char>(
+          input->GetCellData()->GetArray("vtkGhostType"));
+        identifiers.setCellGhost(cellGhost);
+        vtkPointSet *pointSet = vtkPointSet::SafeDownCast(input);
+        identifiers.setPointSet(static_cast<float *>(
+          ttkUtils::GetVoidPointer(pointSet->GetPoints())));
+        vtkCellArray *cells = nullptr;
+        switch(input->GetDataObjectType()) {
+          case VTK_UNSTRUCTURED_GRID: {
+            auto dataSetAsUG = vtkUnstructuredGrid::SafeDownCast(input);
+            cells = dataSetAsUG->GetCells();
+            break;
+          }
+          case VTK_POLY_DATA: {
+            auto dataSetAsPD = vtkPolyData::SafeDownCast(input);
+            cells
+              = dataSetAsPD->GetNumberOfPolys() > 0   ? dataSetAsPD->GetPolys()
+                : dataSetAsPD->GetNumberOfLines() > 0 ? dataSetAsPD->GetLines()
+                                                      : dataSetAsPD->GetVerts();
+            break;
+          }
+          default: {
+            this->printErr("Unable to get cells for `"
+                           + std::string(input->GetClassName()) + "`");
+          }
+        }
+        if(cells == nullptr) {
+          return hasPreconditionedVertGtoL;
+        }
+        if(!cells->IsStorage64Bit()) {
+          if(cells->CanConvertTo64BitStorage()) {
+            this->printWrn("Converting the cell array to 64-bit storage");
+            bool success = cells->ConvertTo64BitStorage();
+            if(!success) {
+              this->printErr(
+                "Error converting the provided cell array to 64-bit storage");
+              return hasPreconditionedVertGtoL;
+            }
+          } else {
+            this->printErr(
+              "Cannot convert the provided cell array to 64-bit storage");
+            return hasPreconditionedVertGtoL;
+          }
+        }
+
+        identifiers.setConnectivity(ttkUtils::GetPointer<ttk::LongSimplexId>(
+          cells->GetConnectivityArray()));
+
+        std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber);
+        vtkIdList *cellList = vtkIdList::New();
+        for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
+          input->GetPointCells(i, cellList);
+          for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
+            if(cellGhost[cellList->GetId(j)] == 0) {
+              pointsToCells[i].push_back(cellList->GetId(j));
+            }
+          }
+        }
+
+        identifiers.setPointsToCells(pointsToCells);
+
+        identifiers.initializeNeighbors(boundingBox);
+
+        identifiers.initializeMPITypes();
+        identifiers.setVertGtoL(vertGtoL);
+        vtkIdList *pointCell = vtkIdList::New();
+        input->GetCellPoints(0, pointCell);
+        int nbPoints = pointCell->GetNumberOfIds();
+        identifiers.setDomainDimension(nbPoints - 1);
+        identifiers.buildKDTree();
+        status = identifiers.executePolyData();
+        hasPreconditionedVertGtoL = true;
+        break;
+      }
+      case VTK_IMAGE_DATA: {
+        vtkImageData *data = vtkImageData::SafeDownCast(input);
+        identifiers.setDims(data->GetDimensions());
+        identifiers.setSpacing(data->GetSpacing());
+        status = identifiers.executeImageData();
+        break;
+      }
+      default: {
+        this->printErr("Unable to triangulate `"
+                       + std::string(input->GetClassName()) + "`");
+      }
+    }
+  } else {
+    status = identifiers.executeSequential();
+  }
+
+  if(status < 1) {
+    printErr("Global identifier generation failed");
+    return hasPreconditionedVertGtoL;
+  }
+#endif
+
+  // Add VTK objects to the data set
+
+  input->GetPointData()->SetGlobalIds(vtkVertexIdentifiers);
+  input->GetCellData()->SetGlobalIds(vtkCellIdentifiers);
+  return hasPreconditionedVertGtoL;
+}
+
+void ttkAlgorithm::MPIGhostPipelinePreconditioning(vtkDataSet *input) {
 
   vtkNew<vtkGhostCellsGenerator> generator;
   if(!input->HasAnyGhostCells() && ttk::isRunningWithMPI()) {
@@ -452,10 +645,79 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
     input->GetCellData()->AddArray(
       generator->GetOutputDataObject(0)->GetGhostArray(1));
   }
+}
 
+void ttkAlgorithm::MPIPipelinePreconditioning(
+  vtkDataSet *input, ttk::Triangulation *triangulation) {
+
+  ttk::SimplexId vertexNumber = input->GetNumberOfPoints();
+  ttk::SimplexId cellNumber = input->GetNumberOfCells();
+  if((input->GetDataObjectType() == VTK_POLY_DATA
+      || input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)) {
+    if((input->GetCellData()->GetGlobalIds() == nullptr)
+       || (input->GetPointData()->GetGlobalIds() == nullptr)) {
+      printWrn("Up to Paraview 5.10.1, bugs have been found in VTK for the "
+               "distribution of Unstructured Grids and Poly Data");
+      printWrn("As a consequence, the generation of Global ids is "
+               "incorrect for those simplices");
+      printWrn(
+        "Beware when using TTK for such data set types, some results may "
+        "be false");
+    }
+    if((input->GetPointData()->GetArray("RankArray") == nullptr)
+       || (input->GetCellData()->GetArray("RankArray") == nullptr)) {
+      printWrn("Up to Paraview 5.10.1, bugs have been found in VTK for the "
+               "distribution of Unstructured Grids and Poly Data");
+      printWrn("As a consequence, the generation of RankArray is "
+               "incorrect for those simplices");
+      printWrn(
+        "Beware when using TTK for such data set types, some results may "
+        "be false");
+    }
+  }
+
+  // Checks if global ids are valid
+  ttk::LongSimplexId *globalPointIds = ttkUtils::GetPointer<ttk::LongSimplexId>(
+    input->GetPointData()->GetGlobalIds());
+  ttk::LongSimplexId *globalCellIds = ttkUtils::GetPointer<ttk::LongSimplexId>(
+    input->GetCellData()->GetGlobalIds());
+  int *vertRankArray
+    = ttkUtils::GetPointer<int>(input->GetPointData()->GetArray("RankArray"));
+
+  bool pointValidity{false};
+  bool cellValidity{false};
+  if(globalPointIds != nullptr) {
+    unsigned char *ghostPoints = ttkUtils::GetPointer<unsigned char>(
+      input->GetPointData()->GetArray("vtkGhostType"));
+    pointValidity = checkGlobalIdValidity(
+      globalPointIds, vertexNumber, ghostPoints, vertRankArray);
+  }
+  if(pointValidity && globalCellIds != nullptr) {
+
+    int *cellRankArray
+      = ttkUtils::GetPointer<int>(input->GetCellData()->GetArray("RankArray"));
+    unsigned char *ghostCells = ttkUtils::GetPointer<unsigned char>(
+      input->GetCellData()->GetArray("vtkGhostType"));
+    cellValidity = checkGlobalIdValidity(
+      globalCellIds, cellNumber, ghostCells, cellRankArray);
+  }
+  // If the global ids are not valid, they are computed again
+  if(!pointValidity || !cellValidity) {
+    bool flag{false};
+    if(triangulation) {
+      flag = this->GenerateGlobalIds(
+        input, triangulation->getVertexGlobalIdMapWriteMode());
+    } else {
+      std::unordered_map<ttk::SimplexId, ttk::SimplexId> vertGtoL{};
+      flag = this->GenerateGlobalIds(input, &vertGtoL);
+    }
+
+    if(triangulation) {
+      triangulation->setHasPreconditionedDistributedVertices(flag);
+    }
+  }
   // If the RankArray array doesn't exist for pointdata, it is created
   if(input->GetPointData()->GetArray("RankArray") == nullptr) {
-    int vertexNumber = input->GetNumberOfPoints();
     std::vector<int> rankArray(vertexNumber, 0);
     if(ttk::isRunningWithMPI()) {
       double *boundingBox = input->GetBounds();
@@ -480,7 +742,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(vtkDataSet *input) {
 
   // If the RankArray array doesn't exist for celldata, it is created
   if(input->GetCellData()->GetArray("RankArray") == nullptr) {
-    int cellNumber = input->GetNumberOfCells();
     std::vector<int> cellsRankArray(cellNumber, 0);
     if(ttk::isRunningWithMPI()) {
       double *boundingBox = input->GetBounds();
@@ -511,8 +772,8 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
   if(pd == nullptr) {
     triangulation->printWrn("No point data on input object");
   } else {
-    // provide "GlobalPointIds" & "RankArray" point data arrays to the
-    // triangulation
+    // provide "GlobalPointIds" & "RankArray" point data arrays
+    // to the triangulation
     triangulation->setVertsGlobalIds(
       ttkUtils::GetPointer<ttk::LongSimplexId>(pd->GetGlobalIds()));
     triangulation->setVertRankArray(
@@ -524,8 +785,8 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
   if(cd == nullptr) {
     triangulation->printWrn("No cell data on input object");
   } else {
-    // provide "GlobalCellIds" & "RankArray" cell data arrays to the
-    // triangulation
+    // provide "GlobalCellIds" & "RankArray" cell data arrays to
+    // the triangulation
     triangulation->setCellsGlobalIds(
       ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()));
     triangulation->setCellRankArray(
