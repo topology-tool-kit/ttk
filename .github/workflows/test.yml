@@ -142,7 +142,6 @@ jobs:
         if [[ "$VERS" == *"22.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
           rm ttk-data/states/mergeTreeTemporalReduction.pvsm
-          rm ttk-data/states/persistentGenerators_darkSky.pvsm
         fi
 
         cd ttk-data/tests
