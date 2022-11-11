@@ -187,6 +187,7 @@ namespace ttk {
       const auto nbArcs = getNumberOfSuperArcs();
       // Retain the relation between merge coming from st, jt
       // also retain info about what we keep
+      std::vector<ExtendedUnionFind> storageUF(nbNode, 0);
       std::vector<ExtendedUnionFind *> subtreeUF(nbNode, nullptr);
 
       // nb arc seen below / above this node
@@ -223,7 +224,8 @@ namespace ttk {
           }
 
           node2see.emplace(thisOriginId, std::get<3>(pp));
-          subtreeUF[thisOriginId] = new ExtendedUnionFind(0);
+          storageUF[thisOriginId] = ExtendedUnionFind{0};
+          subtreeUF[thisOriginId] = &storageUF[thisOriginId];
           ++nbPairMerged;
           if(DEBUG) {
             std::cout << "willSee " << printNode(thisOriginId) << std::endl;
@@ -552,6 +554,9 @@ namespace ttk {
       const triangulationType &mesh) {
       const auto nbNode = getNumberOfNodes();
 
+      std::vector<ExtendedUnionFind> storage_JoinUF(nbNode, 0);
+      std::vector<ExtendedUnionFind> storage_SplitUF(nbNode, 0);
+
       std::vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
       std::vector<ExtendedUnionFind *> vect_SplitUF(nbNode, nullptr);
 
@@ -576,7 +581,8 @@ namespace ttk {
 
             if(nbDown == 0) {
               // leaf
-              vect_JoinUF[n] = new ExtendedUnionFind(getNode(n)->getVertexId());
+              storage_JoinUF[n] = ExtendedUnionFind{getNode(n)->getVertexId()};
+              vect_JoinUF[n] = &storage_JoinUF[n];
               vect_JoinUF[n]->setOrigin(v);
               // std::cout << " jt origin : " << v << std::endl;
             } else {
@@ -676,8 +682,8 @@ namespace ttk {
 
             if(nbUp == 0) {
               // leaf
-              vect_SplitUF[n]
-                = new ExtendedUnionFind(getNode(n)->getVertexId());
+              storage_SplitUF[n] = ExtendedUnionFind{getNode(n)->getVertexId()};
+              vect_SplitUF[n] = &storage_SplitUF[n];
               vect_SplitUF[n]->setOrigin(v);
               // std::cout << " st origin : " << v << std::endl;
             } else {
@@ -1037,7 +1043,13 @@ namespace ttk {
         // we are on a real extrema we have to create a new UNION FIND and a
         // branch a real extrema can't be a virtual extrema
 
-        seed = new ExtendedUnionFind(currentVertex);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+        {
+          this->storageEUF_.emplace_back(currentVertex);
+          seed = &this->storageEUF_.back();
+        }
         // When creating an extrema we create a pair ending on this node.
         currentNode = makeNode(currentVertex);
         getNode(currentNode)->setOrigin(currentNode);

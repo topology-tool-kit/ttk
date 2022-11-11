@@ -46,6 +46,9 @@ namespace ttk {
       // local
       TreeData treeData_;
 
+      // storage
+      std::list<ExtendedUnionFind> storageEUF_;
+
     public:
       // CONSTRUCT
       // -----------
