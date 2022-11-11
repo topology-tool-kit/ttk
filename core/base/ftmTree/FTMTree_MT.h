@@ -54,6 +54,7 @@ namespace ttk {
       std::vector<std::list<std::vector<SimplexId>>> trunkSegments;
 
       // Track informations
+      std::vector<AtomicUF> storage;
       std::vector<UF> ufs;
       std::vector<UF> propagation;
       std::shared_ptr<FTMAtomicVector<CurrentState>> states;

@@ -154,11 +154,13 @@ namespace ttk {
       if(nbLeaves == 1) {
         const SimplexId v = (*mt_data_.nodes)[0].getVertexId();
         mt_data_.openedNodes[v] = 1;
-        mt_data_.ufs[v] = new AtomicUF(v);
+        mt_data_.storage.emplace_back(v);
+        mt_data_.ufs[v] = &mt_data_.storage[0];
         return;
       }
 
       mt_data_.activeTasks = nbLeaves;
+      mt_data_.storage.resize(nbLeaves);
 
       auto comp = [this](const idNode a, const idNode b) {
 #ifdef HIGHER
@@ -176,7 +178,7 @@ namespace ttk {
         SimplexId v = getNode(l)->getVertexId();
         // for each node: get vert, create uf and lauch
         mt_data_.storage[n] = AtomicUF{v};
-        mt_data_.ufs[v] = new AtomicUF(v);
+        mt_data_.ufs[v] = &mt_data_.storage[n];
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task UNTIED() OPTIONAL_PRIORITY(isPrior())

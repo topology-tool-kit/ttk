@@ -57,9 +57,6 @@ void FTMTree_MT::clear() {
     sort(mt_data_.ufs.begin(), mt_data_.ufs.end());
     auto it = unique(mt_data_.ufs.begin(), mt_data_.ufs.end());
     mt_data_.ufs.resize(std::distance(mt_data_.ufs.begin(), it));
-    for(auto *addr : *mt_data_.ufs)
-      if(addr)
-        delete addr;
   }
 
   // if (mt_data_.propagation) {
