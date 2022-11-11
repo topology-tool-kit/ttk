@@ -620,7 +620,7 @@ namespace ttk {
       }
 
       // Clone
-      MergeTree *clone() const;
+      std::shared_ptr<MergeTree> clone() const;
 
       void clone(const MergeTree *mt);
 

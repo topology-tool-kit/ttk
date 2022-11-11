@@ -18,20 +18,11 @@ ContourForestsTree::ContourForestsTree(Params *const params,
                                        Scalars *const scalars,
                                        idPartition part)
   : MergeTree(params, scalars, TreeType::Contour, part),
-    jt_(new MergeTree(params, scalars, TreeType::Join, part)),
-    st_(new MergeTree(params, scalars, TreeType::Split, part)) {
+    jt_(params, scalars, TreeType::Join, part),
+    st_(params, scalars, TreeType::Split, part) {
 }
 
-ContourForestsTree::~ContourForestsTree() {
-  if(jt_) {
-    delete jt_;
-    jt_ = nullptr;
-  }
-  if(st_) {
-    delete st_;
-    st_ = nullptr;
-  }
-}
+ContourForestsTree::~ContourForestsTree() = default;
 
 // Process
 // {
@@ -53,9 +44,9 @@ int ContourForestsTree::combine(const SimplexId &seed0,
   // Add leves to growing nodes
   // We insert non hidden nodes, only those of the interface or those
   // just beyond, linked to a crossing arc
-  for(const idNode &nId : st_->getLeaves()) {
-    if(!st_->getNode(nId)->isHidden()
-       && st_->getNode(nId)->getNumberOfSuperArcs()) {
+  for(const idNode &nId : st_.getLeaves()) {
+    if(!st_.getNode(nId)->isHidden()
+       && st_.getNode(nId)->getNumberOfSuperArcs()) {
       growingNodes.emplace(false, nId);
       ++nbAddedleavesST;
     }
@@ -67,9 +58,9 @@ int ContourForestsTree::combine(const SimplexId &seed0,
   }
 
   // count how many leaves can be added, if more than one : ok!
-  for(const idNode &nId : jt_->getLeaves()) {
-    if(!jt_->getNode(nId)->isHidden()
-       && jt_->getNode(nId)->getNumberOfSuperArcs()) {
+  for(const idNode &nId : jt_.getLeaves()) {
+    if(!jt_.getNode(nId)->isHidden()
+       && jt_.getNode(nId)->getNumberOfSuperArcs()) {
       ++nbAddedleavesJT;
     }
     if(nbAddedleavesJT > 1)
@@ -77,9 +68,9 @@ int ContourForestsTree::combine(const SimplexId &seed0,
   }
 
   if(nbAddedleavesJT > 1) {
-    for(const idNode &nId : jt_->getLeaves()) {
-      if(!jt_->getNode(nId)->isHidden()
-         && jt_->getNode(nId)->getNumberOfSuperArcs()) {
+    for(const idNode &nId : jt_.getLeaves()) {
+      if(!jt_.getNode(nId)->isHidden()
+         && jt_.getNode(nId)->getNumberOfSuperArcs()) {
         growingNodes.emplace(true, nId);
       }
     }
@@ -91,13 +82,13 @@ int ContourForestsTree::combine(const SimplexId &seed0,
 
   if(nbAddedleavesST == 1 && nbAddedleavesJT == 1) {
     // ultra simplistic case where both tree a filliform
-    clone(jt_);
+    clone(&jt_);
     return 0;
   }
 
   // Warning, have a reserve here, can't make it at the begnining, need build
   // output
-  treeData_.leaves.reserve(jt_->getLeaves().size() + st_->getLeaves().size());
+  treeData_.leaves.reserve(jt_.getLeaves().size() + st_.getLeaves().size());
 
   if(growingNodes.empty()) {
     cout << "[ContourForestsTree::combine ] Nothing to combine" << endl;
@@ -115,18 +106,18 @@ int ContourForestsTree::combine(const SimplexId &seed0,
 
     if(head.first) {
       // node come frome jt
-      xt = jt_;
-      yt = st_;
+      xt = &jt_;
+      yt = &st_;
     } else {
       // node come from st
-      xt = st_;
-      yt = jt_;
+      xt = &st_;
+      yt = &jt_;
     }
 
     currentNode = xt->getNode(head.second);
 
     if(DEBUG) {
-      if(xt == jt_)
+      if(xt == &jt_)
         cout << "JT ";
       else
         cout << "ST ";
@@ -269,7 +260,7 @@ int ContourForestsTree::combine(const SimplexId &seed0,
     // DelNode(XT, i)
     {
       if(DEBUG) {
-        cout << " delete xt (" << (xt == jt_)
+        cout << " delete xt (" << (xt == &jt_)
              << ") node :" << xt->getNode(head.second)->getVertexId() << endl;
       }
 

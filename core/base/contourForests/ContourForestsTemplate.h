@@ -115,10 +115,10 @@ namespace ttk {
         vect_baseUF_ST[tree].resize(scalars_->size);
 
         // Statistical reserve
-        parallelData_.trees[tree].jt_->treeData_.nodes.reserve(resSize);
-        parallelData_.trees[tree].jt_->treeData_.superArcs.reserve(resSize);
-        parallelData_.trees[tree].st_->treeData_.nodes.reserve(resSize);
-        parallelData_.trees[tree].st_->treeData_.superArcs.reserve(resSize);
+        parallelData_.trees[tree].jt_.treeData_.nodes.reserve(resSize);
+        parallelData_.trees[tree].jt_.treeData_.superArcs.reserve(resSize);
+        parallelData_.trees[tree].st_.treeData_.nodes.reserve(resSize);
+        parallelData_.trees[tree].st_.treeData_.superArcs.reserve(resSize);
       }
       printDebug(timerAllocPara, "Parallel allocations             ");
 
@@ -139,9 +139,9 @@ namespace ttk {
         } else {
           for(idPartition i = 0; i < parallelParams_.nbPartitions; i++) {
             std::cout << i << " jt:" << std::endl;
-            parallelData_.trees[i].jt_->printTree2();
+            parallelData_.trees[i].jt_.printTree2();
             std::cout << i << " st:" << std::endl;
-            parallelData_.trees[i].st_->printTree2();
+            parallelData_.trees[i].st_.printTree2();
             std::cout << "-----" << std::endl;
           }
         }
@@ -192,19 +192,19 @@ namespace ttk {
       } else {
         if(parallelParams_.partitionNum >= 0) {
           if(parallelParams_.partitionNum > parallelParams_.nbInterfaces) {
-            jt_->clone(parallelData_.trees[parallelParams_.nbInterfaces].jt_);
-            st_->clone(parallelData_.trees[parallelParams_.nbInterfaces].st_);
+            jt_.clone(&parallelData_.trees[parallelParams_.nbInterfaces].jt_);
+            st_.clone(&parallelData_.trees[parallelParams_.nbInterfaces].st_);
           } else {
-            jt_->clone(parallelData_.trees[parallelParams_.partitionNum].jt_);
-            st_->clone(parallelData_.trees[parallelParams_.partitionNum].st_);
+            jt_.clone(&parallelData_.trees[parallelParams_.partitionNum].jt_);
+            st_.clone(&parallelData_.trees[parallelParams_.partitionNum].st_);
           }
         } else if(parallelParams_.nbPartitions == 1) {
-          jt_->clone(parallelData_.trees[0].jt_);
-          st_->clone(parallelData_.trees[0].st_);
+          jt_.clone(&parallelData_.trees[0].jt_);
+          st_.clone(&parallelData_.trees[0].st_);
         } else {
           unify();
-          jt_->parallelInitNodeValence(parallelParams_.nbThreads);
-          st_->parallelInitNodeValence(parallelParams_.nbThreads);
+          jt_.parallelInitNodeValence(parallelParams_.nbThreads);
+          st_.parallelInitNodeValence(parallelParams_.nbThreads);
         }
       }
 
@@ -235,17 +235,17 @@ namespace ttk {
           printTree2();
         else {
           std::cout << "JT :" << std::endl;
-          jt_->printTree2();
+          jt_.printTree2();
           std::cout << "ST :" << std::endl;
-          st_->printTree2();
+          st_.printTree2();
         }
       } else if(params_->debugLevel > 2) {
         std::stringstream msg;
         if(params_->treeType == TreeType::Contour)
           msg << "max node : " << getNumberOfNodes();
         else {
-          msg << "JT max node : " << jt_->getNumberOfNodes();
-          msg << "ST max node : " << st_->getNumberOfNodes();
+          msg << "JT max node : " << jt_.getNumberOfNodes();
+          msg << "ST max node : " << st_.getNumberOfNodes();
         }
         this->printMsg(msg.str());
       }
@@ -253,17 +253,17 @@ namespace ttk {
       if(params_->treeType == TreeType::Contour) {
         updateSegmentation();
       } else {
-        jt_->updateSegmentation();
-        st_->updateSegmentation();
+        jt_.updateSegmentation();
+        st_.updateSegmentation();
       }
 
       // reclaim memory
       {
         for(idPartition tree = 0; tree < parallelParams_.nbPartitions; ++tree) {
-          parallelData_.trees[tree].jt_->treeData_.nodes.shrink_to_fit();
-          parallelData_.trees[tree].jt_->treeData_.superArcs.shrink_to_fit();
-          parallelData_.trees[tree].st_->treeData_.nodes.shrink_to_fit();
-          parallelData_.trees[tree].st_->treeData_.superArcs.shrink_to_fit();
+          parallelData_.trees[tree].jt_.treeData_.nodes.shrink_to_fit();
+          parallelData_.trees[tree].jt_.treeData_.superArcs.shrink_to_fit();
+          parallelData_.trees[tree].st_.treeData_.nodes.shrink_to_fit();
+          parallelData_.trees[tree].st_.treeData_.superArcs.shrink_to_fit();
         }
         // Not while arc segmentation depends on std::vector in partitions
         // parallelData_.interfaces.clear();

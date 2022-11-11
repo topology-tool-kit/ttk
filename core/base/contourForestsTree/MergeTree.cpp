@@ -1018,9 +1018,9 @@ void MergeTree::printTree2() {
 }
 
 // Clone
-MergeTree *MergeTree::clone() const {
-  MergeTree *newMT
-    = new MergeTree(params_, scalars_, treeData_.treeType, treeData_.partition);
+std::shared_ptr<MergeTree> MergeTree::clone() const {
+  auto newMT = std::make_shared<MergeTree>(
+    params_, scalars_, treeData_.treeType, treeData_.partition);
 
   newMT->treeData_.superArcs = treeData_.superArcs;
   newMT->treeData_.nodes = treeData_.nodes;

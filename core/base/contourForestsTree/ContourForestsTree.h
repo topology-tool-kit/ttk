@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <memory>
 #include <queue>
 #include <set>
 
@@ -37,7 +38,7 @@ namespace ttk {
       friend class ContourForests;
 
     protected:
-      MergeTree *jt_, *st_;
+      MergeTree jt_, st_;
 
     public:
       // -----------------
@@ -58,8 +59,8 @@ namespace ttk {
 
       void flush() {
         MergeTree::flush();
-        jt_->flush();
-        st_->flush();
+        jt_.flush();
+        st_.flush();
       }
 
       // }
@@ -68,12 +69,12 @@ namespace ttk {
       // -----------------
       // {
 
-      inline MergeTree *getJoinTree() const {
-        return jt_;
+      inline MergeTree *getJoinTree() {
+        return &jt_;
       }
 
-      inline MergeTree *getSplitTree() const {
-        return st_;
+      inline MergeTree *getSplitTree() {
+        return &st_;
       }
 
       inline MergeTree *getTree(const TreeType &tt) {

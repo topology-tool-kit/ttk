@@ -527,9 +527,9 @@ void ContourForests::unifyTree(const char treetype) {
 
   // could use swap, more efficient
   if(treetype == 0) {
-    jt_->clone(&tmpTree);
+    jt_.clone(&tmpTree);
   } else if(treetype == 1) {
-    st_->clone(&tmpTree);
+    st_.clone(&tmpTree);
   } else if(treetype == 2) {
     clone(&tmpTree);
   }
