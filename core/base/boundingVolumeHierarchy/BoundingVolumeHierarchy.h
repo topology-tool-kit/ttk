@@ -12,8 +12,10 @@
 
 #include "Ray.h"
 #include <Geometry.h>
+
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <stack>
 #include <vector>
 
@@ -36,10 +38,11 @@ namespace ttk {
         m_maxZ = pMax[2];
         indices = triangleIndices;
         numTriangles = nTriangles;
-        m_left = m_right = nullptr;
       }
       // interior constructor
-      Node(const int axis, Node *left, Node *right) {
+      Node(const int axis,
+           const std::shared_ptr<Node> &left,
+           const std::shared_ptr<Node> &right) {
         numTriangles = 0;
         m_left = left;
         m_right = right;
@@ -52,19 +55,14 @@ namespace ttk {
         m_maxZ = std::max(left->m_maxZ, right->m_maxZ);
       }
 
-      ~Node() {
-        if(m_left)
-          delete m_left;
-        if(m_right)
-          delete m_right;
-      }
+      ~Node() = default;
 
       std::vector<int> indices;
       int numTriangles;
       float m_minX, m_minY, m_minZ;
       float m_maxX, m_maxY, m_maxZ;
-      Node *m_left;
-      Node *m_right;
+      std::shared_ptr<Node> m_left;
+      std::shared_ptr<Node> m_right;
       int m_splitAxis;
     };
 
@@ -105,12 +103,9 @@ namespace ttk {
       this->nodes = buildTree(triangles, 0, nTriangles);
     }
 
-    ~BoundingVolumeHierarchy() {
-      if(this->nodes)
-        delete this->nodes;
-    }
+    ~BoundingVolumeHierarchy() = default;
 
-    Node *
+    std::shared_ptr<Node>
       buildTree(std::vector<Triangle> &triangles, size_t start, size_t end) {
 
       float minX, minY, minZ;
@@ -133,7 +128,7 @@ namespace ttk {
         std::vector<int> indices = {t.m_index};
         float pMin[3] = {t.m_minX, t.m_minY, t.m_minZ};
         float pMax[3] = {t.m_maxX, t.m_maxY, t.m_maxZ};
-        return new Node(indices, 1, pMin, pMax);
+        return std::make_shared<Node>(indices, 1, pMin, pMax);
       } else {
         // find the bounds of the centroids, figure out what dimension to split
         // on
@@ -181,7 +176,8 @@ namespace ttk {
           }
           float pMin[3] = {minX, minY, minZ};
           float pMax[3] = {maxX, maxY, maxZ};
-          return new Node(triangleIndices, triangleIndices.size(), pMin, pMax);
+          return std::make_shared<Node>(
+            triangleIndices, triangleIndices.size(), pMin, pMax);
         } else {
           // partition triangles into equally sized subsets
           std::nth_element(&triangles[start], &triangles[half],
@@ -201,8 +197,8 @@ namespace ttk {
                              }
                            });
 
-          return new Node(axis, buildTree(triangles, start, half),
-                          buildTree(triangles, half, end));
+          return std::make_shared<Node>(axis, buildTree(triangles, start, half),
+                                        buildTree(triangles, half, end));
         }
       }
 
@@ -289,7 +285,7 @@ namespace ttk {
       bool wasHit = false;
       float nearestTriangle = std::numeric_limits<float>::max();
       std::stack<Node *> stack;
-      Node *node = &nodes[0];
+      Node *node = &nodes.get()[0];
       if(!wasNodeHit(r, node)) {
         return false;
       }
@@ -322,10 +318,10 @@ namespace ttk {
           } else {
 
             if(node->m_right != nullptr) {
-              stack.push(node->m_right);
+              stack.push(node->m_right.get());
             }
             if(node->m_left != nullptr) {
-              stack.push(node->m_left);
+              stack.push(node->m_left.get());
             }
           }
         }
@@ -374,7 +370,7 @@ namespace ttk {
     }
 
   private:
-    Node *nodes;
+    std::shared_ptr<Node> nodes;
     float findCentroid(const float &v1, const float &v2, const float &v3) {
       return (v1 + v2 + v3) / 3;
     }
