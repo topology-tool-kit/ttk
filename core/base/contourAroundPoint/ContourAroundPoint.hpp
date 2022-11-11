@@ -85,38 +85,6 @@ namespace ttk {
     template <class scalarT>
     int execute() const;
 
-    /**
-     * Get the output field data (e.g. for the wrapped algorithm).
-     * To be called after a successful `execute`.
-     * The ownership of the pointers moves to the caller.
-     * @param cinfos Sequence of cell infos like `n v0 ... vn-1`.
-     * @param nc Number of cells.
-     * @param coords 3D Vertex coordinates as interleaved array.
-     * @param flags isMax-flag for each vertex.
-     * @param scalars Scalar value for each vertex.
-     * @param nv Number of vertices.
-     */
-    void getOutputContours(SimplexId *&cinfos,
-                           SimplexId &nc,
-                           float *&coords,
-                           float *&scalars,
-                           int *&flags,
-                           SimplexId &nv) const;
-
-    /**
-     * Get the output point data (e.g. for the wrapped algorithm).
-     * To be called after a successful `execute`.
-     * The ownership of the pointers moves to the caller.
-     * @param coords 3D point coordinates as interleaved array.
-     * @param scalars Scalar value for each point.
-     * @param flags isMax-flag for each point.
-     * @param nv Number of vertices.
-     */
-    void getOutputCentroids(float *&coords,
-                            float *&scalars,
-                            int *&flags,
-                            SimplexId &nv) const;
-
   protected:
     /// Given one of the input points, find the nearest vertex in the input
     /// field. N.B.: Typically, the points are actually vertices of the input
@@ -188,7 +156,7 @@ namespace ttk {
 
     /* Output data (contours and centroids) */
 
-    mutable std::vector<SimplexId> _outContoursCinfos;
+    mutable std::vector<LongSimplexId> _outContoursCinfos;
     mutable SimplexId _outContoursNc = 0;
     mutable std::vector<float> _outContoursCoords;
     mutable std::vector<float> _outContoursScalars;
