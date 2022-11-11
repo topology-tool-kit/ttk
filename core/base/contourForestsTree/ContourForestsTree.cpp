@@ -14,8 +14,8 @@ using namespace std;
 using namespace ttk;
 using namespace cf;
 
-ContourForestsTree::ContourForestsTree(Params *const params,
-                                       Scalars *const scalars,
+ContourForestsTree::ContourForestsTree(const std::shared_ptr<Params> &params,
+                                       const std::shared_ptr<Scalars> &scalars,
                                        idPartition part)
   : MergeTree(params, scalars, TreeType::Contour, part),
     jt_(params, scalars, TreeType::Join, part),

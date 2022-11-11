@@ -46,8 +46,8 @@ namespace ttk {
       // -----------------
       // {
 
-      ContourForestsTree(Params *const params,
-                         Scalars *const scalars,
+      ContourForestsTree(const std::shared_ptr<Params> &params,
+                         const std::shared_ptr<Scalars> &scalars,
                          idPartition part = nullPartition);
       ~ContourForestsTree() override;
 

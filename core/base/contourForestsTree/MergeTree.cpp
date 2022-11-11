@@ -13,11 +13,11 @@ using namespace cf;
 
 // Constructors & destructors
 
-MergeTree::MergeTree(Params *const params,
-                     Scalars *const scalars,
+MergeTree::MergeTree(std::shared_ptr<Params> params,
+                     std::shared_ptr<Scalars> scalars,
                      TreeType type,
                      idPartition part)
-  : params_(params), scalars_(scalars) {
+  : params_(std::move(params)), scalars_(std::move(scalars)) {
   if(type == TreeType::Join) {
     this->setDebugMsgPrefix("JoinTree");
   } else if(type == TreeType::Split) {

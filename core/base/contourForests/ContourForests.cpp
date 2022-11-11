@@ -20,8 +20,8 @@ Interface::Interface(const SimplexId &seed) : seed_(seed) {
 // ------------------------- ContourForests
 
 ContourForests::ContourForests()
-  : ContourForestsTree(new Params(), new Scalars()), parallelParams_(),
-    parallelData_() {
+  : ContourForestsTree(std::make_shared<Params>(), std::make_shared<Scalars>()),
+    parallelParams_(), parallelData_() {
   this->setDebugMsgPrefix("ContourForests");
   this->printWrn(
     "DEPRECATED This module will be removed in a future release, please use "
@@ -30,8 +30,8 @@ ContourForests::ContourForests()
 }
 
 ContourForests::~ContourForests() {
-  delete params_;
-  delete scalars_;
+  params_.reset();
+  scalars_.reset();
 }
 
 // Get

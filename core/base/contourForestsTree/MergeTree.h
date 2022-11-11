@@ -40,8 +40,8 @@ namespace ttk {
 
     protected:
       // global
-      Params *const params_;
-      Scalars *const scalars_;
+      std::shared_ptr<Params> params_;
+      std::shared_ptr<Scalars> scalars_;
 
       // local
       TreeData treeData_;
@@ -55,8 +55,8 @@ namespace ttk {
       // {
 
       // Tree with global data and partition number
-      MergeTree(Params *const params,
-                Scalars *const scalars,
+      MergeTree(std::shared_ptr<Params> params,
+                std::shared_ptr<Scalars> scalars,
                 TreeType type,
                 idPartition part = nullPartition);
 
