@@ -196,8 +196,7 @@ bool ttk::ContourTreeAlignment::initialize(
                        std::shared_ptr<ttk::cta::AlignmentNode>>>
     q;
 
-  std::shared_ptr<ttk::cta::AlignmentNode> currNode(
-    new ttk::cta::AlignmentNode());
+  auto currNode = std::make_shared<ttk::cta::AlignmentNode>();
   std::shared_ptr<ttk::cta::BinaryTree> currTree;
 
   currNode->freq = 1;
@@ -220,8 +219,7 @@ bool ttk::ContourTreeAlignment::initialize(
 
     if(currTree->child1 != nullptr) {
 
-      std::shared_ptr<ttk::cta::AlignmentNode> childNode(
-        new ttk::cta::AlignmentNode());
+      auto childNode = std::make_shared<ttk::cta::AlignmentNode>();
       childNode->freq = 1;
       childNode->type = currTree->child1->type;
       childNode->branchID = -1;
@@ -230,8 +228,7 @@ bool ttk::ContourTreeAlignment::initialize(
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
       childNode->nodeRefs.emplace_back(0, currTree->child1->nodeRefs[0].second);
 
-      std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
-        new ttk::cta::AlignmentEdge());
+      auto childEdge = std::make_shared<ttk::cta::AlignmentEdge>();
       childEdge->area = currTree->child1->area;
       childEdge->scalardistance = currTree->child1->scalardistanceParent;
       childEdge->volume = currTree->child1->volume;
@@ -249,8 +246,7 @@ bool ttk::ContourTreeAlignment::initialize(
 
     if(currTree->child2 != nullptr) {
 
-      std::shared_ptr<ttk::cta::AlignmentNode> childNode(
-        new ttk::cta::AlignmentNode());
+      auto childNode = std::make_shared<ttk::cta::AlignmentNode>();
       childNode->freq = 1;
       childNode->type = currTree->child2->type;
       childNode->branchID = -1;
@@ -259,8 +255,7 @@ bool ttk::ContourTreeAlignment::initialize(
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
       childNode->nodeRefs.emplace_back(0, currTree->child2->nodeRefs[0].second);
 
-      std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
-        new ttk::cta::AlignmentEdge());
+      auto childEdge = std::make_shared<ttk::cta::AlignmentEdge>();
       childEdge->area = currTree->child2->area;
       childEdge->scalardistance = currTree->child2->scalardistanceParent;
       childEdge->volume = currTree->child2->volume;
@@ -297,8 +292,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
                        std::shared_ptr<ttk::cta::AlignmentNode>>>
     q;
 
-  std::shared_ptr<ttk::cta::AlignmentNode> currNode(
-    new ttk::cta::AlignmentNode());
+  auto currNode = std::make_shared<ttk::cta::AlignmentNode>();
   std::shared_ptr<ttk::cta::BinaryTree> currTree;
 
   currNode->freq = 1;
@@ -321,8 +315,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
 
     if(currTree->child1 != nullptr) {
 
-      std::shared_ptr<ttk::cta::AlignmentNode> childNode(
-        new ttk::cta::AlignmentNode());
+      auto childNode = std::make_shared<ttk::cta::AlignmentNode>();
       childNode->freq = 1;
       childNode->type = currTree->child1->type;
       childNode->branchID = -1;
@@ -331,8 +324,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
       childNode->nodeRefs.emplace_back(0, currTree->child1->nodeRefs[0].second);
 
-      std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
-        new ttk::cta::AlignmentEdge());
+      auto childEdge = std::make_shared<ttk::cta::AlignmentEdge>();
       childEdge->area = currTree->child1->area;
       childEdge->scalardistance = currTree->child1->scalardistanceParent;
       childEdge->volume = currTree->child1->volume;
@@ -354,8 +346,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
 
     if(currTree->child2 != nullptr) {
 
-      std::shared_ptr<ttk::cta::AlignmentNode> childNode(
-        new ttk::cta::AlignmentNode());
+      auto childNode = std::make_shared<ttk::cta::AlignmentNode>();
       childNode->freq = 1;
       childNode->type = currTree->child2->type;
       childNode->branchID = -1;
@@ -364,8 +355,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
       childNode->nodeRefs.emplace_back(0, currTree->child2->nodeRefs[0].second);
 
-      std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
-        new ttk::cta::AlignmentEdge());
+      auto childEdge = std::make_shared<ttk::cta::AlignmentEdge>();
       childEdge->area = currTree->child2->area;
       childEdge->scalardistance = currTree->child2->scalardistanceParent;
       childEdge->volume = currTree->child2->volume;
@@ -520,8 +510,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
   std::shared_ptr<ttk::cta::AlignmentNode> currNode;
   std::shared_ptr<ttk::cta::AlignmentTree> currTree;
 
-  currNode
-    = std::shared_ptr<ttk::cta::AlignmentNode>(new ttk::cta::AlignmentNode());
+  currNode = std::make_shared<ttk::cta::AlignmentNode>();
 
   if(res->node1 == nullptr && res->node2 == nullptr) {
     return;
@@ -608,8 +597,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
         continue;
       }
 
-      std::shared_ptr<ttk::cta::AlignmentNode> childNode(
-        new ttk::cta::AlignmentNode());
+      auto childNode = std::make_shared<ttk::cta::AlignmentNode>();
 
       childNode->freq
         = (currTree->child1->node1 == nullptr ? 0
@@ -669,8 +657,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
           (int)contourtrees.size() - 1,
           currTree->child1->node2->nodeRefs[0].second);
 
-      std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
-        new ttk::cta::AlignmentEdge());
+      auto childEdge = std::make_shared<ttk::cta::AlignmentEdge>();
 
       if(alignmenttreeType == ttk::cta::lastMatchedValue) {
 
@@ -788,8 +775,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
         continue;
       }
 
-      std::shared_ptr<ttk::cta::AlignmentNode> childNode(
-        new ttk::cta::AlignmentNode());
+      auto childNode = std::make_shared<ttk::cta::AlignmentNode>();
 
       childNode->freq
         = (currTree->child2->node1 == nullptr ? 0
@@ -849,8 +835,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
           (int)contourtrees.size() - 1,
           currTree->child2->node2->nodeRefs[0].second);
 
-      std::shared_ptr<ttk::cta::AlignmentEdge> childEdge(
-        new ttk::cta::AlignmentEdge());
+      auto childEdge = std::make_shared<ttk::cta::AlignmentEdge>();
 
       if(alignmenttreeType == ttk::cta::lastMatchedValue) {
 
@@ -1210,11 +1195,11 @@ float ttk::ContourTreeAlignment::editCost(
   const std::shared_ptr<ttk::cta::BinaryTree> &t2) {
 
   float v1 = 0, v2 = 0;
-  if(t1.get() != nullptr)
+  if(t1 != nullptr)
     v1 = arcMatchMode == ttk::cta::persistence ? t1->scalardistanceParent
          : arcMatchMode == ttk::cta::area      ? t1->area
                                                : t1->volume;
-  if(t2.get() != nullptr)
+  if(t2 != nullptr)
     v2 = arcMatchMode == ttk::cta::persistence ? t2->scalardistanceParent
          : arcMatchMode == ttk::cta::area      ? t2->area
                                                : t2->volume;
@@ -1309,8 +1294,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
 
   if(memT[t1->id][t2->id] == editCost(t1, t2) + memF[t1->id][t2->id]) {
 
-    std::shared_ptr<ttk::cta::AlignmentTree> resNode(
-      new ttk::cta::AlignmentTree);
+    auto resNode = std::make_shared<ttk::cta::AlignmentTree>();
 
     resNode->node1 = t1;
     resNode->node2 = t2;
@@ -1347,7 +1331,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
       = traceAlignmentTree(t1->child1, t2, memT, memF);
     std::shared_ptr<ttk::cta::AlignmentTree> resChild2
       = traceNullAlignment(t1->child2, true);
-    std::shared_ptr<ttk::cta::AlignmentTree> res(new ttk::cta::AlignmentTree());
+    auto res = std::make_shared<ttk::cta::AlignmentTree>();
     res->node1 = t1;
     res->node2 = nullptr;
     res->height = 0;
@@ -1372,7 +1356,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
       = traceAlignmentTree(t1->child2, t2, memT, memF);
     std::shared_ptr<ttk::cta::AlignmentTree> resChild2
       = traceNullAlignment(t1->child1, true);
-    std::shared_ptr<ttk::cta::AlignmentTree> res(new ttk::cta::AlignmentTree());
+    auto res = std::make_shared<ttk::cta::AlignmentTree>();
     res->node1 = t1;
     res->node2 = nullptr;
     res->height = 0;
@@ -1397,7 +1381,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
       = traceAlignmentTree(t1, t2->child1, memT, memF);
     std::shared_ptr<ttk::cta::AlignmentTree> resChild2
       = traceNullAlignment(t2->child2, false);
-    std::shared_ptr<ttk::cta::AlignmentTree> res(new ttk::cta::AlignmentTree());
+    auto res = std::make_shared<ttk::cta::AlignmentTree>();
     res->node1 = nullptr;
     res->node2 = t2;
     res->height = 0;
@@ -1422,7 +1406,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
       = traceAlignmentTree(t1, t2->child2, memT, memF);
     std::shared_ptr<ttk::cta::AlignmentTree> resChild2
       = traceNullAlignment(t2->child1, false);
-    std::shared_ptr<ttk::cta::AlignmentTree> res(new ttk::cta::AlignmentTree());
+    auto res = std::make_shared<ttk::cta::AlignmentTree>();
     res->node1 = nullptr;
     res->node2 = t2;
     res->height = 0;
@@ -1440,8 +1424,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
 
   printErr("Alignment computation failed. Traceback of memoization table not "
            "possible.");
-  return std::shared_ptr<ttk::cta::AlignmentTree>(
-    new ttk::cta::AlignmentTree());
+  return std::make_shared<ttk::cta::AlignmentTree>();
 }
 
 std::vector<std::shared_ptr<ttk::cta::AlignmentTree>>
@@ -1514,7 +1497,7 @@ std::vector<std::shared_ptr<ttk::cta::AlignmentTree>>
 
       std::vector<std::shared_ptr<ttk::cta::AlignmentTree>> res;
 
-      std::shared_ptr<ttk::cta::AlignmentTree> t(new ttk::cta::AlignmentTree);
+      auto t = std::make_shared<ttk::cta::AlignmentTree>();
       t->node1 = t1->child1;
       t->node2 = nullptr;
 
@@ -1554,7 +1537,7 @@ std::vector<std::shared_ptr<ttk::cta::AlignmentTree>>
 
       std::vector<std::shared_ptr<ttk::cta::AlignmentTree>> res;
 
-      std::shared_ptr<ttk::cta::AlignmentTree> t(new ttk::cta::AlignmentTree);
+      auto t = std::make_shared<ttk::cta::AlignmentTree>();
       t->node1 = t1->child2;
       t->node2 = nullptr;
 
@@ -1594,7 +1577,7 @@ std::vector<std::shared_ptr<ttk::cta::AlignmentTree>>
 
       std::vector<std::shared_ptr<ttk::cta::AlignmentTree>> res;
 
-      std::shared_ptr<ttk::cta::AlignmentTree> t(new ttk::cta::AlignmentTree);
+      auto t = std::make_shared<ttk::cta::AlignmentTree>();
       t->node1 = nullptr;
       t->node2 = t2->child1;
 
@@ -1634,7 +1617,7 @@ std::vector<std::shared_ptr<ttk::cta::AlignmentTree>>
 
       std::vector<std::shared_ptr<ttk::cta::AlignmentTree>> res;
 
-      std::shared_ptr<ttk::cta::AlignmentTree> t(new ttk::cta::AlignmentTree);
+      auto t = std::make_shared<ttk::cta::AlignmentTree>();
       t->node1 = nullptr;
       t->node2 = t2->child2;
 
@@ -1677,7 +1660,7 @@ std::shared_ptr<ttk::cta::AlignmentTree>
 
   if(t == nullptr)
     return nullptr;
-  std::shared_ptr<ttk::cta::AlignmentTree> at(new ttk::cta::AlignmentTree());
+  auto at = std::make_shared<ttk::cta::AlignmentTree>();
   at->node1 = first ? t : nullptr;
   at->node2 = first ? nullptr : t;
   at->height = t->height;
@@ -1722,7 +1705,7 @@ std::shared_ptr<ttk::cta::BinaryTree>
     const std::shared_ptr<ttk::cta::AlignmentEdge> &parent,
     int &id) {
 
-  std::shared_ptr<ttk::cta::BinaryTree> t(new ttk::cta::BinaryTree);
+  auto t = std::make_shared<ttk::cta::BinaryTree>();
 
   if(parent == nullptr) {
     t->scalardistanceParent = 10000;
@@ -1781,7 +1764,7 @@ std::shared_ptr<ttk::cta::BinaryTree>
     bool parent1,
     int &id) {
 
-  std::shared_ptr<ttk::cta::BinaryTree> t(new ttk::cta::BinaryTree);
+  auto t = std::make_shared<ttk::cta::BinaryTree>();
 
   t->scalardistanceParent = arc->scalardistance;
   t->area = arc->area;
@@ -1813,8 +1796,8 @@ std::shared_ptr<ttk::cta::BinaryTree>
 
     if(edge != arc) {
 
-      std::shared_ptr<ttk::cta::BinaryTree> child = computeRootedDualTree(
-        edge, edge->node1.lock() == node ? true : false, id);
+      std::shared_ptr<ttk::cta::BinaryTree> child
+        = computeRootedDualTree(edge, edge->node1.lock() == node, id);
       children.push_back(child);
       t->size += child->size;
       if(t->height < child->height + 1)
