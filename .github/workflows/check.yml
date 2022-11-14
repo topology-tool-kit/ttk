@@ -112,6 +112,9 @@ jobs:
           doxygen \
           clang-tidy
 
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
     - name: Fetch TTK-ParaView headless Debian package
       run: |
         wget -O ttk-paraview-headless.deb \
@@ -191,6 +194,9 @@ jobs:
           zlib1g-dev \
           clang-tools \
           libomp-dev
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
