@@ -624,12 +624,6 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     }
   }
 
-  // store neighboring ranks
-  for(size_t i = 0; i < this->ghostCellPerOwner_.size(); ++i) {
-    if(!this->ghostCellPerOwner_[i].empty()) {
-      this->neighborRanks_.emplace_back(i);
-    }
-  }
 
   // for each rank, store the global id of local cells that are ghost cells of
   // other ranks.

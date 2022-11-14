@@ -1424,6 +1424,14 @@ namespace ttk {
       abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
     }
 
+    inline std::vector<int> *getNeighborRanksWriteMode() override {
+      return abstractTriangulation_->getNeighborRanksWriteMode();
+    }
+
+    inline const std::vector<int> *getNeighborRanks() const override {
+      return abstractTriangulation_->getNeighborRanks();
+    }
+
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
