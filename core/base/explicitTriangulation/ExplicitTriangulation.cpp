@@ -624,7 +624,6 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     }
   }
 
-
   // for each rank, store the global id of local cells that are ghost cells of
   // other ranks.
   const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
