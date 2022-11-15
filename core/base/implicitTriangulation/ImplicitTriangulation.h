@@ -246,20 +246,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_MPI
 
   protected:
-    template <typename Func0, typename Func1, typename Func2>
-    int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
-                                    const Func1 &storeGlobalSimplexId,
-                                    const Func2 &iterCond,
-                                    const int nSimplicesPerCell);
-
-    int preconditionDistributedCellRanges();
-    size_t
-      computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
-
     int preconditionDistributedCells() override;
-    int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
-    int preconditionDistributedTriangles() override;
     int preconditionBoundaryVerticesInternal() override;
     int preconditionBoundaryEdgesInternal() override;
     int preconditionBoundaryTrianglesInternal() override;
