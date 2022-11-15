@@ -211,21 +211,12 @@ namespace ttk {
     }
 
     /**
-     * Set the threshold for the iterative gradient reversal process.
-     * Disable thresholding with -1 (default).
-     */
-    inline void setIterationThreshold(const int iterationThreshold) {
-      discreteGradient_.setIterationThreshold(iterationThreshold);
-    }
-
-    /**
      * Enable/Disable post-processing gradient reversal of
      * the (saddle,...,saddle) vpaths under a given persistence
      * threshold (disabled by default).
      */
     inline void setReturnSaddleConnectors(const bool state) {
       ReturnSaddleConnectors = state;
-      discreteGradient_.setReturnSaddleConnectors(state);
     }
 
     /**
@@ -236,7 +227,6 @@ namespace ttk {
     inline void
       setSaddleConnectorsPersistenceThreshold(const double threshold) {
       SaddleConnectorsPersistenceThreshold = threshold;
-      discreteGradient_.setSaddleConnectorsPersistenceThreshold(threshold);
     }
 
     /**
