@@ -197,7 +197,7 @@ namespace ttk {
 
     void initializeNeighbors(double *boundingBox,
                              std::vector<int> *neighborRanks) {
-      if(neighborRanks->size() < 1) {
+      if(neighborRanks != nullptr && neighborRanks->size() < 1) {
         preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
       }
       neighbors_ = neighborRanks;

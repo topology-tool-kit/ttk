@@ -121,6 +121,9 @@ namespace ttk {
                           const IT nVerts,
                           MPI_Comm communicator,
                           const int dimensionNumber) {
+    if(neighbors == nullptr) {
+      return -1;
+    }
     int neighborNumber = neighbors->size();
     if(!ttk::isRunningWithMPI()) {
       return -1;
@@ -223,6 +226,9 @@ namespace ttk {
                                           const int *const rankArray,
                                           const IT nVerts,
                                           MPI_Comm communicator) {
+    if(neighbors == nullptr) {
+      return -1;
+    }
     std::unordered_set<int> neighborSet{};
     for(IT i = 0; i < nVerts; i++) {
       if(rankArray[i] != ttk::MPIrank_) {
@@ -367,6 +373,9 @@ namespace ttk {
 
   void inline preconditionNeighborsUsingBoundingBox(
     double *boundingBox, std::vector<int> *neighbors) {
+    if(neighbors == nullptr) {
+      return;
+    }
     std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
@@ -408,7 +417,7 @@ namespace ttk {
                                int nVertices,
                                double *boundingBox,
                                std::vector<int> *neighbors) {
-    if(neighbors->size() < 1) {
+    if(neighbors != nullptr && neighbors->size() < 1) {
       ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighbors);
     }
     MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
