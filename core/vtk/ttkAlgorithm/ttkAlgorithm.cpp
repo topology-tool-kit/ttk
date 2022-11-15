@@ -694,10 +694,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   double *boundingBox = input->GetBounds();
   if(neighborRanks->size() < 1) {
     if(vertRankArray == nullptr) {
-      printMsg("HERE");
       ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
-      printMsg("Size: " + std::to_string(neighborRanks->size()));
-      printMsg("Neighbors: " + std::to_string(neighborRanks->at(0)));
     } else {
       ttk::preconditionNeighborsUsingRankArray(
         neighborRanks, vertRankArray, vertexNumber, ttk::MPIcomm_);

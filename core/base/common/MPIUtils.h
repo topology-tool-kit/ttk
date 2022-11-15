@@ -310,6 +310,7 @@ namespace ttk {
     for(int neighbor : neighborSet) {
       neighbors->push_back(neighbor);
     }
+    std::sort(neighbors->begin(), neighbors->end());
 
     return 0;
   }
