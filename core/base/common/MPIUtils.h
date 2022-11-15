@@ -12,7 +12,6 @@
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <limits>
 #include <unordered_map>
 #include <unordered_set>
@@ -726,7 +725,10 @@ namespace ttk {
                        std::vector<int> *neighbors) {
     int intTag = 101;
     int structTag = 102;
-
+    if(neighbors->size() < 1) {
+      ttk::preconditionNeighborsUsingRankArray(
+        neighbors, rankArray, nVerts, ttk::MPIcomm_);
+    }
     MPI_Barrier(ttk::MPIcomm_);
 
     MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
@@ -819,10 +821,6 @@ namespace ttk {
                                   orderedValuesForRank.data(), gidToLidMap,
                                   orderArray, ttk::globalThreadNumber_);
 
-    if(neighbors->size() < 1) {
-      ttk::preconditionNeighborsUsingRankArray(
-        neighbors, rankArray, nVerts, ttk::MPIcomm_);
-    }
     // we receive the values at the ghostcells through the abstract
     // exchangeGhostCells method
     ttk::exchangeGhostCells<ttk::SimplexId, IT>(orderArray, rankArray,
