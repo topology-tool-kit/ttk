@@ -754,7 +754,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     if(!preciseNeighborComputation) {
       ttk::preconditionNeighborsUsingRankArray<int>(
         neighborRanks, rankArray.data(), vertexNumber, ttk::MPIcomm_);
-      preciseNeighborComputation = true;
     }
     vtkNew<vtkIntArray> vtkRankArray{};
     vtkRankArray->SetName("RankArray");
