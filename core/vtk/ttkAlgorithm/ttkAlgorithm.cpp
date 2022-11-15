@@ -692,7 +692,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   }
 
   double *boundingBox = input->GetBounds();
-  if(neighborRanks->size() < 1) {
+  if(neighborRanks != nullptr && neighborRanks->size() < 1) {
     if(vertRankArray == nullptr) {
       ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
     } else {
