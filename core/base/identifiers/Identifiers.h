@@ -79,6 +79,7 @@ namespace ttk {
     std::map<ttk::LongSimplexId, ttk::SimplexId> vertOutdatedGtoL_;
     std::map<ttk::LongSimplexId, ttk::SimplexId> cellOutdatedGtoL_;
     ttk::KDTree<float, std::array<float, 3>> kdt_;
+    std::array<int, 3> globalDims_{};
 #endif
 
   public:
@@ -99,6 +100,10 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
+    inline const std::array<int, 3> &getGlobalDims() const {
+      return this->globalDims_;
+    }
+
     inline void setDomainDimension(const int &dimension) {
       dimension_ = dimension;
     }
@@ -887,6 +892,12 @@ namespace ttk {
       int height
         = static_cast<int>((globalBounds[3] - globalBounds[2]) / spacing_[1])
           + 1;
+      int depth
+        = static_cast<int>((globalBounds[5] - globalBounds[4]) / spacing_[2])
+          + 1;
+
+      // store global grid dimensions
+      this->globalDims_ = {width, height, depth};
 
       // Compute offset of the current process for each direction
       int offsetWidth = static_cast<int>(

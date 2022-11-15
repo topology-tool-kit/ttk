@@ -480,7 +480,9 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
 bool ttkAlgorithm::GenerateGlobalIds(
   vtkDataSet *input,
   std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL,
-  std::vector<int> *neighborRanks) {
+  std::vector<int> *neighborRanks,
+  std::array<int, 3> &globalDimensions) {
+
   bool hasPreconditionedVertGtoL = false;
   ttk::Identifiers identifiers;
 
@@ -608,6 +610,7 @@ bool ttkAlgorithm::GenerateGlobalIds(
         identifiers.setDims(data->GetDimensions());
         identifiers.setSpacing(data->GetSpacing());
         status = identifiers.executeImageData();
+        globalDimensions = identifiers.getGlobalDims();
         break;
       }
       default: {
@@ -728,12 +731,16 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   // If the global ids are not valid, they are computed again
   if(!pointValidity || !cellValidity) {
     bool flag{false};
+    std::array<int, 3> globalDimensions{};
     if(triangulation) {
       flag = this->GenerateGlobalIds(
-        input, triangulation->getVertexGlobalIdMapWriteMode(), neighborRanks);
+        input, triangulation->getVertexGlobalIdMapWriteMode(), neighborRanks,
+        globalDimensions);
+      triangulation->createMetaGrid(globalDimensions);
     } else {
       std::unordered_map<ttk::SimplexId, ttk::SimplexId> vertGtoL{};
-      flag = this->GenerateGlobalIds(input, &vertGtoL, neighborRanks);
+      flag = this->GenerateGlobalIds(
+        input, &vertGtoL, neighborRanks, globalDimensions);
     }
 
     if(triangulation) {
