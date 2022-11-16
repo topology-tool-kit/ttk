@@ -1432,6 +1432,10 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
+    inline void setLocalBound(double bound[6]) {
+      return abstractTriangulation_->setLocalBound(bound);
+    }
+
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,

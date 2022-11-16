@@ -290,9 +290,116 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
     case VertexPosition::CENTER_1D:
       return false;
     default:
+#if TTK_ENABLE_MPI
+      if(this->vertRankArray_[vertexId] == ttk::MPIrank_) {
+        return true;
+      } else {
+        return this->isVertexOnGlobalBoundary(vertexId);
+      }
+#else
       return true;
+#endif
   }
 }
+
+#if TTK_ENABLE_MPI
+template <typename Derived>
+bool ImplicitTriangulationCRTP<Derived>::isVertexOnGlobalBoundary(
+  const SimplexId &vertexId) const {
+
+  switch(this->underlying().getVertexPosition(vertexId)) {
+    // 1D cases
+    case VertexPosition::LEFT_CORNER_1D: // a
+      return isOnGlobalBoundary_[0];
+    case VertexPosition::RIGHT_CORNER_1D: // b
+      return isOnGlobalBoundary_[1];
+    // 2D corners
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[2];
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[2];
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[3];
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[3];
+    // 2D edges
+    case VertexPosition::TOP_EDGE_2D: // ab
+      return isOnGlobalBoundary_[2];
+    case VertexPosition::BOTTOM_EDGE_2D: // cd
+      return isOnGlobalBoundary_[3];
+    case VertexPosition::LEFT_EDGE_2D: // ac
+      return isOnGlobalBoundary_[0];
+    case VertexPosition::RIGHT_EDGE_2D: // bd
+      return isOnGlobalBoundary_[1];
+    // 3D Corners
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[2]
+             || isOnGlobalBoundary_[4];
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[2]
+             || isOnGlobalBoundary_[4];
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[3]
+             || isOnGlobalBoundary_[4];
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[3]
+             || isOnGlobalBoundary_[4];
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[2]
+             || isOnGlobalBoundary_[5];
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[2]
+             || isOnGlobalBoundary_[5];
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[3]
+             || isOnGlobalBoundary_[5];
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[3]
+             || isOnGlobalBoundary_[5];
+    // 3D edges
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      return isOnGlobalBoundary_[2] || isOnGlobalBoundary_[4];
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      return isOnGlobalBoundary_[3] || isOnGlobalBoundary_[4];
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[4];
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[4];
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+      return isOnGlobalBoundary_[2] || isOnGlobalBoundary_[5];
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      return isOnGlobalBoundary_[3] || isOnGlobalBoundary_[5];
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[5];
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[5];
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[2];
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[2];
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      return isOnGlobalBoundary_[0] || isOnGlobalBoundary_[3];
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      return isOnGlobalBoundary_[1] || isOnGlobalBoundary_[3];
+    // 3D faces
+    case VertexPosition::FRONT_FACE_3D: // abcd
+      return isOnGlobalBoundary_[4];
+    case VertexPosition::BACK_FACE_3D: // efgh
+      return isOnGlobalBoundary_[5];
+    case VertexPosition::TOP_FACE_3D: // abef
+      return isOnGlobalBoundary_[2];
+    case VertexPosition::BOTTOM_FACE_3D: // cdgh
+      return isOnGlobalBoundary_[3];
+    case VertexPosition::LEFT_FACE_3D: // aceg
+      return isOnGlobalBoundary_[0];
+    case VertexPosition::RIGHT_FACE_3D: // bdfh
+      return isOnGlobalBoundary_[1];
+    // 3D central part
+    default:
+      return false;
+  }
+}
+#endif
 
 template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
@@ -3701,6 +3808,52 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   }
 
   this->hasPreconditionedDistributedVertices_ = true;
+
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionBoundaryVerticesInternal() {
+  if(this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+  // Reorganize bounds to only execute Allreduce twice
+  double tempBounds[6] = {localBound_[0], localBound_[2], localBound_[4],
+                          localBound_[1], localBound_[3], localBound_[5]};
+  double tempGlobalBounds[6];
+  // Compute and send to all processes the lower bounds of the data set
+  MPI_Allreduce(
+    tempBounds, tempGlobalBounds, 3, MPI_DOUBLE, MPI_MIN, ttk::MPIcomm_);
+
+  // Compute and send to all processes the higher bounds of the data set
+  MPI_Allreduce(tempBounds + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE, MPI_MAX,
+                ttk::MPIcomm_);
+
+  globalBound_[0] = tempGlobalBounds[0];
+  globalBound_[1] = tempGlobalBounds[3];
+  globalBound_[2] = tempGlobalBounds[1];
+  globalBound_[3] = tempGlobalBounds[4];
+  globalBound_[4] = tempGlobalBounds[2];
+  globalBound_[5] = tempGlobalBounds[5];
+
+  isOnGlobalBoundary_[0] = (static_cast<int>(std::round(
+                              (localBound_[0] - globalBound_[0]) / spacing_[0]))
+                            == 0);
+  isOnGlobalBoundary_[1] = (static_cast<int>(std::round(
+                              (localBound_[1] - globalBound_[1]) / spacing_[0]))
+                            == 0);
+  isOnGlobalBoundary_[2] = (static_cast<int>(std::round(
+                              (localBound_[2] - globalBound_[2]) / spacing_[1]))
+                            == 0);
+  isOnGlobalBoundary_[3] = (static_cast<int>(std::round(
+                              (localBound_[3] - globalBound_[3]) / spacing_[1]))
+                            == 0);
+  isOnGlobalBoundary_[4] = (static_cast<int>(std::round(
+                              (localBound_[4] - globalBound_[4]) / spacing_[2]))
+                            == 0);
+  isOnGlobalBoundary_[5] = (static_cast<int>(std::round(
+                              (localBound_[5] - globalBound_[5]) / spacing_[2]))
+                            == 0);
 
   return 0;
 }

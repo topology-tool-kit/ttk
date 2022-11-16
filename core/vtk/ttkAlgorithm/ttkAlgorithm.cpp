@@ -638,7 +638,7 @@ void ttkAlgorithm::MPIGhostPipelinePreconditioning(vtkDataSet *input) {
   if(!input->HasAnyGhostCells() && ttk::isRunningWithMPI()) {
     generator->SetInputData(input);
     generator->BuildIfRequiredOff();
-    generator->SetNumberOfGhostLayers(2);
+    generator->SetNumberOfGhostLayers(1);
     generator->Update();
     input->ShallowCopy(generator->GetOutputDataObject(0));
     input->GetPointData()->AddArray(
@@ -818,6 +818,9 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     triangulation->setCellRankArray(
       ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
   }
+  double bounds[6];
+  input->GetBounds(bounds);
+  triangulation->setLocalBound(bounds);
 }
 #endif
 //==============================================================================

@@ -2564,6 +2564,15 @@ namespace ttk {
       return this->cellRankArray_;
     }
 
+    inline void setLocalBound(double bound[6]) {
+      this->localBound_[0] = bound[0];
+      this->localBound_[1] = bound[1];
+      this->localBound_[2] = bound[2];
+      this->localBound_[3] = bound[3];
+      this->localBound_[4] = bound[4];
+      this->localBound_[5] = bound[5];
+    };
+
     // public precondition method (used in Triangulation/ttkAlgorithm)
     virtual int preconditionDistributedVertices() {
       return 0;
@@ -3651,6 +3660,9 @@ namespace ttk {
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
     std::vector<SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
+
+    double localBound_[6];
+    double globalBound_[6];
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};

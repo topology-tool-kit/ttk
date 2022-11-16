@@ -256,6 +256,7 @@ namespace ttk {
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
+    int preconditionBoundaryVerticesInternal() override;
 
   public:
     inline SimplexId
@@ -275,6 +276,8 @@ namespace ttk {
     // the cellGid_ array only applies on cubic cells, not on
     // simplicial ones...
     std::vector<SimplexId> cellLidToGid_{};
+    bool isOnGlobalBoundary_[6];
+
 #endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {
@@ -923,6 +926,10 @@ namespace ttk {
 
     bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
       const SimplexId &vertexId) const override;
+
+#if TTK_ENABLE_MPI
+    bool isVertexOnGlobalBoundary(const SimplexId &) const;
+#endif
 
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;
