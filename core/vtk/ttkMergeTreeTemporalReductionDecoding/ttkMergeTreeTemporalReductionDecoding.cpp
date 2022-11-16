@@ -11,7 +11,6 @@
 #include <vtkPointData.h>
 #include <vtkTable.h>
 
-#include <ttkMacros.h>
 #include <ttkUtils.h>
 
 using namespace ttk;
@@ -114,11 +113,6 @@ int ttkMergeTreeTemporalReductionDecoding::RequestData(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees;
   loadBlocks(inputTrees, blocks);
   printMsg("Load Blocks done.", debug::Priority::VERBOSE);
-  int dataTypeInt
-    = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-        ->GetPointData()
-        ->GetArray("Scalar")
-        ->GetDataType();
   auto assignmentSolverArray
     = blocks->GetFieldData()->GetArray("AssignmentSolver");
   if(assignmentSolverArray)
@@ -148,12 +142,7 @@ int ttkMergeTreeTemporalReductionDecoding::RequestData(
       interpolatedTrees[j] = true;
   }
 
-  int res = 0;
-  switch(dataTypeInt) {
-    vtkTemplateMacro(
-      res = run<VTK_TT>(outputVector, inputTrees, coefs, interpolatedTrees););
-  }
-  return res;
+  return run<float>(outputVector, inputTrees, coefs, interpolatedTrees);
 }
 
 template <class dataType>

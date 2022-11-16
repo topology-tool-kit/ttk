@@ -4,7 +4,6 @@
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
 #include <ttkFTMTreeUtils.h>
-#include <ttkMacros.h>
 #include <ttkMergeTreeClustering.h>
 #include <ttkMergeTreeVisualization.h>
 
@@ -142,21 +141,12 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
-  auto *block0 = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0));
-  auto arrayToGet = block0->GetPointData()->GetArray("Scalar");
-  if(arrayToGet == nullptr)
-    arrayToGet = block0->GetCellData()->GetArray(PersistenceBirthName);
-  int dataTypeInt = arrayToGet->GetDataType();
 
   // If we have already computed once but the input has changed
   if(treesNodes.size() != 0 and inputTrees[0]->GetBlock(0) != treesNodes[0])
     resetDataVisualization();
 
-  int res = 0;
-  switch(dataTypeInt) {
-    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputTrees, inputTrees2););
-  }
-  return res;
+  return run<float>(outputVector, inputTrees, inputTrees2);
 }
 
 template <class dataType>
