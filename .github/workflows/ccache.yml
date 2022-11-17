@@ -307,12 +307,6 @@ jobs:
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v3
 
-    - name: Delete ccache artifacts
-      uses: geekyeggo/delete-artifact@v2
-      with:
-          name: |
-              ttk-*ccache*
-
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
@@ -352,3 +346,9 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-sccache-windows/ttk-sccache.tar.gz
         asset_name: ttk-sccache-windows.tar.gz
+
+    - name: Delete ccache artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-*ccache*

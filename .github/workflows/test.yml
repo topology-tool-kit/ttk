@@ -99,6 +99,7 @@ jobs:
           -GNinja \
           $GITHUB_WORKSPACE
 
+    - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
       run: |
         cd build
@@ -141,7 +142,6 @@ jobs:
         if [[ "$VERS" == *"22.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
           rm ttk-data/states/mergeTreeTemporalReduction.pvsm
-          rm ttk-data/states/persistentGenerators_darkSky.pvsm
         fi
 
         cd ttk-data/tests
@@ -181,6 +181,7 @@ jobs:
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
 
     - name: Run ttk-data Python scripts
       run: |
@@ -267,6 +268,7 @@ jobs:
           -GNinja \
           $GITHUB_WORKSPACE
 
+    - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
       run: |
         cd build
@@ -305,6 +307,7 @@ jobs:
       with:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
 
     - name: Run ttk-data Python scripts
       run: |
