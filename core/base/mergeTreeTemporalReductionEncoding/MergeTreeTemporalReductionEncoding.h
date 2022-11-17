@@ -109,7 +109,7 @@ namespace ttk {
       mergeTreeDistance.setKeepSubtree(keepSubtree_);
       mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
       mergeTreeDistance.setThreadNumber(this->threadNumber_);
-      mergeTreeDistance.setDistanceSquared(true); // squared root
+      mergeTreeDistance.setDistanceSquaredRoot(true); // squared root
       mergeTreeDistance.setDebugLevel(2);
       mergeTreeDistance.setPreprocess(false);
       mergeTreeDistance.setPostprocess(false);

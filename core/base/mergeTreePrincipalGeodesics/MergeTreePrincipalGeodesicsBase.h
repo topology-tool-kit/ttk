@@ -62,7 +62,7 @@ namespace ttk {
       mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
       mergeTreeDistance.setIsCalled(isCalled);
       mergeTreeDistance.setThreadNumber(this->threadNumber_);
-      mergeTreeDistance.setDistanceSquared(true); // squared root
+      mergeTreeDistance.setDistanceSquaredRoot(true); // squared root
       mergeTreeDistance.setNodePerTask(nodePerTask_);
       if(useDoubleInput) {
         double weight = mixDistancesMinMaxPairWeight(isFirstInput);

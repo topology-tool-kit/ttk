@@ -82,8 +82,8 @@ Online examples:
                 ${MERGE_TREE_INPUT_WIDGETS}
 
                 <IntVectorProperty
-                name="DistanceSquared"
-                command="SetDistanceSquared"
+                name="DistanceSquaredRoot"
+                command="SetDistanceSquaredRoot"
                 label="Distance Square Root"
                 number_of_elements="1"
                 default_values="1"
@@ -97,7 +97,7 @@ Online examples:
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="UseFieldDataParameters"/>
               <Property name="MixtureCoefficient"/>
-              <Property name="DistanceSquared"/>
+              <Property name="DistanceSquaredRoot"/>
             </PropertyGroup>
             ${MERGE_TREE_PREPROCESS_WIDGETS}
 

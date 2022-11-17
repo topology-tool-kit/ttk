@@ -511,7 +511,7 @@ namespace ttk {
           }
         }
       }
-      if(distanceSquared_)
+      if(distanceSquaredRoot_)
         distance = std::sqrt(distance);
 
       // ---------------------
@@ -601,10 +601,12 @@ namespace ttk {
                debug::LineMode::NEW, debug::Priority::INFO);
       printMsg(debug::Separator::L2);
       std::stringstream ss2;
-      ss2 << "DISTANCE²       = " << distance;
+      ss2 << "DISTANCE²       = "
+          << (distanceSquaredRoot_ ? distance * distance : distance);
       printMsg(ss2.str());
       std::stringstream ss3;
-      ss3 << "DISTANCE        = " << std::sqrt(distance);
+      ss3 << "DISTANCE        = "
+          << (distanceSquaredRoot_ ? distance : std::sqrt(distance));
       printMsg(ss3.str());
       printMsg(debug::Separator::L2);
       std::stringstream ss4;
