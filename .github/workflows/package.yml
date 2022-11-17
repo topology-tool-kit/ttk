@@ -166,7 +166,7 @@ jobs:
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree websocketpp
-        python3 -m pip install scikit-learn packaging
+        python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -237,7 +237,7 @@ jobs:
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree
-        python3 -m pip install scikit-learn packaging
+        python3 -m pip install scikit-learn
 
     - name: Fetch TTK-ParaView
       run: |
@@ -323,7 +323,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz websocketpp
+          scikit-learn openmp graphviz websocketpp
 
     - name: Remove hosted Python
       shell: bash
@@ -413,7 +413,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz
+          scikit-learn openmp graphviz
 
     - name: Remove hosted Python
       shell: bash
@@ -576,3 +576,9 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk.exe/ttk.exe
         asset_name: ttk-$tag.exe
+
+    - name: Delete package artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk*
