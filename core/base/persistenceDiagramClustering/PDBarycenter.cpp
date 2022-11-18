@@ -535,7 +535,7 @@ void ttk::PDBarycenter::setInitialBarycenter(double min_persistence) {
 
 typename ttk::PDBarycenter::KDTreePair ttk::PDBarycenter::getKDTree() const {
   Timer tm;
-  auto kdt = std::unique_ptr<KDT>(new KDT{true, wasserstein_});
+  auto kdt = std::make_unique<KDT>(true, wasserstein_);
 
   const int dimension = geometrical_factor_ >= 1 ? 2 : 5;
 
