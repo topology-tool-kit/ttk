@@ -695,11 +695,11 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+    this->printErr("Missing global cell identifiers array!");
     return -2;
   }
   if(this->cellRankArray_ == nullptr) {
-    this->printWrn("Missing RankArray on cells");
+    this->printErr("Missing cell RankArray!");
     return -3;
   }
 
@@ -1006,7 +1006,7 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+    this->printErr("Missing global cell identifiers array!");
     return -2;
   }
 
@@ -1149,7 +1149,7 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+    this->printErr("Missing global cell identifiers array!");
     return -2;
   }
 
@@ -1282,7 +1282,7 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
     return -1;
   }
   if(this->vertGid_ == nullptr) {
-    this->printWrn("Missing global identifiers array!");
+    this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
 
