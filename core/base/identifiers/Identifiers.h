@@ -201,11 +201,11 @@ namespace ttk {
     }
 
     void initializeNeighbors(double *boundingBox,
-                             std::vector<int> *neighborRanks) {
-      if(neighborRanks != nullptr && neighborRanks->size() < 1) {
+                             std::vector<int> &neighborRanks) {
+      if(neighborRanks.empty()) {
         preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
       }
-      neighbors_ = neighborRanks;
+      neighbors_ = &neighborRanks;
       neighborToId_.clear();
       neighborNumber_ = neighbors_->size();
       for(int i = 0; i < neighborNumber_; i++) {
