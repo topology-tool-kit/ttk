@@ -2599,8 +2599,11 @@ namespace ttk {
       return 0;
     }
 
-    // public precondition method (used in Triangulation/ttkAlgorithm)
+    // public preconditions methods (used in Triangulation/ttkAlgorithm)
     virtual int preconditionDistributedVertices() {
+      return 0;
+    }
+    virtual int preconditionDistributedCells() {
       return 0;
     }
 
@@ -3632,9 +3635,6 @@ namespace ttk {
 
     // precondition methods for distributed meshes
 
-    virtual int preconditionDistributedCells() {
-      return 0;
-    }
     virtual int preconditionDistributedEdges() {
       return 0;
     }

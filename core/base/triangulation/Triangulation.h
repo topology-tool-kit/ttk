@@ -2413,6 +2413,14 @@ namespace ttk {
       return abstractTriangulation_->preconditionGlobalBoundary();
     }
 
+    inline int preconditionDistributedCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionDistributedCells();
+    }
 #endif // TTK_ENABLE_MPI
 
     /// Pre-process the vertex links.

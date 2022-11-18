@@ -824,6 +824,7 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
       ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()));
     triangulation->setCellRankArray(
       ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
+    triangulation->preconditionDistributedCells();
   }
   std::array<double, 6> bounds;
   input->GetBounds(bounds.data());
