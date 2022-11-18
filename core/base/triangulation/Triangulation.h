@@ -1413,9 +1413,9 @@ namespace ttk {
     /// \note This method is similar to getVertexGlobalIdMap() except it is not
     /// const and allows for modification of the triangulation and the map.
 
-    inline std::unordered_map<SimplexId, SimplexId> *
-      getVertexGlobalIdMapWriteMode() override {
-      return abstractTriangulation_->getVertexGlobalIdMapWriteMode();
+    inline std::unordered_map<SimplexId, SimplexId> &
+      getVertexGlobalIdMap() override {
+      return abstractTriangulation_->getVertexGlobalIdMap();
     }
 
     /// Set the flag for precondtioning of distributed vertices of the

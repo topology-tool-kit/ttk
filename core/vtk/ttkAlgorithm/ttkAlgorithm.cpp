@@ -1,4 +1,3 @@
-#include "DataTypes.h"
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -479,18 +478,16 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
 
 bool ttkAlgorithm::GenerateGlobalIds(
   vtkDataSet *input,
-  std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL,
+  std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
   std::vector<int> *neighborRanks,
   std::array<int, 3> &globalDimensions) {
 
   bool hasPreconditionedVertGtoL = false;
   ttk::Identifiers identifiers;
 
-  vtkSmartPointer<vtkIdTypeArray> vtkVertexIdentifiers
-    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkNew<vtkIdTypeArray> vtkVertexIdentifiers{};
 
-  vtkSmartPointer<vtkIdTypeArray> vtkCellIdentifiers
-    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkNew<vtkIdTypeArray> vtkCellIdentifiers{};
   vtkVertexIdentifiers->SetName("GlobalPointIds");
   vtkVertexIdentifiers->SetNumberOfComponents(1);
   vtkVertexIdentifiers->SetNumberOfTuples(input->GetNumberOfPoints());
@@ -595,7 +592,7 @@ bool ttkAlgorithm::GenerateGlobalIds(
         identifiers.setPointsToCells(pointsToCells);
 
         identifiers.initializeMPITypes();
-        identifiers.setVertGtoL(vertGtoL);
+        identifiers.setVertGtoL(&vertGtoL);
         vtkIdList *pointCell = vtkIdList::New();
         input->GetCellPoints(0, pointCell);
         int nbPoints = pointCell->GetNumberOfIds();
@@ -733,14 +730,14 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     bool flag{false};
     std::array<int, 3> globalDimensions{};
     if(triangulation) {
-      flag = this->GenerateGlobalIds(
-        input, triangulation->getVertexGlobalIdMapWriteMode(), neighborRanks,
-        globalDimensions);
+      flag
+        = this->GenerateGlobalIds(input, triangulation->getVertexGlobalIdMap(),
+                                  neighborRanks, globalDimensions);
       triangulation->createMetaGrid(globalDimensions);
     } else {
       std::unordered_map<ttk::SimplexId, ttk::SimplexId> vertGtoL{};
       flag = this->GenerateGlobalIds(
-        input, &vertGtoL, neighborRanks, globalDimensions);
+        input, vertGtoL, neighborRanks, globalDimensions);
     }
 
     if(triangulation) {
