@@ -1424,11 +1424,10 @@ namespace ttk {
       abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
     }
 
-    inline std::vector<int> *getNeighborRanksWriteMode() override {
-      return abstractTriangulation_->getNeighborRanksWriteMode();
+    inline const std::vector<int> &getNeighborRanks() const override {
+      return abstractTriangulation_->getNeighborRanks();
     }
-
-    inline const std::vector<int> *getNeighborRanks() const override {
+    inline std::vector<int> &getNeighborRanks() override {
       return abstractTriangulation_->getNeighborRanks();
     }
 
