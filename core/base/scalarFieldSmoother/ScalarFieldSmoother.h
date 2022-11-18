@@ -173,7 +173,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
         outputData, triangulation->getVertRankArray(),
         triangulation->getVertsGlobalIds(),
         triangulation->getVertexGlobalIdMap(), vertexNumber, ttk::MPIcomm_,
-        dimensionNumber_);
+        triangulation->getNeighborRanks(), dimensionNumber_);
     }
 #endif
 

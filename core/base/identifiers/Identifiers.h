@@ -56,7 +56,7 @@ namespace ttk {
     ttk::LongSimplexId *cellIdentifiers_;
 #ifdef TTK_ENABLE_MPI
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL_;
-    std::vector<int> neighbors_;
+    std::vector<int> *neighbors_;
     std::map<int, int> neighborToId_;
     int neighborNumber_;
     double *bounds_;
@@ -195,13 +195,16 @@ namespace ttk {
       id = neighbours[0]->id_;
     }
 
-    void initializeNeighbors(double *boundingBox) {
-      neighbors_.clear();
+    void initializeNeighbors(double *boundingBox,
+                             std::vector<int> *neighborRanks) {
+      if(neighborRanks != nullptr && neighborRanks->size() < 1) {
+        preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
+      }
+      neighbors_ = neighborRanks;
       neighborToId_.clear();
-      getNeighborsUsingBoundingBox(boundingBox, neighbors_);
-      neighborNumber_ = neighbors_.size();
+      neighborNumber_ = neighbors_->size();
       for(int i = 0; i < neighborNumber_; i++) {
-        neighborToId_[neighbors_[i]] = i;
+        neighborToId_[neighbors_->at(i)] = i;
       }
     }
 
@@ -461,7 +464,7 @@ namespace ttk {
     void sendToAllNeighbors(std::vector<dataType> &vectorToSend,
                             MPI_Datatype messageType) const {
       for(int j = 0; j < neighborNumber_; j++) {
-        sendVector<dataType>(vectorToSend, messageType, neighbors_[j]);
+        sendVector<dataType>(vectorToSend, messageType, neighbors_->at(j));
       }
     }
 
@@ -471,8 +474,8 @@ namespace ttk {
       MPI_Datatype messageType) {
 
       for(int j = 0; j < neighborNumber_; j++) {
-        sendVector<dataType>(vectorToSend[neighborToId_[neighbors_[j]]],
-                             messageType, neighbors_[j]);
+        sendVector<dataType>(vectorToSend[neighborToId_[neighbors_->at(j)]],
+                             messageType, neighbors_->at(j));
       }
     }
 
@@ -679,7 +682,7 @@ namespace ttk {
       // its neighbors
       for(int i = 0; i < neighborNumber_ + 1; i++) {
         if((i == neighborNumber_ && !hasSentData_)
-           || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+           || (!hasSentData_ && ttk::MPIrank_ < neighbors_->at(i))) {
           // it is the turn of the current process to send its ghosts
           if(outdatedGlobalPointIds_ == nullptr) {
             if(vertRankArray_ == nullptr) {
@@ -701,7 +704,7 @@ namespace ttk {
           // and associates its ghosts with the right global identifier
           for(int j = 0; j < neighborNumber_; j++) {
             recvVector<Response>(receivedResponse, recvMessageSize,
-                                 mpiResponseType_, neighbors_[j]);
+                                 mpiResponseType_, neighbors_->at(j));
             if(outdatedGlobalPointIds_ == nullptr) {
               for(int n = 0; n < recvMessageSize; n++) {
                 vertexIdentifiers_[receivedResponse[n].id]
@@ -723,14 +726,14 @@ namespace ttk {
           // It is not the turn of the current process to send its data.
           if(outdatedGlobalPointIds_ == nullptr) {
             recvVector<Point>(receivedPoints, recvMessageSize, mpiPointType_,
-                              neighbors_[i - hasSentData_]);
+                              neighbors_->at(i - hasSentData_));
             // Point coordinates are matched to a local point using a kd-tree
             // and its global id is added to the vector send_buf
             locatePoints(
               locatedSimplices, receivedPoints, recvMessageSize, send_buf);
           } else {
             recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
-                                       neighbors_[i - hasSentData_]);
+                                       neighbors_->at(i - hasSentData_));
             // Outdated global ids are matched to a local point
             // and its global id is added to the vector send_buf
             identifyPoints(
@@ -739,7 +742,7 @@ namespace ttk {
           // The points founds are sent back to the neighbor with their global
           // ids
           sendVector<Response>(
-            send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
+            send_buf, mpiResponseType_, neighbors_->at(i - hasSentData_));
         }
       }
       // Start of computation of ghost information for cells
@@ -788,7 +791,7 @@ namespace ttk {
       // Exchange cells similarly to what is done for vertices
       for(int i = 0; i < neighborNumber_ + 1; i++) {
         if((i == neighborNumber_ && !hasSentData_)
-           || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+           || (!hasSentData_ && ttk::MPIrank_ < neighbors_->at(i))) {
           // For each neighbor, a process will receive the ghost cells of all
           // its neighbors or, if it is its turn, will receive the ghost cells
           // of all its neighbors
@@ -813,7 +816,7 @@ namespace ttk {
           // and associates its ghosts with the right global identifier
           for(int j = 0; j < neighborNumber_; j++) {
             recvVector<Response>(receivedResponse, recvMessageSize,
-                                 mpiResponseType_, neighbors_[j]);
+                                 mpiResponseType_, neighbors_->at(j));
             if(outdatedGlobalCellIds_ == nullptr) {
               for(int n = 0; n < recvMessageSize; n++) {
                 cellIdentifiers_[receivedResponse[n].id]
@@ -830,7 +833,7 @@ namespace ttk {
         } else {
           // It is not the turn of the current process to send its data.
           recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
-                                     neighbors_[i - hasSentData_]);
+                                     neighbors_->at(i - hasSentData_));
           if(outdatedGlobalCellIds_ == nullptr) {
             // Point global ids are matched to a local cell and the global
             // id of the cell is added to the vector send_buf
@@ -845,7 +848,7 @@ namespace ttk {
           // The cells founds are sent back to the neighbor with their global
           // ids
           sendVector<Response>(
-            send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
+            send_buf, mpiResponseType_, neighbors_->at(i - hasSentData_));
         }
       }
 

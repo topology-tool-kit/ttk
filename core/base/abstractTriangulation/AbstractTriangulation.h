@@ -2760,6 +2760,14 @@ namespace ttk {
       return &(this->vertexGidToLid_);
     }
 
+    virtual inline std::vector<int> *getNeighborRanksWriteMode() {
+      return &(this->neighborRanks_);
+    }
+
+    virtual inline const std::vector<int> *getNeighborRanks() const {
+      return &(this->neighborRanks_);
+    }
+
     virtual inline void setHasPreconditionedDistributedVertices(bool flag) {
       this->hasPreconditionedDistributedVertices_ = flag;
     }
