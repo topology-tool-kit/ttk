@@ -519,6 +519,14 @@ namespace ttk {
 
       void sortLeaves(const bool parallel = false);
 
+      /**
+       * @brief Sort tree nodes according to vertex order
+       *
+       * The vertex order is the same for Join Trees and Split Trees:
+       * minima first, maxima last.
+       */
+      void sortNodes();
+
       idNode makeNode(SimplexId vertexId, SimplexId linked = nullVertex);
 
       idNode makeNode(const Node *const n, SimplexId linked = nullVertex);
