@@ -291,11 +291,14 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
       return false;
     default:
 #if TTK_ENABLE_MPI
-      if(this->vertRankArray_[vertexId] == ttk::MPIrank_) {
-        return true;
-      } else {
-        return this->isVertexOnGlobalBoundary(vertexId);
+      if(ttk::isRunningWithMPI()) {
+        if(this->vertRankArray_[vertexId] == ttk::MPIrank_) {
+          return true;
+        } else {
+          return this->isVertexOnGlobalBoundary(vertexId);
+        }
       }
+      return true;
 #else
       return true;
 #endif
