@@ -241,3 +241,9 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-paraview-windows/ttk-paraview.exe
         asset_name: ttk-paraview-$tag.exe
+
+    - name: Delete package artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-paraview*

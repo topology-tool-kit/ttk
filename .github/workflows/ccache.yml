@@ -45,7 +45,7 @@ jobs:
           ninja-build \
           zlib1g-dev \
           dpkg-dev
-        sudo python3 -m pip install scikit-learn packaging
+        sudo python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -114,7 +114,7 @@ jobs:
         brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree websocketpp ccache
-        python3.10 -m pip install scikit-learn packaging
+        python3.10 -m pip install scikit-learn
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
         # remove Python 3.11 installation
@@ -189,7 +189,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz ninja websocketpp sccache
+          scikit-learn openmp graphviz ninja websocketpp sccache
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
 
@@ -307,12 +307,6 @@ jobs:
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v3
 
-    - name: Delete ccache artifacts
-      uses: geekyeggo/delete-artifact@v2
-      with:
-          name: |
-              ttk-*ccache*
-
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
@@ -352,3 +346,9 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-sccache-windows/ttk-sccache.tar.gz
         asset_name: ttk-sccache-windows.tar.gz
+
+    - name: Delete ccache artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-*ccache*
