@@ -257,6 +257,9 @@ namespace ttk {
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
     int preconditionBoundaryVerticesInternal() override;
+    int preconditionBoundaryEdgesInternal() override;
+    int preconditionBoundaryTrianglesInternal() override;
+    int preconditionGlobalBoundaryInternal() override;
 
   public:
     inline SimplexId

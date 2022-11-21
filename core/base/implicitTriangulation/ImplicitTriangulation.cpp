@@ -405,6 +405,17 @@ template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isEdgeOnBoundary)(const SimplexId &edgeId) const {
 
+#if TTK_ENABLE_MPI
+  ttk::SimplexId id;
+  int vertexNumber = this->getEdgeVertexNumber(edgeId);
+  for(int i = 0; i < vertexNumber; i++) {
+    this->getEdgeVertex(edgeId, i, id);
+    if(!this->isVertexOnBoundary(id)) {
+      return false;
+    }
+  }
+  return true;
+#else
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return false;
@@ -426,11 +437,22 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
       break;
   }
   return true;
+#endif
 }
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
   const SimplexId &triangleId) const {
-
+#if TTK_ENABLE_MPI
+  ttk::SimplexId id;
+  int triangleVertexNumber = this->getTriangleVertexNumber(triangleId);
+  for(int i = 0; i < triangleVertexNumber; i++) {
+    this->getTriangleVertex(triangleId, i, id);
+    if(!this->isVertexOnBoundary(id)) {
+      return false;
+    }
+  }
+  return true;
+#else
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return false;
@@ -440,6 +462,7 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
     return (TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId) == 1);
 
   return false;
+#endif
 }
 
 template <typename Derived>
@@ -3559,7 +3582,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
 
   const auto countCellEdges
     = [this, &edgeAlreadyProcessed](const SimplexId lcid,
-                                    std::vector<SimplexId> &edgeGid,
+                                    std::vector<LongSimplexId> &edgeGid,
                                     std::vector<SimplexId> &edgeRangeId,
                                     const size_t rangeId, size_t &edgeCount) {
         SimplexId nEdges{};
@@ -3706,7 +3729,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
 
   const auto countCellTriangles
     = [this, &triangleAlreadyProcessed](
-        const SimplexId lcid, std::vector<SimplexId> &triangleGid,
+        const SimplexId lcid, std::vector<LongSimplexId> &triangleGid,
         std::vector<SimplexId> &triangleRangeId, const size_t rangeId,
         size_t &triangleCount) {
         const auto nTriangles{this->getCellTriangleNumberInternal(lcid)};
@@ -3811,15 +3834,10 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
 
   return 0;
 }
-
-int ImplicitTriangulation::preconditionBoundaryVerticesInternal() {
-  if(this->vertexNumber_ == 0) {
-    this->printErr("Empty dataset, precondition skipped");
-    return 1;
-  }
+int ImplicitTriangulation::preconditionGlobalBoundaryInternal() {
   // Reorganize bounds to only execute Allreduce twice
-  double tempBounds[6] = {localBound_[0], localBound_[2], localBound_[4],
-                          localBound_[1], localBound_[3], localBound_[5]};
+  double tempBounds[6] = {localBounds_[0], localBounds_[2], localBounds_[4],
+                          localBounds_[1], localBounds_[3], localBounds_[5]};
   double tempGlobalBounds[6];
   // Compute and send to all processes the lower bounds of the data set
   MPI_Allreduce(
@@ -3829,32 +3847,68 @@ int ImplicitTriangulation::preconditionBoundaryVerticesInternal() {
   MPI_Allreduce(tempBounds + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE, MPI_MAX,
                 ttk::MPIcomm_);
 
-  globalBound_[0] = tempGlobalBounds[0];
-  globalBound_[1] = tempGlobalBounds[3];
-  globalBound_[2] = tempGlobalBounds[1];
-  globalBound_[3] = tempGlobalBounds[4];
-  globalBound_[4] = tempGlobalBounds[2];
-  globalBound_[5] = tempGlobalBounds[5];
+  globalBounds_[0] = tempGlobalBounds[0];
+  globalBounds_[1] = tempGlobalBounds[3];
+  globalBounds_[2] = tempGlobalBounds[1];
+  globalBounds_[3] = tempGlobalBounds[4];
+  globalBounds_[4] = tempGlobalBounds[2];
+  globalBounds_[5] = tempGlobalBounds[5];
+  return 0;
+}
 
-  isOnGlobalBoundary_[0] = (static_cast<int>(std::round(
-                              (localBound_[0] - globalBound_[0]) / spacing_[0]))
-                            == 0);
-  isOnGlobalBoundary_[1] = (static_cast<int>(std::round(
-                              (localBound_[1] - globalBound_[1]) / spacing_[0]))
-                            == 0);
-  isOnGlobalBoundary_[2] = (static_cast<int>(std::round(
-                              (localBound_[2] - globalBound_[2]) / spacing_[1]))
-                            == 0);
-  isOnGlobalBoundary_[3] = (static_cast<int>(std::round(
-                              (localBound_[3] - globalBound_[3]) / spacing_[1]))
-                            == 0);
-  isOnGlobalBoundary_[4] = (static_cast<int>(std::round(
-                              (localBound_[4] - globalBound_[4]) / spacing_[2]))
-                            == 0);
-  isOnGlobalBoundary_[5] = (static_cast<int>(std::round(
-                              (localBound_[5] - globalBound_[5]) / spacing_[2]))
-                            == 0);
+int ImplicitTriangulation::preconditionBoundaryVerticesInternal() {
+  if(this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
+  this->preconditionGlobalBoundary();
+
+  isOnGlobalBoundary_[0]
+    = (static_cast<int>(
+         std::round((localBounds_[0] - globalBounds_[0]) / spacing_[0]))
+       == 0);
+  isOnGlobalBoundary_[1]
+    = (static_cast<int>(
+         std::round((localBounds_[1] - globalBounds_[1]) / spacing_[0]))
+       == 0);
+  isOnGlobalBoundary_[2]
+    = (static_cast<int>(
+         std::round((localBounds_[2] - globalBounds_[2]) / spacing_[1]))
+       == 0);
+  isOnGlobalBoundary_[3]
+    = (static_cast<int>(
+         std::round((localBounds_[3] - globalBounds_[3]) / spacing_[1]))
+       == 0);
+  isOnGlobalBoundary_[4]
+    = (static_cast<int>(
+         std::round((localBounds_[4] - globalBounds_[4]) / spacing_[2]))
+       == 0);
+  isOnGlobalBoundary_[5]
+    = (static_cast<int>(
+         std::round((localBounds_[5] - globalBounds_[5]) / spacing_[2]))
+       == 0);
+
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionBoundaryEdgesInternal() {
+  this->preconditionEdges();
+  if(this->edgeNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+  this->preconditionBoundaryVertices();
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionBoundaryTrianglesInternal() {
+  this->preconditionTriangles();
+  if(this->triangleNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+  this->preconditionBoundaryVertices();
   return 0;
 }
 

@@ -53,6 +53,9 @@ namespace ttk {
   inline MPI_Datatype getMPIType(const unsigned long long ttkNotUsed(val)) {
     return MPI_UNSIGNED_LONG_LONG;
   };
+  inline MPI_Datatype getMPIType(const unsigned char ttkNotUsed(val)) {
+    return MPI_UNSIGNED_CHAR;
+  };
 
   template <typename DT, typename IT>
   struct value {
@@ -412,8 +415,8 @@ namespace ttk {
    * @param[in] neighbors vector of neighboring ranks
    */
   void inline produceRankArray(std::vector<int> &rankArray,
-                               LongSimplexId *globalIds,
-                               unsigned char *ghostCells,
+                               const LongSimplexId *globalIds,
+                               const unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox,
                                std::vector<int> *neighbors) {

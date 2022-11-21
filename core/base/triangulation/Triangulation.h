@@ -1418,6 +1418,15 @@ namespace ttk {
       return abstractTriangulation_->getVertexGlobalIdMapWriteMode();
     }
 
+    inline const std::unordered_map<SimplexId, SimplexId> &
+      getEdgeGlobalIdMap() const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return this->getEdgeGlobalIdMap();
+#endif
+      return abstractTriangulation_->getEdgeGlobalIdMap();
+    }
+
     /// Set the flag for precondtioning of distributed vertices of the
     /// triangulation.
     inline void setHasPreconditionedDistributedVertices(bool flag) override {
@@ -1436,6 +1445,13 @@ namespace ttk {
       return abstractTriangulation_->setLocalBound(bound);
     }
 
+    inline const ttk::LongSimplexId *getEdgesGlobalIds() {
+      return abstractTriangulation_->getEdgesGlobalIds();
+    }
+
+    inline const ttk::LongSimplexId *getTrianglesGlobalIds() {
+      return abstractTriangulation_->getTrianglesGlobalIds();
+    }
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
@@ -2353,6 +2369,44 @@ namespace ttk {
 #endif
       return abstractTriangulation_->preconditionDistributedVertices();
     }
+
+    inline int preconditionEdgeRankArray() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionEdgeRankArray();
+    }
+
+    inline int preconditionTriangleRankArray() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionTriangleRankArray();
+    }
+
+    /// Pre-process the global boundaries when using MPI. Local bounds should
+    /// be set prior to using this function.
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa globalBounds_
+
+    inline int preconditionGlobalBoundary() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionGlobalBoundary();
+    }
+
 #endif // TTK_ENABLE_MPI
 
     /// Pre-process the vertex links.
