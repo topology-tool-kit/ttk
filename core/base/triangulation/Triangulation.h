@@ -1436,13 +1436,6 @@ namespace ttk {
       return abstractTriangulation_->setLocalBound(bound);
     }
 
-    inline const ttk::SimplexId *getEdgesGlobalIds() {
-      return abstractTriangulation_->getEdgesGlobalIds();
-    }
-
-    inline const ttk::SimplexId *getTrianglesGlobalIds() {
-      return abstractTriangulation_->getTrianglesGlobalIds();
-    }
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
