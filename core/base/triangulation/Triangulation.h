@@ -1424,12 +1424,26 @@ namespace ttk {
       abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
     }
 
+    inline bool getHasPreconditionedDistributedCells() const override {
+      return abstractTriangulation_->getHasPreconditionedDistributedCells();
+    }
+
     inline std::vector<int> *getNeighborRanksWriteMode() override {
       return abstractTriangulation_->getNeighborRanksWriteMode();
     }
 
     inline const std::vector<int> *getNeighborRanks() const override {
       return abstractTriangulation_->getNeighborRanks();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getGhostCellsPerOwner() const override {
+      return abstractTriangulation_->getGhostCellsPerOwner();
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getRemoteGhostCells() const override {
+      return abstractTriangulation_->getRemoteGhostCells();
     }
 
     /// Get the corresponding local id for a given global id of a vertex.
@@ -2348,6 +2362,32 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->preconditionDistributedVertices();
+    }
+#endif // TTK_ENABLE_MPI
+
+#if TTK_ENABLE_MPI
+    /// Pre-process the distributed ghost cells .
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getGhostCellsPerOwner()
+    ///   - getRemoteGhostCells()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getGhostCellsPerOwner()
+    /// \sa getRemoteGhostCells()
+    inline int preconditionDistributedCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionDistributedCells();
     }
 #endif // TTK_ENABLE_MPI
 

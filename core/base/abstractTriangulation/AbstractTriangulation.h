@@ -2569,6 +2569,11 @@ namespace ttk {
       return 0;
     }
 
+    // public precondition method (used in Triangulation/ttkAlgorithm)
+    virtual int preconditionDistributedCells() {
+      return 0;
+    }
+
     // global <-> local id mappings
 
     virtual inline SimplexId getVertexGlobalId(const SimplexId lvid) const {
@@ -2768,8 +2773,22 @@ namespace ttk {
       return &(this->neighborRanks_);
     }
 
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getGhostCellsPerOwner() const {
+      return &(this->ghostCellPerOwner_);
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getRemoteGhostCells() const {
+      return &(this->remoteGhostCells_);
+    }
+
     virtual inline void setHasPreconditionedDistributedVertices(bool flag) {
       this->hasPreconditionedDistributedVertices_ = flag;
+    }
+
+    virtual inline bool getHasPreconditionedDistributedCells() const {
+      return this->hasPreconditionedDistributedCells_;
     }
 
   protected:
@@ -3585,9 +3604,6 @@ namespace ttk {
 
     // precondition methods for distributed meshes
 
-    virtual int preconditionDistributedCells() {
-      return 0;
-    }
     virtual int preconditionDistributedEdges() {
       return 0;
     }
