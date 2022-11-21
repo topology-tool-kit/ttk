@@ -3735,8 +3735,8 @@ namespace ttk {
     std::vector<ttk::LongSimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
 
-    double localBounds_[6];
-    double globalBounds_[6];
+    double localBounds_[6]{0, 0, 0, 0, 0, 0};
+    double globalBounds_[6]{0, 0, 0, 0, 0, 0};
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};

@@ -3835,24 +3835,27 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   return 0;
 }
 int ImplicitTriangulation::preconditionGlobalBoundaryInternal() {
-  // Reorganize bounds to only execute Allreduce twice
-  double tempBounds[6] = {localBounds_[0], localBounds_[2], localBounds_[4],
-                          localBounds_[1], localBounds_[3], localBounds_[5]};
-  double tempGlobalBounds[6];
-  // Compute and send to all processes the lower bounds of the data set
-  MPI_Allreduce(
-    tempBounds, tempGlobalBounds, 3, MPI_DOUBLE, MPI_MIN, ttk::MPIcomm_);
+  if(isRunningWithMPI()) {
+    // Reorganize bounds to only execute Allreduce twice
+    double tempBounds[6] = {localBounds_[0], localBounds_[2], localBounds_[4],
+                            localBounds_[1], localBounds_[3], localBounds_[5]};
+    double tempGlobalBounds[6];
+    // Compute and send to all processes the lower bounds of the data set
+    MPI_Allreduce(
+      tempBounds, tempGlobalBounds, 3, MPI_DOUBLE, MPI_MIN, ttk::MPIcomm_);
 
-  // Compute and send to all processes the higher bounds of the data set
-  MPI_Allreduce(tempBounds + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE, MPI_MAX,
-                ttk::MPIcomm_);
+    // Compute and send to all processes the higher bounds of the data set
+    MPI_Allreduce(tempBounds + 3, tempGlobalBounds + 3, 3, MPI_DOUBLE, MPI_MAX,
+                  ttk::MPIcomm_);
 
-  globalBounds_[0] = tempGlobalBounds[0];
-  globalBounds_[1] = tempGlobalBounds[3];
-  globalBounds_[2] = tempGlobalBounds[1];
-  globalBounds_[3] = tempGlobalBounds[4];
-  globalBounds_[4] = tempGlobalBounds[2];
-  globalBounds_[5] = tempGlobalBounds[5];
+    globalBounds_[0] = tempGlobalBounds[0];
+    globalBounds_[1] = tempGlobalBounds[3];
+    globalBounds_[2] = tempGlobalBounds[1];
+    globalBounds_[3] = tempGlobalBounds[4];
+    globalBounds_[4] = tempGlobalBounds[2];
+    globalBounds_[5] = tempGlobalBounds[5];
+  }
+
   return 0;
 }
 
