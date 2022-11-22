@@ -415,14 +415,9 @@ bool ttk::ContourTreeAlignment::alignTree(
   std::vector<std::shared_ptr<ttk::cta::AlignmentNode>> nodes1 = nodes;
   std::vector<std::shared_ptr<ttk::cta::CTNode>> nodes2 = ct->getGraph().first;
 
-  int i = 0;
-  int j = 0;
-
   for(const auto &node1 : nodes1) {
 
     t1 = this->rootAtNode(node1);
-
-    j = 0;
 
     for(const auto &node2 : nodes2) {
 
@@ -442,11 +437,7 @@ bool ttk::ContourTreeAlignment::alignTree(
           res = match.second;
         }
       }
-
-      j++;
     }
-
-    i++;
   }
 
   if(res)
@@ -477,8 +468,6 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(
 
   std::vector<std::shared_ptr<ttk::cta::CTNode>> nodes2 = ct->getGraph().first;
 
-  int i = 0;
-
   t1 = this->rootAtNode(alignmentRoot);
 
   for(const auto &node2 : nodes2) {
@@ -500,8 +489,6 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(
         res = match.second;
       }
     }
-
-    i++;
   }
 
   if(res)

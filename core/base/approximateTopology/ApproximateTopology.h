@@ -561,7 +561,6 @@ void ttk::ApproximateTopology::tripletsToPersistencePairs(
   Timer tm;
   if(triplets.empty())
     return;
-  size_t numberOfPairs = 0;
 
   // // accelerate getRep lookup?
   // std::vector<SimplexId> firstRep(vertexRepresentatives.size());
@@ -597,7 +596,6 @@ void ttk::ApproximateTopology::tripletsToPersistencePairs(
     SimplexId r2 = getRep(std::get<2>(t));
     if(r1 != r2) {
       SimplexId s = std::get<0>(t);
-      numberOfPairs++;
 
       // Add pair
       if(splitTree) {
