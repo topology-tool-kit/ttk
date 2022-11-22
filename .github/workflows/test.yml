@@ -98,6 +98,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
+      env:
+        CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
@@ -267,6 +269,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
+      env:
+        CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
@@ -414,6 +418,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
           -GNinja ^
           ..
+      env:
+        CXXFLAGS: -Werror
 
     - name: Fix clang-cl OpenMP flags in build.ninja
       shell: bash
