@@ -2787,7 +2787,7 @@ namespace ttk {
       this->hasPreconditionedDistributedVertices_ = flag;
     }
 
-    virtual inline bool getHasPreconditionedDistributedCells() const {
+    virtual inline bool hasPreconditionedDistributedCells() const {
       return this->hasPreconditionedDistributedCells_;
     }
 

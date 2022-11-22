@@ -422,7 +422,7 @@ namespace ttk {
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }
-    if(!triangulation->getHasPreconditionedDistributedCells()) {
+    if(!triangulation->hasPreconditionedDistributedCells()) {
       return -1;
     }
     for(int r = 0; r < ttk::MPIsize_; r++) {
