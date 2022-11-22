@@ -10,7 +10,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkVariantArray.h>
 
-#include <ttkMacros.h>
 #include <ttkUtils.h>
 
 // A VTK macro that enables the instantiation of this class via ::New()
@@ -114,14 +113,6 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputBary, inputTrees;
   ttk::ftm::loadBlocks(inputBary, blockBary);
   ttk::ftm::loadBlocks(inputTrees, blockInputTrees);
-  auto arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputBary[0]->GetBlock(0))
-                      ->GetPointData()
-                      ->GetArray("Scalar");
-  if(arrayToGet == nullptr)
-    arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputBary[0]->GetBlock(0))
-                   ->GetPointData()
-                   ->GetArray("Birth");
-  int dataTypeInt = arrayToGet->GetDataType();
 
   // If we have already computed once but the input has changed
   if((baryTreeNodes.size() != 0
@@ -289,11 +280,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
 
   // ------------------------------------------------------------------------------------
 
-  int res = 0;
-  switch(dataTypeInt) {
-    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputBary, inputTrees););
-  }
-  return res;
+  return run<float>(outputVector, inputBary, inputTrees);
 }
 
 template <class dataType>

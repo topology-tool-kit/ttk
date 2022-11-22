@@ -1,5 +1,4 @@
 #include <ttkFTMTreeUtils.h>
-#include <ttkMacros.h>
 #include <ttkMergeTreeDistanceMatrix.h>
 #include <ttkUtils.h>
 
@@ -285,16 +284,6 @@ int ttkMergeTreeDistanceMatrix::RequestData(
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
 
-  auto arrayToGet
-    = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-        ->GetPointData()
-        ->GetArray("Scalar");
-  if(arrayToGet == nullptr)
-    arrayToGet = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-                   ->GetCellData()
-                   ->GetArray(PersistenceBirthName);
-  int dataTypeInt = arrayToGet->GetDataType();
-
   // --- Load field data parameters
   if(UseFieldDataParameters) {
     printMsg("Load parameters from field data.");
@@ -311,10 +300,5 @@ int ttkMergeTreeDistanceMatrix::RequestData(
     }
   }
 
-  int res = 0;
-  switch(dataTypeInt) {
-    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputTrees, inputTrees2));
-  }
-
-  return res;
+  return run<float>(outputVector, inputTrees, inputTrees2);
 }
