@@ -1441,7 +1441,7 @@ namespace ttk {
       return abstractTriangulation_->getGhostCellsPerOwner();
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::vector<SimplexId>> *
       getRemoteGhostCells() const override {
       return abstractTriangulation_->getRemoteGhostCells();
     }
