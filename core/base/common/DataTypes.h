@@ -9,7 +9,11 @@
 
 namespace ttk {
   /// \brief Identifier type for simplices of any dimension.
+#ifdef TTK_HW_IS_32BITS // i386
+  using LongSimplexId = int;
+#else // amd64
   using LongSimplexId = long long int;
+#endif // TTK_HW_IS_32BITS
 
   /// \brief Identifier type for simplices of any dimension.
 #ifdef TTK_ENABLE_64BIT_IDS
