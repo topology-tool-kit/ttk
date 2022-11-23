@@ -812,9 +812,8 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
                [](const Cell &c) -> bool { return c.dim_ == 2; });
 
   using Vpath = std::vector<Cell>;
-  using SepSads = std::pair<Cell, Cell>;
 
-  std::vector<std::vector<SepSads>> sepsByThread(saddles2.size());
+  std::vector<std::vector<Separatrix>> sepsByThread(saddles2.size());
   std::vector<std::vector<Vpath>> sepsGeomByThread(saddles2.size());
 
 #ifdef TTK_ENABLE_OPENMP
@@ -829,6 +828,7 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
     discreteGradient_.getDescendingWall(
       s2, mask, triangulation, nullptr, &saddles1);
 
+    SimplexId j{};
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
 
@@ -840,34 +840,15 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
         sepsGeomByThread[i].emplace_back(std::move(vpath));
-        sepsByThread[i].emplace_back(s1, s2);
+        sepsByThread[i].emplace_back(true, s1, s2, false, j++);
       }
     }
   }
 
-  // count total number of separatrices in sepsByThread
-  std::vector<size_t> partialSepsId(sepsByThread.size() + 1, 0);
+  this->flattenSeparatricesVectors(sepsByThread, sepsGeomByThread);
 
-  for(size_t i = 0; i < sepsByThread.size(); ++i) {
-    partialSepsId[i + 1] = partialSepsId[i] + sepsByThread[i].size();
-  }
-
-  // pre-allocate output vectors
-  separatrices.resize(partialSepsId.back());
-  separatricesGeometry.resize(partialSepsId.back());
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < sepsByThread.size(); ++i) {
-    for(size_t j = 0; j < sepsByThread[i].size(); ++j) {
-      const auto &sads = sepsByThread[i][j];
-      const size_t k = partialSepsId[i] + j;
-      separatrices[k] = Separatrix{
-        true, sads.first, sads.second, false, static_cast<SimplexId>(k)};
-      separatricesGeometry[k] = std::move(sepsGeomByThread[i][j]);
-    }
-  }
+  separatrices = std::move(sepsByThread[0]);
+  separatricesGeometry = std::move(sepsGeomByThread[0]);
 
   return 0;
 }
