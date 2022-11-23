@@ -756,11 +756,10 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
   }
   const SimplexId numberOfSaddles = saddleIndexes.size();
 
-  // estimation of the number of separatrices, apriori :
-  // numberOfAscendingPaths=2, numberOfDescendingPaths=2
-  const SimplexId numberOfSeparatrices = 4 * numberOfSaddles;
-  separatrices.resize(numberOfSeparatrices);
-  separatricesGeometry.resize(numberOfSeparatrices);
+  using Vpath = std::vector<Cell>;
+
+  std::vector<std::vector<Separatrix>> sepsPerSaddle(numberOfSaddles);
+  std::vector<std::vector<Vpath>> sepsGeomPerSaddle(numberOfSaddles);
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
@@ -782,13 +781,16 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
 
       const Cell &lastCell = vpath.back();
       if(lastCell.dim_ == dim and discreteGradient_.isCellCritical(lastCell)) {
-        const SimplexId separatrixIndex = 4 * i + j;
-        separatricesGeometry[separatrixIndex] = std::move(vpath);
-        separatrices[separatrixIndex]
-          = Separatrix(true, saddle, lastCell, false, separatrixIndex);
+        sepsGeomPerSaddle[i].emplace_back(std::move(vpath));
+        sepsPerSaddle[i].emplace_back(true, saddle, lastCell, false, i);
       }
     }
   }
+
+  this->flattenSeparatricesVectors(sepsPerSaddle, sepsGeomPerSaddle);
+
+  separatrices = std::move(sepsPerSaddle[0]);
+  separatricesGeometry = std::move(sepsGeomPerSaddle[0]);
 
   return 0;
 }

@@ -25,7 +25,7 @@ void ttk::MorseSmaleComplex::flattenSeparatricesVectors(
     for(size_t j = 0; j < separatrices[i].size(); ++j) {
       // shift separatrices geometry_
       for(size_t k = 0; k < separatrices[i][j].geometry_.size(); ++k) {
-        separatrices[i][j].geometry_[k] += offset;
+        separatrices[i][j].geometry_[k] = offset + j;
       }
       // flatten separatrices1 and separatricesGeometry1
       separatrices[0][offset + j] = std::move(separatrices[i][j]);
