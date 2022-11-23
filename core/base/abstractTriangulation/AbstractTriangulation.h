@@ -2548,11 +2548,11 @@ namespace ttk {
       return this->vertGid_;
     }
 
-    inline const ttk::LongSimplexId *getEdgesGlobalIds() const {
+    inline const ttk::SimplexId *getEdgesGlobalIds() const {
       return this->edgeLidToGid_.data();
     }
 
-    inline const ttk::LongSimplexId *getTrianglesGlobalIds() const {
+    inline const ttk::SimplexId *getTrianglesGlobalIds() const {
       return this->triangleLidToGid_.data();
     }
 
@@ -2572,13 +2572,8 @@ namespace ttk {
       return this->cellRankArray_;
     }
 
-    inline void setLocalBound(double bound[6]) {
-      this->localBounds_[0] = bound[0];
-      this->localBounds_[1] = bound[1];
-      this->localBounds_[2] = bound[2];
-      this->localBounds_[3] = bound[3];
-      this->localBounds_[4] = bound[4];
-      this->localBounds_[5] = bound[5];
+    inline void setLocalBound(std::array<double, 6> &bound) {
+      this->localBounds_ = bound;
     };
 
     /// Pre-process the global boundaries when using MPI. Local bounds should
@@ -2808,38 +2803,6 @@ namespace ttk {
       return &(this->vertexGidToLid_);
     }
 
-    virtual inline const std::unordered_map<SimplexId, SimplexId> &
-      getEdgeGlobalIdMap() const {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
-         && this->getDimensionality() != 3) {
-        this->printErr("Only 1D, 2D and 3D datasets are supported");
-      }
-      if(!this->hasPreconditionedDistributedEdges_) {
-        this->printErr("VertexGlobalMap query without pre-process!");
-        this->printErr(
-          "Please call preconditionDistributedEdges() in a pre-process.");
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->edgeGidToLid_;
-    }
-
-    virtual inline const std::unordered_map<SimplexId, SimplexId> &
-      getTriangleGlobalIdMap() const {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
-         && this->getDimensionality() != 3) {
-        this->printErr("Only 1D, 2D and 3D datasets are supported");
-      }
-      if(!this->hasPreconditionedDistributedEdges_) {
-        this->printErr("VertexGlobalMap query without pre-process!");
-        this->printErr(
-          "Please call preconditionDistributedTriangles() in a pre-process.");
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->triangleGidToLid_;
-    }
-
     virtual inline std::vector<int> *getNeighborRanksWriteMode() {
       return &(this->neighborRanks_);
     }
@@ -2885,7 +2848,7 @@ namespace ttk {
       return it->second;
     }
 
-    inline LongSimplexId getEdgeGlobalIdInternal(const SimplexId leid) const {
+    inline SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const {
       return this->edgeLidToGid_[leid];
     }
 
@@ -2899,8 +2862,7 @@ namespace ttk {
       return it->second;
     }
 
-    inline LongSimplexId
-      getTriangleGlobalIdInternal(const SimplexId ltid) const {
+    inline SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const {
       return this->triangleLidToGid_[ltid];
     }
 
@@ -3730,13 +3692,13 @@ namespace ttk {
     // (neighboring) ranks (per MPI rank)
     std::vector<std::vector<SimplexId>> remoteGhostCells_{};
 
-    std::vector<ttk::LongSimplexId> edgeLidToGid_{};
+    std::vector<ttk::SimplexId> edgeLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
-    std::vector<ttk::LongSimplexId> triangleLidToGid_{};
+    std::vector<ttk::SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
 
-    double localBounds_[6]{0, 0, 0, 0, 0, 0};
-    double globalBounds_[6]{0, 0, 0, 0, 0, 0};
+    std::array<double, 6> localBounds_;
+    std::array<double, 6> globalBounds_;
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};

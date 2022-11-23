@@ -103,10 +103,10 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     for(int i = 0; i < edgeNumber; ++i) {
       charBoundary[i] = boundaryEdges_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId>(
+    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId, ttk::SimplexId>(
       charBoundary.data(), this->edgeRankArray_.data(),
-      this->getEdgesGlobalIds(), this->getEdgeGlobalIdMap(), edgeNumber,
-      ttk::MPIcomm_, this->getNeighborRanks());
+      this->getEdgesGlobalIds(), this->edgeGidToLid_, edgeNumber, ttk::MPIcomm_,
+      this->getNeighborRanks());
     for(int i = 0; i < edgeNumber; ++i) {
       boundaryEdges_[i] = (charBoundary[i] == '1');
     }
@@ -208,10 +208,10 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     for(int i = 0; i < triangleNumber; ++i) {
       charBoundary[i] = boundaryTriangles_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId>(
+    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId, ttk::SimplexId>(
       charBoundary.data(), this->triangleRankArray_.data(),
-      this->getTrianglesGlobalIds(), this->getTriangleGlobalIdMap(),
-      triangleNumber, ttk::MPIcomm_, this->getNeighborRanks());
+      this->getTrianglesGlobalIds(), this->triangleGidToLid_, triangleNumber,
+      ttk::MPIcomm_, this->getNeighborRanks());
     for(int i = 0; i < triangleNumber; ++i) {
       boundaryTriangles_[i] = (charBoundary[i] == '1');
     }
@@ -280,7 +280,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     for(int i = 0; i < vertexNumber_; ++i) {
       charBoundary[i] = boundaryVertices_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId>(
+    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId, ttk::LongSimplexId>(
       charBoundary.data(), this->vertRankArray_, this->getVertsGlobalIds(),
       this->getVertexGlobalIdMap(), vertexNumber_, ttk::MPIcomm_,
       this->getNeighborRanks());
@@ -1052,7 +1052,7 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
 
   const auto countCellEdges
     = [this, &edgeAlreadyProcessed](const SimplexId lcid,
-                                    std::vector<LongSimplexId> &edgeGid,
+                                    std::vector<SimplexId> &edgeGid,
                                     std::vector<SimplexId> &edgeRangeId,
                                     const size_t rangeId, size_t &edgeCount) {
         SimplexId nEdges{};
@@ -1193,7 +1193,7 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
 
   const auto countCellTriangles
     = [this, &triangleAlreadyProcessed](
-        const SimplexId lcid, std::vector<LongSimplexId> &triangleGid,
+        const SimplexId lcid, std::vector<SimplexId> &triangleGid,
         std::vector<SimplexId> &triangleRangeId, const size_t rangeId,
         size_t &triangleCount) {
         const auto nTriangles{this->getCellTriangleNumberInternal(lcid)};

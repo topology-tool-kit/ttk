@@ -3585,7 +3585,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
 
   const auto countCellEdges
     = [this, &edgeAlreadyProcessed](const SimplexId lcid,
-                                    std::vector<LongSimplexId> &edgeGid,
+                                    std::vector<SimplexId> &edgeGid,
                                     std::vector<SimplexId> &edgeRangeId,
                                     const size_t rangeId, size_t &edgeCount) {
         SimplexId nEdges{};
@@ -3732,7 +3732,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
 
   const auto countCellTriangles
     = [this, &triangleAlreadyProcessed](
-        const SimplexId lcid, std::vector<LongSimplexId> &triangleGid,
+        const SimplexId lcid, std::vector<SimplexId> &triangleGid,
         std::vector<SimplexId> &triangleRangeId, const size_t rangeId,
         size_t &triangleCount) {
         const auto nTriangles{this->getCellTriangleNumberInternal(lcid)};

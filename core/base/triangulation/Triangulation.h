@@ -1418,15 +1418,6 @@ namespace ttk {
       return abstractTriangulation_->getVertexGlobalIdMapWriteMode();
     }
 
-    inline const std::unordered_map<SimplexId, SimplexId> &
-      getEdgeGlobalIdMap() const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return this->getEdgeGlobalIdMap();
-#endif
-      return abstractTriangulation_->getEdgeGlobalIdMap();
-    }
-
     /// Set the flag for precondtioning of distributed vertices of the
     /// triangulation.
     inline void setHasPreconditionedDistributedVertices(bool flag) override {
@@ -1441,15 +1432,15 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
-    inline void setLocalBound(double bound[6]) {
+    inline void setLocalBound(std::array<double, 6> &bound) {
       return abstractTriangulation_->setLocalBound(bound);
     }
 
-    inline const ttk::LongSimplexId *getEdgesGlobalIds() {
+    inline const ttk::SimplexId *getEdgesGlobalIds() {
       return abstractTriangulation_->getEdgesGlobalIds();
     }
 
-    inline const ttk::LongSimplexId *getTrianglesGlobalIds() {
+    inline const ttk::SimplexId *getTrianglesGlobalIds() {
       return abstractTriangulation_->getTrianglesGlobalIds();
     }
     /// Get the corresponding local id for a given global id of a vertex.

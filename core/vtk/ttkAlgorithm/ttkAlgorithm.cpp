@@ -818,8 +818,8 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     triangulation->setCellRankArray(
       ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
   }
-  double bounds[6];
-  input->GetBounds(bounds);
+  std::array<double, 6> bounds;
+  input->GetBounds(bounds.data());
   triangulation->setLocalBound(bounds);
 }
 #endif

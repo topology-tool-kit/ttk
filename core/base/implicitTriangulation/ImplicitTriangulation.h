@@ -279,7 +279,7 @@ namespace ttk {
     // the cellGid_ array only applies on cubic cells, not on
     // simplicial ones...
     std::vector<SimplexId> cellLidToGid_{};
-    bool isOnGlobalBoundary_[6];
+    std::array<bool, 6> isOnGlobalBoundary_;
 
 #endif // TTK_ENABLE_MPI
 
