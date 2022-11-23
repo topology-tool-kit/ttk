@@ -684,9 +684,8 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
   }
   const SimplexId numberOfSaddles = saddleIndexes.size();
 
-  // estimation of the number of separatrices, apriori :
-  // numberOfAscendingPaths=2, numberOfDescendingPaths=2
-  const SimplexId numberOfSeparatrices = 4 * numberOfSaddles;
+  // only 2 descending separatrices per 1-saddle
+  const SimplexId numberOfSeparatrices = 2 * numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
   separatricesGeometry.resize(numberOfSeparatrices);
 
@@ -703,8 +702,6 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
       const Cell &saddle1 = saddle;
 
       for(int j = 0; j < 2; ++j) {
-        const int shift = j + 2;
-
         SimplexId vertexId;
         triangulation.getEdgeVertex(saddle1.id_, j, vertexId);
 
@@ -715,7 +712,7 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
 
         const Cell &lastCell = vpath.back();
         if(lastCell.dim_ == 0 and discreteGradient_.isCellCritical(lastCell)) {
-          const SimplexId separatrixIndex = 4 * i + shift;
+          const SimplexId separatrixIndex = 2 * i + j;
 
           separatricesGeometry[separatrixIndex] = std::move(vpath);
           separatrices[separatrixIndex]
