@@ -2775,7 +2775,7 @@ namespace ttk {
 
     virtual inline const std::vector<std::vector<SimplexId>> *
       getGhostCellsPerOwner() const {
-      return &(this->ghostCellPerOwner_);
+      return &(this->ghostCellsPerOwner_);
     }
 
     virtual inline const std::vector<std::vector<SimplexId>> *
@@ -3658,7 +3658,7 @@ namespace ttk {
     // list of neighboring ranks (sharing ghost cells to current rank)
     std::vector<int> neighborRanks_{};
     // global ids of (local) ghost cells per each MPI (neighboring) rank
-    std::vector<std::vector<SimplexId>> ghostCellPerOwner_{};
+    std::vector<std::vector<SimplexId>> ghostCellsPerOwner_{};
     // global ids of local (owned) cells that are ghost cells of other
     // (neighboring) ranks (per MPI rank)
     std::vector<std::vector<SimplexId>> remoteGhostCells_{};

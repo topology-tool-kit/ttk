@@ -614,12 +614,12 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     this->cellGidToLid_[this->cellGid_[lcid]] = lcid;
   }
 
-  this->ghostCellPerOwner_.resize(ttk::MPIsize_);
+  this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     if(this->cellRankArray_[lcid] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
-      this->ghostCellPerOwner_[this->cellRankArray_[lcid]].emplace_back(
+      this->ghostCellsPerOwner_[this->cellRankArray_[lcid]].emplace_back(
         this->cellGid_[lcid]);
     }
   }
@@ -633,15 +633,15 @@ int ExplicitTriangulation::preconditionDistributedCells() {
 
   for(const auto neigh : this->neighborRanks_) {
     // 1. send to neigh number of ghost cells owned by neigh
-    const auto nCells{this->ghostCellPerOwner_[neigh].size()};
+    const auto nCells{this->ghostCellsPerOwner_[neigh].size()};
     MPI_Sendrecv(&nCells, 1, ttk::getMPIType(nCells), neigh, ttk::MPIrank_,
                  &nOwnedGhostCellsPerRank[neigh], 1, ttk::getMPIType(nCells),
                  neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
     this->remoteGhostCells_[neigh].resize(nOwnedGhostCellsPerRank[neigh]);
 
     // 2. send to neigh list of ghost cells owned by neigh
-    MPI_Sendrecv(this->ghostCellPerOwner_[neigh].data(),
-                 this->ghostCellPerOwner_[neigh].size(), MIT, neigh,
+    MPI_Sendrecv(this->ghostCellsPerOwner_[neigh].data(),
+                 this->ghostCellsPerOwner_[neigh].size(), MIT, neigh,
                  ttk::MPIrank_, this->remoteGhostCells_[neigh].data(),
                  this->remoteGhostCells_[neigh].size(), MIT, neigh, neigh,
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
@@ -851,7 +851,7 @@ int ttk::ExplicitTriangulation::exchangeDistributedInternal(
       }
       // receiving side
       globalIdPerLocalGhostCell[neigh].resize(
-        nSimplicesPerCell * this->ghostCellPerOwner_[neigh].size());
+        nSimplicesPerCell * this->ghostCellsPerOwner_[neigh].size());
 
       // 4. transfer back global simplex ids
       MPI_Sendrecv(globalIdPerOwnedGhostCell[neigh].data(),
@@ -863,8 +863,8 @@ int ttk::ExplicitTriangulation::exchangeDistributedInternal(
 
     // 5. extend local <-> global simplex ids mappings
     for(const auto neigh : this->neighborRanks_) {
-      for(size_t i = 0; i < this->ghostCellPerOwner_[neigh].size(); ++i) {
-        const auto gcid{this->ghostCellPerOwner_[neigh][i]};
+      for(size_t i = 0; i < this->ghostCellsPerOwner_[neigh].size(); ++i) {
+        const auto gcid{this->ghostCellsPerOwner_[neigh][i]};
         const auto lcid{this->cellGidToLid_[gcid]};
         for(int j = 0; j < nSimplicesPerCell; ++j) {
           const auto geid{

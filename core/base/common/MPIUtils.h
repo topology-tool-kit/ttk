@@ -122,11 +122,11 @@ namespace ttk {
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors->size();
-      const std::vector<std::vector<ttk::SimplexId>> *ghostCellPerOwner
+      const std::vector<std::vector<ttk::SimplexId>> *ghostCellsPerOwner
         = triangulation->getGhostCellsPerOwner();
       // receive the scalar values
       for(int r = 0; r < neighborNumber; r++) {
-        ttk::SimplexId nValues = ghostCellPerOwner->at(neighbors->at(r)).size();
+        ttk::SimplexId nValues = ghostCellsPerOwner->at(neighbors->at(r)).size();
         std::vector<DT> receivedValues(nValues * dimensionNumber);
         if(nValues > 0) {
           MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT, r,
@@ -136,9 +136,9 @@ namespace ttk {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
               ttk::SimplexId globalId
-                = ghostCellPerOwner->at(neighbors->at(r))[i];
+                = ghostCellsPerOwner->at(neighbors->at(r))[i];
               ttk::SimplexId localId
-                = triangulation->getVertexLocalId(globalId);
+                = triangulation->getCellLocalId(globalId);
               scalarArray[localId * dimensionNumber + j] = receivedVal;
             }
           }
@@ -160,7 +160,7 @@ namespace ttk {
             for(int j = 0; j < dimensionNumber; j++) {
               ttk::SimplexId globalId = ghostCellsForThisRank[i];
               ttk::SimplexId localId
-                = triangulation->getVertexLocalId(globalId);
+                = triangulation->getCellLocalId(globalId);
               valuesToSend[i * dimensionNumber + j]
                 = scalarArray[localId * dimensionNumber + j];
             }
@@ -438,7 +438,7 @@ namespace ttk {
      * for every rank
      * this method is for usage without a triangulation, if a triangulation is
      available,
-     * use exchangeGhostCellScalars(), it is more performant when used multiple
+     * use exchangeGhostCells(), it is more performant when used multiple
      times
 
      * @param[out] scalarArray the scalar array which we want to fill and which
