@@ -245,15 +245,6 @@ namespace ttk {
      * and Saddle connectors.
      */
     struct Separatrix {
-      explicit Separatrix() = default;
-
-      // initialization with one segment
-      explicit Separatrix(const dcg::Cell &saddle,
-                          const dcg::Cell &extremum,
-                          const SimplexId segmentGeometry)
-        : source_{saddle}, destination_{extremum}, geometry_{segmentGeometry} {
-      }
-
       /** Source cell of the separatrix. */
       dcg::Cell source_;
       /** Destination cell of the separatrix. */
@@ -263,7 +254,7 @@ namespace ttk {
        * container corresponding to a dense representation
        * of the geometry (i.e. separatricesGeometry).
        */
-      SimplexId geometry_;
+      std::vector<dcg::Cell> geometry_;
     };
 
     /**
@@ -271,44 +262,37 @@ namespace ttk {
      * gradient.
      */
     template <typename triangulationType>
-    int getDescendingSeparatrices1(
-      const std::vector<dcg::Cell> &criticalPoints,
-      std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
-      const triangulationType &triangulation) const;
+    int
+      getDescendingSeparatrices1(const std::vector<dcg::Cell> &criticalPoints,
+                                 std::vector<Separatrix> &separatrices,
+                                 const triangulationType &triangulation) const;
 
     /**
      * Compute the ascending 1-separatrices by reading into the discrete
      * gradient.
      */
     template <typename triangulationType>
-    int getAscendingSeparatrices1(
-      const std::vector<dcg::Cell> &criticalPoints,
-      std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
-      const triangulationType &triangulation) const;
+    int getAscendingSeparatrices1(const std::vector<dcg::Cell> &criticalPoints,
+                                  std::vector<Separatrix> &separatrices,
+                                  const triangulationType &triangulation) const;
 
     /**
      * Compute the saddle-connectors by reading into the discrete
      * gradient.
      */
     template <typename triangulationType>
-    int getSaddleConnectors(
-      const std::vector<dcg::Cell> &criticalPoints,
-      std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
-      const triangulationType &triangulation) const;
+    int getSaddleConnectors(const std::vector<dcg::Cell> &criticalPoints,
+                            std::vector<Separatrix> &separatrices,
+                            const triangulationType &triangulation) const;
 
     /**
      * Compute the geometrical embedding of the 1-separatrices.
      */
     template <typename triangulationType>
-    int setSeparatrices1(
-      Output1Separatrices &outSeps1,
-      const std::vector<Separatrix> &separatrices,
-      const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
-      const SimplexId *const offsets,
-      const triangulationType &triangulation) const;
+    int setSeparatrices1(Output1Separatrices &outSeps1,
+                         const std::vector<Separatrix> &separatrices,
+                         const SimplexId *const offsets,
+                         const triangulationType &triangulation) const;
 
     /**
      * Compute the 2-separatrices by reading into the discrete
@@ -318,7 +302,6 @@ namespace ttk {
     int getDescendingSeparatrices2(
       const std::vector<dcg::Cell> &criticalPoints,
       std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       std::vector<std::set<SimplexId>> &separatricesSaddles,
       const triangulationType &triangulation) const;
 
@@ -330,7 +313,6 @@ namespace ttk {
     int setDescendingSeparatrices2(
       Output2Separatrices &outSeps2,
       const std::vector<Separatrix> &separatrices,
-      const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       const std::vector<std::set<SimplexId>> &separatricesSaddles,
       const SimplexId *const offsets,
       const triangulationType &triangulation) const;
@@ -362,7 +344,6 @@ namespace ttk {
     int getAscendingSeparatrices2(
       const std::vector<dcg::Cell> &criticalPoints,
       std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       std::vector<std::set<SimplexId>> &separatricesSaddles,
       const triangulationType &triangulation) const;
 
@@ -374,7 +355,6 @@ namespace ttk {
     int setAscendingSeparatrices2(
       Output2Separatrices &outSeps2,
       const std::vector<Separatrix> &separatrices,
-      const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       const std::vector<std::set<SimplexId>> &separatricesSaddles,
       const SimplexId *const offsets,
       const triangulationType &triangulation) const;
@@ -383,9 +363,7 @@ namespace ttk {
      * @brief Flatten the vectors of vectors into their first component
      */
     void flattenSeparatricesVectors(
-      std::vector<std::vector<Separatrix>> &separatrices,
-      std::vector<std::vector<std::vector<ttk::dcg::Cell>>>
-        &separatricesGeometry) const;
+      std::vector<std::vector<Separatrix>> &separatrices) const;
 
     /**
      * Compute the ascending manifold of the maxima.
@@ -504,7 +482,6 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
 
   std::vector<std::vector<Separatrix>> separatrices1{};
-  std::vector<std::vector<std::vector<dcg::Cell>>> separatricesGeometry1;
 
   // 1-separatrices
   Timer tm1sep{};
@@ -512,10 +489,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim > 1 && ComputeDescendingSeparatrices1) {
     Timer tmp;
     separatrices1.emplace_back();
-    separatricesGeometry1.emplace_back();
 
-    getDescendingSeparatrices1(criticalPoints, separatrices1.back(),
-                               separatricesGeometry1.back(), triangulation);
+    getDescendingSeparatrices1(
+      criticalPoints, separatrices1.back(), triangulation);
 
     this->printMsg("  Descending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_,
@@ -525,10 +501,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim > 1 && ComputeAscendingSeparatrices1) {
     Timer tmp;
     separatrices1.emplace_back();
-    separatricesGeometry1.emplace_back();
 
-    getAscendingSeparatrices1(criticalPoints, separatrices1.back(),
-                              separatricesGeometry1.back(), triangulation);
+    getAscendingSeparatrices1(
+      criticalPoints, separatrices1.back(), triangulation);
 
     this->printMsg("  Ascending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_,
@@ -539,10 +514,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim == 3 && ComputeSaddleConnectors) {
     Timer tmp;
     separatrices1.emplace_back();
-    separatricesGeometry1.emplace_back();
 
-    getSaddleConnectors(criticalPoints, separatrices1.back(),
-                        separatricesGeometry1.back(), triangulation);
+    getSaddleConnectors(criticalPoints, separatrices1.back(), triangulation);
 
     this->printMsg("  Saddle connectors computed", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_, debug::LineMode::NEW,
@@ -554,9 +527,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
          || ComputeSaddleConnectors)) {
     Timer tmp{};
 
-    flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
-    setSeparatrices1(outSeps1, separatrices1[0], separatricesGeometry1[0],
-                     offsets, triangulation);
+    this->flattenSeparatricesVectors(separatrices1);
+    setSeparatrices1(outSeps1, separatrices1[0], offsets, triangulation);
 
     this->printMsg("  1-separatrices set", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_, debug::LineMode::NEW,
@@ -572,13 +544,11 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim == 3 && ComputeDescendingSeparatrices2) {
     Timer tmp;
     std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     std::vector<std::set<SimplexId>> separatricesSaddles;
-    getDescendingSeparatrices2(criticalPoints, separatrices,
-                               separatricesGeometry, separatricesSaddles,
-                               triangulation);
-    setDescendingSeparatrices2(outSeps2, separatrices, separatricesGeometry,
-                               separatricesSaddles, offsets, triangulation);
+    getDescendingSeparatrices2(
+      criticalPoints, separatrices, separatricesSaddles, triangulation);
+    setDescendingSeparatrices2(
+      outSeps2, separatrices, separatricesSaddles, offsets, triangulation);
 
     this->printMsg("  Descending 2-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_,
@@ -588,13 +558,11 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim == 3 && ComputeAscendingSeparatrices2) {
     Timer tmp;
     std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     std::vector<std::set<SimplexId>> separatricesSaddles;
-    getAscendingSeparatrices2(criticalPoints, separatrices,
-                              separatricesGeometry, separatricesSaddles,
-                              triangulation);
-    setAscendingSeparatrices2(outSeps2, separatrices, separatricesGeometry,
-                              separatricesSaddles, offsets, triangulation);
+    getAscendingSeparatrices2(
+      criticalPoints, separatrices, separatricesSaddles, triangulation);
+    setAscendingSeparatrices2(
+      outSeps2, separatrices, separatricesSaddles, offsets, triangulation);
 
     this->printMsg("  Ascending 2-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_,
@@ -660,7 +628,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::vector<Cell>> &separatricesGeometry,
   const triangulationType &triangulation) const {
 
   std::vector<SimplexId> saddleIndexes;
@@ -676,7 +643,6 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
   // only 2 descending separatrices per 1-saddle
   const SimplexId numberOfSeparatrices = 2 * numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
-  separatricesGeometry.resize(numberOfSeparatrices);
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
@@ -701,11 +667,9 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
 
         const Cell &lastCell = vpath.back();
         if(lastCell.dim_ == 0 and discreteGradient_.isCellCritical(lastCell)) {
-          const SimplexId separatrixIndex = 2 * i + j;
-
-          separatricesGeometry[separatrixIndex] = std::move(vpath);
-          separatrices[separatrixIndex]
-            = Separatrix(saddle, lastCell, separatrixIndex);
+          separatrices[2 * i + j].source_ = saddle;
+          separatrices[2 * i + j].destination_ = lastCell;
+          separatrices[2 * i + j].geometry_ = std::move(vpath);
         }
       }
     }
@@ -718,7 +682,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::vector<Cell>> &separatricesGeometry,
   const triangulationType &triangulation) const {
 
   const auto dim{triangulation.getDimensionality()};
@@ -742,10 +705,7 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
   }
   const SimplexId numberOfSaddles = saddleIndexes.size();
 
-  using Vpath = std::vector<Cell>;
-
   std::vector<std::vector<Separatrix>> sepsPerSaddle(numberOfSaddles);
-  std::vector<std::vector<Vpath>> sepsGeomPerSaddle(numberOfSaddles);
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
@@ -767,16 +727,17 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
 
       const Cell &lastCell = vpath.back();
       if(lastCell.dim_ == dim and discreteGradient_.isCellCritical(lastCell)) {
-        sepsGeomPerSaddle[i].emplace_back(std::move(vpath));
-        sepsPerSaddle[i].emplace_back(saddle, lastCell, i);
+        sepsPerSaddle[i].emplace_back();
+        sepsPerSaddle[i].back().source_ = saddle;
+        sepsPerSaddle[i].back().destination_ = lastCell;
+        sepsPerSaddle[i].back().geometry_ = std::move(vpath);
       }
     }
   }
 
-  this->flattenSeparatricesVectors(sepsPerSaddle, sepsGeomPerSaddle);
+  this->flattenSeparatricesVectors(sepsPerSaddle);
 
   separatrices = std::move(sepsPerSaddle[0]);
-  separatricesGeometry = std::move(sepsGeomPerSaddle[0]);
 
   return 0;
 }
@@ -785,7 +746,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getSaddleConnectors(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::vector<Cell>> &separatricesGeometry,
   const triangulationType &triangulation) const {
 
   const auto nTriangles = triangulation.getNumberOfTriangles();
@@ -803,7 +763,6 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
   using Vpath = std::vector<Cell>;
 
   std::vector<std::vector<Separatrix>> sepsByThread(saddles2.size());
-  std::vector<std::vector<Vpath>> sepsGeomByThread(saddles2.size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
@@ -817,7 +776,6 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
     discreteGradient_.getDescendingWall(
       s2, mask, triangulation, nullptr, &saddles1);
 
-    SimplexId j{};
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
 
@@ -828,16 +786,17 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
-        sepsGeomByThread[i].emplace_back(std::move(vpath));
-        sepsByThread[i].emplace_back(s1, s2, j++);
+        sepsByThread[i].emplace_back();
+        sepsByThread[i].back().source_ = s1;
+        sepsByThread[i].back().destination_ = s2;
+        sepsByThread[i].back().geometry_ = std::move(vpath);
       }
     }
   }
 
-  this->flattenSeparatricesVectors(sepsByThread, sepsGeomByThread);
+  this->flattenSeparatricesVectors(sepsByThread);
 
   separatrices = std::move(sepsByThread[0]);
-  separatricesGeometry = std::move(sepsGeomByThread[0]);
 
   return 0;
 }
@@ -846,7 +805,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::setSeparatrices1(
   Output1Separatrices &outSeps1,
   const std::vector<Separatrix> &separatrices,
-  const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
@@ -865,10 +823,6 @@ int ttk::MorseSmaleComplex::setSeparatrices1(
   auto npoints{static_cast<size_t>(outSeps1.pt.numberOfPoints_)};
   // total number of separatrices cells
   auto ncells{static_cast<size_t>(outSeps1.cl.numberOfCells_)};
-  // list of valid geometryId to flatten loops
-  std::vector<SimplexId> validGeomIds{};
-  // corresponding separatrix index in separatrices array
-  std::vector<SimplexId> geomIdSep{};
   // points beginning id for each separatrix geometry
   std::vector<size_t> geomPointsBegId{npoints};
   // cells beginning id for each separatrix geometry
@@ -877,14 +831,11 @@ int ttk::MorseSmaleComplex::setSeparatrices1(
   // count total number of points and cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &sep = separatrices[i];
-    const auto &geomId{sep.geometry_};
-    const auto sepSize = separatricesGeometry[geomId].size();
+    const auto sepSize = sep.geometry_.size();
     npoints += sepSize;
     ncells += sepSize - 1;
     geomPointsBegId.emplace_back(npoints);
     geomCellsBegId.emplace_back(ncells);
-    validGeomIds.emplace_back(geomId);
-    geomIdSep.emplace_back(i);
   }
 
   const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
@@ -901,16 +852,16 @@ int ttk::MorseSmaleComplex::setSeparatrices1(
   outSeps1.cl.destinationIds_.resize(ncells);
   outSeps1.cl.separatrixIds_.resize(ncells);
   outSeps1.cl.separatrixTypes_.resize(ncells);
-  separatrixFunctionMaxima.resize(separatrixId + validGeomIds.size());
-  separatrixFunctionMinima.resize(separatrixId + validGeomIds.size());
+  separatrixFunctionMaxima.resize(separatrixId + separatrices.size());
+  separatrixFunctionMinima.resize(separatrixId + separatrices.size());
   outSeps1.cl.isOnBoundary_.resize(ncells);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < validGeomIds.size(); ++i) {
-    const auto &sep = separatrices[geomIdSep[i]];
-    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
+    const auto &sepGeom = sep.geometry_;
     const auto sepId = separatrixId + i;
     // saddle (asc/desc sep) or saddle1 (saddle connector)
     const dcg::Cell &src = sep.source_;
@@ -995,7 +946,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getAscendingSeparatrices2(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::vector<Cell>> &separatricesGeometry,
   std::vector<std::set<SimplexId>> &separatricesSaddles,
   const triangulationType &triangulation) const {
   const Cell emptyCell;
@@ -1014,7 +964,6 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices2(
   // numberOfSaddles
   const SimplexId numberOfSeparatrices = numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
-  separatricesGeometry.resize(numberOfSeparatrices);
   separatricesSaddles.resize(numberOfSeparatrices);
 
   const auto nEdges = triangulation.getNumberOfEdges();
@@ -1035,8 +984,9 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices2(
     discreteGradient_.getAscendingWall(
       saddle1, mask, triangulation, &wall, &separatricesSaddles[i]);
 
-    separatricesGeometry[i] = std::move(wall);
-    separatrices[i] = Separatrix(saddle1, emptyCell, i);
+    separatrices[i].source_ = saddle1;
+    separatrices[i].destination_ = emptyCell;
+    separatrices[i].geometry_ = std::move(wall);
   }
 
   return 0;
@@ -1046,7 +996,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getDescendingSeparatrices2(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::vector<Cell>> &separatricesGeometry,
   std::vector<std::set<SimplexId>> &separatricesSaddles,
   const triangulationType &triangulation) const {
   const Cell emptyCell;
@@ -1065,7 +1014,6 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices2(
   // numberOfSaddles
   const SimplexId numberOfSeparatrices = numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
-  separatricesGeometry.resize(numberOfSeparatrices);
   separatricesSaddles.resize(numberOfSeparatrices);
 
   const auto nTriangles = triangulation.getNumberOfTriangles();
@@ -1086,8 +1034,9 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices2(
     discreteGradient_.getDescendingWall(
       saddle2, mask, triangulation, &wall, &separatricesSaddles[i]);
 
-    separatricesGeometry[i] = std::move(wall);
-    separatrices[i] = Separatrix(saddle2, emptyCell, i);
+    separatrices[i].source_ = saddle2;
+    separatrices[i].destination_ = emptyCell;
+    separatrices[i].geometry_ = std::move(wall);
   }
 
   return 0;
@@ -1148,7 +1097,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
   Output2Separatrices &outSeps2,
   const std::vector<Separatrix> &separatrices,
-  const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
   const std::vector<std::set<SimplexId>> &separatricesSaddles,
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
@@ -1172,29 +1120,22 @@ int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
   const auto noldcells{ncells};
   // index of last vertex of last old cell + 1
   const auto firstCellId{outSeps2.cl.connectivity_.size()};
-  // list of valid geometryId to flatten loops
-  std::vector<SimplexId> validGeomIds{};
-  // corresponding separatrix index in separatrices array
-  std::vector<SimplexId> geomIdSep{};
   // cells beginning id for each separatrix geometry
   std::vector<size_t> geomCellsBegId{ncells};
 
   // count total number of cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &sep = separatrices[i];
-    const auto &geomId{sep.geometry_};
-    ncells += separatricesGeometry[geomId].size();
+    ncells += sep.geometry_.size();
     geomCellsBegId.emplace_back(ncells);
-    validGeomIds.emplace_back(geomId);
-    geomIdSep.emplace_back(i);
   }
 
   // store the separatrices info (one per separatrix)
-  std::vector<SimplexId> sepSourceIds(validGeomIds.size());
-  std::vector<SimplexId> sepIds(validGeomIds.size());
-  std::vector<char> sepOnBoundary(validGeomIds.size());
-  separatrixFunctionMaxima.resize(separatrixId + validGeomIds.size());
-  separatrixFunctionMinima.resize(separatrixId + validGeomIds.size());
+  std::vector<SimplexId> sepSourceIds(separatrices.size());
+  std::vector<SimplexId> sepIds(separatrices.size());
+  std::vector<char> sepOnBoundary(separatrices.size());
+  separatrixFunctionMaxima.resize(separatrixId + separatrices.size());
+  separatrixFunctionMinima.resize(separatrixId + separatrices.size());
   // store the polygonal cells tetras SimplexId
   std::vector<SimplexId> polygonNTetras(ncells - noldcells);
   std::vector<SimplexId> polygonEdgeIds(ncells - noldcells);
@@ -1203,10 +1144,10 @@ int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < validGeomIds.size(); ++i) {
-    const auto &sep = separatrices[geomIdSep[i]];
-    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
-    const auto &sepSaddles = separatricesSaddles[validGeomIds[i]];
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
+    const auto &sepGeom = sep.geometry_;
+    const auto &sepSaddles = separatricesSaddles[i];
     const auto sepId = separatrixId + i;
     const dcg::Cell &src = sep.source_; // saddle1
 
@@ -1358,7 +1299,6 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   Output2Separatrices &outSeps2,
   const std::vector<Separatrix> &separatrices,
-  const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
   const std::vector<std::set<SimplexId>> &separatricesSaddles,
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
@@ -1383,21 +1323,14 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   // index of last vertex of last old cell + 1
   const auto firstCellId{outSeps2.cl.connectivity_.size()};
 
-  // list of valid geometryId to flatten loops
-  std::vector<SimplexId> validGeomIds{};
-  // corresponding separatrix index in separatrices array
-  std::vector<SimplexId> geomIdSep{};
   // cells beginning id for each separatrix geometry
   std::vector<size_t> geomCellsBegId{ncells};
 
   // count total number of cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &sep = separatrices[i];
-    const auto &geomId{sep.geometry_};
-    ncells += separatricesGeometry[geomId].size();
+    ncells += sep.geometry_.size();
     geomCellsBegId.emplace_back(ncells);
-    validGeomIds.emplace_back(geomId);
-    geomIdSep.emplace_back(i);
   }
 
   // resize arrays
@@ -1410,8 +1343,8 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   outSeps2.cl.sourceIds_.resize(ncells);
   outSeps2.cl.separatrixIds_.resize(ncells);
   outSeps2.cl.separatrixTypes_.resize(ncells);
-  separatrixFunctionMaxima.resize(separatrixId + validGeomIds.size());
-  separatrixFunctionMinima.resize(separatrixId + validGeomIds.size());
+  separatrixFunctionMaxima.resize(separatrixId + separatrices.size());
+  separatrixFunctionMinima.resize(separatrixId + separatrices.size());
   outSeps2.cl.isOnBoundary_.resize(ncells);
 
   // store the cells/triangles vertices vertexId
@@ -1420,10 +1353,10 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < validGeomIds.size(); ++i) {
-    const auto &sep = separatrices[geomIdSep[i]];
-    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
-    const auto &sepSaddles = separatricesSaddles[validGeomIds[i]];
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
+    const auto &sepGeom = sep.geometry_;
+    const auto &sepSaddles = separatricesSaddles[i];
     const auto sepId = separatrixId + i;
     const dcg::Cell &src = sep.source_; // saddle2
     const char sepType = 2;
