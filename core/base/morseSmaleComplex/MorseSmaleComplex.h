@@ -302,7 +302,7 @@ namespace ttk {
     int getDescendingSeparatrices2(
       const std::vector<dcg::Cell> &criticalPoints,
       std::vector<Separatrix> &separatrices,
-      std::vector<std::set<SimplexId>> &separatricesSaddles,
+      std::vector<std::vector<SimplexId>> &separatricesSaddles,
       const triangulationType &triangulation) const;
 
     /**
@@ -313,7 +313,7 @@ namespace ttk {
     int setDescendingSeparatrices2(
       Output2Separatrices &outSeps2,
       const std::vector<Separatrix> &separatrices,
-      const std::vector<std::set<SimplexId>> &separatricesSaddles,
+      const std::vector<std::vector<SimplexId>> &separatricesSaddles,
       const SimplexId *const offsets,
       const triangulationType &triangulation) const;
 
@@ -344,7 +344,7 @@ namespace ttk {
     int getAscendingSeparatrices2(
       const std::vector<dcg::Cell> &criticalPoints,
       std::vector<Separatrix> &separatrices,
-      std::vector<std::set<SimplexId>> &separatricesSaddles,
+      std::vector<std::vector<SimplexId>> &separatricesSaddles,
       const triangulationType &triangulation) const;
 
     /**
@@ -355,7 +355,7 @@ namespace ttk {
     int setAscendingSeparatrices2(
       Output2Separatrices &outSeps2,
       const std::vector<Separatrix> &separatrices,
-      const std::vector<std::set<SimplexId>> &separatricesSaddles,
+      const std::vector<std::vector<SimplexId>> &separatricesSaddles,
       const SimplexId *const offsets,
       const triangulationType &triangulation) const;
 
@@ -544,7 +544,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim == 3 && ComputeDescendingSeparatrices2) {
     Timer tmp;
     std::vector<Separatrix> separatrices;
-    std::vector<std::set<SimplexId>> separatricesSaddles;
+    std::vector<std::vector<SimplexId>> separatricesSaddles;
     getDescendingSeparatrices2(
       criticalPoints, separatrices, separatricesSaddles, triangulation);
     setDescendingSeparatrices2(
@@ -558,7 +558,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   if(dim == 3 && ComputeAscendingSeparatrices2) {
     Timer tmp;
     std::vector<Separatrix> separatrices;
-    std::vector<std::set<SimplexId>> separatricesSaddles;
+    std::vector<std::vector<SimplexId>> separatricesSaddles;
     getAscendingSeparatrices2(
       criticalPoints, separatrices, separatricesSaddles, triangulation);
     setAscendingSeparatrices2(
@@ -763,15 +763,15 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
   using Vpath = std::vector<Cell>;
 
   std::vector<std::vector<Separatrix>> sepsByThread(saddles2.size());
+  std::vector<SimplexId> saddles1{};
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
-  firstprivate(isVisited, visitedTriangles)
+  firstprivate(isVisited, visitedTriangles, saddles1)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < saddles2.size(); ++i) {
     const auto &s2{saddles2[i]};
 
-    std::set<SimplexId> saddles1{};
     VisitedMask mask{isVisited, visitedTriangles};
     discreteGradient_.getDescendingWall(
       s2, mask, triangulation, nullptr, &saddles1);
@@ -946,7 +946,7 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getAscendingSeparatrices2(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::set<SimplexId>> &separatricesSaddles,
+  std::vector<std::vector<SimplexId>> &separatricesSaddles,
   const triangulationType &triangulation) const {
   const Cell emptyCell;
 
@@ -996,7 +996,7 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::getDescendingSeparatrices2(
   const std::vector<Cell> &criticalPoints,
   std::vector<Separatrix> &separatrices,
-  std::vector<std::set<SimplexId>> &separatricesSaddles,
+  std::vector<std::vector<SimplexId>> &separatricesSaddles,
   const triangulationType &triangulation) const {
   const Cell emptyCell;
 
@@ -1097,7 +1097,7 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
   Output2Separatrices &outSeps2,
   const std::vector<Separatrix> &separatrices,
-  const std::vector<std::set<SimplexId>> &separatricesSaddles,
+  const std::vector<std::vector<SimplexId>> &separatricesSaddles,
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
@@ -1317,7 +1317,7 @@ template <typename triangulationType>
 int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   Output2Separatrices &outSeps2,
   const std::vector<Separatrix> &separatrices,
-  const std::vector<std::set<SimplexId>> &separatricesSaddles,
+  const std::vector<std::vector<SimplexId>> &separatricesSaddles,
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 

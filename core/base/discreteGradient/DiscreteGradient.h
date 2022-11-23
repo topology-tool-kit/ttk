@@ -251,7 +251,8 @@ in the gradient.
                             VisitedMask &mask,
                             const triangulationType &triangulation,
                             std::vector<Cell> *const wall = nullptr,
-                            std::set<SimplexId> *const saddles = nullptr) const;
+                            std::vector<SimplexId> *const saddles
+                            = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
@@ -261,7 +262,8 @@ in the gradient.
                            VisitedMask &mask,
                            const triangulationType &triangulation,
                            std::vector<Cell> *const wall = nullptr,
-                           std::set<SimplexId> *const saddles = nullptr) const;
+                           std::vector<SimplexId> *const saddles
+                           = nullptr) const;
 
       /**
        * Get the vertex id of with the maximum scalar field value on
