@@ -248,33 +248,22 @@ namespace ttk {
       explicit Separatrix() = default;
 
       // initialization with one segment
-      explicit Separatrix(const bool isValid,
-                          const dcg::Cell &saddle,
+      explicit Separatrix(const dcg::Cell &saddle,
                           const dcg::Cell &extremum,
-                          const bool isSegmentReversed,
                           const SimplexId segmentGeometry)
-        : isValid_{isValid}, source_{saddle}, destination_{extremum} {
-        isReversed_.push_back(isSegmentReversed);
-        geometry_.push_back(segmentGeometry);
+        : source_{saddle}, destination_{extremum}, geometry_{segmentGeometry} {
       }
 
-      /** Flag indicating if this separatrix can be processed. */
-      bool isValid_;
       /** Source cell of the separatrix. */
       dcg::Cell source_;
       /** Destination cell of the separatrix. */
       dcg::Cell destination_;
       /**
-       * Container of flags, isReversed[i] indicates if the
-       * element stored at id=geometry_[i] can be reversed.
-       */
-      std::vector<char> isReversed_;
-      /**
        * Container of ids. Each id addresses a separate
        * container corresponding to a dense representation
        * of the geometry (i.e. separatricesGeometry).
        */
-      std::vector<SimplexId> geometry_;
+      SimplexId geometry_;
     };
 
     /**
@@ -716,7 +705,7 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices1(
 
           separatricesGeometry[separatrixIndex] = std::move(vpath);
           separatrices[separatrixIndex]
-            = Separatrix(true, saddle, lastCell, false, separatrixIndex);
+            = Separatrix(saddle, lastCell, separatrixIndex);
         }
       }
     }
@@ -779,7 +768,7 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
       const Cell &lastCell = vpath.back();
       if(lastCell.dim_ == dim and discreteGradient_.isCellCritical(lastCell)) {
         sepsGeomPerSaddle[i].emplace_back(std::move(vpath));
-        sepsPerSaddle[i].emplace_back(true, saddle, lastCell, false, i);
+        sepsPerSaddle[i].emplace_back(saddle, lastCell, i);
       }
     }
   }
@@ -840,7 +829,7 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
         sepsGeomByThread[i].emplace_back(std::move(vpath));
-        sepsByThread[i].emplace_back(true, s1, s2, false, j++);
+        sepsByThread[i].emplace_back(s1, s2, j++);
       }
     }
   }
@@ -888,18 +877,14 @@ int ttk::MorseSmaleComplex::setSeparatrices1(
   // count total number of points and cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &sep = separatrices[i];
-    if(!sep.isValid_ || sep.geometry_.empty()) {
-      continue;
-    }
-    for(const auto geomId : sep.geometry_) {
-      const auto sepSize = separatricesGeometry[geomId].size();
-      npoints += sepSize;
-      ncells += sepSize - 1;
-      geomPointsBegId.emplace_back(npoints);
-      geomCellsBegId.emplace_back(ncells);
-      validGeomIds.emplace_back(geomId);
-      geomIdSep.emplace_back(i);
-    }
+    const auto &geomId{sep.geometry_};
+    const auto sepSize = separatricesGeometry[geomId].size();
+    npoints += sepSize;
+    ncells += sepSize - 1;
+    geomPointsBegId.emplace_back(npoints);
+    geomCellsBegId.emplace_back(ncells);
+    validGeomIds.emplace_back(geomId);
+    geomIdSep.emplace_back(i);
   }
 
   const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
@@ -1051,7 +1036,7 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices2(
       saddle1, mask, triangulation, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
-    separatrices[i] = Separatrix(true, saddle1, emptyCell, false, i);
+    separatrices[i] = Separatrix(saddle1, emptyCell, i);
   }
 
   return 0;
@@ -1102,7 +1087,7 @@ int ttk::MorseSmaleComplex::getDescendingSeparatrices2(
       saddle2, mask, triangulation, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
-    separatrices[i] = Separatrix(true, saddle2, emptyCell, false, i);
+    separatrices[i] = Separatrix(saddle2, emptyCell, i);
   }
 
   return 0;
@@ -1197,15 +1182,11 @@ int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
   // count total number of cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &sep = separatrices[i];
-    if(!sep.isValid_ || sep.geometry_.empty()) {
-      continue;
-    }
-    for(const auto geomId : sep.geometry_) {
-      ncells += separatricesGeometry[geomId].size();
-      geomCellsBegId.emplace_back(ncells);
-      validGeomIds.emplace_back(geomId);
-      geomIdSep.emplace_back(i);
-    }
+    const auto &geomId{sep.geometry_};
+    ncells += separatricesGeometry[geomId].size();
+    geomCellsBegId.emplace_back(ncells);
+    validGeomIds.emplace_back(geomId);
+    geomIdSep.emplace_back(i);
   }
 
   // store the separatrices info (one per separatrix)
@@ -1412,15 +1393,11 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
   // count total number of cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &sep = separatrices[i];
-    if(!sep.isValid_ || sep.geometry_.empty()) {
-      continue;
-    }
-    for(const auto geomId : sep.geometry_) {
-      ncells += separatricesGeometry[geomId].size();
-      geomCellsBegId.emplace_back(ncells);
-      validGeomIds.emplace_back(geomId);
-      geomIdSep.emplace_back(i);
-    }
+    const auto &geomId{sep.geometry_};
+    ncells += separatricesGeometry[geomId].size();
+    geomCellsBegId.emplace_back(ncells);
+    validGeomIds.emplace_back(geomId);
+    geomIdSep.emplace_back(i);
   }
 
   // resize arrays
