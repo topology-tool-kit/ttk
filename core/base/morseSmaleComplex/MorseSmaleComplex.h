@@ -1154,23 +1154,41 @@ int ttk::MorseSmaleComplex::setAscendingSeparatrices2(
     // compute separatrix function diff
     const auto sepFuncMin
       = discreteGradient_.getCellLowerVertex(src, triangulation);
-    const auto maxId = *std::max_element(
-      sepSaddles.begin(), sepSaddles.end(),
-      [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
-        return offsets[discreteGradient_.getCellGreaterVertex(
-                 Cell{2, a}, triangulation)]
-               < offsets[discreteGradient_.getCellGreaterVertex(
-                 Cell{2, b}, triangulation)];
-      });
-    const auto sepFuncMax
-      = discreteGradient_.getCellGreaterVertex(Cell{2, maxId}, triangulation);
+    SimplexId sepFuncMax{};
+    if(!sepSaddles.empty()) {
+      // find minimum vertex on the critical triangles of the 2-separatrix
+      const auto maxId = *std::max_element(
+        sepSaddles.begin(), sepSaddles.end(),
+        [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
+          return offsets[discreteGradient_.getCellGreaterVertex(
+                   Cell{2, a}, triangulation)]
+                 < offsets[discreteGradient_.getCellGreaterVertex(
+                   Cell{2, b}, triangulation)];
+        });
+      sepFuncMax
+        = discreteGradient_.getCellGreaterVertex(Cell{2, maxId}, triangulation);
+    } else {
+      // find maximum vertex by iterating over all the edges in the
+      // 2-separatrix
+      const auto maxId = *std::max_element(
+        sepGeom.begin(), sepGeom.end(),
+        [&triangulation, offsets, this](const Cell &a, const Cell &b) {
+          return offsets[discreteGradient_.getCellGreaterVertex(
+                   a, triangulation)]
+                 < offsets[discreteGradient_.getCellGreaterVertex(
+                   b, triangulation)];
+        });
+      sepFuncMax = discreteGradient_.getCellGreaterVertex(maxId, triangulation);
+    }
 
     // get boundary condition
     const char onBoundary
-      = std::count_if(sepSaddles.begin(), sepSaddles.end(),
-                      [&triangulation](const SimplexId a) {
-                        return triangulation.isTriangleOnBoundary(a);
-                      })
+      = (sepSaddles.empty()
+           ? 0
+           : std::count_if(sepSaddles.begin(), sepSaddles.end(),
+                           [&triangulation](const SimplexId a) {
+                             return triangulation.isTriangleOnBoundary(a);
+                           }))
         + triangulation.isEdgeOnBoundary(src.id_);
 
     sepIds[i] = sepId;
@@ -1364,25 +1382,42 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
     // compute separatrix function diff
     const auto sepFuncMax
       = discreteGradient_.getCellGreaterVertex(src, triangulation);
-    const auto minId = *std::min_element(
-      sepSaddles.begin(), sepSaddles.end(),
-      [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
-        return offsets[discreteGradient_.getCellLowerVertex(
-                 Cell{1, a}, triangulation)]
-               < offsets[discreteGradient_.getCellLowerVertex(
-                 Cell{1, b}, triangulation)];
-      });
-    const auto sepFuncMin
-      = discreteGradient_.getCellLowerVertex(Cell{1, minId}, triangulation);
+    SimplexId sepFuncMin{};
+    if(!sepSaddles.empty()) {
+      // find minimum vertex on the critical edges of the 2-separatrix
+      const auto minId = *std::min_element(
+        sepSaddles.begin(), sepSaddles.end(),
+        [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
+          return offsets[discreteGradient_.getCellLowerVertex(
+                   Cell{1, a}, triangulation)]
+                 < offsets[discreteGradient_.getCellLowerVertex(
+                   Cell{1, b}, triangulation)];
+        });
+      sepFuncMin
+        = discreteGradient_.getCellLowerVertex(Cell{1, minId}, triangulation);
+    } else {
+      // find minimum vertex by iterating over all the triangles in the
+      // 2-separatrix
+      const auto minId = *std::min_element(
+        sepGeom.begin(), sepGeom.end(),
+        [&triangulation, offsets, this](const Cell &a, const Cell &b) {
+          return offsets[discreteGradient_.getCellLowerVertex(a, triangulation)]
+                 < offsets[discreteGradient_.getCellLowerVertex(
+                   b, triangulation)];
+        });
+      sepFuncMin = discreteGradient_.getCellLowerVertex(minId, triangulation);
+    }
     separatrixFunctionMaxima[sepId] = sepFuncMax;
     separatrixFunctionMinima[sepId] = sepFuncMin;
 
     // get boundary condition
     const char onBoundary
-      = std::count_if(sepSaddles.begin(), sepSaddles.end(),
-                      [&triangulation](const SimplexId a) {
-                        return triangulation.isEdgeOnBoundary(a);
-                      })
+      = (sepSaddles.empty()
+           ? 0
+           : std::count_if(sepSaddles.begin(), sepSaddles.end(),
+                           [&triangulation](const SimplexId a) {
+                             return triangulation.isEdgeOnBoundary(a);
+                           }))
         + triangulation.isTriangleOnBoundary(src.id_);
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
