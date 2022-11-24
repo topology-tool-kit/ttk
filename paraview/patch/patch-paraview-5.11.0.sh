@@ -90,6 +90,8 @@ $PATCH_BIN -p1 < "${PATCH_DIR}/paraview-5.11.0-CPack.patch"
 mkdir -p .github/workflows/
 cp ${PATCH_DIR}/package.yml .github/workflows
 cp ${PATCH_DIR}/headless.yml .github/workflows
+# gitignore
+cp ${PATCH_DIR}/pv_gitignore .gitignore
 
 echo "Finished patching."
 
