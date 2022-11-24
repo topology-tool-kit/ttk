@@ -69,19 +69,15 @@ cp "${PATCH_DIR}/icon22.png" \
 cp "${PATCH_DIR}/icon16.png" \
   Qt/Components/Resources/Icons/pvIcon16.png
 
-# # processing example data-sets
+## processing example data-sets
 mkdir -p TTK/Data/
 cp ${PATCH_DIR}/data/* TTK/Data/
 cp TTK/Data/*pvsm Qt/ApplicationComponents/Resources/ExampleVisualizations/
 cp TTK/Data/*png Qt/ApplicationComponents/Resources/Thumbnails/
-$PATCH_BIN Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc \
-  < "${PATCH_DIR}/paraview-5.5.0-pqApplicationComponents.qrc.patch"
-$PATCH_BIN Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
-  < "${PATCH_DIR}/paraview-5.5.0-pqExampleVisualizationsDialog.ui.patch"
-$PATCH_BIN Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx \
-  < "${PATCH_DIR}/paraview-5.5.0-pqExampleVisualizationsDialog.cxx.patch"
 $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkPVFileInformation.cxx.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.11.0-ApplicationComponents.patch"
 
 ## CPack variables for packaging meta-data
 $PATCH_BIN -p1 \
