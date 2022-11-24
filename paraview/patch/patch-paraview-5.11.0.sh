@@ -83,9 +83,10 @@ $PATCH_BIN -p1 \
 ## instructions instead of TTK ones
 rm README.md
 
+## Build options: Release, Python support
+$PATCH_BIN -p1 < "${PATCH_DIR}/paraview-5.11.0-build-options.patch"
 ## CPack variables for packaging meta-data
-$PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.10.1-CPack-CMakeLists.txt.patch"
+$PATCH_BIN -p1 < "${PATCH_DIR}/paraview-5.11.0-CPack.patch"
 mkdir -p .github/workflows/
 cp ${PATCH_DIR}/package.yml .github/workflows
 cp ${PATCH_DIR}/headless.yml .github/workflows
