@@ -79,6 +79,10 @@ $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.11.0-ApplicationComponents.patch"
 
+## Remove README.md that points to ParaView sources & build
+## instructions instead of TTK ones
+rm README.md
+
 ## CPack variables for packaging meta-data
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.10.1-CPack-CMakeLists.txt.patch"
