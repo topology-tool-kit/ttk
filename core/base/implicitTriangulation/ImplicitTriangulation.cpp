@@ -3402,7 +3402,7 @@ SimplexId
 
 SimplexId ttk::ImplicitTriangulation::getEdgeGlobalIdInternal(
   const SimplexId leid) const {
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(leid > this->getNumberOfEdgesInternal() - 1 || leid < 0) {
     return -1;
   }
@@ -3437,7 +3437,7 @@ SimplexId ttk::ImplicitTriangulation::getEdgeGlobalIdInternal(
 SimplexId ttk::ImplicitTriangulation::getEdgeLocalIdInternal(
   const SimplexId geid) const {
 
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(geid > this->metaGrid_->getNumberOfEdgesInternal() - 1 || geid < 0) {
     return -1;
   }
@@ -3494,7 +3494,7 @@ SimplexId ttk::ImplicitTriangulation::findTriangleFromVertices(
 
 SimplexId ttk::ImplicitTriangulation::getTriangleGlobalIdInternal(
   const SimplexId ltid) const {
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ltid > this->getNumberOfTrianglesInternal() - 1 || ltid < 0) {
     return -1;
   }
@@ -3534,7 +3534,7 @@ SimplexId ttk::ImplicitTriangulation::getTriangleGlobalIdInternal(
 
 SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
   const SimplexId gtid) const {
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(gtid > this->metaGrid_->getNumberOfTrianglesInternal() - 1 || gtid < 0) {
     return -1;
   }
