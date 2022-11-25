@@ -282,6 +282,12 @@ namespace ttk {
     SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
 
+  protected:
+    bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
+    bool isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override;
+    bool
+      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override;
+
   private:
     SimplexId findEdgeFromVertices(const SimplexId v0,
                                    const SimplexId v1) const;

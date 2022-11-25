@@ -2891,6 +2891,21 @@ namespace ttk {
       return -1;
     }
 
+    // these protected methods should not be exposed since they are
+    // called by their non-MPI-aware conterparts
+    virtual inline bool
+      isVertexOnGlobalBoundaryInternal(const SimplexId ttkNotUsed(lvid)) const {
+      return false;
+    }
+    virtual inline bool
+      isEdgeOnGlobalBoundaryInternal(const SimplexId ttkNotUsed(leid)) const {
+      return false;
+    }
+    virtual inline bool isTriangleOnGlobalBoundaryInternal(
+      const SimplexId ttkNotUsed(ltid)) const {
+      return false;
+    }
+
 #endif // TTK_ENABLE_MPI
 
   protected:

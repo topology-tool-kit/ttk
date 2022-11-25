@@ -3637,6 +3637,78 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
   return this->findTriangleFromVertices(locVerts);
 }
 
+bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(
+  const SimplexId lvid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return this->isVertexOnBoundary(lvid);
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(lvid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
+     || lvid < 0) {
+    return false;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return false;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto gvid{this->vertGid_[lvid]};
+  if(gvid == -1) {
+    return false;
+  }
+  return this->metaGrid_->isVertexOnBoundary(gvid);
+}
+
+bool ImplicitTriangulation::isEdgeOnGlobalBoundaryInternal(
+  const SimplexId leid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return this->isEdgeOnBoundary(leid);
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(leid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfEdges)() - 1
+     || leid < 0) {
+    return false;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return false;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto geid{this->getEdgeGlobalIdInternal(leid)};
+  if(geid == -1) {
+    return false;
+  }
+  return this->metaGrid_->isEdgeOnBoundary(geid);
+}
+
+bool ImplicitTriangulation::isTriangleOnGlobalBoundaryInternal(
+  const SimplexId ltid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return this->isTriangleOnBoundary(ltid);
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ltid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfTriangles)() - 1
+     || ltid < 0) {
+    return false;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return false;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto gtid{this->getTriangleGlobalIdInternal(ltid)};
+  if(gtid == -1) {
+    return false;
+  }
+  return this->metaGrid_->isTriangleOnBoundary(gtid);
+}
+
 #endif // TTK_ENABLE_MPI
 
 // explicit instantiations
