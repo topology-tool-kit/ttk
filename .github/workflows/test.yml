@@ -226,6 +226,7 @@ jobs:
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
         # remove Python 3.11 installation
         sudo rm -rf /Library/Frameworks/Python.framework/Versions/3.11
+        sudo rm -rf /usr/local/Frameworks/Python.framework/Versions/3.11
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
