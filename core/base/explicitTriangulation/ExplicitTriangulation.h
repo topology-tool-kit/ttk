@@ -701,6 +701,9 @@ namespace ttk {
     std::vector<SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
 
+    std::vector<int> edgeRankArray_{};
+    std::vector<int> triangleRankArray_{};
+
 #endif // TTK_ENABLE_MPI
 
   private:

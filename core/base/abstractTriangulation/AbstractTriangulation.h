@@ -3669,8 +3669,6 @@ namespace ttk {
     const LongSimplexId *vertGid_{};
     // PointData "RankArray" from "TTKGhostCellPreconditioning"
     const int *vertRankArray_{};
-    std::vector<int> edgeRankArray_{};
-    std::vector<int> triangleRankArray_{};
     // CellData "RankArray" from "TTKGhostCellPreconditioning"
     // (warning: for Implicit/Periodic triangulations, concerns
     // "squares"/"cubes" and not "triangles"/"tetrahedron")
