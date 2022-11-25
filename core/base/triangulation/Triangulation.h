@@ -1464,9 +1464,9 @@ namespace ttk {
      *
      * @param[in] dimensions Global grid dimensions
      */
-    inline void createMetaGrid(const std::array<int, 3> dimensions) {
-      this->implicitPreconditionsTriangulation_.createMetaGrid(dimensions);
-      this->implicitTriangulation_.createMetaGrid(dimensions);
+    inline void createMetaGrid(const double *const bounds) {
+      this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
+      this->implicitTriangulation_.createMetaGrid(bounds);
     }
 
 #endif // TTK_ENABLE_MPI

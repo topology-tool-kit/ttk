@@ -247,8 +247,7 @@ protected:
   bool GenerateGlobalIds(
     vtkDataSet *input,
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
-    std::vector<int> &neighborRanks,
-    std::array<int, 3> &globalDimensions);
+    std::vector<int> &neighborRanks);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been

@@ -3367,13 +3367,40 @@ int ImplicitTriangulation::preconditionBoundaryTrianglesInternal() {
   return 0;
 }
 
-void ttk::ImplicitTriangulation::createMetaGrid(
-  const std::array<int, 3> &dimensions) {
+void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
 
   // only works with 2 processes or more
   if(!ttk::isRunningWithMPI()) {
     return;
   }
+
+  // Reorganize bounds to only execute Allreduce twice
+  std::array<double, 6> tempBounds = {
+    bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
+  };
+  std::array<double, 6> tempGlobalBounds{};
+
+  // Compute and send to all processes the lower bounds of the data set
+  MPI_Allreduce(tempBounds.data(), tempGlobalBounds.data(), 3, MPI_DOUBLE,
+                MPI_MIN, ttk::MPIcomm_);
+  // Compute and send to all processes the higher bounds of the data set
+  MPI_Allreduce(&tempBounds[3], &tempGlobalBounds[3], 3, MPI_DOUBLE, MPI_MAX,
+                ttk::MPIcomm_);
+
+  // re-order tempGlobalBounds
+  std::array<double, 6> globalBounds{
+    tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
+    tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5],
+  };
+
+  const std::array<int, 3> dimensions = {
+    static_cast<int>((globalBounds[1] - globalBounds[0]) / this->spacing_[0])
+      + 1,
+    static_cast<int>((globalBounds[3] - globalBounds[2]) / this->spacing_[1])
+      + 1,
+    static_cast<int>((globalBounds[5] - globalBounds[4]) / this->spacing_[2])
+      + 1,
+  };
 
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
   this->metaGrid_->setInputGrid(

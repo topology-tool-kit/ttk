@@ -274,7 +274,7 @@ namespace ttk {
       return this->cellLidToGid_[lcid];
     }
 
-    void createMetaGrid(const std::array<int, 3> &dimensions);
+    void createMetaGrid(const double *const bounds);
 
     SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
     SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
