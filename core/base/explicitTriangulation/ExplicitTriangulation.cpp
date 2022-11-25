@@ -95,11 +95,77 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     return -1;
   }
 
+#if TTK_ENABLE_MPI
+  this->preconditionEdgeRankArray();
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId edgeNumber = edgeList_.size();
+    std::vector<unsigned char> charBoundary(edgeNumber, false);
+    for(int i = 0; i < edgeNumber; ++i) {
+      charBoundary[i] = boundaryEdges_[i] ? '1' : '0';
+    }
+    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId, ttk::SimplexId>(
+      charBoundary.data(), this->edgeRankArray_.data(),
+      this->getEdgesGlobalIds(), this->edgeGidToLid_, edgeNumber, ttk::MPIcomm_,
+      this->getNeighborRanks());
+    for(int i = 0; i < edgeNumber; ++i) {
+      boundaryEdges_[i] = (charBoundary[i] == '1');
+    }
+  }
+#endif
+
   this->printMsg("Extracted boundary edges", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
 }
 
+#if TTK_ENABLE_MPI
+int ExplicitTriangulation::preconditionEdgeRankArray() {
+  ttk::SimplexId edgeNumber = this->getNumberOfEdgesInternal();
+  edgeRankArray_.resize(edgeNumber, 0);
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId min_id;
+    for(ttk::SimplexId id = 0; id < edgeNumber; id++) {
+      this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(id, 0, min_id);
+      const auto nStar{this->TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(id)};
+      for(SimplexId i = 1; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(id, i, sid);
+        // rule: an edge is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellGid_[sid] < this->cellGid_[min_id]) {
+          min_id = sid;
+        }
+      }
+      edgeRankArray_[id] = cellRankArray_[min_id];
+    }
+  }
+  return 0;
+}
+
+int ExplicitTriangulation::preconditionTriangleRankArray() {
+  ttk::SimplexId triangleNumber = this->getNumberOfTrianglesInternal();
+  triangleRankArray_.resize(triangleNumber, 0);
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId min_id;
+    for(ttk::SimplexId id = 0; id < triangleNumber; id++) {
+      this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(id, 0, min_id);
+      const auto nStar{
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(id)};
+      for(SimplexId i = 1; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(id, i, sid);
+        // rule: an triangle is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellGid_[sid] < this->cellGid_[min_id]) {
+          min_id = sid;
+        }
+      }
+      triangleRankArray_[id] = cellRankArray_[min_id];
+    }
+  }
+  return 0;
+}
+#endif
 int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
@@ -134,6 +200,23 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     return -1;
   }
 
+#if TTK_ENABLE_MPI
+  this->preconditionTriangleRankArray();
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId triangleNumber = triangleList_.size();
+    std::vector<unsigned char> charBoundary(triangleNumber, false);
+    for(int i = 0; i < triangleNumber; ++i) {
+      charBoundary[i] = boundaryTriangles_[i] ? '1' : '0';
+    }
+    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId, ttk::SimplexId>(
+      charBoundary.data(), this->triangleRankArray_.data(),
+      this->getTrianglesGlobalIds(), this->triangleGidToLid_, triangleNumber,
+      ttk::MPIcomm_, this->getNeighborRanks());
+    for(int i = 0; i < triangleNumber; ++i) {
+      boundaryTriangles_[i] = (charBoundary[i] == '1');
+    }
+  }
+#endif
   this->printMsg("Extracted boundary triangles", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
@@ -190,7 +273,24 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     printErr("Unsupported dimension for vertex boundary precondition");
     return -1;
   }
+#if TTK_ENABLE_MPI
 
+  if(ttk::isRunningWithMPI()) {
+    std::vector<unsigned char> charBoundary(vertexNumber_, false);
+    for(int i = 0; i < vertexNumber_; ++i) {
+      charBoundary[i] = boundaryVertices_[i] ? '1' : '0';
+    }
+    ttk::exchangeGhostCells<unsigned char, ttk::SimplexId, ttk::LongSimplexId>(
+      charBoundary.data(), this->vertRankArray_, this->getVertsGlobalIds(),
+      this->getVertexGlobalIdMap(), vertexNumber_, ttk::MPIcomm_,
+      this->getNeighborRanks());
+    for(int i = 0; i < vertexNumber_; ++i) {
+      if(vertRankArray_[i] != ttk::MPIrank_) {
+        boundaryVertices_[i] = (charBoundary[i] == '1');
+      }
+    }
+  }
+#endif
   this->printMsg("Extracted boundary vertices", 1.0, tm.getElapsedTime(), 1);
 
   return 0;

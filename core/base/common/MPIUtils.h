@@ -53,6 +53,9 @@ namespace ttk {
   inline MPI_Datatype getMPIType(const unsigned long long ttkNotUsed(val)) {
     return MPI_UNSIGNED_LONG_LONG;
   };
+  inline MPI_Datatype getMPIType(const unsigned char ttkNotUsed(val)) {
+    return MPI_UNSIGNED_CHAR;
+  };
 
   template <typename DT, typename IT>
   struct value {
@@ -111,10 +114,10 @@ namespace ttk {
    * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
-  template <typename DT, typename IT>
+  template <typename DT, typename IT, typename globalIdType>
   int getGhostCellScalars(DT *scalarArray,
                           const int *const rankArray,
-                          const LongSimplexId *const globalIds,
+                          const globalIdType *const globalIds,
                           const std::unordered_map<IT, IT> &gidToLidMap,
                           const std::vector<int> *neighbors,
                           const int rankToSend,
@@ -130,6 +133,7 @@ namespace ttk {
     }
     MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
     MPI_Datatype MPI_IT = getMPIType(static_cast<IT>(0));
+    MPI_Datatype MPI_GIT = getMPIType(static_cast<globalIdType>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
     int tagMultiplier = rankToSend + 1;
@@ -138,8 +142,8 @@ namespace ttk {
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       // initialize the inner vectors with size 0
-      std::vector<std::vector<IT>> rankVectors(
-        ttk::MPIsize_, std::vector<IT>(0));
+      std::vector<std::vector<globalIdType>> rankVectors(
+        ttk::MPIsize_, std::vector<globalIdType>(0));
       // aggregate the needed ids
 
       for(IT i = 0; i < nVerts; i++) {
@@ -153,7 +157,7 @@ namespace ttk {
         MPI_Send(
           &nValues, 1, MPI_IT, neighbors->at(r), amountTag, communicator);
         if(nValues > 0) {
-          MPI_Send(rankVectors[neighbors->at(r)].data(), nValues, MPI_IT,
+          MPI_Send(rankVectors[neighbors->at(r)].data(), nValues, MPI_GIT,
                    neighbors->at(r), idsTag, communicator);
         }
       }
@@ -168,7 +172,7 @@ namespace ttk {
           for(IT i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
-              IT globalId = rankVectors[neighbors->at(r)][i];
+              globalIdType globalId = rankVectors[neighbors->at(r)][i];
               IT localId = gidToLidMap.at(globalId);
               scalarArray[localId * dimensionNumber + j] = receivedVal;
             }
@@ -187,8 +191,8 @@ namespace ttk {
                  MPI_STATUS_IGNORE);
 
         if(nValues > 0) {
-          std::vector<IT> receivedIds(nValues);
-          MPI_Recv(receivedIds.data(), nValues, MPI_IT, rankToSend, idsTag,
+          std::vector<globalIdType> receivedIds(nValues);
+          MPI_Recv(receivedIds.data(), nValues, MPI_GIT, rankToSend, idsTag,
                    communicator, MPI_STATUS_IGNORE);
 
           // assemble the scalar values
@@ -335,10 +339,10 @@ namespace ttk {
    * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
-  template <typename DT, typename IT>
+  template <typename DT, typename IT, typename globalIdType>
   int exchangeGhostCells(DT *scalarArray,
                          const int *const rankArray,
-                         const LongSimplexId *const globalIds,
+                         const globalIdType *const globalIds,
                          const std::unordered_map<IT, IT> &gidToLidMap,
                          const IT nVerts,
                          MPI_Comm communicator,
@@ -351,9 +355,9 @@ namespace ttk {
       return -1;
     }
     for(int r = 0; r < ttk::MPIsize_; r++) {
-      getGhostCellScalars<DT, IT>(scalarArray, rankArray, globalIds,
-                                  gidToLidMap, neighbors, r, nVerts,
-                                  communicator, dimensionNumber);
+      getGhostCellScalars<DT, IT, globalIdType>(
+        scalarArray, rankArray, globalIds, gidToLidMap, neighbors, r, nVerts,
+        communicator, dimensionNumber);
       MPI_Barrier(communicator);
     }
     return 0;
@@ -412,8 +416,8 @@ namespace ttk {
    * @param[in] neighbors vector of neighboring ranks
    */
   void inline produceRankArray(std::vector<int> &rankArray,
-                               LongSimplexId *globalIds,
-                               unsigned char *ghostCells,
+                               const LongSimplexId *globalIds,
+                               const unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox,
                                std::vector<int> *neighbors) {
@@ -832,9 +836,9 @@ namespace ttk {
 
     // we receive the values at the ghostcells through the abstract
     // exchangeGhostCells method
-    ttk::exchangeGhostCells<ttk::SimplexId, IT>(orderArray, rankArray,
-                                                globalIds, gidToLidMap, nVerts,
-                                                ttk::MPIcomm_, neighbors);
+    ttk::exchangeGhostCells<ttk::SimplexId, IT, ttk::LongSimplexId>(
+      orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_,
+      neighbors);
   }
 
   /**

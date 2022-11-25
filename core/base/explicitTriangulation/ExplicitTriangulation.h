@@ -635,6 +635,8 @@ namespace ttk {
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
+    int preconditionEdgeRankArray() override;
+    int preconditionTriangleRankArray() override;
 
 #endif // TTK_ENABLE_MPI
 

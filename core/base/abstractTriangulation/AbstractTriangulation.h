@@ -2548,6 +2548,14 @@ namespace ttk {
       return this->vertGid_;
     }
 
+    inline const ttk::SimplexId *getEdgesGlobalIds() const {
+      return this->edgeLidToGid_.data();
+    }
+
+    inline const ttk::SimplexId *getTrianglesGlobalIds() const {
+      return this->triangleLidToGid_.data();
+    }
+
     // RankArray on points & cells
 
     inline void setVertRankArray(const int *const rankArray) {
@@ -2564,8 +2572,43 @@ namespace ttk {
       return this->cellRankArray_;
     }
 
+    inline void setLocalBound(std::array<double, 6> &bound) {
+      this->localBounds_ = bound;
+    };
+
+    /// Pre-process the global boundaries when using MPI. Local bounds should
+    /// be set prior to using this function.
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa globalBounds_
+    virtual int preconditionGlobalBoundary() {
+
+      if(!hasPreconditionedGlobalBoundary_) {
+        preconditionGlobalBoundaryInternal();
+        hasPreconditionedGlobalBoundary_ = true;
+      }
+      return 0;
+    }
+
+    virtual inline int preconditionGlobalBoundaryInternal() {
+      return 0;
+    }
+
     // public precondition method (used in Triangulation/ttkAlgorithm)
     virtual int preconditionDistributedVertices() {
+      return 0;
+    }
+
+    virtual int preconditionEdgeRankArray() {
+      return 0;
+    }
+
+    virtual int preconditionTriangleRankArray() {
       return 0;
     }
 
@@ -3603,6 +3646,8 @@ namespace ttk {
     const LongSimplexId *vertGid_{};
     // PointData "RankArray" from "TTKGhostCellPreconditioning"
     const int *vertRankArray_{};
+    std::vector<int> edgeRankArray_{};
+    std::vector<int> triangleRankArray_{};
     // CellData "RankArray" from "TTKGhostCellPreconditioning"
     // (warning: for Implicit/Periodic triangulations, concerns
     // "squares"/"cubes" and not "triangles"/"tetrahedron")
@@ -3647,15 +3692,19 @@ namespace ttk {
     // (neighboring) ranks (per MPI rank)
     std::vector<std::vector<SimplexId>> remoteGhostCells_{};
 
-    std::vector<SimplexId> edgeLidToGid_{};
+    std::vector<ttk::SimplexId> edgeLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
-    std::vector<SimplexId> triangleLidToGid_{};
+    std::vector<ttk::SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
+
+    std::array<double, 6> localBounds_;
+    std::array<double, 6> globalBounds_;
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};
     bool hasPreconditionedDistributedTriangles_{false};
     bool hasPreconditionedDistributedVertices_{false};
+    bool hasPreconditionedGlobalBoundary_{false};
 
 #endif // TTK_ENABLE_MPI
 
