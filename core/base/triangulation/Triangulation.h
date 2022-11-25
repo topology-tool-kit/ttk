@@ -2354,7 +2354,7 @@ namespace ttk {
       return abstractTriangulation_->getCellVTKID(ttkId, vtkId);
     }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
     /// Pre-process the distributed vertex ids.
     ///
     /// This function should ONLY be called as a pre-condition to the
@@ -2417,9 +2417,6 @@ namespace ttk {
 #endif
       return abstractTriangulation_->preconditionGlobalBoundary();
     }
-#endif // TTK_ENABLE_MPI
-
-#if TTK_ENABLE_MPI
     /// Pre-process the distributed ghost cells .
     ///
     /// This function should ONLY be called as a pre-condition to the

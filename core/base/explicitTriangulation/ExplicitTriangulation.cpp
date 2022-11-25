@@ -95,7 +95,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     return -1;
   }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+
   this->preconditionEdgeRankArray();
   if(ttk::isRunningWithMPI()) {
     ttk::SimplexId edgeNumber = edgeList_.size();
@@ -112,14 +113,16 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
       boundaryEdges_[i] = (charBoundary[i] == '1');
     }
   }
-#endif
+
+#endif // TTK_ENABLE_MPI
 
   this->printMsg("Extracted boundary edges", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
 }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+
 int ExplicitTriangulation::preconditionEdgeRankArray() {
   ttk::SimplexId edgeNumber = this->getNumberOfEdgesInternal();
   edgeRankArray_.resize(edgeNumber, 0);
@@ -166,7 +169,9 @@ int ExplicitTriangulation::preconditionTriangleRankArray() {
   }
   return 0;
 }
-#endif
+
+#endif // TTK_ENABLE_MPI
+
 int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
@@ -201,7 +206,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     return -1;
   }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+
   this->preconditionTriangleRankArray();
   if(ttk::isRunningWithMPI()) {
     ttk::SimplexId triangleNumber = triangleList_.size();
@@ -218,7 +224,9 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
       boundaryTriangles_[i] = (charBoundary[i] == '1');
     }
   }
-#endif
+
+#endif // TTK_ENABLE_MPI
+
   this->printMsg("Extracted boundary triangles", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
@@ -275,7 +283,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     printErr("Unsupported dimension for vertex boundary precondition");
     return -1;
   }
-#if TTK_ENABLE_MPI
+
+#ifdef TTK_ENABLE_MPI
 
   if(ttk::isRunningWithMPI()) {
     this->preconditionDistributedVertices();
@@ -292,7 +301,9 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
       }
     }
   }
-#endif
+
+#endif // TTK_ENABLE_MPI
+
   this->printMsg("Extracted boundary vertices", 1.0, tm.getElapsedTime(), 1);
 
   return 0;

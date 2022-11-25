@@ -18,7 +18,7 @@
 #include <unordered_set>
 #include <vector>
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
 
 // disable the MPI C++ API
 #define OMPI_SKIP_MPICXX 1
@@ -1080,4 +1080,5 @@ namespace ttk {
   }
 
 } // namespace ttk
-#endif
+
+#endif // TTK_ENABLE_MPI
