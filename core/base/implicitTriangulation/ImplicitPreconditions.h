@@ -55,7 +55,6 @@ namespace ttk {
       hasPreconditionedVerticesAndCells_ = false;
       return AbstractTriangulation::clear();
     }
-    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
 
   private:
     // for every vertex, its position on the grid
@@ -85,21 +84,12 @@ namespace ttk {
     }
 
     inline int preconditionVerticesInternal() override {
-#ifdef TTK_ENABLE_MPI
-      return this->preconditionDistributedVertices();
-#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionEdgesInternal() override {
-#ifdef TTK_ENABLE_MPI
-      return this->preconditionDistributedEdges();
-#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionTrianglesInternal() override {
-#ifdef TTK_ENABLE_MPI
-      return this->preconditionDistributedTriangles();
-#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionTetrahedronsInternal() override {
@@ -129,7 +119,6 @@ namespace ttk {
       this->tetrahedronToPosition(t, p.data());
       return p;
     }
-    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
   };
 
 } // namespace ttk

@@ -119,15 +119,13 @@ namespace ttk {
                           const int *const rankArray,
                           const globalIdType *const globalIds,
                           const std::unordered_map<IT, IT> &gidToLidMap,
-                          const std::vector<int> *neighbors,
+                          const std::vector<int> &neighbors,
                           const int rankToSend,
                           const IT nVerts,
                           MPI_Comm communicator,
                           const int dimensionNumber) {
-    if(neighbors == nullptr) {
-      return -1;
-    }
-    int neighborNumber = neighbors->size();
+
+    int neighborNumber = neighbors.size();
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }
@@ -153,26 +151,24 @@ namespace ttk {
       }
       // send the amount of ids and the needed ids themselves
       for(int r = 0; r < neighborNumber; r++) {
-        IT nValues = rankVectors[neighbors->at(r)].size();
-        MPI_Send(
-          &nValues, 1, MPI_IT, neighbors->at(r), amountTag, communicator);
+        IT nValues = rankVectors[neighbors[r]].size();
+        MPI_Send(&nValues, 1, MPI_IT, neighbors[r], amountTag, communicator);
         if(nValues > 0) {
-          MPI_Send(rankVectors[neighbors->at(r)].data(), nValues, MPI_GIT,
-                   neighbors->at(r), idsTag, communicator);
+          MPI_Send(rankVectors[neighbors[r]].data(), nValues, MPI_GIT,
+                   neighbors[r], idsTag, communicator);
         }
       }
       // receive the scalar values
       for(int r = 0; r < neighborNumber; r++) {
-        IT nValues = rankVectors[neighbors->at(r)].size();
+        IT nValues = rankVectors[neighbors[r]].size();
         std::vector<DT> receivedValues(nValues * dimensionNumber);
         if(nValues > 0) {
           MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
-                   neighbors->at(r), valuesTag, communicator,
-                   MPI_STATUS_IGNORE);
+                   neighbors[r], valuesTag, communicator, MPI_STATUS_IGNORE);
           for(IT i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
-              globalIdType globalId = rankVectors[neighbors->at(r)][i];
+              const auto globalId = rankVectors[neighbors[r]][i];
               IT localId = gidToLidMap.at(globalId);
               scalarArray[localId * dimensionNumber + j] = receivedVal;
             }
@@ -182,8 +178,8 @@ namespace ttk {
     } else { // owner ranks
       // if rankToSend is not the neighbor of the current rank, we do not need
       // to do anything
-      if(std::find(neighbors->begin(), neighbors->end(), rankToSend)
-         != neighbors->end()) {
+      if(std::find(neighbors.begin(), neighbors.end(), rankToSend)
+         != neighbors.end()) {
         // receive the amount of ids and the needed ids themselves
         IT nValues;
 
@@ -226,13 +222,10 @@ namespace ttk {
    * @return 0 in case of success
    */
   template <typename IT>
-  int preconditionNeighborsUsingRankArray(std::vector<int> *neighbors,
+  int preconditionNeighborsUsingRankArray(std::vector<int> &neighbors,
                                           const int *const rankArray,
                                           const IT nVerts,
                                           MPI_Comm communicator) {
-    if(neighbors == nullptr) {
-      return -1;
-    }
     std::unordered_set<int> neighborSet{};
     for(IT i = 0; i < nVerts; i++) {
       if(rankArray[i] != ttk::MPIrank_) {
@@ -315,11 +308,11 @@ namespace ttk {
     neighborSet = finalSet;
 
     // We copy the set as a vector
-    neighbors->clear();
+    neighbors.clear();
     for(int neighbor : neighborSet) {
-      neighbors->push_back(neighbor);
+      neighbors.push_back(neighbor);
     }
-    std::sort(neighbors->begin(), neighbors->end());
+    std::sort(neighbors.begin(), neighbors.end());
 
     return 0;
   }
@@ -346,12 +339,9 @@ namespace ttk {
                          const std::unordered_map<IT, IT> &gidToLidMap,
                          const IT nVerts,
                          MPI_Comm communicator,
-                         const std::vector<int> *neighbors,
+                         const std::vector<int> &neighbors,
                          const int dimensionNumber = 1) {
     if(!ttk::isRunningWithMPI()) {
-      return -1;
-    }
-    if(neighbors == nullptr) {
       return -1;
     }
     for(int r = 0; r < ttk::MPIsize_; r++) {
@@ -376,10 +366,8 @@ namespace ttk {
   }
 
   void inline preconditionNeighborsUsingBoundingBox(
-    double *boundingBox, std::vector<int> *neighbors) {
-    if(neighbors == nullptr) {
-      return;
-    }
+    double *boundingBox, std::vector<int> &neighbors) {
+
     std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
       boundingBox, boundingBox + 6, rankBoundingBoxes[ttk::MPIrank_].begin());
@@ -400,7 +388,7 @@ namespace ttk {
       if(i != ttk::MPIrank_) {
         double *theirBoundingBox = rankBoundingBoxes[i].data();
         if(checkForIntersection(boundingBox, theirBoundingBox)) {
-          neighbors->push_back(i);
+          neighbors.push_back(i);
         }
       }
     }
@@ -420,8 +408,8 @@ namespace ttk {
                                const unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox,
-                               std::vector<int> *neighbors) {
-    if(neighbors != nullptr && neighbors->size() < 1) {
+                               std::vector<int> &neighbors) {
+    if(neighbors.empty()) {
       ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighbors);
     }
     MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
@@ -453,7 +441,7 @@ namespace ttk {
     receivedGlobals.resize(sizeOfCurrentRank);
     ttk::SimplexId sizeOfNeighbor;
     std::vector<ttk::SimplexId> neighborUnknownIds;
-    for(int neighbor : (*neighbors)) {
+    for(int neighbor : neighbors) {
       // we first send the size and then all needed ids to the neighbor
       MPI_Sendrecv(&sizeOfCurrentRank, 1, MIT, neighbor, ttk::MPIrank_,
                    &sizeOfNeighbor, 1, MIT, neighbor, neighbor, ttk::MPIcomm_,
@@ -735,10 +723,10 @@ namespace ttk {
                        const int *rankArray,
                        const size_t nVerts,
                        const int burstSize,
-                       std::vector<int> *neighbors) {
+                       std::vector<int> &neighbors) {
     int intTag = 101;
     int structTag = 102;
-    if(neighbors->size() < 1) {
+    if(neighbors.empty()) {
       ttk::preconditionNeighborsUsingRankArray(
         neighbors, rankArray, nVerts, ttk::MPIcomm_);
     }

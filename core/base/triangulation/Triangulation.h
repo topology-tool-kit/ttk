@@ -1413,9 +1413,9 @@ namespace ttk {
     /// \note This method is similar to getVertexGlobalIdMap() except it is not
     /// const and allows for modification of the triangulation and the map.
 
-    inline std::unordered_map<SimplexId, SimplexId> *
-      getVertexGlobalIdMapWriteMode() override {
-      return abstractTriangulation_->getVertexGlobalIdMapWriteMode();
+    inline std::unordered_map<SimplexId, SimplexId> &
+      getVertexGlobalIdMap() override {
+      return abstractTriangulation_->getVertexGlobalIdMap();
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
@@ -1424,11 +1424,10 @@ namespace ttk {
       abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
     }
 
-    inline std::vector<int> *getNeighborRanksWriteMode() override {
-      return abstractTriangulation_->getNeighborRanksWriteMode();
+    inline const std::vector<int> &getNeighborRanks() const override {
+      return abstractTriangulation_->getNeighborRanks();
     }
-
-    inline const std::vector<int> *getNeighborRanks() const override {
+    inline std::vector<int> &getNeighborRanks() override {
       return abstractTriangulation_->getNeighborRanks();
     }
 
@@ -1436,13 +1435,6 @@ namespace ttk {
       return abstractTriangulation_->setLocalBound(bound);
     }
 
-    inline const ttk::SimplexId *getEdgesGlobalIds() {
-      return abstractTriangulation_->getEdgesGlobalIds();
-    }
-
-    inline const ttk::SimplexId *getTrianglesGlobalIds() {
-      return abstractTriangulation_->getTrianglesGlobalIds();
-    }
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
@@ -1460,6 +1452,21 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->getVertexLocalId(geid);
+    }
+
+    /**
+     * @brief Create a meta grid for implicit triangulations
+     *
+     * In an MPI context, input domains are split into separate,
+     * overlapping local grids. This methods makes each of the local
+     * implicit triangulations aware of the dimensions of the
+     * original, global grid.
+     *
+     * @param[in] dimensions Global grid dimensions
+     */
+    inline void createMetaGrid(const double *const bounds) {
+      this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
+      this->implicitTriangulation_.createMetaGrid(bounds);
     }
 
 #endif // TTK_ENABLE_MPI
@@ -2398,6 +2405,14 @@ namespace ttk {
       return abstractTriangulation_->preconditionGlobalBoundary();
     }
 
+    inline int preconditionDistributedCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionDistributedCells();
+    }
 #endif // TTK_ENABLE_MPI
 
     /// Pre-process the vertex links.
