@@ -395,7 +395,6 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
   Timer tm;
   if(triplets.empty())
     return;
-  size_t numberOfPairs = 0;
 
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return offsets[a] < offsets[b];
@@ -415,7 +414,6 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
     SimplexId r2 = getRep(std::get<2>(t));
     if(r1 != r2) {
       SimplexId s = std::get<0>(t);
-      numberOfPairs++;
 
       // Add pair
       if(splitTree) {

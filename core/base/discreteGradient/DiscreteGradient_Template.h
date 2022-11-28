@@ -1079,7 +1079,11 @@ int DiscreteGradient::getDescendingWall(
   VisitedMask &mask,
   const triangulationType &triangulation,
   std::vector<Cell> *const wall,
-  std::set<SimplexId> *const saddles) const {
+  std::vector<SimplexId> *const saddles) const {
+
+  if(saddles != nullptr) {
+    saddles->clear();
+  }
 
   if(dimensionality_ == 3) {
     if(cell.dim_ == 2) {
@@ -1108,7 +1112,7 @@ int DiscreteGradient::getDescendingWall(
             triangulation.getTriangleEdge(triangleId, j, edgeId);
 
             if((saddles != nullptr) and isSaddle1(Cell(1, edgeId))) {
-              saddles->insert(edgeId);
+              saddles->emplace_back(edgeId);
             }
 
             const SimplexId pairedCellId
@@ -1119,6 +1123,12 @@ int DiscreteGradient::getDescendingWall(
             }
           }
         }
+      }
+
+      if(saddles != nullptr && saddles->size() > 1) {
+        std::sort(saddles->begin(), saddles->end());
+        const auto last = std::unique(saddles->begin(), saddles->end());
+        saddles->erase(last, saddles->end());
       }
     }
   }
@@ -1132,7 +1142,11 @@ int DiscreteGradient::getAscendingWall(
   VisitedMask &mask,
   const triangulationType &triangulation,
   std::vector<Cell> *const wall,
-  std::set<SimplexId> *const saddles) const {
+  std::vector<SimplexId> *const saddles) const {
+
+  if(saddles != nullptr) {
+    saddles->clear();
+  }
 
   if(dimensionality_ == 3) {
     if(cell.dim_ == 1) {
@@ -1163,7 +1177,7 @@ int DiscreteGradient::getAscendingWall(
             triangulation.getEdgeTriangle(edgeId, j, triangleId);
 
             if((saddles != nullptr) and isSaddle2(Cell(2, triangleId))) {
-              saddles->insert(triangleId);
+              saddles->emplace_back(triangleId);
             }
 
             const SimplexId pairedCellId
@@ -1174,6 +1188,12 @@ int DiscreteGradient::getAscendingWall(
             }
           }
         }
+      }
+
+      if(saddles != nullptr && saddles->size() > 1) {
+        std::sort(saddles->begin(), saddles->end());
+        const auto last = std::unique(saddles->begin(), saddles->end());
+        saddles->erase(last, saddles->end());
       }
     }
   }

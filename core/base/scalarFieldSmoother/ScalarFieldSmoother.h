@@ -169,7 +169,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     if(useMPI) {
       // after each iteration we need to exchange the ghostcell values with our
       // neighbors
-      exchangeGhostCellsWithoutTriangulation<dataType, SimplexId>(
+      exchangeGhostCellsWithoutTriangulation<dataType, SimplexId, ttk::LongSimplexId>(
         outputData, triangulation->getVertRankArray(),
         triangulation->getVertsGlobalIds(),
         triangulation->getVertexGlobalIdMap(), vertexNumber, ttk::MPIcomm_,

@@ -97,8 +97,8 @@ namespace ttk {
                               const PowerFunc &power);
 
     template <typename PowerFunc>
-    inline dataType cost(const Container &coordinates,
-                         const PowerFunc &power) const {
+    inline dataType getCost(const Container &coordinates,
+                            const PowerFunc &power) const {
       dataType cost = 0;
       for(size_t i = 0; i < coordinates.size(); i++) {
         cost += power(std::abs(coordinates[i] - coordinates_[i]));
@@ -346,7 +346,7 @@ void ttk::KDTree<dataType, Container>::getKClosest(const unsigned int k,
   /// will need to sort them according to their cost.
   if(this->isLeaf()) {
     dataType cost{};
-    TTK_POW_LAMBDA(cost = this->cost, dataType, p, coordinates);
+    TTK_POW_LAMBDA(cost = this->getCost, dataType, p, coordinates);
     cost += weight_[weight_index];
     neighbours.push_back(this);
     costs.push_back(cost);
@@ -370,7 +370,7 @@ void ttk::KDTree<dataType, Container>::recursiveGetKClosest(
   const PowerFunc &power) {
   // 1- Look wether or not to include the current point in the nearest
   // neighbours
-  dataType cost = this->cost(coordinates, power);
+  dataType cost = this->getCost(coordinates, power);
   cost += weight_[weight_index];
 
   if(costs.size() < k) {

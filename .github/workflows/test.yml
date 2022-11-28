@@ -2,9 +2,10 @@ name: test_build
 
 on:
   push:
+    # triggered on commit pushes on the "dev" branch
+    branches:
+      - 'dev'
     # triggered on tag pushes with tags beginning with either "v" or "dev"
-    branch-ignore:
-      - '*'
     tags:
       - 'v*'
       - 'dev*'
@@ -12,10 +13,9 @@ on:
       - 'build*'
       - 'test*'
   pull_request:
-    # also triggered by pull requests on the "dev" & "mpi" branches
+    # also triggered by pull requests on the "dev" branch
     branches:
       - 'dev'
-      - 'mpi'
 
 env:
   PV_TAG: v5.10.1-headless
@@ -29,6 +29,10 @@ jobs:
   # ------------------#
   test-build-ubuntu:
     runs-on: ${{ matrix.os }}
+    # trigger job when push event on a branch (not on a tag) only for
+    # the "topology-tool-kit/ttk" repository
+    # (pull-requests and tag pushes not affected)
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
@@ -98,6 +102,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
+      env:
+        CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
@@ -201,6 +207,7 @@ jobs:
   # -----------------#
   test-build-macos:
     runs-on: macos-12
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
     steps:
@@ -219,6 +226,7 @@ jobs:
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
         # remove Python 3.11 installation
         sudo rm -rf /Library/Frameworks/Python.framework/Versions/3.11
+        sudo rm -rf /usr/local/Frameworks/Python.framework/Versions/3.11
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -267,6 +275,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
+      env:
+        CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
@@ -329,6 +339,7 @@ jobs:
   # ------------------ #
   test-build-windows:
     runs-on: windows-2022
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk
@@ -414,6 +425,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
           -GNinja ^
           ..
+      env:
+        CXXFLAGS: -Werror
 
     - name: Fix clang-cl OpenMP flags in build.ninja
       shell: bash

@@ -244,7 +244,18 @@ namespace ttk {
       }
       return 0;
     }
-    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
+
+    inline int getCellVTKIDInternal(const int &ttkId,
+                                    int &vtkId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(ttkId < 0) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      const SimplexId nSimplexPerCell{this->getDimensionality() == 3 ? 6 : 2};
+      vtkId = ttkId / nSimplexPerCell;
+      return 0;
+    }
 
   protected:
     int dimensionality_; //

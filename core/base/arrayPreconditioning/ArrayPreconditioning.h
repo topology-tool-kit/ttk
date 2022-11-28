@@ -49,7 +49,7 @@ namespace ttk {
       if(ttk::isRunningWithMPI()) {
         std::vector<int> neighbors{};
         ttk::produceOrdering<DT, IT>(orderArray, scalarArray, globalIds,
-                                     rankArray, nVerts, burstSize, &neighbors);
+                                     rankArray, nVerts, burstSize, neighbors);
       }
 #else
       this->printMsg("MPI not enabled!");
