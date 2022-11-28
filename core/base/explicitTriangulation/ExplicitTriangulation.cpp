@@ -103,7 +103,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     for(int i = 0; i < edgeNumber; ++i) {
       charBoundary[i] = boundaryEdges_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId, ttk::SimplexId>(
+    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                                ttk::SimplexId>(
       charBoundary.data(), this->edgeRankArray_.data(),
       this->edgeLidToGid_.data(), this->edgeGidToLid_, edgeNumber,
       ttk::MPIcomm_, this->getNeighborRanks());
@@ -208,7 +209,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     for(int i = 0; i < triangleNumber; ++i) {
       charBoundary[i] = boundaryTriangles_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId, ttk::SimplexId>(
+    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                                ttk::SimplexId>(
       charBoundary.data(), this->triangleRankArray_.data(),
       this->triangleLidToGid_.data(), this->triangleGidToLid_, triangleNumber,
       ttk::MPIcomm_, this->getNeighborRanks());
@@ -280,7 +282,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     for(int i = 0; i < vertexNumber_; ++i) {
       charBoundary[i] = boundaryVertices_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId, ttk::LongSimplexId>(
+    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                                ttk::LongSimplexId>(
       charBoundary.data(), this->vertRankArray_, this->getVertsGlobalIds(),
       this->getVertexGlobalIdMap(), vertexNumber_, ttk::MPIcomm_,
       this->getNeighborRanks());
@@ -1330,7 +1333,6 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
                  this->remoteGhostVertices_[neigh].size(), MIT, neigh, neigh,
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
-
 
   this->hasPreconditionedDistributedVertices_ = true;
 

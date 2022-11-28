@@ -3320,7 +3320,6 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
-
   this->hasPreconditionedDistributedVertices_ = true;
 
   return 0;

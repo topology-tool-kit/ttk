@@ -130,12 +130,11 @@ namespace ttk {
         = triangulation->getGhostCellsPerOwner();
       // receive the scalar values
       for(int r = 0; r < neighborNumber; r++) {
-        ttk::SimplexId nValues
-          = ghostCellsPerOwner->at(neighbors.at(r)).size();
+        ttk::SimplexId nValues = ghostCellsPerOwner->at(neighbors.at(r)).size();
         std::vector<DT> receivedValues(nValues * dimensionNumber);
         if(nValues > 0) {
-          MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT, neighbors.at(r),
-                   valuesTag, communicator, MPI_STATUS_IGNORE);
+          MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
+                   neighbors.at(r), valuesTag, communicator, MPI_STATUS_IGNORE);
 
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
@@ -179,13 +178,12 @@ namespace ttk {
     return 0;
   }
 
-
   template <typename DT, typename triangulationType>
   int getGhostVertexScalars(DT *scalarArray,
-                          const triangulationType *triangulation,
-                          const int rankToSend,
-                          MPI_Comm communicator,
-                          const int dimensionNumber) {
+                            const triangulationType *triangulation,
+                            const int rankToSend,
+                            MPI_Comm communicator,
+                            const int dimensionNumber) {
     const std::vector<int> &neighbors = triangulation->getNeighborRanks();
     if(!ttk::isRunningWithMPI()) {
       return -1;
@@ -205,14 +203,15 @@ namespace ttk {
           = ghostVerticesPerOwner->at(neighbors.at(r)).size();
         std::vector<DT> receivedValues(nValues * dimensionNumber);
         if(nValues > 0) {
-          MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT, neighbors.at(r),
-                   valuesTag, communicator, MPI_STATUS_IGNORE);
+          MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
+                   neighbors.at(r), valuesTag, communicator, MPI_STATUS_IGNORE);
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
               ttk::SimplexId globalId
                 = ghostVerticesPerOwner->at(neighbors.at(r))[i];
-              ttk::SimplexId localId = triangulation->getVertexLocalId(globalId);
+              ttk::SimplexId localId
+                = triangulation->getVertexLocalId(globalId);
               scalarArray[localId * dimensionNumber + j] = receivedVal;
             }
           }
@@ -233,7 +232,8 @@ namespace ttk {
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               ttk::SimplexId globalId = ghostVerticesForThisRank[i];
-              ttk::SimplexId localId = triangulation->getVertexLocalId(globalId);
+              ttk::SimplexId localId
+                = triangulation->getVertexLocalId(globalId);
               valuesToSend[i * dimensionNumber + j]
                 = scalarArray[localId * dimensionNumber + j];
             }
@@ -502,9 +502,9 @@ namespace ttk {
 
   template <typename DT, typename triangulationType>
   int exchangeGhostVertices(DT *scalarArray,
-                         const triangulationType *triangulation,
-                         MPI_Comm communicator,
-                         const int dimensionNumber = 1) {
+                            const triangulationType *triangulation,
+                            MPI_Comm communicator,
+                            const int dimensionNumber = 1) {
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }

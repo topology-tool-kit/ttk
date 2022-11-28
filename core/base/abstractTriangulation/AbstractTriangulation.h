@@ -2607,7 +2607,6 @@ namespace ttk {
       return 0;
     }
 
-
     // global <-> local id mappings
 
     virtual inline SimplexId getVertexGlobalId(const SimplexId lvid) const {
