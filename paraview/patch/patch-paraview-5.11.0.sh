@@ -78,6 +78,8 @@ $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkPVFileInformation.cxx.patch"
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.11.0-ApplicationComponents.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.11.0-NSIS64.patch"
 
 ## Remove README.md that points to ParaView sources & build
 ## instructions instead of TTK ones
