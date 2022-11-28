@@ -121,7 +121,12 @@ int DiscreteGradient::setCriticalPoints(
 
     triangulation.getCellIncenter(cell.id_, cell.dim_, points[i].data());
     cellDimensions[i] = cellDim;
+#ifdef TTK_ENABLE_MPI
+    cellIds[i]
+      = this->getDistributedGlobalCellId(cellId, cellDim, triangulation);
+#else
     cellIds[i] = cellId;
+#endif
     isOnBoundary[i] = this->isBoundary(cell, triangulation);
     PLVertexIdentifiers[i] = this->getCellGreaterVertex(cell, triangulation);
   }
@@ -463,7 +468,9 @@ int DiscreteGradient::processLowerStars(
 
   // store lower star structure
   lowerStarType Lx;
-
+#if TTK_ENABLE_MPI
+  const int *vertRankArray = triangulation.getVertRankArray();
+#endif
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) \
   firstprivate(Lx, pqZero, pqOne)
@@ -507,76 +514,91 @@ int DiscreteGradient::processLowerStars(
     };
 
     lowerStar(Lx, x, offsets, triangulation);
-
-    // Lx[1] empty => x is a local minimum
-
-    if(!Lx[1].empty()) {
-      // get delta: 1-cell (edge) with minimal G value (steeper gradient)
-      size_t minId = 0;
-      for(size_t i = 1; i < Lx[1].size(); ++i) {
-        const auto &a = Lx[1][minId].lowVerts_[0];
-        const auto &b = Lx[1][i].lowVerts_[0];
-        if(a > b) {
-          // edge[i] < edge[0]
-          minId = i;
+    // In case the vertex is a ghost, the gradient of the
+    // simplices of its star is set to GHOST_GRADIENT
+#if TTK_ENABLE_MPI
+    if(vertRankArray[x] != ttk::MPIrank_) {
+      int sizeDim = Lx.size();
+      for(int i = 0; i < sizeDim; i++) {
+        int nCells = Lx[i].size();
+        for(int j = 0; j < nCells; j++) {
+          setCellToGhost(Lx[i][j].dim_, Lx[i][j].id_);
         }
       }
+    } else {
+#endif
 
-      auto &c_delta = Lx[1][minId];
-
-      // store x (0-cell) -> delta (1-cell) V-path
-      pairCells(Lx[0][0], c_delta, triangulation);
-
-      // push every 1-cell in Lx that is not delta into pqZero
-      for(auto &alpha : Lx[1]) {
-        if(alpha.id_ != c_delta.id_) {
-          pqZero.push(alpha);
-        }
-      }
-
-      // push into pqOne every coface of delta in Lx (2-cells only,
-      // 3-cells have not any facet paired yet) such that
-      // numUnpairedFaces == 1
-      insertCofacets(c_delta, Lx);
-
-      while(!pqOne.empty() || !pqZero.empty()) {
-        while(!pqOne.empty()) {
-          auto &c_alpha = pqOne.top().get();
-          pqOne.pop();
-          auto unpairedFaces = numUnpairedFaces(c_alpha, Lx);
-          if(unpairedFaces.first == 0) {
-            pqZero.push(c_alpha);
-          } else {
-            auto &c_pair_alpha = Lx[c_alpha.dim_ - 1][unpairedFaces.second];
-
-            // store (pair_alpha) -> (alpha) V-path
-            pairCells(c_pair_alpha, c_alpha, triangulation);
-
-            // add cofaces of c_alpha and c_pair_alpha to pqOne
-            insertCofacets(c_alpha, Lx);
-            insertCofacets(c_pair_alpha, Lx);
+      // Lx[1] empty => x is a local minimum
+      if(!Lx[1].empty()) {
+        // get delta: 1-cell (edge) with minimal G value (steeper gradient)
+        size_t minId = 0;
+        for(size_t i = 1; i < Lx[1].size(); ++i) {
+          const auto &a = Lx[1][minId].lowVerts_[0];
+          const auto &b = Lx[1][i].lowVerts_[0];
+          if(a > b) {
+            // edge[i] < edge[0]
+            minId = i;
           }
         }
 
-        // skip pair_alpha from pqZero:
-        // cells in pqZero are not critical if already paired
-        while(!pqZero.empty() && pqZero.top().get().paired_) {
-          pqZero.pop();
+        auto &c_delta = Lx[1][minId];
+
+        // store x (0-cell) -> delta (1-cell) V-path
+        pairCells(Lx[0][0], c_delta, triangulation);
+
+        // push every 1-cell in Lx that is not delta into pqZero
+        for(auto &alpha : Lx[1]) {
+          if(alpha.id_ != c_delta.id_) {
+            pqZero.push(alpha);
+          }
         }
 
-        if(!pqZero.empty()) {
-          auto &c_gamma = pqZero.top().get();
-          pqZero.pop();
+        // push into pqOne every coface of delta in Lx (2-cells only,
+        // 3-cells have not any facet paired yet) such that
+        // numUnpairedFaces == 1
+        insertCofacets(c_delta, Lx);
 
-          // gamma is a critical cell
-          // mark gamma as paired
-          c_gamma.paired_ = true;
+        while(!pqOne.empty() || !pqZero.empty()) {
+          while(!pqOne.empty()) {
+            auto &c_alpha = pqOne.top().get();
+            pqOne.pop();
+            auto unpairedFaces = numUnpairedFaces(c_alpha, Lx);
+            if(unpairedFaces.first == 0) {
+              pqZero.push(c_alpha);
+            } else {
+              auto &c_pair_alpha = Lx[c_alpha.dim_ - 1][unpairedFaces.second];
 
-          // add cofacets of c_gamma to pqOne
-          insertCofacets(c_gamma, Lx);
+              // store (pair_alpha) -> (alpha) V-path
+              pairCells(c_pair_alpha, c_alpha, triangulation);
+
+              // add cofaces of c_alpha and c_pair_alpha to pqOne
+              insertCofacets(c_alpha, Lx);
+              insertCofacets(c_pair_alpha, Lx);
+            }
+          }
+
+          // skip pair_alpha from pqZero:
+          // cells in pqZero are not critical if already paired
+          while(!pqZero.empty() && pqZero.top().get().paired_) {
+            pqZero.pop();
+          }
+
+          if(!pqZero.empty()) {
+            auto &c_gamma = pqZero.top().get();
+            pqZero.pop();
+
+            // gamma is a critical cell
+            // mark gamma as paired
+            c_gamma.paired_ = true;
+
+            // add cofacets of c_gamma to pqOne
+            insertCofacets(c_gamma, Lx);
+          }
         }
       }
+#if TTK_ENABLE_MPI
     }
+#endif
   }
 
   return 0;
@@ -1515,6 +1537,29 @@ ttk::SimplexId DiscreteGradient::getCellLowerVertex(
   return vertexId;
 }
 
+#if TTK_ENABLE_MPI
+template <typename triangulationType>
+int DiscreteGradient::getDistributedGlobalCellId(
+  int localCellId, int cellDim, const triangulationType &triangulation) const {
+  switch(cellDim) {
+    case 0:
+      return triangulation.getVertexGlobalId(localCellId);
+    case 1:
+      return triangulation.getEdgeGlobalId(localCellId);
+    case 2:
+      if(getDimensionality() == 2) {
+        return triangulation.getCellGlobalId(localCellId);
+      } else {
+        return triangulation.getTriangleGlobalId(localCellId);
+      }
+    case 3: {
+      return triangulation.getCellGlobalId(localCellId);
+    }
+  }
+  return -1;
+}
+#endif
+
 template <typename triangulationType>
 int DiscreteGradient::setGradientGlyphs(
   std::vector<std::array<float, 3>> &points,
@@ -1535,7 +1580,7 @@ int DiscreteGradient::setGradientGlyphs(
   for(int i = 0; i < nDims - 1; ++i) {
     const auto nCells = this->getNumberOfCells(i, triangulation);
     for(SimplexId j = 0; j < nCells; ++j) {
-      if(this->getPairedCell(Cell{i, j}, triangulation) != -1) {
+      if(this->getPairedCell(Cell{i, j}, triangulation) > -1) {
         nGlyphsPerDim[i]++;
       }
     }
@@ -1566,7 +1611,7 @@ int DiscreteGradient::setGradientGlyphs(
     for(SimplexId j = 0; j < nCells; ++j) {
       const Cell c{i, j};
       const auto pcid = this->getPairedCell(c, triangulation);
-      if(pcid != -1) {
+      if(pcid > -1) {
         const Cell pc{i + 1, pcid};
         triangulation.getCellIncenter(
           c.id_, c.dim_, points[2 * nProcessedGlyphs].data());
@@ -1575,8 +1620,15 @@ int DiscreteGradient::setGradientGlyphs(
         points_pairOrigins[2 * nProcessedGlyphs] = 0;
         points_pairOrigins[2 * nProcessedGlyphs + 1] = 1;
         cells_pairTypes[nProcessedGlyphs] = i;
+#ifdef TTK_ENABLE_MPI
+        cellIds[2 * nProcessedGlyphs + 0]
+          = this->getDistributedGlobalCellId(j, i, triangulation);
+        cellIds[2 * nProcessedGlyphs + 1]
+          = this->getDistributedGlobalCellId(pcid, i + 1, triangulation);
+#else
         cellIds[2 * nProcessedGlyphs + 0] = j;
         cellIds[2 * nProcessedGlyphs + 1] = pcid;
+#endif
         cellDimensions[2 * nProcessedGlyphs + 0] = i;
         cellDimensions[2 * nProcessedGlyphs + 1] = i + 1;
         nProcessedGlyphs++;

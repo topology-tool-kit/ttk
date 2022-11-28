@@ -44,6 +44,8 @@ namespace ttk {
       SimplexId id_{-1};
     };
 
+    enum gradientValue { NULL_GRADIENT = -1, GHOST_GRADIENT = -2 };
+
     /**
      * @brief Extended Cell structure for processLowerStars
      */
@@ -78,6 +80,9 @@ namespace ttk {
     public:
       DiscreteGradient() {
         this->setDebugMsgPrefix("DiscreteGradient");
+#ifdef TTK_ENABLE_MPI
+        hasMPISupport_ = true;
+#endif
       }
 
       /**
@@ -320,6 +325,13 @@ in the gradient.
       int getCriticalPoints(std::vector<Cell> &criticalPoints,
                             const triangulationType &triangulation) const;
 
+#if TTK_ENABLE_MPI
+      template <typename triangulationType>
+      int getDistributedGlobalCellId(
+        int localCellId,
+        int cellDim,
+        const triangulationType &triangulation) const;
+#endif
       /**
        * Compute manifold size for critical extrema
        */
@@ -474,6 +486,9 @@ gradient, false otherwise.
         const std::vector<Cell> &vpath,
         const triangulationType &triangulation) const;
 
+#if TTK_ENABLE_MPI
+      void setCellToGhost(const int cellDim, const SimplexId cellId);
+#endif
     protected:
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
