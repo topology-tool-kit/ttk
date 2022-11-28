@@ -1427,6 +1427,9 @@ namespace ttk {
     inline bool hasPreconditionedDistributedCells() const override {
       return abstractTriangulation_->hasPreconditionedDistributedCells();
     }
+    inline bool hasPreconditionedDistributedVertices() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedVertices();
+    }
 
     inline const std::vector<int> &getNeighborRanks() const override {
       return abstractTriangulation_->getNeighborRanks();

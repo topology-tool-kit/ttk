@@ -3274,13 +3274,52 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
     this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
-
-  // allocate memory
-  this->vertexGidToLid_.reserve(this->vertexNumber_);
-
-  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexGidToLid_[this->vertGid_[i]] = i;
+  if(this->vertRankArray_ == nullptr) {
+    this->printErr("Missing vertex RankArray!");
+    return -3;
   }
+
+  // number of local vertices (with ghost vertices...)
+  const auto nLocVertices{this->getNumberOfVertices()};
+
+  // global vertex id -> local vertex id (reverse of this->vertGid_)
+  this->vertexGidToLid_.reserve(nLocVertices);
+  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
+  }
+  this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
+
+  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    if(this->vertRankArray_[lvid] != ttk::MPIrank_) {
+      // store ghost cell global ids (per rank)
+      this->ghostVerticesPerOwner_[this->vertRankArray_[lvid]].emplace_back(
+        this->vertGid_[lvid]);
+    }
+  }
+
+  // for each rank, store the global id of local cells that are ghost cells of
+  // other ranks.
+  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
+  this->remoteGhostVertices_.resize(ttk::MPIsize_);
+  // number of owned cells that are ghost cells of other ranks
+  std::vector<size_t> nOwnedGhostVerticesPerRank(ttk::MPIsize_);
+
+  for(const auto neigh : this->neighborRanks_) {
+    // 1. send to neigh number of ghost cells owned by neigh
+    const auto nVerts{this->ghostVerticesPerOwner_[neigh].size()};
+    MPI_Sendrecv(&nVerts, 1, ttk::getMPIType(nVerts), neigh, ttk::MPIrank_,
+                 &nOwnedGhostVerticesPerRank[neigh], 1, ttk::getMPIType(nVerts),
+                 neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    this->remoteGhostVertices_[neigh].resize(nOwnedGhostVerticesPerRank[neigh]);
+
+    // 2. send to neigh list of ghost cells owned by neigh
+    MPI_Sendrecv(this->ghostVerticesPerOwner_[neigh].data(),
+                 this->ghostVerticesPerOwner_[neigh].size(), MIT, neigh,
+                 ttk::MPIrank_, this->remoteGhostVertices_[neigh].data(),
+                 this->remoteGhostVertices_[neigh].size(), MIT, neigh, neigh,
+                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
+  }
+
 
   this->hasPreconditionedDistributedVertices_ = true;
 
