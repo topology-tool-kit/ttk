@@ -3248,6 +3248,9 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
   this->metaGrid_->setInputGrid(
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, dimensions[0], dimensions[1], dimensions[2]);
+  this->metaGrid_->preconditionBoundaryVertices();
+  this->metaGrid_->preconditionBoundaryEdges();
+  this->metaGrid_->preconditionBoundaryTriangles();
 }
 
 SimplexId
