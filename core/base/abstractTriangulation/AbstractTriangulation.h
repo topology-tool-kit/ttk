@@ -2807,8 +2807,35 @@ namespace ttk {
       return this->neighborRanks_;
     }
 
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getGhostCellsPerOwner() const {
+      return &(this->ghostCellsPerOwner_);
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getRemoteGhostCells() const {
+      return &(this->remoteGhostCells_);
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getGhostVerticesPerOwner() const {
+      return &(this->ghostVerticesPerOwner_);
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getRemoteGhostVertices() const {
+      return &(this->remoteGhostVertices_);
+    }
+
     virtual inline void setHasPreconditionedDistributedVertices(bool flag) {
       this->hasPreconditionedDistributedVertices_ = flag;
+    }
+
+    virtual inline bool hasPreconditionedDistributedVertices() const {
+      return this->hasPreconditionedDistributedVertices_;
+    }
+    virtual inline bool hasPreconditionedDistributedCells() const {
+      return this->hasPreconditionedDistributedCells_;
     }
 
   protected:
@@ -3646,10 +3673,15 @@ namespace ttk {
     // list of neighboring ranks (sharing ghost cells to current rank)
     std::vector<int> neighborRanks_{};
     // global ids of (local) ghost cells per each MPI (neighboring) rank
-    std::vector<std::vector<SimplexId>> ghostCellPerOwner_{};
+    std::vector<std::vector<SimplexId>> ghostCellsPerOwner_{};
     // global ids of local (owned) cells that are ghost cells of other
     // (neighboring) ranks (per MPI rank)
     std::vector<std::vector<SimplexId>> remoteGhostCells_{};
+    // global ids of (local) ghost vertices per each MPI (neighboring) rank
+    std::vector<std::vector<SimplexId>> ghostVerticesPerOwner_{};
+    // global ids of local (owned) vertices that are ghost cells of other
+    // (neighboring) ranks (per MPI rank)
+    std::vector<std::vector<SimplexId>> remoteGhostVertices_{};
 
     std::array<double, 6> localBounds_;
     std::array<double, 6> globalBounds_;
