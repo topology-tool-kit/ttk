@@ -103,8 +103,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     for(int i = 0; i < edgeNumber; ++i) {
       charBoundary[i] = boundaryEdges_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId,
-                                                ttk::SimplexId>(
+    ttk::exchangeGhostDataWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                               ttk::SimplexId>(
       charBoundary.data(), this->edgeRankArray_.data(),
       this->edgeLidToGid_.data(), this->edgeGidToLid_, edgeNumber,
       ttk::MPIcomm_, this->getNeighborRanks());
@@ -209,8 +209,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     for(int i = 0; i < triangleNumber; ++i) {
       charBoundary[i] = boundaryTriangles_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId,
-                                                ttk::SimplexId>(
+    ttk::exchangeGhostDataWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                               ttk::SimplexId>(
       charBoundary.data(), this->triangleRankArray_.data(),
       this->triangleLidToGid_.data(), this->triangleGidToLid_, triangleNumber,
       ttk::MPIcomm_, this->getNeighborRanks());
@@ -278,15 +278,14 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
 #if TTK_ENABLE_MPI
 
   if(ttk::isRunningWithMPI()) {
+    this->preconditionDistributedVertices();
     std::vector<unsigned char> charBoundary(vertexNumber_, false);
     for(int i = 0; i < vertexNumber_; ++i) {
       charBoundary[i] = boundaryVertices_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostCellsWithoutTriangulation<unsigned char, ttk::SimplexId,
-                                                ttk::LongSimplexId>(
-      charBoundary.data(), this->vertRankArray_, this->getVertsGlobalIds(),
-      this->getVertexGlobalIdMap(), vertexNumber_, ttk::MPIcomm_,
-      this->getNeighborRanks());
+    ttk::exchangeGhostVertices<unsigned char, ExplicitTriangulation>(
+      charBoundary.data(), this, ttk::MPIcomm_);
+
     for(int i = 0; i < vertexNumber_; ++i) {
       if(vertRankArray_[i] != ttk::MPIrank_) {
         boundaryVertices_[i] = (charBoundary[i] == '1');

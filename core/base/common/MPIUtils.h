@@ -271,7 +271,7 @@ namespace ttk {
    * @return 0 in case of success
    */
   template <typename DT, typename IT, typename globalIdType>
-  int getGhostCellScalarsWithoutTriangulation(
+  int getGhostDataScalarsWithoutTriangulation(
     DT *scalarArray,
     const int *const rankArray,
     const globalIdType *const globalIds,
@@ -541,7 +541,7 @@ namespace ttk {
      * @return 0 in case of success
      */
   template <typename DT, typename IT, typename globalIdType>
-  int exchangeGhostCellsWithoutTriangulation(
+  int exchangeGhostDataWithoutTriangulation(
     DT *scalarArray,
     const int *const rankArray,
     const globalIdType *const globalIds,
@@ -554,7 +554,7 @@ namespace ttk {
       return -1;
     }
     for(int r = 0; r < ttk::MPIsize_; r++) {
-      getGhostCellScalarsWithoutTriangulation<DT, IT, globalIdType>(
+      getGhostDataScalarsWithoutTriangulation<DT, IT, globalIdType>(
         scalarArray, rankArray, globalIds, gidToLidMap, neighbors, r, nVerts,
         communicator, dimensionNumber);
       MPI_Barrier(communicator);
@@ -1033,7 +1033,7 @@ namespace ttk {
 
     // we receive the values at the ghostcells through the abstract
     // exchangeGhostCells method
-    ttk::exchangeGhostCellsWithoutTriangulation<ttk::SimplexId, IT>(
+    ttk::exchangeGhostDataWithoutTriangulation<ttk::SimplexId, IT>(
       orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_,
       neighbors);
   }
