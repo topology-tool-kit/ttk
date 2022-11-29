@@ -157,6 +157,7 @@ jobs:
 
     - name: Remove hosted Python
       run: |
+        sudo rm -rf /Library/Frameworks/Python.framework
         sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
@@ -166,15 +167,16 @@ jobs:
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree websocketpp
-        python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
     - name: Fetch & install TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
-        sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        tar xzf ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        sudo cp -r ttk-paraview/* /usr/local
+        pvpython -m pip install scikit-learn
 
     - name: Set compilers as environment variables
       run: |
@@ -208,13 +210,13 @@ jobs:
     - name: Package TTK
       run: |
         cd build
-        cpack -G productbuild
+        cpack -G TGZ
 
-    - name: Upload .pkg package
+    - name: Upload compressed binaries
       uses: actions/upload-artifact@v3
       with:
-        name: ttk.pkg
-        path: build/ttk.pkg
+        name: ttk.tar.gz
+        path: build/ttk.tar.gz
 
   # -----------#
   # Test macOS #
@@ -228,6 +230,7 @@ jobs:
 
     - name: Remove hosted Python
       run: |
+        sudo rm -rf /Library/Frameworks/Python.framework
         sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
@@ -237,21 +240,23 @@ jobs:
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree
-        python3 -m pip install scikit-learn
 
     - name: Fetch TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
 
-    - name: Fetch TTK .pkg artifact
+    - name: Fetch TTK .tar.gz artifact
       uses: actions/download-artifact@v3
       with:
-        name: ttk.pkg
+        name: ttk.tar.gz
 
-    - name: Install .pkg packages
+    - name: Install binary archives packages
       run: |
-        sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
-        sudo installer -pkg ttk.pkg -target /
+        tar xzf ttk-paraview-${{ env.PV_TAG}}.tar.gz
+        sudo cp -r ttk-paraview/* /usr/local
+        tar xzf ttk.tar.gz
+        sudo cp -r ttk/* /usr/local
+        pvpython -m pip install scikit-learn
 
     - name: Set compilers as environment variables
       run: |
@@ -274,12 +279,10 @@ jobs:
         cmake --build . --parallel
         ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
         # pure Python
-        export PYTHONPATH=/Applications/lib/python3.9/site-packages
-        export DYLD_LIBRARY_PATH=/Applications/lib:$DYLD_LIBRARY_PATH
+        export PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH
         cd $GITHUB_WORKSPACE/examples/python
         python3 example.py ../data/inputData.vtu
         # pvpython
-        export PATH=/Applications/bin:$PATH
         cd $GITHUB_WORKSPACE/examples/pvpython
         pvpython example.py ../data/inputData.vtu
         # standalones
@@ -297,13 +300,12 @@ jobs:
       continue-on-error: true
       run: |
         cd ttk-data
-        python3 -u python/run.py
+        pvpython -u python/run.py
         cat python/res.json
         diff python/hashes/macOS.json python/res.json
       env:
-        PYTHONPATH: /Applications/lib/python3.9/site-packages
-        PV_PLUGIN_PATH: /Applications/bin/plugins/TopologyToolKit
-        OMP_NUM_THREADS: 1
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+        PYTHONPATH: /usr/local/lib/python3.10/site-packages
 
 
   # --------------#
@@ -561,13 +563,13 @@ jobs:
         file: ttk-ubuntu-22.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-22.04.deb
 
-    - name: Upload macOS .pkg as Release Asset
+    - name: Upload macOS binary archives as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk.pkg/ttk.pkg
-        asset_name: ttk-$tag.pkg
+        file: ttk.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag.tar.gz
 
     - name: Upload Windows .exe as Release Asset
       uses: svenstaro/upload-release-action@v2
