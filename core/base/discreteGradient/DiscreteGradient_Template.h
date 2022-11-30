@@ -517,7 +517,7 @@ int DiscreteGradient::processLowerStars(
     // In case the vertex is a ghost, the gradient of the
     // simplices of its star is set to GHOST_GRADIENT
 #ifdef TTK_ENABLE_MPI
-    if(vertRankArray[x] != ttk::MPIrank_) {
+    if(vertRankArray != nullptr && vertRankArray[x] != ttk::MPIrank_) {
       int sizeDim = Lx.size();
       for(int i = 0; i < sizeDim; i++) {
         int nCells = Lx[i].size();
@@ -1541,22 +1541,26 @@ ttk::SimplexId DiscreteGradient::getCellLowerVertex(
 template <typename triangulationType>
 int DiscreteGradient::getDistributedGlobalCellId(
   int localCellId, int cellDim, const triangulationType &triangulation) const {
-  switch(cellDim) {
-    case 0:
-      return triangulation.getVertexGlobalId(localCellId);
-    case 1:
-      return triangulation.getEdgeGlobalId(localCellId);
-    case 2:
-      if(getDimensionality() == 2) {
+  if(ttk::hasInitializedMPI()) {
+    switch(cellDim) {
+      case 0:
+        return triangulation.getVertexGlobalId(localCellId);
+      case 1:
+        return triangulation.getEdgeGlobalId(localCellId);
+      case 2:
+        if(getDimensionality() == 2) {
+          return triangulation.getCellGlobalId(localCellId);
+        } else {
+          return triangulation.getTriangleGlobalId(localCellId);
+        }
+      case 3: {
         return triangulation.getCellGlobalId(localCellId);
-      } else {
-        return triangulation.getTriangleGlobalId(localCellId);
       }
-    case 3: {
-      return triangulation.getCellGlobalId(localCellId);
     }
+    return -1;
+  } else {
+    return localCellId;
   }
-  return -1;
 }
 #endif
 

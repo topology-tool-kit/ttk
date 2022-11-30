@@ -102,8 +102,12 @@ int ttkDiscreteGradient::fillCriticalPoints(
     cellScalars->SetTuple1(i, scalars[critPoints_PLVertexIdentifiers[i]]);
     isOnBoundary->SetTuple1(i, critPoints_isOnBoundary[i]);
 #ifdef TTK_ENABLE_MPI
-    PLVertexIdentifiers->SetTuple1(
-      i, triangulation.getVertexGlobalId(critPoints_PLVertexIdentifiers[i]));
+    if(ttk::hasInitializedMPI()) {
+      PLVertexIdentifiers->SetTuple1(
+        i, triangulation.getVertexGlobalId(critPoints_PLVertexIdentifiers[i]));
+    } else {
+      PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
+    }
 #else
     PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
 #endif
