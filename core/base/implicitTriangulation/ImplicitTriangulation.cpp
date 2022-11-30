@@ -3224,13 +3224,13 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     this->cellLidToGid_[lcid] = globCellId;
   }
 
-  this->ghostCellPerOwner_.resize(ttk::MPIsize_);
+  this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     const auto locCubeId{lcid / nTetraPerCube};
     if(this->cellRankArray_[locCubeId] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
-      this->ghostCellPerOwner_[this->cellRankArray_[locCubeId]].emplace_back(
+      this->ghostCellsPerOwner_[this->cellRankArray_[locCubeId]].emplace_back(
         this->cellLidToGid_[lcid]);
     }
   }
@@ -3244,15 +3244,15 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
 
   for(const auto neigh : this->neighborRanks_) {
     // 1. send to neigh number of ghost cells owned by neigh
-    const auto nCells{this->ghostCellPerOwner_[neigh].size()};
+    const auto nCells{this->ghostCellsPerOwner_[neigh].size()};
     MPI_Sendrecv(&nCells, 1, ttk::getMPIType(nCells), neigh, ttk::MPIrank_,
                  &nOwnedGhostCellsPerRank[neigh], 1, ttk::getMPIType(nCells),
                  neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
     this->remoteGhostCells_[neigh].resize(nOwnedGhostCellsPerRank[neigh]);
 
     // 2. send to neigh list of ghost cells owned by neigh
-    MPI_Sendrecv(this->ghostCellPerOwner_[neigh].data(),
-                 this->ghostCellPerOwner_[neigh].size(), MIT, neigh,
+    MPI_Sendrecv(this->ghostCellsPerOwner_[neigh].data(),
+                 this->ghostCellsPerOwner_[neigh].size(), MIT, neigh,
                  ttk::MPIrank_, this->remoteGhostCells_[neigh].data(),
                  this->remoteGhostCells_[neigh].size(), MIT, neigh, neigh,
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
@@ -3274,12 +3274,50 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
     this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
+  if(this->vertRankArray_ == nullptr) {
+    this->printErr("Missing vertex RankArray!");
+    return -3;
+  }
 
-  // allocate memory
-  this->vertexGidToLid_.reserve(this->vertexNumber_);
+  // number of local vertices (with ghost vertices...)
+  const auto nLocVertices{this->getNumberOfVertices()};
 
-  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexGidToLid_[this->vertGid_[i]] = i;
+  // global vertex id -> local vertex id (reverse of this->vertGid_)
+  this->vertexGidToLid_.reserve(nLocVertices);
+  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
+  }
+  this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
+
+  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    if(this->vertRankArray_[lvid] != ttk::MPIrank_) {
+      // store ghost cell global ids (per rank)
+      this->ghostVerticesPerOwner_[this->vertRankArray_[lvid]].emplace_back(
+        this->vertGid_[lvid]);
+    }
+  }
+
+  // for each rank, store the global id of local cells that are ghost cells of
+  // other ranks.
+  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
+  this->remoteGhostVertices_.resize(ttk::MPIsize_);
+  // number of owned cells that are ghost cells of other ranks
+  std::vector<size_t> nOwnedGhostVerticesPerRank(ttk::MPIsize_);
+
+  for(const auto neigh : this->neighborRanks_) {
+    // 1. send to neigh number of ghost cells owned by neigh
+    const auto nVerts{this->ghostVerticesPerOwner_[neigh].size()};
+    MPI_Sendrecv(&nVerts, 1, ttk::getMPIType(nVerts), neigh, ttk::MPIrank_,
+                 &nOwnedGhostVerticesPerRank[neigh], 1, ttk::getMPIType(nVerts),
+                 neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    this->remoteGhostVertices_[neigh].resize(nOwnedGhostVerticesPerRank[neigh]);
+
+    // 2. send to neigh list of ghost cells owned by neigh
+    MPI_Sendrecv(this->ghostVerticesPerOwner_[neigh].data(),
+                 this->ghostVerticesPerOwner_[neigh].size(), MIT, neigh,
+                 ttk::MPIrank_, this->remoteGhostVertices_[neigh].data(),
+                 this->remoteGhostVertices_[neigh].size(), MIT, neigh, neigh,
+                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedVertices_ = true;
@@ -3429,6 +3467,11 @@ SimplexId
 
 SimplexId ttk::ImplicitTriangulation::getEdgeGlobalIdInternal(
   const SimplexId leid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return leid;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(leid > this->getNumberOfEdgesInternal() - 1 || leid < 0) {
     return -1;
@@ -3437,10 +3480,6 @@ SimplexId ttk::ImplicitTriangulation::getEdgeGlobalIdInternal(
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
-
-  if(!ttk::isRunningWithMPI()) {
-    return leid;
-  }
 
   if(this->dimensionality_ == 1) {
     return this->getCellGlobalIdInternal(leid);
@@ -3464,6 +3503,10 @@ SimplexId ttk::ImplicitTriangulation::getEdgeGlobalIdInternal(
 SimplexId ttk::ImplicitTriangulation::getEdgeLocalIdInternal(
   const SimplexId geid) const {
 
+  if(!ttk::isRunningWithMPI()) {
+    return geid;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(geid > this->metaGrid_->getNumberOfEdgesInternal() - 1 || geid < 0) {
     return -1;
@@ -3472,10 +3515,6 @@ SimplexId ttk::ImplicitTriangulation::getEdgeLocalIdInternal(
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
-
-  if(!ttk::isRunningWithMPI()) {
-    return geid;
-  }
 
   if(this->dimensionality_ == 1) {
     return this->getCellLocalIdInternal(geid);
@@ -3521,6 +3560,11 @@ SimplexId ttk::ImplicitTriangulation::findTriangleFromVertices(
 
 SimplexId ttk::ImplicitTriangulation::getTriangleGlobalIdInternal(
   const SimplexId ltid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return ltid;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ltid > this->getNumberOfTrianglesInternal() - 1 || ltid < 0) {
     return -1;
@@ -3529,10 +3573,6 @@ SimplexId ttk::ImplicitTriangulation::getTriangleGlobalIdInternal(
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
-
-  if(!ttk::isRunningWithMPI()) {
-    return ltid;
-  }
 
   if(this->dimensionality_ == 2) {
     return this->getCellGlobalIdInternal(ltid);
@@ -3561,6 +3601,11 @@ SimplexId ttk::ImplicitTriangulation::getTriangleGlobalIdInternal(
 
 SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
   const SimplexId gtid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return gtid;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(gtid > this->metaGrid_->getNumberOfTrianglesInternal() - 1 || gtid < 0) {
     return -1;
@@ -3569,10 +3614,6 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
-
-  if(!ttk::isRunningWithMPI()) {
-    return gtid;
-  }
 
   if(this->dimensionality_ == 2) {
     return this->getCellGlobalIdInternal(gtid);

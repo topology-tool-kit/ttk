@@ -1424,6 +1424,13 @@ namespace ttk {
       abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
     }
 
+    inline bool hasPreconditionedDistributedCells() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedCells();
+    }
+    inline bool hasPreconditionedDistributedVertices() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedVertices();
+    }
+
     inline const std::vector<int> &getNeighborRanks() const override {
       return abstractTriangulation_->getNeighborRanks();
     }
@@ -1433,6 +1440,16 @@ namespace ttk {
 
     inline void setLocalBound(std::array<double, 6> &bound) {
       return abstractTriangulation_->setLocalBound(bound);
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getGhostCellsPerOwner() const override {
+      return abstractTriangulation_->getGhostCellsPerOwner();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getRemoteGhostCells() const override {
+      return abstractTriangulation_->getRemoteGhostCells();
     }
 
     /// Get the corresponding local id for a given global id of a vertex.
@@ -2404,7 +2421,24 @@ namespace ttk {
 #endif
       return abstractTriangulation_->preconditionGlobalBoundary();
     }
+#endif // TTK_ENABLE_MPI
 
+#if TTK_ENABLE_MPI
+    /// Pre-process the distributed ghost cells .
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getGhostCellsPerOwner()
+    ///   - getRemoteGhostCells()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getGhostCellsPerOwner()
+    /// \sa getRemoteGhostCells()
     inline int preconditionDistributedCells() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE

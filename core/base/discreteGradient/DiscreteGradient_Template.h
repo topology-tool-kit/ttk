@@ -468,7 +468,7 @@ int DiscreteGradient::processLowerStars(
 
   // store lower star structure
   lowerStarType Lx;
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   const int *vertRankArray = triangulation.getVertRankArray();
 #endif
 #ifdef TTK_ENABLE_OPENMP
@@ -516,7 +516,7 @@ int DiscreteGradient::processLowerStars(
     lowerStar(Lx, x, offsets, triangulation);
     // In case the vertex is a ghost, the gradient of the
     // simplices of its star is set to GHOST_GRADIENT
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
     if(vertRankArray[x] != ttk::MPIrank_) {
       int sizeDim = Lx.size();
       for(int i = 0; i < sizeDim; i++) {
@@ -596,7 +596,7 @@ int DiscreteGradient::processLowerStars(
           }
         }
       }
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
     }
 #endif
   }
@@ -1537,7 +1537,7 @@ ttk::SimplexId DiscreteGradient::getCellLowerVertex(
   return vertexId;
 }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
 template <typename triangulationType>
 int DiscreteGradient::getDistributedGlobalCellId(
   int localCellId, int cellDim, const triangulationType &triangulation) const {

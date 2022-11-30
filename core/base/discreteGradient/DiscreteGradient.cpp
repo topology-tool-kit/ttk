@@ -240,7 +240,7 @@ int DiscreteGradient::setManifoldSize(
   return 0;
 }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
 void DiscreteGradient::setCellToGhost(const int cellDim,
                                       const SimplexId cellId) {
   if(cellDim == 0) {

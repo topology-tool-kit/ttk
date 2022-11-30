@@ -325,12 +325,22 @@ in the gradient.
       int getCriticalPoints(std::vector<Cell> &criticalPoints,
                             const triangulationType &triangulation) const;
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+      /**
+       * Get the Global Id of the simplex by calling the appropriate global id
+       * retrieval function based on the simplex dimension cellDim
+       */
       template <typename triangulationType>
       int getDistributedGlobalCellId(
         int localCellId,
         int cellDim,
         const triangulationType &triangulation) const;
+
+      /**
+       * Set the Cell Gradient to GHOST_GRADIENT
+       */
+      void setCellToGhost(const int cellDim, const SimplexId cellId);
+
 #endif
       /**
        * Compute manifold size for critical extrema
@@ -486,9 +496,6 @@ gradient, false otherwise.
         const std::vector<Cell> &vpath,
         const triangulationType &triangulation) const;
 
-#if TTK_ENABLE_MPI
-      void setCellToGhost(const int cellDim, const SimplexId cellId);
-#endif
     protected:
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
