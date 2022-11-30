@@ -1438,10 +1438,6 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
-    inline void setLocalBound(std::array<double, 6> &bound) {
-      return abstractTriangulation_->setLocalBound(bound);
-    }
-
     inline const std::vector<std::vector<SimplexId>> *
       getGhostCellsPerOwner() const override {
       return abstractTriangulation_->getGhostCellsPerOwner();

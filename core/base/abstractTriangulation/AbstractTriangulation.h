@@ -2564,10 +2564,6 @@ namespace ttk {
       return this->cellRankArray_;
     }
 
-    inline void setLocalBound(std::array<double, 6> &bound) {
-      this->localBounds_ = bound;
-    };
-
     /// Pre-process the global boundaries when using MPI. Local bounds should
     /// be set prior to using this function.
     ///
@@ -3697,9 +3693,6 @@ namespace ttk {
     // global ids of local (owned) vertices that are ghost cells of other
     // (neighboring) ranks (per MPI rank)
     std::vector<std::vector<SimplexId>> remoteGhostVertices_{};
-
-    std::array<double, 6> localBounds_;
-    std::array<double, 6> globalBounds_;
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};
