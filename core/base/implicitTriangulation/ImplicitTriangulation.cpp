@@ -283,6 +283,12 @@ template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isVertexOnBoundary)(const SimplexId &vertexId) const {
 
+#if TTK_ENABLE_MPI
+  if(this->metaGrid_ != nullptr) {
+    return this->isVertexOnGlobalBoundaryInternal(vertexId);
+  }
+#endif
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return false;
@@ -294,18 +300,7 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
     case VertexPosition::CENTER_1D:
       return false;
     default:
-#if TTK_ENABLE_MPI
-      if(ttk::isRunningWithMPI()) {
-        if(this->vertRankArray_[vertexId] == ttk::MPIrank_) {
-          return true;
-        } else {
-          return this->isVertexOnGlobalBoundary(vertexId);
-        }
-      }
       return true;
-#else
-      return true;
-#endif
   }
 }
 
@@ -314,16 +309,11 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isEdgeOnBoundary)(const SimplexId &edgeId) const {
 
 #if TTK_ENABLE_MPI
-  ttk::SimplexId id;
-  int vertexNumber = this->getEdgeVertexNumber(edgeId);
-  for(int i = 0; i < vertexNumber; i++) {
-    this->getEdgeVertex(edgeId, i, id);
-    if(!this->isVertexOnBoundary(id)) {
-      return false;
-    }
+  if(this->metaGrid_ != nullptr) {
+    return this->isEdgeOnGlobalBoundaryInternal(edgeId);
   }
-  return true;
-#else
+#endif
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return false;
@@ -345,22 +335,17 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
       break;
   }
   return true;
-#endif
 }
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
   const SimplexId &triangleId) const {
+
 #if TTK_ENABLE_MPI
-  ttk::SimplexId id;
-  int triangleVertexNumber = this->getTriangleVertexNumber(triangleId);
-  for(int i = 0; i < triangleVertexNumber; i++) {
-    this->getTriangleVertex(triangleId, i, id);
-    if(!this->isVertexOnBoundary(id)) {
-      return false;
-    }
+  if(this->metaGrid_ != nullptr) {
+    return this->isTriangleOnGlobalBoundaryInternal(triangleId);
   }
-  return true;
-#else
+#endif
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return false;
@@ -370,7 +355,6 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
     return (TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId) == 1);
 
   return false;
-#endif
 }
 
 template <typename Derived>
