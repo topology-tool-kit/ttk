@@ -109,7 +109,9 @@ int DiscreteGradient::setCriticalPoints(
   cellIds.resize(nCritPoints);
   isOnBoundary.resize(nCritPoints);
   PLVertexIdentifiers.resize(nCritPoints);
+#ifdef TTK_ENABLE_MPI
   ttk::SimplexId globalId{-1};
+#endif
   // for all critical cells
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) private(globalId)
@@ -1578,7 +1580,9 @@ int DiscreteGradient::setGradientGlyphs(
   cells_pairTypes.resize(nGlyphs);
   cellIds.resize(2 * nGlyphs);
   cellDimensions.resize(2 * nGlyphs);
+#ifdef TTK_ENABLE_MPI
   ttk::SimplexId globalId{-1};
+#endif
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) private(globalId)
 #endif // TTK_ENABLE_OPENMP
