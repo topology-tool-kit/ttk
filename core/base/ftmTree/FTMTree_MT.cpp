@@ -551,8 +551,10 @@ void FTMTree_MT::move(FTMTree_MT *mt) {
 void FTMTree_MT::normalizeIds() {
   Timer normTime;
   sortLeaves(true);
-  sortNodes();
-  sortArcs();
+  if(this->params_->treeType != TreeType::Contour) {
+    sortNodes();
+    sortArcs();
+  }
 
   auto getNodeParentArcNb
     = [&](const idNode curNode, const bool goUp) -> idSuperArc {
