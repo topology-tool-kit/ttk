@@ -1482,6 +1482,24 @@ namespace ttk {
       this->implicitTriangulation_.createMetaGrid(bounds);
     }
 
+    /**
+     * @brief  Get the Global Id of the simplex by calling the appropriate
+     * global id retrieval function based on the simplex dimension cellDim
+     *
+     * @param localCellId: local id of the simplex
+     * @param cellDim: dimension of the simplex
+     * @return ttk::SimplexId global id of the simplex
+     */
+    inline ttk::SimplexId getDistributedGlobalCellId(ttk::SimplexId localCellId,
+                                                     int cellDim) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return this->abstractTriangulation_->getDistributedGlobalCellId(
+        localCellId, cellDim);
+    }
+
 #endif // TTK_ENABLE_MPI
 
     /// Get the \p localLinkId-th simplex of the link of the \p vertexId-th

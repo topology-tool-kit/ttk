@@ -327,16 +327,6 @@ in the gradient.
 
 #ifdef TTK_ENABLE_MPI
       /**
-       * Get the Global Id of the simplex by calling the appropriate global id
-       * retrieval function based on the simplex dimension cellDim
-       */
-      template <typename triangulationType>
-      int getDistributedGlobalCellId(
-        int localCellId,
-        int cellDim,
-        const triangulationType &triangulation) const;
-
-      /**
        * Set the Cell Gradient to GHOST_GRADIENT
        */
       void setCellToGhost(const int cellDim, const SimplexId cellId);

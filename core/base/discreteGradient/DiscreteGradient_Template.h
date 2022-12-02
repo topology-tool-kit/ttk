@@ -122,8 +122,7 @@ int DiscreteGradient::setCriticalPoints(
     triangulation.getCellIncenter(cell.id_, cell.dim_, points[i].data());
     cellDimensions[i] = cellDim;
 #ifdef TTK_ENABLE_MPI
-    cellIds[i]
-      = this->getDistributedGlobalCellId(cellId, cellDim, triangulation);
+    cellIds[i] = triangulation.getDistributedGlobalCellId(cellId, cellDim);
 #else
     cellIds[i] = cellId;
 #endif
@@ -1537,33 +1536,6 @@ ttk::SimplexId DiscreteGradient::getCellLowerVertex(
   return vertexId;
 }
 
-#ifdef TTK_ENABLE_MPI
-template <typename triangulationType>
-int DiscreteGradient::getDistributedGlobalCellId(
-  int localCellId, int cellDim, const triangulationType &triangulation) const {
-  if(ttk::hasInitializedMPI()) {
-    switch(cellDim) {
-      case 0:
-        return triangulation.getVertexGlobalId(localCellId);
-      case 1:
-        return triangulation.getEdgeGlobalId(localCellId);
-      case 2:
-        if(getDimensionality() == 2) {
-          return triangulation.getCellGlobalId(localCellId);
-        } else {
-          return triangulation.getTriangleGlobalId(localCellId);
-        }
-      case 3: {
-        return triangulation.getCellGlobalId(localCellId);
-      }
-    }
-    return -1;
-  } else {
-    return localCellId;
-  }
-}
-#endif
-
 template <typename triangulationType>
 int DiscreteGradient::setGradientGlyphs(
   std::vector<std::array<float, 3>> &points,
@@ -1626,9 +1598,9 @@ int DiscreteGradient::setGradientGlyphs(
         cells_pairTypes[nProcessedGlyphs] = i;
 #ifdef TTK_ENABLE_MPI
         cellIds[2 * nProcessedGlyphs + 0]
-          = this->getDistributedGlobalCellId(j, i, triangulation);
+          = triangulation.getDistributedGlobalCellId(j, i);
         cellIds[2 * nProcessedGlyphs + 1]
-          = this->getDistributedGlobalCellId(pcid, i + 1, triangulation);
+          = triangulation.getDistributedGlobalCellId(pcid, i + 1);
 #else
         cellIds[2 * nProcessedGlyphs + 0] = j;
         cellIds[2 * nProcessedGlyphs + 1] = pcid;
