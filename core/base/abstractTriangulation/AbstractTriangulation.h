@@ -2858,28 +2858,35 @@ namespace ttk {
       return this->hasPreconditionedDistributedCells_;
     }
 
-    ttk::SimplexId inline getDistributedGlobalCellId(ttk::SimplexId localCellId,
-                                                     int cellDim) const {
+    inline int getDistributedGlobalCellId(const SimplexId &localCellId,
+                                          const int &cellDim,
+                                          SimplexId &globalCellId) const {
       if(ttk::hasInitializedMPI()) {
         switch(cellDim) {
           case 0:
-            return this->getVertexGlobalIdInternal(localCellId);
+            globalCellId = this->getVertexGlobalIdInternal(localCellId);
+            break;
           case 1:
-            return this->getEdgeGlobalIdInternal(localCellId);
+            globalCellId = this->getEdgeGlobalIdInternal(localCellId);
+            break;
           case 2:
             if(getDimensionality() == 2) {
-              return this->getCellGlobalIdInternal(localCellId);
+              globalCellId = this->getCellGlobalIdInternal(localCellId);
+              break;
             } else {
-              return this->getTriangleGlobalIdInternal(localCellId);
+              globalCellId = this->getTriangleGlobalIdInternal(localCellId);
+              break;
             }
           case 3: {
-            return this->getCellGlobalIdInternal(localCellId);
+            globalCellId = this->getCellGlobalIdInternal(localCellId);
+            break;
           }
         }
-        return -1;
+        globalCellId = -1;
       } else {
-        return localCellId;
+        globalCellId = localCellId;
       }
+      return 0;
     }
 
   protected:

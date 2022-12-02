@@ -109,7 +109,7 @@ int DiscreteGradient::setCriticalPoints(
   cellIds.resize(nCritPoints);
   isOnBoundary.resize(nCritPoints);
   PLVertexIdentifiers.resize(nCritPoints);
-
+  ttk::SimplexId globalId{-1};
   // for all critical cells
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -122,7 +122,8 @@ int DiscreteGradient::setCriticalPoints(
     triangulation.getCellIncenter(cell.id_, cell.dim_, points[i].data());
     cellDimensions[i] = cellDim;
 #ifdef TTK_ENABLE_MPI
-    cellIds[i] = triangulation.getDistributedGlobalCellId(cellId, cellDim);
+    triangulation.getDistributedGlobalCellId(cellId, cellDim, globalId);
+    cellIds[i] = globalId;
 #else
     cellIds[i] = cellId;
 #endif
@@ -1577,7 +1578,7 @@ int DiscreteGradient::setGradientGlyphs(
   cells_pairTypes.resize(nGlyphs);
   cellIds.resize(2 * nGlyphs);
   cellDimensions.resize(2 * nGlyphs);
-
+  ttk::SimplexId globalId{-1};
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -1597,10 +1598,10 @@ int DiscreteGradient::setGradientGlyphs(
         points_pairOrigins[2 * nProcessedGlyphs + 1] = 1;
         cells_pairTypes[nProcessedGlyphs] = i;
 #ifdef TTK_ENABLE_MPI
-        cellIds[2 * nProcessedGlyphs + 0]
-          = triangulation.getDistributedGlobalCellId(j, i);
-        cellIds[2 * nProcessedGlyphs + 1]
-          = triangulation.getDistributedGlobalCellId(pcid, i + 1);
+        triangulation.getDistributedGlobalCellId(j, i, globalId);
+        cellIds[2 * nProcessedGlyphs + 0] = globalId;
+        triangulation.getDistributedGlobalCellId(pcid, i + 1, globalId);
+        cellIds[2 * nProcessedGlyphs + 1] = globalId;
 #else
         cellIds[2 * nProcessedGlyphs + 0] = j;
         cellIds[2 * nProcessedGlyphs + 1] = pcid;

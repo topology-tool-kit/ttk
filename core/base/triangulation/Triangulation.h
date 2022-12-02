@@ -1488,16 +1488,18 @@ namespace ttk {
      *
      * @param localCellId: local id of the simplex
      * @param cellDim: dimension of the simplex
-     * @return ttk::SimplexId global id of the simplex
+     * @param globalCellId global id of the simplex
      */
-    inline ttk::SimplexId getDistributedGlobalCellId(ttk::SimplexId localCellId,
-                                                     int cellDim) const {
+    inline int getDistributedGlobalCellId(const ttk::SimplexId &localCellId,
+                                          const int &cellDim,
+                                          ttk::SimplexId &globalCellId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
       return this->abstractTriangulation_->getDistributedGlobalCellId(
-        localCellId, cellDim);
+        localCellId, cellDim, globalCellId);
+      ;
     }
 
 #endif // TTK_ENABLE_MPI
