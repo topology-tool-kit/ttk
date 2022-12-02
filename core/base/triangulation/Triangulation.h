@@ -2847,7 +2847,7 @@ namespace ttk {
 
     // RankArray on points & cells
 
-    TTK_GET_SET_ARRAYS(VertRankArray, int);
+    TTK_GET_SET_ARRAYS(VertexRankArray, int);
     TTK_GET_SET_ARRAYS(CellRankArray, int);
 
 #undef TTK_GET_SET_ARRAYS

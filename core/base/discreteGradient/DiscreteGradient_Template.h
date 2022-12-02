@@ -469,7 +469,7 @@ int DiscreteGradient::processLowerStars(
   // store lower star structure
   lowerStarType Lx;
 #ifdef TTK_ENABLE_MPI
-  const int *vertRankArray = triangulation.getVertRankArray();
+  const int *vertexRankArray = triangulation.getVertexRankArray();
 #endif
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) \
@@ -517,7 +517,7 @@ int DiscreteGradient::processLowerStars(
     // In case the vertex is a ghost, the gradient of the
     // simplices of its star is set to GHOST_GRADIENT
 #ifdef TTK_ENABLE_MPI
-    if(vertRankArray != nullptr && vertRankArray[x] != ttk::MPIrank_) {
+    if(vertexRankArray != nullptr && vertexRankArray[x] != ttk::MPIrank_) {
       int sizeDim = Lx.size();
       for(int i = 0; i < sizeDim; i++) {
         int nCells = Lx[i].size();

@@ -3159,7 +3159,7 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
     this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
-  if(this->vertRankArray_ == nullptr) {
+  if(this->vertexRankArray_ == nullptr) {
     this->printErr("Missing vertex RankArray!");
     return -3;
   }
@@ -3175,9 +3175,9 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
-    if(this->vertRankArray_[lvid] != ttk::MPIrank_) {
+    if(this->vertexRankArray_[lvid] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
-      this->ghostVerticesPerOwner_[this->vertRankArray_[lvid]].emplace_back(
+      this->ghostVerticesPerOwner_[this->vertexRankArray_[lvid]].emplace_back(
         this->vertGid_[lvid]);
     }
   }
