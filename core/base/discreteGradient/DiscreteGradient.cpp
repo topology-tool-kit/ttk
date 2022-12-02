@@ -174,8 +174,9 @@ bool DiscreteGradient::isCellCritical(const int cellDim,
   }
 
   if(cellDim == 2) {
-    return ((*gradient_)[3][cellId] == -1
-            && (dimensionality_ == 2 || (*gradient_)[4][cellId] == -1));
+    return (
+      (*gradient_)[3][cellId] == NULL_GRADIENT
+      && (dimensionality_ == 2 || (*gradient_)[4][cellId] == NULL_GRADIENT));
   }
 
   if(cellDim == 3) {
