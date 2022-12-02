@@ -1809,6 +1809,8 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
   std::vector<bool> isVisited(triangulation.getNumberOfTriangles(), false);
   std::vector<SimplexId> visitedTriangles{};
 
+  size_t nReturned{};
+
   for(const auto &pair : sadSadPairs) {
     const Cell birth{1, pair.birth};
     const Cell death{2, pair.death};
@@ -1818,14 +1820,20 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     // 2. get the saddle connector
     std::vector<Cell> vpath{};
     this->discreteGradient_.getAscendingPathThroughWall(
-      birth, death, isVisited, &vpath, triangulation);
+      birth, death, isVisited, &vpath, triangulation, true);
     // 3. reverse the gradient on the saddle connector path
-    this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
+    if(vpath.back() == death) {
+      this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
+      nReturned++;
+    } else {
+      this->printMsg("Could not return saddle connector " + birth.to_string()
+                       + " -> " + death.to_string(),
+                     debug::Priority::DETAIL);
+    }
   }
 
-  this->printMsg(
-    "Returned " + std::to_string(sadSadPairs.size()) + " saddle connectors",
-    1.0, tm.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Returned " + std::to_string(nReturned) + " saddle connectors",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
