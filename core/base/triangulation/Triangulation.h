@@ -1438,10 +1438,6 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
-    inline void setLocalBound(std::array<double, 6> &bound) {
-      return abstractTriangulation_->setLocalBound(bound);
-    }
-
     inline const std::vector<std::vector<SimplexId>> *
       getGhostCellsPerOwner() const override {
       return abstractTriangulation_->getGhostCellsPerOwner();
@@ -2358,7 +2354,7 @@ namespace ttk {
       return abstractTriangulation_->getCellVTKID(ttkId, vtkId);
     }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
     /// Pre-process the distributed vertex ids.
     ///
     /// This function should ONLY be called as a pre-condition to the
@@ -2421,9 +2417,6 @@ namespace ttk {
 #endif
       return abstractTriangulation_->preconditionGlobalBoundary();
     }
-#endif // TTK_ENABLE_MPI
-
-#if TTK_ENABLE_MPI
     /// Pre-process the distributed ghost cells .
     ///
     /// This function should ONLY be called as a pre-condition to the

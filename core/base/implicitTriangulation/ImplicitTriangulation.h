@@ -258,10 +258,6 @@ namespace ttk {
   protected:
     int preconditionDistributedCells() override;
     int preconditionDistributedVertices() override;
-    int preconditionBoundaryVerticesInternal() override;
-    int preconditionBoundaryEdgesInternal() override;
-    int preconditionBoundaryTrianglesInternal() override;
-    int preconditionGlobalBoundaryInternal() override;
 
   public:
     inline SimplexId
@@ -282,6 +278,12 @@ namespace ttk {
     SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
 
+  protected:
+    bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
+    bool isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override;
+    bool
+      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override;
+
   private:
     SimplexId findEdgeFromVertices(const SimplexId v0,
                                    const SimplexId v1) const;
@@ -294,7 +296,6 @@ namespace ttk {
     // the cellGid_ array only applies on cubic cells, not on
     // simplicial ones...
     std::vector<SimplexId> cellLidToGid_{};
-    std::array<bool, 6> isOnGlobalBoundary_;
     std::shared_ptr<ImplicitTriangulation> metaGrid_{};
 #endif // TTK_ENABLE_MPI
 
@@ -944,10 +945,6 @@ namespace ttk {
 
     bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
       const SimplexId &vertexId) const override;
-
-#if TTK_ENABLE_MPI
-    bool isVertexOnGlobalBoundary(const SimplexId &) const;
-#endif
 
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;

@@ -9,11 +9,13 @@
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
 #include <vtkDataSet.h>
-#if TTK_ENABLE_MPI
+
+#ifdef TTK_ENABLE_MPI
 #include <Identifiers.h>
 #include <vtkCellData.h>
 #include <vtkGhostCellsGenerator.h>
-#endif
+#endif // TTK_ENABLE_MPI
+
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationIntegerKey.h>
@@ -40,7 +42,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
   this->printMsg("Requesting triangulation for '"
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(ttk::hasInitializedMPI()) {
     if(!hasMPISupport_) {
       printErr(
@@ -48,18 +50,18 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
     }
     this->MPIGhostPipelinePreconditioning(dataSet);
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(ttk::hasInitializedMPI()) {
     std::vector<int> tmp{};
     this->MPIPipelinePreconditioning(dataSet, tmp, triangulation);
     this->MPITriangulationPreconditioning(triangulation, dataSet);
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
   if(triangulation)
     return triangulation;
@@ -179,7 +181,7 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetName(this->GetOrderArrayName(scalarArray).data());
       newOrderArray->SetNumberOfComponents(1);
       newOrderArray->SetNumberOfTuples(nVertices);
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
       std::vector<int> neighbors;
       if(ttk::hasInitializedMPI()) {
         this->MPIGhostPipelinePreconditioning(inputData);
@@ -215,7 +217,7 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
             ttkUtils::GetVoidPointer(newOrderArray)),
           this->threadNumber_));
       }
-#endif
+#endif // TTK_ENABLE_MPI
 
       // append order array temporarily to input
       inputData
@@ -304,7 +306,7 @@ ttk::SimplexId *
   }
 #else
   TTK_FORCE_USE(spareStorage);
-#endif
+#endif // TTK_ENABLE_64BIT_IDS
 
   // return a pointer to the data array internal buffer
   return static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(array));
@@ -432,7 +434,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
   return 1;
 }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
 
 bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                                          ttk::SimplexId simplexNumber,
@@ -442,7 +444,7 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
   if(ghost != nullptr) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for reduction(+ : ghostNumber)
-#endif
+#endif // TTK_ENABLE_OPENMP
     for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
       if(ghost[i] == 1) {
         ghostNumber++;
@@ -452,7 +454,7 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
     if(rankArray != nullptr) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for reduction(+ : ghostNumber)
-#endif
+#endif // TTK_ENABLE_OPENMP
       for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
         if(rankArray[i] != ttk::MPIrank_) {
           ghostNumber++;
@@ -509,7 +511,7 @@ bool ttkAlgorithm::GenerateGlobalIds(
   int cellNumber = input->GetNumberOfCells();
   identifiers.setCellNumber(cellNumber);
   int status = 0;
-#ifdef TTK_ENABLE_MPI
+
   double *boundingBox = input->GetBounds();
   identifiers.setBounds(boundingBox);
   identifiers.initializeNeighbors(boundingBox, neighborRanks);
@@ -622,7 +624,6 @@ bool ttkAlgorithm::GenerateGlobalIds(
     printErr("Global identifier generation failed");
     return hasPreconditionedVertGtoL;
   }
-#endif
 
   // Add VTK objects to the data set
 
@@ -818,11 +819,10 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
       ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
     triangulation->preconditionDistributedCells();
   }
-  std::array<double, 6> bounds;
-  input->GetBounds(bounds.data());
-  triangulation->setLocalBound(bounds);
 }
-#endif
+
+#endif // TTK_ENABLE_MPI
+
 //==============================================================================
 int ttkAlgorithm::ProcessRequest(vtkInformation *request,
                                  vtkInformationVector **inputVector,
