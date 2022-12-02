@@ -114,7 +114,11 @@ int DiscreteGradient::setCriticalPoints(
 #endif
   // for all critical cells
 #ifdef TTK_ENABLE_OPENMP
+#if TTK_ENABLE_MPI
 #pragma omp parallel for num_threads(threadNumber_) private(globalId)
+#else
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
@@ -1584,7 +1588,11 @@ int DiscreteGradient::setGradientGlyphs(
   ttk::SimplexId globalId{-1};
 #endif
 #ifdef TTK_ENABLE_OPENMP
+#if TTK_ENABLE_MPI
 #pragma omp parallel for num_threads(threadNumber_) private(globalId)
+#else
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < nDims - 1; ++i) {
     const SimplexId nCells = getNumberOfCells(i, triangulation);
