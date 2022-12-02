@@ -2881,8 +2881,10 @@ namespace ttk {
             globalCellId = this->getCellGlobalIdInternal(localCellId);
             break;
           }
+          default:
+            globalCellId = -1;
+            break;
         }
-        globalCellId = -1;
       } else {
         globalCellId = localCellId;
       }
