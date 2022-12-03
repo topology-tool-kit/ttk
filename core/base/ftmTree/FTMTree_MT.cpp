@@ -551,6 +551,10 @@ void FTMTree_MT::move(FTMTree_MT *mt) {
 void FTMTree_MT::normalizeIds() {
   Timer normTime;
   sortLeaves(true);
+  if(this->params_->treeType != TreeType::Contour) {
+    sortNodes();
+    sortArcs();
+  }
 
   auto getNodeParentArcNb
     = [&](const idNode curNode, const bool goUp) -> idSuperArc {
@@ -807,6 +811,125 @@ void FTMTree_MT::sortLeaves(const bool para) {
               mt_data_.leaves->end(), indirect_sort);
   } else {
     std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
+  }
+}
+
+void ttk::ftm::FTMTree_MT::sortNodes() {
+  std::vector<idNode> sortedNodes(this->mt_data_.nodes->size());
+  std::iota(sortedNodes.begin(), sortedNodes.end(), 0);
+
+  const auto direct_sort = [&](const Node &a, const Node &b) {
+    // sort according to scalar field
+    return this->comp_.vertLower(a.getVertexId(), b.getVertexId());
+  };
+
+  const auto indirect_sort = [&](const idNode a, const idNode b) {
+    return direct_sort(*this->getNode(a), *this->getNode(b));
+  };
+
+  TTK_PSORT(
+    this->threadNumber_, sortedNodes.begin(), sortedNodes.end(), indirect_sort);
+
+  TTK_PSORT(this->threadNumber_, this->mt_data_.nodes->begin(),
+            this->mt_data_.nodes->end(), direct_sort);
+
+  // reverse sortedNodes
+  std::vector<idNode> revSortedNodes(sortedNodes.size());
+  for(size_t i = 0; i < sortedNodes.size(); ++i) {
+    revSortedNodes[sortedNodes[i]] = i;
+  }
+
+  // update leaves
+  for(auto &leaf : (*this->mt_data_.leaves)) {
+    leaf = revSortedNodes[leaf];
+  }
+
+  // update roots
+  for(auto &root : (*this->mt_data_.roots)) {
+    root = revSortedNodes[root];
+  }
+
+  // update arcs
+  for(auto &arc : (*this->mt_data_.superArcs)) {
+    arc.setDownNodeId(revSortedNodes[arc.getDownNodeId()]);
+    arc.setUpNodeId(revSortedNodes[arc.getUpNodeId()]);
+  }
+
+  // update vert2tree
+  for(size_t i = 0; i < sortedNodes.size(); ++i) {
+    const auto &node{(*this->mt_data_.nodes)[i]};
+    if(this->isCorrespondingNode(node.getVertexId())) {
+      this->updateCorrespondingNode(node.getVertexId(), i);
+    }
+  }
+}
+
+void ttk::ftm::FTMTree_MT::sortArcs() {
+  std::vector<idNode> sortedArcs(this->mt_data_.superArcs->size());
+  std::iota(sortedArcs.begin(), sortedArcs.end(), 0);
+
+  const auto direct_sort = [&](const SuperArc &a, const SuperArc &b) {
+    // sort by NodeId (nodes should be already sorted with sortNodes)
+    const auto adn{a.getDownNodeId()};
+    const auto aun{a.getUpNodeId()};
+    const auto bdn{b.getDownNodeId()};
+    const auto bun{b.getUpNodeId()};
+    return std::tie(adn, aun) < std::tie(bdn, bun);
+  };
+
+  auto indirect_sort = [&](const idSuperArc &a, const idSuperArc &b) {
+    const auto aa{this->getSuperArc(a)};
+    const auto bb{this->getSuperArc(b)};
+    return direct_sort(*aa, *bb);
+  };
+
+  TTK_PSORT(
+    this->threadNumber_, sortedArcs.begin(), sortedArcs.end(), indirect_sort);
+
+  TTK_PSORT(this->threadNumber_, this->mt_data_.superArcs->begin(),
+            this->mt_data_.superArcs->end(), direct_sort);
+
+  // reverse sortedArcs
+  std::vector<idSuperArc> revSortedArcs(sortedArcs.size());
+  for(size_t i = 0; i < sortedArcs.size(); ++i) {
+    revSortedArcs[sortedArcs[i]] = i;
+  }
+
+  // update nodes
+  std::vector<idSuperArc> updatedArcs{};
+  for(auto &node : (*this->mt_data_.nodes)) {
+    {
+      const auto da{node.getNumberOfDownSuperArcs()};
+      updatedArcs.clear();
+      updatedArcs.resize(da);
+      for(idSuperArc i = 0; i < da; ++i) {
+        updatedArcs[i] = revSortedArcs[node.getDownSuperArcId(i)];
+      }
+      node.clearDownSuperArcs();
+      for(const auto &arc : updatedArcs) {
+        node.addDownSuperArcId(arc);
+      }
+    }
+    {
+      const auto ua{node.getNumberOfUpSuperArcs()};
+      updatedArcs.clear();
+      updatedArcs.resize(ua);
+      for(idSuperArc i = 0; i < ua; ++i) {
+        updatedArcs[i] = revSortedArcs[node.getUpSuperArcId(i)];
+      }
+      node.clearUpSuperArcs();
+      for(const auto &arc : updatedArcs) {
+        node.addUpSuperArcId(arc);
+      }
+    }
+  }
+
+  // update vert2tree
+  for(size_t i = 0; i < this->mt_data_.vert2tree->size(); ++i) {
+    if(this->isCorrespondingArc(i)) {
+      this->updateCorrespondingArc(
+        i, revSortedArcs[this->getCorrespondingSuperArcId(i)]);
+    }
   }
 }
 
