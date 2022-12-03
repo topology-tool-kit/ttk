@@ -109,16 +109,10 @@ int DiscreteGradient::setCriticalPoints(
   cellIds.resize(nCritPoints);
   isOnBoundary.resize(nCritPoints);
   PLVertexIdentifiers.resize(nCritPoints);
-#ifdef TTK_ENABLE_MPI
-  ttk::SimplexId globalId{-1};
-#endif
+
   // for all critical cells
 #ifdef TTK_ENABLE_OPENMP
-#if TTK_ENABLE_MPI
-#pragma omp parallel for num_threads(threadNumber_) private(globalId)
-#else
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
@@ -128,11 +122,12 @@ int DiscreteGradient::setCriticalPoints(
     triangulation.getCellIncenter(cell.id_, cell.dim_, points[i].data());
     cellDimensions[i] = cellDim;
 #ifdef TTK_ENABLE_MPI
+    ttk::SimplexId globalId{-1};
     triangulation.getDistributedGlobalCellId(cellId, cellDim, globalId);
     cellIds[i] = globalId;
 #else
     cellIds[i] = cellId;
-#endif
+#endif // TTK_ENABLE_MPI
     isOnBoundary[i] = this->isBoundary(cell, triangulation);
     PLVertexIdentifiers[i] = this->getCellGreaterVertex(cell, triangulation);
   }
@@ -474,6 +469,7 @@ int DiscreteGradient::processLowerStars(
 
   // store lower star structure
   lowerStarType Lx;
+
 #ifdef TTK_ENABLE_MPI
   const int *vertexRankArray = triangulation.getVertexRankArray();
 #endif
@@ -531,9 +527,10 @@ int DiscreteGradient::processLowerStars(
           setCellToGhost(Lx[i][j].dim_, Lx[i][j].id_);
         }
       }
-    } else {
-#endif
+    } else
+#endif // TTK_ENABLE_MPI
 
+    {
       // Lx[1] empty => x is a local minimum
       if(!Lx[1].empty()) {
         // get delta: 1-cell (edge) with minimal G value (steeper gradient)
@@ -602,9 +599,7 @@ int DiscreteGradient::processLowerStars(
           }
         }
       }
-#ifdef TTK_ENABLE_MPI
     }
-#endif
   }
 
   return 0;
@@ -1588,15 +1583,9 @@ int DiscreteGradient::setGradientGlyphs(
   cells_pairTypes.resize(nGlyphs);
   cellIds.resize(2 * nGlyphs);
   cellDimensions.resize(2 * nGlyphs);
-#ifdef TTK_ENABLE_MPI
-  ttk::SimplexId globalId{-1};
-#endif
+
 #ifdef TTK_ENABLE_OPENMP
-#if TTK_ENABLE_MPI
-#pragma omp parallel for num_threads(threadNumber_) private(globalId)
-#else
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < nDims - 1; ++i) {
     const SimplexId nCells = getNumberOfCells(i, triangulation);
@@ -1614,6 +1603,7 @@ int DiscreteGradient::setGradientGlyphs(
         points_pairOrigins[2 * nProcessedGlyphs + 1] = 1;
         cells_pairTypes[nProcessedGlyphs] = i;
 #ifdef TTK_ENABLE_MPI
+        ttk::SimplexId globalId{-1};
         triangulation.getDistributedGlobalCellId(j, i, globalId);
         cellIds[2 * nProcessedGlyphs + 0] = globalId;
         triangulation.getDistributedGlobalCellId(pcid, i + 1, globalId);
@@ -1621,7 +1611,7 @@ int DiscreteGradient::setGradientGlyphs(
 #else
         cellIds[2 * nProcessedGlyphs + 0] = j;
         cellIds[2 * nProcessedGlyphs + 1] = pcid;
-#endif
+#endif // TTK_ENABLE_MPI
         cellDimensions[2 * nProcessedGlyphs + 0] = i;
         cellDimensions[2 * nProcessedGlyphs + 1] = i + 1;
         nProcessedGlyphs++;
