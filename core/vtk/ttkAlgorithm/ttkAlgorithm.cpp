@@ -526,7 +526,7 @@ bool ttkAlgorithm::GenerateGlobalIds(
         identifiers.setOutdatedGlobalCellIds(
           ttkUtils::GetPointer<ttk::LongSimplexId>(
             input->GetCellData()->GetGlobalIds()));
-        identifiers.setVertRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+        identifiers.setVertexRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
           input->GetPointData()->GetArray("RankArray")));
         identifiers.setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
           input->GetCellData()->GetArray("RankArray")));
@@ -679,7 +679,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     }
   }
 
-  int *vertRankArray
+  int *vertexRankArray
     = ttkUtils::GetPointer<int>(input->GetPointData()->GetArray("RankArray"));
 
   // Get the neighbor ranks
@@ -693,11 +693,11 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   }
 
   if(neighborRanks.empty()) {
-    if(vertRankArray == nullptr) {
+    if(vertexRankArray == nullptr) {
       ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
     } else {
       ttk::preconditionNeighborsUsingRankArray(
-        neighborRanks, vertRankArray, vertexNumber, ttk::MPIcomm_);
+        neighborRanks, vertexRankArray, vertexNumber, ttk::MPIcomm_);
       preciseNeighborComputation = true;
     }
   }
@@ -714,7 +714,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     unsigned char *ghostPoints = ttkUtils::GetPointer<unsigned char>(
       input->GetPointData()->GetArray("vtkGhostType"));
     pointValidity = checkGlobalIdValidity(
-      globalPointIds, vertexNumber, ghostPoints, vertRankArray);
+      globalPointIds, vertexNumber, ghostPoints, vertexRankArray);
   }
   if(pointValidity && globalCellIds != nullptr) {
 
@@ -802,7 +802,7 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     // to the triangulation
     triangulation->setVertsGlobalIds(
       ttkUtils::GetPointer<ttk::LongSimplexId>(pd->GetGlobalIds()));
-    triangulation->setVertRankArray(
+    triangulation->setVertexRankArray(
       ttkUtils::GetPointer<int>(pd->GetArray("RankArray")));
     triangulation->preconditionDistributedVertices();
   }

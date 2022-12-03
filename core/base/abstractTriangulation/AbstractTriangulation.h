@@ -2550,11 +2550,11 @@ namespace ttk {
 
     // RankArray on points & cells
 
-    inline void setVertRankArray(const int *const rankArray) {
-      this->vertRankArray_ = rankArray;
+    inline void setVertexRankArray(const int *const rankArray) {
+      this->vertexRankArray_ = rankArray;
     }
-    inline const int *getVertRankArray() const {
-      return this->vertRankArray_;
+    inline const int *getVertexRankArray() const {
+      return this->vertexRankArray_;
     }
 
     inline void setCellRankArray(const int *const rankArray) {
@@ -2856,6 +2856,39 @@ namespace ttk {
     }
     virtual inline bool hasPreconditionedDistributedCells() const {
       return this->hasPreconditionedDistributedCells_;
+    }
+
+    inline int getDistributedGlobalCellId(const SimplexId &localCellId,
+                                          const int &cellDim,
+                                          SimplexId &globalCellId) const {
+      if(ttk::hasInitializedMPI()) {
+        switch(cellDim) {
+          case 0:
+            globalCellId = this->getVertexGlobalIdInternal(localCellId);
+            break;
+          case 1:
+            globalCellId = this->getEdgeGlobalIdInternal(localCellId);
+            break;
+          case 2:
+            if(getDimensionality() == 2) {
+              globalCellId = this->getCellGlobalIdInternal(localCellId);
+              break;
+            } else {
+              globalCellId = this->getTriangleGlobalIdInternal(localCellId);
+              break;
+            }
+          case 3: {
+            globalCellId = this->getCellGlobalIdInternal(localCellId);
+            break;
+          }
+          default:
+            globalCellId = -1;
+            break;
+        }
+      } else {
+        globalCellId = localCellId;
+      }
+      return 0;
     }
 
   protected:
@@ -3692,7 +3725,7 @@ namespace ttk {
     // "GlobalPointIds" from "Generate Global Ids"
     const LongSimplexId *vertGid_{};
     // PointData "RankArray" from "TTKGhostCellPreconditioning"
-    const int *vertRankArray_{};
+    const int *vertexRankArray_{};
     // CellData "RankArray" from "TTKGhostCellPreconditioning"
     // (warning: for Implicit/Periodic triangulations, concerns
     // "squares"/"cubes" and not "triangles"/"tetrahedron")

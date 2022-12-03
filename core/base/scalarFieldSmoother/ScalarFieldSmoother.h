@@ -104,7 +104,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
 
 #if TTK_ENABLE_MPI
   bool useMPI{false};
-  if(ttk::isRunningWithMPI() && triangulation->getVertRankArray() != nullptr
+  if(ttk::isRunningWithMPI() && triangulation->getVertexRankArray() != nullptr
      && triangulation->getVertsGlobalIds() != nullptr)
     useMPI = true;
 #endif

@@ -296,7 +296,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
       charBoundary.data(), this, ttk::MPIcomm_);
 
     for(int i = 0; i < vertexNumber_; ++i) {
-      if(vertRankArray_[i] != ttk::MPIrank_) {
+      if(vertexRankArray_[i] != ttk::MPIrank_) {
         boundaryVertices_[i] = (charBoundary[i] == '1');
       }
     }
@@ -1298,7 +1298,7 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
     this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
-  if(this->vertRankArray_ == nullptr) {
+  if(this->vertexRankArray_ == nullptr) {
     this->printErr("Missing vertex RankArray!");
     return -3;
   }
@@ -1314,9 +1314,9 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
-    if(this->vertRankArray_[lvid] != ttk::MPIrank_) {
+    if(this->vertexRankArray_[lvid] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
-      this->ghostVerticesPerOwner_[this->vertRankArray_[lvid]].emplace_back(
+      this->ghostVerticesPerOwner_[this->vertexRankArray_[lvid]].emplace_back(
         this->vertGid_[lvid]);
     }
   }

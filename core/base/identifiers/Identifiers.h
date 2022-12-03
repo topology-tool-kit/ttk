@@ -67,7 +67,7 @@ namespace ttk {
     MPI_Datatype mpiPointType_;
     int dimension_{};
     int hasSentData_{0};
-    ttk::SimplexId *vertRankArray_{nullptr};
+    ttk::SimplexId *vertexRankArray_{nullptr};
     ttk::SimplexId *cellRankArray_{nullptr};
     unsigned char *vertGhost_{nullptr};
     unsigned char *cellGhost_{nullptr};
@@ -109,8 +109,8 @@ namespace ttk {
       pointsToCells_ = pointsToCells;
     }
 
-    void setVertRankArray(ttk::SimplexId *vertRankArray) {
-      this->vertRankArray_ = vertRankArray;
+    void setVertexRankArray(ttk::SimplexId *vertexRankArray) {
+      this->vertexRankArray_ = vertexRankArray;
     }
 
     void setCellRankArray(ttk::SimplexId *cellRankArray) {
@@ -249,8 +249,8 @@ namespace ttk {
           this->findPoint(
             id, receivedPoints[n].x, receivedPoints[n].y, receivedPoints[n].z);
           if((vertGhost_ != nullptr && vertGhost_[id] == 0)
-             || (vertRankArray_ != nullptr
-                 && vertRankArray_[id] == ttk::MPIrank_)) {
+             || (vertexRankArray_ != nullptr
+                 && vertexRankArray_[id] == ttk::MPIrank_)) {
             globalId = vertexIdentifiers_[id];
             if(globalId >= 0) {
 #ifdef TTK_ENABLE_OPENMP
@@ -511,18 +511,18 @@ namespace ttk {
       // If the vertex is not owned, it will be added to the vector of
       // ghosts.
 
-      if(vertRankArray_ != nullptr) {
+      if(vertexRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-          if(vertRankArray_[i] != ttk::MPIrank_) {
+          if(vertexRankArray_[i] != ttk::MPIrank_) {
             realVertexNumber--;
             if(outdatedGlobalPointIds_ == nullptr) {
               p[0] = pointSet_[i * 3];
               p[1] = pointSet_[i * 3 + 1];
               p[2] = pointSet_[i * 3 + 2];
-              vertGhostCoordinatesPerRank[neighborToId_[vertRankArray_[i]]]
+              vertGhostCoordinatesPerRank[neighborToId_[vertexRankArray_[i]]]
                 .push_back(Point{p[0], p[1], p[2], i});
             } else {
-              vertGhostGlobalIdsPerRank[neighborToId_[vertRankArray_[i]]]
+              vertGhostGlobalIdsPerRank[neighborToId_[vertexRankArray_[i]]]
                 .push_back(
                   static_cast<ttk::SimplexId>(outdatedGlobalPointIds_[i]));
             }
@@ -579,9 +579,9 @@ namespace ttk {
       }
 
       // Generate global ids for vertices
-      if(vertRankArray_ != nullptr) {
+      if(vertexRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-          if(vertRankArray_[i] == ttk::MPIrank_) {
+          if(vertexRankArray_[i] == ttk::MPIrank_) {
             vertexIdentifiers_[i] = vertIndex;
             (*vertGtoL_)[vertIndex] = i;
             vertIndex++;
@@ -649,7 +649,7 @@ namespace ttk {
       // store the outdated global ids of ghost points and their local id.
       // Otherwise, vertGhostCoordinatesPerRank needs to be resized. This vector
       // will store the coordinates of a ghost point and its local id.
-      if(vertRankArray_ != nullptr) {
+      if(vertexRankArray_ != nullptr) {
         if(outdatedGlobalPointIds_ == nullptr) {
           vertGhostCoordinatesPerRank.resize(neighborNumber_);
         } else {
@@ -686,14 +686,14 @@ namespace ttk {
            || (!hasSentData_ && ttk::MPIrank_ < neighbors_->at(i))) {
           // it is the turn of the current process to send its ghosts
           if(outdatedGlobalPointIds_ == nullptr) {
-            if(vertRankArray_ == nullptr) {
+            if(vertexRankArray_ == nullptr) {
               sendToAllNeighbors<Point>(vertGhostCoordinates, mpiPointType_);
             } else {
               sendToAllNeighborsUsingRankArray<Point>(
                 vertGhostCoordinatesPerRank, mpiPointType_);
             }
           } else {
-            if(vertRankArray_ == nullptr) {
+            if(vertexRankArray_ == nullptr) {
               sendToAllNeighbors<ttk::SimplexId>(
                 vertGhostGlobalIds, mpiIdType_);
             } else {
