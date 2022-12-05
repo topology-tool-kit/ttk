@@ -1,7 +1,9 @@
 /// \ingroup vtk
 /// \class ttkIntegralLines
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
+/// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
 /// \date March 2016
+/// \date MPI implementation: December 2022
 ///
 /// \brief TTK VTK-filter for the computation of edge-based integral lines of
 /// the gradient of an input scalar field.
@@ -84,10 +86,19 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  int getTrajectories(vtkDataSet *input,
-                      ttk::Triangulation *triangulation,
-                      std::vector<std::vector<ttk::SimplexId>> &trajectories,
-                      vtkUnstructuredGrid *output);
+  template <typename triangulationType>
+  int getTrajectories(
+    vtkDataSet *input,
+    triangulationType *triangulation,
+    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
+      &trajectories,
+    std::vector<ttk::ArrayLinkedList<std::vector<double>, TABULAR_SIZE>>
+      &distancesFromSeed,
+    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
+      &seedIdentifiers,
+    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
+      &edgeIdentifiers,
+    vtkUnstructuredGrid *output);
 
 protected:
   ttkIntegralLines();

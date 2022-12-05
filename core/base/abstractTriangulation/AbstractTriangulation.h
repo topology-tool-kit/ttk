@@ -2647,6 +2647,24 @@ namespace ttk {
       return this->getVertexLocalIdInternal(gvid);
     }
 
+    virtual inline SimplexId
+      getVertexLocalIdIfExists(const SimplexId gvid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->getVertexLocalIdIfExistsInternal(gvid);
+    }
+
     virtual inline SimplexId getCellGlobalId(const SimplexId lcid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
@@ -2903,6 +2921,15 @@ namespace ttk {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
+      return it->second;
+    }
+
+    inline SimplexId
+      getVertexLocalIdIfExistsInternal(const SimplexId gvid) const {
+      const auto it{this->vertexGidToLid_.find(gvid)};
+      if(it == this->vertexGidToLid_.end()) {
+        return -1;
+      }
       return it->second;
     }
 

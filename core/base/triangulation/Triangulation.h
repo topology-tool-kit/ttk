@@ -1467,6 +1467,15 @@ namespace ttk {
       return abstractTriangulation_->getVertexLocalId(geid);
     }
 
+    inline SimplexId
+      getVertexLocalIdIfExists(const SimplexId geid) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getVertexLocalIdIfExists(geid);
+    }
+
     /**
      * @brief Create a meta grid for implicit triangulations
      *
