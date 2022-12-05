@@ -2899,7 +2899,7 @@ namespace ttk {
       return this->cellGid_[lcid];
     }
 
-    inline SimplexId getCellLocalIdInternal(const SimplexId gcid) const {
+    virtual inline SimplexId getCellLocalIdInternal(const SimplexId gcid) const {
       const auto it{this->cellGidToLid_.find(gcid)};
 #ifndef TTK_ENABLE_KAMIKAZE
       if(it == this->cellGidToLid_.end()) {

@@ -254,20 +254,13 @@ namespace ttk {
     int preconditionDistributedVertices() override;
 
   public:
-    inline SimplexId
-      getCellGlobalIdInternal(const SimplexId lcid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(lcid < 0 || lcid >= this->getNumberOfCellsInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->cellLidToGid_[lcid];
-    }
-
     void createMetaGrid(const double *const bounds);
 
     SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const override;
     SimplexId getVertexLocalIdInternal(const SimplexId gvid) const override;
+
+    SimplexId getCellGlobalIdInternal(const SimplexId lcid) const override;
+    SimplexId getCellLocalIdInternal(const SimplexId gcid) const override;
 
     SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
     SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
@@ -292,6 +285,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_MPI
     // the cellGid_ array only applies on cubic cells, not on
     // simplicial ones...
+    // TODO remove
     std::vector<SimplexId> cellLidToGid_{};
     std::shared_ptr<ImplicitTriangulation> metaGrid_{};
     // offset coordinates of the local grid inside the metaGrid_
