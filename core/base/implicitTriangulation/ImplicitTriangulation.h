@@ -266,6 +266,9 @@ namespace ttk {
 
     void createMetaGrid(const double *const bounds);
 
+    SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const override;
+    SimplexId getVertexLocalIdInternal(const SimplexId gvid) const override;
+
     SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
     SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
 

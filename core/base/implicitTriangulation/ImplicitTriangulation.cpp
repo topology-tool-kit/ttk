@@ -3263,6 +3263,79 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   this->metaGrid_->preconditionBoundaryTriangles();
 }
 
+SimplexId ttk::ImplicitTriangulation::getVertexGlobalIdInternal(
+  const SimplexId lvid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return lvid;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(lvid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
+     || lvid < 0) {
+    return -1;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  // local vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->vertexToPosition(lvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->vertexToPosition2d(lvid, p.data());
+  }
+
+  // global vertex coordinates
+  p[0] += this->localGridOffset_[0];
+  p[1] += this->localGridOffset_[1];
+  p[2] += this->localGridOffset_[2];
+
+  const auto &dims{this->metaGrid_->getGridDimensions()};
+
+  // global coordinates to identifier (inverse of vertexToPosition)
+  return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
+}
+
+SimplexId ttk::ImplicitTriangulation::getVertexLocalIdInternal(
+  const SimplexId gvid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return gvid;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->metaGrid_ == nullptr) {
+    return -1;
+  }
+  if(gvid
+       > this->metaGrid_->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
+     || gvid < 0) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  // global vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->metaGrid_->vertexToPosition(gvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->metaGrid_->vertexToPosition2d(gvid, p.data());
+  }
+
+  // local vertex coordinates
+  p[0] -= this->localGridOffset_[0];
+  p[1] -= this->localGridOffset_[1];
+  p[2] -= this->localGridOffset_[2];
+
+  const auto &dims{this->getGridDimensions()};
+
+  // local coordinates to identifier (inverse of vertexToPosition)
+  return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
+}
+
 SimplexId
   ttk::ImplicitTriangulation::findEdgeFromVertices(const SimplexId v0,
                                                    const SimplexId v1) const {

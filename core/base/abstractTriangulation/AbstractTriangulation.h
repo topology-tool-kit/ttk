@@ -2881,11 +2881,13 @@ namespace ttk {
     }
 
   protected:
-    inline SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const {
+    virtual inline SimplexId
+      getVertexGlobalIdInternal(const SimplexId lvid) const {
       return this->vertGid_[lvid];
     }
 
-    inline SimplexId getVertexLocalIdInternal(const SimplexId gvid) const {
+    virtual inline SimplexId
+      getVertexLocalIdInternal(const SimplexId gvid) const {
       const auto it{this->vertexGidToLid_.find(gvid)};
 #ifndef TTK_ENABLE_KAMIKAZE
       if(it == this->vertexGidToLid_.end()) {
