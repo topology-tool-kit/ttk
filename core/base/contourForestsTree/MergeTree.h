@@ -401,14 +401,18 @@ namespace ttk {
 
       // BFS simplification for local CT
       template <typename scalarType>
-      SimplexId localSimplify(const SimplexId &podSeed0,
-                              const SimplexId &podSeed1);
+      SimplexId localSimplify(
+        const SimplexId &podSeed0,
+        const SimplexId &podSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage);
 
       // BFS simpliciation for global CT
       template <typename scalarType, typename triangulationType>
-      SimplexId globalSimplify(const SimplexId posSeed0,
-                               const SimplexId posSeed1,
-                               const triangulationType &mesh);
+      SimplexId globalSimplify(
+        const SimplexId posSeed0,
+        const SimplexId posSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+        const triangulationType &mesh);
 
       // Having sorted std::pairs, simplify the current tree
       // in accordance with threashol, between the two seeds.
@@ -416,6 +420,7 @@ namespace ttk {
       SimplexId simplifyTree(
         const SimplexId &posSeed0,
         const SimplexId &posSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
         const std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
           &sortedPairs);
 
@@ -527,6 +532,7 @@ namespace ttk {
       idNode getParent(const idNode &n);
 
       void delNode(const idNode &node,
+                   std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
                    const std::pair<SimplexId, bool> *mv = nullptr,
                    const SimplexId &nbm = 0);
 

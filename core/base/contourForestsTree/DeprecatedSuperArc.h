@@ -284,6 +284,7 @@ namespace ttk {
       inline void appendVertLists(
         const std::list<std::pair<SimplexId, bool> *> &vertLists,
         std::list<SimplexId> vertSizes,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
         const SimplexId &totalSize) {
         // size local
         SimplexId newSize = sizeVertList_;
@@ -294,8 +295,14 @@ namespace ttk {
         newSize += totalSize;
 
         // alloc
-        std::pair<SimplexId, bool> *tmpVert
-          = new std::pair<SimplexId, bool>[newSize];
+        std::pair<SimplexId, bool> *tmpVert{};
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+        {
+          storage.emplace_back(newSize);
+          tmpVert = storage.back().data();
+        }
         SimplexId pos = 0;
 
         // values local
@@ -383,8 +390,16 @@ namespace ttk {
         // We have an offset of -1 due to the initial value of sizeVertList_
       }
 
-      inline void makeAllocGlobal(const SimplexId &size) {
-        vertList_ = new std::pair<SimplexId, bool>[size];
+      inline void makeAllocGlobal(
+        const SimplexId &size,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+        {
+          storage.emplace_back(size);
+          vertList_ = storage.back().data();
+        }
         sizeVertList_ = 0;
 #ifndef TTK_ENABLE_KAMIKAZE
         allocSgm_ = size;

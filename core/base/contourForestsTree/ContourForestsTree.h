@@ -100,7 +100,9 @@ namespace ttk {
       // {
 
       /// \brief Combine tree with Natarajan's algorithm
-      int combine(const SimplexId &seed0, const SimplexId &seed1);
+      int combine(const SimplexId &seed0,
+                  const SimplexId &seed1,
+                  std::list<std::vector<std::pair<SimplexId, bool>>> &storage);
 
     private:
       // -----------------

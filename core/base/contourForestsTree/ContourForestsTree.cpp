@@ -27,8 +27,11 @@ ContourForestsTree::~ContourForestsTree() = default;
 // Process
 // {
 
-int ContourForestsTree::combine(const SimplexId &seed0,
-                                const SimplexId &seed1) {
+int ContourForestsTree::combine(
+  const SimplexId &seed0,
+  const SimplexId &seed1,
+  std::list<std::vector<std::pair<SimplexId, bool>>> &storage) {
+
   queue<pair<bool, idNode>> growingNodes;
   pair<bool, idNode> head;
 
@@ -264,7 +267,7 @@ int ContourForestsTree::combine(const SimplexId &seed0,
              << ") node :" << xt->getNode(head.second)->getVertexId() << endl;
       }
 
-      xt->delNode(head.second);
+      xt->delNode(head.second, storage);
     }
 
     // DelNode(YT, i)
@@ -283,7 +286,7 @@ int ContourForestsTree::combine(const SimplexId &seed0,
                << " up" << endl;
         }
 
-        yt->delNode(correspondingNodeId, arcVertList, arcVertSize);
+        yt->delNode(correspondingNodeId, storage, arcVertList, arcVertSize);
       }
     }
 

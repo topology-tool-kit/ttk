@@ -50,8 +50,10 @@ namespace ttk {
     // Simplify
 
     template <typename scalarType>
-    SimplexId MergeTree::localSimplify(const SimplexId &posSeed0,
-                                       const SimplexId &posSeed1) {
+    SimplexId MergeTree::localSimplify(
+      const SimplexId &posSeed0,
+      const SimplexId &posSeed1,
+      std::list<std::vector<std::pair<SimplexId, bool>>> &storage) {
 
       // if null threshold, leave
       if(!params_->simplifyThreshold) {
@@ -89,15 +91,17 @@ namespace ttk {
       // --------------
       // {
 
-      return simplifyTree<scalarType>(posSeed0, posSeed1, pairs);
+      return simplifyTree<scalarType>(posSeed0, posSeed1, storage, pairs);
 
       // }
     }
 
     template <typename scalarType, typename triangulationType>
-    SimplexId MergeTree::globalSimplify(const SimplexId posSeed0,
-                                        const SimplexId posSeed1,
-                                        const triangulationType &mesh) {
+    SimplexId MergeTree::globalSimplify(
+      const SimplexId posSeed0,
+      const SimplexId posSeed1,
+      std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+      const triangulationType &mesh) {
 
       // if null threshold, leave
       if(!params_->simplifyThreshold) {
@@ -173,7 +177,7 @@ namespace ttk {
       //{
 
       // identify subtrees and merge them in recept'arcs
-      return simplifyTree<scalarType>(posSeed0, posSeed1, sortedPairs);
+      return simplifyTree<scalarType>(posSeed0, posSeed1, storage, sortedPairs);
       //}
     }
 
@@ -181,6 +185,7 @@ namespace ttk {
     SimplexId MergeTree::simplifyTree(
       const SimplexId &posSeed0,
       const SimplexId &posSeed1,
+      std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
         &sortedPairs) {
       const auto nbNode = getNumberOfNodes();
@@ -365,7 +370,8 @@ namespace ttk {
             }
 
             subtreeUF[thisOriginId]->find()->setData(receptArcId);
-            getSuperArc(receptArcId)->makeAllocGlobal(std::get<2>(receptArc));
+            getSuperArc(receptArcId)
+              ->makeAllocGlobal(std::get<2>(receptArc), storage);
 
             if(DEBUG) {
               std::cout << "create arc : " << printArc(receptArcId)

@@ -537,9 +537,11 @@ idNode MergeTree::makeNode(const Node *const n, const SimplexId &term) {
   return makeNode(n->getVertexId(), term);
 }
 
-void MergeTree::delNode(const idNode &node,
-                        const pair<SimplexId, bool> *markVertices,
-                        const SimplexId &nbMark) {
+void MergeTree::delNode(
+  const idNode &node,
+  std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+  const pair<SimplexId, bool> *markVertices,
+  const SimplexId &nbMark) {
   Node *mainNode = getNode(node);
 
   if(mainNode->getNumberOfUpSuperArcs() == 0) {
@@ -629,8 +631,8 @@ void MergeTree::delNode(const idNode &node,
           const auto *upSegm = treeData_.superArcs[upArc].getVertList();
           const auto *downSegm = treeData_.superArcs[downArc].getVertList();
 
-          pair<SimplexId, bool> *newSegmentation
-            = new pair<SimplexId, bool>[upSize + downSize];
+          storage.emplace_back(upSize + downSize);
+          pair<SimplexId, bool> *newSegmentation = storage.back().data();
 
           for(SimplexId i = 0; i < downSize; i++) {
             newSegmentation[i] = downSegm[i];
@@ -638,23 +640,6 @@ void MergeTree::delNode(const idNode &node,
 
           for(SimplexId i = 0; i < upSize; i++) {
             newSegmentation[i + downSize] = upSegm[i];
-          }
-
-          // avoid some memory leaks
-          if(treeData_.superArcs[downArc].getSegmentation().size()) {
-            const auto &downVect
-              = treeData_.superArcs[downArc].getSegmentation().data();
-            if(downSegm < downVect || downSegm >= downVect + downSize) {
-              delete[] downSegm;
-            }
-          }
-
-          if(treeData_.superArcs[upArc].getSegmentation().size()) {
-            const auto &upVect
-              = treeData_.superArcs[upArc].getSegmentation().data();
-            if(upSegm < upVect || upSegm >= upVect + upSize) {
-              delete[] upSegm;
-            }
           }
 
           treeData_.superArcs[downArc].setVertList(newSegmentation);

@@ -217,7 +217,8 @@ namespace ttk {
       if(params_->treeType == TreeType::Contour
          && parallelParams_.partitionNum == -1 && params_->simplifyThreshold) {
         DebugTimer timerGlobalSimplify;
-        SimplexId simplifed = globalSimplify<scalarType>(-1, nullVertex, mesh);
+        SimplexId simplifed
+          = globalSimplify<scalarType>(-1, nullVertex, this->storage_, mesh);
         if(params_->debugLevel >= 1) {
           printDebug(timerGlobalSimplify, "Simplify Contour tree            ");
           std::cout << " ( " << simplifed << " pairs merged )" << std::endl;
@@ -455,7 +456,7 @@ namespace ttk {
 
           // Combine, destroy JT and ST to compute CT
           parallelData_.trees[i].combine(
-            std::get<0>(seedsPos), std::get<1>(seedsPos));
+            std::get<0>(seedsPos), std::get<1>(seedsPos), this->storage_);
           parallelData_.trees[i].updateSegmentation();
 
           if(params_->debugLevel > 2) {

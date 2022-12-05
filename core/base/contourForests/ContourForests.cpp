@@ -485,7 +485,8 @@ void ContourForests::unifyTree(const char treetype) {
 
       // Finish the current Arc (segmentation + close)
       if(totalSize) {
-        newArc_tt->appendVertLists(listVertList, listVertSize, totalSize);
+        newArc_tt->appendVertLists(
+          listVertList, listVertSize, this->storage_, totalSize);
       }
       const idNode &closingNode_tt = tmpTree.makeNode(currentNode);
       tmpTree.closeSuperArc(newArcId_tt, closingNode_tt, false, false);
