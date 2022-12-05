@@ -3246,8 +3246,10 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
-  this->metaGrid_->setInputGrid(
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, dimensions[0], dimensions[1], dimensions[2]);
+  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
+                                globalBounds[2], this->spacing_[0],
+                                this->spacing_[1], this->spacing_[2],
+                                dimensions[0], dimensions[1], dimensions[2]);
   this->metaGrid_->preconditionBoundaryVertices();
   this->metaGrid_->preconditionBoundaryEdges();
   this->metaGrid_->preconditionBoundaryTriangles();
