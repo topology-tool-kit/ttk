@@ -3554,8 +3554,7 @@ bool ImplicitTriangulation::isEdgeOnGlobalBoundaryInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(leid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfEdges)() - 1
-     || leid < 0) {
+  if(leid > this->getNumberOfEdgesInternal() - 1 || leid < 0) {
     return false;
   }
   if(this->metaGrid_ == nullptr) {
@@ -3578,8 +3577,7 @@ bool ImplicitTriangulation::isTriangleOnGlobalBoundaryInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ltid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfTriangles)() - 1
-     || ltid < 0) {
+  if(ltid > this->getNumberOfTrianglesInternal() - 1 || ltid < 0) {
     return false;
   }
   if(this->metaGrid_ == nullptr) {
