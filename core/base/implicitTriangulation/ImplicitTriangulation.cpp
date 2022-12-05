@@ -3245,6 +3245,14 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
       + 1,
   };
 
+  this->localGridOffset_ = {
+    static_cast<SimplexId>((this->origin_[0] - globalBounds[0])
+                           / this->spacing_[0]),
+    static_cast<SimplexId>((this->origin_[1] - globalBounds[2])
+                           / this->spacing_[1]),
+    static_cast<SimplexId>((this->origin_[2] - globalBounds[4])
+                           / this->spacing_[2]),
+  };
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
   this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
                                 globalBounds[2], this->spacing_[0],

@@ -297,6 +297,8 @@ namespace ttk {
     // simplicial ones...
     std::vector<SimplexId> cellLidToGid_{};
     std::shared_ptr<ImplicitTriangulation> metaGrid_{};
+    // offset coordinates of the local grid inside the metaGrid_
+    std::array<SimplexId, 3> localGridOffset_{};
 #endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {
