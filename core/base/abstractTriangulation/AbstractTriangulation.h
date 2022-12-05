@@ -2883,18 +2883,12 @@ namespace ttk {
   protected:
     virtual inline SimplexId
       getVertexGlobalIdInternal(const SimplexId lvid) const {
-      return this->vertGid_[lvid];
+      return lvid;
     }
 
     virtual inline SimplexId
       getVertexLocalIdInternal(const SimplexId gvid) const {
-      const auto it{this->vertexGidToLid_.find(gvid)};
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(it == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return it->second;
+      return gvid;
     }
 
     // overriden in ImplicitTriangulation &
