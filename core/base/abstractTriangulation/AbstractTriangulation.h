@@ -827,19 +827,8 @@ namespace ttk {
     /// third: z).
     /// \return Returns 0 upon success, negative values otherwise (for
     /// instance, if the object is not representing a regular grid).
-    virtual inline int getGridDimensions(std::vector<int> &dimensions) {
-
-      if((gridDimensions_[0] == -1) && (gridDimensions_[1] == -1)
-         && (gridDimensions_[2] == -1)) {
-        return -1;
-      }
-
-      dimensions.resize(3);
-      dimensions[0] = gridDimensions_[0];
-      dimensions[1] = gridDimensions_[1];
-      dimensions[2] = gridDimensions_[2];
-
-      return 0;
+    virtual inline const std::array<SimplexId, 3> &getGridDimensions() const {
+      return this->gridDimensions_;
     }
 
     /// Get the number of cells in the triangulation.
@@ -3681,7 +3670,7 @@ namespace ttk {
       hasPreconditionedVertexLinks_, hasPreconditionedVertexNeighbors_,
       hasPreconditionedVertexStars_, hasPreconditionedVertexTriangles_;
 
-    std::array<int, 3> gridDimensions_;
+    std::array<SimplexId, 3> gridDimensions_;
 
     std::vector<bool> boundaryEdges_, boundaryTriangles_, boundaryVertices_;
     std::vector<std::array<SimplexId, 6>> tetraEdgeList_;

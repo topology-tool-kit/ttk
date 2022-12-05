@@ -32,14 +32,8 @@ namespace ttk {
     ImplicitTriangulation &operator=(const ImplicitTriangulation &) = default;
     ImplicitTriangulation &operator=(ImplicitTriangulation &&) = default;
 
-    int getGridDimensions(std::vector<int> &dimensions) override {
-
-      dimensions.resize(3);
-      dimensions[0] = dimensions_[0];
-      dimensions[1] = dimensions_[1];
-      dimensions[2] = dimensions_[2];
-
-      return 0;
+    inline const std::array<SimplexId, 3> &getGridDimensions() const override {
+      return this->dimensions_;
     }
 
     int getCellEdgeInternal(const SimplexId &cellId,
@@ -513,7 +507,7 @@ namespace ttk {
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
-    SimplexId dimensions_[3]; // dimensions
+    std::array<SimplexId, 3> dimensions_; // dimensions
     SimplexId nbvoxels_[3]; // nombre de voxels par axe
 
     // Vertex helper //
