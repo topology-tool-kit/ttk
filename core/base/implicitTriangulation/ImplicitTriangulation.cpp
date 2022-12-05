@@ -3077,10 +3077,6 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(!ttk::hasInitializedMPI()) {
     return -1;
   }
-  if(this->cellGid_ == nullptr) {
-    this->printErr("Missing global cell identifiers array!");
-    return -2;
-  }
   if(this->cellRankArray_ == nullptr) {
     this->printErr("Missing cell RankArray!");
     return -3;
@@ -3096,19 +3092,6 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
                                                                           : 2};
   std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
-  // local (simplicial) cell id -> global cell id
-  this->cellLidToGid_.resize(nLocCells);
-  // global (simplicial) cell id -> local cell id (reverse of
-  // this->cellLidToGid_)
-  this->cellGidToLid_.reserve(nLocCells);
-  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    const auto locCubeId{lcid / nTetraPerCube};
-    const auto globCellId{nTetraPerCube * this->cellGid_[locCubeId]
-                          + fillCells[locCubeId]++};
-    this->cellGidToLid_[globCellId] = lcid;
-    this->cellLidToGid_[lcid] = globCellId;
-  }
-
   this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
@@ -3116,7 +3099,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     if(this->cellRankArray_[locCubeId] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostCellsPerOwner_[this->cellRankArray_[locCubeId]].emplace_back(
-        this->cellLidToGid_[lcid]);
+        this->getCellGlobalIdInternal(lcid));
     }
   }
 

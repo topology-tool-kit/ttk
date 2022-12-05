@@ -283,10 +283,6 @@ namespace ttk {
 
   protected:
 #ifdef TTK_ENABLE_MPI
-    // the cellGid_ array only applies on cubic cells, not on
-    // simplicial ones...
-    // TODO remove
-    std::vector<SimplexId> cellLidToGid_{};
     std::shared_ptr<ImplicitTriangulation> metaGrid_{};
     // offset coordinates of the local grid inside the metaGrid_
     std::array<SimplexId, 3> localGridOffset_{};
