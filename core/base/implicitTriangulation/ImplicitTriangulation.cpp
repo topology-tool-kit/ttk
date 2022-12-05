@@ -3316,10 +3316,10 @@ SimplexId ttk::ImplicitTriangulation::getEdgeLocalIdInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(geid > this->metaGrid_->getNumberOfEdgesInternal() - 1 || geid < 0) {
+  if(this->metaGrid_ == nullptr) {
     return -1;
   }
-  if(this->metaGrid_ == nullptr) {
+  if(geid > this->metaGrid_->getNumberOfEdgesInternal() - 1 || geid < 0) {
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
@@ -3415,10 +3415,10 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(gtid > this->metaGrid_->getNumberOfTrianglesInternal() - 1 || gtid < 0) {
+  if(this->metaGrid_ == nullptr) {
     return -1;
   }
-  if(this->metaGrid_ == nullptr) {
+  if(gtid > this->metaGrid_->getNumberOfTrianglesInternal() - 1 || gtid < 0) {
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
