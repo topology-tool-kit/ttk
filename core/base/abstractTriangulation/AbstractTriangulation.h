@@ -2816,24 +2816,24 @@ namespace ttk {
       return this->neighborRanks_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getGhostCellsPerOwner() const {
-      return &(this->ghostCellsPerOwner_);
+      return this->ghostCellsPerOwner_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getRemoteGhostCells() const {
-      return &(this->remoteGhostCells_);
+      return this->remoteGhostCells_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getGhostVerticesPerOwner() const {
-      return &(this->ghostVerticesPerOwner_);
+      return this->ghostVerticesPerOwner_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getRemoteGhostVertices() const {
-      return &(this->remoteGhostVertices_);
+      return this->remoteGhostVertices_;
     }
 
     virtual inline void setHasPreconditionedDistributedVertices(bool flag) {

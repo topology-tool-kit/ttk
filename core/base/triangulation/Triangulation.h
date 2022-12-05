@@ -1438,12 +1438,12 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
-    inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::vector<SimplexId>> &
       getGhostCellsPerOwner() const override {
       return abstractTriangulation_->getGhostCellsPerOwner();
     }
 
-    inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::vector<SimplexId>> &
       getRemoteGhostCells() const override {
       return abstractTriangulation_->getRemoteGhostCells();
     }
