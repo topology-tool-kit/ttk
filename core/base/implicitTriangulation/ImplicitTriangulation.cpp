@@ -3155,10 +3155,6 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   if(!hasInitializedMPI()) {
     return -1;
   }
-  if(this->vertGid_ == nullptr) {
-    this->printErr("Missing global vertex identifiers array!");
-    return -2;
-  }
   if(this->vertexRankArray_ == nullptr) {
     this->printErr("Missing vertex RankArray!");
     return -3;
@@ -3167,18 +3163,13 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   // number of local vertices (with ghost vertices...)
   const auto nLocVertices{this->getNumberOfVertices()};
 
-  // global vertex id -> local vertex id (reverse of this->vertGid_)
-  this->vertexGidToLid_.reserve(nLocVertices);
-  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
-    this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
-  }
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
     if(this->vertexRankArray_[lvid] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostVerticesPerOwner_[this->vertexRankArray_[lvid]].emplace_back(
-        this->vertGid_[lvid]);
+        this->getVertexGlobalIdInternal(lvid));
     }
   }
 
@@ -3548,7 +3539,7 @@ bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const auto gvid{this->vertGid_[lvid]};
+  const auto gvid{this->getVertexGlobalIdInternal(lvid)};
   if(gvid == -1) {
     return false;
   }
