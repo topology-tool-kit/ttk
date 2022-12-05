@@ -2882,23 +2882,23 @@ namespace ttk {
 
   protected:
     virtual inline SimplexId
-      getVertexGlobalIdInternal(const SimplexId lvid) const {
-      return lvid;
+      getVertexGlobalIdInternal(const SimplexId ttkNotUsed(lvid)) const {
+      return -1;
     }
 
     virtual inline SimplexId
-      getVertexLocalIdInternal(const SimplexId gvid) const {
-      return gvid;
+      getVertexLocalIdInternal(const SimplexId ttkNotUsed(gvid)) const {
+      return -1;
     }
 
     virtual inline SimplexId
-      getCellGlobalIdInternal(const SimplexId lcid) const {
-      return lcid;
+      getCellGlobalIdInternal(const SimplexId ttkNotUsed(lcid)) const {
+      return -1;
     }
 
     virtual inline SimplexId
-      getCellLocalIdInternal(const SimplexId gcid) const {
-      return gcid;
+      getCellLocalIdInternal(const SimplexId ttkNotUsed(gcid)) const {
+      return -1;
     }
 
     virtual inline SimplexId
