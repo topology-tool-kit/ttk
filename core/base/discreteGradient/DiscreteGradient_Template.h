@@ -1039,6 +1039,10 @@ bool DiscreteGradient::getAscendingPathThroughWall(
       }
     }
 
+    if(currentId == -1) {
+      return true;
+    }
+
     SimplexId oldId;
     do {
 
