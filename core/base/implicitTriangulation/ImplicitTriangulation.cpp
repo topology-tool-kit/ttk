@@ -3242,6 +3242,44 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   this->metaGrid_->preconditionBoundaryTriangles();
 }
 
+std::array<SimplexId, 3>
+  ttk::ImplicitTriangulation::getVertGlobalCoords(const SimplexId lvid) const {
+
+  // local vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->vertexToPosition(lvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->vertexToPosition2d(lvid, p.data());
+  }
+
+  // global vertex coordinates
+  p[0] += this->localGridOffset_[0];
+  p[1] += this->localGridOffset_[1];
+  p[2] += this->localGridOffset_[2];
+
+  return p;
+}
+
+std::array<SimplexId, 3>
+  ttk::ImplicitTriangulation::getVertLocalCoords(const SimplexId gvid) const {
+
+  // global vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->metaGrid_->vertexToPosition(gvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->metaGrid_->vertexToPosition2d(gvid, p.data());
+  }
+
+  // local vertex coordinates
+  p[0] -= this->localGridOffset_[0];
+  p[1] -= this->localGridOffset_[1];
+  p[2] -= this->localGridOffset_[2];
+
+  return p;
+}
+
 SimplexId ttk::ImplicitTriangulation::getVertexGlobalIdInternal(
   const SimplexId lvid) const {
 
@@ -3259,19 +3297,7 @@ SimplexId ttk::ImplicitTriangulation::getVertexGlobalIdInternal(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  // local vertex coordinates
-  std::array<SimplexId, 3> p{};
-  if(this->dimensionality_ == 3) {
-    this->vertexToPosition(lvid, p.data());
-  } else if(this->dimensionality_ == 2) {
-    this->vertexToPosition2d(lvid, p.data());
-  }
-
-  // global vertex coordinates
-  p[0] += this->localGridOffset_[0];
-  p[1] += this->localGridOffset_[1];
-  p[2] += this->localGridOffset_[2];
-
+  const auto p{this->getVertGlobalCoords(lvid)};
   const auto &dims{this->metaGrid_->getGridDimensions()};
 
   // global coordinates to identifier (inverse of vertexToPosition)
@@ -3296,19 +3322,7 @@ SimplexId ttk::ImplicitTriangulation::getVertexLocalIdInternal(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  // global vertex coordinates
-  std::array<SimplexId, 3> p{};
-  if(this->dimensionality_ == 3) {
-    this->metaGrid_->vertexToPosition(gvid, p.data());
-  } else if(this->dimensionality_ == 2) {
-    this->metaGrid_->vertexToPosition2d(gvid, p.data());
-  }
-
-  // local vertex coordinates
-  p[0] -= this->localGridOffset_[0];
-  p[1] -= this->localGridOffset_[1];
-  p[2] -= this->localGridOffset_[2];
-
+  const auto p{this->getVertLocalCoords(gvid)};
   const auto &dims{this->getGridDimensions()};
 
   // local coordinates to identifier (inverse of vertexToPosition)

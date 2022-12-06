@@ -279,6 +279,9 @@ namespace ttk {
                                    const SimplexId v1) const;
     SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
 
+    std::array<SimplexId, 3> getVertGlobalCoords(const SimplexId lvid) const;
+    std::array<SimplexId, 3> getVertLocalCoords(const SimplexId gvid) const;
+
 #endif // TTK_ENABLE_MPI
 
   protected:
