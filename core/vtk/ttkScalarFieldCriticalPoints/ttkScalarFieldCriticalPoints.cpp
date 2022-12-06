@@ -152,19 +152,16 @@ int ttkScalarFieldCriticalPoints::RequestData(
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName(ttk::VertexScalarFieldName);
-#if TTK_ENABLE_MPI
-    const auto *globalIds = triangulation->getVertsGlobalIds();
-#endif
     for(size_t i = 0; i < criticalPoints_.size(); i++) {
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
       if(hasInitializedMPI()) {
-        vertexIds->SetTuple1(i, globalIds[criticalPoints_[i].first]);
-      } else {
+        vertexIds->SetTuple1(
+          i, triangulation->getVertexGlobalId(criticalPoints_[i].first));
+      } else
+#endif // TTK_ENABLE_MPI
+      {
         vertexIds->SetTuple1(i, criticalPoints_[i].first);
       }
-#else
-      vertexIds->SetTuple1(i, criticalPoints_[i].first);
-#endif
     }
 
     output->GetPointData()->AddArray(vertexIds);

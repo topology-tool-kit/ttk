@@ -620,6 +620,13 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
+    inline void setCellsGlobalIds(const LongSimplexId *const cellGid) {
+      this->cellGid_ = cellGid;
+    }
+    inline void setVertsGlobalIds(const LongSimplexId *array) {
+      this->vertGid_ = array;
+    }
+
     inline SimplexId
       getVertexGlobalIdInternal(const SimplexId lvid) const override {
       return this->vertGid_[lvid];
@@ -688,6 +695,10 @@ namespace ttk {
       return this->vertexRankArray_[lvid];
     }
 
+    inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
+      return this->vertexGidToLid_;
+    }
+
     inline void setBoundingBox(const double *const bBox) {
       this->boundingBox_
         = {bBox[0], bBox[1], bBox[2], bBox[3], bBox[4], bBox[5]};
@@ -739,6 +750,13 @@ namespace ttk {
     // number of CellRanges per rank
     std::vector<int> nRangesPerRank_{};
 
+    // "GlobalCellIds" from "Generate Global Ids"
+    const LongSimplexId *cellGid_{};
+    // "GlobalPointIds" from "Generate Global Ids"
+    const LongSimplexId *vertGid_{};
+
+    // inverse of vertGid_
+    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
     // inverse of cellGid_
     std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
 

@@ -698,7 +698,8 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   // If the global ids are not valid, they are computed again
   if(!pointValidity || !cellValidity) {
     bool flag{false};
-    if(triangulation) {
+    if(triangulation != nullptr
+       && triangulation->getType() == ttk::Triangulation::Type::EXPLICIT) {
       flag = this->GenerateGlobalIds(
         input, triangulation->getVertexGlobalIdMap(), neighborRanks);
     } else {

@@ -2521,22 +2521,6 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
-    // GlobalPointIds, GlobalCellIds
-
-    inline void setCellsGlobalIds(const LongSimplexId *const cellGid) {
-      this->cellGid_ = cellGid;
-    }
-    inline const LongSimplexId *getCellsGlobalIds() const {
-      return this->cellGid_;
-    }
-
-    inline void setVertsGlobalIds(const LongSimplexId *array) {
-      this->vertGid_ = array;
-    }
-    inline const LongSimplexId *getVertsGlobalIds() const {
-      return this->vertGid_;
-    }
-
     // "vtkGhostType" on points & cells
 
     inline void setVertexGhostArray(const unsigned char *const data) {
@@ -2774,33 +2758,6 @@ namespace ttk {
         return this->getCellLocalIdInternal(gtid);
       }
       return -1;
-    }
-
-    virtual inline const std::unordered_map<SimplexId, SimplexId> &
-      getVertexGlobalIdMap() const {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
-         && this->getDimensionality() != 3) {
-        this->printErr("Only 1D, 2D and 3D datasets are supported");
-      }
-      if(!this->hasPreconditionedDistributedVertices_) {
-        this->printErr("VertexGlobalMap query without pre-process!");
-        this->printErr(
-          "Please call preconditionDistributedVertices() in a pre-process.");
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_;
-    }
-
-    virtual inline std::unordered_map<SimplexId, SimplexId> &
-      getVertexGlobalIdMap() {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
-         && this->getDimensionality() != 3) {
-        this->printErr("Only 1D, 2D and 3D datasets are supported");
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_;
     }
 
     virtual inline int getVertexRank(const SimplexId lvid) const {
@@ -3744,16 +3701,6 @@ namespace ttk {
     virtual int preconditionDistributedTriangles() {
       return 0;
     }
-
-    // "GlobalCellIds" from "Generate Global Ids"
-    // (warning: for Implicit/Periodic triangulations, concerns
-    // "squares"/"cubes" and not "triangles"/"tetrahedron")
-    const LongSimplexId *cellGid_{};
-    // "GlobalPointIds" from "Generate Global Ids"
-    const LongSimplexId *vertGid_{};
-
-    // inverse of vertGid_
-    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
 
     // "vtkGhostType" PointData array
     const unsigned char *vertexGhost_{};
