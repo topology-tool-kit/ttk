@@ -3155,10 +3155,6 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   if(!hasInitializedMPI()) {
     return -1;
   }
-  if(this->vertGid_ == nullptr) {
-    this->printErr("Missing global vertex identifiers array!");
-    return -2;
-  }
   if(this->vertexRankArray_ == nullptr) {
     this->printErr("Missing vertex RankArray!");
     return -3;
@@ -3167,18 +3163,13 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   // number of local vertices (with ghost vertices...)
   const auto nLocVertices{this->getNumberOfVertices()};
 
-  // global vertex id -> local vertex id (reverse of this->vertGid_)
-  this->vertexGidToLid_.reserve(nLocVertices);
-  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
-    this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
-  }
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
     if(this->vertexRankArray_[lvid] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostVerticesPerOwner_[this->vertexRankArray_[lvid]].emplace_back(
-        this->vertGid_[lvid]);
+        this->getVertexGlobalIdInternal(lvid));
     }
   }
 
@@ -3245,12 +3236,95 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
       + 1,
   };
 
+  this->localGridOffset_ = {
+    static_cast<SimplexId>((this->origin_[0] - globalBounds[0])
+                           / this->spacing_[0]),
+    static_cast<SimplexId>((this->origin_[1] - globalBounds[2])
+                           / this->spacing_[1]),
+    static_cast<SimplexId>((this->origin_[2] - globalBounds[4])
+                           / this->spacing_[2]),
+  };
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
-  this->metaGrid_->setInputGrid(
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, dimensions[0], dimensions[1], dimensions[2]);
+  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
+                                globalBounds[2], this->spacing_[0],
+                                this->spacing_[1], this->spacing_[2],
+                                dimensions[0], dimensions[1], dimensions[2]);
   this->metaGrid_->preconditionBoundaryVertices();
   this->metaGrid_->preconditionBoundaryEdges();
   this->metaGrid_->preconditionBoundaryTriangles();
+}
+
+SimplexId ttk::ImplicitTriangulation::getVertexGlobalIdInternal(
+  const SimplexId lvid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return lvid;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(lvid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
+     || lvid < 0) {
+    return -1;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  // local vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->vertexToPosition(lvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->vertexToPosition2d(lvid, p.data());
+  }
+
+  // global vertex coordinates
+  p[0] += this->localGridOffset_[0];
+  p[1] += this->localGridOffset_[1];
+  p[2] += this->localGridOffset_[2];
+
+  const auto &dims{this->metaGrid_->getGridDimensions()};
+
+  // global coordinates to identifier (inverse of vertexToPosition)
+  return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
+}
+
+SimplexId ttk::ImplicitTriangulation::getVertexLocalIdInternal(
+  const SimplexId gvid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return gvid;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->metaGrid_ == nullptr) {
+    return -1;
+  }
+  if(gvid
+       > this->metaGrid_->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
+     || gvid < 0) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  // global vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->metaGrid_->vertexToPosition(gvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->metaGrid_->vertexToPosition2d(gvid, p.data());
+  }
+
+  // local vertex coordinates
+  p[0] -= this->localGridOffset_[0];
+  p[1] -= this->localGridOffset_[1];
+  p[2] -= this->localGridOffset_[2];
+
+  const auto &dims{this->getGridDimensions()};
+
+  // local coordinates to identifier (inverse of vertexToPosition)
+  return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
 }
 
 SimplexId
@@ -3316,10 +3390,10 @@ SimplexId ttk::ImplicitTriangulation::getEdgeLocalIdInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(geid > this->metaGrid_->getNumberOfEdgesInternal() - 1 || geid < 0) {
+  if(this->metaGrid_ == nullptr) {
     return -1;
   }
-  if(this->metaGrid_ == nullptr) {
+  if(geid > this->metaGrid_->getNumberOfEdgesInternal() - 1 || geid < 0) {
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
@@ -3415,10 +3489,10 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(gtid > this->metaGrid_->getNumberOfTrianglesInternal() - 1 || gtid < 0) {
+  if(this->metaGrid_ == nullptr) {
     return -1;
   }
-  if(this->metaGrid_ == nullptr) {
+  if(gtid > this->metaGrid_->getNumberOfTrianglesInternal() - 1 || gtid < 0) {
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
@@ -3465,7 +3539,7 @@ bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const auto gvid{this->vertGid_[lvid]};
+  const auto gvid{this->getVertexGlobalIdInternal(lvid)};
   if(gvid == -1) {
     return false;
   }
@@ -3480,8 +3554,7 @@ bool ImplicitTriangulation::isEdgeOnGlobalBoundaryInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(leid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfEdges)() - 1
-     || leid < 0) {
+  if(leid > this->getNumberOfEdgesInternal() - 1 || leid < 0) {
     return false;
   }
   if(this->metaGrid_ == nullptr) {
@@ -3504,8 +3577,7 @@ bool ImplicitTriangulation::isTriangleOnGlobalBoundaryInternal(
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ltid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfTriangles)() - 1
-     || ltid < 0) {
+  if(ltid > this->getNumberOfTrianglesInternal() - 1 || ltid < 0) {
     return false;
   }
   if(this->metaGrid_ == nullptr) {

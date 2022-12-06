@@ -621,6 +621,22 @@ namespace ttk {
 #ifdef TTK_ENABLE_MPI
 
     inline SimplexId
+      getVertexGlobalIdInternal(const SimplexId lvid) const override {
+      return this->vertGid_[lvid];
+    }
+
+    inline SimplexId
+      getVertexLocalIdInternal(const SimplexId gvid) const override {
+      const auto it{this->vertexGidToLid_.find(gvid)};
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(it == this->vertexGidToLid_.end()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return it->second;
+    }
+
+    inline SimplexId
       getEdgeGlobalIdInternal(const SimplexId leid) const override {
       return this->edgeLidToGid_[leid];
     }

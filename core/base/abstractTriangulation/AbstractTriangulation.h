@@ -827,19 +827,8 @@ namespace ttk {
     /// third: z).
     /// \return Returns 0 upon success, negative values otherwise (for
     /// instance, if the object is not representing a regular grid).
-    virtual inline int getGridDimensions(std::vector<int> &dimensions) {
-
-      if((gridDimensions_[0] == -1) && (gridDimensions_[1] == -1)
-         && (gridDimensions_[2] == -1)) {
-        return -1;
-      }
-
-      dimensions.resize(3);
-      dimensions[0] = gridDimensions_[0];
-      dimensions[1] = gridDimensions_[1];
-      dimensions[2] = gridDimensions_[2];
-
-      return 0;
+    virtual inline const std::array<SimplexId, 3> &getGridDimensions() const {
+      return this->gridDimensions_;
     }
 
     /// Get the number of cells in the triangulation.
@@ -2892,18 +2881,14 @@ namespace ttk {
     }
 
   protected:
-    inline SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const {
-      return this->vertGid_[lvid];
+    virtual inline SimplexId
+      getVertexGlobalIdInternal(const SimplexId lvid) const {
+      return lvid;
     }
 
-    inline SimplexId getVertexLocalIdInternal(const SimplexId gvid) const {
-      const auto it{this->vertexGidToLid_.find(gvid)};
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(it == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return it->second;
+    virtual inline SimplexId
+      getVertexLocalIdInternal(const SimplexId gvid) const {
+      return gvid;
     }
 
     // overriden in ImplicitTriangulation &
@@ -3681,7 +3666,7 @@ namespace ttk {
       hasPreconditionedVertexLinks_, hasPreconditionedVertexNeighbors_,
       hasPreconditionedVertexStars_, hasPreconditionedVertexTriangles_;
 
-    std::array<int, 3> gridDimensions_;
+    std::array<SimplexId, 3> gridDimensions_;
 
     std::vector<bool> boundaryEdges_, boundaryTriangles_, boundaryVertices_;
     std::vector<std::array<SimplexId, 6>> tetraEdgeList_;
