@@ -2882,31 +2882,23 @@ namespace ttk {
 
   protected:
     virtual inline SimplexId
-      getVertexGlobalIdInternal(const SimplexId lvid) const {
-      return lvid;
+      getVertexGlobalIdInternal(const SimplexId ttkNotUsed(lvid)) const {
+      return -1;
     }
 
     virtual inline SimplexId
-      getVertexLocalIdInternal(const SimplexId gvid) const {
-      return gvid;
+      getVertexLocalIdInternal(const SimplexId ttkNotUsed(gvid)) const {
+      return -1;
     }
 
-    // overriden in ImplicitTriangulation &
-    // PeriodicImplicitTriangulation (where cellGid_ refers to
-    // squares/cubes and not triangles/tetrahedron)
     virtual inline SimplexId
-      getCellGlobalIdInternal(const SimplexId lcid) const {
-      return this->cellGid_[lcid];
+      getCellGlobalIdInternal(const SimplexId ttkNotUsed(lcid)) const {
+      return -1;
     }
 
-    inline SimplexId getCellLocalIdInternal(const SimplexId gcid) const {
-      const auto it{this->cellGidToLid_.find(gcid)};
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(it == this->cellGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return it->second;
+    virtual inline SimplexId
+      getCellLocalIdInternal(const SimplexId ttkNotUsed(gcid)) const {
+      return -1;
     }
 
     virtual inline SimplexId
@@ -3716,8 +3708,6 @@ namespace ttk {
     // "squares"/"cubes" and not "triangles"/"tetrahedron")
     const int *cellRankArray_{};
 
-    // inverse of cellGid_
-    std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
     // inverse of vertGid_
     std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
 

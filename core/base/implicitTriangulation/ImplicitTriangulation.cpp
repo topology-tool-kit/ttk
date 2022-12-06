@@ -3077,10 +3077,6 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(!ttk::hasInitializedMPI()) {
     return -1;
   }
-  if(this->cellGid_ == nullptr) {
-    this->printErr("Missing global cell identifiers array!");
-    return -2;
-  }
   if(this->cellRankArray_ == nullptr) {
     this->printErr("Missing cell RankArray!");
     return -3;
@@ -3096,19 +3092,6 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
                                                                           : 2};
   std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
-  // local (simplicial) cell id -> global cell id
-  this->cellLidToGid_.resize(nLocCells);
-  // global (simplicial) cell id -> local cell id (reverse of
-  // this->cellLidToGid_)
-  this->cellGidToLid_.reserve(nLocCells);
-  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    const auto locCubeId{lcid / nTetraPerCube};
-    const auto globCellId{nTetraPerCube * this->cellGid_[locCubeId]
-                          + fillCells[locCubeId]++};
-    this->cellGidToLid_[globCellId] = lcid;
-    this->cellLidToGid_[lcid] = globCellId;
-  }
-
   this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
@@ -3116,7 +3099,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     if(this->cellRankArray_[locCubeId] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostCellsPerOwner_[this->cellRankArray_[locCubeId]].emplace_back(
-        this->cellLidToGid_[lcid]);
+        this->getCellGlobalIdInternal(lcid));
     }
   }
 
@@ -3325,6 +3308,86 @@ SimplexId ttk::ImplicitTriangulation::getVertexLocalIdInternal(
 
   // local coordinates to identifier (inverse of vertexToPosition)
   return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
+}
+
+SimplexId ttk::ImplicitTriangulation::getCellGlobalIdInternal(
+  const SimplexId lcid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return lcid;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(lcid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() - 1
+     || lcid < 0) {
+    return -1;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  // local cube coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->tetrahedronToPosition(lcid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->triangleToPosition2d(lcid, p.data());
+  }
+
+  // global cube coordinates
+  p[0] += this->localGridOffset_[0];
+  p[1] += this->localGridOffset_[1];
+  p[2] += this->localGridOffset_[2];
+
+  const auto &dims{this->metaGrid_->getGridDimensions()};
+
+  // global coordinates to identifier (inverse of tetrahedronToPosition)
+  const auto globCubeId{p[0] + p[1] * (dims[0] - 1)
+                        + p[2] * (dims[0] - 1) * (dims[1] - 1)};
+
+  const auto nCellsPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  return globCubeId * nCellsPerCube + lcid % nCellsPerCube;
+}
+
+SimplexId ttk::ImplicitTriangulation::getCellLocalIdInternal(
+  const SimplexId gcid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return gcid;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->metaGrid_ == nullptr) {
+    return -1;
+  }
+  if(gcid > this->metaGrid_->TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() - 1
+     || gcid < 0) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  // global cube coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->metaGrid_->tetrahedronToPosition(gcid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->metaGrid_->triangleToPosition2d(gcid, p.data());
+  }
+
+  // local cube coordinates
+  p[0] -= this->localGridOffset_[0];
+  p[1] -= this->localGridOffset_[1];
+  p[2] -= this->localGridOffset_[2];
+
+  const auto &dims{this->getGridDimensions()};
+
+  // local coordinates to identifier (inverse of tetrahedronToPosition)
+  const auto locCubeId{p[0] + p[1] * (dims[0] - 1)
+                       + p[2] * (dims[0] - 1) * (dims[1] - 1)};
+
+  const auto nCellsPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  return locCubeId * nCellsPerCube + gcid % nCellsPerCube;
 }
 
 SimplexId

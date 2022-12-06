@@ -637,6 +637,22 @@ namespace ttk {
     }
 
     inline SimplexId
+      getCellGlobalIdInternal(const SimplexId lcid) const override {
+      return this->cellGid_[lcid];
+    }
+
+    inline SimplexId
+      getCellLocalIdInternal(const SimplexId gcid) const override {
+      const auto it{this->cellGidToLid_.find(gcid)};
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(it == this->cellGidToLid_.end()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return it->second;
+    }
+
+    inline SimplexId
       getEdgeGlobalIdInternal(const SimplexId leid) const override {
       return this->edgeLidToGid_[leid];
     }
@@ -711,6 +727,9 @@ namespace ttk {
     std::vector<CellRange> gatheredCellRanges_{};
     // number of CellRanges per rank
     std::vector<int> nRangesPerRank_{};
+
+    // inverse of cellGid_
+    std::unordered_map<SimplexId, SimplexId> cellGidToLid_{};
 
     std::vector<SimplexId> edgeLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> edgeGidToLid_{};
