@@ -2816,6 +2816,29 @@ namespace ttk {
       return this->vertexGidToLid_;
     }
 
+    virtual inline int getVertexRank(const SimplexId lvid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedVertices_) {
+        this->printErr("VertexRankId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+      if(lvid < 0 || lvid >= this->getNumberOfVertices()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      if(!ttk::isRunningWithMPI()) {
+        return lvid;
+      }
+      return this->getVertexRankInternal(lvid);
+    }
+
     virtual inline const std::vector<int> &getNeighborRanks() const {
       return this->neighborRanks_;
     }
@@ -2925,6 +2948,11 @@ namespace ttk {
 
     virtual inline SimplexId
       getTriangleLocalIdInternal(const SimplexId ttkNotUsed(gtid)) const {
+      return -1;
+    }
+
+    virtual inline int
+      getVertexRankInternal(const SimplexId ttkNotUsed(lvid)) const {
       return -1;
     }
 

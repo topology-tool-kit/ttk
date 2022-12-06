@@ -3138,21 +3138,77 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   if(!hasInitializedMPI()) {
     return -1;
   }
-  if(this->vertexRankArray_ == nullptr) {
-    this->printErr("Missing vertex RankArray!");
+  if(this->vertexGhost_ == nullptr) {
+    this->printErr("Missing vertex ghost array!");
     return -3;
   }
 
   // number of local vertices (with ghost vertices...)
   const auto nLocVertices{this->getNumberOfVertices()};
 
+  this->neighborVertexBBoxes_.resize(ttk::MPIsize_);
+  auto &localBBox{this->neighborVertexBBoxes_[ttk::MPIrank_]};
+  // "good" starting values?
+  localBBox = {
+    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
+    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
+    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
+  };
+
+  for(SimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    // only keep non-ghost vertices
+    if(this->vertexGhost_[lvid] == 1) {
+      continue;
+    }
+    // local vertex coordinates
+    std::array<SimplexId, 3> p{};
+    if(this->dimensionality_ == 3) {
+      this->vertexToPosition(lvid, p.data());
+    } else if(this->dimensionality_ == 2) {
+      this->vertexToPosition2d(lvid, p.data());
+    }
+
+    // global vertex coordinates
+    p[0] += this->localGridOffset_[0];
+    p[1] += this->localGridOffset_[1];
+    p[2] += this->localGridOffset_[2];
+
+    if(p[0] < localBBox[0]) {
+      localBBox[0] = p[0];
+    }
+    if(p[0] > localBBox[1]) {
+      localBBox[1] = p[0];
+    }
+    if(p[1] < localBBox[2]) {
+      localBBox[2] = p[1];
+    }
+    if(p[1] > localBBox[3]) {
+      localBBox[3] = p[1];
+    }
+    if(p[2] < localBBox[4]) {
+      localBBox[4] = p[2];
+    }
+    if(p[2] > localBBox[5]) {
+      localBBox[5] = p[2];
+    }
+  }
+
+  for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
+    const auto neigh{this->neighborRanks_[i]};
+    MPI_Sendrecv(this->neighborVertexBBoxes_[ttk::MPIrank_].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
+                 this->neighborVertexBBoxes_[neigh].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
+                 MPI_STATUS_IGNORE);
+  }
+
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
-    if(this->vertexRankArray_[lvid] != ttk::MPIrank_) {
+    if(this->getVertexRankInternal(lvid) != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
-      this->ghostVerticesPerOwner_[this->vertexRankArray_[lvid]].emplace_back(
-        this->getVertexGlobalIdInternal(lvid));
+      this->ghostVerticesPerOwner_[this->getVertexRankInternal(lvid)]
+        .emplace_back(this->getVertexGlobalIdInternal(lvid));
     }
   }
 
@@ -3602,6 +3658,32 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
   }
 
   return this->findTriangleFromVertices(locVerts);
+}
+
+int ttk::ImplicitTriangulation::getVertexRankInternal(
+  const SimplexId lvid) const {
+
+#ifdef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty()) {
+    this->printErr("Empty neighborsRanks_!");
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  if(this->vertexGhost_[lvid] == 0) {
+    return ttk::MPIrank_;
+  }
+
+  const auto p{this->getVertGlobalCoords(lvid)};
+  for(const auto neigh : this->neighborRanks_) {
+    const auto &bbox{this->neighborVertexBBoxes_[neigh]};
+    if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2] && p[1] <= bbox[3]
+       && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+      return neigh;
+    }
+  }
+
+  return -1;
 }
 
 bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(

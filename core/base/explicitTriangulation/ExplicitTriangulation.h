@@ -684,6 +684,10 @@ namespace ttk {
       return it->second;
     }
 
+    inline int getVertexRankInternal(const SimplexId lvid) const override {
+      return this->vertexRankArray_[lvid];
+    }
+
   protected:
     template <typename Func0, typename Func1, typename Func2>
     int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
