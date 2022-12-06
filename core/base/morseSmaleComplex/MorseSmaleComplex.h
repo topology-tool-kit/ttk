@@ -1784,7 +1784,7 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
   using PersPairType = DiscreteMorseSandwich::PersistencePair;
 
   std::vector<PersPairType> dms_pairs{};
-  dms.computePersistencePairs(dms_pairs, offsets, triangulation, false);
+  dms.computePersistencePairs(dms_pairs, offsets, triangulation, false, true);
   this->discreteGradient_ = dms.getGradient();
   // reset gradient pointer to local storage
   this->discreteGradient_.setLocalGradient();
@@ -1795,25 +1795,47 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
           Cell{2, p.death}, Cell{1, p.birth}, scalars, triangulation);
       };
 
-  // only keep saddle-saddle pairs below persistenceThreshold
-  decltype(dms_pairs) sadSadPairs{};
-  sadSadPairs.reserve(dms_pairs.size() / 2); // conservative allocation
-  for(const auto &pair : dms_pairs) {
-    if(pair.type == 1 && getPersistence(pair) <= persistenceThreshold) {
-      sadSadPairs.emplace_back(pair);
-    }
-  }
+  // saddle-saddle pairs should be in one continuous block inside dms_pairs
+  const auto firstSadSadPair{std::distance(
+    dms_pairs.begin(),
+    std::find_if(dms_pairs.begin(), dms_pairs.end(),
+                 [](const auto &pair) { return pair.type == 1; }))};
 
-  // DMS pairs output are already sorted by persistence
+  // DMS pairs output are already sorted by 2-saddles in ascending order
 
   std::vector<bool> isVisited(triangulation.getNumberOfTriangles(), false);
   std::vector<SimplexId> visitedTriangles{};
 
   size_t nReturned{};
 
-  for(const auto &pair : sadSadPairs) {
+  // offset from firstSadSadPair should index s2Children and simplifyS2
+  const auto &s2Children{dms.get2SaddlesChildren()};
+  std::vector<bool> simplifyS2(s2Children.size(), true);
+
+  for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
+    const auto &pair{dms_pairs[i]};
+
+    if(pair.type != 1 || getPersistence(pair) > persistenceThreshold) {
+      continue;
+    }
+
+    const auto o{i - firstSadSadPair};
     const Cell birth{1, pair.birth};
     const Cell death{2, pair.death};
+    bool skip{false};
+    for(const auto child : s2Children[o]) {
+      if(!simplifyS2[child]) {
+        skip = true;
+        break;
+      }
+    }
+    if(skip) {
+      this->printMsg("Skipping saddle connector " + birth.to_string() + " -> "
+                       + death.to_string(),
+                     debug::Priority::DETAIL);
+      simplifyS2[o] = false;
+      continue;
+    }
     // 1. get the 2-saddle wall
     VisitedMask mask{isVisited, visitedTriangles};
     this->discreteGradient_.getDescendingWall(death, mask, triangulation);
@@ -1829,6 +1851,7 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
       this->printMsg("Could not return saddle connector " + birth.to_string()
                        + " -> " + death.to_string(),
                      debug::Priority::DETAIL);
+      simplifyS2[o] = false;
     }
   }
 
