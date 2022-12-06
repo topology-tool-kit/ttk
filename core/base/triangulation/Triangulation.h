@@ -2872,6 +2872,14 @@ namespace ttk {
 
 #undef TTK_GET_SET_ARRAYS
 
+    inline void setVertexGhostArray(const unsigned char *data) {
+      this->abstractTriangulation_->setVertexGhostArray(data);
+    }
+
+    inline void setCellGhostArray(const unsigned char *data) {
+      this->abstractTriangulation_->setCellGhostArray(data);
+    }
+
 #endif // TTK_ENABLE_MPI
 
   protected:

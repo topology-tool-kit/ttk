@@ -2542,8 +2542,15 @@ namespace ttk {
     inline void setVertexRankArray(const int *const rankArray) {
       this->vertexRankArray_ = rankArray;
     }
+    inline void setVertexGhostArray(const unsigned char *const data) {
+      this->vertexGhost_ = data;
+    }
     inline const int *getVertexRankArray() const {
       return this->vertexRankArray_;
+    }
+
+    inline void setCellGhostArray(const unsigned char *const data) {
+      this->cellGhost_ = data;
     }
 
     inline void setCellRankArray(const int *const rankArray) {
@@ -3710,6 +3717,11 @@ namespace ttk {
 
     // inverse of vertGid_
     std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
+
+    // "vtkGhostType" PointData array
+    const unsigned char *vertexGhost_{};
+    // "vtkGhostType" CellData array
+    const unsigned char *cellGhost_{};
 
     // list of neighboring ranks (sharing ghost cells to current rank)
     std::vector<int> neighborRanks_{};
