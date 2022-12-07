@@ -783,6 +783,11 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
       const bool isMultiConnected
         = discreteGradient_.getAscendingPathThroughWall(
           s1, s2, isVisited, &vpath, triangulation);
+
+      if(vpath.empty()) {
+        // safety, should be unreachable
+        continue;
+      }
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
