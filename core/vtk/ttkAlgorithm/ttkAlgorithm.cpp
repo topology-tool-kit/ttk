@@ -476,6 +476,9 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
     &min, &globalMin, 1, ttk::getMPIType(min), MPI_MIN, ttk::MPIcomm_);
   MPI_Allreduce(
     &max, &globalMax, 1, ttk::getMPIType(max), MPI_MAX, ttk::MPIcomm_);
+  printMsg("globalSimplexNumber: " + std::to_string(globalSimplexNumber)
+           + ", globalMax: " + std::to_string(globalMax)
+           + ", globalMin: " + std::to_string(globalMin));
   return (globalSimplexNumber == globalMax + 1 && globalMin == 0);
 };
 
@@ -528,8 +531,9 @@ bool ttkAlgorithm::GenerateGlobalIds(
             input->GetCellData()->GetGlobalIds()));
         identifiers.setVertexRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
           input->GetPointData()->GetArray("RankArray")));
-        identifiers.setCellRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
-          input->GetCellData()->GetArray("RankArray")));
+        ttk::SimplexId *cellRankArray = ttkUtils::GetPointer<ttk::SimplexId>(
+          input->GetCellData()->GetArray("RankArray"));
+        identifiers.setCellRankArray(cellRankArray);
         identifiers.setVertGhost(ttkUtils::GetPointer<unsigned char>(
           input->GetPointData()->GetArray("vtkGhostType")));
         unsigned char *cellGhost = ttkUtils::GetPointer<unsigned char>(
@@ -582,15 +586,25 @@ bool ttkAlgorithm::GenerateGlobalIds(
 
         std::vector<std::vector<ttk::SimplexId>> pointsToCells(vertexNumber);
         vtkIdList *cellList = vtkIdList::New();
-        for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
-          input->GetPointCells(i, cellList);
-          for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
-            if(cellGhost[cellList->GetId(j)] == 0) {
-              pointsToCells[i].push_back(cellList->GetId(j));
+        if(cellRankArray != nullptr) {
+          for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
+            input->GetPointCells(i, cellList);
+            for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
+              if(cellRankArray[cellList->GetId(j)] == ttk::MPIrank_) {
+                pointsToCells[i].push_back(cellList->GetId(j));
+              }
+            }
+          }
+        } else {
+          for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
+            input->GetPointCells(i, cellList);
+            for(int j = 0; j < cellList->GetNumberOfIds(); j++) {
+              if(cellGhost[cellList->GetId(j)] == 0) {
+                pointsToCells[i].push_back(cellList->GetId(j));
+              }
             }
           }
         }
-
         identifiers.setPointsToCells(pointsToCells);
 
         identifiers.initializeMPITypes();
@@ -635,7 +649,10 @@ bool ttkAlgorithm::GenerateGlobalIds(
 void ttkAlgorithm::MPIGhostPipelinePreconditioning(vtkDataSet *input) {
 
   vtkNew<vtkGhostCellsGenerator> generator;
-  if(!input->HasAnyGhostCells() && ttk::isRunningWithMPI()) {
+  if(ttk::isRunningWithMPI()
+     && (!input->HasAnyGhostCells()
+         && ((input->GetPointData()->GetArray("RankArray") == nullptr)
+             || (input->GetCellData()->GetArray("RankArray") == nullptr)))) {
     generator->SetInputData(input);
     generator->BuildIfRequiredOff();
     generator->SetNumberOfGhostLayers(1);
@@ -734,10 +751,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     } else {
       std::unordered_map<ttk::SimplexId, ttk::SimplexId> vertGtoL{};
       flag = this->GenerateGlobalIds(input, vertGtoL, neighborRanks);
-    }
-
-    if(triangulation) {
-      triangulation->setHasPreconditionedDistributedVertices(flag);
     }
   }
   // If the RankArray array doesn't exist for pointdata, it is created

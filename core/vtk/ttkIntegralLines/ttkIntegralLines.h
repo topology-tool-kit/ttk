@@ -69,6 +69,28 @@
 
 class vtkUnstructuredGrid;
 
+struct IntervalToSend {
+  ttk::SimplexId localVertexId;
+  ttk::SimplexId seedIdentifier;
+  ttk::SimplexId intervalSize;
+  int rankArray;
+};
+
+struct IntervalToSendWithOffset {
+  ttk::SimplexId localVertexId;
+  ttk::SimplexId seedIdentifier;
+  ttk::SimplexId intervalSize;
+  ttk::SimplexId offset;
+  ttk::SimplexId intervalId;
+};
+
+bool operator==(const IntervalToSendWithOffset &left,
+                const IntervalToSendWithOffset &right) {
+  return (left.seedIdentifier == right.seedIdentifier
+          && left.localVertexId == right.localVertexId
+          && left.intervalSize == right.intervalSize);
+};
+
 class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public ttkAlgorithm,
                                                  protected ttk::IntegralLines {
 
@@ -96,9 +118,20 @@ public:
       &distancesFromSeed,
     std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
       &seedIdentifiers,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &edgeIdentifiers,
+    std::vector<ttk::SimplexId> &offsets,
+    std::vector<ttk::SimplexId> &edgeOffsets,
     vtkUnstructuredGrid *output);
+
+  int getGlobalIdentifiers(
+    std::vector<ttk::SimplexId> &offsets,
+    std::vector<ttk::SimplexId> &edgeOffsets,
+    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
+      &seedIdentifiers,
+    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
+      &trajectories,
+    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
+      &localVertexIdentifiers,
+    const int *vertexRankArray);
 
 protected:
   ttkIntegralLines();
