@@ -2867,11 +2867,6 @@ namespace ttk {
     TTK_GET_SET_ARRAYS(VertsGlobalIds, LongSimplexId);
     TTK_GET_SET_ARRAYS(CellsGlobalIds, LongSimplexId);
 
-    // RankArray on points & cells
-
-    TTK_GET_SET_ARRAYS(VertexRankArray, int);
-    TTK_GET_SET_ARRAYS(CellRankArray, int);
-
 #undef TTK_GET_SET_ARRAYS
 
     inline void setVertexGhostArray(const unsigned char *data) {

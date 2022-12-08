@@ -794,8 +794,6 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     // to the triangulation
     triangulation->setVertsGlobalIds(
       ttkUtils::GetPointer<ttk::LongSimplexId>(pd->GetGlobalIds()));
-    triangulation->setVertexRankArray(
-      ttkUtils::GetPointer<int>(pd->GetArray("RankArray")));
     triangulation->setVertexGhostArray(
       ttkUtils::GetPointer<unsigned char>(pd->GetArray("vtkGhostType")));
     triangulation->preconditionDistributedVertices();
@@ -809,8 +807,6 @@ void ttkAlgorithm::MPITriangulationPreconditioning(
     // the triangulation
     triangulation->setCellsGlobalIds(
       ttkUtils::GetPointer<ttk::LongSimplexId>(cd->GetGlobalIds()));
-    triangulation->setCellRankArray(
-      ttkUtils::GetPointer<int>(cd->GetArray("RankArray")));
     triangulation->setCellGhostArray(
       ttkUtils::GetPointer<unsigned char>(cd->GetArray("vtkGhostType")));
     triangulation->preconditionDistributedCells();

@@ -2537,27 +2537,14 @@ namespace ttk {
       return this->vertGid_;
     }
 
-    // RankArray on points & cells
+    // "vtkGhostType" on points & cells
 
-    inline void setVertexRankArray(const int *const rankArray) {
-      this->vertexRankArray_ = rankArray;
-    }
     inline void setVertexGhostArray(const unsigned char *const data) {
       this->vertexGhost_ = data;
-    }
-    inline const int *getVertexRankArray() const {
-      return this->vertexRankArray_;
     }
 
     inline void setCellGhostArray(const unsigned char *const data) {
       this->cellGhost_ = data;
-    }
-
-    inline void setCellRankArray(const int *const rankArray) {
-      this->cellRankArray_ = rankArray;
-    }
-    inline const int *getCellRankArray() const {
-      return this->cellRankArray_;
     }
 
     /// Pre-process the global boundaries when using MPI. Local bounds should
@@ -3764,12 +3751,6 @@ namespace ttk {
     const LongSimplexId *cellGid_{};
     // "GlobalPointIds" from "Generate Global Ids"
     const LongSimplexId *vertGid_{};
-    // PointData "RankArray" from "TTKGhostCellPreconditioning"
-    const int *vertexRankArray_{};
-    // CellData "RankArray" from "TTKGhostCellPreconditioning"
-    // (warning: for Implicit/Periodic triangulations, concerns
-    // "squares"/"cubes" and not "triangles"/"tetrahedron")
-    const int *cellRankArray_{};
 
     // inverse of vertGid_
     std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};

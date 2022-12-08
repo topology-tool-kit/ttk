@@ -3077,10 +3077,6 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(!ttk::hasInitializedMPI()) {
     return -1;
   }
-  if(this->cellRankArray_ == nullptr) {
-    this->printErr("Missing cell RankArray!");
-    return -3;
-  }
   if(this->cellGhost_ == nullptr) {
     this->printErr("Missing cell ghost array!");
     return -3;
