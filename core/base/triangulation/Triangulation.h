@@ -1480,6 +1480,8 @@ namespace ttk {
     inline void createMetaGrid(const double *const bounds) {
       this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
       this->implicitTriangulation_.createMetaGrid(bounds);
+      // also pass bounding box to ExplicitTriangulation...
+      this->explicitTriangulation_.setBoundingBox(bounds);
     }
 
     /**

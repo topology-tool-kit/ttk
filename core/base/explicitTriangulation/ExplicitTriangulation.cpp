@@ -123,6 +123,26 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 
 #ifdef TTK_ENABLE_MPI
 
+int ExplicitTriangulation::preconditionVertexRankArray() {
+  this->vertexRankArray_.resize(this->vertexNumber_);
+  if(ttk::isRunningWithMPI()) {
+    ttk::produceRankArray(this->vertexRankArray_, this->vertGid_,
+                          this->vertexGhost_, this->vertexNumber_,
+                          this->boundingBox_.data(), this->neighborRanks_);
+  }
+  return 0;
+}
+
+int ExplicitTriangulation::preconditionCellRankArray() {
+  this->cellRankArray_.resize(this->cellNumber_);
+  if(ttk::isRunningWithMPI()) {
+    ttk::produceRankArray(this->cellRankArray_, this->cellGid_,
+                          this->cellGhost_, this->cellNumber_,
+                          this->boundingBox_.data(), this->neighborRanks_);
+  }
+  return 0;
+}
+
 int ExplicitTriangulation::preconditionEdgeRankArray() {
   ttk::SimplexId edgeNumber = this->getNumberOfEdgesInternal();
   edgeRankArray_.resize(edgeNumber, 0);
@@ -711,12 +731,10 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     this->printErr("Missing global cell identifiers array!");
     return -2;
   }
-  if(this->cellRankArray_ == nullptr) {
-    this->printErr("Missing cell RankArray!");
-    return -3;
-  }
 
   Timer tm{};
+
+  this->preconditionCellRankArray();
 
   // number of local cells (with ghost cells...)
   const auto nLocCells{this->getNumberOfCells()};
@@ -1298,10 +1316,8 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
     this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
-  if(this->vertexRankArray_ == nullptr) {
-    this->printErr("Missing vertex RankArray!");
-    return -3;
-  }
+
+  this->preconditionVertexRankArray();
 
   // number of local vertices (with ghost vertices...)
   const auto nLocVertices{this->getNumberOfVertices()};

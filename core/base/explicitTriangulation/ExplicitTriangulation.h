@@ -688,6 +688,11 @@ namespace ttk {
       return this->vertexRankArray_[lvid];
     }
 
+    inline void setBoundingBox(const double *const bBox) {
+      this->boundingBox_
+        = {bBox[0], bBox[1], bBox[2], bBox[3], bBox[4], bBox[5]};
+    }
+
   protected:
     template <typename Func0, typename Func1, typename Func2>
     int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
@@ -703,6 +708,8 @@ namespace ttk {
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
     int preconditionDistributedTriangles() override;
+    int preconditionVertexRankArray();
+    int preconditionCellRankArray();
     int preconditionEdgeRankArray() override;
     int preconditionTriangleRankArray() override;
 
@@ -740,6 +747,10 @@ namespace ttk {
     std::vector<SimplexId> triangleLidToGid_{};
     std::unordered_map<SimplexId, SimplexId> triangleGidToLid_{};
 
+    std::array<double, 6> boundingBox_{};
+
+    std::vector<int> vertexRankArray_{};
+    std::vector<int> cellRankArray_{};
     std::vector<int> edgeRankArray_{};
     std::vector<int> triangleRankArray_{};
 
