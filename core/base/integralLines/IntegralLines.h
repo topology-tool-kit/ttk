@@ -523,8 +523,8 @@ void ttk::IntegralLines::computeIntegralLine(
           integralLineFork.localVertexIdentifier
             = outputLocalVertexIdentifiers_->at(threadNum).addArrayElement(
               std::vector<ttk::SimplexId>(
-                {integralLine.localVertexIdentifier->back(),
-                 integralLine.localVertexIdentifier->back() + 1}));
+                {integralLine.localVertexIdentifier->back() + 1,
+                 integralLine.localVertexIdentifier->back() + 2}));
           outputSeedIdentifiers_->at(threadNum).addArrayElement(seedIdentifier);
 #if TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(integralLineFork)

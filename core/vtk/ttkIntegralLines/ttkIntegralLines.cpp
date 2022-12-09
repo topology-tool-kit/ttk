@@ -210,6 +210,7 @@ int ttkIntegralLines::getGlobalIdentifiers(
   ttk::SimplexId threadNumber = localVertexIdentifiers.size();
   ttk::SimplexId nbTrajectories = 0;
   ttk::SimplexId intervalSize = 0;
+  unsigned char isFirstGhost;
   for(int thread = 0; thread < threadNumber; thread++) {
     std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator seedIdentifier
       = seedIdentifiers[thread].list.begin();
@@ -226,6 +227,9 @@ int ttkIntegralLines::getGlobalIdentifiers(
             = static_cast<ttk::SimplexId>((*localVertexIdentifier)[i].size());
           if(vertexRankArray[(*trajectory)[i].at(0)] != ttk::MPIrank_) {
             intervalSize--;
+            isFirstGhost = 1;
+          } else {
+            isFirstGhost = 0;
           }
           if((*trajectory)[i].size() > 1
              && vertexRankArray[(*trajectory)[i].back()] != ttk::MPIrank_) {
@@ -233,7 +237,7 @@ int ttkIntegralLines::getGlobalIdentifiers(
           }
           intervals.push_back(IntervalToSend{(*localVertexIdentifier)[i].at(0),
                                              (*seedIdentifier)[i], intervalSize,
-                                             ttk::MPIrank_});
+                                             isFirstGhost, ttk::MPIrank_});
           nbTrajectories++;
         } else {
           break;
@@ -247,14 +251,16 @@ int ttkIntegralLines::getGlobalIdentifiers(
 
   ttk::SimplexId id = 0;
   MPI_Datatype MPI_INTERVAL;
-  MPI_Datatype types[] = {
-    ttk::getMPIType(id), ttk::getMPIType(id), ttk::getMPIType(id), MPI_INTEGER};
-  int lengths[] = {1, 1, 1, 1};
+  MPI_Datatype types[]
+    = {ttk::getMPIType(id), ttk::getMPIType(id), ttk::getMPIType(id),
+       ttk::getMPIType(static_cast<unsigned char>(0)), MPI_INTEGER};
+  int lengths[] = {1, 1, 1, 1, 1};
   const long int mpi_offsets[] = {offsetof(IntervalToSend, localVertexId),
                                   offsetof(IntervalToSend, seedIdentifier),
                                   offsetof(IntervalToSend, intervalSize),
+                                  offsetof(IntervalToSend, isFirstGhost),
                                   offsetof(IntervalToSend, rankArray)};
-  MPI_Type_create_struct(4, lengths, mpi_offsets, types, &MPI_INTERVAL);
+  MPI_Type_create_struct(5, lengths, mpi_offsets, types, &MPI_INTERVAL);
   MPI_Type_commit(&MPI_INTERVAL);
 
   MPI_Datatype MPI_INTERVAL_OFFSET;
@@ -297,12 +303,17 @@ int ttkIntegralLines::getGlobalIdentifiers(
     const auto comp = [this](const IntervalToSend i1, const IntervalToSend i2) {
       if(i1.seedIdentifier != i2.seedIdentifier) {
         return i1.seedIdentifier < i2.seedIdentifier;
-      } else {
-        if(i1.localVertexId <= i2.localVertexId) {
-          return true;
+      }
+      if(i1.localVertexId == i2.localVertexId
+         && i1.isFirstGhost != i2.isFirstGhost) {
+        if((i1.isFirstGhost == 0 && i1.intervalSize == 1)
+           || (i2.isFirstGhost == 0 && i2.intervalSize == 1)) {
+          return (i1.isFirstGhost == 0 && i1.intervalSize == 1);
+        } else {
+          return i1.isFirstGhost > i2.isFirstGhost;
         }
       }
-      return false;
+      return i1.localVertexId <= i2.localVertexId;
     };
 
     std::sort(allIntervals.begin(), allIntervals.end(), comp);
@@ -371,6 +382,7 @@ int ttkIntegralLines::getGlobalIdentifiers(
             edgeOffsets.push_back(
               intervalsWithOffset.at(it - intervalsWithOffset.begin())
                 .intervalId);
+            intervalsWithOffset.erase(it);
           }
         } else {
           break;
@@ -381,7 +393,6 @@ int ttkIntegralLines::getGlobalIdentifiers(
       trajectory++;
     }
   }
-  printMsg("size of offsets: " + std::to_string(offsets.size()));
   return 1;
 }
 

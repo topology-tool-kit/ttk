@@ -73,6 +73,7 @@ struct IntervalToSend {
   ttk::SimplexId localVertexId;
   ttk::SimplexId seedIdentifier;
   ttk::SimplexId intervalSize;
+  unsigned char isFirstGhost;
   int rankArray;
 };
 
