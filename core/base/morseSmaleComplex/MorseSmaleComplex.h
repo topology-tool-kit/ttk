@@ -370,7 +370,6 @@ namespace ttk {
      */
     template <typename triangulationType>
     int setAscendingSegmentation(const std::vector<dcg::Cell> &criticalPoints,
-                                 std::vector<SimplexId> &maxSeeds,
                                  SimplexId *const morseSmaleManifold,
                                  SimplexId &numberOfMaxima,
                                  const triangulationType &triangulation) const;
@@ -587,9 +586,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     SimplexId numberOfMinima{};
 
     if(ComputeAscendingSegmentation) {
-      std::vector<SimplexId> maxSeeds{};
-      setAscendingSegmentation(criticalPoints, maxSeeds, outManifold.ascending_,
-                               numberOfMaxima, triangulation);
+      setAscendingSegmentation(
+        criticalPoints, outManifold.ascending_, numberOfMaxima, triangulation);
     }
     if(ComputeDescendingSegmentation) {
       setDescendingSegmentation(
@@ -1513,7 +1511,6 @@ int ttk::MorseSmaleComplex::setDescendingSeparatrices2(
 template <typename triangulationType>
 int ttk::MorseSmaleComplex::setAscendingSegmentation(
   const std::vector<Cell> &criticalPoints,
-  std::vector<SimplexId> &maxSeeds,
   SimplexId *const morseSmaleManifold,
   SimplexId &numberOfMaxima,
   const triangulationType &triangulation) const {
@@ -1525,91 +1522,76 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
 
   Timer tm{};
 
-  const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
-  std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
+  const auto nVerts{triangulation.getNumberOfVertices()};
+  std::fill(morseSmaleManifold, morseSmaleManifold + nVerts, -1);
 
-  const SimplexId numberOfCells = triangulation.getNumberOfCells();
-  std::vector<SimplexId> morseSmaleManifoldOnCells(numberOfCells, -1);
-  const int cellDim = triangulation.getDimensionality();
+  const auto nCells{triangulation.getNumberOfCells()};
+  std::vector<SimplexId> morseSmaleManifoldOnCells(nCells, -1);
 
-  // get the seeds : maxima
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
-    const Cell &criticalPoint = criticalPoints[i];
-
-    if(criticalPoint.dim_ == cellDim)
-      maxSeeds.push_back(criticalPoint.id_);
+  size_t nMax{};
+  const auto dim{triangulation.getDimensionality()};
+  for(const auto &cp : criticalPoints) {
+    if(cp.dim_ == dim) {
+      // mark the maxima
+      morseSmaleManifoldOnCells[cp.id_] = nMax++;
+    }
   }
-  const SimplexId numberOfSeeds = maxSeeds.size();
-  numberOfMaxima = numberOfSeeds;
+  numberOfMaxima = nMax;
 
   // Triangulation method pointers for 3D
-  auto getCellFace = &triangulationType::getCellTriangle;
   auto getFaceStarNumber = &triangulationType::getTriangleStarNumber;
   auto getFaceStar = &triangulationType::getTriangleStar;
-  if(cellDim == 2) {
+  if(dim == 2) {
     // Triangulation method pointers for 2D
-    getCellFace = &triangulationType::getCellEdge;
     getFaceStarNumber = &triangulationType::getEdgeStarNumber;
     getFaceStar = &triangulationType::getEdgeStar;
-  } else if(cellDim == 1) {
+  } else if(dim == 1) {
     // Triangulation method pointers for 1D
-    getCellFace = &triangulationType::getEdgeVertex;
     getFaceStarNumber = &triangulationType::getVertexStarNumber;
     getFaceStar = &triangulationType::getVertexStar;
   }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
-#endif
-  for(SimplexId i = 0; i < numberOfSeeds; ++i) {
-    std::queue<SimplexId> bfs;
-
-    // push the seed
-    {
-      const SimplexId seedId = maxSeeds[i];
-      bfs.push(seedId);
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < nCells; ++i) {
+    if(morseSmaleManifoldOnCells[i] != -1) {
+      continue;
     }
-
-    // BFS traversal
-    while(!bfs.empty()) {
-      const SimplexId cofacetId = bfs.front();
-      bfs.pop();
-
-      if(morseSmaleManifoldOnCells[cofacetId] == -1) {
-        morseSmaleManifoldOnCells[cofacetId] = i;
-
-        for(int j = 0; j < (cellDim + 1); ++j) {
-          SimplexId facetId = -1;
-          (triangulation.*getCellFace)(cofacetId, j, facetId);
-
-          SimplexId starNumber = (triangulation.*getFaceStarNumber)(facetId);
-          for(SimplexId k = 0; k < starNumber; ++k) {
-            SimplexId neighborId = -1;
-            (triangulation.*getFaceStar)(facetId, k, neighborId);
-
-            if(neighborId == cofacetId) {
-              continue;
-            }
-
-            const SimplexId pairedCellId = discreteGradient_.getPairedCell(
-              Cell(cellDim, neighborId), triangulation, true);
-
-            if(pairedCellId == facetId)
-              bfs.push(neighborId);
-          }
+    auto curr{i};
+    while(morseSmaleManifoldOnCells[curr] == -1) {
+      // follow a V-path till an already marked cell is reached
+      const auto paired{this->discreteGradient_.getPairedCell(
+        Cell{dim, curr}, triangulation, true)};
+      SimplexId next{};
+      const auto nStars{(triangulation.*getFaceStarNumber)(paired)};
+      for(SimplexId j = 0; j < nStars; ++j) {
+        (triangulation.*getFaceStar)(paired, j, next);
+        // get the first cell != curr (what of non-manifold datasets?)
+        if(next != curr) {
+          break;
         }
       }
+      if(next == curr) {
+        // on the boundary?
+        break;
+      }
+      curr = next;
     }
+    morseSmaleManifoldOnCells[i] = morseSmaleManifoldOnCells[curr];
   }
 
-  // put segmentation infos from cells to points
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < numberOfVertices; ++i) {
-    SimplexId starId;
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < nVerts; ++i) {
+    if(triangulation.getVertexStarNumber(i) < 1) {
+      // handle non-manifold datasets?
+      continue;
+    }
+    SimplexId starId{};
     triangulation.getVertexStar(i, 0, starId);
+    // put segmentation infos from cells to points
     morseSmaleManifold[i] = morseSmaleManifoldOnCells[starId];
   }
 
