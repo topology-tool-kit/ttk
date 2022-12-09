@@ -372,6 +372,7 @@ namespace ttk {
     int setAscendingSegmentation(const std::vector<dcg::Cell> &criticalPoints,
                                  SimplexId *const morseSmaleManifold,
                                  SimplexId &numberOfMaxima,
+                                 const SimplexId *const offsets,
                                  const triangulationType &triangulation) const;
 
     /**
@@ -586,8 +587,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     SimplexId numberOfMinima{};
 
     if(ComputeAscendingSegmentation) {
-      setAscendingSegmentation(
-        criticalPoints, outManifold.ascending_, numberOfMaxima, triangulation);
+      setAscendingSegmentation(criticalPoints, outManifold.ascending_,
+                               numberOfMaxima, offsets, triangulation);
     }
     if(ComputeDescendingSegmentation) {
       setDescendingSegmentation(
@@ -1513,6 +1514,7 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
   const std::vector<Cell> &criticalPoints,
   SimplexId *const morseSmaleManifold,
   SimplexId &numberOfMaxima,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
   if(morseSmaleManifold == nullptr) {
@@ -1525,74 +1527,65 @@ int ttk::MorseSmaleComplex::setAscendingSegmentation(
   const auto nVerts{triangulation.getNumberOfVertices()};
   std::fill(morseSmaleManifold, morseSmaleManifold + nVerts, -1);
 
-  const auto nCells{triangulation.getNumberOfCells()};
-  std::vector<SimplexId> morseSmaleManifoldOnCells(nCells, -1);
+  // 1. mark local maxima
 
   size_t nMax{};
   const auto dim{triangulation.getDimensionality()};
   for(const auto &cp : criticalPoints) {
     if(cp.dim_ == dim) {
       // mark the maxima
-      morseSmaleManifoldOnCells[cp.id_] = nMax++;
+      const auto maxId{
+        this->discreteGradient_.getCellGreaterVertex(cp, triangulation)};
+      morseSmaleManifold[maxId] = nMax++;
     }
   }
   numberOfMaxima = nMax;
 
-  // Triangulation method pointers for 3D
-  auto getFaceStarNumber = &triangulationType::getTriangleStarNumber;
-  auto getFaceStar = &triangulationType::getTriangleStar;
-  if(dim == 2) {
-    // Triangulation method pointers for 2D
-    getFaceStarNumber = &triangulationType::getEdgeStarNumber;
-    getFaceStar = &triangulationType::getEdgeStar;
-  } else if(dim == 1) {
-    // Triangulation method pointers for 1D
-    getFaceStarNumber = &triangulationType::getVertexStarNumber;
-    getFaceStar = &triangulationType::getVertexStar;
-  }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
-#endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < nCells; ++i) {
-    if(morseSmaleManifoldOnCells[i] != -1) {
-      continue;
-    }
-    auto curr{i};
-    while(morseSmaleManifoldOnCells[curr] == -1) {
-      // follow a V-path till an already marked cell is reached
-      const auto paired{this->discreteGradient_.getPairedCell(
-        Cell{dim, curr}, triangulation, true)};
-      SimplexId next{};
-      const auto nStars{(triangulation.*getFaceStarNumber)(paired)};
-      for(SimplexId j = 0; j < nStars; ++j) {
-        (triangulation.*getFaceStar)(paired, j, next);
-        // get the first cell != curr (what of non-manifold datasets?)
-        if(next != curr) {
-          break;
-        }
-      }
-      if(next == curr) {
-        // on the boundary?
-        break;
-      }
-      curr = next;
-    }
-    morseSmaleManifoldOnCells[i] = morseSmaleManifoldOnCells[curr];
-  }
+  // 2. loop over all vertices to store their greatest neighbor
+  std::vector<SimplexId> greatestNeigh(nVerts, -1);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < nVerts; ++i) {
-    if(triangulation.getVertexStarNumber(i) < 1) {
-      // handle non-manifold datasets?
+    if(morseSmaleManifold[i] != -1) {
+      // skip local maxima
       continue;
     }
-    SimplexId starId{};
-    triangulation.getVertexStar(i, 0, starId);
-    // put segmentation infos from cells to points
-    morseSmaleManifold[i] = morseSmaleManifoldOnCells[starId];
+    const auto nNeigh{triangulation.getVertexNeighborNumber(i)};
+    auto orderVal{offsets[i]};
+    for(SimplexId j = 0; j < nNeigh; ++j) {
+      SimplexId candidate{};
+      triangulation.getVertexNeighbor(i, j, candidate);
+      if(offsets[candidate] > orderVal) {
+        orderVal = offsets[candidate];
+        greatestNeigh[i] = candidate;
+      }
+    }
+  }
+
+  std::vector<SimplexId> visited{};
+
+  // 3. follow greatest neighbors to local maxima
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) firstprivate(visited)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < nVerts; ++i) {
+    if(morseSmaleManifold[i] != -1 || greatestNeigh[i] == -1) {
+      continue;
+    }
+    visited.clear();
+    auto curr{i};
+    while(morseSmaleManifold[curr] == -1) {
+      visited.emplace_back(curr);
+      curr = greatestNeigh[curr];
+    }
+    if(morseSmaleManifold[curr] != -1) {
+      for(const auto el : visited) {
+        morseSmaleManifold[el] = morseSmaleManifold[curr];
+      }
+    }
   }
 
   this->printMsg("  Ascending segmentation computed", 1.0, tm.getElapsedTime(),
