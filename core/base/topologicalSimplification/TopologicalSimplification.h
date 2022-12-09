@@ -372,6 +372,13 @@ int ttk::TopologicalSimplification::execute(
 
       bool isIncreasingOrder = !j;
 
+      if(isIncreasingOrder && authorizedMinima.empty()) {
+        continue;
+      }
+      if(!isIncreasingOrder && authorizedMaxima.empty()) {
+        continue;
+      }
+
       cmp.setIsIncreasingOrder(isIncreasingOrder);
       std::set<std::tuple<dataType, SimplexId, SimplexId>, decltype(cmp)>
         sweepFront(cmp);

@@ -1327,8 +1327,29 @@ namespace ttk {
 
                                  nVertices);
 
+        bool hasMinima{false};
+        bool hasMaxima{false};
+        for(IT i = 0; i < nAuthorizedExtremaIndices; i++) {
+          const auto &extremum{authorizedExtremaIndices[i]};
+          const auto nNeigh{triangulation->getVertexNeighborNumber(extremum)};
+          if(nNeigh > 0) {
+            // look at the first neighbor to determine if minimum or maximum
+            SimplexId neigh{};
+            triangulation->getVertexNeighbor(extremum, 0, neigh);
+            if(order[extremum] > order[neigh]) {
+              hasMaxima = true;
+            } else {
+              hasMinima = true;
+            }
+          }
+          // don't look further if we have both minima and maxima
+          if(hasMaxima && hasMinima) {
+            break;
+          }
+        }
+
         // Maxima
-        {
+        if(hasMaxima) {
           this->printMsg("----------- [Removing Unauthorized Maxima]",
                          ttk::debug::Separator::L2);
 
@@ -1342,7 +1363,7 @@ namespace ttk {
         }
 
         // Minima
-        {
+        if(hasMinima) {
           this->printMsg("----------- [Removing Unauthorized Minima]",
                          ttk::debug::Separator::L2);
 
