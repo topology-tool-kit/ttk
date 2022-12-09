@@ -3081,6 +3081,10 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     this->printErr("Missing cell RankArray!");
     return -3;
   }
+  if(this->cellGhost_ == nullptr) {
+    this->printErr("Missing cell ghost array!");
+    return -3;
+  }
 
   Timer tm{};
 
@@ -3088,19 +3092,68 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   const auto nLocCells{this->getNumberOfCells()};
 
   // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
-  const int nTetraPerCube{ImplicitTriangulation::getDimensionality() == 3 ? 6
-                                                                          : 2};
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
   std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
   this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
-  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    const auto locCubeId{lcid / nTetraPerCube};
-    if(this->cellRankArray_[locCubeId] != ttk::MPIrank_) {
-      // store ghost cell global ids (per rank)
-      this->ghostCellsPerOwner_[this->cellRankArray_[locCubeId]].emplace_back(
-        this->getCellGlobalIdInternal(lcid));
+  this->neighborCellBBoxes_.resize(ttk::MPIsize_);
+  auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
+  // "good" starting values?
+  localBBox = {
+    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
+    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
+    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
+  };
+
+  for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    // only keep non-ghost cells
+    if(this->cellGhost_[lcid / nTetraPerCube] == 1) {
+      continue;
     }
+    // local vertex coordinates
+    std::array<SimplexId, 3> p{};
+    if(this->dimensionality_ == 3) {
+      this->tetrahedronToPosition(lcid, p.data());
+    } else if(this->dimensionality_ == 2) {
+      this->triangleToPosition2d(lcid, p.data());
+    }
+
+    // global vertex coordinates
+    p[0] += this->localGridOffset_[0];
+    p[1] += this->localGridOffset_[1];
+    p[2] += this->localGridOffset_[2];
+
+    if(p[0] < localBBox[0]) {
+      localBBox[0] = p[0];
+    }
+    if(p[0] > localBBox[1]) {
+      localBBox[1] = p[0];
+    }
+    if(p[1] < localBBox[2]) {
+      localBBox[2] = p[1];
+    }
+    if(p[1] > localBBox[3]) {
+      localBBox[3] = p[1];
+    }
+    if(p[2] < localBBox[4]) {
+      localBBox[4] = p[2];
+    }
+    if(p[2] > localBBox[5]) {
+      localBBox[5] = p[2];
+    }
+  }
+  localBBox[1]++;
+  localBBox[3]++;
+  localBBox[5]++;
+
+  for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
+    const auto neigh{this->neighborRanks_[i]};
+    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
+                 this->neighborCellBBoxes_[neigh].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
+                 MPI_STATUS_IGNORE);
   }
 
   // for each rank, store the global id of local cells that are ghost cells of
@@ -3679,6 +3732,47 @@ int ttk::ImplicitTriangulation::getVertexRankInternal(
     const auto &bbox{this->neighborVertexBBoxes_[neigh]};
     if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2] && p[1] <= bbox[3]
        && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+      return neigh;
+    }
+  }
+
+  return -1;
+}
+
+int ttk::ImplicitTriangulation::getCellRankInternal(
+  const SimplexId lcid) const {
+
+#ifdef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty()) {
+    this->printErr("Empty neighborsRanks_!");
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  const auto locCubeId{lcid / nTetraPerCube};
+
+  if(this->cellGhost_[locCubeId] == 0) {
+    return ttk::MPIrank_;
+  }
+
+  const auto nVertsCell{this->getCellVertexNumber(lcid)};
+
+  std::vector<bool> inRank(nVertsCell);
+  for(const auto neigh : this->neighborRanks_) {
+    std::fill(inRank.begin(), inRank.end(), false);
+    const auto &bbox{this->neighborCellBBoxes_[neigh]};
+    for(SimplexId i = 0; i < nVertsCell; ++i) {
+      SimplexId v{};
+      this->getCellVertex(lcid, i, v);
+      const auto p{this->getVertGlobalCoords(v)};
+      if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
+         && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+        inRank[i] = true;
+      }
+    }
+    if(std::all_of(
+         inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
       return neigh;
     }
   }

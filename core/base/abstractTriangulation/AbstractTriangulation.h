@@ -2839,6 +2839,29 @@ namespace ttk {
       return this->getVertexRankInternal(lvid);
     }
 
+    virtual inline int getCellRank(const SimplexId lcid) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->getDimensionality() != 1 && this->getDimensionality() != 2
+         && this->getDimensionality() != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedCells_) {
+        this->printErr("CellRankId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedCells() in a pre-process.");
+        return -1;
+      }
+      if(lcid < 0 || lcid >= this->getNumberOfCells()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      if(!ttk::isRunningWithMPI()) {
+        return lcid;
+      }
+      return this->getCellRankInternal(lcid);
+    }
+
     virtual inline const std::vector<int> &getNeighborRanks() const {
       return this->neighborRanks_;
     }
@@ -2953,6 +2976,11 @@ namespace ttk {
 
     virtual inline int
       getVertexRankInternal(const SimplexId ttkNotUsed(lvid)) const {
+      return -1;
+    }
+
+    virtual inline int
+      getCellRankInternal(const SimplexId ttkNotUsed(lcid)) const {
       return -1;
     }
 
