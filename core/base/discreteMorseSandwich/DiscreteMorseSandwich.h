@@ -103,6 +103,11 @@ namespace ttk {
       return this->dg_.getCellGreaterVertex(c, triangulation);
     }
 
+    inline const std::vector<std::vector<SimplexId>> &
+      get2SaddlesChildren() const {
+      return this->s2Children_;
+    }
+
     /**
      * @brief Compute the persistence pairs from the discrete gradient
      *
@@ -113,6 +118,7 @@ namespace ttk {
      * @param[in] offsets Order field
      * @param[in] triangulation Preconditionned triangulation
      * @param[in] ignoreBoundary Ignore the boundary component
+     * @param[in] compute2SaddlesChildren Extract links between 2-saddles
      *
      * @return 0 when success
      */
@@ -120,7 +126,8 @@ namespace ttk {
     int computePersistencePairs(std::vector<PersistencePair> &pairs,
                                 const SimplexId *const offsets,
                                 const triangulationType &triangulation,
-                                const bool ignoreBoundary);
+                                const bool ignoreBoundary,
+                                const bool compute2SaddlesChildren = false);
 
     /**
      * @brief Type for exporting persistent generators
@@ -469,10 +476,12 @@ namespace ttk {
     mutable std::array<std::vector<bool>, 4> pairedCritCells_{};
     mutable std::vector<bool> onBoundary_{};
     mutable std::array<std::vector<SimplexId>, 4> critCellsOrder_{};
+    mutable std::vector<std::vector<SimplexId>> s2Children_{};
 
     bool ComputeMinSad{true};
     bool ComputeSadSad{true};
     bool ComputeSadMax{true};
+    bool Compute2SaddlesChildren{false};
   };
 } // namespace ttk
 
@@ -821,6 +830,9 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
             addBoundary(e);
           }
           s2Locks[s2Mapping[pTau]].unlock();
+          if(this->Compute2SaddlesChildren) {
+            this->s2Children_[s2Mapping[s2]].emplace_back(s2Mapping[pTau]);
+          }
 
         } else if(s2Mapping[pTau] > s2Mapping[s2]) {
 
@@ -890,6 +902,10 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
   }
 
   Timer tmpar{};
+
+  if(this->Compute2SaddlesChildren) {
+    this->s2Children_.resize(saddles2.size());
+  }
 
   // sort every triangulation edges by filtration order
   const auto &edgesFiltrOrder{crit1SaddlesOrder};
@@ -1130,7 +1146,8 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   std::vector<PersistencePair> &pairs,
   const SimplexId *const offsets,
   const triangulationType &triangulation,
-  const bool ignoreBoundary) {
+  const bool ignoreBoundary,
+  const bool compute2SaddlesChildren) {
 
   // allocate memory
   this->alloc(triangulation);
@@ -1138,6 +1155,7 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   Timer tm{};
   pairs.clear();
   const auto dim = this->dg_.getDimensionality();
+  this->Compute2SaddlesChildren = compute2SaddlesChildren;
 
   // get every critical cell sorted them by dimension
   std::array<std::vector<SimplexId>, 4> criticalCellsByDim{};

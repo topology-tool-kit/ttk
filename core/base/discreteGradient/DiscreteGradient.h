@@ -40,6 +40,16 @@ namespace ttk {
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
+      inline bool operator==(const Cell &other) const {
+        return std::tie(this->dim_, this->id_)
+               == std::tie(other.dim_, other.id_);
+      }
+
+      inline std::string to_string() const {
+        return '{' + std::to_string(this->dim_) + ' '
+               + std::to_string(this->id_) + '}';
+      }
+
       int dim_{-1};
       SimplexId id_{-1};
     };
