@@ -1634,63 +1634,50 @@ int ttk::MorseSmaleComplex::setDescendingSegmentation(
 
   Timer tm{};
 
-  const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
-  std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
+  const auto nVerts{triangulation.getNumberOfVertices()};
 
-  // get the seeds : minima
-  std::vector<SimplexId> seeds;
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
-    const Cell &criticalPoint = criticalPoints[i];
-
-    if(criticalPoint.dim_ == 0)
-      seeds.push_back(criticalPoint.id_);
+  if(minima.size() == 1) {
+    // shortcut for elevation
+    std::fill(morseSmaleManifold, morseSmaleManifold + nVerts, 0);
+    return 0;
   }
-  const SimplexId numberOfSeeds = seeds.size();
-  numberOfMinima = numberOfSeeds;
+
+  std::fill(morseSmaleManifold, morseSmaleManifold + nVerts, -1);
+
+  size_t nMin{};
+  for(const auto &cp : criticalPoints) {
+    if(cp.dim_ == 0) {
+      // mark the minima
+      morseSmaleManifold[cp.id_] = nMin++;
+    }
+  }
+  numberOfMinima = nMin;
+
+  std::vector<SimplexId> visited{};
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
-#endif
-  for(SimplexId i = 0; i < numberOfSeeds; ++i) {
-    std::queue<SimplexId> bfs;
-
-    // push the seed
-    {
-      const SimplexId seedId = seeds[i];
-      bfs.push(seedId);
+#pragma omp parallel for num_threads(threadNumber_) firstprivate(visited)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < nVerts; ++i) {
+    if(morseSmaleManifold[i] != -1) {
+      continue;
     }
-
-    // BFS traversal
-    while(!bfs.empty()) {
-      const SimplexId vertexId = bfs.front();
-      bfs.pop();
-
-      if(morseSmaleManifold[vertexId] == -1) {
-        morseSmaleManifold[vertexId] = i;
-
-        const SimplexId edgeNumber
-          = triangulation.getVertexEdgeNumber(vertexId);
-        for(SimplexId j = 0; j < edgeNumber; ++j) {
-          SimplexId edgeId;
-          triangulation.getVertexEdge(vertexId, j, edgeId);
-
-          for(int k = 0; k < 2; ++k) {
-            SimplexId neighborId;
-            triangulation.getEdgeVertex(edgeId, k, neighborId);
-
-            if(neighborId == vertexId) {
-              continue;
-            }
-
-            const SimplexId pairedCellId = discreteGradient_.getPairedCell(
-              Cell(0, neighborId), triangulation);
-
-            if(pairedCellId == edgeId)
-              bfs.push(neighborId);
-          }
-        }
+    visited.clear();
+    auto curr{i};
+    while(morseSmaleManifold[curr] == -1) {
+      // follow a V-path till an already marked vertex is reached
+      const auto pairedEdge{
+        this->discreteGradient_.getPairedCell(Cell{0, curr}, triangulation)};
+      SimplexId next{};
+      triangulation.getEdgeVertex(pairedEdge, 0, next);
+      if(next == curr) {
+        triangulation.getEdgeVertex(pairedEdge, 1, next);
       }
+      visited.emplace_back(curr);
+      curr = next;
+    }
+    for(const auto el : visited) {
+      morseSmaleManifold[el] = morseSmaleManifold[curr];
     }
   }
 
