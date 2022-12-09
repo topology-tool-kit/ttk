@@ -479,7 +479,13 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   }
 
   std::vector<dcg::Cell> criticalPoints{};
-  discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
+  {
+    Timer tm{};
+    discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
+    this->printMsg("  Critical points extracted", 1.0, tm.getElapsedTime(),
+                   this->threadNumber_, debug::LineMode::NEW,
+                   debug::Priority::DETAIL);
+  }
 
   std::vector<std::vector<Separatrix>> separatrices1{};
 
@@ -569,8 +575,11 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                    debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
-  this->printMsg("2-separatrices computed", 1.0, tm2sep.getElapsedTime(),
-                 this->threadNumber_);
+  if(this->ComputeAscendingSeparatrices2
+     || this->ComputeDescendingSeparatrices2) {
+    this->printMsg("2-separatrices computed", 1.0, tm2sep.getElapsedTime(),
+                   this->threadNumber_);
+  }
 
   if(ComputeAscendingSegmentation || ComputeDescendingSegmentation) {
     Timer tmp;
