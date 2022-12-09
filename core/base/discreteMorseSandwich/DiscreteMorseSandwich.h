@@ -1009,37 +1009,8 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
   const bool sortEdges) const {
 
   Timer tm{};
-  const auto dim = this->dg_.getDimensionality();
 
-  for(int i = 0; i < dim + 1; ++i) {
-
-    // map: store critical cell per dimension per thread
-    std::vector<std::vector<SimplexId>> critCellsPerThread(this->threadNumber_);
-
-    const SimplexId numberOfCells
-      = this->dg_.getNumberOfCells(i, triangulation);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId j = 0; j < numberOfCells; ++j) {
-#ifdef TTK_ENABLE_OPENMP
-      const auto tid = omp_get_thread_num();
-#else
-      const auto tid = 0;
-#endif // TTK_ENABLE_OPENMP
-      if(this->dg_.isCellCritical(i, j)) {
-        critCellsPerThread[tid].emplace_back(j);
-      }
-    }
-
-    // reduce: aggregate critical cells per thread
-    criticalCellsByDim[i] = std::move(critCellsPerThread[0]);
-    for(size_t j = 1; j < critCellsPerThread.size(); ++j) {
-      const auto &vec{critCellsPerThread[j]};
-      criticalCellsByDim[i].insert(
-        criticalCellsByDim[i].end(), vec.begin(), vec.end());
-    }
-  }
+  this->dg_.getCriticalPoints(criticalCellsByDim, triangulation);
 
   this->printMsg("Extracted critical cells", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,

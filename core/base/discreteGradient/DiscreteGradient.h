@@ -307,14 +307,14 @@ in the gradient.
        * inputScalarField_
        */
       template <typename triangulationType>
-      int setCriticalPoints(const std::vector<Cell> &criticalPoints,
-                            std::vector<size_t> &nCriticalPointsByDim,
-                            std::vector<std::array<float, 3>> &points,
-                            std::vector<char> &cellDimensions,
-                            std::vector<SimplexId> &cellIds,
-                            std::vector<char> &isOnBoundary,
-                            std::vector<SimplexId> &PLVertexIdentifiers,
-                            const triangulationType &triangulation) const;
+      int setCriticalPoints(
+        const std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
+        std::vector<std::array<float, 3>> &points,
+        std::vector<char> &cellDimensions,
+        std::vector<SimplexId> &cellIds,
+        std::vector<char> &isOnBoundary,
+        std::vector<SimplexId> &PLVertexIdentifiers,
+        const triangulationType &triangulation) const;
 
       /**
        * Detect the critical points and build their geometric embedding.
@@ -332,8 +332,9 @@ in the gradient.
        * Get the output critical points as a STL vector of cells.
        */
       template <typename triangulationType>
-      int getCriticalPoints(std::vector<Cell> &criticalPoints,
-                            const triangulationType &triangulation) const;
+      int getCriticalPoints(
+        std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
+        const triangulationType &triangulation) const;
 
 #ifdef TTK_ENABLE_MPI
       /**
@@ -345,11 +346,11 @@ in the gradient.
       /**
        * Compute manifold size for critical extrema
        */
-      int setManifoldSize(const size_t nCritPoints,
-                          const std::vector<size_t> &nCriticalPointsByDim,
-                          const SimplexId *const ascendingManifold,
-                          const SimplexId *const descendingManifold,
-                          std::vector<SimplexId> &manifoldSize) const;
+      int setManifoldSize(
+        const std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
+        const SimplexId *const ascendingManifold,
+        const SimplexId *const descendingManifold,
+        std::vector<SimplexId> &manifoldSize) const;
 
       /**
        * Build the glyphs representing the discrete gradient vector field.

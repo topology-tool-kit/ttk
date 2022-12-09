@@ -84,8 +84,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
 
 template <typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
-  const std::vector<Cell> &criticalPoints,
-  std::vector<size_t> &nCriticalPointsByDim,
+  const std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
   std::vector<std::array<float, 3>> &points,
   std::vector<char> &cellDimensions,
   std::vector<SimplexId> &cellIds,
@@ -93,16 +92,12 @@ int DiscreteGradient::setCriticalPoints(
   std::vector<SimplexId> &PLVertexIdentifiers,
   const triangulationType &triangulation) const {
 
-  const auto nCritPoints = criticalPoints.size();
-
-  const int numberOfDimensions = getNumberOfDimensions();
-  nCriticalPointsByDim.resize(numberOfDimensions, 0);
-
-  // sequential loop over critical points
-  for(size_t i = 0; i < nCritPoints; ++i) {
-    const Cell &cell = criticalPoints[i];
-    nCriticalPointsByDim[cell.dim_]++;
+  std::array<size_t, 5> partSums{};
+  for(size_t i = 0; i < criticalCellsByDim.size(); ++i) {
+    partSums[i + 1] = partSums[i] + criticalCellsByDim[i].size();
   }
+
+  const auto nCritPoints = partSums.back();
 
   points.resize(nCritPoints);
   cellDimensions.resize(nCritPoints);
@@ -110,32 +105,37 @@ int DiscreteGradient::setCriticalPoints(
   isOnBoundary.resize(nCritPoints);
   PLVertexIdentifiers.resize(nCritPoints);
 
-  // for all critical cells
+  for(size_t i = 0; i < criticalCellsByDim.size(); ++i) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nCritPoints; ++i) {
-    const Cell &cell = criticalPoints[i];
-    const int cellDim = cell.dim_;
-    const SimplexId cellId = cell.id_;
+    for(size_t j = 0; j < criticalCellsByDim[i].size(); ++j) {
+      const SimplexId cellId = criticalCellsByDim[i][j];
+      const int cellDim = i;
+      const auto o{partSums[i] + j};
 
-    triangulation.getCellIncenter(cell.id_, cell.dim_, points[i].data());
-    cellDimensions[i] = cellDim;
+      triangulation.getCellIncenter(cellId, i, points[o].data());
+      cellDimensions[o] = cellDim;
 #ifdef TTK_ENABLE_MPI
-    ttk::SimplexId globalId{-1};
-    triangulation.getDistributedGlobalCellId(cellId, cellDim, globalId);
-    cellIds[i] = globalId;
+      ttk::SimplexId globalId{-1};
+      triangulation.getDistributedGlobalCellId(cellId, cellDim, globalId);
+      cellIds[o] = globalId;
 #else
-    cellIds[i] = cellId;
+      cellIds[o] = cellId;
 #endif // TTK_ENABLE_MPI
-    isOnBoundary[i] = this->isBoundary(cell, triangulation);
-    PLVertexIdentifiers[i] = this->getCellGreaterVertex(cell, triangulation);
+      const Cell cell{static_cast<int>(i), cellId};
+      isOnBoundary[o] = this->isBoundary(cell, triangulation);
+      PLVertexIdentifiers[o] = this->getCellGreaterVertex(cell, triangulation);
+    }
   }
 
-  std::vector<std::vector<std::string>> rows(numberOfDimensions);
-  for(int i = 0; i < numberOfDimensions; ++i) {
-    rows[i] = std::vector<std::string>{"#" + std::to_string(i) + "-cell(s)",
-                                       std::to_string(nCriticalPointsByDim[i])};
+  const auto nDims{
+    criticalCellsByDim[3].empty() ? criticalCellsByDim[2].empty() ? 1 : 2 : 3};
+  std::vector<std::vector<std::string>> rows(nDims);
+  for(int i = 0; i < nDims; ++i) {
+    rows[i]
+      = std::vector<std::string>{"#" + std::to_string(i) + "-cell(s)",
+                                 std::to_string(criticalCellsByDim[i].size())};
   }
   this->printMsg(rows);
 
@@ -151,33 +151,49 @@ int DiscreteGradient::setCriticalPoints(
   std::vector<SimplexId> &PLVertexIdentifiers,
   const triangulationType &triangulation) const {
 
-  std::vector<Cell> criticalPoints;
-  getCriticalPoints(criticalPoints, triangulation);
-  std::vector<size_t> nCriticalPointsByDim;
-  setCriticalPoints(criticalPoints, nCriticalPointsByDim, points,
-                    cellDimensions, cellIds, isOnBoundary, PLVertexIdentifiers,
-                    triangulation);
+  std::array<std::vector<SimplexId>, 4> criticalCellsByDim;
+  getCriticalPoints(criticalCellsByDim, triangulation);
+  setCriticalPoints(criticalCellsByDim, points, cellDimensions, cellIds,
+                    isOnBoundary, PLVertexIdentifiers, triangulation);
 
   return 0;
 }
 
 template <typename triangulationType>
 int DiscreteGradient::getCriticalPoints(
-  std::vector<Cell> &criticalPoints,
+  std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
   const triangulationType &triangulation) const {
 
-  // foreach dimension
-  const int numberOfDimensions = getNumberOfDimensions();
-  for(int i = 0; i < numberOfDimensions; ++i) {
+  const auto dims{this->getNumberOfDimensions()};
+  for(int i = 0; i < dims; ++i) {
 
-    // foreach cell of that dimension
-    const SimplexId numberOfCells = getNumberOfCells(i, triangulation);
+    // map: store critical cell per dimension per thread
+    std::vector<std::vector<SimplexId>> critCellsPerThread(this->threadNumber_);
+    const auto numberOfCells{this->getNumberOfCells(i, triangulation)};
+
+    // use static scheduling to ensure that critical cells
+    // are sorted by id
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_) schedule(static)
+#endif // TTK_ENABLE_OPENMP
     for(SimplexId j = 0; j < numberOfCells; ++j) {
-      const Cell cell(i, j);
-
-      if(isCellCritical(cell)) {
-        criticalPoints.push_back(cell);
+#ifdef TTK_ENABLE_OPENMP
+      const auto tid = omp_get_thread_num();
+#else
+      const auto tid = 0;
+#endif // TTK_ENABLE_OPENMP
+      if(this->isCellCritical(i, j)) {
+        critCellsPerThread[tid].emplace_back(j);
       }
+    }
+
+    // reduce: aggregate critical cells per thread
+    criticalCellsByDim[i] = std::move(critCellsPerThread[0]);
+    for(size_t j = 1; j < critCellsPerThread.size(); ++j) {
+      const auto &vec{critCellsPerThread[j]};
+      criticalCellsByDim[i].insert(
+        criticalCellsByDim[i].end(), vec.begin(), vec.end());
     }
   }
 
