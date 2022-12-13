@@ -197,7 +197,10 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
             ttkUtils::GetPointer<T0>(scalarArray),
             ttkUtils::GetPointer<ttk::LongSimplexId>(vtkGlobalPointIds),
             ttkUtils::GetPointer<int>(rankArray), nVertices, 500, neighbors)));
-      } else {
+      } else
+#endif // TTK_ENABLE_MPI
+
+      {
         switch(scalarArray->GetDataType()) {
           vtkTemplateMacro(ttk::preconditionOrderArray(
             nVertices,
@@ -207,17 +210,6 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
             this->threadNumber_));
         }
       }
-
-#else
-      switch(scalarArray->GetDataType()) {
-        vtkTemplateMacro(ttk::preconditionOrderArray(
-          nVertices,
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
-          static_cast<ttk::SimplexId *>(
-            ttkUtils::GetVoidPointer(newOrderArray)),
-          this->threadNumber_));
-      }
-#endif // TTK_ENABLE_MPI
 
       // append order array temporarily to input
       inputData
