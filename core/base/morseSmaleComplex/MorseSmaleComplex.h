@@ -390,7 +390,6 @@ namespace ttk {
      */
     template <typename triangulationType>
     int setFinalSegmentation(const SimplexId numberOfMaxima,
-                             const SimplexId numberOfMinima,
                              const SimplexId *const ascendingManifold,
                              const SimplexId *const descendingManifold,
                              SimplexId *const morseSmaleManifold,
@@ -598,9 +597,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     }
     if(ComputeAscendingSegmentation && ComputeDescendingSegmentation
        && ComputeFinalSegmentation) {
-      setFinalSegmentation(numberOfMaxima, numberOfMinima,
-                           outManifold.ascending_, outManifold.descending_,
-                           outManifold.morseSmale_, triangulation);
+      setFinalSegmentation(numberOfMaxima, outManifold.ascending_,
+                           outManifold.descending_, outManifold.morseSmale_,
+                           triangulation);
     }
 
     this->printMsg(
@@ -1705,7 +1704,6 @@ int ttk::MorseSmaleComplex::setDescendingSegmentation(
 template <typename triangulationType>
 int ttk::MorseSmaleComplex::setFinalSegmentation(
   const SimplexId numberOfMaxima,
-  const SimplexId ttkNotUsed(numberOfMinima),
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   SimplexId *const morseSmaleManifold,
