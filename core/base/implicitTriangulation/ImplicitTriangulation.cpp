@@ -3191,6 +3191,11 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
     return;
   }
 
+  // no need to create it anew?
+  if(this->metaGrid_ != nullptr) {
+    return;
+  }
+
   // Reorganize bounds to only execute Allreduce twice
   std::array<double, 6> tempBounds = {
     bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
