@@ -433,8 +433,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 
 bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                                          ttk::SimplexId simplexNumber,
-                                         unsigned char *ghost,
-                                         int *rankArray) {
+                                         unsigned char *ghost) {
   ttk::SimplexId ghostNumber = 0;
   if(ghost != nullptr) {
 #ifdef TTK_ENABLE_OPENMP
@@ -443,17 +442,6 @@ bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
     for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
       if(ghost[i] == 1) {
         ghostNumber++;
-      }
-    }
-  } else {
-    if(rankArray != nullptr) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for reduction(+ : ghostNumber)
-#endif // TTK_ENABLE_OPENMP
-      for(ttk::SimplexId i = 0; i < simplexNumber; i++) {
-        if(rankArray[i] != ttk::MPIrank_) {
-          ghostNumber++;
-        }
       }
     }
   }
@@ -674,11 +662,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     }
   }
 
-  int *vertexRankArray
-    = ttkUtils::GetPointer<int>(input->GetPointData()->GetArray("RankArray"));
-
   // Get the neighbor ranks
-  bool preciseNeighborComputation{false};
   std::vector<int> &neighborRanks{
     triangulation != nullptr ? triangulation->getNeighborRanks() : neighbors};
 
@@ -688,13 +672,7 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   }
 
   if(neighborRanks.empty()) {
-    if(vertexRankArray == nullptr) {
-      ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
-    } else {
-      ttk::preconditionNeighborsUsingRankArray(
-        neighborRanks, vertexRankArray, vertexNumber, ttk::MPIcomm_);
-      preciseNeighborComputation = true;
-    }
+    ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
   }
 
   // Checks if global ids are valid
@@ -708,17 +686,14 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   if(globalPointIds != nullptr) {
     unsigned char *ghostPoints = ttkUtils::GetPointer<unsigned char>(
       input->GetPointData()->GetArray("vtkGhostType"));
-    pointValidity = checkGlobalIdValidity(
-      globalPointIds, vertexNumber, ghostPoints, vertexRankArray);
+    pointValidity
+      = checkGlobalIdValidity(globalPointIds, vertexNumber, ghostPoints);
   }
   if(pointValidity && globalCellIds != nullptr) {
 
-    int *cellRankArray
-      = ttkUtils::GetPointer<int>(input->GetCellData()->GetArray("RankArray"));
     unsigned char *ghostCells = ttkUtils::GetPointer<unsigned char>(
       input->GetCellData()->GetArray("vtkGhostType"));
-    cellValidity = checkGlobalIdValidity(
-      globalCellIds, cellNumber, ghostCells, cellRankArray);
+    cellValidity = checkGlobalIdValidity(globalCellIds, cellNumber, ghostCells);
   }
   // If the global ids are not valid, they are computed again
   if(!pointValidity || !cellValidity) {
@@ -734,55 +709,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
     if(triangulation) {
       triangulation->setHasPreconditionedDistributedVertices(flag);
     }
-  }
-  // If the RankArray array doesn't exist for pointdata, it is created
-  if(input->GetPointData()->GetArray("RankArray") == nullptr) {
-    std::vector<int> rankArray(vertexNumber, 0);
-    if(ttk::isRunningWithMPI()) {
-      ttk::produceRankArray(rankArray,
-                            ttkUtils::GetPointer<ttk::LongSimplexId>(
-                              input->GetPointData()->GetGlobalIds()),
-                            ttkUtils::GetPointer<unsigned char>(
-                              input->GetPointData()->GetArray("vtkGhostType")),
-                            vertexNumber, boundingBox, neighborRanks);
-    }
-    if(!preciseNeighborComputation) {
-      ttk::preconditionNeighborsUsingRankArray<int>(
-        neighborRanks, rankArray.data(), vertexNumber, ttk::MPIcomm_);
-    }
-    vtkNew<vtkIntArray> vtkRankArray{};
-    vtkRankArray->SetName("RankArray");
-    vtkRankArray->SetNumberOfComponents(1);
-    vtkRankArray->SetNumberOfTuples(vertexNumber);
-
-    for(int i = 0; i < vertexNumber; i++) {
-      vtkRankArray->SetComponent(i, 0, rankArray[i]);
-    }
-
-    input->GetPointData()->AddArray(vtkRankArray);
-  }
-
-  // If the RankArray array doesn't exist for celldata, it is created
-  if(input->GetCellData()->GetArray("RankArray") == nullptr) {
-    std::vector<int> cellsRankArray(cellNumber, 0);
-    if(ttk::isRunningWithMPI()) {
-      ttk::produceRankArray(cellsRankArray,
-                            ttkUtils::GetPointer<ttk::LongSimplexId>(
-                              input->GetCellData()->GetGlobalIds()),
-                            ttkUtils::GetPointer<unsigned char>(
-                              input->GetCellData()->GetArray("vtkGhostType")),
-                            cellNumber, boundingBox, neighborRanks);
-    }
-    vtkNew<vtkIntArray> vtkCellsRankArray{};
-    vtkCellsRankArray->SetName("RankArray");
-    vtkCellsRankArray->SetNumberOfComponents(1);
-    vtkCellsRankArray->SetNumberOfTuples(cellNumber);
-
-    for(int i = 0; i < cellNumber; i++) {
-      vtkCellsRankArray->SetComponent(i, 0, cellsRankArray[i]);
-    }
-
-    input->GetCellData()->AddArray(vtkCellsRankArray);
   }
 }
 
