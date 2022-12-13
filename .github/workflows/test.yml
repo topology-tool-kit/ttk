@@ -39,7 +39,7 @@ jobs:
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     env:
       CCACHE_DIR: /home/runner/.ccache
       CCACHE_MAXSIZE: 500M
@@ -163,15 +163,6 @@ jobs:
         mkdir output_screenshots
         if ! python3 -u validate.py; then
 
-          if [[ "$VERS" == *"18.04"* ]]; then
-            # Ubuntu 18.04 has an old scikit-learn that messes with
-            # KarhunenLove screenshots
-            rm -f output_screenshots/karhunenLoveDigits64Dimensions_1.png
-            rm -f output_screenshots/karhunenLoveDigits64Dimensions_2.png
-            # Weird things with HarmonicSkeleton (old GCC version?)
-            rm -f output_screenshots/harmonicSkeleton_0.png
-            rm -f output_screenshots/harmonicSkeleton_1.png
-          fi
           if [[ "$VERS" == *"22.04"* ]]; then
             # Ubuntu 22.04 performs more iterations in
             # PersistenceDiagramClustering than older Ubuntu VMs
@@ -623,14 +614,6 @@ jobs:
 
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v3
-
-    - name: Upload Ubuntu Bionic .deb as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ccache
-        file: ttk-ccache-ubuntu-18.04/ttk-ccache.tar.gz
-        asset_name: ttk-ccache-ubuntu-18.04.tar.gz
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
