@@ -61,7 +61,7 @@ int ttk::WebSocketIO::startServer(int PortNumber) {
   this->server.start_accept();
 
   // Start the Asio io_service run loop
-  this->serverThread = new thread([this]() {
+  this->serverThread = thread([this]() {
     try {
       {
         std::lock_guard<std::mutex> guard(this->mutex);
@@ -76,7 +76,7 @@ int ttk::WebSocketIO::startServer(int PortNumber) {
       this->printErr("Unable to start server: " + std::string(e.what()));
     }
   });
-  this->serverThread->detach();
+  this->serverThread.detach();
 
   this->printMsg("Starting Server at Port: " + std::to_string(this->portNumber),
                  1, t.getElapsedTime());
@@ -140,8 +140,6 @@ int ttk::WebSocketIO::stopServer() {
         std::lock_guard<std::mutex> guard(this->mutex);
         con = this->serverThreadRunning;
       }
-      delete this->serverThread;
-      this->serverThread = nullptr;
 
       this->printMsg("Terminating Server Thread", 1, 0,
                      ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);

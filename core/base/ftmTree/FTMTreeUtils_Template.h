@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <FTMTree_MT.h>
+
 namespace ttk {
   namespace ftm {
 

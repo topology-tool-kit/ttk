@@ -555,11 +555,11 @@ int ttk::ContourTreeAlignment::execute(
 
   std::vector<std::shared_ptr<ContourTree>> contourtreesToAlign;
   for(size_t i = 0; i < nTrees; i++) {
-    std::shared_ptr<ContourTree> ct(new ContourTree(
+    auto ct = std::make_shared<ContourTree>(
       scalars[permutation[i]], regionSizes[permutation[i]],
       segmentationIds[permutation[i]], topologies[permutation[i]],
       nVertices[permutation[i]], nEdges[permutation[i]],
-      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]));
+      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]);
     if(ct->isBinary()) {
       contourtreesToAlign.push_back(ct);
     } else {

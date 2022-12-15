@@ -17,11 +17,7 @@ using namespace std;
 using namespace ttk;
 using namespace ftm;
 
-FTMTree::FTMTree() : FTMTree_CT(new Params, new Scalars) {
+FTMTree::FTMTree()
+  : FTMTree_CT(std::make_shared<Params>(), std::make_shared<Scalars>()) {
   this->setDebugMsgPrefix("FTMTree");
-}
-
-FTMTree::~FTMTree() {
-  delete params_;
-  delete scalars_;
 }

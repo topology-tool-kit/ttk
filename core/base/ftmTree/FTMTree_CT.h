@@ -29,26 +29,27 @@ namespace ttk {
 
     class FTMTree_CT : public FTMTree_MT {
     protected:
-      FTMTree_MT *jt_, *st_;
+      FTMTree_MT jt_, st_;
 
     public:
       // -----------------
       // Constructors
       // -----------------
 
-      FTMTree_CT(Params *const params, Scalars *const scalars);
-      ~FTMTree_CT() override;
+      FTMTree_CT(const std::shared_ptr<Params> &params,
+                 const std::shared_ptr<Scalars> &scalars);
+      ~FTMTree_CT() override = default;
 
       // -----------------
       // ACCESSOR
       // -----------------
 
-      inline FTMTree_MT *getJoinTree() const {
-        return jt_;
+      inline FTMTree_MT *getJoinTree() {
+        return &jt_;
       }
 
-      inline FTMTree_MT *getSplitTree() const {
-        return st_;
+      inline FTMTree_MT *getSplitTree() {
+        return &st_;
       }
 
       inline FTMTree_MT *getTree(const TreeType tt) {
@@ -71,21 +72,21 @@ namespace ttk {
       inline void preconditionTriangulation(AbstractTriangulation *tri,
                                             const bool preproc = true) {
         FTMTree_MT::preconditionTriangulation(tri, preproc);
-        jt_->preconditionTriangulation(tri, false);
-        st_->preconditionTriangulation(tri, false);
+        jt_.preconditionTriangulation(tri, false);
+        st_.preconditionTriangulation(tri, false);
       }
 
       inline int setDebugLevel(const int &d) override {
         Debug::setDebugLevel(d);
-        jt_->setDebugLevel(d);
-        st_->setDebugLevel(d);
+        jt_.setDebugLevel(d);
+        st_.setDebugLevel(d);
         return 0;
       }
 
       inline int setThreadNumber(const int n) override {
         Debug::setThreadNumber(n);
-        jt_->setThreadNumber(n);
-        st_->setThreadNumber(n);
+        jt_.setThreadNumber(n);
+        st_.setThreadNumber(n);
         return 0;
       }
 
