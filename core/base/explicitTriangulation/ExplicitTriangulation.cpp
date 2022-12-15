@@ -106,7 +106,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     }
     ttk::exchangeGhostDataWithoutTriangulation<unsigned char, ttk::SimplexId,
                                                ttk::SimplexId>(
-      charBoundary.data(), this->edgeRankArray_.data(),
+      charBoundary.data(),
+      [this](const SimplexId a) { return this->edgeRankArray_[a]; },
       this->edgeLidToGid_.data(), this->edgeGidToLid_, edgeNumber,
       ttk::MPIcomm_, this->getNeighborRanks());
     for(int i = 0; i < edgeNumber; ++i) {
@@ -237,7 +238,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     }
     ttk::exchangeGhostDataWithoutTriangulation<unsigned char, ttk::SimplexId,
                                                ttk::SimplexId>(
-      charBoundary.data(), this->triangleRankArray_.data(),
+      charBoundary.data(),
+      [this](const SimplexId a) { return this->triangleRankArray_[a]; },
       this->triangleLidToGid_.data(), this->triangleGidToLid_, triangleNumber,
       ttk::MPIcomm_, this->getNeighborRanks());
     for(int i = 0; i < triangleNumber; ++i) {

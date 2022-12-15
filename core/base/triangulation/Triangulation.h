@@ -1448,6 +1448,10 @@ namespace ttk {
       return abstractTriangulation_->getRemoteGhostCells();
     }
 
+    inline int getVertexRank(const SimplexId lvid) const override {
+      return this->abstractTriangulation_->getVertexRank(lvid);
+    }
+
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,

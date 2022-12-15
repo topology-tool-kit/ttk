@@ -1,4 +1,5 @@
 #include <OrderDisambiguation.h>
+#include <Triangulation.h>
 #include <ttkArrayPreconditioning.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -83,12 +84,13 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   auto vtkGlobalPointIds = pointData->GetGlobalIds();
-  auto rankArray = pointData->GetArray("RankArray");
-  if(vtkGlobalPointIds != nullptr && rankArray != nullptr) {
+  if(vtkGlobalPointIds != nullptr) {
 #ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
       // add the order array for every scalar array, except the ghostcells, the
       // rankarray and the global ids
+      const auto triangulation{this->GetTriangulation(input)};
+
       for(auto scalarArray : scalarArrays) {
         int status = 0;
         std::string arrayName = std::string(scalarArray->GetName());
@@ -96,7 +98,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
            && arrayName != "RankArray") {
           this->printMsg("Arrayname: " + arrayName);
           vtkNew<ttkSimplexIdTypeArray> orderArray{};
-          orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
+          orderArray->SetName(
+            ttkArrayPreconditioning::GetOrderArrayName(scalarArray).data());
           orderArray->SetNumberOfComponents(1);
           orderArray->SetNumberOfTuples(nVertices);
 
@@ -107,7 +110,10 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
                ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
                ttkUtils::GetPointer<T0>(scalarArray),
                ttkUtils::GetPointer<ttk::LongSimplexId>(vtkGlobalPointIds),
-               ttkUtils::GetPointer<int>(rankArray), nVertices, BurstSize)));
+               [triangulation](const ttk::SimplexId a) {
+                 return triangulation->getVertexRank(a);
+               },
+               nVertices, BurstSize)));
 
           // On error cancel filter execution
           if(status != 1)
@@ -130,7 +136,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
 
   for(auto scalarArray : scalarArrays) {
     vtkNew<ttkSimplexIdTypeArray> orderArray{};
-    orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
+    orderArray->SetName(
+      ttkArrayPreconditioning::GetOrderArrayName(scalarArray).data());
     orderArray->SetNumberOfComponents(1);
     orderArray->SetNumberOfTuples(nVertices);
 

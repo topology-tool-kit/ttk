@@ -24,11 +24,11 @@ namespace ttk {
   public:
     ArrayPreconditioning();
 
-    template <typename DT, typename IT>
+    template <typename DT, typename IT, typename GVR>
     int processScalarArray(ttk::SimplexId *orderArray,
                            const DT *scalarArray,
                            const IT *globalIds,
-                           const int *rankArray,
+                           const GVR &getVertexRank,
                            const size_t nVerts,
                            const int burstSize) const { // start global timer
       ttk::Timer globalTimer;
@@ -49,14 +49,15 @@ namespace ttk {
       if(ttk::isRunningWithMPI()) {
         std::vector<int> neighbors{};
         ttk::produceOrdering<DT, IT>(orderArray, scalarArray, globalIds,
-                                     rankArray, nVerts, burstSize, neighbors);
+                                     getVertexRank, nVerts, burstSize,
+                                     neighbors);
       }
 #else
       this->printMsg("MPI not enabled!");
       TTK_FORCE_USE(orderArray);
       TTK_FORCE_USE(scalarArray);
       TTK_FORCE_USE(globalIds);
-      TTK_FORCE_USE(rankArray);
+      TTK_FORCE_USE(getVertexRank);
       TTK_FORCE_USE(burstSize);
       return 0;
 #endif
