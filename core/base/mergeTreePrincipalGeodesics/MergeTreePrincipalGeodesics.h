@@ -107,7 +107,7 @@ namespace ttk {
         auto birthDeathBary
           = getParametrizedBirthDeath<dataType>(barycenterTree, j);
         std::tuple<dataType, dataType> birthDeath;
-        if((int)matchingVector[j] != -1) {
+        if(matchingVector[j] != std::numeric_limits<ftm::idNode>::max()) {
           birthDeath
             = getParametrizedBirthDeath<dataType>(treeTree, matchingVector[j]);
         } else {
@@ -376,7 +376,8 @@ namespace ttk {
                            useDoubleInput, isFirstInput);
         getMatchingVector(barycenter, extremity, matching, matchingVector);
       } else
-        matchingVector.resize(barycenterTree->getNumberOfNodes(), -1);
+        matchingVector.resize(barycenterTree->getNumberOfNodes(),
+                              std::numeric_limits<ftm::idNode>::max());
 
       std::vector<std::vector<double>> oriV = v;
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
@@ -388,7 +389,7 @@ namespace ttk {
         dataType birthBary = std::get<0>(birthDeathBary);
         dataType deathBary = std::get<1>(birthDeathBary);
         std::vector<double> newV{0.0, 0.0};
-        if((int)matched != -1) {
+        if(matched != std::numeric_limits<ftm::idNode>::max()) {
           auto birthDeathMatched
             = getParametrizedBirthDeath<dataType>(extremityTree, matched);
           newV[0] = std::get<0>(birthDeathMatched);
@@ -786,7 +787,7 @@ namespace ttk {
         for(unsigned int j = 0; j < trees.size(); ++j) {
           dataType birth = allProjec[j];
           dataType death = allProjec[j];
-          if((int)matchingMatrix[i][j] != -1) {
+          if(matchingMatrix[i][j] != std::numeric_limits<ftm::idNode>::max()) {
             auto birthDeath = getParametrizedBirthDeath<dataType>(
               ftmTrees[j], matchingMatrix[i][j]);
             birth = std::get<0>(birthDeath);
@@ -1408,7 +1409,7 @@ namespace ttk {
         for(unsigned int i = 0; i < trees.size(); ++i) {
           auto matched = matchingMatrix[node][i];
           std::tuple<dataType, dataType> birthDeath;
-          if((int)matched == -1) {
+          if(matched == std::numeric_limits<ftm::idNode>::max()) {
             birthDeath = barycenter.tree.template getBirthDeath<dataType>(node);
             auto projec
               = (std::get<0>(birthDeath) + std::get<1>(birthDeath)) / 2.0;
