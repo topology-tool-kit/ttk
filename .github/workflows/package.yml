@@ -135,15 +135,30 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
+    - name: Resample large datasets
+      shell: python3 {0}
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+
+    - name: Run ttk-data Python scripts
+      run: |
+        cd ttk-data
+        # no X server
+        rm python/geometryApproximation.py
+        python3 -u python/run.py
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
       run: |
         cd ttk-data
-        python3 -u python/run.py
         cat python/res.json
         diff python/hashes/${{ matrix.os }}.json python/res.json
-      env:
-        OMP_NUM_THREADS: 1
 
 
   # ------------#
@@ -276,16 +291,19 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
-      continue-on-error: true
+    - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
         pvpython -u python/run.py
-        cat python/res.json
-        diff python/hashes/macOS.json python/res.json
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
-        PYTHONPATH: /usr/local/lib/python3.10/site-packages
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        cat python/res.json
+        diff python/hashes/macOS.json python/res.json
 
 
   # --------------#
@@ -475,18 +493,34 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
-      continue-on-error: true
+    - name: Resample large datasets
+      shell: python
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+      env:
+        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages
+
+    - name: Run ttk-data Python scripts
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         python -u python\run.py
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      shell: cmd
+      run: |
+        cd ttk-data
         type python\res.json
         FC python\hashes\windows.json python\res.json
-      env:
-        OMP_NUM_THREADS: 1
 
 
   # ---------------#
