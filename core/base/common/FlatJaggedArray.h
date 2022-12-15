@@ -70,7 +70,7 @@ namespace ttk {
       const SimplexId *const ptr;
       inline SimplexId operator[](const size_t id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if(id >= this->len) {
+        if(id >= this->len || ptr == nullptr) {
           return -1;
         }
 #endif
@@ -244,7 +244,7 @@ namespace ttk {
      */
     inline void writeToFile(const std::string &fName) const {
       std::ofstream out(fName);
-      for(const auto &slice : *this) {
+      for(const auto slice : *this) {
         for(const auto el : slice) {
           out << el << " ";
         }
