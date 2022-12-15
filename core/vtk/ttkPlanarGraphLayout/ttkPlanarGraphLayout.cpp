@@ -169,17 +169,8 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
   vtkUnstructuredGrid *treeArcs
     = vtkUnstructuredGrid::GetData(inputVector[0], 1);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
-  int dataTypeInt
-    = treeNodes->GetPointData()->GetArray("Scalar")->GetDataType();
 
-  int res = 0;
-
-  switch(dataTypeInt) {
-    vtkTemplateMacro(res = mergeTreePlanarLayoutCallTemplate<VTK_TT>(
-                       treeNodes, treeArcs, output););
-  }
-
-  return res;
+  return mergeTreePlanarLayoutCallTemplate<float>(treeNodes, treeArcs, output);
 }
 
 int ttkPlanarGraphLayout::RequestData(vtkInformation *request,

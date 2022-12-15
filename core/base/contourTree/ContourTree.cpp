@@ -1649,14 +1649,6 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
 
   } while(!nodeQueue.empty());
 
-  // scale a bit
-  int maintainedArcNumber = 0;
-  for(int i = 0; i < (int)superArcList_.size(); i++) {
-    if(!superArcList_[i].pruned_) {
-      maintainedArcNumber++;
-    }
-  }
-
   // test
   //   for(int i = 0; i < (int) superArcList_.size(); i++){
   //     if(!superArcList_[i].pruned_){
@@ -2438,7 +2430,6 @@ int ContourTree::combineTrees() {
 
   queue<const Node *> nodeQueue;
   const Node *mergeNode = nullptr, *splitNode = nullptr;
-  int initNumber = 0;
 
   do {
 
@@ -2566,8 +2557,6 @@ int ContourTree::combineTrees() {
       }
     } while(nodeQueue.size());
 
-    initNumber++;
-
     if((int)nodeList_.size() == vertexNumber_)
       break;
 
@@ -2587,23 +2576,6 @@ int ContourTree::combineTrees() {
 }
 
 int ContourTree::finalize() {
-
-  int minCount = 0, mergeCount = 0, splitCount = 0, maxCount = 0, regCount = 0;
-
-  for(int i = 0; i < (int)nodeList_.size(); i++) {
-    if(!nodeList_[i].getNumberOfDownArcs()) {
-      minCount++;
-    } else if(!nodeList_[i].getNumberOfUpArcs()) {
-      maxCount++;
-    } else if((nodeList_[i].getNumberOfDownArcs() == 1)
-              && (nodeList_[i].getNumberOfUpArcs() == 1)) {
-      regCount++;
-    } else if(nodeList_[i].getNumberOfDownArcs() > 1) {
-      mergeCount++;
-    } else if(nodeList_[i].getNumberOfUpArcs() > 1) {
-      splitCount++;
-    }
-  }
 
   vector<bool> inQueue(nodeList_.size(), false);
   queue<int> nodeIdQueue;

@@ -164,21 +164,23 @@ bool DiscreteGradient::isCellCritical(const int cellDim,
   }
 
   if(cellDim == 0) {
-    return ((*gradient_)[0][cellId] == -1);
+    return ((*gradient_)[0][cellId] == NULL_GRADIENT);
   }
 
   if(cellDim == 1) {
-    return ((*gradient_)[1][cellId] == -1
-            && (dimensionality_ == 1 || (*gradient_)[2][cellId] == -1));
+    return (
+      (*gradient_)[1][cellId] == NULL_GRADIENT
+      && (dimensionality_ == 1 || (*gradient_)[2][cellId] == NULL_GRADIENT));
   }
 
   if(cellDim == 2) {
-    return ((*gradient_)[3][cellId] == -1
-            && (dimensionality_ == 2 || (*gradient_)[4][cellId] == -1));
+    return (
+      (*gradient_)[3][cellId] == NULL_GRADIENT
+      && (dimensionality_ == 2 || (*gradient_)[4][cellId] == NULL_GRADIENT));
   }
 
   if(cellDim == 3) {
-    return ((*gradient_)[5][cellId] == -1);
+    return ((*gradient_)[5][cellId] == NULL_GRADIENT);
   }
 
   return false;
@@ -233,3 +235,26 @@ int DiscreteGradient::setManifoldSize(
 
   return 0;
 }
+
+#ifdef TTK_ENABLE_MPI
+void DiscreteGradient::setCellToGhost(const int cellDim,
+                                      const SimplexId cellId) {
+  if(cellDim == 0) {
+    (*gradient_)[0][cellId] = GHOST_GRADIENT;
+  }
+
+  if(cellDim == 1) {
+    (*gradient_)[1][cellId] = GHOST_GRADIENT;
+    (*gradient_)[2][cellId] = GHOST_GRADIENT;
+  }
+
+  if(cellDim == 2) {
+    (*gradient_)[3][cellId] = GHOST_GRADIENT;
+    (*gradient_)[4][cellId] = GHOST_GRADIENT;
+  }
+
+  if(cellDim == 3) {
+    (*gradient_)[5][cellId] = GHOST_GRADIENT;
+  }
+}
+#endif

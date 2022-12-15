@@ -2,9 +2,10 @@ name: test_build
 
 on:
   push:
+    # triggered on commit pushes on the "dev" branch
+    branches:
+      - 'dev'
     # triggered on tag pushes with tags beginning with either "v" or "dev"
-    branch-ignore:
-      - '*'
     tags:
       - 'v*'
       - 'dev*'
@@ -12,10 +13,13 @@ on:
       - 'build*'
       - 'test*'
   pull_request:
-    # also triggered by pull requests on the "dev" & "mpi" branches
+    # also triggered by pull requests on the "dev" branch
     branches:
       - 'dev'
-      - 'mpi'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   PV_TAG: v5.10.1-headless
@@ -29,9 +33,17 @@ jobs:
   # ------------------#
   test-build-ubuntu:
     runs-on: ${{ matrix.os }}
+    # trigger job when push event on a branch (not on a tag) only for
+    # the "topology-tool-kit/ttk" repository
+    # (pull-requests and tag pushes not affected)
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
+    env:
+      CCACHE_DIR: /home/runner/.ccache
+      CCACHE_MAXSIZE: 500M
+
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
@@ -53,7 +65,7 @@ jobs:
           ninja-build \
           zlib1g-dev \
           dpkg-dev
-        sudo python3 -m pip install scikit-learn packaging
+        sudo python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -98,7 +110,10 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
+      env:
+        CXXFLAGS: -Werror
 
+    - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
       run: |
         cd build
@@ -148,15 +163,6 @@ jobs:
         mkdir output_screenshots
         if ! python3 -u validate.py; then
 
-          if [[ "$VERS" == *"18.04"* ]]; then
-            # Ubuntu 18.04 has an old scikit-learn that messes with
-            # KarhunenLove screenshots
-            rm -f output_screenshots/karhunenLoveDigits64Dimensions_1.png
-            rm -f output_screenshots/karhunenLoveDigits64Dimensions_2.png
-            # Weird things with HarmonicSkeleton (old GCC version?)
-            rm -f output_screenshots/harmonicSkeleton_0.png
-            rm -f output_screenshots/harmonicSkeleton_1.png
-          fi
           if [[ "$VERS" == *"22.04"* ]]; then
             # Ubuntu 22.04 performs more iterations in
             # PersistenceDiagramClustering than older Ubuntu VMs
@@ -181,6 +187,7 @@ jobs:
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
 
     - name: Run ttk-data Python scripts
       run: |
@@ -194,14 +201,31 @@ jobs:
         cat python/res.json
         diff python/hashes/${{ matrix.os }}.json python/res.json
 
+    - name: Archive cache
+      run: |
+        ccache -s
+        ccache -c
+        cd /home/runner
+        tar czf ttk-ccache.tar.gz .ccache
+
+    - name: Upload ccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-ccache-${{ matrix.os }}
+        path: /home/runner/ttk-ccache.tar.gz
+        retention-days: 2
+
 
   # -----------------#
   # Test macOS build #
   # -----------------#
   test-build-macos:
     runs-on: macos-12
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
+      CCACHE_MAXSIZE: 200M
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
@@ -213,11 +237,12 @@ jobs:
         brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree websocketpp ccache
-        python3.10 -m pip install scikit-learn packaging
+        python3.10 -m pip install scikit-learn
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
         # remove Python 3.11 installation
         sudo rm -rf /Library/Frameworks/Python.framework/Versions/3.11
+        sudo rm -rf /usr/local/Frameworks/Python.framework/Versions/3.11
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -266,7 +291,10 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
+      env:
+        CXXFLAGS: -Werror
 
+    - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build & install TTK
       run: |
         cd build
@@ -305,6 +333,7 @@ jobs:
       with:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
 
     - name: Run ttk-data Python scripts
       run: |
@@ -320,16 +349,33 @@ jobs:
         cat python/res.json
         diff python/hashes/macOS.json python/res.json
 
+    - name: Archive cache
+      run: |
+        ccache -s
+        ccache -c
+        cd /Users/runner/work/ttk
+        tar czf ttk-ccache.tar.gz .ccache
+
+    - name: Upload ccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-ccache-macOS
+        path: /Users/runner/work/ttk/ttk-ccache.tar.gz
+        retention-days: 2
+
 
   # ------------------ #
   # Test Windows build #
   # ------------------ #
   test-build-windows:
     runs-on: windows-2022
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk
       CONDA_ROOT: C:\Miniconda
+      SCCACHE_CACHE_SIZE: 200M
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
@@ -340,7 +386,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn packaging openmp graphviz ninja websocketpp sccache
+          scikit-learn openmp graphviz ninja websocketpp sccache
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH
@@ -411,6 +457,8 @@ jobs:
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
           -GNinja ^
           ..
+      env:
+        CXXFLAGS: -Werror
 
     - name: Fix clang-cl OpenMP flags in build.ninja
       shell: bash
@@ -508,3 +556,99 @@ jobs:
         cd ttk-data
         type python\res.json
         FC python\hashes\windows.json python\res.json
+
+    - name: Archive cache
+      shell: bash
+      run: |
+        sccache -s
+        cd /c/Users/runneradmin/AppData/Local/Mozilla/sccache
+        tar czf ttk-sccache.tar.gz cache
+
+    - name: Upload sccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-sccache-windows
+        path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
+        retention-days: 2
+
+
+  # ---------------------------------------- #
+  # Upload ccache archives as release assets #
+  # ---------------------------------------- #
+  ccache-release:
+    runs-on: ubuntu-latest
+    needs: [test-build-ubuntu, test-build-macos, test-build-windows]
+    # trigger job only on the "topology-tool-kit" repository in case
+    # of a branch push (pull requests and tags not affected)
+    if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+    steps:
+
+    - name: Delete previous release
+      uses: actions/github-script@v6
+      continue-on-error: true
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          const { data: { id } } = await github.rest.repos.getReleaseByTag({
+            owner,
+            repo,
+            tag: "ccache"
+          })
+          await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
+
+    - name: Create Release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: "ccache",
+            name: "ccache archives",
+            body: "Holds ccache archives to speed up build jobs",
+            draft: false,
+            prerelease: true
+          })
+
+    - name: Fetch all uploaded artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Upload Ubuntu Focal .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-ubuntu-20.04/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-ubuntu-20.04.tar.gz
+
+    - name: Upload Ubuntu Jammy .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-ubuntu-22.04/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-ubuntu-22.04.tar.gz
+
+    - name: Upload .pkg as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-ccache-macOS/ttk-ccache.tar.gz
+        asset_name: ttk-ccache-macOS.tar.gz
+
+    - name: Upload sccache Windows archive
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ccache
+        file: ttk-sccache-windows/ttk-sccache.tar.gz
+        asset_name: ttk-sccache-windows.tar.gz
+
+    - name: Delete ccache artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-*ccache*

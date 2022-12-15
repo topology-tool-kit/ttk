@@ -810,8 +810,7 @@ namespace ttk {
       triangulation_ = triangulation;
       if(triangulation_) {
         dimensionality_ = triangulation_->getDimensionality();
-        std::vector<int> gridDim(3);
-        triangulation_->getGridDimensions(gridDim);
+        const auto &gridDim{triangulation_->getGridDimensions()};
         for(int i = 0; i < 3; i++) {
           gridDimensions_[i] = gridDim[i];
           nbvoxels_[i] = gridDimensions_[i] - 1;

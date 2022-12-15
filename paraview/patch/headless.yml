@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
@@ -208,14 +208,6 @@ jobs:
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v3
 
-    - name: Upload Ubuntu Bionic .deb as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: ttk-paraview-headless-ubuntu-18.04/ttk-paraview.deb
-        asset_name: ttk-paraview-headless-ubuntu-18.04.deb
-
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
@@ -247,3 +239,9 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-paraview-headless-windows/ttk-paraview.exe
         asset_name: ttk-paraview-headless.exe
+
+    - name: Delete package artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-paraview-headless*

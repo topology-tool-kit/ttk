@@ -750,8 +750,8 @@ namespace ttk {
       for(unsigned int j = 0; j < matchings.size(); ++j) {
         auto match0 = std::get<0>(matchings[j]);
         auto match1 = std::get<1>(matchings[j]);
-        if(match0 < barycenter.tree.getNumberOfNodes() and match0 >= 0
-           and match1 < tree.tree.getNumberOfNodes() and match1 >= 0)
+        if(match0 < barycenter.tree.getNumberOfNodes()
+           and match1 < tree.tree.getNumberOfNodes())
           matchingVector[match0] = match1;
       }
     }
@@ -768,8 +768,8 @@ namespace ttk {
       for(unsigned int j = 0; j < matchings.size(); ++j) {
         auto match0 = std::get<0>(matchings[j]);
         auto match1 = std::get<1>(matchings[j]);
-        if(match0 < barycenter.tree.getNumberOfNodes() and match0 >= 0
-           and match1 < tree.tree.getNumberOfNodes() and match1 >= 0)
+        if(match0 < barycenter.tree.getNumberOfNodes()
+           and match1 < tree.tree.getNumberOfNodes())
           matchingVector[match1] = match0;
       }
     }

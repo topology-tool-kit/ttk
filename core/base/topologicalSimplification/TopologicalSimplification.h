@@ -363,7 +363,6 @@ int ttk::TopologicalSimplification::execute(
   SweepCmp cmp;
 
   // processing
-  int iteration{};
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
 
     this->printMsg("Starting simplifying iteration #" + std::to_string(i),
@@ -372,6 +371,13 @@ int ttk::TopologicalSimplification::execute(
     for(int j = 0; j < 2; ++j) {
 
       bool isIncreasingOrder = !j;
+
+      if(isIncreasingOrder && authorizedMinima.empty()) {
+        continue;
+      }
+      if(!isIncreasingOrder && authorizedMaxima.empty()) {
+        continue;
+      }
 
       cmp.setIsIncreasingOrder(isIncreasingOrder);
       std::set<std::tuple<dataType, SimplexId, SimplexId>, decltype(cmp)>
@@ -482,7 +488,6 @@ int ttk::TopologicalSimplification::execute(
     if(addPerturbation_)
       addPerturbation<dataType>(outputScalars, offsets);
 
-    ++iteration;
     if(!needForMoreIterations)
       break;
   }

@@ -1796,21 +1796,6 @@ const vector<vector<SimplexId>> *
   return &cellNeighborList_;
 }
 
-int ttk::PeriodicImplicitTriangulation::getCellVTKIDInternal(const int &ttkId,
-                                                             int &vtkId) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ttkId < 0) {
-    return -1;
-  }
-#endif
-  const int nSimplexPerCell{
-    PeriodicImplicitTriangulation::getDimensionality() == 3   ? 6
-    : PeriodicImplicitTriangulation::getDimensionality() == 2 ? 2
-                                                              : 1};
-  vtkId = ttkId / nSimplexPerCell;
-  return 0;
-}
-
 // explicit instantiations
 template class ttk::PeriodicImplicitTriangulationCRTP<
   ttk::PeriodicWithPreconditions>;

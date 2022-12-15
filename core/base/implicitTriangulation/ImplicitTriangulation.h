@@ -15,6 +15,10 @@
 // base code includes
 #include <AbstractTriangulation.h>
 
+#ifdef TTK_ENABLE_MPI
+#include <memory>
+#endif // TTK_ENABLE_MPI
+
 namespace ttk {
 
   class ImplicitTriangulation : public AbstractTriangulation {
@@ -28,14 +32,8 @@ namespace ttk {
     ImplicitTriangulation &operator=(const ImplicitTriangulation &) = default;
     ImplicitTriangulation &operator=(ImplicitTriangulation &&) = default;
 
-    int getGridDimensions(std::vector<int> &dimensions) override {
-
-      dimensions.resize(3);
-      dimensions[0] = dimensions_[0];
-      dimensions[1] = dimensions_[1];
-      dimensions[2] = dimensions_[2];
-
-      return 0;
+    inline const std::array<SimplexId, 3> &getGridDimensions() const override {
+      return this->dimensions_;
     }
 
     int getCellEdgeInternal(const SimplexId &cellId,
@@ -237,44 +235,57 @@ namespace ttk {
       return 0;
     }
 
-    int getCellVTKIDInternal(const int &ttkId, int &vtkId) const override;
+    inline int getCellVTKIDInternal(const int &ttkId,
+                                    int &vtkId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(ttkId < 0) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      const SimplexId nSimplexPerCell{this->getDimensionality() == 3 ? 6 : 2};
+      vtkId = ttkId / nSimplexPerCell;
+      return 0;
+    }
 
 #ifdef TTK_ENABLE_MPI
 
   protected:
-    template <typename Func0, typename Func1, typename Func2>
-    int exchangeDistributedInternal(const Func0 &getGlobalSimplexId,
-                                    const Func1 &storeGlobalSimplexId,
-                                    const Func2 &iterCond,
-                                    const int nSimplicesPerCell);
-
-    int preconditionDistributedCellRanges();
-    size_t
-      computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
-
     int preconditionDistributedCells() override;
-    int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
-    int preconditionDistributedTriangles() override;
 
   public:
-    inline SimplexId
-      getCellGlobalIdInternal(const SimplexId lcid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(lcid < 0 || lcid >= this->getNumberOfCellsInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->cellLidToGid_[lcid];
-    }
+    void createMetaGrid(const double *const bounds);
+
+    SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const override;
+    SimplexId getVertexLocalIdInternal(const SimplexId gvid) const override;
+
+    SimplexId getCellGlobalIdInternal(const SimplexId lcid) const override;
+    SimplexId getCellLocalIdInternal(const SimplexId gcid) const override;
+
+    SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
+    SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
+
+    SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
+    SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
+
+  protected:
+    bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
+    bool isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override;
+    bool
+      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override;
+
+  private:
+    SimplexId findEdgeFromVertices(const SimplexId v0,
+                                   const SimplexId v1) const;
+    SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
 
 #endif // TTK_ENABLE_MPI
 
   protected:
 #ifdef TTK_ENABLE_MPI
-    // the cellGid_ array only applies on cubic cells, not on
-    // simplicial ones...
-    std::vector<SimplexId> cellLidToGid_{};
+    std::shared_ptr<ImplicitTriangulation> metaGrid_{};
+    // offset coordinates of the local grid inside the metaGrid_
+    std::array<SimplexId, 3> localGridOffset_{};
 #endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {
@@ -489,7 +500,7 @@ namespace ttk {
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
-    SimplexId dimensions_[3]; // dimensions
+    std::array<SimplexId, 3> dimensions_; // dimensions
     SimplexId nbvoxels_[3]; // nombre de voxels par axe
 
     // Vertex helper //

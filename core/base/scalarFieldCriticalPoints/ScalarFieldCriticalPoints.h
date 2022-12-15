@@ -245,7 +245,7 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   if(triangulation) {
 
 #if TTK_ENABLE_MPI
-    const auto rankArray{triangulation->getVertRankArray()};
+    const auto rankArray{triangulation->getVertexRankArray()};
     if(ttk::isRunningWithMPI() && rankArray == nullptr) {
       this->printErr("Missing vertex rank array");
       return -6;

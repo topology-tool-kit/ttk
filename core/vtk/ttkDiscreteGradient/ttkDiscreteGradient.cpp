@@ -101,7 +101,16 @@ int ttkDiscreteGradient::fillCriticalPoints(
     cellIds->SetTuple1(i, critPoints_cellIds[i]);
     cellScalars->SetTuple1(i, scalars[critPoints_PLVertexIdentifiers[i]]);
     isOnBoundary->SetTuple1(i, critPoints_isOnBoundary[i]);
+#ifdef TTK_ENABLE_MPI
+    if(ttk::hasInitializedMPI()) {
+      PLVertexIdentifiers->SetTuple1(
+        i, triangulation.getVertexGlobalId(critPoints_PLVertexIdentifiers[i]));
+    } else {
+      PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
+    }
+#else
     PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
+#endif
   }
 
   ttkUtils::CellVertexFromPoints(outputCriticalPoints, points);
@@ -279,11 +288,20 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
     ttkUtils::GetVoidPointer(inputScalars), inputScalars->GetMTime());
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
-
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::Timer t_mpi;
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
   ttkTemplateMacro(triangulation->getType(),
                    (ret = this->buildGradient<TTK_TT>(
-                      *static_cast<TTK_TT *>(triangulation->getData()))));
-
+                      *static_cast<TTK_TT *>(triangulation->getData()), true)));
+#ifdef TTK_ENABLE_MPI_TIME
+  double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted :" + std::to_string(elapsedTime));
+  }
+#endif
   if(ret != 0) {
     this->printErr("DiscreteGradient.buildGradient() error code: "
                    + std::to_string(ret));
@@ -298,7 +316,10 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
-    fillGradientGlyphs(outputGradientGlyphs, *triangulation);
+    ttkTemplateMacro(triangulation->getType(),
+                     (fillGradientGlyphs<TTK_TT>(
+                       outputGradientGlyphs,
+                       *static_cast<TTK_TT *>(triangulation->getData()))));
   }
 
   return 1;

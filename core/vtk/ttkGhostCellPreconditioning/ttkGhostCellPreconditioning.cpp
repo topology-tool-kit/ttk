@@ -85,11 +85,13 @@ int ttkGhostCellPreconditioning::RequestData(
       std::vector<int> verticesRankArray(nVertices, 0);
       std::vector<int> cellsRankArray(nCells, 0);
       double *boundingBox = input->GetBounds();
-
+      std::vector<int> neighbors{};
+      ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighbors);
       ttk::produceRankArray(verticesRankArray, verticesGlobalIds,
-                            verticesGhostCells, nVertices, boundingBox);
-      ttk::produceRankArray(
-        cellsRankArray, cellsGlobalIds, cellsGhostCells, nCells, boundingBox);
+                            verticesGhostCells, nVertices, boundingBox,
+                            neighbors);
+      ttk::produceRankArray(cellsRankArray, cellsGlobalIds, cellsGhostCells,
+                            nCells, boundingBox, neighbors);
 
       vtkNew<vtkIntArray> vtkVerticesRankArray{};
       vtkVerticesRankArray->SetName("RankArray");

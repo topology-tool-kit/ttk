@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 # name of the project
 project(ttkExample-c++)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(TTKBase REQUIRED)
 

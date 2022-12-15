@@ -13,7 +13,6 @@
 #include <vtkResampleToImage.h>
 #include <vtkTable.h>
 
-#include <ttkMacros.h>
 #include <ttkUtils.h>
 
 using namespace ttk;
@@ -107,22 +106,13 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees;
   loadBlocks(inputTrees, blocks);
   printMsg("Load blocks done.", debug::Priority::VERBOSE);
-  int dataTypeInt
-    = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-        ->GetPointData()
-        ->GetArray("Scalar")
-        ->GetDataType();
 
   // If we have already computed once but the input has changed
   if(treesNodes.size() != 0 and inputTrees[0]->GetBlock(0) != treesNodes[0])
     resetDataVisualization();
 
   // Run
-  int res = 0;
-  switch(dataTypeInt) {
-    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputTrees););
-  }
-  return res;
+  return run<float>(outputVector, inputTrees);
 }
 
 template <class dataType>

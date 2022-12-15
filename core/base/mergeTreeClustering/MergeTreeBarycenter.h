@@ -548,7 +548,6 @@ namespace ttk {
 
       // Compute projection
       double tempBirth = 0, tempDeath = 0;
-      int offDiagonal = 0;
       double alphaSum = 0;
       for(unsigned int i = 0; i < trees.size(); ++i)
         if((int)nodes[i] != -1)
@@ -568,7 +567,6 @@ namespace ttk {
           }
           tempBirth += tTempBirth * alphas[i] / alphaSum;
           tempDeath += tTempDeath * alphas[i] / alphaSum;
-          ++offDiagonal;
         }
       }
       double projec = (tempBirth + tempDeath) / 2;

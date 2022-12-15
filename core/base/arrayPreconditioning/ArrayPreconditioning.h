@@ -47,8 +47,9 @@ namespace ttk {
 // -----------------------------------------------------------------------
 #ifdef TTK_ENABLE_MPI
       if(ttk::isRunningWithMPI()) {
-        ttk::produceOrdering<DT, IT>(
-          orderArray, scalarArray, globalIds, rankArray, nVerts, burstSize);
+        std::vector<int> neighbors{};
+        ttk::produceOrdering<DT, IT>(orderArray, scalarArray, globalIds,
+                                     rankArray, nVerts, burstSize, neighbors);
       }
 #else
       this->printMsg("MPI not enabled!");

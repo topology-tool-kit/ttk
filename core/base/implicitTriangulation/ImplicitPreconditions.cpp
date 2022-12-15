@@ -133,10 +133,6 @@ int ttk::ImplicitWithPreconditions::preconditionVerticesInternal() {
     }
   }
 
-#ifdef TTK_ENABLE_MPI
-  return this->preconditionDistributedVertices();
-#endif // TTK_ENABLE_MPI
-
   return 0;
 }
 
@@ -301,10 +297,6 @@ int ttk::ImplicitWithPreconditions::preconditionEdgesInternal() {
     edgePositions_[this->edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
   }
 
-#ifdef TTK_ENABLE_MPI
-  return this->preconditionDistributedEdges();
-#endif // TTK_ENABLE_MPI
-
   return 0;
 }
 
@@ -352,10 +344,6 @@ int ttk::ImplicitWithPreconditions::preconditionTrianglesInternal() {
     }
   }
 
-#ifdef TTK_ENABLE_MPI
-  return this->preconditionDistributedTriangles();
-#endif // TTK_ENABLE_MPI
-
   return 0;
 }
 
@@ -372,6 +360,7 @@ int ttk::ImplicitWithPreconditions::preconditionTetrahedronsInternal() {
   for(SimplexId i = 0; i < this->tetrahedronNumber_; ++i) {
     this->tetrahedronToPosition(i, tetrahedronCoords_[i].data());
   }
+
   return 0;
 }
 
@@ -703,34 +692,4 @@ std::array<ttk::SimplexId, 3>
     }
   }
   return p;
-}
-
-int ttk::ImplicitWithPreconditions::getCellVTKIDInternal(const int &ttkId,
-                                                         int &vtkId) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ttkId < 0) {
-    return -1;
-  }
-#endif
-  const int nSimplexPerCell{
-    ImplicitWithPreconditions::getDimensionality() == 3   ? 6
-    : ImplicitWithPreconditions::getDimensionality() == 2 ? 2
-                                                          : 1};
-  vtkId = ttkId / nSimplexPerCell;
-  return 0;
-}
-
-int ttk::ImplicitNoPreconditions::getCellVTKIDInternal(const int &ttkId,
-                                                       int &vtkId) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ttkId < 0) {
-    return -1;
-  }
-#endif
-  const int nSimplexPerCell{
-    ImplicitNoPreconditions::getDimensionality() == 3   ? 6
-    : ImplicitNoPreconditions::getDimensionality() == 2 ? 2
-                                                        : 1};
-  vtkId = ttkId / nSimplexPerCell;
-  return 0;
 }

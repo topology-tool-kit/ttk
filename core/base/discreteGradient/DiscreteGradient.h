@@ -40,9 +40,21 @@ namespace ttk {
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
+      inline bool operator==(const Cell &other) const {
+        return std::tie(this->dim_, this->id_)
+               == std::tie(other.dim_, other.id_);
+      }
+
+      inline std::string to_string() const {
+        return '{' + std::to_string(this->dim_) + ' '
+               + std::to_string(this->id_) + '}';
+      }
+
       int dim_{-1};
       SimplexId id_{-1};
     };
+
+    enum gradientValue { NULL_GRADIENT = -1, GHOST_GRADIENT = -2 };
 
     /**
      * @brief Extended Cell structure for processLowerStars
@@ -78,6 +90,9 @@ namespace ttk {
     public:
       DiscreteGradient() {
         this->setDebugMsgPrefix("DiscreteGradient");
+#ifdef TTK_ENABLE_MPI
+        hasMPISupport_ = true;
+#endif
       }
 
       /**
@@ -251,7 +266,8 @@ in the gradient.
                             VisitedMask &mask,
                             const triangulationType &triangulation,
                             std::vector<Cell> *const wall = nullptr,
-                            std::set<SimplexId> *const saddles = nullptr) const;
+                            std::vector<SimplexId> *const saddles
+                            = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
@@ -261,7 +277,8 @@ in the gradient.
                            VisitedMask &mask,
                            const triangulationType &triangulation,
                            std::vector<Cell> *const wall = nullptr,
-                           std::set<SimplexId> *const saddles = nullptr) const;
+                           std::vector<SimplexId> *const saddles
+                           = nullptr) const;
 
       /**
        * Get the vertex id of with the maximum scalar field value on
@@ -318,6 +335,13 @@ in the gradient.
       int getCriticalPoints(std::vector<Cell> &criticalPoints,
                             const triangulationType &triangulation) const;
 
+#ifdef TTK_ENABLE_MPI
+      /**
+       * Set the Cell Gradient to GHOST_GRADIENT
+       */
+      void setCellToGhost(const int cellDim, const SimplexId cellId);
+
+#endif
       /**
        * Compute manifold size for critical extrema
        */

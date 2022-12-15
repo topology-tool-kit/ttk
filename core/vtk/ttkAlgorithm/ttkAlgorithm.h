@@ -162,7 +162,7 @@ public:
    * To pass the triangulation along the pipeline, filters have to perform a
    * shallow or deep copy of an input that already has a triangulation.
    */
-  ttk::Triangulation *GetTriangulation(vtkDataSet *object);
+  ttk::Triangulation *GetTriangulation(vtkDataSet *dataSet);
 
   /**
    * This key can be used during the FillOutputPortInformation() call to
@@ -223,6 +223,7 @@ protected:
    * are present in the pipeline and if not, computes them.
    */
   void MPIPipelinePreconditioning(vtkDataSet *input,
+                                  std::vector<int> &neighbors,
                                   ttk::Triangulation *triangulation = nullptr);
 
   /**
@@ -245,7 +246,8 @@ protected:
 
   bool GenerateGlobalIds(
     vtkDataSet *input,
-    std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL);
+    std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
+    std::vector<int> &neighborRanks);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been

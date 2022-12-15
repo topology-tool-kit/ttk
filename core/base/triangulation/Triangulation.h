@@ -1413,15 +1413,39 @@ namespace ttk {
     /// \note This method is similar to getVertexGlobalIdMap() except it is not
     /// const and allows for modification of the triangulation and the map.
 
-    inline std::unordered_map<SimplexId, SimplexId> *
-      getVertexGlobalIdMapWriteMode() override {
-      return abstractTriangulation_->getVertexGlobalIdMapWriteMode();
+    inline std::unordered_map<SimplexId, SimplexId> &
+      getVertexGlobalIdMap() override {
+      return abstractTriangulation_->getVertexGlobalIdMap();
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
     /// triangulation.
     inline void setHasPreconditionedDistributedVertices(bool flag) override {
       abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
+    }
+
+    inline bool hasPreconditionedDistributedCells() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedCells();
+    }
+    inline bool hasPreconditionedDistributedVertices() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedVertices();
+    }
+
+    inline const std::vector<int> &getNeighborRanks() const override {
+      return abstractTriangulation_->getNeighborRanks();
+    }
+    inline std::vector<int> &getNeighborRanks() override {
+      return abstractTriangulation_->getNeighborRanks();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getGhostCellsPerOwner() const override {
+      return abstractTriangulation_->getGhostCellsPerOwner();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getRemoteGhostCells() const override {
+      return abstractTriangulation_->getRemoteGhostCells();
     }
 
     /// Get the corresponding local id for a given global id of a vertex.
@@ -1441,6 +1465,41 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->getVertexLocalId(geid);
+    }
+
+    /**
+     * @brief Create a meta grid for implicit triangulations
+     *
+     * In an MPI context, input domains are split into separate,
+     * overlapping local grids. This methods makes each of the local
+     * implicit triangulations aware of the dimensions of the
+     * original, global grid.
+     *
+     * @param[in] dimensions Global grid dimensions
+     */
+    inline void createMetaGrid(const double *const bounds) {
+      this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
+      this->implicitTriangulation_.createMetaGrid(bounds);
+    }
+
+    /**
+     * @brief  Get the Global Id of the simplex by calling the appropriate
+     * global id retrieval function based on the simplex dimension cellDim
+     *
+     * @param localCellId: local id of the simplex
+     * @param cellDim: dimension of the simplex
+     * @param globalCellId global id of the simplex
+     */
+    inline int getDistributedGlobalCellId(const ttk::SimplexId &localCellId,
+                                          const int &cellDim,
+                                          ttk::SimplexId &globalCellId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return this->abstractTriangulation_->getDistributedGlobalCellId(
+        localCellId, cellDim, globalCellId);
+      ;
     }
 
 #endif // TTK_ENABLE_MPI
@@ -2315,7 +2374,7 @@ namespace ttk {
       return abstractTriangulation_->getCellVTKID(ttkId, vtkId);
     }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
     /// Pre-process the distributed vertex ids.
     ///
     /// This function should ONLY be called as a pre-condition to the
@@ -2340,6 +2399,66 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->preconditionDistributedVertices();
+    }
+
+    inline int preconditionEdgeRankArray() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionEdgeRankArray();
+    }
+
+    inline int preconditionTriangleRankArray() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionTriangleRankArray();
+    }
+
+    /// Pre-process the global boundaries when using MPI. Local bounds should
+    /// be set prior to using this function.
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa globalBounds_
+
+    inline int preconditionGlobalBoundary() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionGlobalBoundary();
+    }
+    /// Pre-process the distributed ghost cells .
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getGhostCellsPerOwner()
+    ///   - getRemoteGhostCells()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getGhostCellsPerOwner()
+    /// \sa getRemoteGhostCells()
+    inline int preconditionDistributedCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionDistributedCells();
     }
 #endif // TTK_ENABLE_MPI
 
@@ -2748,7 +2867,7 @@ namespace ttk {
 
     // RankArray on points & cells
 
-    TTK_GET_SET_ARRAYS(VertRankArray, int);
+    TTK_GET_SET_ARRAYS(VertexRankArray, int);
     TTK_GET_SET_ARRAYS(CellRankArray, int);
 
 #undef TTK_GET_SET_ARRAYS

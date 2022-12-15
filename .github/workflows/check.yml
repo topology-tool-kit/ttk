@@ -17,6 +17,10 @@ on:
       - 'mpi'
 
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PV_TAG: v5.10.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
@@ -105,11 +109,15 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
           doxygen \
           clang-tidy
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -125,6 +133,7 @@ jobs:
         mkdir build
         cd build
         cmake \
+          -DCMAKE_BUILD_TYPE=Debug \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -184,11 +193,15 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
           clang-tools \
           libomp-dev
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |

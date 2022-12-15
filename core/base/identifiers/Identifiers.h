@@ -56,7 +56,7 @@ namespace ttk {
     ttk::LongSimplexId *cellIdentifiers_;
 #ifdef TTK_ENABLE_MPI
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> *vertGtoL_;
-    std::vector<int> neighbors_;
+    std::vector<int> *neighbors_;
     std::map<int, int> neighborToId_;
     int neighborNumber_;
     double *bounds_;
@@ -67,7 +67,7 @@ namespace ttk {
     MPI_Datatype mpiPointType_;
     int dimension_{};
     int hasSentData_{0};
-    ttk::SimplexId *vertRankArray_{nullptr};
+    ttk::SimplexId *vertexRankArray_{nullptr};
     ttk::SimplexId *cellRankArray_{nullptr};
     unsigned char *vertGhost_{nullptr};
     unsigned char *cellGhost_{nullptr};
@@ -99,6 +99,7 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
+
     inline void setDomainDimension(const int &dimension) {
       dimension_ = dimension;
     }
@@ -108,8 +109,8 @@ namespace ttk {
       pointsToCells_ = pointsToCells;
     }
 
-    void setVertRankArray(ttk::SimplexId *vertRankArray) {
-      this->vertRankArray_ = vertRankArray;
+    void setVertexRankArray(ttk::SimplexId *vertexRankArray) {
+      this->vertexRankArray_ = vertexRankArray;
     }
 
     void setCellRankArray(ttk::SimplexId *cellRankArray) {
@@ -195,13 +196,16 @@ namespace ttk {
       id = neighbours[0]->id_;
     }
 
-    void initializeNeighbors(double *boundingBox) {
-      neighbors_.clear();
+    void initializeNeighbors(double *boundingBox,
+                             std::vector<int> &neighborRanks) {
+      if(neighborRanks.empty()) {
+        preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
+      }
+      neighbors_ = &neighborRanks;
       neighborToId_.clear();
-      getNeighborsUsingBoundingBox(boundingBox, neighbors_);
-      neighborNumber_ = neighbors_.size();
+      neighborNumber_ = neighbors_->size();
       for(int i = 0; i < neighborNumber_; i++) {
-        neighborToId_[neighbors_[i]] = i;
+        neighborToId_[neighbors_->at(i)] = i;
       }
     }
 
@@ -245,8 +249,8 @@ namespace ttk {
           this->findPoint(
             id, receivedPoints[n].x, receivedPoints[n].y, receivedPoints[n].z);
           if((vertGhost_ != nullptr && vertGhost_[id] == 0)
-             || (vertRankArray_ != nullptr
-                 && vertRankArray_[id] == ttk::MPIrank_)) {
+             || (vertexRankArray_ != nullptr
+                 && vertexRankArray_[id] == ttk::MPIrank_)) {
             globalId = vertexIdentifiers_[id];
             if(globalId >= 0) {
 #ifdef TTK_ENABLE_OPENMP
@@ -461,7 +465,7 @@ namespace ttk {
     void sendToAllNeighbors(std::vector<dataType> &vectorToSend,
                             MPI_Datatype messageType) const {
       for(int j = 0; j < neighborNumber_; j++) {
-        sendVector<dataType>(vectorToSend, messageType, neighbors_[j]);
+        sendVector<dataType>(vectorToSend, messageType, neighbors_->at(j));
       }
     }
 
@@ -471,8 +475,8 @@ namespace ttk {
       MPI_Datatype messageType) {
 
       for(int j = 0; j < neighborNumber_; j++) {
-        sendVector<dataType>(vectorToSend[neighborToId_[neighbors_[j]]],
-                             messageType, neighbors_[j]);
+        sendVector<dataType>(vectorToSend[neighborToId_[neighbors_->at(j)]],
+                             messageType, neighbors_->at(j));
       }
     }
 
@@ -507,18 +511,18 @@ namespace ttk {
       // If the vertex is not owned, it will be added to the vector of
       // ghosts.
 
-      if(vertRankArray_ != nullptr) {
+      if(vertexRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-          if(vertRankArray_[i] != ttk::MPIrank_) {
+          if(vertexRankArray_[i] != ttk::MPIrank_) {
             realVertexNumber--;
             if(outdatedGlobalPointIds_ == nullptr) {
               p[0] = pointSet_[i * 3];
               p[1] = pointSet_[i * 3 + 1];
               p[2] = pointSet_[i * 3 + 2];
-              vertGhostCoordinatesPerRank[neighborToId_[vertRankArray_[i]]]
+              vertGhostCoordinatesPerRank[neighborToId_[vertexRankArray_[i]]]
                 .push_back(Point{p[0], p[1], p[2], i});
             } else {
-              vertGhostGlobalIdsPerRank[neighborToId_[vertRankArray_[i]]]
+              vertGhostGlobalIdsPerRank[neighborToId_[vertexRankArray_[i]]]
                 .push_back(
                   static_cast<ttk::SimplexId>(outdatedGlobalPointIds_[i]));
             }
@@ -575,9 +579,9 @@ namespace ttk {
       }
 
       // Generate global ids for vertices
-      if(vertRankArray_ != nullptr) {
+      if(vertexRankArray_ != nullptr) {
         for(ttk::SimplexId i = 0; i < vertexNumber_; i++) {
-          if(vertRankArray_[i] == ttk::MPIrank_) {
+          if(vertexRankArray_[i] == ttk::MPIrank_) {
             vertexIdentifiers_[i] = vertIndex;
             (*vertGtoL_)[vertIndex] = i;
             vertIndex++;
@@ -645,7 +649,7 @@ namespace ttk {
       // store the outdated global ids of ghost points and their local id.
       // Otherwise, vertGhostCoordinatesPerRank needs to be resized. This vector
       // will store the coordinates of a ghost point and its local id.
-      if(vertRankArray_ != nullptr) {
+      if(vertexRankArray_ != nullptr) {
         if(outdatedGlobalPointIds_ == nullptr) {
           vertGhostCoordinatesPerRank.resize(neighborNumber_);
         } else {
@@ -679,17 +683,17 @@ namespace ttk {
       // its neighbors
       for(int i = 0; i < neighborNumber_ + 1; i++) {
         if((i == neighborNumber_ && !hasSentData_)
-           || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+           || (!hasSentData_ && ttk::MPIrank_ < neighbors_->at(i))) {
           // it is the turn of the current process to send its ghosts
           if(outdatedGlobalPointIds_ == nullptr) {
-            if(vertRankArray_ == nullptr) {
+            if(vertexRankArray_ == nullptr) {
               sendToAllNeighbors<Point>(vertGhostCoordinates, mpiPointType_);
             } else {
               sendToAllNeighborsUsingRankArray<Point>(
                 vertGhostCoordinatesPerRank, mpiPointType_);
             }
           } else {
-            if(vertRankArray_ == nullptr) {
+            if(vertexRankArray_ == nullptr) {
               sendToAllNeighbors<ttk::SimplexId>(
                 vertGhostGlobalIds, mpiIdType_);
             } else {
@@ -701,7 +705,7 @@ namespace ttk {
           // and associates its ghosts with the right global identifier
           for(int j = 0; j < neighborNumber_; j++) {
             recvVector<Response>(receivedResponse, recvMessageSize,
-                                 mpiResponseType_, neighbors_[j]);
+                                 mpiResponseType_, neighbors_->at(j));
             if(outdatedGlobalPointIds_ == nullptr) {
               for(int n = 0; n < recvMessageSize; n++) {
                 vertexIdentifiers_[receivedResponse[n].id]
@@ -723,14 +727,14 @@ namespace ttk {
           // It is not the turn of the current process to send its data.
           if(outdatedGlobalPointIds_ == nullptr) {
             recvVector<Point>(receivedPoints, recvMessageSize, mpiPointType_,
-                              neighbors_[i - hasSentData_]);
+                              neighbors_->at(i - hasSentData_));
             // Point coordinates are matched to a local point using a kd-tree
             // and its global id is added to the vector send_buf
             locatePoints(
               locatedSimplices, receivedPoints, recvMessageSize, send_buf);
           } else {
             recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
-                                       neighbors_[i - hasSentData_]);
+                                       neighbors_->at(i - hasSentData_));
             // Outdated global ids are matched to a local point
             // and its global id is added to the vector send_buf
             identifyPoints(
@@ -739,7 +743,7 @@ namespace ttk {
           // The points founds are sent back to the neighbor with their global
           // ids
           sendVector<Response>(
-            send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
+            send_buf, mpiResponseType_, neighbors_->at(i - hasSentData_));
         }
       }
       // Start of computation of ghost information for cells
@@ -788,7 +792,7 @@ namespace ttk {
       // Exchange cells similarly to what is done for vertices
       for(int i = 0; i < neighborNumber_ + 1; i++) {
         if((i == neighborNumber_ && !hasSentData_)
-           || (ttk::MPIrank_ < neighbors_[i] && !hasSentData_)) {
+           || (!hasSentData_ && ttk::MPIrank_ < neighbors_->at(i))) {
           // For each neighbor, a process will receive the ghost cells of all
           // its neighbors or, if it is its turn, will receive the ghost cells
           // of all its neighbors
@@ -813,7 +817,7 @@ namespace ttk {
           // and associates its ghosts with the right global identifier
           for(int j = 0; j < neighborNumber_; j++) {
             recvVector<Response>(receivedResponse, recvMessageSize,
-                                 mpiResponseType_, neighbors_[j]);
+                                 mpiResponseType_, neighbors_->at(j));
             if(outdatedGlobalCellIds_ == nullptr) {
               for(int n = 0; n < recvMessageSize; n++) {
                 cellIdentifiers_[receivedResponse[n].id]
@@ -830,7 +834,7 @@ namespace ttk {
         } else {
           // It is not the turn of the current process to send its data.
           recvVector<ttk::SimplexId>(receivedIds, recvMessageSize, mpiIdType_,
-                                     neighbors_[i - hasSentData_]);
+                                     neighbors_->at(i - hasSentData_));
           if(outdatedGlobalCellIds_ == nullptr) {
             // Point global ids are matched to a local cell and the global
             // id of the cell is added to the vector send_buf
@@ -845,7 +849,7 @@ namespace ttk {
           // The cells founds are sent back to the neighbor with their global
           // ids
           sendVector<Response>(
-            send_buf, mpiResponseType_, neighbors_[i - hasSentData_]);
+            send_buf, mpiResponseType_, neighbors_->at(i - hasSentData_));
         }
       }
 

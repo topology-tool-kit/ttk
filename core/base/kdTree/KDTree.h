@@ -97,8 +97,8 @@ namespace ttk {
                               const PowerFunc &power);
 
     template <typename PowerFunc>
-    inline dataType cost(const Container &coordinates,
-                         const PowerFunc &power) const {
+    inline dataType getCost(const Container &coordinates,
+                            const PowerFunc &power) const {
       dataType cost = 0;
       for(size_t i = 0; i < coordinates.size(); i++) {
         cost += power(std::abs(coordinates[i] - coordinates_[i]));
@@ -196,8 +196,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
       idx_left[i] = idx[i];
     }
 
-    this->left_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, true));
+    this->left_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
                                 correspondance_map, weights, weight_number);
   }
@@ -208,8 +208,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     for(int i = 0; i < ptNumber - median_loc - 1; i++) {
       idx_right[i] = idx[i + median_loc + 1];
     }
-    this->right_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, false));
+    this->right_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                  correspondance_map, weights, weight_number);
   }
@@ -285,8 +285,8 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
       idx_left[i] = idx_side[i];
     }
 
-    this->left_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, true));
+    this->left_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
                                 correspondance_map, weights, weight_number);
   }
@@ -297,8 +297,8 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
     for(unsigned int i = 0; i < idx_side.size() - median_loc - 1; i++) {
       idx_right[i] = idx_side[i + median_loc + 1];
     }
-    this->right_ = std::unique_ptr<KDTree>(
-      new KDTree(this, (coords_number_ + 1) % dimension, false));
+    this->right_
+      = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                  correspondance_map, weights, weight_number);
   }
@@ -346,7 +346,7 @@ void ttk::KDTree<dataType, Container>::getKClosest(const unsigned int k,
   /// will need to sort them according to their cost.
   if(this->isLeaf()) {
     dataType cost{};
-    TTK_POW_LAMBDA(cost = this->cost, dataType, p, coordinates);
+    TTK_POW_LAMBDA(cost = this->getCost, dataType, p, coordinates);
     cost += weight_[weight_index];
     neighbours.push_back(this);
     costs.push_back(cost);
@@ -370,7 +370,7 @@ void ttk::KDTree<dataType, Container>::recursiveGetKClosest(
   const PowerFunc &power) {
   // 1- Look wether or not to include the current point in the nearest
   // neighbours
-  dataType cost = this->cost(coordinates, power);
+  dataType cost = this->getCost(coordinates, power);
   cost += weight_[weight_index];
 
   if(costs.size() < k) {

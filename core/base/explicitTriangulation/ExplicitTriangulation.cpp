@@ -95,10 +95,82 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     return -1;
   }
 
+#ifdef TTK_ENABLE_MPI
+
+  this->preconditionEdgeRankArray();
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId edgeNumber = edgeList_.size();
+    std::vector<unsigned char> charBoundary(edgeNumber, false);
+    for(int i = 0; i < edgeNumber; ++i) {
+      charBoundary[i] = boundaryEdges_[i] ? '1' : '0';
+    }
+    ttk::exchangeGhostDataWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                               ttk::SimplexId>(
+      charBoundary.data(), this->edgeRankArray_.data(),
+      this->edgeLidToGid_.data(), this->edgeGidToLid_, edgeNumber,
+      ttk::MPIcomm_, this->getNeighborRanks());
+    for(int i = 0; i < edgeNumber; ++i) {
+      boundaryEdges_[i] = (charBoundary[i] == '1');
+    }
+  }
+
+#endif // TTK_ENABLE_MPI
+
   this->printMsg("Extracted boundary edges", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
 }
+
+#ifdef TTK_ENABLE_MPI
+
+int ExplicitTriangulation::preconditionEdgeRankArray() {
+  ttk::SimplexId edgeNumber = this->getNumberOfEdgesInternal();
+  edgeRankArray_.resize(edgeNumber, 0);
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId min_id;
+    for(ttk::SimplexId id = 0; id < edgeNumber; id++) {
+      this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(id, 0, min_id);
+      const auto nStar{this->TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(id)};
+      for(SimplexId i = 1; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(id, i, sid);
+        // rule: an edge is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellGid_[sid] < this->cellGid_[min_id]) {
+          min_id = sid;
+        }
+      }
+      edgeRankArray_[id] = cellRankArray_[min_id];
+    }
+  }
+  return 0;
+}
+
+int ExplicitTriangulation::preconditionTriangleRankArray() {
+  ttk::SimplexId triangleNumber = this->getNumberOfTrianglesInternal();
+  triangleRankArray_.resize(triangleNumber, 0);
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId min_id;
+    for(ttk::SimplexId id = 0; id < triangleNumber; id++) {
+      this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(id, 0, min_id);
+      const auto nStar{
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(id)};
+      for(SimplexId i = 1; i < nStar; ++i) {
+        SimplexId sid{-1};
+        this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(id, i, sid);
+        // rule: an triangle is owned by the cell in its star with the
+        // lowest global id
+        if(this->cellGid_[sid] < this->cellGid_[min_id]) {
+          min_id = sid;
+        }
+      }
+      triangleRankArray_[id] = cellRankArray_[min_id];
+    }
+  }
+  return 0;
+}
+
+#endif // TTK_ENABLE_MPI
 
 int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
 
@@ -133,6 +205,27 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     printErr("Unsupported dimension for triangle boundary precondition");
     return -1;
   }
+
+#ifdef TTK_ENABLE_MPI
+
+  this->preconditionTriangleRankArray();
+  if(ttk::isRunningWithMPI()) {
+    ttk::SimplexId triangleNumber = triangleList_.size();
+    std::vector<unsigned char> charBoundary(triangleNumber, false);
+    for(int i = 0; i < triangleNumber; ++i) {
+      charBoundary[i] = boundaryTriangles_[i] ? '1' : '0';
+    }
+    ttk::exchangeGhostDataWithoutTriangulation<unsigned char, ttk::SimplexId,
+                                               ttk::SimplexId>(
+      charBoundary.data(), this->triangleRankArray_.data(),
+      this->triangleLidToGid_.data(), this->triangleGidToLid_, triangleNumber,
+      ttk::MPIcomm_, this->getNeighborRanks());
+    for(int i = 0; i < triangleNumber; ++i) {
+      boundaryTriangles_[i] = (charBoundary[i] == '1');
+    }
+  }
+
+#endif // TTK_ENABLE_MPI
 
   this->printMsg("Extracted boundary triangles", 1.0, tm.getElapsedTime(), 1);
 
@@ -190,6 +283,26 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     printErr("Unsupported dimension for vertex boundary precondition");
     return -1;
   }
+
+#ifdef TTK_ENABLE_MPI
+
+  if(ttk::isRunningWithMPI()) {
+    this->preconditionDistributedVertices();
+    std::vector<unsigned char> charBoundary(vertexNumber_, false);
+    for(int i = 0; i < vertexNumber_; ++i) {
+      charBoundary[i] = boundaryVertices_[i] ? '1' : '0';
+    }
+    ttk::exchangeGhostVertices<unsigned char, ExplicitTriangulation>(
+      charBoundary.data(), this, ttk::MPIcomm_);
+
+    for(int i = 0; i < vertexNumber_; ++i) {
+      if(vertexRankArray_[i] != ttk::MPIrank_) {
+        boundaryVertices_[i] = (charBoundary[i] == '1');
+      }
+    }
+  }
+
+#endif // TTK_ENABLE_MPI
 
   this->printMsg("Extracted boundary vertices", 1.0, tm.getElapsedTime(), 1);
 
@@ -595,11 +708,11 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+    this->printErr("Missing global cell identifiers array!");
     return -2;
   }
   if(this->cellRankArray_ == nullptr) {
-    this->printWrn("Missing RankArray on cells");
+    this->printErr("Missing cell RankArray!");
     return -3;
   }
 
@@ -614,20 +727,13 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     this->cellGidToLid_[this->cellGid_[lcid]] = lcid;
   }
 
-  this->ghostCellPerOwner_.resize(ttk::MPIsize_);
+  this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     if(this->cellRankArray_[lcid] != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
-      this->ghostCellPerOwner_[this->cellRankArray_[lcid]].emplace_back(
+      this->ghostCellsPerOwner_[this->cellRankArray_[lcid]].emplace_back(
         this->cellGid_[lcid]);
-    }
-  }
-
-  // store neighboring ranks
-  for(size_t i = 0; i < this->ghostCellPerOwner_.size(); ++i) {
-    if(!this->ghostCellPerOwner_[i].empty()) {
-      this->neighborRanks_.emplace_back(i);
     }
   }
 
@@ -640,15 +746,15 @@ int ExplicitTriangulation::preconditionDistributedCells() {
 
   for(const auto neigh : this->neighborRanks_) {
     // 1. send to neigh number of ghost cells owned by neigh
-    const auto nCells{this->ghostCellPerOwner_[neigh].size()};
+    const auto nCells{this->ghostCellsPerOwner_[neigh].size()};
     MPI_Sendrecv(&nCells, 1, ttk::getMPIType(nCells), neigh, ttk::MPIrank_,
                  &nOwnedGhostCellsPerRank[neigh], 1, ttk::getMPIType(nCells),
                  neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
     this->remoteGhostCells_[neigh].resize(nOwnedGhostCellsPerRank[neigh]);
 
     // 2. send to neigh list of ghost cells owned by neigh
-    MPI_Sendrecv(this->ghostCellPerOwner_[neigh].data(),
-                 this->ghostCellPerOwner_[neigh].size(), MIT, neigh,
+    MPI_Sendrecv(this->ghostCellsPerOwner_[neigh].data(),
+                 this->ghostCellsPerOwner_[neigh].size(), MIT, neigh,
                  ttk::MPIrank_, this->remoteGhostCells_[neigh].data(),
                  this->remoteGhostCells_[neigh].size(), MIT, neigh, neigh,
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
@@ -858,7 +964,7 @@ int ttk::ExplicitTriangulation::exchangeDistributedInternal(
       }
       // receiving side
       globalIdPerLocalGhostCell[neigh].resize(
-        nSimplicesPerCell * this->ghostCellPerOwner_[neigh].size());
+        nSimplicesPerCell * this->ghostCellsPerOwner_[neigh].size());
 
       // 4. transfer back global simplex ids
       MPI_Sendrecv(globalIdPerOwnedGhostCell[neigh].data(),
@@ -870,8 +976,8 @@ int ttk::ExplicitTriangulation::exchangeDistributedInternal(
 
     // 5. extend local <-> global simplex ids mappings
     for(const auto neigh : this->neighborRanks_) {
-      for(size_t i = 0; i < this->ghostCellPerOwner_[neigh].size(); ++i) {
-        const auto gcid{this->ghostCellPerOwner_[neigh][i]};
+      for(size_t i = 0; i < this->ghostCellsPerOwner_[neigh].size(); ++i) {
+        const auto gcid{this->ghostCellsPerOwner_[neigh][i]};
         const auto lcid{this->cellGidToLid_[gcid]};
         for(int j = 0; j < nSimplicesPerCell; ++j) {
           const auto geid{
@@ -913,7 +1019,7 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+    this->printErr("Missing global cell identifiers array!");
     return -2;
   }
 
@@ -1056,7 +1162,7 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
     return -1;
   }
   if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
+    this->printErr("Missing global cell identifiers array!");
     return -2;
   }
 
@@ -1189,15 +1295,53 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
     return -1;
   }
   if(this->vertGid_ == nullptr) {
-    this->printWrn("Missing global identifiers array!");
+    this->printErr("Missing global vertex identifiers array!");
     return -2;
   }
+  if(this->vertexRankArray_ == nullptr) {
+    this->printErr("Missing vertex RankArray!");
+    return -3;
+  }
 
-  // allocate memory
-  this->vertexGidToLid_.reserve(this->vertexNumber_);
+  // number of local vertices (with ghost vertices...)
+  const auto nLocVertices{this->getNumberOfVertices()};
 
-  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexGidToLid_[this->vertGid_[i]] = i;
+  // global vertex id -> local vertex id (reverse of this->vertGid_)
+  this->vertexGidToLid_.reserve(nLocVertices);
+  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
+  }
+  this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
+
+  for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
+    if(this->vertexRankArray_[lvid] != ttk::MPIrank_) {
+      // store ghost cell global ids (per rank)
+      this->ghostVerticesPerOwner_[this->vertexRankArray_[lvid]].emplace_back(
+        this->vertGid_[lvid]);
+    }
+  }
+
+  // for each rank, store the global id of local cells that are ghost cells of
+  // other ranks.
+  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
+  this->remoteGhostVertices_.resize(ttk::MPIsize_);
+  // number of owned cells that are ghost cells of other ranks
+  std::vector<size_t> nOwnedGhostVerticesPerRank(ttk::MPIsize_);
+
+  for(const auto neigh : this->neighborRanks_) {
+    // 1. send to neigh number of ghost cells owned by neigh
+    const auto nVerts{this->ghostVerticesPerOwner_[neigh].size()};
+    MPI_Sendrecv(&nVerts, 1, ttk::getMPIType(nVerts), neigh, ttk::MPIrank_,
+                 &nOwnedGhostVerticesPerRank[neigh], 1, ttk::getMPIType(nVerts),
+                 neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    this->remoteGhostVertices_[neigh].resize(nOwnedGhostVerticesPerRank[neigh]);
+
+    // 2. send to neigh list of ghost cells owned by neigh
+    MPI_Sendrecv(this->ghostVerticesPerOwner_[neigh].data(),
+                 this->ghostVerticesPerOwner_[neigh].size(), MIT, neigh,
+                 ttk::MPIrank_, this->remoteGhostVertices_[neigh].data(),
+                 this->remoteGhostVertices_[neigh].size(), MIT, neigh, neigh,
+                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedVertices_ = true;
