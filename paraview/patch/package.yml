@@ -106,13 +106,13 @@ jobs:
     - name: Create ParaView package
       run: |
         cd build
-        cpack -G productbuild
+        cpack -G TGZ
 
-    - name: Upload .pgk package
+    - name: Upload compressed binaries
       uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-macOS
-        path: build/ttk-paraview.pkg
+        path: build/ttk-paraview.tar.gz
 
 
   # ------- #
@@ -226,13 +226,13 @@ jobs:
         file: ttk-paraview-ubuntu-22.04/ttk-paraview.deb
         asset_name: ttk-paraview-$tag-ubuntu-22.04.deb
 
-    - name: Upload .pkg as Release Asset
+    - name: Upload .tar.gz as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-macOS/ttk-paraview.pkg
-        asset_name: ttk-paraview-$tag.pkg
+        file: ttk-paraview-macOS/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-$tag.tar.gz
 
     - name: Upload .exe as Release Asset
       uses: svenstaro/upload-release-action@v2
