@@ -87,11 +87,11 @@ namespace ttk {
         BranchMappingDistance branchDist;
         branchDist.setBaseMetric(branchMetric_);
         branchDist.setAssignmentSolver(assignmentSolverID_);
-        branchDist.setSquared(distanceSquared_);
+        branchDist.setSquared(not distanceSquaredRoot_);
         PathMappingDistance pathDist;
         pathDist.setBaseMetric(pathMetric_);
         pathDist.setAssignmentSolver(assignmentSolverID_);
-        pathDist.setSquared(distanceSquared_);
+        pathDist.setSquared(not distanceSquaredRoot_);
         pathDist.setComputeMapping(true);
 
         distanceMatrix[i][i] = 0.0;
@@ -171,7 +171,7 @@ namespace ttk {
               mergeTreeDistance.setNormalizedWassersteinReg(
                 normalizedWassersteinReg_);
               mergeTreeDistance.setKeepSubtree(keepSubtree_);
-              mergeTreeDistance.setDistanceSquared(distanceSquared_);
+              mergeTreeDistance.setDistanceSquaredRoot(distanceSquaredRoot_);
               mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
               mergeTreeDistance.setSaveTree(true);
               mergeTreeDistance.setCleanTree(true);
@@ -181,7 +181,7 @@ namespace ttk {
               if(useDoubleInput_) {
                 double weight = mixDistancesMinMaxPairWeight(isFirstInput);
                 mergeTreeDistance.setMinMaxPairWeight(weight);
-                mergeTreeDistance.setDistanceSquared(true);
+                mergeTreeDistance.setDistanceSquaredRoot(true);
               }
               std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
               distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
