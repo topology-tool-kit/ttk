@@ -47,7 +47,8 @@ namespace ttk {
       auto newScalarsValues = std::make_shared<std::vector<double>>();
       for(auto val : *mt.scalarsValues)
         newScalarsValues->push_back(static_cast<double>(val));
-      newMt = MergeTree<double>(mt.scalars, newScalarsValues, mt.params);
+      auto newScalars = std::make_shared<ftm::Scalars>(*mt.scalars);
+      newMt = MergeTree<double>(newScalars, newScalarsValues, mt.params);
       newMt.tree.copyMergeTreeStructure(&(mt.tree));
     }
 
@@ -81,7 +82,8 @@ namespace ttk {
       auto newScalarsValues = std::make_shared<std::vector<dataType>>();
       for(auto val : *mt.scalarsValues)
         newScalarsValues->push_back(static_cast<dataType>(val));
-      newMt = MergeTree<dataType>(mt.scalars, newScalarsValues, mt.params);
+      auto newScalars = std::make_shared<ftm::Scalars>(*mt.scalars);
+      newMt = MergeTree<dataType>(newScalars, newScalarsValues, mt.params);
       newMt.tree.copyMergeTreeStructure(&(mt.tree));
     }
 

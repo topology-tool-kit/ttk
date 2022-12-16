@@ -938,11 +938,13 @@ namespace ttk {
 
       void copy(const MergeTree<dataType> &mt) {
         // Copy scalars
+        scalars = std::make_shared<ftm::Scalars>();
         scalars->size = mt.scalars->size;
         scalarsValues = mt.scalarsValues;
         scalars->values = (void *)(scalarsValues->data());
 
         // Copy params
+        params = std::make_shared<ftm::Params>();
         params->treeType = mt.params->treeType;
 
         // Copy tree
