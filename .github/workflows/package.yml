@@ -258,36 +258,16 @@ jobs:
         sudo cp -r ttk/* /usr/local
         pvpython -m pip install scikit-learn
 
-    - name: Set compilers as environment variables
+    - name: Set environment variables
       run: |
         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH" >> $GITHUB_ENV
 
-    - name: Test TTK examples
-      run: |
-        # base layer
-        cd $GITHUB_WORKSPACE/examples/c++
-        mkdir build && cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-c++ -i ../../data/inputData.off
-        # VTK layer
-        export CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH
-        cd $GITHUB_WORKSPACE/examples/vtk-c++
-        mkdir build &&  cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
-        # pure Python
-        export PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH
-        cd $GITHUB_WORKSPACE/examples/python
-        python3 example.py ../data/inputData.vtu
-        # pvpython
-        cd $GITHUB_WORKSPACE/examples/pvpython
-        pvpython example.py ../data/inputData.vtu
-        # standalones
-        cd $GITHUB_WORKSPACE
-        ttkHelloWorldCmd -i examples/data/inputData.vtu
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-unix
 
     - uses: actions/checkout@v3
       with:
