@@ -85,14 +85,13 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp mesa glew boost qt@5 ninja python
+        brew install wget libomp mesa glew qt@5 ninja python
 
     - name: Create & configure ParaView build directory
       run: |
         mkdir build && cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/Applications \
           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 \
           -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \

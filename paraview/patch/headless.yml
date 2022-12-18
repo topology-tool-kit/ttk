@@ -94,12 +94,11 @@ jobs:
       run: |
         cd build
         cmake --build . --parallel
-        sudo cmake --build . --target install
 
     - name: Create ParaView package
       run: |
         cd build
-        sudo cpack -G TGZ
+        cpack -G TGZ
 
     - name: Upload compressed binaries
       uses: actions/upload-artifact@v3
