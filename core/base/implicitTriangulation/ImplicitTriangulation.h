@@ -268,6 +268,9 @@ namespace ttk {
     SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
 
+    int getVertexRankInternal(const SimplexId lvid) const override;
+    int getCellRankInternal(const SimplexId lcid) const override;
+
   protected:
     bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
     bool isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override;
@@ -279,6 +282,9 @@ namespace ttk {
                                    const SimplexId v1) const;
     SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
 
+    std::array<SimplexId, 3> getVertGlobalCoords(const SimplexId lvid) const;
+    std::array<SimplexId, 3> getVertLocalCoords(const SimplexId gvid) const;
+
 #endif // TTK_ENABLE_MPI
 
   protected:
@@ -286,6 +292,10 @@ namespace ttk {
     std::shared_ptr<ImplicitTriangulation> metaGrid_{};
     // offset coordinates of the local grid inside the metaGrid_
     std::array<SimplexId, 3> localGridOffset_{};
+    // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
+    std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
+    // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
+    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
 #endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {

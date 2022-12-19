@@ -2521,36 +2521,14 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
-    // GlobalPointIds, GlobalCellIds
+    // "vtkGhostType" on points & cells
 
-    inline void setCellsGlobalIds(const LongSimplexId *const cellGid) {
-      this->cellGid_ = cellGid;
-    }
-    inline const LongSimplexId *getCellsGlobalIds() const {
-      return this->cellGid_;
+    inline void setVertexGhostArray(const unsigned char *const data) {
+      this->vertexGhost_ = data;
     }
 
-    inline void setVertsGlobalIds(const LongSimplexId *array) {
-      this->vertGid_ = array;
-    }
-    inline const LongSimplexId *getVertsGlobalIds() const {
-      return this->vertGid_;
-    }
-
-    // RankArray on points & cells
-
-    inline void setVertexRankArray(const int *const rankArray) {
-      this->vertexRankArray_ = rankArray;
-    }
-    inline const int *getVertexRankArray() const {
-      return this->vertexRankArray_;
-    }
-
-    inline void setCellRankArray(const int *const rankArray) {
-      this->cellRankArray_ = rankArray;
-    }
-    inline const int *getCellRankArray() const {
-      return this->cellRankArray_;
+    inline void setCellGhostArray(const unsigned char *const data) {
+      this->cellGhost_ = data;
     }
 
     /// Pre-process the global boundaries when using MPI. Local bounds should
@@ -2782,31 +2760,50 @@ namespace ttk {
       return -1;
     }
 
-    virtual inline const std::unordered_map<SimplexId, SimplexId> &
-      getVertexGlobalIdMap() const {
+    virtual inline int getVertexRank(const SimplexId lvid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
          && this->getDimensionality() != 3) {
         this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
       }
       if(!this->hasPreconditionedDistributedVertices_) {
-        this->printErr("VertexGlobalMap query without pre-process!");
+        this->printErr("VertexRankId query without pre-process!");
         this->printErr(
           "Please call preconditionDistributedVertices() in a pre-process.");
+        return -1;
+      }
+      if(lvid < 0 || lvid >= this->getNumberOfVertices()) {
+        return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_;
+      if(!ttk::isRunningWithMPI()) {
+        return lvid;
+      }
+      return this->getVertexRankInternal(lvid);
     }
 
-    virtual inline std::unordered_map<SimplexId, SimplexId> &
-      getVertexGlobalIdMap() {
+    virtual inline int getCellRank(const SimplexId lcid) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
          && this->getDimensionality() != 3) {
         this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedCells_) {
+        this->printErr("CellRankId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedCells() in a pre-process.");
+        return -1;
+      }
+      if(lcid < 0 || lcid >= this->getNumberOfCells()) {
+        return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_;
+      if(!ttk::isRunningWithMPI()) {
+        return lcid;
+      }
+      return this->getCellRankInternal(lcid);
     }
 
     virtual inline const std::vector<int> &getNeighborRanks() const {
@@ -2816,24 +2813,24 @@ namespace ttk {
       return this->neighborRanks_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getGhostCellsPerOwner() const {
-      return &(this->ghostCellsPerOwner_);
+      return this->ghostCellsPerOwner_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getRemoteGhostCells() const {
-      return &(this->remoteGhostCells_);
+      return this->remoteGhostCells_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getGhostVerticesPerOwner() const {
-      return &(this->ghostVerticesPerOwner_);
+      return this->ghostVerticesPerOwner_;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> &
       getRemoteGhostVertices() const {
-      return &(this->remoteGhostVertices_);
+      return this->remoteGhostVertices_;
     }
 
     virtual inline void setHasPreconditionedDistributedVertices(bool flag) {
@@ -2918,6 +2915,16 @@ namespace ttk {
 
     virtual inline SimplexId
       getTriangleLocalIdInternal(const SimplexId ttkNotUsed(gtid)) const {
+      return -1;
+    }
+
+    virtual inline int
+      getVertexRankInternal(const SimplexId ttkNotUsed(lvid)) const {
+      return -1;
+    }
+
+    virtual inline int
+      getCellRankInternal(const SimplexId ttkNotUsed(lcid)) const {
       return -1;
     }
 
@@ -3695,21 +3702,10 @@ namespace ttk {
       return 0;
     }
 
-    // "GlobalCellIds" from "Generate Global Ids"
-    // (warning: for Implicit/Periodic triangulations, concerns
-    // "squares"/"cubes" and not "triangles"/"tetrahedron")
-    const LongSimplexId *cellGid_{};
-    // "GlobalPointIds" from "Generate Global Ids"
-    const LongSimplexId *vertGid_{};
-    // PointData "RankArray" from "TTKGhostCellPreconditioning"
-    const int *vertexRankArray_{};
-    // CellData "RankArray" from "TTKGhostCellPreconditioning"
-    // (warning: for Implicit/Periodic triangulations, concerns
-    // "squares"/"cubes" and not "triangles"/"tetrahedron")
-    const int *cellRankArray_{};
-
-    // inverse of vertGid_
-    std::unordered_map<SimplexId, SimplexId> vertexGidToLid_{};
+    // "vtkGhostType" PointData array
+    const unsigned char *vertexGhost_{};
+    // "vtkGhostType" CellData array
+    const unsigned char *cellGhost_{};
 
     // list of neighboring ranks (sharing ghost cells to current rank)
     std::vector<int> neighborRanks_{};

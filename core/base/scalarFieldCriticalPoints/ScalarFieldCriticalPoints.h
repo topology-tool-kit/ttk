@@ -244,21 +244,14 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 
   if(triangulation) {
 
-#if TTK_ENABLE_MPI
-    const auto rankArray{triangulation->getVertexRankArray()};
-    if(ttk::isRunningWithMPI() && rankArray == nullptr) {
-      this->printErr("Missing vertex rank array");
-      return -6;
-    }
-#endif // TTK_ENABLE_MPI
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 #if TTK_ENABLE_MPI
       if(!isRunningWithMPI()
-         || (isRunningWithMPI() && (rankArray[i] == ttk::MPIrank_))) {
+         || (isRunningWithMPI()
+             && (triangulation->getVertexRank(i) == ttk::MPIrank_))) {
 #endif
         vertexTypes[i] = getCriticalType(i, offsets, triangulation);
 #if TTK_ENABLE_MPI

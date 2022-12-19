@@ -1380,12 +1380,12 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param leid Input local vertex identifier.
     /// \return vertexId Input global vertex identifier.
-    inline SimplexId getVertexGlobalId(const SimplexId leid) const override {
+    inline SimplexId getVertexGlobalId(const SimplexId lvid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-      return abstractTriangulation_->getVertexGlobalId(leid);
+      return abstractTriangulation_->getVertexGlobalId(lvid);
     }
 
     /// Get the global id to local id map for the triangulation.
@@ -1399,23 +1399,8 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if succesful, -1 else.
-    inline const std::unordered_map<SimplexId, SimplexId> &
-      getVertexGlobalIdMap() const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return this->getVertexGlobalIdMap();
-#endif
-      return abstractTriangulation_->getVertexGlobalIdMap();
-    }
-
-    /// Get the pointer of global id to local id map for the triangulation.
-    ///
-    /// \note This method is similar to getVertexGlobalIdMap() except it is not
-    /// const and allows for modification of the triangulation and the map.
-
-    inline std::unordered_map<SimplexId, SimplexId> &
-      getVertexGlobalIdMap() override {
-      return abstractTriangulation_->getVertexGlobalIdMap();
+    inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
+      return this->explicitTriangulation_.getVertexGlobalIdMap();
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
@@ -1438,14 +1423,18 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
-    inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::vector<SimplexId>> &
       getGhostCellsPerOwner() const override {
       return abstractTriangulation_->getGhostCellsPerOwner();
     }
 
-    inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::vector<SimplexId>> &
       getRemoteGhostCells() const override {
       return abstractTriangulation_->getRemoteGhostCells();
+    }
+
+    inline int getVertexRank(const SimplexId lvid) const override {
+      return this->abstractTriangulation_->getVertexRank(lvid);
     }
 
     /// Get the corresponding local id for a given global id of a vertex.
@@ -1480,6 +1469,8 @@ namespace ttk {
     inline void createMetaGrid(const double *const bounds) {
       this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
       this->implicitTriangulation_.createMetaGrid(bounds);
+      // also pass bounding box to ExplicitTriangulation...
+      this->explicitTriangulation_.setBoundingBox(bounds);
     }
 
     /**
@@ -2838,39 +2829,23 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
-    // support TriangulationManager by setting "RankArray" & "Global
-    // Ids" arrays in all triangulation instances
+    // GlobalPointIds, GlobalCellIds (only for ExplicitTriangulation)
 
-#define TTK_GET_SET_ARRAYS(FNAME, TYPE)                         \
-  inline void set##FNAME(const TYPE *const data) {              \
-    if(data == nullptr) {                                       \
-      return;                                                   \
-    }                                                           \
-    this->explicitTriangulation_.set##FNAME(data);              \
-    this->compactTriangulation_.set##FNAME(data);               \
-    this->implicitTriangulation_.set##FNAME(data);              \
-    this->implicitPreconditionsTriangulation_.set##FNAME(data); \
-    this->periodicImplicitTriangulation_.set##FNAME(data);      \
-    this->periodicPreconditionsTriangulation_.set##FNAME(data); \
-  }                                                             \
-  inline const TYPE *get##FNAME() const {                       \
-    if(this->abstractTriangulation_ != nullptr) {               \
-      return this->abstractTriangulation_->get##FNAME();        \
-    }                                                           \
-    return {};                                                  \
-  }
+    inline void setVertsGlobalIds(const LongSimplexId *data) {
+      this->explicitTriangulation_.setVertsGlobalIds(data);
+    }
+    inline void setCellsGlobalIds(const LongSimplexId *const data) {
+      this->explicitTriangulation_.setCellsGlobalIds(data);
+    }
 
-    // GlobalPointIds, GlobalCellIds
+    // "vtkGhostType" on vertices & cells
 
-    TTK_GET_SET_ARRAYS(VertsGlobalIds, LongSimplexId);
-    TTK_GET_SET_ARRAYS(CellsGlobalIds, LongSimplexId);
-
-    // RankArray on points & cells
-
-    TTK_GET_SET_ARRAYS(VertexRankArray, int);
-    TTK_GET_SET_ARRAYS(CellRankArray, int);
-
-#undef TTK_GET_SET_ARRAYS
+    inline void setVertexGhostArray(const unsigned char *data) {
+      this->abstractTriangulation_->setVertexGhostArray(data);
+    }
+    inline void setCellGhostArray(const unsigned char *data) {
+      this->abstractTriangulation_->setCellGhostArray(data);
+    }
 
 #endif // TTK_ENABLE_MPI
 

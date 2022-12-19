@@ -126,11 +126,10 @@ namespace ttk {
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors.size();
-      const std::vector<std::vector<ttk::SimplexId>> *ghostCellsPerOwner
-        = triangulation->getGhostCellsPerOwner();
+      const auto &ghostCellsPerOwner = triangulation->getGhostCellsPerOwner();
       // receive the scalar values
       for(int r = 0; r < neighborNumber; r++) {
-        ttk::SimplexId nValues = ghostCellsPerOwner->at(neighbors.at(r)).size();
+        ttk::SimplexId nValues = ghostCellsPerOwner[neighbors[r]].size();
         std::vector<DT> receivedValues(nValues * dimensionNumber);
         if(nValues > 0) {
           MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
@@ -139,8 +138,7 @@ namespace ttk {
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
-              ttk::SimplexId globalId
-                = ghostCellsPerOwner->at(neighbors.at(r))[i];
+              ttk::SimplexId globalId = ghostCellsPerOwner[neighbors[r]][i];
               ttk::SimplexId localId = triangulation->getCellLocalId(globalId);
               scalarArray[localId * dimensionNumber + j] = receivedVal;
             }
@@ -153,8 +151,8 @@ namespace ttk {
       if(std::find(neighbors.begin(), neighbors.end(), rankToSend)
          != neighbors.end()) {
         // get the needed globalids from the triangulation
-        std::vector<ttk::SimplexId> ghostCellsForThisRank
-          = triangulation->getRemoteGhostCells()->at(rankToSend);
+        const auto &ghostCellsForThisRank
+          = triangulation->getRemoteGhostCells()[rankToSend];
         ttk::SimplexId nValues = ghostCellsForThisRank.size();
         if(nValues > 0) {
           // assemble the scalar values
@@ -195,12 +193,11 @@ namespace ttk {
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors.size();
-      const std::vector<std::vector<ttk::SimplexId>> *ghostVerticesPerOwner
+      const auto &ghostVerticesPerOwner
         = triangulation->getGhostVerticesPerOwner();
       // receive the scalar values
       for(int r = 0; r < neighborNumber; r++) {
-        ttk::SimplexId nValues
-          = ghostVerticesPerOwner->at(neighbors.at(r)).size();
+        ttk::SimplexId nValues = ghostVerticesPerOwner[neighbors[r]].size();
         std::vector<DT> receivedValues(nValues * dimensionNumber);
         if(nValues > 0) {
           MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
@@ -208,8 +205,7 @@ namespace ttk {
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
-              ttk::SimplexId globalId
-                = ghostVerticesPerOwner->at(neighbors.at(r))[i];
+              ttk::SimplexId globalId = ghostVerticesPerOwner[neighbors[r]][i];
               ttk::SimplexId localId
                 = triangulation->getVertexLocalId(globalId);
               scalarArray[localId * dimensionNumber + j] = receivedVal;
@@ -223,8 +219,8 @@ namespace ttk {
       if(std::find(neighbors.begin(), neighbors.end(), rankToSend)
          != neighbors.end()) {
         // get the needed globalids from the triangulation
-        std::vector<ttk::SimplexId> ghostVerticesForThisRank
-          = triangulation->getRemoteGhostVertices()->at(rankToSend);
+        const auto &ghostVerticesForThisRank
+          = triangulation->getRemoteGhostVertices()[rankToSend];
         ttk::SimplexId nValues = ghostVerticesForThisRank.size();
         if(nValues > 0) {
           // assemble the scalar values
@@ -258,7 +254,7 @@ namespace ttk {
    *
    * @param[out] scalarArray the scalar array which we want to fill and which is
    * filled on the other ranks
-   * @param[in] rankArray the owner array for the scalar data
+   * @param[in] getVertexRank lambda to get rank from vertex
    * @param[in] globalIds the global id array for the scalar data
    * @param[in] gidToLidMap a map which translates global ids to local,
    * rank-based ids
@@ -270,10 +266,10 @@ namespace ttk {
    * (most likely ttk::MPIcomm_)
    * @return 0 in case of success
    */
-  template <typename DT, typename IT, typename globalIdType>
+  template <typename DT, typename IT, typename globalIdType, typename GVR>
   int getGhostDataScalarsWithoutTriangulation(
     DT *scalarArray,
-    const int *const rankArray,
+    const GVR &getVertexRank,
     const globalIdType *const globalIds,
     const std::unordered_map<IT, IT> &gidToLidMap,
     const std::vector<int> &neighbors,
@@ -301,8 +297,8 @@ namespace ttk {
       // aggregate the needed ids
 
       for(IT i = 0; i < nVerts; i++) {
-        if(ttk::MPIrank_ != rankArray[i]) {
-          rankVectors[rankArray[i]].push_back(globalIds[i]);
+        if(ttk::MPIrank_ != getVertexRank(i)) {
+          rankVectors[getVertexRank(i)].push_back(globalIds[i]);
         }
       }
       // send the amount of ids and the needed ids themselves
@@ -369,23 +365,23 @@ namespace ttk {
   }
 
   /**
-   * @brief get the neighbors of a rank by traversing the rankArray
+   * @brief get the neighbors of a rank
    *
    * @param[out] neighbors a set containing the ranks which are neighbors of
    * this rank
-   * @param[in] rankArray the owner array for the scalar data
-   * @param[in] nVerts the number of vertices in rankArray
+   * @param[in] getVertexRank lambda to get rank from vertex
+   * @param[in] nVerts the number of vertices
    * @return 0 in case of success
    */
-  template <typename IT>
+  template <typename IT, typename GVR>
   int preconditionNeighborsUsingRankArray(std::vector<int> &neighbors,
-                                          const int *const rankArray,
+                                          const GVR &getVertexRank,
                                           const IT nVerts,
                                           MPI_Comm communicator) {
     std::unordered_set<int> neighborSet{};
     for(IT i = 0; i < nVerts; i++) {
-      if(rankArray[i] != ttk::MPIrank_) {
-        neighborSet.emplace(rankArray[i]);
+      if(getVertexRank(i) != ttk::MPIrank_) {
+        neighborSet.emplace(getVertexRank(i));
       }
     }
     std::vector<int> sendVector(neighborSet.begin(), neighborSet.end());
@@ -530,7 +526,7 @@ namespace ttk {
      * @param[out] scalarArray the scalar array which we want to fill and which
      is
      * filled on the other ranks
-     * @param[in] rankArray the owner array for the scalar data
+     * @param[in] getVertexRank lambda to get rank from vertex
      * @param[in] globalIds the global id array for the scalar data
      * @param[in] gidToLidMap a map which translates global ids to local,
      * rank-based ids
@@ -540,10 +536,10 @@ namespace ttk {
      * (most likely ttk::MPIcomm_)
      * @return 0 in case of success
      */
-  template <typename DT, typename IT, typename globalIdType>
+  template <typename DT, typename IT, typename globalIdType, typename GVR>
   int exchangeGhostDataWithoutTriangulation(
     DT *scalarArray,
-    const int *const rankArray,
+    const GVR &getVertexRank,
     const globalIdType *const globalIds,
     const std::unordered_map<IT, IT> &gidToLidMap,
     const IT nVerts,
@@ -555,8 +551,8 @@ namespace ttk {
     }
     for(int r = 0; r < ttk::MPIsize_; r++) {
       getGhostDataScalarsWithoutTriangulation<DT, IT, globalIdType>(
-        scalarArray, rankArray, globalIds, gidToLidMap, neighbors, r, nVerts,
-        communicator, dimensionNumber);
+        scalarArray, getVertexRank, globalIds, gidToLidMap, neighbors, r,
+        nVerts, communicator, dimensionNumber);
       MPI_Barrier(communicator);
     }
     return 0;
@@ -873,20 +869,20 @@ namespace ttk {
    * @param[in] nVerts number of vertices
    * @param[in] scalars the scalar data array
    * @param[in] globalIds the global id array for the scalar data
-   * @param[in] rankArray the rank array for the dataset
+   * @param[in] getVertexRank lambda to get rank from vertex
    */
-  template <typename DT, typename IT>
+  template <typename DT, typename IT, typename GVR>
   void populateVector(std::vector<value<DT, IT>> &valuesToSortVector,
                       std::vector<IT> &gidsToGetVector,
                       std::unordered_map<IT, IT> &gidToLidMap,
                       const size_t nVerts,
                       const DT *const scalars,
                       const LongSimplexId *const globalIds,
-                      const int *const rankArray) {
+                      const GVR &getVertexRank) {
     for(size_t i = 0; i < nVerts; i++) {
       IT globalId = globalIds[i];
       gidToLidMap[globalId] = i;
-      if(rankArray[i] == ttk::MPIrank_) {
+      if(getVertexRank(i) == ttk::MPIrank_) {
         valuesToSortVector.emplace_back(scalars[i], globalId);
       } else {
         gidsToGetVector.push_back(globalId);
@@ -921,15 +917,15 @@ namespace ttk {
    * @param[out] orderArray the order array for the scalar data
    * @param[in] scalarArray the scalar data array
    * @param[in] globalIds the global id array for the scalar data
-   * @param[in] rankArray the rank array for the dataset
+   * @param[in] getVertexRank lambda to get rank from vertex
    * @param[in] nVerts number of vertices in the arrays
    * @param[in] burstSize number of values sent in one communication step
    */
-  template <typename DT, typename IT>
+  template <typename DT, typename IT, typename GVR>
   void produceOrdering(SimplexId *orderArray,
                        const DT *scalarArray,
                        const IT *globalIds,
-                       const int *rankArray,
+                       const GVR &getVertexRank,
                        const size_t nVerts,
                        const int burstSize,
                        std::vector<int> &neighbors) {
@@ -937,7 +933,7 @@ namespace ttk {
     int structTag = 102;
     if(neighbors.empty()) {
       ttk::preconditionNeighborsUsingRankArray(
-        neighbors, rankArray, nVerts, ttk::MPIcomm_);
+        neighbors, getVertexRank, nVerts, ttk::MPIcomm_);
     }
     MPI_Barrier(ttk::MPIcomm_);
 
@@ -948,7 +944,7 @@ namespace ttk {
     std::vector<IT> gidsToGetVector;
     std::unordered_map<IT, IT> gidToLidMap;
     populateVector<DT, IT>(sortingValues, gidsToGetVector, gidToLidMap, nVerts,
-                           scalarArray, globalIds, rankArray);
+                           scalarArray, globalIds, getVertexRank);
 
     // sort the scalar array distributed first by the scalar value itself,
     // then by the global id
@@ -1034,7 +1030,7 @@ namespace ttk {
     // we receive the values at the ghostcells through the abstract
     // exchangeGhostCells method
     ttk::exchangeGhostDataWithoutTriangulation<ttk::SimplexId, IT>(
-      orderArray, rankArray, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_,
+      orderArray, getVertexRank, globalIds, gidToLidMap, nVerts, ttk::MPIcomm_,
       neighbors);
   }
 
