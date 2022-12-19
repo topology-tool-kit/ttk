@@ -23,17 +23,15 @@ fi
 
 cd "$1" || exit 3
 $PATCH_BIN Clients/ParaView/CMakeLists.txt \
-  < "${PATCH_DIR}/paraview-5.8.0-CMakeLists.txt.patch"
+  < "${PATCH_DIR}/paraview-5.10.1-CMakeLists.txt.patch"
 $PATCH_BIN Qt/Components/Resources/UI/pqAboutDialog.ui \
   < "${PATCH_DIR}/pqAboutDialog.ui.patch"
 $PATCH_BIN VTK/IO/Export/vtkVRMLExporter.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkVRMLExporter.cxx.patch"
-$PATCH_BIN VTK/Filters/Extraction/vtkExtractSelectedIds.cxx \
-  < "${PATCH_DIR}/paraview-5.8.0-vtkExtractSelectedIds.cxx.patch"
-$PATCH_BIN VTKExtensions/Extraction/vtkPVSelectionSource.cxx \
-  < "${PATCH_DIR}/vtkPVSelectionSource-5.8.cxx.patch"
-$PATCH_BIN VTK/Filters/Sources/vtkSelectionSource.cxx \
-  < "${PATCH_DIR}/vtkSelectionSource.cxx.patch"
+
+# deprecated (use Polyline Source instead of Range Polygon)
+#$PATCH_BIN VTK/Filters/Extraction/vtkExtractSelectedIds.cxx \
+#  < "${PATCH_DIR}/paraview-5.8.0-vtkExtractSelectedIds.cxx.patch"
 
 cp "${PATCH_DIR}/splash.png"  Clients/ParaView/PVSplashScreen.png
 cp "${PATCH_DIR}/icon128.png" Clients/ParaView/pvIcon.png
@@ -71,31 +69,33 @@ cp "${PATCH_DIR}/icon22.png" \
 cp "${PATCH_DIR}/icon16.png" \
   Qt/Components/Resources/Icons/pvIcon16.png
 
-# # processing example data-sets
+## processing example data-sets
 mkdir -p TTK/Data/
 cp ${PATCH_DIR}/data/* TTK/Data/
 cp TTK/Data/*pvsm Qt/ApplicationComponents/Resources/ExampleVisualizations/
 cp TTK/Data/*png Qt/ApplicationComponents/Resources/Thumbnails/
-$PATCH_BIN CMakeLists.txt \
-  < "${PATCH_DIR}/paraview-examples-5.8-CMakeLists.txt.patch"
-$PATCH_BIN Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc \
-  < "${PATCH_DIR}/paraview-5.5.0-pqApplicationComponents.qrc.patch"
-$PATCH_BIN Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
-  < "${PATCH_DIR}/paraview-5.5.0-pqExampleVisualizationsDialog.ui.patch"
-$PATCH_BIN Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx \
-  < "${PATCH_DIR}/paraview-5.5.0-pqExampleVisualizationsDialog.cxx.patch"
 $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkPVFileInformation.cxx.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.11.0-ApplicationComponents.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.11.0-NSIS64.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.11.0-mpi4py-py311.patch"
 
+## Remove README.md that points to ParaView sources & build
+## instructions instead of TTK ones
+rm README.md
+
+## Build options: Release, Python support
+$PATCH_BIN -p1 < "${PATCH_DIR}/paraview-5.11.0-build-options.patch"
 ## CPack variables for packaging meta-data
-$PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.8.0-CPack-CMakeLists.txt.patch"
-$PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.8.0-build-options-CMakeLists.txt.patch"
-$PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.8.0-numpy_interface-warning.patch"
+$PATCH_BIN -p1 < "${PATCH_DIR}/paraview-5.11.0-CPack.patch"
 mkdir -p .github/workflows/
 cp ${PATCH_DIR}/package.yml .github/workflows
+cp ${PATCH_DIR}/headless.yml .github/workflows
+# gitignore
+cp ${PATCH_DIR}/pv_gitignore .gitignore
 
 echo "Finished patching."
 
