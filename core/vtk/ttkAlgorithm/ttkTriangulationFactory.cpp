@@ -29,10 +29,18 @@ vtkCellArray *GetCells(vtkDataSet *dataSet) {
 }
 
 int checkCellTypes(vtkPointSet *object) {
-  auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
-  object->GetCellTypes(cellTypes);
 
-  size_t nTypes = cellTypes->GetNumberOfTypes();
+  size_t nTypes = 0;
+
+  if(object->GetDataObjectType() == VTK_UNSTRUCTURED_GRID) {
+    auto objectAsUG = vtkUnstructuredGrid::SafeDownCast(object);
+    auto distinctCellTypes = objectAsUG->GetDistinctCellTypesArray();
+    nTypes = distinctCellTypes->GetNumberOfTuples();
+  } else {
+    auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
+    object->GetCellTypes(cellTypes);
+    nTypes = cellTypes->GetNumberOfTypes();
+  }
 
   // if cells are empty
   if(nTypes == 0)
@@ -44,7 +52,7 @@ int checkCellTypes(vtkPointSet *object) {
 
   // if cells are not simplices
   if(nTypes == 1) {
-    const auto &cellType = cellTypes->GetCellType(0);
+    const auto &cellType = object->GetCellType(0);
     if(cellType != VTK_VERTEX && cellType != VTK_LINE
        && cellType != VTK_TRIANGLE && cellType != VTK_TETRA)
       return -2;
