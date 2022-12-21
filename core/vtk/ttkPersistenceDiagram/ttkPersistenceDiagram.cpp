@@ -72,10 +72,6 @@ int ttkPersistenceDiagram::dispatch(
 
   vtkNew<vtkUnstructuredGrid> vtu{};
 
-  // fill missing data in CTDiagram (critical points coordinates & value)
-  fillPersistenceDiagram(
-    CTDiagram, outputScalars, *triangulation, this->threadNumber_);
-
   // convert CTDiagram to vtkUnstructuredGrid
   DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
                triangulation->getDimensionality(), this->ShowInsideDomain);
