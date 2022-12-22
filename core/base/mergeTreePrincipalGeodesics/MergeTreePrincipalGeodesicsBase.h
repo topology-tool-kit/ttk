@@ -6,6 +6,7 @@
 /// \b Related \b publication: \n
 /// "Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)" \n
 /// Mathieu Pont, Jules Vidal, Julien Tierny.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2022
 
 #pragma once
 
