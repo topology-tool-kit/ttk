@@ -386,9 +386,10 @@ namespace ttk {
     }
     std::vector<int> sendVector(neighborSet.begin(), neighborSet.end());
     int localSize = neighborSet.size();
-    int sizes[ttk::MPIsize_];
-    int displacements[ttk::MPIsize_];
-    MPI_Gather(&localSize, 1, MPI_INT, sizes, 1, MPI_INT, 0, communicator);
+    std::vector<int> sizes(ttk::MPIsize_);
+    std::vector<int> displacements(ttk::MPIsize_);
+    MPI_Gather(
+      &localSize, 1, MPI_INT, sizes.data(), 1, MPI_INT, 0, communicator);
     int totalSize = 0;
     if(ttk::MPIrank_ == 0) {
       for(int i = 0; i < ttk::MPIsize_; i++) {
@@ -403,8 +404,8 @@ namespace ttk {
     std::vector<int> rootVector(totalSize);
 
     MPI_Gatherv(sendVector.data(), sendVector.size(), MPI_INT,
-                rootVector.data(), sizes, displacements, MPI_INT, 0,
-                communicator);
+                rootVector.data(), sizes.data(), displacements.data(), MPI_INT,
+                0, communicator);
     std::vector<int> scatterVector;
 
     if(ttk::MPIrank_ == 0) {
@@ -444,12 +445,13 @@ namespace ttk {
 
     // scatter first the size and then the vector itself
     int receivedSize;
-    MPI_Scatter(sizes, 1, MPI_INT, &receivedSize, 1, MPI_INT, 0, communicator);
+    MPI_Scatter(
+      sizes.data(), 1, MPI_INT, &receivedSize, 1, MPI_INT, 0, communicator);
 
     // and then the actual neighbors
     std::vector<int> receivedNeighbors(receivedSize);
-    MPI_Scatterv(scatterVector.data(), sizes, displacements, MPI_INT,
-                 receivedNeighbors.data(), receivedSize, MPI_INT, 0,
+    MPI_Scatterv(scatterVector.data(), sizes.data(), displacements.data(),
+                 MPI_INT, receivedNeighbors.data(), receivedSize, MPI_INT, 0,
                  communicator);
     // then we turn the vector back into a set
     std::unordered_set<int> finalSet(
