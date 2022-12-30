@@ -325,8 +325,9 @@ namespace ttk {
          && (globalDebugLevel_ < (int)priority))
         return 0;
 
-      return this->printMsgInternal(
-        "", "", std::string(1, (char &)separator), priority, lineMode, stream);
+      return this->printMsgInternal("", "",
+                                    std::string(1, (const char &)separator),
+                                    priority, lineMode, stream);
     }
 
     /**
@@ -351,8 +352,9 @@ namespace ttk {
          && (globalDebugLevel_ < (int)priority))
         return 0;
 
-      return this->printMsgInternal(
-        msg, "", std::string(1, (char &)separator), priority, lineMode, stream);
+      return this->printMsgInternal(msg, "",
+                                    std::string(1, (const char &)separator),
+                                    priority, lineMode, stream);
     }
 
     /**

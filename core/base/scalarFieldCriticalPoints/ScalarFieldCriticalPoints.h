@@ -204,7 +204,8 @@ int ttk::ScalarFieldCriticalPoints::executeProgressive(
 
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
-  progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation *>(
+    (const ImplicitTriangulation *)triangulation));
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);
