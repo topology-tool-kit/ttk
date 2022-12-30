@@ -11,6 +11,7 @@ if (NOT MSVC) # GCC and Clang
     -Wvla
     -Wcast-qual
     -Wmissing-declarations
+    -Wundef
     )
 
   # performance and debug flags

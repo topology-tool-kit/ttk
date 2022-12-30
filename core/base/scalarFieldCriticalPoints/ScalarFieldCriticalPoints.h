@@ -255,15 +255,14 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 #pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
       if(!isRunningWithMPI()
          || (isRunningWithMPI()
-             && (triangulation->getVertexRank(i) == ttk::MPIrank_))) {
-#endif
+             && (triangulation->getVertexRank(i) == ttk::MPIrank_)))
+#endif // TTK_ENABLE_MPI
+      {
         vertexTypes[i] = getCriticalType(i, offsets, triangulation);
-#if TTK_ENABLE_MPI
       }
-#endif
     }
   } else if(vertexLinkEdgeLists_) {
     // legacy implementation

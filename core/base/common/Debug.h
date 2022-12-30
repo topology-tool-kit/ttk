@@ -363,7 +363,7 @@ namespace ttk {
      */
     inline void setDebugMsgPrefix(const std::string &prefix) {
       this->debugMsgNamePrefix_ = prefix;
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
       this->debugMsgPrefix_
         = debugMsgNamePrefix_.length() > 0
             ? "[" + debugMsgNamePrefix_ + "-" + std::to_string(MPIrank_) + "] "
@@ -372,7 +372,7 @@ namespace ttk {
       this->debugMsgPrefix_ = debugMsgNamePrefix_.length() > 0
                                 ? "[" + debugMsgNamePrefix_ + "] "
                                 : "";
-#endif
+#endif // TTK_ENABLE_MPI
     }
 
   protected:
