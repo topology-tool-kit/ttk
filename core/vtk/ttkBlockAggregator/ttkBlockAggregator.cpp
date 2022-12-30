@@ -46,7 +46,7 @@ int ttkBlockAggregator::Reset() {
   return 1;
 }
 
-int copyObjects(vtkDataObject *source, vtkDataObject *copy) {
+static int copyObjects(vtkDataObject *source, vtkDataObject *copy) {
   if(source->IsA("vtkMultiBlockDataSet")) {
     auto sourceAsMB = vtkMultiBlockDataSet::SafeDownCast(source);
     auto copyAsMB = vtkMultiBlockDataSet::SafeDownCast(copy);

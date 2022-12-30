@@ -355,7 +355,7 @@ int ttkMergeTreeClustering::runCompute(
   return 1;
 }
 
-void addFieldData(vtkDataSet *in, vtkDataSet *out) {
+static void addFieldData(vtkDataSet *in, vtkDataSet *out) {
   auto inFieldData = in->GetFieldData();
   auto outFieldData = out->GetFieldData();
   for(int i = 0; i < inFieldData->GetNumberOfArrays(); ++i) {

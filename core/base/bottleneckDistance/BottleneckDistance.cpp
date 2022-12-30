@@ -370,20 +370,20 @@ void ttk::BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
   }
 }
 
-void solvePWasserstein(std::vector<std::vector<double>> &matrix,
-                       std::vector<ttk::MatchingType> &matchings,
-                       ttk::AssignmentMunkres<double> &solver) {
+static void solvePWasserstein(std::vector<std::vector<double>> &matrix,
+                              std::vector<ttk::MatchingType> &matchings,
+                              ttk::AssignmentMunkres<double> &solver) {
 
   solver.setInput(matrix);
   solver.run(matchings);
   solver.clearMatrix();
 }
 
-void solveInfinityWasserstein(const int nbRow,
-                              const int nbCol,
-                              std::vector<std::vector<double>> &matrix,
-                              std::vector<ttk::MatchingType> &matchings,
-                              ttk::GabowTarjan &solver) {
+static void solveInfinityWasserstein(const int nbRow,
+                                     const int nbCol,
+                                     std::vector<std::vector<double>> &matrix,
+                                     std::vector<ttk::MatchingType> &matchings,
+                                     ttk::GabowTarjan &solver) {
 
   // Copy input matrix.
   auto bottleneckMatrix = matrix;

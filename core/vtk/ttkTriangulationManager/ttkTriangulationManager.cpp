@@ -49,9 +49,9 @@ int ttkTriangulationManager::FillOutputPortInformation(int port,
   return 0;
 }
 
-void switchPeriodicity(ttk::Triangulation &triangulation,
-                       const bool periodic,
-                       const ttk::Debug &dbg) {
+static void switchPeriodicity(ttk::Triangulation &triangulation,
+                              const bool periodic,
+                              const ttk::Debug &dbg) {
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
 
   if(prevPeriodic != periodic) {
@@ -73,9 +73,9 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
   }
 }
 
-void switchPreconditions(ttk::Triangulation &triangulation,
-                         const ttk::Triangulation::STRATEGY precStrategy,
-                         const ttk::Debug &dbg) {
+static void switchPreconditions(ttk::Triangulation &triangulation,
+                                const ttk::Triangulation::STRATEGY precStrategy,
+                                const ttk::Debug &dbg) {
   const bool prevPreconditions = triangulation.hasImplicitPreconditions();
   if((precStrategy == ttk::Triangulation::STRATEGY::NO_PRECONDITIONS
       && !prevPreconditions)

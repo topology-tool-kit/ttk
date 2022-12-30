@@ -10,6 +10,7 @@ if (NOT MSVC) # GCC and Clang
     -Wshadow
     -Wvla
     -Wcast-qual
+    -Wmissing-declarations
     )
 
   # performance and debug flags
