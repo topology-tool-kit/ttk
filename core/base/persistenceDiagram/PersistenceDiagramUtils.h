@@ -65,30 +65,4 @@ namespace ttk {
                                   double /**< matching cost */
                                   >;
 
-  /**
-   * @brief Complete a ttk::DiagramType instance with scalar field
-   * values and 3D coordinates of critical vertices
-   */
-  template <typename scalarType, typename triangulationType>
-  inline void fillPersistenceDiagram(ttk::DiagramType &diagram,
-                                     const scalarType *const scalars,
-                                     const triangulationType &triangulation,
-                                     const int nThreads) {
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(nThreads)
-#endif // TTK_ENABLE_OPENMP
-    for(std::size_t i = 0; i < diagram.size(); ++i) {
-      auto &pair{diagram[i]};
-      triangulation.getVertexPoint(pair.birth.id, pair.birth.coords[0],
-                                   pair.birth.coords[1], pair.birth.coords[2]);
-      pair.birth.sfValue = scalars[pair.birth.id];
-      triangulation.getVertexPoint(pair.death.id, pair.death.coords[0],
-                                   pair.death.coords[1], pair.death.coords[2]);
-      pair.death.sfValue = scalars[pair.death.id];
-    }
-
-    TTK_FORCE_USE(nThreads);
-  }
-
 }; // namespace ttk
