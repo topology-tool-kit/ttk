@@ -14,8 +14,9 @@
 /// \param Input vtkMultiBlockDataSet Input trees
 /// \param Input (optionnal) vtkMultiBlockDataSet Input trees
 /// \param Output vtkMultiBlockDataSet Barycenter
-/// \param Output vtkMultiBlockDataSet Geodesics
 /// \param Output vtkTable Coefficients
+/// \param Output vtkTable Geodesics Vectors
+/// \param Output vtkTable Correlation Matrix
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
@@ -29,6 +30,7 @@
 /// \b Related \b publication: \n
 /// "Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)" \n
 /// Mathieu Pont, Jules Vidal, Julien Tierny.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2022
 ///
 /// \sa ttk::MergeTreePrincipalGeodesics
 /// \sa ttkAlgorithm
