@@ -62,7 +62,7 @@ private:
   // Used for critical type and for point coordinates
   std::vector<vtkUnstructuredGrid *> treesNodes;
   std::vector<std::vector<int>>
-    treesNodeCorrMesh; // used to acces treesNodes given input trees
+    treesNodeCorrMesh; // used to access treesNodes given input trees
 
   // Segmentation
   std::vector<vtkDataSet *> treesSegmentation;

@@ -62,7 +62,7 @@ namespace ttk {
                      double epsilon,
                      std::vector<int> &sizes,
                      KDT &kdt,
-                     std::vector<KDT *> &correspondance_kdt_map,
+                     std::vector<KDT *> &correspondence_kdt_map,
                      std::vector<double> *min_diag_price,
                      std::vector<double> *min_price,
                      std::vector<std::vector<MatchingType>> *all_matchings,
@@ -73,7 +73,7 @@ namespace ttk {
       runMatchingAuction(double *total_cost,
                          std::vector<int> &sizes,
                          KDT &kdt,
-                         std::vector<KDT *> &correspondance_kdt_map,
+                         std::vector<KDT *> &correspondence_kdt_map,
                          std::vector<double> *min_diag_price,
                          std::vector<std::vector<MatchingType>> *all_matchings,
                          bool use_kdt);

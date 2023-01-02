@@ -8,11 +8,11 @@
 ///
 /// This VTK filter uses the ttk::MergeTreePrincipalGeodesics module to compute
 /// Principal Geodesic Analysis on the space of merge trees or persistence
-/// diagrams, that is, a set of orthognal geodesic axes defining a basis with
+/// diagrams, that is, a set of orthogonal geodesic axes defining a basis with
 /// the barycenter as origin.
 ///
 /// \param Input vtkMultiBlockDataSet Input trees
-/// \param Input (optionnal) vtkMultiBlockDataSet Input trees
+/// \param Input (optional) vtkMultiBlockDataSet Input trees
 /// \param Output vtkMultiBlockDataSet Barycenter
 /// \param Output vtkTable Coefficients
 /// \param Output vtkTable Geodesics Vectors

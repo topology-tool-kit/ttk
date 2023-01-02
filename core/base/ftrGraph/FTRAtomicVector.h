@@ -3,7 +3,7 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2018-01-22
 ///
-///\brief TTK processing package that manage a paralle version of vector *Same
+///\brief TTK processing package that manage a parallel version of vector *Same
 /// as in FTM: Common ?*
 
 #pragma once

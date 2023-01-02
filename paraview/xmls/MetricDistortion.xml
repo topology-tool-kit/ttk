@@ -6,7 +6,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMetricDistortion" class="ttkMetricDistortion" label="TTK MetricDistortion">
-      <Documentation long_help="MetricDistortion Long" short_help="MetricDistortion Short">This filter computes distance, area and curvature information about a surface and an optionnal distance matrix (giving the distance between the points of the surface in a metric space).</Documentation>
+      <Documentation long_help="MetricDistortion Long" short_help="MetricDistortion Short">This filter computes distance, area and curvature information about a surface and an optional distance matrix (giving the distance between the points of the surface in a metric space).</Documentation>
 
       <!-- INPUT DATA OBJECTS -->      
       <InputProperty

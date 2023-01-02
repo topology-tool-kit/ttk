@@ -30,8 +30,8 @@ namespace ttk {
 
   protected:
     bool computeReconstructionError_ = false;
-    bool transferInputTreesInformations_ = false;
-    bool transferBarycenterInformations_ = false;
+    bool transferInputTreesInformation_ = false;
+    bool transferBarycenterInformation_ = false;
 
     std::vector<std::vector<double *>> pVS_, pV2s_, pTrees2Vs_, pTrees2V2s_;
     size_t vSize_, vSize2_;
@@ -174,7 +174,7 @@ namespace ttk {
 
       // Reconstruction
       reconstructedTrees.resize(allTreesTs_.size());
-      if(transferBarycenterInformations_)
+      if(transferBarycenterInformation_)
         recBaryMatchings.resize(reconstructedTrees.size());
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
@@ -183,7 +183,7 @@ namespace ttk {
         getMultiInterpolation<dataType>(barycenter, vSToUse, v2sToUse,
                                         vSizeToUse, allTreesTs_[i],
                                         reconstructedTrees[i]);
-        if(transferBarycenterInformations_) {
+        if(transferBarycenterInformation_) {
           dataType distance;
           computeOneDistance<dataType>(reconstructedTrees[i], barycenter,
                                        recBaryMatchings[i], distance, true);
@@ -192,7 +192,7 @@ namespace ttk {
 
       // Compute reconstruction error (if input trees are provided)
       if(inputTrees.size() != 0
-         and (computeReconstructionError_ or transferInputTreesInformations_)) {
+         and (computeReconstructionError_ or transferInputTreesInformation_)) {
         auto reconstructionError = computeReconstructionError(
           barycenter, inputTrees, vSToUse, v2sToUse, vSizeToUse, allTreesTs_,
           reconstructionErrors, recInputMatchings);
@@ -216,13 +216,13 @@ namespace ttk {
       for(unsigned int i = 0; i < inputTrees.size(); ++i)
         postprocessingPipeline<dataType>(&(inputTrees[i].tree));
 
-      if(inputTrees.size() != 0 and transferInputTreesInformations_) {
+      if(inputTrees.size() != 0 and transferInputTreesInformation_) {
         for(unsigned int i = 0; i < inputTrees.size(); ++i)
           convertBranchDecompositionMatching<dataType>(
             &(reconstructedTrees[i].tree), &(inputTrees[i].tree),
             recInputMatchings[i]);
       }
-      if(transferBarycenterInformations_)
+      if(transferBarycenterInformation_)
         for(unsigned int i = 0; i < reconstructedTrees.size(); ++i)
           convertBranchDecompositionMatching<dataType>(
             &(reconstructedTrees[i].tree), &(barycenter.tree),

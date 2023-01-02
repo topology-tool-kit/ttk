@@ -25,7 +25,7 @@ namespace ttk {
       // Arc created by increasing and decreasing tasks are reversed in
       // terms of up/down node. We use this property to merge such arcs. in
       // order to distinguish between arcs around a loop, and arc is
-      // described by the fisrt and last vertex of its segmentation if any.
+      // described by the first and last vertex of its segmentation if any.
       // Otherwise by its up / last node.
 
       const idSuperArc nbArcs = arcs_.size();

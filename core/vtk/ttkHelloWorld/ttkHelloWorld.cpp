@@ -110,7 +110,7 @@ int ttkHelloWorld::RequestData(vtkInformation *ttkNotUsed(request),
   //               const char *name
   //            )
   //
-  //       The parameter 'idx' is often missunderstood: lets say the filter
+  //       The parameter 'idx' is often misunderstood: lets say the filter
   //       requires n arrays, then idx enumerates them from 0 to n-1.
   //
   //       The 'port' is the input port index at which the object is connected

@@ -407,7 +407,7 @@ namespace ttk {
     /// \param cellId Input global cell identifier.
     /// \param localVertexId Input local vertex identifier,
     /// in [0, getCellVertexNumber()].
-    /// \param vertexId Ouput global vertex identifier.
+    /// \param vertexId Output global vertex identifier.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellVertexNumber()
     inline int getCellVertex(const SimplexId &cellId,
@@ -1398,7 +1398,7 @@ namespace ttk {
     /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
-    /// our GidToLidMap. \return 0 if succesful, -1 else.
+    /// our GidToLidMap. \return 0 if successful, -1 else.
     inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
       return this->explicitTriangulation_.getVertexGlobalIdMap();
     }

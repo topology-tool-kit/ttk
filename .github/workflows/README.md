@@ -216,7 +216,7 @@ can also be triggered by Git tags matching regular expressions:
 * `check*` for the TTK *check_code* workflow,
 * `test*` for the TTK *test_build* workflow.
 
-The last two might be of interest for TTK developpers that want to
+The last two might be of interest for TTK developers that want to
 test their code before writing a Pull Request.
 
 ### ParaView Headless Packages
@@ -409,7 +409,7 @@ reference database.
 Since these tests and the reference database don't belong to the same
 Git repository, an error in any of these two steps won't make the
 whole workflow fail. However, there will be annotations in the
-*Summary* page of the workflow. It is up to TTK developpers to
+*Summary* page of the workflow. It is up to TTK developers to
 maintain the reference databases in sync with the TTK code.
 
 Composite Actions

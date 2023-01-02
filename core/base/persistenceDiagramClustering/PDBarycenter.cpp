@@ -28,7 +28,7 @@ void ttk::PDBarycenter::runMatching(
   double epsilon,
   std::vector<int> &sizes,
   KDT &kdt,
-  std::vector<KDT *> &correspondance_kdt_map,
+  std::vector<KDT *> &correspondence_kdt_map,
   std::vector<double> *min_diag_price,
   std::vector<double> *min_price,
   std::vector<std::vector<MatchingType>> *all_matchings,
@@ -42,7 +42,7 @@ void ttk::PDBarycenter::runMatching(
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map, epsilon,
+      geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map, epsilon,
       min_diag_price->at(i), use_kdt);
     int n_biddings = 0;
     auction.buildUnassignedBidders();
@@ -73,7 +73,7 @@ void ttk::PDBarycenter::runMatchingAuction(
   double *total_cost,
   std::vector<int> &sizes,
   KDT &kdt,
-  std::vector<KDT *> &correspondance_kdt_map,
+  std::vector<KDT *> &correspondence_kdt_map,
   std::vector<double> *min_diag_price,
   std::vector<std::vector<MatchingType>> *all_matchings,
   bool use_kdt) {
@@ -83,7 +83,7 @@ void ttk::PDBarycenter::runMatchingAuction(
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
+      geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map,
       (*min_diag_price)[i], use_kdt);
     std::vector<MatchingType> matchings;
     double cost = auction.run(matchings);
@@ -561,14 +561,14 @@ typename ttk::PDBarycenter::KDTreePair ttk::PDBarycenter::getKDTree() const {
       weights[idx].push_back(g.getPrice());
     }
   }
-  // Correspondance map : position in barycenter_goods_ --> KDT node
+  // Correspondence map : position in barycenter_goods_ --> KDT node
 
-  auto correspondance_kdt_map
+  auto correspondence_kdt_map
     = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension,
                  weights, barycenter_goods_.size());
   this->printMsg(" Building KDTree", 1, tm.getElapsedTime(),
                  debug::LineMode::NEW, debug::Priority::VERBOSE);
-  return std::make_pair(std::move(kdt), correspondance_kdt_map);
+  return std::make_pair(std::move(kdt), correspondence_kdt_map);
 }
 
 std::vector<std::vector<ttk::MatchingType>>

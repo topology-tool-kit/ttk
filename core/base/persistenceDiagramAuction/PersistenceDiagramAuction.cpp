@@ -22,7 +22,7 @@ void ttk::PersistenceDiagramAuction::runAuctionRound(int &n_biddings,
       if(use_kdt_) {
         idx_reassigned = b.runDiagonalKDTBidding(
           &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_,
-          correspondance_kdt_map_, diagonal_queue_, kdt_index);
+          correspondence_kdt_map_, diagonal_queue_, kdt_index);
       } else {
         idx_reassigned
           = b.runDiagonalBidding(&all_goods, twin_good, wasserstein_, epsilon,
@@ -327,7 +327,7 @@ int ttk::Bidder::runDiagonalKDTBidding(
   int wasserstein,
   double epsilon,
   double geometricalFactor,
-  std::vector<KDT *> &correspondance_kdt_map,
+  std::vector<KDT *> &correspondence_kdt_map,
   std::priority_queue<std::pair<int, double>,
                       std::vector<std::pair<int, double>>,
                       Compare> &diagonal_queue,
@@ -429,7 +429,7 @@ int ttk::Bidder::runDiagonalKDTBidding(
   best_good->assign(this->position_in_auction_, new_price);
   if(is_twin) {
     // Update weight in KDTree if the closest good is in it
-    correspondance_kdt_map[best_good->id_]->updateWeight(new_price, kdt_index);
+    correspondence_kdt_map[best_good->id_]->updateWeight(new_price, kdt_index);
     if(non_empty_goods) {
       diagonal_queue.push(best_pair);
     }

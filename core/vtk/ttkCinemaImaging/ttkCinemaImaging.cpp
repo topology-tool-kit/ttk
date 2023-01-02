@@ -268,7 +268,7 @@ vtkCellArray *ttkCinemaImaging::GetCells(vtkPointSet *pointSet) {
 
 int ttkCinemaImaging::AddFieldDataArray(vtkFieldData *fd,
                                         vtkDataArray *array,
-                                        int tupelIdx,
+                                        int tupleIdx,
                                         const std::string &name) {
   if(!array)
     return 0;
@@ -281,11 +281,11 @@ int ttkCinemaImaging::AddFieldDataArray(vtkFieldData *fd,
   newArray->SetNumberOfTuples(1);
 
   if(newArray->GetDataType() == array->GetDataType()) {
-    newArray->SetTuple(0, tupelIdx, array);
+    newArray->SetTuple(0, tupleIdx, array);
   } else {
     for(size_t i = 0; i < nComponents; i++)
       newArray->SetValue(
-        i, array->GetVariantValue(tupelIdx * nComponents + i).ToDouble());
+        i, array->GetVariantValue(tupleIdx * nComponents + i).ToDouble());
   }
 
   fd->AddArray(newArray);
@@ -295,17 +295,17 @@ int ttkCinemaImaging::AddFieldDataArray(vtkFieldData *fd,
 
 int ttkCinemaImaging::AddAllFieldDataArrays(vtkPointSet *inputGrid,
                                             vtkImageData *image,
-                                            int tupelIdx) {
+                                            int tupleIdx) {
   auto imageFD = image->GetFieldData();
 
   auto inputGridPD = inputGrid->GetPointData();
   for(int i = 0; i < inputGridPD->GetNumberOfArrays(); i++) {
     ttkCinemaImaging::AddFieldDataArray(
-      imageFD, inputGridPD->GetArray(i), tupelIdx);
+      imageFD, inputGridPD->GetArray(i), tupleIdx);
   }
 
   ttkCinemaImaging::AddFieldDataArray(
-    imageFD, inputGrid->GetPoints()->GetData(), tupelIdx, "CamPosition");
+    imageFD, inputGrid->GetPoints()->GetData(), tupleIdx, "CamPosition");
 
   return 1;
 };

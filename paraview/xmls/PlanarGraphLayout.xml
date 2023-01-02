@@ -5,7 +5,7 @@
             <Documentation long_help="TTK PlanarGraphLayout" short_help="TTK PlanarGraphLayout">
 This filter computes a planar graph layout of a 'vtkUnstructuredGrid'. To improve the quality of the layout it is possible to pass additional field data to the algorithm:
 
-1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
+1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indices or scalar values).
 
 2) Sizes: Points cover space on the y-axis based on their size.
 
@@ -73,7 +73,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2021
                                              value="0" />
                 </Hints>
                 <BooleanDomain name="bool" />
-                <Documentation>Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).</Documentation>
+                <Documentation>Points are positioned along the x-axis based on a sequence (e.g., time indices or scalar values).</Documentation>
             </IntVectorProperty>
 
             <StringVectorProperty name="SequenceArray" label="Sequence Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">

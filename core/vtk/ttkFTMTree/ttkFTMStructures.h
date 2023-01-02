@@ -188,7 +188,7 @@ namespace ttk {
 
       inline void addArray(vtkUnstructuredGrid *skeletonArcs, Params params) {
         // Some arcs might have been less sampled than the desired value, if
-        // they have not enought regular vertices. Here we ensur that we will no
+        // they have not enough regular vertices. Here we ensur that we will no
         // keep noise in these arrays.
         const size_t nbPoints = skeletonArcs->GetNumberOfPoints();
         const size_t nbCells = skeletonArcs->GetNumberOfCells();

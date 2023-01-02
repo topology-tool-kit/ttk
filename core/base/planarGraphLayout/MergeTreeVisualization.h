@@ -501,7 +501,7 @@ namespace ttk {
       printMsg(ss5.str(), debug::Priority::VERBOSE);
 
       // ----------------------------------------------------
-      // Branches positionning and avoid edges crossing
+      // Branches positioning and avoid edges crossing
       // ----------------------------------------------------
       Timer t_avoid;
       printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
@@ -970,12 +970,12 @@ namespace ttk {
     // ==========================================================================
     // Utils
     // ==========================================================================
-    void parseExcludeImportantPairsString(std::string &exludeString,
+    void parseExcludeImportantPairsString(std::string &excludeString,
                                           std::vector<double> &excludeVector) {
       excludeVector.clear();
-      if(exludeString == "")
+      if(excludeString.empty())
         return;
-      std::string s{exludeString};
+      std::string s{excludeString};
       std::string delimiter = ",";
 
       size_t pos = 0;

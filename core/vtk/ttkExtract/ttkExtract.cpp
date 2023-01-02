@@ -129,7 +129,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
     this->printMsg({{"Extraction Mode",
                      "Block" + std::string(extractTuples ? " Tuples" : "")},
                     {"Output Type", outputDataTypeName + extentString},
-                    {"Indicies", "[" + indicesString + "]"}});
+                    {"Indices", "[" + indicesString + "]"}});
     this->printMsg(ttk::debug::Separator::L2);
   }
 
@@ -241,7 +241,7 @@ int ttkExtract::ExtractRows(vtkDataObject *output,
   {
     this->printMsg(ttk::debug::Separator::L1);
     this->printMsg(
-      {{"Extraction Mode", "Rows"}, {"Indicies", "[" + indicesString + "]"}});
+      {{"Extraction Mode", "Rows"}, {"Indices", "[" + indicesString + "]"}});
     this->printMsg(ttk::debug::Separator::L2);
   }
 
@@ -427,18 +427,18 @@ int ttkExtract::AddMaskArray(vtkDataObject *output,
   // initialize mask array
   const size_t nInPoints = inputAsDS->GetNumberOfPoints();
   const size_t nInCells = inputAsDS->GetNumberOfCells();
-  const size_t nOutValus = isPointDataArray ? nInPoints : nInCells;
+  const size_t nOutValues = isPointDataArray ? nInPoints : nInCells;
 
   auto maskArray = vtkSmartPointer<vtkSignedCharArray>::New();
   maskArray->SetName("Mask");
-  maskArray->SetNumberOfTuples(nOutValus);
+  maskArray->SetNumberOfTuples(nOutValues);
   auto maskArrayData = ttkUtils::GetPointer<signed char>(maskArray);
 
   // compute mask
   int status = 0;
   switch(inputArray->GetDataType()) {
     vtkTemplateMacro((
-      status = computeMask<VTK_TT>(maskArrayData, expressionValues, nOutValus,
+      status = computeMask<VTK_TT>(maskArrayData, expressionValues, nOutValues,
                                    ttkUtils::GetPointer<VTK_TT>(inputArray),
                                    this->ValidationMode, this->threadNumber_)));
   }

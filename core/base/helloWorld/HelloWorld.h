@@ -46,7 +46,7 @@ namespace ttk {
     }
 
     /**
-     * TODO 3: Implmentation of the algorithm.
+     * TODO 3: Implementation of the algorithm.
      *
      *         Note: If the algorithm requires a triangulation then this
      *               method must be called after the triangulation has been
@@ -100,7 +100,7 @@ namespace ttk {
             outputData[i] += inputData[neighborId];
           }
 
-          // devide by neighbor number
+          // divide by neighbor number
           outputData[i] /= (nNeighbors + 1);
         }
 

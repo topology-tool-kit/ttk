@@ -26,7 +26,7 @@ int ttk::Quadrangulation::preconditionVertexStars() {
   zsk.setThreadNumber(this->threadNumber_);
 
   return zsk.buildVertexStars(
-    this->nVerts_, this->buildQuadOffets(), this->vertexStars_);
+    this->nVerts_, this->buildQuadOffsets(), this->vertexStars_);
 }
 
 int ttk::Quadrangulation::preconditionEdges() {
@@ -35,11 +35,11 @@ int ttk::Quadrangulation::preconditionEdges() {
   osk.setDebugLevel(this->debugLevel_);
   osk.setThreadNumber(this->threadNumber_);
 
-  return osk.buildEdgeList(this->nVerts_, this->buildQuadOffets(), this->edges_,
-                           this->edgeStars_, this->quadEdges_);
+  return osk.buildEdgeList(this->nVerts_, this->buildQuadOffsets(),
+                           this->edges_, this->edgeStars_, this->quadEdges_);
 }
 
-ttk::CellArray ttk::Quadrangulation::buildQuadOffets() {
+ttk::CellArray ttk::Quadrangulation::buildQuadOffsets() {
 
   if(static_cast<SimplexId>(this->quadOffsets_.size()) != this->nCells_ + 1) {
     this->quadOffsets_.resize(this->nCells_ + 1);

@@ -9,7 +9,7 @@
 /// distance between two merge trees.
 ///
 /// \param Input vtkMultiBlockDataSet Input trees
-/// \param Input (optionnal) vtkMultiBlockDataSet Input trees
+/// \param Input (optional) vtkMultiBlockDataSet Input trees
 /// \param Output vtkMultiBlockDataSet Input trees (processed)
 /// \param Output vtkMultiBlockDataSet Centroids trees
 /// \param Output vtkMultiBlockDataSet Matchings

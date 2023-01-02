@@ -249,7 +249,7 @@ namespace ttk {
     }
 
     // ------------------------------------------------------------------------
-    // Assignement
+    // Assignment
     // ------------------------------------------------------------------------
     template <class dataType>
     void assignmentCentroidsAccelerated(

@@ -2,7 +2,7 @@
 /// \class ttk::AssignmentAuction
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 ///
-/// Auction algorithm for Balanced and Unbalanced Assignement Problem
+/// Auction algorithm for Balanced and Unbalanced Assignment Problem
 ///
 /// For the unbalanced problem:
 ///   The cost matrix in input has a size of (n + 1) x (m + 1)

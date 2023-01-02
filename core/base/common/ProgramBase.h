@@ -4,7 +4,7 @@
 /// \date February 2017.
 ///
 /// \brief Base editor class for standalone programs. This class parses the
-/// the comamnd line, execute the TTK module and takes care of the IO.
+/// the command line, execute the TTK module and takes care of the IO.
 
 #pragma once
 

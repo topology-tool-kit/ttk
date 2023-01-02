@@ -9,7 +9,7 @@
           short_help="Converts string arrays into int arrays.">
         This filter converts an input vtkStringArray into an
         vtkIntArray to make it easier to apply Threshold on the data
-        set. The correspondance between a string value and an int is
+        set. The correspondence between a string value and an int is
         to be stored in the output Field Data.
       </Documentation>
 

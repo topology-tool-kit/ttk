@@ -2330,7 +2330,7 @@ int ContourTree::build() {
   std::vector<int> localVertSoSoffsets{};
 
   // 0) init data structures
-  if(!externalOffets_) {
+  if(!externalOffsets_) {
     vertexSoSoffsets_ = &localVertSoSoffsets;
     vertexSoSoffsets_->resize(vertexNumber_);
     for(int i = 0; i < (int)vertexSoSoffsets_->size(); i++)
@@ -2405,7 +2405,7 @@ int ContourTree::build() {
     }
   }
 
-  // note: at this point, the split tree is layed out upside down.
+  // note: at this point, the split tree is laid out upside down.
 
   // 3) merge the two trees into the contour tree
   combineTrees();

@@ -176,7 +176,7 @@ namespace ttk {
       for(idNode n = 0; n < nbLeaves; ++n) {
         const idNode l = mt_data_.leaves[n];
         SimplexId v = getNode(l)->getVertexId();
-        // for each node: get vert, create uf and lauch
+        // for each node: get vert, create uf and launch
         mt_data_.storage[n] = AtomicUF{v};
         mt_data_.ufs[v] = &mt_data_.storage[n];
 
@@ -254,7 +254,7 @@ namespace ttk {
 
         // Saddle & Last detection + propagation
         bool isSaddle, isLast;
-        std::tie(isSaddle, isLast) = propage(mesh, *currentState, startUF);
+        std::tie(isSaddle, isLast) = propagate(mesh, *currentState, startUF);
 
         // regular propagation
 #ifdef TTK_ENABLE_OPENMP
@@ -340,9 +340,9 @@ namespace ttk {
     // ------------------------------------------------------------------------
 
     template <class triangulationType>
-    std::tuple<bool, bool> FTMTree_MT::propage(const triangulationType *mesh,
-                                               CurrentState &currentState,
-                                               UF curUF) {
+    std::tuple<bool, bool> FTMTree_MT::propagate(const triangulationType *mesh,
+                                                 CurrentState &currentState,
+                                                 UF curUF) {
       bool becameSaddle = false, isLast = false;
       const auto nbNeigh = mesh->getVertexNeighborNumber(currentState.vertex);
       valence decr = 0;

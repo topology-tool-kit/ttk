@@ -67,7 +67,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     // Get depth array
     auto depthArray = this->GetInputArrayToProcess(0, inputImage);
 
-    // Get camera paramters from field data
+    // Get camera parameters from field data
     auto inputFD = inputImage->GetFieldData();
 
     auto camHeight

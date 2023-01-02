@@ -165,7 +165,7 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
                                     camPos[2] - camRight[2] * camWidthWorldHalf
                                       - camUpTrue[2] * camHeightWorldHalf};
 
-// Compute vertex coordinates while parallizing over rows
+// Compute vertex coordinates while parallelizing over rows
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif

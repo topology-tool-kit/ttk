@@ -529,7 +529,7 @@ namespace ttk {
 
     inline void setVertexSoSoffsets(std::vector<int> *vertexSoSoffsets) {
       vertexSoSoffsets_ = vertexSoSoffsets;
-      externalOffets_ = true;
+      externalOffsets_ = true;
     }
 
     virtual int simplify(const double &simplificationThreshold,
@@ -577,7 +577,7 @@ namespace ttk {
     double minScalar_{}, maxScalar_{};
     const std::vector<real> *vertexScalars_{};
     std::vector<int> *vertexSoSoffsets_{};
-    bool externalOffets_{false};
+    bool externalOffsets_{false};
     const AbstractTriangulation *triangulation_{};
     std::vector<int> *minimumList_{}, *maximumList_{};
     std::vector<Node> nodeList_{}, originalNodeList_{};

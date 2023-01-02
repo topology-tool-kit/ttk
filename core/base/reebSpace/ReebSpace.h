@@ -62,7 +62,7 @@ namespace ttk {
       // of 2-sheets attached to it?)
       std::vector<SimplexId> sheet0List_{};
       // NB: the corresponding 2-sheet should have the same global
-      // indentifier.
+      // identifier.
       std::vector<SimplexId> sheet3List_{};
     };
 
@@ -190,10 +190,10 @@ namespace ttk {
 
     template <class dataTypeU, class dataTypeV>
     inline int
-      perturbate(const dataTypeU *const uField,
-                 const dataTypeV *const vField,
-                 const dataTypeU &uEpsilon = Geometry::powIntTen(-DBL_DIG),
-                 const dataTypeV &vEpsilon = Geometry::powIntTen(-DBL_DIG));
+      perturb(const dataTypeU *const uField,
+              const dataTypeV *const vField,
+              const dataTypeU &uEpsilon = Geometry::powIntTen(-DBL_DIG),
+              const dataTypeV &vEpsilon = Geometry::powIntTen(-DBL_DIG));
 
     inline void setExpand3Sheets(const bool &onOff) {
       expand3sheets_ = onOff;
@@ -213,7 +213,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p sosOffsetsU buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
@@ -225,7 +225,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p sosOffsetsV buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
@@ -792,13 +792,13 @@ inline int ttk::ReebSpace::computeGeometricalMeasures(
 }
 
 template <class dataTypeU, class dataTypeV>
-inline int ttk::ReebSpace::perturbate(const dataTypeU *const uField,
-                                      const dataTypeV *const vField,
-                                      const dataTypeU &uEpsilon,
-                                      const dataTypeV &vEpsilon) {
+inline int ttk::ReebSpace::perturb(const dataTypeU *const uField,
+                                   const dataTypeV *const vField,
+                                   const dataTypeU &uEpsilon,
+                                   const dataTypeV &vEpsilon) {
 
   jacobiSet_.setVertexNumber(vertexNumber_);
-  jacobiSet_.perturbate(uField, vField, uEpsilon, vEpsilon);
+  jacobiSet_.perturb(uField, vField, uEpsilon, vEpsilon);
 
   return 0;
 }
@@ -1672,7 +1672,7 @@ int ttk::ReebSpace::disconnect3sheetFrom1sheet(
 
   if((data.sheet1List_[sheet1Id].hasSaddleEdges_)
      && (data.sheet1List_[sheet1Id].sheet3List_.size() == 1)) {
-    // this guy is no longer separting any body.
+    // this guy is no longer separating any body.
     data.sheet1List_[sheet1Id].pruned_ = true;
     data.sheet2List_[sheet1Id].pruned_ = true;
 

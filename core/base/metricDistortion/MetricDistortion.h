@@ -4,7 +4,7 @@
 /// \date 2022.
 ///
 /// This module defines the %MetricDistortion class that computes distance,
-/// area and curvature information about a surface and an optionnal distance
+/// area and curvature information about a surface and an optional distance
 /// matrix (giving the distance between the points of the surface in a metric
 /// space).
 ///
@@ -20,7 +20,7 @@ namespace ttk {
 
   /**
    * The MetricDistortion class provides methods to compute distance,
-   * area and curvature information about a surface and an optionnal distance
+   * area and curvature information about a surface and an optional distance
    * matrix (giving the distance between the points of the surface in a metric
    * space).
    */

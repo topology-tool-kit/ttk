@@ -12,7 +12,7 @@
 // core includes
 #include <DataTypes.h>
 
-// c++ incldues
+// c++ includes
 #include <functional>
 #include <limits>
 
@@ -45,7 +45,7 @@ namespace ttk {
     /// Edges are sorted by their starting vertex (see orderedEdge)
     using orderedTriangle = std::tuple<idEdge, idEdge, idEdge>;
 
-    /// \brief position of a vertex in a trianlge
+    /// \brief position of a vertex in a triangle
     enum class vertPosInTriangle : char { Start = 0, Middle, End };
 
     // For tasks:

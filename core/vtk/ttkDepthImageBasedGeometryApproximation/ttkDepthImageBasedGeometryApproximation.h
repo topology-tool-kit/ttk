@@ -3,7 +3,7 @@
 /// \author Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.07.2018
 ///
-/// \brief TTK VTK-filter that approximates the geomerty that is depicted by a
+/// \brief TTK VTK-filter that approximates the geometry that is depicted by a
 /// set of depth images.
 ///
 /// VTK wrapping code for the ttk::DepthImageBasedGeometryApproximation package.

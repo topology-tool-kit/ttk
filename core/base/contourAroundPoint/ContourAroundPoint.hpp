@@ -50,7 +50,7 @@ namespace ttk {
      * \param triangulation Pointer to a valid triangulation.
      * \param scalars Scalar for each vertex.
      * \param sizeFilter 0 --> all pass, 10000 none pass.
-     * \param radius If all vertices lie on a shpere and the output is supposed
+     * \param radius If all vertices lie on a sphere and the output is supposed
      *        to do so as well, pass the radius of the sphere here or -1 to have
      *        it computed. The default 0 signals that the data is not spherical.
      * \return 0 upon success, negative values otherwise.
@@ -103,7 +103,7 @@ namespace ttk {
                         int flag,
                         float scalar) const;
 
-    /// Exctract the contour from the input edges that intersect it.
+    /// Extract the contour from the input edges that intersect it.
     /// `inpEdges` may be empty.
     template <typename scalarT, class triangulationType = AbstractTriangulation>
     void extendOutFld(const std::set<SimplexId> &inpEdges,

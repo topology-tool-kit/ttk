@@ -196,8 +196,8 @@ int ttk::LowestCommonAncestor::eulerianTransverse() {
   nodeOrder_.reserve(2 * getNumberOfNodes() + 1);
   nodeDepth_.clear();
   nodeDepth_.reserve(2 * getNumberOfNodes() + 1);
-  nodeFirstAppearence_.clear();
-  nodeFirstAppearence_.resize(getNumberOfNodes(), -1);
+  nodeFirstAppearance_.clear();
+  nodeFirstAppearance_.resize(getNumberOfNodes(), -1);
   // Transverse starting from the root
   std::stack<int> nodeStack;
   int depth = 0;
@@ -219,7 +219,7 @@ int ttk::LowestCommonAncestor::eulerianTransverse() {
       for(int i = 0; i < numberOfSuccessors; i++) {
         nodeStack.push(node_[nodeId].getSuccessorId(i));
       }
-      nodeFirstAppearence_[nodeId] = iteration;
+      nodeFirstAppearance_[nodeId] = iteration;
       isVisited[nodeId] = true;
     }
     // Next depth

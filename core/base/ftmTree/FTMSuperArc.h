@@ -4,7 +4,7 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
-///\brief TTK classe representing a SuperArc of a tree,
+///\brief TTK class representing a SuperArc of a tree,
 /// containing regular vertices.
 ///
 ///\param dataType Data type of the input scalar field (char, float,
@@ -133,7 +133,7 @@ namespace ttk {
       // Segmentation
       // ------------
 
-      // Fonction using ArcRegion
+      // Function using ArcRegion
 
       inline void concat(const segm_it &begin, const segm_it &end) {
         region_.concat(begin, end);

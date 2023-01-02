@@ -588,7 +588,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
     auto openEdgesNew2 = std::get<3>(q.front());
     q.pop();
 
-    // type 'rootNode' not possible, otherwise has to be catched
+    // type 'rootNode' not possible, otherwise has to be caught
 
     if(currTree->child1 != nullptr) {
 

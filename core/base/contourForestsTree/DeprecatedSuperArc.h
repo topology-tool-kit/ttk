@@ -4,7 +4,7 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
-///\brief TTK classe representing a SuperArc of a tree,
+///\brief TTK class representing a SuperArc of a tree,
 /// containing regular vertices.
 ///
 ///\param dataType Data type of the input scalar field (char, float,
@@ -44,13 +44,13 @@ namespace ttk {
       SimplexId lastVisited_;
       // Stat of this arc, if replaced...
       ComponentState state_;
-      // ... use this field to know by wich other arc.
+      // ... use this field to know by which other arc.
       // Caution, we do not want chained replacant !
       idSuperArc replacantId_;
 
       // Regular nodes in this arc
       // Vector for initialisation only (mergetree::build & simplify)
-      // Use vertList and sizeVertList_ to acces Arc's vertices after combine
+      // Use vertList and sizeVertList_ to access Arc's vertices after combine
       std::vector<std::pair<SimplexId, bool>> vertices_;
       // initialized with vertices_.data() and vertices_.size()
       // these two variable allow to split the segmentation when
@@ -324,7 +324,7 @@ namespace ttk {
         sizeVertList_ = newSize;
       }
 
-      // From array : alloc should be already done (chck boundary no kamikaze
+      // From array : alloc should be already done (check boundary no kamikaze
       // only)
       inline int addSegmentationGlobal(const std::pair<SimplexId, bool> *arr,
                                        const SimplexId &size) {
