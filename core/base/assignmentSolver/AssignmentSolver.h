@@ -2,7 +2,7 @@
 /// \class ttk::AssignmentSolver
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 ///
-/// Assignement Problem Solver abstract class
+/// Assignment Problem Solver abstract class
 ///
 /// For the unbalanced problem:
 ///   The cost matrix in input has a size of (n + 1) x (m + 1)

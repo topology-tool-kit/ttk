@@ -88,7 +88,7 @@ int FTMTree_CT::combine() {
       tie(isJT, currentNodeId) = remainingNodes.front();
       remainingNodes.pop();
       if(isJT) {
-        // node come frome jt
+        // node come from jt
         xt = &jt_;
       } else {
         // node come from st
@@ -268,7 +268,7 @@ void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
                                          idSuperArc xtArc) {
   const FTMTree_MT *xt = (isJT) ? &jt_ : &st_;
 
-  /*Here we prefere to create lots of small region, each arc having its own
+  /*Here we prefer to create lots of small region, each arc having its own
    * segmentation with no overlap instead of having a same vertice in several
    * arc and using vert2tree to decide because we do not want to maintain
    * vert2tree information during the whole computation*/

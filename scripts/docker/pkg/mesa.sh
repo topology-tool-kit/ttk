@@ -1,6 +1,6 @@
 MESA_VERSION=20.3.5
 
-# install packges required for build
+# install packages required for build
 require-pkgs \
     pkg-config      \
 	python3-dev		\

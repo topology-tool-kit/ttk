@@ -357,7 +357,7 @@ namespace ttk {
       // tools
 
       // ensure that main arc have valid up/down node even if the merge of
-      // the two arc occured during the computation, leaving some unfinished
+      // the two arc occurred during the computation, leaving some unfinished
       // arcs.
       template <typename ScalarType>
       void consolidateArc(const idSuperArc mainArc,

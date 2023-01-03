@@ -327,7 +327,7 @@ SimplexId MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
       // need to insert node
       const idNode &newNodeId = makeNode(stitchVert);
       Node *newNode = getNode(newNodeId);
-      // for the instert node to works
+      // for the insert node to works
       updateCorrespondingArc(stitchVert, arc);
       insertNode(newNode, false);
       newNode->setUpValence(1);
@@ -596,7 +596,7 @@ void MergeTree::delNode(
       if(markVertices != nullptr) {
         // In case the two segmenation are already contiguous,
         // it means we are removing a regular node that was inserted in the
-        // tree only for the combinaison.
+        // tree only for the combinations.
         if((treeData_.superArcs[downArc].getVertList()
             + treeData_.superArcs[downArc].getVertSize())
            == treeData_.superArcs[upArc].getVertList()) {
@@ -1240,7 +1240,7 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
   }
 
   // if upNode == downNode, take one none merging arc randomly
-  // (this case is possbile if several degenerate node are following)
+  // (this case is possible if several degenerate node are following)
   if(upNode == downNode) {
     // several degen. nodes adjacent
     // Prefer down for JT / ST

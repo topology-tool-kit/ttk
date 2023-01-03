@@ -105,8 +105,8 @@ void ContourForests::initNbPartitions() {
 // {
 
 void ContourForests::stitch() {
-  // We need goods informations here befor starting
-  // Get the arc/NODE correspoding to the seed + crossingEdges
+  // We need goods information here before starting
+  // Get the arc/NODE corresponding to the seed + crossingEdges
 
   if(params_->treeType == TreeType::Contour) {
     stitchTree(2);
@@ -221,7 +221,7 @@ void ContourForests::stitchTree(const char treetype) {
       curTreeStitchNode->clearUpSuperArcs();
 
       // for the other tree we need to replace arc (hide the one that is
-      // replaced) Exeption : the seed may contain noise directly above: we
+      // replaced) Exception : the seed may contain noise directly above: we
       // clear its down arcs if it is the stitch node.
       if(stitchVertex == seedPair.first) {
         if(DEBUG) {
@@ -332,7 +332,7 @@ void ContourForests::unifyTree(const char treetype) {
   tmpTree.treeData_.nodes.reserve(scalars_->size / 50);
   tmpTree.treeData_.superArcs.reserve(scalars_->size / 50);
 
-  // partition, node in partion, is a leaf
+  // partition, node in partition, is a leaf
   queue<tuple<idInterface, idNode>> leavesNodes;
   vector<unsigned> nbVisit(scalars_->size, 0);
 

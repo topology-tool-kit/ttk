@@ -206,7 +206,7 @@ namespace ttk {
       /// segmentationIds Segmentation ids of the contour tree edges.
       /// segmentationIds[i] is an identifier of the segment associated with the
       /// edge of index i. \param topology Connectivity information describing
-      /// the graph stucture. topology[i][0] and topology[i][1] are the indices
+      /// the graph structure. topology[i][0] and topology[i][1] are the indices
       /// of the two nodes incident to the edge of index i. \param nVertices The
       /// number of vertices in the graph and the length of scalar array. \param
       /// nEdges The number of edges in the graph and the length of regionSizes,
@@ -250,7 +250,7 @@ namespace ttk {
       /// branch information to the node objects.
       void computeBranches();
 
-      /// Returns a graph representaiton of the contour tree as node list and
+      /// Returns a graph representation of the contour tree as node list and
       /// edge list.
       ///
       /// \returns Pair consisting of the node list and the edge list.

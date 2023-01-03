@@ -135,8 +135,8 @@ namespace ttk {
     void initSaddleSeeds(std::vector<polarity> &isNew,
                          std::vector<std::vector<std::pair<polarity, polarity>>>
                            &vertexLinkPolarity,
-                         std::vector<polarity> &toPropageMin,
-                         std::vector<polarity> &toPropageMax,
+                         std::vector<polarity> &toPropagateMin,
+                         std::vector<polarity> &toPropagateMax,
                          std::vector<polarity> &toProcess,
                          std::vector<DynamicTree> &link,
                          std::vector<uint8_t> &vertexLink,
@@ -146,8 +146,8 @@ namespace ttk {
                          const SimplexId *const offsets) const;
 
     void initPropagation(
-      std::vector<polarity> &toPropageMin,
-      std::vector<polarity> &toPropageMax,
+      std::vector<polarity> &toPropagateMin,
+      std::vector<polarity> &toPropagateMax,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMax,
       std::vector<std::vector<SimplexId>> &saddleCCMin,
@@ -159,8 +159,8 @@ namespace ttk {
       const SimplexId *const offsets) const;
 
     void updatePropagation(
-      std::vector<polarity> &toPropageMin,
-      std::vector<polarity> &toPropageMax,
+      std::vector<polarity> &toPropagateMin,
+      std::vector<polarity> &toPropagateMax,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMax,
       std::vector<std::vector<SimplexId>> &saddleCCMin,
@@ -221,8 +221,8 @@ namespace ttk {
       updateSaddleSeeds(std::vector<polarity> &isNew,
                         std::vector<std::vector<std::pair<polarity, polarity>>>
                           &vertexLinkPolarity,
-                        std::vector<polarity> &toPropageMin,
-                        std::vector<polarity> &toPropageMax,
+                        std::vector<polarity> &toPropagateMin,
+                        std::vector<polarity> &toPropagateMax,
                         std::vector<polarity> &toProcess,
                         std::vector<polarity> &toReprocess,
                         std::vector<DynamicTree> &link,
@@ -246,10 +246,10 @@ namespace ttk {
                             std::vector<std::pair<polarity, polarity>> &vlp,
                             const SimplexId *const offsets) const;
 
-    ttk::SimplexId propageFromSaddles(
+    ttk::SimplexId propagateFromSaddles(
       const SimplexId vertexId,
       std::vector<Lock> &vertLock,
-      std::vector<polarity> &toPropage,
+      std::vector<polarity> &toPropagate,
       std::vector<std::vector<SimplexId>> &vertexRepresentatives,
       std::vector<std::vector<SimplexId>> &saddleCC,
       std::vector<polarity> &isUpdated,
@@ -262,8 +262,8 @@ namespace ttk {
       const SimplexId *const offsets,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMax,
-      const std::vector<polarity> &toPropageMin,
-      const std::vector<polarity> &toPropageMax) const;
+      const std::vector<polarity> &toPropagateMin,
+      const std::vector<polarity> &toPropagateMax) const;
 
     double predictNextIterationDuration(const double currItDuration,
                                         const size_t nCurrPairs) const;

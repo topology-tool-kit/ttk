@@ -409,7 +409,7 @@ namespace ttk {
     /// \param cellId Input global cell identifier.
     /// \param localVertexId Input local vertex identifier,
     /// in [0, getCellVertexNumber()].
-    /// \param vertexId Ouput global vertex identifier.
+    /// \param vertexId Output global vertex identifier.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellVertexNumber()
     virtual inline int getCellVertex(const SimplexId &cellId,

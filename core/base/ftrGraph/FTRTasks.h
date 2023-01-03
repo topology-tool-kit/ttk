@@ -79,7 +79,7 @@ namespace ttk {
       }
     };
 
-    // Explain priority explicitely
+    // Explain priority explicitly
     enum PriorityLevel { Min = 0, Low, Average, High, Higher, Max };
   } // namespace ftr
 } // namespace ttk

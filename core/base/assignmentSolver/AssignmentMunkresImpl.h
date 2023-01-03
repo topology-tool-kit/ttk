@@ -187,7 +187,7 @@ int ttk::AssignmentMunkres<dataType>::stepOne(int &step) // ~ 0% perf
     }
   }
 
-  // Substract minimum value in every column except the last.
+  // Subtract minimum value in every column except the last.
   for(int c = 0; c < this->colSize - 1; ++c) {
     minInCol = (*C)[0][c];
 

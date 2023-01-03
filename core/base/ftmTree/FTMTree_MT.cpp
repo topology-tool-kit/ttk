@@ -142,7 +142,7 @@ void FTMTree_MT::buildSegmentation() {
   // current status of the segmentation of this arc
   vector<SimplexId> posSegm(nbArcs, 0);
 
-  // Segments are connex region of geometrie forming
+  // Segments are connex region of geometry forming
   // the segmentation (sorted in ascending order)
   const SimplexId nbVert = scalars_->size;
   const SimplexId chunkSize = getChunkSize();
@@ -224,7 +224,7 @@ void FTMTree_MT::buildSegmentation() {
 
   // Update SuperArc region
 
-  // ST have a segmentation wich is in the reverse-order of its build
+  // ST have a segmentation which is in the reverse-order of its build
   // ST have a segmentation sorted in ascending order as JT
   for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId) {
 #ifdef TTK_ENABLE_OPENMP
@@ -294,7 +294,7 @@ void FTMTree_MT::delNode(idNode node) {
     // Root: No Superarc
 #ifndef TTK_ENABLE_KAMIKAZE
     if(mainNode->getNumberOfDownSuperArcs() != 1) {
-      // Root with several childs: impossible /\ .
+      // Root with several children: impossible /\ .
       cout << endl << "[FTMTree_MT]:delNode won't delete ";
       cout << mainNode->getVertexId() << " (root) with ";
       cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs())
@@ -486,7 +486,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
 
   idNode newNodeId = mt_data_.nodes->getNext();
   (*mt_data_.nodes)[newNodeId].setVertexId(vertexId);
-  (*mt_data_.nodes)[newNodeId].setTerminaison(term);
+  (*mt_data_.nodes)[newNodeId].setTermination(term);
   updateCorrespondingNode(vertexId, newNodeId);
 
   return newNodeId;
@@ -615,7 +615,7 @@ void FTMTree_MT::normalizeIds() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(std::abs((long)nIdMax - (long)nIdMin) > 1) {
-    this->printMsg({"error during normalize, tree compromized: ",
+    this->printMsg({"error during normalize, tree compromised: ",
                     std::to_string(nIdMin), " ", std::to_string(nIdMax)},
                    debug::Priority::ERROR);
   }

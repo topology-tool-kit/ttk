@@ -9,7 +9,7 @@
 /// layout of a \b vtkUnstructuredGrid. To improve the quality of the layout it
 /// is possible to pass additional field data to the algorithm:\n \b 1) \b
 /// Sequences: Points are positioned along the x-axis based on a sequence (e.g.,
-/// time indicies or scalar values). \b 1) \b Sizes: Points cover space on the
+/// time indices or scalar values). \b 1) \b Sizes: Points cover space on the
 /// y-axis based on their size. \b 1) \b Branches: Points with the same branch
 /// label are positioned on straight lines. \b 1) \b Levels: The layout of
 /// points with the same level label are computed individually and afterwards
@@ -63,8 +63,8 @@ namespace ttk {
     template <typename IT, typename CT>
     int extractLevel(
       // Output
-      std::vector<size_t> &nodeIndicies,
-      std::vector<size_t> &edgeIndicies,
+      std::vector<size_t> &nodeIndices,
+      std::vector<size_t> &edgeIndices,
 
       // Input
       const CT *connectivityList,
@@ -83,8 +83,8 @@ namespace ttk {
       const ST *pointSequences,
       const float *sizes,
       const IT *branches,
-      const std::vector<size_t> &nodeIndicies,
-      const std::vector<size_t> &edgeIndicies,
+      const std::vector<size_t> &nodeIndices,
+      const std::vector<size_t> &edgeIndices,
       const std::map<ST, size_t> &sequenceValueToIndexMap) const;
 
     template <typename IT, typename CT>
@@ -106,7 +106,7 @@ namespace ttk {
       float *layout,
 
       // Input
-      const std::vector<size_t> &nodeIndicies,
+      const std::vector<size_t> &nodeIndices,
       const std::string &dotString) const;
   };
 } // namespace ttk
@@ -117,8 +117,8 @@ namespace ttk {
 template <typename IT, typename CT>
 int ttk::PlanarGraphLayout::extractLevel(
   // Output
-  std::vector<size_t> &nodeIndicies,
-  std::vector<size_t> &edgeIndicies,
+  std::vector<size_t> &nodeIndices,
+  std::vector<size_t> &edgeIndices,
 
   // Input
   const CT *connectivityList,
@@ -129,13 +129,13 @@ int ttk::PlanarGraphLayout::extractLevel(
 
   // If levels==nullptr then return all points and edges
   if(levels == nullptr) {
-    nodeIndicies.resize(nPoints);
+    nodeIndices.resize(nPoints);
     for(size_t i = 0; i < nPoints; i++)
-      nodeIndicies[i] = i;
+      nodeIndices[i] = i;
 
-    edgeIndicies.resize(nEdges);
+    edgeIndices.resize(nEdges);
     for(size_t i = 0; i < nEdges; i++)
-      edgeIndicies[i] = i;
+      edgeIndices[i] = i;
 
     return 1;
   }
@@ -143,7 +143,7 @@ int ttk::PlanarGraphLayout::extractLevel(
   // Get nodes at level
   for(size_t i = 0; i < nPoints; i++)
     if(levels[i] == level)
-      nodeIndicies.push_back(i);
+      nodeIndices.push_back(i);
 
   // Get edges at level
   size_t nEdges2 = nEdges * 2;
@@ -151,7 +151,7 @@ int ttk::PlanarGraphLayout::extractLevel(
     auto n0l = levels[connectivityList[i + 0]];
     auto n1l = levels[connectivityList[i + 1]];
     if(n0l == level && n0l == n1l)
-      edgeIndicies.push_back(i / 2);
+      edgeIndices.push_back(i / 2);
   }
 
   return 1;
@@ -170,8 +170,8 @@ int ttk::PlanarGraphLayout::computeDotString(
   const ST *pointSequences,
   const float *sizes,
   const IT *branches,
-  const std::vector<size_t> &nodeIndicies,
-  const std::vector<size_t> &edgeIndicies,
+  const std::vector<size_t> &nodeIndices,
+  const std::vector<size_t> &edgeIndices,
   const std::map<ST, size_t> &sequenceValueToIndexMap) const {
 
   Timer t;
@@ -200,7 +200,7 @@ int ttk::PlanarGraphLayout::computeDotString(
 
     // If useSizes then map size to node height
     if(useSizes)
-      for(auto &i : nodeIndicies)
+      for(auto &i : nodeIndices)
         nodeString += nl(i) + "[height=" + std::to_string(sizes[i]) + "];";
   }
 
@@ -221,7 +221,7 @@ int ttk::PlanarGraphLayout::computeDotString(
     // Collect nodes with the same sequence index
     std::vector<std::vector<size_t>> sequenceIndexToPointIndexMap(
       nSequenceValues);
-    for(auto &i : nodeIndicies)
+    for(auto &i : nodeIndices)
       sequenceIndexToPointIndexMap
         [sequenceValueToIndexMap.find(pointSequences[i])->second]
           .push_back(i);
@@ -242,7 +242,7 @@ int ttk::PlanarGraphLayout::computeDotString(
   // Edges
   // ---------------------------------------------------------------------------
   {
-    for(auto &edgeIndex : edgeIndicies) {
+    for(auto &edgeIndex : edgeIndices) {
       size_t temp = edgeIndex * 2;
       auto &i0 = connectivityList[temp + 0];
       auto &i1 = connectivityList[temp + 1];
@@ -326,19 +326,19 @@ int ttk::PlanarGraphLayout::computeSlots(
   // Adjust positions from bottom to top (skip last level)
   // ---------------------------------------------------------------------------
   for(IT l = 0; l < nLevels - 1; l++) {
-    std::vector<size_t> nodeIndicies;
-    std::vector<size_t> edgeIndicies;
+    std::vector<size_t> nodeIndices;
+    std::vector<size_t> edgeIndices;
 
     // get nodes at current level (parents)
     this->extractLevel<IT, CT>(
       // Output
-      nodeIndicies, edgeIndicies,
+      nodeIndices, edgeIndices,
 
       // Input
       connectivityList, nPoints, nEdges, l, levels);
 
     // for each parent adjust position of children
-    for(auto &parent : nodeIndicies) {
+    for(auto &parent : nodeIndices) {
       auto &children = nodeIndexChildrenIndexMap[parent];
       size_t nChildren = children.size();
       if(nChildren < 1)
@@ -445,14 +445,14 @@ int ttk::PlanarGraphLayout::computeLayout(
   // Compute initial layout for each level
   // ---------------------------------------------------------------------------
   for(IT l = 0; l < nLevels; l++) {
-    std::vector<size_t> nodeIndicies;
-    std::vector<size_t> edgeIndicies;
+    std::vector<size_t> nodeIndices;
+    std::vector<size_t> edgeIndices;
 
     // Extract nodes and edges at certain level
     {
       int status = this->extractLevel<IT, CT>(
         // Output
-        nodeIndicies, edgeIndicies,
+        nodeIndices, edgeIndices,
 
         // Input
         connectivityList, nPoints, nEdges, l, levels);
@@ -468,15 +468,15 @@ int ttk::PlanarGraphLayout::computeLayout(
         dotString,
 
         // Input
-        connectivityList, pointSequences, sizes, branches, nodeIndicies,
-        edgeIndicies, sequenceValueToIndexMap);
+        connectivityList, pointSequences, sizes, branches, nodeIndices,
+        edgeIndices, sequenceValueToIndexMap);
       if(status != 1)
         return 0;
     }
 
     // Compute Dot Layout
     {
-      int status = this->computeDotLayout(layout, nodeIndicies, dotString);
+      int status = this->computeDotLayout(layout, nodeIndices, dotString);
       if(status != 1)
         return 0;
     }

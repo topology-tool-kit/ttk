@@ -449,7 +449,7 @@ std::vector<int> ttk::PDClustering::execute(
           CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
           CriticalVertex{0, CriticalType::Saddle1, g.y_, critCoords}, 0, true});
         if(g.getPersistence() > 1000) {
-          this->printMsg("Found a anormally high persistence in min diagram",
+          this->printMsg("Found a abnormally high persistence in min diagram",
                          debug::Priority::WARNING);
         }
       }
@@ -463,7 +463,7 @@ std::vector<int> ttk::PDClustering::execute(
           CriticalVertex{0, CriticalType::Saddle1, g.x_, critCoords},
           CriticalVertex{0, CriticalType::Saddle2, g.y_, critCoords}, 1, true});
         if(g.getPersistence() > 1000) {
-          this->printMsg("Found a anormally high persistence in sad diagram",
+          this->printMsg("Found a abnormally high persistence in sad diagram",
                          debug::Priority::WARNING);
         }
       }
@@ -485,7 +485,7 @@ std::vector<int> ttk::PDClustering::execute(
           true});
 
         if(g.getPersistence() > 1000) {
-          this->printMsg("Found a anormally high persistence in min diagram",
+          this->printMsg("Found a abnormally high persistence in min diagram",
                          debug::Priority::WARNING);
         }
       }
@@ -1009,7 +1009,7 @@ void ttk::PDClustering::initializeCentroidsKMeanspp() {
       probabilities[i] = square(min_distance_to_centroid[i]);
 
       // The following block is useful in case of need for a deterministic
-      // algoritm
+      // algorithm
       if(deterministic_ && min_distance_to_centroid[i] > maximal_distance) {
         maximal_distance = min_distance_to_centroid[i];
         candidate_centroid = i;
@@ -1240,7 +1240,7 @@ void ttk::PDClustering::updateClusters() {
 
 void ttk::PDClustering::invertClusters() {
   /// Converts the clustering (vector of vector of diagram's id) into
-  /// a vector of size numberOfInputs_ containg the cluster of each input
+  /// a vector of size numberOfInputs_ containing the cluster of each input
   /// diagram.
 
   // Initializes clusters with -1

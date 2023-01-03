@@ -79,7 +79,7 @@ jobs:
         # not enough RAM to build in parallel (or with ninja)
         cmake --build .
 
-    - name: Package TTK & update package informations
+    - name: Package TTK & update package information
       run: |
         cd build
         cpack -G DEB

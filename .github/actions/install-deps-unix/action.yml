@@ -1,5 +1,5 @@
 name: 'Install dependencies for Unix'
-description: 'Install TTK optionall dependencies on Ubuntu & macOS'
+description: 'Install TTK optional dependencies on Ubuntu & macOS'
 runs:
   using: "composite"
   steps:

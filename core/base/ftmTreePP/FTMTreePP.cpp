@@ -3,7 +3,7 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-08-03
 ///
-///\brief TTK processing package that add persistance pairs features
+///\brief TTK processing package that add persistence pairs features
 // to the contour tree package.
 ///
 ///\param dataType Data type of the input scalar field (char, float,

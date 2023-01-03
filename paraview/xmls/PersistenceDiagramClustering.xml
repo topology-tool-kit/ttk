@@ -94,7 +94,7 @@
       <Documentation>
         When there are only two input diagrams and one cluster, the progressive approach is not used by default to compute the barycenter.
           Instead, the Auction Algorithm is used to compute the Wasserstein distance between the two diagrams, and the barycenter is deduced from
-          the corresponding assignments without additional computationnal cost.
+          the corresponding assignments without additional computational cost.
           This option forces the use of the progressive approach to compute the barycenter.
       </Documentation>
 
@@ -308,7 +308,7 @@
                            </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
-            Ajust the spacing for the display of diagrams.
+            Adjust the spacing for the display of diagrams.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -337,7 +337,7 @@
         <BooleanDomain name="bool"/>
          <Documentation>
           If activated, the clustering is initialized cleverly. The option may avoid local minima at the cost
-          of some initial computations proportionnal to the product of the number of clusters and the number of diagrams.
+          of some initial computations proportional to the product of the number of clusters and the number of diagrams.
          </Documentation>
       </IntVectorProperty>
 

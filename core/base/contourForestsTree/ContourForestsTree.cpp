@@ -108,7 +108,7 @@ int ContourForestsTree::combine(
     head = growingNodes.front();
 
     if(head.first) {
-      // node come frome jt
+      // node come from jt
       xt = &jt_;
       yt = &st_;
     } else {

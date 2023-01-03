@@ -16,9 +16,9 @@ namespace ttk {
 
     KDT default_kdt_{};
     KDT &kdt_{default_kdt_};
-    std::vector<KDT *> default_correspondance_kdt_map_{};
-    std::vector<KDT *> &correspondance_kdt_map_{
-      default_correspondance_kdt_map_};
+    std::vector<KDT *> default_correspondence_kdt_map_{};
+    std::vector<KDT *> &correspondence_kdt_map_{
+      default_correspondence_kdt_map_};
 
     PersistenceDiagramAuction(int wasserstein,
                               double geometricalFactor,
@@ -36,11 +36,11 @@ namespace ttk {
                               double lambda,
                               double delta_lim,
                               KDT &kdt,
-                              std::vector<KDT *> &correspondance_kdt_map,
+                              std::vector<KDT *> &correspondence_kdt_map,
                               double epsilon = {},
                               double initial_diag_price = {},
                               bool use_kdTree = true)
-      : kdt_{kdt}, correspondance_kdt_map_{correspondance_kdt_map},
+      : kdt_{kdt}, correspondence_kdt_map_{correspondence_kdt_map},
         bidders_{bidders}, goods_{goods} {
 
       n_bidders_ = bidders.size();
@@ -188,7 +188,7 @@ namespace ttk {
           coordinates.push_back((1 - geometricalFactor_) * g.coords_[2]);
         }
       }
-      correspondance_kdt_map_
+      correspondence_kdt_map_
         = kdt_.build(coordinates.data(), goods_.size(), dimension);
     }
 

@@ -572,7 +572,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     else if(seg >= 0)
       affectedSegments[seg] = true;
     else {
-      this->printErr("Negative segment encoutered (" + std::to_string(i) + ")");
+      this->printErr("Negative segment encountered (" + std::to_string(i)
+                     + ")");
     }
   }
   std::vector<int> empty;

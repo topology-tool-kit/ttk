@@ -2,7 +2,7 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-// VTK inclues
+// VTK includes
 #include <vtkConnectivityFilter.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
@@ -76,7 +76,7 @@ int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
   if(input->IsA("vtkUnstructuredGrid")) {
     // This data set may have several connected components,
     // we need to apply the FTM Tree for each one of these components
-    // We then reconstruct the global tree using an offest mecanism
+    // We then reconstruct the global tree using an offset mechanism
     auto inputWithId = vtkSmartPointer<vtkUnstructuredGrid>::New();
     inputWithId->ShallowCopy(input);
     identify(inputWithId);

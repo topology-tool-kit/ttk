@@ -39,7 +39,7 @@ namespace ttk {
       DebugTimer timerTOTAL;
 
       // -----------
-      // Paramemters
+      // Parameters
       // -----------
       initTreeType();
       initNbScalars(mesh);
@@ -217,11 +217,11 @@ namespace ttk {
       if(params_->treeType == TreeType::Contour
          && parallelParams_.partitionNum == -1 && params_->simplifyThreshold) {
         DebugTimer timerGlobalSimplify;
-        SimplexId simplifed
+        SimplexId simplified
           = globalSimplify<scalarType>(-1, nullVertex, this->storage_, mesh);
         if(params_->debugLevel >= 1) {
           printDebug(timerGlobalSimplify, "Simplify Contour tree            ");
-          std::cout << " ( " << simplifed << " pairs merged )" << std::endl;
+          std::cout << " ( " << simplified << " pairs merged )" << std::endl;
         }
       }
 
@@ -423,7 +423,7 @@ namespace ttk {
         if(params_->treeType == TreeType::Contour) {
           DebugTimer timerCombine;
 
-          // clone here if we do not want to destry original merge trees!
+          // clone here if we do not want to destroy original merge trees!
           auto *jt = parallelData_.trees[i].getJoinTree();
           auto *st = parallelData_.trees[i].getSplitTree();
 

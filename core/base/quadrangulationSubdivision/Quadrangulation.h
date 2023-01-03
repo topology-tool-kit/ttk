@@ -128,7 +128,7 @@ namespace ttk {
     using Point = ttk::SurfaceGeometrySmoother::Point;
 
   private:
-    CellArray buildQuadOffets();
+    CellArray buildQuadOffsets();
 
     const Point *vertCoords_{};
     const Quad *cells_{};

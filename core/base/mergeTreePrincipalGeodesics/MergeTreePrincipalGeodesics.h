@@ -5,7 +5,7 @@
 ///
 /// This module defines the %MergeTreePrincipalGeodesics class that computes
 /// Principal Geodesic Analysis on the space of merge trees or persistence
-/// diagrams, that is, a set of orthognal geodesic axes defining a basis with
+/// diagrams, that is, a set of orthogonal geodesic axes defining a basis with
 /// the barycenter as origin.
 ///
 /// \b Related \b publication: \n
@@ -28,7 +28,7 @@ namespace ttk {
   /**
    * The MergeTreePrincipalGeodesics class provides methods to compute
    * Principal Geodesic Analysis on the space of merge trees or persistence
-   * diagrams, that is, a set of orthognal geodesic axes defining a basis with
+   * diagrams, that is, a set of orthogonal geodesic axes defining a basis with
    * the barycenter as origin.
    */
   class MergeTreePrincipalGeodesics : virtual public Debug,
@@ -211,12 +211,12 @@ namespace ttk {
                     return (std::get<0>(a) > std::get<0>(b));
                   });
 
-      // Init vectors according farest input
-      // (repeat with the ith farest until projection gives non null vector)
+      // Init vectors according fairest input
+      // (repeat with the ith fairest until projection gives non null vector)
       unsigned int i = 0;
       bool foundGoodIndex = false;
       while(not foundGoodIndex) {
-        // Get matching of the ith farest input
+        // Get matching of the ith fairest input
         if(bestIndex >= 0 and bestIndex < (int)trees.size()) {
           if(geodesicNumber != 0) {
             dataType distance;

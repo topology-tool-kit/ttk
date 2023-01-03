@@ -83,12 +83,12 @@ namespace ttk {
         return getNode(nid)->getCorArc();
       }
 
-      // check wether or not this node is connected to others
+      // check whether or not this node is connected to others
       bool isDisconnected(const DynGraphNode<Type> *const node) const {
         return !node->hasParent();
       }
 
-      // check wether or not this node is connected to others
+      // check whether or not this node is connected to others
       bool isDisconnected(const std::size_t nid) {
         return !getNode(nid)->hasParent();
       }
@@ -194,8 +194,8 @@ namespace ttk {
     };
 
     // Same as dynamic graph but keep the number of subtrees at any time
-    // CAREFULL: this number is not protected for parallel modification, and
-    // this class is not made for parallel acess.
+    // CAREFUL: this number is not protected for parallel modification, and
+    // this class is not made for parallel access.
     template <typename Type>
     class LocalForest : public DynamicGraph<Type> {
       std::size_t nbCC_;
@@ -360,7 +360,7 @@ namespace ttk {
                       const Type weight,
                       const idSuperArc corArc);
 
-      /// Remove the link between this node and its parent, thus makeing a new
+      /// Remove the link between this node and its parent, thus making a new
       /// root
       void removeEdge();
     };

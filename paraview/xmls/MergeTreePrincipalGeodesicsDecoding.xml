@@ -67,7 +67,7 @@
       </InputProperty>
       
       <InputProperty
-        name="Correlation Matrix (optionnal)"
+        name="Correlation Matrix (optional)"
         port_index="3"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -86,7 +86,7 @@
       </InputProperty>
       
       <InputProperty
-        name="Input Trees (optionnal)"
+        name="Input Trees (optional)"
         port_index="4"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -182,9 +182,9 @@
       </IntVectorProperty>
       
       <IntVectorProperty
-      name="TransferInputTreesInformations"
-      command="SettransferInputTreesInformations_"
-      label="Transfer Input Trees Informations"
+      name="TransferInputTreesInformation"
+      command="SettransferInputTreesInformation_"
+      label="Transfer Input Trees Information"
       number_of_elements="1"
       default_values="0"
       panel_visibility="advanced">
@@ -201,9 +201,9 @@
       </IntVectorProperty>
       
       <IntVectorProperty
-      name="TransferBarycenterInformations"
-      command="SettransferBarycenterInformations_"
-      label="Transfer Barycenter Informations"
+      name="TransferBarycenterInformation"
+      command="SettransferBarycenterInformation_"
+      label="Transfer Barycenter Information"
       number_of_elements="1"
       default_values="0"
       panel_visibility="advanced">
@@ -339,8 +339,8 @@
         <Property name="OutputBarycenter"/>
         <Property name="ReconstructInputTrees"/>
         <Property name="ComputeReconstructionError"/>
-        <Property name="TransferInputTreesInformations"/>
-        <Property name="TransferBarycenterInformations"/>
+        <Property name="TransferInputTreesInformation"/>
+        <Property name="TransferBarycenterInformation"/>
         <Property name="ConstructGeodesicsTrees"/>
         <Property name="ConstructEllipses"/>
         <Property name="ConstructRectangle"/>

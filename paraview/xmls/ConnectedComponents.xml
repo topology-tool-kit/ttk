@@ -3,7 +3,7 @@
   <ProxyGroup name="filters">
     <SourceProxy name="ConnectedComponents" class="ttkConnectedComponents" label="TTK ConnectedComponents">
       <Documentation long_help="TTK connectedComponents" short_help="TTK connectedComponents">
-        This filter consumes a scalar field with a feature mask and computes for each edge connected group of vertices with a non-background mask value a so-called connected component via flood-filling, where the backgroud is masked with values smaller-equal zero. The computed components store the size, seed, and center of mass of each component. The flag UseSeedIdAsComponentId controls if the resulting segmentation is either labeled by the index of the component, or by its seed location (which can be used as a deterministic component label).
+        This filter consumes a scalar field with a feature mask and computes for each edge connected group of vertices with a non-background mask value a so-called connected component via flood-filling, where the background is masked with values smaller-equal zero. The computed components store the size, seed, and center of mass of each component. The flag UseSeedIdAsComponentId controls if the resulting segmentation is either labeled by the index of the component, or by its seed location (which can be used as a deterministic component label).
       </Documentation>
 
       <InputProperty name="Segmentation" command="SetInputConnection">
@@ -14,7 +14,7 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet" />
         </DataTypeDomain>
-        <InputArrayDomain attribute_type="point" name="segmantation_point_arrays" number_of_components="1" optional="1" />
+        <InputArrayDomain attribute_type="point" name="segmentation_point_arrays" number_of_components="1" optional="1" />
         <Documentation>A vtkDataSet.</Documentation>
       </InputProperty>
 
@@ -22,7 +22,7 @@
       <OutputPort index="1" id="port1" name="Components" />
 
       <StringVectorProperty name="FeatureMask" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="None">
-        <ArrayListDomain name="array_list" input_domain_name="segmantation_point_arrays" none_string="None">
+        <ArrayListDomain name="array_list" input_domain_name="segmentation_point_arrays" none_string="None">
           <RequiredProperties>
             <Property function="Input" name="Segmentation" />
           </RequiredProperties>

@@ -120,7 +120,7 @@ namespace ttk {
   };
 
   /// Comparison between critical point pairs ( (Extremum,Saddle), dist(M,S) )
-  struct criticalPointPairComparaison {
+  struct criticalPointPairComparison {
     bool operator()(const std::pair<std::pair<int, int>, double> &left,
                     const std::pair<std::pair<int, int>, double> &right) const {
       return (left.second < right.second);
@@ -128,7 +128,7 @@ namespace ttk {
   };
 
   /// Comparison between mandatory saddles (Saddle id, Number of merged extrema)
-  struct mandatorySaddleComparaison {
+  struct mandatorySaddleComparison {
     bool operator()(const std::pair<int, int> &left,
                     const std::pair<int, int> &right) const {
       return (left.second < right.second);
@@ -137,7 +137,7 @@ namespace ttk {
 
   // TODO : template
   /// Comparison of the second member of a std::pair<int,double>
-  struct pairComparaison {
+  struct pairComparison {
     bool operator()(const std::pair<int, double> &left,
                     const std::pair<int, double> &right) const {
       return (left.second < right.second);

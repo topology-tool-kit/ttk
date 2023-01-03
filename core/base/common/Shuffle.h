@@ -3,7 +3,7 @@
 
 namespace ttk {
   /**
-   * @brief Platform-independant alternative to std::shuffle
+   * @brief Platform-independent alternative to std::shuffle
    * implementing the Fisher-Yates shuffle algorithm
    *
    * @param[in,out] toShuffle Vector of elements to be shuffled

@@ -10,7 +10,7 @@
 /// This filter computes a planar graph layout of a \b vtkUnstructuredGrid. To
 /// improve the quality of the layout it is possible to pass additional field
 /// data to the algorithm:\n \b 1) \b Sequences: Points are positioned along the
-/// x-axis based on a sequence (e.g., time indicies or scalar values). \b 1) \b
+/// x-axis based on a sequence (e.g., time indices or scalar values). \b 1) \b
 /// Sizes: Points cover space on the y-axis based on their size. \b 1) \b
 /// Branches: Points with the same branch label are positioned on straight
 /// lines. \b 1) \b Levels: The layout of points with the same level label are

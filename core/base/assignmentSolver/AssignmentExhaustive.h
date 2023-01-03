@@ -2,7 +2,7 @@
 /// \class ttk::AssignmentExhaustive
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 ///
-/// Exhaustive Search for Unbalanced Assignement Problem
+/// Exhaustive Search for Unbalanced Assignment Problem
 ///   (TODO manage balanced problem)
 ///
 /// The cost matrix in input has a size of (n + 1) x (m + 1)
@@ -12,7 +12,7 @@
 /// - the last cell (costMatrix[n][m]) is not used
 ///
 /// An exhaustive search for the assignment problem has an exponential
-/// complexity Use this algorithm only for small assigment problem
+/// complexity Use this algorithm only for small assignment problem
 
 #pragma once
 
@@ -80,7 +80,7 @@ namespace ttk {
             continue;
 
           if(ind == max_dim - 1) {
-            // A new assignement without unassigned costs is made here
+            // A new assignment without unassigned costs is made here
             // allAsgn.push_back(new_asgn);
 
             // Construct assignments with unassigned costs
@@ -172,7 +172,7 @@ namespace ttk {
 
             unsigned int new_ind = new_asgn.size();
             if(new_ind == max_dim) {
-              // A new assignement is made here
+              // A new assignment is made here
               for(auto new_unasgn_elem : new_unasgn)
                 new_asgn.push_back(new_unasgn_elem);
               // std::sort(new_asgn.begin()+min_dim, new_asgn.end());
@@ -239,7 +239,7 @@ namespace ttk {
 
             unsigned int new_ind = new_asgn.size();
             if(new_ind == max_dim) {
-              // A new assignement is made here
+              // A new assignment is made here
               for(auto new_unasgn_elem : new_unasgn)
                 new_asgn.push_back(new_unasgn_elem);
               // std::sort(new_asgn.begin()+min_dim, new_asgn.end());

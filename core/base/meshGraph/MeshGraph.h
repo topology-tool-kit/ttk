@@ -317,7 +317,7 @@ int ttk::MeshGraph::execute(
       IT aInputIndex = inputConnectivityArray[temp++];
       IT bInputIndex = inputConnectivityArray[temp];
 
-      // get point indicies
+      // get point indices
       IT a = aInputIndex * 3;
       IT a0 = a + 1;
       IT a1 = a + 2;

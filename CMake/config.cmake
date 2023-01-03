@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
 cmake_dependent_option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON "TTK_BUILD_VTK_WRAPPERS" OFF)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
-option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
+option(TTK_WHITELIST_MODE "Explicitly enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
 
 # This option allows library to be built dynamic
@@ -32,7 +32,7 @@ endif ()
 # This variable has two possible values "SingleArray" and "OffsetAndConnectiviy".
 # * "SingleArray" use a layout compatible with VTK < 9 were the cell array store the
 #   cells and their connectivity in a flat array
-# * "OffsetAndConnectivity" use a layout comatible with VTK >= 9, having two arrays
+# * "OffsetAndConnectivity" use a layout compatible with VTK >= 9, having two arrays
 #   (see https://vtk.org/doc/nightly/html/classvtkCellArray.html#details for more info)
 set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.")
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
@@ -49,7 +49,7 @@ if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
   # Find ParaView, otherwise VTK
   find_package(ParaView)
   if(ParaView_FOUND)
-    # hande version manually so we do not have to include
+    # handle version manually so we do not have to include
     # files from VTK / ParaView in the code.
     # this is necessary to work with build folder directly (MacOS)
     add_definitions(-DPARAVIEW_VERSION_MAJOR=${ParaView_VERSION_MAJOR})
@@ -64,7 +64,7 @@ if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
   else()
     find_package(VTK)
     if(VTK_FOUND)
-      # hande version manually so we do not have to include
+      # handle version manually so we do not have to include
       # files from VTK / ParaView in the code.
       # this is necessary to work with build folder directly (MacOS)
       add_definitions(-DVTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
@@ -149,7 +149,7 @@ if(Boost_FOUND)
   message(STATUS "Found Boost ${Boost_VERSION} (${Boost_INCLUDE_DIR})")
 endif()
 
-# optional pakages
+# optional packages
 
 find_package(ZLIB QUIET)
 if(ZLIB_FOUND)

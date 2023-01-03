@@ -51,7 +51,7 @@ namespace ttk {
       triScheme(const char u) : scheme(u) {
       }
 
-      // direct acess to data
+      // direct access to data
       operator char() const {
         return scheme;
       }

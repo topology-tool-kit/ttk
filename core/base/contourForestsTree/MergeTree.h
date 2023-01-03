@@ -73,7 +73,7 @@ namespace ttk {
         scalars_->size = tri->getNumberOfVertices();
       }
 
-      /// \brief init the type of the current tree froms params
+      /// \brief init the type of the current tree from params
       void initTreeType() {
         treeData_.treeType = params_->treeType;
       }
@@ -168,7 +168,7 @@ namespace ttk {
        * @pre For this function to behave correctly in the absence of
        * the VTK wrapper, ttk::preconditionOrderArray() needs to be
        * called to fill the @p offsets buffer prior to any
-       * computation (the VTK wrapper already includes a mecanism to
+       * computation (the VTK wrapper already includes a mechanism to
        * automatically generate such a preconditioned buffer).
        * @see examples/c++/main.cpp for an example use.
        */
@@ -330,7 +330,7 @@ namespace ttk {
       }
 
       // }
-      // Get vertex correponding object
+      // Get vertex corresponding object
       // ................................{
 
       inline SuperArc *vertex2SuperArc(const SimplexId &vert) {
@@ -538,7 +538,7 @@ namespace ttk {
 
       void hideNode(const idNode &node);
 
-      // For persistance std::pair on CT
+      // For persistence std::pair on CT
       // these function allow to make a JT / ST od the CT
       std::vector<idNode> getNodeNeighbors(const idNode &node);
 
@@ -556,14 +556,14 @@ namespace ttk {
                                        const SimplexId &v);
 
       // }
-      // Update informations
+      // Update information
       // ...........................{
 
       void updateSegmentation();
 
       void parallelUpdateSegmentation(const bool ct = false);
 
-      // will disapear
+      // will disappear
       void parallelInitNodeValence(const int nbThreadValence);
 
       // }

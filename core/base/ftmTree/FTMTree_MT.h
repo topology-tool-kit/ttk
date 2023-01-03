@@ -38,7 +38,7 @@ namespace ttk {
   namespace ftm {
     using UF = AtomicUF *;
 
-    // Tree datas ( 1 per tree )
+    // Tree data ( 1 per tree )
     struct TreeData {
       TreeType treeType;
 
@@ -53,7 +53,7 @@ namespace ttk {
       std::vector<SimplexId> visitOrder;
       std::vector<std::list<std::vector<SimplexId>>> trunkSegments;
 
-      // Track informations
+      // Track information
       std::vector<AtomicUF> storage;
       std::vector<UF> ufs;
       std::vector<UF> propagation;
@@ -232,9 +232,9 @@ namespace ttk {
                      const SimplexId orig);
 
       template <class triangulationType>
-      std::tuple<bool, bool> propage(const triangulationType *mesh,
-                                     CurrentState &currentState,
-                                     UF curUF);
+      std::tuple<bool, bool> propagate(const triangulationType *mesh,
+                                       CurrentState &currentState,
+                                       UF curUF);
 
       template <class triangulationType>
       void closeAndMergeOnSaddle(const triangulationType *mesh,
@@ -261,7 +261,7 @@ namespace ttk {
 
       // segmentation
 
-      /// \brief use vert2tree to compute the segmentation of the fresh builded
+      /// \brief use vert2tree to compute the segmentation of the fresh built
       /// merge tree.
       void buildSegmentation();
 
@@ -302,7 +302,7 @@ namespace ttk {
       inline void preconditionTriangulation(AbstractTriangulation *tri,
                                             const bool preproc = true) {
         if(tri && preproc) {
-          // propage through vertices (build)
+          // propagate through vertices (build)
           tri->preconditionVertexNeighbors();
         }
       }
@@ -350,7 +350,7 @@ namespace ttk {
        * @pre For this function to behave correctly in the absence of
        * the VTK wrapper, ttk::preconditionOrderArray() needs to be
        * called to fill the @p sos buffer prior to any
-       * computation (the VTK wrapper already includes a mecanism to
+       * computation (the VTK wrapper already includes a mechanism to
        * automatically generate such a preconditioned buffer).
        * @see examples/c++/main.cpp for an example use.
        */
@@ -478,7 +478,7 @@ namespace ttk {
         return mt_data_.vert2tree[val];
       }
 
-      // Get corresponding elemnt
+      // Get corresponding element
 
       inline SuperArc *vertex2SuperArc(const SimplexId vert) {
         return &((*mt_data_.superArcs)[getCorrespondingSuperArcId(vert)]);

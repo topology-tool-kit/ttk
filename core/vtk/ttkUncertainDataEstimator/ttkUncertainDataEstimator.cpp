@@ -52,7 +52,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *ttkNotUsed(request),
   this->printMsg(std::vector<std::vector<std::string>>{
     {"#Inputs", std::to_string(numInputs)}});
 
-  // Get input datas
+  // Get input data
   std::vector<vtkDataSet *> input(numInputs);
   for(int i = 0; i < numInputs; i++) {
     input[i] = vtkDataSet::GetData(inputVector[0], i);
@@ -66,7 +66,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *ttkNotUsed(request),
   int numFields = 0;
   int numArrays = 0;
 
-  // Get arrays from input datas
+  // Get arrays from input data
   std::vector<vtkDataArray *> inputScalarField;
 
   for(int i = 0; i < numInputs; i++) {
