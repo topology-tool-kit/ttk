@@ -12,7 +12,7 @@ on:
       - 'pack*'
 
 env:
-  PV_TAG: v5.10.1
+  PV_TAG: v5.11.0
   PV_REPO: topology-tool-kit/ttk-paraview
 
 jobs:
@@ -135,15 +135,30 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
+    - name: Resample large datasets
+      shell: python3 {0}
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+
+    - name: Run ttk-data Python scripts
+      run: |
+        cd ttk-data
+        # no X server
+        rm python/geometryApproximation.py
+        python3 -u python/run.py
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
       run: |
         cd ttk-data
-        python3 -u python/run.py
         cat python/res.json
         diff python/hashes/${{ matrix.os }}.json python/res.json
-      env:
-        OMP_NUM_THREADS: 1
 
 
   # ------------#
@@ -157,6 +172,7 @@ jobs:
 
     - name: Remove hosted Python
       run: |
+        sudo rm -rf /Library/Frameworks/Python.framework
         sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
@@ -166,15 +182,16 @@ jobs:
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree websocketpp
-        python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
     - name: Fetch & install TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
-        sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        tar xzf ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        sudo cp -r ttk-paraview/* /usr/local
+        pvpython -m pip install scikit-learn
 
     - name: Set compilers as environment variables
       run: |
@@ -208,13 +225,13 @@ jobs:
     - name: Package TTK
       run: |
         cd build
-        cpack -G productbuild
+        cpack -G TGZ
 
-    - name: Upload .pkg package
+    - name: Upload compressed binaries
       uses: actions/upload-artifact@v3
       with:
-        name: ttk.pkg
-        path: build/ttk.pkg
+        name: ttk.tar.gz
+        path: build/ttk.tar.gz
 
   # -----------#
   # Test macOS #
@@ -228,6 +245,7 @@ jobs:
 
     - name: Remove hosted Python
       run: |
+        sudo rm -rf /Library/Frameworks/Python.framework
         sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
@@ -237,54 +255,34 @@ jobs:
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
         brew install boost eigen graphviz embree
-        python3 -m pip install scikit-learn
 
     - name: Fetch TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.pkg
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
 
-    - name: Fetch TTK .pkg artifact
+    - name: Fetch TTK .tar.gz artifact
       uses: actions/download-artifact@v3
       with:
-        name: ttk.pkg
+        name: ttk.tar.gz
 
-    - name: Install .pkg packages
+    - name: Install binary archives packages
       run: |
-        sudo installer -pkg ttk-paraview-${{ env.PV_TAG }}.pkg -target /
-        sudo installer -pkg ttk.pkg -target /
+        tar xzf ttk-paraview-${{ env.PV_TAG}}.tar.gz
+        sudo cp -r ttk-paraview/* /usr/local
+        tar xzf ttk.tar.gz
+        sudo cp -r ttk/* /usr/local
+        pvpython -m pip install scikit-learn
 
-    - name: Set compilers as environment variables
+    - name: Set environment variables
       run: |
         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH" >> $GITHUB_ENV
 
-    - name: Test TTK examples
-      run: |
-        # base layer
-        cd $GITHUB_WORKSPACE/examples/c++
-        mkdir build && cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-c++ -i ../../data/inputData.off
-        # VTK layer
-        export CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH
-        cd $GITHUB_WORKSPACE/examples/vtk-c++
-        mkdir build &&  cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
-        # pure Python
-        export PYTHONPATH=/Applications/lib/python3.9/site-packages
-        export DYLD_LIBRARY_PATH=/Applications/lib:$DYLD_LIBRARY_PATH
-        cd $GITHUB_WORKSPACE/examples/python
-        python3 example.py ../data/inputData.vtu
-        # pvpython
-        export PATH=/Applications/bin:$PATH
-        cd $GITHUB_WORKSPACE/examples/pvpython
-        pvpython example.py ../data/inputData.vtu
-        # standalones
-        cd $GITHUB_WORKSPACE
-        ttkHelloWorldCmd -i examples/data/inputData.vtu
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-unix
 
     - uses: actions/checkout@v3
       with:
@@ -293,17 +291,19 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
+    - name: Run ttk-data Python scripts
+      run: |
+        cd ttk-data
+        pvpython -u python/run.py
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
       run: |
         cd ttk-data
-        python3 -u python/run.py
         cat python/res.json
         diff python/hashes/macOS.json python/res.json
-      env:
-        PYTHONPATH: /Applications/lib/python3.9/site-packages
-        PV_PLUGIN_PATH: /Applications/bin/plugins/TopologyToolKit
-        OMP_NUM_THREADS: 1
 
 
   # --------------#
@@ -493,18 +493,34 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data Python scripts [NOT ENFORCED]
-      continue-on-error: true
+    - name: Resample large datasets
+      shell: python
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+      env:
+        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages
+
+    - name: Run ttk-data Python scripts
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         python -u python\run.py
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      shell: cmd
+      run: |
+        cd ttk-data
         type python\res.json
         FC python\hashes\windows.json python\res.json
-      env:
-        OMP_NUM_THREADS: 1
 
 
   # ---------------#
@@ -561,13 +577,13 @@ jobs:
         file: ttk-ubuntu-22.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-22.04.deb
 
-    - name: Upload macOS .pkg as Release Asset
+    - name: Upload macOS binary archives as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk.pkg/ttk.pkg
-        asset_name: ttk-$tag.pkg
+        file: ttk.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag.tar.gz
 
     - name: Upload Windows .exe as Release Asset
       uses: svenstaro/upload-release-action@v2

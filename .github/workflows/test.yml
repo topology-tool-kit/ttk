@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PV_TAG: v5.10.1-headless
+  PV_TAG: v5.11.0-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -119,12 +119,6 @@ jobs:
         cd build
         cmake --build . --parallel
         sudo cmake --build . --target install
-
-    - name: Set PYTHONPATH for Ubuntu 22.04 pvpython
-      if: matrix.os == 'ubuntu-22.04'
-      run: |
-        # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
@@ -237,12 +231,8 @@ jobs:
         brew install wget llvm libomp ninja python open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy embree websocketpp ccache
-        python3.10 -m pip install scikit-learn
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
-        # remove Python 3.11 installation
-        sudo rm -rf /Library/Frameworks/Python.framework/Versions/3.11
-        sudo rm -rf /usr/local/Frameworks/Python.framework/Versions/3.11
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -267,6 +257,7 @@ jobs:
       run: |
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
+        pvpython -m pip install scikit-learn
 
     - name: Set compilers as environment variables
       run: |
@@ -304,7 +295,7 @@ jobs:
     - name: Set PYTHONPATH for macOS pvpython
       run: |
         # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        echo "PYTHONPATH=/usr/local/lib/python3.11/site-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
@@ -338,7 +329,7 @@ jobs:
     - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
-        python3.10 -u python/run.py
+        pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
 
