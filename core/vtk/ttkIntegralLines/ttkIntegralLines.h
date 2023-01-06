@@ -1,9 +1,7 @@
 /// \ingroup vtk
 /// \class ttkIntegralLines
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
-/// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
 /// \date March 2016
-/// \date MPI implementation: December 2022
 ///
 /// \brief TTK VTK-filter for the computation of edge-based integral lines of
 /// the gradient of an input scalar field.
@@ -69,29 +67,6 @@
 
 class vtkUnstructuredGrid;
 
-struct IntervalToSend {
-  ttk::SimplexId localVertexId;
-  ttk::SimplexId seedIdentifier;
-  ttk::SimplexId intervalSize;
-  unsigned char isFirstGhost;
-  int rankArray;
-};
-
-struct IntervalToSendWithOffset {
-  ttk::SimplexId localVertexId;
-  ttk::SimplexId seedIdentifier;
-  ttk::SimplexId intervalSize;
-  ttk::SimplexId offset;
-  ttk::SimplexId intervalId;
-};
-
-bool operator==(const IntervalToSendWithOffset &left,
-                const IntervalToSendWithOffset &right) {
-  return (left.seedIdentifier == right.seedIdentifier
-          && left.localVertexId == right.localVertexId
-          && left.intervalSize == right.intervalSize);
-};
-
 class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public ttkAlgorithm,
                                                  protected ttk::IntegralLines {
 
@@ -109,30 +84,10 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  template <typename triangulationType>
-  int getTrajectories(
-    vtkDataSet *input,
-    triangulationType *triangulation,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &trajectories,
-    std::vector<ttk::ArrayLinkedList<std::vector<double>, TABULAR_SIZE>>
-      &distancesFromSeed,
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      &seedIdentifiers,
-    std::vector<ttk::SimplexId> &offsets,
-    std::vector<ttk::SimplexId> &edgeOffsets,
-    vtkUnstructuredGrid *output);
-
-  int getGlobalIdentifiers(
-    std::vector<ttk::SimplexId> &offsets,
-    std::vector<ttk::SimplexId> &edgeOffsets,
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      &seedIdentifiers,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &trajectories,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &localVertexIdentifiers,
-    const int *vertexRankArray);
+  int getTrajectories(vtkDataSet *input,
+                      ttk::Triangulation *triangulation,
+                      std::vector<std::vector<ttk::SimplexId>> &trajectories,
+                      vtkUnstructuredGrid *output);
 
 protected:
   ttkIntegralLines();
