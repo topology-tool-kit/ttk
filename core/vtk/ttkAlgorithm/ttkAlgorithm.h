@@ -9,7 +9,7 @@
 /// \brief Baseclass of all VTK filters that wrap ttk modules.
 ///
 /// This is an abstract vtkAlgorithm that provides standardized input/output
-/// managment for VTK wrappers of ttk filters. The class also provides a static
+/// management for VTK wrappers of ttk filters. The class also provides a static
 /// method to retrieve a ttk::Triangulation of a vtkDataSet.
 
 #pragma once
@@ -54,7 +54,7 @@ public:
 
   /**
    * Explicitly sets the maximum number of threads for the base code
-   * (overriden by UseAllCores member).
+   * (overridden by UseAllCores member).
    */
   void SetThreadNumber(int threadNumber) {
     this->ThreadNumber = threadNumber;
@@ -123,7 +123,7 @@ public:
 
   /**
    * Retrieve an identifier field and provides a ttk::SimplexId
-   * pointer to the underlaying buffer.
+   * pointer to the underlying buffer.
    *
    * Use the same parameters as GetOptionalArray to fetch the VTK data
    * array.
@@ -236,8 +236,7 @@ protected:
 
   bool checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                              ttk::SimplexId simplexNumber,
-                             unsigned char *ghost,
-                             int *rankArray);
+                             unsigned char *ghost);
   /**
    * This methods generates global ids and is called during the MPI
    * preconditioning. It behaves differently for PolyData and ImageData
@@ -261,7 +260,7 @@ protected:
   /**
    * This method is called during the first pipeline pass in
    * ProcessRequest() to create empty output data objects. The data type of
-   * the generated outputs is specified in FillOutputPortInfomration().
+   * the generated outputs is specified in FillOutputPortInformation().
    *
    * In general it should not be necessary to override this method.
    */

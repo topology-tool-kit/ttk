@@ -33,6 +33,9 @@ public:
   vtkSetMacro(NumberOfSamples, int);
   vtkGetMacro(NumberOfSamples, int);
 
+  vtkSetMacro(RandomSeed, int);
+  vtkGetMacro(RandomSeed, int);
+
 protected:
   ttkGaussianPointCloud();
 
@@ -44,4 +47,5 @@ protected:
 private:
   int Dimension{2};
   int NumberOfSamples{1000};
+  int RandomSeed{0};
 };

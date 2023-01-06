@@ -32,14 +32,8 @@ namespace ttk {
     ImplicitTriangulation &operator=(const ImplicitTriangulation &) = default;
     ImplicitTriangulation &operator=(ImplicitTriangulation &&) = default;
 
-    int getGridDimensions(std::vector<int> &dimensions) override {
-
-      dimensions.resize(3);
-      dimensions[0] = dimensions_[0];
-      dimensions[1] = dimensions_[1];
-      dimensions[2] = dimensions_[2];
-
-      return 0;
+    inline const std::array<SimplexId, 3> &getGridDimensions() const override {
+      return this->dimensions_;
     }
 
     int getCellEdgeInternal(const SimplexId &cellId,
@@ -260,23 +254,22 @@ namespace ttk {
     int preconditionDistributedVertices() override;
 
   public:
-    inline SimplexId
-      getCellGlobalIdInternal(const SimplexId lcid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(lcid < 0 || lcid >= this->getNumberOfCellsInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->cellLidToGid_[lcid];
-    }
-
     void createMetaGrid(const double *const bounds);
+
+    SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const override;
+    SimplexId getVertexLocalIdInternal(const SimplexId gvid) const override;
+
+    SimplexId getCellGlobalIdInternal(const SimplexId lcid) const override;
+    SimplexId getCellLocalIdInternal(const SimplexId gcid) const override;
 
     SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
     SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
 
     SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
+
+    int getVertexRankInternal(const SimplexId lvid) const override;
+    int getCellRankInternal(const SimplexId lcid) const override;
 
   protected:
     bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
@@ -289,14 +282,20 @@ namespace ttk {
                                    const SimplexId v1) const;
     SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
 
+    std::array<SimplexId, 3> getVertGlobalCoords(const SimplexId lvid) const;
+    std::array<SimplexId, 3> getVertLocalCoords(const SimplexId gvid) const;
+
 #endif // TTK_ENABLE_MPI
 
   protected:
 #ifdef TTK_ENABLE_MPI
-    // the cellGid_ array only applies on cubic cells, not on
-    // simplicial ones...
-    std::vector<SimplexId> cellLidToGid_{};
     std::shared_ptr<ImplicitTriangulation> metaGrid_{};
+    // offset coordinates of the local grid inside the metaGrid_
+    std::array<SimplexId, 3> localGridOffset_{};
+    // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
+    std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
+    // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
+    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
 #endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {
@@ -511,7 +510,7 @@ namespace ttk {
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
-    SimplexId dimensions_[3]; // dimensions
+    std::array<SimplexId, 3> dimensions_; // dimensions
     SimplexId nbvoxels_[3]; // nombre de voxels par axe
 
     // Vertex helper //

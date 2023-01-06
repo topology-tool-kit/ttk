@@ -555,10 +555,10 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet::perturbate(const dataTypeU *const uField,
-                               const dataTypeV *const vField,
-                               const dataTypeU uEpsilon,
-                               const dataTypeV vEpsilon) const {
+int ttk::JacobiSet::perturb(const dataTypeU *const uField,
+                            const dataTypeV *const vField,
+                            const dataTypeU uEpsilon,
+                            const dataTypeV vEpsilon) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!uField)

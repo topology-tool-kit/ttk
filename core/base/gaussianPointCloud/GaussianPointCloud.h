@@ -22,6 +22,7 @@ namespace ttk {
 
     template <class dataType>
     int castSample(const int &dimension,
+                   std::mt19937 &gen,
                    dataType &x,
                    dataType &y,
                    dataType &z) const;
@@ -30,18 +31,17 @@ namespace ttk {
     template <class dataType>
     int generate(const int &dimension,
                  const int &numberOfSamples,
+                 const int &seed,
                  dataType *const outputData) const;
   };
 } // namespace ttk
 
 template <class dataType>
 int ttk::GaussianPointCloud::castSample(const int &dimension,
+                                        std::mt19937 &gen,
                                         dataType &x,
                                         dataType &y,
                                         dataType &z) const {
-
-  std::random_device rd{};
-  std::mt19937 gen{rd()};
 
   dataType u, v, w;
 
@@ -66,16 +66,25 @@ int ttk::GaussianPointCloud::castSample(const int &dimension,
 template <class dataType>
 int ttk::GaussianPointCloud::generate(const int &dimension,
                                       const int &numberOfSamples,
+                                      const int &seed,
                                       dataType *const outputData) const {
 
   Timer t;
+
+  std::vector<std::mt19937> genVector(threadNumber_);
+  for(auto i = 0; i < threadNumber_; i++)
+    genVector[i].seed(seed + i * threadNumber_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < numberOfSamples; i++) {
-    castSample<dataType>(dimension, outputData[3 * i], outputData[3 * i + 1],
-                         outputData[3 * i + 2]);
+    int tId = 0;
+#ifdef TTK_ENABLE_OPENMP
+    tId = omp_get_thread_num();
+#endif
+    castSample<dataType>(dimension, genVector[tId], outputData[3 * i],
+                         outputData[3 * i + 1], outputData[3 * i + 2]);
   }
 
   this->printMsg(std::vector<std::vector<std::string>>{

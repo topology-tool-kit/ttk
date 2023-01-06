@@ -21,24 +21,12 @@ using namespace ttk;
 
 using namespace ftm;
 
-FTMTree_CT::FTMTree_CT(Params *const params,
-
-                       Scalars *const scalars)
+FTMTree_CT::FTMTree_CT(const std::shared_ptr<Params> &params,
+                       const std::shared_ptr<Scalars> &scalars)
   : FTMTree_MT(params, scalars, TreeType::Contour),
-    jt_(new FTMTree_MT(params, scalars, TreeType::Join)),
-    st_(new FTMTree_MT(params, scalars, TreeType::Split)) {
+    jt_(params, scalars, TreeType::Join),
+    st_(params, scalars, TreeType::Split) {
   this->setDebugMsgPrefix("FTMTree_CT");
-}
-
-FTMTree_CT::~FTMTree_CT() {
-  if(jt_) {
-    delete jt_;
-    jt_ = nullptr;
-  }
-  if(st_) {
-    delete st_;
-    st_ = nullptr;
-  }
 }
 
 int FTMTree_CT::combine() {
@@ -48,17 +36,17 @@ int FTMTree_CT::combine() {
   const bool DEBUG = false;
 
   // Reserve
-  mt_data_.nodes->reserve(jt_->getNumberOfNodes());
-  mt_data_.superArcs->reserve(jt_->getNumberOfSuperArcs() + 2);
-  mt_data_.leaves->reserve(jt_->getNumberOfLeaves() + st_->getNumberOfLeaves());
+  mt_data_.nodes->reserve(jt_.getNumberOfNodes());
+  mt_data_.superArcs->reserve(jt_.getNumberOfSuperArcs() + 2);
+  mt_data_.leaves.reserve(jt_.getNumberOfLeaves() + st_.getNumberOfLeaves());
 
   // Add JT & ST Leaves to growingNodes
 
   // Add leves to growing nodes
-  const auto &nbSTLeaves = st_->getNumberOfLeaves();
+  const auto &nbSTLeaves = st_.getNumberOfLeaves();
   if(nbSTLeaves > 1) {
     for(idNode n = 0; n < nbSTLeaves; ++n) {
-      const auto &nId = st_->getLeave(n);
+      const auto &nId = st_.getLeave(n);
       growingNodes.emplace(false, nId);
     }
   } else {
@@ -67,10 +55,10 @@ int FTMTree_CT::combine() {
   }
 
   // count how many leaves can be added, if more than one : ok!
-  const auto &nbJTLeaves = jt_->getNumberOfLeaves();
+  const auto &nbJTLeaves = jt_.getNumberOfLeaves();
   if(nbJTLeaves > 1) {
     for(idNode n = 0; n < nbJTLeaves; ++n) {
-      const auto &nId = jt_->getLeave(n);
+      const auto &nId = jt_.getLeave(n);
       growingNodes.emplace(true, nId);
     }
   } // else can't clone, not same up and down
@@ -82,9 +70,9 @@ int FTMTree_CT::combine() {
 
   // Warning, have a reserve here, can't make it at the begnining, need build
   // output
-  mt_data_.leaves->reserve(jt_->getLeaves().size() + st_->getLeaves().size());
-  mt_data_.superArcs->reserve(jt_->getNumberOfSuperArcs());
-  mt_data_.nodes->reserve(jt_->getNumberOfNodes());
+  mt_data_.leaves.reserve(jt_.getLeaves().size() + st_.getLeaves().size());
+  mt_data_.superArcs->reserve(jt_.getNumberOfSuperArcs());
+  mt_data_.nodes->reserve(jt_.getNumberOfNodes());
 
   if(growingNodes.empty()) {
     cout << "[FTMTree_CT::combine ] Nothing to combine" << endl;
@@ -100,11 +88,11 @@ int FTMTree_CT::combine() {
       tie(isJT, currentNodeId) = remainingNodes.front();
       remainingNodes.pop();
       if(isJT) {
-        // node come frome jt
-        xt = jt_;
+        // node come from jt
+        xt = &jt_;
       } else {
         // node come from st
-        xt = st_;
+        xt = &st_;
       }
       if(xt->getNode(currentNodeId)->getNumberOfUpSuperArcs() == 1) {
         growingNodes.emplace(isJT, currentNodeId);
@@ -125,8 +113,8 @@ int FTMTree_CT::combine() {
       tie(isJT, currentNodeId) = growingNodes.front();
       growingNodes.pop();
 
-      FTMTree_MT *xt = (isJT) ? jt_ : st_;
-      FTMTree_MT *yt = (isJT) ? st_ : jt_;
+      FTMTree_MT *xt = (isJT) ? &jt_ : &st_;
+      FTMTree_MT *yt = (isJT) ? &st_ : &jt_;
 
       // INFO JT / ST
 
@@ -134,7 +122,7 @@ int FTMTree_CT::combine() {
       const Node *currentNode = xt->getNode(currentNodeId);
 
       if(DEBUG) {
-        if(xt == jt_)
+        if(xt == &jt_)
           cout << endl << "JT ";
         else
           cout << endl << "ST ";
@@ -183,7 +171,7 @@ int FTMTree_CT::combine() {
         // check if leaf
         if(!currentNode->getNumberOfDownSuperArcs()
            || !currentNode->getNumberOfUpSuperArcs())
-          mt_data_.leaves->emplace_back(node1);
+          mt_data_.leaves.emplace_back(node1);
       }
 
       // j <- GetAdj(XT, i)
@@ -204,7 +192,7 @@ int FTMTree_CT::combine() {
         // create a new node
         node2 = makeNode(parentNode);
         if(!parentNode->getNumberOfUpSuperArcs())
-          mt_data_.leaves->emplace_back(node2);
+          mt_data_.leaves.emplace_back(node2);
       }
 
       // CREATE ARC
@@ -236,7 +224,7 @@ int FTMTree_CT::combine() {
       // DelNode(XT, i)
       {
         if(DEBUG) {
-          cout << " delete xt (" << (xt == jt_) << ") ";
+          cout << " delete xt (" << (xt == &jt_) << ") ";
           cout << "node :" << xt->printNode(currentNodeId) << endl;
         }
 
@@ -278,9 +266,9 @@ int FTMTree_CT::combine() {
 void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
                                          const bool isJT,
                                          idSuperArc xtArc) {
-  const FTMTree_MT *xt = (isJT) ? jt_ : st_;
+  const FTMTree_MT *xt = (isJT) ? &jt_ : &st_;
 
-  /*Here we prefere to create lots of small region, each arc having its own
+  /*Here we prefer to create lots of small region, each arc having its own
    * segmentation with no overlap instead of having a same vertice in several
    * arc and using vert2tree to decide because we do not want to maintain
    * vert2tree information during the whole computation*/
@@ -318,31 +306,31 @@ void FTMTree_CT::finalizeSegmentation() {
 #pragma omp parallel for schedule(dynamic)
 #endif
   for(idSuperArc i = 0; i < nbArc; i++) {
-    getSuperArc(i)->createSegmentation(scalars_);
+    getSuperArc(i)->createSegmentation(scalars_.get());
   }
 
   printTime(finSegmTime, "post-process segm", 4);
 }
 
 void FTMTree_CT::insertNodes() {
-  vector<idNode> sortedJTNodes = jt_->sortedNodes(true);
-  vector<idNode> sortedSTNodes = st_->sortedNodes(true);
+  vector<idNode> sortedJTNodes = jt_.sortedNodes(true);
+  vector<idNode> sortedSTNodes = st_.sortedNodes(true);
 
   for(const idNode &t : sortedSTNodes) {
 
-    SimplexId vertId = st_->getNode(t)->getVertexId();
-    if(jt_->isCorrespondingNode(vertId)) {
+    SimplexId vertId = st_.getNode(t)->getVertexId();
+    if(jt_.isCorrespondingNode(vertId)) {
       continue;
     }
-    jt_->insertNode(st_->getNode(t));
+    jt_.insertNode(st_.getNode(t));
   }
 
   for(const idNode &t : sortedJTNodes) {
 
-    SimplexId vertId = jt_->getNode(t)->getVertexId();
-    if(st_->isCorrespondingNode(vertId)) {
+    SimplexId vertId = jt_.getNode(t)->getVertexId();
+    if(st_.isCorrespondingNode(vertId)) {
       continue;
     }
-    st_->insertNode(jt_->getNode(t));
+    st_.insertNode(jt_.getNode(t));
   }
 }

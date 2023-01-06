@@ -30,7 +30,7 @@ namespace ttk {
     }
 
     /**
-     * @brief Clear the underlaying vectors
+     * @brief Clear the underlying vectors
      */
     inline void clear() {
       this->data_.clear();

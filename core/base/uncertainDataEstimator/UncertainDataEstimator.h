@@ -133,7 +133,7 @@ namespace ttk {
           binValue_[i] = rangeMin_ + (dx / 2.0) + (static_cast<double>(i) * dx);
         }
       }
-      /* Add input datas */
+      /* Add input data */
       for(SimplexId i = 0; i < numberOfVertices_; i++) {
         int bin
           = static_cast<int>(floor((inputData[i] - rangeMin_) * numberOfBins_

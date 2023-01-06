@@ -122,6 +122,9 @@ namespace ttk {
       // local
       ParallelData parallelData_;
 
+      // storage
+      std::list<std::vector<std::pair<SimplexId, bool>>> storage_;
+
     public:
       ContourForests();
 

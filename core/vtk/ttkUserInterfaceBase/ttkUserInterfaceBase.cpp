@@ -189,7 +189,7 @@ int ttkUserInterfaceBase::run() {
 
   {
     stringstream msg;
-    msg << "[UserInterace] Initializing user interface..." << endl;
+    msg << "[UserInterface] Initializing user interface..." << endl;
     printMsg(msg.str());
   }
 

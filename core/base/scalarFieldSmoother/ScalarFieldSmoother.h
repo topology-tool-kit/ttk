@@ -102,12 +102,6 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     return -4;
 #endif
 
-#if TTK_ENABLE_MPI
-  bool useMPI{false};
-  if(ttk::isRunningWithMPI() && triangulation->getVertexRankArray() != nullptr
-     && triangulation->getVertsGlobalIds() != nullptr)
-    useMPI = true;
-#endif
   SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
@@ -165,14 +159,14 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
         }
       }
     }
-#if TTK_ENABLE_MPI
-    if(useMPI) {
+#ifdef TTK_ENABLE_MPI
+    if(ttk::isRunningWithMPI()) {
       // after each iteration we need to exchange the ghostcell values with our
       // neighbors
       exchangeGhostVertices<dataType, triangulationType>(
         outputData, triangulation, ttk::MPIcomm_, dimensionNumber_);
     }
-#endif
+#endif // TTK_ENABLE_MPI
 
     if(debugLevel_ >= (int)(debug::Priority::INFO)) {
       if(!(it % ((numberOfIterations) / timeBuckets))) {

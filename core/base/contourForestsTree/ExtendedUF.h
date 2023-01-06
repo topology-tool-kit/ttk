@@ -47,6 +47,16 @@ namespace ttk {
         origin_ = other.origin_;
       }
 
+      inline ExtendedUnionFind &operator=(const ExtendedUnionFind &other) {
+        if(&other != this) {
+          rank_ = other.rank_;
+          parent_ = this;
+          data_ = other.data_;
+          origin_ = other.origin_;
+        }
+        return *this;
+      }
+
       inline void setData(const ufDataType &d) {
         data_ = d;
       }

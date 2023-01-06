@@ -41,7 +41,7 @@ namespace ttk {
     bool normalizedWasserstein_ = true;
     bool keepSubtree_ = false;
 
-    bool distanceSquared_ = true; // squared root
+    bool distanceSquaredRoot_ = true; // squared root
     bool useFullMerge_ = false;
 
     bool isPersistenceDiagram_ = false;
@@ -142,8 +142,8 @@ namespace ttk {
       barycenterMergeTree_ = imt;
     }
 
-    void setDistanceSquared(bool distanceSquared) {
-      distanceSquared_ = distanceSquared;
+    void setDistanceSquaredRoot(bool distanceSquaredRoot) {
+      distanceSquaredRoot_ = distanceSquaredRoot;
     }
 
     void setUseMinMaxPair(bool useMinMaxPair) {

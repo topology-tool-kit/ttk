@@ -170,7 +170,7 @@ namespace ttk {
     }
 
     /**
-     * @brief Compute euclidian projection in a triangle plane
+     * @brief Compute euclidean projection in a triangle plane
      *
      * @param[in] p Point to be projected
      * @param[in] a Triangle vertex coordinates
@@ -185,7 +185,7 @@ namespace ttk {
     }
 
     /**
-     * @brief Compute euclidian projection on a 3D segment
+     * @brief Compute euclidean projection on a 3D segment
      *
      * @param[in] p Point to be projected
      * @param[in] a First segment vertex coordinates
@@ -703,7 +703,7 @@ int ttk::SurfaceGeometrySmoother::execute(
     }
   } else {
     // generate a ttkVertexScalarField-like point data array using raw
-    // euclidian distance between the points to smooth and every
+    // euclidean distance between the points to smooth and every
     // vertex of the surface
     Timer tm_nv{};
     this->printMsg("Computing nearest vertices...", debug::Priority::INFO,

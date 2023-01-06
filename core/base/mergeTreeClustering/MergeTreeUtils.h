@@ -192,21 +192,19 @@ namespace ttk {
   // Testing
   // --------------------
   template <class dataType>
-  ftm::FTMTree_MT *
+  std::shared_ptr<ftm::FTMTree_MT>
     makeFakeTree(dataType *nodesScalar,
                  std::vector<SimplexId> &nodes,
                  std::vector<std::tuple<ftm::idNode, ftm::idNode>> &arcs) {
     // Init Scalars
-    ftm::Scalars *scalars = new ftm::Scalars();
+    auto scalars = std::make_shared<ftm::Scalars>();
     scalars->size = nodes.size();
     scalars->values = (void *)nodesScalar;
 
     // Init Tree
-    ftm::Params *params = new ftm::Params();
-    // ftm::FTMTree_MT *tree = new ftm::FTMTree_MT(params, nullptr, scalars,
-    // ftm::Join_Split);
-    ftm::FTMTree_MT *tree
-      = new ftm::FTMTree_MT(params, scalars, ftm::Join_Split);
+    auto params = std::make_shared<ftm::Params>();
+    auto tree
+      = std::make_shared<ftm::FTMTree_MT>(params, scalars, ftm::Join_Split);
     tree->makeAlloc();
 
     // Add Nodes

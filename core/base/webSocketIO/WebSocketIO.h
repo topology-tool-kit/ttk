@@ -98,7 +98,7 @@ namespace ttk {
     ttk::Timer msgTimer;
     size_t nMessages;
 
-    std::thread *serverThread = nullptr;
+    std::thread serverThread{};
     con_list connections;
     std::mutex mutex;
     websocketpp::lib::error_code ec;

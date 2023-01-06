@@ -214,7 +214,7 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
         sum[1] /= chunk;
         sum[2] /= chunk;
 
-        // do not use memorized points as even if a point already exisit it is
+        // do not use memorized points as even if a point already exist it is
         // from another vertex and should not be used
         pointIds[1] = points->InsertNextPoint(sum);
         arcData.points.emplace(regV, pointIds[1]);

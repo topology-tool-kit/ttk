@@ -173,6 +173,16 @@ namespace ttk {
       this->dms_.setComputeSadMax(data);
     }
 
+    /**
+     * @brief Complete a ttk::DiagramType instance with scalar field
+     * values (useful for persistence) and 3D coordinates of critical vertices
+     */
+    template <typename scalarType, typename triangulationType>
+    void
+      augmentPersistenceDiagram(std::vector<PersistencePair> &persistencePairs,
+                                const scalarType *const scalars,
+                                const triangulationType *triangulation);
+
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
                                   ftm::TreeType treeType,
                                   const SimplexId vertexId) const;
@@ -191,7 +201,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p inputOffsets buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
@@ -335,6 +345,26 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   return 0;
 }
 
+template <typename scalarType, typename triangulationType>
+void ttk::PersistenceDiagram::augmentPersistenceDiagram(
+  std::vector<PersistencePair> &persistencePairs,
+  const scalarType *const scalars,
+  const triangulationType *triangulation) {
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(std::size_t i = 0; i < persistencePairs.size(); ++i) {
+    auto &pair{persistencePairs[i]};
+    triangulation->getVertexPoint(pair.birth.id, pair.birth.coords[0],
+                                  pair.birth.coords[1], pair.birth.coords[2]);
+    pair.birth.sfValue = scalars[pair.birth.id];
+    triangulation->getVertexPoint(pair.death.id, pair.death.coords[0],
+                                  pair.death.coords[1], pair.death.coords[2]);
+    pair.death.sfValue = scalars[pair.death.id];
+  }
+}
+
 template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
                                      const scalarType *inputScalars,
@@ -370,6 +400,9 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
   }
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  // augment persistence pairs with meta-data
+  augmentPersistenceDiagram(CTDiagram, inputScalars, triangulation);
 
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, inputOffsets);

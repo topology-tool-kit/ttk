@@ -260,7 +260,7 @@ namespace ttk {
       int wasserstein,
       double epsilon,
       double geometricalFactor,
-      std::vector<KDT *> &correspondance_kdt_map,
+      std::vector<KDT *> &correspondence_kdt_map,
       std::priority_queue<std::pair<int, double>,
                           std::vector<std::pair<int, double>>,
                           Compare> &diagonal_queue,

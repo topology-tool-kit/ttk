@@ -157,7 +157,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p inputOffsets buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
@@ -371,6 +371,13 @@ int ttk::TopologicalSimplification::execute(
     for(int j = 0; j < 2; ++j) {
 
       bool isIncreasingOrder = !j;
+
+      if(isIncreasingOrder && authorizedMinima.empty()) {
+        continue;
+      }
+      if(!isIncreasingOrder && authorizedMaxima.empty()) {
+        continue;
+      }
 
       cmp.setIsIncreasingOrder(isIncreasingOrder);
       std::set<std::tuple<dataType, SimplexId, SimplexId>, decltype(cmp)>

@@ -20,7 +20,7 @@ ContourTree::ContourTree(float *scalars,
   float maxVal = -FLT_MAX;
 
   for(size_t i = 0; i < nVertices; i++) {
-    std::shared_ptr<ttk::cta::CTNode> node(new ttk::cta::CTNode);
+    auto node = std::make_shared<ttk::cta::CTNode>();
     node->scalarValue = scalars[i];
     node->edgeList = std::vector<int>();
     node->branchID = -1;
@@ -32,7 +32,7 @@ ContourTree::ContourTree(float *scalars,
   }
   int j = 0;
   for(size_t i = 0; i < nEdges; i++) {
-    std::shared_ptr<ttk::cta::CTEdge> edge(new ttk::cta::CTEdge);
+    auto edge = std::make_shared<ttk::cta::CTEdge>();
     edge->area = regionSizes[i];
     edge->segId = segmentationIds[i];
     if(!regions.empty())
@@ -83,7 +83,7 @@ std::shared_ptr<ttk::cta::Tree> ContourTree::computeRootedTree(
   int &id) {
 
   // initialize tree
-  std::shared_ptr<Tree> t(new Tree);
+  auto t = std::make_shared<Tree>();
 
   // set id and increment for later calls
   t->id = id;
@@ -147,7 +147,7 @@ std::shared_ptr<ttk::cta::BinaryTree> ContourTree::computeRootedTree_binary(
   int &id) {
 
   // initialize tree
-  std::shared_ptr<BinaryTree> t(new BinaryTree);
+  auto t = std::make_shared<BinaryTree>();
 
   // set id and increment for later calls
   t->id = id;

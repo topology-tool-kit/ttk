@@ -41,9 +41,9 @@ These backends are different through 3 parameters:
 
 These parameters can be configured manually by selecting the Custom backend.
 
-The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optional).
 
-When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
+When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the distance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
 
 Online examples:
 
@@ -142,8 +142,8 @@ Online examples:
                   <Hints>
                   <PropertyWidgetDecorator type="CompositeDecorator">
                     <Expression type="and">
-                      <Expression type="and">
-                        <Expression type="or">
+                      <Expression type="or">
+                        <Expression type="and">
                           <Expression type="and">
                             <PropertyWidgetDecorator type="GenericDecorator"
                                                     mode="visibility"
@@ -156,12 +156,12 @@ Online examples:
                           </Expression>
                           <PropertyWidgetDecorator type="GenericDecorator"
                                                   mode="visibility"
-                                                  property="Backend"
+                                                  property="KeepSubtree"
                                                   value="0" />
                         </Expression>
                         <PropertyWidgetDecorator type="GenericDecorator"
                                                 mode="visibility"
-                                                property="KeepSubtree"
+                                                property="Backend"
                                                 value="0" />
                       </Expression>
                       <PropertyWidgetDecorator type="GenericDecorator"
@@ -186,8 +186,8 @@ Online examples:
                   <Hints>
                   <PropertyWidgetDecorator type="CompositeDecorator">
                     <Expression type="and">
-                      <Expression type="and">
-                        <Expression type="or">
+                      <Expression type="or">
+                        <Expression type="and">
                           <Expression type="and">
                             <PropertyWidgetDecorator type="GenericDecorator"
                                                     mode="visibility"
@@ -200,12 +200,12 @@ Online examples:
                           </Expression>
                           <PropertyWidgetDecorator type="GenericDecorator"
                                                   mode="visibility"
-                                                  property="Backend"
+                                                  property="KeepSubtree"
                                                   value="0" />
                         </Expression>
                         <PropertyWidgetDecorator type="GenericDecorator"
                                                 mode="visibility"
-                                                property="KeepSubtree"
+                                                property="Backend"
                                                 value="0" />
                       </Expression>
                       <PropertyWidgetDecorator type="GenericDecorator"
@@ -230,8 +230,8 @@ Online examples:
                   <Hints>
                   <PropertyWidgetDecorator type="CompositeDecorator">
                     <Expression type="and">
-                      <Expression type="and">
-                        <Expression type="or">
+                      <Expression type="or">
+                        <Expression type="and">
                           <Expression type="and">
                             <PropertyWidgetDecorator type="GenericDecorator"
                                                     mode="visibility"
@@ -244,12 +244,12 @@ Online examples:
                           </Expression>
                           <PropertyWidgetDecorator type="GenericDecorator"
                                                   mode="visibility"
-                                                  property="Backend"
+                                                  property="KeepSubtree"
                                                   value="0" />
                         </Expression>
                         <PropertyWidgetDecorator type="GenericDecorator"
                                                 mode="visibility"
-                                                property="KeepSubtree"
+                                                property="Backend"
                                                 value="0" />
                       </Expression>
                       <PropertyWidgetDecorator type="GenericDecorator"
@@ -282,7 +282,7 @@ Online examples:
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    Set the alpha coefficent of the first tree. Use to work when there is only 2 input trees, the alpha of the second input will be (1-alpha).
+                    Set the alpha coefficient of the first tree. Use to work when there is only 2 input trees, the alpha of the second input will be (1-alpha).
                   </Documentation>
                   <DoubleRangeDomain name="range" min="0" max="1" />
                 </DoubleVectorProperty> 

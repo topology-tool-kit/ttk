@@ -4,10 +4,10 @@
 /// \author Gueunet Charles <charles.gueunet+ttk@gmail.com>
 /// \date 2018-07-31
 ///
-/// \brief TTK %DynamicGraph lazyness
+/// \brief TTK %DynamicGraph laziness
 ///
 /// This class maintain the information per arc
-/// for the lazy evalutaion of each DG component.
+/// for the lazy evaluation of each DG component.
 ///
 /// \sa ttk::FTRGraph
 

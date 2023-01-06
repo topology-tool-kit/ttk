@@ -28,7 +28,7 @@ namespace ttk {
     // Power used for the computation of distances. p=2 yields euclidean
     // distance
     int p_{2};
-    // Wether or not the KDTree should include weights that add up to distance
+    // Whether or not the KDTree should include weights that add up to distance
     // for the computation of nearest neighbours
     bool include_weights_{false};
 
@@ -71,7 +71,7 @@ namespace ttk {
                         const int &ptNumber,
                         const int &dimension,
                         KDTree<dataType, Container> *parent,
-                        KDTreeMap &correspondance_map,
+                        KDTreeMap &correspondence_map,
                         const std::vector<std::vector<dataType>> &weights = {},
                         const int weight_number = 1);
 
@@ -148,7 +148,7 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     const std::vector<std::vector<dataType>> &weights,
     const int weight_number) {
 
-  KDTreeMap correspondance_map(ptNumber);
+  KDTreeMap correspondence_map(ptNumber);
   // First, perform a argsort on the data
   // initialize original index locations
   for(int axis = 0; axis < dimension; axis++) {
@@ -166,7 +166,7 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
   });
   int median_loc = (int)(ptNumber - 1) / 2;
   int median_idx = idx[median_loc];
-  correspondance_map[median_idx] = this;
+  correspondence_map[median_idx] = this;
 
   for(int axis = 0; axis < dimension; axis++) {
     coordinates_[axis] = data[dimension * median_idx + axis];
@@ -199,7 +199,7 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     this->left_
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
-                                correspondance_map, weights, weight_number);
+                                correspondence_map, weights, weight_number);
   }
 
   if(idx.size() > 1) {
@@ -211,10 +211,10 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     this->right_
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
-                                 correspondance_map, weights, weight_number);
+                                 correspondence_map, weights, weight_number);
   }
 
-  return correspondance_map;
+  return correspondence_map;
 }
 
 template <typename dataType, typename Container>
@@ -224,7 +224,7 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
   const int &ptNumber,
   const int &dimension,
   KDTree<dataType, Container> *parent,
-  KDTreeMap &correspondance_map,
+  KDTreeMap &correspondence_map,
   const std::vector<std::vector<dataType>> &weights,
   const int weight_number) {
 
@@ -235,7 +235,7 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
   });
   int median_loc = (int)(idx_side.size() - 1) / 2;
   int median_idx = idx_side[median_loc];
-  correspondance_map[median_idx] = this;
+  correspondence_map[median_idx] = this;
 
   for(int axis = 0; axis < dimension; axis++) {
     coordinates_[axis] = data[dimension * median_idx + axis];
@@ -288,7 +288,7 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
     this->left_
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
-                                correspondance_map, weights, weight_number);
+                                correspondence_map, weights, weight_number);
   }
 
   if(idx_side.size() > 1) {
@@ -300,7 +300,7 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
     this->right_
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
-                                 correspondance_map, weights, weight_number);
+                                 correspondence_map, weights, weight_number);
   }
 }
 
@@ -368,7 +368,7 @@ void ttk::KDTree<dataType, Container>::recursiveGetKClosest(
   std::vector<dataType> &costs,
   const int weight_index,
   const PowerFunc &power) {
-  // 1- Look wether or not to include the current point in the nearest
+  // 1- Look whether or not to include the current point in the nearest
   // neighbours
   dataType cost = this->getCost(coordinates, power);
   cost += weight_[weight_index];

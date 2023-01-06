@@ -16,7 +16,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   float *layout,
 
   // Input
-  const std::vector<size_t> &nodeIndicies,
+  const std::vector<size_t> &nodeIndices,
   const std::string &dotString) const {
 #ifdef TTK_ENABLE_GRAPHVIZ
   Timer t;
@@ -33,7 +33,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   // ---------------------------------------------------------
   // Get layout data from GraphViz
   // ---------------------------------------------------------
-  for(auto i : nodeIndicies) {
+  for(auto i : nodeIndices) {
     Agnode_t *n = agnode(G, const_cast<char *>(std::to_string(i).data()), 0);
     if(n != nullptr) {
       auto &coord = ND_coord(n);
@@ -55,7 +55,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   return 1;
 #else
   TTK_FORCE_USE(layout);
-  TTK_FORCE_USE(nodeIndicies);
+  TTK_FORCE_USE(nodeIndices);
   TTK_FORCE_USE(dotString);
 
   this->printErr("This filter requires GraphViz to compute a layout.");

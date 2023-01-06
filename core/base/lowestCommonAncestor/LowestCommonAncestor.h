@@ -82,11 +82,11 @@ namespace ttk {
     /// \pre preprocess() must have been called after the last change in the
     /// tree.
     inline int query(int i, int j) const {
-      if(nodeFirstAppearence_[i] > nodeFirstAppearence_[j]) {
+      if(nodeFirstAppearance_[i] > nodeFirstAppearance_[j]) {
         std::swap(i, j);
       }
       return nodeOrder_[RMQuery(
-        nodeFirstAppearence_[i], nodeFirstAppearence_[j])];
+        nodeFirstAppearance_[i], nodeFirstAppearance_[j])];
     }
 
   protected:
@@ -116,7 +116,7 @@ namespace ttk {
     /* Eulerian Transverse */
     std::vector<int> nodeOrder_{};
     std::vector<int> nodeDepth_{};
-    std::vector<int> nodeFirstAppearence_{};
+    std::vector<int> nodeFirstAppearance_{};
 
     /* Range Minimum Query */
     int blocSize_{};

@@ -72,7 +72,7 @@ public:
     SetVoidArray(vtkDataArray *array, void *data, vtkIdType size, int save);
 
   // Fill Cell array using a pointer with the old memory layout
-  // DEPRECTAED
+  // DEPRECATED
   static void FillCellArrayFromSingle(vtkIdType const *cells,
                                       vtkIdType ncells,
                                       vtkCellArray *cellArray);

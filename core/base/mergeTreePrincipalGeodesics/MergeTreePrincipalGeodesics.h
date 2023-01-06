@@ -5,12 +5,13 @@
 ///
 /// This module defines the %MergeTreePrincipalGeodesics class that computes
 /// Principal Geodesic Analysis on the space of merge trees or persistence
-/// diagrams, that is, a set of orthognal geodesic axes defining a basis with
+/// diagrams, that is, a set of orthogonal geodesic axes defining a basis with
 /// the barycenter as origin.
 ///
 /// \b Related \b publication: \n
 /// "Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)" \n
 /// Mathieu Pont, Jules Vidal, Julien Tierny.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2022
 
 #pragma once
 
@@ -27,7 +28,7 @@ namespace ttk {
   /**
    * The MergeTreePrincipalGeodesics class provides methods to compute
    * Principal Geodesic Analysis on the space of merge trees or persistence
-   * diagrams, that is, a set of orthognal geodesic axes defining a basis with
+   * diagrams, that is, a set of orthogonal geodesic axes defining a basis with
    * the barycenter as origin.
    */
   class MergeTreePrincipalGeodesics : virtual public Debug,
@@ -107,7 +108,7 @@ namespace ttk {
         auto birthDeathBary
           = getParametrizedBirthDeath<dataType>(barycenterTree, j);
         std::tuple<dataType, dataType> birthDeath;
-        if((int)matchingVector[j] != -1) {
+        if(matchingVector[j] != std::numeric_limits<ftm::idNode>::max()) {
           birthDeath
             = getParametrizedBirthDeath<dataType>(treeTree, matchingVector[j]);
         } else {
@@ -210,12 +211,12 @@ namespace ttk {
                     return (std::get<0>(a) > std::get<0>(b));
                   });
 
-      // Init vectors according farest input
-      // (repeat with the ith farest until projection gives non null vector)
+      // Init vectors according fairest input
+      // (repeat with the ith fairest until projection gives non null vector)
       unsigned int i = 0;
       bool foundGoodIndex = false;
       while(not foundGoodIndex) {
-        // Get matching of the ith farest input
+        // Get matching of the ith fairest input
         if(bestIndex >= 0 and bestIndex < (int)trees.size()) {
           if(geodesicNumber != 0) {
             dataType distance;
@@ -376,7 +377,8 @@ namespace ttk {
                            useDoubleInput, isFirstInput);
         getMatchingVector(barycenter, extremity, matching, matchingVector);
       } else
-        matchingVector.resize(barycenterTree->getNumberOfNodes(), -1);
+        matchingVector.resize(barycenterTree->getNumberOfNodes(),
+                              std::numeric_limits<ftm::idNode>::max());
 
       std::vector<std::vector<double>> oriV = v;
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
@@ -388,7 +390,7 @@ namespace ttk {
         dataType birthBary = std::get<0>(birthDeathBary);
         dataType deathBary = std::get<1>(birthDeathBary);
         std::vector<double> newV{0.0, 0.0};
-        if((int)matched != -1) {
+        if(matched != std::numeric_limits<ftm::idNode>::max()) {
           auto birthDeathMatched
             = getParametrizedBirthDeath<dataType>(extremityTree, matched);
           newV[0] = std::get<0>(birthDeathMatched);
@@ -786,7 +788,7 @@ namespace ttk {
         for(unsigned int j = 0; j < trees.size(); ++j) {
           dataType birth = allProjec[j];
           dataType death = allProjec[j];
-          if((int)matchingMatrix[i][j] != -1) {
+          if(matchingMatrix[i][j] != std::numeric_limits<ftm::idNode>::max()) {
             auto birthDeath = getParametrizedBirthDeath<dataType>(
               ftmTrees[j], matchingMatrix[i][j]);
             birth = std::get<0>(birthDeath);
@@ -1408,7 +1410,7 @@ namespace ttk {
         for(unsigned int i = 0; i < trees.size(); ++i) {
           auto matched = matchingMatrix[node][i];
           std::tuple<dataType, dataType> birthDeath;
-          if((int)matched == -1) {
+          if(matched == std::numeric_limits<ftm::idNode>::max()) {
             birthDeath = barycenter.tree.template getBirthDeath<dataType>(node);
             auto projec
               = (std::get<0>(birthDeath) + std::get<1>(birthDeath)) / 2.0;

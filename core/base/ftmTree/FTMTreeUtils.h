@@ -44,10 +44,11 @@ namespace ttk {
     template <class dataType>
     void mergeTreeTemplateToDouble(MergeTree<dataType> &mt,
                                    MergeTree<double> &newMt) {
-      std::vector<double> newScalarsValues;
-      for(auto val : mt.scalarsValues)
-        newScalarsValues.push_back(static_cast<double>(val));
-      newMt = MergeTree<double>(mt.scalars, newScalarsValues, mt.params);
+      auto newScalarsValues = std::make_shared<std::vector<double>>();
+      for(auto val : *mt.scalarsValues)
+        newScalarsValues->push_back(static_cast<double>(val));
+      auto newScalars = std::make_shared<ftm::Scalars>(*mt.scalars);
+      newMt = MergeTree<double>(newScalars, newScalarsValues, mt.params);
       newMt.tree.copyMergeTreeStructure(&(mt.tree));
     }
 
@@ -78,10 +79,11 @@ namespace ttk {
     template <class dataType>
     void mergeTreeDoubleToTemplate(MergeTree<double> &mt,
                                    MergeTree<dataType> &newMt) {
-      std::vector<dataType> newScalarsValues;
-      for(auto val : mt.scalarsValues)
-        newScalarsValues.push_back(static_cast<dataType>(val));
-      newMt = MergeTree<dataType>(mt.scalars, newScalarsValues, mt.params);
+      auto newScalarsValues = std::make_shared<std::vector<dataType>>();
+      for(auto val : *mt.scalarsValues)
+        newScalarsValues->push_back(static_cast<dataType>(val));
+      auto newScalars = std::make_shared<ftm::Scalars>(*mt.scalars);
+      newMt = MergeTree<dataType>(newScalars, newScalarsValues, mt.params);
       newMt.tree.copyMergeTreeStructure(&(mt.tree));
     }
 
@@ -122,14 +124,13 @@ namespace ttk {
     template <class dataType>
     MergeTree<dataType> createEmptyMergeTree(int scalarSize) {
       // Init Scalars
-      ftm::Scalars scalars;
-      scalars.size = scalarSize;
-      dataType *scalarsValues = nullptr;
-      scalars.values = (void *)scalarsValues;
+      auto scalars = std::make_shared<ftm::Scalars>();
+      scalars->size = scalarSize;
+      scalars->values = (void *)nullptr;
 
       // Init Params
-      ftm::Params params;
-      params.treeType = ftm::Join_Split;
+      auto params = std::make_shared<ftm::Params>();
+      params->treeType = ftm::Join_Split;
 
       // Init tree
       MergeTree<dataType> mergeTree(scalars, params);
@@ -140,9 +141,10 @@ namespace ttk {
     template <class dataType>
     void setTreeScalars(MergeTree<dataType> &mergeTree,
                         std::vector<dataType> &scalarsVector) {
-      mergeTree.scalarsValues = scalarsVector;
-      mergeTree.scalars.values = (void *)(mergeTree.scalarsValues.data());
-      mergeTree.scalars.size = mergeTree.scalarsValues.size();
+      mergeTree.scalarsValues
+        = std::make_shared<std::vector<dataType>>(scalarsVector);
+      mergeTree.scalars->values = (void *)(mergeTree.scalarsValues->data());
+      mergeTree.scalars->size = mergeTree.scalarsValues->size();
     }
 
     template <class dataType>

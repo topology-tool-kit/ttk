@@ -284,7 +284,7 @@ namespace ttk {
       if(nCols < 1)
         return 0;
 
-      std::vector<std::string> formatedRows(nRows);
+      std::vector<std::string> formattedRows(nRows);
       std::vector<size_t> colSizes(nCols, 0);
       for(int i = 0; i < nRows; i++)
         for(int j = 0; j < nCols; j++)
@@ -302,7 +302,7 @@ namespace ttk {
       // Values
       int resultIndex = 0;
       for(int i = 0; i < nRows; i++) {
-        auto &row = formatedRows[resultIndex++];
+        auto &row = formattedRows[resultIndex++];
         row
           = formatCell(rows[i][0], colSizes[0], " ") + (hasHeader ? ": " : "");
         if(nCols > 1)
@@ -311,7 +311,7 @@ namespace ttk {
           row += "," + formatCell(rows[i][j], colSizes[j], " ");
       }
 
-      return this->printMsg(formatedRows, priority, lineMode, stream);
+      return this->printMsg(formattedRows, priority, lineMode, stream);
     }
 
     /**

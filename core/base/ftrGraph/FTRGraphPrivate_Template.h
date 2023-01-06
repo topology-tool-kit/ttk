@@ -5,7 +5,7 @@
 #include "FTRGraph_Template.h"
 #include "FTRTasks.h"
 
-// c++ incldues
+// c++ includes
 #include <unordered_map>
 
 // trick to print a full line in an atomic operation, avoid mixed up redulsts in
@@ -226,7 +226,7 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
     localGrowth(localProp, star.upper);
   } // end propagation while
 
-  // get the corresponging critical point on which
+  // get the corresponding critical point on which
   // the propagation has stopped (join, split, max)
   const idVertex upVert = localProp->getCurVertex();
 
@@ -253,7 +253,7 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
 
   PRINT(upVert << " active " << localProp->getNbArcs());
 
-  // reached node id and wether it has been created by this task or already
+  // reached node id and whether it has been created by this task or already
   // existed
   idNode saddleNode;
   idSuperArc joinParentArc{};
@@ -412,8 +412,8 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthSequential(
 #ifndef TTK_DISABLE_FTR_LAZY
     if(valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
 
-      // simple reeb regular, lazyness
-      if(star.lower.size()) {
+      // simple reeb regular, laziness
+      if(!star.lower.empty()) {
         // not a min nor a saddle: 1 CC below (need findSubtree)
         currentArc = dynGraph(localProp).getSubtreeArc(star.lower[0]);
         if(valences_.upper[curVert] && valences_.lower[curVert]) {
@@ -682,7 +682,7 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::
                            const Propagation *const localProp,
                            const idSuperArc curArc) {
   // Check if exist ?
-  // If not, the triangle will be visited again once a merge have occured.
+  // If not, the triangle will be visited again once a merge have occurred.
   // So we do not add the edge now
   dynGraph(localProp).removeEdge(
     std::get<0>(oTriangle), std::get<1>(oTriangle));

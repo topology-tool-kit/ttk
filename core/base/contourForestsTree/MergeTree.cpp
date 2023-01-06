@@ -13,11 +13,11 @@ using namespace cf;
 
 // Constructors & destructors
 
-MergeTree::MergeTree(Params *const params,
-                     Scalars *const scalars,
+MergeTree::MergeTree(std::shared_ptr<Params> params,
+                     std::shared_ptr<Scalars> scalars,
                      TreeType type,
                      idPartition part)
-  : params_(params), scalars_(scalars) {
+  : params_(std::move(params)), scalars_(std::move(scalars)) {
   if(type == TreeType::Join) {
     this->setDebugMsgPrefix("JoinTree");
   } else if(type == TreeType::Split) {
@@ -327,7 +327,7 @@ SimplexId MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
       // need to insert node
       const idNode &newNodeId = makeNode(stitchVert);
       Node *newNode = getNode(newNodeId);
-      // for the instert node to works
+      // for the insert node to works
       updateCorrespondingArc(stitchVert, arc);
       insertNode(newNode, false);
       newNode->setUpValence(1);
@@ -537,9 +537,11 @@ idNode MergeTree::makeNode(const Node *const n, const SimplexId &term) {
   return makeNode(n->getVertexId(), term);
 }
 
-void MergeTree::delNode(const idNode &node,
-                        const pair<SimplexId, bool> *markVertices,
-                        const SimplexId &nbMark) {
+void MergeTree::delNode(
+  const idNode &node,
+  std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+  const pair<SimplexId, bool> *markVertices,
+  const SimplexId &nbMark) {
   Node *mainNode = getNode(node);
 
   if(mainNode->getNumberOfUpSuperArcs() == 0) {
@@ -594,7 +596,7 @@ void MergeTree::delNode(const idNode &node,
       if(markVertices != nullptr) {
         // In case the two segmenation are already contiguous,
         // it means we are removing a regular node that was inserted in the
-        // tree only for the combinaison.
+        // tree only for the combinations.
         if((treeData_.superArcs[downArc].getVertList()
             + treeData_.superArcs[downArc].getVertSize())
            == treeData_.superArcs[upArc].getVertList()) {
@@ -629,8 +631,8 @@ void MergeTree::delNode(const idNode &node,
           const auto *upSegm = treeData_.superArcs[upArc].getVertList();
           const auto *downSegm = treeData_.superArcs[downArc].getVertList();
 
-          pair<SimplexId, bool> *newSegmentation
-            = new pair<SimplexId, bool>[upSize + downSize];
+          storage.emplace_back(upSize + downSize);
+          pair<SimplexId, bool> *newSegmentation = storage.back().data();
 
           for(SimplexId i = 0; i < downSize; i++) {
             newSegmentation[i] = downSegm[i];
@@ -638,23 +640,6 @@ void MergeTree::delNode(const idNode &node,
 
           for(SimplexId i = 0; i < upSize; i++) {
             newSegmentation[i + downSize] = upSegm[i];
-          }
-
-          // avoid some memory leaks
-          if(treeData_.superArcs[downArc].getSegmentation().size()) {
-            const auto &downVect
-              = treeData_.superArcs[downArc].getSegmentation().data();
-            if(downSegm < downVect || downSegm >= downVect + downSize) {
-              delete[] downSegm;
-            }
-          }
-
-          if(treeData_.superArcs[upArc].getSegmentation().size()) {
-            const auto &upVect
-              = treeData_.superArcs[upArc].getSegmentation().data();
-            if(upSegm < upVect || upSegm >= upVect + upSize) {
-              delete[] upSegm;
-            }
           }
 
           treeData_.superArcs[downArc].setVertList(newSegmentation);
@@ -1018,9 +1003,9 @@ void MergeTree::printTree2() {
 }
 
 // Clone
-MergeTree *MergeTree::clone() const {
-  MergeTree *newMT
-    = new MergeTree(params_, scalars_, treeData_.treeType, treeData_.partition);
+std::shared_ptr<MergeTree> MergeTree::clone() const {
+  auto newMT = std::make_shared<MergeTree>(
+    params_, scalars_, treeData_.treeType, treeData_.partition);
 
   newMT->treeData_.superArcs = treeData_.superArcs;
   newMT->treeData_.nodes = treeData_.nodes;
@@ -1255,7 +1240,7 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
   }
 
   // if upNode == downNode, take one none merging arc randomly
-  // (this case is possbile if several degenerate node are following)
+  // (this case is possible if several degenerate node are following)
   if(upNode == downNode) {
     // several degen. nodes adjacent
     // Prefer down for JT / ST

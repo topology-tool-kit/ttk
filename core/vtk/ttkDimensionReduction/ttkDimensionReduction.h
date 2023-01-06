@@ -48,6 +48,7 @@
 // TTK includes
 #include <DimensionReduction.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class TTKDIMENSIONREDUCTION_EXPORT ttkDimensionReduction
   : public ttkAlgorithm,
@@ -83,8 +84,8 @@ public:
   vtkSetMacro(IsDeterministic, int);
   vtkGetMacro(IsDeterministic, int);
 
-  vtkSetMacro(Method, int);
-  vtkGetMacro(Method, int);
+  ttkSetEnumMacro(Method, METHOD);
+  vtkGetEnumMacro(Method, METHOD);
 
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
@@ -92,12 +93,7 @@ public:
   // SE && MDS
   void SetInputIsADistanceMatrix(const bool b) {
     this->InputIsADistanceMatrix = b;
-    if(b) {
-      this->mds_Dissimilarity = "precomputed";
-      this->se_Affinity = "precomputed";
-      this->tsne_Metric = "precomputed";
-      this->iso_Metric = "precomputed";
-    }
+    this->setIsInputDistanceMatrix(b);
     Modified();
   }
   vtkGetMacro(InputIsADistanceMatrix, bool);
@@ -247,10 +243,6 @@ private:
   std::string RegexpString{".*"};
   std::vector<std::string> ScalarFields{};
 
-  int NumberOfComponents{2};
-  int NumberOfNeighbors{5};
-  int Method{2}; // MDS
-  int IsDeterministic{true};
   bool KeepAllDataArrays{true};
 
   // mds && se

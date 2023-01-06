@@ -390,7 +390,7 @@ tuple<SimplexId, ArcRegion> ArcRegion::splitFront(SimplexId v,
       remainingRegion.concat(reg.segmentBegin, reg.segmentEnd);
       willErase.emplace_back(it);
       if(splitVert == nullVertex || s->isLower(*reg.segmentBegin, splitVert)) {
-        // we ignore vertices that does not come frome this arc
+        // we ignore vertices that does not come from this arc
         splitVert = *reg.segmentBegin;
       }
     }

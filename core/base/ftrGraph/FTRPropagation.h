@@ -59,7 +59,7 @@ namespace ttk {
         return curVert_;
       }
 
-      // used to avoid thhe fibonacci heaps the local propagation is only
+      // used to avoid the fibonacci heaps the local propagation is only
       // used to store comp and current vert during a sequential pass using
       // the reference alforithm and so it's a mock propagation used for
       // compliance with the rest of the code

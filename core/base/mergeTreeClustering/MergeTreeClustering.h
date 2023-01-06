@@ -249,7 +249,7 @@ namespace ttk {
     }
 
     // ------------------------------------------------------------------------
-    // Assignement
+    // Assignment
     // ------------------------------------------------------------------------
     template <class dataType>
     void assignmentCentroidsAccelerated(
@@ -626,7 +626,7 @@ namespace ttk {
       mergeTreeBary.setAssignmentSolver(assignmentSolverID_);
       mergeTreeBary.setIsCalled(true);
       mergeTreeBary.setThreadNumber(this->threadNumber_);
-      mergeTreeBary.setDistanceSquared(true); // squared root
+      mergeTreeBary.setDistanceSquaredRoot(true); // squared root
       mergeTreeBary.setProgressiveBarycenter(progressiveBarycenter_);
       mergeTreeBary.setDeterministic(deterministic_);
       mergeTreeBary.setTol(tol_);

@@ -34,11 +34,11 @@ int ttkGaussianPointCloud::RequestData(
 
   if(points->GetDataType() == VTK_FLOAT) {
     this->generate<float>(
-      Dimension, NumberOfSamples,
+      Dimension, NumberOfSamples, RandomSeed,
       static_cast<float *>(ttkUtils::GetVoidPointer(points)));
   } else if(points->GetDataType() == VTK_DOUBLE) {
     this->generate<double>(
-      Dimension, NumberOfSamples,
+      Dimension, NumberOfSamples, RandomSeed,
       static_cast<double *>(ttkUtils::GetVoidPointer(points)));
   }
 

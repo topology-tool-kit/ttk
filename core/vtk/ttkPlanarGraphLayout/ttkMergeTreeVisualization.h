@@ -62,7 +62,7 @@ private:
   // Used for critical type and for point coordinates
   std::vector<vtkUnstructuredGrid *> treesNodes;
   std::vector<std::vector<int>>
-    treesNodeCorrMesh; // used to acces treesNodes given input trees
+    treesNodeCorrMesh; // used to access treesNodes given input trees
 
   // Segmentation
   std::vector<vtkDataSet *> treesSegmentation;
@@ -949,7 +949,9 @@ public:
         // _ m[i][j] contains the node in treesOri[j] matched to the node i in
         // the barycenter
         std::vector<std::vector<idNode>> baryMatching(
-          trees[i]->getNumberOfNodes(), std::vector<idNode>(numInputsOri, -1));
+          trees[i]->getNumberOfNodes(),
+          std::vector<idNode>(
+            numInputsOri, std::numeric_limits<idNode>::max()));
         if(ShiftMode == 1) {
           for(size_t j = 0; j < outputMatchingBarycenter[c].size(); ++j)
             for(auto match : outputMatchingBarycenter[c][j])
@@ -1003,7 +1005,7 @@ public:
           double point[3] = {0, 0, 0};
           if(ShiftMode == 1) { // Star barycenter
             for(int j = 0; j < numInputsOri; ++j) {
-              if((int)baryMatching[node][j] != -1) {
+              if(baryMatching[node][j] != std::numeric_limits<idNode>::max()) {
                 nodeMesh = treesNodeCorrMesh[j][baryMatching[node][j]];
                 getPoint(treesNodes[j], nodeMesh, point);
                 noMatched += 1;

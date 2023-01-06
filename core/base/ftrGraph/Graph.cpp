@@ -21,7 +21,7 @@ std::string Graph::print(const int verbosity) const {
   }
 
   if(verbosity >= 2) {
-    res << "visibles arcs: " << getNumberOfVisibleArcs() << endl;
+    res << "visible arcs: " << getNumberOfVisibleArcs() << endl;
   }
 
   if(verbosity >= 3) {

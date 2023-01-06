@@ -4,7 +4,7 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
-///\brief TTK classe representing a SuperArc of a tree,
+///\brief TTK class representing a SuperArc of a tree,
 /// containing regular vertices.
 ///
 ///\param dataType Data type of the input scalar field (char, float,
@@ -44,13 +44,13 @@ namespace ttk {
       SimplexId lastVisited_;
       // Stat of this arc, if replaced...
       ComponentState state_;
-      // ... use this field to know by wich other arc.
+      // ... use this field to know by which other arc.
       // Caution, we do not want chained replacant !
       idSuperArc replacantId_;
 
       // Regular nodes in this arc
       // Vector for initialisation only (mergetree::build & simplify)
-      // Use vertList and sizeVertList_ to acces Arc's vertices after combine
+      // Use vertList and sizeVertList_ to access Arc's vertices after combine
       std::vector<std::pair<SimplexId, bool>> vertices_;
       // initialized with vertices_.data() and vertices_.size()
       // these two variable allow to split the segmentation when
@@ -284,6 +284,7 @@ namespace ttk {
       inline void appendVertLists(
         const std::list<std::pair<SimplexId, bool> *> &vertLists,
         std::list<SimplexId> vertSizes,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
         const SimplexId &totalSize) {
         // size local
         SimplexId newSize = sizeVertList_;
@@ -294,8 +295,14 @@ namespace ttk {
         newSize += totalSize;
 
         // alloc
-        std::pair<SimplexId, bool> *tmpVert
-          = new std::pair<SimplexId, bool>[newSize];
+        std::pair<SimplexId, bool> *tmpVert{};
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+        {
+          storage.emplace_back(newSize);
+          tmpVert = storage.back().data();
+        }
         SimplexId pos = 0;
 
         // values local
@@ -317,7 +324,7 @@ namespace ttk {
         sizeVertList_ = newSize;
       }
 
-      // From array : alloc should be already done (chck boundary no kamikaze
+      // From array : alloc should be already done (check boundary no kamikaze
       // only)
       inline int addSegmentationGlobal(const std::pair<SimplexId, bool> *arr,
                                        const SimplexId &size) {
@@ -383,8 +390,16 @@ namespace ttk {
         // We have an offset of -1 due to the initial value of sizeVertList_
       }
 
-      inline void makeAllocGlobal(const SimplexId &size) {
-        vertList_ = new std::pair<SimplexId, bool>[size];
+      inline void makeAllocGlobal(
+        const SimplexId &size,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+        {
+          storage.emplace_back(size);
+          vertList_ = storage.back().data();
+        }
         sizeVertList_ = 0;
 #ifndef TTK_ENABLE_KAMIKAZE
         allocSgm_ = size;

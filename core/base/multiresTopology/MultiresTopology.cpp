@@ -4,8 +4,8 @@ void ttk::MultiresTopology::getValencesFromLink(
   const SimplexId vertexId,
   const std::vector<std::pair<polarity, polarity>> &vlp,
   DynamicTree &link,
-  std::vector<polarity> &toPropageMin,
-  std::vector<polarity> &toPropageMax,
+  std::vector<polarity> &toPropagateMin,
+  std::vector<polarity> &toPropagateMax,
   std::vector<std::vector<SimplexId>> &saddleCCMin,
   std::vector<std::vector<SimplexId>> &saddleCCMax) const {
 
@@ -32,21 +32,21 @@ void ttk::MultiresTopology::getValencesFromLink(
     }
 
     if(downValence > 1) {
-      toPropageMin[vertexId] = 255;
+      toPropagateMin[vertexId] = 255;
     } else {
       saddleCCMin[vertexId].clear();
-      toPropageMin[vertexId] = 0;
+      toPropagateMin[vertexId] = 0;
     }
     if(upValence > 1) {
-      toPropageMax[vertexId] = 255;
+      toPropagateMax[vertexId] = 255;
     } else {
       saddleCCMax[vertexId].clear();
-      toPropageMax[vertexId] = 0;
+      toPropagateMax[vertexId] = 0;
     }
 
   } else { // not a saddle
-    toPropageMax[vertexId] = 0;
-    toPropageMin[vertexId] = 0;
+    toPropagateMax[vertexId] = 0;
+    toPropagateMin[vertexId] = 0;
   }
 }
 

@@ -12,7 +12,7 @@ default_values="0">
     <Entry value="2" text="Custom"/>
 </EnumerationDomain>
   <Documentation>
-    Backend for the computation of the distance between merge trees. The Edit Distance, the Branch Mapping Distance and the Path Mapping Distance do not allow to compute geodesics, barycenters and clusters contrary to the Wasserstein Distance. One can choose Custom to configure manually the three parameters controling the distance.
+    Backend for the computation of the distance between merge trees. The Edit Distance, the Branch Mapping Distance and the Path Mapping Distance do not allow to compute geodesics, barycenters and clusters contrary to the Wasserstein Distance. One can choose Custom to configure manually the three parameters controlling the distance.
   </Documentation>
 </IntVectorProperty>
 

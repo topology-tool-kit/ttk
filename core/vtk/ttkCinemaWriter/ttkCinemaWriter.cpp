@@ -231,7 +231,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
   // Update database
   // ===========================================================================
   {
-    // Initilize file lock for remaining operations
+    // Initialize file lock for remaining operations
     std::string lockFilePath;
     if(!this->GetLockFilePath(lockFilePath))
       return 0;
@@ -247,7 +247,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     struct stat info;
 
     // -------------------------------------------------------------------------
-    // If data.csv file does not exsist create it
+    // If data.csv file does not exist create it
     // -------------------------------------------------------------------------
     if(stat(csvPath.data(), &info) != 0) {
       ttk::Timer t;
@@ -328,12 +328,12 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
         if(columnName.compare("FILE") == 0)
           continue;
 
-        bool exsist = false;
+        bool exist = false;
         for(size_t j = 0; j < nFields; j++) {
           if(fields[j].compare(columnName) == 0)
-            exsist = true;
+            exist = true;
         }
-        if(!exsist) {
+        if(!exist) {
           this->printErr("'data.csv' file contains column '" + columnName
                          + "' not present in field data.");
           this->printErr("Unable to insert data product into cinema database.");
@@ -557,7 +557,7 @@ int ttkCinemaWriter::RequestData(vtkInformation *ttkNotUsed(request),
   // Prepare Database
   // -------------------------------------------------------------------------
   {
-    // Initilize file lock for remaining operations
+    // Initialize file lock for remaining operations
     std::string lockFilePath;
     if(!this->GetLockFilePath(lockFilePath))
       return 0;

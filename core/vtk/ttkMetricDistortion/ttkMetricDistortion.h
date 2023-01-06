@@ -6,12 +6,12 @@
 /// \brief TTK VTK-filter that wraps the ttk::MetricDistortion module.
 ///
 /// This VTK filter uses the ttk::MetricDistortion module to compute distance,
-/// area and curvature information about a surface and an optionnal distance
+/// area and curvature information about a surface and an optional distance
 /// matrix (giving the distance between the points of the surface in a metric
 /// space).
 ///
 /// \param Input vtkPolyData.
-/// \param Input vtkTable (optionnal)
+/// \param Input vtkTable (optional)
 /// \param Output vtkDataSet.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the

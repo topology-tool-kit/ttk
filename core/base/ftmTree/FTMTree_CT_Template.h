@@ -32,10 +32,10 @@ namespace ttk {
 #ifdef TTK_ENABLE_OMP_PRIORITY
       {
         // Set priority
-        if(st_->getNumberOfLeaves() < jt_->getNumberOfLeaves())
-          st_->setPrior();
+        if(st_.getNumberOfLeaves() < jt_.getNumberOfLeaves())
+          st_.setPrior();
         else
-          jt_->setPrior();
+          jt_.setPrior();
       }
 #endif
 
@@ -53,13 +53,13 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
-            jt_->build(mesh, tt == TreeType::Contour);
+            jt_.build(mesh, tt == TreeType::Contour);
           }
           if(tt == TreeType::Split || bothMT) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
-            st_->build(mesh, tt == TreeType::Contour);
+            st_.build(mesh, tt == TreeType::Contour);
           }
         }
 #ifdef TTK_ENABLE_OPENMP
@@ -85,14 +85,14 @@ namespace ttk {
         std::string nbNodes;
         switch(tt) {
           case TreeType::Join:
-            nbNodes = std::to_string(jt_->getNumberOfNodes());
+            nbNodes = std::to_string(jt_.getNumberOfNodes());
             break;
           case TreeType::Split:
-            nbNodes = std::to_string(st_->getNumberOfNodes());
+            nbNodes = std::to_string(st_.getNumberOfNodes());
             break;
           case TreeType::Join_Split:
             nbNodes
-              = std::to_string(jt_->getNumberOfNodes() + st_->getNumberOfNodes());
+              = std::to_string(jt_.getNumberOfNodes() + st_.getNumberOfNodes());
             break;
           default:
             nbNodes = std::to_string(getNumberOfNodes());
@@ -136,15 +136,15 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
           }
         }
 
-        jt_->setValence(v, downval);
-        st_->setValence(v, upval);
+        jt_.setValence(v, downval);
+        st_.setValence(v, upval);
 
         if(!downval) {
-          jt_->makeNode(v);
+          jt_.makeNode(v);
         }
 
         if(!upval) {
-          st_->makeNode(v);
+          st_.makeNode(v);
         }
       }
     }

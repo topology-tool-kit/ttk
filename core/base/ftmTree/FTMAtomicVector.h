@@ -3,7 +3,7 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-02-09
 ///
-///\brief TTK processing package that manage a paralle vecrion of vector
+///\brief TTK processing package that manage a parallel vecrion of vector
 
 #pragma once
 

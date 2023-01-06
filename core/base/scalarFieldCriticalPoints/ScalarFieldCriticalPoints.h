@@ -68,7 +68,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p offsets buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
@@ -253,21 +253,14 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
 
   if(triangulation) {
 
-#if TTK_ENABLE_MPI
-    const auto rankArray{triangulation->getVertexRankArray()};
-    if(ttk::isRunningWithMPI() && rankArray == nullptr) {
-      this->printErr("Missing vertex rank array");
-      return -6;
-    }
-#endif // TTK_ENABLE_MPI
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic, chunkSize) num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 #if TTK_ENABLE_MPI
       if(!isRunningWithMPI()
-         || (isRunningWithMPI() && (rankArray[i] == ttk::MPIrank_))) {
+         || (isRunningWithMPI()
+             && (triangulation->getVertexRank(i) == ttk::MPIrank_))) {
 #endif
         vertexTypes[i] = getCriticalType(i, offsets, triangulation);
 #if TTK_ENABLE_MPI

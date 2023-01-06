@@ -114,8 +114,8 @@ namespace ttk {
       const SimplexId vertexId,
       const std::vector<std::pair<polarity, polarity>> &vlp,
       DynamicTree &link,
-      std::vector<polarity> &toPropageMin,
-      std::vector<polarity> &toPropageMax,
+      std::vector<polarity> &toPropagateMin,
+      std::vector<polarity> &toPropagateMax,
       std::vector<std::vector<SimplexId>> &saddleCCMin,
       std::vector<std::vector<SimplexId>> &saddleCCMax) const;
 

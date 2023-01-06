@@ -139,8 +139,8 @@ namespace ttk {
       // Put all segments in one vector in the arc
       // Suppose that all segment are already sorted
       // see Segments::sortAll
-      // For Contour Tree segmentaion, you have to precise the current arc since
-      // a segment can contain vertices for several arcs
+      // For Contour Tree segmentation, you have to precise the current arc
+      // since a segment can contain vertices for several arcs
       void createSegmentation(const Scalars *s);
 
       inline SimplexId count() const {

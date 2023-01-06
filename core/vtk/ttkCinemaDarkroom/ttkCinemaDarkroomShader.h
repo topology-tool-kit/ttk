@@ -110,7 +110,7 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  /// Replaces all palceholder strings of the input string based on previously
+  /// Replaces all placeholder strings of the input string based on previously
   /// added replacements.
   std::string PerformReplacements(const std::string &input);
 

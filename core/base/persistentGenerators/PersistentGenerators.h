@@ -230,13 +230,13 @@ void ttk::PersistentGenerators::findHandlesGenerators(
     std::vector<SimplexId> generator{};
     std::set<SimplexId> visited1Sads{};
 
-    std::queue<SimplexId> toPropage{};
-    toPropage.push(s1);
+    std::queue<SimplexId> toPropagate{};
+    toPropagate.push(s1);
 
-    while(!toPropage.empty()) {
+    while(!toPropagate.empty()) {
       // current 1-saddle
-      const auto curr{toPropage.front()};
-      toPropage.pop();
+      const auto curr{toPropagate.front()};
+      toPropagate.pop();
       visited1Sads.emplace(curr);
 
       if(curr != s1) {
@@ -273,7 +273,7 @@ void ttk::PersistentGenerators::findHandlesGenerators(
 
         const auto next{min2sad[min]};
         if(visited1Sads.find(next) == visited1Sads.end()) {
-          toPropage.push(next);
+          toPropagate.push(next);
         }
       }
     }

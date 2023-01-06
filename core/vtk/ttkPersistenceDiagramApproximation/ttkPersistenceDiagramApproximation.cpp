@@ -81,6 +81,9 @@ int ttkPersistenceDiagramApproximation::dispatch(
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
+  // fill missing data in CTDiagram (critical points coordinates & value)
+  augmentPersistenceDiagram(CTDiagram, outputScalars, triangulation);
+
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, inputOrder);
 
@@ -92,10 +95,6 @@ int ttkPersistenceDiagramApproximation::dispatch(
                    + std::to_string(status));
     return 0;
   }
-
-  // fill missing data in CTDiagram (critical points coordinates & value)
-  fillPersistenceDiagram(
-    CTDiagram, outputScalars, *triangulation, this->threadNumber_);
 
   // convert CTDiagram to vtkUnstructuredGrid
   vtkNew<vtkUnstructuredGrid> vtu{};

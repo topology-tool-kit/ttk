@@ -1469,7 +1469,7 @@ namespace ttk {
       } else if(getDimensionality() == 3) {
         preconditionTriangles();
       } else {
-        this->printErr("Unsupported dimension for vertex link precondtion");
+        this->printErr("Unsupported dimension for vertex link precondition");
         return -1;
       }
       return 0;

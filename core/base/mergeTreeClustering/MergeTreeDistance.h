@@ -280,7 +280,7 @@ namespace ttk {
     // Edit Distance Dynamic Programming Equations
     // ------------------------------------------------------------------------
     template <class dataType>
-    void computeForestToEmpyDistance(
+    void computeForestToEmptyDistance(
       ftm::FTMTree_MT *tree1,
       ftm::idNode nodeI,
       int i,
@@ -458,7 +458,7 @@ namespace ttk {
                       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
                         &outputMatching) {
       // ---------------------
-      // ----- Init dynamic progamming tables
+      // ----- Init dynamic programming tables
       // --------------------
       size_t nRows = tree1->getNumberOfNodes() + 1;
       size_t nCols = tree2->getNumberOfNodes() + 1;
@@ -511,7 +511,7 @@ namespace ttk {
           }
         }
       }
-      if(distanceSquared_)
+      if(distanceSquaredRoot_)
         distance = std::sqrt(distance);
 
       // ---------------------
@@ -596,15 +596,17 @@ namespace ttk {
             tree1, tree2, outputMatching);
       }
 
-      // std::cout << "TIME COMP.MATC. = " << t_match_time << std::endl;
+      // std::cout << "TIME COMP.MATCH. = " << t_match_time << std::endl;
       printMsg("Total", 1, t_total.getElapsedTime(), this->threadNumber_,
                debug::LineMode::NEW, debug::Priority::INFO);
       printMsg(debug::Separator::L2);
       std::stringstream ss2;
-      ss2 << "DISTANCE²       = " << distance;
+      ss2 << "DISTANCE²       = "
+          << (distanceSquaredRoot_ ? distance * distance : distance);
       printMsg(ss2.str());
       std::stringstream ss3;
-      ss3 << "DISTANCE        = " << std::sqrt(distance);
+      ss3 << "DISTANCE        = "
+          << (distanceSquaredRoot_ ? distance : std::sqrt(distance));
       printMsg(ss3.str());
       printMsg(debug::Separator::L2);
       std::stringstream ss4;
@@ -705,8 +707,8 @@ namespace ttk {
       if(processTree1) {
         if(computeEmptyTree) {
           int i = nodeI + 1;
-          // --- Forst to empty tree distance
-          computeForestToEmpyDistance(tree1, nodeI, i, treeTable, forestTable);
+          // --- Forest to empty tree distance
+          computeForestToEmptyDistance(tree1, nodeI, i, treeTable, forestTable);
 
           // --- Subtree to empty tree distance
           computeSubtreeToEmptyDistance(
@@ -1070,7 +1072,7 @@ namespace ttk {
             if(isTree1) {
               int i = nodeT + 1;
               // --- Forest to empty tree distance
-              computeForestToEmpyDistance(
+              computeForestToEmptyDistance(
                 tree, nodeT, i, treeTable, forestTable);
 
               // --- Subtree to empty tree distance

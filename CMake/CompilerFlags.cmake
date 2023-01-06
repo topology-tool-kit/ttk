@@ -8,6 +8,7 @@ if (NOT MSVC) # GCC and Clang
     -Wextra
     -Wtype-limits
     -Wshadow
+    -Wvla
     )
 
   # performance and debug flags

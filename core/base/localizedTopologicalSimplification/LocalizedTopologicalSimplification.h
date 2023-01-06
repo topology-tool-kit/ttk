@@ -149,7 +149,7 @@ namespace ttk {
           authorizationMask[authorizedExtremaIndices[i]] = -2;
 
         IT writeIndex = 0;
-// find discareded maxima
+// find discarded maxima
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -783,12 +783,12 @@ namespace ttk {
         }
 
         if(performSuperlevelSetPropagation) {
-          // skip first idx as it correponds to saddle
+          // skip first idx as it corresponds to saddle
           for(IT i = 1; i <= nSegmentVertices; i++)
             localOrder[localVertexSequence[i]] = -i;
         } else {
           IT order = -nSegmentVertices;
-          // skip last idx as it correponds to saddle
+          // skip last idx as it corresponds to saddle
           for(IT i = 0; i < nSegmentVertices; i++)
             localOrder[localVertexSequence[i]] = order++;
         }
@@ -803,7 +803,7 @@ namespace ttk {
                                      const TT *triangulation,
                                      const IT *segmentation,
                                      const IT *inputOrder) const {
-        // quick espace for small segments
+        // quick escape for small segments
         if(propagation->segmentSize == 1) {
           localOrder[propagation->segment[0]] = -2;
           return 1;
@@ -1139,9 +1139,9 @@ namespace ttk {
         // init propagations
         status = this->initializePropagations<IT, TT>(
           propagations,
-          queueMask, // use as authorization mask (will be overriden by
+          queueMask, // use as authorization mask (will be overridden by
                      // subsequent procedures)
-          localOrder, // use as maxima buffer (will be overriden by subsequent
+          localOrder, // use as maxima buffer (will be overridden by subsequent
                       // procedures)
 
           authorizedExtremaIndices, nAuthorizedExtremaIndices, order,
@@ -1224,7 +1224,7 @@ namespace ttk {
         status = this->initializePropagations<IT, TT>(
           propagations,
           queueMask, // will be ignored since there are no authorized maxima
-          localOrder, // use as maxima buffer (will be overriden by subsequent
+          localOrder, // use as maxima buffer (will be overridden by subsequent
                       // procedures)
 
           nullptr, 0, order, triangulation);
@@ -1327,8 +1327,29 @@ namespace ttk {
 
                                  nVertices);
 
+        bool hasMinima{false};
+        bool hasMaxima{false};
+        for(IT i = 0; i < nAuthorizedExtremaIndices; i++) {
+          const auto &extremum{authorizedExtremaIndices[i]};
+          const auto nNeigh{triangulation->getVertexNeighborNumber(extremum)};
+          if(nNeigh > 0) {
+            // look at the first neighbor to determine if minimum or maximum
+            SimplexId neigh{};
+            triangulation->getVertexNeighbor(extremum, 0, neigh);
+            if(order[extremum] > order[neigh]) {
+              hasMaxima = true;
+            } else {
+              hasMinima = true;
+            }
+          }
+          // don't look further if we have both minima and maxima
+          if(hasMaxima && hasMinima) {
+            break;
+          }
+        }
+
         // Maxima
-        {
+        if(hasMaxima) {
           this->printMsg("----------- [Removing Unauthorized Maxima]",
                          ttk::debug::Separator::L2);
 
@@ -1342,7 +1363,7 @@ namespace ttk {
         }
 
         // Minima
-        {
+        if(hasMinima) {
           this->printMsg("----------- [Removing Unauthorized Minima]",
                          ttk::debug::Separator::L2);
 

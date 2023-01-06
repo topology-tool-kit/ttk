@@ -319,8 +319,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runCompute(
 
   if(OutputInputTrees
      or (ReconstructInputTrees
-         and (computeReconstructionError_
-              or transferInputTreesInformations_))) {
+         and (computeReconstructionError_ or transferInputTreesInformation_))) {
     bool useSadMaxPairs
       = (useDoubleInput_ and not processFirstInput) or mixtureCoefficient_ == 0;
     bool isInputPD = ttk::ftm::constructTrees<dataType>(
@@ -485,7 +484,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
     getMatchingMatrix<double>(
       baryMTree[0], inputMTrees, baryMatchings_, matchingMatrix);
   // TODO compute matching to barycenter if correlation matrix is not provided
-  if(transferInputTreesInformations_
+  if(transferInputTreesInformation_
      and (inputMTrees.empty() or baryMatchings_.empty()))
     printWrn("Please provide input trees and correlation matrix to transfer "
              "input trees information.");
@@ -614,9 +613,9 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
     } else
       visuMaker.setShiftMode(2); // Line
 
-    // TODO transfer other informations?
+    // TODO transfer other information?
     if(isReconstructedTree) {
-      if(transferBarycenterInformations_) {
+      if(transferBarycenterInformation_) {
         ttk::ftm::MergeTree<dataType> baryMT;
         ttk::ftm::mergeTreeDoubleToTemplate<dataType>(baryMTree[0], baryMT);
         std::vector<ttk::ftm::idNode> matchingVector;
@@ -631,7 +630,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
         std::string nameBaryNodeId{"BaryNodeId"};
         visuMaker.addCustomIntArray(nameBaryNodeId, baryNodeID);
       }
-      if(transferInputTreesInformations_ and !inputMTrees.empty()
+      if(transferInputTreesInformation_ and !inputMTrees.empty()
          and !baryMatchings_.empty()) {
         ttk::ftm::MergeTree<dataType> inputMT;
         ttk::ftm::mergeTreeDoubleToTemplate<dataType>(
