@@ -1064,21 +1064,6 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
   TTK_PSORT(this->threadNumber_, critTriangles.begin(), critTriangles.end());
   TTK_PSORT(this->threadNumber_, critTetras.begin(), critTetras.end());
 
-  if(sortEdges) {
-    TTK_PSORT(this->threadNumber_, criticalCellsByDim[1].begin(),
-              criticalCellsByDim[1].end(),
-              [&critCellsOrder](const SimplexId a, const SimplexId b) {
-                return critCellsOrder[1][a] < critCellsOrder[1][b];
-              });
-  } else {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(size_t i = 0; i < critEdges.size(); ++i) {
-      criticalCellsByDim[1][i] = critEdges[i].id_;
-    }
-  }
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -1104,6 +1089,21 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
     for(size_t i = 0; i < critTetras.size(); ++i) {
       criticalCellsByDim[3][i] = critTetras[i].id_;
       critCellsOrder[3][critTetras[i].id_] = i;
+    }
+  }
+
+  if(sortEdges) {
+    TTK_PSORT(this->threadNumber_, criticalCellsByDim[1].begin(),
+              criticalCellsByDim[1].end(),
+              [&critCellsOrder](const SimplexId a, const SimplexId b) {
+                return critCellsOrder[1][a] < critCellsOrder[1][b];
+              });
+  } else {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(size_t i = 0; i < critEdges.size(); ++i) {
+      criticalCellsByDim[1][i] = critEdges[i].id_;
     }
   }
 
