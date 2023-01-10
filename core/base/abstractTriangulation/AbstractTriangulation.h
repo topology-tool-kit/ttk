@@ -1786,6 +1786,46 @@ namespace ttk {
       return true;
     }
 
+    /// If the triangulation is manifold or not (Rips Complexes
+    /// are not manifold)
+    /// \return True if the triangulation is manifold
+    virtual inline bool isManifold() const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!this->hasPreconditionedManifold())
+        return false;
+#endif
+      return this->isManifold_;
+    }
+
+    /// Check if the triangulation is manifold or not.
+    ///
+    /// \ref ttk::ExplicitTriangulation (and maybe \ref
+    /// ttk::CompactTriangulation too) can be generated from
+    /// non-manifold datasets (such as a Rips Complex). Some TTK
+    /// modules may be valid only for manifold triangulations, other
+    /// may have alternatives for non-manifold data-sets (\see
+    /// ttk::PersistenceDiagram::checkManifold).
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following function(s):
+    ///   - isManifold()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa isManifold()
+    virtual inline int preconditionManifold() {
+
+      if(!this->hasPreconditionedManifold_) {
+        this->preconditionManifoldInternal();
+        this->hasPreconditionedManifold_ = true;
+      }
+      return 0;
+    }
+
     /// Check if the triangle with global identifier \p triangleId is on the
     /// boundary of the domain.
     ///
@@ -3538,6 +3578,18 @@ namespace ttk {
       return true;
     }
 
+    inline bool hasPreconditionedManifold() const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!this->hasPreconditionedManifold_) {
+        this->printMsg("isManifold query without pre-process!",
+                       debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        this->printMsg("Please call preconditionManifold() in a pre-process.",
+                       debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->hasPreconditionedManifold_;
+    }
+
     // empty wrapping to VTK for now
     bool needsToAbort() override {
       return false;
@@ -3619,6 +3671,10 @@ namespace ttk {
       return 0;
     }
 
+    virtual inline int preconditionManifoldInternal() {
+      return 0;
+    }
+
     virtual inline int getCellVTKIDInternal(const int &ttkId,
                                             int &vtkId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -3663,7 +3719,10 @@ namespace ttk {
       hasPreconditionedTriangleEdges_, hasPreconditionedTriangleLinks_,
       hasPreconditionedTriangleStars_, hasPreconditionedVertexEdges_,
       hasPreconditionedVertexLinks_, hasPreconditionedVertexNeighbors_,
-      hasPreconditionedVertexStars_, hasPreconditionedVertexTriangles_;
+      hasPreconditionedVertexStars_, hasPreconditionedVertexTriangles_,
+      hasPreconditionedManifold_;
+
+    bool isManifold_{true};
 
     std::array<SimplexId, 3> gridDimensions_;
 
