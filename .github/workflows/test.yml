@@ -229,17 +229,10 @@ jobs:
         if ! python3 -u validate.py; then
 
           if [[ "$VERS" == *"22.04"* ]]; then
-            # Ubuntu 22.04 performs more iterations in
-            # PersistenceDiagramClustering than older Ubuntu VMs
-            rm -f output_screenshots/persistenceDiagramClustering*.png
-            # EigenField output not deterministic...
-            rm -f output_screenshots/persistentGenerators_skull_1.png
+            # weird opacity difference between the two Ubuntus
+            rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_1.png
+            rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_2.png
           fi
-          # ViscousFingering plot rendering issues
-          rm -rf output_screenshots/viscousFingering_0.png
-          # EigenField output not deterministic...
-          rm -rf output_screenshots/persistentGenerators_fertility_1.png
-
           if [ "$(ls -A output_screenshots)" ]; then
             tar zcf screenshots.tar.gz output_screenshots
             false
