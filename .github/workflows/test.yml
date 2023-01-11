@@ -114,14 +114,84 @@ jobs:
         CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
-    - name: Build & install TTK
+    - name: Build, install TTK & package it
       run: |
         cd build
         cmake --build . --parallel
+        cpack -G DEB
         sudo cmake --build . --target install
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
+
+    - name: Upload TTK .deb package for fast install in tests
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
+        path: build/ttk.deb
+
+    - name: Archive cache
+      run: |
+        ccache -s
+        ccache -c
+        cd /home/runner
+        tar czf ttk-ccache.tar.gz .ccache
+
+    - name: Upload ccache archive
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ttk-ccache-${{ matrix.os }}
+        path: /home/runner/ttk-ccache.tar.gz
+        retention-days: 2
+
+
+  # ------------------#
+  # Tests on ttk-data #
+  # ------------------#
+  run-python-screenshots-tests:
+    runs-on: ${{ matrix.os }}
+    needs: test-build-ubuntu
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
+        testSet: [pyTests, screenshotTests]
+    steps:
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          ccache \
+          libboost-system-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libosmesa-dev \
+          libopenmpi-dev \
+          libsqlite3-dev \
+          libwebsocketpp-dev \
+          graphviz \
+          ninja-build \
+          zlib1g-dev \
+          dpkg-dev
+        sudo python3 -m pip install scikit-learn
+    
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.deb
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-headless.deb
+
+    - name: Fetch TTK packages we just built in the test-build-ubuntu job
+      uses: actions/download-artifact@v3
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
+
+    - name: Installing the previously built ttk package
+      run: |
+        sudo apt install ./ttk.deb
 
     - uses: actions/checkout@v3
       with:
@@ -142,6 +212,7 @@ jobs:
             simple.SaveData(ds, rsi)
 
     - name: Run ttk-data states [NOT ENFORCED]
+      if: matrix.testSet == 'screenshotTests'
       id: validate
       continue-on-error: true
       run: |
@@ -176,7 +247,7 @@ jobs:
         fi
 
     - name: Upload result screenshots
-      if: steps.validate.outcome == 'failure'
+      if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshotTests'
       uses: actions/upload-artifact@v3
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
@@ -184,31 +255,18 @@ jobs:
         retention-days: 10
 
     - name: Run ttk-data Python scripts
+      if: matrix.testSet == 'pyTests'
       run: |
         cd ttk-data
         python3 -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      if: matrix.testSet == 'pyTests'
       continue-on-error: true
       run: |
         cd ttk-data
         cat python/res.json
         diff python/hashes/${{ matrix.os }}.json python/res.json
-
-    - name: Archive cache
-      run: |
-        ccache -s
-        ccache -c
-        cd /home/runner
-        tar czf ttk-ccache.tar.gz .ccache
-
-    - name: Upload ccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: ttk-ccache-${{ matrix.os }}
-        path: /home/runner/ttk-ccache.tar.gz
-        retention-days: 2
 
 
   # -----------------#
