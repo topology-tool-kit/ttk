@@ -129,10 +129,8 @@ int DiscreteGradient::setCriticalPoints(
     }
   }
 
-  const auto nDims{
-    criticalCellsByDim[3].empty() ? criticalCellsByDim[2].empty() ? 1 : 2 : 3};
-  std::vector<std::vector<std::string>> rows(nDims);
-  for(int i = 0; i < nDims; ++i) {
+  std::vector<std::vector<std::string>> rows(this->dimensionality_ + 1);
+  for(int i = 0; i < this->dimensionality_ + 1; ++i) {
     rows[i]
       = std::vector<std::string>{"#" + std::to_string(i) + "-cell(s)",
                                  std::to_string(criticalCellsByDim[i].size())};
