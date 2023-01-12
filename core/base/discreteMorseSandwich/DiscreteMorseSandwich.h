@@ -1249,13 +1249,16 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
       }
     }
 
+    int nBoundComp
+      = (dim == 3 ? nCavities : nHandles) + nConnComp - nNonPairedMax;
+    nBoundComp = std::max(nBoundComp, 0);
+
     // print Betti numbers
     std::vector<std::vector<std::string>> rows{
       {" #Connected components", std::to_string(nConnComp)},
       {" #Topological handles", std::to_string(nHandles)},
       {" #Cavities", std::to_string(nCavities)},
-      {" #Boundary components", std::to_string((dim == 3 ? nCavities : nHandles)
-                                               + nConnComp - nNonPairedMax)},
+      {" #Boundary components", std::to_string(nBoundComp)},
     };
 
     this->printMsg(rows, debug::Priority::DETAIL);
