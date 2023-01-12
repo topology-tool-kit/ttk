@@ -198,6 +198,13 @@ jobs:
             rsi.SamplingDimensions = [128, 128, 128]
             simple.SaveData(ds, rsi)
 
+    - name: Delete TTK package artifact
+      uses: geekyeggo/delete-artifact@v2
+      # delete package only once
+      if: matrix.testSet == 'screenshotTests'
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
+
     - name: Run ttk-data states [NOT ENFORCED]
       if: matrix.testSet == 'screenshotTests'
       id: validate
