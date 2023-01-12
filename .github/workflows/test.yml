@@ -74,7 +74,7 @@ jobs:
       continue-on-error: true
       run: |
         wget -O ttk-ccache.tar.gz \
-          https://github.com/${{ github.repository }}/releases/download/ccache/ttk-ccache-${{ matrix.os }}.tar.gz
+          https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-ccache-${{ matrix.os }}.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
@@ -285,7 +285,7 @@ jobs:
     - name: Fetch archived ccache
       continue-on-error: true
       run: |
-        wget https://github.com/${{ github.repository }}/releases/download/ccache/ttk-ccache-macOS.tar.gz
+        wget https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-ccache-macOS.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
@@ -439,7 +439,7 @@ jobs:
       run: |
         Invoke-WebRequest `
         -OutFile ttk-sccache.tar.gz `
-        -Uri https://github.com/${{ github.repository }}/releases/download/ccache/ttk-sccache-windows.tar.gz
+        -Uri https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-sccache-windows.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
