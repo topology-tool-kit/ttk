@@ -31,9 +31,9 @@ namespace ttk {
       /** second (higher) vertex id */
       SimplexId death;
       /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
-      SimplexId type;
+      int type;
 
-      PersistencePair(SimplexId b, SimplexId d, SimplexId t)
+      PersistencePair(SimplexId b, SimplexId d, int t)
         : birth{b}, death{d}, type{t} {
       }
     };

@@ -437,20 +437,18 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   // convert PersistentSimplex pairs (with critical cells id) to PL
   // pairs (with vertices id)
 
-  for(auto &p : pairs) {
-    int birthType{};
-    if(dim == 3) {
-      birthType = p.type;
-    } else if(dim == 2) {
-      birthType = (p.type == 0) ? 0 : 1;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < pairs.size(); ++i) {
+    auto &pair{pairs[i]};
+    if(pair.type > 0) {
+      pair.birth = dms_.getCellGreaterVertex(
+        Cell{pair.type, pair.birth}, *triangulation);
     }
-    if(p.type > 0) {
-      p.birth
-        = dms_.getCellGreaterVertex(Cell{birthType, p.birth}, *triangulation);
-    }
-    if(p.death != -1) {
-      p.death = dms_.getCellGreaterVertex(
-        Cell{birthType + 1, p.death}, *triangulation);
+    if(pair.death != -1) {
+      pair.death = dms_.getCellGreaterVertex(
+        Cell{pair.type + 1, pair.death}, *triangulation);
     }
   }
 
@@ -489,7 +487,6 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
     }
   }
 
-  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
   return 0;
 }
 
