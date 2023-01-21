@@ -210,3 +210,8 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
     - Re-open ParaView and re-create your state file pipeline **from scratch** (to show people how to put things together)
 
 From our experience, video tutorials are **essential** to attract users towards new features. So if you want people to use your new module, you want to prepare a video tutorial. There are several excellent software packages for video editing (for instance [kdenlive](https://kdenlive.org/en/))
+
+# 7. Tools for TTK developers
+
+A list of tips & tools to help TTK developers has been gathered into
+[DEVELOPER_EXPERIENCE.md](./doc/DEVELOPER_EXPERIENCE.md).
