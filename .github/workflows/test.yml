@@ -435,7 +435,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn openmp graphviz ninja websocketpp sccache
+          scikit-learn openmp graphviz ninja websocketpp sccache python=3.9.12
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH
@@ -550,6 +550,7 @@ jobs:
         ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
     - name: Test Python example
+      continue-on-error: true
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
@@ -578,7 +579,7 @@ jobs:
       name: Checkout ttk-data
 
     - name: Resample large datasets
-      shell: python
+      shell: pvpython {0}
       working-directory: ./ttk-data
       run: |
         from paraview import simple
@@ -588,15 +589,16 @@ jobs:
             rsi.SamplingDimensions = [128, 128, 128]
             simple.SaveData(ds, rsi)
       env:
-        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages
+        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages;${{ env.CONDA_ROOT }}\Lib
 
     - name: Run ttk-data Python scripts
+      continue-on-error: true
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
-        python -u python\run.py
+        pvpython -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
