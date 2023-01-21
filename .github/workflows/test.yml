@@ -74,7 +74,7 @@ jobs:
       continue-on-error: true
       run: |
         wget -O ttk-ccache.tar.gz \
-          https://github.com/${{ github.repository }}/releases/download/ccache/ttk-ccache-${{ matrix.os }}.tar.gz
+          https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-ccache-${{ matrix.os }}.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
@@ -160,21 +160,8 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
-        sudo apt install -y \
-          ccache \
-          libboost-system-dev \
-          libeigen3-dev \
-          libgraphviz-dev \
-          libosmesa-dev \
-          libopenmpi-dev \
-          libsqlite3-dev \
-          libwebsocketpp-dev \
-          graphviz \
-          ninja-build \
-          zlib1g-dev \
-          dpkg-dev
         sudo python3 -m pip install scikit-learn
-    
+
     - name: Fetch TTK-ParaView headless Debian package
       run: |
         wget -O ttk-paraview-headless.deb \
@@ -211,6 +198,13 @@ jobs:
             rsi.SamplingDimensions = [128, 128, 128]
             simple.SaveData(ds, rsi)
 
+    - name: Delete TTK package artifact
+      uses: geekyeggo/delete-artifact@v2
+      # delete package only once
+      if: matrix.testSet == 'screenshotTests'
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
+
     - name: Run ttk-data states [NOT ENFORCED]
       if: matrix.testSet == 'screenshotTests'
       id: validate
@@ -229,17 +223,10 @@ jobs:
         if ! python3 -u validate.py; then
 
           if [[ "$VERS" == *"22.04"* ]]; then
-            # Ubuntu 22.04 performs more iterations in
-            # PersistenceDiagramClustering than older Ubuntu VMs
-            rm -f output_screenshots/persistenceDiagramClustering*.png
-            # EigenField output not deterministic...
-            rm -f output_screenshots/persistentGenerators_skull_1.png
+            # weird opacity difference between the two Ubuntus
+            rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_1.png
+            rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_2.png
           fi
-          # ViscousFingering plot rendering issues
-          rm -rf output_screenshots/viscousFingering_0.png
-          # EigenField output not deterministic...
-          rm -rf output_screenshots/persistentGenerators_fertility_1.png
-
           if [ "$(ls -A output_screenshots)" ]; then
             tar zcf screenshots.tar.gz output_screenshots
             false
@@ -298,7 +285,7 @@ jobs:
     - name: Fetch archived ccache
       continue-on-error: true
       run: |
-        wget https://github.com/${{ github.repository }}/releases/download/ccache/ttk-ccache-macOS.tar.gz
+        wget https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-ccache-macOS.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
@@ -452,7 +439,7 @@ jobs:
       run: |
         Invoke-WebRequest `
         -OutFile ttk-sccache.tar.gz `
-        -Uri https://github.com/${{ github.repository }}/releases/download/ccache/ttk-sccache-windows.tar.gz
+        -Uri https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-sccache-windows.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
