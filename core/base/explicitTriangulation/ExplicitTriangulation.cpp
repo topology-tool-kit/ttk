@@ -720,6 +720,37 @@ int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
   return 0;
 }
 
+int ttk::ExplicitTriangulation::preconditionManifoldInternal() {
+
+  // quick check by numbering (d-1)-simplices star
+  FlatJaggedArray *simplexStar{};
+
+  if(this->getDimensionality() == 3) {
+    this->preconditionTriangleStarsInternal();
+    simplexStar = &this->triangleStarData_;
+  } else if(this->getDimensionality() == 2) {
+    this->preconditionEdgeStarsInternal();
+    simplexStar = &this->edgeStarData_;
+  } else if(this->getDimensionality() == 1) {
+    this->preconditionVertexStarsInternal();
+    simplexStar = &this->vertexStarData_;
+  }
+
+  if(simplexStar == nullptr) {
+    return 0;
+  }
+
+  for(const auto star : *simplexStar) {
+    if(star.size() < 1 || star.size() > 2) {
+      this->isManifold_ = false;
+      this->printWrn("Non manifold data-set detected");
+      break;
+    }
+  }
+
+  return 0;
+}
+
 #ifdef TTK_ENABLE_MPI
 
 int ExplicitTriangulation::preconditionDistributedCells() {

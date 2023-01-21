@@ -64,9 +64,14 @@ int ttkPersistenceDiagram::dispatch(
                          inputOrder, triangulation);
 
   // something wrong in baseCode
-  if(status != 0 || CTDiagram.empty()) {
-    this->printErr("PersistenceDiagram::execute() error code : "
+  if(status != 0) {
+    this->printErr("PersistenceDiagram::execute() error code: "
                    + std::to_string(status));
+    return 0;
+  }
+
+  if(CTDiagram.empty()) {
+    this->printErr("Empty diagram!");
     return 0;
   }
 
