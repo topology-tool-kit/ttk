@@ -71,26 +71,18 @@ int ttk::GaussianPointCloud::generate(const int &dimension,
 
   Timer t;
 
-  std::vector<std::mt19937> genVector(threadNumber_);
-  for(auto i = 0; i < threadNumber_; i++)
-    genVector[i].seed(seed + i * threadNumber_);
+  std::mt19937 gen{};
+  gen.seed(seed);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
   for(int i = 0; i < numberOfSamples; i++) {
-    int tId = 0;
-#ifdef TTK_ENABLE_OPENMP
-    tId = omp_get_thread_num();
-#endif
-    castSample<dataType>(dimension, genVector[tId], outputData[3 * i],
-                         outputData[3 * i + 1], outputData[3 * i + 2]);
+    this->castSample(dimension, gen, outputData[3 * i], outputData[3 * i + 1],
+                     outputData[3 * i + 2]);
   }
 
   this->printMsg(std::vector<std::vector<std::string>>{
     {"#Samples", std::to_string(numberOfSamples)}});
   this->printMsg("Samples generated in " + std::to_string(dimension) + "D", 1.0,
-                 t.getElapsedTime(), this->threadNumber_);
+                 t.getElapsedTime(), 1);
 
   return 0;
 }

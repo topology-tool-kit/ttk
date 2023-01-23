@@ -242,6 +242,9 @@ namespace ttk {
     template <class triangulationType>
     void checkProgressivityRequirement(const triangulationType *triangulation);
 
+    template <class triangulationType>
+    void checkManifold(const triangulationType *const triangulation);
+
     inline void
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
@@ -257,8 +260,10 @@ namespace ttk {
           dms_.setDebugLevel(debugLevel_);
           dms_.setThreadNumber(threadNumber_);
           dms_.preconditionTriangulation(triangulation);
+          triangulation->preconditionManifold();
         }
-        if(this->BackEnd == BACKEND::PERSISTENT_SIMPLEX) {
+        if(this->BackEnd == BACKEND::PERSISTENT_SIMPLEX
+           || this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
           psp_.preconditionTriangulation(triangulation);
         }
       }
@@ -375,6 +380,7 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
   printMsg(ttk::debug::Separator::L1);
 
   checkProgressivityRequirement(triangulation);
+  checkManifold(triangulation);
 
   Timer tm{};
 
@@ -431,20 +437,18 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   // convert PersistentSimplex pairs (with critical cells id) to PL
   // pairs (with vertices id)
 
-  for(auto &p : pairs) {
-    int birthType{};
-    if(dim == 3) {
-      birthType = p.type;
-    } else if(dim == 2) {
-      birthType = (p.type == 0) ? 0 : 1;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < pairs.size(); ++i) {
+    auto &pair{pairs[i]};
+    if(pair.type > 0) {
+      pair.birth = dms_.getCellGreaterVertex(
+        Cell{pair.type, pair.birth}, *triangulation);
     }
-    if(p.type > 0) {
-      p.birth
-        = dms_.getCellGreaterVertex(Cell{birthType, p.birth}, *triangulation);
-    }
-    if(p.death != -1) {
-      p.death = dms_.getCellGreaterVertex(
-        Cell{birthType + 1, p.death}, *triangulation);
+    if(pair.death != -1) {
+      pair.death = dms_.getCellGreaterVertex(
+        Cell{pair.type + 1, pair.death}, *triangulation);
     }
   }
 
@@ -483,7 +487,6 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
     }
   }
 
-  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
   return 0;
 }
 
@@ -714,5 +717,21 @@ void ttk::PersistenceDiagram::checkProgressivityRequirement(
     printWrn("Defaulting to the FTM backend.");
 
     BackEnd = BACKEND::FTM;
+  }
+}
+
+template <class triangulationType>
+void ttk::PersistenceDiagram::checkManifold(
+  const triangulationType *const triangulation) {
+
+  if(this->BackEnd != BACKEND::DISCRETE_MORSE_SANDWICH) {
+    return;
+  }
+
+  if(!triangulation->isManifold()) {
+    this->printWrn("Non-manifold data-set detected.");
+    this->printWrn("Defaulting to the Persistence Simplex backend.");
+
+    this->BackEnd = BACKEND::PERSISTENT_SIMPLEX;
   }
 }

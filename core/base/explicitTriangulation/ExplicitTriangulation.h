@@ -515,6 +515,8 @@ namespace ttk {
     int preconditionVertexStarsInternal() override;
     int preconditionVertexTrianglesInternal() override;
 
+    int preconditionManifoldInternal() override;
+
 #ifdef TTK_CELL_ARRAY_NEW
     // Layout with connectivity + offset array (new)
     inline int setInputCells(const SimplexId &cellNumber,
