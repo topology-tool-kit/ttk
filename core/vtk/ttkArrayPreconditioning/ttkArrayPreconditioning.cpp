@@ -83,56 +83,54 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
-  auto vtkGlobalPointIds = pointData->GetGlobalIds();
-  if(vtkGlobalPointIds != nullptr) {
 #ifdef TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI()) {
-      // add the order array for every scalar array, except the ghostcells, the
-      // rankarray and the global ids
-      const auto triangulation{this->GetTriangulation(input)};
+  if(ttk::isRunningWithMPI()) {
+    // add the order array for every scalar array, except the ghostcells, the
+    // rankarray and the global ids
+    const auto triangulation{this->GetTriangulation(input)};
 
-      for(auto scalarArray : scalarArrays) {
-        int status = 0;
-        std::string arrayName = std::string(scalarArray->GetName());
-        if(arrayName != "GlobalPointIds" && arrayName != "vtkGhostType"
-           && arrayName != "RankArray") {
-          this->printMsg("Arrayname: " + arrayName);
-          vtkNew<ttkSimplexIdTypeArray> orderArray{};
-          orderArray->SetName(
-            ttkArrayPreconditioning::GetOrderArrayName(scalarArray).data());
-          orderArray->SetNumberOfComponents(1);
-          orderArray->SetNumberOfTuples(nVertices);
+    for(auto scalarArray : scalarArrays) {
+      int status = 0;
+      std::string arrayName = std::string(scalarArray->GetName());
+      if(arrayName != "GlobalPointIds" && arrayName != "vtkGhostType"
+         && arrayName != "RankArray") {
+        this->printMsg("Arrayname: " + arrayName);
+        vtkNew<ttkSimplexIdTypeArray> orderArray{};
+        orderArray->SetName(
+          ttkArrayPreconditioning::GetOrderArrayName(scalarArray).data());
+        orderArray->SetNumberOfComponents(1);
+        orderArray->SetNumberOfTuples(nVertices);
 
-          this->printMsg(std::to_string(scalarArray->GetDataType()));
-          ttkTypeMacroA(
-            scalarArray->GetDataType(),
-            (status = processScalarArray(
-               ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
-               ttkUtils::GetPointer<T0>(scalarArray),
-               ttkUtils::GetPointer<ttk::LongSimplexId>(vtkGlobalPointIds),
-               [triangulation](const ttk::SimplexId a) {
-                 return triangulation->getVertexRank(a);
-               },
-               nVertices, BurstSize)));
+        this->printMsg(std::to_string(scalarArray->GetDataType()));
+        ttkTypeMacroA(scalarArray->GetDataType(),
+                      (status = processScalarArray(
+                         ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
+                         ttkUtils::GetPointer<T0>(scalarArray),
+                         [triangulation](const ttk::SimplexId a) {
+                           return triangulation->getVertexGlobalId(a);
+                         },
+                         [triangulation](const ttk::SimplexId a) {
+                           return triangulation->getVertexRank(a);
+                         },
+                         nVertices, BurstSize)));
 
-          // On error cancel filter execution
-          if(status != 1)
-            return 0;
-          output->GetPointData()->AddArray(orderArray);
-        }
+        // On error cancel filter execution
+        if(status != 1)
+          return 0;
+        output->GetPointData()->AddArray(orderArray);
       }
-      this->printMsg("Preconditioned selected scalar arrays", 1.0,
-                     tm.getElapsedTime(), this->threadNumber_);
-      return 1;
-    } else {
-      this->printMsg("Necessary arrays are present,  TTK is built with MPI "
-                     "support, but not run with mpirun. Running sequentially.");
     }
-#else
-    this->printMsg("Necessary arrays are present, but TTK is not built with "
-                   "MPI support, running sequentially.");
-#endif
+    this->printMsg("Preconditioned selected scalar arrays", 1.0,
+                   tm.getElapsedTime(), this->threadNumber_);
+    return 1;
+  } else {
+    this->printMsg("Necessary arrays are present,  TTK is built with MPI "
+                   "support, but not run with mpirun. Running sequentially.");
   }
+#else
+  this->printMsg("Necessary arrays are present, but TTK is not built with "
+                 "MPI support, running sequentially.");
+#endif
 
   for(auto scalarArray : scalarArrays) {
     vtkNew<ttkSimplexIdTypeArray> orderArray{};
