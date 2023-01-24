@@ -646,6 +646,18 @@ namespace ttk {
     }
 
     inline SimplexId
+      getVertexLocalIdIfExistsInternal(const SimplexId gvid) const override {
+      const auto it{this->vertexGidToLid_.find(gvid)};
+      if(it == this->vertexGidToLid_.end()) {
+        return -1;
+      }
+      if(this->getVertexRank(it->second) != ttk::MPIrank_) {
+        return -1;
+      }
+      return it->second;
+    }
+
+    inline SimplexId
       getCellGlobalIdInternal(const SimplexId lcid) const override {
       return this->cellGid_[lcid];
     }
@@ -691,6 +703,18 @@ namespace ttk {
       }
 #endif // TTK_ENABLE_KAMIKAZE
       return it->second;
+    }
+
+    inline int setVertexRankArray(const int *rankArray) override {
+      vertexRankArray_.resize(vertexNumber_);
+      std::copy(rankArray, rankArray + vertexNumber_, vertexRankArray_.begin());
+      return 0;
+    }
+
+    inline int setCellRankArray(const int *rankArray) override {
+      cellRankArray_.resize(cellNumber_);
+      std::copy(rankArray, rankArray + cellNumber_, cellRankArray_.begin());
+      return 0;
     }
 
     inline int getVertexRankInternal(const SimplexId lvid) const override {
