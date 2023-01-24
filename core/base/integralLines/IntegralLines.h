@@ -1,7 +1,9 @@
 /// \ingroup base
 /// \class ttk::IntegralLines
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
+/// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
 /// \date March 2016
+/// \date MPI implementation: December 2022
 ///
 /// \brief TTK processing package for the computation of edge-based integral
 /// lines of the gradient of an input scalar field defined on a PL manifold.
@@ -14,12 +16,20 @@
 #pragma once
 
 // base code includes
+#include <ArrayLinkedList.h>
 #include <Geometry.h>
+#include <ScalarFieldCriticalPoints.h>
 #include <Triangulation.h>
-
 // std includes
+#include <algorithm>
+#include <iterator>
 #include <limits>
 #include <unordered_set>
+#define TABULAR_SIZE 50
+#ifdef TTK_ENABLE_MPI
+#define IS_ELEMENT_TO_PROCESS 0
+#define IS_MESSAGE_SIZE 1
+#endif
 
 namespace ttk {
 
@@ -65,35 +75,58 @@ namespace ttk {
     IntegralLines();
     ~IntegralLines() override;
 
+    template <class triangulationType = ttk::AbstractTriangulation>
+    int execute(triangulationType *triangulation);
+
+    /**
+     * @brief Computes the integral line starting at the vertex of global id
+     * seedIdentifier.
+     *
+     * @tparam triangulationType
+     * @param triangulation
+     * @param integralLine integral line to compute
+     * @param offsets Order array of the scalar array
+     */
+    template <class triangulationType = ttk::AbstractTriangulation>
+    void computeIntegralLine(const triangulationType *triangulation,
+                             ttk::IntegralLine integralLine,
+                             const ttk::SimplexId *offsets) const;
+
+    /**
+     * @brief Create an OpenMP task that contains the computation of nbElement
+     * integral lines.
+     *
+     * @tparam triangulationType
+     * @param triangulation
+     * @param chunkIntegralLine integral lines to compute within one task
+     * @param offsets Order array of the scalar array
+     * @param nbElement number of integral lines in chunkIntegralLine
+     */
     template <class triangulationType>
-    inline float getDistance(const triangulationType *triangulation,
-                             const SimplexId &a,
-                             const SimplexId &b) const {
-      float p0[3];
-      triangulation->getVertexPoint(a, p0[0], p0[1], p0[2]);
-      float p1[3];
-      triangulation->getVertexPoint(b, p1[0], p1[1], p1[2]);
-
-      return Geometry::distance(p0, p1, 3);
-    }
-
-    template <typename dataType, class triangulationType>
-    inline float getGradient(const triangulationType *triangulation,
-                             const SimplexId &a,
-                             const SimplexId &b,
-                             dataType *scalars) const {
-      return std::fabs(static_cast<float>(scalars[b] - scalars[a]))
-             / getDistance<triangulationType>(triangulation, a, b);
-    }
-
-    template <typename dataType,
-              class triangulationType = ttk::AbstractTriangulation>
-    int execute(const triangulationType *) const;
-
-    template <typename dataType,
-              class Compare,
-              class triangulationType = ttk::AbstractTriangulation>
-    int execute(Compare, const triangulationType *) const;
+    void createTask(const triangulationType *triangulation,
+                    std::vector<ttk::IntegralLine> &chunkIntegralLine,
+                    const ttk::SimplexId *offsets,
+                    int nbElement) const;
+    /**
+     * @brief Initializes the three attributes of an integral line: the global
+     * id of its seed, its trajectory, and the distances of its points with
+     * regards to its seed. Then stores the pointers to those objects in
+     * chunkIntegralLine to use it for task creation.
+     *
+     * @tparam triangulationType
+     * @param triangulation
+     * @param chunkIntegralLine integral lines to compute within one task
+     * @param startingIndex index of the first seed of seeds to be used to
+     * create an integral line and add it to chunkIntegralLine
+     * @param nbElement number of integral lines in chunkIntegralLine
+     * @param seeds starting points of the integral lines to be computed
+     */
+    template <class triangulationType>
+    void prepareForTask(const triangulationType *triangulation,
+                        std::vector<ttk::IntegralLine> &chunkIntegralLine,
+                        int startingIndex,
+                        int nbElement,
+                        std::vector<SimplexId> *seeds) const;
 
     inline void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -228,12 +261,14 @@ namespace ttk {
       inputOffsets_ = data;
     }
 
-    inline void setVertexIdentifierScalarField(SimplexId *const data) {
+    inline void
+      setVertexIdentifierScalarField(std::vector<SimplexId> *const data) {
       vertexIdentifierScalarField_ = data;
     }
 
-    inline void
-      setOutputTrajectories(std::vector<std::vector<SimplexId>> *trajectories) {
+    inline void setOutputTrajectories(
+      std::vector<ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
+        *trajectories) {
       outputTrajectories_ = trajectories;
     }
 
@@ -264,9 +299,10 @@ namespace ttk {
     }
 
   protected:
-    SimplexId vertexNumber_;
-    SimplexId seedNumber_;
-    int direction_;
+    ttk::SimplexId vertexNumber_;
+    ttk::SimplexId seedNumber_;
+    ttk::SimplexId chunkSize_;
+    ttk::SimplexId direction_;
     void *inputScalarField_;
     const ttk::SimplexId *inputOffsets_;
     std::vector<ttk::SimplexId> *vertexIdentifierScalarField_;
@@ -519,7 +555,7 @@ void ttk::IntegralLines::computeIntegralLine(
               this->computeIntegralLine<triangulationType>(
                 triangulation, integralLineFork, offsets);
 #ifdef TTK_ENABLE_MPI
-            }
+          }
 #endif
 #if TTK_ENABLE_OPENMP
           }
@@ -596,76 +632,177 @@ void ttk::IntegralLines::prepareForTask(
     outputForkIdentifiers_->at(threadNum).addArrayElement(
       chunkIntegralLine[j].forkIdentifier);
   }
-
-  {
-    std::stringstream msg;
-    msg << "Processed " << vertexNumber_ << " points";
-    this->printMsg(msg.str(), 1, t.getElapsedTime(), 1);
-  }
-
-  return 0;
 }
 
-template <typename dataType, class Compare, class triangulationType>
-int ttk::IntegralLines::execute(Compare cmp,
-                                const triangulationType *triangulation) const {
-  const auto offsets = inputOffsets_;
-  SimplexId *identifiers
-    = static_cast<SimplexId *>(vertexIdentifierScalarField_);
-  dataType *scalars = static_cast<dataType *>(inputScalarField_);
-  std::vector<std::vector<SimplexId>> *trajectories = outputTrajectories_;
+template <class triangulationType>
+void ttk::IntegralLines::createTask(
+  const triangulationType *triangulation,
+  std::vector<ttk::IntegralLine> &chunkIntegralLine,
+  const ttk::SimplexId *offsets,
+  int nbElement) const {
+#if TTK_ENABLE_OPENMP
+#pragma omp task firstprivate(chunkIntegralLine)
+  {
+#endif
+    for(int j = 0; j < nbElement; j++) {
+      this->computeIntegralLine<triangulationType>(
+        triangulation, chunkIntegralLine[j], offsets);
+    }
+#if TTK_ENABLE_OPENMP
+  }
+#endif
+}
 
+template <class triangulationType>
+int ttk::IntegralLines::execute(triangulationType *triangulation) {
+
+#ifdef TTK_ENABLE_MPI
+  keepWorking_ = 1;
+  finishedElement_ = 0;
+  addedElement_ = 0;
+#endif
+  const SimplexId *offsets = inputOffsets_;
+  std::vector<SimplexId> *seeds = vertexIdentifierScalarField_;
   Timer t;
 
-  // get the seeds
-  std::unordered_set<SimplexId> isSeed;
-  for(SimplexId k = 0; k < seedNumber_; ++k)
-    isSeed.insert(identifiers[k]);
-  std::vector<SimplexId> seeds(isSeed.begin(), isSeed.end());
-  isSeed.clear();
+  std::vector<ttk::IntegralLine> chunkIntegralLine(chunkSize_);
+  int taskNumber = (int)seedNumber_ / chunkSize_;
+#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_MPI
+#pragma omp parallel shared(finishedElement_, toSend_, addedElement_) \
+  num_threads(threadNumber_)
+  {
+#else
+#pragma omp parallel num_threads(threadNumber_)
+  {
+#endif // TTK_ENABLE_MPI
+#pragma omp master
+    {
+#endif // TTK_ENABLE_OPENMP
+      for(SimplexId i = 0; i < taskNumber; ++i) {
+        this->prepareForTask<triangulationType>(
+          triangulation, chunkIntegralLine, i * chunkSize_, chunkSize_, seeds);
+        this->createTask<triangulationType>(
+          triangulation, chunkIntegralLine, offsets, chunkSize_);
+      }
+      int rest = seedNumber_ % chunkSize_;
+      if(rest > 0) {
+        this->prepareForTask<triangulationType>(
+          triangulation, chunkIntegralLine, taskNumber * chunkSize_, rest,
+          seeds);
+        this->createTask<triangulationType>(
+          triangulation, chunkIntegralLine, offsets, rest);
+      }
+#ifdef TTK_ENABLE_OPENMP
+    }
+  }
+#endif
+#ifdef TTK_ENABLE_MPI
+  if(ttk::isRunningWithMPI()) {
+    int i;
+    int finishedElementReceived = 0;
+    std::vector<int> sendMessageSize(neighborNumber_);
+    std::vector<int> recvMessageSize(neighborNumber_);
+    std::vector<std::vector<ElementToBeSent>> send_buf(neighborNumber_);
+    std::vector<std::vector<ElementToBeSent>> recv_buf(neighborNumber_);
+    for(i = 0; i < neighborNumber_; i++) {
+      send_buf.reserve((int)seedNumber_ * 0.005);
+      recv_buf.reserve((int)seedNumber_ * 0.005);
+    }
+    std::vector<MPI_Request> requests(2 * neighborNumber_, MPI_REQUEST_NULL);
+    std::vector<MPI_Status> statuses(4 * neighborNumber_);
+    int taskSize;
+    int index;
+    int totalMessageSize;
+    while(keepWorking_) {
+      finishedElement_ -= addedElement_;
+      addedElement_ = 0;
+      // Exchange of the number of integral lines finished on all processes
+      MPI_Allreduce(&finishedElement_, &finishedElementReceived, 1, MPI_INTEGER,
+                    MPI_SUM, ttk::MPIcomm_);
+      finishedElement_ = 0;
+      // Update the number of integral lines left to compute
+      globalElementCounter_ -= finishedElementReceived;
+      // Stop working in case there are no more computation to be done
+      if(globalElementCounter_ == 0) {
+        keepWorking_ = 0;
+      }
+      if(keepWorking_) {
+        totalMessageSize = 0;
+        // Preparation of the send buffers and exchange of the size of messages
+        // to be sent
+        for(i = 0; i < neighborNumber_; i++) {
+          for(int j = 0; j < threadNumber_; j++) {
+            send_buf[i].insert(send_buf[i].end(), toSend_->at(i)[j].begin(),
+                               toSend_->at(i)[j].end());
+            toSend_->at(i)[j].clear();
+          }
+          sendMessageSize[i] = (int)send_buf[i].size();
+          MPI_Isend(&sendMessageSize[i], 1, MPI_INTEGER, neighbors_.at(i),
+                    IS_MESSAGE_SIZE, ttk::MPIcomm_, &requests[2 * i]);
+          MPI_Irecv(&recvMessageSize[i], 1, MPI_INTEGER, neighbors_.at(i),
+                    IS_MESSAGE_SIZE, ttk::MPIcomm_, &requests[2 * i + 1]);
+        }
+        MPI_Waitall(2 * neighborNumber_, requests.data(), MPI_STATUSES_IGNORE);
+        // Exchange of the data
+        for(i = 0; i < neighborNumber_; i++) {
+          if(recv_buf[i].size() < (size_t)recvMessageSize[i]) {
+            recv_buf[i].resize(recvMessageSize[i]);
+          }
+          if(recvMessageSize[i] > 0) {
+            MPI_Irecv(recv_buf[i].data(), recvMessageSize[i], this->MessageType,
+                      neighbors_.at(i), IS_ELEMENT_TO_PROCESS, ttk::MPIcomm_,
+                      &requests[2 * i]);
+            totalMessageSize += recvMessageSize[i];
+          }
 
-  trajectories->resize(seeds.size());
-  for(SimplexId i = 0; i < (SimplexId)seeds.size(); ++i) {
-    SimplexId v{seeds[i]};
-    (*trajectories)[i].push_back(v);
-
-    bool isMax{};
-    while(!isMax) {
-      SimplexId vnext{-1};
-      float fnext = std::numeric_limits<float>::min();
-      SimplexId neighborNumber = triangulation->getVertexNeighborNumber(v);
-      for(SimplexId k = 0; k < neighborNumber; ++k) {
-        SimplexId n;
-        triangulation->getVertexNeighbor(v, k, n);
-
-        if((direction_ == static_cast<int>(Direction::Forward))
-           xor (offsets[n] < offsets[v])) {
-          const float f
-            = getGradient<dataType, triangulationType>(v, n, scalars);
-          if(f > fnext) {
-            vnext = n;
-            fnext = f;
+          if(sendMessageSize[i] > 0) {
+            MPI_Isend(send_buf[i].data(), sendMessageSize[i], this->MessageType,
+                      neighbors_.at(i), IS_ELEMENT_TO_PROCESS, ttk::MPIcomm_,
+                      &requests[2 * i + 1]);
           }
         }
-      }
-
-      if(vnext == -1)
-        isMax = true;
-      else {
-        v = vnext;
-        (*trajectories)[i].push_back(v);
-
-        if(cmp(v))
-          isMax = true;
+        MPI_Waitall(2 * neighborNumber_, requests.data(), MPI_STATUSES_IGNORE);
+        for(i = 0; i < neighborNumber_; i++) {
+          send_buf[i].clear();
+        }
+        // Extraction of the received data and creation of the tasks
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel shared(finishedElement_, toSend_) \
+  num_threads(threadNumber_)
+        {
+#pragma omp master
+          {
+#endif // TTK_ENABLE_OPENMP
+            index = 0;
+            taskSize = std::min(
+              (ttk::SimplexId)std::max(totalMessageSize / (threadNumber_ * 100),
+                                       std::min(totalMessageSize, 50)),
+              chunkSize_);
+            chunkIntegralLine.resize(taskSize);
+            for(i = 0; i < neighborNumber_; i++) {
+              for(int j = 0; j < recvMessageSize[i]; j++) {
+                this->receiveElement<triangulationType>(
+                  triangulation, recv_buf[i][j], chunkIntegralLine, index,
+                  taskSize, offsets);
+              }
+            }
+            if(index > 0) {
+              this->createTask<triangulationType>(
+                triangulation, chunkIntegralLine, offsets, index);
+            }
+#ifdef TTK_ENABLE_OPENMP
+          }
+        }
+#endif // TTK_ENABLE_OPENMP
       }
     }
   }
-
+#endif // TTK_ENABLE_MPI
   {
     std::stringstream msg;
     msg << "Processed " << vertexNumber_ << " points";
-    this->printMsg(msg.str(), 1, t.getElapsedTime(), 1);
+    this->printMsg(msg.str(), 1, t.getElapsedTime(), threadNumber_);
   }
-
   return 0;
 }

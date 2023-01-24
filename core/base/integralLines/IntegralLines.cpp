@@ -7,6 +7,9 @@ IntegralLines::IntegralLines()
   : vertexNumber_{}, seedNumber_{}, inputScalarField_{}, inputOffsets_{},
     vertexIdentifierScalarField_{}, outputTrajectories_{} {
   this->setDebugMsgPrefix("IntegralLines");
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 IntegralLines::~IntegralLines() = default;

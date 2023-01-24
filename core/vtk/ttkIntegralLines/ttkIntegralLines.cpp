@@ -5,10 +5,12 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <ArrayLinkedList.h>
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -43,6 +45,7 @@ int ttkIntegralLines::FillOutputPortInformation(int port,
   return 1;
 }
 
+template <typename triangulationType>
 int ttkIntegralLines::getTrajectories(
   vtkDataSet *input,
   triangulationType *triangulation,
@@ -59,13 +62,12 @@ int ttkIntegralLines::getTrajectories(
   std::vector<ttk::SimplexId> &globalCellId,
 #endif
   vtkUnstructuredGrid *output) {
-
   if(input == nullptr || output == nullptr
      || input->GetPointData() == nullptr) {
     this->printErr("Null pointers in getTrajectories parameters");
     return 0;
   }
-
+  ttk::SimplexId threadNumber = trajectories.size();
   vtkNew<vtkUnstructuredGrid> ug{};
   vtkNew<vtkPoints> pts{};
   vtkNew<vtkDoubleArray> dist{};
@@ -82,7 +84,6 @@ int ttkIntegralLines::getTrajectories(
   outputMaskField->SetNumberOfComponents(1);
   outputMaskField->SetName(ttk::MaskScalarFieldName);
 
-  vtkNew<vtkFloatArray> dist{};
   dist->SetNumberOfComponents(1);
   dist->SetName("DistanceFromSeed");
   identifier->SetNumberOfComponents(1);
@@ -204,12 +205,6 @@ int ttkIntegralLines::getTrajectories(
         } else {
           break;
         }
-
-        ug->InsertNextCell(VTK_LINE, 2, ids.data());
-
-        // iteration
-        ids[0] = ids[1];
-        p0 = p1;
       }
       trajectory++;
       distanceFromSeed++;
@@ -217,6 +212,7 @@ int ttkIntegralLines::getTrajectories(
       forkIdentifier++;
     }
   }
+
   ug->SetPoints(pts);
   ug->GetPointData()->AddArray(dist);
   ug->GetPointData()->AddArray(identifier);
@@ -477,6 +473,7 @@ int ttkIntegralLines::exchangeGhosts(
 int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
+
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);
   vtkPointSet *seeds = vtkPointSet::GetData(inputVector[1], 0);
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
@@ -575,9 +572,19 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #else
   std::vector<ttk::SimplexId> idSpareStorage{};
-  auto *inputIdentifiers = this->GetIdentifierArrayPtr(
+  ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
     idSpareStorage);
+  std::unordered_set<ttk::SimplexId> isSeed;
+  for(ttk::SimplexId k = 0; k < numberOfPointsInSeeds; ++k) {
+    isSeed.insert(identifiers[k]);
+  }
+  std::vector<ttk::SimplexId> inputIdentifiers(isSeed.begin(), isSeed.end());
+#ifndef TTK_ENABLE_KAMIKAZE
+  totalSeeds = inputIdentifiers.size();
+#endif
+  isSeed.clear();
+#endif
 
   std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
     trajectories(
@@ -654,7 +661,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     return -1;
   }
   // field problem
-  if(!inputIdentifiers) {
+  if(!inputIdentifiers.size()) {
     this->printErr("wrong identifiers.");
     return -1;
   }
@@ -664,28 +671,26 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     return -1;
   }
   // no points.
-  if(numberOfPointsInSeeds <= 0) {
+  if(totalSeeds <= 0) {
     this->printErr("seeds have no points.");
     return -1;
   }
 #endif
-
-  std::vector<std::vector<ttk::SimplexId>> trajectories{};
-
-  this->setVertexNumber(numberOfPointsInDomain);
-  this->setSeedNumber(numberOfPointsInSeeds);
-  this->setDirection(Direction);
-  this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
-  this->setVertexIdentifierScalarField(inputIdentifiers);
-  this->setOutputTrajectories(&trajectories);
-
-  this->preconditionTriangulation(triangulation);
-
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
   int status = 0;
-  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                      (status = this->execute<VTK_TT, TTK_TT>(
-                         static_cast<TTK_TT *>(triangulation->getData()))));
+  ttkTemplateMacro(triangulation->getType(),
+                   (status = this->execute<TTK_TT>(
+                      static_cast<TTK_TT *>(triangulation->getData()))));
+
+#ifdef TTK_ENABLE_MPI_TIME
+  elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted :" + std::to_string(elapsedTime));
+  }
+#endif
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(status != 0) {

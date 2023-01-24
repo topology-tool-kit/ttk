@@ -1,7 +1,9 @@
 /// \ingroup vtk
 /// \class ttkIntegralLines
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
+/// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
 /// \date March 2016
+/// \date MPI implementation: December 2022
 ///
 /// \brief TTK VTK-filter for the computation of edge-based integral lines of
 /// the gradient of an input scalar field.
@@ -59,7 +61,6 @@
 #pragma once
 
 // VTK Module
-#include "DataTypes.h"
 #include <ttkIntegralLinesModule.h>
 
 // ttk code includes
