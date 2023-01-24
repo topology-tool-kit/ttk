@@ -188,18 +188,18 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
         this->MPIPipelinePreconditioning(inputData, neighbors, nullptr);
       }
       if(ttk::isRunningWithMPI()) {
-        auto vtkGlobalPointIds = inputData->GetPointData()->GetGlobalIds();
         const auto triangulation{this->GetTriangulation(inputData)};
-        ttkTypeMacroA(
-          scalarArray->GetDataType(),
-          (ttk::produceOrdering<T0>(
-            ttkUtils::GetPointer<ttk::SimplexId>(newOrderArray),
-            ttkUtils::GetPointer<T0>(scalarArray),
-            ttkUtils::GetPointer<ttk::LongSimplexId>(vtkGlobalPointIds),
-            [triangulation](const ttk::SimplexId a) {
-              return triangulation->getVertexRank(a);
-            },
-            nVertices, 500, neighbors)));
+        ttkTypeMacroA(scalarArray->GetDataType(),
+                      (ttk::produceOrdering<T0>(
+                        ttkUtils::GetPointer<ttk::SimplexId>(newOrderArray),
+                        ttkUtils::GetPointer<T0>(scalarArray),
+                        [triangulation](const ttk::SimplexId a) {
+                          return triangulation->getVertexGlobalId(a);
+                        },
+                        [triangulation](const ttk::SimplexId a) {
+                          return triangulation->getVertexRank(a);
+                        },
+                        nVertices, 500, neighbors)));
       } else
 #endif // TTK_ENABLE_MPI
 
