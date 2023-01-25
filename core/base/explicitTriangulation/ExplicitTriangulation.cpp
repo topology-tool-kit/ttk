@@ -97,7 +97,6 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 
 #ifdef TTK_ENABLE_MPI
 
-  this->preconditionEdgeRankArray();
   if(ttk::isRunningWithMPI()) {
     ttk::SimplexId edgeNumber = edgeList_.size();
     std::vector<unsigned char> charBoundary(edgeNumber, false);
@@ -236,7 +235,6 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
 
 #ifdef TTK_ENABLE_MPI
 
-  this->preconditionTriangleRankArray();
   if(ttk::isRunningWithMPI()) {
     ttk::SimplexId triangleNumber = triangleList_.size();
     std::vector<unsigned char> charBoundary(triangleNumber, false);
@@ -1202,6 +1200,8 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
     },
     nEdgesPerCell);
 
+  this->preconditionEdgeRankArray();
+
   if(MPIrank_ == 0) {
     this->printMsg("Domain contains " + std::to_string(nEdges) + " edges", 1.0,
                    tm.getElapsedTime(), 1);
@@ -1333,6 +1333,8 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
              > 0;
     },
     nTrianglesPerCell);
+
+  this->preconditionTriangleRankArray();
 
   if(MPIrank_ == 0) {
     this->printMsg(
