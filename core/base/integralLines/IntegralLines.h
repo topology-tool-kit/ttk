@@ -426,10 +426,11 @@ void ttk::IntegralLines::storeToSendIfNecessary(
 }
 #endif
 
-void ttk::IntegralLines::findNextVertex(ttk::SimplexId &vnext,
-                                        ttk::SimplexId &fnext,
-                                        std::vector<ttk::SimplexId> &component,
-                                        const SimplexId *offsets) const {
+inline void
+  ttk::IntegralLines::findNextVertex(ttk::SimplexId &vnext,
+                                     ttk::SimplexId &fnext,
+                                     std::vector<ttk::SimplexId> &component,
+                                     const SimplexId *offsets) const {
   ttk::SimplexId elementInComponentNumber = component.size();
   for(ttk::SimplexId k = 0; k < elementInComponentNumber; ++k) {
     if(direction_ == static_cast<int>(Direction::Forward)) {
@@ -555,7 +556,7 @@ void ttk::IntegralLines::computeIntegralLine(
               this->computeIntegralLine<triangulationType>(
                 triangulation, integralLineFork, offsets);
 #ifdef TTK_ENABLE_MPI
-          }
+            }
 #endif
 #if TTK_ENABLE_OPENMP
           }

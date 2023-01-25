@@ -18,6 +18,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <array>
+#include <numeric>
 
 vtkStandardNewMacro(ttkIntegralLines);
 
@@ -218,11 +219,12 @@ int ttkIntegralLines::getTrajectories(
   ug->GetPointData()->AddArray(identifier);
   ug->GetPointData()->AddArray(vtkForkIdentifiers);
   ug->GetPointData()->AddArray(outputMaskField);
-  ug->GetPointData()->AddArray(vtkVertexRankArray);
+
   for(unsigned int k = 0; k < scalarArrays.size(); ++k) {
     ug->GetPointData()->AddArray(inputScalars[k]);
   }
 #ifdef TTK_ENABLE_MPI
+  ug->GetPointData()->AddArray(vtkVertexRankArray);
   ug->GetCellData()->AddArray(vtkEdgeRankArray);
   ug->GetCellData()->SetGlobalIds(vtkEdgeIdentifiers);
   ug->GetPointData()->SetGlobalIds(vtkVertexGlobalIdArray);

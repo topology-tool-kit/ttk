@@ -12,7 +12,6 @@
 #pragma once
 
 // base code includes
-#include "MPIUtils.h"
 #include <Cache.h>
 #include <Geometry.h>
 #include <Wrapper.h>

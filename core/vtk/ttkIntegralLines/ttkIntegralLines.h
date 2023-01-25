@@ -89,8 +89,8 @@ namespace ttk {
       ttk::SimplexId ghostEdgeLocalId;
     };
 
-    bool operator<(const GhostElementsToSort &left,
-                   const GhostElementsToSort &right) {
+    inline bool operator<(const GhostElementsToSort &left,
+                          const GhostElementsToSort &right) {
       if(left.seedIdentifier != right.seedIdentifier) {
         return left.seedIdentifier < right.seedIdentifier;
       }

@@ -2459,11 +2459,11 @@ namespace ttk {
       return abstractTriangulation_->preconditionTriangleRankArray();
     }
 
-    inline int setVertexRankArray(const int *rankArray) {
+    inline int setVertexRankArray(const int *rankArray) override {
       return abstractTriangulation_->setVertexRankArray(rankArray);
     }
 
-    inline int setCellRankArray(const int *rankArray) {
+    inline int setCellRankArray(const int *rankArray) override {
       return abstractTriangulation_->setCellRankArray(rankArray);
     }
 
