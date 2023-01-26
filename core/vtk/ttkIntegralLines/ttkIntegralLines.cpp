@@ -619,8 +619,9 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   this->setOutputLocalVertexIdentifiers(&localVertexIdentifiers);
   this->preconditionTriangulation(triangulation);
   this->setChunkSize(
-    std::max(std::min(1000, (int)numberOfPointsInSeeds),
-             (int)numberOfPointsInSeeds / (threadNumber_ * 100)));
+    std::max(std::max(std::min(1000, (int)numberOfPointsInSeeds),
+                      (int)numberOfPointsInSeeds / (threadNumber_ * 100)),
+             1));
 #ifdef TTK_ENABLE_MPI
   std::vector<std::vector<std::vector<ttk::ElementToBeSent>>> toSend(
     ttk::MPIsize_);
@@ -662,11 +663,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("input offset field type not supported.");
     return -1;
   }
-  // field problem
-  if(!inputIdentifiers.size()) {
-    this->printErr("wrong identifiers.");
-    return -1;
-  }
+
   // no points.
   if(numberOfPointsInDomain <= 0) {
     this->printErr("domain has no points.");
