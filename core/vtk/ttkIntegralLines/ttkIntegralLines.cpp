@@ -18,7 +18,6 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <array>
-#include <numeric>
 
 vtkStandardNewMacro(ttkIntegralLines);
 
@@ -233,7 +232,6 @@ int ttkIntegralLines::getTrajectories(
 
   return 1;
 }
-
 
 int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,

@@ -24,7 +24,9 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <numeric>
 #include <unordered_set>
+
 #define TABULAR_SIZE 50
 #ifdef TTK_ENABLE_MPI
 #define IS_ELEMENT_TO_PROCESS 0
@@ -33,6 +35,7 @@
 
 namespace ttk {
   namespace intgl {
+
     struct IntegralLine {
       std::vector<ttk::SimplexId> *trajectory;
       std::vector<double> *distanceFromSeed;
@@ -93,9 +96,8 @@ namespace ttk {
       ttk::SimplexId SeedIdentifier;
       ttk::SimplexId ForkIdentifier;
     };
-  } // namespace intgl
-
 #endif
+  } // namespace intgl
 
   enum Direction { Forward = 0, Backward };
 
@@ -1076,7 +1078,7 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   return 0;
 }
 
-int ttk::IntegralLines::exchangeGhosts(
+inline int ttk::IntegralLines::exchangeGhosts(
   std::vector<std::vector<ttk::intgl::GhostElementsToSort>> &unmatchedGhosts,
   std::vector<ttk::SimplexId> &globalVertexId,
   std::vector<ttk::SimplexId> &globalCellId) {

@@ -643,7 +643,6 @@ namespace ttk {
       return it->second;
     }
 
-
     inline SimplexId
       getCellGlobalIdInternal(const SimplexId lcid) const override {
       return this->cellGid_[lcid];
