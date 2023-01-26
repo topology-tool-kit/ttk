@@ -69,39 +69,6 @@
 
 class vtkUnstructuredGrid;
 
-#ifdef TTK_ENABLE_MPI
-namespace ttk {
-  namespace intgl {
-    /**
-     * @brief Struct used for sorting ghost data during the generation of global
-     * ids. A GhostElementsToSort object is created for each segment of integral
-     * line that ends or begins with a ghost vertex. minLocalVertexId,
-     * seedIdentifier and forkIdentifier are used to identify this segment of
-     * integral line on different processes.
-     */
-    struct GhostElementsToSort {
-      ttk::SimplexId ownedGlobalId;
-      ttk::SimplexId minLocalVertexId;
-      ttk::SimplexId seedIdentifier;
-      ttk::SimplexId forkIdentifier{-1};
-      ttk::SimplexId globalEdgeId{-1};
-      ttk::SimplexId ghostVertexLocalId;
-      ttk::SimplexId ghostEdgeLocalId;
-    };
-
-    inline bool operator<(const GhostElementsToSort &left,
-                          const GhostElementsToSort &right) {
-      if(left.seedIdentifier != right.seedIdentifier) {
-        return left.seedIdentifier < right.seedIdentifier;
-      }
-      if(left.forkIdentifier != right.forkIdentifier) {
-        return left.forkIdentifier < right.forkIdentifier;
-      }
-      return left.minLocalVertexId < right.minLocalVertexId;
-    };
-  } // namespace intgl
-} // namespace ttk
-#endif
 class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public ttkAlgorithm,
                                                  protected ttk::IntegralLines {
 
@@ -136,55 +103,6 @@ public:
     std::vector<ttk::SimplexId> &globalCellId,
 #endif
     vtkUnstructuredGrid *output);
-#ifdef TTK_ENABLE_MPI
-  /**
-   * @brief Constructs the global identifiers for vertices and edges.
-   *
-   * @tparam triangulationType
-   * @param globalVertexId vector of global identifiers for vertices
-   * @param globalCellId vector of global identifiers for cells
-   * @param seedIdentifiers linked list of identifiers of seed, one for each
-   * integral line
-   * @param forkIdentifiers linked list of identifiers of forks, one for each
-   * integral line
-   * @param trajectories linked list of identifiers of forks, one for each
-   * integral line
-   * @param localVertexIdentifiers linked list of identifiers, one for each
-   * vertex of an integral lines. It represents the number of the vertex in the
-   * integral line.
-   * @param triangulation Triangulation
-   * @return int
-   */
-  template <typename triangulationType>
-  int getGlobalIdentifiers(
-    std::vector<ttk::SimplexId> &globalVertexId,
-    std::vector<ttk::SimplexId> &globalCellId,
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      &seedIdentifiers,
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      &forkIdentifiers,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &trajectories,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &localVertexIdentifiers,
-    triangulationType *triangulation);
-
-  /**
-   * @brief Sorts ghosts and exchanges their global identifiers between
-   * processes.
-   *
-   * @param unmatchedGhosts Ghosts vertices and edges for which the global
-   * identifier is to be determined
-   * @param globalVertexId vector of global identifiers for vertices
-   * @param globalCellId vector of global identifiers for cells
-   * @return int 0 for success
-   */
-  int exchangeGhosts(
-    std::vector<std::vector<ttk::intgl::GhostElementsToSort>> &unmatchedGhosts,
-    std::vector<ttk::SimplexId> &globalVertexId,
-    std::vector<ttk::SimplexId> &globalCellId);
-
-#endif // TTK_ENABLE_MPI
 
 protected:
   ttkIntegralLines();

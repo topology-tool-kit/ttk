@@ -271,9 +271,6 @@ namespace ttk {
     int getVertexRankInternal(const SimplexId lvid) const override;
     int getCellRankInternal(const SimplexId lcid) const override;
 
-    ttk::SimplexId getVertexLocalIdIfExistsInternal(
-      const ttk::SimplexId gvid) const override;
-
   protected:
     bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
     bool isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override;

@@ -637,25 +637,12 @@ namespace ttk {
     inline SimplexId
       getVertexLocalIdInternal(const SimplexId gvid) const override {
       const auto it{this->vertexGidToLid_.find(gvid)};
-#ifndef TTK_ENABLE_KAMIKAZE
       if(it == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return it->second;
-    }
-
-    inline SimplexId
-      getVertexLocalIdIfExistsInternal(const SimplexId gvid) const override {
-      const auto it{this->vertexGidToLid_.find(gvid)};
-      if(it == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-      if(this->getVertexRank(it->second) != ttk::MPIrank_) {
         return -1;
       }
       return it->second;
     }
+
 
     inline SimplexId
       getCellGlobalIdInternal(const SimplexId lcid) const override {

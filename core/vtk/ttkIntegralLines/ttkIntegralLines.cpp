@@ -234,243 +234,6 @@ int ttkIntegralLines::getTrajectories(
   return 1;
 }
 
-#ifdef TTK_ENABLE_MPI
-template <typename triangulationType>
-int ttkIntegralLines::getGlobalIdentifiers(
-  std::vector<ttk::SimplexId> &globalVertexId,
-  std::vector<ttk::SimplexId> &globalCellId,
-  std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-    &seedIdentifiers,
-  std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-    &forkIdentifiers,
-  std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-    &trajectories,
-  std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-    &localVertexIdentifiers,
-  triangulationType *triangulation) {
-  ttk::SimplexId outputVertexNumber = 0;
-  ttk::SimplexId outputCellNumber = 0;
-  ttk::SimplexId realVertexNumber = 0;
-  ttk::SimplexId realCellNumber = 0;
-  ttk::SimplexId intervalSize;
-  // Counts vertices and edges number (with and without ghosts)
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for reduction(+:outputVertexNumber,outputCellNumber,realCellNumber,realVertexNumber) schedule(static,1) private(intervalSize)
-#endif
-  for(int thread = 0; thread < threadNumber_; thread++) {
-    std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
-      trajectory
-      = trajectories[thread].list.begin();
-    while(trajectory != trajectories[thread].list.end()) {
-      for(int i = 0; i < TABULAR_SIZE; i++) {
-        if((*trajectory)[i].size() > 0) {
-          intervalSize = static_cast<ttk::SimplexId>((*trajectory)[i].size());
-          outputVertexNumber += intervalSize;
-          outputCellNumber += intervalSize - 1;
-          if(triangulation->getVertexRank((*trajectory)[i].at(0))
-             != ttk::MPIrank_) {
-            intervalSize--;
-          }
-          if((*trajectory)[i].size() > 1) {
-            realCellNumber += intervalSize - 1;
-            if(triangulation->getVertexRank((*trajectory)[i].back())
-               != ttk::MPIrank_) {
-              intervalSize--;
-            }
-          }
-          realVertexNumber += intervalSize;
-        } else {
-          break;
-        }
-      }
-      trajectory++;
-    }
-  }
-
-  ttk::SimplexId vertIndex;
-  ttk::SimplexId cellIndex;
-
-  // Perform exclusive prefix sum to find local offset for vertices and
-  // cells
-  MPI_Exscan(&realVertexNumber, &vertIndex, 1, ttk::getMPIType(vertIndex),
-             MPI_SUM, ttk::MPIcomm_);
-  MPI_Exscan(&realCellNumber, &cellIndex, 1, ttk::getMPIType(cellIndex),
-             MPI_SUM, ttk::MPIcomm_);
-
-  // Rank 0 received garbage values, it is replaced by the correct offset
-  // (always 0)
-  if(ttk::MPIrank_ == 0) {
-    vertIndex = 0;
-    cellIndex = 0;
-  }
-
-  // Generate Global identifers and package ghost data for the process that owns
-  // the ghost data
-  ttk::SimplexId startCellId = 0;
-  ttk::SimplexId startVertexId = 0;
-  globalVertexId.resize(outputVertexNumber);
-  globalCellId.resize(outputCellNumber);
-  std::vector<std::vector<ttk::intgl::GhostElementsToSort>> unmatchedGhosts(
-    neighborNumber_);
-  std::vector<std::vector<ttk::SimplexId>> unmatchedGhostsVertexLocalId(
-    neighborNumber_);
-  std::vector<std::vector<ttk::SimplexId>> unmatchedGhostsEdgeLocalId(
-    neighborNumber_);
-  for(int thread = 0; thread < threadNumber_; thread++) {
-    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator forkIdentifier
-      = forkIdentifiers[thread].list.begin();
-    std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
-      localVertexIdentifier
-      = localVertexIdentifiers[thread].list.begin();
-    std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
-      trajectory
-      = trajectories[thread].list.begin();
-    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator seedIdentifier
-      = seedIdentifiers[thread].list.begin();
-    while(trajectory != trajectories[thread].list.end()) {
-      for(int i = 0; i < TABULAR_SIZE; i++) {
-        if((*trajectory)[i].size() > 0) {
-          if(triangulation->getVertexRank((*trajectory)[i].at(0))
-             != ttk::MPIrank_) {
-            globalVertexId.at(startVertexId) = -1;
-          } else {
-            globalVertexId.at(startVertexId) = vertIndex;
-            vertIndex++;
-          }
-          startVertexId++;
-          if((*trajectory)[i].size() > 1) {
-            if(triangulation->getVertexRank((*trajectory)[i].at(0))
-               != ttk::MPIrank_) {
-              globalCellId.at(startCellId) = -1;
-              unmatchedGhosts
-                .at(neighborsToId_[triangulation->getVertexRank(
-                  (*trajectory)[i].at(0))])
-                .push_back(ttk::intgl::GhostElementsToSort{
-                  vertIndex, (*localVertexIdentifier)[i].at(0),
-                  (*seedIdentifier)[i], (*forkIdentifier)[i], -1,
-                  startVertexId - 1, startCellId});
-            } else {
-              globalCellId.at(startCellId) = cellIndex;
-              cellIndex++;
-            }
-            startCellId++;
-            if((*trajectory)[i].size() > 2) {
-              std::iota(globalCellId.begin() + startCellId,
-                        globalCellId.begin() + startCellId
-                          + (*trajectory)[i].size() - 2,
-                        cellIndex);
-              std::iota(globalVertexId.begin() + startVertexId,
-                        globalVertexId.begin() + startVertexId
-                          + (*trajectory)[i].size() - 2,
-                        vertIndex);
-              startCellId += (*trajectory)[i].size() - 2;
-              startVertexId += (*trajectory)[i].size() - 2;
-              vertIndex += (*trajectory)[i].size() - 2;
-              cellIndex += (*trajectory)[i].size() - 2;
-            }
-            if(triangulation->getVertexRank((*trajectory)[i].back())
-               != ttk::MPIrank_) {
-              globalVertexId.at(startVertexId) = -1;
-              unmatchedGhosts
-                .at(neighborsToId_[triangulation->getVertexRank(
-                  (*trajectory)[i].back())])
-                .push_back(ttk::intgl::GhostElementsToSort{
-                  globalVertexId.at(startVertexId - 1),
-                  (*localVertexIdentifier)[i].at(
-                    (*localVertexIdentifier)[i].size() - 2),
-                  (*seedIdentifier)[i], (*forkIdentifier)[i],
-                  globalCellId.at(startCellId - 1), startVertexId,
-                  startCellId - 1});
-            } else {
-              globalVertexId.at(startVertexId) = vertIndex;
-              vertIndex++;
-            }
-            startVertexId++;
-          }
-        } else {
-          break;
-        }
-      }
-      seedIdentifier++;
-      forkIdentifier++;
-      localVertexIdentifier++;
-      trajectory++;
-    }
-  }
-  // unmatchedGhosts contains the ghost data for each process.
-  // For two processes i and j that are neighbors, their respective
-  // unmatchedGhosts[k_i] and unmatchedGhosts[k_j] have the same
-  // number of elements and each element represents a segment of
-  // integral line. This means that if unmatchedGhosts[k_i] and
-  // unmatchedGhosts[k_j] are sorted using the same comparator,
-  // element l of unmatchedGhosts[k_i] and element l of unmatchedGhosts[k_j]
-  // represent the same segment of integral line. Therefore, once
-  // unmatchedGhosts vectors are sorted for each process, all that
-  // is left to do is exchange the global identifiers of vertices
-  // and edges, as the receiving process already knows to which local
-  // vertices in its domain the ghosts corresponds to.
-  if(ttk::MPIsize_ > 1) {
-    for(int i = 0; i < neighborNumber_; i++) {
-      TTK_PSORT(threadNumber_, unmatchedGhosts.at(i).begin(),
-                unmatchedGhosts.at(i).end());
-    }
-    this->exchangeGhosts(unmatchedGhosts, globalVertexId, globalCellId);
-  }
-
-  return 0;
-}
-
-int ttkIntegralLines::exchangeGhosts(
-  std::vector<std::vector<ttk::intgl::GhostElementsToSort>> &unmatchedGhosts,
-  std::vector<ttk::SimplexId> &globalVertexId,
-  std::vector<ttk::SimplexId> &globalCellId) {
-  ttk::SimplexId id{0};
-  std::vector<std::vector<ttk::SimplexId>> globalIdsToSend(neighborNumber_);
-  std::vector<std::vector<ttk::SimplexId>> globalIdsToReceive(neighborNumber_);
-  for(int i = 0; i < neighborNumber_; i++) {
-    globalIdsToSend[i].resize(2 * unmatchedGhosts[i].size());
-    globalIdsToReceive[i].resize(2 * unmatchedGhosts[i].size());
-  }
-  // The sending buffer is prepared
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for
-#endif
-  for(int i = 0; i < neighborNumber_; i++) {
-    for(size_t j = 0; j < unmatchedGhosts[i].size(); j++) {
-      globalIdsToSend[i][2 * j] = unmatchedGhosts[i][j].ownedGlobalId;
-      globalIdsToSend[i][2 * j + 1] = unmatchedGhosts[i][j].globalEdgeId;
-    }
-  }
-  // Each process sends and receives global identifiers of ghosts
-  // to its neighbors
-  for(int neighbor : neighbors_) {
-    MPI_Sendrecv(globalIdsToSend[neighborsToId_[neighbor]].data(),
-                 globalIdsToSend[neighborsToId_[neighbor]].size(),
-                 ttk::getMPIType(id), neighbor, ttk::MPIrank_,
-                 globalIdsToReceive[neighborsToId_[neighbor]].data(),
-                 globalIdsToSend[neighborsToId_[neighbor]].size(),
-                 ttk::getMPIType(id), neighbor, neighbor, ttk::MPIcomm_,
-                 MPI_STATUS_IGNORE);
-  }
-  // The global identifiers of ghosts are inserted in the globalVertexId
-  // and globalCellId vectors
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for
-#endif
-  for(int i = 0; i < neighborNumber_; i++) {
-    for(size_t j = 0; j < unmatchedGhosts[i].size(); j++) {
-      globalVertexId.at(unmatchedGhosts[i][j].ghostVertexLocalId)
-        = globalIdsToReceive[i][2 * j];
-      if(globalCellId.at(unmatchedGhosts[i][j].ghostEdgeLocalId) == -1) {
-        globalCellId.at(unmatchedGhosts[i][j].ghostEdgeLocalId)
-          = globalIdsToReceive[i][j * 2 + 1];
-      }
-    }
-  }
-  return 0;
-}
-
-#endif // TTK_ENABLE_MPI
 
 int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
@@ -533,9 +296,10 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                 totalSeeds, ttk::getMPIType(id), 0, ttk::MPIcomm_);
       ttk::SimplexId localId = -1;
       for(int i = 0; i < totalSeeds; i++) {
-        localId = triangulation->getVertexLocalIdIfExists(
-          globalSeedsId->GetTuple1(i));
-        if(localId != -1) {
+        localId = triangulation->getVertexLocalId(globalSeedsId->GetTuple1(i));
+
+        if(localId != -1
+           && triangulation->getVertexRank(localId) == ttk::MPIrank_) {
           inputIdentifiers.push_back(localId);
         }
       }
@@ -623,7 +387,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                       (int)numberOfPointsInSeeds / (threadNumber_ * 100)),
              1));
 #ifdef TTK_ENABLE_MPI
-  std::vector<std::vector<std::vector<ttk::ElementToBeSent>>> toSend(
+  std::vector<std::vector<std::vector<ttk::intgl::ElementToBeSent>>> toSend(
     ttk::MPIsize_);
   this->setNeighbors(triangulation->getNeighborRanks());
   if(ttk::MPIsize_ > 1) {
@@ -683,13 +447,6 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                    (status = this->execute<TTK_TT>(
                       static_cast<TTK_TT *>(triangulation->getData()))));
 
-#ifdef TTK_ENABLE_MPI_TIME
-  elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
-  if(ttk::MPIrank_ == 0) {
-    printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
-  }
-#endif
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(status != 0) {
@@ -706,6 +463,13 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                      globalVertexId, globalCellId, seedIdentifiers,
                      forkIdentifiers, trajectories, localVertexIdentifiers,
                      static_cast<TTK_TT *>(triangulation->getData()))));
+#ifdef TTK_ENABLE_MPI_TIME
+  elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted :" + std::to_string(elapsedTime));
+  }
+#endif
 #endif
   // make the vtk trajectories
   ttkTemplateMacro(

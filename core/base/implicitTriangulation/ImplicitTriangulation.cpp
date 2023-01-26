@@ -3438,40 +3438,13 @@ SimplexId ttk::ImplicitTriangulation::getVertexLocalIdInternal(
   const auto p{this->getVertLocalCoords(gvid)};
   const auto &dims{this->getGridDimensions()};
 
-  // local coordinates to identifier (inverse of vertexToPosition)
-  return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
-}
-
-ttk::SimplexId ttk::ImplicitTriangulation::getVertexLocalIdIfExistsInternal(
-  const ttk::SimplexId gvid) const {
-
-  if(!ttk::isRunningWithMPI()) {
-    return gvid;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(this->metaGrid_ == nullptr) {
-    return -1;
-  }
-  if(gvid
-       > this->metaGrid_->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
-     || gvid < 0) {
-    return -1;
-  }
-#endif // TTK_ENABLE_KAMIKAZE
-
-  const auto p{this->getVertLocalCoords(gvid)};
-  const auto &dims{this->getGridDimensions()};
-
   if(p[0] < 0 || p[1] < 0 || p[2] < 0 || p[0] > dims[0] - 1
      || p[1] > dims[1] - 1 || p[2] > dims[2] - 1) {
     return -1;
   }
-  ttk::SimplexId localId = p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
-  if(this->vertexGhost_[localId] != 0) {
-    return -1;
-  }
-  return localId;
+
+  // local coordinates to identifier (inverse of vertexToPosition)
+  return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
 }
 
 SimplexId ttk::ImplicitTriangulation::getCellGlobalIdInternal(
