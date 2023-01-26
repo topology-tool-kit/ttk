@@ -721,37 +721,5 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
       output)));
 
-  // // Write data to csv
-  std::ofstream myfile;
-  myfile.open("/home/eveleguillou/experiment/IntegralLines/Benchmark/"
-              + std::to_string(ttk::MPIsize_) + "_proc_integraLines_"
-              + std::to_string(ttk::MPIrank_) + ".csv");
-  myfile << "DistanceFromSeed,SeedIdentifier,GlobalPointIds,RankArray\n";
-  vtkDataArray *vertRankArray = output->GetPointData()->GetArray("RankArray");
-  vtkDataArray *seedIdentifier
-    = output->GetPointData()->GetArray("SeedIdentifier");
-  vtkDataArray *globalIdsForCsv
-    = output->GetPointData()->GetArray("GlobalPointIds");
-  vtkDataArray *distance = output->GetPointData()->GetArray("DistanceFromSeed");
-  for(int i = 0; i < vertRankArray->GetNumberOfTuples(); i++) {
-    myfile << std::to_string(distance->GetTuple1(i)) + ","
-                + std::to_string(seedIdentifier->GetTuple1(i)) + ","
-                + std::to_string(globalIdsForCsv->GetTuple1(i)) + ","
-                + std::to_string(vertRankArray->GetTuple1(i)) + "\n";
-  }
-  myfile.close();
-
-  myfile.open("/home/eveleguillou/experiment/IntegralLines/Benchmark/"
-              + std::to_string(ttk::MPIsize_) + "_proc_integraLinesCellData_"
-              + std::to_string(ttk::MPIrank_) + ".csv");
-  myfile << "GlobalCellIds,RankArray\n";
-  vtkDataArray *edgeId = output->GetCellData()->GetArray("GlobalCellIds");
-  vtkDataArray *rankArray = output->GetCellData()->GetArray("RankArray");
-  for(int i = 0; i < edgeId->GetNumberOfTuples(); i++) {
-    myfile << std::to_string(edgeId->GetTuple1(i)) + ","
-                + std::to_string(rankArray->GetTuple1(i)) + "\n";
-  }
-  myfile.close();
-
   return (int)(status == 0);
 }
