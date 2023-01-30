@@ -146,12 +146,7 @@ int ttkIntegralLines::getTrajectories(
           // distanceScalars
           dist->InsertNextTuple1((*distanceFromSeed)[i].at(0));
 #ifdef TTK_ENABLE_MPI
-          if(triangulation->getVertexRank((*trajectory)[i].back())
-             == ttk::MPIrank_) {
-            outputMaskField->InsertNextTuple1(0);
-          } else {
-            outputMaskField->InsertNextTuple1(1);
-          }
+          outputMaskField->InsertNextTuple1(0);
           vtkVertexGlobalIdArray->InsertNextTuple1(
             globalVertexId.at(vertexCounter));
           vertexCounter++;
@@ -196,11 +191,8 @@ int ttkIntegralLines::getTrajectories(
             ids[0] = ids[1];
           }
 #ifdef TTK_ENABLE_MPI
-          if(triangulation->getVertexRank((*trajectory)[i].back())
-             == ttk::MPIrank_) {
-            outputMaskField->SetTuple1(
-              outputMaskField->GetNumberOfComponents() - 1, 0);
-          }
+          outputMaskField->SetTuple1(
+            outputMaskField->GetNumberOfTuples() - 1, 0);
 #endif
         } else {
           break;
