@@ -129,15 +129,15 @@ int ttkIntegralLines::getTrajectories(
   for(int thread = 0; thread < threadNumber; thread++) {
     std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
       trajectory
-      = trajectories[thread].list.begin();
+      = trajectories[thread].list_.begin();
     std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator forkIdentifier
-      = forkIdentifiers[thread].list.begin();
+      = forkIdentifiers[thread].list_.begin();
     std::list<std::array<std::vector<double>, TABULAR_SIZE>>::iterator
       distanceFromSeed
-      = distancesFromSeed[thread].list.begin();
+      = distancesFromSeed[thread].list_.begin();
     std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator seedIdentifier
-      = seedIdentifiers[thread].list.begin();
-    while(trajectory != trajectories[thread].list.end()) {
+      = seedIdentifiers[thread].list_.begin();
+    while(trajectory != trajectories[thread].list_.end()) {
       for(int i = 0; i < TABULAR_SIZE; i++) {
         if((*trajectory)[i].size() > 0) {
           ttk::SimplexId vertex = (*trajectory)[i].at(0);

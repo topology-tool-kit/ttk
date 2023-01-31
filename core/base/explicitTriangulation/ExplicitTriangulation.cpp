@@ -124,7 +124,7 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 
 int ExplicitTriangulation::preconditionVertexRankArray() {
   if(vertexRankArray_.size() == 0) {
-    this->vertexRankArray_.resize(this->vertexNumber_);
+    this->vertexRankArray_.resize(this->vertexNumber_, 0);
     if(ttk::isRunningWithMPI()) {
       ttk::produceRankArray(this->vertexRankArray_, this->vertGid_,
                             this->vertexGhost_, this->vertexNumber_,
@@ -140,7 +140,7 @@ int ExplicitTriangulation::preconditionVertexRankArray() {
 
 int ExplicitTriangulation::preconditionCellRankArray() {
   if(cellRankArray_.size() == 0) {
-    this->cellRankArray_.resize(this->cellNumber_);
+    this->cellRankArray_.resize(this->cellNumber_, 0);
     if(ttk::isRunningWithMPI()) {
       ttk::produceRankArray(this->cellRankArray_, this->cellGid_,
                             this->cellGhost_, this->cellNumber_,

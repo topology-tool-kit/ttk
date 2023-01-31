@@ -918,8 +918,8 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   for(int thread = 0; thread < threadNumber_; thread++) {
     std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
       trajectory
-      = trajectories[thread].list.begin();
-    while(trajectory != trajectories[thread].list.end()) {
+      = trajectories[thread].list_.begin();
+    while(trajectory != trajectories[thread].list_.end()) {
       for(int i = 0; i < TABULAR_SIZE; i++) {
         if((*trajectory)[i].size() > 0) {
           intervalSize = static_cast<ttk::SimplexId>((*trajectory)[i].size());
@@ -976,16 +976,16 @@ int ttk::IntegralLines::getGlobalIdentifiers(
     neighborNumber_);
   for(int thread = 0; thread < threadNumber_; thread++) {
     std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator forkIdentifier
-      = forkIdentifiers[thread].list.begin();
+      = forkIdentifiers[thread].list_.begin();
     std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
       localVertexIdentifier
-      = localVertexIdentifiers[thread].list.begin();
+      = localVertexIdentifiers[thread].list_.begin();
     std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
       trajectory
-      = trajectories[thread].list.begin();
+      = trajectories[thread].list_.begin();
     std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator seedIdentifier
-      = seedIdentifiers[thread].list.begin();
-    while(trajectory != trajectories[thread].list.end()) {
+      = seedIdentifiers[thread].list_.begin();
+    while(trajectory != trajectories[thread].list_.end()) {
       for(int i = 0; i < TABULAR_SIZE; i++) {
         if((*trajectory)[i].size() > 0) {
           if(triangulation->getVertexRank((*trajectory)[i].at(0))
