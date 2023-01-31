@@ -55,7 +55,6 @@ private:
   bool SelectFieldsWithRegexpLow{false};
 
 public:
-
   // Variable to choose which columns to use. Two different inputs:
   // the low one and the high one, hence duplicate variables.
   vtkSetMacro(SelectFieldsWithRegexpHigh, bool);
