@@ -57,11 +57,15 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation) {
+#ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
       return 1;
     } else {
+#endif
       return 0;
+#ifdef TTK_ENABLE_MPI
     }
+#endif
   }
 
   if(VertexBoundary)

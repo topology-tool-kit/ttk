@@ -52,11 +52,15 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
   if(!triangulation) {
+#ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
       return 1;
     } else {
+#endif
       return 0;
+#ifdef TTK_ENABLE_MPI
     }
+#endif
   }
   this->preconditionTriangulation(triangulation);
 

@@ -101,12 +101,15 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
   if(inputArray == nullptr) {
+#ifdef TTK_ENABLE_MPI
     if(ttk::isRunningWithMPI()) {
       return 1;
     } else {
-      this->printErr("No such input scalar field");
+#endif
       return 0;
+#ifdef TTK_ENABLE_MPI
     }
+#endif
   }
   vtkSmartPointer<vtkDataArray> outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
