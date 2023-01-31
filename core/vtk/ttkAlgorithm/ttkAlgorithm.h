@@ -209,6 +209,17 @@ protected:
   ttkAlgorithm();
   ~ttkAlgorithm() override;
 
+#ifdef TTK_ENABLE_MPI
+  /**
+   * @brief Creates a new communicator if one of the processes doesn't contain
+   * any point or cells. In this case, the RankArray is update for vertices and
+   * cells to match the new ranks.
+   *
+   * @param input input data set
+   * @return int 0 if input contains no points or no cells
+   */
+  int updateMPICommunicator(vtkDataSet *input);
+#endif
   /**
    * This method is called in GetTriangulation, after the triangulation as been
    * created. It verifies that ghost cells and points are present and if they

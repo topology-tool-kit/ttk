@@ -48,8 +48,13 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
 
   Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  if(!triangulation)
-    return 0;
+  if(!triangulation) {
+    if(ttk::isRunningWithMPI()) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
 
   this->preconditionTriangulation(triangulation);
 

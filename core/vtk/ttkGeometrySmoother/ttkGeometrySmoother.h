@@ -85,4 +85,7 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+#ifdef TTK_ENABLE_MPI
+  void updateDebugPrefix() override;
+#endif
 };

@@ -370,6 +370,17 @@ namespace ttk {
 #endif
     }
 
+#ifdef TTK_ENABLE_MPI
+    /**
+     * This method should be overloaded in all classes that have MPI support.
+     *
+     */
+    inline virtual void updateDebugPrefix() {
+      this->printWrn("The method updateDebugPrefix has not been implemented in "
+                     "the current class");
+    };
+#endif
+
   protected:
     mutable int debugLevel_;
 

@@ -52,9 +52,12 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::Timer tm{};
 
   if(input == nullptr || output == nullptr) {
-    return 0;
+    if(ttk::isRunningWithMPI()) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
-
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();

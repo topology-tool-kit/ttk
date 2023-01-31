@@ -242,6 +242,15 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
   auto outputGradientGlyphs = vtkPolyData::GetData(outputVector, 1);
 
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(!triangulation) {
+    if(ttk::isRunningWithMPI()) {
+      return 1;
+    } else {
+      this->printErr("Triangulation is NULL");
+      return 0;
+    }
+  }
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
     this->printErr("Input pointer is NULL.");
@@ -257,11 +266,6 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(triangulation == nullptr) {
-    this->printErr("Triangulation is NULL");
-    return 0;
-  }
   this->preconditionTriangulation(triangulation);
 
   const auto inputScalars = this->GetInputArrayToProcess(0, input);

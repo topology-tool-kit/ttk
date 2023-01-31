@@ -1,3 +1,4 @@
+#include "MPIUtils.h"
 #include <ttkGeometrySmoother.h>
 
 #include <ttkUtils.h>
@@ -17,6 +18,12 @@ ttkGeometrySmoother::ttkGeometrySmoother() {
 }
 
 ttkGeometrySmoother::~ttkGeometrySmoother() = default;
+
+#ifdef TTK_ENABLE_MPI
+void ttkGeometrySmoother::updateDebugPrefix() {
+  this->setDebugMsgPrefix("GeometrySmoother");
+}
+#endif
 
 int ttkGeometrySmoother::FillInputPortInformation(int port,
                                                   vtkInformation *info) {
@@ -44,8 +51,13 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputPointSet = vtkPointSet::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
-  if(!triangulation)
-    return 0;
+  if(!triangulation) {
+    if(ttk::isRunningWithMPI()) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
   this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(

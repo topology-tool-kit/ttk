@@ -24,6 +24,10 @@ namespace ttk {
   public:
     ArrayPreconditioning();
 
+#ifdef TTK_ENABLE_MPI
+    void updateDebugPrefix() override;
+#endif
+
     template <typename DT, typename GVGID, typename GVR>
     int processScalarArray(ttk::SimplexId *orderArray,
                            const DT *scalarArray,

@@ -48,6 +48,9 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       printErr(
         "MPI is not supported for this filter, the results will be incorrect");
     }
+    if(this->updateMPICommunicator(dataSet)) {
+      return nullptr;
+    }
     this->MPIGhostPipelinePreconditioning(dataSet);
   }
 #endif // TTK_ENABLE_MPI
@@ -430,6 +433,41 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 }
 
 #ifdef TTK_ENABLE_MPI
+
+int ttkAlgorithm::updateMPICommunicator(vtkDataSet *input) {
+  int isEmpty
+    = input->GetNumberOfCells() == 0 || input->GetNumberOfPoints() == 0;
+  int oldSize = ttk::MPIsize_;
+  int oldRank = ttk::MPIrank_;
+  MPI_Comm_split(ttk::MPIcomm_, isEmpty, ttk::MPIrank_, &ttk::MPIcomm_);
+  MPI_Comm_rank(ttk::MPIcomm_, &ttk::MPIrank_);
+  MPI_Comm_size(ttk::MPIcomm_, &ttk::MPIsize_);
+  if(oldSize != ttk::MPIsize_) {
+    std::vector<int> newToOldRanks(ttk::MPIsize_);
+    MPI_Allgather(&oldRank, 1, MPI_INTEGER, newToOldRanks.data(), 1,
+                  MPI_INTEGER, ttk::MPIcomm_);
+    std::map<int, int> oldToNewRanks;
+    for(int i = 0; i < ttk::MPIsize_; i++) {
+      oldToNewRanks[newToOldRanks[i]] = i;
+    }
+    int *vertexRankArray
+      = ttkUtils::GetPointer<int>(input->GetPointData()->GetArray("RankArray"));
+    if(vertexRankArray != nullptr) {
+      for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+        vertexRankArray[i] = oldToNewRanks[vertexRankArray[i]];
+      }
+    }
+    int *cellRankArray
+      = ttkUtils::GetPointer<int>(input->GetCellData()->GetArray("RankArray"));
+    if(cellRankArray != nullptr) {
+      for(int i = 0; i < input->GetNumberOfCells(); i++) {
+        cellRankArray[i] = oldToNewRanks[cellRankArray[i]];
+      }
+    }
+    this->updateDebugPrefix();
+  }
+  return isEmpty;
+}
 
 bool ttkAlgorithm::checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                                          ttk::SimplexId simplexNumber,

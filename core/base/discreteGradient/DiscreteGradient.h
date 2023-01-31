@@ -94,7 +94,11 @@ namespace ttk {
         hasMPISupport_ = true;
 #endif
       }
-
+#ifdef TTK_ENABLE_MPI
+      inline void updateDebugPrefix() override {
+        this->setDebugMsgPrefix("DiscreteGradient");
+      }
+#endif
       /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.

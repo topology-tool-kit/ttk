@@ -47,7 +47,9 @@ namespace ttk {
   public:
     ScalarFieldSmoother();
     ~ScalarFieldSmoother() override;
-
+#ifdef TTK_ENABLE_MPI
+    void updateDebugPrefix() override;
+#endif
     inline void setDimensionNumber(const int &dimensionNumber) {
       dimensionNumber_ = dimensionNumber;
     }

@@ -25,7 +25,11 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
   hasMPISupport_ = true;
 #endif
 }
-
+#ifdef TTK_ENABLE_MPI
+void ttkScalarFieldNormalizer::updateDebugPrefix() {
+  this->setDebugMsgPrefix("ScalarFieldNormalizer");
+}
+#endif
 ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() = default;
 
 int ttkScalarFieldNormalizer::FillInputPortInformation(int port,
@@ -97,10 +101,13 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
   if(inputArray == nullptr) {
-    this->printErr("No such input scalar field");
-    return 0;
+    if(ttk::isRunningWithMPI()) {
+      return 1;
+    } else {
+      this->printErr("No such input scalar field");
+      return 0;
+    }
   }
-
   vtkSmartPointer<vtkDataArray> outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
   outputArray->SetName(inputArray->GetName());
