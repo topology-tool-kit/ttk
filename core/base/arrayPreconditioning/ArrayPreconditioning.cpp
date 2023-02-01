@@ -7,9 +7,3 @@ ttk::ArrayPreconditioning::ArrayPreconditioning() {
   hasMPISupport_ = true;
 #endif
 }
-
-#ifdef TTK_ENABLE_MPI
-void ttk::ArrayPreconditioning::updateDebugPrefix() {
-  this->setDebugMsgPrefix("ArrayPreconditioning");
-}
-#endif

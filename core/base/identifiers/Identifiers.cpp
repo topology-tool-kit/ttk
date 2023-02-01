@@ -7,8 +7,3 @@ ttk::Identifiers::Identifiers() {
   hasMPISupport_ = true;
 #endif
 }
-#ifdef TTK_ENABLE_MPI
-void ttk::Identifiers::updateDebugPrefix() {
-  this->setDebugMsgPrefix("Identifiers");
-}
-#endif

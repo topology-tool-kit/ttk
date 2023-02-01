@@ -464,8 +464,8 @@ int ttkAlgorithm::updateMPICommunicator(vtkDataSet *input) {
         cellRankArray[i] = oldToNewRanks[cellRankArray[i]];
       }
     }
-    this->updateDebugPrefix();
   }
+  this->updateDebugPrefix();
   return isEmpty;
 }
 

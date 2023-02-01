@@ -375,9 +375,12 @@ namespace ttk {
      * This method should be overloaded in all classes that have MPI support.
      *
      */
-    inline virtual void updateDebugPrefix() {
-      this->printWrn("The method updateDebugPrefix has not been implemented in "
-                     "the current class");
+    inline void updateDebugPrefix() {
+      this->debugMsgPrefix_ = this->debugMsgPrefix_.length() > 0
+                                ? this->debugMsgPrefix_.substr(
+                                    0, this->debugMsgPrefix_.length() - 3)
+                                    + std::to_string(MPIrank_) + "] "
+                                : "";
     };
 #endif
 

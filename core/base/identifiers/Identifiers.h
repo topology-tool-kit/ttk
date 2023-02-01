@@ -48,9 +48,7 @@ namespace ttk {
     Identifiers();
 
     ~Identifiers() override = default;
-#ifdef TTK_ENABLE_MPI
-    void updateDebugPrefix() override;
-#endif
+
   protected:
     ttk::SimplexId vertexNumber_{};
     ttk::SimplexId cellNumber_{};

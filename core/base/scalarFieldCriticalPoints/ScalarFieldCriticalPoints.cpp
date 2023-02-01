@@ -6,11 +6,7 @@ ttk::ScalarFieldCriticalPoints::ScalarFieldCriticalPoints() {
   hasMPISupport_ = true;
 #endif
 }
-#ifdef TTK_ENABLE_MPI
-void ttk::ScalarFieldCriticalPoints::updateDebugPrefix() {
-  this->setDebugMsgPrefix("ScalarFieldCriticalPoints");
-}
-#endif
+
 char ttk::ScalarFieldCriticalPoints::getCriticalType(
   const SimplexId &vertexId,
   const SimplexId *const offsets,

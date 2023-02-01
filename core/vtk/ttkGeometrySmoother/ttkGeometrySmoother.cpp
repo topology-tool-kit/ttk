@@ -19,12 +19,6 @@ ttkGeometrySmoother::ttkGeometrySmoother() {
 
 ttkGeometrySmoother::~ttkGeometrySmoother() = default;
 
-#ifdef TTK_ENABLE_MPI
-void ttkGeometrySmoother::updateDebugPrefix() {
-  this->setDebugMsgPrefix("GeometrySmoother");
-}
-#endif
-
 int ttkGeometrySmoother::FillInputPortInformation(int port,
                                                   vtkInformation *info) {
   if(port == 0) {

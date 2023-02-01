@@ -61,9 +61,6 @@ public:
 
   vtkTypeMacro(ttkScalarFieldNormalizer, ttkAlgorithm);
 
-#ifdef TTK_ENABLE_MPI
-  void updateDebugPrefix() override;
-#endif
 protected:
   ttkScalarFieldNormalizer();
 

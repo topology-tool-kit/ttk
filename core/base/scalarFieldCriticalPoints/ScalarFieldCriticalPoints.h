@@ -58,9 +58,7 @@ namespace ttk {
     ScalarFieldCriticalPoints();
 
     enum class BACKEND { GENERIC = 0, PROGRESSIVE_TOPOLOGY = 1 };
-#ifdef TTK_ENABLE_MPI
-    void updateDebugPrefix() override;
-#endif
+
     /**
      * Execute the package.
      * \param offsets Pointer to order field on vertices
