@@ -1,4 +1,3 @@
-#include "MPIUtils.h"
 #include <ttkGeometrySmoother.h>
 
 #include <ttkUtils.h>
