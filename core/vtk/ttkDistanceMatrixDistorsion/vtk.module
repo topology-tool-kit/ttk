@@ -1,0 +1,4 @@
+NAME
+  ttkDistanceMatrixDistorsion
+DEPENDS
+  ttkAlgorithm
