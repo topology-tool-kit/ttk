@@ -709,7 +709,8 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   bool pointValidity{false};
   bool cellValidity{false};
   if((triangulation != nullptr
-      && triangulation->getType() == ttk::Triangulation::Type::EXPLICIT)
+      && (triangulation->getType() == ttk::Triangulation::Type::EXPLICIT
+          || triangulation->getType() == ttk::Triangulation::Type::COMPACT))
      || triangulation == nullptr) {
     if(globalPointIds != nullptr) {
       unsigned char *ghostPoints = ttkUtils::GetPointer<unsigned char>(
@@ -736,7 +737,8 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
   // If the global ids are not valid, they are computed again
   if(!pointValidity || !cellValidity) {
     if(triangulation != nullptr) {
-      if(triangulation->getType() == ttk::Triangulation::Type::EXPLICIT) {
+      if(triangulation->getType() == ttk::Triangulation::Type::EXPLICIT
+         || triangulation->getType() == ttk::Triangulation::Type::COMPACT) {
         this->GenerateGlobalIds(
           input, triangulation->getVertexGlobalIdMap(), neighborRanks);
       }

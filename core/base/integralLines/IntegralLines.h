@@ -202,15 +202,16 @@ namespace ttk {
     int getGlobalIdentifiers(
       std::vector<ttk::SimplexId> &globalVertexId,
       std::vector<ttk::SimplexId> &globalCellId,
-      std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
+      const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
         &seedIdentifiers,
-      std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
+      const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
         &forkIdentifiers,
-      std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
-                                       TABULAR_SIZE>> &trajectories,
-      std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
-                                       TABULAR_SIZE>> &localVertexIdentifiers,
-      triangulationType *triangulation);
+      const std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
+                                             TABULAR_SIZE>> &trajectories,
+      const std::vector<
+        ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
+        &localVertexIdentifiers,
+      const triangulationType *triangulation);
 
     /**
      * @brief Sorts ghosts and exchanges their global identifiers between
@@ -897,15 +898,15 @@ template <typename triangulationType>
 int ttk::IntegralLines::getGlobalIdentifiers(
   std::vector<ttk::SimplexId> &globalVertexId,
   std::vector<ttk::SimplexId> &globalCellId,
-  std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
+  const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
     &seedIdentifiers,
-  std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
+  const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
     &forkIdentifiers,
-  std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-    &trajectories,
-  std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-    &localVertexIdentifiers,
-  triangulationType *triangulation) {
+  const std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
+                                         TABULAR_SIZE>> &trajectories,
+  const std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
+                                         TABULAR_SIZE>> &localVertexIdentifiers,
+  const triangulationType *triangulation) {
   ttk::SimplexId outputVertexNumber = 0;
   ttk::SimplexId outputCellNumber = 0;
   ttk::SimplexId realVertexNumber = 0;
@@ -916,8 +917,8 @@ int ttk::IntegralLines::getGlobalIdentifiers(
 #pragma omp parallel for reduction(+:outputVertexNumber,outputCellNumber,realCellNumber,realVertexNumber) schedule(static,1) private(intervalSize)
 #endif
   for(int thread = 0; thread < threadNumber_; thread++) {
-    std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
-      trajectory
+    std::list<std::array<std::vector<ttk::SimplexId>,
+                         TABULAR_SIZE>>::const_iterator trajectory
       = trajectories[thread].list_.begin();
     while(trajectory != trajectories[thread].list_.end()) {
       for(int i = 0; i < TABULAR_SIZE; i++) {
@@ -975,15 +976,17 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   std::vector<std::vector<ttk::SimplexId>> unmatchedGhostsEdgeLocalId(
     neighborNumber_);
   for(int thread = 0; thread < threadNumber_; thread++) {
-    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator forkIdentifier
+    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::const_iterator
+      forkIdentifier
       = forkIdentifiers[thread].list_.begin();
-    std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
-      localVertexIdentifier
+    std::list<std::array<std::vector<ttk::SimplexId>,
+                         TABULAR_SIZE>>::const_iterator localVertexIdentifier
       = localVertexIdentifiers[thread].list_.begin();
-    std::list<std::array<std::vector<ttk::SimplexId>, TABULAR_SIZE>>::iterator
-      trajectory
+    std::list<std::array<std::vector<ttk::SimplexId>,
+                         TABULAR_SIZE>>::const_iterator trajectory
       = trajectories[thread].list_.begin();
-    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::iterator seedIdentifier
+    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::const_iterator
+      seedIdentifier
       = seedIdentifiers[thread].list_.begin();
     while(trajectory != trajectories[thread].list_.end()) {
       for(int i = 0; i < TABULAR_SIZE; i++) {
