@@ -571,7 +571,7 @@ jobs:
       run: |
         set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
-        pvpython.exe python/resample.py ctBones.vti 128 128 128 ctBones.vti
+        pvpython.exe python\resample.py ctBones.vti 128 128 128 ctBones.vti
 
     - name: Run ttk-data Python scripts
       shell: cmd
