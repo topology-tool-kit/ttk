@@ -69,7 +69,12 @@ namespace ttk {
     getrusage(RUSAGE_SELF, &use);
     ru_maxrss = static_cast<int>(use.ru_maxrss);
 #ifdef TTK_ENABLE_MPI
-    MPI_Reduce(&ru_maxrss, &max_use, 1, MPI_INTEGER, MPI_MAX, 0, ttk::MPIcomm_);
+    if(ttk::hasInitializedMPI()) {
+      MPI_Reduce(
+        &ru_maxrss, &max_use, 1, MPI_INTEGER, MPI_MAX, 0, ttk::MPIcomm_);
+    } else {
+      max_use = ru_maxrss;
+    }
 #else
     max_use = ru_maxrss;
 #endif // TTK_ENABLE_MPI
