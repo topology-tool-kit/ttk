@@ -540,8 +540,9 @@ jobs:
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd %GITHUB_WORKSPACE%\examples\python
-        python example.py ..\data\inputData.vtu
+        pvpython.exe example.py ..\data\inputData.vtu
 
     - name: Test pvpython example
       shell: cmd
