@@ -572,19 +572,23 @@ jobs:
         cd ttk-data
         pvpython.exe python\resample.py ctBones.vti 128 128 128 ctBones.vti
 
+    - name: Temporary removal of python-dependent examples
+      shell: bash
+      run: |
+        cd ttk-data
+        rm states/1manifoldLearning.pvsm
+        rm states/clusteringKelvinHelmholtzInstabilities.pvsm
+        rm states/karhunenLoveDigits64Dimensions.pvsm
+        rm states/mergeTreeClustering.pvsm
+        rm states/persistentGenerators_householdAnalysis.pvsm
+        rm states/persistentGenerators_periodicPicture.pvsm
+
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
-        # temporary removal of python dependent examples
-        del states\1manifoldLearning.pvsm
-        del states\clusteringKelvinHelmholtzInstabilities.pvsm
-        del states\karhunenLoveDigits64Dimensions.pvsm
-        del states\mergeTreeClustering.pvsm
-        del states\persistentGenerators_householdAnalysis.pvsm
-        del states\persistentGenerators_periodicPicture.pvsm
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
