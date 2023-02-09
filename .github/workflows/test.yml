@@ -566,17 +566,12 @@ jobs:
       name: Checkout ttk-data
 
     - name: Resample large datasets
-      shell: python
+      shell: cmd
       working-directory: ./ttk-data
       run: |
-        from paraview import simple
-        for ds in ["ctBones.vti"]:
-            vti = simple.XMLImageDataReader(FileName=ds)
-            rsi = simple.ResampleToImage(Input=vti)
-            rsi.SamplingDimensions = [128, 128, 128]
-            simple.SaveData(ds, rsi)
-      env:
-        PYTHONPATH: ${{ env.PV_DIR }}\bin\Lib\site-packages
+        set PYTHONPATH=%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        pvpython.exe python/resample.py ctBones.vti 128 128 128 ctBones.vti
 
     - name: Run ttk-data Python scripts
       shell: cmd
@@ -584,7 +579,7 @@ jobs:
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
-        python -u python\run.py
+        pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
