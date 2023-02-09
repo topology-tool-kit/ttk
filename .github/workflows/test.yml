@@ -539,7 +539,7 @@ jobs:
     - name: Test Python example
       shell: cmd
       run: |
-        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd %GITHUB_WORKSPACE%\examples\python
         pvpython.exe example.py ..\data\inputData.vtu
@@ -568,7 +568,7 @@ jobs:
     - name: Resample large datasets
       shell: cmd
       run: |
-        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         pvpython.exe python\resample.py ctBones.vti 128 128 128 ctBones.vti
