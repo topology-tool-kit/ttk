@@ -63,8 +63,9 @@ namespace ttk {
   }
 
   float OsCall::getTotalMemoryUsage() {
-    int ru_maxrss, max_use{0};
+    int max_use{0};
 #ifdef __linux__
+    int ru_maxrss;
     struct rusage use;
     getrusage(RUSAGE_SELF, &use);
     ru_maxrss = static_cast<int>(use.ru_maxrss);
