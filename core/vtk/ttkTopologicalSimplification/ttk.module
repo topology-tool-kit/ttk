@@ -6,5 +6,4 @@ HEADERS
   ttkTopologicalSimplification.h
 DEPENDS
   topologicalSimplification
-  localizedTopologicalSimplification
   ttkAlgorithm
