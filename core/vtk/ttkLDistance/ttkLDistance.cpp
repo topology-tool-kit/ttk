@@ -1,5 +1,6 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -90,6 +91,13 @@ int ttkLDistance::RequestData(vtkInformation *ttkNotUsed(request),
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
       DistanceType, numberOfPoints));
   }
+
+  vtkNew<vtkDoubleArray> meanDistanceArray{};
+  const std::string arrayName = "L" + DistanceType + "-distance";
+  meanDistanceArray->SetName(arrayName.c_str());
+  meanDistanceArray->SetNumberOfTuples(1);
+  meanDistanceArray->SetTuple1(0, this->getResult());
+  output->GetFieldData()->AddArray(meanDistanceArray);
 
   return 1;
 }
