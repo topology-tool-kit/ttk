@@ -25,21 +25,31 @@
 #include <iterator>
 #include <limits>
 #include <numeric>
+#include <string>
 #include <unordered_set>
 
-#define TABULAR_SIZE 50
+#define INTEGRAL_LINE_TABULAR_SIZE 50
 #ifdef TTK_ENABLE_MPI
-#define IS_ELEMENT_TO_PROCESS 0
-#define IS_MESSAGE_SIZE 1
+#define INTEGRAL_LINE_IS_ELEMENT_TO_PROCESS 0
+#define INTEGRAL_LINE_IS_MESSAGE_SIZE 1
 #endif
 
 namespace ttk {
   namespace intgl {
 
+    /**
+     * @brief Struct containing the data of an integral line.
+     * trajectories: vector of identifiers of each vertex the integral line
+     * passes on distanceFromSeed: distance of each vertex for the integral line
+     * from the seed localVertexIdentifiers: vector of local vertex ids. It
+     * represents the number of the vertex in the integral line. seedIdentifier:
+     * identifier of the seed of the integral line forkIdentifier: identifier of
+     * the last fork the integral line encountered
+     */
     struct IntegralLine {
-      std::vector<ttk::SimplexId> *trajectory;
-      std::vector<double> *distanceFromSeed;
-      std::vector<ttk::SimplexId> *localVertexIdentifier;
+      std::vector<ttk::SimplexId> trajectory;
+      std::vector<double> distanceFromSeed;
+      std::vector<ttk::SimplexId> localVertexIdentifier;
       ttk::SimplexId seedIdentifier;
       ttk::SimplexId forkIdentifier = -1;
     };
@@ -121,7 +131,7 @@ namespace ttk {
      */
     template <class triangulationType = ttk::AbstractTriangulation>
     void computeIntegralLine(const triangulationType *triangulation,
-                             ttk::intgl::IntegralLine integralLine,
+                             ttk::intgl::IntegralLine *integralLine,
                              const ttk::SimplexId *offsets) const;
 
     /**
@@ -136,7 +146,7 @@ namespace ttk {
      */
     template <class triangulationType>
     void createTask(const triangulationType *triangulation,
-                    std::vector<ttk::intgl::IntegralLine> &chunkIntegralLine,
+                    std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
                     const ttk::SimplexId *offsets,
                     int nbElement) const;
     /**
@@ -156,7 +166,7 @@ namespace ttk {
     template <class triangulationType>
     void
       prepareForTask(const triangulationType *triangulation,
-                     std::vector<ttk::intgl::IntegralLine> &chunkIntegralLine,
+                     std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
                      int startingIndex,
                      int nbElement,
                      std::vector<SimplexId> *seeds) const;
@@ -173,6 +183,15 @@ namespace ttk {
       direction_ = direction;
     }
 
+    /**
+     * @brief Finds the vertex of highest or lowest offsets (depending on the
+     * direction of the integral line) in the component vector.
+     *
+     * @param vnext identifier of the vertex
+     * @param fnext offset of the vertex
+     * @param component list of identifiers to do the search in
+     * @param offsets Order array of the scalar array
+     */
     void findNextVertex(ttk::SimplexId &vnext,
                         ttk::SimplexId &fnext,
                         std::vector<ttk::SimplexId> &component,
@@ -186,15 +205,7 @@ namespace ttk {
      * @tparam triangulationType
      * @param globalVertexId vector of global identifiers for vertices
      * @param globalCellId vector of global identifiers for cells
-     * @param seedIdentifiers linked list of identifiers of seed, one for each
-     * integral line
-     * @param forkIdentifiers linked list of identifiers of forks, one for each
-     * integral line
-     * @param trajectories linked list of identifiers of forks, one for each
-     * integral line
-     * @param localVertexIdentifiers linked list of identifiers, one for each
-     * vertex of an integral lines. It represents the number of the vertex in
-     * the integral line.
+     * @param integralLines linked list of integralLines
      * @param triangulation Triangulation
      * @return int
      */
@@ -202,15 +213,9 @@ namespace ttk {
     int getGlobalIdentifiers(
       std::vector<ttk::SimplexId> &globalVertexId,
       std::vector<ttk::SimplexId> &globalCellId,
-      const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-        &seedIdentifiers,
-      const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-        &forkIdentifiers,
-      const std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
-                                             TABULAR_SIZE>> &trajectories,
-      const std::vector<
-        ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-        &localVertexIdentifiers,
+      const std::vector<ttk::ArrayLinkedList<ttk::intgl::IntegralLine,
+                                             INTEGRAL_LINE_TABULAR_SIZE>>
+        &integralLines,
       const triangulationType *triangulation);
 
     /**
@@ -223,10 +228,11 @@ namespace ttk {
      * @param globalCellId vector of global identifiers for cells
      * @return int 0 for success
      */
-    int exchangeGhosts(std::vector<std::vector<ttk::intgl::GhostElementsToSort>>
-                         &unmatchedGhosts,
-                       std::vector<ttk::SimplexId> &globalVertexId,
-                       std::vector<ttk::SimplexId> &globalCellId);
+    int exchangeGhosts(
+      const std::vector<std::vector<ttk::intgl::GhostElementsToSort>>
+        &unmatchedGhosts,
+      std::vector<ttk::SimplexId> &globalVertexId,
+      std::vector<ttk::SimplexId> &globalCellId);
 
     /**
      * @brief Checks if an integral line should be continued on another process
@@ -241,7 +247,7 @@ namespace ttk {
      */
     template <class triangulationType>
     void storeToSendIfNecessary(const triangulationType *triangulation,
-                                ttk::intgl::IntegralLine integralLine,
+                                ttk::intgl::IntegralLine *integralLine,
                                 bool &isMax) const;
 
     /**
@@ -263,7 +269,7 @@ namespace ttk {
     void
       receiveElement(const triangulationType *triangulation,
                      intgl::ElementToBeSent &element,
-                     std::vector<ttk::intgl::IntegralLine> &chunkIntegralLine,
+                     std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
                      int &index,
                      int taskSize,
                      const ttk::SimplexId *offsets);
@@ -312,18 +318,12 @@ namespace ttk {
     }
 #endif
 
-    inline void setOutputLocalVertexIdentifiers(
-      std::vector<ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-        *localVertexIdentifiers) {
-      outputLocalVertexIdentifiers_ = localVertexIdentifiers;
-    }
-
     int preconditionTriangulation(ttk::AbstractTriangulation *triangulation) {
       int status = triangulation->preconditionVertexNeighbors();
       // For critical points computation
       status += triangulation->preconditionVertexStars();
       status += triangulation->preconditionBoundaryVertices();
-      this->scalarFieldCriticalPoints_.setDomainDimension(2);
+      this->scalarFieldCriticalPoints_.preconditionTriangulation(triangulation);
       return status;
     }
 
@@ -348,28 +348,11 @@ namespace ttk {
       vertexIdentifierScalarField_ = data;
     }
 
-    inline void setOutputTrajectories(
-      std::vector<ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-        *trajectories) {
-      outputTrajectories_ = trajectories;
-    }
-
-    inline void setOutputDistancesFromSeed(
-      std::vector<ArrayLinkedList<std::vector<double>, TABULAR_SIZE>>
-        *distancesFromSeed) {
-      outputDistancesFromSeed_ = distancesFromSeed;
-    }
-
-    inline void setOutputSeedIdentifiers(
-      std::vector<ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-        *seedIdentifiers) {
-      outputSeedIdentifiers_ = seedIdentifiers;
-    }
-
-    inline void setOutputForkIdentifiers(
-      std::vector<ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-        *forkIdentifiers) {
-      outputForkIdentifiers_ = forkIdentifiers;
+    inline void setOutputIntegralLines(
+      std::vector<ttk::ArrayLinkedList<ttk::intgl::IntegralLine,
+                                       INTEGRAL_LINE_TABULAR_SIZE>>
+        *integralLines) {
+      this->outputIntegralLines_ = integralLines;
     }
 
     inline void setChunkSize(int size) {
@@ -388,17 +371,11 @@ namespace ttk {
     void *inputScalarField_;
     const ttk::SimplexId *inputOffsets_;
     std::vector<ttk::SimplexId> *vertexIdentifierScalarField_;
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      *outputTrajectories_;
-    std::vector<ttk::ArrayLinkedList<std::vector<double>, TABULAR_SIZE>>
-      *outputDistancesFromSeed_;
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      *outputSeedIdentifiers_;
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      *outputForkIdentifiers_;
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      *outputLocalVertexIdentifiers_;
+    std::vector<ttk::ArrayLinkedList<ttk::intgl::IntegralLine,
+                                     INTEGRAL_LINE_TABULAR_SIZE>>
+      *outputIntegralLines_;
     ttk::ScalarFieldCriticalPoints scalarFieldCriticalPoints_;
+    bool EnableForking{false};
 
 #ifdef TTK_ENABLE_MPI
     std::vector<std::vector<std::vector<intgl::ElementToBeSent>>> *toSend_{
@@ -419,39 +396,31 @@ template <class triangulationType>
 void ttk::IntegralLines::receiveElement(
   const triangulationType *triangulation,
   intgl::ElementToBeSent &element,
-  std::vector<ttk::intgl::IntegralLine> &chunkIntegralLine,
+  std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
   int &index,
   int taskSize,
   const ttk::SimplexId *offsets) {
-  ttk::intgl::IntegralLine integralLine = ttk::intgl::IntegralLine{
-    nullptr, nullptr, nullptr, element.SeedIdentifier, element.ForkIdentifier};
+
   // Create integral line object on this process
   int threadNum{0};
 #if TTK_ENABLE_OPENMP
   threadNum = omp_get_thread_num();
 #endif
-  integralLine.trajectory = outputTrajectories_->at(threadNum).addArrayElement(
-    std::vector<ttk::SimplexId>(
-      {triangulation->getVertexLocalId(element.Id1),
-       triangulation->getVertexLocalId(element.Id2)}));
-  integralLine.distanceFromSeed
-    = outputDistancesFromSeed_->at(threadNum).addArrayElement(
-      std::vector<double>(
-        {element.DistanceFromSeed1, element.DistanceFromSeed2}));
-  integralLine.localVertexIdentifier
-    = outputLocalVertexIdentifiers_->at(threadNum).addArrayElement(
-      std::vector<ttk::SimplexId>(
-        {element.LocalVertexIdentifier1, element.LocalVertexIdentifier2}));
-  outputSeedIdentifiers_->at(threadNum).addArrayElement(element.SeedIdentifier);
-  outputForkIdentifiers_->at(threadNum).addArrayElement(element.ForkIdentifier);
+
+  ttk::intgl::IntegralLine *integralLine
+    = outputIntegralLines_->at(threadNum).addArrayElement(
+      ttk::intgl::IntegralLine{
+        std::vector<ttk::SimplexId>(
+          {triangulation->getVertexLocalId(element.Id1),
+           triangulation->getVertexLocalId(element.Id2)}),
+        std::vector<double>(
+          {element.DistanceFromSeed1, element.DistanceFromSeed2}),
+        std::vector<ttk::SimplexId>(
+          {element.LocalVertexIdentifier1, element.LocalVertexIdentifier2}),
+        element.SeedIdentifier, element.ForkIdentifier});
 
   // Add to chunks for task granularity
-  chunkIntegralLine[index].trajectory = integralLine.trajectory;
-  chunkIntegralLine[index].seedIdentifier = integralLine.seedIdentifier;
-  chunkIntegralLine[index].forkIdentifier = integralLine.forkIdentifier;
-  chunkIntegralLine[index].distanceFromSeed = integralLine.distanceFromSeed;
-  chunkIntegralLine[index].localVertexIdentifier
-    = integralLine.localVertexIdentifier;
+  chunkIntegralLine[index] = integralLine;
 
   // Start task if necessary
   if(index == taskSize - 1) {
@@ -466,14 +435,14 @@ void ttk::IntegralLines::receiveElement(
 template <class triangulationType>
 void ttk::IntegralLines::storeToSendIfNecessary(
   const triangulationType *triangulation,
-  ttk::intgl::IntegralLine integralLine,
+  ttk::intgl::IntegralLine *integralLine,
   bool &isMax) const {
 #ifdef TTK_ENABLE_MPI
   if(ttk::isRunningWithMPI()) {
-    int size = integralLine.trajectory->size();
+    int size = integralLine->trajectory.size();
     if(size > 1) {
       int rankArray
-        = triangulation->getVertexRank(integralLine.trajectory->back());
+        = triangulation->getVertexRank(integralLine->trajectory.back());
       if(rankArray != ttk::MPIrank_) {
         intgl::ElementToBeSent element
           = intgl::ElementToBeSent{-1,
@@ -482,18 +451,18 @@ void ttk::IntegralLines::storeToSendIfNecessary(
                                    0,
                                    -1,
                                    -1,
-                                   integralLine.seedIdentifier,
-                                   integralLine.forkIdentifier};
+                                   integralLine->seedIdentifier,
+                                   integralLine->forkIdentifier};
         element.Id2
-          = triangulation->getVertexGlobalId(integralLine.trajectory->back());
+          = triangulation->getVertexGlobalId(integralLine->trajectory.back());
         element.Id1 = triangulation->getVertexGlobalId(
-          integralLine.trajectory->at(size - 2));
-        element.DistanceFromSeed2 = integralLine.distanceFromSeed->back();
-        element.DistanceFromSeed1 = integralLine.distanceFromSeed->at(size - 2);
+          integralLine->trajectory.at(size - 2));
+        element.DistanceFromSeed2 = integralLine->distanceFromSeed.back();
+        element.DistanceFromSeed1 = integralLine->distanceFromSeed.at(size - 2);
         element.LocalVertexIdentifier2
-          = integralLine.localVertexIdentifier->back();
+          = integralLine->localVertexIdentifier.back();
         element.LocalVertexIdentifier1
-          = integralLine.localVertexIdentifier->at(size - 2);
+          = integralLine->localVertexIdentifier.at(size - 2);
 #if TTK_ENABLE_OPENMP
         toSend_
           ->at(neighborsToId_.find(rankArray)->second)[omp_get_thread_num()]
@@ -534,10 +503,10 @@ inline void
 template <class triangulationType>
 void ttk::IntegralLines::computeIntegralLine(
   const triangulationType *triangulation,
-  ttk::intgl::IntegralLine integralLine,
+  ttk::intgl::IntegralLine *integralLine,
   const SimplexId *offsets) const {
-  double distance = integralLine.distanceFromSeed->back();
-  ttk::SimplexId v = integralLine.trajectory->back();
+  double distance = integralLine->distanceFromSeed.back();
+  ttk::SimplexId v = integralLine->trajectory.back();
   float p0[3];
   float p1[3];
   triangulation->getVertexPoint(v, p0[0], p0[1], p0[2]);
@@ -572,12 +541,13 @@ void ttk::IntegralLines::computeIntegralLine(
       // If the integral line continues, the computation continues using lower
       // and upper components
       components = &(lowerComponents);
-      if(criticalType == (char)CriticalType::Saddle1
-         || criticalType == (char)CriticalType::Saddle2
-         || criticalType == (char)CriticalType::Degenerate) {
-        if(direction_ == static_cast<int>(Direction::Forward)) {
-          components = &(upperComponents);
-        }
+      if(direction_ == static_cast<int>(Direction::Forward)) {
+        components = &(upperComponents);
+      }
+      if((criticalType == (char)CriticalType::Saddle1
+          || criticalType == (char)CriticalType::Saddle2
+          || criticalType == (char)CriticalType::Degenerate)
+         && EnableForking) {
         // For each connected components, the max (or the min) is computed
         // and a task is created to further the computation of the integral line
         ttk::SimplexId numberOfComponents = components->size();
@@ -603,29 +573,21 @@ void ttk::IntegralLines::computeIntegralLine(
 #else
           ttk::SimplexId forkIdentifier = vnext;
 #endif
-          ttk::intgl::IntegralLine integralLineFork = ttk::intgl::IntegralLine{
-            nullptr, nullptr, nullptr, integralLine.seedIdentifier,
-            forkIdentifier};
           triangulation->getVertexPoint(vnext, p1[0], p1[1], p1[2]);
           double distanceFork = Geometry::distance(p0, p1, 3);
           int threadNum{0};
 #if TTK_ENABLE_OPENMP
           threadNum = omp_get_thread_num();
 #endif
-          integralLineFork.trajectory
-            = outputTrajectories_->at(threadNum).addArrayElement(
-              std::vector<ttk::SimplexId>({v, vnext}));
-          integralLineFork.distanceFromSeed
-            = outputDistancesFromSeed_->at(threadNum).addArrayElement(
-              std::vector<double>({distance, distance + distanceFork}));
-          integralLineFork.localVertexIdentifier
-            = outputLocalVertexIdentifiers_->at(threadNum).addArrayElement(
-              std::vector<ttk::SimplexId>(
-                {integralLine.localVertexIdentifier->back(),
-                 integralLine.localVertexIdentifier->back() + 1}));
-          outputSeedIdentifiers_->at(threadNum).addArrayElement(
-            integralLine.seedIdentifier);
-          outputForkIdentifiers_->at(threadNum).addArrayElement(forkIdentifier);
+          ttk::intgl::IntegralLine *integralLineFork
+            = outputIntegralLines_->at(threadNum).addArrayElement(
+              ttk::intgl::IntegralLine{
+                std::vector<ttk::SimplexId>({v, vnext}),
+                std::vector<double>({distance, distance + distanceFork}),
+                std::vector<ttk::SimplexId>(
+                  {integralLine->localVertexIdentifier.back(),
+                   integralLine->localVertexIdentifier.back() + 1}),
+                integralLine->seedIdentifier, forkIdentifier});
 
 #if TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(integralLineFork)
@@ -663,13 +625,13 @@ void ttk::IntegralLines::computeIntegralLine(
         this->findNextVertex(vnext, fnext, components->at(0), offsets);
         triangulation->getVertexPoint(vnext, p1[0], p1[1], p1[2]);
         distance += Geometry::distance(p0, p1, 3);
-        integralLine.trajectory->push_back(vnext);
+        integralLine->trajectory.push_back(vnext);
         p0[0] = p1[0];
         p0[1] = p1[1];
         p0[2] = p1[2];
-        integralLine.distanceFromSeed->push_back(distance);
-        integralLine.localVertexIdentifier->push_back(
-          integralLine.localVertexIdentifier->back() + 1);
+        integralLine->distanceFromSeed.push_back(distance);
+        integralLine->localVertexIdentifier.push_back(
+          integralLine->localVertexIdentifier.back() + 1);
         v = vnext;
 #ifdef TTK_ENABLE_MPI
         this->storeToSendIfNecessary<triangulationType>(
@@ -687,42 +649,34 @@ void ttk::IntegralLines::prepareForTask(
 #else
   const triangulationType *ttkNotUsed(triangulation),
 #endif
-  std::vector<ttk::intgl::IntegralLine> &chunkIntegralLine,
+  std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
   int startingIndex,
   int nbElement,
   std::vector<SimplexId> *seeds) const {
 
   for(SimplexId j = 0; j < nbElement; j++) {
     SimplexId v{seeds->at(j + startingIndex)};
+    int seedIdentifier;
 #ifdef TTK_ENABLE_MPI
-    chunkIntegralLine[j].seedIdentifier = triangulation->getVertexGlobalId(v);
+    seedIdentifier = triangulation->getVertexGlobalId(v);
 #else
-    chunkIntegralLine[j].seedIdentifier = v;
+    seedIdentifier = v;
 #endif
     int threadNum{0};
 #if TTK_ENABLE_OPENMP
     threadNum = omp_get_thread_num();
 #endif
-    chunkIntegralLine[j].trajectory
-      = outputTrajectories_->at(threadNum).addArrayElement(
-        std::vector<ttk::SimplexId>(1, v));
-    chunkIntegralLine[j].distanceFromSeed
-      = outputDistancesFromSeed_->at(threadNum).addArrayElement(
-        std::vector<double>(1, 0));
-    chunkIntegralLine[j].localVertexIdentifier
-      = outputLocalVertexIdentifiers_->at(threadNum).addArrayElement(
-        std::vector<ttk::SimplexId>(1, 0));
-    outputSeedIdentifiers_->at(threadNum).addArrayElement(
-      chunkIntegralLine[j].seedIdentifier);
-    outputForkIdentifiers_->at(threadNum).addArrayElement(
-      chunkIntegralLine[j].forkIdentifier);
+    chunkIntegralLine[j] = outputIntegralLines_->at(threadNum).addArrayElement(
+      ttk::intgl::IntegralLine{
+        std::vector<ttk::SimplexId>(1, v), std::vector<double>(1, 0),
+        std::vector<ttk::SimplexId>(1, 0), seedIdentifier, -1});
   }
 }
 
 template <class triangulationType>
 void ttk::IntegralLines::createTask(
   const triangulationType *triangulation,
-  std::vector<ttk::intgl::IntegralLine> &chunkIntegralLine,
+  std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
   const ttk::SimplexId *offsets,
   int nbElement) const {
 #if TTK_ENABLE_OPENMP
@@ -750,7 +704,7 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
   std::vector<SimplexId> *seeds = vertexIdentifierScalarField_;
   Timer t;
 
-  std::vector<ttk::intgl::IntegralLine> chunkIntegralLine(chunkSize_);
+  std::vector<ttk::intgl::IntegralLine *> chunkIntegralLine(chunkSize_);
   int taskNumber = (int)seedNumber_ / chunkSize_;
 #ifdef TTK_ENABLE_OPENMP
 #ifdef TTK_ENABLE_MPI
@@ -825,9 +779,11 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
           }
           sendMessageSize[i] = (int)send_buf[i].size();
           MPI_Isend(&sendMessageSize[i], 1, MPI_INTEGER, neighbors_.at(i),
-                    IS_MESSAGE_SIZE, ttk::MPIcomm_, &requests[2 * i]);
+                    INTEGRAL_LINE_IS_MESSAGE_SIZE, ttk::MPIcomm_,
+                    &requests[2 * i]);
           MPI_Irecv(&recvMessageSize[i], 1, MPI_INTEGER, neighbors_.at(i),
-                    IS_MESSAGE_SIZE, ttk::MPIcomm_, &requests[2 * i + 1]);
+                    INTEGRAL_LINE_IS_MESSAGE_SIZE, ttk::MPIcomm_,
+                    &requests[2 * i + 1]);
         }
         MPI_Waitall(2 * neighborNumber_, requests.data(), MPI_STATUSES_IGNORE);
         // Exchange of the data
@@ -837,15 +793,15 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
           }
           if(recvMessageSize[i] > 0) {
             MPI_Irecv(recv_buf[i].data(), recvMessageSize[i], this->MessageType,
-                      neighbors_.at(i), IS_ELEMENT_TO_PROCESS, ttk::MPIcomm_,
-                      &requests[2 * i]);
+                      neighbors_.at(i), INTEGRAL_LINE_IS_ELEMENT_TO_PROCESS,
+                      ttk::MPIcomm_, &requests[2 * i]);
             totalMessageSize += recvMessageSize[i];
           }
 
           if(sendMessageSize[i] > 0) {
             MPI_Isend(send_buf[i].data(), sendMessageSize[i], this->MessageType,
-                      neighbors_.at(i), IS_ELEMENT_TO_PROCESS, ttk::MPIcomm_,
-                      &requests[2 * i + 1]);
+                      neighbors_.at(i), INTEGRAL_LINE_IS_ELEMENT_TO_PROCESS,
+                      ttk::MPIcomm_, &requests[2 * i + 1]);
           }
         }
         MPI_Waitall(2 * neighborNumber_, requests.data(), MPI_STATUSES_IGNORE);
@@ -898,14 +854,9 @@ template <typename triangulationType>
 int ttk::IntegralLines::getGlobalIdentifiers(
   std::vector<ttk::SimplexId> &globalVertexId,
   std::vector<ttk::SimplexId> &globalCellId,
-  const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-    &seedIdentifiers,
-  const std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-    &forkIdentifiers,
-  const std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
-                                         TABULAR_SIZE>> &trajectories,
-  const std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>,
-                                         TABULAR_SIZE>> &localVertexIdentifiers,
+  const std::vector<
+    ttk::ArrayLinkedList<ttk::intgl::IntegralLine, INTEGRAL_LINE_TABULAR_SIZE>>
+    &integralLines,
   const triangulationType *triangulation) {
   ttk::SimplexId outputVertexNumber = 0;
   ttk::SimplexId outputCellNumber = 0;
@@ -917,22 +868,25 @@ int ttk::IntegralLines::getGlobalIdentifiers(
 #pragma omp parallel for reduction(+:outputVertexNumber,outputCellNumber,realCellNumber,realVertexNumber) schedule(static,1) private(intervalSize)
 #endif
   for(int thread = 0; thread < threadNumber_; thread++) {
-    std::list<std::array<std::vector<ttk::SimplexId>,
-                         TABULAR_SIZE>>::const_iterator trajectory
-      = trajectories[thread].list_.begin();
-    while(trajectory != trajectories[thread].list_.end()) {
-      for(int i = 0; i < TABULAR_SIZE; i++) {
-        if((*trajectory)[i].size() > 0) {
-          intervalSize = static_cast<ttk::SimplexId>((*trajectory)[i].size());
+    std::list<std::array<ttk::intgl::IntegralLine,
+                         INTEGRAL_LINE_TABULAR_SIZE>>::const_iterator
+      integralLine
+      = integralLines[thread].list_.begin();
+    while(integralLine != integralLines[thread].list_.end()) {
+      for(int i = 0; i < INTEGRAL_LINE_TABULAR_SIZE; i++) {
+        if(integralLine->at(i).trajectory.size() > 0) {
+          intervalSize = static_cast<ttk::SimplexId>(
+            integralLine->at(i).trajectory.size());
           outputVertexNumber += intervalSize;
           outputCellNumber += intervalSize - 1;
-          if(triangulation->getVertexRank((*trajectory)[i].at(0))
+          if(triangulation->getVertexRank(integralLine->at(i).trajectory.at(0))
              != ttk::MPIrank_) {
             intervalSize--;
           }
-          if((*trajectory)[i].size() > 1) {
+          if(integralLine->at(i).trajectory.size() > 1) {
             realCellNumber += intervalSize - 1;
-            if(triangulation->getVertexRank((*trajectory)[i].back())
+            if(triangulation->getVertexRank(
+                 integralLine->at(i).trajectory.back())
                != ttk::MPIrank_) {
               intervalSize--;
             }
@@ -942,7 +896,7 @@ int ttk::IntegralLines::getGlobalIdentifiers(
           break;
         }
       }
-      trajectory++;
+      integralLine++;
     }
   }
 
@@ -976,22 +930,14 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   std::vector<std::vector<ttk::SimplexId>> unmatchedGhostsEdgeLocalId(
     neighborNumber_);
   for(int thread = 0; thread < threadNumber_; thread++) {
-    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::const_iterator
-      forkIdentifier
-      = forkIdentifiers[thread].list_.begin();
-    std::list<std::array<std::vector<ttk::SimplexId>,
-                         TABULAR_SIZE>>::const_iterator localVertexIdentifier
-      = localVertexIdentifiers[thread].list_.begin();
-    std::list<std::array<std::vector<ttk::SimplexId>,
-                         TABULAR_SIZE>>::const_iterator trajectory
-      = trajectories[thread].list_.begin();
-    std::list<std::array<ttk::SimplexId, TABULAR_SIZE>>::const_iterator
-      seedIdentifier
-      = seedIdentifiers[thread].list_.begin();
-    while(trajectory != trajectories[thread].list_.end()) {
-      for(int i = 0; i < TABULAR_SIZE; i++) {
-        if((*trajectory)[i].size() > 0) {
-          if(triangulation->getVertexRank((*trajectory)[i].at(0))
+    std::list<std::array<ttk::intgl::IntegralLine,
+                         INTEGRAL_LINE_TABULAR_SIZE>>::const_iterator
+      integralLine
+      = integralLines[thread].list_.begin();
+    while(integralLine != integralLines[thread].list_.end()) {
+      for(int i = 0; i < INTEGRAL_LINE_TABULAR_SIZE; i++) {
+        if(integralLine->at(i).trajectory.size() > 0) {
+          if(triangulation->getVertexRank(integralLine->at(i).trajectory.at(0))
              != ttk::MPIrank_) {
             globalVertexId.at(startVertexId) = -1;
           } else {
@@ -999,47 +945,51 @@ int ttk::IntegralLines::getGlobalIdentifiers(
             vertIndex++;
           }
           startVertexId++;
-          if((*trajectory)[i].size() > 1) {
-            if(triangulation->getVertexRank((*trajectory)[i].at(0))
+          if(integralLine->at(i).trajectory.size() > 1) {
+            if(triangulation->getVertexRank(
+                 integralLine->at(i).trajectory.at(0))
                != ttk::MPIrank_) {
               globalCellId.at(startCellId) = -1;
               unmatchedGhosts
                 .at(neighborsToId_[triangulation->getVertexRank(
-                  (*trajectory)[i].at(0))])
+                  integralLine->at(i).trajectory.at(0))])
                 .push_back(ttk::intgl::GhostElementsToSort{
-                  vertIndex, (*localVertexIdentifier)[i].at(0),
-                  (*seedIdentifier)[i], (*forkIdentifier)[i], -1,
-                  startVertexId - 1, startCellId});
+                  vertIndex, integralLine->at(i).localVertexIdentifier.at(0),
+                  integralLine->at(i).seedIdentifier,
+                  integralLine->at(i).forkIdentifier, -1, startVertexId - 1,
+                  startCellId});
             } else {
               globalCellId.at(startCellId) = cellIndex;
               cellIndex++;
             }
             startCellId++;
-            if((*trajectory)[i].size() > 2) {
+            if(integralLine->at(i).trajectory.size() > 2) {
               std::iota(globalCellId.begin() + startCellId,
                         globalCellId.begin() + startCellId
-                          + (*trajectory)[i].size() - 2,
+                          + integralLine->at(i).trajectory.size() - 2,
                         cellIndex);
               std::iota(globalVertexId.begin() + startVertexId,
                         globalVertexId.begin() + startVertexId
-                          + (*trajectory)[i].size() - 2,
+                          + integralLine->at(i).trajectory.size() - 2,
                         vertIndex);
-              startCellId += (*trajectory)[i].size() - 2;
-              startVertexId += (*trajectory)[i].size() - 2;
-              vertIndex += (*trajectory)[i].size() - 2;
-              cellIndex += (*trajectory)[i].size() - 2;
+              startCellId += integralLine->at(i).trajectory.size() - 2;
+              startVertexId += integralLine->at(i).trajectory.size() - 2;
+              vertIndex += integralLine->at(i).trajectory.size() - 2;
+              cellIndex += integralLine->at(i).trajectory.size() - 2;
             }
-            if(triangulation->getVertexRank((*trajectory)[i].back())
+            if(triangulation->getVertexRank(
+                 integralLine->at(i).trajectory.back())
                != ttk::MPIrank_) {
               globalVertexId.at(startVertexId) = -1;
               unmatchedGhosts
                 .at(neighborsToId_[triangulation->getVertexRank(
-                  (*trajectory)[i].back())])
+                  integralLine->at(i).trajectory.back())])
                 .push_back(ttk::intgl::GhostElementsToSort{
                   globalVertexId.at(startVertexId - 1),
-                  (*localVertexIdentifier)[i].at(
-                    (*localVertexIdentifier)[i].size() - 2),
-                  (*seedIdentifier)[i], (*forkIdentifier)[i],
+                  integralLine->at(i).localVertexIdentifier.at(
+                    integralLine->at(i).localVertexIdentifier.size() - 2),
+                  integralLine->at(i).seedIdentifier,
+                  integralLine->at(i).forkIdentifier,
                   globalCellId.at(startCellId - 1), startVertexId,
                   startCellId - 1});
             } else {
@@ -1052,10 +1002,7 @@ int ttk::IntegralLines::getGlobalIdentifiers(
           break;
         }
       }
-      seedIdentifier++;
-      forkIdentifier++;
-      localVertexIdentifier++;
-      trajectory++;
+      integralLine++;
     }
   }
   // unmatchedGhosts contains the ghost data for each process.
@@ -1082,7 +1029,8 @@ int ttk::IntegralLines::getGlobalIdentifiers(
 }
 
 inline int ttk::IntegralLines::exchangeGhosts(
-  std::vector<std::vector<ttk::intgl::GhostElementsToSort>> &unmatchedGhosts,
+  const std::vector<std::vector<ttk::intgl::GhostElementsToSort>>
+    &unmatchedGhosts,
   std::vector<ttk::SimplexId> &globalVertexId,
   std::vector<ttk::SimplexId> &globalCellId) {
   ttk::SimplexId id{0};

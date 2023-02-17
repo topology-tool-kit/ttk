@@ -86,21 +86,24 @@ public:
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
+  vtkSetMacro(EnableForking, bool);
+  vtkGetMacro(EnableForking, bool);
+
+  /**
+   * This method converts the output data in VTK data types.
+   * It constructs the new unstructured grid and associates scalar data
+   * to its points and cells.
+   */
   template <typename triangulationType>
   int getTrajectories(
     vtkDataSet *input,
-    triangulationType *triangulation,
-    std::vector<ttk::ArrayLinkedList<std::vector<ttk::SimplexId>, TABULAR_SIZE>>
-      &trajectories,
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      &forkIdentifiers,
-    std::vector<ttk::ArrayLinkedList<std::vector<double>, TABULAR_SIZE>>
-      &distancesFromSeed,
-    std::vector<ttk::ArrayLinkedList<ttk::SimplexId, TABULAR_SIZE>>
-      &seedIdentifiers,
+    const triangulationType *triangulation,
+    const std::vector<ttk::ArrayLinkedList<ttk::intgl::IntegralLine,
+                                           INTEGRAL_LINE_TABULAR_SIZE>>
+      &integralLines,
 #ifdef TTK_ENABLE_MPI
-    std::vector<ttk::SimplexId> &globalVertexId,
-    std::vector<ttk::SimplexId> &globalCellId,
+    const std::vector<ttk::SimplexId> &globalVertexId,
+    const std::vector<ttk::SimplexId> &globalCellId,
 #endif
     vtkUnstructuredGrid *output);
 
