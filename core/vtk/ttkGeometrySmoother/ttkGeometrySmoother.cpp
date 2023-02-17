@@ -44,16 +44,10 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputPointSet = vtkPointSet::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
-  if(!triangulation) {
-#ifdef TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI()) {
-      return 1;
-    } else {
-#endif
-      return 0;
-#ifdef TTK_ENABLE_MPI
-    }
-#endif
+
+  int keepGoing = continueComputation<ttk::Triangulation>(triangulation);
+  if(keepGoing < 2) {
+    return keepGoing;
   }
   this->preconditionTriangulation(triangulation);
 

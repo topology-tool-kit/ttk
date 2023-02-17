@@ -96,17 +96,12 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
 
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
-  if(inputArray == nullptr) {
-#ifdef TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI()) {
-      return 1;
-    } else {
-#endif
-      return 0;
-#ifdef TTK_ENABLE_MPI
-    }
-#endif
+
+  int keepGoing = ttkAlgorithm::continueComputation<vtkDataArray>(inputArray);
+  if(keepGoing < 2) {
+    return keepGoing;
   }
+
   vtkSmartPointer<vtkDataArray> outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
   outputArray->SetName(inputArray->GetName());

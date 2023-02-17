@@ -465,7 +465,7 @@ int ttkAlgorithm::updateMPICommunicator(vtkDataSet *input) {
       }
     }
   }
-  this->updateDebugPrefix();
+  this->setDebugMsgPrefix(debugMsgNamePrefix_);
   return isEmpty;
 }
 

@@ -205,6 +205,33 @@ public:
   void AddInputData(vtkDataSet *);
   void AddInputData(int, vtkDataSet *);
 
+  /**
+   * @brief This method tests whether the input is a nullptr.
+   * If the computation is being done on multiple processes, it is possible
+   * that the domain of one process or more is empty, but not others, therefore
+   * in that particular case the rest of the filter will not be computed but
+   * an error message will not be sent.
+   *
+   * @tparam inputType
+   * @param input  the input to assess
+   * @return int 0: error, 1: stop without error, 2: continue
+   */
+  template <typename inputType>
+  inline int continueComputation(inputType *input) {
+    if(!input) {
+#ifdef TTK_ENABLE_MPI
+      if(ttk::isRunningWithMPI()) {
+        return 1;
+      } else {
+#endif
+        return 0;
+#ifdef TTK_ENABLE_MPI
+      }
+#endif
+    }
+    return 2;
+  };
+
 protected:
   ttkAlgorithm();
   ~ttkAlgorithm() override;
