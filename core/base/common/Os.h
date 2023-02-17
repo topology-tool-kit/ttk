@@ -64,6 +64,8 @@ namespace ttk {
 
     static float getMemoryInstantUsage();
 
+    static float getTotalMemoryUsage();
+
     static int getNumberOfCores();
 
     static std::vector<std::string>
@@ -109,6 +111,10 @@ namespace ttk {
 
     inline float getElapsedUsage() {
       return OsCall::getMemoryInstantUsage() - initialMemory_;
+    }
+
+    inline float getTotalUsage() {
+      return OsCall::getTotalMemoryUsage();
     }
 
   protected:
