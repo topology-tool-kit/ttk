@@ -51,17 +51,11 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   auto output = vtkDataSet::GetData(outputVector);
   ttk::Timer tm{};
 
-  if(input == nullptr || output == nullptr) {
-#ifdef TTK_ENABLE_MPI
-    if(ttk::isRunningWithMPI()) {
-      return 1;
-    } else {
-#endif
-      return 0;
-#ifdef TTK_ENABLE_MPI
-    }
-#endif
+  int keepGoing = continueComputation<vtkDataSet>(input);
+  if(keepGoing < 2) {
+    return keepGoing;
   }
+
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();
