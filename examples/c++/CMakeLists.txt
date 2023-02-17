@@ -5,6 +5,8 @@ project(ttkExample-c++)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(CMAKE_BUILD_TYPE "Release")
+
 find_package(TTKBase REQUIRED)
 
 add_executable(ttkExample-c++ main.cpp)
