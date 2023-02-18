@@ -173,6 +173,21 @@ plateaus).
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="EnableForking"
+        label="Enable Forking"
+        command="SetEnableForking"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        Enables forking when the integral line comes accross a saddle vertex.
+        In that case, it will spawn as many new integral lines as there are
+        lower (or upper, depending on the direction) components in the star 
+        of the saddle vertex.
+        </Documentation>
+      </IntVectorProperty>
+
       ${DEBUG_WIDGETS}
 
       <PropertyGroup label="Input options">
@@ -182,6 +197,7 @@ plateaus).
         <Property name="InputVertexScalarField" />
         <Property name="ForceInputOffsetScalarField" />
         <Property name="OffsetScalarField" />
+        <Property name="EnableForking" />
       </PropertyGroup>
 
       <Hints>

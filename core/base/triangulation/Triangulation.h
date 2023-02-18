@@ -2450,6 +2450,14 @@ namespace ttk {
       return abstractTriangulation_->preconditionTriangleRankArray();
     }
 
+    inline int setVertexRankArray(const int *rankArray) override {
+      return abstractTriangulation_->setVertexRankArray(rankArray);
+    }
+
+    inline int setCellRankArray(const int *rankArray) override {
+      return abstractTriangulation_->setCellRankArray(rankArray);
+    }
+
     /// Pre-process the global boundaries when using MPI. Local bounds should
     /// be set prior to using this function.
     ///

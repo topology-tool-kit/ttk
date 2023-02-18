@@ -209,10 +209,13 @@ namespace ttk {
           // each task uses its local forests
           for(idVertex v = lowerBound; v < upperBound; ++v) {
             bool lBoundary = false, uBoundary = false;
-            critPoints.getNumberOfLowerUpperComponents(
-              v, scalars_.getOffsets(), mesh_.getTriangulation(),
-              valences_.lower[v], valences_.upper[v], lBoundary, uBoundary);
-
+            std::vector<std::vector<ttk::SimplexId>> upperComponents;
+            std::vector<std::vector<ttk::SimplexId>> lowerComponents;
+            critPoints.getLowerUpperComponents(
+              v, scalars_.getOffsets(), mesh_.getTriangulation(), lBoundary,
+              uBoundary, &upperComponents, &lowerComponents);
+            valences_.lower[v] = lowerComponents.size();
+            valences_.upper[v] = upperComponents.size();
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {
               graph_.addLeaf(v, true);

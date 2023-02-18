@@ -123,21 +123,29 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 #ifdef TTK_ENABLE_MPI
 
 int ExplicitTriangulation::preconditionVertexRankArray() {
-  this->vertexRankArray_.resize(this->vertexNumber_);
-  if(ttk::isRunningWithMPI()) {
-    ttk::produceRankArray(this->vertexRankArray_, this->vertGid_,
-                          this->vertexGhost_, this->vertexNumber_,
-                          this->boundingBox_.data(), this->neighborRanks_);
+  if(vertexRankArray_.size() == 0) {
+    this->vertexRankArray_.resize(this->vertexNumber_, 0);
+    if(ttk::isRunningWithMPI()) {
+      ttk::produceRankArray(this->vertexRankArray_, this->vertGid_,
+                            this->vertexGhost_, this->vertexNumber_,
+                            this->boundingBox_.data(), this->neighborRanks_);
+      ttk::preconditionNeighborsUsingRankArray<ttk::SimplexId>(
+        this->neighborRanks_,
+        [this](const ttk::SimplexId a) { return this->getVertexRank(a); },
+        this->vertexNumber_, ttk::MPIcomm_);
+    }
   }
   return 0;
 }
 
 int ExplicitTriangulation::preconditionCellRankArray() {
-  this->cellRankArray_.resize(this->cellNumber_);
-  if(ttk::isRunningWithMPI()) {
-    ttk::produceRankArray(this->cellRankArray_, this->cellGid_,
-                          this->cellGhost_, this->cellNumber_,
-                          this->boundingBox_.data(), this->neighborRanks_);
+  if(cellRankArray_.size() == 0) {
+    this->cellRankArray_.resize(this->cellNumber_, 0);
+    if(ttk::isRunningWithMPI()) {
+      ttk::produceRankArray(this->cellRankArray_, this->cellGid_,
+                            this->cellGhost_, this->cellNumber_,
+                            this->boundingBox_.data(), this->neighborRanks_);
+    }
   }
   return 0;
 }

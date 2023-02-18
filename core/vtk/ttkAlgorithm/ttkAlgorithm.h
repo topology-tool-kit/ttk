@@ -236,14 +236,15 @@ protected:
 
   bool checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
                              ttk::SimplexId simplexNumber,
-                             unsigned char *ghost);
+                             unsigned char *ghost,
+                             int *rankArray);
   /**
    * This methods generates global ids and is called during the MPI
    * preconditioning. It behaves differently for PolyData and ImageData
    * datasets.
    */
 
-  bool GenerateGlobalIds(
+  int GenerateGlobalIds(
     vtkDataSet *input,
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
     std::vector<int> &neighborRanks);
