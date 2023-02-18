@@ -101,7 +101,7 @@ int ttkTopologicalSimplificationByPersistence::RequestData(
        this->ComputePerturbation, this->PairType)));
 
   // On error cancel filter execution
-  if(status != 1)
+  if(status != 0)
     return 0;
 
   auto outputDataSet = vtkDataSet::GetData(outputVector, 0);

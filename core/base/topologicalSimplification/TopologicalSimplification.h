@@ -166,7 +166,7 @@ int ttk::TopologicalSimplification::execute(
     case TOPO_LTS:
       ltsObject_.setDebugLevel(debugLevel_);
       ltsObject_.setThreadNumber(threadNumber_);
-      return !ltsObject_
+      return ltsObject_
         .removeUnauthorizedExtrema<dataType, SimplexId, triangulationType>(
           outputScalars, offsets, &triangulation, identifiers, constraintNumber,
           addPerturbation);
