@@ -32,14 +32,16 @@ namespace ttk {
   public:
     ClusteringMetrics();
 
-    int execute(const std::vector<int> &clustering1,
-                const std::vector<int> &clustering2,
+    int execute(const int *clustering1,
+                const int *clustering2,
+                const size_t n,
                 double &nmiValue,
                 double &ariValue) const;
 
     int
-      computeContingencyTables(const std::vector<int> &clust1,
-                               const std::vector<int> &clust2,
+      computeContingencyTables(const int *clust1,
+                               const int *clust2,
+                               const size_t nPoint,
                                std::vector<std::vector<int>> &contingencyMatrix,
                                std::vector<int> &sumLin,
                                std::vector<int> &sumCol) const;
@@ -49,12 +51,12 @@ namespace ttk {
     int computeARI(const std::vector<std::vector<int>> &contingencyMatrix,
                    const std::vector<int> &sumLin,
                    const std::vector<int> &sumCol,
-                   const int nPoint,
+                   const size_t nPoint,
                    double &ariValue) const;
     int computeNMI(const std::vector<std::vector<int>> &contingencyMatrix,
                    const std::vector<int> &sumLin,
                    const std::vector<int> &sumCol,
-                   const int nPoint,
+                   const size_t nPoint,
                    double &nmiValue) const;
   }; // ClusteringMetrics class
 
