@@ -106,39 +106,36 @@ int ttkDistanceMatrixDistorsion::RequestData(
   }
 
   int n = nRowsHigh;
-  std::vector<std::vector<double>> vectMatHigh(n), vectMatLow(n);
+  std::vector<double *> vectMatHigh(n),
+    vectMatLow(n); // No 2D vectors to avoid copy of data from the VTK layer.
 
   // Getting the actual input columns.
-  std::vector<vtkAbstractArray *> arraysHigh{}, arraysLow{};
+  std::vector<vtkDataArray *> arraysHigh{}, arraysLow{};
   for(const auto &s : ScalarFieldsHigh)
-    arraysHigh.push_back(inputHigh->GetColumnByName(s.data()));
+    arraysHigh.push_back(
+      vtkDoubleArray::SafeDownCast(inputHigh->GetColumnByName(s.data())));
   for(const auto &s : ScalarFieldsLow)
-    arraysLow.push_back(inputLow->GetColumnByName(s.data()));
+    arraysLow.push_back(
+      vtkDoubleArray::SafeDownCast(inputLow->GetColumnByName(s.data())));
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < n; i++) {
-    vectMatHigh[i].resize(n);
-    vectMatLow[i].resize(n);
-    for(int j = 0; j < n; j++) {
-      vectMatHigh[i][j] = arraysHigh[j]->GetVariantValue(i).ToDouble();
-      vectMatLow[i][j] = arraysLow[j]->GetVariantValue(i).ToDouble();
-    }
+    vectMatHigh[i] = ttkUtils::GetPointer<double>(arraysHigh[i]);
+    vectMatLow[i] = ttkUtils::GetPointer<double>(arraysLow[i]);
   }
 
-  std::vector<double> vectOutput;
   double distorsionValue = 0;
-  this->printMsg("Starting computation of sim distorsion value...");
-  this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
-
-  vtkNew<vtkDoubleArray> distorsionValArray{}, tmpCol{};
+  vtkNew<vtkDoubleArray> tmpCol{}, distorsionValArray{};
   tmpCol->SetNumberOfTuples(n);
-  tmpCol->SetName("SimValue");
-  for(int i = 0; i < n; i++)
-    tmpCol->SetTuple1(i, vectOutput[i]);
-  output->AddColumn(tmpCol);
+  this->printMsg("Starting computation of sim distorsion value...");
+  this->execute(vectMatHigh, vectMatLow, distorsionValue,
+                ttkUtils::GetPointer<double>(tmpCol));
 
+  tmpCol->SetName("SimValue");
+  // No deep copy, makes output->RowData points to the data of tmpCol.
+  output->AddColumn(tmpCol);
   distorsionValArray->SetName("DistorsionValue");
   distorsionValArray->SetNumberOfTuples(1);
   distorsionValArray->SetTuple1(0, distorsionValue);

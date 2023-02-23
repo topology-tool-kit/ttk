@@ -1,19 +1,18 @@
 #include <DistanceMatrixDistorsion.h>
+#include <Geometry.h> // To check wheter a double is zero.
+#include <Os.h>
 #include <random>
 #include <vector>
-// To check wheter a double is zero.
-#include <Geometry.h>
-#include <Os.h>
 
 ttk::DistanceMatrixDistorsion::DistanceMatrixDistorsion() {
   this->setDebugMsgPrefix("DistanceMatrixDistorsion");
 }
 
 int ttk::DistanceMatrixDistorsion::execute(
-  const std::vector<std::vector<double>> &highDistMatrix,
-  const std::vector<std::vector<double>> &lowDistMatrix,
+  const std::vector<double *> &highDistMatrix,
+  const std::vector<double *> &lowDistMatrix,
   double &distorsionValue,
-  std::vector<double> &distorsionVerticesValues) const {
+  double *distorsionVerticesValues) const {
   ttk::Timer timer;
   auto n = highDistMatrix.size();
 
@@ -25,23 +24,6 @@ int ttk::DistanceMatrixDistorsion::execute(
     return 0;
   }
 
-  for(size_t i = 0; i < n; i++) {
-    if(highDistMatrix[i].size() != n) {
-      this->printErr(
-        " Sizes mismatch: high distance matrix is not a square matrix: it has "
-        + std::to_string(n) + " rows and  row " + std::to_string(i) + " has "
-        + std::to_string(highDistMatrix[i].size()) + " elements.\n");
-      return 1;
-    }
-    if(lowDistMatrix[i].size() != n) {
-      this->printErr(
-        " Sizes mismatch: low distance matrix is not a square matrix: it has "
-        + std::to_string(n) + " rows and  row " + std::to_string(i) + " has "
-        + std::to_string(lowDistMatrix[i].size()) + "elements .\n");
-      return 1;
-    }
-  }
-
   /* The computation, which is optimised for performance here, can be decomposed
    * as follows: compute for each (x,y) delta(x,y) =
    * (dist_low(x,y)-dist_high(x,y))^2. Compute maxi = maximum (delta(x,y)) over
@@ -51,7 +33,12 @@ int ttk::DistanceMatrixDistorsion::execute(
    */
 
   double maxi = 0;
-  distorsionVerticesValues.resize(n);
+  if(distorsionVerticesValues == nullptr) {
+    this->printErr(
+      " The output pointer to the distorsionValues must be non NULL. "
+      "It must point to an allocated array of the right size.");
+    return 1;
+  }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_) reduction(max     \
@@ -91,8 +78,7 @@ int ttk::DistanceMatrixDistorsion::execute(
 
   distorsionValue = totalSum / n;
 
-  this->printMsg("Size of output in ttk/base = "
-                 + std::to_string(distorsionVerticesValues.size()) + "\n");
+  this->printMsg("Size of output in ttk/base = " + std::to_string(n) + "\n");
 
   this->printMsg("Computed distorsion value: "
                  + std::to_string(distorsionValue));
