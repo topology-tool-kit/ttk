@@ -2602,6 +2602,14 @@ namespace ttk {
       return 0;
     }
 
+    virtual int setVertexRankArray(const int *ttkNotUsed(rankArray)) {
+      return 0;
+    }
+
+    virtual int setCellRankArray(const int *ttkNotUsed(rankArray)) {
+      return 0;
+    }
+
     virtual int preconditionEdgeRankArray() {
       return 0;
     }
@@ -2613,6 +2621,9 @@ namespace ttk {
     // global <-> local id mappings
 
     virtual inline SimplexId getVertexGlobalId(const SimplexId lvid) const {
+      if(!ttk::isRunningWithMPI()) {
+        return lvid;
+      }
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
          && this->getDimensionality() != 3) {
@@ -2629,12 +2640,13 @@ namespace ttk {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      if(!ttk::isRunningWithMPI()) {
-        return lvid;
-      }
       return this->getVertexGlobalIdInternal(lvid);
     }
     virtual inline SimplexId getVertexLocalId(const SimplexId gvid) const {
+
+      if(!ttk::isRunningWithMPI()) {
+        return gvid;
+      }
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
          && this->getDimensionality() != 3) {
@@ -2648,9 +2660,6 @@ namespace ttk {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      if(!ttk::isRunningWithMPI()) {
-        return gvid;
-      }
       return this->getVertexLocalIdInternal(gvid);
     }
 
@@ -2801,6 +2810,10 @@ namespace ttk {
     }
 
     virtual inline int getVertexRank(const SimplexId lvid) const {
+
+      if(!ttk::isRunningWithMPI()) {
+        return 0;
+      }
 #ifndef TTK_ENABLE_KAMIKAZE
       if(this->getDimensionality() != 1 && this->getDimensionality() != 2
          && this->getDimensionality() != 3) {
@@ -2817,9 +2830,6 @@ namespace ttk {
         return -1;
       }
 #endif // TTK_ENABLE_KAMIKAZE
-      if(!ttk::isRunningWithMPI()) {
-        return lvid;
-      }
       return this->getVertexRankInternal(lvid);
     }
 
@@ -2928,6 +2938,9 @@ namespace ttk {
       return -1;
     }
 
+    // overriden in ImplicitTriangulation &
+    // PeriodicImplicitTriangulation (where cellGid_ refers to
+    // squares/cubes and not triangles/tetrahedron)
     virtual inline SimplexId
       getCellGlobalIdInternal(const SimplexId ttkNotUsed(lcid)) const {
       return -1;

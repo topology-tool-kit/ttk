@@ -18,7 +18,8 @@ ttk_add_base_library(common
         Shuffle.h
         Timer.h
         VisitedMask.h
-        Wrapper.h
+        Wrapper.h  
+        ArrayLinkedList.h   
         )
 
 if(TTK_REDUCE_TEMPLATE_INSTANTIATIONS)

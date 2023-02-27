@@ -3078,7 +3078,9 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     return -1;
   }
   if(this->cellGhost_ == nullptr) {
-    this->printErr("Missing cell ghost array!");
+    if(ttk::isRunningWithMPI()) {
+      this->printErr("Missing cell ghost array!");
+    }
     return -3;
   }
 
@@ -3184,11 +3186,13 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
   if(this->hasPreconditionedDistributedVertices_) {
     return 0;
   }
-  if(!hasInitializedMPI()) {
+  if(!isRunningWithMPI()) {
     return -1;
   }
   if(this->vertexGhost_ == nullptr) {
-    this->printErr("Missing vertex ghost array!");
+    if(ttk::isRunningWithMPI()) {
+      this->printErr("Missing vertex ghost array!");
+    }
     return -3;
   }
 
@@ -3321,22 +3325,26 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   const std::array<int, 3> dimensions = {
-    static_cast<int>((globalBounds[1] - globalBounds[0]) / this->spacing_[0])
+    static_cast<int>(
+      std::round((globalBounds[1] - globalBounds[0]) / this->spacing_[0]))
       + 1,
-    static_cast<int>((globalBounds[3] - globalBounds[2]) / this->spacing_[1])
+    static_cast<int>(
+      std::round((globalBounds[3] - globalBounds[2]) / this->spacing_[1]))
       + 1,
-    static_cast<int>((globalBounds[5] - globalBounds[4]) / this->spacing_[2])
+    static_cast<int>(
+      std::round((globalBounds[5] - globalBounds[4]) / this->spacing_[2]))
       + 1,
   };
 
   this->localGridOffset_ = {
-    static_cast<SimplexId>((this->origin_[0] - globalBounds[0])
-                           / this->spacing_[0]),
-    static_cast<SimplexId>((this->origin_[1] - globalBounds[2])
-                           / this->spacing_[1]),
-    static_cast<SimplexId>((this->origin_[2] - globalBounds[4])
-                           / this->spacing_[2]),
+    static_cast<SimplexId>(
+      std::round((this->origin_[0] - globalBounds[0]) / this->spacing_[0])),
+    static_cast<SimplexId>(
+      std::round((this->origin_[1] - globalBounds[2]) / this->spacing_[1])),
+    static_cast<SimplexId>(
+      std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
   };
+
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
   this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
                                 globalBounds[2], this->spacing_[0],
@@ -3429,6 +3437,11 @@ SimplexId ttk::ImplicitTriangulation::getVertexLocalIdInternal(
 
   const auto p{this->getVertLocalCoords(gvid)};
   const auto &dims{this->getGridDimensions()};
+
+  if(p[0] < 0 || p[1] < 0 || p[2] < 0 || p[0] > dims[0] - 1
+     || p[1] > dims[1] - 1 || p[2] > dims[2] - 1) {
+    return -1;
+  }
 
   // local coordinates to identifier (inverse of vertexToPosition)
   return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
@@ -3712,7 +3725,7 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
 int ttk::ImplicitTriangulation::getVertexRankInternal(
   const SimplexId lvid) const {
 
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(this->neighborRanks_.empty()) {
     this->printErr("Empty neighborsRanks_!");
     return -1;
@@ -3738,7 +3751,7 @@ int ttk::ImplicitTriangulation::getVertexRankInternal(
 int ttk::ImplicitTriangulation::getCellRankInternal(
   const SimplexId lcid) const {
 
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(this->neighborRanks_.empty()) {
     this->printErr("Empty neighborsRanks_!");
     return -1;

@@ -6,4 +6,5 @@ ttk_add_base_library(integralLines
   DEPENDS
     geometry
     triangulation
+    scalarFieldCriticalPoints
     )
