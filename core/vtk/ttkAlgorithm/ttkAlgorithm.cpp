@@ -556,9 +556,9 @@ int ttkAlgorithm::GenerateGlobalIds(
         identifiers.setOutdatedGlobalCellIds(
           ttkUtils::GetPointer<ttk::LongSimplexId>(
             input->GetCellData()->GetGlobalIds()));
-        identifiers.setVertexRankArray(ttkUtils::GetPointer<ttk::SimplexId>(
+        identifiers.setVertexRankArray(ttkUtils::GetPointer<int>(
           input->GetPointData()->GetArray("RankArray")));
-        ttk::SimplexId *cellRankArray = ttkUtils::GetPointer<ttk::SimplexId>(
+        int *cellRankArray = ttkUtils::GetPointer<int>(
           input->GetCellData()->GetArray("RankArray"));
         identifiers.setCellRankArray(cellRankArray);
         identifiers.setVertGhost(ttkUtils::GetPointer<unsigned char>(
