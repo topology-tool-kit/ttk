@@ -14,6 +14,8 @@ To specify the number of threads to use during execution, the environment variab
 
 To use Paraview in distributed mode using MPI, one has to use either `pvserver` or `pvbatch`. 
 
+Please note that TTK only supports a number of processes equal to $2^n$, with $n\in \mathbb{N}$. There are no constraints on the number of threads.
+
 #### pvserver
 The following command allows one to start `pvserver` with 4 MPI processes and 8 threads (per process) with OpenMPI:
 
