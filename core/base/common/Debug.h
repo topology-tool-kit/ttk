@@ -360,13 +360,16 @@ namespace ttk {
      * debug message.
      */
     inline void setDebugMsgPrefix(const std::string &prefix) {
+      this->debugMsgNamePrefix_ = prefix;
 #if TTK_ENABLE_MPI
       this->debugMsgPrefix_
-        = prefix.length() > 0
-            ? "[" + prefix + "-" + std::to_string(MPIrank_) + "] "
+        = debugMsgNamePrefix_.length() > 0
+            ? "[" + debugMsgNamePrefix_ + "-" + std::to_string(MPIrank_) + "] "
             : "";
 #else
-      this->debugMsgPrefix_ = prefix.length() > 0 ? "[" + prefix + "] " : "";
+      this->debugMsgPrefix_ = debugMsgNamePrefix_.length() > 0
+                                ? "[" + debugMsgNamePrefix_ + "] "
+                                : "";
 #endif
     }
 
@@ -376,6 +379,7 @@ namespace ttk {
     COMMON_EXPORTS static debug::LineMode lastLineMode;
 
     std::string debugMsgPrefix_;
+    std::string debugMsgNamePrefix_;
 
     /**
      * Internal debug method that formats debug messages.

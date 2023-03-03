@@ -56,8 +56,11 @@ int ttkScalarFieldCriticalPoints::RequestData(
   vtkPolyData *output = vtkPolyData::GetData(outputVector, 0);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(!triangulation)
-    return 0;
+
+  int keepGoing = checkEmptyMPIInput<Triangulation>(triangulation);
+  if(keepGoing < 2) {
+    return keepGoing;
+  }
 
   if(VertexBoundary)
     triangulation->preconditionBoundaryVertices();

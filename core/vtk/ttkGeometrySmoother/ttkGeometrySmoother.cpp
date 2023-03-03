@@ -44,8 +44,11 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputPointSet = vtkPointSet::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
-  if(!triangulation)
-    return 0;
+
+  int keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
+  if(keepGoing < 2) {
+    return keepGoing;
+  }
   this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(

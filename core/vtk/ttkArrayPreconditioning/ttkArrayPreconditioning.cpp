@@ -51,8 +51,9 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   auto output = vtkDataSet::GetData(outputVector);
   ttk::Timer tm{};
 
-  if(input == nullptr || output == nullptr) {
-    return 0;
+  int keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
+  if(keepGoing < 2) {
+    return keepGoing;
   }
 
   output->ShallowCopy(input);
