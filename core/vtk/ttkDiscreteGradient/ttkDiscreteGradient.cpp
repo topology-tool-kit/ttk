@@ -244,7 +244,7 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  int keepGoing = continueComputation<ttk::Triangulation>(triangulation);
+  int keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
   if(keepGoing < 2) {
     return keepGoing;
   }

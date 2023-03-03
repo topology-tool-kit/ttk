@@ -48,9 +48,6 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       printErr(
         "MPI is not supported for this filter, the results will be incorrect");
     }
-    if(this->updateMPICommunicator(dataSet)) {
-      return nullptr;
-    }
     this->MPIGhostPipelinePreconditioning(dataSet);
   }
 #endif // TTK_ENABLE_MPI
@@ -439,7 +436,7 @@ int ttkAlgorithm::updateMPICommunicator(vtkDataSet *input) {
     = input->GetNumberOfCells() == 0 || input->GetNumberOfPoints() == 0;
   int oldSize = ttk::MPIsize_;
   int oldRank = ttk::MPIrank_;
-  MPI_Comm_split(ttk::MPIcomm_, isEmpty, ttk::MPIrank_, &ttk::MPIcomm_);
+  MPI_Comm_split(MPI_COMM_WORLD, isEmpty, 0, &ttk::MPIcomm_);
   MPI_Comm_rank(ttk::MPIcomm_, &ttk::MPIrank_);
   MPI_Comm_size(ttk::MPIcomm_, &ttk::MPIsize_);
   if(oldSize != ttk::MPIsize_) {
@@ -879,6 +876,13 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
   if(request->Has(vtkCompositeDataPipeline::REQUEST_DATA())) {
     this->printMsg("Processing REQUEST_DATA", ttk::debug::Priority::VERBOSE);
     this->printMsg(ttk::debug::Separator::L0);
+#ifdef TTK_ENABLE_MPI
+    if(ttk::hasInitializedMPI()) {
+      if(this->updateMPICommunicator(vtkDataSet::GetData(inputVector[0], 0))) {
+        return 1;
+      };
+    }
+#endif // TTK_ENABLE_MPI
     return this->RequestData(request, inputVector, outputVector);
   }
 

@@ -51,7 +51,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   auto output = vtkDataSet::GetData(outputVector);
   ttk::Timer tm{};
 
-  int keepGoing = continueComputation<vtkDataSet>(input);
+  int keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
   if(keepGoing < 2) {
     return keepGoing;
   }

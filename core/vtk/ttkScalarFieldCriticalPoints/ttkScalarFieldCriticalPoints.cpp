@@ -57,7 +57,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  int keepGoing = continueComputation<Triangulation>(triangulation);
+  int keepGoing = checkEmptyMPIInput<Triangulation>(triangulation);
   if(keepGoing < 2) {
     return keepGoing;
   }

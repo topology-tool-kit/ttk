@@ -219,6 +219,10 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
+  int keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
+  if(keepGoing < 2) {
+    return keepGoing;
+  }
   vtkDataArray *inputOffsets
     = this->GetOrderArray(domain, 0, 1, ForceInputOffsetScalarField);
 
@@ -368,11 +372,6 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 #ifndef TTK_ENABLE_KAMIKAZE
-  // triangulation problem
-  if(!triangulation) {
-    this->printErr("wrong triangulation.");
-    return -1;
-  }
   // field problem
   if(!inputScalars) {
     this->printErr("wrong scalar field.");

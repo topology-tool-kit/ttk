@@ -217,7 +217,7 @@ public:
    * @return int 0: error, 1: stop without error, 2: continue
    */
   template <typename inputType>
-  inline int continueComputation(inputType *input) {
+  inline int checkEmptyMPIInput(inputType *input) {
     if(!input) {
 #ifdef TTK_ENABLE_MPI
       if(ttk::isRunningWithMPI()) {

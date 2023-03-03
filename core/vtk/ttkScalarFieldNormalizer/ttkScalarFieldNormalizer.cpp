@@ -97,7 +97,7 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
 
-  int keepGoing = ttkAlgorithm::continueComputation<vtkDataArray>(inputArray);
+  int keepGoing = ttkAlgorithm::checkEmptyMPIInput<vtkDataArray>(inputArray);
   if(keepGoing < 2) {
     return keepGoing;
   }
