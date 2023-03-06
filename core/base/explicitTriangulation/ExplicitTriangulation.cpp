@@ -1416,6 +1416,7 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
     return -2;
   }
 
+  this->hasPreconditionedDistributedVertices_ = true;
   this->preconditionVertexRankArray();
 
   // number of local vertices (with ghost vertices...)
@@ -1458,8 +1459,6 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
                  this->remoteGhostVertices_[neigh].size(), MIT, neigh, neigh,
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
-
-  this->hasPreconditionedDistributedVertices_ = true;
 
   return 0;
 }

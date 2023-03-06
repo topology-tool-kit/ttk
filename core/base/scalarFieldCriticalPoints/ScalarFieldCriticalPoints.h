@@ -544,6 +544,17 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   ttk::SimplexId lowerComponentNumber = lowerComponents->size();
   ttk::SimplexId upperComponentNumber = upperComponents->size();
 
+  if(dimension_ == 1) {
+    if(lowerComponentNumber == 0 && upperComponentNumber != 0) {
+      return (char)(CriticalType::Local_minimum);
+    } else if(lowerComponentNumber != 0 && upperComponentNumber == 0) {
+      return (char)(CriticalType::Local_maximum);
+    } else if(lowerComponentNumber == 1 && upperComponentNumber == 1) {
+      return (char)(CriticalType::Regular);
+    }
+    return (char)(CriticalType::Saddle1);
+  }
+
   if(lowerComponentNumber == 0 && upperComponentNumber == 1) {
     return (char)(CriticalType::Local_minimum);
   } else if(lowerComponentNumber == 1 && upperComponentNumber == 0) {

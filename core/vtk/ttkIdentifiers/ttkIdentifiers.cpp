@@ -43,6 +43,11 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
 
   Timer t;
 
+  int keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
+  if(keepGoing < 2) {
+    return keepGoing;
+  }
+
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
   if(triangulation == nullptr) {
     this->printErr("Triangulation is NULL");
