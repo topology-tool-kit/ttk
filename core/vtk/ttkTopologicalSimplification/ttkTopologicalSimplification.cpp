@@ -47,6 +47,11 @@ int ttkTopologicalSimplification::RequestData(
 
   using ttk::SimplexId;
 
+  // Warning: this needs to be done before the preconditioning.
+  if(!this->UseLTS) {
+    this->setBackend(BACKEND::LEGACY);
+  }
+
   const auto domain = vtkDataSet::GetData(inputVector[0]);
   const auto constraints = vtkPointSet::GetData(inputVector[1]);
   if(!domain || !constraints)
@@ -110,11 +115,6 @@ int ttkTopologicalSimplification::RequestData(
   auto identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField, 1,
                                                  ttk::VertexScalarFieldName,
                                                  constraints, idSpareStorage);
-
-  if(!this->UseLTS) {
-    this->setBackend("legacy");
-  }
-  // TODO nb thread et debuglevel ?
 
   int ret{};
   switch(inputScalars->GetDataType()) {

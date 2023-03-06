@@ -178,10 +178,6 @@ namespace ttk {
       return 0;
     }
 
-    inline void setNumberOfVertices(size_t n) {
-      vertexNumber_ = n;
-    }
-
     inline void setConsiderIdentifierAsBlackList(bool onOff) {
       considerIdentifierAsBlackList_ = onOff;
     }

@@ -108,6 +108,7 @@ namespace ttk {
   public:
     TopologicalSimplification();
 
+    enum class BACKEND { LEGACY, LTS };
     /*
      * Either execute this file "legacy" algorithm, or the
      * lts algorithm. The choice depends on the value of the variable backend_.
@@ -123,30 +124,34 @@ namespace ttk {
                 const bool addPerturbation,
                 const triangulationType &triangulation);
 
-    inline void setBackend(const std::string &arg) {
-      if(arg == "lts")
-        backend_ = TOPO_LTS;
-      else if(arg == "legacy")
-        backend_ = TOPO_LEGACY;
-      else
-        this->printMsg("Error : topological simplification should be 'lts' or "
-                       "'legacy', but got: "
-                       + arg);
+    inline void setBackend(const BACKEND arg) {
+      backend_ = arg;
     }
 
     inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
-      if(triangulation) {
-        triangulation->preconditionVertexNeighbors();
-        if(backend_ == TOPO_LEGACY)
-          legacyObject_.setNumberOfVertices(
-            triangulation->getNumberOfVertices());
+      switch(backend_) {
+        case BACKEND::LEGACY:
+          legacyObject_.setDebugLevel(debugLevel_);
+          legacyObject_.setThreadNumber(threadNumber_);
+          legacyObject_.preconditionTriangulation(triangulation);
+          break;
+
+        case BACKEND::LTS:
+          ltsObject_.setDebugLevel(debugLevel_);
+          ltsObject_.setThreadNumber(threadNumber_);
+          ltsObject_.preconditionTriangulation(triangulation);
+          break;
+
+        default:
+          this->printErr(
+            "Error, the backend for topological simplification is invalid");
+          return -1;
       }
       return 0;
     }
 
   protected:
-    enum TOPO_BACKEND { TOPO_LTS, TOPO_LEGACY };
-    TOPO_BACKEND backend_{TOPO_LTS};
+    BACKEND backend_{BACKEND::LTS};
     LegacyTopologicalSimplification legacyObject_;
     lts::LocalizedTopologicalSimplification ltsObject_;
   };
@@ -163,16 +168,12 @@ int ttk::TopologicalSimplification::execute(
   const bool addPerturbation,
   const triangulationType &triangulation) {
   switch(backend_) {
-    case TOPO_LTS:
-      ltsObject_.setDebugLevel(debugLevel_);
-      ltsObject_.setThreadNumber(threadNumber_);
+    case BACKEND::LTS:
       return ltsObject_
         .removeUnauthorizedExtrema<dataType, SimplexId, triangulationType>(
           outputScalars, offsets, &triangulation, identifiers, constraintNumber,
           addPerturbation);
-    case TOPO_LEGACY:
-      legacyObject_.setDebugLevel(debugLevel_);
-      legacyObject_.setThreadNumber(threadNumber_);
+    case BACKEND::LEGACY:
       return legacyObject_.execute(inputScalars, outputScalars, identifiers,
                                    inputOffsets, offsets, constraintNumber,
                                    triangulation);
