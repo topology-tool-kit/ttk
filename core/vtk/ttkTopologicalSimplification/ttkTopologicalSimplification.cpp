@@ -12,8 +12,6 @@
 #include <ttkTopologicalSimplification.h>
 #include <ttkUtils.h>
 
-#include <LocalizedTopologicalSimplification.h>
-
 vtkStandardNewMacro(ttkTopologicalSimplification);
 
 ttkTopologicalSimplification::ttkTopologicalSimplification() {
@@ -48,6 +46,11 @@ int ttkTopologicalSimplification::RequestData(
   vtkInformationVector *outputVector) {
 
   using ttk::SimplexId;
+
+  // Warning: this needs to be done before the preconditioning.
+  if(!this->UseLTS) {
+    this->setBackend(BACKEND::LEGACY);
+  }
 
   const auto domain = vtkDataSet::GetData(inputVector[0]);
   const auto constraints = vtkPointSet::GetData(inputVector[1]);
@@ -113,37 +116,15 @@ int ttkTopologicalSimplification::RequestData(
                                                  ttk::VertexScalarFieldName,
                                                  constraints, idSpareStorage);
 
-  // NOTE it'd be better if the two backends were inheriting from the same API
-  // (the switch would then happen in the base code)
   int ret{};
-  if(this->UseLTS) {
-    ttk::lts::LocalizedTopologicalSimplification lts{};
-    lts.setDebugLevel(this->debugLevel_);
-    lts.setThreadNumber(this->threadNumber_);
-
-    lts.preconditionTriangulation(triangulation);
-
-    ttkVtkTemplateMacro(
-      inputScalars->GetDataType(), triangulation->getType(),
-      (ret = lts.removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
-         ttkUtils::GetPointer<VTK_TT>(outputScalars),
-         ttkUtils::GetPointer<SimplexId>(outputOrder),
-
-         static_cast<TTK_TT *>(triangulation->getData()), identifiers,
-         numberOfConstraints, this->AddPerturbation)));
-
-    // TODO: fix convention in original ttk module
-    ret = !ret;
-  } else {
-    switch(inputScalars->GetDataType()) {
-      vtkTemplateMacro(
-        ret = this->execute(ttkUtils::GetPointer<VTK_TT>(inputScalars),
-                            ttkUtils::GetPointer<VTK_TT>(outputScalars),
-                            identifiers,
-                            ttkUtils::GetPointer<SimplexId>(inputOrder),
-                            ttkUtils::GetPointer<SimplexId>(outputOrder),
-                            numberOfConstraints, *triangulation->getData()));
-    }
+  switch(inputScalars->GetDataType()) {
+    vtkTemplateMacro(ret = this->execute(
+                       ttkUtils::GetPointer<VTK_TT>(inputScalars),
+                       ttkUtils::GetPointer<VTK_TT>(outputScalars), identifiers,
+                       ttkUtils::GetPointer<SimplexId>(inputOrder),
+                       ttkUtils::GetPointer<SimplexId>(outputOrder),
+                       numberOfConstraints, this->AddPerturbation,
+                       *triangulation->getData()));
   }
 
   // something wrong in baseCode

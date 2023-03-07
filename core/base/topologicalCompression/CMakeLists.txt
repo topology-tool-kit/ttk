@@ -7,7 +7,7 @@ ttk_add_base_library(topologicalCompression
     OtherCompression.h
   DEPENDS
     triangulation
-    topologicalSimplification
+    legacyTopologicalSimplification
     ftmTreePP
   )
 

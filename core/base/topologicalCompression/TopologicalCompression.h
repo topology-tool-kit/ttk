@@ -15,7 +15,7 @@
 
 // base code includes
 #include <FTMTreePP.h>
-#include <TopologicalSimplification.h>
+#include <LegacyTopologicalSimplification.h>
 #include <Triangulation.h>
 
 // std
@@ -359,7 +359,7 @@ namespace ttk {
 
   protected:
     // General.
-    TopologicalSimplification topologicalSimplification{};
+    LegacyTopologicalSimplification topologicalSimplification{};
     ftm::FTMTreePP ftmTreePP;
 
     // Parameters

@@ -212,10 +212,10 @@ int main(int argc, char **argv) {
   // 6. simplifying the input data to remove non-persistent pairs
   ttk::TopologicalSimplification simplification;
   simplification.preconditionTriangulation(&triangulation);
-  simplification.execute<float>(height.data(), simplifiedHeight.data(),
-                                authorizedCriticalPoints.data(), order.data(),
-                                simplifiedOrder.data(),
-                                authorizedCriticalPoints.size(), triangulation);
+  simplification.execute<float>(
+    height.data(), simplifiedHeight.data(), authorizedCriticalPoints.data(),
+    order.data(), simplifiedOrder.data(), authorizedCriticalPoints.size(),
+    false, triangulation);
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {
