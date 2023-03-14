@@ -13,6 +13,10 @@ if (@TTK_ENABLE_OPENMP@)
   find_dependency(OpenMP REQUIRED)
 endif()
 
+if (@TTK_ENABLE_QHULL@ AND @Qhull_FOUND@)
+  find_dependency(Qhull REQUIRED)
+endif()
+
 if (@TTK_ENABLE_ZFP@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
   set(ZFP_DIR "@ZFP_DIR@" CACHE PATH "Use TTK ZFP dir" FORCE)
   find_dependency(ZFP REQUIRED @ZFP_DIR@)

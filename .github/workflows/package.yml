@@ -43,6 +43,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
+          libqhull-dev \
           dpkg-dev
 
     - name: Install optional dependencies

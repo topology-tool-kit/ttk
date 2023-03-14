@@ -1,0 +1,9 @@
+NAME
+  ttkTopoMap
+SOURCES
+  ttkTopoMap.cpp
+HEADERS
+  ttkTopoMap.h
+DEPENDS
+  topoMap
+  ttkAlgorithm

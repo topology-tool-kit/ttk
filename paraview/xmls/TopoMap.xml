@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkTopoMap"
+      class="ttkTopoMap"
+      label="TTK TopoMap (IEEE VIS 2020)">
+      <Documentation
+        long_help="TopoMap"
+        short_help="TopoMap">
+
+        This filter generates a topological mapper from a data-set. It computes it
+        by first computing a MST of the points, then reducing the dimension by preserving the cost of the edges of the MST, and if possible the edges themselves (their endvertices).
+        
+        "Topomap: A 0-dimensional homology preserving projection of high-dimensional data".
+        H.Doraiswamy, J. Tierny, P. J. S. Silva, L. G. Nonato and C. Silva.
+IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input data-set.
+        </Documentation>
+      </InputProperty>
+
+								<IntVectorProperty
+        name="SelectMatrixWithRegexp"
+        label="Select Matrix With Regexp"
+        command="SetSelectMatrixWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        
+        <Documentation>
+          Select input distance matrix Point Data arrays with a
+          regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetDistMat"
+        clean_command="ClearDistMat"
+        label="Input Distance Matrix"
+        name="DistMat"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        
+        <Documentation>
+          Select the input distance matrix scalar fields.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="DistanceMatrixRegexp"
+        label="Distance Matrix Regexp"
+        command="SetDistanceMatrixRegexp"
+        number_of_elements="1"
+        default_values=".*">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="SelectMatrixWithRegexp"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ReEmbedMapper"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Select the Distance Matrix Point Data arrays with a regular
+          expression.
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <IntVectorProperty
+        name="AngularSampleNb"
+        label="Angular samples"
+        command="SetAngularSampleNb"
+        number_of_elements="1"
+        default_values="20">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Documentation>
+        When projecting in 2D, we regularly need to merge two already projected subsets of the points. We put them apart the right distance, but we may rotate each by some angle between two bounds. We test several angles and keep the best one. This parameter defines how many tests we do for each rotation. Beware, this parameter appears squared in the algorithm complexity.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="CheckMST"
+        label="MST Preservation Check"
+        command="SetCheckMST"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This way to embedd points in 2D is based on preserving the lengths of the edges selected by Kruskal Algortihm to build a spanning tree. Checking this box enables testing that these lengths are indeed preserved. This test is very quick.
+        </Documentation>
+      </IntVectorProperty>
+
+
+     
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="AngularSampleNb" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Checks">
+        <Property name="CheckMST" />
+      </PropertyGroup>
+
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="Output" index="0" id="port0" />
+
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
