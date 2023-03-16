@@ -2,6 +2,7 @@
 #include <cmath> // For the log2 function
 #include <map>
 #include <vector>
+#include <Geometry.h>  // To check wheter a double is zero.
 
 ttk::ClusteringMetrics::ClusteringMetrics() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
@@ -140,7 +141,10 @@ int ttk::ClusteringMetrics::computeARI(
                      - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
   double denominator = 0.5 * (sumNChoose2_1 + sumNChoose2_2)
                        - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
-  ariValue = numerator / denominator;
+  if (denominator < ttk::Geometry::powIntTen(-DBL_DIG))
+    ariValue = 1;
+  else
+    ariValue = numerator / denominator;
 
   return 0;
 }

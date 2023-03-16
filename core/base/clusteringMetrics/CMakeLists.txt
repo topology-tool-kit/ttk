@@ -4,5 +4,5 @@ ttk_add_base_library(clusteringMetrics
   HEADERS
     ClusteringMetrics.h
   DEPENDS
-    common
+    geometry
 )
