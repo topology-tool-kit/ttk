@@ -760,7 +760,7 @@ namespace ttk {
    * counting down
    * @param[in] burstSize number of values sent in one communication step
    * @param[in] MPI_IT MPI datatype representing integers
-   * @param[out] processedValueCounter an counter keeping track of the number
+   * @param[out] processedValueCounter a counter keeping track of the number
    * of values already processed
    * @param[in, out] unsortedReceivedValues a vector of vectors representing
    * received values for each rank
