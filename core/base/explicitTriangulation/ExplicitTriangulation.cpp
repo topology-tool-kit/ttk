@@ -110,7 +110,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
       charBoundary.data(),
       [this](const SimplexId a) { return this->edgeRankArray_[a]; },
       [this](const SimplexId a) { return this->edgeLidToGid_[a]; },
-      this->edgeGidToLid_, edgeNumber, ttk::MPIcomm_, this->getNeighborRanks());
+      [this](const SimplexId a) { return this->edgeGidToLid_[a]; }, edgeNumber,
+      ttk::MPIcomm_, this->getNeighborRanks());
     for(int i = 0; i < edgeNumber; ++i) {
       boundaryEdges_[i] = (charBoundary[i] == '1');
     }
@@ -251,8 +252,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
       charBoundary.data(),
       [this](const SimplexId a) { return this->triangleRankArray_[a]; },
       [this](const SimplexId a) { return this->triangleLidToGid_[a]; },
-      this->triangleGidToLid_, triangleNumber, ttk::MPIcomm_,
-      this->getNeighborRanks());
+      [this](const SimplexId a) { return this->triangleGidToLid_[a]; },
+      triangleNumber, ttk::MPIcomm_, this->getNeighborRanks());
     for(int i = 0; i < triangleNumber; ++i) {
       boundaryTriangles_[i] = (charBoundary[i] == '1');
     }
