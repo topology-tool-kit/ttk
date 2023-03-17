@@ -49,10 +49,10 @@
 #pragma once
 
 // ttk code includes
-#include "FTRGraph.h"
-#include "Graph.h"
-#include "ttkAlgorithm.h"
-#include "ttkFTRGraphStructures.h"
+#include <FTRGraph.h>
+#include <Graph.h>
+#include <ttkAlgorithm.h>
+#include <ttkFTRGraphStructures.h>
 
 // VTK includes
 #include <vtkDataArray.h>
