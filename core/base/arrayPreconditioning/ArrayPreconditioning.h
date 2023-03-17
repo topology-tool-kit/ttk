@@ -60,7 +60,9 @@ namespace ttk {
       TTK_FORCE_USE(scalarArray);
       TTK_FORCE_USE(getVertexGlobalId);
       TTK_FORCE_USE(getVertexRank);
+      TTK_FORCE_USE(getVertexLocalId);
       TTK_FORCE_USE(burstSize);
+      TTK_FORCE_USE(neighbors);
       return 0;
 #endif
 
