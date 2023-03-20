@@ -1,4 +1,3 @@
-#include "DataTypes.h"
 #include <OrderDisambiguation.h>
 #include <Triangulation.h>
 #include <ttkArrayPreconditioning.h>
