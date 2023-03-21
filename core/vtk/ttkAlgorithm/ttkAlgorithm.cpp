@@ -199,6 +199,9 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
                         [triangulation](const ttk::SimplexId a) {
                           return triangulation->getVertexRank(a);
                         },
+                        [triangulation](const ttk::SimplexId a) {
+                          return triangulation->getVertexLocalId(a);
+                        },
                         nVertices, 500, neighbors)));
       } else
 #endif // TTK_ENABLE_MPI

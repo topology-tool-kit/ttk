@@ -55,7 +55,9 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   if(keepGoing < 2) {
     return keepGoing;
   }
-
+#ifdef TTK_ENABLE_MPI
+  const auto triangulation{this->GetTriangulation(input)};
+#endif
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();
@@ -88,8 +90,6 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   if(ttk::isRunningWithMPI()) {
     // add the order array for every scalar array, except the ghostcells, the
     // rankarray and the global ids
-    const auto triangulation{this->GetTriangulation(input)};
-
     for(auto scalarArray : scalarArrays) {
       int status = 0;
       std::string arrayName = std::string(scalarArray->GetName());
@@ -103,17 +103,21 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
         orderArray->SetNumberOfTuples(nVertices);
 
         this->printMsg(std::to_string(scalarArray->GetDataType()));
-        ttkTypeMacroA(scalarArray->GetDataType(),
-                      (status = processScalarArray(
-                         ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
-                         ttkUtils::GetPointer<T0>(scalarArray),
-                         [triangulation](const ttk::SimplexId a) {
-                           return triangulation->getVertexGlobalId(a);
-                         },
-                         [triangulation](const ttk::SimplexId a) {
-                           return triangulation->getVertexRank(a);
-                         },
-                         nVertices, BurstSize)));
+        ttkTypeMacroA(
+          scalarArray->GetDataType(),
+          (status = processScalarArray(
+             ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
+             ttkUtils::GetPointer<T0>(scalarArray),
+             [triangulation](const ttk::SimplexId a) {
+               return triangulation->getVertexGlobalId(a);
+             },
+             [triangulation](const ttk::SimplexId a) {
+               return triangulation->getVertexRank(a);
+             },
+             [triangulation](const ttk::SimplexId a) {
+               return triangulation->getVertexLocalId(a);
+             },
+             nVertices, BurstSize, triangulation->getNeighborRanks())));
 
         // On error cancel filter execution
         if(status != 1)
