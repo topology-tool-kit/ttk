@@ -33,10 +33,10 @@ namespace ttk {
   public:
     DistanceMatrixDistorsion();
 
-    int execute(const std::vector<std::vector<double>> &highDistMatrix,
-                const std::vector<std::vector<double>> &lowDistMatrix,
+    int execute(const std::vector<double *> &highDistMatrix,
+                const std::vector<double *> &lowDistMatrix,
                 double &distorsionValue,
-                std::vector<double> &distorsionVerticesValues) const;
+                double *distorsionVerticesValues) const;
   };
 
 } // namespace ttk

@@ -57,10 +57,8 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   // We do not use the GetInputArrayToProcess but a version of it allowing us to
   // retrieve an array of int instead of an array of double.
-  vtkAbstractArray *inputClustering1
-    = this->GetInputAbstractArrayToProcess(0, input1);
-  vtkAbstractArray *inputClustering2
-    = this->GetInputAbstractArrayToProcess(1, input2);
+  vtkDataArray *inputClustering1 = this->GetInputArrayToProcess(0, input1);
+  vtkDataArray *inputClustering2 = this->GetInputArrayToProcess(1, input2);
 
   if(!inputClustering1) {
     this->printErr("Unable to retrieve input array for first clustering.");
@@ -71,8 +69,12 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
     return 1;
   }
 
-  const auto intArray1 = vtkIntArray::SafeDownCast(inputClustering1);
-  const auto intArray2 = vtkIntArray::SafeDownCast(inputClustering2);
+  vtkIntArray *intArray1 = vtkIntArray::SafeDownCast(inputClustering1);
+  vtkIntArray *intArray2 = vtkIntArray::SafeDownCast(inputClustering2);
+
+  // To avoid making a copy of the data.
+  const int *values1 = ttkUtils::GetPointer<int>(inputClustering1);
+  const int *values2 = ttkUtils::GetPointer<int>(inputClustering2);
 
   // If all checks pass then log which array is going to be processed.
   this->printMsg("Starting computation...");
@@ -88,16 +90,10 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
     this->printMsg("Error : the two clusterings must have the same size\n");
     return 0;
   }
-
   size_t nbVal = nbVal1;
-  std::vector<int> values1(nbVal), values2(nbVal);
-  for(size_t i = 0; i < nbVal; i++) {
-    values1[i] = intArray1->GetValue(i);
-    values2[i] = intArray2->GetValue(i);
-  }
 
   double nmiValue = 0, ariValue = 0;
-  this->execute(values1, values2, nmiValue, ariValue);
+  this->execute(values1, values2, nbVal, nmiValue, ariValue);
   vtkNew<vtkDoubleArray> nmiValArray{}, ariValArray{};
   output->SetNumberOfRows(1);
 

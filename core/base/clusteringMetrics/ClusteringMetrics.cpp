@@ -1,4 +1,5 @@
 #include <ClusteringMetrics.h>
+#include <Geometry.h> // To check wheter a double is zero.
 #include <cmath> // For the log2 function
 #include <map>
 #include <vector>
@@ -14,7 +15,7 @@ inline int nChoose2(int x) {
 
 inline int checkContingencyMatSize(const ttk::ClusteringMetrics *object,
                                    const std::vector<std::vector<int>> &matrix,
-                                   int nPoint) {
+                                   const size_t nPoint) {
   if(nPoint == 0) {
     object->printErr("Error: clustering on zero points.");
     return 0;
@@ -46,12 +47,12 @@ inline int checkContingencyMatSize(const ttk::ClusteringMetrics *object,
 }
 
 int ttk::ClusteringMetrics::computeContingencyTables(
-  const std::vector<int> &clust1,
-  const std::vector<int> &clust2,
+  const int *clust1,
+  const int *clust2,
+  const size_t nPoint,
   std::vector<std::vector<int>> &contingencyMatrix,
   std::vector<int> &sumLin,
   std::vector<int> &sumCol) const {
-  size_t nPoint = clust1.size();
   if(nPoint == 0) {
     this->printErr("Error: clustering on zero points.");
     return 0;
@@ -59,17 +60,17 @@ int ttk::ClusteringMetrics::computeContingencyTables(
 
   std::map<int, int> values1ToId, values2ToId;
   size_t nbVal1 = 0, nbVal2 = 0;
-  for(int x : clust1) {
-    auto found = values1ToId.find(x);
-    if(found == values1ToId.end()) {
-      values1ToId[x] = nbVal1;
+  for(size_t i = 0; i < nPoint; i++) {
+    int x1 = clust1[i], x2 = clust2[i];
+    auto found1 = values1ToId.find(x1), found2 = values2ToId.find(x2);
+
+    if(found1 == values1ToId.end()) {
+      values1ToId[x1] = nbVal1;
       nbVal1++;
     }
-  }
-  for(int x : clust2) {
-    auto found = values2ToId.find(x);
-    if(found == values2ToId.end()) {
-      values2ToId[x] = nbVal2;
+
+    if(found2 == values2ToId.end()) {
+      values2ToId[x2] = nbVal2;
       nbVal2++;
     }
   }
@@ -103,7 +104,7 @@ int ttk::ClusteringMetrics::computeARI(
   const std::vector<std::vector<int>> &contingencyMatrix,
   const std::vector<int> &sumLin,
   const std::vector<int> &sumCol,
-  const int nPoint,
+  const size_t nPoint,
   double &ariValue) const {
   if(!checkContingencyMatSize(this, contingencyMatrix, nPoint))
     return 0;
@@ -140,7 +141,10 @@ int ttk::ClusteringMetrics::computeARI(
                      - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
   double denominator = 0.5 * (sumNChoose2_1 + sumNChoose2_2)
                        - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
-  ariValue = numerator / denominator;
+  if(denominator < ttk::Geometry::powIntTen(-DBL_DIG))
+    ariValue = 1;
+  else
+    ariValue = numerator / denominator;
 
   return 0;
 }
@@ -149,7 +153,7 @@ int ttk::ClusteringMetrics::computeNMI(
   const std::vector<std::vector<int>> &contingencyMatrix,
   const std::vector<int> &sumLin,
   const std::vector<int> &sumCol,
-  const int nPoint,
+  const size_t nPoint,
   double &nmiValue) const {
   if(!checkContingencyMatSize(this, contingencyMatrix, nPoint))
     return 0;
@@ -197,27 +201,19 @@ int ttk::ClusteringMetrics::computeNMI(
   return 0;
 }
 
-int ttk::ClusteringMetrics::execute(const std::vector<int> &clustering1,
-                                    const std::vector<int> &clustering2,
+int ttk::ClusteringMetrics::execute(const int *clustering1,
+                                    const int *clustering2,
+                                    const size_t n,
                                     double &nmiValue,
                                     double &ariValue) const {
   ttk::Timer timer;
-  size_t n = clustering1.size();
 
   this->printMsg(ttk::debug::Separator::L1);
-
-  if(clustering2.size() != n) {
-    this->printMsg(" Sizes mismatch: clustering one represents "
-                   + std::to_string(n)
-                   + " points and clustering two represents "
-                   + std::to_string(clustering2.size()) + " points\n");
-    return 1;
-  }
 
   std::vector<std::vector<int>> contingencyMatrix;
   std::vector<int> sumLines, sumColumns;
   computeContingencyTables(
-    clustering1, clustering2, contingencyMatrix, sumLines, sumColumns);
+    clustering1, clustering2, n, contingencyMatrix, sumLines, sumColumns);
 
   computeARI(contingencyMatrix, sumLines, sumColumns, n, ariValue);
   computeNMI(contingencyMatrix, sumLines, sumColumns, n, nmiValue);
