@@ -3154,6 +3154,16 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
                  MPI_STATUS_IGNORE);
   }
 
+  int cellRank = 0;
+  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    cellRank = this->getCellRankInternal(lcid);
+    if(cellRank != ttk::MPIrank_) {
+      // store ghost cell global ids (per rank)
+      this->ghostCellsPerOwner_[cellRank].emplace_back(
+        this->getCellGlobalIdInternal(lcid));
+    }
+  }
+
   // for each rank, store the global id of local cells that are ghost cells of
   // other ranks.
   const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
