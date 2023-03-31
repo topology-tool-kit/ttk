@@ -55,6 +55,15 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
 
+  if(triangulation->hasPeriodicBoundaries()
+     && !triangulation->getHasPreconditionedPeriodicGhosts()
+     && ttk::isRunningWithMPI()) {
+    this->MPIPeriodicGhostPipelinePreconditioning(dataSet, triangulation);
+    triangulation = ttkTriangulationFactory::GetTriangulation(
+      this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
+    triangulation->setHasPreconditionedPeriodicGhosts(true);
+  }
+
 #ifdef TTK_ENABLE_MPI
   if(ttk::hasInitializedMPI()) {
     std::vector<int> tmp{};
@@ -693,6 +702,96 @@ void ttkAlgorithm::MPIGhostPipelinePreconditioning(vtkDataSet *input) {
       generator->GetOutputDataObject(0)->GetGhostArray(1));
   }
 }
+
+int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
+  vtkDataSet *input, ttk::Triangulation *triangulation) {
+
+  struct partialGlobalBound {
+    unsigned char isBound{0};
+    double x{0};
+    double y{0};
+    double z{0};
+  };
+
+  vtkImageData *image;
+  if(input->IsA("vtkImageData")) {
+    image = vtkImageData::SafeDownCast(input);
+  } else {
+    printErr("Invalid data input type for periodicTriangulation computation");
+    return -1;
+  }
+
+  std::array<partialGlobalBound, 6> localGlobalBounds;
+  std::array<double, 6> tempGlobalBounds{};
+  double bounds[6];
+  image->GetBounds(bounds);
+  // Reorganize bounds to only execute Allreduce twice
+  std::array<double, 6> tempBounds = {
+    bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
+  };
+  // Compute and send to all processes the lower bounds of the data set
+  MPI_Allreduce(tempBounds.data(), tempGlobalBounds.data(), 3, MPI_DOUBLE,
+                MPI_MIN, ttk::MPIcomm_);
+  // Compute and send to all processes the higher bounds of the data set
+  MPI_Allreduce(&tempBounds[3], &tempGlobalBounds[3], 3, MPI_DOUBLE, MPI_MAX,
+                ttk::MPIcomm_);
+
+  // re-order tempGlobalBounds
+  std::array<double, 6> globalBounds{
+    tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
+    tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5],
+  };
+  double origin[3];
+
+  image->GetOrigin(origin);
+  double spacing[3];
+  image->GetSpacing(spacing);
+  for(int i = 0; i < 2; i++) {
+    if(std::abs(globalBounds[i] - bounds[i]) < spacing[0]) {
+      localGlobalBounds[i].isBound = 1;
+      localGlobalBounds[i].x = bounds[i];
+      localGlobalBounds[i].y = (bounds[2] + bounds[3]) / 2;
+      localGlobalBounds[i].z = (bounds[4] + bounds[5]) / 2;
+    }
+  }
+
+  for(int i = 0; i < 2; i++) {
+    if(std::abs(globalBounds[2 + i] - bounds[2 + i]) < spacing[1]) {
+      localGlobalBounds[2 + i].isBound = 1;
+      localGlobalBounds[2 + i].x = (bounds[0] + bounds[1]) / 2;
+      localGlobalBounds[2 + i].y = bounds[2 + i];
+      localGlobalBounds[2 + i].z = (bounds[4] + bounds[5]) / 2;
+    }
+  }
+
+  for(int i = 0; i < 2; i++) {
+    if(std::abs(globalBounds[4 + i] - bounds[4 + i]) < spacing[2]) {
+      localGlobalBounds[4 + i].isBound = 1;
+      localGlobalBounds[4 + i].x = (bounds[0] + bounds[1]) / 2;
+      localGlobalBounds[4 + i].y = (bounds[2] + bounds[3]) / 2;
+      localGlobalBounds[4 + i].z = bounds[4 + i];
+    }
+  }
+
+  MPI_Datatype partialGlobalBoundMPI;
+  std::vector<std::array<partialGlobalBound, 6>> allLocalGlobalBounds(
+    ttk::MPIsize_);
+  MPI_Datatype types[]
+    = {MPI_UNSIGNED_CHAR, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
+  int lengths[] = {1, 1, 1, 1};
+  const long int mpi_offsets[]
+    = {offsetof(partialGlobalBound, isBound), offsetof(partialGlobalBound, x),
+       offsetof(partialGlobalBound, y), offsetof(partialGlobalBound, z)};
+  MPI_Type_create_struct(
+    4, lengths, mpi_offsets, types, &partialGlobalBoundMPI);
+  MPI_Type_commit(&partialGlobalBoundMPI);
+
+  MPI_Allgather(localGlobalBounds.data(), 6, partialGlobalBoundMPI,
+                allLocalGlobalBounds.data(), 6, partialGlobalBoundMPI,
+                ttk::MPIcomm_);
+
+  return 1;
+};
 
 void ttkAlgorithm::MPIPipelinePreconditioning(
   vtkDataSet *input,

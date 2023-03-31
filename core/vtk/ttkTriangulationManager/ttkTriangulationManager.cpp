@@ -56,15 +56,6 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
 
   if(prevPeriodic != periodic) {
 
-#ifdef TTK_ENABLE_MPI
-    if(ttk::hasInitializedMPI() && periodic) {
-      dbg.printErr("Periodic implicit triangulation not (yet) supported in "
-                   "an MPI context!");
-      dbg.printErr("Keeping the Implicit triangulation.");
-      return;
-    }
-#endif // TTK_ENABLE_MPI
-
     triangulation.setPeriodicBoundaryConditions(periodic);
     dbg.printMsg("Switching regular grid periodicity from "
                  + (prevPeriodic ? std::string("ON") : std::string("OFF"))

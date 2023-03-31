@@ -2561,6 +2561,14 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
+    bool getHasPreconditionedPeriodicGhosts() {
+      return hasPreconditionedPeriodicGhosts_;
+    }
+
+    void setHasPreconditionedPeriodicGhosts(bool flag) {
+      hasPreconditionedPeriodicGhosts_ = flag;
+    }
+
     // "vtkGhostType" on points & cells
 
     inline void setVertexGhostArray(const unsigned char *const data) {
@@ -3797,6 +3805,7 @@ namespace ttk {
     bool hasPreconditionedDistributedTriangles_{false};
     bool hasPreconditionedDistributedVertices_{false};
     bool hasPreconditionedGlobalBoundary_{false};
+    bool hasPreconditionedPeriodicGhosts_{false};
 
 #endif // TTK_ENABLE_MPI
 

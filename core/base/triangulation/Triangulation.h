@@ -1369,6 +1369,13 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
+    bool getHasPreconditionedPeriodicGhosts() {
+      return abstractTriangulation_->getHasPreconditionedPeriodicGhosts();
+    }
+
+    void setHasPreconditionedPeriodicGhosts(bool flag) {
+      abstractTriangulation_->setHasPreconditionedPeriodicGhosts(flag);
+    }
     /// Get the corresponding global id for a given local id of a vertex.
     ///    ///
     /// \pre For this function to behave correctly,
