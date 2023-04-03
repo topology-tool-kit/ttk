@@ -332,9 +332,7 @@ jobs:
 
     - name: Fetch TTK-ParaView installer
       run: |
-        Invoke-WebRequest `
-        -OutFile ttk-paraview.exe `
-        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
+        curl.exe -OL https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
 
     - name: Install ParaView
       shell: cmd
@@ -343,9 +341,7 @@ jobs:
 
     - name: Fetch Visual C++ redistribuable run-time
       run: |
-        Invoke-WebRequest `
-          -OutFile vc_redist.x64.exe `
-          -Uri https://aka.ms/vs/16/release/vc_redist.x64.exe
+        curl.exe -OL https://aka.ms/vs/16/release/vc_redist.x64.exe
 
     - name: Create & configure TTK build directory
       shell: cmd
@@ -422,9 +418,7 @@ jobs:
 
     - name: Fetch TTK-ParaView installer
       run: |
-        Invoke-WebRequest `
-        -OutFile ttk-paraview.exe `
-        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
+        curl.exe -OL https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
 
     - name: Fetch TTK .exe artifact
       uses: actions/download-artifact@v3
