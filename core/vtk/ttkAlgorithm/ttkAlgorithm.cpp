@@ -718,7 +718,7 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
     double z{0};
   };
 
-  auto other = [this](ttk::SimplexId i) {
+  auto other = [](ttk::SimplexId i) {
     if(i % 2 == 1) {
       return i - 1;
     }
@@ -770,9 +770,14 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
       boundsWithoutGhosts[2 * i + 1] = bounds[2 * i + 1] - spacing[0];
     }
   }
+  std::string s = "globalBounds: ";
+  for(int i = 0; i < 6; i++) {
+    s += std::to_string(boundsWithoutGhosts[i]) + ", ";
+  }
+  printMsg(s);
 
   for(int i = 0; i < 2; i++) {
-    if(std::abs(globalBounds[i] - boundsWithoutGhosts[i]) < spacing[0]) {
+    if(globalBounds[i] == boundsWithoutGhosts[i]) {
       localGlobalBounds[i].isBound = 1;
       localGlobalBounds[i].x = boundsWithoutGhosts[i];
       localGlobalBounds[i].y
@@ -783,8 +788,7 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
   }
 
   for(int i = 0; i < 2; i++) {
-    if(std::abs(globalBounds[2 + i] - boundsWithoutGhosts[2 + i])
-       < spacing[1]) {
+    if(globalBounds[2 + i] == boundsWithoutGhosts[2 + i]) {
       localGlobalBounds[2 + i].isBound = 1;
       localGlobalBounds[2 + i].x
         = (boundsWithoutGhosts[0] + boundsWithoutGhosts[1]) / 2;
@@ -795,8 +799,7 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
   }
 
   for(int i = 0; i < 2; i++) {
-    if(std::abs(globalBounds[4 + i] - boundsWithoutGhosts[4 + i])
-       < spacing[2]) {
+    if(globalBounds[4 + i] == boundsWithoutGhosts[4 + i]) {
       localGlobalBounds[4 + i].isBound = 1;
       localGlobalBounds[4 + i].x
         = (boundsWithoutGhosts[0] + boundsWithoutGhosts[1]) / 2;
@@ -805,9 +808,19 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
       localGlobalBounds[4 + i].z = boundsWithoutGhosts[4 + i];
     }
   }
+  std::string s1 = "";
+  printMsg("Local: ");
+  for(int j = 0; j < 6; j++) {
+    s1 += "isBound: " + std::to_string(localGlobalBounds[j].isBound)
+          + "mid: " + std::to_string(localGlobalBounds[j].x) + ", "
+          + std::to_string(localGlobalBounds[j].y) + ", "
+          + std::to_string(localGlobalBounds[j].z) + "\n";
+  }
+  printMsg(s1);
 
   MPI_Datatype partialGlobalBoundMPI;
-  std::vector<partialGlobalBound> allLocalGlobalBounds(ttk::MPIsize_ * 6);
+  std::vector<partialGlobalBound> allLocalGlobalBounds(
+    ttk::MPIsize_ * 6, partialGlobalBound{});
   MPI_Datatype types[]
     = {MPI_UNSIGNED_CHAR, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
   int lengths[] = {1, 1, 1, 1};
@@ -821,6 +834,17 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
   MPI_Allgather(localGlobalBounds.data(), 6, partialGlobalBoundMPI,
                 allLocalGlobalBounds.data(), 6, partialGlobalBoundMPI,
                 ttk::MPIcomm_);
+  /* printMsg("allLocalGlobalBounds: ");
+   for (int i = 0; i<ttk::MPIsize_; i++){
+     std::string s = "";
+     for (int j = 0; j < 6; j++){
+         s += "isBound: "+std::to_string(allLocalGlobalBounds[6*i+j].isBound)
+         + "mid: "+std::to_string(allLocalGlobalBounds[6*i+j].x)+", "
+         +std::to_string(allLocalGlobalBounds[6*i+j].y)+", "
+         +std::to_string(allLocalGlobalBounds[6*i+j].z)+"\n";
+     }
+     printMsg(s);
+   } */
 
   std::vector<std::array<ttk::SimplexId, 3>> matches;
   for(int i = 0; i < ttk::MPIsize_; i++) {
@@ -875,7 +899,10 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
   for(int i = 0; i < 4; i++) {
     for(int j = i + 1; j < 6; j++) {
       if((abs(i - j) == 1 && i % 2 == 1) || abs(i - j) >= 2) {
-        if(localGlobalBounds[i].isBound != 0 && localGlobalBounds[j].isBound) {
+        if((localGlobalBounds[i].isBound != 0
+            && localGlobalBounds[j].isBound != 0)
+           && !(localGlobalBounds[other(i)].isBound != 0
+                && localGlobalBounds[other(j)].isBound != 0)) {
           local2DBounds.emplace_back(std::array<ttk::SimplexId, 2>{i, j});
         }
       }
@@ -884,11 +911,38 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<std::array<ttk::SimplexId, 3>> matches_2D;
   for(int i = 0; i < local2DBounds.size(); i++) {
     for(int j = 0; j < ttk::MPIsize_; j++) {
-      if((allLocalGlobalBounds[j * 6 + other(local2DBounds[i][0])].isBound != 0)
-         && (allLocalGlobalBounds[j * 6 + other(local2DBounds[i][1])].isBound
-             != 0)) {
-        matches_2D.emplace_back(std::array<ttk::SimplexId, 3>{
-          j, local2DBounds[i][0], local2DBounds[i][1]});
+      if(j != ttk::MPIrank_) {
+        bool isIn = false;
+        if((allLocalGlobalBounds[j * 6 + other(local2DBounds[i][0])].isBound
+            != 0)
+           && (allLocalGlobalBounds[j * 6 + other(local2DBounds[i][1])].isBound
+               != 0)) {
+          ttk::SimplexId dirs[2]
+            = {other(local2DBounds[i][0]), other(local2DBounds[i][1])};
+          std::sort(dirs, dirs + 2);
+          if((dirs[0] < 2 && dirs[1] >= 2 && dirs[1] < 4)) {
+            isIn = (boundsWithoutGhosts[4]
+                      <= allLocalGlobalBounds[j * 6 + dirs[0]].z
+                    && boundsWithoutGhosts[5]
+                         >= allLocalGlobalBounds[j * 6 + dirs[0]].z);
+          }
+          if((dirs[0] < 2 && dirs[1] >= 4)) {
+            isIn = (boundsWithoutGhosts[2]
+                      <= allLocalGlobalBounds[j * 6 + dirs[0]].y
+                    && boundsWithoutGhosts[3]
+                         >= allLocalGlobalBounds[j * 6 + dirs[0]].y);
+          }
+          if((dirs[0] >= 2 && dirs[0] < 4 && dirs[1] >= 4)) {
+            isIn = (boundsWithoutGhosts[0]
+                      <= allLocalGlobalBounds[j * 6 + dirs[0]].x
+                    && boundsWithoutGhosts[1]
+                         >= allLocalGlobalBounds[j * 6 + dirs[0]].x);
+          }
+          if(isIn) {
+            matches_2D.emplace_back(std::array<ttk::SimplexId, 3>{
+              j, local2DBounds[i][0], local2DBounds[i][1]});
+          }
+        }
       }
     }
   }
@@ -909,17 +963,31 @@ int ttkAlgorithm::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<std::array<ttk::SimplexId, 4>> matches_3D;
   for(int i = 0; i < local3DBounds.size(); i++) {
     for(int j = 0; j < ttk::MPIsize_; j++) {
-      if((allLocalGlobalBounds[j * 6 + other(local2DBounds[i][0])].isBound != 0)
-         && (allLocalGlobalBounds[j * 6 + other(local2DBounds[i][1])].isBound
-             != 0)
-         && (allLocalGlobalBounds[j * 6 + other(local2DBounds[i][2])].isBound
-             != 0)) {
-        matches_3D.emplace_back(std::array<ttk::SimplexId, 4>{
-          j, local3DBounds[i][0], local3DBounds[i][1], local3DBounds[i][2]});
+      if(j != ttk::MPIrank_) {
+        if((allLocalGlobalBounds[j * 6 + other(local3DBounds[i][0])].isBound
+            != 0)
+           && (allLocalGlobalBounds[j * 6 + other(local3DBounds[i][1])].isBound
+               != 0)
+           && (allLocalGlobalBounds[j * 6 + other(local3DBounds[i][2])].isBound
+               != 0)) {
+          matches_3D.emplace_back(std::array<ttk::SimplexId, 4>{
+            j, local3DBounds[i][0], local3DBounds[i][1], local3DBounds[i][2]});
+        }
       }
     }
   }
-
+  /*printMsg("2D matches: "+std::to_string(matches_2D.size()));
+  for (int i = 0; i<matches_2D.size(); i++){
+    printMsg("proc,i,j: "+std::to_string(matches_2D[i][0])+",
+  "+std::to_string(matches_2D[i][1])+", "+std::to_string(matches_2D[i][2]));
+  }*/
+  printMsg("3D matches: " + std::to_string(matches_3D.size()));
+  for(int i = 0; i < matches_3D.size(); i++) {
+    printMsg("proc,i,j,k: " + std::to_string(matches_3D[i][0]) + ", "
+             + std::to_string(matches_3D[i][1]) + ", "
+             + std::to_string(matches_3D[i][2]) + ", "
+             + std::to_string(matches_3D[i][3]));
+  }
   return 1;
 };
 
