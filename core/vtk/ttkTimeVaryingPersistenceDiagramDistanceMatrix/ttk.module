@@ -1,0 +1,10 @@
+NAME
+  ttkTimeVaryingPersistenceDiagramDistanceMatrix
+SOURCES
+  ttkTimeVaryingPersistenceDiagramDistanceMatrix.cpp
+HEADERS
+  ttkTimeVaryingPersistenceDiagramDistanceMatrix.h
+DEPENDS
+  timeVaryingTimeVaryingPersistenceDiagramDistanceMatrix
+  ttkAlgorithm
+  ttkPersistenceDiagram

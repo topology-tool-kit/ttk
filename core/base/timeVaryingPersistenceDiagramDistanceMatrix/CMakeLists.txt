@@ -1,0 +1,9 @@
+ttk_add_base_library(timeVaryingTimeVaryingPersistenceDiagramDistanceMatrix
+  SOURCES
+    TimeVaryingPersistenceDiagramDistanceMatrix.cpp
+  HEADERS
+    TimeVaryingPersistenceDiagramDistanceMatrix.h
+  DEPENDS
+    common
+    persistenceDiagramAuction
+  )
