@@ -145,7 +145,6 @@ namespace ttk {
             stream << i << " / " << distanceMatrix.size();
             printMsg(stream.str());
           }
-
           distanceMatrix[i][i] = 0.0;
           for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
             // Execute
@@ -158,8 +157,6 @@ namespace ttk {
               mergeTreeDistance.setEpsilon2Tree2(epsilon2Tree2_);
               mergeTreeDistance.setEpsilon3Tree1(epsilon3Tree1_);
               mergeTreeDistance.setEpsilon3Tree2(epsilon3Tree2_);
-              mergeTreeDistance.setProgressiveComputation(
-                progressiveComputation_);
               mergeTreeDistance.setBranchDecomposition(branchDecomposition_);
               mergeTreeDistance.setParallelize(parallelize_);
               mergeTreeDistance.setPersistenceThreshold(persistenceThreshold_);
@@ -167,9 +164,6 @@ namespace ttk {
               mergeTreeDistance.setThreadNumber(this->threadNumber_);
               mergeTreeDistance.setNormalizedWasserstein(
                 normalizedWasserstein_);
-              mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
-              mergeTreeDistance.setNormalizedWassersteinReg(
-                normalizedWassersteinReg_);
               mergeTreeDistance.setKeepSubtree(keepSubtree_);
               mergeTreeDistance.setDistanceSquaredRoot(distanceSquaredRoot_);
               mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);

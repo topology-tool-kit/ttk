@@ -399,12 +399,8 @@ namespace ttk {
                           std::vector<ftm::FTMTree_MT *> &trees2,
                           std::vector<ftm::MergeTree<dataType>> &centroids2) {
       oldBestCentroid_ = bestCentroid_;
-      if(normalizedWasserstein_ and rescaledWasserstein_)
-        assignmentCentroidsNaive<dataType>(
-          trees, centroids, assignmentC, bestDistanceT, trees2, centroids2);
-      else
-        assignmentCentroidsAccelerated<dataType>(
-          trees, centroids, assignmentC, bestDistanceT, trees2, centroids2);
+      assignmentCentroidsAccelerated<dataType>(
+        trees, centroids, assignmentC, bestDistanceT, trees2, centroids2);
     }
 
     template <class dataType>
@@ -617,11 +613,8 @@ namespace ttk {
         &finalMatchings) {
       MergeTreeBarycenter mergeTreeBary;
       mergeTreeBary.setDebugLevel(std::min(debugLevel_, 2));
-      mergeTreeBary.setProgressiveComputation(false);
       mergeTreeBary.setBranchDecomposition(true);
       mergeTreeBary.setNormalizedWasserstein(normalizedWasserstein_);
-      mergeTreeBary.setNormalizedWassersteinReg(normalizedWassersteinReg_);
-      mergeTreeBary.setRescaledWasserstein(rescaledWasserstein_);
       mergeTreeBary.setKeepSubtree(keepSubtree_);
       mergeTreeBary.setAssignmentSolver(assignmentSolverID_);
       mergeTreeBary.setIsCalled(true);

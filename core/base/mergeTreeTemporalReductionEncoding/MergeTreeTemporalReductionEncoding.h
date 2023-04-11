@@ -99,13 +99,10 @@ namespace ttk {
       mergeTreeDistance.setEpsilon2Tree2(epsilon2Tree2_);
       mergeTreeDistance.setEpsilon3Tree1(epsilon3Tree1_);
       mergeTreeDistance.setEpsilon3Tree2(epsilon3Tree2_);
-      mergeTreeDistance.setProgressiveComputation(progressiveComputation_);
       mergeTreeDistance.setBranchDecomposition(branchDecomposition_);
       mergeTreeDistance.setParallelize(parallelize_);
       mergeTreeDistance.setPersistenceThreshold(persistenceThreshold_);
       mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
-      mergeTreeDistance.setNormalizedWassersteinReg(normalizedWassersteinReg_);
-      mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
       mergeTreeDistance.setKeepSubtree(keepSubtree_);
       mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
       mergeTreeDistance.setThreadNumber(this->threadNumber_);
@@ -135,14 +132,10 @@ namespace ttk {
       mergeTreeBarycenter.setEpsilon2Tree2(epsilon2Tree2_);
       mergeTreeBarycenter.setEpsilon3Tree1(epsilon3Tree1_);
       mergeTreeBarycenter.setEpsilon3Tree2(epsilon3Tree2_);
-      mergeTreeBarycenter.setProgressiveComputation(progressiveComputation_);
       mergeTreeBarycenter.setBranchDecomposition(branchDecomposition_);
       mergeTreeBarycenter.setParallelize(parallelize_);
       mergeTreeBarycenter.setPersistenceThreshold(persistenceThreshold_);
       mergeTreeBarycenter.setNormalizedWasserstein(normalizedWasserstein_);
-      mergeTreeBarycenter.setNormalizedWassersteinReg(
-        normalizedWassersteinReg_);
-      mergeTreeBarycenter.setRescaledWasserstein(rescaledWasserstein_);
       mergeTreeBarycenter.setKeepSubtree(keepSubtree_);
       mergeTreeBarycenter.setUseMinMaxPair(useMinMaxPair_);
       mergeTreeBarycenter.setThreadNumber(this->threadNumber_);
