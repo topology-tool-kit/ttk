@@ -76,15 +76,6 @@ namespace ttk {
       return goodPrices;
     }
 
-    template <class vecType>
-    void printVector(std::vector<vecType> &vec) {
-      std::stringstream ss;
-      for(auto valTemp : vec)
-        ss << valTemp << " ";
-      printMsg(ss.str(), debug::Priority::VERBOSE);
-      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
-    }
-
   private:
     int numberOfRounds = -1;
     int iter = 0;
@@ -92,9 +83,13 @@ namespace ttk {
     double epsilonDiviserMultiplier = 0;
     double delta_lim = 0.01;
 
-    std::vector<int> bidderAssignments{1, -1};
+    dataType lowerBoundCostWeight = 1 + delta_lim;
+
+    // Filled
+    std::vector<int> bidderAssignments{1, -1}, bestBidderAssignments;
     std::vector<int> goodAssignments{};
     std::vector<double> goodPrices{};
+    dataType lowerBoundCost;
   }; // AssignmentAuction Class
 
   template <typename type>
@@ -118,34 +113,12 @@ namespace ttk {
     return maxValue;
   }
 
-  template <class dataType>
-  dataType getSecondMinValueVector(std::vector<dataType> &vec) {
-    dataType secondMin = std::numeric_limits<dataType>::max();
-    dataType firstMin = std::numeric_limits<dataType>::max();
-    for(auto elem : vec) {
-      if(elem < firstMin) {
-        secondMin = firstMin;
-        firstMin = elem;
-      } else if(elem < secondMin)
-        secondMin = elem;
-    }
-    return secondMin;
-  }
-
   template <typename dataType>
   void AssignmentAuction<dataType>::initEpsilon() {
     if(epsilon == -1.0) {
       dataType maxValue
         = getMaxValue<dataType>(this->costMatrix, this->balancedAssignment);
-      // int tRowSize = this->balancedAssignment ? this->rowSize :
-      // (this->rowSize-1)+(this->colSize-1); int tColSize =
-      // this->balancedAssignment ? this->colSize :
-      // (this->rowSize-1)+(this->colSize-1); epsilon = maxValue *
-      // std::min(tRowSize, tColSize)/2;
       epsilon = maxValue / 4.0;
-      // epsilon = std::pow(maxValue, 2)/4;
-      // epsilon += *std::max_element(goodPrices.begin(), goodPrices.end());
-      // epsilon += getSecondMinValueVector(goodPrices);
       if(epsilon == 0.0)
         epsilon = 1.0;
       epsilon
@@ -171,16 +144,12 @@ namespace ttk {
       bidderAssignments.resize((this->rowSize - 1) + (this->colSize - 1), -1);
       goodAssignments.resize((this->colSize - 1) + (this->rowSize - 1), -1);
     }
-    /*goodPrices.clear();
-    goodPrices.resize(this->colSize, 0);*/
   }
 
   template <typename dataType>
   void AssignmentAuction<dataType>::initFirstRound() {
     iter = 0;
     bidderAssignments[0] = -1;
-    // epsilon /= ((epsilonDiviserMultiplier==0) ? 1 : epsilonDiviserMultiplier
-    // * 5);
   }
 
   template <typename dataType>
@@ -240,17 +209,48 @@ namespace ttk {
         unassignedBidders.push(goodAssignments[bestGoodId]);
       goodAssignments[bestGoodId] = bidderId;
 
+      // If there is only one acceptable good for the bidder
+      if(bestSecondValue == std::numeric_limits<dataType>::lowest())
+        bestSecondValue = bestValue;
+
       // Update price
       double delta = abs<dataType>(bestValue - bestSecondValue) + epsilon;
-      goodPrices[bestGoodId] = goodPrices[bestGoodId] + delta;
-
-      // printVector(goodPrices);
+      double newPrice = goodPrices[bestGoodId] + delta;
+      if(newPrice > std::numeric_limits<double>::max() / 2) {
+        // Avoid price explosion
+        newPrice = goodPrices[bestGoodId] + epsilon;
+      }
+      goodPrices[bestGoodId] = newPrice;
     }
+  }
+
+  template <typename dataType>
+  dataType getLowerBoundCost(std::vector<std::vector<dataType>> &costMatrix) {
+    std::vector<dataType> minCol(
+      costMatrix[0].size(), std::numeric_limits<dataType>::max()),
+      minRow(costMatrix.size(), std::numeric_limits<dataType>::max());
+    for(unsigned int i = 0; i < costMatrix.size(); ++i) {
+      for(unsigned int j = 0; j < costMatrix[i].size(); ++j) {
+        if(costMatrix[i][j] < minCol[j])
+          minCol[j] = costMatrix[i][j];
+        if(costMatrix[i][j] < minRow[i])
+          minRow[i] = costMatrix[i][j];
+      }
+    }
+    dataType minColCost = 0, minRowCost = 0;
+    for(unsigned int i = 0; i < minCol.size(); ++i)
+      minColCost += minCol[i];
+    for(unsigned int i = 0; i < minRow.size(); ++i)
+      minRowCost += minRow[i];
+    dataType lowerBoundCost = std::max(minColCost, minRowCost);
+
+    return lowerBoundCost;
   }
 
   template <typename dataType>
   int AssignmentAuction<dataType>::run(std::vector<MatchingType> &matchings) {
     initEpsilon();
+    dataType bestCost = std::numeric_limits<dataType>::max();
 
     // Try to avoid price war
     double tempPrice = *std::max_element(goodPrices.begin(), goodPrices.end());
@@ -265,30 +265,34 @@ namespace ttk {
 
     // Make balanced cost matrix
     if(not this->balancedAssignment)
-      makeBalancedMatrix(this->costMatrix);
-    // printTableVector(this->costMatrix);
+      this->makeBalancedMatrix(this->costMatrix);
+
+    // Get lower bound cost
+    lowerBoundCost = getLowerBoundCost(this->costMatrix);
 
     // Run auction
     initFirstRound();
-    // printVector(goodPrices);
     while(not stoppingCriterion(this->costMatrix)) {
       initBiddersAndGoods();
       runAuctionRound(this->costMatrix);
-      // std::cout << epsilon << std::endl;
-      // printVector(goodPrices);
-      // printVector(bidderAssignments);
+
+      dataType cost = getMatchingDistance(this->costMatrix);
+      if(cost < bestCost) {
+        bestCost = cost;
+        bestBidderAssignments = bidderAssignments;
+      }
+
       epsilonScaling();
       iter++;
+
       if(numberOfRounds != -1 and iter >= numberOfRounds)
         break;
     }
-    // printVector(goodPrices);
+    bidderAssignments = bestBidderAssignments;
 
     // Create output matching
     for(unsigned int bidderId = 0; bidderId < bidderAssignments.size();
         ++bidderId) {
-      /*int i = std::min(bidderId, this->rowSize-1);
-      int j = std::min(bidderAssignments[bidderId], this->colSize-1);*/
       int i = bidderId;
       int j = bidderAssignments[bidderId];
       if(this->balancedAssignment
@@ -316,7 +320,6 @@ namespace ttk {
       return false;
     dataType delta = 5;
     delta = getRelativePrecision(cMatrix);
-    // std::cout << "delta = " << delta << std::endl;
     return not(delta > delta_lim);
   }
 
@@ -325,7 +328,7 @@ namespace ttk {
   dataType AssignmentAuction<dataType>::getRelativePrecision(
     std::vector<std::vector<dataType>> &cMatrix) {
     dataType d = this->getMatchingDistance(cMatrix);
-    if(d < 1e-12) {
+    if(d < 1e-6 or d <= (lowerBoundCost * lowerBoundCostWeight)) {
       return 0;
     }
     dataType denominator = d - bidderAssignments.size() * epsilon;
