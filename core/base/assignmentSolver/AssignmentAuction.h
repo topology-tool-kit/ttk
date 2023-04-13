@@ -113,34 +113,12 @@ namespace ttk {
     return maxValue;
   }
 
-  template <class dataType>
-  dataType getSecondMinValueVector(std::vector<dataType> &vec) {
-    dataType secondMin = std::numeric_limits<dataType>::max();
-    dataType firstMin = std::numeric_limits<dataType>::max();
-    for(auto elem : vec) {
-      if(elem < firstMin) {
-        secondMin = firstMin;
-        firstMin = elem;
-      } else if(elem < secondMin)
-        secondMin = elem;
-    }
-    return secondMin;
-  }
-
   template <typename dataType>
   void AssignmentAuction<dataType>::initEpsilon() {
     if(epsilon == -1.0) {
       dataType maxValue
         = getMaxValue<dataType>(this->costMatrix, this->balancedAssignment);
-      // int tRowSize = this->balancedAssignment ? this->rowSize :
-      // (this->rowSize-1)+(this->colSize-1); int tColSize =
-      // this->balancedAssignment ? this->colSize :
-      // (this->rowSize-1)+(this->colSize-1); epsilon = maxValue *
-      // std::min(tRowSize, tColSize)/2;
       epsilon = maxValue / 4.0;
-      // epsilon = std::pow(maxValue, 2)/4;
-      // epsilon += *std::max_element(goodPrices.begin(), goodPrices.end());
-      // epsilon += getSecondMinValueVector(goodPrices);
       if(epsilon == 0.0)
         epsilon = 1.0;
       epsilon
@@ -166,16 +144,12 @@ namespace ttk {
       bidderAssignments.resize((this->rowSize - 1) + (this->colSize - 1), -1);
       goodAssignments.resize((this->colSize - 1) + (this->rowSize - 1), -1);
     }
-    /*goodPrices.clear();
-    goodPrices.resize(this->colSize, 0);*/
   }
 
   template <typename dataType>
   void AssignmentAuction<dataType>::initFirstRound() {
     iter = 0;
     bidderAssignments[0] = -1;
-    // epsilon /= ((epsilonDiviserMultiplier==0) ? 1 : epsilonDiviserMultiplier
-    // * 5);
   }
 
   template <typename dataType>
