@@ -182,10 +182,12 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetNumberOfComponents(1);
       newOrderArray->SetNumberOfTuples(nVertices);
       std::vector<int> neighbors;
+#ifdef TTK_ENABLE_MPI
       if(ttk::hasInitializedMPI()) {
         this->MPIGhostPipelinePreconditioning(inputData);
         this->MPIPipelinePreconditioning(inputData, neighbors, nullptr);
       }
+#endif
       switch(scalarArray->GetDataType()) {
         vtkTemplateMacro(ttk::preconditionOrderArray(
           nVertices,
