@@ -80,6 +80,8 @@ namespace ttk {
       return 1; // return success
     }
 
+  protected:
+    bool GlobalOrder{false};
   }; // ArrayPreconditioning class
 
 } // namespace ttk
