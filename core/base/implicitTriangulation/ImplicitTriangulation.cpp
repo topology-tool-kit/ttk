@@ -1,3 +1,4 @@
+#include "BaseClass.h"
 #include <ImplicitTriangulation.h>
 
 #include <numeric>
@@ -3736,7 +3737,7 @@ int ttk::ImplicitTriangulation::getVertexRankInternal(
   const SimplexId lvid) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(this->neighborRanks_.empty()) {
+  if(this->neighborRanks_.empty() && ttk::MPIsize_ > 1) {
     this->printErr("Empty neighborsRanks_!");
     return -1;
   }
@@ -3762,7 +3763,7 @@ int ttk::ImplicitTriangulation::getCellRankInternal(
   const SimplexId lcid) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(this->neighborRanks_.empty()) {
+  if(this->neighborRanks_.empty() && ttk::MPIsize_ > 1) {
     this->printErr("Empty neighborsRanks_!");
     return -1;
   }
