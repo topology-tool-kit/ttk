@@ -176,10 +176,8 @@ int ttkIntegralLines::getTrajectories(
             // iteration
             ids[0] = ids[1];
           }
-#ifdef TTK_ENABLE_MPI
           outputMaskField->SetTuple1(
             outputMaskField->GetNumberOfTuples() - 1, 0);
-#endif
         } else {
           break;
         }
