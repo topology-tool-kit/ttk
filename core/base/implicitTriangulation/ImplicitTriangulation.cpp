@@ -1,4 +1,3 @@
-#include "BaseClass.h"
 #include <ImplicitTriangulation.h>
 
 #include <numeric>
