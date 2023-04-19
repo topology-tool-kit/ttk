@@ -174,7 +174,6 @@ int ttk::ContinuousScatterPlot::execute(
         localScalarMax[1] = data[k][1];
 
       // get positions
-
       triangulation->getVertexPoint(
         vertex[k], position[k][0], position[k][1], position[k][2]);
     }
@@ -233,53 +232,86 @@ int ttk::ContinuousScatterPlot::execute(
         isLimit = true;
     }
 
-    // classification:
+    // Classify tetrahedron based on their projection in the data domain,
+    // following Shirley & Tuchman algorithm
+
+    // Class 0 tetras have either 1 or 3 visible faces, so geometrically one
+    // point is in the triangle made by the 3 other in the 2D data domain.
+    // Testing if one point is inside the triangle made by the others is
+    // equivalent to testing the quadrilateral convexity property. Thus, for
+    // class 0, we cannot find a convex quadrilateral in the 2D plane out of
+    // these 4 points. Using the signs of cross products along the Z axis of
+    // consecutive edge vectors, we can find whether or not a convex quad can be
+    // found.
+
     int index[4]{0, 1, 2, 3};
-    bool isInTriangle{};
-    if(Geometry::isPointInTriangle(data[0], data[1], data[2], data[3]))
+    bool isInTriangle{}; // True if the tetra is class 0
+
+    bool zCrossProductsSigns[4]
+      = {(data[1][0] - data[0][0]) * (data[2][1] - data[0][1])
+             - (data[1][1] - data[0][1]) * (data[2][0] - data[0][0])
+           > 0,
+         (data[2][0] - data[1][0]) * (data[3][1] - data[1][1])
+             - (data[2][1] - data[1][1]) * (data[3][0] - data[1][0])
+           > 0,
+         (data[3][0] - data[2][0]) * (data[0][1] - data[2][1])
+             - (data[3][1] - data[2][1]) * (data[0][0] - data[2][0])
+           > 0,
+         (data[0][0] - data[3][0]) * (data[1][1] - data[3][1])
+             - (data[0][1] - data[3][1]) * (data[1][0] - data[3][0])
+           > 0};
+
+    // For class 0, the quad is not convex, which means
+    // all but one consecutive edge vector cross-product Z coordinate have the
+    // same sign.
+    if((zCrossProductsSigns[0] != zCrossProductsSigns[1])
+       != (zCrossProductsSigns[2] != zCrossProductsSigns[3])) {
       isInTriangle = true;
-    else if(Geometry::isPointInTriangle(data[0], data[1], data[3], data[2])) {
-      isInTriangle = true;
-      index[0] = 0;
-      index[1] = 1;
-      index[2] = 3;
-      index[3] = 2;
-    } else if(Geometry::isPointInTriangle(data[0], data[2], data[3], data[1])) {
-      isInTriangle = true;
-      index[0] = 0;
-      index[1] = 2;
-      index[2] = 3;
-      index[3] = 1;
-    } else if(Geometry::isPointInTriangle(data[1], data[2], data[3], data[0])) {
-      isInTriangle = true;
-      index[0] = 1;
-      index[1] = 2;
-      index[2] = 3;
-      index[3] = 0;
+      if(zCrossProductsSigns[1] == zCrossProductsSigns[2]
+         && zCrossProductsSigns[2] == zCrossProductsSigns[3]) {
+        index[0] = 0;
+        index[1] = 2;
+        index[2] = 3;
+        index[3] = 1;
+      } else if(zCrossProductsSigns[0] == zCrossProductsSigns[2]
+                && zCrossProductsSigns[2] == zCrossProductsSigns[3]) {
+        index[0] = 0;
+        index[1] = 1;
+        index[2] = 3;
+        index[3] = 2;
+      } else if(zCrossProductsSigns[0] == zCrossProductsSigns[1]
+                && zCrossProductsSigns[1] == zCrossProductsSigns[2]) {
+        index[0] = 1;
+        index[1] = 2;
+        index[2] = 3;
+        index[3] = 0;
+      }
     }
 
     // projection:
     double density{};
-    double imaginaryPosition[3]{};
+    double imaginaryPosition[3]{0, 0, 0};
     triangles.clear();
     std::array<SimplexId, 3> triangle{};
-    // class 0
+
+    // class 0 projection : 3 triangles
     if(isInTriangle) {
       // mass density
       double massDensity{};
       {
-        double A;
+        double fullArea{};
 
         Geometry::computeTriangleArea(
-          data[index[0]], data[index[1]], data[index[2]], A);
-        double invA = 1.0 / A;
-        if(A == 0.) {
-          invA = 0.0;
+          data[index[0]], data[index[1]], data[index[2]], fullArea);
+
+        double invArea{};
+        if(fullArea == 0.) {
+          invArea = 0.0;
           isLimit = true;
+        } else {
+          invArea = 1.0 / fullArea;
         }
-
         double alpha, beta, gamma;
-
         Geometry::computeTriangleArea(
           data[index[1]], data[index[2]], data[index[3]], alpha);
 
@@ -289,19 +321,21 @@ int ttk::ContinuousScatterPlot::execute(
         Geometry::computeTriangleArea(
           data[index[0]], data[index[1]], data[index[3]], gamma);
 
-        alpha *= invA;
-        beta *= invA;
-        gamma *= invA;
+        alpha *= invArea;
+        beta *= invArea;
+        gamma *= invArea;
 
-        double p0[3];
-        double p1[3];
+        double centralPoint[3];
+        double interpolatedPoint[3]; // Coordinates of the point on the opposite
+                                     // face that has the same isovalue as the
+                                     // central point
         for(int k = 0; k < 3; ++k) {
-          p0[k] = position[index[3]][k];
-
-          p1[k] = alpha * position[index[0]][k] + beta * position[index[1]][k]
-                  + gamma * position[index[2]][k];
+          centralPoint[k] = position[index[3]][k];
+          interpolatedPoint[k] = alpha * position[index[0]][k]
+                                 + beta * position[index[1]][k]
+                                 + gamma * position[index[2]][k];
         }
-        massDensity = Geometry::distance(p0, p1);
+        massDensity = Geometry::distance(centralPoint, interpolatedPoint);
       }
 
       if(isLimit)
@@ -324,45 +358,57 @@ int ttk::ContinuousScatterPlot::execute(
       triangle[2] = vertex[index[2]];
       triangles.push_back(triangle);
     }
-    // class 1
+    // class 1 projection : 4 triangles using an "imaginary point"
     else {
       double massDensity{};
-      double p[3]{0, 0, 0};
-      if(Geometry::computeSegmentIntersection(
-           data[0][0], data[0][1], data[1][0], data[1][1], data[2][0],
-           data[2][1], data[3][0], data[3][1], p[0], p[1])) {
-        index[0] = 0;
-        index[1] = 1;
-        index[2] = 2;
-        index[3] = 3;
-      } else if(Geometry::computeSegmentIntersection(
-                  data[0][0], data[0][1], data[2][0], data[2][1], data[1][0],
-                  data[1][1], data[3][0], data[3][1], p[0], p[1])) {
-        index[0] = 0;
-        index[1] = 2;
-        index[2] = 1;
-        index[3] = 3;
-      } else if(Geometry::computeSegmentIntersection(
-                  data[0][0], data[0][1], data[3][0], data[3][1], data[1][0],
-                  data[1][1], data[2][0], data[2][1], p[0], p[1])) {
+
+      // We know that a convex quad can be made out of the 4 points in the data
+      // domain Still using cross-product signs, we find a point order where the
+      // quad is not self-intersecting A non self-intersecting quad would have
+      // the same cross-product signs for all 4 consecutive edge pairs
+      if(zCrossProductsSigns[0] != zCrossProductsSigns[1]) {
         index[0] = 0;
         index[1] = 3;
         index[2] = 1;
         index[3] = 2;
+        Geometry::computeSegmentIntersection(
+          data[0][0], data[0][1], data[3][0], data[3][1], data[1][0],
+          data[1][1], data[2][0], data[2][1], imaginaryPosition[0],
+          imaginaryPosition[1]);
+      } else if(zCrossProductsSigns[2] != zCrossProductsSigns[1]) {
+        index[0] = 0;
+        index[1] = 1;
+        index[2] = 2;
+        index[3] = 3;
+        Geometry::computeSegmentIntersection(
+          data[0][0], data[0][1], data[1][0], data[1][1], data[2][0],
+          data[2][1], data[3][0], data[3][1], imaginaryPosition[0],
+          imaginaryPosition[1]);
+      } else {
+        index[0] = 0;
+        index[1] = 2;
+        index[2] = 1;
+        index[3] = 3;
+        Geometry::computeSegmentIntersection(
+          data[0][0], data[0][1], data[2][0], data[2][1], data[1][0],
+          data[1][1], data[3][0], data[3][1], imaginaryPosition[0],
+          imaginaryPosition[1]);
       }
 
-      double a = Geometry::distance(data[index[0]], p);
-      double b = Geometry::distance(data[index[0]], data[index[1]]);
-      double r0 = a / b;
+      double distanceToIntersection
+        = Geometry::distance(data[index[0]], imaginaryPosition);
+      double diagonalLength
+        = Geometry::distance(data[index[0]], data[index[1]]);
+      double r0 = distanceToIntersection / diagonalLength;
 
-      a = Geometry::distance(data[index[2]], p);
-      b = Geometry::distance(data[index[2]], data[index[3]]);
-      double r1 = a / b;
+      distanceToIntersection
+        = Geometry::distance(data[index[2]], imaginaryPosition);
+      diagonalLength = Geometry::distance(data[index[2]], data[index[3]]);
+      double r1 = distanceToIntersection / diagonalLength;
 
       double p0[3];
       double p1[3];
       for(int k = 0; k < 3; ++k) {
-
         p0[k] = position[index[0]][k]
                 + r0 * (position[index[1]][k] - position[index[0]][k]);
 
@@ -375,10 +421,6 @@ int ttk::ContinuousScatterPlot::execute(
         density = std::numeric_limits<decltype(density)>::max();
       else
         density = massDensity / volume;
-
-      imaginaryPosition[0] = p[0];
-      imaginaryPosition[1] = p[1];
-      imaginaryPosition[2] = 0;
 
       // four triangles projection
       triangle[0] = -1; // new geometry

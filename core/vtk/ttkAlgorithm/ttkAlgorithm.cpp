@@ -181,40 +181,20 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetName(this->GetOrderArrayName(scalarArray).data());
       newOrderArray->SetNumberOfComponents(1);
       newOrderArray->SetNumberOfTuples(nVertices);
-#ifdef TTK_ENABLE_MPI
       std::vector<int> neighbors;
+#ifdef TTK_ENABLE_MPI
       if(ttk::hasInitializedMPI()) {
         this->MPIGhostPipelinePreconditioning(inputData);
         this->MPIPipelinePreconditioning(inputData, neighbors, nullptr);
       }
-      if(ttk::isRunningWithMPI()) {
-        const auto triangulation{this->GetTriangulation(inputData)};
-        ttkTypeMacroA(scalarArray->GetDataType(),
-                      (ttk::produceOrdering<T0>(
-                        ttkUtils::GetPointer<ttk::SimplexId>(newOrderArray),
-                        ttkUtils::GetPointer<T0>(scalarArray),
-                        [triangulation](const ttk::SimplexId a) {
-                          return triangulation->getVertexGlobalId(a);
-                        },
-                        [triangulation](const ttk::SimplexId a) {
-                          return triangulation->getVertexRank(a);
-                        },
-                        [triangulation](const ttk::SimplexId a) {
-                          return triangulation->getVertexLocalId(a);
-                        },
-                        nVertices, 500, neighbors)));
-      } else
-#endif // TTK_ENABLE_MPI
-
-      {
-        switch(scalarArray->GetDataType()) {
-          vtkTemplateMacro(ttk::preconditionOrderArray(
-            nVertices,
-            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
-            static_cast<ttk::SimplexId *>(
-              ttkUtils::GetVoidPointer(newOrderArray)),
-            this->threadNumber_));
-        }
+#endif
+      switch(scalarArray->GetDataType()) {
+        vtkTemplateMacro(ttk::preconditionOrderArray(
+          nVertices,
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
+          static_cast<ttk::SimplexId *>(
+            ttkUtils::GetVoidPointer(newOrderArray)),
+          this->threadNumber_));
       }
 
       // append order array temporarily to input

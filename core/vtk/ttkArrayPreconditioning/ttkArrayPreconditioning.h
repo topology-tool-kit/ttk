@@ -50,6 +50,9 @@ public:
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
+  vtkSetMacro(GlobalOrder, bool);
+  vtkGetMacro(GlobalOrder, bool);
+
   // copy the vtkPassSelectedArray ("PassArrays" filter) API
   vtkDataArraySelection *GetPointDataArraySelection() {
     return this->ArraySelection;
