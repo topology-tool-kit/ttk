@@ -117,7 +117,6 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
     bool use_kdt = use_kdt_;
 
     // Get closest good
-    int bestIndex = std::numeric_limits<int>::max();
     double bestCost = std::numeric_limits<double>::max();
     std::vector<KDT *> neighbours;
     std::vector<double> costs;
@@ -125,17 +124,15 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
       std::array<double, 5> coordinates;
       bidders_[i].GetKDTCoordinates(geometricalFactor_, coordinates);
       kdt_.getKClosest(1, coordinates, neighbours, costs, kdt_index);
-      bestIndex = neighbours[0]->id_;
+      int bestIndex = neighbours[0]->id_;
       bestCost
         = bidders_[i].cost(goods_[bestIndex], wasserstein_, geometricalFactor_);
     } else {
       for(unsigned int j = 0; j < goods_.size(); ++j) {
         double cost
           = bidders_[i].cost(goods_[j], wasserstein_, geometricalFactor_);
-        if(cost < bestCost) {
+        if(cost < bestCost)
           bestCost = cost;
-          bestIndex = j;
-        }
       }
     }
 
@@ -143,10 +140,8 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
     Good g{bidders_[i].x_, bidders_[i].y_, true, -bidders_[i].id_ - 1};
     g.projectOnDiagonal();
     double cost = bidders_[i].cost(g, wasserstein_, geometricalFactor_);
-    if(cost < bestCost) {
+    if(cost < bestCost)
       bestCost = cost;
-      bestIndex = -1;
-    }
 
     // Update lower bound
     lowerBoundCost_ += bestCost;
