@@ -83,10 +83,10 @@ void ttk::PDBarycenter::runMatchingAuction(
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map,
+      geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map, 0,
       (*min_diag_price)[i], use_kdt);
     std::vector<MatchingType> matchings;
-    double cost = auction.run(matchings);
+    double cost = auction.run(matchings, i);
     all_matchings->at(i) = matchings;
 
     (*total_cost) += cost * cost;
