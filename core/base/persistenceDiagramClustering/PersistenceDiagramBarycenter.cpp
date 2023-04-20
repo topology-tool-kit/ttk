@@ -73,7 +73,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
   std::vector<std::vector<MatchingType>> matching_min, matching_sad,
     matching_max;
 
-  double total_cost = 0;
+  double total_cost = 0, min_cost = 0, sad_cost = 0, max_cost = 0;
   /*omp_set_num_threads(1);
   #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel sections
@@ -101,7 +101,8 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_min.setReinitPrices(reinit_prices_);
     bary_min.setDiagrams(&data_min);
     matching_min = bary_min.execute(barycenter_min);
-    total_cost += bary_min.getCost();
+    min_cost = bary_min.getCost();
+    total_cost += min_cost;
   }
   /*}
 
@@ -127,7 +128,8 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_sad.setReinitPrices(reinit_prices_);
     bary_sad.setDiagrams(&data_sad);
     matching_sad = bary_sad.execute(barycenter_sad);
-    total_cost += bary_sad.getCost();
+    sad_cost = bary_sad.getCost();
+    total_cost += sad_cost;
   }
   /*}
 
@@ -153,7 +155,8 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_max.setReinitPrices(reinit_prices_);
     bary_max.setDiagrams(&data_max);
     matching_max = bary_max.execute(barycenter_max);
-    total_cost += bary_max.getCost();
+    max_cost = bary_max.getCost();
+    total_cost += max_cost;
   }
   //}
   //}
@@ -271,6 +274,9 @@ void ttk::PersistenceDiagramBarycenter::execute(
     }
   }
 
-  printMsg("Total cost : " + std::to_string(total_cost));
+  printMsg("Min-saddle cost    : " + std::to_string(min_cost));
+  printMsg("Saddle-saddle cost : " + std::to_string(sad_cost));
+  printMsg("Saddle-max cost    : " + std::to_string(max_cost));
+  printMsg("Total cost         : " + std::to_string(total_cost));
   printMsg("Complete", 1, tm.getElapsedTime(), threadNumber_);
 }

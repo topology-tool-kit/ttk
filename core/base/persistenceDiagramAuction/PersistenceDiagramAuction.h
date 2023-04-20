@@ -20,6 +20,12 @@ namespace ttk {
     std::vector<KDT *> &correspondence_kdt_map_{
       default_correspondence_kdt_map_};
 
+    inline void initLowerBoundCostWeight(double delta_lim) {
+      lowerBoundCostWeight_ = 1 + delta_lim;
+    }
+
+    double initLowerBoundCost(const int kdt_index = 0);
+
     PersistenceDiagramAuction(int wasserstein,
                               double geometricalFactor,
                               double lambda,
@@ -81,7 +87,7 @@ namespace ttk {
     void runAuctionRound(int &n_biddings, const int kdt_index = 0);
     double getMatchingsAndDistance(std::vector<MatchingType> &matchings,
                                    bool get_diagonal_matches = false);
-    double run(std::vector<MatchingType> &matchings);
+    double run(std::vector<MatchingType> &matchings, const int kdt_index = 0);
     double run() {
       std::vector<MatchingType> matchings{};
       return this->run(matchings);
@@ -241,7 +247,7 @@ namespace ttk {
 
     double getRelativePrecision() {
       double d = this->getMatchingDistance();
-      if(d < 1e-12) {
+      if(d < 1e-6 or d <= (lowerBoundCost_ * lowerBoundCostWeight_)) {
         return 0;
       }
       double denominator = d - bidders_.size() * epsilon_;
@@ -298,6 +304,7 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double delta_lim_{};
+    double lowerBoundCost_, lowerBoundCostWeight_;
     bool use_kdt_{true};
 
   }; // namespace ttk
