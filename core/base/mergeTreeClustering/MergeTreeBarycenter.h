@@ -500,37 +500,16 @@ namespace ttk {
     }
 
     template <class dataType>
-    std::tuple<double, double>
-      getParametrizedBirthDeath(ftm::FTMTree_MT *tree1,
-                                ftm::idNode nodeId1,
-                                ftm::FTMTree_MT *tree2 = nullptr,
-                                ftm::idNode nodeId2 = ftm::nullNodes) {
-      std::tuple<double, double> birthDeath;
+    std::tuple<dataType, dataType>
+      getParametrizedBirthDeath(ftm::FTMTree_MT *tree1, ftm::idNode nodeId1) {
+      std::tuple<dataType, dataType> birthDeath;
       // Normalized Wasserstein
-      if(normalizedWasserstein_ and not rescaledWasserstein_)
+      if(normalizedWasserstein_)
         birthDeath = getNormalizedBirthDeathDouble<dataType>(tree1, nodeId1);
-      // Rescaled Wasserstein
-      else if(normalizedWasserstein_ and rescaledWasserstein_)
-        birthDeath
-          = getRescaledBirthDeath<dataType>(tree1, nodeId1, tree2, nodeId2);
       // Classical Wasserstein
       else
         birthDeath = tree1->getBirthDeath<dataType>(nodeId1);
       return birthDeath;
-    }
-
-    template <class dataType>
-    std::tuple<dataType, dataType> getParametrizedBirthDeathFromVector(
-      ftm::FTMTree_MT *tree1,
-      ftm::idNode nodeId1,
-      ftm::FTMTree_MT *tree2,
-      ftm::idNode nodeId2,
-      std::vector<dataType> &newScalarsVector) {
-      if(normalizedWasserstein_ and rescaledWasserstein_)
-        return getRescaledBirthDeathFromVector<dataType>(
-          tree1, nodeId1, tree2, nodeId2, newScalarsVector);
-      return getParametrizedBirthDeath<dataType>(
-        tree1, nodeId1, tree2, nodeId2);
     }
 
     template <class dataType>
@@ -557,17 +536,11 @@ namespace ttk {
       for(unsigned int i = 0; i < trees.size(); ++i) {
         // if node is matched in trees[i]
         if(nodes[i] != std::numeric_limits<ftm::idNode>::max()) {
-          auto iBirthDeath = getParametrizedBirthDeathFromVector<dataType>(
-            trees[i], nodes[i], baryTree, nodeId, newScalarsVector);
+          auto iBirthDeath
+            = getParametrizedBirthDeath<dataType>(trees[i], nodes[i]);
           double tTempBirth = 0, tTempDeath = 0;
           tTempBirth += std::get<0>(iBirthDeath);
           tTempDeath += std::get<1>(iBirthDeath);
-          if(normalizedWasserstein_ and rescaledWasserstein_) {
-            auto newMinMax = getNewMinMaxFromVector<dataType>(
-              trees[i], nodes[i], baryTree, nodeId, newScalarsVector);
-            tTempBirth /= (std::get<1>(newMinMax) - std::get<0>(newMinMax));
-            tTempDeath /= (std::get<1>(newMinMax) - std::get<0>(newMinMax));
-          }
           tempBirth += tTempBirth * alphas[i] / alphaSum;
           tempDeath += tTempDeath * alphas[i] / alphaSum;
         }
@@ -575,44 +548,19 @@ namespace ttk {
       double projec = (tempBirth + tempDeath) / 2;
 
       // Compute newBirth and newDeath
-      dataType divisor = 0;
       for(unsigned int i = 0; i < trees.size(); ++i) {
         double iBirth = projec, iDeath = projec;
         // if node is matched in trees[i]
         if(nodes[i] != std::numeric_limits<ftm::idNode>::max()) {
-          auto iBirthDeath = getParametrizedBirthDeathFromVector<dataType>(
-            trees[i], nodes[i], baryTree, nodeId, newScalarsVector);
+          auto iBirthDeath
+            = getParametrizedBirthDeath<dataType>(trees[i], nodes[i]);
           iBirth = std::get<0>(iBirthDeath);
           iDeath = std::get<1>(iBirthDeath);
-        }
-        if(normalizedWasserstein_ and rescaledWasserstein_) {
-          dataType beta_max = 1, beta_min = 0;
-          auto newMinMax
-            = (nodes[i] == std::numeric_limits<ftm::idNode>::max())
-                ? getNewMinMax<dataType>(baryTree, nodeId, baryTree, nodeId)
-                : getNewMinMaxFromVector<dataType>(
-                  trees[i], nodes[i], baryTree, nodeId, newScalarsVector);
-          if(nodes[i] == std::numeric_limits<ftm::idNode>::max()) {
-            beta_max = mu_max;
-            beta_min = mu_min;
-            iBirth *= (beta_max - beta_min);
-            iDeath *= (beta_max - beta_min);
-          } else {
-            beta_min = std::get<0>(newMinMax);
-            beta_max = std::get<1>(newMinMax);
-          }
-          iBirth *= (beta_max - beta_min);
-          iDeath *= (beta_max - beta_min);
-          divisor += alphas[i] * (beta_max - beta_min) * (beta_max - beta_min);
         }
         newBirth += alphas[i] * iBirth;
         newDeath += alphas[i] * iDeath;
       }
-      if(normalizedWasserstein_ and rescaledWasserstein_) {
-        newBirth /= divisor;
-        newDeath /= divisor;
-      }
-      if(normalizedWasserstein_ or rescaledWasserstein_) {
+      if(normalizedWasserstein_) {
         newBirth = newBirth * (mu_max - mu_min) + mu_min;
         newDeath = newDeath * (mu_max - mu_min) + mu_min;
       }
@@ -634,35 +582,15 @@ namespace ttk {
       dataType mu_min
         = getMinMaxLocalFromVector<dataType>(baryTree, nodeB, newScalarsVector);
 
-      auto birthDeath = getParametrizedBirthDeathFromVector<dataType>(
-        tree, nodeId, baryTree, nodeB, newScalarsVector);
+      auto birthDeath = getParametrizedBirthDeath<dataType>(tree, nodeId);
       double newBirth = std::get<0>(birthDeath);
       double newDeath = std::get<1>(birthDeath);
       double projec = (newBirth + newDeath) / 2;
 
-      dataType beta_min = 0, beta_max = 0, divisor = 1;
-      if(normalizedWasserstein_ and rescaledWasserstein_) {
-        auto newMinMax = getNewMinMaxFromVector<dataType>(
-          tree, nodeId, baryTree, nodeB, newScalarsVector);
-        beta_min = std::get<0>(newMinMax);
-        beta_max = std::get<1>(newMinMax);
-        newBirth *= (beta_max - beta_min);
-        newDeath *= (beta_max - beta_min);
-        projec = projec * (mu_max - mu_min) * (mu_max - mu_min)
-                 / (beta_max - beta_min);
-        divisor = alpha * (beta_max - beta_min) * (beta_max - beta_min)
-                  + (1 - alpha) * (mu_max - mu_min) * (mu_max - mu_min);
-      }
-
       newBirth = alpha * newBirth + (1 - alpha) * projec;
       newDeath = alpha * newDeath + (1 - alpha) * projec;
 
-      if(normalizedWasserstein_ and rescaledWasserstein_) {
-        newBirth /= divisor;
-        newDeath /= divisor;
-      }
-
-      if(normalizedWasserstein_ or rescaledWasserstein_) {
+      if(normalizedWasserstein_) {
         newBirth = newBirth * (mu_max - mu_min) + mu_min;
         newDeath = newDeath * (mu_max - mu_min) + mu_min;
       }
@@ -670,57 +598,6 @@ namespace ttk {
       dataType newBirthT = newBirth;
       dataType newDeathT = newDeath;
       return std::make_tuple(newBirthT, newDeathT);
-    }
-
-    template <class dataType>
-    void purgeBarycenter(ftm::MergeTree<dataType> &baryMergeTree,
-                         std::vector<std::vector<ftm::idNode>> &baryMatching,
-                         std::vector<ftm::FTMTree_MT *> &trees,
-                         std::vector<double> &alphas) {
-      ftm::FTMTree_MT *baryTree = &(baryMergeTree.tree);
-      std::vector<bool> nodesProcessed(baryTree->getNumberOfNodes(), false);
-      std::vector<dataType> nodesMatchingCost(baryTree->getNumberOfNodes(), 0);
-      std::vector<dataType> nodesDestructCost(baryTree->getNumberOfNodes(), 0);
-      std::vector<ftm::idNode> leaves;
-      baryTree->getLeavesFromTree(leaves);
-      std::queue<ftm::idNode> queue;
-      for(auto leaf : leaves)
-        queue.emplace(leaf);
-      while(!queue.empty()) {
-        ftm::idNode node = queue.front();
-        queue.pop();
-        for(unsigned int i = 0; i < trees.size(); ++i) {
-          dataType newMatchingCost = alphas[i];
-          dataType newDestructCost = alphas[i];
-          if(baryMatching[node][i] != std::numeric_limits<ftm::idNode>::max()) {
-            newMatchingCost *= relabelCost<dataType>(
-              baryTree, node, trees[i], baryMatching[node][i]);
-            newDestructCost
-              *= deleteCost<dataType>(trees[i], baryMatching[node][i]);
-          } else {
-            newMatchingCost *= deleteCost<dataType>(baryTree, node);
-            newDestructCost *= 0;
-          }
-          nodesMatchingCost[node] += newMatchingCost;
-          nodesDestructCost[node] += newDestructCost;
-        }
-        std::vector<ftm::idNode> children;
-        baryTree->getChildren(node, children);
-        for(auto child : children) {
-          nodesMatchingCost[node] += nodesMatchingCost[child];
-          nodesDestructCost[node] += nodesDestructCost[child];
-        }
-        nodesProcessed[node] = true;
-        if(not nodesProcessed[baryTree->getParentSafe(node)])
-          queue.emplace(baryTree->getParentSafe(node));
-
-        // Destruct subtree if better
-        if(nodesDestructCost[node] < nodesMatchingCost[node]) {
-          baryTree->deleteSubtree(node);
-          nodesDestructCost[node] = 0;
-          nodesMatchingCost[node] = 0;
-        }
-      }
     }
 
     template <class dataType>
@@ -796,8 +673,6 @@ namespace ttk {
 
       setTreeScalars(baryMergeTree, newScalarsVector);
 
-      if(normalizedWasserstein_ and rescaledWasserstein_)
-        purgeBarycenter<dataType>(baryMergeTree, baryMatching, trees, alphas);
       std::vector<ftm::idNode> deletedNodesT;
       persistenceThresholding<dataType>(
         &(baryMergeTree.tree), 0, deletedNodesT);
@@ -832,13 +707,10 @@ namespace ttk {
       // Timer t_distance;
       MergeTreeDistance mergeTreeDistance;
       mergeTreeDistance.setDebugLevel(std::min(debugLevel_, 2));
-      mergeTreeDistance.setProgressiveComputation(false);
       mergeTreeDistance.setPreprocess(false);
       mergeTreeDistance.setPostprocess(false);
       mergeTreeDistance.setBranchDecomposition(true);
       mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
-      mergeTreeDistance.setNormalizedWassersteinReg(normalizedWassersteinReg_);
-      mergeTreeDistance.setRescaledWasserstein(rescaledWasserstein_);
       mergeTreeDistance.setKeepSubtree(keepSubtree_);
       mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
       mergeTreeDistance.setIsCalled(true);
@@ -1226,20 +1098,12 @@ namespace ttk {
     // ------------------------------------------------------------------------
     // Preprocessing
     // ------------------------------------------------------------------------
-    double getSizeLimitMetric(double meanNodes, unsigned int n) {
-      return meanNodes * n;
-    }
-
     template <class dataType>
     void limitSizePercent(ftm::MergeTree<dataType> &bary,
                           std::vector<ftm::FTMTree_MT *> &trees,
                           double percent,
                           bool useBD) {
-      std::array<double, 3> stats;
-      getTreesStats(trees, stats);
-      auto meanNodes = stats[0];
-      unsigned int n = trees.size();
-      auto metric = getSizeLimitMetric(meanNodes, n);
+      auto metric = getSizeLimitMetric(trees);
       unsigned int newNoNodes = metric * percent / 100.0;
       keepMostImportantPairs<dataType>(&(bary.tree), newNoNodes, useBD);
 

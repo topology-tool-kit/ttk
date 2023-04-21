@@ -45,15 +45,13 @@ namespace ttk {
     bool useFullMerge_ = false;
 
     bool isPersistenceDiagram_ = false;
+    bool convertToDiagram_ = false;
 
     // Double input
     double mixtureCoefficient_ = 0.5;
     bool useDoubleInput_ = false;
 
     // Old
-    bool progressiveComputation_ = false;
-    bool rescaledWasserstein_ = false;
-    double normalizedWassersteinReg_ = 0.;
     bool parallelize_ = true;
     int nodePerTask_ = 32;
     bool cleanTree_ = true;
@@ -120,22 +118,8 @@ namespace ttk {
       normalizedWasserstein_ = normalizedWasserstein;
     }
 
-    void setRescaledWasserstein(bool rescaledWasserstein) {
-      rescaledWasserstein_ = rescaledWasserstein;
-    }
-
-    void setNormalizedWassersteinReg(double normalizedWassersteinReg) {
-      normalizedWassersteinReg_ = normalizedWassersteinReg;
-    }
-
     void setKeepSubtree(bool keepSubtree) {
       keepSubtree_ = keepSubtree;
-    }
-
-    void setProgressiveComputation(bool progressive) {
-      progressiveComputation_ = progressive;
-      /*if(progressiveComputation_)
-        Preprocess = false;*/
     }
 
     void setBarycenterMergeTree(bool imt) {
@@ -188,12 +172,14 @@ namespace ttk {
              + mixDistancesWeight(false) * distance2;
     }
 
-    void mixDistancesMatrix(std::vector<std::vector<double>> &distanceMatrix,
-                            std::vector<std::vector<double>> &distanceMatrix2) {
+    template <class dataType>
+    void
+      mixDistancesMatrix(std::vector<std::vector<dataType>> &distanceMatrix,
+                         std::vector<std::vector<dataType>> &distanceMatrix2) {
       for(unsigned int i = 0; i < distanceMatrix.size(); ++i)
         for(unsigned int j = 0; j < distanceMatrix[i].size(); ++j)
-          distanceMatrix[i][j]
-            = mixDistances<double>(distanceMatrix[i][j], distanceMatrix2[i][j]);
+          distanceMatrix[i][j] = mixDistances<dataType>(
+            distanceMatrix[i][j], distanceMatrix2[i][j]);
     }
 
     // ------------------------------------------------------------------------
@@ -376,18 +362,26 @@ namespace ttk {
     void persistenceThresholding(ftm::FTMTree_MT *tree,
                                  double persistenceThresholdT,
                                  std::vector<ftm::idNode> &deletedNodes) {
-      dataType threshold
-        = persistenceThresholdT / 100 * tree->getMaximumPersistence<dataType>();
+      ftm::idNode treeRoot = tree->getRoot();
+      dataType maxPers = tree->getMaximumPersistence<dataType>();
+      dataType threshold = persistenceThresholdT / 100 * maxPers;
 
       dataType secondMax = tree->getSecondMaximumPersistence<dataType>();
+      bool keepOneZeroPersistencePair = (secondMax == 0 or maxPers == 0);
       if(threshold >= secondMax)
         threshold = (1.0 - 1e-6) * secondMax;
 
       for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
+        if(tree->isRoot(i))
+          continue;
         dataType nodePers = tree->getNodePersistence<dataType>(i);
+        if(nodePers == 0 and keepOneZeroPersistencePair
+           and tree->getParentSafe(i) == treeRoot) {
+          keepOneZeroPersistencePair = false;
+          continue;
+        }
         if((nodePers == 0 or nodePers <= threshold
-            or not tree->isNodeOriginDefined(i))
-           and !tree->isRoot(i)) {
+            or not tree->isNodeOriginDefined(i))) {
           tree->deleteNode(i);
           deletedNodes.push_back(i);
           ftm::idNode nodeOrigin = tree->getNode(i)->getOrigin();
@@ -469,7 +463,7 @@ namespace ttk {
       }
 
       // Compute persistence pairs
-      if(not isPersistenceDiagram_) {
+      if(not isPersistenceDiagram_ or convertToDiagram_) {
         auto pairs = ftm::computePersistencePairs<dataType>(tree);
         // Verify pairs
         verifyOrigins<dataType>(tree);
@@ -649,14 +643,15 @@ namespace ttk {
       // - Merge saddle points according epsilon
       std::vector<std::vector<ftm::idNode>> treeNodeMerged(
         tree->getNumberOfNodes());
-      if(not isPersistenceDiagram_) {
+      if(not isPersistenceDiagram_ or convertToDiagram_) {
         if(epsilonTree != 0)
           mergeSaddle<dataType>(tree, epsilonTree, treeNodeMerged);
       }
 
       // - Compute branch decomposition
       // verifyPairsTree(tree);
-      if(branchDecompositionT and not isPersistenceDiagram_)
+      if(branchDecompositionT
+         and (not isPersistenceDiagram_ or convertToDiagram_))
         tree = computeBranchDecomposition<dataType>(tree, treeNodeMerged);
 
       // - Delete multi pers pairs
@@ -729,6 +724,14 @@ namespace ttk {
     void mtsFlattening(std::vector<ftm::MergeTree<dataType>> &mts) {
       for(auto &mt : mts)
         mtFlattening(mt);
+    }
+
+    double getSizeLimitMetric(std::vector<ftm::FTMTree_MT *> &trees) {
+      std::array<double, 3> stats;
+      getTreesStats(trees, stats);
+      auto meanNodes = stats[0];
+      unsigned int n = trees.size();
+      return meanNodes * n;
     }
 
     // ------------------------------------------------------------------------
@@ -1105,22 +1108,9 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType regularizationCost(ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
-      dataType shiftMin1 = getMinMaxLocal<dataType>(tree, nodeId);
-      dataType shiftMax1 = getMinMaxLocal<dataType>(tree, nodeId, false);
-      return computeDistance<dataType>(
-        shiftMin1, 0, shiftMax1, 0, wassersteinPower_);
-    }
-
-    template <class dataType>
     dataType deleteCost(ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
       dataType cost = 0;
       dataType newMin = 0.0, newMax = 1.0;
-      if(normalizedWasserstein_ and rescaledWasserstein_) {
-        auto newMinMax = getNewMinMax<dataType>(tree, nodeId, tree, nodeId);
-        newMin = std::get<0>(newMinMax);
-        newMax = std::get<1>(newMinMax);
-      }
       // Get birth/death
       auto birthDeath
         = normalizedWasserstein_
@@ -1135,10 +1125,6 @@ namespace ttk {
       // Divide cost by two if not branch decomposition and not merged
       /*if(! branchDecomposition_ and ! tree->isNodeMerged(nodeId))
         cost /= 2;*/
-      // Regularize
-      if(normalizedWasserstein_ and normalizedWassersteinReg_ != 0)
-        cost += normalizedWassersteinReg_
-                * regularizationCost<dataType>(tree, nodeId);
 
       return cost;
     }
@@ -1149,30 +1135,12 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType regularizationCost2(ftm::FTMTree_MT *tree1,
-                                 ftm::idNode nodeId1,
-                                 ftm::FTMTree_MT *tree2,
-                                 ftm::idNode nodeId2) {
-      dataType shiftMin1 = getMinMaxLocal<dataType>(tree1, nodeId1);
-      dataType shiftMax1 = getMinMaxLocal<dataType>(tree1, nodeId1, false);
-      dataType shiftMin2 = getMinMaxLocal<dataType>(tree2, nodeId2);
-      dataType shiftMax2 = getMinMaxLocal<dataType>(tree2, nodeId2, false);
-      return computeDistance<dataType>(
-        shiftMin1, shiftMax1, shiftMin2, shiftMax2, wassersteinPower_);
-    }
-
-    template <class dataType>
     dataType relabelCostOnly(ftm::FTMTree_MT *tree1,
                              ftm::idNode nodeId1,
                              ftm::FTMTree_MT *tree2,
                              ftm::idNode nodeId2) {
       dataType cost = 0;
       dataType newMin = 0.0, newMax = 1.0;
-      if(normalizedWasserstein_ and rescaledWasserstein_) {
-        auto newMinMax = getNewMinMax<dataType>(tree1, nodeId1, tree2, nodeId2);
-        newMin = std::get<0>(newMinMax);
-        newMax = std::get<1>(newMinMax);
-      }
       // Get birth/death of the first tree
       auto birthDeath1
         = normalizedWasserstein_
@@ -1193,10 +1161,6 @@ namespace ttk {
       // Divide cost by two if not branch decomposition and not merged
       /*bool merged = isNodeMerged(tree1, nodeId1) or isNodeMerged(tree2,
       nodeId2); if(! branchDecomposition_ and ! merged) cost /= 2;*/
-      // Regularize
-      if(normalizedWasserstein_ and normalizedWassersteinReg_ != 0)
-        cost += normalizedWassersteinReg_
-                * regularizationCost2<dataType>(tree1, nodeId1, tree2, nodeId2);
 
       return cost;
     }
@@ -1213,12 +1177,14 @@ namespace ttk {
 
       // Compute relabel cost
       dataType cost = relabelCostOnly<dataType>(tree1, nodeId1, tree2, nodeId2);
-      // Compute deleteInsert cost
-      dataType deleteInsertCost = deleteCost<dataType>(tree1, nodeId1)
-                                  + insertCost<dataType>(tree2, nodeId2);
 
-      if(keepSubtree_ and deleteInsertCost < cost)
-        cost = deleteInsertCost;
+      if(keepSubtree_) {
+        // Compute deleteInsert cost
+        dataType deleteInsertCost = deleteCost<dataType>(tree1, nodeId1)
+                                    + insertCost<dataType>(tree2, nodeId2);
+        if(deleteInsertCost < cost)
+          cost = deleteInsertCost;
+      }
 
       return cost;
     }
