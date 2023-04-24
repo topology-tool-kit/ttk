@@ -344,7 +344,9 @@ std::vector<int> ttk::PDClustering::execute(
         }
         converged = converged
                     || (all_diagrams_complete && !do_min_ && !do_sad_
-                        && !do_max_ && (precision_criterion_reached));
+                        && !do_max_ && (precision_criterion_reached))
+                    || (precision_criterion_reached && UseDeltaLim_
+                        && numberOfInputs_ == 2);
       }
 
       total_time

@@ -114,13 +114,11 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
     if(bidders_[i].isDiagonal())
       continue;
 
-    bool use_kdt = use_kdt_;
-
     // Get closest good
     double bestCost = std::numeric_limits<double>::max();
     std::vector<KDT *> neighbours;
     std::vector<double> costs;
-    if(use_kdt) {
+    if(use_kdt_) {
       std::array<double, 5> coordinates;
       bidders_[i].GetKDTCoordinates(geometricalFactor_, coordinates);
       kdt_.getKClosest(1, coordinates, neighbours, costs, kdt_index);
