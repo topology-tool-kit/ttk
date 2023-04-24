@@ -48,6 +48,8 @@ When using the clustering algorithm, this filter allows to use the join tree and
 Online examples:
 
 - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+- https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/
            </Documentation>
 
             <!-- INPUT -->
