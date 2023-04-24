@@ -66,6 +66,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
 ///   Tree Clustering example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
+///   Tree Feature Tracking example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
 ///   Tree Temporal Reduction</a> \n
 
