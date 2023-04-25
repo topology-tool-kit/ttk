@@ -298,14 +298,6 @@ protected:
                                        vtkDataSet *input);
 
   /**
-   * This method is called in GetTriangulation, if the triangulation is
-   * periodic, to create ghosts specific to dealing with this type of
-   * triangulation. This may add points to the dataset of a process and
-   * therefore invalidates the triangulation object taken as parameter here.
-   */
-  int MPIPeriodicGhostPipelinePreconditioning(
-    vtkDataSet *input, ttk::Triangulation *triangulation);
-  /**
    * This method is called during the first pipeline pass in
    * ProcessRequest() to create empty output data objects. The data type of
    * the generated outputs is specified in FillOutputPortInformation().

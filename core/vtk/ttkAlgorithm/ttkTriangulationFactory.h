@@ -39,8 +39,10 @@ using Registry = std::unordered_map<RegistryKey, RegistryValue>;
 
 class TTKALGORITHM_EXPORT ttkTriangulationFactory : public ttk::Debug {
 public:
-  static ttk::Triangulation *
-    GetTriangulation(int debugLevel, float cacheRatio, vtkDataSet *object);
+  static ttk::Triangulation *GetTriangulation(int debugLevel,
+                                              float cacheRatio,
+                                              vtkDataSet *object,
+                                              bool forceInvalid = false);
 
   static ttkTriangulationFactory Instance;
   static RegistryKey GetKey(vtkDataSet *dataSet);

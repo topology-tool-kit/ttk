@@ -336,7 +336,7 @@ RegistryTriangulation
 }
 
 ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
-  int debugLevel, float cacheRatio, vtkDataSet *object) {
+  int debugLevel, float cacheRatio, vtkDataSet *object, bool forceInvalid) {
   auto instance = &ttkTriangulationFactory::Instance;
   instance->setDebugLevel(debugLevel);
 
@@ -346,7 +346,7 @@ ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
   auto it = instance->registry.find(key);
   if(it != instance->registry.end()) {
     // object is the owner of the explicit or implicit triangulation
-    if(it->second.isValid(object)) {
+    if(it->second.isValid(object) && !forceInvalid) {
       instance->printMsg(
         "Retrieving Existing Triangulation", ttk::debug::Priority::DETAIL);
       triangulation = it->second.triangulation.get();
