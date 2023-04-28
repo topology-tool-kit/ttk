@@ -1,5 +1,4 @@
 #include "vtkStreamingDemandDrivenPipeline.h"
-#include <string>
 #include <ttkPeriodicGhostsGeneration.h>
 
 #include <vtkCellData.h>
@@ -43,14 +42,10 @@ int ttkPeriodicGhostsGeneration::RequestUpdateExtent(
   vtkInformationVector *outputVector) {
   vtkImageData *image = vtkImageData::GetData(inputVector[0]);
   this->ComputeOutputExtent(image);
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  outInfo->Set(
-    vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT(), 1);
-  outInfo->Set(
-    vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outExtent_.data(), 6);
-  printMsg("Has unrestricted update extent in RequestInformation: "
-           + std::to_string(outInfo->Has(
-             vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT())));
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
+              outExtent_[0] + 1, outExtent_[1] - 1, outExtent_[2] + 1,
+              outExtent_[3] - 1, outExtent_[4] + 1, outExtent_[5] - 1);
   return 1;
 }
 
@@ -62,13 +57,8 @@ int ttkPeriodicGhostsGeneration::RequestInformation(
   this->ComputeOutputExtent(image);
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   outInfo->Set(
-    vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT(), 1);
-  outInfo->Set(
     vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outExtent_.data(), 6);
-  // this->append->RequestInformation(request, inputVectors, outputVector);
-  printMsg("Has unrestricted update extent in RequestInformation: "
-           + std::to_string(outInfo->Has(
-             vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT())));
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT());
   return 1;
 }
 
@@ -76,12 +66,6 @@ int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-    printMsg(
-      "Has unrestricted update extent in FillOutputInformation: "
-      + std::to_string(info->Has(
-        vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT())));
-    info->Set(
-      vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT(), 1);
     return 1;
   }
   return 0;
@@ -119,7 +103,12 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
 
     double spacing[3];
     imageIn->GetSpacing(spacing);
-    imageIn->GetExtent(outExtent_.data());
+    outExtent_[0] = static_cast<int>(round(globalBounds_[0] / spacing[0])) - 1;
+    outExtent_[1] = static_cast<int>(round(globalBounds_[1] / spacing[0])) + 1;
+    outExtent_[2] = static_cast<int>(round(globalBounds_[2] / spacing[1])) - 1;
+    outExtent_[3] = static_cast<int>(round(globalBounds_[3] / spacing[1])) + 1;
+    outExtent_[4] = static_cast<int>(round(globalBounds_[4] / spacing[2])) - 1;
+    outExtent_[5] = static_cast<int>(round(globalBounds_[5] / spacing[2])) + 1;
     printMsg(
       "Input Extent: " + std::to_string(outExtent_[0]) + ", "
       + std::to_string(outExtent_[1]) + ", " + std::to_string(outExtent_[2])
@@ -131,12 +120,10 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
       if(bounds[2 * i] != globalBounds_[2 * i]) {
         boundsWithoutGhosts_[2 * i] = bounds[2 * i] + spacing[0];
       } else {
-        outExtent_[2 * i] -= 1;
       }
       if(bounds[2 * i + 1] != globalBounds_[2 * i + 1]) {
         boundsWithoutGhosts_[2 * i + 1] = bounds[2 * i + 1] - spacing[0];
       } else {
-        outExtent_[2 * i + 1] += 1;
       }
     }
     isOutputExtentComputed_ = true;
@@ -289,6 +276,13 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     mergedImage->GetPointData()->AddArray(currentArray);
   }
   int numberOfCells = mergedImage->GetNumberOfCells();
+
+  vtkNew<vtkCharArray> cellTypes;
+  cellTypes->SetName("Cell Type");
+  cellTypes->SetNumberOfTuples(numberOfCells);
+  cellTypes->Fill(image->GetCellType(0));
+  mergedImage->GetCellData()->AddArray(cellTypes);
+
   for(int array = 0; array < image->GetCellData()->GetNumberOfArrays();
       array++) {
     vtkDataArray *imageArray = image->GetCellData()->GetArray(array);
@@ -296,11 +290,11 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
     currentArray->SetNumberOfComponents(1);
-    currentArray->SetNumberOfTuples(numberOfPoints);
+    currentArray->SetNumberOfTuples(numberOfCells);
     currentArray->SetName(imageArray->GetName());
-    int sliceCounter = 0;
-    int imageCounter = 0;
-    int counter = 0;
+    vtkIdType sliceCounter = 0;
+    vtkIdType imageCounter = 0;
+    vtkIdType counter = 0;
     switch(direction) {
       case 0:
         for(int z = 0; z < dims[2] - 1; z++) {
@@ -442,11 +436,8 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   this->ComputeOutputExtent(imageIn);
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   outInfo->Set(
-    vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT(), 1);
-  outInfo->Set(
     vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outExtent_.data(), 6);
-  // printMsg("Has unrestricted update extent in RequestInformation:
-  // "+std::to_string(outInfo->Has(vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT())));
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT());
 
   /*std::string s = "boundsWithoutGhosts: ";
   for(int i = 0; i < 6; i++) {
@@ -874,7 +865,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     printMsg("Size of received charArray:
   "+std::to_string(charArray3DBoundariesReceived[i]->GetNumberOfTuples()));
   }*/
-
+  imageOut->DeepCopy(imageIn);
   auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
                       charArrayBoundariesMetaDataReceived.end(), 2);
   if(it != charArrayBoundariesMetaDataReceived.end()) {
@@ -890,7 +881,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       printErr("UnMarshaling failed!");
     };
     this->MergeImageAppendAndSlice(imageIn, id, mergedImage, other(2));
-    imageIn->DeepCopy(mergedImage);
+    imageOut->DeepCopy(mergedImage);
   }
   it = std::find(charArrayBoundariesMetaDataReceived.begin(),
                  charArrayBoundariesMetaDataReceived.end(), 3);
@@ -907,10 +898,9 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       printErr("UnMarshaling failed!");
     };
     this->MergeImageAppendAndSlice(imageIn, id, mergedImage, other(3));
-    imageIn->DeepCopy(mergedImage);
+    imageOut->DeepCopy(mergedImage);
   }
   printMsg("End of periodic ghost generation");
-  imageOut->DeepCopy(imageIn);
   return 1;
 };
 
@@ -919,9 +909,6 @@ int ttkPeriodicGhostsGeneration::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  printMsg("Has unrestricted update extent in RequestData: "
-           + std::to_string(outInfo->Has(
-             vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT())));
 
   // Get input object from input vector
   // Note: has to be a vtkDataSet as required by FillInputPortInformation
