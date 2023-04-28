@@ -22,7 +22,7 @@
 vtkStandardNewMacro(ttkPeriodicGhostsGeneration);
 
 ttkPeriodicGhostsGeneration::ttkPeriodicGhostsGeneration() {
-  this->append->SetAppendAxis(0);
+  this->setDebugMsgPrefix("PeriodicGhostsGeneration");
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
@@ -72,6 +72,7 @@ int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
 }
 
 int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
+  // TODO: fix problem of direction that don't match because on same process
   if(!isOutputExtentComputed_) {
     vtkImageData *imageIn;
     if(input->IsA("vtkImageData")) {
@@ -109,11 +110,6 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
     outExtent_[3] = static_cast<int>(round(globalBounds_[3] / spacing[1])) + 1;
     outExtent_[4] = static_cast<int>(round(globalBounds_[4] / spacing[2])) - 1;
     outExtent_[5] = static_cast<int>(round(globalBounds_[5] / spacing[2])) + 1;
-    printMsg(
-      "Input Extent: " + std::to_string(outExtent_[0]) + ", "
-      + std::to_string(outExtent_[1]) + ", " + std::to_string(outExtent_[2])
-      + ", " + std::to_string(outExtent_[3]) + ", "
-      + std::to_string(outExtent_[4]) + ", " + std::to_string(outExtent_[5]));
     boundsWithoutGhosts_
       = {bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]};
     for(int i = 0; i < 3; i++) {
@@ -149,6 +145,7 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   mergedImage->SetExtent(extentImage);
   int dims[3];
   mergedImage->GetDimensions(dims);
+  // TODO: make slice a ghost
   int numberOfPoints = mergedImage->GetNumberOfPoints();
   for(int array = 0; array < image->GetPointData()->GetNumberOfArrays();
       array++) {
@@ -277,12 +274,6 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   }
   int numberOfCells = mergedImage->GetNumberOfCells();
 
-  vtkNew<vtkCharArray> cellTypes;
-  cellTypes->SetName("Cell Type");
-  cellTypes->SetNumberOfTuples(numberOfCells);
-  cellTypes->Fill(image->GetCellType(0));
-  mergedImage->GetCellData()->AddArray(cellTypes);
-
   for(int array = 0; array < image->GetCellData()->GetNumberOfArrays();
       array++) {
     vtkDataArray *imageArray = image->GetCellData()->GetArray(array);
@@ -292,6 +283,10 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     currentArray->SetNumberOfComponents(1);
     currentArray->SetNumberOfTuples(numberOfCells);
     currentArray->SetName(imageArray->GetName());
+    if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
+      sliceArray->SetNumberOfTuples(slice->GetNumberOfCells());
+      sliceArray->Fill(2); // TODO: fix les ghosts
+    }
     vtkIdType sliceCounter = 0;
     vtkIdType imageCounter = 0;
     vtkIdType counter = 0;
@@ -407,6 +402,13 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     };
     mergedImage->GetCellData()->AddArray(currentArray);
   }
+
+  vtkNew<vtkCharArray> cellTypes;
+  cellTypes->SetName("Cell Type");
+  cellTypes->SetNumberOfTuples(numberOfCells);
+  cellTypes->Fill(image->GetCellType(0));
+  mergedImage->GetCellData()->AddArray(cellTypes);
+
   return 1;
 };
 
@@ -577,6 +579,13 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
+  /*std::string s = "local2Dbounds :";
+  for (int i = 0; i<local2DBounds.size();i++){
+    s +=
+  "("+std::to_string(local2DBounds[i][0])+","+std::to_string(local2DBounds[i][1])+"),
+  ";
+  }
+  printMsg(s);*/
   std::vector<std::array<ttk::SimplexId, 3>> matches_2D;
   for(int i = 0; i < local2DBounds.size(); i++) {
     for(int j = 0; j < ttk::MPIsize_; j++) {
@@ -866,40 +875,68 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   "+std::to_string(charArray3DBoundariesReceived[i]->GetNumberOfTuples()));
   }*/
   imageOut->DeepCopy(imageIn);
-  auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
-                      charArrayBoundariesMetaDataReceived.end(), 2);
-  if(it != charArrayBoundariesMetaDataReceived.end()) {
-    vtkSmartPointer<vtkImageAppend> imageAppend
-      = vtkSmartPointer<vtkImageAppend>::New();
-    vtkNew<vtkStructuredPoints> id;
-    vtkNew<vtkImageData> mergedImage;
-    if(vtkCommunicator::UnMarshalDataObject(
-         charArrayBoundariesReceived[std::distance(
-           charArrayBoundariesMetaDataReceived.begin(), it)],
-         id)
-       == 0) {
-      printErr("UnMarshaling failed!");
-    };
-    this->MergeImageAppendAndSlice(imageIn, id, mergedImage, other(2));
-    imageOut->DeepCopy(mergedImage);
+
+  // Merge in the x direction (x_low and x_high)
+  for(int dir = 0; dir < 2; dir++) {
+    auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
+                        charArrayBoundariesMetaDataReceived.end(), other(dir));
+    if(it != charArrayBoundariesMetaDataReceived.end()) {
+      vtkNew<vtkStructuredPoints> id;
+      vtkNew<vtkImageData> mergedImage;
+      if(vtkCommunicator::UnMarshalDataObject(
+           charArrayBoundariesReceived[std::distance(
+             charArrayBoundariesMetaDataReceived.begin(), it)],
+           id)
+         == 0) {
+        printErr("UnMarshaling failed!");
+      };
+      this->MergeImageAppendAndSlice(imageIn, id, mergedImage, dir);
+      imageOut->DeepCopy(mergedImage);
+    }
   }
-  it = std::find(charArrayBoundariesMetaDataReceived.begin(),
-                 charArrayBoundariesMetaDataReceived.end(), 3);
-  if(it != charArrayBoundariesMetaDataReceived.end()) {
-    vtkSmartPointer<vtkImageAppend> imageAppend
-      = vtkSmartPointer<vtkImageAppend>::New();
-    vtkNew<vtkStructuredPoints> id;
+  // Merge in the y direction
+  for(int dir = 2; dir < 4; dir++) {
+    auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
+                        charArrayBoundariesMetaDataReceived.end(), other(dir));
     vtkNew<vtkImageData> mergedImage;
-    if(vtkCommunicator::UnMarshalDataObject(
-         charArrayBoundariesReceived[std::distance(
-           charArrayBoundariesMetaDataReceived.begin(), it)],
-         id)
-       == 0) {
-      printErr("UnMarshaling failed!");
-    };
-    this->MergeImageAppendAndSlice(imageIn, id, mergedImage, other(3));
-    imageOut->DeepCopy(mergedImage);
+    if(it != charArrayBoundariesMetaDataReceived.end()) {
+      vtkNew<vtkStructuredPoints> id;
+      if(vtkCommunicator::UnMarshalDataObject(
+           charArrayBoundariesReceived[std::distance(
+             charArrayBoundariesMetaDataReceived.begin(), it)],
+           id)
+         == 0) {
+        printErr("UnMarshaling failed!");
+      };
+      mergedImage->DeepCopy(id);
+    }
+    for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
+      auto it_2D
+        = std::find(charArray2DBoundariesMetaDataReceived.begin(),
+                    charArray2DBoundariesMetaDataReceived.end(),
+                    std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)});
+      if(it_2D != charArray2DBoundariesMetaDataReceived.end()) {
+        vtkNew<vtkStructuredPoints> id_2D;
+        vtkNew<vtkImageData> aux;
+        if(vtkCommunicator::UnMarshalDataObject(
+             charArray2DBoundariesReceived[std::distance(
+               charArray2DBoundariesMetaDataReceived.begin(), it_2D)],
+             id_2D)
+           == 0) {
+          printErr("UnMarshaling failed!");
+        };
+        this->MergeImageAppendAndSlice(mergedImage, id_2D, aux, dir_2D);
+        mergedImage->DeepCopy(aux);
+      }
+    }
+
+    if(mergedImage->GetNumberOfPoints() > 0) {
+      vtkNew<vtkImageData> aux;
+      this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir);
+      imageOut->DeepCopy(aux);
+    }
   }
+
   printMsg("End of periodic ghost generation");
   return 1;
 };
