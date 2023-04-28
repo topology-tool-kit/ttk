@@ -73,6 +73,7 @@ int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
 
 int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
   // TODO: fix problem of direction that don't match because on same process
+  // TODO: check for 4 processes and 2 processes
   if(!isOutputExtentComputed_) {
     vtkImageData *imageIn;
     if(input->IsA("vtkImageData")) {
@@ -145,7 +146,6 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   mergedImage->SetExtent(extentImage);
   int dims[3];
   mergedImage->GetDimensions(dims);
-  // TODO: make slice a ghost
   int numberOfPoints = mergedImage->GetNumberOfPoints();
   for(int array = 0; array < image->GetPointData()->GetNumberOfArrays();
       array++) {
@@ -157,6 +157,10 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     currentArray->SetNumberOfComponents(1);
     currentArray->SetNumberOfTuples(numberOfPoints);
     currentArray->SetName(imageArray->GetName());
+    if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
+      sliceArray->SetNumberOfTuples(slice->GetNumberOfPoints());
+      sliceArray->Fill(vtkDataSetAttributes::DUPLICATEPOINT);
+    }
     int sliceCounter = 0;
     int imageCounter = 0;
     int counter = 0;
@@ -285,7 +289,7 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     currentArray->SetName(imageArray->GetName());
     if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
       sliceArray->SetNumberOfTuples(slice->GetNumberOfCells());
-      sliceArray->Fill(2); // TODO: fix les ghosts
+      sliceArray->Fill(vtkDataSetAttributes::EXTERIORCELL);
     }
     vtkIdType sliceCounter = 0;
     vtkIdType imageCounter = 0;
@@ -936,6 +940,8 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       imageOut->DeepCopy(aux);
     }
   }
+
+  // Merge in the z direction
 
   printMsg("End of periodic ghost generation");
   return 1;
