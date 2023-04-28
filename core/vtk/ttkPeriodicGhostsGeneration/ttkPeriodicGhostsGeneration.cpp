@@ -133,7 +133,22 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   vtkImageData *slice,
   vtkImageData *mergedImage,
   int direction) {
-  // TODO: add checks on number of arrays and their name, and slice.
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(image->GetPointData()->GetNumberOfArrays()
+     != slice->GetPointData()->GetNumberOfArrays()) {
+    printErr("The two vtkImageData objects to merge don't have the same number "
+             "of arrays for their Point Data");
+    return 0;
+  }
+
+  if(image->GetCellData()->GetNumberOfArrays()
+     != slice->GetCellData()->GetNumberOfArrays()) {
+    printErr("The two vtkImageData objects to merge don't have the same number "
+             "of arrays for their Cell Data");
+    return 0;
+  }
+#endif
   mergedImage->SetSpacing(image->GetSpacing());
   mergedImage->Initialize();
   int extentImage[6];
@@ -150,13 +165,22 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   for(int array = 0; array < image->GetPointData()->GetNumberOfArrays();
       array++) {
     vtkDataArray *imageArray = image->GetPointData()->GetArray(array);
+    std::string arrayName(imageArray->GetName());
     vtkDataArray *sliceArray
-      = slice->GetPointData()->GetArray(imageArray->GetName());
+      = slice->GetPointData()->GetArray(arrayName.c_str());
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!sliceArray) {
+      printErr(
+        "Array " + arrayName
+        + " is not present in the Point Data of the second vtkImageData");
+      return 0;
+    }
+#endif
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
     currentArray->SetNumberOfComponents(1);
     currentArray->SetNumberOfTuples(numberOfPoints);
-    currentArray->SetName(imageArray->GetName());
+    currentArray->SetName(arrayName.c_str());
     if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
       sliceArray->SetNumberOfTuples(slice->GetNumberOfPoints());
       sliceArray->Fill(vtkDataSetAttributes::DUPLICATEPOINT);
@@ -281,12 +305,22 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   for(int array = 0; array < image->GetCellData()->GetNumberOfArrays();
       array++) {
     vtkDataArray *imageArray = image->GetCellData()->GetArray(array);
-    vtkDataArray *sliceArray = slice->GetCellData()->GetArray(array);
+    std::string arrayName(imageArray->GetName());
+    vtkDataArray *sliceArray
+      = slice->GetCellData()->GetArray(arrayName.c_str());
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!sliceArray) {
+      printErr(
+        "Array " + arrayName
+        + " is not present in the Point Data of the second vtkImageData");
+      return 0;
+    }
+#endif
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
     currentArray->SetNumberOfComponents(1);
     currentArray->SetNumberOfTuples(numberOfCells);
-    currentArray->SetName(imageArray->GetName());
+    currentArray->SetName(arrayName.c_str());
     if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
       sliceArray->SetNumberOfTuples(slice->GetNumberOfCells());
       sliceArray->Fill(vtkDataSetAttributes::EXTERIORCELL);
