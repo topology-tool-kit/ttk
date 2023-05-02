@@ -308,6 +308,9 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     std::string arrayName(imageArray->GetName());
     vtkDataArray *sliceArray
       = slice->GetCellData()->GetArray(arrayName.c_str());
+    if(std::strcmp(arrayName.c_str(), "Cell Type") == 0) {
+      break;
+    }
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!sliceArray) {
       printErr(
@@ -976,6 +979,94 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   }
 
   // Merge in the z direction
+  for(int dir = 4; dir < 6; dir++) {
+    auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
+                        charArrayBoundariesMetaDataReceived.end(), other(dir));
+    vtkNew<vtkImageData> mergedImage1;
+    if(it != charArrayBoundariesMetaDataReceived.end()) {
+      vtkNew<vtkStructuredPoints> id;
+      if(vtkCommunicator::UnMarshalDataObject(
+           charArrayBoundariesReceived[std::distance(
+             charArrayBoundariesMetaDataReceived.begin(), it)],
+           id)
+         == 0) {
+        printErr("UnMarshaling failed!");
+      };
+      mergedImage1->DeepCopy(id);
+    }
+    if(mergedImage1->GetNumberOfPoints() > 0) {
+      for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
+        auto it_2D
+          = std::find(charArray2DBoundariesMetaDataReceived.begin(),
+                      charArray2DBoundariesMetaDataReceived.end(),
+                      std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)});
+        if(it_2D != charArray2DBoundariesMetaDataReceived.end()) {
+          vtkNew<vtkStructuredPoints> id_2D;
+          vtkNew<vtkImageData> aux;
+          if(vtkCommunicator::UnMarshalDataObject(
+               charArray2DBoundariesReceived[std::distance(
+                 charArray2DBoundariesMetaDataReceived.begin(), it_2D)],
+               id_2D)
+             == 0) {
+            printErr("UnMarshaling failed!");
+          };
+          this->MergeImageAppendAndSlice(mergedImage1, id_2D, aux, dir_2D);
+          mergedImage1->DeepCopy(aux);
+        }
+      }
+      for(int dir_2D = 2; dir_2D < 4; dir_2D++) {
+        vtkNew<vtkImageData> mergedImage2;
+        auto it_2D
+          = std::find(charArray2DBoundariesMetaDataReceived.begin(),
+                      charArray2DBoundariesMetaDataReceived.end(),
+                      std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)});
+        if(it_2D != charArray2DBoundariesMetaDataReceived.end()) {
+          vtkNew<vtkStructuredPoints> id;
+          if(vtkCommunicator::UnMarshalDataObject(
+               charArray2DBoundariesReceived[std::distance(
+                 charArray2DBoundariesMetaDataReceived.begin(), it_2D)],
+               id)
+             == 0) {
+            printErr("UnMarshaling failed!");
+          };
+          mergedImage2->DeepCopy(id);
+        }
+        if(mergedImage2->GetNumberOfPoints() > 0) {
+          for(int dir_3D = 0; dir_3D < 2; dir_3D++) {
+            // printMsg("Found image2 for 3D dir "+std::to_string(dir_3D));
+            auto it_3D
+              = std::find(charArray3DBoundariesMetaDataReceived.begin(),
+                          charArray3DBoundariesMetaDataReceived.end(),
+                          std::array<ttk::SimplexId, 3>{
+                            other(dir_3D), other(dir_2D), other(dir)});
+            if(it_3D != charArray3DBoundariesMetaDataReceived.end()) {
+              vtkNew<vtkStructuredPoints> id_3D;
+              vtkNew<vtkImageData> aux;
+              if(vtkCommunicator::UnMarshalDataObject(
+                   charArray3DBoundariesReceived[std::distance(
+                     charArray3DBoundariesMetaDataReceived.begin(), it_3D)],
+                   id_3D)
+                 == 0) {
+                printErr("UnMarshaling failed!");
+              };
+              this->MergeImageAppendAndSlice(mergedImage2, id_3D, aux, dir_3D);
+              mergedImage2->DeepCopy(aux);
+            }
+          }
+          vtkNew<vtkImageData> aux;
+          this->MergeImageAppendAndSlice(
+            mergedImage1, mergedImage2, aux, dir_2D);
+          mergedImage1->DeepCopy(aux);
+        }
+      }
+
+      if(mergedImage1->GetNumberOfPoints() > 0) {
+        vtkNew<vtkImageData> aux;
+        this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir);
+        imageOut->DeepCopy(aux);
+      }
+    }
+  }
 
   printMsg("End of periodic ghost generation");
   return 1;
