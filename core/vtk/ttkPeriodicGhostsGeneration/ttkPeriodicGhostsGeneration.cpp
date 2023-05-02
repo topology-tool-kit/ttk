@@ -72,8 +72,6 @@ int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
 }
 
 int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
-  // TODO: fix problem of direction that don't match because on same process
-  // TODO: check for 4 processes and 2 processes
   if(!isOutputExtentComputed_) {
     vtkImageData *imageIn;
     if(input->IsA("vtkImageData")) {
@@ -160,13 +158,12 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndCopy(
     = std::find(metaDataReceived.begin(), metaDataReceived.end(), direction);
   if(it != metaDataReceived.end()) {
     vtkNew<vtkStructuredPoints> id;
-    vtkNew<vtkImageData> aux;
     if(vtkCommunicator::UnMarshalDataObject(
          boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
        == 0) {
       printErr("UnMarshaling failed!");
     };
-    mergedImage->DeepCopy(aux);
+    mergedImage->DeepCopy(id);
   }
 }
 
@@ -179,116 +176,45 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
   int sliceCounter = 0;
   int imageCounter = 0;
   int counter = 0;
+  std::function<bool(int, int, int, int[3])> addSlice;
   switch(direction) {
     case 0:
-      for(int z = 0; z < dims[2]; z++) {
-        for(int y = 0; y < dims[1]; y++) {
-          for(int x = 0; x < dims[0]; x++) {
-            if(x == 0) {
-              currentArray->SetTuple1(
-                counter, sliceArray->GetTuple1(sliceCounter));
-              sliceCounter++;
-            } else {
-              currentArray->SetTuple1(
-                counter, imageArray->GetTuple1(imageCounter));
-              imageCounter++;
-            }
-            counter++;
-          }
-        }
-      }
+      addSlice = [](int x, int y, int z, int dims[3]) { return x == 0; };
       break;
     case 1:
-      for(int z = 0; z < dims[2]; z++) {
-        for(int y = 0; y < dims[1]; y++) {
-          for(int x = 0; x < dims[0]; x++) {
-            if(x == dims[0] - 1) {
-              currentArray->SetTuple1(
-                counter, sliceArray->GetTuple1(sliceCounter));
-              sliceCounter++;
-            } else {
-              currentArray->SetTuple1(
-                counter, imageArray->GetTuple1(imageCounter));
-              imageCounter++;
-            }
-            counter++;
-          }
-        }
-      }
+      addSlice
+        = [](int x, int y, int z, int dims[3]) { return x == dims[0] - 1; };
       break;
     case 2:
-      for(int z = 0; z < dims[2]; z++) {
-        for(int y = 0; y < dims[1]; y++) {
-          for(int x = 0; x < dims[0]; x++) {
-            if(y == 0) {
-              currentArray->SetTuple1(
-                counter, sliceArray->GetTuple1(sliceCounter));
-              sliceCounter++;
-            } else {
-              currentArray->SetTuple1(
-                counter, imageArray->GetTuple1(imageCounter));
-              imageCounter++;
-            }
-            counter++;
-          }
-        }
-      }
+      addSlice = [](int x, int y, int z, int dims[3]) { return y == 0; };
       break;
     case 3:
-      for(int z = 0; z < dims[2]; z++) {
-        for(int y = 0; y < dims[1]; y++) {
-          for(int x = 0; x < dims[0]; x++) {
-            if(y == dims[1] - 1) {
-              currentArray->SetTuple1(
-                counter, sliceArray->GetTuple1(sliceCounter));
-              sliceCounter++;
-            } else {
-              currentArray->SetTuple1(
-                counter, imageArray->GetTuple1(imageCounter));
-              imageCounter++;
-            }
-            counter++;
-          }
-        }
-      }
+      addSlice
+        = [](int x, int y, int z, int dims[3]) { return y == dims[1] - 1; };
       break;
     case 4:
-      for(int z = 0; z < dims[2]; z++) {
-        for(int y = 0; y < dims[1]; y++) {
-          for(int x = 0; x < dims[0]; x++) {
-            if(z == 0) {
-              currentArray->SetTuple1(
-                counter, sliceArray->GetTuple1(sliceCounter));
-              sliceCounter++;
-            } else {
-              currentArray->SetTuple1(
-                counter, imageArray->GetTuple1(imageCounter));
-              imageCounter++;
-            }
-            counter++;
-          }
-        }
-      }
+      addSlice = [](int x, int y, int z, int dims[3]) { return z == 0; };
       break;
     case 5:
-      for(int z = 0; z < dims[2]; z++) {
-        for(int y = 0; y < dims[1]; y++) {
-          for(int x = 0; x < dims[0]; x++) {
-            if(z == dims[2] - 1) {
-              currentArray->SetTuple1(
-                counter, sliceArray->GetTuple1(sliceCounter));
-              sliceCounter++;
-            } else {
-              currentArray->SetTuple1(
-                counter, imageArray->GetTuple1(imageCounter));
-              imageCounter++;
-            }
-            counter++;
-          }
-        }
-      }
+      addSlice
+        = [](int x, int y, int z, int dims[3]) { return z == dims[2] - 1; };
       break;
-  };
+  }
+
+  for(int z = 0; z < dims[2]; z++) {
+    for(int y = 0; y < dims[1]; y++) {
+      for(int x = 0; x < dims[0]; x++) {
+        if(addSlice(x, y, z, dims)) {
+          currentArray->SetTuple1(counter, sliceArray->GetTuple1(sliceCounter));
+          sliceCounter++;
+        } else {
+          currentArray->SetTuple1(counter, imageArray->GetTuple1(imageCounter));
+          imageCounter++;
+        }
+        counter++;
+      }
+    }
+  }
 }
 
 int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
@@ -791,8 +717,8 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
 
   imageOut->DeepCopy(imageIn);
 
-  // Merge in the x direction (x_low and x_high)
-  for(int dir = 0; dir < 2; dir++) {
+  // Merge in the z direction (z_low and y_high)
+  for(int dir = 4; dir < 6; dir++) {
     this->UnMarshalAndMerge<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
                                             charArrayBoundariesReceived,
                                             other(dir), dir, imageOut);
@@ -805,10 +731,10 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
                                            charArrayBoundariesReceived,
                                            other(dir), mergedImage);
     if(mergedImage->GetNumberOfPoints() > 0) {
-      for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
+      for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
         this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
           charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
-          std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)}, dir_2D,
+          std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
           mergedImage);
       }
       vtkNew<vtkImageData> aux;
@@ -817,32 +743,32 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     }
   }
 
-  // Merge in the z direction
-  for(int dir = 4; dir < 6; dir++) {
+  // Merge in the x direction
+  for(int dir = 0; dir < 2; dir++) {
     vtkNew<vtkImageData> mergedImage1;
     this->UnMarshalAndCopy<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
                                            charArrayBoundariesReceived,
                                            other(dir), mergedImage1);
     if(mergedImage1->GetNumberOfPoints() > 0) {
-      for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
+      for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
         this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
           charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
-          std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)}, dir_2D,
+          std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
           mergedImage1);
       }
       for(int dir_2D = 2; dir_2D < 4; dir_2D++) {
         vtkNew<vtkImageData> mergedImage2;
         this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
           charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
-          std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)},
+          std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)},
           mergedImage2);
         if(mergedImage2->GetNumberOfPoints() > 0) {
-          for(int dir_3D = 0; dir_3D < 2; dir_3D++) {
+          for(int dir_3D = 4; dir_3D < 6; dir_3D++) {
             this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
               charArray3DBoundariesMetaDataReceived,
               charArray3DBoundariesReceived,
               std::array<ttk::SimplexId, 3>{
-                other(dir_3D), other(dir_2D), other(dir)},
+                other(dir), other(dir_2D), other(dir_3D)},
               dir_3D, mergedImage2);
           }
           vtkNew<vtkImageData> aux;
@@ -858,8 +784,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
-
-  printMsg("End of periodic ghost generation");
   return 1;
 };
 
