@@ -142,6 +142,27 @@ protected:
                                vtkImageData *mergedImage,
                                int direction);
 
+  template <typename boundaryType>
+  int UnMarshalAndMerge(
+    std::vector<boundaryType> &metaDataReceived,
+    std::vector<vtkSmartPointer<vtkCharArray>> &boundariesReceived,
+    boundaryType direction,
+    int mergeDirection,
+    vtkImageData *mergedImage);
+
+  template <typename boundaryType>
+  int UnMarshalAndCopy(
+    std::vector<boundaryType> &metaDataReceived,
+    std::vector<vtkSmartPointer<vtkCharArray>> &boundariesReceived,
+    boundaryType direction,
+    vtkImageData *mergedImage);
+
+  int MergeDataArrays(vtkDataArray *imageArray,
+                      vtkDataArray *sliceArray,
+                      vtkSmartPointer<vtkDataArray> &currentArray,
+                      int direction,
+                      int dims[3]);
+
   /**
    * TODO 9: Specify the data object type of each output port
    *         (see cpp file)

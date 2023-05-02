@@ -128,6 +128,169 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
   return 1;
 };
 
+template <typename boundaryType>
+int ttkPeriodicGhostsGeneration::UnMarshalAndMerge(
+  std::vector<boundaryType> &metaDataReceived,
+  std::vector<vtkSmartPointer<vtkCharArray>> &boundariesReceived,
+  boundaryType direction,
+  int mergeDirection,
+  vtkImageData *mergedImage) {
+  auto it
+    = std::find(metaDataReceived.begin(), metaDataReceived.end(), direction);
+  if(it != metaDataReceived.end()) {
+    vtkNew<vtkStructuredPoints> id;
+    vtkNew<vtkImageData> aux;
+    if(vtkCommunicator::UnMarshalDataObject(
+         boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
+       == 0) {
+      printErr("UnMarshaling failed!");
+    };
+    this->MergeImageAppendAndSlice(mergedImage, id, aux, mergeDirection);
+    mergedImage->DeepCopy(aux);
+  }
+}
+
+template <typename boundaryType>
+int ttkPeriodicGhostsGeneration::UnMarshalAndCopy(
+  std::vector<boundaryType> &metaDataReceived,
+  std::vector<vtkSmartPointer<vtkCharArray>> &boundariesReceived,
+  boundaryType direction,
+  vtkImageData *mergedImage) {
+  auto it
+    = std::find(metaDataReceived.begin(), metaDataReceived.end(), direction);
+  if(it != metaDataReceived.end()) {
+    vtkNew<vtkStructuredPoints> id;
+    vtkNew<vtkImageData> aux;
+    if(vtkCommunicator::UnMarshalDataObject(
+         boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
+       == 0) {
+      printErr("UnMarshaling failed!");
+    };
+    mergedImage->DeepCopy(aux);
+  }
+}
+
+int ttkPeriodicGhostsGeneration::MergeDataArrays(
+  vtkDataArray *imageArray,
+  vtkDataArray *sliceArray,
+  vtkSmartPointer<vtkDataArray> &currentArray,
+  int direction,
+  int dims[3]) {
+  int sliceCounter = 0;
+  int imageCounter = 0;
+  int counter = 0;
+  switch(direction) {
+    case 0:
+      for(int z = 0; z < dims[2]; z++) {
+        for(int y = 0; y < dims[1]; y++) {
+          for(int x = 0; x < dims[0]; x++) {
+            if(x == 0) {
+              currentArray->SetTuple1(
+                counter, sliceArray->GetTuple1(sliceCounter));
+              sliceCounter++;
+            } else {
+              currentArray->SetTuple1(
+                counter, imageArray->GetTuple1(imageCounter));
+              imageCounter++;
+            }
+            counter++;
+          }
+        }
+      }
+      break;
+    case 1:
+      for(int z = 0; z < dims[2]; z++) {
+        for(int y = 0; y < dims[1]; y++) {
+          for(int x = 0; x < dims[0]; x++) {
+            if(x == dims[0] - 1) {
+              currentArray->SetTuple1(
+                counter, sliceArray->GetTuple1(sliceCounter));
+              sliceCounter++;
+            } else {
+              currentArray->SetTuple1(
+                counter, imageArray->GetTuple1(imageCounter));
+              imageCounter++;
+            }
+            counter++;
+          }
+        }
+      }
+      break;
+    case 2:
+      for(int z = 0; z < dims[2]; z++) {
+        for(int y = 0; y < dims[1]; y++) {
+          for(int x = 0; x < dims[0]; x++) {
+            if(y == 0) {
+              currentArray->SetTuple1(
+                counter, sliceArray->GetTuple1(sliceCounter));
+              sliceCounter++;
+            } else {
+              currentArray->SetTuple1(
+                counter, imageArray->GetTuple1(imageCounter));
+              imageCounter++;
+            }
+            counter++;
+          }
+        }
+      }
+      break;
+    case 3:
+      for(int z = 0; z < dims[2]; z++) {
+        for(int y = 0; y < dims[1]; y++) {
+          for(int x = 0; x < dims[0]; x++) {
+            if(y == dims[1] - 1) {
+              currentArray->SetTuple1(
+                counter, sliceArray->GetTuple1(sliceCounter));
+              sliceCounter++;
+            } else {
+              currentArray->SetTuple1(
+                counter, imageArray->GetTuple1(imageCounter));
+              imageCounter++;
+            }
+            counter++;
+          }
+        }
+      }
+      break;
+    case 4:
+      for(int z = 0; z < dims[2]; z++) {
+        for(int y = 0; y < dims[1]; y++) {
+          for(int x = 0; x < dims[0]; x++) {
+            if(z == 0) {
+              currentArray->SetTuple1(
+                counter, sliceArray->GetTuple1(sliceCounter));
+              sliceCounter++;
+            } else {
+              currentArray->SetTuple1(
+                counter, imageArray->GetTuple1(imageCounter));
+              imageCounter++;
+            }
+            counter++;
+          }
+        }
+      }
+      break;
+    case 5:
+      for(int z = 0; z < dims[2]; z++) {
+        for(int y = 0; y < dims[1]; y++) {
+          for(int x = 0; x < dims[0]; x++) {
+            if(z == dims[2] - 1) {
+              currentArray->SetTuple1(
+                counter, sliceArray->GetTuple1(sliceCounter));
+              sliceCounter++;
+            } else {
+              currentArray->SetTuple1(
+                counter, imageArray->GetTuple1(imageCounter));
+              imageCounter++;
+            }
+            counter++;
+          }
+        }
+      }
+      break;
+  };
+}
+
 int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   vtkImageData *image,
   vtkImageData *slice,
@@ -161,6 +324,7 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   mergedImage->SetExtent(extentImage);
   int dims[3];
   mergedImage->GetDimensions(dims);
+  int cellDims[3] = {dims[0] - 1, dims[1] - 1, dims[2] - 1};
   int numberOfPoints = mergedImage->GetNumberOfPoints();
   for(int array = 0; array < image->GetPointData()->GetNumberOfArrays();
       array++) {
@@ -185,119 +349,8 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
       sliceArray->SetNumberOfTuples(slice->GetNumberOfPoints());
       sliceArray->Fill(vtkDataSetAttributes::DUPLICATEPOINT);
     }
-    int sliceCounter = 0;
-    int imageCounter = 0;
-    int counter = 0;
-    switch(direction) {
-      case 0:
-        for(int z = 0; z < dims[2]; z++) {
-          for(int y = 0; y < dims[1]; y++) {
-            for(int x = 0; x < dims[0]; x++) {
-              if(x == 0) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 1:
-        for(int z = 0; z < dims[2]; z++) {
-          for(int y = 0; y < dims[1]; y++) {
-            for(int x = 0; x < dims[0]; x++) {
-              if(x == dims[0] - 1) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 2:
-        for(int z = 0; z < dims[2]; z++) {
-          for(int y = 0; y < dims[1]; y++) {
-            for(int x = 0; x < dims[0]; x++) {
-              if(y == 0) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 3:
-        for(int z = 0; z < dims[2]; z++) {
-          for(int y = 0; y < dims[1]; y++) {
-            for(int x = 0; x < dims[0]; x++) {
-              if(y == dims[1] - 1) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 4:
-        for(int z = 0; z < dims[2]; z++) {
-          for(int y = 0; y < dims[1]; y++) {
-            for(int x = 0; x < dims[0]; x++) {
-              if(z == 0) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 5:
-        for(int z = 0; z < dims[2]; z++) {
-          for(int y = 0; y < dims[1]; y++) {
-            for(int x = 0; x < dims[0]; x++) {
-              if(z == dims[2] - 1) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-    };
+    this->MergeDataArrays(
+      imageArray, sliceArray, currentArray, direction, dims);
     mergedImage->GetPointData()->AddArray(currentArray);
   }
   int numberOfCells = mergedImage->GetNumberOfCells();
@@ -328,119 +381,8 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
       sliceArray->SetNumberOfTuples(slice->GetNumberOfCells());
       sliceArray->Fill(vtkDataSetAttributes::EXTERIORCELL);
     }
-    vtkIdType sliceCounter = 0;
-    vtkIdType imageCounter = 0;
-    vtkIdType counter = 0;
-    switch(direction) {
-      case 0:
-        for(int z = 0; z < dims[2] - 1; z++) {
-          for(int y = 0; y < dims[1] - 1; y++) {
-            for(int x = 0; x < dims[0] - 1; x++) {
-              if(x == 0) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 1:
-        for(int z = 0; z < dims[2] - 1; z++) {
-          for(int y = 0; y < dims[1] - 1; y++) {
-            for(int x = 0; x < dims[0] - 1; x++) {
-              if(x == dims[0] - 2) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 2:
-        for(int z = 0; z < dims[2] - 1; z++) {
-          for(int y = 0; y < dims[1] - 1; y++) {
-            for(int x = 0; x < dims[0] - 1; x++) {
-              if(y == 0) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 3:
-        for(int z = 0; z < dims[2] - 1; z++) {
-          for(int y = 0; y < dims[1] - 1; y++) {
-            for(int x = 0; x < dims[0] - 1; x++) {
-              if(y == dims[1] - 2) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 4:
-        for(int z = 0; z < dims[2] - 1; z++) {
-          for(int y = 0; y < dims[1] - 1; y++) {
-            for(int x = 0; x < dims[0] - 1; x++) {
-              if(z == 0) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-      case 5:
-        for(int z = 0; z < dims[2] - 1; z++) {
-          for(int y = 0; y < dims[1] - 1; y++) {
-            for(int x = 0; x < dims[0] - 1; x++) {
-              if(z == dims[2] - 2) {
-                currentArray->SetTuple1(
-                  counter, sliceArray->GetTuple1(sliceCounter));
-                sliceCounter++;
-              } else {
-                currentArray->SetTuple1(
-                  counter, imageArray->GetTuple1(imageCounter));
-                imageCounter++;
-              }
-              counter++;
-            }
-          }
-        }
-        break;
-    };
+    this->MergeDataArrays(
+      imageArray, sliceArray, currentArray, direction, cellDims);
     mergedImage->GetCellData()->AddArray(currentArray);
   }
 
@@ -482,12 +424,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outExtent_.data(), 6);
   outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT());
 
-  /*std::string s = "boundsWithoutGhosts: ";
-  for(int i = 0; i < 6; i++) {
-    s += std::to_string(boundsWithoutGhosts_[i]) + ", ";
-  }
-  printMsg(s);*/
-
   for(int i = 0; i < 2; i++) {
     if(globalBounds_[i] == boundsWithoutGhosts_[i]) {
       localGlobalBounds[i].isBound = 1;
@@ -520,15 +456,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       localGlobalBounds[4 + i].z = boundsWithoutGhosts_[4 + i];
     }
   }
-  /*std::string s1 = "";
-  printMsg("Local: ");
-  for(int j = 0; j < 6; j++) {
-    s1 += "isBound: " + std::to_string(localGlobalBounds[j].isBound)
-          + "mid: " + std::to_string(localGlobalBounds[j].x) + ", "
-          + std::to_string(localGlobalBounds[j].y) + ", "
-          + std::to_string(localGlobalBounds[j].z) + "\n";
-  }
-  printMsg(s1);*/
 
   MPI_Datatype partialGlobalBoundMPI;
   std::vector<partialGlobalBound> allLocalGlobalBounds(
@@ -546,17 +473,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   MPI_Allgather(localGlobalBounds.data(), 6, partialGlobalBoundMPI,
                 allLocalGlobalBounds.data(), 6, partialGlobalBoundMPI,
                 ttk::MPIcomm_);
-  /*printMsg("allLocalGlobalBounds: ");
-   for (int i = 0; i<ttk::MPIsize_; i++){
-     std::string s = "";
-     for (int j = 0; j < 6; j++){
-         s += "isBound: "+std::to_string(allLocalGlobalBounds[6*i+j].isBound)
-         + "mid: "+std::to_string(allLocalGlobalBounds[6*i+j].x)+", "
-         +std::to_string(allLocalGlobalBounds[6*i+j].y)+", "
-         +std::to_string(allLocalGlobalBounds[6*i+j].z)+"\n";
-     }
-     printMsg(s);
-   } */
 
   std::vector<std::array<ttk::SimplexId, 3>> matches;
   for(int i = 0; i < ttk::MPIsize_; i++) {
@@ -620,13 +536,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
-  /*std::string s = "local2Dbounds :";
-  for (int i = 0; i<local2DBounds.size();i++){
-    s +=
-  "("+std::to_string(local2DBounds[i][0])+","+std::to_string(local2DBounds[i][1])+"),
-  ";
-  }
-  printMsg(s);*/
+
   std::vector<std::array<ttk::SimplexId, 3>> matches_2D;
   for(int i = 0; i < local2DBounds.size(); i++) {
     for(int j = 0; j < ttk::MPIsize_; j++) {
@@ -695,18 +605,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
-  /*printMsg("2D matches: "+std::to_string(matches_2D.size()));
-  for (int i = 0; i<matches_2D.size(); i++){
-    printMsg("proc,i,j: "+std::to_string(matches_2D[i][0])+",
-  "+std::to_string(matches_2D[i][1])+", "+std::to_string(matches_2D[i][2]));
-  }
-  printMsg("3D matches: " + std::to_string(matches_3D.size()));
-  for(int i = 0; i < matches_3D.size(); i++) {
-    printMsg("proc,i,j,k: " + std::to_string(matches_3D[i][0]) + ", "
-             + std::to_string(matches_3D[i][1]) + ", "
-             + std::to_string(matches_3D[i][2]) + ", "
-             + std::to_string(matches_3D[i][3]));
-  }*/
 
   // Now, extract ImageData
   int *default_VOI = imageIn->GetExtent();
@@ -740,22 +638,13 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     +std::to_string(extent[3])+", "
     +std::to_string(extent[4])+", "
     +std::to_string(extent[5]));*/
-
-    // printMsg("Size of extracted ImageData:
-    // "+std::to_string(extracted->GetNumberOfPoints()));
-    // charArrayBoundaries[matches[i][0]].emplace_back(vtkNew<vtkCharArray>());
     if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
       printErr("Marshalling failed!");
     };
     charArrayBoundaries[matches[i][0]].emplace_back(buffer);
     charArrayBoundariesMetaData[matches[i][0]].emplace_back(matches[i][1]);
   }
-  /*for (int i = 0; i < ttk::MPIsize_; i++){
-    for (int j = 0; j < charArrayBoundaries[i].size(); j++){
-      printMsg("Size of charArray:
-  "+std::to_string(charArrayBoundaries[i][j]->GetNumberOfTuples()));
-    }
-  }*/
+
   ttk::SimplexId recv_size;
   ttk::SimplexId send_size;
   ttk::SimplexId sendMetadata;
@@ -784,10 +673,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       charArrayBoundariesMetaDataReceived.emplace_back(recvMetaData);
     }
   }
-  /*for (int i = 0; i < charArrayBoundariesReceived.size(); i++){
-    printMsg("Size of received charArray:
-  "+std::to_string(charArrayBoundariesReceived[i]->GetNumberOfTuples()));
-  }*/
 
   // Now, extract ImageData
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray2DBoundaries(
@@ -846,13 +731,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     }
   }
 
-  /*for (int i = 0; i < charArray2DBoundariesReceived.size(); i++){
-    printMsg("Size of received charArray:
-  "+std::to_string(charArray2DBoundariesReceived[i]->GetNumberOfTuples()));
-  }*/
-
   // Now, same for 3D boundaries
-
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray3DBoundaries(
     ttk::MPIsize_);
   std::vector<std::vector<std::array<ttk::SimplexId, 3>>>
@@ -910,68 +789,28 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     }
   }
 
-  /*
-  for (int i = 0; i < charArray3DBoundariesReceived.size(); i++){
-    printMsg("Size of received charArray:
-  "+std::to_string(charArray3DBoundariesReceived[i]->GetNumberOfTuples()));
-  }*/
   imageOut->DeepCopy(imageIn);
 
   // Merge in the x direction (x_low and x_high)
   for(int dir = 0; dir < 2; dir++) {
-    auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
-                        charArrayBoundariesMetaDataReceived.end(), other(dir));
-    if(it != charArrayBoundariesMetaDataReceived.end()) {
-      vtkNew<vtkStructuredPoints> id;
-      vtkNew<vtkImageData> mergedImage;
-      if(vtkCommunicator::UnMarshalDataObject(
-           charArrayBoundariesReceived[std::distance(
-             charArrayBoundariesMetaDataReceived.begin(), it)],
-           id)
-         == 0) {
-        printErr("UnMarshaling failed!");
-      };
-      this->MergeImageAppendAndSlice(imageIn, id, mergedImage, dir);
-      imageOut->DeepCopy(mergedImage);
-    }
+    this->UnMarshalAndMerge<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
+                                            charArrayBoundariesReceived,
+                                            other(dir), dir, imageOut);
   }
+
   // Merge in the y direction
   for(int dir = 2; dir < 4; dir++) {
-    auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
-                        charArrayBoundariesMetaDataReceived.end(), other(dir));
     vtkNew<vtkImageData> mergedImage;
-    if(it != charArrayBoundariesMetaDataReceived.end()) {
-      vtkNew<vtkStructuredPoints> id;
-      if(vtkCommunicator::UnMarshalDataObject(
-           charArrayBoundariesReceived[std::distance(
-             charArrayBoundariesMetaDataReceived.begin(), it)],
-           id)
-         == 0) {
-        printErr("UnMarshaling failed!");
-      };
-      mergedImage->DeepCopy(id);
-    }
-    for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
-      auto it_2D
-        = std::find(charArray2DBoundariesMetaDataReceived.begin(),
-                    charArray2DBoundariesMetaDataReceived.end(),
-                    std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)});
-      if(it_2D != charArray2DBoundariesMetaDataReceived.end()) {
-        vtkNew<vtkStructuredPoints> id_2D;
-        vtkNew<vtkImageData> aux;
-        if(vtkCommunicator::UnMarshalDataObject(
-             charArray2DBoundariesReceived[std::distance(
-               charArray2DBoundariesMetaDataReceived.begin(), it_2D)],
-             id_2D)
-           == 0) {
-          printErr("UnMarshaling failed!");
-        };
-        this->MergeImageAppendAndSlice(mergedImage, id_2D, aux, dir_2D);
-        mergedImage->DeepCopy(aux);
-      }
-    }
-
+    this->UnMarshalAndCopy<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
+                                           charArrayBoundariesReceived,
+                                           other(dir), mergedImage);
     if(mergedImage->GetNumberOfPoints() > 0) {
+      for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
+        this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
+          charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
+          std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)}, dir_2D,
+          mergedImage);
+      }
       vtkNew<vtkImageData> aux;
       this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir);
       imageOut->DeepCopy(aux);
@@ -980,78 +819,31 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
 
   // Merge in the z direction
   for(int dir = 4; dir < 6; dir++) {
-    auto it = std::find(charArrayBoundariesMetaDataReceived.begin(),
-                        charArrayBoundariesMetaDataReceived.end(), other(dir));
     vtkNew<vtkImageData> mergedImage1;
-    if(it != charArrayBoundariesMetaDataReceived.end()) {
-      vtkNew<vtkStructuredPoints> id;
-      if(vtkCommunicator::UnMarshalDataObject(
-           charArrayBoundariesReceived[std::distance(
-             charArrayBoundariesMetaDataReceived.begin(), it)],
-           id)
-         == 0) {
-        printErr("UnMarshaling failed!");
-      };
-      mergedImage1->DeepCopy(id);
-    }
+    this->UnMarshalAndCopy<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
+                                           charArrayBoundariesReceived,
+                                           other(dir), mergedImage1);
     if(mergedImage1->GetNumberOfPoints() > 0) {
       for(int dir_2D = 0; dir_2D < 2; dir_2D++) {
-        auto it_2D
-          = std::find(charArray2DBoundariesMetaDataReceived.begin(),
-                      charArray2DBoundariesMetaDataReceived.end(),
-                      std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)});
-        if(it_2D != charArray2DBoundariesMetaDataReceived.end()) {
-          vtkNew<vtkStructuredPoints> id_2D;
-          vtkNew<vtkImageData> aux;
-          if(vtkCommunicator::UnMarshalDataObject(
-               charArray2DBoundariesReceived[std::distance(
-                 charArray2DBoundariesMetaDataReceived.begin(), it_2D)],
-               id_2D)
-             == 0) {
-            printErr("UnMarshaling failed!");
-          };
-          this->MergeImageAppendAndSlice(mergedImage1, id_2D, aux, dir_2D);
-          mergedImage1->DeepCopy(aux);
-        }
+        this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
+          charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
+          std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)}, dir_2D,
+          mergedImage1);
       }
       for(int dir_2D = 2; dir_2D < 4; dir_2D++) {
         vtkNew<vtkImageData> mergedImage2;
-        auto it_2D
-          = std::find(charArray2DBoundariesMetaDataReceived.begin(),
-                      charArray2DBoundariesMetaDataReceived.end(),
-                      std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)});
-        if(it_2D != charArray2DBoundariesMetaDataReceived.end()) {
-          vtkNew<vtkStructuredPoints> id;
-          if(vtkCommunicator::UnMarshalDataObject(
-               charArray2DBoundariesReceived[std::distance(
-                 charArray2DBoundariesMetaDataReceived.begin(), it_2D)],
-               id)
-             == 0) {
-            printErr("UnMarshaling failed!");
-          };
-          mergedImage2->DeepCopy(id);
-        }
+        this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
+          charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
+          std::array<ttk::SimplexId, 2>{other(dir_2D), other(dir)},
+          mergedImage2);
         if(mergedImage2->GetNumberOfPoints() > 0) {
           for(int dir_3D = 0; dir_3D < 2; dir_3D++) {
-            // printMsg("Found image2 for 3D dir "+std::to_string(dir_3D));
-            auto it_3D
-              = std::find(charArray3DBoundariesMetaDataReceived.begin(),
-                          charArray3DBoundariesMetaDataReceived.end(),
-                          std::array<ttk::SimplexId, 3>{
-                            other(dir_3D), other(dir_2D), other(dir)});
-            if(it_3D != charArray3DBoundariesMetaDataReceived.end()) {
-              vtkNew<vtkStructuredPoints> id_3D;
-              vtkNew<vtkImageData> aux;
-              if(vtkCommunicator::UnMarshalDataObject(
-                   charArray3DBoundariesReceived[std::distance(
-                     charArray3DBoundariesMetaDataReceived.begin(), it_3D)],
-                   id_3D)
-                 == 0) {
-                printErr("UnMarshaling failed!");
-              };
-              this->MergeImageAppendAndSlice(mergedImage2, id_3D, aux, dir_3D);
-              mergedImage2->DeepCopy(aux);
-            }
+            this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
+              charArray3DBoundariesMetaDataReceived,
+              charArray3DBoundariesReceived,
+              std::array<ttk::SimplexId, 3>{
+                other(dir_3D), other(dir_2D), other(dir)},
+              dir_3D, mergedImage2);
           }
           vtkNew<vtkImageData> aux;
           this->MergeImageAppendAndSlice(
@@ -1059,7 +851,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
           mergedImage1->DeepCopy(aux);
         }
       }
-
       if(mergedImage1->GetNumberOfPoints() > 0) {
         vtkNew<vtkImageData> aux;
         this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir);
@@ -1078,102 +869,7 @@ int ttkPeriodicGhostsGeneration::RequestData(
   vtkInformationVector *outputVector) {
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  // Get input object from input vector
-  // Note: has to be a vtkDataSet as required by FillInputPortInformation
-  /*vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
-  vtkImageData* image = vtkImageData::SafeDownCast(input);*/
   this->MPIPeriodicGhostPipelinePreconditioning(inputVector, outputVector);
-  // Get ttk::triangulation of the input vtkDataSet (will create one if one does
-  // not exist already).
-  /*ttk::Triangulation *triangulation
-    = ttkAlgorithm::GetTriangulation(inputDataSet);
-  if(!triangulation)
-    return 0;*/
-  /*vtkImageData* image1 =
-  vtkImageData::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
-  vtkSmartPointer<vtkImageAppend> imageAppend =
-  vtkSmartPointer<vtkImageAppend>::New(); vtkNew<vtkImageData> input2; int*
-  extent; double* origin; double origin2[3]; extent = image->GetExtent();
-  origin = image->GetOrigin();*/
-  // for (int i = 0; i < 2; i++){
-  //  extent[i] += 5;
-  //}
-  /*origin2[0] = origin[0]+5;
-  origin2[1] = origin[1];
-  origin2[2] = origin[2];*/
-  /*input2->DeepCopy(image);
-  //input2->SetExtent(extent);
-  //input2->SetOrigin(origin2);
-  imageAppend->SetInputData(image);
-  imageAppend->AddInputData(input2);
-  imageAppend->SetAppendAxis(0);
-  //imageAppend->PreserveExtentsOff();
-  imageAppend->Update();*/
-
-  /*vtkImageData* image = vtkImageData::GetData(inputVector[0]);
-  vtkImageData *output = vtkImageData::GetData(outputVector);
-  vtkNew<vtkImageAppend> imageAppend;
-  imageAppend->SetInputData(image);
-  imageAppend->AddInputData(image);
-  imageAppend->SetAppendAxis(0);
-  //mageAppend->PreserveExtentsOn();
-  imageAppend->Update();
-  //vtkInformation* outInfo = outputVector->GetInformationObject(0);
-  //int* appendedExtent = imageAppend->GetOutput()->GetExtent();
-  //outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),
-appendedExtent, 6); vtkNew<vtkImageData>outImage{}; int newExtent[6]; int*
-extent = image->GetExtent(); newExtent[0] = extent[0]; newExtent[1] =
-extent[1]+(extent[1]-extent[0]); newExtent[2] = extent[2]; newExtent[3] =
-extent[3]; newExtent[4] = extent[4]; newExtent[5] = extent[5];
-  outImage->SetExtent(newExtent);
-  outImage->SetSpacing(image->GetSpacing());
-  outImage->SetOrigin(image->GetOrigin());
-  //outImage->SetNumber
-  vtkNew<vtkCharArray> test;
-  test->SetNumberOfTuples(outImage->GetNumberOfPoints());
-  test->Fill(1);
-  test->SetName("Test");
-  //outInfo->Set(vtkStreamingDemandDrivenPipeline::UNRESTRICTED_UPDATE_EXTENT(),
-1);
-  //outInfo->Set(
-  //  vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), newExtent, 6);
-  outImage->GetPointData()->AddArray(test);
-  output->ShallowCopy(imageAppend->GetOutput());
-  outInfo->Set(vtkDataObject::SPACING(), outImage->GetSpacing(), 3);
-  outInfo->Set(vtkDataObject::ORIGIN(), outImage->GetOrigin(), 3);
-  //outInfo->Set(
-  //  vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outImage->GetExtent(),
-6); printMsg("inside :"+std::to_string(image->GetNumberOfPoints()));
-
-  printMsg("outside after ghost :"+std::to_string(output->GetNumberOfPoints()));
-/*  int* inWextent =
-outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT());
-  printMsg("inWextent: "+std::to_string(inWextent[0])+", "
-  +std::to_string(inWextent[1])+", "
-  +std::to_string(inWextent[2])+", "
-  +std::to_string(inWextent[3])+", "
-  +std::to_string(inWextent[4])+", "
-  +std::to_string(inWextent[5]));
-  printMsg("appendedExtent: "+std::to_string(appendedExtent[0])+", "
-  +std::to_string(appendedExtent[1])+", "
-  +std::to_string(appendedExtent[2])+", "
-  +std::to_string(appendedExtent[3])+", "
-  +std::to_string(appendedExtent[4])+", "
-  +std::to_string(appendedExtent[5]));
-  appendedExtent = image->GetExtent();
-  printMsg("originExtent: "+std::to_string(appendedExtent[0])+", "
-  +std::to_string(appendedExtent[1])+", "
-  +std::to_string(appendedExtent[2])+", "
-  +std::to_string(appendedExtent[3])+", "
-  +std::to_string(appendedExtent[4])+", "
-  +std::to_string(appendedExtent[5]));  */
-  // Get output vtkDataSet (which was already instantiated based on the
-  // information provided by FillOutputPortInformation)
-  // vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 0);*/
-
-  // make a SHALLOW copy of the input
-  // outputDataSet->ShallowCopy(inputDataSet);
 
   // return success
   return 1;
