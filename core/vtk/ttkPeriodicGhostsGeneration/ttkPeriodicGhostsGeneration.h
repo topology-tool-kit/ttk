@@ -39,6 +39,7 @@
 #pragma once
 
 // VTK Module
+#include "DataTypes.h"
 #include <ttkPeriodicGhostsGenerationModule.h>
 
 // VTK Includes
@@ -79,6 +80,15 @@
  *   VTK::FiltersSources
  */
 
+namespace periodicGhosts {
+  struct partialGlobalBound {
+    unsigned char isBound{0};
+    double x{0};
+    double y{0};
+    double z{0};
+  };
+} // namespace periodicGhosts
+
 class TTKPERIODICGHOSTSGENERATION_EXPORT ttkPeriodicGhostsGeneration
   : public ttkAlgorithm {
 
@@ -93,6 +103,7 @@ private:
   std::array<double, 6> boundsWithoutGhosts_;
   std::array<double, 6> globalBounds_;
   bool isOutputExtentComputed_{false};
+  std::array<periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
 
 public:
   /**
@@ -161,7 +172,10 @@ protected:
                       vtkDataArray *sliceArray,
                       vtkSmartPointer<vtkDataArray> &currentArray,
                       int direction,
-                      int dims[3]);
+                      int dims[3],
+                      unsigned char ghostValue,
+                      ttk::SimplexId numberOfSimplices,
+                      ttk::SimplexId numberOfTuples);
 
   /**
    * TODO 9: Specify the data object type of each output port

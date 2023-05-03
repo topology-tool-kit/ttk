@@ -103,12 +103,6 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
 
     double spacing[3];
     imageIn->GetSpacing(spacing);
-    outExtent_[0] = static_cast<int>(round(globalBounds_[0] / spacing[0])) - 1;
-    outExtent_[1] = static_cast<int>(round(globalBounds_[1] / spacing[0])) + 1;
-    outExtent_[2] = static_cast<int>(round(globalBounds_[2] / spacing[1])) - 1;
-    outExtent_[3] = static_cast<int>(round(globalBounds_[3] / spacing[1])) + 1;
-    outExtent_[4] = static_cast<int>(round(globalBounds_[4] / spacing[2])) - 1;
-    outExtent_[5] = static_cast<int>(round(globalBounds_[5] / spacing[2])) + 1;
     boundsWithoutGhosts_
       = {bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]};
     for(int i = 0; i < 3; i++) {
@@ -119,6 +113,54 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
       if(bounds[2 * i + 1] != globalBounds_[2 * i + 1]) {
         boundsWithoutGhosts_[2 * i + 1] = bounds[2 * i + 1] - spacing[0];
       } else {
+      }
+    }
+
+    for(int i = 0; i < 2; i++) {
+      if(globalBounds_[i] == boundsWithoutGhosts_[i]) {
+        localGlobalBounds_[i].isBound = 1;
+        localGlobalBounds_[i].x = boundsWithoutGhosts_[i];
+        localGlobalBounds_[i].y
+          = (boundsWithoutGhosts_[2] + boundsWithoutGhosts_[3]) / 2;
+        localGlobalBounds_[i].z
+          = (boundsWithoutGhosts_[4] + boundsWithoutGhosts_[5]) / 2;
+      }
+    }
+
+    for(int i = 0; i < 2; i++) {
+      if(globalBounds_[2 + i] == boundsWithoutGhosts_[2 + i]) {
+        localGlobalBounds_[2 + i].isBound = 1;
+        localGlobalBounds_[2 + i].x
+          = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
+        localGlobalBounds_[2 + i].y = boundsWithoutGhosts_[2 + i];
+        localGlobalBounds_[2 + i].z
+          = (boundsWithoutGhosts_[4] + boundsWithoutGhosts_[5]) / 2;
+      }
+    }
+
+    for(int i = 0; i < 2; i++) {
+      if(globalBounds_[4 + i] == boundsWithoutGhosts_[4 + i]) {
+        localGlobalBounds_[4 + i].isBound = 1;
+        localGlobalBounds_[4 + i].x
+          = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
+        localGlobalBounds_[4 + i].y
+          = (boundsWithoutGhosts_[2] + boundsWithoutGhosts_[3]) / 2;
+        localGlobalBounds_[4 + i].z = boundsWithoutGhosts_[4 + i];
+      }
+    }
+
+    for(int i = 0; i < 3; i++) {
+      if(!(localGlobalBounds_[2 * i].isBound == 1
+           && localGlobalBounds_[2 * i + 1].isBound == 1)) {
+        outExtent_[2 * i]
+          = static_cast<int>(round(globalBounds_[2 * i] / spacing[i])) - 1;
+        outExtent_[2 * i + 1]
+          = static_cast<int>(round(globalBounds_[2 * i + 1] / spacing[i])) + 1;
+      } else {
+        outExtent_[2 * i]
+          = static_cast<int>(round(globalBounds_[2 * i] / spacing[i]));
+        outExtent_[2 * i + 1]
+          = static_cast<int>(round(globalBounds_[2 * i + 1] / spacing[i]));
       }
     }
     isOutputExtentComputed_ = true;
@@ -172,32 +214,57 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
   vtkDataArray *sliceArray,
   vtkSmartPointer<vtkDataArray> &currentArray,
   int direction,
-  int dims[3]) {
+  int dims[3],
+  unsigned char ghostValue,
+  ttk::SimplexId numberOfSimplices,
+  ttk::SimplexId numberOfTuples) {
+  std::string arrayName(imageArray->GetName());
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!sliceArray) {
+    printErr("Array " + arrayName
+             + " is not present in the Data of the second vtkImageData");
+    return 0;
+  }
+#endif
+  currentArray->SetNumberOfComponents(1);
+  currentArray->SetNumberOfTuples(numberOfSimplices);
+  currentArray->SetName(arrayName.c_str());
+  if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
+    sliceArray->SetNumberOfTuples(numberOfTuples);
+    sliceArray->Fill(ghostValue);
+  }
   int sliceCounter = 0;
   int imageCounter = 0;
   int counter = 0;
   std::function<bool(int, int, int, int[3])> addSlice;
   switch(direction) {
     case 0:
-      addSlice = [](int x, int y, int z, int dims[3]) { return x == 0; };
+      addSlice = [](int x, int ttkNotUsed(y), int ttkNotUsed(z),
+                    int ttkNotUsed(dims)[3]) { return x == 0; };
       break;
     case 1:
-      addSlice
-        = [](int x, int y, int z, int dims[3]) { return x == dims[0] - 1; };
+      addSlice = [](int x, int ttkNotUsed(y), int ttkNotUsed(z), int dims[3]) {
+        return x == dims[0] - 1;
+      };
       break;
     case 2:
-      addSlice = [](int x, int y, int z, int dims[3]) { return y == 0; };
+      addSlice = [](int ttkNotUsed(x), int y, int ttkNotUsed(z),
+                    int ttkNotUsed(dims)[3]) { return y == 0; };
       break;
     case 3:
-      addSlice
-        = [](int x, int y, int z, int dims[3]) { return y == dims[1] - 1; };
+      addSlice = [](int ttkNotUsed(x), int y, int ttkNotUsed(z), int dims[3]) {
+        return y == dims[1] - 1;
+      };
       break;
     case 4:
-      addSlice = [](int x, int y, int z, int dims[3]) { return z == 0; };
+      addSlice = [](int ttkNotUsed(x), int ttkNotUsed(y), int z,
+                    int ttkNotUsed(dims)[3]) { return z == 0; };
       break;
     case 5:
-      addSlice
-        = [](int x, int y, int z, int dims[3]) { return z == dims[2] - 1; };
+      addSlice = [](int ttkNotUsed(x), int ttkNotUsed(y), int z, int dims[3]) {
+        return z == dims[2] - 1;
+      };
       break;
   }
 
@@ -215,6 +282,7 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
       }
     }
   }
+  return 1;
 }
 
 int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
@@ -255,28 +323,13 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   for(int array = 0; array < image->GetPointData()->GetNumberOfArrays();
       array++) {
     vtkDataArray *imageArray = image->GetPointData()->GetArray(array);
-    std::string arrayName(imageArray->GetName());
     vtkDataArray *sliceArray
-      = slice->GetPointData()->GetArray(arrayName.c_str());
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!sliceArray) {
-      printErr(
-        "Array " + arrayName
-        + " is not present in the Point Data of the second vtkImageData");
-      return 0;
-    }
-#endif
+      = slice->GetPointData()->GetArray(imageArray->GetName());
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
-    currentArray->SetNumberOfComponents(1);
-    currentArray->SetNumberOfTuples(numberOfPoints);
-    currentArray->SetName(arrayName.c_str());
-    if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
-      sliceArray->SetNumberOfTuples(slice->GetNumberOfPoints());
-      sliceArray->Fill(vtkDataSetAttributes::DUPLICATEPOINT);
-    }
-    this->MergeDataArrays(
-      imageArray, sliceArray, currentArray, direction, dims);
+    this->MergeDataArrays(imageArray, sliceArray, currentArray, direction, dims,
+                          vtkDataSetAttributes::DUPLICATEPOINT, numberOfPoints,
+                          slice->GetNumberOfPoints());
     mergedImage->GetPointData()->AddArray(currentArray);
   }
   int numberOfCells = mergedImage->GetNumberOfCells();
@@ -290,25 +343,11 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     if(std::strcmp(arrayName.c_str(), "Cell Type") == 0) {
       break;
     }
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!sliceArray) {
-      printErr(
-        "Array " + arrayName
-        + " is not present in the Point Data of the second vtkImageData");
-      return 0;
-    }
-#endif
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
-    currentArray->SetNumberOfComponents(1);
-    currentArray->SetNumberOfTuples(numberOfCells);
-    currentArray->SetName(arrayName.c_str());
-    if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
-      sliceArray->SetNumberOfTuples(slice->GetNumberOfCells());
-      sliceArray->Fill(vtkDataSetAttributes::EXTERIORCELL);
-    }
-    this->MergeDataArrays(
-      imageArray, sliceArray, currentArray, direction, cellDims);
+    this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
+                          cellDims, vtkDataSetAttributes::EXTERIORCELL,
+                          numberOfCells, slice->GetNumberOfCells());
     mergedImage->GetCellData()->AddArray(currentArray);
   }
 
@@ -324,13 +363,6 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
 int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   vtkInformationVector **inputVectors, vtkInformationVector *outputVector) {
 
-  struct partialGlobalBound {
-    unsigned char isBound{0};
-    double x{0};
-    double y{0};
-    double z{0};
-  };
-
   auto other = [](ttk::SimplexId i) {
     if(i % 2 == 1) {
       return i - 1;
@@ -341,62 +373,24 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   vtkImageData *imageIn = vtkImageData::GetData(inputVectors[0]);
   vtkImageData *imageOut = vtkImageData::GetData(outputVector);
 
-  imageOut->ShallowCopy(imageIn);
-
-  std::array<partialGlobalBound, 6> localGlobalBounds;
   this->ComputeOutputExtent(imageIn);
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  outInfo->Set(
-    vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outExtent_.data(), 6);
-  outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT());
-
-  for(int i = 0; i < 2; i++) {
-    if(globalBounds_[i] == boundsWithoutGhosts_[i]) {
-      localGlobalBounds[i].isBound = 1;
-      localGlobalBounds[i].x = boundsWithoutGhosts_[i];
-      localGlobalBounds[i].y
-        = (boundsWithoutGhosts_[2] + boundsWithoutGhosts_[3]) / 2;
-      localGlobalBounds[i].z
-        = (boundsWithoutGhosts_[4] + boundsWithoutGhosts_[5]) / 2;
-    }
-  }
-
-  for(int i = 0; i < 2; i++) {
-    if(globalBounds_[2 + i] == boundsWithoutGhosts_[2 + i]) {
-      localGlobalBounds[2 + i].isBound = 1;
-      localGlobalBounds[2 + i].x
-        = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
-      localGlobalBounds[2 + i].y = boundsWithoutGhosts_[2 + i];
-      localGlobalBounds[2 + i].z
-        = (boundsWithoutGhosts_[4] + boundsWithoutGhosts_[5]) / 2;
-    }
-  }
-
-  for(int i = 0; i < 2; i++) {
-    if(globalBounds_[4 + i] == boundsWithoutGhosts_[4 + i]) {
-      localGlobalBounds[4 + i].isBound = 1;
-      localGlobalBounds[4 + i].x
-        = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
-      localGlobalBounds[4 + i].y
-        = (boundsWithoutGhosts_[2] + boundsWithoutGhosts_[3]) / 2;
-      localGlobalBounds[4 + i].z = boundsWithoutGhosts_[4 + i];
-    }
-  }
 
   MPI_Datatype partialGlobalBoundMPI;
-  std::vector<partialGlobalBound> allLocalGlobalBounds(
-    ttk::MPIsize_ * 6, partialGlobalBound{});
+  std::vector<periodicGhosts::partialGlobalBound> allLocalGlobalBounds(
+    ttk::MPIsize_ * 6, periodicGhosts::partialGlobalBound{});
   MPI_Datatype types[]
     = {MPI_UNSIGNED_CHAR, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
   int lengths[] = {1, 1, 1, 1};
   const long int mpi_offsets[]
-    = {offsetof(partialGlobalBound, isBound), offsetof(partialGlobalBound, x),
-       offsetof(partialGlobalBound, y), offsetof(partialGlobalBound, z)};
+    = {offsetof(periodicGhosts::partialGlobalBound, isBound),
+       offsetof(periodicGhosts::partialGlobalBound, x),
+       offsetof(periodicGhosts::partialGlobalBound, y),
+       offsetof(periodicGhosts::partialGlobalBound, z)};
   MPI_Type_create_struct(
     4, lengths, mpi_offsets, types, &partialGlobalBoundMPI);
   MPI_Type_commit(&partialGlobalBoundMPI);
 
-  MPI_Allgather(localGlobalBounds.data(), 6, partialGlobalBoundMPI,
+  MPI_Allgather(localGlobalBounds_.data(), 6, partialGlobalBoundMPI,
                 allLocalGlobalBounds.data(), 6, partialGlobalBoundMPI,
                 ttk::MPIcomm_);
 
@@ -405,9 +399,9 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     if(i != ttk::MPIrank_) {
       for(int j = 0; j < 6; j++) {
         bool isIn = false;
-        if(!(localGlobalBounds[other(j)].isBound != 0
-             && localGlobalBounds[j].isBound != 0)) {
-          if(localGlobalBounds[other(j)].isBound != 0
+        if(!(localGlobalBounds_[other(j)].isBound != 0
+             && localGlobalBounds_[j].isBound != 0)) {
+          if(localGlobalBounds_[other(j)].isBound != 0
              && allLocalGlobalBounds[i * 6 + j].isBound != 0) {
             if(0 <= j && j <= 1) {
               isIn
@@ -453,10 +447,10 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   for(int i = 0; i < 4; i++) {
     for(int j = i + 1; j < 6; j++) {
       if((abs(i - j) == 1 && i % 2 == 1) || abs(i - j) >= 2) {
-        if((localGlobalBounds[i].isBound != 0
-            && localGlobalBounds[j].isBound != 0)
-           && !(localGlobalBounds[other(i)].isBound != 0
-                && localGlobalBounds[other(j)].isBound != 0)) {
+        if((localGlobalBounds_[i].isBound != 0
+            && localGlobalBounds_[j].isBound != 0)
+           && !(localGlobalBounds_[other(i)].isBound != 0
+                && localGlobalBounds_[other(j)].isBound != 0)) {
           local2DBounds.emplace_back(std::array<ttk::SimplexId, 2>{i, j});
         }
       }
@@ -506,9 +500,9 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   for(int i = 0; i < 2; i++) {
     for(int j = 0; j < 2; j++) {
       for(int k = 0; k < 2; k++) {
-        if(localGlobalBounds[i].isBound != 0
-           && localGlobalBounds[2 + j].isBound != 0
-           && localGlobalBounds[4 + k].isBound != 0) {
+        if(localGlobalBounds_[i].isBound != 0
+           && localGlobalBounds_[2 + j].isBound != 0
+           && localGlobalBounds_[4 + k].isBound != 0) {
           local3DBounds.emplace_back(
             std::array<ttk::SimplexId, 3>{i, 2 + j, 4 + k});
         }
@@ -791,7 +785,6 @@ int ttkPeriodicGhostsGeneration::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
   this->MPIPeriodicGhostPipelinePreconditioning(inputVector, outputVector);
 
