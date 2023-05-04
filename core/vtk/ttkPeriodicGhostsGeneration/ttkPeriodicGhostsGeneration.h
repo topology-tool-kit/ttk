@@ -148,6 +148,19 @@ protected:
 
   int ComputeOutputExtent(vtkDataSet *input);
 
+  template <int matchesSize, int metaDataSize>
+  int MarshalAndSendRecv(
+    vtkImageData *imageIn,
+    std::vector<std::vector<vtkSmartPointer<vtkCharArray>>>
+      &charArrayBoundaries,
+    std::vector<std::vector<std::array<ttk::SimplexId, metaDataSize>>>
+      &charArrayBoundariesMetaData,
+    std::vector<std::array<ttk::SimplexId, matchesSize>> &matches,
+    std::vector<vtkSmartPointer<vtkCharArray>> &charArrayBoundariesReceived,
+    std::vector<std::array<ttk::SimplexId, metaDataSize>>
+      &charArrayBoundariesMetaDataReceived,
+    int dim);
+
   int MergeImageAppendAndSlice(vtkImageData *image,
                                vtkImageData *slice,
                                vtkImageData *mergedImage,

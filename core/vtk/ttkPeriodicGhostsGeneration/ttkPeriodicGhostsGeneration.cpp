@@ -1,3 +1,5 @@
+#include "BaseClass.h"
+#include "DataTypes.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include <ttkPeriodicGhostsGeneration.h>
 
@@ -167,6 +169,77 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
   }
   return 1;
 };
+
+template <int matchesSize, int metaDataSize>
+int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
+  vtkImageData *imageIn,
+  std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> &charArrayBoundaries,
+  std::vector<std::vector<std::array<ttk::SimplexId, metaDataSize>>>
+    &charArrayBoundariesMetaData,
+  std::vector<std::array<ttk::SimplexId, matchesSize>> &matches,
+  std::vector<vtkSmartPointer<vtkCharArray>> &charArrayBoundariesReceived,
+  std::vector<std::array<ttk::SimplexId, metaDataSize>>
+    &charArrayBoundariesMetaDataReceived,
+  int dim) {
+  int *default_VOI = imageIn->GetExtent();
+  std::array<ttk::SimplexId, 6> VOI;
+  for(int i = 0; i < matches.size(); i++) {
+    VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
+           default_VOI[3], default_VOI[4], default_VOI[5]};
+    for(int k = 1; k <= dim; k++) {
+      if(matches[i][k] % 2 == 0) {
+        VOI[matches[i][k] + 1] = VOI[matches[i][k]];
+      } else {
+        VOI[matches[i][k] - 1] = VOI[matches[i][k]];
+      }
+    }
+    vtkSmartPointer<vtkExtractVOI> extractVOI
+      = vtkSmartPointer<vtkExtractVOI>::New();
+    extractVOI->SetInputData(imageIn);
+    extractVOI->SetVOI(VOI[0], VOI[1], VOI[2], VOI[3], VOI[4], VOI[5]);
+    extractVOI->Update();
+    vtkSmartPointer<vtkImageData> extracted = extractVOI->GetOutput();
+    vtkSmartPointer<vtkCharArray> buffer = vtkSmartPointer<vtkCharArray>::New();
+    int *extent = extracted->GetExtent();
+    if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
+      printErr("Marshalling failed!");
+    };
+    charArrayBoundaries[matches[i][0]].emplace_back(buffer);
+    std::array<ttk::SimplexId, metaDataSize> metaData;
+    for(int j = 0; j < metaDataSize; j++) {
+      metaData.at(j) = matches[i][j + 1];
+    }
+    charArrayBoundariesMetaData[matches[i][0]].emplace_back(metaData);
+  }
+
+  ttk::SimplexId recv_size;
+  ttk::SimplexId send_size;
+  std::array<ttk::SimplexId, metaDataSize> sendMetadata;
+  std::array<ttk::SimplexId, metaDataSize> recvMetaData;
+  for(int i = 0; i < ttk::MPIsize_; i++) {
+    for(int j = 0; j < charArrayBoundaries[i].size(); j++) {
+      send_size = charArrayBoundaries[i][j]->GetNumberOfTuples();
+      MPI_Sendrecv(&send_size, 1, ttk::getMPIType(send_size), i, 0, &recv_size,
+                   1, ttk::getMPIType(recv_size), i, 0, ttk::MPIcomm_,
+                   MPI_STATUS_IGNORE);
+      vtkSmartPointer<vtkCharArray> buffer
+        = vtkSmartPointer<vtkCharArray>::New();
+      buffer->SetNumberOfTuples(recv_size);
+      buffer->SetNumberOfComponents(1);
+      char *sendPointer = ttkUtils::GetPointer<char>(charArrayBoundaries[i][j]);
+      char *recvPointer = ttkUtils::GetPointer<char>(buffer);
+      MPI_Sendrecv(sendPointer, send_size, MPI_CHAR, i, 0, recvPointer,
+                   recv_size, MPI_CHAR, i, 0, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+      charArrayBoundariesReceived.emplace_back(buffer);
+      sendMetadata = charArrayBoundariesMetaData[i][j];
+      MPI_Sendrecv(sendMetadata.data(), metaDataSize,
+                   ttk::getMPIType(recv_size), i, 0, recvMetaData.data(),
+                   metaDataSize, ttk::getMPIType(recv_size), i, 0,
+                   ttk::MPIcomm_, MPI_STATUS_IGNORE);
+      charArrayBoundariesMetaDataReceived.emplace_back(recvMetaData);
+    }
+  }
+}
 
 template <typename boundaryType>
 int ttkPeriodicGhostsGeneration::UnMarshalAndMerge(
@@ -526,204 +599,57 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     }
   }
 
-  // Now, extract ImageData
-  int *default_VOI = imageIn->GetExtent();
-  std::array<ttk::SimplexId, 6> VOI;
+  // Now, extract ImageData for 1D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArrayBoundaries(
     ttk::MPIsize_);
-  std::vector<std::vector<ttk::SimplexId>> charArrayBoundariesMetaData(
-    ttk::MPIsize_);
-  for(int i = 0; i < matches.size(); i++) {
-    vtkNew<vtkImageAppend> imageAppend;
-    // imageAppend->PreserveExtentsOn();
-    VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
-           default_VOI[3], default_VOI[4], default_VOI[5]};
-    imageAppend->SetAppendAxis(static_cast<int>(matches[i][1] / 2));
-    if(matches[i][1] % 2 == 0) {
-      VOI[matches[i][1] + 1] = VOI[matches[i][1]];
-    } else {
-      VOI[matches[i][1] - 1] = VOI[matches[i][1]];
-    }
-    vtkSmartPointer<vtkExtractVOI> extractVOI
-      = vtkSmartPointer<vtkExtractVOI>::New();
-    extractVOI->SetInputData(imageIn);
-    extractVOI->SetVOI(VOI[0], VOI[1], VOI[2], VOI[3], VOI[4], VOI[5]);
-    extractVOI->Update();
-    vtkSmartPointer<vtkImageData> extracted = extractVOI->GetOutput();
-    vtkSmartPointer<vtkCharArray> buffer = vtkSmartPointer<vtkCharArray>::New();
-    int *extent = extracted->GetExtent();
-    /*printMsg("Extent: "+std::to_string(extent[0])+", "
-    +std::to_string(extent[1])+", "
-    +std::to_string(extent[2])+", "
-    +std::to_string(extent[3])+", "
-    +std::to_string(extent[4])+", "
-    +std::to_string(extent[5]));*/
-    if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
-      printErr("Marshalling failed!");
-    };
-    charArrayBoundaries[matches[i][0]].emplace_back(buffer);
-    charArrayBoundariesMetaData[matches[i][0]].emplace_back(matches[i][1]);
-  }
-
-  ttk::SimplexId recv_size;
-  ttk::SimplexId send_size;
-  ttk::SimplexId sendMetadata;
-  ttk::SimplexId recvMetaData;
+  std::vector<std::vector<std::array<ttk::SimplexId, 1>>>
+    charArrayBoundariesMetaData(ttk::MPIsize_);
   std::vector<vtkSmartPointer<vtkCharArray>> charArrayBoundariesReceived;
-  std::vector<ttk::SimplexId> charArrayBoundariesMetaDataReceived;
-  for(int i = 0; i < ttk::MPIsize_; i++) {
-    for(int j = 0; j < charArrayBoundaries[i].size(); j++) {
-      send_size = charArrayBoundaries[i][j]->GetNumberOfTuples();
-      MPI_Sendrecv(&send_size, 1, ttk::getMPIType(send_size), i, 0, &recv_size,
-                   1, ttk::getMPIType(recv_size), i, 0, ttk::MPIcomm_,
-                   MPI_STATUS_IGNORE);
-      vtkSmartPointer<vtkCharArray> buffer
-        = vtkSmartPointer<vtkCharArray>::New();
-      buffer->SetNumberOfTuples(recv_size);
-      buffer->SetNumberOfComponents(1);
-      char *sendPointer = ttkUtils::GetPointer<char>(charArrayBoundaries[i][j]);
-      char *recvPointer = ttkUtils::GetPointer<char>(buffer);
-      MPI_Sendrecv(sendPointer, send_size, MPI_CHAR, i, 0, recvPointer,
-                   recv_size, MPI_CHAR, i, 0, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArrayBoundariesReceived.emplace_back(buffer);
-      sendMetadata = charArrayBoundariesMetaData[i][j];
-      MPI_Sendrecv(&sendMetadata, 1, ttk::getMPIType(sendMetadata), i, 0,
-                   &recvMetaData, 1, ttk::getMPIType(recvMetaData), i, 0,
-                   ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArrayBoundariesMetaDataReceived.emplace_back(recvMetaData);
-    }
-  }
+  std::vector<std::array<ttk::SimplexId, 1>>
+    charArrayBoundariesMetaDataReceived;
+  this->MarshalAndSendRecv<3, 1>(
+    imageIn, charArrayBoundaries, charArrayBoundariesMetaData, matches,
+    charArrayBoundariesReceived, charArrayBoundariesMetaDataReceived, 1);
 
-  // Now, extract ImageData
+  // Extract 2D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray2DBoundaries(
     ttk::MPIsize_);
   std::vector<std::vector<std::array<ttk::SimplexId, 2>>>
     charArray2DBoundariesMetaData(ttk::MPIsize_);
-  for(int i = 0; i < matches_2D.size(); i++) {
-    VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
-           default_VOI[3], default_VOI[4], default_VOI[5]};
-    for(int k = 1; k < 3; k++) {
-      if(matches_2D[i][k] % 2 == 0) {
-        VOI[matches_2D[i][k] + 1] = VOI[matches_2D[i][k]];
-      } else {
-        VOI[matches_2D[i][k] - 1] = VOI[matches_2D[i][k]];
-      }
-    }
-    vtkNew<vtkExtractVOI> extractVOI;
-    extractVOI->SetInputData(imageIn);
-    extractVOI->SetVOI(VOI[0], VOI[1], VOI[2], VOI[3], VOI[4], VOI[5]);
-    extractVOI->Update();
-    vtkImageData *extracted = extractVOI->GetOutput();
-    vtkSmartPointer<vtkCharArray> buffer = vtkSmartPointer<vtkCharArray>::New();
-    if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
-      printErr("Marshalling failed!");
-    };
-    charArray2DBoundaries[matches_2D[i][0]].emplace_back(buffer);
-    charArray2DBoundariesMetaData[matches_2D[i][0]].emplace_back(
-      std::array<ttk::SimplexId, 2>{matches_2D[i][1], matches_2D[i][2]});
-  }
-  std::array<ttk::SimplexId, 2> sendMetadataArray;
-  std::array<ttk::SimplexId, 2> recvMetaDataArray;
   std::vector<vtkSmartPointer<vtkCharArray>> charArray2DBoundariesReceived;
   std::vector<std::array<ttk::SimplexId, 2>>
     charArray2DBoundariesMetaDataReceived;
-  for(int i = 0; i < ttk::MPIsize_; i++) {
-    for(int j = 0; j < charArray2DBoundaries[i].size(); j++) {
-      send_size = charArray2DBoundaries[i][j]->GetNumberOfTuples();
-      MPI_Sendrecv(&send_size, 1, ttk::getMPIType(send_size), i, 0, &recv_size,
-                   1, ttk::getMPIType(recv_size), i, 0, ttk::MPIcomm_,
-                   MPI_STATUS_IGNORE);
-      vtkSmartPointer<vtkCharArray> buffer
-        = vtkSmartPointer<vtkCharArray>::New();
-      buffer->SetNumberOfTuples(recv_size);
-      buffer->SetNumberOfComponents(1);
-      char *sendPointer
-        = ttkUtils::GetPointer<char>(charArray2DBoundaries[i][j]);
-      char *recvPointer = ttkUtils::GetPointer<char>(buffer);
-      MPI_Sendrecv(sendPointer, send_size, MPI_CHAR, i, 0, recvPointer,
-                   recv_size, MPI_CHAR, i, 0, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArray2DBoundariesReceived.emplace_back(buffer);
-      sendMetadataArray = charArray2DBoundariesMetaData[i][j];
-      MPI_Sendrecv(&sendMetadataArray, 2, ttk::getMPIType(sendMetadata), i, 0,
-                   &recvMetaDataArray, 2, ttk::getMPIType(recvMetaData), i, 0,
-                   ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArray2DBoundariesMetaDataReceived.emplace_back(recvMetaDataArray);
-    }
-  }
+  this->MarshalAndSendRecv<3, 2>(
+    imageIn, charArray2DBoundaries, charArray2DBoundariesMetaData, matches_2D,
+    charArray2DBoundariesReceived, charArray2DBoundariesMetaDataReceived, 2);
 
   // Now, same for 3D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray3DBoundaries(
     ttk::MPIsize_);
   std::vector<std::vector<std::array<ttk::SimplexId, 3>>>
     charArray3DBoundariesMetaData(ttk::MPIsize_);
-  for(int i = 0; i < matches_3D.size(); i++) {
-    VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
-           default_VOI[3], default_VOI[4], default_VOI[5]};
-    for(int k = 1; k < 4; k++) {
-      if(matches_3D[i][k] % 2 == 0) {
-        VOI[matches_3D[i][k] + 1] = VOI[matches_3D[i][k]] + 1;
-      } else {
-        VOI[matches_3D[i][k] - 1] = VOI[matches_3D[i][k]] - 1;
-      }
-    }
-    vtkNew<vtkExtractVOI> extractVOI;
-    extractVOI->SetInputData(imageIn);
-    extractVOI->SetVOI(VOI[0], VOI[1], VOI[2], VOI[3], VOI[4], VOI[5]);
-    extractVOI->Update();
-    vtkImageData *extracted = extractVOI->GetOutput();
-    vtkSmartPointer<vtkCharArray> buffer = vtkSmartPointer<vtkCharArray>::New();
-    if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
-      printErr("Marshalling failed!");
-    };
-    charArray3DBoundaries[matches_3D[i][0]].emplace_back(buffer);
-    charArray3DBoundariesMetaData[matches_3D[i][0]].emplace_back(
-      std::array<ttk::SimplexId, 3>{
-        matches_3D[i][1], matches_3D[i][2], matches_3D[i][3]});
-  }
-  std::array<ttk::SimplexId, 3> sendMetadataArray3D;
-  std::array<ttk::SimplexId, 3> recvMetaDataArray3D;
   std::vector<vtkSmartPointer<vtkCharArray>> charArray3DBoundariesReceived;
   std::vector<std::array<ttk::SimplexId, 3>>
     charArray3DBoundariesMetaDataReceived;
-  for(int i = 0; i < ttk::MPIsize_; i++) {
-    for(int j = 0; j < charArray3DBoundaries[i].size(); j++) {
-      send_size = charArray3DBoundaries[i][j]->GetNumberOfTuples();
-      MPI_Sendrecv(&send_size, 1, ttk::getMPIType(send_size), i, 0, &recv_size,
-                   1, ttk::getMPIType(recv_size), i, 0, ttk::MPIcomm_,
-                   MPI_STATUS_IGNORE);
-      vtkSmartPointer<vtkCharArray> buffer
-        = vtkSmartPointer<vtkCharArray>::New();
-      buffer->SetNumberOfTuples(recv_size);
-      buffer->SetNumberOfComponents(1);
-      char *sendPointer
-        = ttkUtils::GetPointer<char>(charArray3DBoundaries[i][j]);
-      char *recvPointer = ttkUtils::GetPointer<char>(buffer);
-      MPI_Sendrecv(sendPointer, send_size, MPI_CHAR, i, 0, recvPointer,
-                   recv_size, MPI_CHAR, i, 0, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArray3DBoundariesReceived.emplace_back(buffer);
-      sendMetadataArray3D = charArray3DBoundariesMetaData[i][j];
-      MPI_Sendrecv(&sendMetadataArray3D, 3, ttk::getMPIType(sendMetadata), i, 0,
-                   &recvMetaDataArray3D, 3, ttk::getMPIType(recvMetaData), i, 0,
-                   ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArray3DBoundariesMetaDataReceived.emplace_back(recvMetaDataArray3D);
-    }
-  }
+  this->MarshalAndSendRecv<4, 3>(
+    imageIn, charArray3DBoundaries, charArray3DBoundariesMetaData, matches_3D,
+    charArray3DBoundariesReceived, charArray3DBoundariesMetaDataReceived, 3);
 
   imageOut->DeepCopy(imageIn);
 
   // Merge in the z direction (z_low and y_high)
   for(int dir = 4; dir < 6; dir++) {
-    this->UnMarshalAndMerge<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
-                                            charArrayBoundariesReceived,
-                                            other(dir), dir, imageOut);
+    this->UnMarshalAndMerge<std::array<ttk::SimplexId, 1>>(
+      charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+      std::array<ttk::SimplexId, 1>{other(dir)}, dir, imageOut);
   }
 
   // Merge in the y direction
   for(int dir = 2; dir < 4; dir++) {
     vtkNew<vtkImageData> mergedImage;
-    this->UnMarshalAndCopy<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
-                                           charArrayBoundariesReceived,
-                                           other(dir), mergedImage);
+    this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
+      charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+      std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage);
     if(mergedImage->GetNumberOfPoints() > 0) {
       for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
         this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
@@ -740,9 +666,9 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   // Merge in the x direction
   for(int dir = 0; dir < 2; dir++) {
     vtkNew<vtkImageData> mergedImage1;
-    this->UnMarshalAndCopy<ttk::SimplexId>(charArrayBoundariesMetaDataReceived,
-                                           charArrayBoundariesReceived,
-                                           other(dir), mergedImage1);
+    this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
+      charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+      std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage1);
     if(mergedImage1->GetNumberOfPoints() > 0) {
       for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
         this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
