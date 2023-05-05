@@ -429,6 +429,9 @@ namespace ttk {
     void alloc(const triangulationType &triangulation) {
       Timer tm{};
       const auto dim{this->dg_.getDimensionality()};
+      if(dim > 3 || dim < 1) {
+        return;
+      }
       this->firstRepMin_.resize(triangulation.getNumberOfVertices());
       if(dim > 1) {
         this->firstRepMax_.resize(triangulation.getNumberOfCells());
