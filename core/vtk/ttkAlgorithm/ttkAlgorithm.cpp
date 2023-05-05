@@ -415,6 +415,9 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
 #ifdef TTK_ENABLE_MPI
 
 int ttkAlgorithm::updateMPICommunicator(vtkDataSet *input) {
+  if(input == nullptr) {
+    return 0;
+  }
   int isEmpty
     = input->GetNumberOfCells() == 0 || input->GetNumberOfPoints() == 0;
   int oldSize = ttk::MPIsize_;
@@ -860,7 +863,7 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
     this->printMsg("Processing REQUEST_DATA", ttk::debug::Priority::VERBOSE);
     this->printMsg(ttk::debug::Separator::L0);
 #ifdef TTK_ENABLE_MPI
-    if(ttk::hasInitializedMPI()) {
+    if(ttk::hasInitializedMPI() && inputVector != nullptr) {
       if(this->updateMPICommunicator(vtkDataSet::GetData(inputVector[0], 0))) {
         return 1;
       };
