@@ -80,8 +80,6 @@ $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.11.0-ApplicationComponents.patch"
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.11.0-NSIS64.patch"
-$PATCH_BIN -p1 \
-  < "${PATCH_DIR}/paraview-5.11.0-mpi4py-py311.patch"
 
 ## Remove README.md that points to ParaView sources & build
 ## instructions instead of TTK ones
