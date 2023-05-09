@@ -12,7 +12,7 @@ on:
       - 'pack*'
 
 env:
-  PV_TAG: v5.11.0
+  PV_TAG: v5.11.1
   PV_REPO: topology-tool-kit/ttk-paraview
 
 jobs:
