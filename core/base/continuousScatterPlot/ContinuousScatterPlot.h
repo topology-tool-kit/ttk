@@ -500,25 +500,14 @@ int ttk::ContinuousScatterPlot::execute(
 
               // triangle/ray intersection below
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp atomic
-#else
 #pragma omp atomic update
-#endif
 #endif
             (*density_)[i][j] += (1.0 - u - v) * density;
 
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp atomic
-            (*validPointMask_)[i][j] += 1;
-#else
 #pragma omp atomic write
-            (*validPointMask_)[i][j] = 1;
 #endif
-#else
             (*validPointMask_)[i][j] = 1;
-#endif
             break;
           }
         }
