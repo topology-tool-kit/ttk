@@ -569,22 +569,10 @@ jobs:
         cd ttk-data
         pvpython.exe python\resample.py ctBones.vti 128 128 128 ctBones.vti
 
-    - name: Temporary removal of python-dependent examples
-      shell: bash
-      run: |
-        cd ttk-data
-        rm python/1manifoldLearning.py
-        rm python/clusteringKelvinHelmholtzInstabilities.py
-        rm python/karhunenLoveDigits64Dimensions.py
-        rm python/mergeTreeClustering.py
-        rm python/persistentGenerators_householdAnalysis.py
-        rm python/persistentGenerators_periodicPicture.py
-        ls -lh python/*.py
-
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
-        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         pvpython.exe -u python\run.py
