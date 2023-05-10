@@ -1080,7 +1080,9 @@ inline void ttk::ImplicitTriangulation::edgeToPosition2d(const SimplexId edge,
 inline void
   ttk::ImplicitTriangulation::triangleToPosition2d(const SimplexId triangle,
                                                    SimplexId p[2]) const {
-  p[0] = triangle % tshift_[0];
+  // compatibility with tetrahedronToPosition; fix a bounding box
+  // error in the first axis
+  p[0] = (triangle % tshift_[0]) / 2;
   p[1] = triangle / tshift_[0];
 }
 
