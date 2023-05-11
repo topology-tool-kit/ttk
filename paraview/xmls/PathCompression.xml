@@ -7,10 +7,8 @@
       <Documentation
         long_help="TTK pathCompression plugin."
         short_help="TTK pathCompression plugin.">
-        TTK plugin for the computation of Morse-Smale segmentation.
-
-        Morse-Smale complexes are useful topological abstractions of scalar
-        fields for data segmentation, feature extraction, etc.
+        TTK plugin for the computation of Morse-Smale segmentation. It allows to extract the ascending, descending, and Morse-Smale segmentation hash as point data arrays.
+        Each array represents the minimum/maximum/minimum-maximum combination a vertex is reaching when following the gradient direction. By using path compression, the computational complexity was minimized.
 
         Related publication:
         "Parallel Computation of Piecewise Linear Morse-Smale Segmentations"
@@ -112,7 +110,7 @@
          panel_visibility="default">
          <BooleanDomain name="bool"/>
          <Documentation>
-           Toggles the creation of the Ascending segmentation, where each vertex points towards its minimum.
+           Toggles the creation of the ascending segmentation, where each vertex points towards its minimum.
          </Documentation>
        </IntVectorProperty>
 
@@ -124,7 +122,7 @@
          panel_visibility="default">
          <BooleanDomain name="bool"/>
          <Documentation>
-           Toggles the creation of the Descending segmentation, where each vertex points towards its maximum.
+           Toggles the creation of the descending segmentation, where each vertex points towards its maximum.
          </Documentation>
        </IntVectorProperty>
 

@@ -1,8 +1,10 @@
-/// TODO 12: Add your information
-/// \author Your Name Here <Your Email Address Here>.
-/// \date The Date Here.
+/// \ingroup vtk
+/// \class ttkPathCompression
+/// \author Robin Maack <maack@rptu.de>
+/// \date May 2023.
 ///
-/// \brief dummy program example.
+/// \brief Compute the ascending, descending, and MS segmentation hash from a
+/// dataset.
 
 // TTK Includes
 #include <CommandLineParser.h>
@@ -19,145 +21,71 @@
 
 int main(int argc, char **argv) {
 
-  // ---------------------------------------------------------------------------
-  // Program variables
-  // ---------------------------------------------------------------------------
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
-  std::string outputArrayName{"AveragedArray"};
-  std::string outputPathPrefix{"output"};
-  bool listArrays{false};
+  std::string outputName{"MSSegmentation"};
 
-  // ---------------------------------------------------------------------------
-  // Set program variables based on command line arguments
-  // ---------------------------------------------------------------------------
   {
     ttk::CommandLineParser parser;
 
-    // -------------------------------------------------------------------------
-    // Standard options and arguments
-    // -------------------------------------------------------------------------
     parser.setArgument(
       "i", &inputFilePaths, "Input data-sets (*.vti, *vtu, *vtp)", false);
-    parser.setArgument("a", &inputArrayNames, "Input array names", true);
-    parser.setArgument(
-      "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setOption("l", &listArrays, "List available arrays");
+    parser.setArgument("a", &inputArrayNames, "Input array name", true);
 
-    // -------------------------------------------------------------------------
-    // TODO 13: Declare custom arguments and options
-    // -------------------------------------------------------------------------
-    parser.setArgument("O", &outputArrayName, "Output array name", true);
+    parser.setArgument(
+      "o", &outputName, "Output file name (no extension)", true);
 
     parser.parse(argc, argv);
   }
 
-  // ---------------------------------------------------------------------------
-  // Command line output messages.
-  // ---------------------------------------------------------------------------
   ttk::Debug msg;
   msg.setDebugMsgPrefix("PathCompression");
 
-  // ---------------------------------------------------------------------------
-  // Initialize ttkPathCompression module (adjust parameters)
-  // ---------------------------------------------------------------------------
   auto pathCompression = vtkSmartPointer<ttkPathCompression>::New();
 
-  // ---------------------------------------------------------------------------
-  // TODO 14: Pass custom arguments and options to the module
-  // ---------------------------------------------------------------------------
-  // pathCompression->SetOutputArrayName(outputArrayName);
-
-  // ---------------------------------------------------------------------------
-  // Read input vtkDataObjects (optionally: print available arrays)
-  // ---------------------------------------------------------------------------
   vtkDataArray *defaultArray = nullptr;
-  for(size_t i = 0; i < inputFilePaths.size(); i++) {
-    // init a reader that can parse any vtkDataObject stored in xml format
-    auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
-    reader->SetFileName(inputFilePaths[i].data());
-    reader->Update();
+  auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
+  reader->SetFileName(inputFilePaths[0].data());
+  reader->Update();
 
-    // check if input vtkDataObject was successfully read
-    auto inputDataObject = reader->GetOutput();
-    if(!inputDataObject) {
-      msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
-      return 1;
-    }
-
-    auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
-
-    // if requested print list of arrays, otherwise proceed with execution
-    if(listArrays) {
-      msg.printMsg(inputFilePaths[i] + ":");
-      if(inputAsVtkDataSet) {
-        // Point Data
-        msg.printMsg("  PointData:");
-        auto pointData = inputAsVtkDataSet->GetPointData();
-        for(int j = 0; j < pointData->GetNumberOfArrays(); j++)
-          msg.printMsg("    - " + std::string(pointData->GetArrayName(j)));
-
-        // Cell Data
-        msg.printMsg("  CellData:");
-        auto cellData = inputAsVtkDataSet->GetCellData();
-        for(int j = 0; j < cellData->GetNumberOfArrays(); j++)
-          msg.printMsg("    - " + std::string(cellData->GetArrayName(j)));
-      } else {
-        msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
-                     + "'");
-        return 1;
-      }
-    } else {
-      // feed input object to ttkPathCompression filter
-      pathCompression->SetInputDataObject(i, reader->GetOutput());
-
-      // default arrays
-      if(!defaultArray) {
-        defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
-        if(!defaultArray)
-          defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
-      }
-    }
+  auto inputDataObject = reader->GetOutput();
+  if(!inputDataObject) {
+    msg.printErr("Unable to read input file `" + inputFilePaths[0] + "' :(");
+    return 1;
   }
 
-  // terminate program if it was just asked to list arrays
-  if(listArrays) {
-    return 0;
+  auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
+
+  pathCompression->SetInputDataObject(0, reader->GetOutput());
+
+  if(!defaultArray) {
+    defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
+    if(!defaultArray)
+      defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
   }
 
-  // ---------------------------------------------------------------------------
-  // Specify which arrays of the input vtkDataObjects will be processed
-  // ---------------------------------------------------------------------------
   if(!inputArrayNames.size()) {
     if(defaultArray)
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
-  for(size_t i = 0; i < inputArrayNames.size(); i++)
-    pathCompression->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
-  // ---------------------------------------------------------------------------
-  // Execute ttkPathCompression filter
-  // ---------------------------------------------------------------------------
+  pathCompression->SetComputeAscendingSegmentation(true);
+  pathCompression->SetComputeDescendingSegmentation(true);
+  pathCompression->SetcomputeMSSegmentationHash(true);
+  pathCompression->SetInputArrayToProcess(
+    0, 0, 0, 0, inputArrayNames[0].data());
   pathCompression->Update();
 
-  // ---------------------------------------------------------------------------
-  // If output prefix is specified then write all output objects to disk
-  // ---------------------------------------------------------------------------
-  if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < pathCompression->GetNumberOfOutputPorts(); i++) {
-      auto output = pathCompression->GetOutputDataObject(i);
-      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
-        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
+  auto output = pathCompression->GetOutputDataObject(0);
+  auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
+    vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
-      std::string outputFileName = outputPathPrefix + "_port_"
-                                   + std::to_string(i) + "."
-                                   + writer->GetDefaultFileExtension();
-      msg.printMsg("Writing output file `" + outputFileName + "'...");
-      writer->SetInputDataObject(output);
-      writer->SetFileName(outputFileName.data());
-      writer->Update();
-    }
-  }
+  std::string outputFileName
+    = outputName + "." + writer->GetDefaultFileExtension();
+  msg.printMsg("Writing output file `" + outputFileName + "'...");
+  writer->SetInputDataObject(output);
+  writer->SetFileName(outputFileName.data());
+  writer->Update();
 
   return 0;
 }
