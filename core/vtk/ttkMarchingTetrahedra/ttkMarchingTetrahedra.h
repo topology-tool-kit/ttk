@@ -1,0 +1,91 @@
+/// \ingroup vtk
+/// \class ttkMarchingTetrahedra
+/// \author Robin Maack <maack@rptu.de>
+/// \date May 2023.
+///
+/// \brief TTK VTK-filter that wraps the ttk::MarchingTetrahedra module.
+///
+/// Given an input point data array and triangulation this class executes the
+/// marching tetrahedra/triangles algorithm. It has three options that either
+/// separate each label with a single separating geometry inbetween two labels,
+/// or a separating geometry enclosing each label (detailed and fast mode).
+///
+/// \param Input vtkDataSet containing the input scalar field as point data
+/// \param Output vtkPolyData containing the output geometry as cell data
+///
+/// This filter can be used like any other VTK filter (for instance, by using
+/// the sequence of calls SetInputData(), Update(), GetOutputDataObject()).
+///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// See the corresponding standalone program for a usage example:
+///   - standalone/MarchingTetrahedra/main.cpp
+///
+/// See the related ParaView example state files for usage examples within a
+/// VTK pipeline.
+///
+/// \b Related \b publication \n
+/// "Parallel Computation of Piecewise Linear Morse-Smale Segmentations" \n
+/// Robin G. C. Maack, Jonas Lukasczyk, Julien Tierny, Hans Hagen,
+/// Ross Maciejewski, Christoph Garth \n
+/// IEEE Transactions on Visualization and Computer Graphics \n
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/TODO/">TODO
+///   example</a> \n
+///
+/// \sa ttk::MarchingTetrahedra
+
+#pragma once
+
+// VTK Module
+#include <ttkMarchingTetrahedraModule.h>
+
+// ttk code includes
+#include <MarchingTetrahedra.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
+
+class vtkPolyData;
+
+using namespace ttk;
+
+class TTKMARCHINGTETRAHEDRA_EXPORT ttkMarchingTetrahedra
+  : public ttkAlgorithm,
+    protected ttk::MarchingTetrahedra {
+
+public:
+  static ttkMarchingTetrahedra *New();
+
+  vtkTypeMacro(ttkMarchingTetrahedra, ttkAlgorithm);
+
+  ttkSetEnumMacro(SurfaceMode, SURFACE_MODE);
+  vtkGetEnumMacro(SurfaceMode, SURFACE_MODE);
+
+protected:
+  template <typename scalarType, typename triangulationType>
+  int dispatch(vtkDataArray *const inputScalars,
+               vtkPolyData *const outputSeparators,
+               const triangulationType &triangulation);
+
+  ttkMarchingTetrahedra();
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+
+private:
+  // Output data
+  std::vector<float> output_points{};
+  std::vector<ttk::SimplexId> output_cells_connectivity{};
+  std::vector<unsigned long long> output_cells_mscIds{};
+  std::vector<ttk::SimplexId> output_cells_caseTypes{};
+};

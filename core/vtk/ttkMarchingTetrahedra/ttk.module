@@ -1,0 +1,9 @@
+NAME
+  ttkMarchingTetrahedra
+SOURCES
+  ttkMarchingTetrahedra.cpp
+HEADERS
+  ttkMarchingTetrahedra.h
+DEPENDS
+  marchingTetrahedra
+  ttkAlgorithm
