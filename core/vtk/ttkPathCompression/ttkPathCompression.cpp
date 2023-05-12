@@ -139,17 +139,17 @@ int ttkPathCompression::RequestData(vtkInformation *ttkNotUsed(request),
   outputMorseComplexes->ShallowCopy(input);
 
   if(ComputeAscendingSegmentation || ComputeDescendingSegmentation
-     || computeMSSegmentationHash) {
+     || ComputeMSSegmentationHash) {
     vtkPointData *pointData = outputMorseComplexes->GetPointData();
 
     if(!pointData)
       return !this->printErr("outputMorseComplexes has no point data.");
 
-    if(ComputeDescendingSegmentation || computeMSSegmentationHash)
+    if(ComputeDescendingSegmentation || ComputeMSSegmentationHash)
       pointData->AddArray(descendingSegmentation);
-    if(ComputeAscendingSegmentation || computeMSSegmentationHash)
+    if(ComputeAscendingSegmentation || ComputeMSSegmentationHash)
       pointData->AddArray(ascendingSegmentation);
-    if(computeMSSegmentationHash)
+    if(ComputeMSSegmentationHash)
       pointData->AddArray(morseSmaleSegmentation);
   }
 
