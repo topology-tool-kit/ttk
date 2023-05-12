@@ -76,8 +76,8 @@ public:
   vtkSetMacro(ComputeDescendingSegmentation, bool);
   vtkGetMacro(ComputeDescendingSegmentation, bool);
 
-  vtkSetMacro(computeMSSegmentationHash, bool);
-  vtkGetMacro(computeMSSegmentationHash, bool);
+  vtkSetMacro(ComputeMSSegmentationHash, bool);
+  vtkGetMacro(ComputeMSSegmentationHash, bool);
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
