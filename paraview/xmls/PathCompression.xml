@@ -128,7 +128,7 @@
 
        <IntVectorProperty name="ComputeFinalSegmentation"
          label="Morse-Smale Complex Hash"
-         command="SetComputeFinalSegmentation"
+         command="computeMSSegmentationHash"
          number_of_elements="1"
          default_values="1"
          panel_visibility="default">

@@ -164,7 +164,7 @@ namespace ttk {
     bool ComputeDescendingSegmentation{true};
 
     // Compute Morse-Smale segmentation hash?
-    bool computeMSSegmentationHash{true};
+    bool ComputeMSSegmentationHash{true};
   };
 } // namespace ttk
 
@@ -181,7 +181,7 @@ int ttk::PathCompression::execute(OutputSegmentation &outSegmentation,
                  this->threadNumber_);
 
   if((ComputeAscendingSegmentation && ComputeDescendingSegmentation)
-     || computeMSSegmentationHash) {
+     || ComputeMSSegmentationHash) {
     computePathCompression(outSegmentation.ascending_,
                            outSegmentation.descending_, orderArray,
                            triangulation);
@@ -193,7 +193,7 @@ int ttk::PathCompression::execute(OutputSegmentation &outSegmentation,
       outSegmentation.descending_, false, orderArray, triangulation);
   }
 
-  if(computeMSSegmentationHash) {
+  if(ComputeMSSegmentationHash) {
     computeMSHash(outSegmentation.morseSmale_, outSegmentation.ascending_,
                   outSegmentation.descending_, triangulation);
   }
