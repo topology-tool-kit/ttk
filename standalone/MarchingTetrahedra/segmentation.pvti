@@ -1,8 +1,0 @@
-<VTKFile type="PImageData" version="1.0" byte_order="LittleEndian" header_type="UInt64">
-  <PImageData WholeExtent="0 176 0 94 0 47" GhostLevel="0" Origin="0 0 0" Spacing="1 1 1">
-    <PPointData>
-      <PDataArray type="Int32" Name="AscendingManifold"/>
-    </PPointData>
-    <Piece Extent="0 176 0 94 0 47" Source="segmentation/segmentation_0.vti"/>
-  </PImageData>
-</VTKFile>
