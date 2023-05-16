@@ -117,7 +117,7 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
       } else {
       }
     }
-
+    // TODO: cas où une dimension est nulle
     for(int i = 0; i < 2; i++) {
       if(globalBounds_[i] == boundsWithoutGhosts_[i]) {
         localGlobalBounds_[i].isBound = 1;
@@ -446,6 +446,41 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   vtkImageData *imageIn = vtkImageData::GetData(inputVectors[0]);
   vtkImageData *imageOut = vtkImageData::GetData(outputVector);
 
+  int *dims = imageIn->GetDimensions();
+  int dimensionality = imageIn->GetDataDimension();
+  int firstDim;
+  int secondDim;
+  // TODO: cut selon la plus grande dimension
+  if(dimensionality == 1) {
+    firstDim = 0;
+    if(dims[0] <= 1 && dims[1] <= 1) {
+      firstDim = 4;
+    } else {
+      if(dims[0] <= 1 && dims[2] <= 1) {
+        firstDim = 2;
+      }
+    }
+  }
+  if(dimensionality == 2) {
+    if(dims[0] <= 1) {
+      firstDim = 4;
+      secondDim = 2;
+    }
+    if(dims[1] <= 1) {
+      firstDim = 4;
+      secondDim = 0;
+    }
+    if(dims[2] <= 1) {
+      firstDim = 2;
+      secondDim = 0;
+    }
+  }
+
+  if(dimensionality == 3) {
+    firstDim = 4;
+    secondDim = 2;
+  }
+
   this->ComputeOutputExtent(imageIn);
 
   MPI_Datatype partialGlobalBoundMPI;
@@ -517,88 +552,94 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   }
 
   std::vector<std::array<ttk::SimplexId, 2>> local2DBounds;
-  for(int i = 0; i < 4; i++) {
-    for(int j = i + 1; j < 6; j++) {
-      if((abs(i - j) == 1 && i % 2 == 1) || abs(i - j) >= 2) {
-        if((localGlobalBounds_[i].isBound != 0
-            && localGlobalBounds_[j].isBound != 0)
-           && !(localGlobalBounds_[other(i)].isBound != 0
-                && localGlobalBounds_[other(j)].isBound != 0)) {
-          local2DBounds.emplace_back(std::array<ttk::SimplexId, 2>{i, j});
-        }
-      }
-    }
-  }
-
   std::vector<std::array<ttk::SimplexId, 3>> matches_2D;
-  for(int i = 0; i < local2DBounds.size(); i++) {
-    for(int j = 0; j < ttk::MPIsize_; j++) {
-      if(j != ttk::MPIrank_) {
-        bool isIn = false;
-        if((allLocalGlobalBounds[j * 6 + other(local2DBounds[i][0])].isBound
-            != 0)
-           && (allLocalGlobalBounds[j * 6 + other(local2DBounds[i][1])].isBound
-               != 0)) {
-          ttk::SimplexId dirs[2]
-            = {other(local2DBounds[i][0]), other(local2DBounds[i][1])};
-          std::sort(dirs, dirs + 2);
-          if((dirs[0] < 2 && dirs[1] >= 2 && dirs[1] < 4)) {
-            isIn = (boundsWithoutGhosts_[4]
-                      <= allLocalGlobalBounds[j * 6 + dirs[0]].z
-                    && boundsWithoutGhosts_[5]
-                         >= allLocalGlobalBounds[j * 6 + dirs[0]].z);
+  if(dimensionality >= 2) {
+    for(int i = 0; i < 4; i++) {
+      for(int j = i + 1; j < 6; j++) {
+        if((abs(i - j) == 1 && i % 2 == 1) || abs(i - j) >= 2) {
+          if((localGlobalBounds_[i].isBound != 0
+              && localGlobalBounds_[j].isBound != 0)
+             && !(localGlobalBounds_[other(i)].isBound != 0
+                  && localGlobalBounds_[other(j)].isBound != 0)) {
+            local2DBounds.emplace_back(std::array<ttk::SimplexId, 2>{i, j});
           }
-          if((dirs[0] < 2 && dirs[1] >= 4)) {
-            isIn = (boundsWithoutGhosts_[2]
-                      <= allLocalGlobalBounds[j * 6 + dirs[0]].y
-                    && boundsWithoutGhosts_[3]
-                         >= allLocalGlobalBounds[j * 6 + dirs[0]].y);
-          }
-          if((dirs[0] >= 2 && dirs[0] < 4 && dirs[1] >= 4)) {
-            isIn = (boundsWithoutGhosts_[0]
-                      <= allLocalGlobalBounds[j * 6 + dirs[0]].x
-                    && boundsWithoutGhosts_[1]
-                         >= allLocalGlobalBounds[j * 6 + dirs[0]].x);
-          }
-          if(isIn) {
-            matches_2D.emplace_back(std::array<ttk::SimplexId, 3>{
-              j, local2DBounds[i][0], local2DBounds[i][1]});
+        }
+      }
+    }
+
+    for(int i = 0; i < local2DBounds.size(); i++) {
+      for(int j = 0; j < ttk::MPIsize_; j++) {
+        if(j != ttk::MPIrank_) {
+          bool isIn = false;
+          if((allLocalGlobalBounds[j * 6 + other(local2DBounds[i][0])].isBound
+              != 0)
+             && (allLocalGlobalBounds[j * 6 + other(local2DBounds[i][1])]
+                   .isBound
+                 != 0)) {
+            ttk::SimplexId dirs[2]
+              = {other(local2DBounds[i][0]), other(local2DBounds[i][1])};
+            std::sort(dirs, dirs + 2);
+            if((dirs[0] < 2 && dirs[1] >= 2 && dirs[1] < 4)) {
+              isIn = (boundsWithoutGhosts_[4]
+                        <= allLocalGlobalBounds[j * 6 + dirs[0]].z
+                      && boundsWithoutGhosts_[5]
+                           >= allLocalGlobalBounds[j * 6 + dirs[0]].z);
+            }
+            if((dirs[0] < 2 && dirs[1] >= 4)) {
+              isIn = (boundsWithoutGhosts_[2]
+                        <= allLocalGlobalBounds[j * 6 + dirs[0]].y
+                      && boundsWithoutGhosts_[3]
+                           >= allLocalGlobalBounds[j * 6 + dirs[0]].y);
+            }
+            if((dirs[0] >= 2 && dirs[0] < 4 && dirs[1] >= 4)) {
+              isIn = (boundsWithoutGhosts_[0]
+                        <= allLocalGlobalBounds[j * 6 + dirs[0]].x
+                      && boundsWithoutGhosts_[1]
+                           >= allLocalGlobalBounds[j * 6 + dirs[0]].x);
+            }
+            if(isIn) {
+              matches_2D.emplace_back(std::array<ttk::SimplexId, 3>{
+                j, local2DBounds[i][0], local2DBounds[i][1]});
+            }
           }
         }
       }
     }
   }
-
   std::vector<std::array<ttk::SimplexId, 3>> local3DBounds;
-  for(int i = 0; i < 2; i++) {
-    for(int j = 0; j < 2; j++) {
-      for(int k = 0; k < 2; k++) {
-        if(localGlobalBounds_[i].isBound != 0
-           && localGlobalBounds_[2 + j].isBound != 0
-           && localGlobalBounds_[4 + k].isBound != 0) {
-          local3DBounds.emplace_back(
-            std::array<ttk::SimplexId, 3>{i, 2 + j, 4 + k});
-        }
-      }
-    }
-  }
   std::vector<std::array<ttk::SimplexId, 4>> matches_3D;
-  for(int i = 0; i < local3DBounds.size(); i++) {
-    for(int j = 0; j < ttk::MPIsize_; j++) {
-      if(j != ttk::MPIrank_) {
-        if((allLocalGlobalBounds[j * 6 + other(local3DBounds[i][0])].isBound
-            != 0)
-           && (allLocalGlobalBounds[j * 6 + other(local3DBounds[i][1])].isBound
-               != 0)
-           && (allLocalGlobalBounds[j * 6 + other(local3DBounds[i][2])].isBound
-               != 0)) {
-          matches_3D.emplace_back(std::array<ttk::SimplexId, 4>{
-            j, local3DBounds[i][0], local3DBounds[i][1], local3DBounds[i][2]});
+  if(dimensionality == 3) {
+    for(int i = 0; i < 2; i++) {
+      for(int j = 0; j < 2; j++) {
+        for(int k = 0; k < 2; k++) {
+          if(localGlobalBounds_[i].isBound != 0
+             && localGlobalBounds_[2 + j].isBound != 0
+             && localGlobalBounds_[4 + k].isBound != 0) {
+            local3DBounds.emplace_back(
+              std::array<ttk::SimplexId, 3>{i, 2 + j, 4 + k});
+          }
+        }
+      }
+    }
+    for(int i = 0; i < local3DBounds.size(); i++) {
+      for(int j = 0; j < ttk::MPIsize_; j++) {
+        if(j != ttk::MPIrank_) {
+          if((allLocalGlobalBounds[j * 6 + other(local3DBounds[i][0])].isBound
+              != 0)
+             && (allLocalGlobalBounds[j * 6 + other(local3DBounds[i][1])]
+                   .isBound
+                 != 0)
+             && (allLocalGlobalBounds[j * 6 + other(local3DBounds[i][2])]
+                   .isBound
+                 != 0)) {
+            matches_3D.emplace_back(std::array<ttk::SimplexId, 4>{
+              j, local3DBounds[i][0], local3DBounds[i][1],
+              local3DBounds[i][2]});
+          }
         }
       }
     }
   }
-
   // Now, extract ImageData for 1D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArrayBoundaries(
     ttk::MPIsize_);
@@ -619,10 +660,11 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<vtkSmartPointer<vtkCharArray>> charArray2DBoundariesReceived;
   std::vector<std::array<ttk::SimplexId, 2>>
     charArray2DBoundariesMetaDataReceived;
-  this->MarshalAndSendRecv<3, 2>(
-    imageIn, charArray2DBoundaries, charArray2DBoundariesMetaData, matches_2D,
-    charArray2DBoundariesReceived, charArray2DBoundariesMetaDataReceived, 2);
-
+  if(dimensionality >= 2) {
+    this->MarshalAndSendRecv<3, 2>(
+      imageIn, charArray2DBoundaries, charArray2DBoundariesMetaData, matches_2D,
+      charArray2DBoundariesReceived, charArray2DBoundariesMetaDataReceived, 2);
+  }
   // Now, same for 3D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray3DBoundaries(
     ttk::MPIsize_);
@@ -631,76 +673,82 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<vtkSmartPointer<vtkCharArray>> charArray3DBoundariesReceived;
   std::vector<std::array<ttk::SimplexId, 3>>
     charArray3DBoundariesMetaDataReceived;
-  this->MarshalAndSendRecv<4, 3>(
-    imageIn, charArray3DBoundaries, charArray3DBoundariesMetaData, matches_3D,
-    charArray3DBoundariesReceived, charArray3DBoundariesMetaDataReceived, 3);
-
+  if(dimensionality == 3) {
+    this->MarshalAndSendRecv<4, 3>(
+      imageIn, charArray3DBoundaries, charArray3DBoundariesMetaData, matches_3D,
+      charArray3DBoundariesReceived, charArray3DBoundariesMetaDataReceived, 3);
+  }
   imageOut->DeepCopy(imageIn);
 
-  // Merge in the z direction (z_low and y_high)
-  for(int dir = 4; dir < 6; dir++) {
+  // Merge in the first direction (low and high)
+  for(int dir = firstDim; dir < firstDim + 2; dir++) {
     this->UnMarshalAndMerge<std::array<ttk::SimplexId, 1>>(
       charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
       std::array<ttk::SimplexId, 1>{other(dir)}, dir, imageOut);
   }
-
-  // Merge in the y direction
-  for(int dir = 2; dir < 4; dir++) {
-    vtkNew<vtkImageData> mergedImage;
-    this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
-      charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
-      std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage);
-    if(mergedImage->GetNumberOfPoints() > 0) {
-      for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
-        this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
-          charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
-          std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
-          mergedImage);
+  if(dimensionality >= 2) {
+    // Merge in the second direction
+    for(int dir = secondDim; dir < secondDim + 2; dir++) {
+      vtkNew<vtkImageData> mergedImage;
+      this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
+        charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+        std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage);
+      if(mergedImage->GetNumberOfPoints() > 0) {
+        for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
+          this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
+            charArray2DBoundariesMetaDataReceived,
+            charArray2DBoundariesReceived,
+            std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
+            mergedImage);
+        }
+        vtkNew<vtkImageData> aux;
+        this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir);
+        imageOut->DeepCopy(aux);
       }
-      vtkNew<vtkImageData> aux;
-      this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir);
-      imageOut->DeepCopy(aux);
     }
   }
-
-  // Merge in the x direction
-  for(int dir = 0; dir < 2; dir++) {
-    vtkNew<vtkImageData> mergedImage1;
-    this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
-      charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
-      std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage1);
-    if(mergedImage1->GetNumberOfPoints() > 0) {
-      for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
-        this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
-          charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
-          std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
-          mergedImage1);
-      }
-      for(int dir_2D = 2; dir_2D < 4; dir_2D++) {
-        vtkNew<vtkImageData> mergedImage2;
-        this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
-          charArray2DBoundariesMetaDataReceived, charArray2DBoundariesReceived,
-          std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)},
-          mergedImage2);
-        if(mergedImage2->GetNumberOfPoints() > 0) {
-          for(int dir_3D = 4; dir_3D < 6; dir_3D++) {
-            this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
-              charArray3DBoundariesMetaDataReceived,
-              charArray3DBoundariesReceived,
-              std::array<ttk::SimplexId, 3>{
-                other(dir), other(dir_2D), other(dir_3D)},
-              dir_3D, mergedImage2);
-          }
-          vtkNew<vtkImageData> aux;
-          this->MergeImageAppendAndSlice(
-            mergedImage1, mergedImage2, aux, dir_2D);
-          mergedImage1->DeepCopy(aux);
-        }
-      }
+  if(dimensionality == 3) {
+    // Merge in the x direction
+    for(int dir = 0; dir < 2; dir++) {
+      vtkNew<vtkImageData> mergedImage1;
+      this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
+        charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+        std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage1);
       if(mergedImage1->GetNumberOfPoints() > 0) {
-        vtkNew<vtkImageData> aux;
-        this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir);
-        imageOut->DeepCopy(aux);
+        for(int dir_2D = firstDim; dir_2D < firstDim + 2; dir_2D++) {
+          this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
+            charArray2DBoundariesMetaDataReceived,
+            charArray2DBoundariesReceived,
+            std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
+            mergedImage1);
+        }
+        for(int dir_2D = secondDim; dir_2D < secondDim + 2; dir_2D++) {
+          vtkNew<vtkImageData> mergedImage2;
+          this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
+            charArray2DBoundariesMetaDataReceived,
+            charArray2DBoundariesReceived,
+            std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)},
+            mergedImage2);
+          if(mergedImage2->GetNumberOfPoints() > 0) {
+            for(int dir_3D = firstDim; dir_3D < firstDim + 2; dir_3D++) {
+              this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
+                charArray3DBoundariesMetaDataReceived,
+                charArray3DBoundariesReceived,
+                std::array<ttk::SimplexId, 3>{
+                  other(dir), other(dir_2D), other(dir_3D)},
+                dir_3D, mergedImage2);
+            }
+            vtkNew<vtkImageData> aux;
+            this->MergeImageAppendAndSlice(
+              mergedImage1, mergedImage2, aux, dir_2D);
+            mergedImage1->DeepCopy(aux);
+          }
+        }
+        if(mergedImage1->GetNumberOfPoints() > 0) {
+          vtkNew<vtkImageData> aux;
+          this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir);
+          imageOut->DeepCopy(aux);
+        }
       }
     }
   }
