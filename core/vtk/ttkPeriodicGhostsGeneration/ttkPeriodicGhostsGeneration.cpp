@@ -694,7 +694,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
         charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
         std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage);
       if(mergedImage->GetNumberOfPoints() > 0) {
-        for(int dir_2D = 4; dir_2D < 6; dir_2D++) {
+        for(int dir_2D = firstDim; dir_2D < firstDim + 2; dir_2D++) {
           this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
             charArray2DBoundariesMetaDataReceived,
             charArray2DBoundariesReceived,
