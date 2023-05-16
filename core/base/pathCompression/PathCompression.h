@@ -159,7 +159,7 @@ namespace ttk {
     template <typename triangulationType>
     int computeMSHash(SimplexId *const morseSmaleSegmentation,
                       const SimplexId *const ascSegmentation,
-                      const SimplexId *const desSegmentation,
+                      const SimplexId *const dscSegmentation,
                       const triangulationType &triangulation) const;
 
     // Compute ascending segmentation?
