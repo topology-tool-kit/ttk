@@ -185,6 +185,10 @@ int ttkTriangulationManager::processExplicit(
   // insert cells in the output mesh
   output->Allocate(cells.size());
   const size_t dimension = triangulation.getCellVertexNumber(0);
+  if(dimension > 4 || dimension < 2) {
+    this->printErr("Dimension not supported");
+    return 0;
+  }
 
   for(unsigned int i = 0; i < cells.size(); i++) {
     std::array<vtkIdType, 4> cell{};

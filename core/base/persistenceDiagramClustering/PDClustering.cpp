@@ -1687,7 +1687,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
 
         precision_min
           = barycenter_computer_min_[c].isPrecisionObjectiveMet(deltaLim_, 0);
-        cost_min_ += sqrt(total_cost);
+        cost_min_ += total_cost;
         Timer time_update;
         if(!only_matchings) {
           max_shift_c_min
@@ -1784,7 +1784,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
             = barycenter_computer_sad_[c].updateBarycenter(all_matchings);
         }
 
-        cost_sad_ += sqrt(total_cost);
+        cost_sad_ += total_cost;
 
         if(max_shift_c_sad > max_shift_vector[1]) {
           max_shift_vector[1] = max_shift_c_sad;
@@ -1869,7 +1869,7 @@ std::vector<double> ttk::PDClustering::updateCentroidsPosition(
         precision_max
           = barycenter_computer_max_[c].isPrecisionObjectiveMet(deltaLim_, 0);
 
-        cost_max_ += sqrt(total_cost);
+        cost_max_ += total_cost;
         Timer time_update;
         if(!only_matchings) {
           max_shift_c_max

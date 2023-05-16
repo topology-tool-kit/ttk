@@ -3115,6 +3115,9 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
       this->tetrahedronToPosition(lcid, p.data());
     } else if(this->dimensionality_ == 2) {
       this->triangleToPosition2d(lcid, p.data());
+      // compatibility with tetrahedronToPosition; fix a bounding box
+      // error in the first axis
+      p[0] /= 2;
     }
 
     // global vertex coordinates
@@ -3480,6 +3483,9 @@ SimplexId ttk::ImplicitTriangulation::getCellGlobalIdInternal(
     this->tetrahedronToPosition(lcid, p.data());
   } else if(this->dimensionality_ == 2) {
     this->triangleToPosition2d(lcid, p.data());
+    // compatibility with tetrahedronToPosition; fix a bounding box
+    // error in the first axis
+    p[0] /= 2;
   }
 
   // global cube coordinates
@@ -3520,6 +3526,9 @@ SimplexId ttk::ImplicitTriangulation::getCellLocalIdInternal(
     this->metaGrid_->tetrahedronToPosition(gcid, p.data());
   } else if(this->dimensionality_ == 2) {
     this->metaGrid_->triangleToPosition2d(gcid, p.data());
+    // compatibility with tetrahedronToPosition; fix a bounding box
+    // error in the first axis
+    p[0] /= 2;
   }
 
   // local cube coordinates

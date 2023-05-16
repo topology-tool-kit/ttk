@@ -33,11 +33,12 @@ void ttk::PDBarycenter::runMatching(
   std::vector<double> *min_price,
   std::vector<std::vector<MatchingType>> *all_matchings,
   bool use_kdt,
-  int actual_distance) {
+  bool actual_distance) {
   Timer time_matchings;
 
+  double local_cost = *total_cost;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     double delta_lim = 0.01;
@@ -58,9 +59,9 @@ void ttk::PDBarycenter::runMatching(
     double cost = auction.getMatchingsAndDistance(matchings, true);
     all_matchings->at(i) = matchings;
     if(actual_distance) {
-      (*total_cost) += cost;
+      local_cost += sqrt(cost);
     } else {
-      (*total_cost) += cost * cost;
+      local_cost += cost;
     }
 
     double quotient = epsilon * auction.getAugmentedNumberOfBidders() / cost;
@@ -72,6 +73,7 @@ void ttk::PDBarycenter::runMatching(
     // TODO do this inside the auction !
     current_bidder_diagrams_[i].resize(sizes[i]);
   }
+  *total_cost = local_cost;
 }
 
 void ttk::PDBarycenter::runMatchingAuction(
@@ -81,9 +83,11 @@ void ttk::PDBarycenter::runMatchingAuction(
   std::vector<KDT *> &correspondence_kdt_map,
   std::vector<double> *min_diag_price,
   std::vector<std::vector<MatchingType>> *all_matchings,
-  bool use_kdt) {
+  bool use_kdt,
+  bool actual_distance) {
+  double local_cost = *total_cost;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
@@ -93,13 +97,18 @@ void ttk::PDBarycenter::runMatchingAuction(
     std::vector<MatchingType> matchings;
     double cost = auction.run(matchings, i);
     all_matchings->at(i) = matchings;
+    if(actual_distance) {
+      local_cost += sqrt(cost);
+    } else {
+      local_cost += cost;
+    }
 
-    (*total_cost) += cost * cost;
     // Resizes the diagram which was enrich with diagonal bidders
     // during the auction
     // TODO do this inside the auction !
     current_bidder_diagrams_[i].resize(sizes[i]);
   }
+  *total_cost = local_cost;
 }
 
 bool ttk::PDBarycenter::hasBarycenterConverged(
@@ -634,8 +643,10 @@ std::vector<std::vector<ttk::MatchingType>>
                                               diagramType_, true});
     }
 
+    bool actual_distance = (numberOfInputs_ == 2);
     runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
-                       &min_diag_price, &all_matchings, use_kdt);
+                       &min_diag_price, &all_matchings, use_kdt,
+                       actual_distance);
 
     this->printMsg("Barycenter cost : " + std::to_string(total_cost),
                    debug::Priority::DETAIL);
@@ -683,7 +694,7 @@ std::vector<std::vector<ttk::MatchingType>>
                                             diagramType_, true});
   }
 
-  cost_ = sqrt(total_cost);
+  cost_ = total_cost;
   std::vector<std::vector<MatchingType>> corrected_matchings
     = correctMatchings(previous_matchings);
   return corrected_matchings;
