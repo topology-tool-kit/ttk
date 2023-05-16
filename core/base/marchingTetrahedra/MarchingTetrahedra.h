@@ -573,7 +573,6 @@ namespace ttk {
      * Computes a binary code for each tetrahedron and counts the number of
      * triangles generated, depending on the triangleCounter used.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
      * @param[out] tetCases Binary codes
      * @param[out] numTriangles Number of triangles generated per thread
@@ -582,13 +581,10 @@ namespace ttk {
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int computeMarchingCases_2D(unsigned char *const tetCases,
                                 size_t *const numTriangles,
-                                const dataType *const scalars,
+                                const unsigned long long *const scalars,
                                 const size_t *const triangleCounter,
                                 const triangulationType &triangulation) const;
 
@@ -596,67 +592,52 @@ namespace ttk {
      * Writes the geometry of all Triangles to the ouputVariables set by
      * setOutput. 2D basin separators.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
-     * @tparam std::enable_if<std::is_unsigned<dataType>::value>::type
      * @param[in] tetCases Binary codes
      * @param[in] numTriangles Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int writeSeparators_2D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
-                           const dataType *const scalars,
+                           const unsigned long long *const scalars,
                            const triangulationType &triangulation) const;
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
      * setOutput. 2D basin boundaries.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
-     * @tparam std::enable_if<std::is_unsigned<dataType>::value>::type
      * @param[in] tetCases Binary codes
      * @param[in] numTriangles Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int writeBoundaries_2D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
-                           const dataType *const scalars,
+                           const unsigned long long *const scalars,
                            const triangulationType &triangulation) const;
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
      * setOutput. 2D detailed basin boundaries.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
-     * @tparam std::enable_if<std::is_unsigned<dataType>::value>::type
      * @param[in] tetCases Binary codes
      * @param[in] numTriangles Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int
       writeBoundariesDetailed_2D(const unsigned char *const tetCases,
                                  const size_t *numTriangles,
-                                 const dataType *const scalars,
+                                 const unsigned long long *const scalars,
                                  const triangulationType &triangulation) const;
 
     /* 3D Datasets */
@@ -665,7 +646,6 @@ namespace ttk {
      * Computes a binary code for each tetrahedron and counts the number of
      * triangles generated, depending on the triangleCounter used.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulation
      * @param[out] tetCases Binary codes
      * @param[out] numTriangles Number of triangles generated per thread
@@ -674,13 +654,10 @@ namespace ttk {
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int computeMarchingCases_3D(unsigned char *const tetCases,
                                 size_t *const numTriangles,
-                                const dataType *const scalars,
+                                const unsigned long long *const scalars,
                                 const size_t *const triangleCounter,
                                 const triangulationType &triangulation) const;
 
@@ -688,67 +665,52 @@ namespace ttk {
      * Writes the geometry of all Triangles to the ouputVariables set by
      * setOutput. 3D basin separators.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
-     * @tparam std::enable_if<std::is_unsigned<dataType>::value>::type
      * @param[in] tetCases Binary codes
      * @param[in] numTriangles Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int writeSeparators_3D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
-                           const dataType *const scalars,
+                           const unsigned long long *const scalars,
                            const triangulationType &triangulation) const;
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
      * setOutput. 3D basin boundaries.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
-     * @tparam std::enable_if<std::is_unsigned<dataType>::value>::type
      * @param[in] tetCases Binary codes
      * @param[in] numTriangles Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int writeBoundaries_3D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
-                           const dataType *const scalars,
+                           const unsigned long long *const scalars,
                            const triangulationType &triangulation) const;
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
      * setOutput. 3D detailed basin boundaries.
      *
-     * @tparam dataType Scalartype
      * @tparam triangulationType Triangulationtype
-     * @tparam std::enable_if<std::is_unsigned<dataType>::value>::type
      * @param[in] tetCases Binary codes
      * @param[in] numTriangles Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangulation Triangulation
      * @return int
      */
-    template <
-      typename dataType,
-      typename triangulationType,
-      class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+    template <typename triangulationType>
     int
       writeBoundariesDetailed_3D(const unsigned char *const tetCases,
                                  const size_t *numTriangles,
-                                 const dataType *const scalars,
+                                 const unsigned long long *const scalars,
                                  const triangulationType &triangulation) const;
 
     /**
@@ -866,15 +828,19 @@ int ttk::MarchingTetrahedra::execute(const dataType *const scalars,
   const SimplexId nV = triangulation.getNumberOfVertices();
   const SimplexId nC = triangulation.getNumberOfCells();
   const int dim = triangulation.getDimensionality();
-  int num_threads_current = omp_get_max_threads();
 
   unsigned char *tetCases = nullptr;
   size_t *numberOfTetCases = nullptr;
   unsigned long long *cScalars = nullptr;
 
   tetCases = (unsigned char *)malloc(nC * sizeof(unsigned char));
-  numberOfTetCases = (size_t *)malloc(num_threads_current * sizeof(size_t));
   cScalars = (unsigned long long *)malloc(nV * sizeof(unsigned long long));
+
+#ifdef TTK_ENABLE_OPENMP
+  numberOfTetCases = (size_t *)malloc(omp_get_max_threads() * sizeof(size_t));
+#else
+  numberOfTetCases = (size_t *)malloc(sizeof(size_t));
+#endif // TTK_ENABLE_OPENMP
 
   for(int vert = 0; vert < nV; vert++)
     cScalars[vert] = (unsigned long long)scalars[vert];
@@ -924,14 +890,11 @@ int ttk::MarchingTetrahedra::execute(const dataType *const scalars,
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::computeMarchingCases_2D(
   unsigned char *const tetCases,
   size_t *const numTriangles,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const size_t *const triangleCounter,
   const triangulationType &triangulation) const {
 
@@ -1005,14 +968,11 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::writeSeparators_2D(
   const unsigned char *const tetCases,
   const size_t *numEdges,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const triangulationType &triangulation) const {
 
   ttk::Timer localTimer;
@@ -1278,14 +1238,11 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::writeBoundaries_2D(
   const unsigned char *const tetCases,
   const size_t *numEdges,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const triangulationType &triangulation) const {
 
   ttk::Timer localTimer;
@@ -1447,14 +1404,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
   const unsigned char *const tetCases,
   const size_t *numEdges,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const triangulationType &triangulation) const {
 
   ttk::Timer localTimer;
@@ -1818,14 +1772,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::computeMarchingCases_3D(
   unsigned char *const tetCases,
   size_t *const numTriangles,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const size_t *const triangleCounter,
   const triangulationType &triangulation) const {
 
@@ -1914,14 +1865,11 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::writeSeparators_3D(
   const unsigned char *const tetCases,
   const size_t *numTriangles,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const triangulationType &triangulation) const {
 
   ttk::Timer localTimer;
@@ -2488,14 +2436,11 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::writeBoundaries_3D(
   const unsigned char *const tetCases,
   const size_t *numTriangles,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const triangulationType &triangulation) const {
 
   ttk::Timer localTimer;
@@ -2673,14 +2618,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
   return 0;
 }
 
-template <
-  typename dataType,
-  typename triangulationType,
-  class = typename std::enable_if<std::is_unsigned<dataType>::value>::type>
+template <typename triangulationType>
 int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
   const unsigned char *const tetCases,
   const size_t *numTriangles,
-  const dataType *const scalars,
+  const unsigned long long *const scalars,
   const triangulationType &triangulation) const {
 
   ttk::Timer localTimer;

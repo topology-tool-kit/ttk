@@ -57,8 +57,6 @@
 
 class vtkPolyData;
 
-using namespace ttk;
-
 class TTKMARCHINGTETRAHEDRA_EXPORT ttkMarchingTetrahedra
   : public ttkAlgorithm,
     protected ttk::MarchingTetrahedra {
