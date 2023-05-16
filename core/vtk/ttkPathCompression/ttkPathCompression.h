@@ -11,9 +11,11 @@
 /// collision detection) of both segmentations can be created to represent the
 /// Morse-Smale segmentation.
 ///
-/// \param Input scalar field, either 2D or 3D, regular grid or
+/// \param Input Input scalar field, defined as a point data scalar field
+/// attached to a geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet)
-/// \param Output scalar field, either 2D or 3D, regular grid or
+/// \param Output output scalar field, defined as a point data scalar field
+/// attached to a geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet) with resulting arrays attached to point data
 ///
 /// The input data array needs to be specified via the standard VTK call
