@@ -1,14 +1,15 @@
 /// \ingroup base
-/// \class ttk::PathCompression
+/// \class ttk::MarchingTetrahedra
 /// \author Robin G. C. Maack <maack@rptu.de>
 /// \date May 2023.
 ///
 /// \brief TTK processing package for Marching Tetra/Triangles computations
 ///
-/// Given an input point data array and triangulation this class executes the
-/// marching tetrahedra/triangles algorithm. It has three options that either
-/// separate each label with a single separating geometry inbetween two labels,
-/// or a separating geometry enclosing each label (detailed and fast mode).
+/// Given an input scalar field with labels attached to the point data this
+/// class executes the marching tetrahedra/triangles algorithm. It has three
+/// options that either separate each label with a single separating geometry
+/// inbetween two labels, or a separating geometry enclosing each label
+/// (detailed and fast mode).
 ///
 /// \b Related \b publication \n
 /// "Parallel Computation of Piecewise Linear Morse-Smale Segmentations" \n
@@ -16,8 +17,12 @@
 /// Ross Maciejewski, Christoph Garth \n
 /// IEEE Transactions on Visualization and Computer Graphics \n
 ///
-/// \b Online \b examples: \n
+/// \sa ttkMarchingTetrahedra.cpp %for a usage example.
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
+///   segmentation example</a> \n
 
 #pragma once
 

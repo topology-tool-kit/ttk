@@ -10,8 +10,10 @@
 /// separate each label with a single separating geometry inbetween two labels,
 /// or a separating geometry enclosing each label (detailed and fast mode).
 ///
-/// \param Input vtkDataSet containing the input scalar field as point data
-/// \param Output vtkPolyData containing the output geometry as cell data
+/// \param Input Input scalar field, defined as a point data scalar field
+/// attached to a geometry, either 2D or 3D, either regular grid or
+/// triangulation (vtkDataSet)
+/// \param Output Output separating geometry (vtkPolyData)
 ///
 /// This filter can be used like any other VTK filter (for instance, by using
 /// the sequence of calls SetInputData(), Update(), GetOutputDataObject()).
@@ -36,11 +38,12 @@
 /// Ross Maciejewski, Christoph Garth \n
 /// IEEE Transactions on Visualization and Computer Graphics \n
 ///
-/// \b Online \b examples: \n
-///   - <a href="https://topology-tool-kit.github.io/examples/TODO/">TODO
-///   example</a> \n
-///
 /// \sa ttk::MarchingTetrahedra
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
+///   segmentation example</a> \n
 
 #pragma once
 
