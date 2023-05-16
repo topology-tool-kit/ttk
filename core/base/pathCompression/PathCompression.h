@@ -233,7 +233,7 @@ int ttk::PathCompression::computePathCompression(
 
     // find maxima/minima and intialize vector of vertices to compress
     for(SimplexId i = 0; i < nVertices; i++) {
-      SimplexId neighborId;
+      SimplexId neighborId{0};
       const SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
 
       bool hasLargerNeighbor = false;
@@ -297,7 +297,7 @@ int ttk::PathCompression::computePathCompression(
 // find the biggest neighbor for each vertex
 #pragma omp for schedule(static)
       for(SimplexId i = 0; i < nVertices; i++) {
-        SimplexId neighborId;
+        SimplexId neighborId{0};
         SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
 
         bool hasLargerNeighbor = false;
@@ -383,7 +383,7 @@ int ttk::PathCompression::computePathCompressionSingle(
     activeVertices.reserve(nVertices);
     // find maxima and intialize vector of not fully compressed vertices
     for(SimplexId i = 0; i < nVertices; i++) {
-      SimplexId neighborId;
+      SimplexId neighborId{0};
       const SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
 
       bool hasLargerNeighbor = false;
@@ -445,7 +445,7 @@ int ttk::PathCompression::computePathCompressionSingle(
 // find the biggest neighbor for each vertex
 #pragma omp for schedule(static)
       for(SimplexId i = 0; i < nVertices; i++) {
-        SimplexId neighborId;
+        SimplexId neighborId{0};
         SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
 
         bool hasLargerNeighbor = false;
