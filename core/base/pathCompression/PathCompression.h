@@ -18,7 +18,12 @@
 /// Ross Maciejewski, Christoph Garth \n
 /// IEEE Transactions on Visualization and Computer Graphics \n
 ///
-/// \sa ttk::Triangulation
+/// \sa ttkPathCompression.cpp %for a usage example
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
+///   segmentation example</a> \n
 
 #pragma once
 

@@ -5,8 +5,8 @@
       class="ttkPathCompression"
       label="TTK PathCompression">
       <Documentation
-        long_help="TTK pathCompression plugin."
-        short_help="TTK pathCompression plugin.">
+        long_help="TTK plugin for the computation of Morse-Smale segmentation."
+        short_help="TTK plugin for the computation of Morse-Smale segmentation.">
         TTK plugin for the computation of Morse-Smale segmentation. It allows to extract the ascending, descending, and Morse-Smale segmentation hash as point data arrays.
         Each array represents the minimum/maximum/minimum-maximum combination a vertex is reaching when following the gradient direction. By using path compression, the computational complexity was minimized.
 
@@ -17,7 +17,7 @@
 
         Online examples:
 
-        - https://topology-tool-kit.github.io/examples/?/
+        - https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/
 
       </Documentation>
       <InputProperty

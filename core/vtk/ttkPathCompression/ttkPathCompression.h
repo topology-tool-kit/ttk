@@ -5,18 +5,16 @@
 ///
 /// \brief TTK VTK-filter that wraps the ttk::PathCompression module.
 ///
-/// Given an input order field, this class computes its ascending and descending
-/// segmentation by assigning every vertex to its minimum or maximum in gradient
-/// or inverse gradient direction. For convienience a hash (no hash collision
-/// detection) of both segmentations can be created to represent the Morse-Smale
-/// segmentation.
+/// Given an input order field, this filter computes its ascending and
+/// descending segmentation by assigning every vertex to its minimum or maximum
+/// in gradient or inverse gradient direction. For convienience a hash (no hash
+/// collision detection) of both segmentations can be created to represent the
+/// Morse-Smale segmentation.
 ///
-/// \param Input vtkDataSet containing the input scalar field as point data
-/// \param Output vtkDataSet containing the output segmentations as point data
-/// arrays
-///
-/// This filter can be used like any other VTK filter (for instance, by using
-/// the sequence of calls SetInputData(), Update(), GetOutputDataObject()).
+/// \param Input scalar field, either 2D or 3D, regular grid or
+/// triangulation (vtkDataSet)
+/// \param Output scalar field, either 2D or 3D, regular grid or
+/// triangulation (vtkDataSet) with resulting arrays attached to point data
 ///
 /// The input data array needs to be specified via the standard VTK call
 /// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
@@ -36,18 +34,27 @@
 /// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
 /// enabled with the setter `setForceInputOffsetScalarField()'.
 ///
+/// This filter can be used like any other VTK filter (for instance, by using
+/// the sequence of calls SetInputData(), Update(), GetOutputDataObject()).
+///
 /// See the corresponding standalone program for a usage example:
 ///   - standalone/PathCompression/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \b Online \b examples: \n
-///   - <a href="https://topology-tool-kit.github.io/examples/TODO/">TODO
-///   example</a> \n
+/// \b Related \b publication \n
+/// "Parallel Computation of Piecewise Linear Morse-Smale Segmentations" \n
+/// Robin G. C. Maack, Jonas Lukasczyk, Julien Tierny, Hans Hagen,
+/// Ross Maciejewski, Christoph Garth \n
+/// IEEE Transactions on Visualization and Computer Graphics \n
 ///
 /// \sa ttk::PathCompression
-/// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
+///   segmentation example</a> \n
 
 #pragma once
 
