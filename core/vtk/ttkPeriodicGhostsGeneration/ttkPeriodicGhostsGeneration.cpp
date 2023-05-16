@@ -117,7 +117,6 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
       } else {
       }
     }
-    // TODO: cas où une dimension est nulle
     for(int i = 0; i < 2; i++) {
       if(globalBounds_[i] == boundsWithoutGhosts_[i]) {
         localGlobalBounds_[i].isBound = 1;
@@ -200,7 +199,6 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
     extractVOI->Update();
     vtkSmartPointer<vtkImageData> extracted = extractVOI->GetOutput();
     vtkSmartPointer<vtkCharArray> buffer = vtkSmartPointer<vtkCharArray>::New();
-    int *extent = extracted->GetExtent();
     if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
       printErr("Marshalling failed!");
     };
@@ -239,6 +237,7 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
       charArrayBoundariesMetaDataReceived.emplace_back(recvMetaData);
     }
   }
+  return 1;
 }
 
 template <typename boundaryType>
@@ -257,10 +256,12 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndMerge(
          boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
        == 0) {
       printErr("UnMarshaling failed!");
+      return 0;
     };
     this->MergeImageAppendAndSlice(mergedImage, id, aux, mergeDirection);
     mergedImage->DeepCopy(aux);
   }
+  return 1;
 }
 
 template <typename boundaryType>
@@ -277,9 +278,11 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndCopy(
          boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
        == 0) {
       printErr("UnMarshaling failed!");
+      return 0;
     };
     mergedImage->DeepCopy(id);
   }
+  return 1;
 }
 
 int ttkPeriodicGhostsGeneration::MergeDataArrays(
@@ -450,7 +453,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   int dimensionality = imageIn->GetDataDimension();
   int firstDim;
   int secondDim;
-  // TODO: cut selon la plus grande dimension
   if(dimensionality == 1) {
     firstDim = 0;
     if(dims[0] <= 1 && dims[1] <= 1) {
@@ -648,9 +650,12 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<vtkSmartPointer<vtkCharArray>> charArrayBoundariesReceived;
   std::vector<std::array<ttk::SimplexId, 1>>
     charArrayBoundariesMetaDataReceived;
-  this->MarshalAndSendRecv<3, 1>(
-    imageIn, charArrayBoundaries, charArrayBoundariesMetaData, matches,
-    charArrayBoundariesReceived, charArrayBoundariesMetaDataReceived, 1);
+  if(this->MarshalAndSendRecv<3, 1>(
+       imageIn, charArrayBoundaries, charArrayBoundariesMetaData, matches,
+       charArrayBoundariesReceived, charArrayBoundariesMetaDataReceived, 1)
+     == 0) {
+    return 0;
+  }
 
   // Extract 2D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray2DBoundaries(
@@ -661,9 +666,13 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<std::array<ttk::SimplexId, 2>>
     charArray2DBoundariesMetaDataReceived;
   if(dimensionality >= 2) {
-    this->MarshalAndSendRecv<3, 2>(
-      imageIn, charArray2DBoundaries, charArray2DBoundariesMetaData, matches_2D,
-      charArray2DBoundariesReceived, charArray2DBoundariesMetaDataReceived, 2);
+    if(this->MarshalAndSendRecv<3, 2>(imageIn, charArray2DBoundaries,
+                                      charArray2DBoundariesMetaData, matches_2D,
+                                      charArray2DBoundariesReceived,
+                                      charArray2DBoundariesMetaDataReceived, 2)
+       == 0) {
+      return 0;
+    }
   }
   // Now, same for 3D boundaries
   std::vector<std::vector<vtkSmartPointer<vtkCharArray>>> charArray3DBoundaries(
@@ -674,35 +683,51 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   std::vector<std::array<ttk::SimplexId, 3>>
     charArray3DBoundariesMetaDataReceived;
   if(dimensionality == 3) {
-    this->MarshalAndSendRecv<4, 3>(
-      imageIn, charArray3DBoundaries, charArray3DBoundariesMetaData, matches_3D,
-      charArray3DBoundariesReceived, charArray3DBoundariesMetaDataReceived, 3);
+    if(this->MarshalAndSendRecv<4, 3>(imageIn, charArray3DBoundaries,
+                                      charArray3DBoundariesMetaData, matches_3D,
+                                      charArray3DBoundariesReceived,
+                                      charArray3DBoundariesMetaDataReceived, 3)
+       == 0) {
+      return 0;
+    }
   }
   imageOut->DeepCopy(imageIn);
 
   // Merge in the first direction (low and high)
   for(int dir = firstDim; dir < firstDim + 2; dir++) {
-    this->UnMarshalAndMerge<std::array<ttk::SimplexId, 1>>(
-      charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
-      std::array<ttk::SimplexId, 1>{other(dir)}, dir, imageOut);
+    if(this->UnMarshalAndMerge<std::array<ttk::SimplexId, 1>>(
+         charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+         std::array<ttk::SimplexId, 1>{other(dir)}, dir, imageOut)
+       == 0) {
+      return 0;
+    }
   }
   if(dimensionality >= 2) {
     // Merge in the second direction
     for(int dir = secondDim; dir < secondDim + 2; dir++) {
       vtkNew<vtkImageData> mergedImage;
-      this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
-        charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
-        std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage);
+      if(this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
+           charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+           std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage)
+         == 0) {
+        return 0;
+      }
       if(mergedImage->GetNumberOfPoints() > 0) {
         for(int dir_2D = firstDim; dir_2D < firstDim + 2; dir_2D++) {
-          this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
-            charArray2DBoundariesMetaDataReceived,
-            charArray2DBoundariesReceived,
-            std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
-            mergedImage);
+          if(this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
+               charArray2DBoundariesMetaDataReceived,
+               charArray2DBoundariesReceived,
+               std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
+               mergedImage)
+             == 0) {
+            return 0;
+          }
         }
         vtkNew<vtkImageData> aux;
-        this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir);
+        if(this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir)
+           == 0) {
+          return 0;
+        }
         imageOut->DeepCopy(aux);
       }
     }
@@ -711,42 +736,60 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     // Merge in the x direction
     for(int dir = 0; dir < 2; dir++) {
       vtkNew<vtkImageData> mergedImage1;
-      this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
-        charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
-        std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage1);
+      if(this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
+           charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
+           std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage1)
+         == 0) {
+        return 0;
+      }
       if(mergedImage1->GetNumberOfPoints() > 0) {
         for(int dir_2D = firstDim; dir_2D < firstDim + 2; dir_2D++) {
-          this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
-            charArray2DBoundariesMetaDataReceived,
-            charArray2DBoundariesReceived,
-            std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
-            mergedImage1);
+          if(this->UnMarshalAndMerge<std::array<ttk::SimplexId, 2>>(
+               charArray2DBoundariesMetaDataReceived,
+               charArray2DBoundariesReceived,
+               std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)}, dir_2D,
+               mergedImage1)
+             == 0) {
+            return 0;
+          }
         }
         for(int dir_2D = secondDim; dir_2D < secondDim + 2; dir_2D++) {
           vtkNew<vtkImageData> mergedImage2;
-          this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
-            charArray2DBoundariesMetaDataReceived,
-            charArray2DBoundariesReceived,
-            std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)},
-            mergedImage2);
+          if(this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
+               charArray2DBoundariesMetaDataReceived,
+               charArray2DBoundariesReceived,
+               std::array<ttk::SimplexId, 2>{other(dir), other(dir_2D)},
+               mergedImage2)
+             == 0) {
+            return 0;
+          }
           if(mergedImage2->GetNumberOfPoints() > 0) {
             for(int dir_3D = firstDim; dir_3D < firstDim + 2; dir_3D++) {
-              this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
-                charArray3DBoundariesMetaDataReceived,
-                charArray3DBoundariesReceived,
-                std::array<ttk::SimplexId, 3>{
-                  other(dir), other(dir_2D), other(dir_3D)},
-                dir_3D, mergedImage2);
+              if(this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
+                   charArray3DBoundariesMetaDataReceived,
+                   charArray3DBoundariesReceived,
+                   std::array<ttk::SimplexId, 3>{
+                     other(dir), other(dir_2D), other(dir_3D)},
+                   dir_3D, mergedImage2)
+                 == 0) {
+                return 0;
+              }
             }
             vtkNew<vtkImageData> aux;
-            this->MergeImageAppendAndSlice(
-              mergedImage1, mergedImage2, aux, dir_2D);
+            if(this->MergeImageAppendAndSlice(
+                 mergedImage1, mergedImage2, aux, dir_2D)
+               == 0) {
+              return 0;
+            }
             mergedImage1->DeepCopy(aux);
           }
         }
         if(mergedImage1->GetNumberOfPoints() > 0) {
           vtkNew<vtkImageData> aux;
-          this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir);
+          if(this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir)
+             == 0) {
+            return 0;
+          }
           imageOut->DeepCopy(aux);
         }
       }
