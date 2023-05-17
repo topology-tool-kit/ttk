@@ -17,12 +17,19 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedLongLongArray.h>
 
+namespace {
+  template <typename vtkArrayType, typename vectorType>
+  void setArray(vtkArrayType &vtkArray, vectorType &vector) {
+    ttkUtils::SetVoidArray(vtkArray, vector.data(), vector.size(), 1);
+  }
+} // namespace
+
 vtkStandardNewMacro(ttkMarchingTetrahedra);
 
 ttkMarchingTetrahedra::ttkMarchingTetrahedra() {
   this->setDebugMsgPrefix("MarchingTetrahedra");
-  SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(1);
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 int ttkMarchingTetrahedra::FillInputPortInformation(int port,
@@ -43,11 +50,6 @@ int ttkMarchingTetrahedra::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename vtkArrayType, typename vectorType>
-void setArray(vtkArrayType &vtkArray, vectorType &vector) {
-  ttkUtils::SetVoidArray(vtkArray, vector.data(), vector.size(), 1);
-}
-
 template <typename scalarType, typename triangulationType>
 int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
                                     vtkPolyData *const outputSeparators,
@@ -63,10 +65,10 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
   this->setOutput(&numberOfPoints, &output_points, &numberOfCells,
                   &output_cells_connectivity, &output_cells_mscIds);
 
-  const int ret
+  const int status
     = this->execute<scalarType, triangulationType>(scalars, triangulation);
 
-  if(ret != 0)
+  if(status != 0)
     return !this->printErr("MarchingTetrahedra.execute() error");
 
   vtkNew<vtkFloatArray> pointsCoords{};
@@ -118,7 +120,7 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
   auto cellData = outputSeparators->GetCellData();
   cellData->AddArray(mscIds);
 
-  return ret;
+  return 1;
 }
 
 int ttkMarchingTetrahedra::RequestData(vtkInformation *ttkNotUsed(request),
@@ -155,16 +157,12 @@ int ttkMarchingTetrahedra::RequestData(vtkInformation *ttkNotUsed(request),
   if(!numberOfVertices)
     return !this->printErr("Input has no vertices.");
 
-  int ret{};
+  int status{};
 
   ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                      (ret = dispatch<VTK_TT, TTK_TT>(
+                      (status = dispatch<VTK_TT, TTK_TT>(
                          inputScalars, outputSeparators,
                          *static_cast<TTK_TT *>(triangulation->getData()))));
 
-  if(ret != 0) {
-    return -1;
-  }
-
-  return !ret;
+  return status;
 }
