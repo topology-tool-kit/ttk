@@ -346,7 +346,7 @@ int ttk::MarchingTetrahedra::execute(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
 
   for(int vert = 0; vert < nV; vert++)
-    cScalars[vert] = static_cast<unsigned long long>(scalars[vert]);
+    std::memcpy(&cScalars[vert], &scalars[vert], sizeof(dataType));
 
   if(dim == 2) {
     if(SurfaceMode == SURFACE_MODE::SM_SEPARATORS) {
