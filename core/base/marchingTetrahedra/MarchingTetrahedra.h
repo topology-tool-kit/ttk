@@ -229,7 +229,7 @@ namespace ttk {
       output_points_ = output_points;
       output_numberOfCells_ = output_numberOfCells;
       output_cells_connectivity_ = output_cells_connectivity;
-      output_cells_mscIds_ = output_cells_mscIds;
+      output_cells_Labels_ = output_cells_mscIds;
       return 0;
     }
 
@@ -314,7 +314,7 @@ namespace ttk {
     SimplexId *output_numberOfPoints_{};
     std::vector<float> *output_points_{};
     SimplexId *output_numberOfCells_{};
-    std::vector<unsigned long long> *output_cells_mscIds_{};
+    std::vector<unsigned long long> *output_cells_Labels_{};
     std::vector<SimplexId> *output_cells_connectivity_{};
   };
 } // namespace ttk
@@ -425,13 +425,16 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
 
-      const unsigned long long msm[3]
+      const unsigned long long label[3]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
-      const unsigned char index0 = (msm[0] == msm[1]) ? 0x00 : 0x04; // 0 : 1
-      const unsigned char index1 = (msm[0] == msm[2]) ? 0x00 : // 0
-                                     (msm[1] == msm[2]) ? 0x01
-                                                        : 0x02; // 1 : 2
+      // Set the third bit to 0 or 1
+      const unsigned char index0 = (label[0] == label[1]) ? 0x00 : 0x04;
+
+      // Set the first and second bit to 0, 1 or 2
+      const unsigned char index1 = (label[0] == label[2])   ? 0x00
+                                   : (label[1] == label[2]) ? 0x01
+                                                            : 0x02;
 
       tetCases[tet] = index0 | index1;
       numTris += triangleCounter[tetCases[tet]];
@@ -453,13 +456,16 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
 
-        const unsigned long long msm[3]
+        const unsigned long long label[3]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
-        const unsigned char index0 = (msm[0] == msm[1]) ? 0x00 : 0x04; // 0 : 1
-        const unsigned char index1 = (msm[0] == msm[2]) ? 0x00 : // 0
-                                       (msm[1] == msm[2]) ? 0x01
-                                                          : 0x02; // 1 : 2
+        // Set the third bit to 0 or 1
+        const unsigned char index0 = (label[0] == label[1]) ? 0x00 : 0x04;
+
+        // Set the first and second bit to 0, 1 or 2
+        const unsigned char index1 = (label[0] == label[2])   ? 0x00
+                                     : (label[1] == label[2]) ? 0x01
+                                                              : 0x02;
 
         tetCases[tet] = index0 | index1;
         threadTriangles += triangleCounter[tetCases[tet]];
@@ -493,17 +499,17 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
     output_points_->resize(6 * numEdges[0]);
     output_cells_connectivity_->resize(2 * numEdges[0]);
-    output_cells_mscIds_->resize(numEdges[0]);
+    output_cells_Labels_->resize(numEdges[0]);
     *output_numberOfPoints_ = 2 * numEdges[0];
     *output_numberOfCells_ = numEdges[0];
 
     auto &points = *output_points_;
     auto &cellsConn = *output_cells_connectivity_;
-    auto &cellsMSCIds = *output_cells_mscIds_;
+    auto &cellLabels = *output_cells_Labels_;
 
     float *p = points.data();
     SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellsMSCIds.data();
+    unsigned long long *m = cellLabels.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -527,7 +533,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
       triangulation.getVertexPoint(
         vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-      const unsigned long long msm[3]
+      const unsigned long long label[3]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
@@ -535,9 +541,11 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
         getCenter(vertPos[edgeVerts[0]], vertPos[edgeVerts[1]], eC[0]);
         getCenter(vertPos[edgeVerts[2]], vertPos[edgeVerts[3]], eC[1]);
 
+        // Create a hash from vertex label 0 and 1
         const unsigned long long sparseID
-          = getHash(msm[edgeVerts[0]], msm[edgeVerts[1]]);
+          = getHash(label[edgeVerts[0]], label[edgeVerts[1]]);
 
+        // Write the edge endpoints, cell indices, and label
         p[0] = eC[0][0];
         p[1] = eC[0][1];
         p[2] = eC[0][2];
@@ -554,29 +562,33 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
         m[0] = sparseID;
         m += 1;
 
-      } else {
+      } else { //
         float eC[4][3];
         getCenter(vertPos[0], vertPos[1], eC[0]);
         getCenter(vertPos[0], vertPos[2], eC[1]);
         getCenter(vertPos[1], vertPos[2], eC[2]);
         getCenter(vertPos[0], vertPos[1], vertPos[2], eC[3]);
 
+        // Create a hash from all vertex label combinations
         const unsigned long long sparseID[3]
-          = {getHash(msm[0], msm[1]), getHash(msm[0], msm[2]),
-             getHash(msm[1], msm[2])};
+          = {getHash(label[0], label[1]), getHash(label[0], label[2]),
+             getHash(label[1], label[2])};
 
+        // Write all three lines, each connected to the triangle center
         p[0] = eC[0][0];
         p[1] = eC[0][1];
         p[2] = eC[0][2];
         p[3] = eC[3][0];
         p[4] = eC[3][1];
         p[5] = eC[3][2];
+
         p[6] = eC[1][0];
         p[7] = eC[1][1];
         p[8] = eC[1][2];
         p[9] = eC[3][0];
         p[10] = eC[3][1];
         p[11] = eC[3][2];
+
         p[12] = eC[2][0];
         p[13] = eC[2][1];
         p[14] = eC[2][2];
@@ -616,7 +628,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
     output_points_->resize(9 * numTotalTriangles);
     output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_mscIds_->resize(numTotalTriangles);
+    output_cells_Labels_->resize(numTotalTriangles);
     *output_numberOfPoints_ = 3 * numTotalTriangles;
     *output_numberOfCells_ = numTotalTriangles;
 
@@ -629,11 +641,11 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
       auto &points = *output_points_;
       auto &cellsConn = *output_cells_connectivity_;
-      auto &cellsMSCIds = *output_cells_mscIds_;
+      auto &cellLabels = *output_cells_Labels_;
 
       float *p = points.data();
       SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellsMSCIds.data();
+      unsigned long long *m = cellLabels.data();
 
       p += (numThreadIndex * 6);
       c += (numThreadIndex * 2);
@@ -662,7 +674,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
         triangulation.getVertexPoint(
           vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-        const unsigned long long msm[3]
+        const unsigned long long label[3]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         if(triangleLookupIs2Label[tetCases[tet]]) {
@@ -670,9 +682,11 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
           getCenter(vertPos[edgeVerts[0]], vertPos[edgeVerts[1]], eC[0]);
           getCenter(vertPos[edgeVerts[2]], vertPos[edgeVerts[3]], eC[1]);
 
+          // Create a hash from vertex label 0 and 1
           const unsigned long long sparseID
-            = getHash(msm[edgeVerts[0]], msm[edgeVerts[1]]);
+            = getHash(label[edgeVerts[0]], label[edgeVerts[1]]);
 
+          // Write the edge endpoints, cell indices, and label
           p[0] = eC[0][0];
           p[1] = eC[0][1];
           p[2] = eC[0][2];
@@ -696,10 +710,12 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
           getCenter(vertPos[1], vertPos[2], eC[2]);
           getCenter(vertPos[0], vertPos[1], vertPos[2], eC[3]);
 
+          // Create a hash from all vertex label combinations
           const unsigned long long sparseID[3]
-            = {getHash(msm[0], msm[1]), getHash(msm[0], msm[2]),
-               getHash(msm[1], msm[2])};
+            = {getHash(label[0], label[1]), getHash(label[0], label[2]),
+               getHash(label[1], label[2])};
 
+          // Write all three lines, each connected to the triangle center
           p[0] = eC[0][0];
           p[1] = eC[0][1];
           p[2] = eC[0][2];
@@ -763,17 +779,17 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
 
     output_points_->resize(6 * numEdges[0]);
     output_cells_connectivity_->resize(2 * numEdges[0]);
-    output_cells_mscIds_->resize(numEdges[0]);
+    output_cells_Labels_->resize(numEdges[0]);
     *output_numberOfPoints_ = 2 * numEdges[0];
     *output_numberOfCells_ = numEdges[0];
 
     auto &points = *output_points_;
     auto &cellsConn = *output_cells_connectivity_;
-    auto &cellsMSCIds = *output_cells_mscIds_;
+    auto &cellLabels = *output_cells_Labels_;
 
     float *p = points.data();
     SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellsMSCIds.data();
+    unsigned long long *m = cellLabels.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -795,12 +811,13 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
       triangulation.getVertexPoint(
         vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-      const unsigned long long msm[3]
+      const unsigned long long label[3]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
         const int *edgeVerts = triangleLookupEdgeVerts[tetCases[tet]];
 
+        // Write the edge endpoints, cell indices, and label
         p[0] = vertPos[edgeVerts[0]][0];
         p[1] = vertPos[edgeVerts[0]][1];
         p[2] = vertPos[edgeVerts[0]][2];
@@ -814,7 +831,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
         c += 2;
         cellIndex += 2;
 
-        m[0] = msm[edgeVerts[0]];
+        m[0] = label[edgeVerts[0]];
         m += 1;
       }
     }
@@ -834,7 +851,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
 
     output_points_->resize(9 * numTotalTriangles);
     output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_mscIds_->resize(numTotalTriangles);
+    output_cells_Labels_->resize(numTotalTriangles);
     *output_numberOfPoints_ = 3 * numTotalTriangles;
     *output_numberOfCells_ = numTotalTriangles;
 
@@ -847,11 +864,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
 
       auto &points = *output_points_;
       auto &cellsConn = *output_cells_connectivity_;
-      auto &cellsMSCIds = *output_cells_mscIds_;
+      auto &cellLabels = *output_cells_Labels_;
 
       float *p = points.data();
       SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellsMSCIds.data();
+      unsigned long long *m = cellLabels.data();
 
       p += (numThreadIndex * 6);
       c += (numThreadIndex * 2);
@@ -878,12 +895,13 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
         triangulation.getVertexPoint(
           vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-        const unsigned long long msm[3]
+        const unsigned long long label[3]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         if(triangleLookupIs2Label[tetCases[tet]]) {
           const int *edgeVerts = triangleLookupEdgeVerts[tetCases[tet]];
 
+          // Write the edge endpoints, cell indices, and label
           p[0] = vertPos[edgeVerts[0]][0];
           p[1] = vertPos[edgeVerts[0]][1];
           p[2] = vertPos[edgeVerts[0]][2];
@@ -897,7 +915,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
           c += 2;
           numThreadIndex += 2;
 
-          m[0] = msm[edgeVerts[0]];
+          m[0] = label[edgeVerts[0]];
           m += 1;
         }
       }
@@ -934,17 +952,17 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
     output_points_->resize(6 * numEdges[0]);
     output_cells_connectivity_->resize(2 * numEdges[0]);
-    output_cells_mscIds_->resize(numEdges[0]);
+    output_cells_Labels_->resize(numEdges[0]);
     *output_numberOfPoints_ = 2 * numEdges[0];
     *output_numberOfCells_ = numEdges[0];
 
     auto &points = *output_points_;
     auto &cellsConn = *output_cells_connectivity_;
-    auto &cellsMSCIds = *output_cells_mscIds_;
+    auto &cellLabels = *output_cells_Labels_;
 
     float *p = points.data();
     SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellsMSCIds.data();
+    unsigned long long *m = cellLabels.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -968,7 +986,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
       triangulation.getVertexPoint(
         vertices[2], vPos[2][0], vPos[2][1], vPos[2][2]);
 
-      const unsigned long long msm[3]
+      const unsigned long long label[3]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
@@ -979,12 +997,14 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d1, vert10);
         interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
 
+        // Write the edge endpoints, cell indices, and labels
         p[0] = vert00[0];
         p[1] = vert00[1];
         p[2] = vert00[2];
         p[3] = vert01[0];
         p[4] = vert01[1];
         p[5] = vert01[2];
+
         p[6] = vert10[0];
         p[7] = vert10[1];
         p[8] = vert10[2];
@@ -995,13 +1015,14 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
         c[0] = cellIndex;
         c[1] = cellIndex + 1;
+
         c[2] = cellIndex + 2;
         c[3] = cellIndex + 3;
         c += 4;
         cellIndex += 4;
 
-        m[0] = msm[vIds[0]];
-        m[1] = msm[vIds[1]];
+        m[0] = label[vIds[0]];
+        m[1] = label[vIds[1]];
         m += 2;
 
       } else {
@@ -1021,12 +1042,14 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         interpolatePoints(vPos[1], triCenter, dc, triS1);
         interpolatePoints(vPos[2], triCenter, dc, triS2);
 
+        // Write the edge endpoints, cell indices, and labels
         p[0] = vert00[0];
         p[1] = vert00[1];
         p[2] = vert00[2];
         p[3] = triS0[0];
         p[4] = triS0[1];
         p[5] = triS0[2];
+
         p[6] = triS0[0];
         p[7] = triS0[1];
         p[8] = triS0[2];
@@ -1040,6 +1063,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         p[15] = triS1[0];
         p[16] = triS1[1];
         p[17] = triS1[2];
+
         p[18] = triS1[0];
         p[19] = triS1[1];
         p[20] = triS1[2];
@@ -1053,6 +1077,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         p[27] = triS2[0];
         p[28] = triS2[1];
         p[29] = triS2[2];
+
         p[30] = triS2[0];
         p[31] = triS2[1];
         p[32] = triS2[2];
@@ -1078,12 +1103,12 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         c += 12;
         cellIndex += 12;
 
-        m[0] = msm[0];
-        m[1] = msm[0];
-        m[2] = msm[1];
-        m[3] = msm[1];
-        m[4] = msm[2];
-        m[5] = msm[2];
+        m[0] = label[0];
+        m[1] = label[0];
+        m[2] = label[1];
+        m[3] = label[1];
+        m[4] = label[2];
+        m[5] = label[2];
         m += 6;
       }
     }
@@ -1094,7 +1119,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
     triangleStartIndex[0] = 0;
 
-    // Count triangle number and create iterator start indices
+    // Count triangle numbers and create iterator start indices
     for(int t = 1; t <= threadNumber_; ++t) {
       triangleStartIndex[t] = numEdges[t - 1] + triangleStartIndex[t - 1];
     }
@@ -1103,7 +1128,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
     output_points_->resize(9 * numTotalTriangles);
     output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_mscIds_->resize(numTotalTriangles);
+    output_cells_Labels_->resize(numTotalTriangles);
     *output_numberOfPoints_ = 3 * numTotalTriangles;
     *output_numberOfCells_ = numTotalTriangles;
 
@@ -1116,11 +1141,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
       auto &points = *output_points_;
       auto &cellsConn = *output_cells_connectivity_;
-      auto &cellsMSCIds = *output_cells_mscIds_;
+      auto &cellLabels = *output_cells_Labels_;
 
       float *p = points.data();
       SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellsMSCIds.data();
+      unsigned long long *m = cellLabels.data();
 
       p += (numThreadIndex * 6);
       c += (numThreadIndex * 2);
@@ -1149,7 +1174,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         triangulation.getVertexPoint(
           vertices[2], vPos[2][0], vPos[2][1], vPos[2][2]);
 
-        const unsigned long long msm[3]
+        const unsigned long long label[3]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         if(triangleLookupIs2Label[tetCases[tet]]) {
@@ -1160,6 +1185,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
           interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d1, vert10);
           interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
 
+          // Write the edge endpoints, cell indices, and labels
           p[0] = vert00[0];
           p[1] = vert00[1];
           p[2] = vert00[2];
@@ -1181,8 +1207,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
           c += 4;
           numThreadIndex += 4;
 
-          m[0] = msm[vIds[0]];
-          m[1] = msm[vIds[1]];
+          m[0] = label[vIds[0]];
+          m[1] = label[vIds[1]];
           m += 2;
 
         } else {
@@ -1203,6 +1229,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
           interpolatePoints(vPos[1], triCenter, dc, triS1);
           interpolatePoints(vPos[2], triCenter, dc, triS2);
 
+          // Write the edge endpoints, cell indices, and labels
           p[0] = vert00[0];
           p[1] = vert00[1];
           p[2] = vert00[2];
@@ -1260,12 +1287,12 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
           c += 12;
           numThreadIndex += 12;
 
-          m[0] = msm[0];
-          m[1] = msm[0];
-          m[2] = msm[1];
-          m[3] = msm[1];
-          m[4] = msm[2];
-          m[5] = msm[2];
+          m[0] = label[0];
+          m[1] = label[0];
+          m[2] = label[1];
+          m[3] = label[1];
+          m[4] = label[2];
+          m[5] = label[2];
           m += 6;
         }
       }
@@ -1308,19 +1335,22 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long msm[4]
+      const unsigned long long label[4]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
-      const unsigned char index1 = (msm[0] == msm[1]) ? 0x00 : 0x10; // 0 : 1
-      const unsigned char index2 = (msm[0] == msm[2]) ? 0x00 : // 0
-                                     (msm[1] == msm[2]) ? 0x04
-                                                        : 0x08; // 1 : 2
-      const unsigned char index3 = (msm[0] == msm[3]) ? 0x00 : // 0
-                                     (msm[1] == msm[3]) ? 0x01
-                                                        : // 1
-                                     (msm[2] == msm[3]) ? 0x02
-                                                        : 0x03; // 2 : 3
+      // Set the fifth bit to 0 or 1
+      const unsigned char index1 = (label[0] == label[1]) ? 0x00 : 0x10;
+
+      // Set the fourth and third bit to 0, 1 or 2
+      const unsigned char index2 = (label[0] == label[2])   ? 0x00
+                                   : (label[1] == label[2]) ? 0x04
+                                                            : 0x08;
+      // Set the first and second bit to 0, 1, 2 or 3
+      const unsigned char index3 = (label[0] == label[3])   ? 0x00
+                                   : (label[1] == label[3]) ? 0x01
+                                   : (label[2] == label[3]) ? 0x02
+                                                            : 0x03;
 
       tetCases[tet] = index1 | index2 | index3;
       numTris += triangleCounter[tetCases[tet]];
@@ -1344,21 +1374,25 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long msm[4]
+        const unsigned long long label[4]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
-        const unsigned char index1 = (msm[0] == msm[1]) ? 0x00 : 0x10; // 0 : 1
-        const unsigned char index2 = (msm[0] == msm[2]) ? 0x00 : // 0
-                                       (msm[1] == msm[2]) ? 0x04
-                                                          : 0x08; // 1 : 2
-        const unsigned char index3 = (msm[0] == msm[3]) ? 0x00 : // 0
-                                       (msm[1] == msm[3]) ? 0x01
-                                                          : // 1
-                                       (msm[2] == msm[3]) ? 0x02
-                                                          : 0x03; // 2 : 3
-        tetCases[tet] = index1 | index2 | index3;
+        // Set the fifth bit to 0 or 1
+        const unsigned char index1 = (label[0] == label[1]) ? 0x00 : 0x10;
 
+        // Set the fourth and third bit to 0, 1 or 2
+        const unsigned char index2 = (label[0] == label[2])   ? 0x00
+                                     : (label[1] == label[2]) ? 0x04
+                                                              : 0x08;
+
+        // Set the first and second bit to 0, 1, 2 or 3
+        const unsigned char index3 = (label[0] == label[3])   ? 0x00
+                                     : (label[1] == label[3]) ? 0x01
+                                     : (label[2] == label[3]) ? 0x02
+                                                              : 0x03;
+
+        tetCases[tet] = index1 | index2 | index3;
         threadTriangles += triangleCounter[tetCases[tet]];
       }
       numTriangles[tid] = threadTriangles;
@@ -1390,17 +1424,17 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
 
     output_points_->resize(9 * numTriangles[0]);
     output_cells_connectivity_->resize(3 * numTriangles[0]);
-    output_cells_mscIds_->resize(numTriangles[0]);
+    output_cells_Labels_->resize(numTriangles[0]);
     *output_numberOfPoints_ = 3 * numTriangles[0];
     *output_numberOfCells_ = numTriangles[0];
 
     auto &points = *output_points_;
     auto &cellsConn = *output_cells_connectivity_;
-    auto &cellsMSCIds = *output_cells_mscIds_;
+    auto &cellLabels = *output_cells_Labels_;
 
     float *p = points.data();
     SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellsMSCIds.data();
+    unsigned long long *m = cellLabels.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -1418,7 +1452,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long msm[4]
+      const unsigned long long label[4]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
@@ -1451,11 +1485,13 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
         float tetCenter[3];
         getCenter(vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
 
+        // Create a hashes from all four label combinations
         unsigned long long sparseMSIds[6]
-          = {getHash(msm[0], msm[1]), getHash(msm[0], msm[2]),
-             getHash(msm[0], msm[3]), getHash(msm[1], msm[2]),
-             getHash(msm[1], msm[3]), getHash(msm[2], msm[3])};
+          = {getHash(label[0], label[1]), getHash(label[0], label[2]),
+             getHash(label[0], label[3]), getHash(label[1], label[2]),
+             getHash(label[1], label[3]), getHash(label[2], label[3])};
 
+        // Write the triangle endpoints, cell indices, and label
         p[0] = eC[7][0];
         p[1] = eC[7][1];
         p[2] = eC[7][2];
@@ -1620,11 +1656,9 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
         m += 12;
       } else { // 2 or 3 labels on tetraeder
         const size_t numTris = tetLookupNumWallTriangles[tetCases[tet]];
-        std::vector<unsigned long long> sparseIds(numTris);
-        for(size_t t = 0; t < numTris; ++t) {
-          sparseIds[t]
-            = getHash(msm[tetVertLabel[t * 2]], msm[tetVertLabel[(t * 2) + 1]]);
 
+        for(size_t t = 0; t < numTris; ++t) {
+          // Write the triangle endpoints, cell indices, and label
           p[0] = eC[tetEdgeIndices[(t * 3)]][0];
           p[1] = eC[tetEdgeIndices[(t * 3)]][1];
           p[2] = eC[tetEdgeIndices[(t * 3)]][2];
@@ -1642,7 +1676,9 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
           c += 3;
           cellIndex += 3;
 
-          m[0] = sparseIds[t];
+          // Create hash from the corresponsing vertex labels
+          m[0] = getHash(
+            label[tetVertLabel[t * 2]], label[tetVertLabel[(t * 2) + 1]]);
           m += 1;
         }
       }
@@ -1663,7 +1699,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
 
     output_points_->resize(9 * numTotalTriangles);
     output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_mscIds_->resize(numTotalTriangles);
+    output_cells_Labels_->resize(numTotalTriangles);
     *output_numberOfPoints_ = 3 * numTotalTriangles;
     *output_numberOfCells_ = numTotalTriangles;
 
@@ -1676,11 +1712,11 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
 
       auto &points = *output_points_;
       auto &cellsConn = *output_cells_connectivity_;
-      auto &cellsMSCIds = *output_cells_mscIds_;
+      auto &cellLabels = *output_cells_Labels_;
 
       float *p = points.data();
       SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellsMSCIds.data();
+      unsigned long long *m = cellLabels.data();
 
       p += (numThreadIndex * 9);
       c += (numThreadIndex * 3);
@@ -1703,7 +1739,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long msm[4]
+        const unsigned long long label[4]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
@@ -1736,11 +1772,13 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
           float tetCenter[3];
           getCenter(vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
 
+          // Create a hashes from all four label combinations
           unsigned long long sparseMSIds[6]
-            = {getHash(msm[0], msm[1]), getHash(msm[0], msm[2]),
-               getHash(msm[0], msm[3]), getHash(msm[1], msm[2]),
-               getHash(msm[1], msm[3]), getHash(msm[2], msm[3])};
+            = {getHash(label[0], label[1]), getHash(label[0], label[2]),
+               getHash(label[0], label[3]), getHash(label[1], label[2]),
+               getHash(label[1], label[3]), getHash(label[2], label[3])};
 
+          // Write the triangle endpoints, cell indices, and label
           p[0] = eC[7][0];
           p[1] = eC[7][1];
           p[2] = eC[7][2];
@@ -1906,11 +1944,9 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
 
         } else { // 2 or 3 labels on tetraeder
           const size_t numTris = tetLookupNumWallTriangles[tetCases[tet]];
-          std::vector<unsigned long long> sparseIds(numTris);
-          for(size_t t = 0; t < numTris; ++t) {
-            sparseIds[t] = getHash(
-              msm[tetVertLabel[t * 2]], msm[tetVertLabel[(t * 2) + 1]]);
 
+          for(size_t t = 0; t < numTris; ++t) {
+            // Write the triangle endpoints, cell indices, and label
             p[0] = eC[tetEdgeIndices[(t * 3)]][0];
             p[1] = eC[tetEdgeIndices[(t * 3)]][1];
             p[2] = eC[tetEdgeIndices[(t * 3)]][2];
@@ -1928,7 +1964,9 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
             c += 3;
             numThreadIndex += 3;
 
-            m[0] = sparseIds[t];
+            // Create hash from the corresponsing vertex labels
+            m[0] = getHash(
+              label[tetVertLabel[t * 2]], label[tetVertLabel[(t * 2) + 1]]);
             m += 1;
           }
         }
@@ -1961,17 +1999,17 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
 
     output_points_->resize(9 * numTriangles[0]);
     output_cells_connectivity_->resize(3 * numTriangles[0]);
-    output_cells_mscIds_->resize(numTriangles[0]);
+    output_cells_Labels_->resize(numTriangles[0]);
     *output_numberOfPoints_ = 3 * numTriangles[0];
     *output_numberOfCells_ = numTriangles[0];
 
     auto &points = *output_points_;
     auto &cellsConn = *output_cells_connectivity_;
-    auto &cellsMSCIds = *output_cells_mscIds_;
+    auto &cellLabels = *output_cells_Labels_;
 
     float *p = points.data();
     SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellsMSCIds.data();
+    unsigned long long *m = cellLabels.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -1986,10 +2024,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long msm[4]
+      const unsigned long long label[4]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
+      // Get the tetrahedron local vertex ids that all three have the same label
       const int id0 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][0];
       const int id1 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][1];
       const int id2 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][2];
@@ -2004,6 +2043,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
       triangulation.getVertexPoint(
         vertices[3], vertPos[3][0], vertPos[3][1], vertPos[3][2]);
 
+      // Write the triangle endpoints, cell indices, and label
       p[0] = vertPos[id0][0];
       p[1] = vertPos[id0][1];
       p[2] = vertPos[id0][2];
@@ -2021,7 +2061,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
       c += 3;
       cellIndex += 3;
 
-      m[0] = msm[id0];
+      m[0] = label[id0];
       m += 1;
     }
 
@@ -2040,7 +2080,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
 
     output_points_->resize(9 * numTotalTriangles);
     output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_mscIds_->resize(numTotalTriangles);
+    output_cells_Labels_->resize(numTotalTriangles);
     *output_numberOfPoints_ = 3 * numTotalTriangles;
     *output_numberOfCells_ = numTotalTriangles;
 
@@ -2053,11 +2093,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
 
       auto &points = *output_points_;
       auto &cellsConn = *output_cells_connectivity_;
-      auto &cellsMSCIds = *output_cells_mscIds_;
+      auto &cellLabels = *output_cells_Labels_;
 
       float *p = points.data();
       SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellsMSCIds.data();
+      unsigned long long *m = cellLabels.data();
 
       p += (numThreadIndex * 9);
       c += (numThreadIndex * 3);
@@ -2077,10 +2117,12 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long msm[4]
+        const unsigned long long label[4]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
+        // Get the tetrahedron local vertex ids that all three have the same
+        // label
         const int id0 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][0];
         const int id1 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][1];
         const int id2 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][2];
@@ -2095,6 +2137,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
         triangulation.getVertexPoint(
           vertices[3], vertPos[3][0], vertPos[3][1], vertPos[3][2]);
 
+        // Write the triangle endpoints, cell indices, and label
         p[0] = vertPos[id0][0];
         p[1] = vertPos[id0][1];
         p[2] = vertPos[id0][2];
@@ -2112,7 +2155,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
         c += 3;
         numThreadIndex += 3;
 
-        m[0] = msm[id0];
+        m[0] = label[id0];
         m += 1;
       }
     }
@@ -2148,17 +2191,17 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
 
     output_points_->resize(9 * numTriangles[0]);
     output_cells_connectivity_->resize(3 * numTriangles[0]);
-    output_cells_mscIds_->resize(numTriangles[0]);
+    output_cells_Labels_->resize(numTriangles[0]);
     *output_numberOfPoints_ = 3 * numTriangles[0];
     *output_numberOfCells_ = numTriangles[0];
 
     auto &points = *output_points_;
     auto &cellsConn = *output_cells_connectivity_;
-    auto &cellsMSCIds = *output_cells_mscIds_;
+    auto &cellLabels = *output_cells_Labels_;
 
     float *p = points.data();
     SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellsMSCIds.data();
+    unsigned long long *m = cellLabels.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -2173,7 +2216,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long msm[4]
+      const unsigned long long label[4]
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
@@ -2199,6 +2242,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
         interpolatePoints(vPos[vIds[4]], vPos[vIds[5]], d1, vert12);
 
+        // Write the triangle endpoints, cell indices, and labels
         p[0] = vert00[0];
         p[1] = vert00[1];
         p[2] = vert00[2];
@@ -2229,8 +2273,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         c += 6;
         cellIndex += 6;
 
-        m[0] = msm[vIds[0]];
-        m[1] = msm[vIds[1]];
+        m[0] = label[vIds[0]];
+        m[1] = label[vIds[1]];
         m += 2;
 
         if(vIds[6] != -1) { // 2 vertices per label (e.g. AABB)
@@ -2239,6 +2283,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d0, vert03);
           interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d1, vert13);
 
+          // Write the triangle endpoints, cell indices, and label
           p[0] = vert00[0];
           p[1] = vert00[1];
           p[2] = vert00[2];
@@ -2268,11 +2313,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           c += 6;
           cellIndex += 6;
 
-          m[0] = msm[vIds[0]];
-          m[1] = msm[vIds[1]];
+          m[0] = label[vIds[0]];
+          m[1] = label[vIds[1]];
           m += 2;
         }
-      } else if(tetLookupIs3Label[tetCases[tet]]) {
+      } else if(tetLookupIs3Label[tetCases[tet]]) { // 3 labels
         const int *vIds = tetLookupSplitBasisns3Label[tetCases[tet]];
 
         float triCenter[4][3];
@@ -2282,7 +2327,6 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
         float edgeCenters[10][3];
-
         getCenter(vPos[0], vPos[1], edgeCenters[0]);
         getCenter(vPos[0], vPos[2], edgeCenters[1]);
         getCenter(vPos[0], vPos[3], edgeCenters[2]);
@@ -2293,7 +2337,6 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         float edge00[3], edge01[3], edge02[3], edge03[3], tri00[3], tri01[3],
           edge10[3], edge11[3], edge12[3], tri10[3], tri11[3], edge20[3],
           edge21[3], edge22[3], tri20[3], tri21[3];
-
         interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[1]], dc, edge00);
         interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[2]], dc, edge01);
         interpolatePoints(vPos[vIds[0]], triCenter[vIds[3]], dc, tri00);
@@ -2313,6 +2356,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         interpolatePoints(vPos[vIds[9]], triCenter[vIds[3]], dc, tri20);
         interpolatePoints(vPos[vIds[9]], triCenter[vIds[7]], dc, tri21);
 
+        // Write the triangle endpoints, cell indices, and labels
         // Label 0
         p[0] = edge00[0];
         p[1] = edge00[1];
@@ -2443,16 +2487,16 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         c += 30;
         cellIndex += 30;
 
-        m[0] = msm[vIds[0]];
-        m[1] = msm[vIds[0]];
-        m[2] = msm[vIds[0]];
-        m[3] = msm[vIds[0]];
-        m[4] = msm[vIds[8]];
-        m[5] = msm[vIds[8]];
-        m[6] = msm[vIds[8]];
-        m[7] = msm[vIds[9]];
-        m[8] = msm[vIds[9]];
-        m[9] = msm[vIds[9]];
+        m[0] = label[vIds[0]];
+        m[1] = label[vIds[0]];
+        m[2] = label[vIds[0]];
+        m[3] = label[vIds[0]];
+        m[4] = label[vIds[8]];
+        m[5] = label[vIds[8]];
+        m[6] = label[vIds[8]];
+        m[7] = label[vIds[9]];
+        m[8] = label[vIds[9]];
+        m[9] = label[vIds[9]];
         m += 10;
       } else { // 4 labels
         float tetCenter[3];
@@ -2503,6 +2547,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         interpolatePoints(vPos[3], triCenter[2], dc, vert3t1);
         interpolatePoints(vPos[3], triCenter[3], dc, vert3t2);
 
+        // Write the triangle endpoints, cell indices, and label
         // Label Vert 0
         p[0] = vert00[0];
         p[1] = vert00[1];
@@ -2803,30 +2848,30 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         c += 72;
         cellIndex += 72;
 
-        m[0] = msm[0];
-        m[1] = msm[0];
-        m[2] = msm[0];
-        m[3] = msm[0];
-        m[4] = msm[0];
-        m[5] = msm[0];
-        m[6] = msm[1];
-        m[7] = msm[1];
-        m[8] = msm[1];
-        m[9] = msm[1];
-        m[10] = msm[1];
-        m[11] = msm[1];
-        m[12] = msm[2];
-        m[13] = msm[2];
-        m[14] = msm[2];
-        m[15] = msm[2];
-        m[16] = msm[2];
-        m[17] = msm[2];
-        m[18] = msm[3];
-        m[19] = msm[3];
-        m[20] = msm[3];
-        m[21] = msm[3];
-        m[22] = msm[3];
-        m[23] = msm[3];
+        m[0] = label[0];
+        m[1] = label[0];
+        m[2] = label[0];
+        m[3] = label[0];
+        m[4] = label[0];
+        m[5] = label[0];
+        m[6] = label[1];
+        m[7] = label[1];
+        m[8] = label[1];
+        m[9] = label[1];
+        m[10] = label[1];
+        m[11] = label[1];
+        m[12] = label[2];
+        m[13] = label[2];
+        m[14] = label[2];
+        m[15] = label[2];
+        m[16] = label[2];
+        m[17] = label[2];
+        m[18] = label[3];
+        m[19] = label[3];
+        m[20] = label[3];
+        m[21] = label[3];
+        m[22] = label[3];
+        m[23] = label[3];
         m += 24;
       }
     }
@@ -2846,7 +2891,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
 
     output_points_->resize(9 * numTotalTriangles);
     output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_mscIds_->resize(numTotalTriangles);
+    output_cells_Labels_->resize(numTotalTriangles);
     *output_numberOfPoints_ = 3 * numTotalTriangles;
     *output_numberOfCells_ = numTotalTriangles;
 
@@ -2859,11 +2904,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
 
       auto &points = *output_points_;
       auto &cellsConn = *output_cells_connectivity_;
-      auto &cellsMSCIds = *output_cells_mscIds_;
+      auto &cellLabels = *output_cells_Labels_;
 
       float *p = points.data();
       SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellsMSCIds.data();
+      unsigned long long *m = cellLabels.data();
 
       p += (numThreadIndex * 9);
       c += (numThreadIndex * 3);
@@ -2883,7 +2928,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long msm[4]
+        const unsigned long long label[4]
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
@@ -2910,6 +2955,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
           interpolatePoints(vPos[vIds[4]], vPos[vIds[5]], d1, vert12);
 
+          // Write the triangle endpoints, cell indices, and label
           p[0] = vert00[0];
           p[1] = vert00[1];
           p[2] = vert00[2];
@@ -2940,8 +2986,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           c += 6;
           numThreadIndex += 6;
 
-          m[0] = msm[vIds[0]];
-          m[1] = msm[vIds[1]];
+          m[0] = label[vIds[0]];
+          m[1] = label[vIds[1]];
           m += 2;
 
           if(vIds[6] != -1) { // 2 vertices per label (e.g. AABB)
@@ -2950,6 +2996,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
             interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d0, vert03);
             interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d1, vert13);
 
+            // Write the triangle endpoints, cell indices, and label
             p[0] = vert00[0];
             p[1] = vert00[1];
             p[2] = vert00[2];
@@ -2979,8 +3026,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
             c += 6;
             numThreadIndex += 6;
 
-            m[0] = msm[vIds[0]];
-            m[1] = msm[vIds[1]];
+            m[0] = label[vIds[0]];
+            m[1] = label[vIds[1]];
             m += 2;
           }
         } else if(tetLookupIs3Label[tetCases[tet]]) {
@@ -3024,6 +3071,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           interpolatePoints(vPos[vIds[9]], triCenter[vIds[3]], dc, tri20);
           interpolatePoints(vPos[vIds[9]], triCenter[vIds[7]], dc, tri21);
 
+          // Write the triangle endpoints, cell indices, and labels
           // Label 0
           p[0] = edge00[0];
           p[1] = edge00[1];
@@ -3154,16 +3202,16 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           c += 30;
           numThreadIndex += 30;
 
-          m[0] = msm[vIds[0]];
-          m[1] = msm[vIds[0]];
-          m[2] = msm[vIds[0]];
-          m[3] = msm[vIds[0]];
-          m[4] = msm[vIds[8]];
-          m[5] = msm[vIds[8]];
-          m[6] = msm[vIds[8]];
-          m[7] = msm[vIds[9]];
-          m[8] = msm[vIds[9]];
-          m[9] = msm[vIds[9]];
+          m[0] = label[vIds[0]];
+          m[1] = label[vIds[0]];
+          m[2] = label[vIds[0]];
+          m[3] = label[vIds[0]];
+          m[4] = label[vIds[8]];
+          m[5] = label[vIds[8]];
+          m[6] = label[vIds[8]];
+          m[7] = label[vIds[9]];
+          m[8] = label[vIds[9]];
+          m[9] = label[vIds[9]];
           m += 10;
 
         } else { // 4 labels
@@ -3216,6 +3264,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           interpolatePoints(vPos[3], triCenter[2], dc, vert3t1);
           interpolatePoints(vPos[3], triCenter[3], dc, vert3t2);
 
+          // Write the triangle endpoints, cell indices, and labels
           // Label Vert 0
           p[0] = vert00[0];
           p[1] = vert00[1];
@@ -3516,30 +3565,30 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           c += 72;
           numThreadIndex += 72;
 
-          m[0] = msm[0];
-          m[1] = msm[0];
-          m[2] = msm[0];
-          m[3] = msm[0];
-          m[4] = msm[0];
-          m[5] = msm[0];
-          m[6] = msm[1];
-          m[7] = msm[1];
-          m[8] = msm[1];
-          m[9] = msm[1];
-          m[10] = msm[1];
-          m[11] = msm[1];
-          m[12] = msm[2];
-          m[13] = msm[2];
-          m[14] = msm[2];
-          m[15] = msm[2];
-          m[16] = msm[2];
-          m[17] = msm[2];
-          m[18] = msm[3];
-          m[19] = msm[3];
-          m[20] = msm[3];
-          m[21] = msm[3];
-          m[22] = msm[3];
-          m[23] = msm[3];
+          m[0] = label[0];
+          m[1] = label[0];
+          m[2] = label[0];
+          m[3] = label[0];
+          m[4] = label[0];
+          m[5] = label[0];
+          m[6] = label[1];
+          m[7] = label[1];
+          m[8] = label[1];
+          m[9] = label[1];
+          m[10] = label[1];
+          m[11] = label[1];
+          m[12] = label[2];
+          m[13] = label[2];
+          m[14] = label[2];
+          m[15] = label[2];
+          m[16] = label[2];
+          m[17] = label[2];
+          m[18] = label[3];
+          m[19] = label[3];
+          m[20] = label[3];
+          m[21] = label[3];
+          m[22] = label[3];
+          m[23] = label[3];
           m += 24;
         }
       }
