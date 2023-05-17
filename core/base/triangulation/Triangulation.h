@@ -1369,13 +1369,6 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_MPI
 
-    bool getHasPreconditionedPeriodicGhosts() {
-      return abstractTriangulation_->getHasPreconditionedPeriodicGhosts();
-    }
-
-    void setHasPreconditionedPeriodicGhosts(bool flag) {
-      abstractTriangulation_->setHasPreconditionedPeriodicGhosts(flag);
-    }
     /// Get the corresponding global id for a given local id of a vertex.
     ///    ///
     /// \pre For this function to behave correctly,
@@ -2902,9 +2895,19 @@ namespace ttk {
       this->abstractTriangulation_->setCellGhostArray(data);
     }
 
+    inline bool getIsValid() const {
+      return isValid;
+    }
+
+    inline void setIsValid(bool flag) {
+      isValid = flag;
+    }
 #endif // TTK_ENABLE_MPI
 
   protected:
+#ifdef TTK_ENABLE_MPI
+    bool isValid{true};
+#endif
     inline bool isEmptyCheck() const {
       if(!abstractTriangulation_) {
         printErr("Trying to access an empty data-structure!");

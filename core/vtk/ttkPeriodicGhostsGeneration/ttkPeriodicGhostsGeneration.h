@@ -120,31 +120,32 @@ public:
   static ttkPeriodicGhostsGeneration *New();
   vtkTypeMacro(ttkPeriodicGhostsGeneration, ttkAlgorithm);
 
-protected:
-  /**
-   * TODO 7: Implement the filter constructor and destructor
-   *         (see cpp file)
-   */
+public:
   ttkPeriodicGhostsGeneration();
   ~ttkPeriodicGhostsGeneration() override = default;
 
-  /**
-   * TODO 8: Specify the input data type of each input port
-   *         (see cpp file)
-   */
-  int FillInputPortInformation(int port, vtkInformation *info) override;
   int RequestUpdateExtent(vtkInformation *ttkNotUsed(request),
                           vtkInformationVector **inputVector,
                           vtkInformationVector *outputVector) override;
 
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVectors,
+                         vtkInformationVector *outputVector) override;
   /**
    * This method is called in GetTriangulation, if the triangulation is
    * periodic, to create ghosts specific to dealing with this type of
    * triangulation. This may add points to the dataset of a process and
    * therefore invalidates the triangulation object taken as parameter here.
    */
-  int MPIPeriodicGhostPipelinePreconditioning(
-    vtkInformationVector **inputVectors, vtkInformationVector *outputVector);
+  int MPIPeriodicGhostPipelinePreconditioning(vtkImageData *imageIn,
+                                              vtkImageData *imageOut);
+
+protected:
+  /**
+   * TODO 8: Specify the input data type of each input port
+   *         (see cpp file)
+   */
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
   int ComputeOutputExtent(vtkDataSet *input);
 
@@ -203,8 +204,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-  int RequestInformation(vtkInformation *request,
-                         vtkInformationVector **inputVectors,
-                         vtkInformationVector *outputVector) override;
 };

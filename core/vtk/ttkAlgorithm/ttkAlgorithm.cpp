@@ -59,14 +59,6 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
   auto triangulation = ttkTriangulationFactory::GetTriangulation(
     this->debugLevel_, this->CompactTriangulationCacheSize, dataSet);
-  if(triangulation->hasPeriodicBoundaries()
-     && !triangulation->getHasPreconditionedPeriodicGhosts()
-     && ttk::isRunningWithMPI()) {
-    // this->MPIPeriodicGhostPipelinePreconditioning(dataSet, triangulation);
-    triangulation = ttkTriangulationFactory::GetTriangulation(
-      this->debugLevel_, this->CompactTriangulationCacheSize, dataSet, true);
-    triangulation->setHasPreconditionedPeriodicGhosts(true);
-  }
 
 #ifdef TTK_ENABLE_MPI
   if(ttk::hasInitializedMPI()) {

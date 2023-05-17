@@ -48,10 +48,39 @@ int ttkTriangulationManager::FillOutputPortInformation(int port,
   }
   return 0;
 }
+#ifdef TTK_ENABLE_MPI
+int ttkTriangulationManager::RequestUpdateExtent(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+  if(Periodicity) {
+    return this->periodicGhostGenerator->RequestUpdateExtent(
+      request, inputVector, outputVector);
+  }
+  return 1;
+}
+int ttkTriangulationManager::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVectors,
+  vtkInformationVector *outputVector) {
+  if(Periodicity) {
+    return this->periodicGhostGenerator->RequestInformation(
+      request, inputVectors, outputVector);
+  }
+  return 1;
+}
+#endif
 
 void switchPeriodicity(ttk::Triangulation &triangulation,
                        const bool periodic,
-                       const ttk::Debug &dbg) {
+                       const ttk::Debug &dbg
+#ifdef TTK_ENABLE_MPI
+                       ,
+                       vtkImageData *imageIn,
+                       vtkImageData *imageOut,
+                       ttkPeriodicGhostsGeneration *periodicGhostGenerator
+#endif
+) {
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
 
   if(prevPeriodic != periodic) {
@@ -61,6 +90,15 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
                  + (prevPeriodic ? std::string("ON") : std::string("OFF"))
                  + " to "
                  + (periodic ? std::string("ON") : std::string("OFF")));
+#ifdef TTK_ENABLE_MPI
+    if(periodic) {
+      if(ttk::isRunningWithMPI()) {
+        periodicGhostGenerator->MPIPeriodicGhostPipelinePreconditioning(
+          imageIn, imageOut);
+        triangulation.setIsValid(false);
+      }
+    }
+#endif
   }
 }
 
@@ -85,10 +123,16 @@ void switchPreconditions(ttk::Triangulation &triangulation,
   }
 }
 
-void ttkTriangulationManager::processImplicit(
-  ttk::Triangulation &triangulation) const {
+void ttkTriangulationManager::processImplicit(ttk::Triangulation &triangulation
+#ifdef TTK_ENABLE_MPI
+                                              ,
+                                              vtkImageData *imageIn,
+                                              vtkImageData *imageOut
+#endif
+) {
 
-  switchPeriodicity(triangulation, this->Periodicity, *this);
+  switchPeriodicity(triangulation, this->Periodicity, *this, imageIn, imageOut,
+                    this->periodicGhostGenerator);
   switchPreconditions(triangulation, this->PreconditioningStrategy, *this);
 }
 
@@ -237,9 +281,15 @@ int ttkTriangulationManager::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   if(inputDataSet->IsA("vtkImageData")) {
-    this->processImplicit(*triangulation);
-    auto *outputDataSet = vtkDataSet::GetData(outputVector, 0);
-    outputDataSet->ShallowCopy(inputDataSet);
+    vtkImageData *imageIn = vtkImageData::GetData(inputVector[0]);
+    vtkImageData *imageOut = vtkImageData::GetData(outputVector);
+    imageOut->ShallowCopy(imageIn);
+    this->processImplicit(*triangulation
+#ifdef TTK_ENABLE_MPI
+                          ,
+                          imageIn, imageOut
+#endif
+    );
     return 1;
   } else if(inputDataSet->IsA("vtkUnstructuredGrid")
             || inputDataSet->IsA("vtkPolyData")) {

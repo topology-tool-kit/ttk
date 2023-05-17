@@ -1,6 +1,7 @@
 #include "BaseClass.h"
 #include "DataTypes.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include <string>
 #include <ttkPeriodicGhostsGeneration.h>
 
 #include <vtkCellData.h>
@@ -437,7 +438,7 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
 };
 
 int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
-  vtkInformationVector **inputVectors, vtkInformationVector *outputVector) {
+  vtkImageData *imageIn, vtkImageData *imageOut) {
 
   auto other = [](ttk::SimplexId i) {
     if(i % 2 == 1) {
@@ -446,13 +447,12 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     return i + 1;
   };
 
-  vtkImageData *imageIn = vtkImageData::GetData(inputVectors[0]);
-  vtkImageData *imageOut = vtkImageData::GetData(outputVector);
-
   int *dims = imageIn->GetDimensions();
   int dimensionality = imageIn->GetDataDimension();
-  int firstDim;
-  int secondDim;
+  // Case dimensionality == 3
+  int firstDim = 4;
+  int secondDim = 2;
+
   if(dimensionality == 1) {
     firstDim = 0;
     if(dims[0] <= 1 && dims[1] <= 1) {
@@ -476,11 +476,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       firstDim = 2;
       secondDim = 0;
     }
-  }
-
-  if(dimensionality == 3) {
-    firstDim = 4;
-    secondDim = 2;
   }
 
   this->ComputeOutputExtent(imageIn);
@@ -705,7 +700,8 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   if(dimensionality >= 2) {
     // Merge in the second direction
     for(int dir = secondDim; dir < secondDim + 2; dir++) {
-      vtkNew<vtkImageData> mergedImage;
+      vtkSmartPointer<vtkImageData> mergedImage
+        = vtkSmartPointer<vtkImageData>::New();
       if(this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
            charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
            std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage)
@@ -723,7 +719,8 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
             return 0;
           }
         }
-        vtkNew<vtkImageData> aux;
+        vtkSmartPointer<vtkImageData> aux
+          = vtkSmartPointer<vtkImageData>::New();
         if(this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir)
            == 0) {
           return 0;
@@ -803,7 +800,10 @@ int ttkPeriodicGhostsGeneration::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
-  this->MPIPeriodicGhostPipelinePreconditioning(inputVector, outputVector);
+  vtkImageData *imageIn = vtkImageData::GetData(inputVector[0]);
+  vtkImageData *imageOut = vtkImageData::GetData(outputVector);
+
+  this->MPIPeriodicGhostPipelinePreconditioning(imageIn, imageOut);
 
   // return success
   return 1;

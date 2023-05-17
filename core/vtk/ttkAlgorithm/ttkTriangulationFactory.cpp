@@ -146,7 +146,11 @@ bool RegistryValue::isValid(vtkDataSet *dataSet) const {
     image->GetSpacing(spacing_);
     image->GetDimensions(dimensions_);
 
+#ifdef TTK_ENABLE_MPI
+    bool isValid = triangulation->getIsValid();
+#else
     bool isValid = true;
+#endif
     for(int i = 0; i < 6; i++)
       if(this->extent[i] != extent_[i])
         isValid = false;
@@ -336,7 +340,7 @@ RegistryTriangulation
 }
 
 ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
-  int debugLevel, float cacheRatio, vtkDataSet *object, bool forceInvalid) {
+  int debugLevel, float cacheRatio, vtkDataSet *object) {
   auto instance = &ttkTriangulationFactory::Instance;
   instance->setDebugLevel(debugLevel);
 
@@ -346,7 +350,7 @@ ttk::Triangulation *ttkTriangulationFactory::GetTriangulation(
   auto it = instance->registry.find(key);
   if(it != instance->registry.end()) {
     // object is the owner of the explicit or implicit triangulation
-    if(it->second.isValid(object) && !forceInvalid) {
+    if(it->second.isValid(object)) {
       instance->printMsg(
         "Retrieving Existing Triangulation", ttk::debug::Priority::DETAIL);
       triangulation = it->second.triangulation.get();
