@@ -30,6 +30,7 @@
 #include <Triangulation.h>
 
 #include <queue>
+#include <type_traits>
 
 /**
  * Lookup table to retrieve the indices of the edges (0-5) and triangles (6-9)
@@ -829,53 +830,57 @@ int ttk::MarchingTetrahedra::execute(const dataType *const scalars,
   const SimplexId nC = triangulation.getNumberOfCells();
   const int dim = triangulation.getDimensionality();
 
-  unsigned char *tetCases = nullptr;
-  size_t *numberOfTetCases = nullptr;
-  unsigned long long *cScalars = nullptr;
+  std::vector<unsigned char> tetCases;
+  std::vector<size_t> numberOfTetCases;
+  std::vector<unsigned long long> cScalars;
 
-  tetCases = (unsigned char *)malloc(nC * sizeof(unsigned char));
-  cScalars = (unsigned long long *)malloc(nV * sizeof(unsigned long long));
+  tetCases.resize(nC);
+  cScalars.resize(nV);
 
 #ifdef TTK_ENABLE_OPENMP
-  numberOfTetCases = (size_t *)malloc(omp_get_max_threads() * sizeof(size_t));
+  numberOfTetCases.resize(omp_get_max_threads());
 #else
-  numberOfTetCases = (size_t *)malloc(sizeof(size_t));
+  numberOfTetCases.resize(1);
 #endif // TTK_ENABLE_OPENMP
 
   for(int vert = 0; vert < nV; vert++)
-    cScalars[vert] = (unsigned long long)scalars[vert];
+    cScalars[vert] = static_cast<unsigned long long>(scalars[vert]);
 
   if(dim == 2) {
     if(SurfaceMode == SURFACE_MODE::SM_SEPARATORS) {
-      computeMarchingCases_2D(tetCases, numberOfTetCases, cScalars,
+      computeMarchingCases_2D(&tetCases[0], &numberOfTetCases[0], &cScalars[0],
                               triangleNumberLookup, triangulation);
-      writeSeparators_2D(tetCases, numberOfTetCases, cScalars, triangulation);
+      writeSeparators_2D(
+        &tetCases[0], &numberOfTetCases[0], &cScalars[0], triangulation);
     } else if(SurfaceMode == SURFACE_MODE::SM_BOUNDARIES) {
-      computeMarchingCases_2D(tetCases, numberOfTetCases, cScalars,
+      computeMarchingCases_2D(&tetCases[0], &numberOfTetCases[0], &cScalars[0],
                               triangleNumberLookupBoundary, triangulation);
-      writeBoundaries_2D(tetCases, numberOfTetCases, cScalars, triangulation);
+      writeBoundaries_2D(
+        &tetCases[0], &numberOfTetCases[0], &cScalars[0], triangulation);
     } else if(SurfaceMode == SURFACE_MODE::SM_BOUNDARIES_DETAILED) {
-      computeMarchingCases_2D(tetCases, numberOfTetCases, cScalars,
+      computeMarchingCases_2D(&tetCases[0], &numberOfTetCases[0], &cScalars[0],
                               triangleNumberLookupBoundaryDetailed,
                               triangulation);
       writeBoundariesDetailed_2D(
-        tetCases, numberOfTetCases, cScalars, triangulation);
+        &tetCases[0], &numberOfTetCases[0], &cScalars[0], triangulation);
     }
   } else if(dim == 3) {
     if(SurfaceMode == SURFACE_MODE::SM_SEPARATORS) {
-      computeMarchingCases_3D(tetCases, numberOfTetCases, cScalars,
+      computeMarchingCases_3D(&tetCases[0], &numberOfTetCases[0], &cScalars[0],
                               tetLookupNumWallTriangles, triangulation);
-      writeSeparators_3D(tetCases, numberOfTetCases, cScalars, triangulation);
+      writeSeparators_3D(
+        &tetCases[0], &numberOfTetCases[0], &cScalars[0], triangulation);
     } else if(SurfaceMode == SURFACE_MODE::SM_BOUNDARIES) {
-      computeMarchingCases_3D(tetCases, numberOfTetCases, cScalars,
+      computeMarchingCases_3D(&tetCases[0], &numberOfTetCases[0], &cScalars[0],
                               tetLookupNumTrianglesBoundaries, triangulation);
-      writeBoundaries_3D(tetCases, numberOfTetCases, cScalars, triangulation);
+      writeBoundaries_3D(
+        &tetCases[0], &numberOfTetCases[0], &cScalars[0], triangulation);
     } else if(SurfaceMode == SURFACE_MODE::SM_BOUNDARIES_DETAILED) {
-      computeMarchingCases_3D(tetCases, numberOfTetCases, cScalars,
+      computeMarchingCases_3D(&tetCases[0], &numberOfTetCases[0], &cScalars[0],
                               tetLookupNumTrianglesDetailedBoundary,
                               triangulation);
       writeBoundariesDetailed_3D(
-        tetCases, numberOfTetCases, cScalars, triangulation);
+        &tetCases[0], &numberOfTetCases[0], &cScalars[0], triangulation);
     }
   } else {
     return this->printErr("Data of dimension " + std::to_string(dim)
