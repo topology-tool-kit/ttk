@@ -1,7 +1,6 @@
 ttk_add_base_library(marchingTetrahedra
   SOURCES
     MarchingTetrahedra.cpp
-    MarchingTetrahedraLookupTables.inl
   HEADERS
     MarchingTetrahedra.h
   DEPENDS
