@@ -345,7 +345,7 @@ int ttk::MarchingTetrahedra::execute(const dataType *const scalars,
   numberOfTetCases.resize(1);
 #endif // TTK_ENABLE_OPENMP
 
-  for(int vert = 0; vert < nV; vert++)
+  for(SimplexId vert = 0; vert < nV; vert++)
     std::memcpy(&cScalars[vert], &scalars[vert], sizeof(dataType));
 
   if(dim == 2) {
@@ -420,7 +420,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
     size_t numTris = 0;
 
     for(SimplexId tet = 0; tet < numTetra; tet++) {
-      SimplexId vertices[3];
+      std::array<SimplexId, 3> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -451,7 +451,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
 
 #pragma omp for schedule(static)
       for(SimplexId tet = 0; tet < numTetra; ++tet) {
-        SimplexId vertices[3];
+        std::array<SimplexId, 3> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -520,7 +520,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
       const int *edgeVerts = triangleLookupEdgeVerts[tetCases[tet]];
 
-      SimplexId vertices[3];
+      std::array<SimplexId, 3> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -661,7 +661,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
         const int *edgeVerts = triangleLookupEdgeVerts[tetCases[tet]];
 
-        SimplexId vertices[3];
+        std::array<SimplexId, 3> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -798,7 +798,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
         continue;
       }
 
-      SimplexId vertices[3];
+      std::array<SimplexId, 3> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -882,7 +882,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
           continue;
         }
 
-        SimplexId vertices[3];
+        std::array<SimplexId, 3> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -973,7 +973,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
       const int *vIds = triangleLookupEdgeVerts[tetCases[tet]];
 
-      SimplexId vertices[3];
+      std::array<SimplexId, 3> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -1161,7 +1161,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
         const int *vIds = triangleLookupEdgeVerts[tetCases[tet]];
 
-        SimplexId vertices[3];
+        std::array<SimplexId, 3> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
