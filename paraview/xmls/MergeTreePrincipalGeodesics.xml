@@ -6,7 +6,21 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMergeTreePrincipalGeodesics" class="ttkMergeTreePrincipalGeodesics" label="TTK MergeTreePrincipalGeodesics">
-      <Documentation long_help="MergeTreePrincipalGeodesics Long" short_help="MergeTreePrincipalGeodesics Short">TODO</Documentation>
+      <Documentation long_help="MergeTreePrincipalGeodesics Long" short_help="MergeTreePrincipalGeodesics Short">
+
+        This filter computes Principal Geodesic Analysis on the space of merge trees or persistence diagrams, that is, a set of orthogonal geodesic axes defining an optimized basis with the barycenter as origin.
+
+        Related publication:
+
+        'Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)'
+        Mathieu Pont, Jules Vidal, Julien Tierny.
+        IEEE Transactions on Visualization and Computer Graphics, 2022
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+
+        </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty
