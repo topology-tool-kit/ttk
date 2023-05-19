@@ -10,6 +10,11 @@
 /// \b Related \b publication: \n
 /// "Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)" \n
 /// Mathieu Pont, Jules Vidal, Julien Tierny.\n
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
 
 #pragma once
 
