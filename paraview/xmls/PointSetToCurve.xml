@@ -9,6 +9,10 @@
           short_help="Converts string arrays into int arrays.">
         This filter generates lines between points in a Point Set
         according to the ordering of a given Point Data.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
       </Documentation>
 
       <InputProperty
