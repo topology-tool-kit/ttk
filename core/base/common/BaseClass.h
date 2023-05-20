@@ -14,10 +14,10 @@
 
 #include <DataTypes.h>
 #include <OpenMP.h>
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
 #define OMPI_SKIP_MPICXX 1
 #include <mpi.h>
-#endif
+#endif // TTK_ENABLE_MPI
 
 #if defined(_MSC_VER) && defined(TTK_ENABLE_SHARED_BASE_LIBRARIES)
 #if defined(common_EXPORTS)

@@ -325,8 +325,9 @@ namespace ttk {
          && (globalDebugLevel_ < (int)priority))
         return 0;
 
-      return this->printMsgInternal(
-        "", "", std::string(1, (char &)separator), priority, lineMode, stream);
+      return this->printMsgInternal("", "",
+                                    std::string(1, (const char &)separator),
+                                    priority, lineMode, stream);
     }
 
     /**
@@ -351,8 +352,9 @@ namespace ttk {
          && (globalDebugLevel_ < (int)priority))
         return 0;
 
-      return this->printMsgInternal(
-        msg, "", std::string(1, (char &)separator), priority, lineMode, stream);
+      return this->printMsgInternal(msg, "",
+                                    std::string(1, (const char &)separator),
+                                    priority, lineMode, stream);
     }
 
     /**
@@ -361,7 +363,7 @@ namespace ttk {
      */
     inline void setDebugMsgPrefix(const std::string &prefix) {
       this->debugMsgNamePrefix_ = prefix;
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
       this->debugMsgPrefix_
         = debugMsgNamePrefix_.length() > 0
             ? "[" + debugMsgNamePrefix_ + "-" + std::to_string(MPIrank_) + "] "
@@ -370,7 +372,7 @@ namespace ttk {
       this->debugMsgPrefix_ = debugMsgNamePrefix_.length() > 0
                                 ? "[" + debugMsgNamePrefix_ + "] "
                                 : "";
-#endif
+#endif // TTK_ENABLE_MPI
     }
 
   protected:

@@ -20,15 +20,15 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkTrackingFromOverlap)
+vtkStandardNewMacro(ttkTrackingFromOverlap);
 
-  // Function to fetch data of a specificd block
-  void getData(vtkMultiBlockDataSet *mb,
-               size_t time,
-               size_t level,
-               const string &labelFieldName,
-               vtkPointSet *&pointSet,
-               vtkDataArray *&labels) {
+// Function to fetch data of a specificd block
+static void getData(vtkMultiBlockDataSet *mb,
+                    size_t time,
+                    size_t level,
+                    const string &labelFieldName,
+                    vtkPointSet *&pointSet,
+                    vtkDataArray *&labels) {
   auto timesteps = vtkMultiBlockDataSet::SafeDownCast(mb->GetBlock(level));
   pointSet = vtkPointSet::SafeDownCast(timesteps->GetBlock(time));
   if(pointSet == nullptr) {
@@ -40,9 +40,9 @@ vtkStandardNewMacro(ttkTrackingFromOverlap)
 
 // Function to compute number of levels and timesteps contained in a
 // vtkMultiBlockDataSet
-void getNumberOfLevelsAndTimesteps(vtkMultiBlockDataSet *mb,
-                                   size_t &nL,
-                                   size_t &nT) {
+static void getNumberOfLevelsAndTimesteps(vtkMultiBlockDataSet *mb,
+                                          size_t &nL,
+                                          size_t &nT) {
   nL = mb->GetNumberOfBlocks();
   auto timesteps = vtkMultiBlockDataSet::SafeDownCast(mb->GetBlock(0));
   nT = timesteps->GetNumberOfBlocks();

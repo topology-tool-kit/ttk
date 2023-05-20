@@ -132,8 +132,8 @@ int ttk::RangeDrivenOctree::build(
 
   Timer t;
 
-  dataTypeU *u = (dataTypeU *)u_;
-  dataTypeV *v = (dataTypeV *)v_;
+  const dataTypeU *u = (const dataTypeU *)u_;
+  const dataTypeV *v = (const dataTypeV *)v_;
 
   if(triangulation) {
     cellNumber_ = triangulation->getNumberOfCells();

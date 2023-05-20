@@ -9,6 +9,9 @@ if (NOT MSVC) # GCC and Clang
     -Wtype-limits
     -Wshadow
     -Wvla
+    -Wcast-qual
+    -Wmissing-declarations
+    -Wundef
     )
 
   # performance and debug flags

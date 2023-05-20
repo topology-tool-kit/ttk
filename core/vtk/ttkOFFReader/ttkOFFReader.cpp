@@ -39,7 +39,7 @@ ttkOFFReader::ttkOFFReader() {
   this->SetNumberOfOutputPorts(1);
 }
 
-int countVertsData(const std::string &line) {
+static int countVertsData(const std::string &line) {
   std::istringstream ss(line);
   double buffer;
   int nbFields = -1;
@@ -51,7 +51,7 @@ int countVertsData(const std::string &line) {
   return nbFields - 3;
 }
 
-int countCellsData(const std::string &line) {
+static int countCellsData(const std::string &line) {
   std::istringstream ss(line);
   double buffer;
   int nbFields = -1;
@@ -67,11 +67,11 @@ int countCellsData(const std::string &line) {
   return nbFields - sizeCell;
 }
 
-int processLineVert(vtkIdType curLine,
-                    std::string &line,
-                    vtkPoints *points,
-                    std::vector<vtkNew<vtkDoubleArray>> &vertScalars,
-                    const vtkIdType nbVertsData) {
+static int processLineVert(vtkIdType curLine,
+                           std::string &line,
+                           vtkPoints *points,
+                           std::vector<vtkNew<vtkDoubleArray>> &vertScalars,
+                           const vtkIdType nbVertsData) {
 
   double x, y, z;
   std::istringstream ss(line);
@@ -91,13 +91,13 @@ int processLineVert(vtkIdType curLine,
   return ++curLine;
 }
 
-int processLineCell(vtkIdType curLine,
-                    std::string &line,
-                    vtkUnstructuredGrid *mesh,
-                    std::vector<vtkNew<vtkDoubleArray>> &cellScalars,
-                    const vtkIdType nbVerts,
-                    const vtkIdType nbCellsData,
-                    const ttk::Debug &dbg) {
+static int processLineCell(vtkIdType curLine,
+                           std::string &line,
+                           vtkUnstructuredGrid *mesh,
+                           std::vector<vtkNew<vtkDoubleArray>> &cellScalars,
+                           const vtkIdType nbVerts,
+                           const vtkIdType nbCellsData,
+                           const ttk::Debug &dbg) {
   int nbCellVerts;
   vtkNew<vtkIdList> cellVerts{};
   std::istringstream ss(line);
