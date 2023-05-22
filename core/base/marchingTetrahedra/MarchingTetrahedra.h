@@ -241,8 +241,9 @@ namespace ttk {
      * @param[out] incenter Resulting position
      * @return int 0 on success
      */
-    inline void
-      getCenter(float pos0[3], float pos1[3], float incenter[3]) const {
+    inline void getCenter(const std::array<float, 3> pos0,
+                          const std::array<float, 3> pos1,
+                          std::array<float, 3> &incenter) const {
       incenter[0] = 0.5 * (pos0[0] + pos1[0]);
       incenter[1] = 0.5 * (pos0[1] + pos1[1]);
       incenter[2] = 0.5 * (pos0[2] + pos1[2]);
@@ -257,10 +258,10 @@ namespace ttk {
      * @param[out] incenter Resulting position
      * @return int 0 on success
      */
-    inline void getCenter(float pos0[3],
-                          float pos1[3],
-                          float pos2[3],
-                          float incenter[3]) const {
+    inline void getCenter(const std::array<float, 3> pos0,
+                          const std::array<float, 3> pos1,
+                          const std::array<float, 3> pos2,
+                          std::array<float, 3> &incenter) const {
       incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
       incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
       incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
@@ -276,11 +277,11 @@ namespace ttk {
      * @param[out] incenter Resulting position
      * @return int 0 on success
      */
-    inline void getCenter(float pos0[3],
-                          float pos1[3],
-                          float pos2[3],
-                          float pos3[3],
-                          float incenter[3]) const {
+    inline void getCenter(const std::array<float, 3> pos0,
+                          const std::array<float, 3> pos1,
+                          const std::array<float, 3> pos2,
+                          const std::array<float, 3> pos3,
+                          std::array<float, 3> &incenter) const {
       incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
       incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
       incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
@@ -295,10 +296,10 @@ namespace ttk {
      * @param[out] result Resulting position
      * @return int 0 on success
      */
-    inline void interpolatePoints(float pos0[3],
-                                  float pos1[3],
-                                  float lambda,
-                                  float result[3]) const {
+    inline void interpolatePoints(const std::array<float, 3> pos0,
+                                  const std::array<float, 3> pos1,
+                                  const float lambda,
+                                  std::array<float, 3> &result) const {
 
       result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
       result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
@@ -425,7 +426,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
 
-      const unsigned long long label[3]
+      const std::array<unsigned long long, 3> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       // Set the third bit to 0 or 1
@@ -456,7 +457,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
 
-        const unsigned long long label[3]
+        const std::array<unsigned long long, 3> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         // Set the third bit to 0 or 1
@@ -525,7 +526,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
 
-      float vertPos[3][3];
+      std::array<std::array<float, 3>, 4> vertPos{};
       triangulation.getVertexPoint(
         vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
       triangulation.getVertexPoint(
@@ -533,11 +534,11 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
       triangulation.getVertexPoint(
         vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-      const unsigned long long label[3]
+      const std::array<unsigned long long, 3> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
-        float eC[2][3];
+        std::array<std::array<float, 3>, 2> eC{};
         getCenter(vertPos[edgeVerts[0]], vertPos[edgeVerts[1]], eC[0]);
         getCenter(vertPos[edgeVerts[2]], vertPos[edgeVerts[3]], eC[1]);
 
@@ -563,14 +564,14 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
         m += 1;
 
       } else { //
-        float eC[4][3];
+        std::array<std::array<float, 3>, 4> eC{};
         getCenter(vertPos[0], vertPos[1], eC[0]);
         getCenter(vertPos[0], vertPos[2], eC[1]);
         getCenter(vertPos[1], vertPos[2], eC[2]);
         getCenter(vertPos[0], vertPos[1], vertPos[2], eC[3]);
 
         // Create a hash from all vertex label combinations
-        const unsigned long long sparseID[3]
+        const std::array<unsigned long long, 3> sparseID
           = {getHash(label[0], label[1]), getHash(label[0], label[2]),
              getHash(label[1], label[2])};
 
@@ -666,7 +667,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
 
-        float vertPos[3][3];
+        std::array<std::array<float, 3>, 3> vertPos{};
         triangulation.getVertexPoint(
           vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
         triangulation.getVertexPoint(
@@ -674,11 +675,11 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
         triangulation.getVertexPoint(
           vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-        const unsigned long long label[3]
+        const std::array<unsigned long long, 3> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         if(triangleLookupIs2Label[tetCases[tet]]) {
-          float eC[2][3];
+          std::array<std::array<float, 3>, 2> eC{};
           getCenter(vertPos[edgeVerts[0]], vertPos[edgeVerts[1]], eC[0]);
           getCenter(vertPos[edgeVerts[2]], vertPos[edgeVerts[3]], eC[1]);
 
@@ -704,14 +705,14 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
           m += 1;
 
         } else {
-          float eC[4][3];
+          std::array<std::array<float, 3>, 4> eC{};
           getCenter(vertPos[0], vertPos[1], eC[0]);
           getCenter(vertPos[0], vertPos[2], eC[1]);
           getCenter(vertPos[1], vertPos[2], eC[2]);
           getCenter(vertPos[0], vertPos[1], vertPos[2], eC[3]);
 
           // Create a hash from all vertex label combinations
-          const unsigned long long sparseID[3]
+          const std::array<unsigned long long, 3> sparseID
             = {getHash(label[0], label[1]), getHash(label[0], label[2]),
                getHash(label[1], label[2])};
 
@@ -803,7 +804,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
 
-      float vertPos[3][3];
+      std::array<std::array<float, 3>, 3> vertPos{};
       triangulation.getVertexPoint(
         vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
       triangulation.getVertexPoint(
@@ -811,7 +812,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
       triangulation.getVertexPoint(
         vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-      const unsigned long long label[3]
+      const std::array<unsigned long long, 3> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
@@ -887,7 +888,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
 
-        float vertPos[3][3];
+        std::array<std::array<float, 3>, 3> vertPos{};
         triangulation.getVertexPoint(
           vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
         triangulation.getVertexPoint(
@@ -895,7 +896,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
         triangulation.getVertexPoint(
           vertices[2], vertPos[2][0], vertPos[2][1], vertPos[2][2]);
 
-        const unsigned long long label[3]
+        const std::array<unsigned long long, 3> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         if(triangleLookupIs2Label[tetCases[tet]]) {
@@ -978,7 +979,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
 
-      float vPos[3][3];
+      std::array<std::array<float, 3>, 4> vPos{};
       triangulation.getVertexPoint(
         vertices[0], vPos[0][0], vPos[0][1], vPos[0][2]);
       triangulation.getVertexPoint(
@@ -986,11 +987,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
       triangulation.getVertexPoint(
         vertices[2], vPos[2][0], vPos[2][1], vPos[2][2]);
 
-      const unsigned long long label[3]
+      const std::array<unsigned long long, 3> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
-        float vert00[3], vert01[3], vert10[3], vert11[3];
+        std::array<float, 3> vert00{}, vert01{}, vert10{}, vert11{};
 
         interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
         interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
@@ -1026,7 +1027,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         m += 2;
 
       } else {
-        float vert00[3], vert01[3], vert10[3], vert11[3], vert20[3], vert21[3];
+        std::array<float, 3> vert00{}, vert01{}, vert10{}, vert11{}, vert20{},
+          vert21{};
         interpolatePoints(vPos[0], vPos[1], d0, vert00);
         interpolatePoints(vPos[0], vPos[2], d0, vert01);
         interpolatePoints(vPos[1], vPos[0], d0, vert10);
@@ -1034,10 +1036,10 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         interpolatePoints(vPos[2], vPos[0], d0, vert20);
         interpolatePoints(vPos[2], vPos[1], d0, vert21);
 
-        float triCenter[3];
+        std::array<float, 3> triCenter{};
         getCenter(vPos[0], vPos[1], vPos[2], triCenter);
 
-        float triS0[3], triS1[3], triS2[3];
+        std::array<float, 3> triS0{}, triS1{}, triS2{};
         interpolatePoints(vPos[0], triCenter, dc, triS0);
         interpolatePoints(vPos[1], triCenter, dc, triS1);
         interpolatePoints(vPos[2], triCenter, dc, triS2);
@@ -1166,7 +1168,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
 
-        float vPos[3][3];
+        std::array<std::array<float, 3>, 3> vPos{};
         triangulation.getVertexPoint(
           vertices[0], vPos[0][0], vPos[0][1], vPos[0][2]);
         triangulation.getVertexPoint(
@@ -1174,11 +1176,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
         triangulation.getVertexPoint(
           vertices[2], vPos[2][0], vPos[2][1], vPos[2][2]);
 
-        const unsigned long long label[3]
+        const std::array<unsigned long long, 3> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]]};
 
         if(triangleLookupIs2Label[tetCases[tet]]) {
-          float vert00[3], vert01[3], vert10[3], vert11[3];
+          std::array<float, 3> vert00{}, vert01{}, vert10{}, vert11{};
 
           interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
           interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
@@ -1212,8 +1214,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
           m += 2;
 
         } else {
-          float vert00[3], vert01[3], vert10[3], vert11[3], vert20[3],
-            vert21[3];
+          std::array<float, 3> vert00{}, vert01{}, vert10{}, vert11{}, vert20{},
+            vert21{};
           interpolatePoints(vPos[0], vPos[1], d0, vert00);
           interpolatePoints(vPos[0], vPos[2], d0, vert01);
           interpolatePoints(vPos[1], vPos[0], d0, vert10);
@@ -1221,10 +1223,10 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
           interpolatePoints(vPos[2], vPos[0], d0, vert20);
           interpolatePoints(vPos[2], vPos[1], d0, vert21);
 
-          float triCenter[3];
+          std::array<float, 3> triCenter{};
           getCenter(vPos[0], vPos[1], vPos[2], triCenter);
 
-          float triS0[3], triS1[3], triS2[3];
+          std::array<float, 3> triS0{}, triS1{}, triS2{};
           interpolatePoints(vPos[0], triCenter, dc, triS0);
           interpolatePoints(vPos[1], triCenter, dc, triS1);
           interpolatePoints(vPos[2], triCenter, dc, triS2);
@@ -1329,13 +1331,13 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
     size_t numTris = 0;
 
     for(SimplexId tet = 0; tet < numTetra; tet++) {
-      SimplexId vertices[4];
+      std::array<SimplexId, 3> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long label[4]
+      const std::array<unsigned long long, 4> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
@@ -1368,13 +1370,13 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
 #pragma omp for schedule(static)
       for(SimplexId tet = 0; tet < numTetra; ++tet) {
 
-        SimplexId vertices[4];
+        std::array<SimplexId, 4> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long label[4]
+        const std::array<unsigned long long, 4> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
@@ -1446,17 +1448,17 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
       const int *tetEdgeIndices = tetLookupWall[tetCases[tet]];
       const int *tetVertLabel = tetLookupWallLabel[tetCases[tet]];
 
-      SimplexId vertices[4];
+      std::array<SimplexId, 3> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long label[4]
+      const std::array<unsigned long long, 4> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
-      float vertPos[4][3];
+      std::array<std::array<float, 3>, 4> vertPos{};
       triangulation.getVertexPoint(
         vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
       triangulation.getVertexPoint(
@@ -1466,7 +1468,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
       triangulation.getVertexPoint(
         vertices[3], vertPos[3][0], vertPos[3][1], vertPos[3][2]);
 
-      float eC[10][3];
+      std::array<std::array<float, 3>, 10> eC{};
       // 6 edge centers
       getCenter(vertPos[0], vertPos[1], eC[0]);
       getCenter(vertPos[0], vertPos[2], eC[1]);
@@ -1482,7 +1484,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
       getCenter(vertPos[1], vertPos[2], vertPos[3], eC[9]);
 
       if(tetEdgeIndices[0] == 10) { // 4 labels on tetraeder
-        float tetCenter[3];
+        std::array<float, 3> tetCenter{};
         getCenter(vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
 
         // Create a hashes from all four label combinations
@@ -1733,17 +1735,17 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
         const int *tetEdgeIndices = tetLookupWall[tetCases[tet]];
         const int *tetVertLabel = tetLookupWallLabel[tetCases[tet]];
 
-        SimplexId vertices[4];
+        std::array<SimplexId, 4> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long label[4]
+        const std::array<unsigned long long, 4> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
-        float vertPos[4][3];
+        std::array<std::array<float, 3>, 4> vertPos{};
         triangulation.getVertexPoint(
           vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
         triangulation.getVertexPoint(
@@ -1753,7 +1755,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
         triangulation.getVertexPoint(
           vertices[3], vertPos[3][0], vertPos[3][1], vertPos[3][2]);
 
-        float eC[10][3];
+        std::array<std::array<float, 3>, 10> eC{};
         // 6 edge centers
         getCenter(vertPos[0], vertPos[1], eC[0]);
         getCenter(vertPos[0], vertPos[2], eC[1]);
@@ -1769,7 +1771,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
         getCenter(vertPos[1], vertPos[2], vertPos[3], eC[9]);
 
         if(tetEdgeIndices[0] == 10) { // 4 labels on tetraeder
-          float tetCenter[3];
+          std::array<float, 3> tetCenter{};
           getCenter(vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
 
           // Create a hashes from all four label combinations
@@ -2018,13 +2020,13 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
         continue;
       }
 
-      SimplexId vertices[4];
+      std::array<SimplexId, 4> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long label[4]
+      const std::array<unsigned long long, 4> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
@@ -2033,7 +2035,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
       const int id1 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][1];
       const int id2 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][2];
 
-      float vertPos[4][3];
+      std::array<std::array<float, 3>, 4> vertPos{};
       triangulation.getVertexPoint(
         vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
       triangulation.getVertexPoint(
@@ -2111,13 +2113,13 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
           continue;
         }
 
-        SimplexId vertices[4];
+        std::array<SimplexId, 4> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long label[4]
+        const std::array<unsigned long long, 4> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
@@ -2127,7 +2129,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
         const int id1 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][1];
         const int id2 = tetLookupFastTri[tetLookupFastCase[tetCases[tet]]][2];
 
-        float vertPos[4][3];
+        std::array<std::array<float, 3>, 4> vertPos{};
         triangulation.getVertexPoint(
           vertices[0], vertPos[0][0], vertPos[0][1], vertPos[0][2]);
         triangulation.getVertexPoint(
@@ -2210,17 +2212,17 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         continue;
       }
 
-      SimplexId vertices[4];
+      std::array<SimplexId, 4> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
       triangulation.getCellVertex(tet, 3, vertices[3]);
 
-      const unsigned long long label[4]
+      const std::array<unsigned long long, 4> label
         = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
            scalars[vertices[3]]};
 
-      float vPos[4][3];
+      std::array<std::array<float, 3>, 4> vPos{};
       triangulation.getVertexPoint(
         vertices[0], vPos[0][0], vPos[0][1], vPos[0][2]);
       triangulation.getVertexPoint(
@@ -2233,7 +2235,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
       if(tetLookupIs2Label[tetCases[tet]]) { // 2 labels (eg. AAAB / AABB)
         const int *vIds = tetLookupSplitBasins2Label[tetCases[tet]];
 
-        float vert00[3], vert01[3], vert02[3], vert10[3], vert11[3], vert12[3];
+        std::array<float, 3> vert00{}, vert01{}, vert02{}, vert10{}, vert11{},
+          vert12{};
 
         interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
         interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
@@ -2278,7 +2281,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         m += 2;
 
         if(vIds[6] != -1) { // 2 vertices per label (e.g. AABB)
-          float vert03[3], vert13[3];
+          std::array<float, 3> vert03{}, vert13{};
 
           interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d0, vert03);
           interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d1, vert13);
@@ -2320,13 +2323,13 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
       } else if(tetLookupIs3Label[tetCases[tet]]) { // 3 labels
         const int *vIds = tetLookupSplitBasisns3Label[tetCases[tet]];
 
-        float triCenter[4][3];
+        std::array<std::array<float, 3>, 4> triCenter{};
         getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
         getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
         getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
         getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
-        float edgeCenters[10][3];
+        std::array<std::array<float, 3>, 10> edgeCenters{};
         getCenter(vPos[0], vPos[1], edgeCenters[0]);
         getCenter(vPos[0], vPos[2], edgeCenters[1]);
         getCenter(vPos[0], vPos[3], edgeCenters[2]);
@@ -2334,9 +2337,9 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         getCenter(vPos[1], vPos[3], edgeCenters[4]);
         getCenter(vPos[2], vPos[3], edgeCenters[5]);
 
-        float edge00[3], edge01[3], edge02[3], edge03[3], tri00[3], tri01[3],
-          edge10[3], edge11[3], edge12[3], tri10[3], tri11[3], edge20[3],
-          edge21[3], edge22[3], tri20[3], tri21[3];
+        std::array<float, 3> edge00{}, edge01{}, edge02{}, edge03{}, tri00{},
+          tri01{}, edge10{}, edge11{}, edge12{}, tri10{}, tri11{}, edge20{},
+          edge21{}, edge22{}, tri20{}, tri21{};
         interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[1]], dc, edge00);
         interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[2]], dc, edge01);
         interpolatePoints(vPos[vIds[0]], triCenter[vIds[3]], dc, tri00);
@@ -2499,21 +2502,21 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         m[9] = label[vIds[9]];
         m += 10;
       } else { // 4 labels
-        float tetCenter[3];
+        std::array<float, 3> tetCenter{};
         getCenter(vPos[0], vPos[1], vPos[2], vPos[3], tetCenter);
 
         // the 4 triangle centers
-        float triCenter[4][3];
+        std::array<std::array<float, 3>, 4> triCenter{};
         getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
         getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
         getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
         getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
-        float vert00[3], vert01[3], vert02[3], vert0tet[3], vert0t0[3],
-          vert0t1[3], vert0t2[3], vert10[3], vert11[3], vert12[3], vert1tet[3],
-          vert1t0[3], vert1t1[3], vert1t2[3], vert20[3], vert21[3], vert22[3],
-          vert2tet[3], vert2t0[3], vert2t1[3], vert2t2[3], vert30[3], vert31[3],
-          vert32[3], vert3tet[3], vert3t0[3], vert3t1[3], vert3t2[3];
+        std::array<float, 3> vert00{}, vert01{}, vert02{}, vert0tet{},
+          vert0t0{}, vert0t1{}, vert0t2{}, vert10{}, vert11{}, vert12{},
+          vert1tet{}, vert1t0{}, vert1t1{}, vert1t2{}, vert20{}, vert21{},
+          vert22{}, vert2tet{}, vert2t0{}, vert2t1{}, vert2t2{}, vert30{},
+          vert31{}, vert32{}, vert3tet{}, vert3t0{}, vert3t1{}, vert3t2{};
 
         interpolatePoints(vPos[0], vPos[1], d0, vert00);
         interpolatePoints(vPos[0], vPos[2], d0, vert01);
@@ -2922,17 +2925,17 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           continue;
         }
 
-        SimplexId vertices[4];
+        std::array<SimplexId, 4> vertices{};
         triangulation.getCellVertex(tet, 0, vertices[0]);
         triangulation.getCellVertex(tet, 1, vertices[1]);
         triangulation.getCellVertex(tet, 2, vertices[2]);
         triangulation.getCellVertex(tet, 3, vertices[3]);
 
-        const unsigned long long label[4]
+        const std::array<unsigned long long, 4> label
           = {scalars[vertices[0]], scalars[vertices[1]], scalars[vertices[2]],
              scalars[vertices[3]]};
 
-        float vPos[4][3];
+        std::array<std::array<float, 3>, 4> vPos{};
         triangulation.getVertexPoint(
           vertices[0], vPos[0][0], vPos[0][1], vPos[0][2]);
         triangulation.getVertexPoint(
@@ -2945,8 +2948,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         if(tetLookupIs2Label[tetCases[tet]]) { // 2 labels (eg. AAAB / AABB)
           const int *vIds = tetLookupSplitBasins2Label[tetCases[tet]];
 
-          float vert00[3], vert01[3], vert02[3], vert10[3], vert11[3],
-            vert12[3];
+          std::array<float, 3> vert00{}, vert01{}, vert02{}, vert10{}, vert11{},
+            vert12{};
 
           interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
           interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
@@ -2991,7 +2994,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           m += 2;
 
           if(vIds[6] != -1) { // 2 vertices per label (e.g. AABB)
-            float vert03[3], vert13[3];
+            std::array<float, 3> vert03{}, vert13{};
 
             interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d0, vert03);
             interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d1, vert13);
@@ -3033,13 +3036,13 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         } else if(tetLookupIs3Label[tetCases[tet]]) {
           const int *vIds = tetLookupSplitBasisns3Label[tetCases[tet]];
 
-          float triCenter[4][3];
+          std::array<std::array<float, 3>, 4> triCenter{};
           getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
           getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
           getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
           getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
-          float edgeCenters[10][3];
+          std::array<std::array<float, 3>, 10> edgeCenters{};
 
           getCenter(vPos[0], vPos[1], edgeCenters[0]);
           getCenter(vPos[0], vPos[2], edgeCenters[1]);
@@ -3048,9 +3051,9 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           getCenter(vPos[1], vPos[3], edgeCenters[4]);
           getCenter(vPos[2], vPos[3], edgeCenters[5]);
 
-          float edge00[3], edge01[3], edge02[3], edge03[3], tri00[3], tri01[3],
-            edge10[3], edge11[3], edge12[3], tri10[3], tri11[3], edge20[3],
-            edge21[3], edge22[3], tri20[3], tri21[3];
+          std::array<float, 3> edge00{}, edge01{}, edge02{}, edge03{}, tri00{},
+            tri01{}, edge10{}, edge11{}, edge12{}, tri10{}, tri11{}, edge20{},
+            edge21{}, edge22{}, tri20{}, tri21{};
 
           interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[1]], dc, edge00);
           interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[2]], dc, edge01);
@@ -3215,22 +3218,21 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           m += 10;
 
         } else { // 4 labels
-          float tetCenter[3];
+          std::array<float, 3> tetCenter{};
           getCenter(vPos[0], vPos[1], vPos[2], vPos[3], tetCenter);
 
           // the 4 triangle centers
-          float triCenter[4][3];
+          std::array<std::array<float, 3>, 4> triCenter{};
           getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
           getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
           getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
           getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
-          float vert00[3], vert01[3], vert02[3], vert0tet[3], vert0t0[3],
-            vert0t1[3], vert0t2[3], vert10[3], vert11[3], vert12[3],
-            vert1tet[3], vert1t0[3], vert1t1[3], vert1t2[3], vert20[3],
-            vert21[3], vert22[3], vert2tet[3], vert2t0[3], vert2t1[3],
-            vert2t2[3], vert30[3], vert31[3], vert32[3], vert3tet[3],
-            vert3t0[3], vert3t1[3], vert3t2[3];
+          std::array<float, 3> vert00{}, vert01{}, vert02{}, vert0tet{},
+            vert0t0{}, vert0t1{}, vert0t2{}, vert10{}, vert11{}, vert12{},
+            vert1tet{}, vert1t0{}, vert1t1{}, vert1t2{}, vert20{}, vert21{},
+            vert22{}, vert2tet{}, vert2t0{}, vert2t1{}, vert2t2{}, vert30{},
+            vert31{}, vert32{}, vert3tet{}, vert3t0{}, vert3t1{}, vert3t2{};
 
           interpolatePoints(vPos[0], vPos[1], d0, vert00);
           interpolatePoints(vPos[0], vPos[2], d0, vert01);
