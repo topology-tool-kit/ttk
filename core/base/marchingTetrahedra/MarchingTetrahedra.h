@@ -224,12 +224,12 @@ namespace ttk {
                 std::vector<float> *const output_points,
                 SimplexId *const output_numberOfCells,
                 std::vector<SimplexId> *const output_cells_connectivity,
-                std::vector<unsigned long long> *const output_cells_mscIds) {
+                std::vector<unsigned long long> *const output_cells_hash) {
       output_numberOfPoints_ = output_numberOfPoints;
       output_points_ = output_points;
       output_numberOfCells_ = output_numberOfCells;
       output_cells_connectivity_ = output_cells_connectivity;
-      output_cells_Labels_ = output_cells_mscIds;
+      output_cells_Labels_ = output_cells_hash;
       return 0;
     }
 

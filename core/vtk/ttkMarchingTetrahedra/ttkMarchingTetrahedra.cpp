@@ -60,10 +60,10 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
   SimplexId numberOfPoints{};
   SimplexId numberOfCells{};
   output_points.clear();
-  output_cells_mscIds.clear();
+  output_cells_hash.clear();
 
   this->setOutput(&numberOfPoints, &output_points, &numberOfCells,
-                  &output_cells_connectivity, &output_cells_mscIds);
+                  &output_cells_connectivity, &output_cells_hash);
 
   const int status
     = this->execute<scalarType, triangulationType>(scalars, triangulation);
@@ -81,10 +81,10 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
   connectivity->SetNumberOfComponents(1);
   setArray(connectivity, output_cells_connectivity);
 
-  vtkNew<vtkUnsignedLongLongArray> mscIds{};
-  mscIds->SetNumberOfComponents(1);
-  mscIds->SetName("MSCIds");
-  setArray(mscIds, output_cells_mscIds);
+  vtkNew<vtkUnsignedLongLongArray> hashArr{};
+  hashArr->SetNumberOfComponents(1);
+  hashArr->SetName("Hash");
+  setArray(hashArr, output_cells_hash);
 
   if(triangulation.getDimensionality() == 3) {
 #ifdef TTK_ENABLE_OPENMP
@@ -118,7 +118,7 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
   }
 
   auto cellData = outputSeparators->GetCellData();
-  cellData->AddArray(mscIds);
+  cellData->AddArray(hashArr);
 
   return 1;
 }
