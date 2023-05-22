@@ -1331,7 +1331,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
     size_t numTris = 0;
 
     for(SimplexId tet = 0; tet < numTetra; tet++) {
-      std::array<SimplexId, 3> vertices{};
+      std::array<SimplexId, 4> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
@@ -1448,7 +1448,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
       const int *tetEdgeIndices = tetLookupWall[tetCases[tet]];
       const int *tetVertLabel = tetLookupWallLabel[tetCases[tet]];
 
-      std::array<SimplexId, 3> vertices{};
+      std::array<SimplexId, 4> vertices{};
       triangulation.getCellVertex(tet, 0, vertices[0]);
       triangulation.getCellVertex(tet, 1, vertices[1]);
       triangulation.getCellVertex(tet, 2, vertices[2]);
