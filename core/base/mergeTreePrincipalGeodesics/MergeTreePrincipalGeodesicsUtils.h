@@ -139,13 +139,4 @@ namespace ttk {
       distances[i] = mixDistances(distances[i], distances2[i]);
     return computeVarianceFromDistances(distances);
   }
-
-  template <class dataType>
-  std::tuple<dataType, dataType>
-    MergeTreePrincipalGeodesics::getParametrizedBirthDeath(
-      ftm::FTMTree_MT *tree, ftm::idNode node) {
-    return normalizedWasserstein_
-             ? getNormalizedBirthDeath<dataType>(tree, node)
-             : tree->getBirthDeath<dataType>(node);
-  }
 } // namespace ttk

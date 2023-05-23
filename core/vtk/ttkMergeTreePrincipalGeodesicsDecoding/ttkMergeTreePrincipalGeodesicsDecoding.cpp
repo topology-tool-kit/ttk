@@ -612,6 +612,8 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
       }
     } else
       visuMaker.setShiftMode(2); // Line
+    if(isPersistenceDiagram_)
+      visuMaker.setPlanarLayout(true);
 
     // TODO transfer other information?
     if(isReconstructedTree) {
