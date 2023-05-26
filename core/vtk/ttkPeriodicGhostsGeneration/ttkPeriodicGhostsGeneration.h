@@ -104,6 +104,7 @@ private:
   std::array<double, 6> globalBounds_;
   bool isOutputExtentComputed_{false};
   std::array<periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
+  std::vector<int> neighbors_;
 
 public:
   /**
@@ -139,6 +140,17 @@ public:
    */
   int MPIPeriodicGhostPipelinePreconditioning(vtkImageData *imageIn,
                                               vtkImageData *imageOut);
+  inline std::vector<int> getNeighbors() {
+    return neighbors_;
+  }
+
+  inline std::array<unsigned char, 6> generateIsBoundaryPeriodic() {
+    std::array<unsigned char, 6> isBoundaryPeriodic{};
+    for(int i = 0; i < 6; i++) {
+      isBoundaryPeriodic[i] = localGlobalBounds_[i].isBound;
+    }
+    return isBoundaryPeriodic;
+  }
 
 protected:
   /**

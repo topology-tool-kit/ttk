@@ -53,6 +53,14 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Triangulation is NULL");
     return 0;
   }
+  ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
+  vtkNew<vtkIdTypeArray> globalPointIds;
+  globalPointIds->SetNumberOfTuples(numberOfVertices);
+  globalPointIds->SetNumberOfComponents(1);
+  for(int i = 0; i < 3; i++) {
+    globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
+  }
+  input->GetPointData()->AddArray(globalPointIds);
   output->ShallowCopy(input);
 
   printMsg(ttk::debug::Separator::L1);

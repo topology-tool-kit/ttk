@@ -1468,9 +1468,16 @@ namespace ttk {
      */
     inline void createMetaGrid(const double *const bounds) {
       this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
+      this->periodicImplicitTriangulation_.createMetaGrid(bounds);
       this->implicitTriangulation_.createMetaGrid(bounds);
+      this->periodicPreconditionsTriangulation_.createMetaGrid(bounds);
       // also pass bounding box to ExplicitTriangulation...
       this->explicitTriangulation_.setBoundingBox(bounds);
+    }
+
+    inline void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary) {
+      this->periodicImplicitTriangulation_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation_.setIsBoundaryPeriodic(boundary);
     }
 
     /**
@@ -1488,8 +1495,7 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 #endif
-      return this->abstractTriangulation_->getDistributedGlobalCellId(
-        localCellId, cellDim, globalCellId);
+      return getDistributedGlobalCellId(localCellId, cellDim, globalCellId);
       ;
     }
 

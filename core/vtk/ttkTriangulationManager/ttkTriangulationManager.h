@@ -28,6 +28,7 @@
 
 #ifdef TTK_ENABLE_MPI
 #include <ttkPeriodicGhostsGeneration.h>
+#include <ttkTriangulationFactory.h>
 #endif
 
 // TTK Includes

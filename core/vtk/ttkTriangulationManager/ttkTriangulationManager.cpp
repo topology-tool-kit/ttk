@@ -78,7 +78,9 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
                        ,
                        vtkImageData *imageIn,
                        vtkImageData *imageOut,
-                       ttkPeriodicGhostsGeneration *periodicGhostGenerator
+                       ttkPeriodicGhostsGeneration *periodicGhostGenerator,
+                       int debugLevel,
+                       float cacheSize
 #endif
 ) {
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
@@ -96,6 +98,14 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
         periodicGhostGenerator->MPIPeriodicGhostPipelinePreconditioning(
           imageIn, imageOut);
         triangulation.setIsValid(false);
+        auto newTriangulation = ttkTriangulationFactory::GetTriangulation(
+          debugLevel, cacheSize, imageOut);
+        newTriangulation->setPeriodicBoundaryConditions(periodic);
+        // Retrieve neighbors from the PeriodicGhostGenerator
+        std::vector<int> &neighbors = newTriangulation->getNeighborRanks();
+        neighbors = periodicGhostGenerator->getNeighbors();
+        newTriangulation->setIsBoundaryPeriodic(
+          periodicGhostGenerator->generateIsBoundaryPeriodic());
       }
     }
 #endif
@@ -132,7 +142,8 @@ void ttkTriangulationManager::processImplicit(ttk::Triangulation &triangulation
 ) {
 
   switchPeriodicity(triangulation, this->Periodicity, *this, imageIn, imageOut,
-                    this->periodicGhostGenerator);
+                    this->periodicGhostGenerator, this->debugLevel_,
+                    this->CompactTriangulationCacheSize);
   switchPreconditions(triangulation, this->PreconditioningStrategy, *this);
 }
 

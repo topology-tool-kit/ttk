@@ -36,7 +36,6 @@ class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
 private:
   int ThreadNumber{1};
   bool UseAllCores{true};
-  float CompactTriangulationCacheSize{0.2f};
 
 public:
   static ttkAlgorithm *New();
@@ -236,6 +235,7 @@ public:
 protected:
   ttkAlgorithm();
   ~ttkAlgorithm() override;
+  float CompactTriangulationCacheSize{0.2f};
 
 #ifdef TTK_ENABLE_MPI
   /**

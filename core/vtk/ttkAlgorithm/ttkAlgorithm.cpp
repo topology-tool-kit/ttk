@@ -63,8 +63,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 #ifdef TTK_ENABLE_MPI
   if(ttk::hasInitializedMPI()) {
     std::vector<int> tmp{};
-    // this->MPIPipelinePreconditioning(dataSet, tmp, triangulation);
-    // this->MPITriangulationPreconditioning(triangulation, dataSet);
+    this->MPIPipelinePreconditioning(dataSet, tmp, triangulation);
+    this->MPITriangulationPreconditioning(triangulation, dataSet);
   }
 #endif // TTK_ENABLE_MPI
 

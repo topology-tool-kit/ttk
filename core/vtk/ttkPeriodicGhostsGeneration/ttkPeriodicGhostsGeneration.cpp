@@ -86,7 +86,9 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
 
     std::array<double, 6> tempGlobalBounds{};
     double bounds[6];
+    // Initialize neighbors vector
     imageIn->GetBounds(bounds);
+    ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
     // Reorganize bounds to only execute Allreduce twice
     std::array<double, 6> tempBounds = {
       bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
@@ -367,7 +369,7 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   vtkImageData *slice,
   vtkImageData *mergedImage,
   int direction) {
-
+  // TODO: handle GlobalPointIds
 #ifndef TTK_ENABLE_KAMIKAZE
   if(image->GetPointData()->GetNumberOfArrays()
      != slice->GetPointData()->GetNumberOfArrays()) {
@@ -422,9 +424,16 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     }
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
-    this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
-                          cellDims, vtkDataSetAttributes::EXTERIORCELL,
-                          numberOfCells, slice->GetNumberOfCells());
+    if(direction == 0 || direction == 2 || direction == 4) {
+      this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
+                            cellDims, 0, numberOfCells,
+                            slice->GetNumberOfCells());
+    } else {
+      this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
+                            cellDims, vtkDataSetAttributes::EXTERIORCELL,
+                            numberOfCells, slice->GetNumberOfCells());
+    }
+
     mergedImage->GetCellData()->AddArray(currentArray);
   }
 
@@ -541,6 +550,10 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
             if(isIn) {
               matches.emplace_back(
                 std::array<ttk::SimplexId, 3>{i, other(j), j});
+              if(std::find(neighbors_.begin(), neighbors_.end(), i)
+                 == neighbors_.end()) {
+                neighbors_.push_back(i);
+              }
             }
           }
         }
@@ -597,6 +610,10 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
             if(isIn) {
               matches_2D.emplace_back(std::array<ttk::SimplexId, 3>{
                 j, local2DBounds[i][0], local2DBounds[i][1]});
+              if(std::find(neighbors_.begin(), neighbors_.end(), j)
+                 == neighbors_.end()) {
+                neighbors_.push_back(j);
+              }
             }
           }
         }
@@ -632,6 +649,10 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
             matches_3D.emplace_back(std::array<ttk::SimplexId, 4>{
               j, local3DBounds[i][0], local3DBounds[i][1],
               local3DBounds[i][2]});
+            if(std::find(neighbors_.begin(), neighbors_.end(), j)
+               == neighbors_.end()) {
+              neighbors_.push_back(j);
+            }
           }
         }
       }
