@@ -1,5 +1,4 @@
 #include <PeriodicImplicitTriangulation.h>
-#include <vtkDataSetAttributes.h>
 using namespace std;
 using namespace ttk;
 
@@ -961,28 +960,27 @@ int PeriodicImplicitTriangulation::getCellRankInternal(
   const auto nVertsCell{this->getCellVertexNumber(lcid)};
 
   std::vector<bool> inRank(nVertsCell);
-  std::string s = "";
   for(const auto neigh : this->neighborRanks_) {
-    s += "\n";
     std::fill(inRank.begin(), inRank.end(), false);
     const auto &bbox{this->neighborCellBBoxes_[neigh]};
     for(SimplexId i = 0; i < nVertsCell; ++i) {
       SimplexId v{};
       this->getCellVertex(lcid, i, v);
-      const auto p{this->getVertGlobalCoords(v)};
-      if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
-         && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+      if(this->vertexGhost_[v] == 0) {
         inRank[i] = true;
+      } else {
+        const auto p{this->getVertGlobalCoords(v)};
+        if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
+           && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+          inRank[i] = true;
+        }
       }
-      s += std::to_string(inRank[i]) + ", ";
     }
     if(std::all_of(
          inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
       return neigh;
     }
   }
-  printMsg("problematic local id: " + std::to_string(lcid));
-  printMsg(s);
   // TODO: à quel processus appartiennent les cellules créées par périodicité?
   return -1;
 }
@@ -1039,6 +1037,12 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
     p[1] += this->localGridOffset_[1];
     p[2] += this->localGridOffset_[2];
 
+    const auto &dims{this->metaGrid_->getGridDimensions()};
+
+    p[0] = (p[0] + (dims[0] - 1)) % (dims[0] - 1);
+    p[1] = (p[1] + (dims[1] - 1)) % (dims[1] - 1);
+    p[2] = (p[2] + (dims[2] - 1)) % (dims[2] - 1);
+
     if(p[0] < localBBox[0]) {
       localBBox[0] = p[0];
     }
@@ -1064,7 +1068,11 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   localBBox[1]++;
   localBBox[3]++;
   localBBox[5]++;
-
+  printMsg("Bbox: " + std::to_string(localBBox[0]) + ", "
+           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
+           + ", " + std::to_string(localBBox[3]) + ", "
+           + std::to_string(localBBox[4]) + ", "
+           + std::to_string(localBBox[5]));
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
@@ -1077,6 +1085,9 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   int cellRank = 0;
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     cellRank = this->getCellRankInternal(lcid);
+    if(cellRank == -1) {
+      return printMsg("PROBLEM");
+    }
     if(cellRank != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostCellsPerOwner_[cellRank].emplace_back(
@@ -1326,7 +1337,7 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
   if(p[0] > 0 && p[1] > 0 && p[2] > 0 && p[0] <= dims[0] - 1
      && p[1] <= dims[1] - 1 && p[2] <= dims[2] - 1
      && this->vertexGhost_[p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1]]
-          == vtkDataSetAttributes::DUPLICATEPOINT) {
+          == 1) {
     return p;
   }
 
