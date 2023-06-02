@@ -813,6 +813,15 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
+
+  int nbArrays = imageOut->GetPointData()->GetNumberOfArrays();
+  for(int i = nbArrays - 1; i >= 0; i--) {
+    vtkDataArray *array = imageOut->GetPointData()->GetArray(i);
+    std::string arrayName = std::string(array->GetName());
+    if(arrayName.rfind("_Order") == (arrayName.size() - 6)) {
+      imageOut->GetPointData()->RemoveArray(i);
+    }
+  }
   return 1;
 };
 

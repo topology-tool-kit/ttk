@@ -57,7 +57,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   vtkNew<vtkIdTypeArray> globalPointIds;
   globalPointIds->SetNumberOfTuples(numberOfVertices);
   globalPointIds->SetNumberOfComponents(1);
-  globalPointIds->SetName("globalPointIds");
+  globalPointIds->SetName("GlobalPointIds");
   for(int i = 0; i < numberOfVertices; i++) {
     globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
   }
