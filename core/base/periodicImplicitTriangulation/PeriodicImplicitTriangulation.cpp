@@ -917,15 +917,17 @@ SimplexId PeriodicImplicitTriangulation::getTriangleLocalIdInternal(
 
 int PeriodicImplicitTriangulation::getVertexRankInternal(
   const SimplexId lvid) const {
+
+  if(this->vertexGhost_[lvid] == 0) {
+    return ttk::MPIrank_;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(this->neighborRanks_.empty()) {
     this->printErr("Empty neighborsRanks_!");
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
-  if(this->vertexGhost_[lvid] == 0) {
-    return ttk::MPIrank_;
-  }
   const auto p{this->getVertGlobalCoords(lvid)};
   for(const auto neigh : this->neighborRanks_) {
     const auto &bbox{this->neighborVertexBBoxes_[neigh]};
@@ -943,19 +945,19 @@ int PeriodicImplicitTriangulation::getVertexRankInternal(
 int PeriodicImplicitTriangulation::getCellRankInternal(
   const SimplexId lcid) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(this->neighborRanks_.empty()) {
-    this->printErr("Empty neighborsRanks_!");
-    return -1;
-  }
-#endif // TTK_ENABLE_KAMIKAZE
-
   const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
   const auto locCubeId{lcid / nTetraPerCube};
 
   if(this->cellGhost_[locCubeId] == 0) {
     return ttk::MPIrank_;
   }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty()) {
+    this->printErr("Empty neighborsRanks_!");
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
 
   const auto nVertsCell{this->getCellVertexNumber(lcid)};
 
@@ -991,6 +993,9 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   }
   if(!ttk::hasInitializedMPI()) {
     return -1;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return 0;
   }
   if(this->cellGhost_ == nullptr) {
     if(ttk::isRunningWithMPI()) {
@@ -1321,7 +1326,7 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
 
   const auto &dims{this->getGridDimensions()};
 
-  if(p[0] > 0 && p[1] > 0 && p[2] > 0 && p[0] <= dims[0] - 1
+  if(p[0] >= 0 && p[1] >= 0 && p[2] >= 0 && p[0] <= dims[0] - 1
      && p[1] <= dims[1] - 1 && p[2] <= dims[2] - 1) {
     return p;
   }
@@ -1334,13 +1339,13 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
     }
   }
 
-  if(p[0] > 0 && p[1] > 0 && p[2] > 0 && p[0] <= dims[0] - 1
-     && p[1] <= dims[1] - 1 && p[2] <= dims[2] - 1
-     && this->vertexGhost_[p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1]]
-          == 1) {
-    return p;
+  if(p[0] >= 0 && p[1] >= 0 && p[2] >= 0 && p[0] <= dims[0] - 1
+     && p[1] <= dims[1] - 1 && p[2] <= dims[2] - 1) {
+    if(this->vertexGhost_[p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1]]
+       != 0) {
+      return p;
+    }
   }
-
   return std::array<SimplexId, 3>{-1, -1, -1};
 }
 

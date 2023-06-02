@@ -3735,16 +3735,16 @@ SimplexId ttk::ImplicitTriangulation::getTriangleLocalIdInternal(
 int ttk::ImplicitTriangulation::getVertexRankInternal(
   const SimplexId lvid) const {
 
+  if(this->vertexGhost_[lvid] == 0) {
+    return ttk::MPIrank_;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(this->neighborRanks_.empty()) {
     this->printErr("Empty neighborsRanks_!");
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
-
-  if(this->vertexGhost_[lvid] == 0) {
-    return ttk::MPIrank_;
-  }
 
   const auto p{this->getVertGlobalCoords(lvid)};
   for(const auto neigh : this->neighborRanks_) {
@@ -3761,12 +3761,6 @@ int ttk::ImplicitTriangulation::getVertexRankInternal(
 int ttk::ImplicitTriangulation::getCellRankInternal(
   const SimplexId lcid) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(this->neighborRanks_.empty()) {
-    this->printErr("Empty neighborsRanks_!");
-    return -1;
-  }
-#endif // TTK_ENABLE_KAMIKAZE
 
   const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
   const auto locCubeId{lcid / nTetraPerCube};
@@ -3774,6 +3768,13 @@ int ttk::ImplicitTriangulation::getCellRankInternal(
   if(this->cellGhost_[locCubeId] == 0) {
     return ttk::MPIrank_;
   }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty()) {
+    this->printErr("Empty neighborsRanks_!");
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
 
   const auto nVertsCell{this->getCellVertexNumber(lcid)};
 

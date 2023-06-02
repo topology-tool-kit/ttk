@@ -42,7 +42,7 @@ int ttkPeriodicGhostsGeneration::FillInputPortInformation(
 int ttkPeriodicGhostsGeneration::RequestUpdateExtent(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector) {
+  vtkInformationVector *ttkNotUsed(outputVector)) {
   vtkImageData *image = vtkImageData::GetData(inputVector[0]);
   this->ComputeOutputExtent(image);
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
@@ -53,7 +53,7 @@ int ttkPeriodicGhostsGeneration::RequestUpdateExtent(
 }
 
 int ttkPeriodicGhostsGeneration::RequestInformation(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVectors,
   vtkInformationVector *outputVector) {
   vtkImageData *image = vtkImageData::GetData(inputVectors[0]);
@@ -185,7 +185,7 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
   int dim) {
   int *default_VOI = imageIn->GetExtent();
   std::array<ttk::SimplexId, 6> VOI;
-  for(int i = 0; i < matches.size(); i++) {
+  for(int i = 0; i < static_cast<int>(matches.size()); i++) {
     VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
            default_VOI[3], default_VOI[4], default_VOI[5]};
     for(int k = 1; k <= dim; k++) {
@@ -218,7 +218,7 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
   std::array<ttk::SimplexId, metaDataSize> sendMetadata;
   std::array<ttk::SimplexId, metaDataSize> recvMetaData;
   for(int i = 0; i < ttk::MPIsize_; i++) {
-    for(int j = 0; j < charArrayBoundaries[i].size(); j++) {
+    for(int j = 0; j < static_cast<int>(charArrayBoundaries[i].size()); j++) {
       send_size = charArrayBoundaries[i][j]->GetNumberOfTuples();
       MPI_Sendrecv(&send_size, 1, ttk::getMPIType(send_size), i, 0, &recv_size,
                    1, ttk::getMPIType(recv_size), i, 0, ttk::MPIcomm_,
@@ -320,30 +320,27 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
   switch(direction) {
     case 0:
       addSlice = [](int x, int ttkNotUsed(y), int ttkNotUsed(z),
-                    int ttkNotUsed(dims)[3]) { return x == 0; };
+                    int ttkNotUsed(dimensions)[3]) { return x == 0; };
       break;
     case 1:
-      addSlice = [](int x, int ttkNotUsed(y), int ttkNotUsed(z), int dims[3]) {
-        return x == dims[0] - 1;
-      };
+      addSlice = [](int x, int ttkNotUsed(y), int ttkNotUsed(z),
+                    int dimensions[3]) { return x == dimensions[0] - 1; };
       break;
     case 2:
       addSlice = [](int ttkNotUsed(x), int y, int ttkNotUsed(z),
-                    int ttkNotUsed(dims)[3]) { return y == 0; };
+                    int ttkNotUsed(dimensions)[3]) { return y == 0; };
       break;
     case 3:
-      addSlice = [](int ttkNotUsed(x), int y, int ttkNotUsed(z), int dims[3]) {
-        return y == dims[1] - 1;
-      };
+      addSlice = [](int ttkNotUsed(x), int y, int ttkNotUsed(z),
+                    int dimensions[3]) { return y == dimensions[1] - 1; };
       break;
     case 4:
       addSlice = [](int ttkNotUsed(x), int ttkNotUsed(y), int z,
-                    int ttkNotUsed(dims)[3]) { return z == 0; };
+                    int ttkNotUsed(dimensions)[3]) { return z == 0; };
       break;
     case 5:
-      addSlice = [](int ttkNotUsed(x), int ttkNotUsed(y), int z, int dims[3]) {
-        return z == dims[2] - 1;
-      };
+      addSlice = [](int ttkNotUsed(x), int ttkNotUsed(y), int z,
+                    int dimensions[3]) { return z == dimensions[2] - 1; };
       break;
   }
 
@@ -449,6 +446,9 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
 int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   vtkImageData *imageIn, vtkImageData *imageOut) {
 
+  if(!ttk::isRunningWithMPI()) {
+    return 0;
+  }
   auto other = [](ttk::SimplexId i) {
     if(i % 2 == 1) {
       return i - 1;
@@ -577,7 +577,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
 
-    for(int i = 0; i < local2DBounds.size(); i++) {
+    for(int i = 0; i < static_cast<int>(local2DBounds.size()); i++) {
       for(int j = 0; j < ttk::MPIsize_; j++) {
         if(j != ttk::MPIrank_) {
           bool isIn = false;
@@ -635,7 +635,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
         }
       }
     }
-    for(int i = 0; i < local3DBounds.size(); i++) {
+    for(int i = 0; i < static_cast<int>(local3DBounds.size()); i++) {
       for(int j = 0; j < ttk::MPIsize_; j++) {
         if(j != ttk::MPIrank_) {
           if((allLocalGlobalBounds[j * 6 + other(local3DBounds[i][0])].isBound
