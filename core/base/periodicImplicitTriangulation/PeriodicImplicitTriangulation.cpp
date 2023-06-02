@@ -1331,10 +1331,11 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
     return p;
   }
   for(int i = 0; i < 3; i++) {
-    if(pGlobal[i] == 0) {
+    if((p[i] < 0 || p[i] > dims[i] - 1) && pGlobal[i] == 0) {
       p[i] = dims[i] - 1;
     }
-    if(pGlobal[i] == this->metaGrid_->dimensions_[i] - 1) {
+    if((p[i] < 0 || p[i] > dims[i] - 1)
+       && pGlobal[i] == this->metaGrid_->dimensions_[i] - 1) {
       p[i] = 0;
     }
   }

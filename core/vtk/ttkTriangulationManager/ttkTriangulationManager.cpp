@@ -29,6 +29,9 @@ ttkTriangulationManager::ttkTriangulationManager() {
   this->ArraySelection = vtkSmartPointer<vtkDataArraySelection>::New();
   this->ArraySelection->AddObserver(
     vtkCommand::ModifiedEvent, this, &ttkTriangulationManager::Modified);
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 int ttkTriangulationManager::FillInputPortInformation(int port,
