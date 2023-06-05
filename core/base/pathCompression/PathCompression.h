@@ -221,20 +221,21 @@ int ttk::PathCompression::computePathCompression(
   ttk::Timer localTimer;
 
   const SimplexId nVertices = triangulation.getNumberOfVertices();
+  std::vector<SimplexId> lActiveVertices;
 
 #ifdef TTK_ENABLE_OPENMP
-  if(threadNumber_ == 1) {
+#pragma omp parallel num_threads(threadNumber_) private(lActiveVertices)
+  {
+    lActiveVertices.reserve(std::ceil(nVertices / threadNumber_));
+
+#pragma omp for schedule(static)
+#else // TTK_ENABLE_OPENMP
+  lActiveVertices.reserve(nVertices);
 #endif // TTK_ENABLE_OPENMP
-
-    SimplexId nActiveVertices;
-    std::vector<SimplexId> activeVertices;
-
-    activeVertices.reserve(nVertices);
-
-    // find maxima/minima and intialize vector of vertices to compress
+    // find the largest and smallest neighbor for each vertex
     for(SimplexId i = 0; i < nVertices; i++) {
       SimplexId neighborId{0};
-      const SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
+      SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
 
       bool hasLargerNeighbor = false;
       SimplexId &dmi = dscSegmentation[i];
@@ -258,101 +259,41 @@ int ttk::PathCompression::computePathCompression(
       }
 
       if(hasLargerNeighbor || hasSmallerNeighbor) {
-        activeVertices.push_back(i);
+        lActiveVertices.push_back(i);
       }
     }
 
-    nActiveVertices = activeVertices.size();
+    size_t lnActiveVertices = lActiveVertices.size();
     size_t currentIndex = 0;
 
     // compress paths until no changes occur
-    while(nActiveVertices > 0) {
-      for(SimplexId i = 0; i < nActiveVertices; i++) {
-        SimplexId &v = activeVertices[i];
+    while(lnActiveVertices > 0) {
+      for(size_t i = 0; i < lnActiveVertices; i++) {
+        SimplexId &v = lActiveVertices[i];
         SimplexId &vDsc = dscSegmentation[v];
         SimplexId &vAsc = ascSegmentation[v];
 
-        // compress paths
+// compress paths
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif // TTK_ENABLE_OPENMP
         vDsc = dscSegmentation[vDsc];
-        vAsc = ascSegmentation[vAsc];
-
-        // check if not fully compressed
-        if(vDsc != dscSegmentation[vDsc] || vAsc != ascSegmentation[vAsc]) {
-          activeVertices[currentIndex++] = v;
-        }
-      }
-
-      nActiveVertices = currentIndex;
-      currentIndex = 0;
-    }
 
 #ifdef TTK_ENABLE_OPENMP
-  } else {
+#pragma omp atomic read
+#endif // TTK_ENABLE_OPENMP
+        vAsc = ascSegmentation[vAsc];
 
-#pragma omp parallel num_threads(threadNumber_)
-    {
-      std::vector<SimplexId> lActiveVertices;
-      lActiveVertices.reserve(std::ceil(nVertices / threadNumber_));
-
-// find the biggest neighbor for each vertex
-#pragma omp for schedule(static)
-      for(SimplexId i = 0; i < nVertices; i++) {
-        SimplexId neighborId{0};
-        SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
-
-        bool hasLargerNeighbor = false;
-        SimplexId &dmi = dscSegmentation[i];
-        dmi = i;
-
-        bool hasSmallerNeighbor = false;
-        SimplexId &ami = ascSegmentation[i];
-        ami = i;
-
-        // check all neighbors
-        for(SimplexId n = 0; n < numNeighbors; n++) {
-          triangulation.getVertexNeighbor(i, n, neighborId);
-
-          if(orderArray[neighborId] < orderArray[ami]) {
-            ami = neighborId;
-            hasSmallerNeighbor = true;
-          } else if(orderArray[neighborId] > orderArray[dmi]) {
-            dmi = neighborId;
-            hasLargerNeighbor = true;
-          }
-        }
-
-        if(hasLargerNeighbor || hasSmallerNeighbor) {
-          lActiveVertices.push_back(i);
+        // check if fully compressed
+        if(vDsc != dscSegmentation[vDsc] || vAsc != ascSegmentation[vAsc]) {
+          lActiveVertices[currentIndex++] = v;
         }
       }
 
-      size_t lnActiveVertices = lActiveVertices.size();
-      size_t currentIndex = 0;
-
-      // compress paths until no changes occur
-      while(lnActiveVertices > 0) {
-        for(size_t i = 0; i < lnActiveVertices; i++) {
-          SimplexId &v = lActiveVertices[i];
-          SimplexId &vDsc = dscSegmentation[v];
-          SimplexId &vAsc = ascSegmentation[v];
-
-// compress paths
-#pragma omp atomic read
-          vDsc = dscSegmentation[vDsc];
-
-#pragma omp atomic read
-          vAsc = ascSegmentation[vAsc];
-
-          // check if fully compressed
-          if(vDsc != dscSegmentation[vDsc] || vAsc != ascSegmentation[vAsc]) {
-            lActiveVertices[currentIndex++] = v;
-          }
-        }
-
-        lnActiveVertices = currentIndex;
-        currentIndex = 0;
-      }
+      lnActiveVertices = currentIndex;
+      currentIndex = 0;
     }
+#ifdef TTK_ENABLE_OPENMP
   }
 #endif // TTK_ENABLE_OPENMP
 
@@ -373,18 +314,21 @@ int ttk::PathCompression::computePathCompressionSingle(
   ttk::Timer localTimer;
 
   const SimplexId nVertices = triangulation.getNumberOfVertices();
+  std::vector<SimplexId> lActiveVertices;
 
 #ifdef TTK_ENABLE_OPENMP
-  if(threadNumber_ == 1) {
-#endif // TTK_ENABLE_OPENMP
+#pragma omp parallel num_threads(threadNumber_)
+  {
+    lActiveVertices.reserve(std::ceil(nVertices / threadNumber_));
 
-    SimplexId nActiveVertices;
-    std::vector<SimplexId> activeVertices;
-    activeVertices.reserve(nVertices);
-    // find maxima and intialize vector of not fully compressed vertices
+#pragma omp for schedule(static)
+#else // TTK_ENABLE_OPENMP
+  lActiveVertices.reserve(nVertices);
+#endif // TTK_ENABLE_OPENMP
+    // find the largest neighbor for each vertex
     for(SimplexId i = 0; i < nVertices; i++) {
       SimplexId neighborId{0};
-      const SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
+      SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
 
       bool hasLargerNeighbor = false;
       SimplexId &mi = segmentation[i];
@@ -408,95 +352,35 @@ int ttk::PathCompression::computePathCompressionSingle(
       }
 
       if(hasLargerNeighbor) {
-        activeVertices.push_back(i);
+        lActiveVertices.push_back(i);
       }
     }
 
-    nActiveVertices = activeVertices.size();
+    size_t lnActiveVertices = lActiveVertices.size();
     size_t currentIndex = 0;
 
     // compress paths until no changes occur
-    while(nActiveVertices > 0) {
-      for(SimplexId i = 0; i < nActiveVertices; i++) {
-        SimplexId &v = activeVertices[i];
+    while(lnActiveVertices > 0) {
+      for(size_t i = 0; i < lnActiveVertices; i++) {
+        SimplexId &v = lActiveVertices[i];
         SimplexId &vMan = segmentation[v];
 
-        // compress paths
+// compress paths
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif // TTK_ENABLE_OPENMP
         vMan = segmentation[vMan];
 
-        // check if not fully compressed
+        // check if fully compressed
         if(vMan != segmentation[vMan]) {
-          activeVertices[currentIndex++] = v;
+          lActiveVertices[currentIndex++] = v;
         }
       }
 
-      nActiveVertices = currentIndex;
+      lnActiveVertices = currentIndex;
       currentIndex = 0;
     }
-
 #ifdef TTK_ENABLE_OPENMP
-  } else {
-
-#pragma omp parallel num_threads(threadNumber_)
-    {
-      std::vector<SimplexId> lActiveVertices;
-      lActiveVertices.reserve(std::ceil(nVertices / threadNumber_));
-
-// find the biggest neighbor for each vertex
-#pragma omp for schedule(static)
-      for(SimplexId i = 0; i < nVertices; i++) {
-        SimplexId neighborId{0};
-        SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
-
-        bool hasLargerNeighbor = false;
-        SimplexId &mi = segmentation[i];
-        mi = i;
-
-        // check all neighbors
-        for(SimplexId n = 0; n < numNeighbors; n++) {
-          triangulation.getVertexNeighbor(i, n, neighborId);
-
-          if(computeAscending) {
-            if(orderArray[neighborId] < orderArray[mi]) {
-              mi = neighborId;
-              hasLargerNeighbor = true;
-            }
-          } else {
-            if(orderArray[neighborId] > orderArray[mi]) {
-              mi = neighborId;
-              hasLargerNeighbor = true;
-            }
-          }
-        }
-
-        if(hasLargerNeighbor) {
-          lActiveVertices.push_back(i);
-        }
-      }
-
-      size_t lnActiveVertices = lActiveVertices.size();
-      size_t currentIndex = 0;
-
-      // compress paths until no changes occur
-      while(lnActiveVertices > 0) {
-        for(size_t i = 0; i < lnActiveVertices; i++) {
-          SimplexId &v = lActiveVertices[i];
-          SimplexId &vMan = segmentation[v];
-
-// compress paths
-#pragma omp atomic read
-          vMan = segmentation[vMan];
-
-          // check if fully compressed
-          if(vMan != segmentation[vMan]) {
-            lActiveVertices[currentIndex++] = v;
-          }
-        }
-
-        lnActiveVertices = currentIndex;
-        currentIndex = 0;
-      }
-    }
   }
 #endif // TTK_ENABLE_OPENMP
 
@@ -525,24 +409,11 @@ int ttk::PathCompression::computeMSHash(
   const size_t nVerts = triangulation.getNumberOfVertices();
 
 #ifdef TTK_ENABLE_OPENMP
-  if(threadNumber_ == 1) {
-#endif // TTK_ENABLE_OPENMP
-
-    for(size_t i = 0; i < nVerts; ++i) {
-      morseSmaleSegmentation[i]
-        = getHash(ascSegmentation[i], dscSegmentation[i]);
-    }
-
-#ifdef TTK_ENABLE_OPENMP
-  } else {
-
 #pragma omp parallel for schedule(static) num_threads(threadNumber_)
-    for(size_t i = 0; i < nVerts; ++i) {
-      morseSmaleSegmentation[i]
-        = getHash(ascSegmentation[i], dscSegmentation[i]);
-    }
-  }
 #endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    morseSmaleSegmentation[i] = getHash(ascSegmentation[i], dscSegmentation[i]);
+  }
 
   this->printMsg("Morse-Smale segmentation hash computed", 1.0,
                  localTimer.getElapsedTime(), this->threadNumber_,
