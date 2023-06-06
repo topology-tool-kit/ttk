@@ -13,15 +13,11 @@
 #include <array>
 
 // base code includes
-#include <AbstractTriangulation.h>
-
-#ifdef TTK_ENABLE_MPI
-#include <memory>
-#endif // TTK_ENABLE_MPI
+#include <RegularGridTriangulation.h>
 
 namespace ttk {
 
-  class ImplicitTriangulation : public AbstractTriangulation {
+  class ImplicitTriangulation : public RegularGridTriangulation {
 
   public:
     ImplicitTriangulation();
@@ -208,7 +204,7 @@ namespace ttk {
                      const float &zSpacing,
                      const SimplexId &xDim,
                      const SimplexId &yDim,
-                     const SimplexId &zDim);
+                     const SimplexId &zDim) override;
 
     virtual int preconditionVerticesInternal() = 0;
     int preconditionVertexNeighborsInternal() override;
@@ -251,25 +247,9 @@ namespace ttk {
 
   protected:
     int preconditionDistributedCells() override;
-    int preconditionDistributedVertices() override;
 
   public:
-    void createMetaGrid(const double *const bounds);
-
-    SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const override;
-    SimplexId getVertexLocalIdInternal(const SimplexId gvid) const override;
-
-    SimplexId getCellGlobalIdInternal(const SimplexId lcid) const override;
-    SimplexId getCellLocalIdInternal(const SimplexId gcid) const override;
-
-    SimplexId getEdgeGlobalIdInternal(const SimplexId leid) const override;
-    SimplexId getEdgeLocalIdInternal(const SimplexId geid) const override;
-
-    SimplexId getTriangleGlobalIdInternal(const SimplexId ltid) const override;
-    SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
-
-    int getVertexRankInternal(const SimplexId lvid) const override;
-    int getCellRankInternal(const SimplexId lcid) const override;
+    void createMetaGrid(const double *const bounds) override;
 
   protected:
     bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
@@ -278,25 +258,14 @@ namespace ttk {
       isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override;
 
   private:
-    SimplexId findEdgeFromVertices(const SimplexId v0,
-                                   const SimplexId v1) const;
-    SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
-
-    std::array<SimplexId, 3> getVertGlobalCoords(const SimplexId lvid) const;
-    std::array<SimplexId, 3> getVertLocalCoords(const SimplexId gvid) const;
+    std::array<SimplexId, 3>
+      getVertGlobalCoords(const SimplexId lvid) const override;
+    std::array<SimplexId, 3>
+      getVertLocalCoords(const SimplexId gvid) const override;
 
 #endif // TTK_ENABLE_MPI
 
   protected:
-#ifdef TTK_ENABLE_MPI
-    std::shared_ptr<ImplicitTriangulation> metaGrid_{};
-    // offset coordinates of the local grid inside the metaGrid_
-    std::array<SimplexId, 3> localGridOffset_{};
-    // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
-    std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
-    // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
-    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
-#endif // TTK_ENABLE_MPI
 
     enum class VertexPosition : char {
       // a--------b
@@ -507,10 +476,8 @@ namespace ttk {
 
     bool hasPreconditionedVerticesAndCells_{false};
 
-    int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
-    std::array<SimplexId, 3> dimensions_; // dimensions
     SimplexId nbvoxels_[3]; // nombre de voxels par axe
 
     // Vertex helper //
@@ -550,7 +517,8 @@ namespace ttk {
 
     //\cond
     // 2D //
-    void vertexToPosition2d(const SimplexId vertex, SimplexId p[2]) const;
+    void vertexToPosition2d(const SimplexId vertex,
+                            SimplexId p[2]) const override;
     void
       edgeToPosition2d(const SimplexId edge, const int k, SimplexId p[2]) const;
     void triangleToPosition2d(const SimplexId triangle, SimplexId p[2]) const;
@@ -601,14 +569,15 @@ namespace ttk {
     SimplexId getEdgeStar2dH(const SimplexId p[2], const int id) const;
 
     // 3D //
-    void vertexToPosition(const SimplexId vertex, SimplexId p[3]) const;
+    void vertexToPosition(const SimplexId vertex,
+                          SimplexId p[3]) const override;
     void
       edgeToPosition(const SimplexId edge, const int k, SimplexId p[3]) const;
     void triangleToPosition(const SimplexId triangle,
                             const int k,
-                            SimplexId p[3]) const;
+                            SimplexId p[3]) const override;
     void tetrahedronToPosition(const SimplexId tetrahedron,
-                               SimplexId p[3]) const;
+                               SimplexId p[3]) const override;
 
     SimplexId getVertexEdgeA(const SimplexId p[3], const int id) const;
     SimplexId getVertexEdgeB(const SimplexId p[3], const int id) const;

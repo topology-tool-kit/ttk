@@ -1,4 +1,4 @@
 ttk_add_base_library(periodicImplicitTriangulation
   SOURCES PeriodicImplicitTriangulation.cpp PeriodicPreconditions.cpp
   HEADERS PeriodicImplicitTriangulation.h PeriodicPreconditions.h
-  DEPENDS abstractTriangulation)
+  DEPENDS abstractTriangulation regularGridTriangulation)

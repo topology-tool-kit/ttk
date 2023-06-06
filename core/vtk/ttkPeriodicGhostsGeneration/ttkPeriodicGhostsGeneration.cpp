@@ -80,13 +80,6 @@ int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
 
 int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
   if(!isOutputExtentComputed_) {
-    vtkImageData *imageIn;
-    if(input->IsA("vtkImageData")) {
-      imageIn = vtkImageData::SafeDownCast(input);
-    } else {
-      printErr("Invalid data input type for periodicTriangulation computation");
-      return -1;
-    }
 
     vtkNew<vtkExtentTranslator> translator;
     translator->SetWholeExtent(inExtent_.data());
