@@ -48,6 +48,79 @@ constexpr unsigned long long int getHash(const unsigned long long int a,
          % ULONG_LONG_MAX;
 }
 
+/**
+ * @brief Get the center of two points
+ *
+ * @param[in] pos0 Position 0
+ * @param[in] pos1 Position 1
+ * @param[out] incenter Resulting position
+ * @return int 0 on success
+ */
+inline void getCenter(const std::array<float, 3> pos0,
+                      const std::array<float, 3> pos1,
+                      std::array<float, 3> &incenter) {
+  incenter[0] = 0.5 * (pos0[0] + pos1[0]);
+  incenter[1] = 0.5 * (pos0[1] + pos1[1]);
+  incenter[2] = 0.5 * (pos0[2] + pos1[2]);
+}
+
+/**
+ * @brief Get the center of three points
+ *
+ * @param[in] pos0 Position 0
+ * @param[in] pos1 Position 1
+ * @param[in] pos2 Position 2
+ * @param[out] incenter Resulting position
+ * @return int 0 on success
+ */
+inline void getCenter(const std::array<float, 3> pos0,
+                      const std::array<float, 3> pos1,
+                      const std::array<float, 3> pos2,
+                      std::array<float, 3> &incenter) {
+  incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
+  incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
+  incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
+}
+
+/**
+ * @brief Get the center of four points
+ *
+ * @param[in] pos0 Position 0
+ * @param[in] pos1 Position 1
+ * @param[in] pos2 Position 2
+ * @param[in] pos3 Position 3
+ * @param[out] incenter Resulting position
+ * @return int 0 on success
+ */
+inline void getCenter(const std::array<float, 3> pos0,
+                      const std::array<float, 3> pos1,
+                      const std::array<float, 3> pos2,
+                      const std::array<float, 3> pos3,
+                      std::array<float, 3> &incenter) {
+  incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
+  incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
+  incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
+}
+
+/**
+ * @brief Interpolate between two points (lambda = 0 -> pos1 / 1 -> pos0)
+ *
+ * @param[in] pos0 Position 0
+ * @param[in] pos1 Position 1
+ * @param[in] lambda Interpolation parameter
+ * @param[out] result Resulting position
+ * @return int 0 on success
+ */
+inline void interpolatePoints(const std::array<float, 3> pos0,
+                              const std::array<float, 3> pos1,
+                              const float lambda,
+                              std::array<float, 3> &result) {
+
+  result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
+  result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
+  result[2] = lambda * pos0[2] + (1 - lambda) * pos1[2];
+}
+
 using ttk::SimplexId;
 
 namespace ttk {
@@ -106,7 +179,7 @@ namespace ttk {
     int writeSeparators_2D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
                            const unsigned long long *const scalars,
-                           const triangulationType &triangulation) const;
+                           const triangulationType &triangulation) ;
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
@@ -123,7 +196,7 @@ namespace ttk {
     int writeBoundaries_2D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
                            const unsigned long long *const scalars,
-                           const triangulationType &triangulation) const;
+                           const triangulationType &triangulation);
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
@@ -141,7 +214,7 @@ namespace ttk {
       writeBoundariesDetailed_2D(const unsigned char *const tetCases,
                                  const size_t *numTriangles,
                                  const unsigned long long *const scalars,
-                                 const triangulationType &triangulation) const;
+                                 const triangulationType &triangulation);
 
     /* 3D Datasets */
 
@@ -179,7 +252,7 @@ namespace ttk {
     int writeSeparators_3D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
                            const unsigned long long *const scalars,
-                           const triangulationType &triangulation) const;
+                           const triangulationType &triangulation);
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
@@ -196,7 +269,7 @@ namespace ttk {
     int writeBoundaries_3D(const unsigned char *const tetCases,
                            const size_t *numTriangles,
                            const unsigned long long *const scalars,
-                           const triangulationType &triangulation) const;
+                           const triangulationType &triangulation);
 
     /**
      * Writes the geometry of all Triangles to the ouputVariables set by
@@ -214,109 +287,18 @@ namespace ttk {
       writeBoundariesDetailed_3D(const unsigned char *const tetCases,
                                  const size_t *numTriangles,
                                  const unsigned long long *const scalars,
-                                 const triangulationType &triangulation) const;
-
-    /**
-     * Set all necessary 2-separatrix output variables
-     */
-    inline int
-      setOutput(SimplexId *const output_numberOfPoints,
-                std::vector<float> *const output_points,
-                SimplexId *const output_numberOfCells,
-                std::vector<SimplexId> *const output_cells_connectivity,
-                std::vector<unsigned long long> *const output_cells_hash) {
-      output_numberOfPoints_ = output_numberOfPoints;
-      output_points_ = output_points;
-      output_numberOfCells_ = output_numberOfCells;
-      output_cells_connectivity_ = output_cells_connectivity;
-      output_cells_Labels_ = output_cells_hash;
-      return 0;
-    }
-
-    /**
-     * @brief Get the center of two points
-     *
-     * @param[in] pos0 Position 0
-     * @param[in] pos1 Position 1
-     * @param[out] incenter Resulting position
-     * @return int 0 on success
-     */
-    inline void getCenter(const std::array<float, 3> pos0,
-                          const std::array<float, 3> pos1,
-                          std::array<float, 3> &incenter) const {
-      incenter[0] = 0.5 * (pos0[0] + pos1[0]);
-      incenter[1] = 0.5 * (pos0[1] + pos1[1]);
-      incenter[2] = 0.5 * (pos0[2] + pos1[2]);
-    }
-
-    /**
-     * @brief Get the center of three points
-     *
-     * @param[in] pos0 Position 0
-     * @param[in] pos1 Position 1
-     * @param[in] pos2 Position 2
-     * @param[out] incenter Resulting position
-     * @return int 0 on success
-     */
-    inline void getCenter(const std::array<float, 3> pos0,
-                          const std::array<float, 3> pos1,
-                          const std::array<float, 3> pos2,
-                          std::array<float, 3> &incenter) const {
-      incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
-      incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
-      incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
-    }
-
-    /**
-     * @brief Get the center of four points
-     *
-     * @param[in] pos0 Position 0
-     * @param[in] pos1 Position 1
-     * @param[in] pos2 Position 2
-     * @param[in] pos3 Position 3
-     * @param[out] incenter Resulting position
-     * @return int 0 on success
-     */
-    inline void getCenter(const std::array<float, 3> pos0,
-                          const std::array<float, 3> pos1,
-                          const std::array<float, 3> pos2,
-                          const std::array<float, 3> pos3,
-                          std::array<float, 3> &incenter) const {
-      incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
-      incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
-      incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
-    }
-
-    /**
-     * @brief Interpolate between two points (lambda = 0 -> pos1 / 1 -> pos0)
-     *
-     * @param[in] pos0 Position 0
-     * @param[in] pos1 Position 1
-     * @param[in] lambda Interpolation parameter
-     * @param[out] result Resulting position
-     * @return int 0 on success
-     */
-    inline void interpolatePoints(const std::array<float, 3> pos0,
-                                  const std::array<float, 3> pos1,
-                                  const float lambda,
-                                  std::array<float, 3> &result) const {
-
-      result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
-      result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
-      result[2] = lambda * pos0[2] + (1 - lambda) * pos1[2];
-    }
+                                 const triangulationType &triangulation);
 
   protected:
     // Output options
     SURFACE_MODE SurfaceMode{SURFACE_MODE::SM_SEPARATORS};
 
-  private:
     // Output data
-    SimplexId *output_numberOfPoints_{};
-    std::vector<float> *output_points_{};
-    SimplexId *output_numberOfCells_{};
-    std::vector<unsigned long long> *output_cells_Labels_{};
-    std::vector<SimplexId> *output_cells_connectivity_{};
+    SimplexId output_numberOfPoints_{};
+    SimplexId output_numberOfCells_{};
+    std::vector<float> output_points_;
+    std::vector<unsigned long long> output_cells_labels_;
+    std::vector<SimplexId> output_cells_connectivity_;
   };
 } // namespace ttk
 
@@ -487,7 +469,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
   const unsigned char *const tetCases,
   const size_t *numEdges,
   const unsigned long long *const scalars,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   ttk::Timer localTimer;
 
@@ -497,20 +479,15 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 #ifdef TTK_ENABLE_OPENMP
   if(threadNumber_ == 1) {
 #endif // TTK_ENABLE_OPENMP
+    output_points_.resize(6 * numEdges[0]);
+    output_cells_connectivity_.resize(2 * numEdges[0]);
+    output_cells_labels_.resize(numEdges[0]);
+    output_numberOfPoints_ = 2 * numEdges[0];
+    output_numberOfCells_ = numEdges[0];
 
-    output_points_->resize(6 * numEdges[0]);
-    output_cells_connectivity_->resize(2 * numEdges[0]);
-    output_cells_Labels_->resize(numEdges[0]);
-    *output_numberOfPoints_ = 2 * numEdges[0];
-    *output_numberOfCells_ = numEdges[0];
-
-    auto &points = *output_points_;
-    auto &cellsConn = *output_cells_connectivity_;
-    auto &cellLabels = *output_cells_Labels_;
-
-    float *p = points.data();
-    SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellLabels.data();
+    float *p = output_points_.data();
+    SimplexId *c = output_cells_connectivity_.data();
+    unsigned long long *m = output_cells_labels_.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -625,13 +602,13 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
       triangleStartIndex[t] = numEdges[t - 1] + triangleStartIndex[t - 1];
     }
 
-    size_t numTotalTriangles = triangleStartIndex[threadNumber_];
+    const size_t numTotalTriangles = triangleStartIndex[threadNumber_];
 
-    output_points_->resize(9 * numTotalTriangles);
-    output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_Labels_->resize(numTotalTriangles);
-    *output_numberOfPoints_ = 3 * numTotalTriangles;
-    *output_numberOfCells_ = numTotalTriangles;
+    output_points_.resize(9 * numTotalTriangles);
+    output_cells_connectivity_.resize(3 * numTotalTriangles);
+    output_cells_labels_.resize(numTotalTriangles);
+    output_numberOfPoints_ = 3 * numTotalTriangles;
+    output_numberOfCells_ = numTotalTriangles;
 
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -640,13 +617,9 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
       const int tid = omp_get_thread_num();
       size_t numThreadIndex = triangleStartIndex[tid];
 
-      auto &points = *output_points_;
-      auto &cellsConn = *output_cells_connectivity_;
-      auto &cellLabels = *output_cells_Labels_;
-
-      float *p = points.data();
-      SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellLabels.data();
+      float *p = output_points_.data();
+      SimplexId *c = output_cells_connectivity_.data();
+      unsigned long long *m = output_cells_labels_.data();
 
       p += (numThreadIndex * 6);
       c += (numThreadIndex * 2);
@@ -767,7 +740,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
   const unsigned char *const tetCases,
   const size_t *numEdges,
   const unsigned long long *const scalars,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   ttk::Timer localTimer;
 
@@ -778,19 +751,15 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
   if(threadNumber_ == 1) {
 #endif // TTK_ENABLE_OPENMP
 
-    output_points_->resize(6 * numEdges[0]);
-    output_cells_connectivity_->resize(2 * numEdges[0]);
-    output_cells_Labels_->resize(numEdges[0]);
-    *output_numberOfPoints_ = 2 * numEdges[0];
-    *output_numberOfCells_ = numEdges[0];
+    output_points_.resize(6 * numEdges[0]);
+    output_cells_connectivity_.resize(2 * numEdges[0]);
+    output_cells_labels_.resize(numEdges[0]);
+    output_numberOfPoints_ = 2 * numEdges[0];
+    output_numberOfCells_ = numEdges[0];
 
-    auto &points = *output_points_;
-    auto &cellsConn = *output_cells_connectivity_;
-    auto &cellLabels = *output_cells_Labels_;
-
-    float *p = points.data();
-    SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellLabels.data();
+    float *p = output_points_.data();
+    SimplexId *c = output_cells_connectivity_.data();
+    unsigned long long *m = output_cells_labels_.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -850,11 +819,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
 
     size_t numTotalTriangles = triangleStartIndex[threadNumber_];
 
-    output_points_->resize(9 * numTotalTriangles);
-    output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_Labels_->resize(numTotalTriangles);
-    *output_numberOfPoints_ = 3 * numTotalTriangles;
-    *output_numberOfCells_ = numTotalTriangles;
+    output_points_.resize(9 * numTotalTriangles);
+    output_cells_connectivity_.resize(3 * numTotalTriangles);
+    output_cells_labels_.resize(numTotalTriangles);
+    output_numberOfPoints_ = 3 * numTotalTriangles;
+    output_numberOfCells_ = numTotalTriangles;
 
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -863,13 +832,9 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
       const int tid = omp_get_thread_num();
       size_t numThreadIndex = triangleStartIndex[tid];
 
-      auto &points = *output_points_;
-      auto &cellsConn = *output_cells_connectivity_;
-      auto &cellLabels = *output_cells_Labels_;
-
-      float *p = points.data();
-      SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellLabels.data();
+      float *p = output_points_.data();
+      SimplexId *c = output_cells_connectivity_.data();
+      unsigned long long *m = output_cells_labels_.data();
 
       p += (numThreadIndex * 6);
       c += (numThreadIndex * 2);
@@ -935,7 +900,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
   const unsigned char *const tetCases,
   const size_t *numEdges,
   const unsigned long long *const scalars,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   ttk::Timer localTimer;
 
@@ -951,19 +916,15 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
   if(threadNumber_ == 1) {
 #endif // TTK_ENABLE_OPENMP
 
-    output_points_->resize(6 * numEdges[0]);
-    output_cells_connectivity_->resize(2 * numEdges[0]);
-    output_cells_Labels_->resize(numEdges[0]);
-    *output_numberOfPoints_ = 2 * numEdges[0];
-    *output_numberOfCells_ = numEdges[0];
+    output_points_.resize(6 * numEdges[0]);
+    output_cells_connectivity_.resize(2 * numEdges[0]);
+    output_cells_labels_.resize(numEdges[0]);
+    output_numberOfPoints_ = 2 * numEdges[0];
+    output_numberOfCells_ = numEdges[0];
 
-    auto &points = *output_points_;
-    auto &cellsConn = *output_cells_connectivity_;
-    auto &cellLabels = *output_cells_Labels_;
-
-    float *p = points.data();
-    SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellLabels.data();
+    float *p = output_points_.data();
+    SimplexId *c = output_cells_connectivity_.data();
+    unsigned long long *m = output_cells_labels_.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -1128,11 +1089,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
 
     size_t numTotalTriangles = triangleStartIndex[threadNumber_];
 
-    output_points_->resize(9 * numTotalTriangles);
-    output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_Labels_->resize(numTotalTriangles);
-    *output_numberOfPoints_ = 3 * numTotalTriangles;
-    *output_numberOfCells_ = numTotalTriangles;
+    output_points_.resize(9 * numTotalTriangles);
+    output_cells_connectivity_.resize(3 * numTotalTriangles);
+    output_cells_labels_.resize(numTotalTriangles);
+    output_numberOfPoints_ = 3 * numTotalTriangles;
+    output_numberOfCells_ = numTotalTriangles;
 
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -1141,13 +1102,9 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
       const int tid = omp_get_thread_num();
       size_t numThreadIndex = triangleStartIndex[tid];
 
-      auto &points = *output_points_;
-      auto &cellsConn = *output_cells_connectivity_;
-      auto &cellLabels = *output_cells_Labels_;
-
-      float *p = points.data();
-      SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellLabels.data();
+      float *p = output_points_.data();
+      SimplexId *c = output_cells_connectivity_.data();
+      unsigned long long *m = output_cells_labels_.data();
 
       p += (numThreadIndex * 6);
       c += (numThreadIndex * 2);
@@ -1413,7 +1370,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
   const unsigned char *const tetCases,
   const size_t *numTriangles,
   const unsigned long long *const scalars,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   ttk::Timer localTimer;
 
@@ -1424,19 +1381,15 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
   if(threadNumber_ == 1) {
 #endif // TTK_ENABLE_OPENMP
 
-    output_points_->resize(9 * numTriangles[0]);
-    output_cells_connectivity_->resize(3 * numTriangles[0]);
-    output_cells_Labels_->resize(numTriangles[0]);
-    *output_numberOfPoints_ = 3 * numTriangles[0];
-    *output_numberOfCells_ = numTriangles[0];
+    output_points_.resize(9 * numTriangles[0]);
+    output_cells_connectivity_.resize(3 * numTriangles[0]);
+    output_cells_labels_.resize(numTriangles[0]);
+    output_numberOfPoints_ = 3 * numTriangles[0];
+    output_numberOfCells_ = numTriangles[0];
 
-    auto &points = *output_points_;
-    auto &cellsConn = *output_cells_connectivity_;
-    auto &cellLabels = *output_cells_Labels_;
-
-    float *p = points.data();
-    SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellLabels.data();
+    float *p = output_points_.data();
+    SimplexId *c = output_cells_connectivity_.data();
+    unsigned long long *m = output_cells_labels_.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -1699,11 +1652,11 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
 
     size_t numTotalTriangles = triangleStartIndex[threadNumber_];
 
-    output_points_->resize(9 * numTotalTriangles);
-    output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_Labels_->resize(numTotalTriangles);
-    *output_numberOfPoints_ = 3 * numTotalTriangles;
-    *output_numberOfCells_ = numTotalTriangles;
+    output_points_.resize(9 * numTotalTriangles);
+    output_cells_connectivity_.resize(3 * numTotalTriangles);
+    output_cells_labels_.resize(numTotalTriangles);
+    output_numberOfPoints_ = 3 * numTotalTriangles;
+    output_numberOfCells_ = numTotalTriangles;
 
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -1712,13 +1665,9 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
       const int tid = omp_get_thread_num();
       size_t numThreadIndex = triangleStartIndex[tid];
 
-      auto &points = *output_points_;
-      auto &cellsConn = *output_cells_connectivity_;
-      auto &cellLabels = *output_cells_Labels_;
-
-      float *p = points.data();
-      SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellLabels.data();
+      float *p = output_points_.data();
+      SimplexId *c = output_cells_connectivity_.data();
+      unsigned long long *m = output_cells_labels_.data();
 
       p += (numThreadIndex * 9);
       c += (numThreadIndex * 3);
@@ -1988,7 +1937,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
   const unsigned char *const tetCases,
   const size_t *numTriangles,
   const unsigned long long *const scalars,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   ttk::Timer localTimer;
 
@@ -1999,19 +1948,15 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
   if(threadNumber_ == 1) {
 #endif // TTK_ENABLE_OPENMP
 
-    output_points_->resize(9 * numTriangles[0]);
-    output_cells_connectivity_->resize(3 * numTriangles[0]);
-    output_cells_Labels_->resize(numTriangles[0]);
-    *output_numberOfPoints_ = 3 * numTriangles[0];
-    *output_numberOfCells_ = numTriangles[0];
+    output_points_.resize(9 * numTriangles[0]);
+    output_cells_connectivity_.resize(3 * numTriangles[0]);
+    output_cells_labels_.resize(numTriangles[0]);
+    output_numberOfPoints_ = 3 * numTriangles[0];
+    output_numberOfCells_ = numTriangles[0];
 
-    auto &points = *output_points_;
-    auto &cellsConn = *output_cells_connectivity_;
-    auto &cellLabels = *output_cells_Labels_;
-
-    float *p = points.data();
-    SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellLabels.data();
+    float *p = output_points_.data();
+    SimplexId *c = output_cells_connectivity_.data();
+    unsigned long long *m = output_cells_labels_.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -2080,11 +2025,11 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
 
     size_t numTotalTriangles = triangleStartIndex[threadNumber_];
 
-    output_points_->resize(9 * numTotalTriangles);
-    output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_Labels_->resize(numTotalTriangles);
-    *output_numberOfPoints_ = 3 * numTotalTriangles;
-    *output_numberOfCells_ = numTotalTriangles;
+    output_points_.resize(9 * numTotalTriangles);
+    output_cells_connectivity_.resize(3 * numTotalTriangles);
+    output_cells_labels_.resize(numTotalTriangles);
+    output_numberOfPoints_ = 3 * numTotalTriangles;
+    output_numberOfCells_ = numTotalTriangles;
 
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -2093,13 +2038,9 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
       const int tid = omp_get_thread_num();
       size_t numThreadIndex = triangleStartIndex[tid];
 
-      auto &points = *output_points_;
-      auto &cellsConn = *output_cells_connectivity_;
-      auto &cellLabels = *output_cells_Labels_;
-
-      float *p = points.data();
-      SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellLabels.data();
+      float *p = output_points_.data();
+      SimplexId *c = output_cells_connectivity_.data();
+      unsigned long long *m = output_cells_labels_.data();
 
       p += (numThreadIndex * 9);
       c += (numThreadIndex * 3);
@@ -2175,7 +2116,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
   const unsigned char *const tetCases,
   const size_t *numTriangles,
   const unsigned long long *const scalars,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   ttk::Timer localTimer;
 
@@ -2191,19 +2132,15 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
   if(threadNumber_ == 1) {
 #endif // TTK_ENABLE_OPENMP
 
-    output_points_->resize(9 * numTriangles[0]);
-    output_cells_connectivity_->resize(3 * numTriangles[0]);
-    output_cells_Labels_->resize(numTriangles[0]);
-    *output_numberOfPoints_ = 3 * numTriangles[0];
-    *output_numberOfCells_ = numTriangles[0];
+    output_points_.resize(9 * numTriangles[0]);
+    output_cells_connectivity_.resize(3 * numTriangles[0]);
+    output_cells_labels_.resize(numTriangles[0]);
+    output_numberOfPoints_ = 3 * numTriangles[0];
+    output_numberOfCells_ = numTriangles[0];
 
-    auto &points = *output_points_;
-    auto &cellsConn = *output_cells_connectivity_;
-    auto &cellLabels = *output_cells_Labels_;
-
-    float *p = points.data();
-    SimplexId *c = cellsConn.data();
-    unsigned long long *m = cellLabels.data();
+    float *p = output_points_.data();
+    SimplexId *c = output_cells_connectivity_.data();
+    unsigned long long *m = output_cells_labels_.data();
     SimplexId cellIndex = 0;
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -2892,11 +2829,11 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
 
     size_t numTotalTriangles = triangleStartIndex[threadNumber_];
 
-    output_points_->resize(9 * numTotalTriangles);
-    output_cells_connectivity_->resize(3 * numTotalTriangles);
-    output_cells_Labels_->resize(numTotalTriangles);
-    *output_numberOfPoints_ = 3 * numTotalTriangles;
-    *output_numberOfCells_ = numTotalTriangles;
+    output_points_.resize(9 * numTotalTriangles);
+    output_cells_connectivity_.resize(3 * numTotalTriangles);
+    output_cells_labels_.resize(numTotalTriangles);
+    output_numberOfPoints_ = 3 * numTotalTriangles;
+    output_numberOfCells_ = numTotalTriangles;
 
     const SimplexId numTets = triangulation.getNumberOfCells();
 
@@ -2905,13 +2842,9 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
       const int tid = omp_get_thread_num();
       size_t numThreadIndex = triangleStartIndex[tid];
 
-      auto &points = *output_points_;
-      auto &cellsConn = *output_cells_connectivity_;
-      auto &cellLabels = *output_cells_Labels_;
-
-      float *p = points.data();
-      SimplexId *c = cellsConn.data();
-      unsigned long long *m = cellLabels.data();
+      float *p = output_points_.data();
+      SimplexId *c = output_cells_connectivity_.data();
+      unsigned long long *m = output_cells_labels_.data();
 
       p += (numThreadIndex * 9);
       c += (numThreadIndex * 3);

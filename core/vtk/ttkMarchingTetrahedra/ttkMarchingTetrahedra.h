@@ -82,11 +82,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  // Output data
-  std::vector<float> output_points{};
-  std::vector<ttk::SimplexId> output_cells_connectivity{};
-  std::vector<unsigned long long> output_cells_hash{};
-  std::vector<ttk::SimplexId> output_cells_caseTypes{};
 };

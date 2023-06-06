@@ -56,14 +56,11 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
                                     const triangulationType &triangulation) {
 
   const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
+  const int dim = triangulation.getDimensionality();
 
-  SimplexId numberOfPoints{};
-  SimplexId numberOfCells{};
-  output_points.clear();
-  output_cells_hash.clear();
-
-  this->setOutput(&numberOfPoints, &output_points, &numberOfCells,
-                  &output_cells_connectivity, &output_cells_hash);
+  output_points_.clear();
+  output_cells_labels_.clear();
+  output_cells_connectivity_.clear();
 
   const int status
     = this->execute<scalarType, triangulationType>(scalars, triangulation);
@@ -73,32 +70,25 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
 
   vtkNew<vtkFloatArray> pointsCoords{};
   pointsCoords->SetNumberOfComponents(3);
-  setArray(pointsCoords, output_points);
+  setArray(pointsCoords, output_points_);
 
   vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
   offsets->SetNumberOfComponents(1);
-  offsets->SetNumberOfTuples(numberOfCells + 1);
+  offsets->SetNumberOfTuples(output_numberOfCells_ + 1);
   connectivity->SetNumberOfComponents(1);
-  setArray(connectivity, output_cells_connectivity);
+  setArray(connectivity, output_cells_connectivity_);
 
   vtkNew<vtkUnsignedLongLongArray> hashArr{};
   hashArr->SetNumberOfComponents(1);
   hashArr->SetName("Hash");
-  setArray(hashArr, output_cells_hash);
+  setArray(hashArr, output_cells_labels_);
 
-  if(triangulation.getDimensionality() == 3) {
+  if(dim == 2 || dim == 3) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < numberOfCells + 1; ++i) {
-      offsets->SetTuple1(i, 3 * i);
-    }
-  } else {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < numberOfCells + 1; ++i) {
-      offsets->SetTuple1(i, 2 * i);
+    for(SimplexId i = 0; i < output_numberOfCells_ + 1; ++i) {
+      offsets->SetTuple1(i, dim * i);
     }
   }
 
@@ -111,7 +101,7 @@ int ttkMarchingTetrahedra::dispatch(vtkDataArray *const inputScalars,
   cells->Use32BitStorage();
 #endif // TTK_ENABLE_64BIT_IDS
   cells->SetData(offsets, connectivity);
-  if(triangulation.getDimensionality() == 3) {
+  if(dim == 3) {
     outputSeparators->SetPolys(cells);
   } else {
     outputSeparators->SetLines(cells);
