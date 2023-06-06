@@ -11,7 +11,7 @@ if (NOT MSVC) # GCC and Clang
     -Wvla
     -Wcast-qual
     -Wmissing-declarations
-    #-Wundef
+    -Wundef
     )
 
   # performance and debug flags
@@ -41,7 +41,7 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "x${CMAKE_CXX_SIMULATE_ID}"
   # c.f. https://stackoverflow.com/questions/50857779/cmake-detects-clang-cl-as-clang
 
   # warning flags
-  list(APPEND TTK_COMPILER_FLAGS -Wno-unused-parameter)
+  list(APPEND TTK_COMPILER_FLAGS -Wno-unused-parameter -Wundef)
 
 else() # MSVC
 
