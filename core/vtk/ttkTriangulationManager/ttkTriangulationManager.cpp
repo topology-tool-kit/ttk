@@ -56,7 +56,7 @@ int ttkTriangulationManager::RequestUpdateExtent(
   vtkInformation *request,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-  if(Periodicity) {
+  if(Periodicity && ttk::isRunningWithMPI()) {
     return this->periodicGhostGenerator->RequestUpdateExtent(
       request, inputVector, outputVector);
   }
@@ -66,7 +66,7 @@ int ttkTriangulationManager::RequestInformation(
   vtkInformation *request,
   vtkInformationVector **inputVectors,
   vtkInformationVector *outputVector) {
-  if(Periodicity) {
+  if(Periodicity && ttk::isRunningWithMPI()) {
     return this->periodicGhostGenerator->RequestInformation(
       request, inputVectors, outputVector);
   }

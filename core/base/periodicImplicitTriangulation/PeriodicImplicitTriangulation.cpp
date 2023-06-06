@@ -1073,11 +1073,7 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   localBBox[1]++;
   localBBox[3]++;
   localBBox[5]++;
-  printMsg("Bbox: " + std::to_string(localBBox[0]) + ", "
-           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
-           + ", " + std::to_string(localBBox[3]) + ", "
-           + std::to_string(localBBox[4]) + ", "
-           + std::to_string(localBBox[5]));
+
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
@@ -1090,9 +1086,6 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   int cellRank = 0;
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     cellRank = this->getCellRankInternal(lcid);
-    if(cellRank == -1) {
-      return printMsg("PROBLEM");
-    }
     if(cellRank != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostCellsPerOwner_[cellRank].emplace_back(
@@ -1195,11 +1188,7 @@ int PeriodicImplicitTriangulation::preconditionDistributedVertices() {
       localBBox[5] = p[2];
     }
   }
-  printMsg("Bbox: " + std::to_string(localBBox[0]) + ", "
-           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
-           + ", " + std::to_string(localBBox[3]) + ", "
-           + std::to_string(localBBox[4]) + ", "
-           + std::to_string(localBBox[5]));
+
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborVertexBBoxes_[ttk::MPIrank_].data(), 6,

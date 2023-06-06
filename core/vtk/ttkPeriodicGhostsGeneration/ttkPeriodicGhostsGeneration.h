@@ -100,8 +100,11 @@ private:
   std::string OutputArrayName{"AveragedScalarField"};
   vtkNew<vtkImageAppend> append;
   std::array<int, 6> outExtent_;
+  std::array<int, 6> inExtent_;
   std::array<double, 6> boundsWithoutGhosts_;
   std::array<double, 6> globalBounds_;
+  std::array<double, 3> origin_;
+  std::array<double, 3> spacing_;
   bool isOutputExtentComputed_{false};
   std::array<periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
   std::vector<int> neighbors_;

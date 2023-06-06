@@ -1,9 +1,8 @@
-#include "BaseClass.h"
-#include "DataTypes.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include <string>
 #include <ttkPeriodicGhostsGeneration.h>
 
+#include "vtkExtentTranslator.h"
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkImageAppend.h>
@@ -57,6 +56,11 @@ int ttkPeriodicGhostsGeneration::RequestInformation(
   vtkInformationVector **inputVectors,
   vtkInformationVector *outputVector) {
   vtkImageData *image = vtkImageData::GetData(inputVectors[0]);
+  vtkInformation *inInfo = inputVectors[0]->GetInformationObject(0);
+  inInfo->Get(
+    vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), inExtent_.data());
+  inInfo->Get(vtkDataObject::SPACING(), this->spacing_.data());
+  inInfo->Get(vtkDataObject::ORIGIN(), this->origin_.data());
   this->ComputeOutputExtent(image);
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   outInfo->Set(
@@ -84,44 +88,36 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
       return -1;
     }
 
-    std::array<double, 6> tempGlobalBounds{};
-    double bounds[6];
-    // Initialize neighbors vector
-    imageIn->GetBounds(bounds);
-    ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
-    // Reorganize bounds to only execute Allreduce twice
-    std::array<double, 6> tempBounds = {
-      bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
+    vtkNew<vtkExtentTranslator> translator;
+    translator->SetWholeExtent(inExtent_.data());
+    translator->SetNumberOfPieces(ttk::MPIsize_);
+    translator->SetPiece(ttk::MPIrank_);
+    translator->PieceToExtent();
+    int localExtent[6];
+    translator->GetExtent(localExtent);
+
+    double bounds[6] = {
+      origin_[0] + localExtent[0] * spacing_[0],
+      origin_[0] + localExtent[1] * spacing_[0],
+      origin_[1] + localExtent[2] * spacing_[1],
+      origin_[1] + localExtent[3] * spacing_[1],
+      origin_[2] + localExtent[4] * spacing_[2],
+      origin_[2] + localExtent[5] * spacing_[2],
     };
 
-    // Compute and send to all processes the lower bounds of the data set
-    MPI_Allreduce(tempBounds.data(), tempGlobalBounds.data(), 3, MPI_DOUBLE,
-                  MPI_MIN, ttk::MPIcomm_);
-    // Compute and send to all processes the higher bounds of the data set
-    MPI_Allreduce(&tempBounds[3], &tempGlobalBounds[3], 3, MPI_DOUBLE, MPI_MAX,
-                  ttk::MPIcomm_);
-
+    ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
     // re-order tempGlobalBounds
-    globalBounds_
-      = {tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
-         tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5]};
-
-    double spacing[3];
-    imageIn->GetSpacing(spacing);
+    globalBounds_ = {origin_[0] + inExtent_[0] * spacing_[0],
+                     origin_[0] + inExtent_[1] * spacing_[0],
+                     origin_[1] + inExtent_[2] * spacing_[1],
+                     origin_[1] + inExtent_[3] * spacing_[1],
+                     origin_[2] + inExtent_[4] * spacing_[2],
+                     origin_[2] + inExtent_[5] * spacing_[2]};
     boundsWithoutGhosts_
       = {bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]};
-    for(int i = 0; i < 3; i++) {
-      if(bounds[2 * i] != globalBounds_[2 * i]) {
-        boundsWithoutGhosts_[2 * i] = bounds[2 * i] + spacing[0];
-      } else {
-      }
-      if(bounds[2 * i + 1] != globalBounds_[2 * i + 1]) {
-        boundsWithoutGhosts_[2 * i + 1] = bounds[2 * i + 1] - spacing[0];
-      } else {
-      }
-    }
     for(int i = 0; i < 2; i++) {
-      if(globalBounds_[i] == boundsWithoutGhosts_[i]) {
+      if(std::abs(globalBounds_[i] - boundsWithoutGhosts_[i])
+         < spacing_[0] / 2) {
         localGlobalBounds_[i].isBound = 1;
         localGlobalBounds_[i].x = boundsWithoutGhosts_[i];
         localGlobalBounds_[i].y
@@ -132,7 +128,8 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
     }
 
     for(int i = 0; i < 2; i++) {
-      if(globalBounds_[2 + i] == boundsWithoutGhosts_[2 + i]) {
+      if(std::abs(globalBounds_[2 + i] - boundsWithoutGhosts_[2 + i])
+         < spacing_[1] / 2) {
         localGlobalBounds_[2 + i].isBound = 1;
         localGlobalBounds_[2 + i].x
           = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
@@ -143,7 +140,8 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
     }
 
     for(int i = 0; i < 2; i++) {
-      if(globalBounds_[4 + i] == boundsWithoutGhosts_[4 + i]) {
+      if(std::abs(globalBounds_[4 + i] - boundsWithoutGhosts_[4 + i])
+         < spacing_[2] / 2) {
         localGlobalBounds_[4 + i].isBound = 1;
         localGlobalBounds_[4 + i].x
           = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
@@ -156,15 +154,11 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
     for(int i = 0; i < 3; i++) {
       if(!(localGlobalBounds_[2 * i].isBound == 1
            && localGlobalBounds_[2 * i + 1].isBound == 1)) {
-        outExtent_[2 * i]
-          = static_cast<int>(round(globalBounds_[2 * i] / spacing[i])) - 1;
-        outExtent_[2 * i + 1]
-          = static_cast<int>(round(globalBounds_[2 * i + 1] / spacing[i])) + 1;
+        outExtent_[2 * i] = inExtent_[2 * i] - 1;
+        outExtent_[2 * i + 1] = inExtent_[2 * i + 1] + 1;
       } else {
-        outExtent_[2 * i]
-          = static_cast<int>(round(globalBounds_[2 * i] / spacing[i]));
-        outExtent_[2 * i + 1]
-          = static_cast<int>(round(globalBounds_[2 * i + 1] / spacing[i]));
+        outExtent_[2 * i] = inExtent_[2 * i];
+        outExtent_[2 * i + 1] = inExtent_[2 * i + 1];
       }
     }
     isOutputExtentComputed_ = true;
@@ -366,7 +360,6 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   vtkImageData *slice,
   vtkImageData *mergedImage,
   int direction) {
-  // TODO: handle GlobalPointIds
 #ifndef TTK_ENABLE_KAMIKAZE
   if(image->GetPointData()->GetNumberOfArrays()
      != slice->GetPointData()->GetNumberOfArrays()) {
