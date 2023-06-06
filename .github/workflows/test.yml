@@ -423,7 +423,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn openmp graphviz ninja websocketpp sccache python=3.10 zlib
+          scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH
