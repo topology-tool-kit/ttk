@@ -151,7 +151,7 @@ namespace ttk {
      *
      * @tparam triangulationType Triangulationtype
      * @param[out] tetCases Binary codes
-     * @param[out] numTriangles Number of triangles generated per thread
+     * @param[out] numEdges Number of triangles generated per thread
      * @param[in] scalars Scalars
      * @param[in] triangleCounter Table with binary code to number of triangles
      * @param[in] triangulation Triangulation
