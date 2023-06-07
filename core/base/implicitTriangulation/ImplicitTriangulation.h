@@ -251,7 +251,9 @@ namespace ttk {
 
   protected:
     int preconditionDistributedCells() override;
+    int preconditionExchangeGhostCells() override;
     int preconditionDistributedVertices() override;
+    int preconditionExchangeGhostVertices() override;
 
   public:
     void createMetaGrid(const double *const bounds);

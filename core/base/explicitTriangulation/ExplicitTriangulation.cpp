@@ -841,7 +841,39 @@ int ExplicitTriangulation::preconditionDistributedCells() {
     this->cellGidToLid_[this->cellGid_[lcid]] = lcid;
   }
 
+  this->preconditionExchangeGhostCells();
+
+  this->preconditionDistributedCellRanges();
+
+  this->hasPreconditionedDistributedCells_ = true;
+
+  if(ttk::MPIrank_ == 0) {
+    this->printMsg("Domain contains "
+                     + std::to_string(this->gatheredCellRanges_.back().end + 1)
+                     + " cells",
+                   1.0, tm.getElapsedTime(), this->threadNumber_);
+  }
+
+  return 0;
+}
+
+int ttk::ExplicitTriangulation::preconditionExchangeGhostCells() {
+
+  if(this->hasPreconditionedExchangeGhostCells_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+  if(this->cellGid_ == nullptr) {
+    this->printErr("Missing global cell identifiers array!");
+    return -2;
+  }
+
   this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
+
+  // number of local cells (with ghost cells...)
+  const auto nLocCells{this->getNumberOfCells()};
 
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     if(this->cellRankArray_[lcid] != ttk::MPIrank_) {
@@ -874,17 +906,7 @@ int ExplicitTriangulation::preconditionDistributedCells() {
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
-  this->preconditionDistributedCellRanges();
-
-  this->hasPreconditionedDistributedCells_ = true;
-
-  if(ttk::MPIrank_ == 0) {
-    this->printMsg("Domain contains "
-                     + std::to_string(this->gatheredCellRanges_.back().end + 1)
-                     + " cells",
-                   1.0, tm.getElapsedTime(), this->threadNumber_);
-  }
-
+  this->hasPreconditionedExchangeGhostCells_ = true;
   return 0;
 }
 
@@ -1428,6 +1450,26 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
     this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
   }
+
+  return 0;
+}
+
+int ttk::ExplicitTriangulation::preconditionExchangeGhostVertices() {
+
+  if(this->hasPreconditionedExchangeGhostVertices_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+  if(this->vertGid_ == nullptr) {
+    this->printErr("Missing global vertex identifiers array!");
+    return -2;
+  }
+
+  // number of local vertices (with ghost vertices...)
+  const auto nLocVertices{this->getNumberOfVertices()};
+
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
@@ -1460,6 +1502,8 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
                  this->remoteGhostVertices_[neigh].size(), MIT, neigh, neigh,
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
+
+  this->hasPreconditionedExchangeGhostVertices_ = true;
 
   return 0;
 }

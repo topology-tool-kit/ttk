@@ -3157,6 +3157,23 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
                  MPI_STATUS_IGNORE);
   }
 
+  this->hasPreconditionedDistributedCells_ = true;
+
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionExchangeGhostCells() {
+
+  if(this->hasPreconditionedExchangeGhostCells_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+
+  // number of local cells (with ghost cells...)
+  const auto nLocCells{this->getNumberOfCells()};
+
   int cellRank = 0;
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     cellRank = this->getCellRankInternal(lcid);
@@ -3190,8 +3207,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
-  this->hasPreconditionedDistributedCells_ = true;
-
+  this->hasPreconditionedExchangeGhostCells_ = true;
   return 0;
 }
 
@@ -3268,7 +3284,24 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
                  MPI_STATUS_IGNORE);
   }
 
+  this->hasPreconditionedDistributedVertices_ = true;
+
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionExchangeGhostVertices() {
+
+  if(this->hasPreconditionedExchangeGhostVertices_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
+
+  // number of local vertices (with ghost vertices...)
+  const auto nLocVertices{this->getNumberOfVertices()};
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
     if(this->getVertexRankInternal(lvid) != ttk::MPIrank_) {
@@ -3301,8 +3334,7 @@ int ImplicitTriangulation::preconditionDistributedVertices() {
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
-  this->hasPreconditionedDistributedVertices_ = true;
-
+  this->hasPreconditionedExchangeGhostVertices_ = true;
   return 0;
 }
 
