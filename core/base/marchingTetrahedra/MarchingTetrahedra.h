@@ -317,11 +317,11 @@ int ttk::MarchingTetrahedra::execute(const dataType *const scalars,
   std::vector<size_t> numberOfTetCases;
   std::vector<unsigned long long> cScalars;
 
-  tetCases.resize(nC);
   cScalars.resize(nV);
+  tetCases.resize(nC);
 
 #ifdef TTK_ENABLE_OPENMP
-  numberOfTetCases.resize(omp_get_max_threads());
+  numberOfTetCases.resize(this->threadNumber_);
 #else
   numberOfTetCases.resize(1);
 #endif // TTK_ENABLE_OPENMP
@@ -395,7 +395,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_2D(
   const SimplexId numTetra = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_)
+#pragma omp parallel num_threads(this->threadNumber_)
   {
     SimplexId threadEdges = 0;
     const int tid = omp_get_thread_num();
@@ -449,16 +449,16 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
                  ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
-  std::vector<size_t> edgeStartIndex(threadNumber_ + 1);
+  std::vector<size_t> edgeStartIndex(this->threadNumber_ + 1);
 
   edgeStartIndex[0] = 0;
 
   // Count triangle number and create iterator start indices
-  for(int t = 1; t <= threadNumber_; ++t) {
+  for(int t = 1; t <= this->threadNumber_; ++t) {
     edgeStartIndex[t] = numEdges[t - 1] + edgeStartIndex[t - 1];
   }
 
-  const size_t numTotalEdges = edgeStartIndex[threadNumber_];
+  const size_t numTotalEdges = edgeStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   const size_t numTotalEdges = numEdges[0];
 #endif // TTK_ENABLE_OPENMP
@@ -475,7 +475,7 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
   unsigned long long *m = output_cells_labels_.data();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_) firstprivate(p, c, m)
+#pragma omp parallel num_threads(this->threadNumber_) firstprivate(p, c, m)
   {
     const int tid = omp_get_thread_num();
     size_t numThreadIndex = edgeStartIndex[tid];
@@ -609,16 +609,16 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
                  ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
-  std::vector<size_t> edgeStartIndex(threadNumber_ + 1);
+  std::vector<size_t> edgeStartIndex(this->threadNumber_ + 1);
 
   edgeStartIndex[0] = 0;
 
   // Count triangle number and create iterator start indices
-  for(int t = 1; t <= threadNumber_; ++t) {
+  for(int t = 1; t <= this->threadNumber_; ++t) {
     edgeStartIndex[t] = numEdges[t - 1] + edgeStartIndex[t - 1];
   }
 
-  size_t numTotalEdges = edgeStartIndex[threadNumber_];
+  size_t numTotalEdges = edgeStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalEdges = numEdges[0];
 #endif // TTK_ENABLE_OPENMP
@@ -636,7 +636,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
   const SimplexId numTets = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_) firstprivate(p, c, m)
+#pragma omp parallel num_threads(this->threadNumber_) firstprivate(p, c, m)
   {
     const int tid = omp_get_thread_num();
     size_t numThreadIndex = edgeStartIndex[tid];
@@ -721,16 +721,16 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
   constexpr float dc = 2 * diff;
 
 #ifdef TTK_ENABLE_OPENMP
-  std::vector<size_t> edgeStartIndex(threadNumber_ + 1);
+  std::vector<size_t> edgeStartIndex(this->threadNumber_ + 1);
 
   edgeStartIndex[0] = 0;
 
   // Count triangle numbers and create iterator start indices
-  for(int t = 1; t <= threadNumber_; ++t) {
+  for(int t = 1; t <= this->threadNumber_; ++t) {
     edgeStartIndex[t] = numEdges[t - 1] + edgeStartIndex[t - 1];
   }
 
-  size_t numTotalEdges = edgeStartIndex[threadNumber_];
+  size_t numTotalEdges = edgeStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalEdges = numEdges[0];
 #endif // TTK_ENABLE_OPENMP
@@ -748,7 +748,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
   const SimplexId numTets = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_) firstprivate(p, c, m)
+#pragma omp parallel num_threads(this->threadNumber_) firstprivate(p, c, m)
   {
     const int tid = omp_get_thread_num();
     size_t numThreadIndex = edgeStartIndex[tid];
@@ -932,7 +932,7 @@ int ttk::MarchingTetrahedra::computeMarchingCases_3D(
   const SimplexId numTetra = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_)
+#pragma omp parallel num_threads(this->threadNumber_)
   {
     SimplexId threadTriangles = 0;
     const int tid = omp_get_thread_num();
@@ -995,16 +995,16 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
                  ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
-  std::vector<size_t> triangleStartIndex(threadNumber_ + 1);
+  std::vector<size_t> triangleStartIndex(this->threadNumber_ + 1);
 
   triangleStartIndex[0] = 0;
 
   // Count triangle number and create iterator start indices
-  for(int t = 1; t <= threadNumber_; ++t) {
+  for(int t = 1; t <= this->threadNumber_; ++t) {
     triangleStartIndex[t] = numTriangles[t - 1] + triangleStartIndex[t - 1];
   }
 
-  size_t numTotalTriangles = triangleStartIndex[threadNumber_];
+  size_t numTotalTriangles = triangleStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalTriangles = numTriangles[0];
 #endif // TTK_ENABLE_OPENMP
@@ -1022,7 +1022,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
   const SimplexId numTets = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_) firstprivate(p, c, m)
+#pragma omp parallel num_threads(this->threadNumber_) firstprivate(p, c, m)
   {
     const int tid = omp_get_thread_num();
     size_t numThreadIndex = triangleStartIndex[tid];
@@ -1306,16 +1306,16 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
                  ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
-  std::vector<size_t> triangleStartIndex(threadNumber_ + 1);
+  std::vector<size_t> triangleStartIndex(this->threadNumber_ + 1);
 
   triangleStartIndex[0] = 0;
 
   // Count triangle number and create iterator start indices
-  for(int t = 1; t <= threadNumber_; ++t) {
+  for(int t = 1; t <= this->threadNumber_; ++t) {
     triangleStartIndex[t] = numTriangles[t - 1] + triangleStartIndex[t - 1];
   }
 
-  size_t numTotalTriangles = triangleStartIndex[threadNumber_];
+  size_t numTotalTriangles = triangleStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalTriangles = numTriangles[0];
 #endif // TTK_ENABLE_OPENMP
@@ -1333,7 +1333,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
   const SimplexId numTets = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_) firstprivate(p, c, m)
+#pragma omp parallel num_threads(this->threadNumber_) firstprivate(p, c, m)
   {
     const int tid = omp_get_thread_num();
     size_t numThreadIndex = triangleStartIndex[tid];
@@ -1428,16 +1428,16 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
   constexpr float dc = diff * 2;
 
 #ifdef TTK_ENABLE_OPENMP
-  std::vector<size_t> triangleStartIndex(threadNumber_ + 1);
+  std::vector<size_t> triangleStartIndex(this->threadNumber_ + 1);
 
   triangleStartIndex[0] = 0;
 
   // Count triangle number and create iterator start indices
-  for(int t = 1; t <= threadNumber_; ++t) {
+  for(int t = 1; t <= this->threadNumber_; ++t) {
     triangleStartIndex[t] = numTriangles[t - 1] + triangleStartIndex[t - 1];
   }
 
-  size_t numTotalTriangles = triangleStartIndex[threadNumber_];
+  size_t numTotalTriangles = triangleStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalTriangles = numTriangles[0];
 #endif // TTK_ENABLE_OPENMP
@@ -1455,7 +1455,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
   const SimplexId numTets = triangulation.getNumberOfCells();
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_) firstprivate(p, c, m)
+#pragma omp parallel num_threads(this->threadNumber_) firstprivate(p, c, m)
   {
     const int tid = omp_get_thread_num();
     size_t numThreadIndex = triangleStartIndex[tid];
