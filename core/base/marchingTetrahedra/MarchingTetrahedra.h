@@ -34,92 +34,94 @@
 
 #include <MarchingTetrahedraLookupTables.inl>
 
-/**
- * @brief Get a hash value from two keys
- *
- * @param a First Hash key
- * @param b Second hash key
- *
- * @return Hash value
- */
-constexpr unsigned long long int getHash(const unsigned long long int a,
-                                         const unsigned long long int b) {
-  return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
-         % ULONG_LONG_MAX;
-}
+namespace {
+  /**
+   * @brief Get a hash value from two keys
+   *
+   * @param a First Hash key
+   * @param b Second hash key
+   *
+   * @return Hash value
+   */
+  constexpr unsigned long long int getHash(const unsigned long long int a,
+                                           const unsigned long long int b) {
+    return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
+           % ULONG_LONG_MAX;
+  }
 
-/**
- * @brief Get the center of two points
- *
- * @param[in] pos0 Position 0
- * @param[in] pos1 Position 1
- * @param[out] incenter Resulting position
- * @return int 0 on success
- */
-inline void getCenter(const std::array<float, 3> pos0,
-                      const std::array<float, 3> pos1,
-                      std::array<float, 3> &incenter) {
-  incenter[0] = 0.5 * (pos0[0] + pos1[0]);
-  incenter[1] = 0.5 * (pos0[1] + pos1[1]);
-  incenter[2] = 0.5 * (pos0[2] + pos1[2]);
-}
+  /**
+   * @brief Get the center of two points
+   *
+   * @param[in] pos0 Position 0
+   * @param[in] pos1 Position 1
+   * @param[out] incenter Resulting position
+   * @return int 0 on success
+   */
+  inline void getCenter(const std::array<float, 3> pos0,
+                        const std::array<float, 3> pos1,
+                        std::array<float, 3> &incenter) {
+    incenter[0] = 0.5 * (pos0[0] + pos1[0]);
+    incenter[1] = 0.5 * (pos0[1] + pos1[1]);
+    incenter[2] = 0.5 * (pos0[2] + pos1[2]);
+  }
 
-/**
- * @brief Get the center of three points
- *
- * @param[in] pos0 Position 0
- * @param[in] pos1 Position 1
- * @param[in] pos2 Position 2
- * @param[out] incenter Resulting position
- * @return int 0 on success
- */
-inline void getCenter(const std::array<float, 3> pos0,
-                      const std::array<float, 3> pos1,
-                      const std::array<float, 3> pos2,
-                      std::array<float, 3> &incenter) {
-  incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
-  incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
-  incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
-}
+  /**
+   * @brief Get the center of three points
+   *
+   * @param[in] pos0 Position 0
+   * @param[in] pos1 Position 1
+   * @param[in] pos2 Position 2
+   * @param[out] incenter Resulting position
+   * @return int 0 on success
+   */
+  inline void getCenter(const std::array<float, 3> pos0,
+                        const std::array<float, 3> pos1,
+                        const std::array<float, 3> pos2,
+                        std::array<float, 3> &incenter) {
+    incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
+    incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
+    incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
+  }
 
-/**
- * @brief Get the center of four points
- *
- * @param[in] pos0 Position 0
- * @param[in] pos1 Position 1
- * @param[in] pos2 Position 2
- * @param[in] pos3 Position 3
- * @param[out] incenter Resulting position
- * @return int 0 on success
- */
-inline void getCenter(const std::array<float, 3> pos0,
-                      const std::array<float, 3> pos1,
-                      const std::array<float, 3> pos2,
-                      const std::array<float, 3> pos3,
-                      std::array<float, 3> &incenter) {
-  incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
-  incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
-  incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
-}
+  /**
+   * @brief Get the center of four points
+   *
+   * @param[in] pos0 Position 0
+   * @param[in] pos1 Position 1
+   * @param[in] pos2 Position 2
+   * @param[in] pos3 Position 3
+   * @param[out] incenter Resulting position
+   * @return int 0 on success
+   */
+  inline void getCenter(const std::array<float, 3> pos0,
+                        const std::array<float, 3> pos1,
+                        const std::array<float, 3> pos2,
+                        const std::array<float, 3> pos3,
+                        std::array<float, 3> &incenter) {
+    incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
+    incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
+    incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
+  }
 
-/**
- * @brief Interpolate between two points (lambda = 0 -> pos1 / 1 -> pos0)
- *
- * @param[in] pos0 Position 0
- * @param[in] pos1 Position 1
- * @param[in] lambda Interpolation parameter
- * @param[out] result Resulting position
- * @return int 0 on success
- */
-inline void interpolatePoints(const std::array<float, 3> pos0,
-                              const std::array<float, 3> pos1,
-                              const float lambda,
-                              std::array<float, 3> &result) {
+  /**
+   * @brief Interpolate between two points (lambda = 0 -> pos1 / 1 -> pos0)
+   *
+   * @param[in] pos0 Position 0
+   * @param[in] pos1 Position 1
+   * @param[in] lambda Interpolation parameter
+   * @param[out] result Resulting position
+   * @return int 0 on success
+   */
+  inline void interpolatePoints(const std::array<float, 3> pos0,
+                                const std::array<float, 3> pos1,
+                                const float lambda,
+                                std::array<float, 3> &result) {
 
-  result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
-  result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
-  result[2] = lambda * pos0[2] + (1 - lambda) * pos1[2];
-}
+    result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
+    result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
+    result[2] = lambda * pos0[2] + (1 - lambda) * pos1[2];
+  }
+} // namespace
 
 using ttk::SimplexId;
 
