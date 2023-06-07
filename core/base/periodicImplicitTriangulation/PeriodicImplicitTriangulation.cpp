@@ -696,8 +696,11 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
     const auto &dims{this->metaGrid_->getGridDimensions()};
 
     p[0] = (p[0] + (dims[0] - 1)) % (dims[0] - 1);
-    p[1] = (p[1] + (dims[1] - 1)) % (dims[1] - 1);
-    p[2] = (p[2] + (dims[2] - 1)) % (dims[2] - 1);
+    if(dimensionality_ > 1) {
+      p[1] = (p[1] + (dims[1] - 1)) % (dims[1] - 1);
+      if(dimensionality_ > 2)
+        p[2] = (p[2] + (dims[2] - 1)) % (dims[2] - 1);
+    }
 
     if(p[0] < localBBox[0]) {
       localBBox[0] = p[0];
@@ -789,8 +792,12 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertGlobalCoords(
   const auto &dims{this->metaGrid_->getGridDimensions()};
 
   p[0] = (p[0] + dims[0]) % dims[0];
-  p[1] = (p[1] + dims[1]) % dims[1];
-  p[2] = (p[2] + dims[2]) % dims[2];
+  if(dimensionality_ > 1) {
+    p[1] = (p[1] + dims[1]) % dims[1];
+    if(dimensionality_ > 2)
+      p[2] = (p[2] + dims[2]) % dims[2];
+  }
+
   return p;
 }
 
