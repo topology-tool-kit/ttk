@@ -39,7 +39,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars_1" number_of_components="1">
+        <InputArrayDomain name="input_scalars_1" attribute_type="point" number_of_components="1">
           <Property name="Input1" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>

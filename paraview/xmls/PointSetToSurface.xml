@@ -9,6 +9,10 @@
           short_help="Converts point set to surface.">
         This filter generates a surface between points in a Point Set
         according to the ordering of two given Point Data arrays.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
       </Documentation>
 
       <InputProperty

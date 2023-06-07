@@ -5,7 +5,7 @@
 ttk::WebSocketIO::WebSocketIO() {
   this->setDebugMsgPrefix("WebSocketIO");
 
-#if TTK_ENABLE_WEBSOCKETPP
+#ifdef TTK_ENABLE_WEBSOCKETPP
   this->server.set_error_channels(websocketpp::log::elevel::none);
   this->server.set_access_channels(websocketpp::log::alevel::none);
 
@@ -36,7 +36,7 @@ ttk::WebSocketIO::~WebSocketIO() {
   }
 }
 
-#if TTK_ENABLE_WEBSOCKETPP
+#ifdef TTK_ENABLE_WEBSOCKETPP
 
 int ttk::WebSocketIO::isListening() {
   return this->server.is_listening();

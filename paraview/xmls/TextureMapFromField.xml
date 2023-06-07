@@ -27,7 +27,7 @@ or to generate texture-based level lines out of a single scalar fields.
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
+        <InputArrayDomain name="input_scalars" attribute_type="point" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>

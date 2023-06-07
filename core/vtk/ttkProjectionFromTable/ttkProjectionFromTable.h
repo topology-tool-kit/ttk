@@ -24,6 +24,11 @@
 ///
 /// \sa ttk::ProjectionFromTable
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
 
 #pragma once
 

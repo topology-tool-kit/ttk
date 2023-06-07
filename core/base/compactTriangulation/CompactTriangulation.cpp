@@ -74,24 +74,27 @@ int CompactTriangulation::reorderVertices(std::vector<SimplexId> &vertexMap) {
     for(SimplexId vid = 0; vid < vertexNumber_; vid++) {
       for(int j = 0; j < 3; j++) {
         newPointSet[3 * vertexMap[vid] + j]
-          = ((double *)pointSet_)[3 * vid + j];
+          = ((const double *)pointSet_)[3 * vid + j];
       }
     }
     for(SimplexId vid = 0; vid < vertexNumber_; vid++) {
       for(int j = 0; j < 3; j++) {
-        ((double *)pointSet_)[3 * vid + j] = newPointSet[3 * vid + j];
+        const_cast<double *>((const double *)pointSet_)[3 * vid + j]
+          = newPointSet[3 * vid + j];
       }
     }
   } else {
     std::vector<float> newPointSet(3 * vertexNumber_);
     for(SimplexId vid = 0; vid < vertexNumber_; vid++) {
       for(int j = 0; j < 3; j++) {
-        newPointSet[3 * vertexMap[vid] + j] = ((float *)pointSet_)[3 * vid + j];
+        newPointSet[3 * vertexMap[vid] + j]
+          = ((const float *)pointSet_)[3 * vid + j];
       }
     }
     for(SimplexId vid = 0; vid < vertexNumber_; vid++) {
       for(int j = 0; j < 3; j++) {
-        ((float *)pointSet_)[3 * vid + j] = newPointSet[3 * vid + j];
+        const_cast<float *>((const float *)pointSet_)[3 * vid + j]
+          = newPointSet[3 * vid + j];
       }
     }
   }
@@ -100,7 +103,7 @@ int CompactTriangulation::reorderVertices(std::vector<SimplexId> &vertexMap) {
   for(SimplexId nid = 1; nid <= nodeNumber_; nid++) {
     for(SimplexId vid = vertexIntervals_[nid - 1] + 1;
         vid <= vertexIntervals_[nid]; vid++) {
-      ((int *)vertexIndices_)[vid] = nid;
+      const_cast<int *>(vertexIndices_)[vid] = nid;
     }
   }
 
@@ -114,7 +117,7 @@ int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
   // change the indices in cell array
   SimplexId cellCount = 0, verticesPerCell = offset[1] - offset[0];
   std::vector<std::vector<SimplexId>> nodeCells(nodeNumber_ + 1);
-  LongSimplexId *cellArr = ((LongSimplexId *)connectivity);
+  LongSimplexId *cellArr = const_cast<LongSimplexId *>(connectivity);
 
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
     SimplexId cellId = offset[cid];
@@ -151,7 +154,7 @@ int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
 
   // copy the new cell array back to original one
   for(SimplexId i = 0; i < verticesPerCell * cellNumber; i++) {
-    ((LongSimplexId *)connectivity)[i] = newCellArray[i];
+    const_cast<LongSimplexId *>(connectivity)[i] = newCellArray[i];
   }
 
   return 0;
@@ -162,7 +165,7 @@ int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
   // change the indices in cell array
   SimplexId cellCount = 0, verticesPerCell = cellArray[0];
   std::vector<std::vector<SimplexId>> nodeCells(nodeNumber_ + 1);
-  LongSimplexId *cellArr = ((LongSimplexId *)cellArray);
+  LongSimplexId *cellArr = const_cast<LongSimplexId *>(cellArray);
 
   for(SimplexId cid = 0; cid < cellNumber_; cid++) {
     SimplexId cellId = (verticesPerCell + 1) * cid;
@@ -200,7 +203,7 @@ int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
 
   // copy the new cell array back to original one
   for(SimplexId i = 0; i < (verticesPerCell + 1) * cellNumber_; i++) {
-    ((LongSimplexId *)cellArray)[i] = newCellArray[i];
+    const_cast<LongSimplexId *>(cellArray)[i] = newCellArray[i];
   }
 
   return 0;

@@ -125,7 +125,7 @@ int ttkMergeTreeTemporalReductionEncoding::run(
   return 1;
 }
 
-std::vector<vtkSmartPointer<vtkDataSet>>
+static std::vector<vtkSmartPointer<vtkDataSet>>
   preprocessSegmentation(std::vector<vtkDataSet *> &treesSegmentation,
                          bool doResampleToImage = false) {
   std::vector<vtkSmartPointer<vtkDataSet>> images;
