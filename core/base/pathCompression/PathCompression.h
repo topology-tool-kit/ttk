@@ -32,33 +32,35 @@
 
 using ttk::SimplexId;
 
+namespace {
 #ifdef TTK_ENABLE_64BIT_IDS
-/**
- * @brief Get a hash value from two keys
- *
- * @param a First Hash key
- * @param b Second hash key
- *
- * @return Hash value
- */
-constexpr unsigned long long int getHash(const unsigned long long int a,
-                                         const unsigned long long int b) {
-  return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
-         % ULONG_LONG_MAX;
-}
+  /**
+   * @brief Get a hash value from two keys
+   *
+   * @param a First Hash key
+   * @param b Second hash key
+   *
+   * @return Hash value
+   */
+  constexpr unsigned long long int getHash(const unsigned long long int a,
+                                           const unsigned long long int b) {
+    return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
+           % ULONG_LONG_MAX;
+  }
 #else
-/**
- * @brief Get a hash value from two keys
- *
- * @param a First Hash key
- * @param b Second hash key
- *
- * @return Hash value
- */
-constexpr unsigned int getHash(const unsigned int a, const unsigned int b) {
-  return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b)) % UINT_MAX;
-}
+  /**
+   * @brief Get a hash value from two keys
+   *
+   * @param a First Hash key
+   * @param b Second hash key
+   *
+   * @return Hash value
+   */
+  constexpr unsigned int getHash(const unsigned int a, const unsigned int b) {
+    return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b)) % UINT_MAX;
+  }
 #endif
+} // namespace
 
 namespace ttk {
   class PathCompression : public virtual Debug {
