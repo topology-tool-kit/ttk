@@ -39,6 +39,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">
 ///   Morse Molecule example</a> \n
 ///

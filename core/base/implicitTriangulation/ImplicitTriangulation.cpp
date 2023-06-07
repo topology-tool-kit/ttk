@@ -283,11 +283,11 @@ template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isVertexOnBoundary)(const SimplexId &vertexId) const {
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(this->metaGrid_ != nullptr) {
     return this->isVertexOnGlobalBoundaryInternal(vertexId);
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -308,11 +308,11 @@ template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isEdgeOnBoundary)(const SimplexId &edgeId) const {
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(this->metaGrid_ != nullptr) {
     return this->isEdgeOnGlobalBoundaryInternal(edgeId);
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
@@ -340,11 +340,11 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
   const SimplexId &triangleId) const {
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(this->metaGrid_ != nullptr) {
     return this->isTriangleOnGlobalBoundaryInternal(triangleId);
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)

@@ -6,6 +6,10 @@
 /// This module defines the %ProjectionFromTable class that
 /// projects on a surface points in a vtkTable.
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
 
 #pragma once
 
@@ -68,8 +72,9 @@ namespace ttk {
         }
 
         // Find barycentric coordinates
-        std::array<double, 2> tableValues{static_cast<double>(tableXValues[i]),
-                                          static_cast<double>(tableYValues[i])};
+        std::array<double, 3> tableValues{static_cast<double>(tableXValues[i]),
+                                          static_cast<double>(tableYValues[i]),
+                                          0};
         std::array<std::array<double, 3>, 3> trianglePoints;
         std::array<int, 3> indexes;
         std::array<double, 2> mid{(points[3][0] - points[1][0]) / 2.0,
@@ -90,9 +95,11 @@ namespace ttk {
             indexes[2] = 3;
         }
 
-        for(unsigned int j = 0; j < 3; ++j)
+        for(unsigned int j = 0; j < 3; ++j) {
           for(unsigned int k = 0; k < 2; ++k)
             trianglePoints[j][k] = points[indexes[j]][k];
+          trianglePoints[j][2] = 0;
+        }
 
         Geometry::computeTriangleArea(
           tableValues.data(), trianglePoints[0].data(),

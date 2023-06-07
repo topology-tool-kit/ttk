@@ -207,6 +207,7 @@ jobs:
         # Ubuntu 22.04 OOM killer also kills the parent process...
         if [[ "$VERS" == *"22.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
+          rm ttk-data/states/mergeTreePGA.pvsm
           rm ttk-data/states/mergeTreeTemporalReduction.pvsm
           rm ttk-data/states/persistentGenerators_darkSky.pvsm
         fi
@@ -422,7 +423,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn openmp graphviz ninja websocketpp sccache python=3.10 zlib
+          scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH

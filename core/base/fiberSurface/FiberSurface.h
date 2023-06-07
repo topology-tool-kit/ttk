@@ -613,10 +613,10 @@ inline int ttk::FiberSurface::computeBaseTriangle(
 
     std::array<double, 2> baryCentrics{};
     std::array<double, 2> p0{}, p1{}, p{};
-    p0[0] = ((dataTypeU *)uField_)[vertexId0];
-    p0[1] = ((dataTypeV *)vField_)[vertexId0];
-    p1[0] = ((dataTypeU *)uField_)[vertexId1];
-    p1[1] = ((dataTypeV *)vField_)[vertexId1];
+    p0[0] = ((const dataTypeU *)uField_)[vertexId0];
+    p0[1] = ((const dataTypeV *)vField_)[vertexId0];
+    p1[0] = ((const dataTypeU *)uField_)[vertexId1];
+    p1[1] = ((const dataTypeV *)vField_)[vertexId1];
     p[0] = basePointProjections[i].first;
     p[1] = basePointProjections[i].second;
     Geometry::computeBarycentricCoordinates(
@@ -755,10 +755,10 @@ inline int ttk::FiberSurface::computeCase0(
 
     std::array<double, 2> baryCentrics{};
     std::array<double, 2> p0{}, p1{}, p{};
-    p0[0] = ((dataTypeU *)uField_)[vertexId0];
-    p0[1] = ((dataTypeV *)vField_)[vertexId0];
-    p1[0] = ((dataTypeU *)uField_)[vertexId1];
-    p1[1] = ((dataTypeV *)vField_)[vertexId1];
+    p0[0] = ((const dataTypeU *)uField_)[vertexId0];
+    p0[1] = ((const dataTypeV *)vField_)[vertexId0];
+    p1[0] = ((const dataTypeU *)uField_)[vertexId1];
+    p1[1] = ((const dataTypeV *)vField_)[vertexId1];
     p[0] = (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].uv_.first;
     p[1] = (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].uv_.second;
     Geometry::computeBarycentricCoordinates(
@@ -1861,8 +1861,8 @@ inline int ttk::FiberSurface::processTetrahedron(
     }
 
     double projectedVertex[2];
-    projectedVertex[0] = ((dataTypeU *)uField_)[vertexId];
-    projectedVertex[1] = ((dataTypeV *)vField_)[vertexId];
+    projectedVertex[0] = ((const dataTypeU *)uField_)[vertexId];
+    projectedVertex[1] = ((const dataTypeV *)vField_)[vertexId];
 
     double vertexRangeEdge[2];
     vertexRangeEdge[0] = projectedVertex[0] - rangePoint0.first;
@@ -2053,11 +2053,11 @@ inline int ttk::FiberSurface::processTetrahedron(
              && (triangleEdges[i][j] == triangleEdges[i][j + 1])) {
 
             // special case of a jacobi edge
-            uv[j].first = ((dataTypeU *)uField_)[vertexId0];
-            uv[j].second = ((dataTypeV *)vField_)[vertexId0];
+            uv[j].first = ((const dataTypeU *)uField_)[vertexId0];
+            uv[j].second = ((const dataTypeV *)vField_)[vertexId0];
 
-            uv[j + 1].first = ((dataTypeU *)uField_)[vertexId1];
-            uv[j + 1].second = ((dataTypeV *)vField_)[vertexId1];
+            uv[j + 1].first = ((const dataTypeU *)uField_)[vertexId1];
+            uv[j + 1].second = ((const dataTypeV *)vField_)[vertexId1];
 
           } else if((!j)
                     || ((j)
@@ -2065,12 +2065,12 @@ inline int ttk::FiberSurface::processTetrahedron(
 
             // regular intersection case
             d0 = d[edgeImplicitEncoding_[2 * triangleEdges[i][j]]];
-            uv0.first = ((dataTypeU *)uField_)[vertexId0];
-            uv0.second = ((dataTypeV *)vField_)[vertexId0];
+            uv0.first = ((const dataTypeU *)uField_)[vertexId0];
+            uv0.second = ((const dataTypeV *)vField_)[vertexId0];
 
             d1 = d[edgeImplicitEncoding_[2 * triangleEdges[i][j] + 1]];
-            uv1.first = ((dataTypeU *)uField_)[vertexId1];
-            uv1.second = ((dataTypeV *)vField_)[vertexId1];
+            uv1.first = ((const dataTypeU *)uField_)[vertexId1];
+            uv1.second = ((const dataTypeV *)vField_)[vertexId1];
 
             uv[j].first
               = uv0.first + (d0 / (d0 - d1)) * (uv1.first - uv0.first);

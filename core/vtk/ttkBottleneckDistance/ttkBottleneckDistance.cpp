@@ -38,16 +38,16 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
   return 0;
 }
 
-int generateMatchings(vtkUnstructuredGrid *const outputCT3,
-                      const ttk::DiagramType &diagram1,
-                      const ttk::DiagramType &diagram2,
-                      const std::vector<ttk::MatchingType> &matchings,
-                      const std::array<double, 3> &distances,
-                      const double globalDist,
-                      const double spacing,
-                      const bool isBottleneck,
-                      const bool is2D0,
-                      const bool is2D1) {
+static int generateMatchings(vtkUnstructuredGrid *const outputCT3,
+                             const ttk::DiagramType &diagram1,
+                             const ttk::DiagramType &diagram2,
+                             const std::vector<ttk::MatchingType> &matchings,
+                             const std::array<double, 3> &distances,
+                             const double globalDist,
+                             const double spacing,
+                             const bool isBottleneck,
+                             const bool is2D0,
+                             const bool is2D1) {
 
   vtkNew<vtkUnstructuredGrid> vtu{};
 

@@ -19,7 +19,6 @@ ttkEndFor::ttkEndFor() {
 }
 
 ttkEndFor::~ttkEndFor() = default;
-;
 
 int ttkEndFor::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0 || port == 1) {
@@ -37,7 +36,7 @@ int ttkEndFor::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int removeFieldDataRecursively(vtkDataObject *object) {
+static int removeFieldDataRecursively(vtkDataObject *object) {
   object->GetFieldData()->RemoveArray("_ttk_IterationInfo");
   if(object->IsA("vtkMultiBlockDataSet")) {
     auto objectAsMB = static_cast<vtkMultiBlockDataSet *>(object);

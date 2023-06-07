@@ -32,7 +32,6 @@ ttkExtract::ttkExtract() {
   this->SetNumberOfOutputPorts(1);
 }
 ttkExtract::~ttkExtract() = default;
-;
 
 std::string ttkExtract::GetVtkDataTypeName(const int outputType) const {
   switch(outputType) {
@@ -99,7 +98,8 @@ int ttkExtract::RequestInformation(
   return 1;
 }
 
-int doubleVectorToString(std::string &str, const std::vector<double> &vec) {
+static int doubleVectorToString(std::string &str,
+                                const std::vector<double> &vec) {
   std::stringstream ss;
   for(auto &v : vec)
     ss << v << ",";

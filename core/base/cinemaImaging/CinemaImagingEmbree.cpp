@@ -5,7 +5,7 @@ ttk::CinemaImagingEmbree::CinemaImagingEmbree() {
 }
 ttk::CinemaImagingEmbree::~CinemaImagingEmbree() = default;
 
-#if TTK_ENABLE_EMBREE
+#ifdef TTK_ENABLE_EMBREE
 
 int ttk::CinemaImagingEmbree::deallocateScene(RTCDevice &device,
                                               RTCScene &scene) const {
@@ -221,4 +221,4 @@ int ttk::CinemaImagingEmbree::renderImage(
   return 1;
 };
 
-#endif
+#endif // TTK_ENABLE_EMBREE
