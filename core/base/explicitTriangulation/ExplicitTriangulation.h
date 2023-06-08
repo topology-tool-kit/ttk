@@ -728,8 +728,10 @@ namespace ttk {
       computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
 
     int preconditionDistributedCells() override;
+    int preconditionExchangeGhostCells() override;
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
+    int preconditionExchangeGhostVertices() override;
     int preconditionDistributedTriangles() override;
     int preconditionVertexRankArray();
     int preconditionCellRankArray();

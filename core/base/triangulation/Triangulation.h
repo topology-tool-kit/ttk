@@ -2478,6 +2478,26 @@ namespace ttk {
     }
     /// Pre-process the distributed ghost cells .
     ///
+    /// This function should ONLY be called as a pre-condition for
+    /// handling cells when executing with MPI.
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    inline int preconditionDistributedCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionDistributedCells();
+    }
+
+    /// Pre-process the distributed ghost cells .
+    ///
     /// This function should ONLY be called as a pre-condition to the
     /// following functions:
     ///   - getGhostCellsPerOwner()
@@ -2491,13 +2511,37 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getGhostCellsPerOwner()
     /// \sa getRemoteGhostCells()
-    inline int preconditionDistributedCells() override {
+    inline int preconditionExchangeGhostCells() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-      return abstractTriangulation_->preconditionDistributedCells();
+      return abstractTriangulation_->preconditionExchangeGhostCells();
+    }
+
+    /// Pre-process the distributed ghost vertices .
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getGhostVerticesPerOwner()
+    ///   - getRemoteGhostVertices()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getGhostVerticesPerOwner()
+    /// \sa getRemoteGhostVertices()
+    inline int preconditionExchangeGhostVertices() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionExchangeGhostVertices();
     }
 #endif // TTK_ENABLE_MPI
 

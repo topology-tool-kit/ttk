@@ -71,6 +71,9 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
+#ifdef TTK_ENABLE_MPI
+        triangulation->preconditionExchangeGhostVertices();
+#endif // TTK_ENABLE_MPI
       }
       return 0;
     }
