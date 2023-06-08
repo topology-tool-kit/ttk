@@ -34,98 +34,98 @@
 
 #include <MarchingTetrahedraLookupTables.inl>
 
-namespace {
-  /**
-   * @brief Get a hash value from two keys
-   *
-   * @param a First Hash key
-   * @param b Second hash key
-   *
-   * @return Hash value
-   */
-  constexpr unsigned long long int getHash(const unsigned long long int a,
-                                           const unsigned long long int b) {
-    return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
-           % ULONG_LONG_MAX;
-  }
-
-  /**
-   * @brief Get the center of two points
-   *
-   * @param[in] pos0 Position 0
-   * @param[in] pos1 Position 1
-   * @param[out] incenter Resulting position
-   * @return int 0 on success
-   */
-  inline void getCenter(const std::array<float, 3> pos0,
-                        const std::array<float, 3> pos1,
-                        std::array<float, 3> &incenter) {
-    incenter[0] = 0.5 * (pos0[0] + pos1[0]);
-    incenter[1] = 0.5 * (pos0[1] + pos1[1]);
-    incenter[2] = 0.5 * (pos0[2] + pos1[2]);
-  }
-
-  /**
-   * @brief Get the center of three points
-   *
-   * @param[in] pos0 Position 0
-   * @param[in] pos1 Position 1
-   * @param[in] pos2 Position 2
-   * @param[out] incenter Resulting position
-   * @return int 0 on success
-   */
-  inline void getCenter(const std::array<float, 3> pos0,
-                        const std::array<float, 3> pos1,
-                        const std::array<float, 3> pos2,
-                        std::array<float, 3> &incenter) {
-    incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
-    incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
-    incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
-  }
-
-  /**
-   * @brief Get the center of four points
-   *
-   * @param[in] pos0 Position 0
-   * @param[in] pos1 Position 1
-   * @param[in] pos2 Position 2
-   * @param[in] pos3 Position 3
-   * @param[out] incenter Resulting position
-   * @return int 0 on success
-   */
-  inline void getCenter(const std::array<float, 3> pos0,
-                        const std::array<float, 3> pos1,
-                        const std::array<float, 3> pos2,
-                        const std::array<float, 3> pos3,
-                        std::array<float, 3> &incenter) {
-    incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
-    incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
-    incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
-  }
-
-  /**
-   * @brief Interpolate between two points (lambda = 0 -> pos1 / 1 -> pos0)
-   *
-   * @param[in] pos0 Position 0
-   * @param[in] pos1 Position 1
-   * @param[in] lambda Interpolation parameter
-   * @param[out] result Resulting position
-   * @return int 0 on success
-   */
-  inline void interpolatePoints(const std::array<float, 3> pos0,
-                                const std::array<float, 3> pos1,
-                                const float lambda,
-                                std::array<float, 3> &result) {
-
-    result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
-    result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
-    result[2] = lambda * pos0[2] + (1 - lambda) * pos1[2];
-  }
-} // namespace
-
 using ttk::SimplexId;
 
 namespace ttk {
+  namespace mth {
+    /**
+     * @brief Get a hash value from two keys
+     *
+     * @param a First Hash key
+     * @param b Second hash key
+     *
+     * @return Hash value
+     */
+    constexpr unsigned long long int getHash(const unsigned long long int a,
+                                             const unsigned long long int b) {
+      return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
+             % ULONG_LONG_MAX;
+    }
+
+    /**
+     * @brief Get the center of two points
+     *
+     * @param[in] pos0 Position 0
+     * @param[in] pos1 Position 1
+     * @param[out] incenter Resulting position
+     * @return int 0 on success
+     */
+    inline void getCenter(const std::array<float, 3> pos0,
+                          const std::array<float, 3> pos1,
+                          std::array<float, 3> &incenter) {
+      incenter[0] = 0.5 * (pos0[0] + pos1[0]);
+      incenter[1] = 0.5 * (pos0[1] + pos1[1]);
+      incenter[2] = 0.5 * (pos0[2] + pos1[2]);
+    }
+
+    /**
+     * @brief Get the center of three points
+     *
+     * @param[in] pos0 Position 0
+     * @param[in] pos1 Position 1
+     * @param[in] pos2 Position 2
+     * @param[out] incenter Resulting position
+     * @return int 0 on success
+     */
+    inline void getCenter(const std::array<float, 3> pos0,
+                          const std::array<float, 3> pos1,
+                          const std::array<float, 3> pos2,
+                          std::array<float, 3> &incenter) {
+      incenter[0] = 0.3333 * (pos0[0] + pos1[0] + pos2[0]);
+      incenter[1] = 0.3333 * (pos0[1] + pos1[1] + pos2[1]);
+      incenter[2] = 0.3333 * (pos0[2] + pos1[2] + pos2[2]);
+    }
+
+    /**
+     * @brief Get the center of four points
+     *
+     * @param[in] pos0 Position 0
+     * @param[in] pos1 Position 1
+     * @param[in] pos2 Position 2
+     * @param[in] pos3 Position 3
+     * @param[out] incenter Resulting position
+     * @return int 0 on success
+     */
+    inline void getCenter(const std::array<float, 3> pos0,
+                          const std::array<float, 3> pos1,
+                          const std::array<float, 3> pos2,
+                          const std::array<float, 3> pos3,
+                          std::array<float, 3> &incenter) {
+      incenter[0] = 0.25 * (pos0[0] + pos1[0] + pos2[0] + pos3[0]);
+      incenter[1] = 0.25 * (pos0[1] + pos1[1] + pos2[1] + pos3[1]);
+      incenter[2] = 0.25 * (pos0[2] + pos1[2] + pos2[2] + pos3[2]);
+    }
+
+    /**
+     * @brief Interpolate between two points (lambda = 0 -> pos1 / 1 -> pos0)
+     *
+     * @param[in] pos0 Position 0
+     * @param[in] pos1 Position 1
+     * @param[in] lambda Interpolation parameter
+     * @param[out] result Resulting position
+     * @return int 0 on success
+     */
+    inline void interpolatePoints(const std::array<float, 3> pos0,
+                                  const std::array<float, 3> pos1,
+                                  const float lambda,
+                                  std::array<float, 3> &result) {
+
+      result[0] = lambda * pos0[0] + (1 - lambda) * pos1[0];
+      result[1] = lambda * pos0[1] + (1 - lambda) * pos1[1];
+      result[2] = lambda * pos0[2] + (1 - lambda) * pos1[2];
+    }
+  } // namespace mth
+
   class MarchingTetrahedra : public virtual Debug {
   public:
     MarchingTetrahedra();
@@ -516,12 +516,12 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
       if(triangleLookupIs2Label[tetCases[tet]]) {
         std::array<std::array<float, 3>, 2> eC{};
-        getCenter(vertPos[edgeVerts[0]], vertPos[edgeVerts[1]], eC[0]);
-        getCenter(vertPos[edgeVerts[2]], vertPos[edgeVerts[3]], eC[1]);
+        mth::getCenter(vertPos[edgeVerts[0]], vertPos[edgeVerts[1]], eC[0]);
+        mth::getCenter(vertPos[edgeVerts[2]], vertPos[edgeVerts[3]], eC[1]);
 
         // Create a hash from vertex label 0 and 1
         const unsigned long long sparseID
-          = getHash(label[edgeVerts[0]], label[edgeVerts[1]]);
+          = mth::getHash(label[edgeVerts[0]], label[edgeVerts[1]]);
 
         // Write the edge endpoints, cell indices, and label
         p[0] = eC[0][0];
@@ -542,15 +542,15 @@ int ttk::MarchingTetrahedra::writeSeparators_2D(
 
       } else {
         std::array<std::array<float, 3>, 4> eC{};
-        getCenter(vertPos[0], vertPos[1], eC[0]);
-        getCenter(vertPos[0], vertPos[2], eC[1]);
-        getCenter(vertPos[1], vertPos[2], eC[2]);
-        getCenter(vertPos[0], vertPos[1], vertPos[2], eC[3]);
+        mth::getCenter(vertPos[0], vertPos[1], eC[0]);
+        mth::getCenter(vertPos[0], vertPos[2], eC[1]);
+        mth::getCenter(vertPos[1], vertPos[2], eC[2]);
+        mth::getCenter(vertPos[0], vertPos[1], vertPos[2], eC[3]);
 
         // Create a hash from all vertex label combinations
         const std::array<unsigned long long, 3> sparseID
-          = {getHash(label[0], label[1]), getHash(label[0], label[2]),
-             getHash(label[1], label[2])};
+          = {mth::getHash(label[0], label[1]), mth::getHash(label[0], label[2]),
+             mth::getHash(label[1], label[2])};
 
         // Write all three lines, each connected to the triangle center
         p[0] = eC[0][0];
@@ -791,10 +791,10 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
       if(triangleLookupIs2Label[tetCases[tet]]) {
         std::array<float, 3> vert00{}, vert01{}, vert10{}, vert11{};
 
-        interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
-        interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
-        interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d1, vert10);
-        interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
+        mth::interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
+        mth::interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
+        mth::interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d1, vert10);
+        mth::interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
 
         // Write the edge endpoints, cell indices, and labels
         p[0] = vert00[0];
@@ -825,20 +825,20 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
       } else {
         std::array<float, 3> vert00{}, vert01{}, vert10{}, vert11{}, vert20{},
           vert21{};
-        interpolatePoints(vPos[0], vPos[1], d0, vert00);
-        interpolatePoints(vPos[0], vPos[2], d0, vert01);
-        interpolatePoints(vPos[1], vPos[0], d0, vert10);
-        interpolatePoints(vPos[1], vPos[2], d0, vert11);
-        interpolatePoints(vPos[2], vPos[0], d0, vert20);
-        interpolatePoints(vPos[2], vPos[1], d0, vert21);
+        mth::interpolatePoints(vPos[0], vPos[1], d0, vert00);
+        mth::interpolatePoints(vPos[0], vPos[2], d0, vert01);
+        mth::interpolatePoints(vPos[1], vPos[0], d0, vert10);
+        mth::interpolatePoints(vPos[1], vPos[2], d0, vert11);
+        mth::interpolatePoints(vPos[2], vPos[0], d0, vert20);
+        mth::interpolatePoints(vPos[2], vPos[1], d0, vert21);
 
         std::array<float, 3> triCenter{};
-        getCenter(vPos[0], vPos[1], vPos[2], triCenter);
+        mth::getCenter(vPos[0], vPos[1], vPos[2], triCenter);
 
         std::array<float, 3> triS0{}, triS1{}, triS2{};
-        interpolatePoints(vPos[0], triCenter, dc, triS0);
-        interpolatePoints(vPos[1], triCenter, dc, triS1);
-        interpolatePoints(vPos[2], triCenter, dc, triS2);
+        mth::interpolatePoints(vPos[0], triCenter, dc, triS0);
+        mth::interpolatePoints(vPos[1], triCenter, dc, triS1);
+        mth::interpolatePoints(vPos[2], triCenter, dc, triS2);
 
         // Write the edge endpoints, cell indices, and labels
         p[0] = vert00[0];
@@ -1069,28 +1069,29 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
 
       std::array<std::array<float, 3>, 10> eC{};
       // 6 edge centers
-      getCenter(vertPos[0], vertPos[1], eC[0]);
-      getCenter(vertPos[0], vertPos[2], eC[1]);
-      getCenter(vertPos[0], vertPos[3], eC[2]);
-      getCenter(vertPos[1], vertPos[2], eC[3]);
-      getCenter(vertPos[1], vertPos[3], eC[4]);
-      getCenter(vertPos[2], vertPos[3], eC[5]);
+      mth::getCenter(vertPos[0], vertPos[1], eC[0]);
+      mth::getCenter(vertPos[0], vertPos[2], eC[1]);
+      mth::getCenter(vertPos[0], vertPos[3], eC[2]);
+      mth::getCenter(vertPos[1], vertPos[2], eC[3]);
+      mth::getCenter(vertPos[1], vertPos[3], eC[4]);
+      mth::getCenter(vertPos[2], vertPos[3], eC[5]);
 
       // 4 triangle centers
-      getCenter(vertPos[0], vertPos[1], vertPos[2], eC[6]);
-      getCenter(vertPos[0], vertPos[1], vertPos[3], eC[7]);
-      getCenter(vertPos[0], vertPos[2], vertPos[3], eC[8]);
-      getCenter(vertPos[1], vertPos[2], vertPos[3], eC[9]);
+      mth::getCenter(vertPos[0], vertPos[1], vertPos[2], eC[6]);
+      mth::getCenter(vertPos[0], vertPos[1], vertPos[3], eC[7]);
+      mth::getCenter(vertPos[0], vertPos[2], vertPos[3], eC[8]);
+      mth::getCenter(vertPos[1], vertPos[2], vertPos[3], eC[9]);
 
       if(tetEdgeIndices[0] == 10) { // 4 labels on tetraeder
         std::array<float, 3> tetCenter{};
-        getCenter(vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
+        mth::getCenter(
+          vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
 
         // Create a hashes from all four label combinations
-        unsigned long long sparseMSIds[6]
-          = {getHash(label[0], label[1]), getHash(label[0], label[2]),
-             getHash(label[0], label[3]), getHash(label[1], label[2]),
-             getHash(label[1], label[3]), getHash(label[2], label[3])};
+        unsigned long long sparseMSIds[6] = {
+          mth::getHash(label[0], label[1]), mth::getHash(label[0], label[2]),
+          mth::getHash(label[0], label[3]), mth::getHash(label[1], label[2]),
+          mth::getHash(label[1], label[3]), mth::getHash(label[2], label[3])};
 
         // Write the triangle endpoints, cell indices, and label
         p[0] = eC[7][0];
@@ -1279,7 +1280,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
           numThreadIndex += 3;
 
           // Create hash from the corresponsing vertex labels
-          m[0] = getHash(
+          m[0] = mth::getHash(
             label[tetVertLabel[t * 2]], label[tetVertLabel[(t * 2) + 1]]);
           m += 1;
         }
@@ -1503,12 +1504,12 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         std::array<float, 3> vert00{}, vert01{}, vert02{}, vert10{}, vert11{},
           vert12{};
 
-        interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
-        interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
-        interpolatePoints(vPos[vIds[4]], vPos[vIds[5]], d0, vert02);
-        interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d1, vert10);
-        interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
-        interpolatePoints(vPos[vIds[4]], vPos[vIds[5]], d1, vert12);
+        mth::interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d0, vert00);
+        mth::interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d0, vert01);
+        mth::interpolatePoints(vPos[vIds[4]], vPos[vIds[5]], d0, vert02);
+        mth::interpolatePoints(vPos[vIds[0]], vPos[vIds[1]], d1, vert10);
+        mth::interpolatePoints(vPos[vIds[2]], vPos[vIds[3]], d1, vert11);
+        mth::interpolatePoints(vPos[vIds[4]], vPos[vIds[5]], d1, vert12);
 
         // Write the triangle endpoints, cell indices, and label
         p[0] = vert00[0];
@@ -1548,8 +1549,8 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         if(vIds[6] != -1) { // 2 vertices per label (e.g. AABB)
           std::array<float, 3> vert03{}, vert13{};
 
-          interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d0, vert03);
-          interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d1, vert13);
+          mth::interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d0, vert03);
+          mth::interpolatePoints(vPos[vIds[6]], vPos[vIds[7]], d1, vert13);
 
           // Write the triangle endpoints, cell indices, and label
           p[0] = vert00[0];
@@ -1589,42 +1590,44 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
         const int *vIds = tetLookupSplitBasisns3Label[tetCases[tet]];
 
         std::array<std::array<float, 3>, 4> triCenter{};
-        getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
-        getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
-        getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
-        getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
+        mth::getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
+        mth::getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
+        mth::getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
+        mth::getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
         std::array<std::array<float, 3>, 10> edgeCenters{};
 
-        getCenter(vPos[0], vPos[1], edgeCenters[0]);
-        getCenter(vPos[0], vPos[2], edgeCenters[1]);
-        getCenter(vPos[0], vPos[3], edgeCenters[2]);
-        getCenter(vPos[1], vPos[2], edgeCenters[3]);
-        getCenter(vPos[1], vPos[3], edgeCenters[4]);
-        getCenter(vPos[2], vPos[3], edgeCenters[5]);
+        mth::getCenter(vPos[0], vPos[1], edgeCenters[0]);
+        mth::getCenter(vPos[0], vPos[2], edgeCenters[1]);
+        mth::getCenter(vPos[0], vPos[3], edgeCenters[2]);
+        mth::getCenter(vPos[1], vPos[2], edgeCenters[3]);
+        mth::getCenter(vPos[1], vPos[3], edgeCenters[4]);
+        mth::getCenter(vPos[2], vPos[3], edgeCenters[5]);
 
         std::array<float, 3> edge00{}, edge01{}, edge02{}, edge03{}, tri00{},
           tri01{}, edge10{}, edge11{}, edge12{}, tri10{}, tri11{}, edge20{},
           edge21{}, edge22{}, tri20{}, tri21{};
 
-        interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[1]], dc, edge00);
-        interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[2]], dc, edge01);
-        interpolatePoints(vPos[vIds[0]], triCenter[vIds[3]], dc, tri00);
-        interpolatePoints(vPos[vIds[4]], edgeCenters[vIds[5]], dc, edge02);
-        interpolatePoints(vPos[vIds[4]], edgeCenters[vIds[6]], dc, edge03);
-        interpolatePoints(vPos[vIds[4]], triCenter[vIds[7]], dc, tri01);
+        mth::interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[1]], dc, edge00);
+        mth::interpolatePoints(vPos[vIds[0]], edgeCenters[vIds[2]], dc, edge01);
+        mth::interpolatePoints(vPos[vIds[0]], triCenter[vIds[3]], dc, tri00);
+        mth::interpolatePoints(vPos[vIds[4]], edgeCenters[vIds[5]], dc, edge02);
+        mth::interpolatePoints(vPos[vIds[4]], edgeCenters[vIds[6]], dc, edge03);
+        mth::interpolatePoints(vPos[vIds[4]], triCenter[vIds[7]], dc, tri01);
 
-        interpolatePoints(vPos[vIds[8]], edgeCenters[vIds[1]], dc, edge10);
-        interpolatePoints(vPos[vIds[8]], edgeCenters[vIds[5]], dc, edge11);
-        interpolatePoints(vPos[vIds[8]], edgeCenters[vIds[10]], dc, edge12);
-        interpolatePoints(vPos[vIds[8]], triCenter[vIds[3]], dc, tri10);
-        interpolatePoints(vPos[vIds[8]], triCenter[vIds[7]], dc, tri11);
+        mth::interpolatePoints(vPos[vIds[8]], edgeCenters[vIds[1]], dc, edge10);
+        mth::interpolatePoints(vPos[vIds[8]], edgeCenters[vIds[5]], dc, edge11);
+        mth::interpolatePoints(
+          vPos[vIds[8]], edgeCenters[vIds[10]], dc, edge12);
+        mth::interpolatePoints(vPos[vIds[8]], triCenter[vIds[3]], dc, tri10);
+        mth::interpolatePoints(vPos[vIds[8]], triCenter[vIds[7]], dc, tri11);
 
-        interpolatePoints(vPos[vIds[9]], edgeCenters[vIds[2]], dc, edge20);
-        interpolatePoints(vPos[vIds[9]], edgeCenters[vIds[6]], dc, edge21);
-        interpolatePoints(vPos[vIds[9]], edgeCenters[vIds[10]], dc, edge22);
-        interpolatePoints(vPos[vIds[9]], triCenter[vIds[3]], dc, tri20);
-        interpolatePoints(vPos[vIds[9]], triCenter[vIds[7]], dc, tri21);
+        mth::interpolatePoints(vPos[vIds[9]], edgeCenters[vIds[2]], dc, edge20);
+        mth::interpolatePoints(vPos[vIds[9]], edgeCenters[vIds[6]], dc, edge21);
+        mth::interpolatePoints(
+          vPos[vIds[9]], edgeCenters[vIds[10]], dc, edge22);
+        mth::interpolatePoints(vPos[vIds[9]], triCenter[vIds[3]], dc, tri20);
+        mth::interpolatePoints(vPos[vIds[9]], triCenter[vIds[7]], dc, tri21);
 
         // Write the triangle endpoints, cell indices, and labels
         // Label 0
@@ -1771,14 +1774,14 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
 
       } else { // 4 labels
         std::array<float, 3> tetCenter{};
-        getCenter(vPos[0], vPos[1], vPos[2], vPos[3], tetCenter);
+        mth::getCenter(vPos[0], vPos[1], vPos[2], vPos[3], tetCenter);
 
         // the 4 triangle centers
         std::array<std::array<float, 3>, 4> triCenter{};
-        getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
-        getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
-        getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
-        getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
+        mth::getCenter(vPos[0], vPos[1], vPos[2], triCenter[0]);
+        mth::getCenter(vPos[0], vPos[1], vPos[3], triCenter[1]);
+        mth::getCenter(vPos[0], vPos[2], vPos[3], triCenter[2]);
+        mth::getCenter(vPos[1], vPos[2], vPos[3], triCenter[3]);
 
         std::array<float, 3> vert00{}, vert01{}, vert02{}, vert0tet{},
           vert0t0{}, vert0t1{}, vert0t2{}, vert10{}, vert11{}, vert12{},
@@ -1786,37 +1789,37 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
           vert22{}, vert2tet{}, vert2t0{}, vert2t1{}, vert2t2{}, vert30{},
           vert31{}, vert32{}, vert3tet{}, vert3t0{}, vert3t1{}, vert3t2{};
 
-        interpolatePoints(vPos[0], vPos[1], d0, vert00);
-        interpolatePoints(vPos[0], vPos[2], d0, vert01);
-        interpolatePoints(vPos[0], vPos[3], d0, vert02);
-        interpolatePoints(vPos[0], tetCenter, dc, vert0tet);
-        interpolatePoints(vPos[0], triCenter[0], dc, vert0t0);
-        interpolatePoints(vPos[0], triCenter[1], dc, vert0t1);
-        interpolatePoints(vPos[0], triCenter[2], dc, vert0t2);
+        mth::interpolatePoints(vPos[0], vPos[1], d0, vert00);
+        mth::interpolatePoints(vPos[0], vPos[2], d0, vert01);
+        mth::interpolatePoints(vPos[0], vPos[3], d0, vert02);
+        mth::interpolatePoints(vPos[0], tetCenter, dc, vert0tet);
+        mth::interpolatePoints(vPos[0], triCenter[0], dc, vert0t0);
+        mth::interpolatePoints(vPos[0], triCenter[1], dc, vert0t1);
+        mth::interpolatePoints(vPos[0], triCenter[2], dc, vert0t2);
 
-        interpolatePoints(vPos[1], vPos[0], d0, vert10);
-        interpolatePoints(vPos[1], vPos[2], d0, vert11);
-        interpolatePoints(vPos[1], vPos[3], d0, vert12);
-        interpolatePoints(vPos[1], tetCenter, dc, vert1tet);
-        interpolatePoints(vPos[1], triCenter[0], dc, vert1t0);
-        interpolatePoints(vPos[1], triCenter[1], dc, vert1t1);
-        interpolatePoints(vPos[1], triCenter[3], dc, vert1t2);
+        mth::interpolatePoints(vPos[1], vPos[0], d0, vert10);
+        mth::interpolatePoints(vPos[1], vPos[2], d0, vert11);
+        mth::interpolatePoints(vPos[1], vPos[3], d0, vert12);
+        mth::interpolatePoints(vPos[1], tetCenter, dc, vert1tet);
+        mth::interpolatePoints(vPos[1], triCenter[0], dc, vert1t0);
+        mth::interpolatePoints(vPos[1], triCenter[1], dc, vert1t1);
+        mth::interpolatePoints(vPos[1], triCenter[3], dc, vert1t2);
 
-        interpolatePoints(vPos[2], vPos[0], d0, vert20);
-        interpolatePoints(vPos[2], vPos[1], d0, vert21);
-        interpolatePoints(vPos[2], vPos[3], d0, vert22);
-        interpolatePoints(vPos[2], tetCenter, dc, vert2tet);
-        interpolatePoints(vPos[2], triCenter[0], dc, vert2t0);
-        interpolatePoints(vPos[2], triCenter[2], dc, vert2t1);
-        interpolatePoints(vPos[2], triCenter[3], dc, vert2t2);
+        mth::interpolatePoints(vPos[2], vPos[0], d0, vert20);
+        mth::interpolatePoints(vPos[2], vPos[1], d0, vert21);
+        mth::interpolatePoints(vPos[2], vPos[3], d0, vert22);
+        mth::interpolatePoints(vPos[2], tetCenter, dc, vert2tet);
+        mth::interpolatePoints(vPos[2], triCenter[0], dc, vert2t0);
+        mth::interpolatePoints(vPos[2], triCenter[2], dc, vert2t1);
+        mth::interpolatePoints(vPos[2], triCenter[3], dc, vert2t2);
 
-        interpolatePoints(vPos[3], vPos[0], d0, vert30);
-        interpolatePoints(vPos[3], vPos[1], d0, vert31);
-        interpolatePoints(vPos[3], vPos[2], d0, vert32);
-        interpolatePoints(vPos[3], tetCenter, dc, vert3tet);
-        interpolatePoints(vPos[3], triCenter[1], dc, vert3t0);
-        interpolatePoints(vPos[3], triCenter[2], dc, vert3t1);
-        interpolatePoints(vPos[3], triCenter[3], dc, vert3t2);
+        mth::interpolatePoints(vPos[3], vPos[0], d0, vert30);
+        mth::interpolatePoints(vPos[3], vPos[1], d0, vert31);
+        mth::interpolatePoints(vPos[3], vPos[2], d0, vert32);
+        mth::interpolatePoints(vPos[3], tetCenter, dc, vert3tet);
+        mth::interpolatePoints(vPos[3], triCenter[1], dc, vert3t0);
+        mth::interpolatePoints(vPos[3], triCenter[2], dc, vert3t1);
+        mth::interpolatePoints(vPos[3], triCenter[3], dc, vert3t2);
 
         // Write the triangle endpoints, cell indices, and labels
         // Label Vert 0
