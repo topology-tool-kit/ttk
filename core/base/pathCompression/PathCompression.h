@@ -32,35 +32,36 @@
 
 using ttk::SimplexId;
 
-#ifdef TTK_ENABLE_64BIT_IDS
-/**
- * @brief Get a hash value from two keys
- *
- * @param a First Hash key
- * @param b Second hash key
- *
- * @return Hash value
- */
-constexpr unsigned long long int getHash(const unsigned long long int a,
-                                         const unsigned long long int b) {
-  return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
-         % ULONG_LONG_MAX;
-}
-#else
-/**
- * @brief Get a hash value from two keys
- *
- * @param a First Hash key
- * @param b Second hash key
- *
- * @return Hash value
- */
-constexpr unsigned int getHash(const unsigned int a, const unsigned int b) {
-  return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b)) % UINT_MAX;
-}
-#endif
-
 namespace ttk {
+  namespace pcp {
+#ifdef TTK_ENABLE_64BIT_IDS
+    /**
+     * @brief Get a hash value from two keys
+     *
+     * @param a First Hash key
+     * @param b Second hash key
+     *
+     * @return Hash value
+     */
+    constexpr unsigned long long int getHash(const unsigned long long int a,
+                                             const unsigned long long int b) {
+      return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
+             % ULONG_LONG_MAX;
+    }
+#else
+    /**
+     * @brief Get a hash value from two keys
+     *
+     * @param a First Hash key
+     * @param b Second hash key
+     *
+     * @return Hash value
+     */
+    constexpr unsigned int getHash(const unsigned int a, const unsigned int b) {
+      return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b)) % UINT_MAX;
+    }
+#endif
+  } // namespace pcp
   class PathCompression : public virtual Debug {
   public:
     PathCompression();
@@ -162,6 +163,7 @@ namespace ttk {
                       const SimplexId *const dscSegmentation,
                       const triangulationType &triangulation) const;
 
+  protected:
     // Compute ascending segmentation?
     bool ComputeAscendingSegmentation{true};
 
@@ -412,7 +414,8 @@ int ttk::PathCompression::computeMSHash(
 #pragma omp parallel for schedule(static) num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nVerts; ++i) {
-    morseSmaleSegmentation[i] = getHash(ascSegmentation[i], dscSegmentation[i]);
+    morseSmaleSegmentation[i]
+      = pcp::getHash(ascSegmentation[i], dscSegmentation[i]);
   }
 
   this->printMsg("Morse-Smale segmentation hash computed", 1.0,

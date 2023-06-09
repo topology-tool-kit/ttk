@@ -8,6 +8,8 @@ if(TTK_BUILD_DOCUMENTATION)
     endif()
     # to find welcomeMsg.inl and welcomeLogo.inl
     list(APPEND DOXYGEN_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/core/base/common")
+    # to find MarchingTetrahedraLookupTables.inl
+    list(APPEND DOXYGEN_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/core/base/marchingTetrahedra")
     # Doxygen needs space-separated paths
     string (REPLACE ";" " " DOXYGEN_INCLUDE_DIRS "${DOXYGEN_INCLUDE_DIRS}")
     # to find splash.png
