@@ -1331,7 +1331,6 @@ public:
               if(embeddedDiagram) {
                 bool nodeSup = trees[i]->getValue<dataType>(node)
                                > trees[i]->getValue<dataType>(nodeOrigin);
-                // TODO is this correct?
                 criticalTypeT
                   = ((nodeSup and toAddT == 1) or (not nodeSup and toAddT == 0)
                        ? (isPDSadMax or nodeIsRoot ? locMax : saddle1)

@@ -640,30 +640,6 @@ namespace ttk {
       zeroPadding(name, noTrees, treeNum);
       return name;
     }
-
-    //----------------------------------------------------------------------------
-    // Testing
-    //----------------------------------------------------------------------------
-    void printVector(std::vector<double> &v, bool printHead = true) {
-      if(printHead)
-        std::cout << "======= printVector" << std::endl;
-      for(auto vv : v)
-        std::cout << vv << " ";
-      std::cout << std::endl;
-    }
-
-    void printVectorOfVector(std::vector<std::vector<double>> &v) {
-      std::cout << "======= printVectorOfVector" << std::endl;
-      for(auto vv : v)
-        printVector(vv, false);
-    }
-
-    void printVectorOfVectorOfVector(
-      std::vector<std::vector<std::vector<double>>> &v) {
-      std::cout << "======= printVectorOfVectorOfVector" << std::endl;
-      for(auto vv : v)
-        printVectorOfVector(vv);
-    }
   }; // MergeTreeAxesAlgorithmBase class
 
 } // namespace ttk
