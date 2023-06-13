@@ -1423,6 +1423,11 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
+    inline const std::vector<std::array<ttk::SimplexId, 6>> &
+      getNeighborVertexBBoxes() const override {
+      return abstractTriangulation_->getNeighborVertexBBoxes();
+    }
+
     inline const std::vector<std::vector<SimplexId>> &
       getGhostCellsPerOwner() const override {
       return abstractTriangulation_->getGhostCellsPerOwner();

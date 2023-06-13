@@ -108,6 +108,7 @@ private:
   bool isOutputExtentComputed_{false};
   std::array<periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
   std::vector<int> neighbors_;
+  std::vector<std::array<ttk::SimplexId, 6>> neighborVertexBBoxes_;
 
 public:
   /**
@@ -144,6 +145,7 @@ public:
   int MPIPeriodicGhostPipelinePreconditioning(vtkImageData *imageIn,
                                               vtkImageData *imageOut);
   inline std::vector<int> getNeighbors() {
+    std::sort(neighbors_.begin(), neighbors_.end());
     return neighbors_;
   }
 

@@ -47,10 +47,6 @@ namespace ttk {
     int preconditionDistributedVertices() override;
     // offset coordinates of the local grid inside the metaGrid_
     std::array<SimplexId, 3> localGridOffset_{};
-    // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
-    std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
-    // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
-    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
     std::shared_ptr<RegularGridTriangulation> metaGrid_;
 
     virtual void createMetaGrid(const double *const bounds) = 0;

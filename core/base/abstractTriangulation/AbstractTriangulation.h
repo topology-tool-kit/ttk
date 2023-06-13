@@ -2871,6 +2871,11 @@ namespace ttk {
       return this->neighborRanks_;
     }
 
+    virtual inline const std::vector<std::array<ttk::SimplexId, 6>> &
+      getNeighborVertexBBoxes() const {
+      return this->neighborVertexBBoxes_;
+    }
+
     virtual inline const std::vector<std::vector<SimplexId>> &
       getGhostCellsPerOwner() const {
       return this->ghostCellsPerOwner_;
@@ -3799,6 +3804,10 @@ namespace ttk {
     // global ids of local (owned) vertices that are ghost cells of other
     // (neighboring) ranks (per MPI rank)
     std::vector<std::vector<SimplexId>> remoteGhostVertices_{};
+    // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
+    std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
+    // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
+    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedDistributedEdges_{false};

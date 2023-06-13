@@ -90,11 +90,6 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
 
   if(prevPeriodic != periodic) {
 
-    triangulation.setPeriodicBoundaryConditions(periodic);
-    dbg.printMsg("Switching regular grid periodicity from "
-                 + (prevPeriodic ? std::string("ON") : std::string("OFF"))
-                 + " to "
-                 + (periodic ? std::string("ON") : std::string("OFF")));
 #ifdef TTK_ENABLE_MPI
     if(periodic) {
       if(ttk::isRunningWithMPI()) {
@@ -112,6 +107,11 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
       }
     }
 #endif
+    triangulation.setPeriodicBoundaryConditions(periodic);
+    dbg.printMsg("Switching regular grid periodicity from "
+                 + (prevPeriodic ? std::string("ON") : std::string("OFF"))
+                 + " to "
+                 + (periodic ? std::string("ON") : std::string("OFF")));
   }
 }
 

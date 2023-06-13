@@ -45,9 +45,17 @@ int ttkPeriodicGhostsGeneration::RequestUpdateExtent(
   vtkImageData *image = vtkImageData::GetData(inputVector[0]);
   this->ComputeOutputExtent(image);
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  std::array<int, 6> outExtentWithoutGhost{outExtent_};
+  for(int i = 0; i < 3; i++) {
+    if(std::abs(outExtent_[2 * i] - outExtent_[2 * i + 1]) > spacing_[i] / 10) {
+      outExtentWithoutGhost[2 * i] += 1;
+      outExtentWithoutGhost[2 * i + 1] -= 1;
+    }
+  }
   inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
-              outExtent_[0] + 1, outExtent_[1] - 1, outExtent_[2] + 1,
-              outExtent_[3] - 1, outExtent_[4] + 1, outExtent_[5] - 1);
+              outExtentWithoutGhost[0], outExtentWithoutGhost[1],
+              outExtentWithoutGhost[2], outExtentWithoutGhost[3],
+              outExtentWithoutGhost[4], outExtentWithoutGhost[5]);
   return 1;
 }
 
@@ -79,26 +87,32 @@ int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
 }
 
 int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
-  if(!isOutputExtentComputed_) {
 
-    vtkNew<vtkExtentTranslator> translator;
-    translator->SetWholeExtent(inExtent_.data());
-    translator->SetNumberOfPieces(ttk::MPIsize_);
-    translator->SetPiece(ttk::MPIrank_);
-    translator->PieceToExtent();
-    int localExtent[6];
-    translator->GetExtent(localExtent);
+  vtkNew<vtkExtentTranslator> translator;
+  translator->SetWholeExtent(inExtent_.data());
+  translator->SetNumberOfPieces(ttk::MPIsize_);
+  translator->SetPiece(ttk::MPIrank_);
+  translator->PieceToExtent();
+  int localExtent[6];
+  translator->GetExtent(localExtent);
 
-    double bounds[6] = {
-      origin_[0] + localExtent[0] * spacing_[0],
-      origin_[0] + localExtent[1] * spacing_[0],
-      origin_[1] + localExtent[2] * spacing_[1],
-      origin_[1] + localExtent[3] * spacing_[1],
-      origin_[2] + localExtent[4] * spacing_[2],
-      origin_[2] + localExtent[5] * spacing_[2],
-    };
-
-    ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
+  double bounds[6] = {
+    origin_[0] + localExtent[0] * spacing_[0],
+    origin_[0] + localExtent[1] * spacing_[0],
+    origin_[1] + localExtent[2] * spacing_[1],
+    origin_[1] + localExtent[3] * spacing_[1],
+    origin_[2] + localExtent[4] * spacing_[2],
+    origin_[2] + localExtent[5] * spacing_[2],
+  };
+  if(!isOutputExtentComputed_
+     || std::abs(boundsWithoutGhosts_[0] - bounds[0]) > spacing_[0] / 10
+     || std::abs(boundsWithoutGhosts_[1] - bounds[1]) > spacing_[0] / 10
+     || std::abs(boundsWithoutGhosts_[2] - bounds[2]) > spacing_[1] / 10
+     || std::abs(boundsWithoutGhosts_[3] - bounds[3]) > spacing_[1] / 10
+     || std::abs(boundsWithoutGhosts_[4] - bounds[4]) > spacing_[2] / 10
+     || std::abs(boundsWithoutGhosts_[5] - bounds[5]) > spacing_[2] / 10) {
+    boundsWithoutGhosts_
+      = {bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]};
     // re-order tempGlobalBounds
     globalBounds_ = {origin_[0] + inExtent_[0] * spacing_[0],
                      origin_[0] + inExtent_[1] * spacing_[0],
@@ -106,8 +120,9 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
                      origin_[1] + inExtent_[3] * spacing_[1],
                      origin_[2] + inExtent_[4] * spacing_[2],
                      origin_[2] + inExtent_[5] * spacing_[2]};
-    boundsWithoutGhosts_
-      = {bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]};
+
+    ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
+
     for(int i = 0; i < 2; i++) {
       if(std::abs(globalBounds_[i] - boundsWithoutGhosts_[i])
          < spacing_[0] / 2) {
@@ -172,7 +187,10 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
   int dim) {
   int *default_VOI = imageIn->GetExtent();
   std::array<ttk::SimplexId, 6> VOI;
-  for(int i = 0; i < static_cast<int>(matches.size()); i++) {
+  ttk::SimplexId matchesNumber = matches.size();
+  std::vector<std::vector<int>> additionalNeighbors(
+    ttk::MPIsize_, std::vector<int>{});
+  for(int i = 0; i < matchesNumber; i++) {
     VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
            default_VOI[3], default_VOI[4], default_VOI[5]};
     for(int k = 1; k <= dim; k++) {
@@ -182,6 +200,30 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
         VOI[matches[i][k] - 1] = VOI[matches[i][k]];
       }
     }
+    for(const auto neigh : neighbors_) {
+      if(neigh != matches[i][0]) {
+        if(!(neighborVertexBBoxes_[neigh][0] == 0
+             && neighborVertexBBoxes_[neigh][1] == 0
+             && neighborVertexBBoxes_[neigh][2] == 0
+             && neighborVertexBBoxes_[neigh][3] == 0
+             && neighborVertexBBoxes_[neigh][4] == 0
+             && neighborVertexBBoxes_[neigh][5] == 0)) {
+          if(VOI[0] - inExtent_[0] <= neighborVertexBBoxes_[neigh][1]
+             && VOI[1] - inExtent_[0] >= neighborVertexBBoxes_[neigh][0]
+             && VOI[2] - inExtent_[2] <= neighborVertexBBoxes_[neigh][3]
+             && VOI[3] - inExtent_[2] >= neighborVertexBBoxes_[neigh][2]
+             && VOI[4] - inExtent_[4] <= neighborVertexBBoxes_[neigh][5]
+             && VOI[5] - inExtent_[4] >= neighborVertexBBoxes_[neigh][4]) {
+            if(std::find(additionalNeighbors[matches[i][0]].begin(),
+                         additionalNeighbors[matches[i][0]].end(), neigh)
+               == additionalNeighbors[matches[i][0]].end()) {
+              additionalNeighbors[matches[i][0]].push_back(neigh);
+            }
+          }
+        }
+      }
+    }
+
     vtkSmartPointer<vtkExtractVOI> extractVOI
       = vtkSmartPointer<vtkExtractVOI>::New();
     extractVOI->SetInputData(imageIn);
@@ -202,8 +244,8 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
 
   ttk::SimplexId recv_size;
   ttk::SimplexId send_size;
-  std::array<ttk::SimplexId, metaDataSize> sendMetadata;
-  std::array<ttk::SimplexId, metaDataSize> recvMetaData;
+  std::array<ttk::SimplexId, metaDataSize + 1> sendMetadata;
+  std::array<ttk::SimplexId, metaDataSize + 1> recvMetaData;
   for(int i = 0; i < ttk::MPIsize_; i++) {
     for(int j = 0; j < static_cast<int>(charArrayBoundaries[i].size()); j++) {
       send_size = charArrayBoundaries[i][j]->GetNumberOfTuples();
@@ -219,12 +261,28 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
       MPI_Sendrecv(sendPointer, send_size, MPI_CHAR, i, 0, recvPointer,
                    recv_size, MPI_CHAR, i, 0, ttk::MPIcomm_, MPI_STATUS_IGNORE);
       charArrayBoundariesReceived.emplace_back(buffer);
-      sendMetadata = charArrayBoundariesMetaData[i][j];
-      MPI_Sendrecv(sendMetadata.data(), metaDataSize,
+      std::copy(charArrayBoundariesMetaData[i][j].begin(),
+                charArrayBoundariesMetaData[i][j].begin() + metaDataSize,
+                sendMetadata.begin());
+      sendMetadata.at(metaDataSize) = additionalNeighbors[i].size();
+      MPI_Sendrecv(sendMetadata.data(), metaDataSize + 1,
                    ttk::getMPIType(recv_size), i, 0, recvMetaData.data(),
-                   metaDataSize, ttk::getMPIType(recv_size), i, 0,
+                   metaDataSize + 1, ttk::getMPIType(recv_size), i, 0,
                    ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      charArrayBoundariesMetaDataReceived.emplace_back(recvMetaData);
+      std::array<ttk::SimplexId, metaDataSize> aux;
+      std::copy(recvMetaData.begin(), recvMetaData.end() - 1, aux.begin());
+      charArrayBoundariesMetaDataReceived.emplace_back(aux);
+      std::vector<int> receivedNeighbors(recvMetaData.back());
+      MPI_Sendrecv(additionalNeighbors[i].data(), additionalNeighbors[i].size(),
+                   MPI_INTEGER, i, 0, receivedNeighbors.data(),
+                   recvMetaData.back(), MPI_INTEGER, i, 0, ttk::MPIcomm_,
+                   MPI_STATUS_IGNORE);
+      for(const int neigh : receivedNeighbors) {
+        if(std::find(neighbors_.begin(), neighbors_.end(), neigh)
+           == neighbors_.end()) {
+          neighbors_.push_back(neigh);
+        }
+      }
     }
   }
   return 1;
@@ -444,6 +502,11 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
 
   int *dims = imageIn->GetDimensions();
   int dimensionality = imageIn->GetDataDimension();
+
+  ttk::RegularGridTriangulation *triangulation
+    = (ttk::RegularGridTriangulation *)GetTriangulation(imageIn);
+  neighborVertexBBoxes_ = triangulation->getNeighborVertexBBoxes();
+
   // Case dimensionality == 3
   int firstDim = 4;
   int secondDim = 2;
@@ -656,6 +719,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
        imageIn, charArrayBoundaries, charArrayBoundariesMetaData, matches,
        charArrayBoundariesReceived, charArrayBoundariesMetaDataReceived, 1)
      == 0) {
+    printErr("Error occurred when marshalling messages");
     return 0;
   }
 

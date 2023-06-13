@@ -585,11 +585,13 @@ void PeriodicImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   for(int i = 0; i < 3; i++) {
-    if(this->isBoundaryPeriodic[2 * i] == 1) {
-      tempBounds[i] += spacing_[i];
-    }
-    if(this->isBoundaryPeriodic[2 * i + 1] == 1) {
-      tempBounds[3 + i] -= spacing_[i];
+    if(dimensionality_ > i) {
+      if(this->isBoundaryPeriodic[2 * i] == 1) {
+        tempBounds[i] += spacing_[i];
+      }
+      if(this->isBoundaryPeriodic[2 * i + 1] == 1) {
+        tempBounds[3 + i] -= spacing_[i];
+      }
     }
   }
 
@@ -722,8 +724,12 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
     }
   }
   localBBox[0] -= isBoundaryPeriodic[0];
-  localBBox[2] -= isBoundaryPeriodic[2];
-  localBBox[4] -= isBoundaryPeriodic[4];
+  if(dimensionality_ > 1) {
+    localBBox[2] -= isBoundaryPeriodic[2];
+    if(dimensionality_ > 2)
+      localBBox[4] -= isBoundaryPeriodic[4];
+  }
+
   localBBox[1]++;
   localBBox[3]++;
   localBBox[5]++;
