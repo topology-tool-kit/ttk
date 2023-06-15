@@ -1,4 +1,7 @@
+#include "BaseClass.h"
 #include <RegularGridTriangulation.h>
+#include <numeric>
+#include <string>
 
 ttk::RegularGridTriangulation::RegularGridTriangulation()
   : dimensionality_{-1} {
@@ -64,10 +67,14 @@ int ttk::RegularGridTriangulation::getCellRankInternal(
 #endif // TTK_ENABLE_KAMIKAZE
 
   const auto nVertsCell{this->getCellVertexNumber(lcid)};
-
+  if(lcid == 0 && ttk::MPIrank_ == 1) {
+    printErr("Start computation");
+  }
   std::vector<bool> inRank(nVertsCell);
+  std::map<int, int> neighborOccurrences;
   for(const auto neigh : this->neighborRanks_) {
     std::fill(inRank.begin(), inRank.end(), false);
+    std::string s = "";
     const auto &bbox{this->neighborCellBBoxes_[neigh]};
     for(SimplexId i = 0; i < nVertsCell; ++i) {
       SimplexId v{};
@@ -76,17 +83,38 @@ int ttk::RegularGridTriangulation::getCellRankInternal(
         inRank[i] = true;
       } else {
         const auto p{this->getVertGlobalCoords(v)};
+        if(lcid == 0 && ttk::MPIrank_ == 1) {
+          printErr("p: " + std::to_string(p[0]) + ", " + std::to_string(p[1])
+                   + ", " + std::to_string(p[2]));
+          printErr("bbox for neigh: " + std::to_string(neigh) + ", "
+                   + std::to_string(bbox[0]) + ", " + std::to_string(bbox[1])
+                   + ", " + std::to_string(bbox[2]) + ","
+                   + std::to_string(bbox[3]) + ", " + std::to_string(bbox[4])
+                   + ", " + std::to_string(bbox[5]));
+        }
         if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
            && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
           inRank[i] = true;
         }
       }
+      // s += std::to_string(inRank[i])+", ";
     }
+    if(lcid == 0 && ttk::MPIrank_ == 1)
+      printErr(s);
     if(std::all_of(
          inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
       return neigh;
     }
+    neighborOccurrences[neigh]
+      = std::accumulate(inRank.begin(), inRank.end(), 0);
   }
+
+  auto pr = std::max_element(
+    std::begin(neighborOccurrences), std::end(neighborOccurrences),
+    [](const std::pair<int, int> &p1, const std::pair<int, int> &p2) {
+      return p1.second < p2.second;
+    });
+  return pr->first;
   return -1;
 }
 
@@ -444,7 +472,11 @@ int ttk::RegularGridTriangulation::preconditionDistributedVertices() {
       localBBox[5] = p[2];
     }
   }
-
+  printErr("Bounding box for vertices: " + std::to_string(localBBox[0]) + ", "
+           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
+           + ", " + std::to_string(localBBox[3]) + ", "
+           + std::to_string(localBBox[4]) + ", "
+           + std::to_string(localBBox[5]));
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborVertexBBoxes_[ttk::MPIrank_].data(), 6,

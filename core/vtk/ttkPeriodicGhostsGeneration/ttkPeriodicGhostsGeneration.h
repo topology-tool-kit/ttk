@@ -109,6 +109,7 @@ private:
   std::array<periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
   std::vector<int> neighbors_;
   std::vector<std::array<ttk::SimplexId, 6>> neighborVertexBBoxes_;
+  std::array<unsigned char, 6> isBoundaryPeriodic_{};
 
 public:
   /**
@@ -149,20 +150,8 @@ public:
     return neighbors_;
   }
 
-  inline std::array<unsigned char, 6> generateIsBoundaryPeriodic() {
-    std::array<unsigned char, 6> isBoundaryPeriodic{};
-    for(int i = 0; i < 3; i++) {
-      if(localGlobalBounds_[2 * i].isBound == 1
-         && localGlobalBounds_[2 * i].isBound
-              == localGlobalBounds_[2 * i + 1].isBound) {
-        isBoundaryPeriodic[2 * i] = 0;
-        isBoundaryPeriodic[2 * i + 1] = 0;
-      } else {
-        isBoundaryPeriodic[2 * i] = localGlobalBounds_[2 * i].isBound;
-        isBoundaryPeriodic[2 * i + 1] = localGlobalBounds_[2 * i + 1].isBound;
-      }
-    }
-    return isBoundaryPeriodic;
+  inline std::array<unsigned char, 6> getIsBoundaryPeriodic() {
+    return isBoundaryPeriodic_;
   }
 
 protected:

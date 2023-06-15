@@ -103,7 +103,7 @@ void switchPeriodicity(ttk::Triangulation &triangulation,
         std::vector<int> &neighbors = newTriangulation->getNeighborRanks();
         neighbors = periodicGhostGenerator->getNeighbors();
         newTriangulation->setIsBoundaryPeriodic(
-          periodicGhostGenerator->generateIsBoundaryPeriodic());
+          periodicGhostGenerator->getIsBoundaryPeriodic());
       }
     }
 #endif

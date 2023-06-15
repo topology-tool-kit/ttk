@@ -1,4 +1,3 @@
-#include "DataTypes.h"
 #include <PeriodicImplicitTriangulation.h>
 using namespace std;
 using namespace ttk;
@@ -676,6 +675,7 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
     this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
     this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
   };
+  const auto &dims{this->metaGrid_->getGridDimensions()};
 
   for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     // only keep non-ghost cells
@@ -695,32 +695,25 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
     p[1] += this->localGridOffset_[1];
     p[2] += this->localGridOffset_[2];
 
-    const auto &dims{this->metaGrid_->getGridDimensions()};
 
-    p[0] = (p[0] + (dims[0] - 1)) % (dims[0] - 1);
-    if(dimensionality_ > 1) {
-      p[1] = (p[1] + (dims[1] - 1)) % (dims[1] - 1);
-      if(dimensionality_ > 2)
-        p[2] = (p[2] + (dims[2] - 1)) % (dims[2] - 1);
-    }
 
     if(p[0] < localBBox[0]) {
-      localBBox[0] = p[0];
+      localBBox[0] = max(p[0], static_cast<ttk::SimplexId>(0));
     }
     if(p[0] > localBBox[1]) {
-      localBBox[1] = p[0];
+      localBBox[1] = min(p[0], dims[0]);
     }
     if(p[1] < localBBox[2]) {
-      localBBox[2] = p[1];
+      localBBox[2] = max(p[1], static_cast<ttk::SimplexId>(0));
     }
     if(p[1] > localBBox[3]) {
-      localBBox[3] = p[1];
+      localBBox[3] = min(p[1], dims[1]);
     }
     if(p[2] < localBBox[4]) {
-      localBBox[4] = p[2];
+      localBBox[4] = max(p[2], static_cast<ttk::SimplexId>(0));
     }
     if(p[2] > localBBox[5]) {
-      localBBox[5] = p[2];
+      localBBox[5] = min(p[2], dims[2]);
     }
   }
   localBBox[0] -= isBoundaryPeriodic[0];
@@ -734,6 +727,11 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   localBBox[3]++;
   localBBox[5]++;
 
+  printErr("Bounding box1: " + std::to_string(localBBox[0]) + ", "
+           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
+           + ", " + std::to_string(localBBox[3]) + ", "
+           + std::to_string(localBBox[4]) + ", "
+           + std::to_string(localBBox[5]));
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
@@ -746,6 +744,12 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   int cellRank = 0;
   for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     cellRank = this->getCellRankInternal(lcid);
+    if(cellRank == -1) {
+      const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+      const auto locCubeId{lcid / nTetraPerCube};
+      printErr("HERE IS YOUR PROBLEM: " + std::to_string(lcid)
+               + ", for vtk: " + std::to_string(locCubeId));
+    }
     if(cellRank != ttk::MPIrank_) {
       // store ghost cell global ids (per rank)
       this->ghostCellsPerOwner_[cellRank].emplace_back(
