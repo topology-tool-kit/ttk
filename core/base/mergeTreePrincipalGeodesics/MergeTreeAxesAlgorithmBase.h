@@ -69,36 +69,8 @@ namespace ttk {
         double weight = mixDistancesMinMaxPairWeight(isFirstInput);
         mergeTreeDistance.setMinMaxPairWeight(weight);
       }
-
-      Timer t;
-
       distance = mergeTreeDistance.computeDistance<dataType>(
         &(tree1.tree), &(tree2.tree), matching);
-
-      auto time = t.getElapsedTime();
-      double mult = (tree1.tree.getRealNumberOfNodes()
-                     + tree2.tree.getRealNumberOfNodes())
-                    / 2.0 / 10;
-      mult = 1;
-      if(false and time > 1 * mult) {
-        if((tree1.tree.getRealNumberOfNodes()
-            + tree2.tree.getRealNumberOfNodes())
-             / 2.0
-           <= 100) {
-          std::cout
-            << tree1.tree.template printPairsFromTree<dataType>(true).str()
-            << std::endl;
-          std::cout
-            << tree2.tree.template printPairsFromTree<dataType>(true).str()
-            << std::endl;
-        }
-        std::cout << "time = " << time << std::endl;
-        std::cout << "distance = " << distance << std::endl;
-        // std::cout << std::endl << std::endl;
-        /*std::cout << "pause" << std::endl;
-        int temp;
-        std::cin >> temp;*/
-      }
     }
 
     template <class dataType>
