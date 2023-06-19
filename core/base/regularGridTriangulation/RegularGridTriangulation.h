@@ -4,10 +4,10 @@
 /// \date June 2023.
 ///
 /// \brief RegularGridTriangulation is an abstract subclass of
-/// ttk::AbstractTriangulation that exposes a common API for triangulation
-/// on regular grids. This class is meant to be implemented in
-/// ttk::ImplicitTriangulation and ttk::PeriodicImplicitTriangulation.
-/// \sa Triangulation
+/// ttk::AbstractTriangulation that exposes a common MPI API for triangulation
+/// on regular grids. The virtual methods in this class are meant to be
+/// implemented in ttk::ImplicitTriangulation and
+/// ttk::PeriodicImplicitTriangulation. \sa Triangulation
 
 #pragma once
 
@@ -33,6 +33,12 @@ namespace ttk {
     RegularGridTriangulation();
     ~RegularGridTriangulation() override = default;
 
+    RegularGridTriangulation(const RegularGridTriangulation &) = default;
+    RegularGridTriangulation(RegularGridTriangulation &&) = default;
+    RegularGridTriangulation &operator=(const RegularGridTriangulation &)
+      = default;
+    RegularGridTriangulation &operator=(RegularGridTriangulation &&) = default;
+
     virtual int setInputGrid(const float &xOrigin,
                              const float &yOrigin,
                              const float &zOrigin,
@@ -44,18 +50,17 @@ namespace ttk {
                              const SimplexId &zDim)
       = 0;
 
+#ifdef TTK_ENABLE_MPI
+
     int preconditionDistributedVertices() override;
     // offset coordinates of the local grid inside the metaGrid_
     std::array<SimplexId, 3> localGridOffset_{};
     std::shared_ptr<RegularGridTriangulation> metaGrid_;
 
-    virtual void createMetaGrid(const double *const bounds) = 0;
+    int preconditionExchangeGhostCells() override;
+    int preconditionExchangeGhostVertices() override;
 
-    RegularGridTriangulation(const RegularGridTriangulation &) = default;
-    RegularGridTriangulation(RegularGridTriangulation &&) = default;
-    RegularGridTriangulation &operator=(const RegularGridTriangulation &)
-      = default;
-    RegularGridTriangulation &operator=(RegularGridTriangulation &&) = default;
+    virtual void createMetaGrid(const double *const bounds) = 0;
 
     SimplexId getVertexGlobalIdInternal(const SimplexId lvid) const override;
     SimplexId getVertexLocalIdInternal(const SimplexId gvid) const override;
@@ -70,7 +75,7 @@ namespace ttk {
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
 
     int getVertexRankInternal(const SimplexId lvid) const override;
-
+#endif
   protected:
     std::array<SimplexId, 3> dimensions_; // dimensions
     int dimensionality_;
@@ -90,10 +95,11 @@ namespace ttk {
     SimplexId findEdgeFromVertices(const SimplexId v0,
                                    const SimplexId v1) const;
     SimplexId findTriangleFromVertices(std::array<SimplexId, 3> &verts) const;
-
+#ifdef TTK_ENABLE_MPI
     virtual std::array<SimplexId, 3>
       getVertGlobalCoords(const SimplexId lvid) const = 0;
     virtual std::array<SimplexId, 3>
       getVertLocalCoords(const SimplexId gvid) const = 0;
+#endif
   };
 } // namespace ttk

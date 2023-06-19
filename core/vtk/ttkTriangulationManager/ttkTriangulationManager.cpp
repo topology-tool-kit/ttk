@@ -144,9 +144,13 @@ void ttkTriangulationManager::processImplicit(ttk::Triangulation &triangulation
 #endif
 ) {
 
-  switchPeriodicity(triangulation, this->Periodicity, *this, imageIn, imageOut,
-                    this->periodicGhostGenerator, this->debugLevel_,
-                    this->CompactTriangulationCacheSize);
+  switchPeriodicity(triangulation, this->Periodicity, *this
+#ifdef TTK_ENABLE_MPI
+                    ,
+                    imageIn, imageOut, this->periodicGhostGenerator,
+                    this->debugLevel_, this->CompactTriangulationCacheSize
+#endif
+  );
   switchPreconditions(triangulation, this->PreconditioningStrategy, *this);
 }
 
@@ -299,15 +303,14 @@ int ttkTriangulationManager::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   if(inputDataSet->IsA("vtkImageData")) {
+#ifdef TTK_ENABLE_MPI
     vtkImageData *imageIn = vtkImageData::GetData(inputVector[0]);
     vtkImageData *imageOut = vtkImageData::GetData(outputVector);
     imageOut->ShallowCopy(imageIn);
-    this->processImplicit(*triangulation
-#ifdef TTK_ENABLE_MPI
-                          ,
-                          imageIn, imageOut
+    this->processImplicit(*triangulation, imageIn, imageOut);
+#else
+    this->processImplicit(*triangulation);
 #endif
-    );
     return 1;
   } else if(inputDataSet->IsA("vtkUnstructuredGrid")
             || inputDataSet->IsA("vtkPolyData")) {

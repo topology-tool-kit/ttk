@@ -1,4 +1,5 @@
 #include <PeriodicImplicitTriangulation.h>
+#include <string>
 using namespace std;
 using namespace ttk;
 
@@ -658,14 +659,16 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
 
   Timer tm{};
 
-  // number of local cells (with ghost cells...)
-  const auto nLocCells{this->getNumberOfCells()};
 
   // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
   const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
-  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
-  this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
+  // number of local cells (with ghost cells but without the additional periodic
+  // cells)
+  const auto nLocCells{(this->dimensions_[0] - 1) * (this->dimensions_[1] - 1)
+                       * (this->dimensions_[2] - 1) * nTetraPerCube};
+
+  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
   auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
@@ -688,14 +691,15 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
       this->tetrahedronToPosition(lcid, p.data());
     } else if(this->dimensionality_ == 2) {
       this->triangleToPosition2d(lcid, p.data());
+      // compatibility with tetrahedronToPosition; fix a bounding box
+      // error in the first axis
+      p[0] /= 2;
     }
 
     // global vertex coordinates
     p[0] += this->localGridOffset_[0];
     p[1] += this->localGridOffset_[1];
     p[2] += this->localGridOffset_[2];
-
-
 
     if(p[0] < localBBox[0]) {
       localBBox[0] = max(p[0], static_cast<ttk::SimplexId>(0));
@@ -727,11 +731,6 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   localBBox[3]++;
   localBBox[5]++;
 
-  printErr("Bounding box1: " + std::to_string(localBBox[0]) + ", "
-           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
-           + ", " + std::to_string(localBBox[3]) + ", "
-           + std::to_string(localBBox[4]) + ", "
-           + std::to_string(localBBox[5]));
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
@@ -739,45 +738,6 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
                  this->neighborCellBBoxes_[neigh].data(), 6,
                  ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
                  MPI_STATUS_IGNORE);
-  }
-
-  int cellRank = 0;
-  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    cellRank = this->getCellRankInternal(lcid);
-    if(cellRank == -1) {
-      const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
-      const auto locCubeId{lcid / nTetraPerCube};
-      printErr("HERE IS YOUR PROBLEM: " + std::to_string(lcid)
-               + ", for vtk: " + std::to_string(locCubeId));
-    }
-    if(cellRank != ttk::MPIrank_) {
-      // store ghost cell global ids (per rank)
-      this->ghostCellsPerOwner_[cellRank].emplace_back(
-        this->getCellGlobalIdInternal(lcid));
-    }
-  }
-
-  // for each rank, store the global id of local cells that are ghost cells of
-  // other ranks.
-  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
-  this->remoteGhostCells_.resize(ttk::MPIsize_);
-  // number of owned cells that are ghost cells of other ranks
-  std::vector<size_t> nOwnedGhostCellsPerRank(ttk::MPIsize_);
-
-  for(const auto neigh : this->neighborRanks_) {
-    // 1. send to neigh number of ghost cells owned by neigh
-    const auto nCells{this->ghostCellsPerOwner_[neigh].size()};
-    MPI_Sendrecv(&nCells, 1, ttk::getMPIType(nCells), neigh, ttk::MPIrank_,
-                 &nOwnedGhostCellsPerRank[neigh], 1, ttk::getMPIType(nCells),
-                 neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
-    this->remoteGhostCells_[neigh].resize(nOwnedGhostCellsPerRank[neigh]);
-
-    // 2. send to neigh list of ghost cells owned by neigh
-    MPI_Sendrecv(this->ghostCellsPerOwner_[neigh].data(),
-                 this->ghostCellsPerOwner_[neigh].size(), MIT, neigh,
-                 ttk::MPIrank_, this->remoteGhostCells_[neigh].data(),
-                 this->remoteGhostCells_[neigh].size(), MIT, neigh, neigh,
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedCells_ = true;

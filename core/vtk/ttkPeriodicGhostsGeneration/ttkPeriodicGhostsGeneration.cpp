@@ -1,14 +1,10 @@
-#include "BaseClass.h"
-#include "DataTypes.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
-#include <string>
 #include <ttkPeriodicGhostsGeneration.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
-#include "vtkExtentTranslator.h"
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
+#include <vtkExtentTranslator.h>
 #include <vtkExtractVOI.h>
-#include <vtkImageAppend.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkStructuredPoints.h>
@@ -22,8 +18,6 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-// A VTK macro that enables the instantiation of this class via ::New()
-// You do not have to modify this
 vtkStandardNewMacro(ttkPeriodicGhostsGeneration);
 
 ttkPeriodicGhostsGeneration::ttkPeriodicGhostsGeneration() {
@@ -44,12 +38,22 @@ int ttkPeriodicGhostsGeneration::FillInputPortInformation(
   return 0;
 }
 
+int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+    return 1;
+  }
+  return 0;
+}
+
+#ifdef TTK_ENABLE_MPI
+
 int ttkPeriodicGhostsGeneration::RequestUpdateExtent(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *ttkNotUsed(outputVector)) {
-  vtkImageData *image = vtkImageData::GetData(inputVector[0]);
-  this->ComputeOutputExtent(image);
+  this->ComputeOutputExtent();
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
   std::array<int, 6> outExtentWithoutGhost{outExtent_};
   for(int i = 0; i < 3; i++) {
@@ -73,13 +77,12 @@ int ttkPeriodicGhostsGeneration::RequestInformation(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVectors,
   vtkInformationVector *outputVector) {
-  vtkImageData *image = vtkImageData::GetData(inputVectors[0]);
   vtkInformation *inInfo = inputVectors[0]->GetInformationObject(0);
   inInfo->Get(
     vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), inExtent_.data());
   inInfo->Get(vtkDataObject::SPACING(), this->spacing_.data());
   inInfo->Get(vtkDataObject::ORIGIN(), this->origin_.data());
-  this->ComputeOutputExtent(image);
+  this->ComputeOutputExtent();
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   outInfo->Set(
     vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), outExtent_.data(), 6);
@@ -87,17 +90,9 @@ int ttkPeriodicGhostsGeneration::RequestInformation(
   return 1;
 }
 
-int ttkPeriodicGhostsGeneration::FillOutputPortInformation(
-  int port, vtkInformation *info) {
-  if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-    return 1;
-  }
-  return 0;
-}
+int ttkPeriodicGhostsGeneration::ComputeOutputExtent() {
 
-int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
-
+  // Retrieve the local extent for the current process
   vtkNew<vtkExtentTranslator> translator;
   translator->SetWholeExtent(inExtent_.data());
   translator->SetNumberOfPieces(ttk::MPIsize_);
@@ -106,6 +101,7 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
   int localExtent[6];
   translator->GetExtent(localExtent);
 
+  // Compute the bounds of the local process
   double bounds[6] = {
     origin_[0] + localExtent[0] * spacing_[0],
     origin_[0] + localExtent[1] * spacing_[0],
@@ -114,6 +110,7 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
     origin_[2] + localExtent[4] * spacing_[2],
     origin_[2] + localExtent[5] * spacing_[2],
   };
+  // If the extent has never been computed or has changed
   if(!isOutputExtentComputed_
      || std::abs(boundsWithoutGhosts_[0] - bounds[0]) > spacing_[0] / 10
      || std::abs(boundsWithoutGhosts_[1] - bounds[1]) > spacing_[0] / 10
@@ -133,9 +130,11 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
 
     ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
 
+    // Compute the 1D boundary matches: if both
+
     for(int i = 0; i < 2; i++) {
       if(std::abs(globalBounds_[i] - boundsWithoutGhosts_[i])
-         < spacing_[0] / 2) {
+         < spacing_[0] / 10) {
         localGlobalBounds_[i].isBound = 1;
         localGlobalBounds_[i].x = boundsWithoutGhosts_[i];
         localGlobalBounds_[i].y
@@ -147,7 +146,7 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
 
     for(int i = 0; i < 2; i++) {
       if(std::abs(globalBounds_[2 + i] - boundsWithoutGhosts_[2 + i])
-         < spacing_[1] / 2) {
+         < spacing_[1] / 10) {
         localGlobalBounds_[2 + i].isBound = 1;
         localGlobalBounds_[2 + i].x
           = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
@@ -159,7 +158,7 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent(vtkDataSet *input) {
 
     for(int i = 0; i < 2; i++) {
       if(std::abs(globalBounds_[4 + i] - boundsWithoutGhosts_[4 + i])
-         < spacing_[2] / 2) {
+         < spacing_[2] / 10) {
         localGlobalBounds_[4 + i].isBound = 1;
         localGlobalBounds_[4 + i].x
           = (boundsWithoutGhosts_[0] + boundsWithoutGhosts_[1]) / 2;
@@ -320,8 +319,6 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndMerge(
   auto it
     = std::find(metaDataReceived.begin(), metaDataReceived.end(), direction);
   if(it != metaDataReceived.end()) {
-    if(ttk::MPIrank_ == 0)
-      printErr("Direction found");
     vtkNew<vtkStructuredPoints> id;
     vtkNew<vtkImageData> aux;
     if(vtkCommunicator::UnMarshalDataObject(
@@ -330,7 +327,7 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndMerge(
       printErr("UnMarshaling failed!");
       return 0;
     };
-    this->MergeImageAppendAndSlice(mergedImage, id, aux, mergeDirection);
+    this->MergeImageAndSlice(mergedImage, id, aux, mergeDirection);
     mergedImage->DeepCopy(aux);
   }
   return 1;
@@ -426,42 +423,22 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
       for(int x = 0; x < dims[0]; x++) {
         if(addSlice(x, y, z, dims)) {
           currentArray->SetTuple1(counter, sliceArray->GetTuple1(sliceCounter));
-          if(ttk::MPIrank_ == 0) {
-            if(std::strcmp(arrayName.c_str(), "vtkGhostType") == 0
-               && sliceArray->GetTuple1(sliceCounter) > 1
-               && sliceArray->GetTuple1(sliceCounter) != 16) {
-              printErr(std::to_string(sliceArray->GetTuple1(sliceCounter)));
-            }
-          }
           sliceCounter++;
         } else {
           currentArray->SetTuple1(counter, imageArray->GetTuple1(imageCounter));
-          if(ttk::MPIrank_ == 0) {
-            if(std::strcmp(arrayName.c_str(), "vtkGhostType") == 0
-               && imageArray->GetTuple1(sliceCounter) > 1
-               && imageArray->GetTuple1(sliceCounter) != 16) {
-              printErr(std::to_string(imageArray->GetTuple1(sliceCounter)));
-            }
-          }
           imageCounter++;
         }
         counter++;
       }
     }
   }
-  if(std::strcmp(arrayName.c_str(), "vtkGhostType") == 0) {
-    printErr("counter: " + std::to_string(counter) + ", "
-             + std::to_string(imageCounter) + ", "
-             + std::to_string(sliceCounter));
-  }
   return 1;
 }
 
-int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
-  vtkImageData *image,
-  vtkImageData *slice,
-  vtkImageData *mergedImage,
-  int direction) {
+int ttkPeriodicGhostsGeneration::MergeImageAndSlice(vtkImageData *image,
+                                                    vtkImageData *slice,
+                                                    vtkImageData *mergedImage,
+                                                    int direction) {
   vtkDataArray *arrayImage = image->GetCellData()->GetArray("Cell Type");
   vtkDataArray *arraySlice = slice->GetCellData()->GetArray("Cell Type");
   if(!(arrayImage && arraySlice) && arrayImage) {
@@ -503,22 +480,9 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
   int numberOfPoints = mergedImage->GetNumberOfPoints();
   int imageDims[3];
   image->GetDimensions(imageDims);
-  if(ttk::MPIrank_ == 0)
-    printErr("Image dim: " + std::to_string(imageDims[0]) + ", "
-             + std::to_string(imageDims[1]) + ", "
-             + std::to_string(imageDims[2])
-             + ", for direction: " + std::to_string(direction));
   int sliceDims[3];
   slice->GetDimensions(sliceDims);
-  if(ttk::MPIrank_ == 0)
-    printErr("Slice dim: " + std::to_string(sliceDims[0]) + ", "
-             + std::to_string(sliceDims[1]) + ", "
-             + std::to_string(sliceDims[2])
-             + ", for direction: " + std::to_string(direction));
-  if(ttk::MPIrank_ == 0)
-    printErr("Output dim: " + std::to_string(dims[0]) + ", "
-             + std::to_string(dims[1]) + ", " + std::to_string(dims[2])
-             + ", for direction: " + std::to_string(direction));
+
   for(int array = 0; array < image->GetPointData()->GetNumberOfArrays();
       array++) {
     vtkDataArray *imageArray = image->GetPointData()->GetArray(array);
@@ -544,9 +508,6 @@ int ttkPeriodicGhostsGeneration::MergeImageAppendAndSlice(
     }
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
-    if(std::strcmp(arrayName.c_str(), "vtkGhostType") == 0) {
-      printErr("MergeDataArrays for Cells");
-    }
 
     if(direction == 0 || direction == 2 || direction == 4) {
       this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
@@ -583,9 +544,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     return i + 1;
   };
 
-  int *dims = imageIn->GetDimensions();
-  printErr("Local dimensions: " + std::to_string(dims[0]) + ", "
-           + std::to_string(dims[1]) + ", " + std::to_string(dims[2]));
   int dimensionality = imageIn->GetDataDimension();
 
   ttk::RegularGridTriangulation *triangulation
@@ -623,10 +581,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   }
   thirdDim = 6 - (firstDim + secondDim);
 
-  printErr("firstDim: " + std::to_string(firstDim)
-           + ", secondDim: " + std::to_string(secondDim)
-           + ", thirdDim: " + std::to_string(thirdDim));
-  this->ComputeOutputExtent(imageIn);
+  this->ComputeOutputExtent();
 
   MPI_Datatype partialGlobalBoundMPI;
   std::vector<periodicGhosts::partialGlobalBound> allLocalGlobalBounds(
@@ -850,8 +805,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   imageOut->DeepCopy(imageIn);
 
   // Merge in the first direction (low and high)
-  if(ttk::MPIrank_ == 0)
-    printErr("Merge first direction");
   for(int dir = firstDim; dir < firstDim + 2; dir++) {
     if(this->UnMarshalAndMerge<std::array<ttk::SimplexId, 1>>(
          charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
@@ -862,13 +815,9 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   }
   if(dimensionality >= 2) {
     // Merge in the second direction
-    if(ttk::MPIrank_ == 0)
-      printErr("Merge in second direction");
     for(int dir = secondDim; dir < secondDim + 2; dir++) {
       vtkSmartPointer<vtkImageData> mergedImage
         = vtkSmartPointer<vtkImageData>::New();
-      if(ttk::MPIrank_ == 0)
-        printErr("UnMarshal and copy, dir: " + std::to_string(dir));
       if(this->UnMarshalAndCopy<std::array<ttk::SimplexId, 1>>(
            charArrayBoundariesMetaDataReceived, charArrayBoundariesReceived,
            std::array<ttk::SimplexId, 1>{other(dir)}, mergedImage)
@@ -876,14 +825,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
         return 0;
       }
       if(mergedImage->GetNumberOfPoints() > 0) {
-        // if (ttk::MPIrank_ == 5)
-        // printErr("UnMarshal and merge with merged image size:
-        // "+std::to_string(mergedImage->GetNumberOfPoints()));
         for(int dir_2D = firstDim; dir_2D < firstDim + 2; dir_2D++) {
-          if(ttk::MPIrank_ == 0)
-            printErr("UnMarshal and merge with merged image size: "
-                     + std::to_string(mergedImage->GetNumberOfPoints())
-                     + ", dir: " + std::to_string(dir));
           std::array<ttk::SimplexId, 2> merge_dir{
             std::min(other(dir), other(dir_2D)),
             std::max(other(dir_2D), other(dir))};
@@ -894,14 +836,9 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
             return 0;
           }
         }
-        if(ttk::MPIrank_ == 0)
-          printErr("Merge Image Append and slice: "
-                   + std::to_string(mergedImage->GetNumberOfPoints()) + ", "
-                   + std::to_string(imageOut->GetNumberOfPoints()));
         vtkSmartPointer<vtkImageData> aux
           = vtkSmartPointer<vtkImageData>::New();
-        if(this->MergeImageAppendAndSlice(imageOut, mergedImage, aux, dir)
-           == 0) {
+        if(this->MergeImageAndSlice(imageOut, mergedImage, aux, dir) == 0) {
           return 0;
         }
         imageOut->DeepCopy(aux);
@@ -909,8 +846,6 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     }
   }
   if(dimensionality == 3) {
-    if(ttk::MPIrank_ == 0)
-      printErr("Merge third direction");
     // Merge in the third direction
     for(int dir = thirdDim; dir < thirdDim + 2; dir++) {
       vtkNew<vtkImageData> mergedImage1;
@@ -934,31 +869,30 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
         }
         for(int dir_2D = secondDim; dir_2D < secondDim + 2; dir_2D++) {
           vtkNew<vtkImageData> mergedImage2;
-          std::array<ttk::SimplexId, 2> merge_dir{
+          std::array<ttk::SimplexId, 2> merge_dir_2D{
             std::min(other(dir), other(dir_2D)),
             std::max(other(dir_2D), other(dir))};
           if(this->UnMarshalAndCopy<std::array<ttk::SimplexId, 2>>(
                charArray2DBoundariesMetaDataReceived,
-               charArray2DBoundariesReceived, merge_dir, mergedImage2)
+               charArray2DBoundariesReceived, merge_dir_2D, mergedImage2)
              == 0) {
             return 0;
           }
           if(mergedImage2->GetNumberOfPoints() > 0) {
             for(int dir_3D = firstDim; dir_3D < firstDim + 2; dir_3D++) {
-              std::array<ttk::SimplexId, 3> merge_dir{
+              std::array<ttk::SimplexId, 3> merge_dir_3D{
                 other(dir), other(dir_2D), other(dir_3D)};
-              std::sort(merge_dir.begin(), merge_dir.end());
+              std::sort(merge_dir_3D.begin(), merge_dir_3D.end());
               if(this->UnMarshalAndMerge<std::array<ttk::SimplexId, 3>>(
                    charArray3DBoundariesMetaDataReceived,
-                   charArray3DBoundariesReceived, merge_dir, dir_3D,
+                   charArray3DBoundariesReceived, merge_dir_3D, dir_3D,
                    mergedImage2)
                  == 0) {
                 return 0;
               }
             }
             vtkNew<vtkImageData> aux;
-            if(this->MergeImageAppendAndSlice(
-                 mergedImage1, mergedImage2, aux, dir_2D)
+            if(this->MergeImageAndSlice(mergedImage1, mergedImage2, aux, dir_2D)
                == 0) {
               return 0;
             }
@@ -967,8 +901,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
         }
         if(mergedImage1->GetNumberOfPoints() > 0) {
           vtkNew<vtkImageData> aux;
-          if(this->MergeImageAppendAndSlice(imageOut, mergedImage1, aux, dir)
-             == 0) {
+          if(this->MergeImageAndSlice(imageOut, mergedImage1, aux, dir) == 0) {
             return 0;
           }
           imageOut->DeepCopy(aux);
@@ -988,6 +921,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   return 1;
 };
 
+#endif
 int ttkPeriodicGhostsGeneration::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
@@ -995,8 +929,11 @@ int ttkPeriodicGhostsGeneration::RequestData(
 
   vtkImageData *imageIn = vtkImageData::GetData(inputVector[0]);
   vtkImageData *imageOut = vtkImageData::GetData(outputVector);
-
+#ifdef TTK_ENABLE_MPI
   this->MPIPeriodicGhostPipelinePreconditioning(imageIn, imageOut);
+#else
+  imageOut->ShallowCopy(imageIn);
+#endif
 
   // return success
   return 1;

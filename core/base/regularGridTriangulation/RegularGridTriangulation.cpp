@@ -49,7 +49,7 @@ ttk::SimplexId ttk::RegularGridTriangulation::findTriangleFromVertices(
   return -1;
 }
 
-
+#ifdef TTK_ENABLE_MPI
 
 int ttk::RegularGridTriangulation::getVertexRankInternal(
   const SimplexId lvid) const {
@@ -405,11 +405,7 @@ int ttk::RegularGridTriangulation::preconditionDistributedVertices() {
       localBBox[5] = p[2];
     }
   }
-  printErr("Bounding box for vertices: " + std::to_string(localBBox[0]) + ", "
-           + std::to_string(localBBox[1]) + ", " + std::to_string(localBBox[2])
-           + ", " + std::to_string(localBBox[3]) + ", "
-           + std::to_string(localBBox[4]) + ", "
-           + std::to_string(localBBox[5]));
+
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborVertexBBoxes_[ttk::MPIrank_].data(), 6,
@@ -418,7 +414,74 @@ int ttk::RegularGridTriangulation::preconditionDistributedVertices() {
                  ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
                  MPI_STATUS_IGNORE);
   }
+
+  this->hasPreconditionedDistributedVertices_ = true;
+
+  return 0;
+}
+
+int ttk::RegularGridTriangulation::preconditionExchangeGhostCells() {
+
+  if(this->hasPreconditionedExchangeGhostCells_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+
+  // number of local cells (with ghost cells...)
+  const auto nLocCells{this->getNumberOfCells()};
+
+  int cellRank = 0;
+  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    cellRank = this->getCellRankInternal(lcid);
+    if(cellRank != ttk::MPIrank_) {
+      // store ghost cell global ids (per rank)
+      this->ghostCellsPerOwner_[cellRank].emplace_back(
+        this->getCellGlobalIdInternal(lcid));
+    }
+  }
+
+  // for each rank, store the global id of local cells that are ghost cells of
+  // other ranks.
+  const auto MIT{ttk::getMPIType(ttk::SimplexId{})};
+  this->remoteGhostCells_.resize(ttk::MPIsize_);
+  // number of owned cells that are ghost cells of other ranks
+  std::vector<size_t> nOwnedGhostCellsPerRank(ttk::MPIsize_);
+
+  for(const auto neigh : this->neighborRanks_) {
+    // 1. send to neigh number of ghost cells owned by neigh
+    const auto nCells{this->ghostCellsPerOwner_[neigh].size()};
+    MPI_Sendrecv(&nCells, 1, ttk::getMPIType(nCells), neigh, ttk::MPIrank_,
+                 &nOwnedGhostCellsPerRank[neigh], 1, ttk::getMPIType(nCells),
+                 neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
+    this->remoteGhostCells_[neigh].resize(nOwnedGhostCellsPerRank[neigh]);
+
+    // 2. send to neigh list of ghost cells owned by neigh
+    MPI_Sendrecv(this->ghostCellsPerOwner_[neigh].data(),
+                 this->ghostCellsPerOwner_[neigh].size(), MIT, neigh,
+                 ttk::MPIrank_, this->remoteGhostCells_[neigh].data(),
+                 this->remoteGhostCells_[neigh].size(), MIT, neigh, neigh,
+                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
+  }
+
+  this->hasPreconditionedExchangeGhostCells_ = true;
+  return 0;
+}
+
+int ttk::RegularGridTriangulation::preconditionExchangeGhostVertices() {
+
+  if(this->hasPreconditionedExchangeGhostVertices_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+
   this->ghostVerticesPerOwner_.resize(ttk::MPIsize_);
+
+  // number of local vertices (with ghost vertices...)
+  const auto nLocVertices{this->getNumberOfVertices()};
 
   for(LongSimplexId lvid = 0; lvid < nLocVertices; ++lvid) {
     if(this->getVertexRankInternal(lvid) != ttk::MPIrank_) {
@@ -451,7 +514,7 @@ int ttk::RegularGridTriangulation::preconditionDistributedVertices() {
                  ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
-  this->hasPreconditionedDistributedVertices_ = true;
-
+  this->hasPreconditionedExchangeGhostVertices_ = true;
   return 0;
 }
+#endif

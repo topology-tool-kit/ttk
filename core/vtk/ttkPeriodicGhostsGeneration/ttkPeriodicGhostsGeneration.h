@@ -1,20 +1,14 @@
-/// TODO 4: Provide your information and **update** the documentation (in
-/// particular regarding the order convention if input arrays need to be
-/// specified with the standard VTK call SetInputArrayToProcess()).
-///
 /// \ingroup vtk
 /// \class ttkPeriodicGhostsGeneration
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
+/// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
+/// \date June 2023.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::PeriodicGhostsGeneration module.
+/// \brief TTK VTK-filter that generates an outside ghost layer for periodic
+/// implicit
+///  grids when used in a distributed context.
 ///
-/// This VTK filter uses the ttk::PeriodicGhostsGeneration module to compute an
-/// averaging of the data values of an input point data array defined on the
-/// input vtkDataSet.
-///
-/// \param Input vtkDataSet.
-/// \param Output vtkDataSet.
+/// \param Input Scalar field on an vtkImageData.
+/// \param Output Scalar field on an vtkImageData.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
@@ -27,8 +21,6 @@
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the input array)
 ///
-/// See the corresponding standalone program for a usage example:
-///   - standalone/PeriodicGhostsGeneration/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
@@ -39,46 +31,21 @@
 #pragma once
 
 // VTK Module
-#include "DataTypes.h"
 #include <ttkPeriodicGhostsGenerationModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkCellTypes.h>
 #include <vtkCharArray.h>
-#include <vtkCommand.h>
 #include <vtkCommunicator.h>
 #include <vtkDataSet.h>
 #include <vtkExtractVOI.h>
-#include <vtkImageAppend.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationIntegerKey.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
-
-/* Note on including VTK modules
- *
- * Each VTK module that you include a header from needs to be specified in this
- * module's vtk.module file, either in the DEPENDS or PRIVATE_DEPENDS (if the
- * header is included in the cpp file only) sections.
- *
- * In order to find the corresponding module, check its location within the VTK
- * source code. The VTK module name is composed of the path to the header. You
- * can also find the module name within the vtk.module file located in the same
- * directory as the header file.
- *
- * For example, vtkSphereSource.h is located in directory VTK/Filters/Sources/,
- * so its corresponding VTK module is called VTK::FiltersSources. In this case,
- * the vtk.module file would need to be extended to
- *
- * NAME
- *   ttkPeriodicGhostsGeneration
- * DEPENDS
- *   ttkAlgorithm
- *   VTK::FiltersSources
- */
 
 namespace periodicGhosts {
   struct partialGlobalBound {
@@ -93,15 +60,9 @@ class TTKPERIODICGHOSTSGENERATION_EXPORT ttkPeriodicGhostsGeneration
   : public ttkAlgorithm {
 
 private:
-  /**
-   * TODO 5: Add all filter parameters only as private member variables and
-   *         initialize them here.
-   */
-  std::string OutputArrayName{"AveragedScalarField"};
-  vtkNew<vtkImageAppend> append;
-  std::array<int, 6> outExtent_;
-  std::array<int, 6> inExtent_;
-  std::array<double, 6> boundsWithoutGhosts_;
+  std::array<int, 6> outExtent_; // Global extent size before computation
+  std::array<int, 6> inExtent_; // Global extent size after computation
+  std::array<double, 6> boundsWithoutGhosts_; // Local Bounds without ghosts
   std::array<double, 6> globalBounds_;
   std::array<double, 3> origin_;
   std::array<double, 3> spacing_;
@@ -112,23 +73,13 @@ private:
   std::array<unsigned char, 6> isBoundaryPeriodic_{};
 
 public:
-  /**
-   * TODO 6: Automatically generate getters and setters of filter
-   *         parameters via vtkMacros.
-   */
-  vtkSetMacro(OutputArrayName, const std::string &);
-  vtkGetMacro(OutputArrayName, std::string);
-
-  /**
-   * This static method and the macro below are VTK conventions on how to
-   * instantiate VTK objects. You don't have to modify this.
-   */
   static ttkPeriodicGhostsGeneration *New();
   vtkTypeMacro(ttkPeriodicGhostsGeneration, ttkAlgorithm);
 
-public:
   ttkPeriodicGhostsGeneration();
   ~ttkPeriodicGhostsGeneration() override = default;
+
+#ifdef TTK_ENABLE_MPI
 
   int RequestUpdateExtent(vtkInformation *ttkNotUsed(request),
                           vtkInformationVector **inputVector,
@@ -145,6 +96,7 @@ public:
    */
   int MPIPeriodicGhostPipelinePreconditioning(vtkImageData *imageIn,
                                               vtkImageData *imageOut);
+
   inline std::vector<int> getNeighbors() {
     std::sort(neighbors_.begin(), neighbors_.end());
     return neighbors_;
@@ -154,15 +106,42 @@ public:
     return isBoundaryPeriodic_;
   }
 
+#endif
+
 protected:
-  /**
-   * TODO 8: Specify the input data type of each input port
-   *         (see cpp file)
-   */
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
-  int ComputeOutputExtent(vtkDataSet *input);
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
+#ifdef TTK_ENABLE_MPI
+
+  /**
+   * @brief  Computes several pieces of information necessary for predicting the
+   * global output extent.
+   *
+   * @return int Returns 1 if success
+   */
+  int ComputeOutputExtent();
+
+  /**
+   * @brief Converts extracted sub-extents of a vtkImageData to vtkCharArrays
+   * and exchanges them between processes using MPI_SendRecv.
+   *
+   * @tparam matchesSize
+   * @tparam metaDataSize
+   * @param imageIn : vtkImageData input data set
+   * @param charArrayBoundaries: array that will store the vtkCharArrays
+   * @param charArrayBoundariesMetaData : array that will store the meta data of
+   * the vtkCharArrays (such as the boundaries and processes involved in the
+   * exchange)
+   * @param matches : vector of boundary matches (1D, 2D or 3D)
+   * @param charArrayBoundariesReceived : array that will store the received
+   * vtkCharArrays
+   * @param charArrayBoundariesMetaDataReceived : array that will store the meta
+   * data of the received vtkCharArrays
+   * @param dim Dimension of the boundaries (1, 2 or 3)
+   * @return int Returns 1 upon success
+   */
   template <int matchesSize, int metaDataSize>
   int MarshalAndSendRecv(
     vtkImageData *imageIn,
@@ -176,11 +155,35 @@ protected:
       &charArrayBoundariesMetaDataReceived,
     int dim);
 
-  int MergeImageAppendAndSlice(vtkImageData *image,
-                               vtkImageData *slice,
-                               vtkImageData *mergedImage,
-                               int direction);
+  /**
+   * @brief Merges the data arrays of a data set and a slice of a data set.
+   *
+   * A slice is a vtkImageData for which one of the dimensions is equal to 1.
+   *
+   * @param image Input vtkImageData
+   * @param slice Slice input vtkImageData
+   * @param mergedImage Output vtkImageData
+   * @param direction Direction along which the merge should be done
+   * @return int Returns 1 upon success
+   */
+  int MergeImageAndSlice(vtkImageData *image,
+                         vtkImageData *slice,
+                         vtkImageData *mergedImage,
+                         int direction);
 
+  /**
+   * @brief Searches in the meta data array if a boundary matching direction as
+   * been received. If so, converts the vtkCharArray to its original form
+   * (vtkImageData) and merges the obtained vtkImageData with the mergedImage.
+   *
+   * @tparam boundaryType
+   * @param metaDataReceived : meta data of the vtkCharArrays
+   * @param boundariesReceived : vtkCharArrays to convert
+   * @param direction : Directions characterizing the boundaries
+   * @param mergeDirection : direction along which to merge the data sets
+   * @param mergedImage: merged image
+   * @return int Returns 1 upon success
+   */
   template <typename boundaryType>
   int UnMarshalAndMerge(
     std::vector<boundaryType> &metaDataReceived,
@@ -189,6 +192,18 @@ protected:
     int mergeDirection,
     vtkImageData *mergedImage);
 
+  /**
+   * @brief Searches in the meta data array if a boundary matching direction as
+   * been received. If so, converts the vtkCharArray to its original form
+   * (vtkImageData) and copies the obtained vtkImageData into mergedImage.
+   *
+   * @tparam boundaryType
+   * @param metaDataReceived meta data of the vtkCharArray
+   * @param boundariesReceived  vtkCharArrays to convert
+   * @param direction Directions characterizing the boundaries
+   * @param mergedImage merged image
+   * @return int Returns 1 upon success
+   */
   template <typename boundaryType>
   int UnMarshalAndCopy(
     std::vector<boundaryType> &metaDataReceived,
@@ -196,6 +211,21 @@ protected:
     boundaryType direction,
     vtkImageData *mergedImage);
 
+  /**
+  * @brief Merges two data arrays along the given direction.
+
+  * The data array from the slice has one dimension equal to 1.
+  *
+  * @param imageArray : image array
+  * @param sliceArray : slice array
+  * @param currentArray : output array
+  * @param direction : direction along which to merge
+  * @param dims : dimension of the vtkImageData image
+  * @param ghostValue : value to give the ghost simplices
+  * @param numberOfSimplices : number of simplices in currentArray
+  * @param numberOfTuples : number of tuple in the sliceArray
+  * @return int Returns 1 upon success
+  */
   int MergeDataArrays(vtkDataArray *imageArray,
                       vtkDataArray *sliceArray,
                       vtkSmartPointer<vtkDataArray> &currentArray,
@@ -205,16 +235,8 @@ protected:
                       ttk::SimplexId numberOfSimplices,
                       ttk::SimplexId numberOfTuples);
 
-  /**
-   * TODO 9: Specify the data object type of each output port
-   *         (see cpp file)
-   */
-  int FillOutputPortInformation(int port, vtkInformation *info) override;
+#endif
 
-  /**
-   * TODO 10: Pass VTK data to the base code and convert base code output to VTK
-   *          (see cpp file)
-   */
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
