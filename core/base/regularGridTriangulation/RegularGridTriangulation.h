@@ -70,7 +70,6 @@ namespace ttk {
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
 
     int getVertexRankInternal(const SimplexId lvid) const override;
-    int getCellRankInternal(const SimplexId lcid) const override;
 
   protected:
     std::array<SimplexId, 3> dimensions_; // dimensions

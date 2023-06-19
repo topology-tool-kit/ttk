@@ -530,6 +530,7 @@ namespace ttk {
   public:
     void createMetaGrid(const double *const bounds) override;
     void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary);
+    int getCellRankInternal(const SimplexId lcid) const override;
 
   protected:
     std::array<SimplexId, 3>

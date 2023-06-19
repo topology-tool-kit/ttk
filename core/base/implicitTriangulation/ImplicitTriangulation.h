@@ -250,6 +250,7 @@ namespace ttk {
 
   public:
     void createMetaGrid(const double *const bounds) override;
+    int getCellRankInternal(const SimplexId lcid) const override;
 
   protected:
     bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;

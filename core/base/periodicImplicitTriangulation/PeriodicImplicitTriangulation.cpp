@@ -852,6 +852,58 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
   return std::array<SimplexId, 3>{-1, -1, -1};
 }
 
+int ttk::PeriodicImplicitTriangulation::getCellRankInternal(
+  const SimplexId lcid) const {
+
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  const auto locCubeId{lcid / nTetraPerCube};
+
+  if(this->cellGhost_[locCubeId] == 0) {
+    return ttk::MPIrank_;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty()) {
+    this->printErr("Empty neighborsRanks_!");
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto nVertsCell{this->getCellVertexNumber(lcid)};
+  std::vector<bool> inRank(nVertsCell);
+  std::map<int, int> neighborOccurrences;
+  for(const auto neigh : this->neighborRanks_) {
+    std::fill(inRank.begin(), inRank.end(), false);
+    const auto &bbox{this->neighborCellBBoxes_[neigh]};
+    for(SimplexId i = 0; i < nVertsCell; ++i) {
+      SimplexId v{};
+      this->getCellVertex(lcid, i, v);
+      if(this->vertexGhost_[v] == 0) {
+        inRank[i] = true;
+      } else {
+        const auto p{this->getVertGlobalCoords(v)};
+        if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
+           && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+          inRank[i] = true;
+        }
+      }
+    }
+    if(std::all_of(
+         inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
+      return neigh;
+    }
+    neighborOccurrences[neigh]
+      = std::accumulate(inRank.begin(), inRank.end(), 0);
+  }
+
+  auto pr = std::max_element(
+    std::begin(neighborOccurrences), std::end(neighborOccurrences),
+    [](const std::pair<int, int> &p1, const std::pair<int, int> &p2) {
+      return p1.second < p2.second;
+    });
+  return pr->first;
+}
+
 #endif // TTK_ENABLE_MPI
 
 template <typename Derived>
