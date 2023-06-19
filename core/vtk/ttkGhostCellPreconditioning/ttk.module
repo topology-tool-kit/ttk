@@ -1,8 +1,0 @@
-NAME
-  ttkGhostCellPreconditioning
-SOURCES
-  ttkGhostCellPreconditioning.cpp
-HEADERS
-  ttkGhostCellPreconditioning.h
-DEPENDS
-  ttkAlgorithm

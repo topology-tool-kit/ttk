@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PV_TAG: v5.11.0-headless
+  PV_TAG: v5.11.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -207,6 +207,7 @@ jobs:
         # Ubuntu 22.04 OOM killer also kills the parent process...
         if [[ "$VERS" == *"22.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
+          rm ttk-data/states/mergeTreePGA.pvsm
           rm ttk-data/states/mergeTreeTemporalReduction.pvsm
           rm ttk-data/states/persistentGenerators_darkSky.pvsm
         fi
@@ -422,7 +423,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn openmp graphviz ninja websocketpp sccache python=3.9.13 zlib
+          scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH
@@ -437,23 +438,19 @@ jobs:
     - name: Fetch archived ccache
       continue-on-error: true
       run: |
-        Invoke-WebRequest `
-        -OutFile ttk-sccache.tar.gz `
-        -Uri https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-sccache-windows.tar.gz
+        curl.exe -OL https://github.com/topology-tool-kit/ttk/releases/download/ccache/ttk-sccache-windows.tar.gz
 
     - name: Decompress ccache archive
       continue-on-error: true
       shell: bash
       run: |
-        tar xzf ttk-sccache.tar.gz
+        tar xzf ttk-sccache-windows.tar.gz
         mkdir -p /c/Users/runneradmin/AppData/Local/Mozilla/sccache
         mv cache /c/Users/runneradmin/AppData/Local/Mozilla/sccache
 
     - name: Fetch TTK-ParaView headless Windows installer
       run: |
-        Invoke-WebRequest `
-        -OutFile ttk-paraview-headless.exe `
-        -Uri https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless.exe
+        curl.exe -OL https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless.exe
 
     - name: Install ParaView
       shell: cmd
@@ -573,22 +570,10 @@ jobs:
         cd ttk-data
         pvpython.exe python\resample.py ctBones.vti 128 128 128 ctBones.vti
 
-    - name: Temporary removal of python-dependent examples
-      shell: bash
-      run: |
-        cd ttk-data
-        rm python/1manifoldLearning.py
-        rm python/clusteringKelvinHelmholtzInstabilities.py
-        rm python/karhunenLoveDigits64Dimensions.py
-        rm python/mergeTreeClustering.py
-        rm python/persistentGenerators_householdAnalysis.py
-        rm python/persistentGenerators_periodicPicture.py
-        ls -lh python/*.py
-
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
-        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         pvpython.exe -u python\run.py

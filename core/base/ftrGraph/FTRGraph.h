@@ -186,7 +186,8 @@ namespace ttk {
 
       /// Scalar field used to compute the Reeb Graph
       void setScalars(const void *scalars) {
-        scalars_.setScalars((ScalarType *)scalars);
+        scalars_.setScalars(
+          const_cast<ScalarType *>((const ScalarType *)scalars));
       }
 
       /// When several points have the same scalar value,

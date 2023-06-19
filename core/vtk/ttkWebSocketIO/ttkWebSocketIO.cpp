@@ -124,8 +124,8 @@ void jsonArrayToArray(const boost::property_tree::ptree &pt,
   }
 }
 
-bool jsonHasChild(const boost::property_tree::ptree &pt,
-                  const boost::property_tree::ptree::key_type &key) {
+static bool jsonHasChild(const boost::property_tree::ptree &pt,
+                         const boost::property_tree::ptree::key_type &key) {
   return pt.find(key) != pt.not_found();
 }
 

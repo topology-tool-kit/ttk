@@ -108,8 +108,49 @@ double ttk::PersistenceDiagramAuction::getMatchingsAndDistance(
   return wassersteinDistance;
 }
 
-double
-  ttk::PersistenceDiagramAuction::run(std::vector<MatchingType> &matchings) {
+double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
+  lowerBoundCost_ = 0;
+  for(unsigned int i = 0; i < bidders_.size(); ++i) {
+    if(bidders_[i].isDiagonal())
+      continue;
+
+    // Get closest good
+    double bestCost = std::numeric_limits<double>::max();
+    std::vector<KDT *> neighbours;
+    std::vector<double> costs;
+    if(use_kdt_) {
+      std::array<double, 5> coordinates;
+      bidders_[i].GetKDTCoordinates(geometricalFactor_, coordinates);
+      kdt_.getKClosest(1, coordinates, neighbours, costs, kdt_index);
+      int bestIndex = neighbours[0]->id_;
+      bestCost
+        = bidders_[i].cost(goods_[bestIndex], wasserstein_, geometricalFactor_);
+    } else {
+      for(unsigned int j = 0; j < goods_.size(); ++j) {
+        double cost
+          = bidders_[i].cost(goods_[j], wasserstein_, geometricalFactor_);
+        if(cost < bestCost)
+          bestCost = cost;
+      }
+    }
+
+    // Compare with diagonal good
+    Good g{bidders_[i].x_, bidders_[i].y_, true, -bidders_[i].id_ - 1};
+    g.projectOnDiagonal();
+    double cost = bidders_[i].cost(g, wasserstein_, geometricalFactor_);
+    if(cost < bestCost)
+      bestCost = cost;
+
+    // Update lower bound
+    lowerBoundCost_ += bestCost;
+  }
+  return lowerBoundCost_;
+}
+
+double ttk::PersistenceDiagramAuction::run(std::vector<MatchingType> &matchings,
+                                           const int kdt_index) {
+  initLowerBoundCostWeight(delta_lim_);
+  initLowerBoundCost(kdt_index);
   initializeEpsilon();
   int n_biddings = 0;
   double delta = 5;
@@ -117,7 +158,7 @@ double
     epsilon_ /= 5;
     this->buildUnassignedBidders();
     this->reinitializeGoods();
-    this->runAuctionRound(n_biddings);
+    this->runAuctionRound(n_biddings, kdt_index);
     delta = this->getRelativePrecision();
   }
   double wassersteinDistance = this->getMatchingsAndDistance(matchings, true);
@@ -454,14 +495,8 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
   std::vector<KDT *> neighbours;
   std::vector<double> costs;
 
-  std::array<double, 5> coordinates{
-    geometricalFactor * this->x_, geometricalFactor * this->y_, 0.0, 0.0, 0.0,
-  };
-  if(geometricalFactor < 1) {
-    coordinates[2] = (1 - geometricalFactor) * this->coords_[0];
-    coordinates[3] = (1 - geometricalFactor) * this->coords_[1];
-    coordinates[4] = (1 - geometricalFactor) * this->coords_[2];
-  }
+  std::array<double, 5> coordinates;
+  GetKDTCoordinates(geometricalFactor, coordinates);
 
   kdt->getKClosest(2, coordinates, neighbours, costs, kdt_index);
   double best_val, second_val;

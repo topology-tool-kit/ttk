@@ -86,6 +86,20 @@
                 <Documentation>Controls how many elements are sent from the ranks at once.</Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name="GlobalOrder"
+        label="Global Order Array"
+        command="SetGlobalOrder"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        Request a global order array. By default, order arrays are computed locally on each process.
+        This forces the filter to compute an order for all processes. 
+        It is a costly and sometimes unnecessary computation. Requires MPI to have an effect. 
+        </Documentation>
+      </IntVectorProperty>      
+
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input Options">

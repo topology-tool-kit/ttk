@@ -75,8 +75,7 @@ namespace ttk {
     }
 
     void setPreprocess(bool preproc) {
-      if(not progressiveComputation_)
-        preprocess_ = preproc;
+      preprocess_ = preproc;
     }
 
     void setPostprocess(bool postproc) {
@@ -126,7 +125,17 @@ namespace ttk {
       AssignmentExhaustive<dataType> solverExhaustive;
       AssignmentMunkres<dataType> solverMunkres;
       AssignmentAuction<dataType> solverAuction;
-      switch(assignmentSolverID_) {
+
+      int nRows = costMatrix.size() - 1;
+      int nCols = costMatrix[0].size() - 1;
+      int max_dim = std::max(nRows, nCols);
+      int min_dim = std::min(nRows, nCols);
+
+      int assignmentSolverID = assignmentSolverID_;
+      if((min_dim <= 2 and max_dim <= 2) or (min_dim <= 1 and max_dim <= 6))
+        assignmentSolverID = 1;
+
+      switch(assignmentSolverID) {
         case 1:
           solverExhaustive = AssignmentExhaustive<dataType>();
           assignmentSolver = &solverExhaustive;
@@ -234,17 +243,7 @@ namespace ttk {
       std::vector<ftm::idNode> &children1,
       std::vector<ftm::idNode> &children2) {
       if(children1.size() != 0 && children2.size() != 0) {
-        dataType forestTerm1, forestTerm2, forestTerm3;
-        std::tuple<dataType, ftm::idNode> forestCoTerm1, forestCoTerm2;
-        // Term 1
-        forestCoTerm1
-          = computeTerm1_2<dataType>(children2, i, forestTable, true);
-        forestTerm1 = forestTable[0][j] + std::get<0>(forestCoTerm1);
-
-        // Term2
-        forestCoTerm2
-          = computeTerm1_2<dataType>(children1, j, forestTable, false);
-        forestTerm2 = forestTable[i][0] + std::get<0>(forestCoTerm2);
+        dataType forestTerm3;
 
         // Term 3
         Timer t_assignment;
@@ -254,20 +253,39 @@ namespace ttk {
         if(not parallelize_)
           t_assignment_time_ += t_assignment.getElapsedTime();
 
-        // Compute table value
-        forestTable[i][j] = keepSubtree_ ? std::min(
-                              std::min(forestTerm1, forestTerm2), forestTerm3)
-                                         : forestTerm3;
-
-        // Add backtracking information
-        if(forestTable[i][j] == forestTerm3) {
+        if(not keepSubtree_) {
+          // Compute table value
+          forestTable[i][j] = forestTerm3;
+          // Add backtracking information
           forestBackTable[i][j] = forestAssignment;
-        } else if(forestTable[i][j] == forestTerm2) {
-          forestBackTable[i][j].push_back(
-            std::make_tuple(std::get<1>(forestCoTerm2), j));
         } else {
-          forestBackTable[i][j].push_back(
-            std::make_tuple(i, std::get<1>(forestCoTerm1)));
+          dataType forestTerm1, forestTerm2;
+          std::tuple<dataType, ftm::idNode> forestCoTerm1, forestCoTerm2;
+
+          // Term 1
+          forestCoTerm1
+            = computeTerm1_2<dataType>(children2, i, forestTable, true);
+          forestTerm1 = forestTable[0][j] + std::get<0>(forestCoTerm1);
+
+          // Term2
+          forestCoTerm2
+            = computeTerm1_2<dataType>(children1, j, forestTable, false);
+          forestTerm2 = forestTable[i][0] + std::get<0>(forestCoTerm2);
+
+          // Compute table value
+          forestTable[i][j]
+            = std::min(std::min(forestTerm1, forestTerm2), forestTerm3);
+
+          // Add backtracking information
+          if(forestTable[i][j] == forestTerm3) {
+            forestBackTable[i][j] = forestAssignment;
+          } else if(forestTable[i][j] == forestTerm2) {
+            forestBackTable[i][j].push_back(
+              std::make_tuple(std::get<1>(forestCoTerm2), j));
+          } else {
+            forestBackTable[i][j].push_back(
+              std::make_tuple(i, std::get<1>(forestCoTerm1)));
+          }
         }
       } else {
         // If one of the forest is empty we get back to equation 8 or 10
@@ -367,32 +385,40 @@ namespace ttk {
       std::vector<std::vector<std::tuple<int, int>>> &treeBackTable,
       std::vector<ftm::idNode> &children1,
       std::vector<ftm::idNode> &children2) {
-      dataType treeTerm1, treeTerm2, treeTerm3;
-      std::tuple<dataType, ftm::idNode> treeCoTerm1, treeCoTerm2;
-      // Term 1
-      treeCoTerm1 = computeTerm1_2<dataType>(children2, i, treeTable, true);
-      treeTerm1 = treeTable[0][j] + std::get<0>(treeCoTerm1);
-
-      // Term 2
-      treeCoTerm2 = computeTerm1_2<dataType>(children1, j, treeTable, false);
-      treeTerm2 = treeTable[i][0] + std::get<0>(treeCoTerm2);
+      dataType treeTerm3;
 
       // Term 3
       treeTerm3
         = forestTable[i][j] + relabelCost<dataType>(tree1, nodeI, tree2, nodeJ);
 
-      // Compute table value
-      treeTable[i][j] = keepSubtree_
-                          ? std::min(std::min(treeTerm1, treeTerm2), treeTerm3)
-                          : treeTerm3;
-
-      // Add backtracking information
-      if(treeTable[i][j] == treeTerm3) {
+      if(not keepSubtree_) {
+        // Compute table value
+        treeTable[i][j] = treeTerm3;
+        // Add backtracking information
         treeBackTable[i][j] = std::make_tuple(i, j);
-      } else if(treeTable[i][j] == treeTerm2) {
-        treeBackTable[i][j] = std::make_tuple(std::get<1>(treeCoTerm2), j);
       } else {
-        treeBackTable[i][j] = std::make_tuple(i, std::get<1>(treeCoTerm1));
+        dataType treeTerm1, treeTerm2;
+        std::tuple<dataType, ftm::idNode> treeCoTerm1, treeCoTerm2;
+
+        // Term 1
+        treeCoTerm1 = computeTerm1_2<dataType>(children2, i, treeTable, true);
+        treeTerm1 = treeTable[0][j] + std::get<0>(treeCoTerm1);
+
+        // Term 2
+        treeCoTerm2 = computeTerm1_2<dataType>(children1, j, treeTable, false);
+        treeTerm2 = treeTable[i][0] + std::get<0>(treeCoTerm2);
+
+        // Compute table value
+        treeTable[i][j] = std::min(std::min(treeTerm1, treeTerm2), treeTerm3);
+
+        // Add backtracking information
+        if(treeTable[i][j] == treeTerm3) {
+          treeBackTable[i][j] = std::make_tuple(i, j);
+        } else if(treeTable[i][j] == treeTerm2) {
+          treeBackTable[i][j] = std::make_tuple(std::get<1>(treeCoTerm2), j);
+        } else {
+          treeBackTable[i][j] = std::make_tuple(i, std::get<1>(treeCoTerm1));
+        }
       }
     }
 
@@ -484,15 +510,8 @@ namespace ttk {
       // ---------------------
       // ----- Compute edit distance
       // --------------------
-      if(progressiveComputation_) {
-        /*MergeTreeDistanceProgressive<dataType> editDistanceProgressive;
-        editDistanceProgressive.computeEditDistanceProgressive(tree1, tree2,
-                            treeTable, forestTable, treeBackTable,
-        forestBackTable);*/
-      } else {
-        computeEditDistance(tree1, tree2, treeTable, forestTable, treeBackTable,
-                            forestBackTable, nRows, nCols);
-      }
+      computeEditDistance(tree1, tree2, treeTable, forestTable, treeBackTable,
+                          forestBackTable, nRows, nCols);
       dataType distance = treeTable[indR][indC];
       if(onlyEmptyTreeDistance_)
         distance = treeTable[indR][0];

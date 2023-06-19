@@ -169,10 +169,10 @@ int ttkPersistenceDiagramClustering::RequestData(
   return 1;
 }
 
-void addCostsAsFieldData(vtkUnstructuredGrid *vtu,
-                         const double minSadCost,
-                         const double sadSadCost,
-                         const double sadMaxCost) {
+static void addCostsAsFieldData(vtkUnstructuredGrid *vtu,
+                                const double minSadCost,
+                                const double sadSadCost,
+                                const double sadMaxCost) {
 
   // add global matchings cost as FieldData (only 1 tuple per array)
   vtkNew<vtkDoubleArray> minSad{};

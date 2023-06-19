@@ -25,7 +25,7 @@ int ttk::ttkCinemaImagingEmbree::RenderVTKObject(
   vtkPointSet *inputGrid) const {
   int status = 0;
 
-#if TTK_ENABLE_EMBREE
+#ifdef TTK_ENABLE_EMBREE
 
   auto inputObjectCells = ttkCinemaImaging::GetCells(inputObject);
 

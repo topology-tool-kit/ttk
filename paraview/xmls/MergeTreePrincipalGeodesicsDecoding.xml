@@ -6,7 +6,21 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkMergeTreePrincipalGeodesicsDecoding" class="ttkMergeTreePrincipalGeodesicsDecoding" label="TTK MergeTreePrincipalGeodesicsDecoding">
-      <Documentation long_help="MergeTreePrincipalGeodesicsDecoding Long" short_help="MergeTreePrincipalGeodesicsDecoding Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+      <Documentation long_help="MergeTreePrincipalGeodesicsDecoding Long" short_help="MergeTreePrincipalGeodesicsDecoding Short">
+
+        This filter reconstructs merge trees (or persistence diagrams) given their coordinates in a basis computed via Principal Geodesic Analysis.
+
+        Related publication:
+
+        'Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)'
+        Mathieu Pont, Jules Vidal, Julien Tierny.
+        IEEE Transactions on Visualization and Computer Graphics, 2022
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+
+        </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty

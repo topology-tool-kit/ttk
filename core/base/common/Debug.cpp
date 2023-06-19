@@ -33,11 +33,11 @@ Debug::~Debug() {
 
 int Debug::welcomeMsg(ostream &stream) {
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(MPIrank_ != 0) {
     ttk::welcomeMsg_ = false;
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
   int priorityAsInt = (int)debug::Priority::PERFORMANCE;
 

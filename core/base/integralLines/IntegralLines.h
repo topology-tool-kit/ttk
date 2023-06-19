@@ -403,9 +403,9 @@ void ttk::IntegralLines::receiveElement(
 
   // Create integral line object on this process
   int threadNum{0};
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
   threadNum = omp_get_thread_num();
-#endif
+#endif // TTK_ENABLE_OPENMP
 
   ttk::intgl::IntegralLine *integralLine
     = outputIntegralLines_->at(threadNum).addArrayElement(
@@ -463,14 +463,14 @@ void ttk::IntegralLines::storeToSendIfNecessary(
           = integralLine->localVertexIdentifier.back();
         element.LocalVertexIdentifier1
           = integralLine->localVertexIdentifier.at(size - 2);
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
         toSend_
           ->at(neighborsToId_.find(rankArray)->second)[omp_get_thread_num()]
           .push_back(element);
 #else
         toSend_->at(neighborsToId_.find(rankArray)->second)[0].push_back(
           element);
-#endif
+#endif // TTK_ENABLE_OPENMP
         isMax = true;
       }
     }
@@ -528,9 +528,9 @@ void ttk::IntegralLines::computeIntegralLine(
 #ifdef TTK_ENABLE_MPI
       if(ttk::isRunningWithMPI()
          && triangulation->getVertexRank(v) == ttk::MPIrank_) {
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update seq_cst
-#endif
+#endif // TTK_ENABLE_OPENMP
         ttk::intgl::finishedElement_++;
       } else {
         this->storeToSendIfNecessary<triangulationType>(
@@ -552,13 +552,13 @@ void ttk::IntegralLines::computeIntegralLine(
         // and a task is created to further the computation of the integral line
         ttk::SimplexId numberOfComponents = components->size();
 #ifdef TTK_ENABLE_MPI
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update seq_cst
-#endif
+#endif // TTK_ENABLE_OPENMP
         ttk::intgl::finishedElement_++;
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update seq_cst
-#endif
+#endif // TTK_ENABLE_OPENMP
         ttk::intgl::addedElement_ += numberOfComponents;
 #endif
         isMax = true;
@@ -576,9 +576,9 @@ void ttk::IntegralLines::computeIntegralLine(
           triangulation->getVertexPoint(vnext, p1[0], p1[1], p1[2]);
           double distanceFork = Geometry::distance(p0, p1, 3);
           int threadNum{0};
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
           threadNum = omp_get_thread_num();
-#endif
+#endif // TTK_ENABLE_OPENMP
           ttk::intgl::IntegralLine *integralLineFork
             = outputIntegralLines_->at(threadNum).addArrayElement(
               ttk::intgl::IntegralLine{
@@ -589,10 +589,10 @@ void ttk::IntegralLines::computeIntegralLine(
                    integralLine->localVertexIdentifier.back() + 1}),
                 integralLine->seedIdentifier, forkIdentifier});
 
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(integralLineFork)
           {
-#endif
+#endif // TTK_ENABLE_OPENMP
 #ifdef TTK_ENABLE_MPI
             bool hasBeenSent = false;
             this->storeToSendIfNecessary<triangulationType>(
@@ -604,9 +604,9 @@ void ttk::IntegralLines::computeIntegralLine(
 #ifdef TTK_ENABLE_MPI
             }
 #endif
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
           }
-#endif
+#endif // TTK_ENABLE_OPENMP
         }
       } else {
         // In case the vertex is not a saddle point, all neighbor vertices
@@ -663,9 +663,9 @@ void ttk::IntegralLines::prepareForTask(
     seedIdentifier = v;
 #endif
     int threadNum{0};
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
     threadNum = omp_get_thread_num();
-#endif
+#endif // TTK_ENABLE_OPENMP
     chunkIntegralLine[j] = outputIntegralLines_->at(threadNum).addArrayElement(
       ttk::intgl::IntegralLine{
         std::vector<ttk::SimplexId>(1, v), std::vector<double>(1, 0),
@@ -679,17 +679,17 @@ void ttk::IntegralLines::createTask(
   std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
   const ttk::SimplexId *offsets,
   int nbElement) const {
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkIntegralLine)
   {
-#endif
+#endif // TTK_ENABLE_OPENMP
     for(int j = 0; j < nbElement; j++) {
       this->computeIntegralLine<triangulationType>(
         triangulation, chunkIntegralLine[j], offsets);
     }
-#if TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP
   }
-#endif
+#endif // TTK_ENABLE_OPENMP
 }
 
 template <class triangulationType>

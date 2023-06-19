@@ -22,10 +22,10 @@ ttkForEach::ttkForEach() {
 }
 
 ttkForEach::~ttkForEach() = default;
-;
 
-int addRecursivelyToFieldData(vtkDataObject *object,
-                              const vtkSmartPointer<vtkDataArray> &array) {
+static int
+  addRecursivelyToFieldData(vtkDataObject *object,
+                            const vtkSmartPointer<vtkDataArray> &array) {
   object->GetFieldData()->AddArray(array);
   if(object->IsA("vtkMultiBlockDataSet")) {
     auto objectAsMB = (vtkMultiBlockDataSet *)object;

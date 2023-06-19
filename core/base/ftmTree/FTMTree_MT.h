@@ -341,8 +341,8 @@ namespace ttk {
       }
 
       template <typename scalarType>
-      inline void setVertexScalars(scalarType *vals) {
-        scalars_->values = (void *)vals;
+      inline void setVertexScalars(const scalarType *vals) {
+        scalars_->values = static_cast<void *>(const_cast<scalarType *>(vals));
       }
 
       // offset

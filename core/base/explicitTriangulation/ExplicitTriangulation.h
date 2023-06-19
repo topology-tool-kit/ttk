@@ -410,13 +410,13 @@ namespace ttk {
 #endif
 
       if(doublePrecision_) {
-        x = ((double *)pointSet_)[3 * vertexId];
-        y = ((double *)pointSet_)[3 * vertexId + 1];
-        z = ((double *)pointSet_)[3 * vertexId + 2];
+        x = ((const double *)pointSet_)[3 * vertexId];
+        y = ((const double *)pointSet_)[3 * vertexId + 1];
+        z = ((const double *)pointSet_)[3 * vertexId + 2];
       } else {
-        x = ((float *)pointSet_)[3 * vertexId];
-        y = ((float *)pointSet_)[3 * vertexId + 1];
-        z = ((float *)pointSet_)[3 * vertexId + 2];
+        x = ((const float *)pointSet_)[3 * vertexId];
+        y = ((const float *)pointSet_)[3 * vertexId + 1];
+        z = ((const float *)pointSet_)[3 * vertexId + 2];
       }
 
       return 0;
@@ -728,8 +728,10 @@ namespace ttk {
       computeCellRangeOffsets(std::vector<size_t> &nSimplicesPerRange) const;
 
     int preconditionDistributedCells() override;
+    int preconditionExchangeGhostCells() override;
     int preconditionDistributedEdges() override;
     int preconditionDistributedVertices() override;
+    int preconditionExchangeGhostVertices() override;
     int preconditionDistributedTriangles() override;
     int preconditionVertexRankArray();
     int preconditionCellRankArray();

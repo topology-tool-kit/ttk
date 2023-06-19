@@ -573,7 +573,8 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
 
   approxT_.setDebugLevel(debugLevel_);
   approxT_.setThreadNumber(threadNumber_);
-  approxT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation *>(
+    (const ImplicitTriangulation *)triangulation));
   approxT_.setStartingResolutionLevel(StartingResolutionLevel);
   approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   approxT_.setPreallocateMemory(true);
@@ -616,7 +617,8 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
 
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
-  progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation *>(
+    (const ImplicitTriangulation *)triangulation));
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);

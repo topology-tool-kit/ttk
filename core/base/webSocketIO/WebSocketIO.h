@@ -30,7 +30,7 @@
 
 #include <functional>
 
-#if TTK_ENABLE_WEBSOCKETPP
+#ifdef TTK_ENABLE_WEBSOCKETPP
 
 // fix undefined reference to boost::system link error
 #define BOOST_ERROR_CODE_HEADER_ONLY
@@ -92,7 +92,7 @@ namespace ttk {
     int clearMessageQueue();
 
   private:
-#if TTK_ENABLE_WEBSOCKETPP
+#ifdef TTK_ENABLE_WEBSOCKETPP
     mutable WSServer server;
 
     ttk::Timer msgTimer;
