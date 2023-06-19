@@ -16,6 +16,7 @@
 #include <RegularGridTriangulation.h>
 
 #include <array>
+#include <numeric>
 
 namespace ttk {
 

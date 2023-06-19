@@ -1,5 +1,6 @@
 #include <ttkIdentifiers.h>
 
+#include <Triangulation.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdTypeArray.h>

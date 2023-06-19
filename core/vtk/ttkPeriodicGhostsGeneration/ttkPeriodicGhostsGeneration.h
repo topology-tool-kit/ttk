@@ -34,19 +34,25 @@
 #include <ttkPeriodicGhostsGenerationModule.h>
 
 // VTK Includes
+#include <RegularGridTriangulation.h>
+#include <Triangulation.h>
 #include <ttkAlgorithm.h>
-#include <vtkCellTypes.h>
+#include <vtkCellData.h>
 #include <vtkCharArray.h>
-#include <vtkCommunicator.h>
 #include <vtkDataSet.h>
-#include <vtkExtractVOI.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkInformationIntegerKey.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
-#include <vtkUnsignedCharArray.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkStructuredPoints.h>
 
+#ifdef TTK_ENABLE_MPI
+#include <cstring>
+#include <vtkCommunicator.h>
+#include <vtkExtentTranslator.h>
+#include <vtkExtractVOI.h>
+#endif
 namespace periodicGhosts {
   struct partialGlobalBound {
     unsigned char isBound{0};
@@ -60,6 +66,7 @@ class TTKPERIODICGHOSTSGENERATION_EXPORT ttkPeriodicGhostsGeneration
   : public ttkAlgorithm {
 
 private:
+#ifdef TTK_ENABLE_MPI
   std::array<int, 6> outExtent_; // Global extent size before computation
   std::array<int, 6> inExtent_; // Global extent size after computation
   std::array<double, 6> boundsWithoutGhosts_; // Local Bounds without ghosts
@@ -71,7 +78,7 @@ private:
   std::vector<int> neighbors_;
   std::vector<std::array<ttk::SimplexId, 6>> neighborVertexBBoxes_;
   std::array<unsigned char, 6> isBoundaryPeriodic_{};
-
+#endif
 public:
   static ttkPeriodicGhostsGeneration *New();
   vtkTypeMacro(ttkPeriodicGhostsGeneration, ttkAlgorithm);

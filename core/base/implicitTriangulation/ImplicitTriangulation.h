@@ -267,7 +267,6 @@ namespace ttk {
 #endif // TTK_ENABLE_MPI
 
   protected:
-
     enum class VertexPosition : char {
       // a--------b
 
@@ -522,7 +521,8 @@ namespace ttk {
                             SimplexId p[2]) const override;
     void
       edgeToPosition2d(const SimplexId edge, const int k, SimplexId p[2]) const;
-    void triangleToPosition2d(const SimplexId triangle, SimplexId p[2]) const;
+    void triangleToPosition2d(const SimplexId triangle,
+                              SimplexId p[2]) const override;
 
     SimplexId getVertexEdge2dA(const SimplexId p[2], const int id) const;
     SimplexId getVertexEdge2dB(const SimplexId p[2], const int id) const;

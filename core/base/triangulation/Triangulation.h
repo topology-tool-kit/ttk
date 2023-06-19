@@ -1500,8 +1500,8 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 #endif
-      return getDistributedGlobalCellId(localCellId, cellDim, globalCellId);
-      ;
+      return this->abstractTriangulation_->getDistributedGlobalCellId(
+        localCellId, cellDim, globalCellId);
     }
 
 #endif // TTK_ENABLE_MPI

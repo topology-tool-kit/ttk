@@ -1,5 +1,4 @@
 #include <PeriodicImplicitTriangulation.h>
-#include <string>
 using namespace std;
 using namespace ttk;
 
@@ -658,7 +657,6 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   }
 
   Timer tm{};
-
 
   // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
   const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};

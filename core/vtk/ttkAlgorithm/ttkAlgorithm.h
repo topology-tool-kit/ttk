@@ -15,7 +15,6 @@
 #pragma once
 
 // VTK Module
-#include "Triangulation.h"
 #include <ttkAlgorithmModule.h>
 
 // VTK Includes

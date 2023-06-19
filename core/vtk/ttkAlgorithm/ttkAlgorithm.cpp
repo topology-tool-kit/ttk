@@ -1,8 +1,3 @@
-#include "BaseClass.h"
-#include "DataTypes.h"
-#include <array>
-#include <cstddef>
-#include <string>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -681,7 +676,6 @@ void ttkAlgorithm::MPIGhostPipelinePreconditioning(vtkDataSet *input) {
       generator->GetOutputDataObject(0)->GetGhostArray(1));
   }
 }
-
 
 void ttkAlgorithm::MPIPipelinePreconditioning(
   vtkDataSet *input,

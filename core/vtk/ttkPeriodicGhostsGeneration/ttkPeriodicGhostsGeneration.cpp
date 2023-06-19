@@ -1,19 +1,4 @@
 #include <ttkPeriodicGhostsGeneration.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkExtentTranslator.h>
-#include <vtkExtractVOI.h>
-#include <vtkImageData.h>
-#include <vtkInformation.h>
-#include <vtkStructuredPoints.h>
-
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -130,7 +115,8 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent() {
 
     ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
 
-    // Compute the 1D boundary matches: if both
+    // Compute the 1D boundary matches of local process: if the process is on
+    // the global boundary, then the center of its other dimension is computed
 
     for(int i = 0; i < 2; i++) {
       if(std::abs(globalBounds_[i] - boundsWithoutGhosts_[i])
@@ -168,6 +154,9 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent() {
       }
     }
 
+    // The output extent is computed based on the previous results
+    // It is inflated or deflated for boundaries that will contain
+    // periodic ghosts
     for(int i = 0; i < 3; i++) {
       if(!(localGlobalBounds_[2 * i].isBound == 1
            && localGlobalBounds_[2 * i + 1].isBound == 1)) {
@@ -179,6 +168,9 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent() {
       }
     }
 
+    // We compute here if the global boundary has periodic ghosts. In case a
+    // process has both a low and high (e.g. w low and x high) global boundary,
+    // the boundary does not have periodic ghosts
     for(int i = 0; i < 3; i++) {
       if(localGlobalBounds_[2 * i].isBound == 1
          && localGlobalBounds_[2 * i].isBound
@@ -212,8 +204,10 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
   std::vector<std::vector<int>> additionalNeighbors(
     ttk::MPIsize_, std::vector<int>{});
   for(int i = 0; i < matchesNumber; i++) {
+    // Extent of the vtkImageData to extract
     VOI = {default_VOI[0], default_VOI[1], default_VOI[2],
            default_VOI[3], default_VOI[4], default_VOI[5]};
+    // It is modified based on the direction of the match
     for(int k = 1; k <= dim; k++) {
       if(matches[i][k] % 2 == 0) {
         VOI[matches[i][k] + 1] = VOI[matches[i][k]];
@@ -221,6 +215,8 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
         VOI[matches[i][k] - 1] = VOI[matches[i][k]];
       }
     }
+    // The intersections between the extracted extent and the neighbors
+    // are computed to keep track of the new neighbors
     for(const auto neigh : neighbors_) {
       if(neigh != matches[i][0]) {
         if(!(neighborVertexBBoxes_[neigh][0] == 0
@@ -244,7 +240,7 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
         }
       }
     }
-
+    // The vtkImageData is extracted
     vtkSmartPointer<vtkExtractVOI> extractVOI
       = vtkSmartPointer<vtkExtractVOI>::New();
     extractVOI->SetInputData(imageIn);
@@ -252,6 +248,7 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
     extractVOI->Update();
     vtkSmartPointer<vtkImageData> extracted = extractVOI->GetOutput();
     vtkSmartPointer<vtkCharArray> buffer = vtkSmartPointer<vtkCharArray>::New();
+    // The vtkImageData is converted to a vtkCharArray (for sending)
     if(vtkCommunicator::MarshalDataObject(extracted, buffer) == 0) {
       printErr("Marshalling failed!");
     };
@@ -260,13 +257,16 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
     for(int j = 0; j < metaDataSize; j++) {
       metaData.at(j) = matches[i][j + 1];
     }
+    // The type of match is stored as meta data
     charArrayBoundariesMetaData[matches[i][0]].emplace_back(metaData);
   }
 
-  ttk::SimplexId recv_size;
-  ttk::SimplexId send_size;
+  ttk::SimplexId recv_size{0};
+  ttk::SimplexId send_size{0};
   std::array<ttk::SimplexId, metaDataSize + 1> sendMetadata;
   std::array<ttk::SimplexId, metaDataSize + 1> recvMetaData;
+  // All the extracted image data are exchanged between processes along with
+  // their meta data and their new neighbors
   for(int i = 0; i < ttk::MPIsize_; i++) {
     for(int j = 0; j < static_cast<int>(charArrayBoundaries[i].size()); j++) {
       send_size = charArrayBoundaries[i][j]->GetNumberOfTuples();
@@ -316,17 +316,22 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndMerge(
   boundaryType direction,
   int mergeDirection,
   vtkImageData *mergedImage) {
+  // Search for the right received extracted image data using the meta
+  // data and the boundary direction
   auto it
     = std::find(metaDataReceived.begin(), metaDataReceived.end(), direction);
   if(it != metaDataReceived.end()) {
     vtkNew<vtkStructuredPoints> id;
     vtkNew<vtkImageData> aux;
+    // If the right extracted image is found, it is converted back to a
+    // vtkImageData
     if(vtkCommunicator::UnMarshalDataObject(
          boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
        == 0) {
       printErr("UnMarshaling failed!");
       return 0;
     };
+    // Merged into mergedImage
     this->MergeImageAndSlice(mergedImage, id, aux, mergeDirection);
     mergedImage->DeepCopy(aux);
   }
@@ -339,16 +344,21 @@ int ttkPeriodicGhostsGeneration::UnMarshalAndCopy(
   std::vector<vtkSmartPointer<vtkCharArray>> &boundariesReceived,
   boundaryType direction,
   vtkImageData *mergedImage) {
+  // Search for the right received extracted image data using the meta
+  // data and the boundary direction
   auto it
     = std::find(metaDataReceived.begin(), metaDataReceived.end(), direction);
   if(it != metaDataReceived.end()) {
     vtkNew<vtkStructuredPoints> id;
+    // If the right extracted image is found, it is converted back to a
+    // vtkImageData
     if(vtkCommunicator::UnMarshalDataObject(
          boundariesReceived[std::distance(metaDataReceived.begin(), it)], id)
        == 0) {
       printErr("UnMarshaling failed!");
       return 0;
     };
+    // Copied into mergedImage
     mergedImage->DeepCopy(id);
   }
   return 1;
@@ -375,6 +385,7 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
   currentArray->SetNumberOfComponents(1);
   currentArray->SetNumberOfTuples(numberOfSimplices);
   currentArray->SetName(arrayName.c_str());
+  // Special treatment for ghost arrays
   if(std::strcmp(currentArray->GetName(), "vtkGhostType") == 0) {
     if(ghostValue != 0) {
       sliceArray->SetNumberOfTuples(numberOfTuples);
@@ -390,6 +401,7 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
   int sliceCounter = 0;
   int imageCounter = 0;
   int counter = 0;
+  // We define the function addSlice based on the direction of the merge
   std::function<bool(int, int, int, int[3])> addSlice;
   switch(direction) {
     case 0:
@@ -418,6 +430,7 @@ int ttkPeriodicGhostsGeneration::MergeDataArrays(
       break;
   }
 
+  // Do the actual merging
   for(int z = 0; z < dims[2]; z++) {
     for(int y = 0; y < dims[1]; y++) {
       for(int x = 0; x < dims[0]; x++) {
@@ -508,12 +521,14 @@ int ttkPeriodicGhostsGeneration::MergeImageAndSlice(vtkImageData *image,
     }
     vtkSmartPointer<vtkDataArray> currentArray
       = vtkSmartPointer<vtkDataArray>::Take(imageArray->NewInstance());
-
+    // If the direction is low, the new cells created belong to the process
     if(direction == 0 || direction == 2 || direction == 4) {
       this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
                             cellDims, 0, numberOfCells,
                             slice->GetNumberOfCells());
     } else {
+      // The value of ghost is not 1, as it would make the cell disappear in
+      // Paraview
       this->MergeDataArrays(imageArray, sliceArray, currentArray, direction,
                             cellDims, vtkDataSetAttributes::EXTERIORCELL,
                             numberOfCells, slice->GetNumberOfCells());
@@ -537,6 +552,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
   if(!ttk::isRunningWithMPI()) {
     return 0;
   }
+
   auto other = [](ttk::SimplexId i) {
     if(i % 2 == 1) {
       return i - 1;
@@ -550,6 +566,8 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
     = (ttk::RegularGridTriangulation *)GetTriangulation(imageIn);
   neighborVertexBBoxes_ = triangulation->getNeighborVertexBBoxes();
 
+  // Computation of the order in which the merging of the ghosts should be done
+  // The first dimension is the longest
   std::map<int, ttk::SimplexId> dimensionOrder;
   dimensionOrder[0] = inExtent_[1] - inExtent_[0];
   dimensionOrder[2] = inExtent_[3] - inExtent_[2];
@@ -583,6 +601,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
 
   this->ComputeOutputExtent();
 
+  // Preparation of the MPI type for the matches
   MPI_Datatype partialGlobalBoundMPI;
   std::vector<periodicGhosts::partialGlobalBound> allLocalGlobalBounds(
     ttk::MPIsize_ * 6, periodicGhosts::partialGlobalBound{});
@@ -602,6 +621,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
                 allLocalGlobalBounds.data(), 6, partialGlobalBoundMPI,
                 ttk::MPIcomm_);
 
+  // Computation of the 1D matches
   std::vector<std::array<ttk::SimplexId, 3>> matches;
   for(int i = 0; i < ttk::MPIsize_; i++) {
     if(i != ttk::MPIrank_) {
@@ -654,7 +674,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
-
+  // Computation of the 2D matches
   std::vector<std::array<ttk::SimplexId, 2>> local2DBounds;
   std::vector<std::array<ttk::SimplexId, 3>> matches_2D;
   if(dimensionality >= 2) {
@@ -714,6 +734,7 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
       }
     }
   }
+  // Computation of the 3D matches
   std::vector<std::array<ttk::SimplexId, 3>> local3DBounds;
   std::vector<std::array<ttk::SimplexId, 4>> matches_3D;
   if(dimensionality == 3) {
