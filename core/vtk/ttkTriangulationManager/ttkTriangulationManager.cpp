@@ -90,7 +90,6 @@ static void
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
 
   if(prevPeriodic != periodic) {
-
 #ifdef TTK_ENABLE_MPI
     if(periodic) {
       if(ttk::isRunningWithMPI()) {
