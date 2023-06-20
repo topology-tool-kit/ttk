@@ -198,6 +198,7 @@ int ttkPeriodicGhostsGeneration::MarshalAndSendRecv(
   std::vector<std::array<ttk::SimplexId, metaDataSize>>
     &charArrayBoundariesMetaDataReceived,
   int dim) {
+
   int *default_VOI = imageIn->GetExtent();
   std::array<ttk::SimplexId, 6> VOI;
   ttk::SimplexId matchesNumber = matches.size();
