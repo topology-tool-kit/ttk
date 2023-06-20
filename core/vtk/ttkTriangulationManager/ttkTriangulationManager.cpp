@@ -310,6 +310,8 @@ int ttkTriangulationManager::RequestData(vtkInformation *ttkNotUsed(request),
     this->processImplicit(*triangulation, imageIn, imageOut);
 #else
     this->processImplicit(*triangulation);
+    auto *outputDataSet = vtkDataSet::GetData(outputVector, 0);
+    outputDataSet->ShallowCopy(inputDataSet);
 #endif
     return 1;
   } else if(inputDataSet->IsA("vtkUnstructuredGrid")
