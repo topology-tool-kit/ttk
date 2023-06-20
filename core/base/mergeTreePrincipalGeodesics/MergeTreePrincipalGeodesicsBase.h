@@ -10,9 +10,7 @@
 
 #pragma once
 
-#include <Geometry.h>
-#include <MergeTreeBase.h>
-#include <MergeTreeDistance.h>
+#include <MergeTreeAxesAlgorithmBase.h>
 #include <cmath>
 
 #define POINTS_BELOW_DIAG_TOLERANCE 1e-4
@@ -20,10 +18,8 @@
 namespace ttk {
 
   class MergeTreePrincipalGeodesicsBase : virtual public Debug,
-                                          public MergeTreeBase {
+                                          public MergeTreeAxesAlgorithmBase {
   protected:
-    unsigned int k_ = 10;
-
     // Filled by the algorithm
     std::vector<std::vector<std::vector<double>>> vS_, v2s_, trees2Vs_,
       trees2V2s_;
@@ -44,47 +40,6 @@ namespace ttk {
     //----------------------------------------------------------------------------
     // Matching / Distance
     //----------------------------------------------------------------------------
-    template <class dataType>
-    void computeOneDistance(
-      ftm::MergeTree<dataType> &tree1,
-      ftm::MergeTree<dataType> &tree2,
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
-      dataType &distance,
-      bool isCalled = false,
-      bool useDoubleInput = false,
-      bool isFirstInput = true) {
-      MergeTreeDistance mergeTreeDistance;
-      mergeTreeDistance.setDebugLevel(std::min(debugLevel_, 2));
-      mergeTreeDistance.setPreprocess(false);
-      mergeTreeDistance.setPostprocess(false);
-      mergeTreeDistance.setBranchDecomposition(true);
-      mergeTreeDistance.setNormalizedWasserstein(normalizedWasserstein_);
-      mergeTreeDistance.setKeepSubtree(false);
-      mergeTreeDistance.setAssignmentSolver(assignmentSolverID_);
-      mergeTreeDistance.setIsCalled(isCalled);
-      mergeTreeDistance.setThreadNumber(this->threadNumber_);
-      mergeTreeDistance.setDistanceSquaredRoot(true); // squared root
-      mergeTreeDistance.setNodePerTask(nodePerTask_);
-      if(useDoubleInput) {
-        double weight = mixDistancesMinMaxPairWeight(isFirstInput);
-        mergeTreeDistance.setMinMaxPairWeight(weight);
-      }
-      distance = mergeTreeDistance.computeDistance<dataType>(
-        &(tree1.tree), &(tree2.tree), matching);
-    }
-
-    template <class dataType>
-    void computeOneDistance(ftm::MergeTree<dataType> &tree1,
-                            ftm::MergeTree<dataType> &tree2,
-                            dataType &distance,
-                            bool isCalled = false,
-                            bool useDoubleInput = false,
-                            bool isFirstInput = true) {
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching;
-      computeOneDistance<dataType>(tree1, tree2, matching, distance, isCalled,
-                                   useDoubleInput, isFirstInput);
-    }
-
     template <class dataType>
     dataType computeReconstructionError(
       ftm::MergeTree<dataType> &barycenter,
@@ -707,151 +662,6 @@ namespace ttk {
       getMultiInterpolation(barycenter, vSTemp, v2sTemp, tsTemp, interpolated);
     }
 
-    //----------------------------------------------------------------------------
-    // Preprocessing
-    //----------------------------------------------------------------------------
-    template <class dataType>
-    void preprocessingTrees(std::vector<ftm::MergeTree<dataType>> &trees,
-                            std::vector<std::vector<int>> &nodeCorr,
-                            bool useMinMaxPairT = true) {
-      nodeCorr.resize(trees.size());
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
-#endif
-      for(unsigned int i = 0; i < trees.size(); ++i) {
-        preprocessingPipeline<dataType>(
-          trees[i], epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_,
-          branchDecomposition_, useMinMaxPairT, cleanTree_, nodeCorr[i]);
-        if(trees.size() < 40)
-          printTreeStats(trees[i]);
-      }
-      if(trees.size() != 0)
-        printTreesStats(trees);
-    }
-
-    template <class dataType>
-    void preprocessingTrees(std::vector<ftm::MergeTree<dataType>> &trees,
-                            bool useMinMaxPairT = true) {
-      std::vector<std::vector<int>> nodeCorr(trees.size());
-      preprocessingTrees(trees, nodeCorr, useMinMaxPairT);
-    }
-
-    //----------------------------------------------------------------------------
-    // Utils
-    //----------------------------------------------------------------------------
-    // v[i] contains the node in tree matched to the node i in barycenter
-    template <class dataType>
-    void getMatchingVector(
-      ftm::MergeTree<dataType> &barycenter,
-      ftm::MergeTree<dataType> &tree,
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matchings,
-      std::vector<ftm::idNode> &matchingVector) {
-      matchingVector.clear();
-      matchingVector.resize(barycenter.tree.getNumberOfNodes(),
-                            std::numeric_limits<ftm::idNode>::max());
-      for(unsigned int j = 0; j < matchings.size(); ++j) {
-        auto match0 = std::get<0>(matchings[j]);
-        auto match1 = std::get<1>(matchings[j]);
-        if(match0 < barycenter.tree.getNumberOfNodes()
-           and match1 < tree.tree.getNumberOfNodes())
-          matchingVector[match0] = match1;
-      }
-    }
-
-    // v[i] contains the node in barycenter matched to the node i in tree
-    template <class dataType>
-    void getInverseMatchingVector(
-      ftm::MergeTree<dataType> &barycenter,
-      ftm::MergeTree<dataType> &tree,
-      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matchings,
-      std::vector<ftm::idNode> &matchingVector) {
-      matchingVector.clear();
-      matchingVector.resize(
-        tree.tree.getNumberOfNodes(), std::numeric_limits<ftm::idNode>::max());
-      for(unsigned int j = 0; j < matchings.size(); ++j) {
-        auto match0 = std::get<0>(matchings[j]);
-        auto match1 = std::get<1>(matchings[j]);
-        if(match0 < barycenter.tree.getNumberOfNodes()
-           and match1 < tree.tree.getNumberOfNodes())
-          matchingVector[match1] = match0;
-      }
-    }
-
-    // m[i][j] contains the node in trees[j] matched to the node i in the
-    // barycenter
-    template <class dataType>
-    void getMatchingMatrix(
-      ftm::MergeTree<dataType> &barycenter,
-      std::vector<ftm::MergeTree<dataType>> &trees,
-      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
-        &matchings,
-      std::vector<std::vector<ftm::idNode>> &matchingMatrix) {
-      matchingMatrix.clear();
-      matchingMatrix.resize(
-        barycenter.tree.getNumberOfNodes(),
-        std::vector<ftm::idNode>(
-          trees.size(), std::numeric_limits<ftm::idNode>::max()));
-      for(unsigned int i = 0; i < trees.size(); ++i) {
-        std::vector<ftm::idNode> matchingVector;
-        getMatchingVector<dataType>(
-          barycenter, trees[i], matchings[i], matchingVector);
-        for(unsigned int j = 0; j < matchingVector.size(); ++j)
-          matchingMatrix[j][i] = matchingVector[j];
-      }
-    }
-
-    void zeroPadding(std::string &colName,
-                     const size_t numberCols,
-                     const size_t colIdx) {
-      std::string max{std::to_string(numberCols - 1)};
-      std::string cur{std::to_string(colIdx)};
-      std::string zer(max.size() - cur.size(), '0');
-      colName.append(zer).append(cur);
-    }
-
-    std::string getTableCoefficientName(int noGeodesics, int geodesicNum) {
-      std::string name{"T"};
-      zeroPadding(name, noGeodesics, geodesicNum);
-      return name;
-    }
-
-    std::string getTableCoefficientNormName(int noGeodesics, int geodesicNum) {
-      std::string name{"TNorm"};
-      zeroPadding(name, noGeodesics, geodesicNum);
-      return name;
-    }
-
-    std::string getTableVectorName(int noGeodesics,
-                                   int geodesicNum,
-                                   int vId,
-                                   int vComp,
-                                   bool isSecondInput = false) {
-      std::string indexString{};
-      zeroPadding(indexString, noGeodesics, geodesicNum);
-      std::string prefix{(isSecondInput ? "T2_" : "")};
-      std::string name{prefix + "V" + indexString + "_" + std::to_string(vId)
-                       + "_" + std::to_string(vComp)};
-      return name;
-    }
-
-    std::string getTableCorrelationName(int noGeodesics, int geodesicNum) {
-      std::string name{"Corr"};
-      zeroPadding(name, noGeodesics, geodesicNum);
-      return name;
-    }
-
-    std::string getTableCorrelationPersName(int noGeodesics, int geodesicNum) {
-      std::string name{"CorrPers"};
-      zeroPadding(name, noGeodesics, geodesicNum);
-      return name;
-    }
-
-    std::string getTableCorrelationTreeName(int noTrees, int treeNum) {
-      std::string name{"Tree"};
-      zeroPadding(name, noTrees, treeNum);
-      return name;
-    }
-
     // ----------------------------------------------------------------------------
     // Vector Utils
     // ----------------------------------------------------------------------------
@@ -877,30 +687,6 @@ namespace ttk {
     void pointersToVectors(std::vector<double *> &pVec,
                            size_t size,
                            std::vector<std::vector<double>> &vec);
-
-    //----------------------------------------------------------------------------
-    // Testing
-    //----------------------------------------------------------------------------
-    void printVector(std::vector<double> &v, bool printHead = true) {
-      if(printHead)
-        std::cout << "======= printVector" << std::endl;
-      for(auto vv : v)
-        std::cout << vv << " ";
-      std::cout << std::endl;
-    }
-
-    void printVectorOfVector(std::vector<std::vector<double>> &v) {
-      std::cout << "======= printVectorOfVector" << std::endl;
-      for(auto vv : v)
-        printVector(vv, false);
-    }
-
-    void printVectorOfVectorOfVector(
-      std::vector<std::vector<std::vector<double>>> &v) {
-      std::cout << "======= printVectorOfVectorOfVector" << std::endl;
-      for(auto vv : v)
-        printVectorOfVector(vv);
-    }
   }; // MergeTreePrincipalGeodesicsBase class
 
 } // namespace ttk
