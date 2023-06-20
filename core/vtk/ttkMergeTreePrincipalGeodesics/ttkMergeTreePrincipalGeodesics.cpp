@@ -150,22 +150,20 @@ int ttkMergeTreePrincipalGeodesics::runCompute(
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
-  const int numInputs = inputTrees.size();
-  const int numInputs2
-    = (not isPersistenceDiagram_
-         ? inputTrees2.size()
-         : (mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1 ? numInputs
-                                                                  : 0));
-
-  setDataVisualization(numInputs, numInputs2);
-
-  std::vector<ttk::ftm::MergeTree<dataType>> intermediateMTrees(numInputs),
-    intermediateMTrees2(numInputs2);
+  std::vector<ttk::ftm::MergeTree<dataType>> intermediateMTrees,
+    intermediateMTrees2;
 
   bool useSadMaxPairs = (mixtureCoefficient_ == 0);
   isPersistenceDiagram_ = ttk::ftm::constructTrees<dataType>(
     inputTrees, intermediateMTrees, treesNodes, treesArcs, treesSegmentation,
     useSadMaxPairs);
+  // If merge trees are provided in input and normalization is not asked
+  convertToDiagram_
+    = (not isPersistenceDiagram_ and not normalizedWasserstein_);
+  if(convertToDiagram_) {
+    mixtureCoefficient_
+      = (intermediateMTrees[0].tree.template isJoinTree<dataType>() ? 1 : 0);
+  }
   if(not isPersistenceDiagram_
      or (mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1)) {
     auto &inputTrees2ToUse
@@ -175,6 +173,10 @@ int ttkMergeTreePrincipalGeodesics::runCompute(
                                        treesSegmentation2, !useSadMaxPairs);
   }
   isPersistenceDiagram_ |= (not normalizedWasserstein_);
+
+  const int numInputs = intermediateMTrees.size();
+  const int numInputs2 = intermediateMTrees2.size();
+  setDataVisualization(numInputs, numInputs2);
 
   // ------------------------------------------------------------------------------------
   // --- Call base
@@ -208,10 +210,12 @@ void ttkMergeTreePrincipalGeodesics::makeBarycenterOutput(
       visuMakerBary.setIsPDSadMax(blockId);
     else
       visuMakerBary.setIsPDSadMax(mixtureCoefficient_ == 0);
+    visuMakerBary.setPlanarLayout(true);
   }
   visuMakerBary.setDebugLevel(this->debugLevel_);
   visuMakerBary.setOutputTreeNodeId(true);
   visuMakerBary.setIsPersistenceDiagram(isPersistenceDiagram_);
+  visuMakerBary.setConvertedToDiagram(convertToDiagram_);
   visuMakerBary.makeTreesOutput<dataType>(&(barycenter.tree));
 
   // Construct multiblock

@@ -81,14 +81,8 @@ private:
   // Output
   // -> base class
 
-  void setDataVisualization(int numInputs, int numInputs2) {
-    // Trees
-    treesNodes.resize(numInputs);
-    treesNodes2.resize(numInputs2);
-    treesArcs.resize(numInputs);
-    treesArcs2.resize(numInputs2);
-    treesSegmentation.resize(numInputs);
-    treesSegmentation2.resize(numInputs2);
+  void setDataVisualization(int ttkNotUsed(numInputs),
+                            int ttkNotUsed(numInputs2)) {
   }
 
   void resetDataVisualization() {
