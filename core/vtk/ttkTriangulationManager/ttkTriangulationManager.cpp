@@ -74,18 +74,19 @@ int ttkTriangulationManager::RequestInformation(
 }
 #endif
 
-void switchPeriodicity(ttk::Triangulation &triangulation,
-                       const bool periodic,
-                       const ttk::Debug &dbg
+static void
+  switchPeriodicity(ttk::Triangulation &triangulation,
+                    const bool periodic,
+                    const ttk::Debug &dbg
 #ifdef TTK_ENABLE_MPI
-                       ,
-                       vtkImageData *imageIn,
-                       vtkImageData *imageOut,
-                       ttkPeriodicGhostsGeneration *periodicGhostGenerator,
-                       int debugLevel,
-                       float cacheSize
+                    ,
+                    vtkImageData *imageIn,
+                    vtkImageData *imageOut,
+                    ttkPeriodicGhostsGeneration *periodicGhostGenerator,
+                    int debugLevel,
+                    float cacheSize
 #endif
-) {
+  ) {
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
 
   if(prevPeriodic != periodic) {
