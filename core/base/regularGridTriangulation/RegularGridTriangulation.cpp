@@ -1,4 +1,3 @@
-#include "BaseClass.h"
 #include <RegularGridTriangulation.h>
 #include <numeric>
 #include <string>

@@ -634,9 +634,6 @@ void PeriodicImplicitTriangulation::createMetaGrid(const double *const bounds) {
                                 globalBounds[2], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],
                                 dimensions[0], dimensions[1], dimensions[2]);
-  this->metaGrid_->preconditionBoundaryVertices();
-  this->metaGrid_->preconditionBoundaryEdges();
-  this->metaGrid_->preconditionBoundaryTriangles();
 }
 
 int PeriodicImplicitTriangulation::preconditionDistributedCells() {

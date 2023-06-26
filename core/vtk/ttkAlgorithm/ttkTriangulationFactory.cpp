@@ -146,7 +146,7 @@ bool RegistryValue::isValid(vtkDataSet *dataSet) const {
     image->GetDimensions(dimensions_);
 
 #ifdef TTK_ENABLE_MPI
-    bool isValid = triangulation->getIsValid();
+    bool isValid = triangulation->getIsMPIValid();
 #else
     bool isValid = true;
 #endif

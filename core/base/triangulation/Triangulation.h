@@ -2950,18 +2950,18 @@ namespace ttk {
       this->abstractTriangulation_->setCellGhostArray(data);
     }
 
-    inline bool getIsValid() const {
-      return isValid;
+    inline bool getIsMPIValid() const {
+      return isMPIValid_;
     }
 
-    inline void setIsValid(bool flag) {
-      isValid = flag;
+    inline void setIsMPIValid(bool flag) {
+      isMPIValid_ = flag;
     }
 #endif // TTK_ENABLE_MPI
 
   protected:
 #ifdef TTK_ENABLE_MPI
-    bool isValid{true};
+    bool isMPIValid_{true};
 #endif
     inline bool isEmptyCheck() const {
       if(!abstractTriangulation_) {

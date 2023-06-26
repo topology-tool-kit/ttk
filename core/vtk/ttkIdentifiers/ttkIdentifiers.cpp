@@ -55,17 +55,19 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-#ifdef TTK_ENABLE_MPI
   ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   vtkNew<vtkIdTypeArray> globalPointIds;
   globalPointIds->SetNumberOfTuples(numberOfVertices);
   globalPointIds->SetNumberOfComponents(1);
   globalPointIds->SetName("GlobalPointIds");
   for(int i = 0; i < numberOfVertices; i++) {
+#ifdef TTK_ENABLE_MPI
     globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
+#else
+    globalPointIds->SetTuple1(i, i);
+#endif
   }
   input->GetPointData()->AddArray(globalPointIds);
-#endif
 
   output->ShallowCopy(input);
 

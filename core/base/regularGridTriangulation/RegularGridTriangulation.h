@@ -7,7 +7,9 @@
 /// ttk::AbstractTriangulation that exposes a common MPI API for triangulation
 /// on regular grids. The virtual methods in this class are meant to be
 /// implemented in ttk::ImplicitTriangulation and
-/// ttk::PeriodicImplicitTriangulation. \sa Triangulation
+/// ttk::PeriodicImplicitTriangulation. This meta-class only holds an interface
+/// for MPI-related features for the moment but will maybe be enlarged in the
+/// future. \sa Triangulation
 
 #pragma once
 

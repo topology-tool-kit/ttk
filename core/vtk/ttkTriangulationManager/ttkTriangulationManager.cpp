@@ -95,7 +95,7 @@ static void
       if(ttk::isRunningWithMPI()) {
         periodicGhostGenerator->MPIPeriodicGhostPipelinePreconditioning(
           imageIn, imageOut);
-        triangulation.setIsValid(false);
+        triangulation.setIsMPIValid(false);
         auto newTriangulation = ttkTriangulationFactory::GetTriangulation(
           debugLevel, cacheSize, imageOut);
         newTriangulation->setPeriodicBoundaryConditions(periodic);
