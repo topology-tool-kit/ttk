@@ -31,6 +31,7 @@
 
 #include <queue>
 #include <type_traits>
+#include <climits>
 
 #include <MarchingTetrahedraLookupTables.inl>
 
@@ -49,7 +50,7 @@ namespace ttk {
     constexpr unsigned long long int getHash(const unsigned long long int a,
                                              const unsigned long long int b) {
       return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
-             % ULONG_LONG_MAX;
+             % ULLONG_MAX;
     }
 
     /**
