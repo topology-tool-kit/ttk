@@ -29,9 +29,9 @@
 // base code includes
 #include <Triangulation.h>
 
+#include <climits>
 #include <queue>
 #include <type_traits>
-#include <climits>
 
 #include <MarchingTetrahedraLookupTables.inl>
 
