@@ -1,0 +1,11 @@
+ttk_add_base_library(initDictPersistenceDiagram
+  SOURCES
+    InitDictPersistenceDiagram.cpp
+    InitDictRandomly.cpp
+  HEADERS
+    InitDictPersistenceDiagram.h
+    InitDictRandomly.h
+  DEPENDS
+    common
+    persistenceDiagramDistanceMatrix
+)
