@@ -6,7 +6,6 @@
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
-#include <vtkType.h>
 
 using namespace std;
 using namespace ttk;
