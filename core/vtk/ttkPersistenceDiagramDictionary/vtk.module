@@ -1,0 +1,4 @@
+NAME
+ ttkPersistenceDiagramDictionary
+DEPENDS
+ ttkAlgorithm
