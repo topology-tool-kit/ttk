@@ -59,7 +59,6 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   // vtkPolyData, the global identifiers are always stored as vtkDataArrays
   // automatically during preconditioning.
 
-  if(input->GetDataObjectType() == VTK_IMAGE_DATA) {
     ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
     vtkNew<vtkIdTypeArray> globalPointIds;
     globalPointIds->SetNumberOfTuples(numberOfVertices);
@@ -67,17 +66,25 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     globalPointIds->SetName("GlobalPointIds");
     for(int i = 0; i < numberOfVertices; i++) {
 #ifdef TTK_ENABLE_MPI
-      globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
+      if(input->GetDataObjectType() == VTK_IMAGE_DATA) {
+        globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
+      }
 #else
       globalPointIds->SetTuple1(i, i);
 #endif
     }
-    input->GetPointData()->AddArray(globalPointIds);
-  }
 
-  output->ShallowCopy(input);
+#ifdef TTK_ENABLE_MPI
+    if(input->GetDataObjectType() == VTK_IMAGE_DATA) {
+#endif
+      input->GetPointData()->AddArray(globalPointIds);
+#ifdef TTK_ENABLE_MPI
+    }
+#endif
 
-  printMsg(ttk::debug::Separator::L1);
+    output->ShallowCopy(input);
 
-  return 1;
+    printMsg(ttk::debug::Separator::L1);
+
+    return 1;
 }
