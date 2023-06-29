@@ -425,14 +425,17 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 #endif
   // make the vtk trajectories
-  ttkTemplateMacro(
-    triangulation->getType(),
-    (getTrajectories<TTK_TT>(
-      domain, static_cast<TTK_TT *>(triangulation->getData()), integralLines,
 #ifdef TTK_ENABLE_MPI
-      globalVertexId, globalCellId,
+  ttkTemplateMacro(triangulation->getType(),
+                   (getTrajectories<TTK_TT>(
+                     domain, static_cast<TTK_TT *>(triangulation->getData()),
+                     integralLines, globalVertexId, globalCellId, output)));
+#else
+  ttkTemplateMacro(triangulation->getType(),
+                   (getTrajectories<TTK_TT>(
+                     domain, static_cast<TTK_TT *>(triangulation->getData()),
+                     integralLines, output)));
 #endif
-      output)));
 
   return (int)(status == 0);
 }

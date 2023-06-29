@@ -29,6 +29,7 @@
 // base code includes
 #include <Triangulation.h>
 
+#include <climits>
 #include <queue>
 #include <type_traits>
 
@@ -49,7 +50,7 @@ namespace ttk {
     constexpr unsigned long long int getHash(const unsigned long long int a,
                                              const unsigned long long int b) {
       return (a * b + (a * a) + (b * b) + (a * a * a) * (b * b * b))
-             % ULONG_LONG_MAX;
+             % ULLONG_MAX;
     }
 
     /**
