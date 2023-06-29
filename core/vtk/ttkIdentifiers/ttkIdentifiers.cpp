@@ -6,6 +6,7 @@
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
+#include <vtkType.h>
 
 using namespace std;
 using namespace ttk;
@@ -55,19 +56,25 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
-  vtkNew<vtkIdTypeArray> globalPointIds;
-  globalPointIds->SetNumberOfTuples(numberOfVertices);
-  globalPointIds->SetNumberOfComponents(1);
-  globalPointIds->SetName("GlobalPointIds");
-  for(int i = 0; i < numberOfVertices; i++) {
+  // The following is reserved to vtkImageData. For UnstructuredGrid and
+  // vtkPolyData, the global identifiers are always stored as vtkDataArrays
+  // automatically during preconditioning.
+
+  if(input->GetDataObjectType() == VTK_IMAGE_DATA) {
+    ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
+    vtkNew<vtkIdTypeArray> globalPointIds;
+    globalPointIds->SetNumberOfTuples(numberOfVertices);
+    globalPointIds->SetNumberOfComponents(1);
+    globalPointIds->SetName("GlobalPointIds");
+    for(int i = 0; i < numberOfVertices; i++) {
 #ifdef TTK_ENABLE_MPI
-    globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
+      globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
 #else
-    globalPointIds->SetTuple1(i, i);
+      globalPointIds->SetTuple1(i, i);
 #endif
+    }
+    input->GetPointData()->AddArray(globalPointIds);
   }
-  input->GetPointData()->AddArray(globalPointIds);
 
   output->ShallowCopy(input);
 
