@@ -7,4 +7,5 @@ ttk_add_base_library(implicitTriangulation
     ImplicitPreconditions.h
   DEPENDS
     abstractTriangulation
+    regularGridTriangulation
     )

@@ -1,5 +1,6 @@
 #include <ttkIdentifiers.h>
 
+#include <Triangulation.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdTypeArray.h>
@@ -53,6 +54,34 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Triangulation is NULL");
     return 0;
   }
+
+  // The following is reserved to vtkImageData. For UnstructuredGrid and
+  // vtkPolyData, the global identifiers are always stored as vtkDataArrays
+  // automatically during preconditioning
+
+  ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
+  vtkNew<vtkIdTypeArray> globalPointIds;
+  globalPointIds->SetNumberOfTuples(numberOfVertices);
+  globalPointIds->SetNumberOfComponents(1);
+  globalPointIds->SetName("GlobalPointIds");
+  for(int i = 0; i < numberOfVertices; i++) {
+#ifdef TTK_ENABLE_MPI
+    if(input->GetDataObjectType() == VTK_IMAGE_DATA) {
+      globalPointIds->SetTuple1(i, triangulation->getVertexGlobalId(i));
+    }
+#else
+    globalPointIds->SetTuple1(i, i);
+#endif
+  }
+
+#ifdef TTK_ENABLE_MPI
+  if(input->GetDataObjectType() == VTK_IMAGE_DATA) {
+#endif
+    input->GetPointData()->AddArray(globalPointIds);
+#ifdef TTK_ENABLE_MPI
+  }
+#endif
+
   output->ShallowCopy(input);
 
   printMsg(ttk::debug::Separator::L1);

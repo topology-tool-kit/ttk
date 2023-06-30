@@ -26,6 +26,11 @@
 #include <vtkDataArraySelection.h>
 #include <vtkSmartPointer.h>
 
+#ifdef TTK_ENABLE_MPI
+#include <ttkPeriodicGhostsGeneration.h>
+#include <ttkTriangulationFactory.h>
+#endif
+
 // TTK Includes
 #include <Triangulation.h>
 #include <ttkAlgorithm.h>
@@ -42,6 +47,9 @@ class TTKTRIANGULATIONMANAGER_EXPORT ttkTriangulationManager
   STRATEGY PreconditioningStrategy{STRATEGY::DEFAULT};
   int Threshold{1000};
   vtkSmartPointer<vtkDataArraySelection> ArraySelection{};
+#ifdef TTK_ENABLE_MPI
+  vtkNew<ttkPeriodicGhostsGeneration> periodicGhostGenerator{};
+#endif
 
 public:
   ttkSetEnumMacro(PreconditioningStrategy, STRATEGY);
@@ -70,7 +78,13 @@ protected:
   ttkTriangulationManager();
   ~ttkTriangulationManager() override = default;
 
-  void processImplicit(ttk::Triangulation &triangulation) const;
+  void processImplicit(ttk::Triangulation &triangulation
+#ifdef TTK_ENABLE_MPI
+                       ,
+                       vtkImageData *imageIn,
+                       vtkImageData *imageOut
+#endif
+  );
   int processExplicit(vtkUnstructuredGrid *const output,
                       vtkPointSet *const input,
                       ttk::Triangulation &triangulation) const;
@@ -80,4 +94,12 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+#ifdef TTK_ENABLE_MPI
+  int RequestUpdateExtent(vtkInformation *ttkNotUsed(request),
+                          vtkInformationVector **inputVector,
+                          vtkInformationVector *outputVector) override;
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVectors,
+                         vtkInformationVector *outputVector) override;
+#endif // TTK_ENABLE_MPI
 };

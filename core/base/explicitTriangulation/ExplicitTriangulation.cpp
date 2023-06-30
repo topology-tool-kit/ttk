@@ -1451,6 +1451,8 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
     this->vertexGidToLid_[this->vertGid_[lvid]] = lvid;
   }
 
+  this->preconditionExchangeGhostVertices();
+
   return 0;
 }
 

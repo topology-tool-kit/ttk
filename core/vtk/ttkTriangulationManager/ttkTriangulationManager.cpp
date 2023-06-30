@@ -29,6 +29,9 @@ ttkTriangulationManager::ttkTriangulationManager() {
   this->ArraySelection = vtkSmartPointer<vtkDataArraySelection>::New();
   this->ArraySelection->AddObserver(
     vtkCommand::ModifiedEvent, this, &ttkTriangulationManager::Modified);
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 int ttkTriangulationManager::FillInputPortInformation(int port,
@@ -48,23 +51,62 @@ int ttkTriangulationManager::FillOutputPortInformation(int port,
   }
   return 0;
 }
+#ifdef TTK_ENABLE_MPI
+int ttkTriangulationManager::RequestUpdateExtent(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+  if(Periodicity && ttk::isRunningWithMPI()) {
+    return this->periodicGhostGenerator->RequestUpdateExtent(
+      request, inputVector, outputVector);
+  }
+  return 1;
+}
+int ttkTriangulationManager::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVectors,
+  vtkInformationVector *outputVector) {
+  if(Periodicity && ttk::isRunningWithMPI()) {
+    return this->periodicGhostGenerator->RequestInformation(
+      request, inputVectors, outputVector);
+  }
+  return 1;
+}
+#endif
 
-static void switchPeriodicity(ttk::Triangulation &triangulation,
-                              const bool periodic,
-                              const ttk::Debug &dbg) {
+static void
+  switchPeriodicity(ttk::Triangulation &triangulation,
+                    const bool periodic,
+                    const ttk::Debug &dbg
+#ifdef TTK_ENABLE_MPI
+                    ,
+                    vtkImageData *imageIn,
+                    vtkImageData *imageOut,
+                    ttkPeriodicGhostsGeneration *periodicGhostGenerator,
+                    int debugLevel,
+                    float cacheSize
+#endif
+  ) {
   const bool prevPeriodic = triangulation.hasPeriodicBoundaries();
 
   if(prevPeriodic != periodic) {
-
 #ifdef TTK_ENABLE_MPI
-    if(ttk::hasInitializedMPI() && periodic) {
-      dbg.printErr("Periodic implicit triangulation not (yet) supported in "
-                   "an MPI context!");
-      dbg.printErr("Keeping the Implicit triangulation.");
-      return;
+    if(periodic) {
+      if(ttk::isRunningWithMPI()) {
+        periodicGhostGenerator->MPIPeriodicGhostPipelinePreconditioning(
+          imageIn, imageOut);
+        triangulation.setIsMPIValid(false);
+        auto newTriangulation = ttkTriangulationFactory::GetTriangulation(
+          debugLevel, cacheSize, imageOut);
+        newTriangulation->setPeriodicBoundaryConditions(periodic);
+        // Retrieve neighbors from the PeriodicGhostGenerator
+        std::vector<int> &neighbors = newTriangulation->getNeighborRanks();
+        neighbors = periodicGhostGenerator->getNeighbors();
+        newTriangulation->setIsBoundaryPeriodic(
+          periodicGhostGenerator->getIsBoundaryPeriodic());
+      }
     }
-#endif // TTK_ENABLE_MPI
-
+#endif
     triangulation.setPeriodicBoundaryConditions(periodic);
     dbg.printMsg("Switching regular grid periodicity from "
                  + (prevPeriodic ? std::string("ON") : std::string("OFF"))
@@ -94,10 +136,21 @@ static void switchPreconditions(ttk::Triangulation &triangulation,
   }
 }
 
-void ttkTriangulationManager::processImplicit(
-  ttk::Triangulation &triangulation) const {
+void ttkTriangulationManager::processImplicit(ttk::Triangulation &triangulation
+#ifdef TTK_ENABLE_MPI
+                                              ,
+                                              vtkImageData *imageIn,
+                                              vtkImageData *imageOut
+#endif
+) {
 
-  switchPeriodicity(triangulation, this->Periodicity, *this);
+  switchPeriodicity(triangulation, this->Periodicity, *this
+#ifdef TTK_ENABLE_MPI
+                    ,
+                    imageIn, imageOut, this->periodicGhostGenerator,
+                    this->debugLevel_, this->CompactTriangulationCacheSize
+#endif
+  );
   switchPreconditions(triangulation, this->PreconditioningStrategy, *this);
 }
 
@@ -250,9 +303,16 @@ int ttkTriangulationManager::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   if(inputDataSet->IsA("vtkImageData")) {
+#ifdef TTK_ENABLE_MPI
+    vtkImageData *imageIn = vtkImageData::GetData(inputVector[0]);
+    vtkImageData *imageOut = vtkImageData::GetData(outputVector);
+    imageOut->ShallowCopy(imageIn);
+    this->processImplicit(*triangulation, imageIn, imageOut);
+#else
     this->processImplicit(*triangulation);
     auto *outputDataSet = vtkDataSet::GetData(outputVector, 0);
     outputDataSet->ShallowCopy(inputDataSet);
+#endif
     return 1;
   } else if(inputDataSet->IsA("vtkUnstructuredGrid")
             || inputDataSet->IsA("vtkPolyData")) {
