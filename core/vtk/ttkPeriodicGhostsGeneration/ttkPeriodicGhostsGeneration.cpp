@@ -604,16 +604,16 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
 
   // Preparation of the MPI type for the matches
   MPI_Datatype partialGlobalBoundMPI;
-  std::vector<periodicGhosts::partialGlobalBound> allLocalGlobalBounds(
-    ttk::MPIsize_ * 6, periodicGhosts::partialGlobalBound{});
+  std::vector<ttk::periodicGhosts::partialGlobalBound> allLocalGlobalBounds(
+    ttk::MPIsize_ * 6, ttk::periodicGhosts::partialGlobalBound{});
   MPI_Datatype types[]
     = {MPI_UNSIGNED_CHAR, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
   int lengths[] = {1, 1, 1, 1};
   const long int mpi_offsets[]
-    = {offsetof(periodicGhosts::partialGlobalBound, isBound),
-       offsetof(periodicGhosts::partialGlobalBound, x),
-       offsetof(periodicGhosts::partialGlobalBound, y),
-       offsetof(periodicGhosts::partialGlobalBound, z)};
+    = {offsetof(ttk::periodicGhosts::partialGlobalBound, isBound),
+       offsetof(ttk::periodicGhosts::partialGlobalBound, x),
+       offsetof(ttk::periodicGhosts::partialGlobalBound, y),
+       offsetof(ttk::periodicGhosts::partialGlobalBound, z)};
   MPI_Type_create_struct(
     4, lengths, mpi_offsets, types, &partialGlobalBoundMPI);
   MPI_Type_commit(&partialGlobalBoundMPI);
