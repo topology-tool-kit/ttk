@@ -40,13 +40,13 @@ void InitDictPersistenceDiagram::execute(
 
   int FirstId = std::min_element(tempDistsSummed.begin(), tempDistsSummed.end())
                 - tempDistsSummed.begin();
-  const auto temp = datas[indices[FirstId]];
+  const auto &temp = datas[indices[FirstId]];
   DictDiagrams.push_back(temp);
   for(int i = 0; i < nbAtoms; ++i) {
     if(i == FirstId) {
       continue;
     } else {
-      const auto temp2 = datas[indices[i]];
+      const auto &temp2 = datas[indices[i]];
       DictDiagrams.push_back(temp2);
     }
   }
