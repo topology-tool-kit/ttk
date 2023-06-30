@@ -58,7 +58,8 @@
         Related publication:
         'Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for Scalar Data -- An Algorithm and A Benchmark'
         Pierre Guillou, Jules Vidal, Julien Tierny
-        Technical Report, arXiv:2206.13932, 2022
+        IEEE Transactions on Visualization and Computer Graphics, 2023.
+        arXiv:2206.13932, 2023.
 
         Fast and versatile algorithm for persistence diagram computation.
 
@@ -236,7 +237,7 @@
          <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
-          <Entry value="2" text="Discrete Morse Sandwich"/>
+          <Entry value="2" text="Discrete Morse Sandwich (IEEE TVCG 2023)"/>
           <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
           <Entry value="4" text="Persistent Simplex (Zomorodian 2010)"/>
         </EnumerationDomain>
