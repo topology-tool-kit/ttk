@@ -5,7 +5,8 @@
 - Parallel Computation of Morse-Smale Segmentations (IEEE TVCG 2023)
 - Branch Mapping Distance between Merge Trees (EuroVis 2022)
 - Path Mapping Distance between Merge Trees (IEEE TopoInVis 2022)
-- Migration to ParaView 5.11.0
+- TTK is Getting MPI-Ready \0/ !!!
+- Migration to ParaView 5.11.1
 - Switch to C++14
 - Discrete Morse Sandwich performance improvements (parallel efficiency)
 - Morse Smale Complex performance improvements
