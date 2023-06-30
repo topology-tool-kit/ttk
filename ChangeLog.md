@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
-### ttk.git
+### dev
+
+### 1.2
 - Principal Geodesic Analysis of Merge Trees / Pers. Diagrams (IEEE TVCG 2023)
 - Parallel Computation of Morse-Smale Segmentations (IEEE TVCG 2023)
 - Branch Mapping Distance between Merge Trees (EuroVis 2022)
