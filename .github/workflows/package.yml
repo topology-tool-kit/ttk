@@ -337,7 +337,7 @@ jobs:
     - name: Install ParaView
       shell: cmd
       run: |
-        ttk-paraview.exe /S
+        ttk-paraview-${{ env.PV_TAG }}.exe /S
 
     - name: Fetch Visual C++ redistribuable run-time
       run: |
