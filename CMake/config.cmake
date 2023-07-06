@@ -108,11 +108,7 @@ set(TTK_IMPLICIT_PRECONDITIONS_THRESHOLD "256*256*256" CACHE STRING
   "Disable implicit triangulation preconditions above this number of vertices" )
 mark_as_advanced(TTK_IMPLICIT_PRECONDITIONS_THRESHOLD)
 
-if(WIN32)
-  option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
-else()
-  option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" ON)
-endif()
+option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
 mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 
 option(TTK_REDUCE_TEMPLATE_INSTANTIATIONS "Use a reduced list of template instatiations to fasten build times" OFF)
