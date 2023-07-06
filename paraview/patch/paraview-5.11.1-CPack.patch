@@ -1,0 +1,52 @@
+diff --git c/CMakeLists.txt w/CMakeLists.txt
+index fda3fbbf3..ed976e859 100644
+--- c/CMakeLists.txt
++++ w/CMakeLists.txt
+@@ -900,3 +900,47 @@ install(
+ if (PARAVIEW_ENABLE_EXAMPLES)
+   add_subdirectory(Examples)
+ endif ()
++
++#-----------------------------------------------------------------------------
++# Install TTK example data
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example1.vti
++  DESTINATION share/paraview-5.11/examples/
++  COMPONENT development)
++
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example2.vti
++  DESTINATION share/paraview-5.11/examples/
++  COMPONENT development)
++
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example3.vti
++  DESTINATION share/paraview-5.11/examples/
++  COMPONENT development)
++
++#-----------------------------------------------------------------------------
++# Generate a .deb package
++set(CPACK_PACKAGE_NAME "TTK-ParaView")
++set(CPACK_PACKAGE_FILE_NAME "ttk-paraview")
++set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ParaView built with TTK patches")
++set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
++set(CPACK_PACKAGE_VENDOR "CNRS, Sorbonne University and contributors")
++set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
++
++option(TTK_PARAVIEW_HEADLESS_DEPS "Use headless TTK-ParaView dependencies for .deb packages" OFF)
++set(CPACK_DEBIAN_PACKAGE_DEPENDS "python3-dev")
++if(TTK_PARAVIEW_HEADLESS_DEPS)
++  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopenmpi-dev, libosmesa-dev, ${CPACK_DEBIAN_PACKAGE_DEPENDS}")
++else()
++  set(CPACK_DEBIAN_PACKAGE_DEPENDS
++    "qtbase5-dev, qtchooser, qt5-qmake, qtbase5-dev-tools, qttools5-dev, libqt5x11extras5-dev, qtxmlpatterns5-dev-tools, libqt5svg5-dev, libxt-dev, ${CPACK_DEBIAN_PACKAGE_DEPENDS}"
++  )
++endif()
++
++set(CPACK_PACKAGE_VERSION_MAJOR ${PARAVIEW_VERSION_MAJOR})
++set(CPACK_PACKAGE_VERSION_MINOR ${PARAVIEW_VERSION_MINOR})
++set(CPACK_PACKAGE_VERSION_PATCH ${PARAVIEW_VERSION_PATCH})
++# autogenerate dependency information
++set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
++# package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
++set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK-ParaView")
++# let the installer uninstall previous installations on Windows
++set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
++include(CPack)
