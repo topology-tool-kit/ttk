@@ -428,7 +428,7 @@ jobs:
     - name: Install TTK-ParaView and TTK
       shell: cmd
       run: |
-        ttk-paraview.exe /S
+        ttk-paraview-${{ env.PV_TAG }}.exe /S
         ttk.exe /S
 
     - name: Set PATH environment variable
