@@ -323,7 +323,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz 
+          scikit-learn openmp graphviz websocketpp python=3.10 zlib 
 
     - name: Remove hosted Python
       shell: bash
@@ -367,7 +367,6 @@ jobs:
           -DTTK_ENABLE_OPENMP=TRUE ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
-          -DTTK_ENABLE_TTK_ENABLE_WEBSOCKETPP=FALSE ^
           -G"Visual Studio 17 2022" ^
           -Tclangcl ^
           ..
@@ -410,7 +409,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz python=3.10 zlib
+          scikit-learn openmp graphviz python=3.10 websocketpp zlib
 
     - name: Remove hosted Python
       shell: bash
