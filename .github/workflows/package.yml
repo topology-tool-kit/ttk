@@ -165,21 +165,21 @@ jobs:
   # Build macOS #
   # ------------#
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework
-        sudo rm -rf /usr/local/Frameworks/Python.framework
+#    - name: Remove hosted Python
+#      run: |
+#        sudo rm -rf /Library/Frameworks/Python.framework
+#        sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget llvm libomp mesa glew qt@5 ninja python
+        brew install wget llvm libomp mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost eigen graphviz numpy embree websocketpp 
 
@@ -238,21 +238,21 @@ jobs:
   # -----------#
   test-macos:
     needs: build-macos
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework
-        sudo rm -rf /usr/local/Frameworks/Python.framework
+#    - name: Remove hosted Python
+#      run: |
+#        sudo rm -rf /Library/Frameworks/Python.framework
+#        sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget llvm libomp mesa glew qt@5 ninja python
+        brew install wget llvm libomp mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost eigen graphviz numpy websocketpp embree
 
