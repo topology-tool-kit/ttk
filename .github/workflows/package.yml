@@ -397,7 +397,7 @@ jobs:
     runs-on: windows-2022
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
-      TTK_DIR: C:\Program Files\TTK
+      TTK_DIR: C:\Program Files (x86)\TTK
       CONDA_ROOT: C:\Miniconda
     steps:
     - uses: actions/checkout@v3
