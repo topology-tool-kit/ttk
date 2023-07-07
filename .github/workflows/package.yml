@@ -367,6 +367,7 @@ jobs:
           -DTTK_ENABLE_OPENMP=TRUE ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
+          -DTTK_ENABLE_TTK_ENABLE_WEBSOCKETPP=FALSE ^
           -G"Visual Studio 17 2022" ^
           -Tclangcl ^
           ..
