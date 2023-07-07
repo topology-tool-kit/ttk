@@ -323,7 +323,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz websocketpp
+          scikit-learn openmp graphviz 
 
     - name: Remove hosted Python
       shell: bash
@@ -397,7 +397,7 @@ jobs:
     runs-on: windows-2022
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
-      TTK_DIR: C:\Program Files (x86)\TTK
+      TTK_DIR: C:\Program Files\TTK
       CONDA_ROOT: C:\Miniconda
     steps:
     - uses: actions/checkout@v3
@@ -409,7 +409,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz websocketpp python=3.10 zlib
+          scikit-learn openmp graphviz python=3.10 zlib
 
     - name: Remove hosted Python
       shell: bash
