@@ -181,7 +181,7 @@ jobs:
         brew install --cask xquartz
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
-        brew install boost eigen graphviz embree websocketpp
+        brew install boost eigen graphviz numpy embree websocketpp 
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -254,7 +254,7 @@ jobs:
         brew install --cask xquartz
         brew install wget llvm libomp mesa glew qt@5 ninja python
         # TTK dependencies
-        brew install boost eigen graphviz embree
+        brew install boost eigen graphviz numpy websocketpp embree
 
     - name: Fetch TTK-ParaView
       run: |
@@ -279,7 +279,7 @@ jobs:
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
         # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        echo "PYTHONPATH=/usr/local/lib/python3.11/site-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
