@@ -15,6 +15,7 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-20.04
+    timeout-minutes: 3600
     steps:
       -
         name: Set up QEMU
