@@ -20,9 +20,9 @@ Next, before launching the script, make sure that you properly define the follow
 - PV_PLUGIN_PATH (where TTK ParaView plugins are installed)
 - PYTHONPATH (where ParaView python modules are installed)
 
-For instance, under Linux, with Python 3.8, this can be done as follows, assuming that you installed ParaView and TTK to /usr/local:
+For instance, under Linux, with Python 3.10, this can be done as follows, assuming that you installed ParaView and TTK to /usr/local:
 $ export PV_PLUGIN_PATH="/usr/local/bin/plugins/"
-$ export PYTHONPATH="/usr/local/lib/python3.8/site-packages/"
+$ export PYTHONPATH="/usr/local/lib/python3.10/site-packages/"
 
 Then, from the current directory, enter the following command (omit the '$' character):
 $ ./example.py ../data/inputData.vtu
