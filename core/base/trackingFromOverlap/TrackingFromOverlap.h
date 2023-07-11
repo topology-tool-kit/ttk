@@ -3,13 +3,13 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK %trackingFromOverlap processing package that tracks labled point
+/// \brief TTK %trackingFromOverlap processing package that tracks labeled point
 /// sets.
 ///
 /// %TrackingFromOverlap is a TTK processing package that provides algorithms to
-/// track labled point sets across time (and optionally levels) based on spatial
-/// overlap, where two points overlap iff their corresponding coordinates are
-/// equal.
+/// track labeled point sets across time (and optionally levels) based on
+/// spatial overlap, where two points overlap iff their corresponding
+/// coordinates are equal.
 ///
 /// \b Related \b publication: \n
 /// 'Nested Tracking Graphs'
@@ -94,15 +94,15 @@ namespace ttk {
     // This function sorts points based on their x, y, and then z coordinate
     int sortCoordinates(const float *pointCoordinates,
                         const size_t nPoints,
-                        std::vector<size_t> &sortedIndicies) const {
+                        std::vector<size_t> &sortedIndices) const {
       printMsg("Sorting coordinates ... ", debug::Priority::PERFORMANCE);
       Timer t;
 
-      sortedIndicies.resize(nPoints);
+      sortedIndices.resize(nPoints);
       for(size_t i = 0; i < nPoints; i++)
-        sortedIndicies[i] = i;
+        sortedIndices[i] = i;
       CoordinateComparator c = CoordinateComparator(pointCoordinates);
-      sort(sortedIndicies.begin(), sortedIndicies.end(), c);
+      sort(sortedIndices.begin(), sortedIndices.end(), c);
 
       std::stringstream msg;
       msg << "done (" << t.getElapsedTime() << " s).";
@@ -208,8 +208,8 @@ namespace ttk {
       return 1;
     }
 
-    // This function sorts all unique lables of a point set and then maps these
-    // lables to their respective index in the sorted list
+    // This function sorts all unique labels of a point set and then maps these
+    // labels to their respective index in the sorted list
     template <typename labelType>
     int computeLabelIndexMap(const labelType *pointLabels,
                              const size_t nPoints,
@@ -323,10 +323,10 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   // -------------------------------------------------------------------------
   // Sort coordinates
   // -------------------------------------------------------------------------
-  std::vector<size_t> sortedIndicies0;
-  std::vector<size_t> sortedIndicies1;
-  this->sortCoordinates(pointCoordinates0, nPoints0, sortedIndicies0);
-  this->sortCoordinates(pointCoordinates1, nPoints1, sortedIndicies1);
+  std::vector<size_t> sortedIndices0;
+  std::vector<size_t> sortedIndices1;
+  this->sortCoordinates(pointCoordinates0, nPoints0, sortedIndices0);
+  this->sortCoordinates(pointCoordinates1, nPoints1, sortedIndices1);
 
   // -------------------------------------------------------------------------
   // Track Nodes
@@ -367,8 +367,8 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   std::unordered_map<size_t, std::unordered_map<size_t, size_t>> edgesMap;
   // Iterate over both point sets synchronously using comparison function
   while(i < nPoints0 && j < nPoints1) {
-    size_t pointIndex0 = sortedIndicies0[i];
-    size_t pointIndex1 = sortedIndicies1[j];
+    size_t pointIndex0 = sortedIndices0[i];
+    size_t pointIndex1 = sortedIndices1[j];
 
     // Determine point configuration
     int c = compare(pointIndex0, pointIndex1);

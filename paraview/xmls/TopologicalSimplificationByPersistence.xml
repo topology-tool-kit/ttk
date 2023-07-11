@@ -56,10 +56,10 @@
       </IntVectorProperty>
 
       <DoubleVectorProperty name="PersistenceThreshold" command="SetPersistenceThreshold" number_of_elements="1" default_values="0">
-        <Documentation>The persistence threshold all persistence pairs of the output scalar field must strictly exceed. Note, a persistence threshold of 0 will remove all flat plateau artifacts.</Documentation>
+        <Documentation>The persistence threshold all persistence pairs of the output scalar field must strictly exceed (by default relative to the function range, i.e. between 0 and 1). Note, a persistence threshold of 0 will remove all flat plateau artifacts.</Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty name="ThresholdIsAbsolute" command="SetThresholdIsAbsolute" number_of_elements="1" default_values="1">
+      <IntVectorProperty name="ThresholdIsAbsolute" command="SetThresholdIsAbsolute" number_of_elements="1" default_values="0">
         <BooleanDomain name="bool" />
         <Documentation>
           This parameter determines if the persistence threshold is an absolute scalar value, or a fraction (0-1) of the function range.

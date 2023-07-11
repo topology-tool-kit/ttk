@@ -47,7 +47,7 @@ Online Examples:
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
+        <InputArrayDomain name="input_scalars" attribute_type="point"  number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
@@ -125,7 +125,7 @@ Online Examples:
       </IntVectorProperty>
 
       <IntVectorProperty
-         name="OutputMinmumComponentId"
+         name="OutputMinimumComponentId"
          label="Only display minimum with Id"
          command="SetOutputMinimumComponentId"
          number_of_elements="1"
@@ -216,7 +216,7 @@ specify in the text box below which maximum to display.
         <Property name="OutputAllJoinSaddleComponents" />
         <Property name="OutputAllSplitSaddleComponents" />
         <Property name="OutputAllMaximumComponents" />
-        <Property name="OutputMinmumComponentId" />
+        <Property name="OutputMinimumComponentId" />
         <Property name="OutputJoinSaddleComponentId" />
         <Property name="OutputSplitSaddleComponentId" />
         <Property name="OutputMaxmumComponentId" />

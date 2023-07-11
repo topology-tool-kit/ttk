@@ -13,7 +13,8 @@
 /// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
 /// Scalar Data -- An Algorithm and A Benchmark" \n
 /// Pierre Guillou, Jules Vidal, Julien Tierny \n
-/// Technical Report, arXiv:2206.13932, 2022
+/// IEEE Transactions on Visualization and Computer Graphics, 2023.\n
+/// arXiv:2206.13932, 2023.
 ///
 /// \sa ttk::DiscreteMorseSandwich
 ///
@@ -230,13 +231,13 @@ void ttk::PersistentGenerators::findHandlesGenerators(
     std::vector<SimplexId> generator{};
     std::set<SimplexId> visited1Sads{};
 
-    std::queue<SimplexId> toPropage{};
-    toPropage.push(s1);
+    std::queue<SimplexId> toPropagate{};
+    toPropagate.push(s1);
 
-    while(!toPropage.empty()) {
+    while(!toPropagate.empty()) {
       // current 1-saddle
-      const auto curr{toPropage.front()};
-      toPropage.pop();
+      const auto curr{toPropagate.front()};
+      toPropagate.pop();
       visited1Sads.emplace(curr);
 
       if(curr != s1) {
@@ -273,7 +274,7 @@ void ttk::PersistentGenerators::findHandlesGenerators(
 
         const auto next{min2sad[min]};
         if(visited1Sads.find(next) == visited1Sads.end()) {
-          toPropage.push(next);
+          toPropagate.push(next);
         }
       }
     }
@@ -424,6 +425,7 @@ int ttk::PersistentGenerators::computePersistentGenerators(
     this->edgeTrianglePartner_.resize(triangulation.getNumberOfEdges(), -1);
     this->onBoundary_.resize(triangulation.getNumberOfEdges(), false);
     this->s2Mapping_.resize(triangulation.getNumberOfTriangles(), -1);
+    this->s1Mapping_.resize(triangulation.getNumberOfEdges(), -1);
   }
 
   // get every critical cell sorted them by dimension
@@ -458,7 +460,7 @@ int ttk::PersistentGenerators::computePersistentGenerators(
     std::vector<PersistencePair> sadMaxPairs{};
     this->getMaxSaddlePairs(
       sadMaxPairs, pairedMaxima, paired2Saddles, criticalCellsByDim[dim - 1],
-      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation, false);
+      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation);
   }
 
   if(!criticalCellsByDim[1].empty() && !criticalCellsByDim[2].empty()) {

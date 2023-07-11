@@ -36,8 +36,8 @@ using namespace std;
 using namespace ttk;
 using namespace ftm;
 
-FTMTree_MT::FTMTree_MT(Params *const params,
-                       Scalars *const scalars,
+FTMTree_MT::FTMTree_MT(const std::shared_ptr<Params> &params,
+                       const std::shared_ptr<Scalars> &scalars,
                        TreeType type)
   : params_(params), scalars_(scalars) {
 
@@ -47,15 +47,16 @@ FTMTree_MT::FTMTree_MT(Params *const params,
 }
 
 FTMTree_MT::~FTMTree_MT() {
+  this->clear();
+}
+
+void FTMTree_MT::clear() {
 
   // remove UF data structures
-  if(mt_data_.ufs) {
-    sort(mt_data_.ufs->begin(), mt_data_.ufs->end());
-    auto it = unique(mt_data_.ufs->begin(), mt_data_.ufs->end());
-    mt_data_.ufs->resize(std::distance(mt_data_.ufs->begin(), it));
-    for(auto *addr : *mt_data_.ufs)
-      if(addr)
-        delete addr;
+  if(!mt_data_.ufs.empty()) {
+    sort(mt_data_.ufs.begin(), mt_data_.ufs.end());
+    auto it = unique(mt_data_.ufs.begin(), mt_data_.ufs.end());
+    mt_data_.ufs.resize(std::distance(mt_data_.ufs.begin(), it));
   }
 
   // if (mt_data_.propagation) {
@@ -69,60 +70,33 @@ FTMTree_MT::~FTMTree_MT() {
 
   // remove containers
   if(mt_data_.superArcs) {
-    delete mt_data_.superArcs;
-    mt_data_.superArcs = nullptr;
+    mt_data_.superArcs.reset();
   }
   if(mt_data_.nodes) {
-    delete mt_data_.nodes;
-    mt_data_.nodes = nullptr;
+    mt_data_.nodes.reset();
   }
   if(mt_data_.roots) {
-    delete mt_data_.roots;
-    mt_data_.roots = nullptr;
+    mt_data_.roots.reset();
   }
-  if(mt_data_.leaves) {
-    delete mt_data_.leaves;
-    mt_data_.leaves = nullptr;
-  }
-  if(mt_data_.vert2tree) {
-    delete mt_data_.vert2tree;
-    mt_data_.vert2tree = nullptr;
-  }
-  if(mt_data_.trunkSegments) {
-    delete mt_data_.trunkSegments;
-    mt_data_.trunkSegments = nullptr;
-  }
-  if(mt_data_.visitOrder) {
-    delete mt_data_.visitOrder;
-    mt_data_.visitOrder = nullptr;
-  }
-  if(mt_data_.ufs) {
-    delete mt_data_.ufs;
-    mt_data_.ufs = nullptr;
-  }
+  mt_data_.leaves.clear();
+  mt_data_.vert2tree.clear();
+  mt_data_.trunkSegments.clear();
+  mt_data_.visitOrder.clear();
+  mt_data_.ufs.clear();
+
   if(mt_data_.states) {
-    delete mt_data_.states;
-    mt_data_.states = nullptr;
+    mt_data_.states.reset();
   }
-  if(mt_data_.propagation) {
-    delete mt_data_.propagation;
-    mt_data_.propagation = nullptr;
-  }
-  if(mt_data_.valences) {
-    delete mt_data_.valences;
-    mt_data_.valences = nullptr;
-  }
-  if(mt_data_.openedNodes) {
-    delete mt_data_.openedNodes;
-    mt_data_.openedNodes = nullptr;
-  }
+  mt_data_.propagation.clear();
+  mt_data_.valences.clear();
+  mt_data_.openedNodes.clear();
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-  if(mt_data_.activeTasksStats) {
-    delete mt_data_.activeTasksStats;
-    mt_data_.activeTasksStats = nullptr;
-  }
+  mt_data_.activeTasksStats.clear();
 #endif
+
+  this->params_.reset();
+  this->scalars_.reset();
 }
 
 void FTMTree_MT::buildSegmentation() {
@@ -168,7 +142,7 @@ void FTMTree_MT::buildSegmentation() {
   // current status of the segmentation of this arc
   vector<SimplexId> posSegm(nbArcs, 0);
 
-  // Segments are connex region of geometrie forming
+  // Segments are connex region of geometry forming
   // the segmentation (sorted in ascending order)
   const SimplexId nbVert = scalars_->size;
   const SimplexId chunkSize = getChunkSize();
@@ -186,13 +160,13 @@ void FTMTree_MT::buildSegmentation() {
         if(isCorrespondingArc(vert)) {
           idSuperArc sa = getCorrespondingSuperArcId(vert);
           SimplexId vertToAdd;
-          if((*mt_data_.visitOrder)[vert] != nullVertex) {
+          if(mt_data_.visitOrder[vert] != nullVertex) {
             // Opposite order for Split Tree
-            vertToAdd = (*mt_data_.visitOrder)[vert];
+            vertToAdd = mt_data_.visitOrder[vert];
             if(isST())
               vertToAdd = getSuperArc(sa)->getNbVertSeen() - vertToAdd - 2;
             mt_data_.segments_[sa][vertToAdd] = vert;
-          } else if(mt_data_.trunkSegments->size() == 0) {
+          } else if(mt_data_.trunkSegments.empty()) {
             // MT computation
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
@@ -211,7 +185,7 @@ void FTMTree_MT::buildSegmentation() {
 
   printTime(segmentsSet, "segmentation set vertices", 4);
 
-  if(mt_data_.trunkSegments->size() == 0) {
+  if(mt_data_.trunkSegments.empty()) {
     // sort arc that have been filled by the trunk
     // only for MT
     Timer segmentsSortTime;
@@ -220,7 +194,7 @@ void FTMTree_MT::buildSegmentation() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(a) OPTIONAL_PRIORITY(isPrior())
 #endif
-        mt_data_.segments_[a].sort(scalars_);
+        mt_data_.segments_[a].sort(scalars_.get());
       }
     }
 #ifdef TTK_ENABLE_OPENMP
@@ -232,12 +206,12 @@ void FTMTree_MT::buildSegmentation() {
     Timer segmentsArcTime;
     for(idSuperArc a = 0; a < nbArcs; ++a) {
       // CT computation, we have already the vert list
-      if((*mt_data_.trunkSegments)[a].size()) {
+      if(!mt_data_.trunkSegments[a].empty()) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(a) OPTIONAL_PRIORITY(isPrior())
 #endif
         mt_data_.segments_[a].createFromList(
-          scalars_, (*mt_data_.trunkSegments)[a],
+          scalars_.get(), mt_data_.trunkSegments[a],
           mt_data_.treeType == TreeType::Split);
       }
     }
@@ -250,7 +224,7 @@ void FTMTree_MT::buildSegmentation() {
 
   // Update SuperArc region
 
-  // ST have a segmentation wich is in the reverse-order of its build
+  // ST have a segmentation which is in the reverse-order of its build
   // ST have a segmentation sorted in ascending order as JT
   for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId) {
 #ifdef TTK_ENABLE_OPENMP
@@ -274,8 +248,9 @@ void FTMTree_MT::buildSegmentation() {
 #endif
 }
 
-FTMTree_MT *FTMTree_MT::clone() const {
-  FTMTree_MT *newMT = new FTMTree_MT(params_, scalars_, mt_data_.treeType);
+std::shared_ptr<FTMTree_MT> FTMTree_MT::clone() const {
+  auto newMT
+    = std::make_shared<FTMTree_MT>(params_, scalars_, mt_data_.treeType);
 
   newMT->mt_data_.superArcs = mt_data_.superArcs;
   newMT->mt_data_.nodes = mt_data_.nodes;
@@ -319,7 +294,7 @@ void FTMTree_MT::delNode(idNode node) {
     // Root: No Superarc
 #ifndef TTK_ENABLE_KAMIKAZE
     if(mainNode->getNumberOfDownSuperArcs() != 1) {
-      // Root with several childs: impossible /\ .
+      // Root with several children: impossible /\ .
       cout << endl << "[FTMTree_MT]:delNode won't delete ";
       cout << mainNode->getVertexId() << " (root) with ";
       cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs())
@@ -370,7 +345,7 @@ void FTMTree_MT::delNode(idNode node) {
 
 void FTMTree_MT::finalizeSegmentation() {
   for(auto &arc : *mt_data_.superArcs) {
-    arc.createSegmentation(scalars_);
+    arc.createSegmentation(scalars_.get());
   }
 }
 
@@ -484,11 +459,11 @@ idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm) {
     if(mt_data_.treeType == TreeType::Split) {
       (*mt_data_.superArcs)[newSA].concat(
         get<1>((*mt_data_.superArcs)[currentSA].splitBack(
-          node->getVertexId(), scalars_)));
+          node->getVertexId(), scalars_.get())));
     } else {
       (*mt_data_.superArcs)[newSA].concat(
         get<1>((*mt_data_.superArcs)[currentSA].splitFront(
-          node->getVertexId(), scalars_)));
+          node->getVertexId(), scalars_.get())));
     }
   }
 
@@ -511,7 +486,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
 
   idNode newNodeId = mt_data_.nodes->getNext();
   (*mt_data_.nodes)[newNodeId].setVertexId(vertexId);
-  (*mt_data_.nodes)[newNodeId].setTerminaison(term);
+  (*mt_data_.nodes)[newNodeId].setTermination(term);
   updateCorrespondingNode(vertexId, newNodeId);
 
   return newNodeId;
@@ -534,23 +509,25 @@ idSuperArc FTMTree_MT::makeSuperArc(idNode downNodeId, idNode upNodeId)
   return newSuperArcId;
 }
 
-void FTMTree_MT::move(FTMTree_MT *mt) {
+void FTMTree_MT::move(FTMTree_MT &mt) {
   // we already have common data
-  mt_data_.superArcs = mt->mt_data_.superArcs;
-  mt->mt_data_.superArcs = nullptr;
-  mt_data_.nodes = mt->mt_data_.nodes;
-  mt->mt_data_.nodes = nullptr;
-  mt_data_.leaves = mt->mt_data_.leaves;
-  mt->mt_data_.leaves = nullptr;
-  mt_data_.roots = mt->mt_data_.roots;
-  mt->mt_data_.roots = nullptr;
-  mt_data_.vert2tree = mt->mt_data_.vert2tree;
-  mt->mt_data_.vert2tree = nullptr;
+  mt_data_.superArcs = mt.mt_data_.superArcs;
+  mt.mt_data_.superArcs.reset();
+  mt_data_.nodes = mt.mt_data_.nodes;
+  mt.mt_data_.nodes.reset();
+  mt_data_.leaves = std::move(mt.mt_data_.leaves);
+  mt_data_.roots = mt.mt_data_.roots;
+  mt.mt_data_.roots.reset();
+  mt_data_.vert2tree = std::move(mt.mt_data_.vert2tree);
 }
 
 void FTMTree_MT::normalizeIds() {
   Timer normTime;
   sortLeaves(true);
+  if(this->params_->treeType != TreeType::Contour) {
+    sortNodes();
+    sortArcs();
+  }
 
   auto getNodeParentArcNb
     = [&](const idNode curNode, const bool goUp) -> idSuperArc {
@@ -581,7 +558,7 @@ void FTMTree_MT::normalizeIds() {
 
   std::queue<tuple<idNode, bool>> q;
   std::stack<tuple<idNode, bool>> qr;
-  for(const idNode n : *mt_data_.leaves) {
+  for(const idNode n : mt_data_.leaves) {
     bool goUp = isJT() || isST() || getNode(n)->getNumberOfUpSuperArcs();
     if(goUp)
       q.emplace(make_tuple(n, goUp));
@@ -638,7 +615,7 @@ void FTMTree_MT::normalizeIds() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(std::abs((long)nIdMax - (long)nIdMin) > 1) {
-    this->printMsg({"error during normalize, tree compromized: ",
+    this->printMsg({"error during normalize, tree compromised: ",
                     std::to_string(nIdMin), " ", std::to_string(nIdMax)},
                    debug::Priority::ERROR);
   }
@@ -759,9 +736,7 @@ int FTMTree_MT::printTime(Timer &t,
     st << s;
 
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-    if(nbScalars == -1) {
-      nbScalars = scalars_->size;
-    }
+    const auto nbScalars = scalars_->size;
     int speed = nbScalars / t.getElapsedTime();
     st << " at " << speed << " vert/s";
 #endif
@@ -787,7 +762,7 @@ void FTMTree_MT::printTree2() {
     }
 
     cout << "Leaves" << endl;
-    for(const auto &l : *mt_data_.leaves)
+    for(const auto &l : mt_data_.leaves)
       cout << " " << (*mt_data_.nodes)[l].getVertexId();
     cout << endl;
 
@@ -805,10 +780,129 @@ void FTMTree_MT::sortLeaves(const bool para) {
   };
 
   if(para) {
-    TTK_PSORT(this->threadNumber_, mt_data_.leaves->begin(),
-              mt_data_.leaves->end(), indirect_sort);
+    TTK_PSORT(this->threadNumber_, mt_data_.leaves.begin(),
+              mt_data_.leaves.end(), indirect_sort);
   } else {
-    std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
+    std::sort(mt_data_.leaves.begin(), mt_data_.leaves.end(), indirect_sort);
+  }
+}
+
+void ttk::ftm::FTMTree_MT::sortNodes() {
+  std::vector<idNode> sortedNodes(this->mt_data_.nodes->size());
+  std::iota(sortedNodes.begin(), sortedNodes.end(), 0);
+
+  const auto direct_sort = [&](const Node &a, const Node &b) {
+    // sort according to scalar field
+    return this->comp_.vertLower(a.getVertexId(), b.getVertexId());
+  };
+
+  const auto indirect_sort = [&](const idNode a, const idNode b) {
+    return direct_sort(*this->getNode(a), *this->getNode(b));
+  };
+
+  TTK_PSORT(
+    this->threadNumber_, sortedNodes.begin(), sortedNodes.end(), indirect_sort);
+
+  TTK_PSORT(this->threadNumber_, this->mt_data_.nodes->begin(),
+            this->mt_data_.nodes->end(), direct_sort);
+
+  // reverse sortedNodes
+  std::vector<idNode> revSortedNodes(sortedNodes.size());
+  for(size_t i = 0; i < sortedNodes.size(); ++i) {
+    revSortedNodes[sortedNodes[i]] = i;
+  }
+
+  // update leaves
+  for(auto &leaf : this->mt_data_.leaves) {
+    leaf = revSortedNodes[leaf];
+  }
+
+  // update roots
+  for(auto &root : (*this->mt_data_.roots)) {
+    root = revSortedNodes[root];
+  }
+
+  // update arcs
+  for(auto &arc : (*this->mt_data_.superArcs)) {
+    arc.setDownNodeId(revSortedNodes[arc.getDownNodeId()]);
+    arc.setUpNodeId(revSortedNodes[arc.getUpNodeId()]);
+  }
+
+  // update vert2tree
+  for(size_t i = 0; i < sortedNodes.size(); ++i) {
+    const auto &node{(*this->mt_data_.nodes)[i]};
+    if(this->isCorrespondingNode(node.getVertexId())) {
+      this->updateCorrespondingNode(node.getVertexId(), i);
+    }
+  }
+}
+
+void ttk::ftm::FTMTree_MT::sortArcs() {
+  std::vector<idNode> sortedArcs(this->mt_data_.superArcs->size());
+  std::iota(sortedArcs.begin(), sortedArcs.end(), 0);
+
+  const auto direct_sort = [&](const SuperArc &a, const SuperArc &b) {
+    // sort by NodeId (nodes should be already sorted with sortNodes)
+    const auto adn{a.getDownNodeId()};
+    const auto aun{a.getUpNodeId()};
+    const auto bdn{b.getDownNodeId()};
+    const auto bun{b.getUpNodeId()};
+    return std::tie(adn, aun) < std::tie(bdn, bun);
+  };
+
+  auto indirect_sort = [&](const idSuperArc &a, const idSuperArc &b) {
+    const auto aa{this->getSuperArc(a)};
+    const auto bb{this->getSuperArc(b)};
+    return direct_sort(*aa, *bb);
+  };
+
+  TTK_PSORT(
+    this->threadNumber_, sortedArcs.begin(), sortedArcs.end(), indirect_sort);
+
+  TTK_PSORT(this->threadNumber_, this->mt_data_.superArcs->begin(),
+            this->mt_data_.superArcs->end(), direct_sort);
+
+  // reverse sortedArcs
+  std::vector<idSuperArc> revSortedArcs(sortedArcs.size());
+  for(size_t i = 0; i < sortedArcs.size(); ++i) {
+    revSortedArcs[sortedArcs[i]] = i;
+  }
+
+  // update nodes
+  std::vector<idSuperArc> updatedArcs{};
+  for(auto &node : (*this->mt_data_.nodes)) {
+    {
+      const auto da{node.getNumberOfDownSuperArcs()};
+      updatedArcs.clear();
+      updatedArcs.resize(da);
+      for(idSuperArc i = 0; i < da; ++i) {
+        updatedArcs[i] = revSortedArcs[node.getDownSuperArcId(i)];
+      }
+      node.clearDownSuperArcs();
+      for(const auto &arc : updatedArcs) {
+        node.addDownSuperArcId(arc);
+      }
+    }
+    {
+      const auto ua{node.getNumberOfUpSuperArcs()};
+      updatedArcs.clear();
+      updatedArcs.resize(ua);
+      for(idSuperArc i = 0; i < ua; ++i) {
+        updatedArcs[i] = revSortedArcs[node.getUpSuperArcId(i)];
+      }
+      node.clearUpSuperArcs();
+      for(const auto &arc : updatedArcs) {
+        node.addUpSuperArcId(arc);
+      }
+    }
+  }
+
+  // update vert2tree
+  for(size_t i = 0; i < this->mt_data_.vert2tree.size(); ++i) {
+    if(this->isCorrespondingArc(i)) {
+      this->updateCorrespondingArc(
+        i, revSortedArcs[this->getCorrespondingSuperArcId(i)]);
+    }
   }
 }
 
@@ -843,7 +937,7 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
   const auto chunkNb = getChunkCount(sizeBackBone, nbTasksThreads);
   // si pas efficace vecteur de la taille de node ici a la place de acc
   idNode lastVertInRange = 0;
-  mt_data_.trunkSegments->resize(getNumberOfSuperArcs());
+  mt_data_.trunkSegments.resize(getNumberOfSuperArcs());
   for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(trunkVerts) \
@@ -884,7 +978,7 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
 #pragma omp critical
 #endif
                 {
-                  (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
+                  mt_data_.trunkSegments[oldArc].emplace_back(regularList);
                   regularList.clear();
                 }
               }
@@ -903,7 +997,7 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
 #pragma omp critical
 #endif
         {
-          (*mt_data_.trunkSegments)[upArc].emplace_back(regularList);
+          mt_data_.trunkSegments[upArc].emplace_back(regularList);
           regularList.clear();
         }
       }

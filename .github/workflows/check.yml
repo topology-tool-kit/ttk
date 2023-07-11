@@ -17,8 +17,12 @@ on:
       - 'mpi'
 
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  PV_TAG: v5.10.1-headless
+  PV_TAG: v5.11.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -30,19 +34,17 @@ jobs:
   # ----------------------- #
   check-formatting:
     runs-on: ubuntu-22.04
-    env:
-      CLANG_FORMAT: clang-format-11
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install latest clang-format
       run: |
         sudo apt update
-        sudo apt install -y $CLANG_FORMAT
+        sudo apt install -y clang-format
 
     - name: Use clang-format to detect formatting issues
       run: |
-        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs $CLANG_FORMAT -n -Werror
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n -Werror
 
     - name: Check line endings (Unix rather than DOS)
       run: |
@@ -85,17 +87,17 @@ jobs:
   # ------------- #
   lint-code:
     runs-on: ubuntu-22.04
-    env:
-      CLANG_TIDY: clang-tidy-12
     strategy:
       matrix:
         config:
           - {tidy: true, sa: false, dox: false}
           - {tidy: false, sa: true, dox: false}
           - {tidy: false, sa: false, dox: true}
+    env:
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu dependencies
       run: |
@@ -107,19 +109,20 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
           doxygen \
-          $CLANG_TIDY
+          clang-tidy
 
-    - uses: dsaltares/fetch-gh-release-asset@master
-      with:
-        repo: "${{ env.PV_REPO }}"
-        version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-headless-ubuntu-22.04.deb"
-        target: "ttk-paraview-headless.deb"
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-22.04.deb
 
     - name: Install ParaView .deb
       run: |
@@ -130,7 +133,7 @@ jobs:
         mkdir build
         cd build
         cmake \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+          -DCMAKE_BUILD_TYPE=Debug \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -145,7 +148,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) clang-tidy -p build --warnings-as-errors="*" 2> /dev/null
 
     - name: Use Clang static analyzer
       if: matrix.config.sa
@@ -153,7 +156,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P$(nproc) $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
+        | xargs -n1 -P$(nproc) clang-tidy -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
       if: matrix.config.dox
@@ -174,8 +177,11 @@ jobs:
         simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
         opt: [Debug, Release]
         mpi: [MPI=TRUE, MPI=FALSE]
+    env:
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
+
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu dependencies
       run: |
@@ -187,18 +193,20 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libsqlite3-dev \
+          libwebsocketpp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          clang-tools-11
+          clang-tools \
+          libomp-dev
 
-    - uses: dsaltares/fetch-gh-release-asset@master
-      with:
-        repo: "${{ env.PV_REPO }}"
-        version: "tags/${{ env.PV_TAG }}"
-        file: "ttk-paraview-headless-ubuntu-22.04.deb"
-        target: "ttk-paraview-headless.deb"
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-22.04.deb
 
     - name: Install ParaView .deb
       run: |
@@ -209,7 +217,6 @@ jobs:
         mkdir build
         cd build
         cmake \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
           -DCMAKE_BUILD_TYPE=${{ matrix.opt }} \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
@@ -225,4 +232,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P$(nproc) clang-check-11 -p build --extra-arg=-Werror
+        | xargs -n1 -P$(nproc) clang-check -p build --extra-arg=-Werror

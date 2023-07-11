@@ -50,8 +50,10 @@ namespace ttk {
     // Simplify
 
     template <typename scalarType>
-    SimplexId MergeTree::localSimplify(const SimplexId &posSeed0,
-                                       const SimplexId &posSeed1) {
+    SimplexId MergeTree::localSimplify(
+      const SimplexId &posSeed0,
+      const SimplexId &posSeed1,
+      std::list<std::vector<std::pair<SimplexId, bool>>> &storage) {
 
       // if null threshold, leave
       if(!params_->simplifyThreshold) {
@@ -61,7 +63,7 @@ namespace ttk {
       const bool DEBUG = false;
 
       // -----------------
-      // Persistance pairs
+      // Persistence pairs
       // -----------------
       // {
 
@@ -89,15 +91,17 @@ namespace ttk {
       // --------------
       // {
 
-      return simplifyTree<scalarType>(posSeed0, posSeed1, pairs);
+      return simplifyTree<scalarType>(posSeed0, posSeed1, storage, pairs);
 
       // }
     }
 
     template <typename scalarType, typename triangulationType>
-    SimplexId MergeTree::globalSimplify(const SimplexId posSeed0,
-                                        const SimplexId posSeed1,
-                                        const triangulationType &mesh) {
+    SimplexId MergeTree::globalSimplify(
+      const SimplexId posSeed0,
+      const SimplexId posSeed1,
+      std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+      const triangulationType &mesh) {
 
       // if null threshold, leave
       if(!params_->simplifyThreshold) {
@@ -129,7 +133,7 @@ namespace ttk {
       //---------------------
       //{
 
-      // origin, end, persistance, needToGoUp
+      // origin, end, persistence, needToGoUp
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairsJT;
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairsST;
 
@@ -173,7 +177,7 @@ namespace ttk {
       //{
 
       // identify subtrees and merge them in recept'arcs
-      return simplifyTree<scalarType>(posSeed0, posSeed1, sortedPairs);
+      return simplifyTree<scalarType>(posSeed0, posSeed1, storage, sortedPairs);
       //}
     }
 
@@ -181,12 +185,14 @@ namespace ttk {
     SimplexId MergeTree::simplifyTree(
       const SimplexId &posSeed0,
       const SimplexId &posSeed1,
+      std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
         &sortedPairs) {
       const auto nbNode = getNumberOfNodes();
       const auto nbArcs = getNumberOfSuperArcs();
       // Retain the relation between merge coming from st, jt
       // also retain info about what we keep
+      std::vector<ExtendedUnionFind> storageUF(nbNode, 0);
       std::vector<ExtendedUnionFind *> subtreeUF(nbNode, nullptr);
 
       // nb arc seen below / above this node
@@ -197,7 +203,7 @@ namespace ttk {
       const bool DEBUG = false;
 
       if(DEBUG) {
-        std::cout << "Imapct simplify on tree btwn : " << posSeed0 << " and "
+        std::cout << "Impact simplify on tree btwn : " << posSeed0 << " and "
                   << posSeed1 << std::endl;
       }
 
@@ -223,7 +229,8 @@ namespace ttk {
           }
 
           node2see.emplace(thisOriginId, std::get<3>(pp));
-          subtreeUF[thisOriginId] = new ExtendedUnionFind(0);
+          storageUF[thisOriginId] = ExtendedUnionFind{0};
+          subtreeUF[thisOriginId] = &storageUF[thisOriginId];
           ++nbPairMerged;
           if(DEBUG) {
             std::cout << "willSee " << printNode(thisOriginId) << std::endl;
@@ -273,7 +280,7 @@ namespace ttk {
 
         // if we have processed all but one arc of this node, we nee to continue
         // traversall
-        // throug it
+        // through it
         if(valenceOffset[parentNodeId].first
              + valenceOffset[parentNodeId].second + 1
            == getNode(parentNodeId)->getValence()) {
@@ -363,7 +370,8 @@ namespace ttk {
             }
 
             subtreeUF[thisOriginId]->find()->setData(receptArcId);
-            getSuperArc(receptArcId)->makeAllocGlobal(std::get<2>(receptArc));
+            getSuperArc(receptArcId)
+              ->makeAllocGlobal(std::get<2>(receptArc), storage);
 
             if(DEBUG) {
               std::cout << "create arc : " << printArc(receptArcId)
@@ -489,7 +497,7 @@ namespace ttk {
       for(const idNode &leave : treeData_.leaves) {
         Node *curNode = getNode(leave);
         SimplexId curVert = curNode->getVertexId();
-        SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
+        SimplexId termVert = getNode(curNode->getTermination())->getVertexId();
 
         addPair<scalarType>(pairs, curVert, termVert, mesh);
       }
@@ -527,7 +535,7 @@ namespace ttk {
       for(const idNode &leave : treeData_.leaves) {
         Node *curNode = getNode(leave);
         SimplexId curVert = curNode->getVertexId();
-        SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
+        SimplexId termVert = getNode(curNode->getTermination())->getVertexId();
 
         addPair<scalarType>(
           pairs, curVert, termVert, mesh, treeData_.treeType == TreeType::Join);
@@ -551,6 +559,9 @@ namespace ttk {
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairsST,
       const triangulationType &mesh) {
       const auto nbNode = getNumberOfNodes();
+
+      std::vector<ExtendedUnionFind> storage_JoinUF(nbNode, 0);
+      std::vector<ExtendedUnionFind> storage_SplitUF(nbNode, 0);
 
       std::vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
       std::vector<ExtendedUnionFind *> vect_SplitUF(nbNode, nullptr);
@@ -576,7 +587,8 @@ namespace ttk {
 
             if(nbDown == 0) {
               // leaf
-              vect_JoinUF[n] = new ExtendedUnionFind(getNode(n)->getVertexId());
+              storage_JoinUF[n] = ExtendedUnionFind{getNode(n)->getVertexId()};
+              vect_JoinUF[n] = &storage_JoinUF[n];
               vect_JoinUF[n]->setOrigin(v);
               // std::cout << " jt origin : " << v << std::endl;
             } else {
@@ -589,7 +601,7 @@ namespace ttk {
               SimplexId further = merge->getOrigin();
               idSuperArc furtherI = 0;
 
-              // Find the most persistant way
+              // Find the most persistent way
               for(idSuperArc ni = 1; ni < nbDown; ++ni) {
                 const idSuperArc curSaId = getNode(n)->getDownSuperArcId(ni);
                 const SuperArc *curSA = getSuperArc(curSaId);
@@ -620,7 +632,7 @@ namespace ttk {
 
                   ExtendedUnionFind *neighUF = vect_JoinUF[neigh]->find();
 
-                  if(ni != furtherI) { // keep the more persitent pair
+                  if(ni != furtherI) { // keep the more persistent pair
                     addPair<scalarType>(
                       pairsJT, neighUF->getOrigin(), v, mesh, true);
                     pendingMinMax.erase(neighUF->getOrigin());
@@ -676,8 +688,8 @@ namespace ttk {
 
             if(nbUp == 0) {
               // leaf
-              vect_SplitUF[n]
-                = new ExtendedUnionFind(getNode(n)->getVertexId());
+              storage_SplitUF[n] = ExtendedUnionFind{getNode(n)->getVertexId()};
+              vect_SplitUF[n] = &storage_SplitUF[n];
               vect_SplitUF[n]->setOrigin(v);
               // std::cout << " st origin : " << v << std::endl;
             } else {
@@ -691,7 +703,7 @@ namespace ttk {
               idSuperArc furtherI = 0;
 
               for(idSuperArc ni = 1; ni < nbUp; ++ni) {
-                // find the more persistant way
+                // find the more persistent way
                 const idSuperArc curSaId = getNode(n)->getUpSuperArcId(ni);
                 const SuperArc *curSA = getSuperArc(curSaId);
                 // Ignore hidden / simplified arc
@@ -715,7 +727,7 @@ namespace ttk {
               }
 
               if(nbUp > 1) {
-                // close finsh pair and make union
+                // close finish pair and make union
                 for(idSuperArc ni = 0; ni < nbUp; ++ni) {
                   const idSuperArc curSaId = getNode(n)->getUpSuperArcId(ni);
                   const SuperArc *curSA = getSuperArc(curSaId);
@@ -741,7 +753,7 @@ namespace ttk {
 
                   ExtendedUnionFind::makeUnion(merge, neighUF)
                     ->setOrigin(further);
-                  // Re-visit after merge lead to add the most persistant
+                  // Re-visit after merge lead to add the most persistent
                   // pair....
                 }
               }
@@ -819,7 +831,7 @@ namespace ttk {
                          const SimplexId &posSeed0,
                          const SimplexId &posSeed1,
                          const triangulationType &mesh) {
-      // idea, work on the neighbohood instead of working on the node itsef.
+      // idea, work on the neighborhood instead of working on the node itself.
       // Need lower / higher star construction.
       //
       // at this time, ST have no root except in Adjacency list. These root are
@@ -950,7 +962,7 @@ namespace ttk {
             = makeNode(treeData_.superArcs[tmp_sa].getLastVisited(), origin);
           Node *originNode = getNode(
             getNode(getSuperArc(tmp_sa)->getDownNodeId())->getOrigin());
-          originNode->setTerminaison(rootNode);
+          originNode->setTermination(rootNode);
 
           const bool overlapB
             = scalars_->sosOffsets[getNode(rootNode)->getVertexId()]
@@ -962,7 +974,7 @@ namespace ttk {
           closeSuperArc(tmp_sa, rootNode, overlapB, overlapA);
 
           // in the case we have 1 vertex domain,
-          // hide the close SuperArc wich is point1 <>> point1
+          // hide the close SuperArc which is point1 <>> point1
           if(getSuperArc(tmp_sa)->getDownNodeId()
              == getSuperArc(tmp_sa)->getUpNodeId()) {
             hideArc(tmp_sa);
@@ -1037,7 +1049,13 @@ namespace ttk {
         // we are on a real extrema we have to create a new UNION FIND and a
         // branch a real extrema can't be a virtual extrema
 
-        seed = new ExtendedUnionFind(currentVertex);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+        {
+          this->storageEUF_.emplace_back(currentVertex);
+          seed = &this->storageEUF_.back();
+        }
         // When creating an extrema we create a pair ending on this node.
         currentNode = makeNode(currentVertex);
         getNode(currentNode)->setOrigin(currentNode);
@@ -1070,9 +1088,9 @@ namespace ttk {
         for(auto *neigh : vect_neighUF) {
           closeSuperArc((idSuperArc)neigh->find()->getData(), closingNode,
                         overlapB, overlapA);
-          // persistance pair closing here.
-          // For the one who will continue, it will be overide later
-          vertex2Node(neigh->find()->getOrigin())->setTerminaison(closingNode);
+          // persistence pair closing here.
+          // For the one who will continue, it will be override later
+          vertex2Node(neigh->find()->getOrigin())->setTermination(closingNode);
 
           // cout <<
           // getNode(getCorrespondingNode(neigh->find()->getOrigin()))->getVertexId()
@@ -1081,7 +1099,7 @@ namespace ttk {
           if((isJT && isLower(neigh->find()->getOrigin(), farOrigin))
              || (!isJT && isHigher(neigh->find()->getOrigin(), farOrigin))) {
             // here we keep the continuing the most persitant pair.
-            // It means a pair end when a parent have another origin thant the
+            // It means a pair end when a parent have another origin than the
             // current leaf (or is the root) It might be not intuitive but it is
             // more convenient for degenerate cases
             farOrigin = neigh->find()->getOrigin();
@@ -1137,15 +1155,15 @@ namespace ttk {
         std::cout << "nbNode initial : " << nbNodes << std::endl;
         std::cout << "nbArcs initial : " << nbArcs << std::endl;
 
-        idSuperArc nbArcsVisibles = 0;
-        idSuperArc nbNodesVisibles = 0;
+        idSuperArc nbArcsVisible = 0;
+        idSuperArc nbNodesVisible = 0;
 
         // for each visible arc, verify he is in the node
 
         for(idSuperArc aid = 0; aid < nbArcs; aid++) {
           const SuperArc &arc = treeData_.superArcs[aid];
           if(arc.isVisible()) {
-            ++nbArcsVisibles;
+            ++nbArcsVisible;
             const idNode &up = arc.getUpNodeId();
             const idNode &down = arc.getDownNodeId();
             if(up == nullNodes || down == nullNodes) {
@@ -1198,7 +1216,7 @@ namespace ttk {
         for(idNode nid = 0; nid < nbNodes; nid++) {
           const Node &node = treeData_.nodes[nid];
           if(!node.isHidden()) {
-            ++nbNodesVisibles;
+            ++nbNodesVisible;
 
             // Verify up arcs
             const auto &nbup = node.getNumberOfUpSuperArcs();
@@ -1266,7 +1284,7 @@ namespace ttk {
 
           if(segmSize && !segmVect) {
             res = false;
-            std::cout << "[Verif] Inconsistant segmentation for arc : ";
+            std::cout << "[Verif] Inconsistent segmentation for arc : ";
             std::cout << printArc(aid);
             std::cout << " have size of " << segmSize;
             std::cout << " and a null list" << std::endl;
@@ -1297,8 +1315,8 @@ namespace ttk {
         }
         std::cout << std::endl;
 
-        std::cout << "Nb visible Node : " << nbNodesVisibles << std::endl;
-        std::cout << "Nb visible Arcs : " << nbArcsVisibles << std::endl;
+        std::cout << "Nb visible Node : " << nbNodesVisible << std::endl;
+        std::cout << "Nb visible Arcs : " << nbArcsVisible << std::endl;
       }
       return res;
     }

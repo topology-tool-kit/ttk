@@ -1,12 +1,14 @@
 ## Running TTK and Paraview with MPI
 
+Please note that not all TTK filters have MPI support. If a filter does not have MPI support, an error message will be printed at runtime and its behavior will be undefined.
+
 ### Compilation
 
 In order to use MPI, Paraview needs to be compiled with MPI support. This can be done by setting the `PARAVIEW_USE_MPI` variable to `ON`. For more information, see [Paraview's building documentation](https://gitlab.kitware.com/paraview/paraview/-/blob/master/Documentation/dev/build.md#linux). TTK also needs to be compiled with MPI support. This can be done by setting the `TTK_ENABLE_MPI` variable to `ON` during compilation. TTK is 
-parallelized using both threads and MPI processes simultaneously. Some filters require the use of threads to function using MPI.
+parallelized using both threads and MPI processes simultaneously. Some filters require the use of threads to function using MPI. To measure the computation time of a TTK filter, the variable `TTK_ENABLE_MPI_TIME` needs to be set to `ON`.
 
 ### Environment variables
-Some TTK filters require a level of thread support not provided by Paraview by default. Obtaining the right level of thread support is MPI implementation dependent. For OpenMPI, it is done by setting the environment variable ` OMPI_MPI_THREAD_LEVEL` to 3. For MPICH, it is done by setting the environment variable `MPIR_CVAR_DEFAULT_THREAD_LEVEL` to 3. 
+Some TTK filters require a level of thread support not provided by Paraview by default. Obtaining the right level of thread support is MPI implementation dependent. For OpenMPI, it is done by setting the environment variable ` OMPI_MPI_THREAD_LEVEL` to 1. For MPICH, it is done by setting the environment variable `MPIR_CVAR_DEFAULT_THREAD_LEVEL` to 1. 
 
 To specify the number of threads to use during execution, the environment variable `OMP_NUM_THREADS` can be used.
 
@@ -14,10 +16,14 @@ To specify the number of threads to use during execution, the environment variab
 
 To use Paraview in distributed mode using MPI, one has to use either `pvserver` or `pvbatch`. 
 
+Please note that TTK only supports a number of processes equal to $2^n$, with $n\in \mathbb{N}$. There are no constraints on the number of threads.
+
+The use of the periodic grid in distributed mode requires a number of processes equal to $8^n$, with $n\in \mathbb{N}$. It may work for a number equal to $2^n$ if all processes distribute the data similarly in all directions (this distribution depends on Paraview and the dimensions of the data set). 
+
 #### pvserver
 The following command allows one to start `pvserver` with 4 MPI processes and 8 threads (per process) with OpenMPI:
 
-    OMPI_MPI_THREAD_LEVEL=3 OMP_NUM_THREADS=8 mpirun -np 4 pvserver
+    OMPI_MPI_THREAD_LEVEL=1 OMP_NUM_THREADS=8 mpirun -np 4 pvserver
 
 The next step is to run the Paraview client using the command:
 
@@ -29,27 +35,27 @@ Now all that is needed is to connect to the server from the client GUI by going 
 
 `pvbatch` does not require to set up a `pvserver`. However, it does require that the Paraview pipeline to be executed is given in the format of a Python script. To execute the pipeline `pipeline.py` using `pvbatch` using 4 MPI processes and 8 threads (per process) with OpenMPI, the following command can be used:
 
-    OMPI_MPI_THREAD_LEVEL=3 OMP_NUM_THREADS=8 mpirun -n 4 pvbatch pipeline.py
+    OMPI_MPI_THREAD_LEVEL=1 OMP_NUM_THREADS=8 mpirun -n 4 pvbatch pipeline.py
 
-For more information on `pvbatch`, see [pvbatch's documentation here](https://docs.paraview.org/en/latest/ReferenceManual/parallelDataVisualization.html#using-pvbatch)
+For more information on `pvbatch`, see [pvbatch's documentation here.](https://docs.paraview.org/en/latest/ReferenceManual/parallelDataVisualization.html#using-pvbatch)
 
 
 ### Usage within a pipeline
 
-#### Before distribution of the data
+##### For unstructured grids
 
-In order to obtain results identical to results obtained if the pipeline is executed in sequential, the data needs to be prepared by using the filter `GenerateGlobalIds` on the data in sequential. The output of this filter should then be used for the distributed computation.
+In order to obtain results identical regardless of the number of processes, the data needs to be prepared by using the filter `TTKIdentifiers` on the data before the distribution. This means opening the data file **in parallel with MPI**, using the `TTKIdentifiers` and then redistributing using the `RedistributeDataSet` filter. The pipeline should look like this:
 
-#### After distribution of the data
+    Data File > TTKIdentifiers > RedistributeDataSet
 
- - TTK filters require ghost cells and ghost points to be created to function correctly. Ghost cells are cells inside a data set that are copies of the interfacing cells of an adjacent data set. TTK filters require two layers of ghost cells. Ghost cells and points can be created using the [`GhostCellsGenerator` filter](https://kitware.github.io/paraview-docs/latest/python/paraview.simple.GhostCellsGenerator.html).
+After this, the user can start using TTK filters, the rest of the needed preconditioning will be triggered automatically.
 
- - The `GhostCellPreconditioning` filter can be used after the  `GhostCellsGenerator` filter to calculate which rank is the "primary" owner of each vertex.
+##### For structured grids
 
-- The `ArrayPreconditioning` filter requires both of the previous filters to function correctly in distributed mode.
+There is **nothing** to do for structured grids! Everything needed is triggered automatically in the preconditioning steps.
 
 ### Output format
 
-- The output of TTK filters executed in distributed mode using MPI is usable as-is in a distributed pipeline. There is no need to add ghost cells or global ids to the output of a TTK filter.
+- The output of TTK filters executed in distributed mode using MPI is usable as-is in a distributed pipeline.
 
 - The distributed output of a TTK filter is strictly identical, regardless of how many processes are used during execution.

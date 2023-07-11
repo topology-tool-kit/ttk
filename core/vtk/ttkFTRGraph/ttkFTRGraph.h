@@ -8,17 +8,16 @@
 /// \brief TTK VTK-filter for the computation of Reeb Graphs
 ///
 /// The computation of the Reeb graph done by this package is done in
-/// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approch
+/// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
 /// described in the article mention below.
 ///
 /// \param Input Input scalar field, either 2D or 3D, regular
 /// grid or triangulation (vtkDataSet)
 /// \param SingleSweep control if the computation should start from both minima
-/// and maxima simultaneously. If you encouter troubled with FTR, you should try
-/// to use the single sweep. It is slower but may be more robust.
-/// \param Segmentation control wethear or not the output should be augmented
-/// with the segmentation.
-/// \param SuperArcSamplingLevel control the number of subdivision
+/// and maxima simultaneously. If you encounter troubled with FTR, you should
+/// try to use the single sweep. It is slower but may be more robust. \param
+/// Segmentation control wethear or not the output should be augmented with the
+/// segmentation. \param SuperArcSamplingLevel control the number of subdivision
 /// of each superarc. Intermediate point will be located on the barycenter of
 /// the corresponding portion of vertex.
 /// \param Output the output of this filter
@@ -26,7 +25,7 @@
 /// 1. The nodes of the tree
 /// 2. The arcs of the tree
 /// 3. The semgentation of the initial dataset
-/// The structure of the tree (Nodes+Arcs) have a concept of nodeId, wich is
+/// The structure of the tree (Nodes+Arcs) have a concept of nodeId, which is
 /// an id that is consistent between execution if SetWithNormalize is set to
 /// True. The downNodeId of an arc is its starting node (directed towards the
 /// leaves as the computation starts here) and the upNodeId it the ending node,
@@ -50,10 +49,10 @@
 #pragma once
 
 // ttk code includes
-#include "FTRGraph.h"
-#include "Graph.h"
-#include "ttkAlgorithm.h"
-#include "ttkFTRGraphStructures.h"
+#include <FTRGraph.h>
+#include <Graph.h>
+#include <ttkAlgorithm.h>
+#include <ttkFTRGraphStructures.h>
 
 // VTK includes
 #include <vtkDataArray.h>
@@ -94,7 +93,7 @@ public:
   /// @}
 
   /// @brief if set to true, a post processing pass will be used to enforce
-  /// consistend node ids between executions
+  /// consistent node ids between executions
   /// @{
   void SetWithNormalize(const bool norm) {
     params_.normalize = norm;

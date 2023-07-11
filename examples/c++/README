@@ -19,16 +19,16 @@ Proc. of IEEE VIS 2017.
 Then, from the current directory, enter the following commands (omit the '$' 
 character):
 
+```
 $ mkdir build
 $ cd build
-$ cmake ../ \
-  -DTTKBase_DIR=<path to installed cmake files for ttk libraries> 
+$ cmake ../ 
 $ make
-
-A typical value for TTKBase_DIR is "/usr/local/lib/cmake/ttk" (depending on the
-path you selected to install TTK).
+```
 
 2) To run this example, from the current directory, enter the following command
 (omit the '$' character):
 
+```
 $ build/ttkExample-c++ -i ../data/inputData.off
+```

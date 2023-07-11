@@ -48,7 +48,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   std::vector<std::vector<SimplexId>> vertexRepresentativesMin{},
     vertexRepresentativesMax{};
   std::vector<polarity> isUpToDateMin{}, isUpToDateMax{};
-  std::vector<polarity> toPropageMin{}, toPropageMax{};
+  std::vector<polarity> toPropagateMin{}, toPropagateMax{};
   std::vector<char> vertexTypes{};
 
   if(computePersistenceDiagram) {
@@ -56,8 +56,8 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     saddleCCMax.resize(vertexNumber);
     vertexRepresentativesMin.resize(vertexNumber);
     vertexRepresentativesMax.resize(vertexNumber);
-    toPropageMin.resize(vertexNumber, 0);
-    toPropageMax.resize(vertexNumber, 0);
+    toPropagateMin.resize(vertexNumber, 0);
+    toPropagateMax.resize(vertexNumber, 0);
     isUpToDateMin.resize(vertexNumber, 0);
     isUpToDateMax.resize(vertexNumber, 0);
   } else {
@@ -79,7 +79,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     toReprocess.resize(vertexNumber, 0);
   }
 
-  // lock vertex thread access for firstPropage
+  // lock vertex thread access for firstPropagate
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);
 
   // pre-allocate memory
@@ -117,10 +117,10 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   multiresTriangulation_.setDecimationLevel(decimationLevel_);
 
   if(computePersistenceDiagram) {
-    initSaddleSeeds(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
+    initSaddleSeeds(isNew, vertexLinkPolarity, toPropagateMin, toPropagateMax,
                     toProcess, link, vertexLink, vertexLinkByBoundaryType,
                     saddleCCMin, saddleCCMax, offsets);
-    initPropagation(toPropageMin, toPropageMax, vertexRepresentativesMin,
+    initPropagation(toPropagateMin, toPropagateMax, vertexRepresentativesMin,
                     vertexRepresentativesMax, saddleCCMin, saddleCCMax,
                     vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
                     offsets);
@@ -128,7 +128,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     // compute pairs in non-progressive mode
     computePersistencePairsFromSaddles(
       CTDiagram_, offsets, vertexRepresentativesMin, vertexRepresentativesMax,
-      toPropageMin, toPropageMax);
+      toPropagateMin, toPropagateMax);
   } else {
     initCriticalPoints(isNew, vertexLinkPolarity, toProcess, toReprocess, link,
                        vertexLink, vertexLinkByBoundaryType, vertexTypes,
@@ -152,17 +152,17 @@ int ttk::ProgressiveTopology::executeCPProgressive(
              ttk::debug::LineMode::REPLACE);
 
     if(computePersistenceDiagram) {
-      updateSaddleSeeds(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
-                        toProcess, toReprocess, link, vertexLink,
-                        vertexLinkByBoundaryType, saddleCCMin, saddleCCMax,
+      updateSaddleSeeds(isNew, vertexLinkPolarity, toPropagateMin,
+                        toPropagateMax, toProcess, toReprocess, link,
+                        vertexLink, vertexLinkByBoundaryType, saddleCCMin,
+                        saddleCCMax, isUpToDateMin, isUpToDateMax, offsets);
+      updatePropagation(toPropagateMin, toPropagateMax,
+                        vertexRepresentativesMin, vertexRepresentativesMax,
+                        saddleCCMin, saddleCCMax, vertLockMin, vertLockMax,
                         isUpToDateMin, isUpToDateMax, offsets);
-      updatePropagation(toPropageMin, toPropageMax, vertexRepresentativesMin,
-                        vertexRepresentativesMax, saddleCCMin, saddleCCMax,
-                        vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
-                        offsets);
       computePersistencePairsFromSaddles(
         CTDiagram_, offsets, vertexRepresentativesMin, vertexRepresentativesMax,
-        toPropageMin, toPropageMax);
+        toPropagateMin, toPropagateMax);
     } else {
       updateCriticalPoints(isNew, vertexLinkPolarity, toProcess, toReprocess,
                            link, vertexLink, vertexLinkByBoundaryType,
@@ -232,15 +232,15 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
     + std::to_string(
       multiresTriangulation_.DL_to_RL(stoppingDecimationLevel_)));
 
-  // lock vertex thread access for firstPropage
+  // lock vertex thread access for firstPropagate
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);
   // propagation markers
-  std::vector<polarity> toPropageMin{}, toPropageMax{};
+  std::vector<polarity> toPropagateMin{}, toPropagateMax{};
   std::vector<polarity> isUpToDateMin{}, isUpToDateMax{};
 
   if(computePersistenceDiagram) {
-    toPropageMin.resize(vertexNumber, 0);
-    toPropageMax.resize(vertexNumber, 0);
+    toPropagateMin.resize(vertexNumber, 0);
+    toPropagateMax.resize(vertexNumber, 0);
     isUpToDateMin.resize(vertexNumber, 0);
     isUpToDateMax.resize(vertexNumber, 0);
   }
@@ -254,17 +254,17 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
     printMsg(this->resolutionInfoString(), 0, timer.getElapsedTime(),
              this->threadNumber_, ttk::debug::LineMode::REPLACE);
     if(computePersistenceDiagram) {
-      updateSaddleSeeds(isNew_, vertexLinkPolarity_, toPropageMin, toPropageMax,
-                        toProcess_, toReprocess_, link_, vertexLink_,
-                        vertexLinkByBoundaryType_, saddleCCMin_, saddleCCMax_,
+      updateSaddleSeeds(isNew_, vertexLinkPolarity_, toPropagateMin,
+                        toPropagateMax, toProcess_, toReprocess_, link_,
+                        vertexLink_, vertexLinkByBoundaryType_, saddleCCMin_,
+                        saddleCCMax_, isUpToDateMin, isUpToDateMax, offsets);
+      updatePropagation(toPropagateMin, toPropagateMax,
+                        vertexRepresentativesMin_, vertexRepresentativesMax_,
+                        saddleCCMin_, saddleCCMax_, vertLockMin, vertLockMax,
                         isUpToDateMin, isUpToDateMax, offsets);
-      updatePropagation(toPropageMin, toPropageMax, vertexRepresentativesMin_,
-                        vertexRepresentativesMax_, saddleCCMin_, saddleCCMax_,
-                        vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
-                        offsets);
       computePersistencePairsFromSaddles(
         CTDiagram_, offsets, vertexRepresentativesMin_,
-        vertexRepresentativesMax_, toPropageMin, toPropageMax);
+        vertexRepresentativesMax_, toPropagateMin, toPropagateMax);
     } else {
       updateCriticalPoints(isNew_, vertexLinkPolarity_, toProcess_,
                            toReprocess_, link_, vertexLink_,
@@ -305,8 +305,8 @@ void ttk::ProgressiveTopology::computePersistencePairsFromSaddles(
   const SimplexId *const offsets,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMax,
-  const std::vector<polarity> &toPropageMin,
-  const std::vector<polarity> &toPropageMax) const {
+  const std::vector<polarity> &toPropagateMin,
+  const std::vector<polarity> &toPropagateMax) const {
 
   Timer timer{};
   std::vector<triplet> tripletsMax{}, tripletsMin{};
@@ -314,10 +314,10 @@ void ttk::ProgressiveTopology::computePersistencePairsFromSaddles(
 
   for(SimplexId localId = 0; localId < nbDecVert; localId++) {
     SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(localId);
-    if(toPropageMin[globalId]) {
+    if(toPropagateMin[globalId]) {
       getTripletsFromSaddles(globalId, tripletsMin, vertexRepresentativesMin);
     }
-    if(toPropageMax[globalId]) {
+    if(toPropagateMax[globalId]) {
       getTripletsFromSaddles(globalId, tripletsMax, vertexRepresentativesMax);
     }
   }
@@ -395,7 +395,6 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
   Timer tm;
   if(triplets.empty())
     return;
-  size_t numberOfPairs = 0;
 
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return offsets[a] < offsets[b];
@@ -415,7 +414,6 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
     SimplexId r2 = getRep(std::get<2>(t));
     if(r1 != r2) {
       SimplexId s = std::get<0>(t);
-      numberOfPairs++;
 
       // Add pair
       if(splitTree) {
@@ -577,8 +575,8 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
 void ttk::ProgressiveTopology::updateSaddleSeeds(
   std::vector<polarity> &isNew,
   std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
-  std::vector<polarity> &toPropageMin,
-  std::vector<polarity> &toPropageMax,
+  std::vector<polarity> &toPropagateMin,
+  std::vector<polarity> &toPropagateMax,
   std::vector<polarity> &toProcess,
   std::vector<polarity> &toReprocess,
   std::vector<DynamicTree> &link,
@@ -627,7 +625,7 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
                         vertexLink[globalId], link[globalId],
                         vertexLinkByBoundaryType, offsets);
         getValencesFromLink(globalId, vertexLinkPolarity[globalId],
-                            link[globalId], toPropageMin, toPropageMax,
+                            link[globalId], toPropagateMin, toPropagateMax,
                             saddleCCMin, saddleCCMax);
       }
       isNew[globalId] = false;
@@ -645,7 +643,7 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
           toProcess[globalId] = 255; // mark as processed
         }
         getValencesFromLink(globalId, vertexLinkPolarity[globalId],
-                            link[globalId], toPropageMin, toPropageMax,
+                            link[globalId], toPropagateMin, toPropagateMax,
                             saddleCCMin, saddleCCMax);
         toReprocess[globalId] = 0;
       }
@@ -701,10 +699,10 @@ bool ttk::ProgressiveTopology::getMonotonyChangeByOldPointCP(
   return hasMonotonyChanged;
 }
 
-ttk::SimplexId ttk::ProgressiveTopology::propageFromSaddles(
+ttk::SimplexId ttk::ProgressiveTopology::propagateFromSaddles(
   const SimplexId vertexId,
   std::vector<Lock> &vertLock,
-  std::vector<polarity> &toPropage,
+  std::vector<polarity> &toPropagate,
   std::vector<std::vector<SimplexId>> &vertexRepresentatives,
   std::vector<std::vector<SimplexId>> &saddleCC,
   std::vector<polarity> &isUpdated,
@@ -712,7 +710,7 @@ ttk::SimplexId ttk::ProgressiveTopology::propageFromSaddles(
   const SimplexId *const offsets,
   const bool splitTree) const {
 
-  auto &toProp = toPropage[vertexId];
+  auto &toProp = toPropagate[vertexId];
   auto &reps = vertexRepresentatives[vertexId];
   auto &updated = isUpdated[vertexId];
 
@@ -736,8 +734,8 @@ ttk::SimplexId ttk::ProgressiveTopology::propageFromSaddles(
       SimplexId neighborId = -1;
       SimplexId localId = CC[r];
       multiresTriangulation_.getVertexNeighbor(vertexId, localId, neighborId);
-      SimplexId ret = propageFromSaddles(
-        neighborId, vertLock, toPropage, vertexRepresentatives, saddleCC,
+      SimplexId ret = propagateFromSaddles(
+        neighborId, vertLock, toPropagate, vertexRepresentatives, saddleCC,
         isUpdated, globalExtremum, offsets, splitTree);
       reps.emplace_back(ret);
     }
@@ -770,9 +768,9 @@ ttk::SimplexId ttk::ProgressiveTopology::propageFromSaddles(
       }
     }
     if(maxNeighbor != vertexId) { // not an extremum
-      ret = propageFromSaddles(maxNeighbor, vertLock, toPropage,
-                               vertexRepresentatives, saddleCC, isUpdated,
-                               globalExtremum, offsets, splitTree);
+      ret = propagateFromSaddles(maxNeighbor, vertLock, toPropagate,
+                                 vertexRepresentatives, saddleCC, isUpdated,
+                                 globalExtremum, offsets, splitTree);
     } else {
 #ifdef TTK_ENABLE_OPENMP
       const auto tid = omp_get_thread_num();
@@ -832,8 +830,8 @@ void ttk::ProgressiveTopology::initCriticalPoints(
 void ttk::ProgressiveTopology::initSaddleSeeds(
   std::vector<polarity> &isNew,
   std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
-  std::vector<polarity> &toPropageMin,
-  std::vector<polarity> &toPropageMax,
+  std::vector<polarity> &toPropagateMin,
+  std::vector<polarity> &toPropagateMax,
   std::vector<polarity> &toProcess,
   std::vector<DynamicTree> &link,
   std::vector<uint8_t> &vertexLink,
@@ -856,7 +854,8 @@ void ttk::ProgressiveTopology::initSaddleSeeds(
                     vertexLink[globalId], link[globalId],
                     vertexLinkByBoundaryType, offsets);
     getValencesFromLink(globalId, vertexLinkPolarity[globalId], link[globalId],
-                        toPropageMin, toPropageMax, saddleCCMin, saddleCCMax);
+                        toPropagateMin, toPropagateMax, saddleCCMin,
+                        saddleCCMax);
     toProcess[globalId] = 255;
     isNew[globalId] = 0;
   }
@@ -867,8 +866,8 @@ void ttk::ProgressiveTopology::initSaddleSeeds(
 }
 
 void ttk::ProgressiveTopology::initPropagation(
-  std::vector<polarity> &toPropageMin,
-  std::vector<polarity> &toPropageMax,
+  std::vector<polarity> &toPropagateMin,
+  std::vector<polarity> &toPropagateMax,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMax,
   std::vector<std::vector<SimplexId>> &saddleCCMin,
@@ -890,15 +889,15 @@ void ttk::ProgressiveTopology::initPropagation(
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
     SimplexId v = multiresTriangulation_.localToGlobalVertexId(i);
-    if(toPropageMin[v]) {
-      propageFromSaddles(v, vertLockMin, toPropageMin, vertexRepresentativesMin,
-                         saddleCCMin, isUpdatedMin, globalMinThr, offsets,
-                         false);
+    if(toPropagateMin[v]) {
+      propagateFromSaddles(v, vertLockMin, toPropagateMin,
+                           vertexRepresentativesMin, saddleCCMin, isUpdatedMin,
+                           globalMinThr, offsets, false);
     }
-    if(toPropageMax[v]) {
-      propageFromSaddles(v, vertLockMax, toPropageMax, vertexRepresentativesMax,
-                         saddleCCMax, isUpdatedMax, globalMaxThr, offsets,
-                         true);
+    if(toPropagateMax[v]) {
+      propagateFromSaddles(v, vertLockMax, toPropagateMax,
+                           vertexRepresentativesMax, saddleCCMax, isUpdatedMax,
+                           globalMaxThr, offsets, true);
     }
   }
 
@@ -915,8 +914,8 @@ void ttk::ProgressiveTopology::initPropagation(
 }
 
 void ttk::ProgressiveTopology::updatePropagation(
-  std::vector<polarity> &toPropageMin,
-  std::vector<polarity> &toPropageMax,
+  std::vector<polarity> &toPropagateMin,
+  std::vector<polarity> &toPropagateMax,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMax,
   std::vector<std::vector<SimplexId>> &saddleCCMin,
@@ -933,21 +932,21 @@ void ttk::ProgressiveTopology::updatePropagation(
   std::vector<SimplexId> globalMaxThr(threadNumber_, 0);
   std::vector<SimplexId> globalMinThr(threadNumber_, 0);
 
-  // propage along split tree
+  // propagate along split tree
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
     SimplexId v = multiresTriangulation_.localToGlobalVertexId(i);
-    if(toPropageMin[v]) {
-      propageFromSaddles(v, vertLockMin, toPropageMin, vertexRepresentativesMin,
-                         saddleCCMin, isUpdatedMin, globalMinThr, offsets,
-                         false);
+    if(toPropagateMin[v]) {
+      propagateFromSaddles(v, vertLockMin, toPropagateMin,
+                           vertexRepresentativesMin, saddleCCMin, isUpdatedMin,
+                           globalMinThr, offsets, false);
     }
-    if(toPropageMax[v]) {
-      propageFromSaddles(v, vertLockMax, toPropageMax, vertexRepresentativesMax,
-                         saddleCCMax, isUpdatedMax, globalMaxThr, offsets,
-                         true);
+    if(toPropagateMax[v]) {
+      propagateFromSaddles(v, vertLockMax, toPropagateMax,
+                           vertexRepresentativesMax, saddleCCMax, isUpdatedMax,
+                           globalMaxThr, offsets, true);
     }
   }
 

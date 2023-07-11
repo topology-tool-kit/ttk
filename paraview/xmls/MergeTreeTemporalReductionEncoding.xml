@@ -11,7 +11,7 @@ This filter allows to compute a temporal reduction of a sequence of merge trees.
 
 It greedily removes trees in the sequence that can be accurately reconstructed with the geodesic computation. This iterated removal reveals key frames in the sequence (the trees that are not removed and used to reconstruct the removed trees). 
 
-The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optional).
 
 The output of this filter contains the key frames and the reduction coefficients needed to reconstructs the removed trees. To reconstruct the sequence, call the MergeTreeTemporalReductionDecoding filter.
 

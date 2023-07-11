@@ -810,8 +810,7 @@ namespace ttk {
       triangulation_ = triangulation;
       if(triangulation_) {
         dimensionality_ = triangulation_->getDimensionality();
-        std::vector<int> gridDim(3);
-        triangulation_->getGridDimensions(gridDim);
+        const auto &gridDim{triangulation_->getGridDimensions()};
         for(int i = 0; i < 3; i++) {
           gridDimensions_[i] = gridDim[i];
           nbvoxels_[i] = gridDimensions_[i] - 1;
@@ -820,7 +819,7 @@ namespace ttk {
         if(dimensionality_ == 2) {
           if(gridDimensions_[0] == 1) {
             Di_ = 1;
-            Di_ = 2;
+            Dj_ = 2;
           } else if(gridDimensions_[1] == 1) {
             Di_ = 0;
             Dj_ = 2;

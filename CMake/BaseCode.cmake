@@ -117,9 +117,9 @@ function(ttk_add_base_template_library library)
   install(FILES ${ARG_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ttk/base")
 endfunction()
 
-# Add compile flags and defintions to the target
+# Add compile flags and definitions to the target
 # according to the options selected by the user.
-# Only options and defintions common to all modules
+# Only options and definitions common to all modules
 # should be here.
 #
 # Usage:

@@ -13,13 +13,6 @@ workflow:
 git tag -f [check_code|test_build] && git push -f github_remote [check_code|test_build]
 ```
 
-To re-generate a `ccache` archive with the *ccache* workflow, delete
-any GitHub Release named "ccache", then:
-
-```sh
-git tag -f ccache && git push -f github_remote ccache
-```
-
 To create packages, delete any GitHub Release named "package", then:
 
 ```sh
@@ -44,7 +37,6 @@ The TTK CI is split into the following files, written in the
 [YAML](https://yaml.org/) format:
 * The TTK *package* workflow ([package.yml](./package.yml))
 * The TTK *check_code* workflow ([check.yml](./check.yml))
-* The TTK *ccache* workflow ([ccache.yml](./ccache.yml))
 * The TTK *test_build* workflow ([test.yml](./test.yml))
 
 Additionally, two other workflows are used to generate ParaView binaries:
@@ -70,8 +62,6 @@ pull requests, performs extensive tests on TTK's code. It uses all
 remaining workflows:
 * ParaView's *headless* workflow generates headless packages (without
   the Qt graphical interface) with Offscreen Rendering enabled,
-* TTK's *ccache* workflow generates [ccache](https://ccache.dev/)
-  archives that are reused in the *test* workflow,
 * TTK's *check_code* workflow performs some static analyzes on the
   code and
 * TTK's *test_build* workflow builds TTK on all 3 platforms and tests
@@ -87,10 +77,8 @@ graph LR
     subgraph PRs Testing Pipeline
         ph[ParaView headless]
         tch[TTK check_code]
-        tcc[TTK ccache]
         tt[TTK test_build]
         ph --> tch
-        ph --> tcc
         ph --> tt
         tcc --> tt
     end
@@ -212,11 +200,10 @@ Request. However, similarly to the packaging pipeline, its workflows
 can also be triggered by Git tags matching regular expressions:
 
 * `v?\d+.\d+.\d+-headless` for generating ParaView headless packages,
-* `ccache` for the TTK *ccache* workflow and
 * `check*` for the TTK *check_code* workflow,
 * `test*` for the TTK *test_build* workflow.
 
-The last two might be of interest for TTK developpers that want to
+The last two might be of interest for TTK developers that want to
 test their code before writing a Pull Request.
 
 ### ParaView Headless Packages
@@ -323,7 +310,7 @@ cartesian product of:
 
 Compiler warnings raise a CI error (`-Werror`).
 
-### The *test_build* and *ccache* workflows
+### The *test_build* workflows
 
 The *test_build* workflow is the most important one of the TTK GitHub
 Actions CI. It builds TTK on the 3 major platforms: Ubuntu, macOS and
@@ -333,17 +320,6 @@ Windows, and tests the binaries on the TTK examples and on the
 
 ```mermaid
 graph LR
-    subgraph TTK ccache
-        subgraph cu [Ubuntu]
-            buc[Build TTK with ccache]
-        end
-        subgraph cm [macOS]
-            bmc[Build TTK with ccache]
-        end
-        ccr[Create ccache Release]
-        buc --> ccr
-        bmc --> ccr
-    end
     subgraph TTK test_build
         subgraph Ubuntu
             bu[Build & install TTK]
@@ -366,23 +342,6 @@ graph LR
         end
     end
 ```
-
-#### Accelerating TTK builds with ccache
-
-Since running this workflow can take a long time, the *ccache*
-workflow aims at caching the compiler outputs as GitHub Release
-Assets. While GitHub Actions provides its own cache system, it is not
-available across PRs. This is why a separate workflow has to be used.
-
-The *test_build* workflow loads and uses this cache to reduce
-TTK's build time from 20 minutes to 2 minutes when the cache is recent
-enough. PRs that modify TTK's internals (the `common` or
-`triangulation`s modules for instance) should be followed by a re-run
-of the *ccache* workflow. Don't forget to delete the corresponding
-GitHub Release prior to running the workflow if it exists. Sadly, the
-`ccache` program is not compatible with our way of building TTK on
-Windows (using Visual Studio with the `clang-cl` front-end to benefit
-from the OpenMP support).
 
 #### ttk-data validation
 
@@ -409,7 +368,7 @@ reference database.
 Since these tests and the reference database don't belong to the same
 Git repository, an error in any of these two steps won't make the
 whole workflow fail. However, there will be annotations in the
-*Summary* page of the workflow. It is up to TTK developpers to
+*Summary* page of the workflow. It is up to TTK developers to
 maintain the reference databases in sync with the TTK code.
 
 Composite Actions

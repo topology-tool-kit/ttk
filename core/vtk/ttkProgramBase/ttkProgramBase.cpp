@@ -36,7 +36,7 @@ int ttkProgramBase::load(const std::vector<std::string> &inputPaths) {
         inputPaths[i], unstructuredGridReaders_);
     } else {
       stringstream msg;
-      msg << "[ttkProgramBase] Unkown input extension `" << extension << "' :("
+      msg << "[ttkProgramBase] Unknown input extension `" << extension << "' :("
           << endl;
       printErr(msg.str());
       return -1;

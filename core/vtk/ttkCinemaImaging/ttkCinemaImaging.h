@@ -101,12 +101,12 @@ public:
 
   static int AddFieldDataArray(vtkFieldData *fd,
                                vtkDataArray *array,
-                               int tupelIdx,
+                               int tupleIdx,
                                const std::string &name = "");
 
   static int AddAllFieldDataArrays(vtkPointSet *inputGrid,
                                    vtkImageData *image,
-                                   int tupelIdx);
+                                   int tupleIdx);
 
   static int ComputeDirFromFocalPoint(vtkPointSet *inputGrid);
 

@@ -12,11 +12,11 @@ struct LocCell {
   std::array<ttk::SimplexId, n> verts;
 };
 
-void computeEdges(std::vector<ttk::SimplexId> &connectivity,
-                  std::vector<double> &diameters,
-                  const double epsilon,
-                  const std::vector<std::vector<double>> &distanceMatrix,
-                  const int nThreads) {
+static void computeEdges(std::vector<ttk::SimplexId> &connectivity,
+                         std::vector<double> &diameters,
+                         const double epsilon,
+                         const std::vector<std::vector<double>> &distanceMatrix,
+                         const int nThreads) {
 
   TTK_FORCE_USE(nThreads);
 
@@ -62,11 +62,12 @@ static inline void maxAssign(double &a, const double b) {
   }
 }
 
-void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
-                      std::vector<double> &diameters,
-                      const double epsilon,
-                      const std::vector<std::vector<double>> &distanceMatrix,
-                      const int nThreads) {
+static void
+  computeTriangles(std::vector<ttk::SimplexId> &connectivity,
+                   std::vector<double> &diameters,
+                   const double epsilon,
+                   const std::vector<std::vector<double>> &distanceMatrix,
+                   const int nThreads) {
 
   TTK_FORCE_USE(nThreads);
 
@@ -118,11 +119,12 @@ void computeTriangles(std::vector<ttk::SimplexId> &connectivity,
   }
 }
 
-void computeTetras(std::vector<ttk::SimplexId> &connectivity,
-                   std::vector<double> &diameters,
-                   const double epsilon,
-                   const std::vector<std::vector<double>> &distanceMatrix,
-                   const int nThreads) {
+static void
+  computeTetras(std::vector<ttk::SimplexId> &connectivity,
+                std::vector<double> &diameters,
+                const double epsilon,
+                const std::vector<std::vector<double>> &distanceMatrix,
+                const int nThreads) {
 
   TTK_FORCE_USE(nThreads);
 

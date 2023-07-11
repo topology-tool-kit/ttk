@@ -8,7 +8,7 @@ if(ENABLE_PROFILING)
   set(profiler_lib profiler)
 endif()
 
-# option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
+# option (TTK_DISABLE_FTR_LAZY "Disable the laziness optimization" OFF)
 # mark_as_advanced(TTK_DISABLE_FTR_LAZY)
 
 option (TTK_ENABLE_FTR_TASK_STATS "print propagations death time (min only)" OFF)

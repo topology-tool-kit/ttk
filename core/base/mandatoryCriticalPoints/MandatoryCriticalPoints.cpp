@@ -307,9 +307,8 @@ int MandatoryCriticalPoints::buildPairs(
     }
   }
   // Sort pair by increasing value of d(S,M) (.second)
-  criticalPointPairComparaison pairComparaison;
-  std::sort(
-    extremaSaddlePair.begin(), extremaSaddlePair.end(), pairComparaison);
+  criticalPointPairComparison pairComparison;
+  std::sort(extremaSaddlePair.begin(), extremaSaddlePair.end(), pairComparison);
 
   const std::string treeName = treeType == TreeType::JoinTree
                                  ? "minimum - join saddle"
@@ -336,7 +335,7 @@ int MandatoryCriticalPoints::computePlanarLayout(
   std::vector<double> &xCoord,
   std::vector<double> &yCoord) const {
 
-  /* Informations */
+  /* Information */
   const int numberOfPoints = mdtTree.getNumberOfVertices();
   const double rangeMin = getGlobalMinimum();
   const double rangeMax = getGlobalMaximum();
@@ -447,7 +446,7 @@ int MandatoryCriticalPoints::computePlanarLayout(
 
   /* X coordinates */
   // Sorting
-  pairComparaison xCoordCmp;
+  pairComparison xCoordCmp;
   std::sort(xOrder.begin(), xOrder.end(), xCoordCmp);
   // X coordinates for all points except root (global extremum)
   int pointCount = 0;
@@ -496,7 +495,7 @@ int MandatoryCriticalPoints::computeExtremumComponent(
   // Get the list of the sub tree super arc ids
   std::vector<int> subTreeSuperArcId;
   getSubTreeSuperArcIds(&tree, rootSuperArcId, subTreeSuperArcId);
-  // Comparaison
+  // Comparison
   int sign = (pointType == PointType::Minimum) ? 1 : -1;
   // Compute each super arc
   for(int i = 0; i < (int)subTreeSuperArcId.size(); i++) {
@@ -1225,7 +1224,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     order.emplace_back(i, mandatoryMergedExtrema_tmp[i].size());
   }
   // Sort by number of merged extrema
-  mandatorySaddleComparaison cmp;
+  mandatorySaddleComparison cmp;
   std::sort(order.begin(), order.end(), cmp);
   // Reorder for output
   mandatoryMergedExtrema.clear();
@@ -1461,7 +1460,7 @@ int MandatoryCriticalPoints::simplify(
               lastSaddleId = rootSaddleId;
               rootSaddleId = saddleParentSaddle[rootSaddleId];
             }
-            // Link the root to the proccessed saddle
+            // Link the root to the processed saddle
             saddleParentSaddle[rootSaddleId] = i;
           }
         }

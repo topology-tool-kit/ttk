@@ -5,7 +5,7 @@
 ttk::WebSocketIO::WebSocketIO() {
   this->setDebugMsgPrefix("WebSocketIO");
 
-#if TTK_ENABLE_WEBSOCKETPP
+#ifdef TTK_ENABLE_WEBSOCKETPP
   this->server.set_error_channels(websocketpp::log::elevel::none);
   this->server.set_access_channels(websocketpp::log::alevel::none);
 
@@ -36,7 +36,7 @@ ttk::WebSocketIO::~WebSocketIO() {
   }
 }
 
-#if TTK_ENABLE_WEBSOCKETPP
+#ifdef TTK_ENABLE_WEBSOCKETPP
 
 int ttk::WebSocketIO::isListening() {
   return this->server.is_listening();
@@ -61,7 +61,7 @@ int ttk::WebSocketIO::startServer(int PortNumber) {
   this->server.start_accept();
 
   // Start the Asio io_service run loop
-  this->serverThread = new thread([this]() {
+  this->serverThread = thread([this]() {
     try {
       {
         std::lock_guard<std::mutex> guard(this->mutex);
@@ -76,7 +76,7 @@ int ttk::WebSocketIO::startServer(int PortNumber) {
       this->printErr("Unable to start server: " + std::string(e.what()));
     }
   });
-  this->serverThread->detach();
+  this->serverThread.detach();
 
   this->printMsg("Starting Server at Port: " + std::to_string(this->portNumber),
                  1, t.getElapsedTime());
@@ -140,8 +140,6 @@ int ttk::WebSocketIO::stopServer() {
         std::lock_guard<std::mutex> guard(this->mutex);
         con = this->serverThreadRunning;
       }
-      delete this->serverThread;
-      this->serverThread = nullptr;
 
       this->printMsg("Terminating Server Thread", 1, 0,
                      ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);

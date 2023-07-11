@@ -35,11 +35,19 @@ GaussianPointCloud">
               </Documentation>
             </IntVectorProperty>
 
+            <IntVectorProperty name="Seed"
+                         label="Random Seed"
+                         command="SetRandomSeed"
+                         number_of_elements="1"
+                         default_values="0">
+            </IntVectorProperty>
+
             ${DEBUG_WIDGETS}
 
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="NumberOfSamples" />
                 <Property name="Dimension" />
+                <Property name="Seed" />
             </PropertyGroup>
 
             <Hints>

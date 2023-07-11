@@ -6,13 +6,13 @@ Please find below a few guidelines that we invite you to consider before making 
 Please find below generic recommendations for setting up your fork of TTK's main repository.
   - Setting up your Github account:
     - Create an account on [Github](https://github.com/).
-    - If applicable, we recommand to upgrade (for free) this account to a Github Pro account, through the [Github education program](https://docs.github.com/en/education/explore-the-benefits-of-teaching-and-learning-with-github-education/use-github-in-your-classroom-and-research/apply-for-an-educator-or-researcher-discount).
+    - If applicable, we recommend to upgrade (for free) this account to a Github Pro account, through the [Github education program](https://docs.github.com/en/education/explore-the-benefits-of-teaching-and-learning-with-github-education/use-github-in-your-classroom-and-research/apply-for-an-educator-or-researcher-discount).
   - Forking TTK's main repository:
     - Go to [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) and click on the "Fork" button (top right corner).
     - In the remainder, let us designate by `@PUBLIC` the URL of [TTK's main source code repository](https://github.com/topology-tool-kit/ttk) (i.e. `@PUBLIC = https://github.com/topology-tool-kit/ttk`)
     - Similarly, let us designate by `@FORK` the URL of your public fork of TTK's public repository.
   - Creating your private TTK repository:
-    - We recommand to use a private repository for the development of unpublished features.
+    - We recommend to use a private repository for the development of unpublished features.
     - For this, create and setup a *private* repository (e.g. `ttk-yourusername`). Let us call it `@PRIVATE`.
     - Clone your `@PRIVATE` repository locally and enter the following commands:
     ```
@@ -26,11 +26,11 @@ Please find below generic recommendations for setting up your fork of TTK's main
     ```
     $ git pull ttk-public dev
     ```
-    - When developing a new unpublished feature, we recommand to create a new branch on your `@PRIVATE` repository.
+    - When developing a new unpublished feature, we recommend to create a new branch on your `@PRIVATE` repository.
     - When this feature is ready to be made public (e.g. after publication of the corresponding research), push the corresponding branch to your `@FORK`. This will enable you to open a pull-request (PR) to the [main TTK repository](https://github.com/topology-tool-kit/ttk).
   - Setting up [ttk-data](https://github.com/topology-tool-kit/ttk-data)
     - The repository [ttk-data](https://github.com/topology-tool-kit/ttk-data) hosts data sets and examples.
-    - We recommand that you re-iterate the above procedure (with a public fork and a private repository) for this repository as well.
+    - We recommend that you re-iterate the above procedure (with a public fork and a private repository) for this repository as well.
     - Note that only the features which are covered by examples in [ttk-data](https://github.com/topology-tool-kit/ttk-data) are tested by the continuous integration.
 
 # 1. Authorship
@@ -210,3 +210,8 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
     - Re-open ParaView and re-create your state file pipeline **from scratch** (to show people how to put things together)
 
 From our experience, video tutorials are **essential** to attract users towards new features. So if you want people to use your new module, you want to prepare a video tutorial. There are several excellent software packages for video editing (for instance [kdenlive](https://kdenlive.org/en/))
+
+# 7. Tools for TTK developers
+
+A list of tips & tools to help TTK developers has been gathered into
+[DEVELOPER_EXPERIENCE.md](./doc/DEVELOPER_EXPERIENCE.md).

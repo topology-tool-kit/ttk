@@ -44,7 +44,7 @@ namespace ttk {
       }
     };
 
-    // Tree datas ( 1 per tree )
+    // Tree data ( 1 per tree )
     struct TreeData {
       TreeType treeType;
       idPartition partition;
@@ -61,7 +61,7 @@ namespace ttk {
       std::vector<idCorresp> vert2tree;
     };
 
-    // info on one vertex and CT arc in wich it is
+    // info on one vertex and CT arc in which it is
     struct vertex {
       SimplexId id;
       idSuperArc ctArc;
@@ -71,7 +71,7 @@ namespace ttk {
     using segmentRevIterator = std::vector<vertex>::reverse_iterator;
 
     // If we want to cross a Segment in the sorted order,
-    // wich is form the end to the beginning in the case of Split Tree,
+    // which is form the end to the beginning in the case of Split Tree,
     // we can do so by using sbegin and send which use this class
     class sorted_iterator : public segmentIterator {
     public:

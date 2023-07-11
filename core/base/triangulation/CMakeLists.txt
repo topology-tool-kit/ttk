@@ -7,6 +7,7 @@ ttk_add_base_library(triangulation
     abstractTriangulation
     compactTriangulation
     explicitTriangulation
+    regularGridTriangulation    
     implicitTriangulation
     periodicImplicitTriangulation
     )

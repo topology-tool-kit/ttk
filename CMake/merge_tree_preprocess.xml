@@ -5,6 +5,24 @@ label="Delete Multi Persistence Pairs"
 number_of_elements="1"
 default_values="0"
 panel_visibility="advanced">
+<Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="or">
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="0" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="1" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="2" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
   <Documentation>
     Delete persistence pairs for which the saddle point is involved in more than one pair.
   </Documentation>
@@ -18,6 +36,24 @@ label="Epsilon1 Use Farthest Saddle"
 number_of_elements="1"
 default_values="0"
 panel_visibility="advanced">
+<Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="or">
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="0" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="1" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="2" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
   <Documentation>
     
   </Documentation>
@@ -30,6 +66,24 @@ command="SetEpsilonTree1"
 label="Epsilon 1 (%)"
 number_of_elements="1"
 default_values="5">
+<Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="or">
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="0" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="1" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="2" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
   <Documentation>
     Merge saddle points (in a bottom-up manner) having their difference in function value below epsilon times the biggest difference in function value. No effect for epsilon = 0.
   </Documentation>
@@ -108,6 +162,24 @@ command="SetPersistenceThreshold"
 label="Persistence Threshold (%)"
 number_of_elements="1"
 default_values="0">
+<Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="or">
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="0" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="1" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="2" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
   <Documentation>
     Delete persistence pairs having a persistence lower than this threshold (relative to the highest persistence).
   </Documentation>
@@ -115,10 +187,10 @@ default_values="0">
 </DoubleVectorProperty>
 
 <PropertyGroup panel_widget="Line" label="Input options">
-  <Property name="DeleteMultiPersPairs"/>
   <Property name="Epsilon1UseFarthestSaddle"/>
   <Property name="EpsilonTree1"/>
   <Property name="Epsilon2Tree1"/>
   <Property name="Epsilon3Tree1"/>
   <Property name="PersistenceThreshold"/>
+  <Property name="DeleteMultiPersPairs"/>
 </PropertyGroup>

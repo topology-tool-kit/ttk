@@ -95,7 +95,7 @@ $PATCH_BIN -p1 \
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.8.0-numpy_interface-warning.patch"
 mkdir -p .github/workflows/
-cp ${PATCH_DIR}/main.yml .github/workflows
+cp ${PATCH_DIR}/package.yml .github/workflows
 
 echo "Finished patching."
 

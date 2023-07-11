@@ -7,3 +7,4 @@ HEADERS
 DEPENDS
   ttkAlgorithm
   compactTriangulationPreconditioning
+  ttkPeriodicGhostsGeneration

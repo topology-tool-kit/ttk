@@ -254,7 +254,7 @@ int ttk::Icosphere::computeIcosphere(
         = s % 2 == 0 ? connectivityList : connectivityListTemp.data();
       IT *newList = s % 2 != 0 ? connectivityList : connectivityListTemp.data();
 
-      // reset indicies
+      // reset indices
       const size_t nOldTriangles = triangleIndex;
       triangleIndex = 0;
 

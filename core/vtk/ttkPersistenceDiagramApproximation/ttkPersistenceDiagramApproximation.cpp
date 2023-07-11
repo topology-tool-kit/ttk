@@ -67,8 +67,27 @@ int ttkPersistenceDiagramApproximation::dispatch(
   this->setOutputOffsets(outputOffsets);
   this->setOutputMonotonyOffsets(outputMonotonyOffsets);
 
-  status = this->execute(CTDiagram, inputScalars, inputScalarsArray->GetMTime(),
-                         inputOrder, triangulation);
+  if(!std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
+    this->printErr("Explicit, Compact or Periodic triangulation detected.");
+    this->printErr("Approximation only works on regular grids.");
+    return 0;
+  }
+
+  ttk::Timer tm{};
+
+  status
+    = this->executeApproximateTopology(CTDiagram, inputScalars, triangulation);
+
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  // fill missing data in CTDiagram (critical points coordinates & value)
+  augmentPersistenceDiagram(CTDiagram, outputScalars, triangulation);
+
+  // finally sort the diagram
+  sortPersistenceDiagram(CTDiagram, inputOrder);
+
+  printMsg(ttk::debug::Separator::L1);
 
   // something wrong in baseCode
   if(status != 0) {
@@ -76,10 +95,6 @@ int ttkPersistenceDiagramApproximation::dispatch(
                    + std::to_string(status));
     return 0;
   }
-
-  // fill missing data in CTDiagram (critical points coordinates & value)
-  fillPersistenceDiagram(
-    CTDiagram, outputScalars, *triangulation, this->threadNumber_);
 
   // convert CTDiagram to vtkUnstructuredGrid
   vtkNew<vtkUnstructuredGrid> vtu{};

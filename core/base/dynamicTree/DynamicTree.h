@@ -47,7 +47,7 @@ namespace ttk {
     /// operation
     bool insertEdge(DynTreeNode *const n);
 
-    /// Remove the link between this node and its parent, thus makeing a new
+    /// Remove the link between this node and its parent, thus making a new
     /// root
     inline void removeEdge() {
 #ifndef TTK_ENABLE_KAMIKAZE

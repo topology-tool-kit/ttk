@@ -20,6 +20,11 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa ttk::CompactTriangulationPreconditioning
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/compactTriangulation/">
+///   Compact Triangulation example</a> \n
 
 #pragma once
 
@@ -1142,13 +1147,13 @@ namespace ttk {
 #endif
 
       if(doublePrecision_) {
-        x = ((double *)pointSet_)[3 * vertexId];
-        y = ((double *)pointSet_)[3 * vertexId + 1];
-        z = ((double *)pointSet_)[3 * vertexId + 2];
+        x = ((const double *)pointSet_)[3 * vertexId];
+        y = ((const double *)pointSet_)[3 * vertexId + 1];
+        z = ((const double *)pointSet_)[3 * vertexId + 2];
       } else {
-        x = ((float *)pointSet_)[3 * vertexId];
-        y = ((float *)pointSet_)[3 * vertexId + 1];
-        z = ((float *)pointSet_)[3 * vertexId + 2];
+        x = ((const float *)pointSet_)[3 * vertexId];
+        y = ((const float *)pointSet_)[3 * vertexId + 1];
+        z = ((const float *)pointSet_)[3 * vertexId + 2];
       }
 
       return 0;
@@ -1327,32 +1332,6 @@ namespace ttk {
       return (exnode->boundaryVertices_)[localVertexId];
     }
 
-#ifdef TTK_ENABLE_MPI
-    int preconditionDistributedVertices() override;
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexGlobalId)(
-      const SimplexId &ltid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid < 0 || ltid >= this->getNumberOfVerticesInternal()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexLidToGid_[ltid];
-    }
-    inline const std::unordered_map<SimplexId, SimplexId> *
-      TTK_TRIANGULATION_INTERNAL(getVertexGlobalIdMap)() const override {
-      return &this->vertexGidToLid_;
-    }
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLocalId)(
-      const SimplexId &gtid) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->vertexGidToLid_.find(gtid) == this->vertexGidToLid_.end()) {
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-      return this->vertexGidToLid_.at(gtid);
-    }
-#endif // TTK_ENABLE_MPI
-
     inline int preconditionBoundaryEdgesInternal() override {
       return 0;
     }
@@ -1490,7 +1469,7 @@ namespace ttk {
       } else if(getDimensionality() == 3) {
         preconditionTriangles();
       } else {
-        this->printErr("Unsupported dimension for vertex link precondtion");
+        this->printErr("Unsupported dimension for vertex link precondition");
         return -1;
       }
       return 0;
@@ -1519,6 +1498,8 @@ namespace ttk {
      */
     inline void initCache(const float ratio = 0.2) {
       cacheSize_ = nodeNumber_ * ratio + 1;
+      caches_.resize(threadNumber_);
+      cacheMaps_.resize(threadNumber_);
       for(int i = 0; i < threadNumber_; i++) {
         caches_[i].clear();
         cacheMaps_[i].clear();

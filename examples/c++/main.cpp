@@ -186,25 +186,23 @@ int main(int argc, char **argv) {
   // precondition/fill in the order array according to the elevation field
   ttk::preconditionOrderArray(height.size(), height.data(), order.data());
 
-  // 2. computing the persistence curve
-  ttk::PersistenceCurve curve;
-  std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
-  curve.preconditionTriangulation(&triangulation);
-  curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float>(height.data(), 0, order.data(), &triangulation);
-
-  // 3. computing the persitence diagram
+  // 2. computing the persistence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<ttk::PersistencePair> diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
   diagram.execute(
     diagramOutput, height.data(), 0, order.data(), &triangulation);
 
+  // 3. computing the persistence curve from the persistence diagram
+  ttk::PersistenceCurve curve;
+  std::array<ttk::PersistenceCurve::PlotType, 4> outputCurve;
+  curve.execute(outputCurve, diagramOutput);
+
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
   std::vector<ttk::SimplexId> authorizedCriticalPoints, simplifiedOrder = order;
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
-    if(diagramOutput[i].persistence > 0.05) {
+    if(diagramOutput[i].persistence() > 0.05) {
       // 5. selecting the most persistent pairs
       authorizedCriticalPoints.push_back(diagramOutput[i].birth.id);
       authorizedCriticalPoints.push_back(diagramOutput[i].death.id);
@@ -214,10 +212,10 @@ int main(int argc, char **argv) {
   // 6. simplifying the input data to remove non-persistent pairs
   ttk::TopologicalSimplification simplification;
   simplification.preconditionTriangulation(&triangulation);
-  simplification.execute<float>(height.data(), simplifiedHeight.data(),
-                                authorizedCriticalPoints.data(), order.data(),
-                                simplifiedOrder.data(),
-                                authorizedCriticalPoints.size(), triangulation);
+  simplification.execute<float>(
+    height.data(), simplifiedHeight.data(), authorizedCriticalPoints.data(),
+    order.data(), simplifiedOrder.data(), authorizedCriticalPoints.size(),
+    false, triangulation);
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {

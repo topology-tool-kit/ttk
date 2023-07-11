@@ -73,7 +73,7 @@ if(VTK_WRAP_PYTHON)
     LIBRARY_DESTINATION
       "${CMAKE_INSTALL_LIBDIR}"
     INSTALL_HEADERS
-      ON
+      OFF
     TARGET
       TTK::Python
     )

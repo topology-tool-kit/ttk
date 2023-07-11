@@ -30,7 +30,7 @@ namespace ttk {
     }
 
     /**
-     * @brief Clear the underlaying vectors
+     * @brief Clear the underlying vectors
      */
     inline void clear() {
       this->data_.clear();
@@ -66,11 +66,11 @@ namespace ttk {
     }
 
     struct Slice {
+      const size_t len;
       const SimplexId *const ptr;
-      const SimplexId len;
-      inline SimplexId operator[](const SimplexId id) {
+      inline SimplexId operator[](const size_t id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if(id < 0 || id >= this->len) {
+        if(id >= this->len || ptr == nullptr) {
           return -1;
         }
 #endif
@@ -85,7 +85,7 @@ namespace ttk {
       inline const SimplexId *end() const {
         return this->ptr + this->len;
       }
-      inline SimplexId size() const {
+      inline size_t size() const {
         return this->len;
       }
     };
@@ -111,13 +111,13 @@ namespace ttk {
       return {this->size(), *this};
     }
 
-    inline Slice operator[](const SimplexId id) const {
+    inline Slice operator[](const size_t id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(id < 0 || id >= (SimplexId)this->offsets_.size()) {
-        return {nullptr, 0};
+      if(id >= this->offsets_.size()) {
+        return {0, nullptr};
       }
 #endif
-      return {this->get_ptr(id, 0), this->size(id)};
+      return {static_cast<size_t>(this->size(id)), this->get_ptr(id, 0)};
     }
 
     /**
@@ -184,7 +184,7 @@ namespace ttk {
     /**
      * @brief Computes the memory footprint of the array
      */
-    inline std::size_t footprint() const {
+    inline size_t footprint() const {
       return (this->data_.size() + this->offsets_.size()) * sizeof(SimplexId);
     }
 
@@ -244,7 +244,7 @@ namespace ttk {
      */
     inline void writeToFile(const std::string &fName) const {
       std::ofstream out(fName);
-      for(const auto &slice : *this) {
+      for(const auto slice : *this) {
         for(const auto el : slice) {
           out << el << " ";
         }

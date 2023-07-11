@@ -54,11 +54,10 @@ namespace ttk {
                          const triangulationType &triangulation);
 
     template <class dataTypeU, class dataTypeV>
-    int perturbate(const dataTypeU *const uField,
-                   const dataTypeV *const vField,
-                   const dataTypeU uEpsilon = Geometry::powIntTen(-DBL_DIG),
-                   const dataTypeV vEpsilon
-                   = Geometry::powIntTen(-DBL_DIG)) const;
+    int perturb(const dataTypeU *const uField,
+                const dataTypeV *const vField,
+                const dataTypeU uEpsilon = Geometry::powIntTen(-DBL_DIG),
+                const dataTypeV vEpsilon = Geometry::powIntTen(-DBL_DIG)) const;
 
     inline void
       setEdgeFans(const std::vector<std::vector<SimplexId>> *edgeFans) {
@@ -85,7 +84,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p sosOffsets buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */
@@ -97,7 +96,7 @@ namespace ttk {
      * @pre For this function to behave correctly in the absence of
      * the VTK wrapper, ttk::preconditionOrderArray() needs to be
      * called to fill the @p sosOffsets buffer prior to any
-     * computation (the VTK wrapper already includes a mecanism to
+     * computation (the VTK wrapper already includes a mechanism to
      * automatically generate such a preconditioned buffer).
      * @see examples/c++/main.cpp for an example use.
      */

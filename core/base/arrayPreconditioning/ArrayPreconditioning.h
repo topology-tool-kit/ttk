@@ -24,13 +24,16 @@ namespace ttk {
   public:
     ArrayPreconditioning();
 
-    template <typename DT, typename IT>
+    template <typename DT, typename GVGID, typename GVR, typename GVLID>
     int processScalarArray(ttk::SimplexId *orderArray,
                            const DT *scalarArray,
-                           const IT *globalIds,
-                           const int *rankArray,
+                           const GVGID &getVertexGlobalId,
+                           const GVR &getVertexRank,
+                           const GVLID &getVertexLocalId,
                            const size_t nVerts,
-                           const int burstSize) const { // start global timer
+                           const int burstSize,
+                           std::vector<int> neighbors
+                           = {}) const { // start global timer
       ttk::Timer globalTimer;
 
       // print horizontal separator
@@ -47,16 +50,19 @@ namespace ttk {
 // -----------------------------------------------------------------------
 #ifdef TTK_ENABLE_MPI
       if(ttk::isRunningWithMPI()) {
-        ttk::produceOrdering<DT, IT>(
-          orderArray, scalarArray, globalIds, rankArray, nVerts, burstSize);
+        ttk::produceOrdering<DT>(orderArray, scalarArray, getVertexGlobalId,
+                                 getVertexRank, getVertexLocalId, nVerts,
+                                 burstSize, neighbors);
       }
 #else
       this->printMsg("MPI not enabled!");
       TTK_FORCE_USE(orderArray);
       TTK_FORCE_USE(scalarArray);
-      TTK_FORCE_USE(globalIds);
-      TTK_FORCE_USE(rankArray);
+      TTK_FORCE_USE(getVertexGlobalId);
+      TTK_FORCE_USE(getVertexRank);
+      TTK_FORCE_USE(getVertexLocalId);
       TTK_FORCE_USE(burstSize);
+      TTK_FORCE_USE(neighbors);
       return 0;
 #endif
 
@@ -74,6 +80,8 @@ namespace ttk {
       return 1; // return success
     }
 
+  protected:
+    bool GlobalOrder{false};
   }; // ArrayPreconditioning class
 
 } // namespace ttk

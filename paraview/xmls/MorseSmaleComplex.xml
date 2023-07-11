@@ -1,4 +1,3 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
        our new filter. As a rule of thumb, try to locate the configuration for
@@ -24,31 +23,31 @@
         Computer Graphics Forum, 2012.
 
         Online examples:
-        
+
         - https://topology-tool-kit.github.io/examples/1manifoldLearning/
-        
+
         - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
 
         - https://topology-tool-kit.github.io/examples/2manifoldLearning/
 
         - https://topology-tool-kit.github.io/examples/imageProcessing/
-        
+
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
-        
+
         - https://topology-tool-kit.github.io/examples/morseMolecule/
-        
+
         - https://topology-tool-kit.github.io/examples/morsePersistence/
-        
+
         - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
 
         - https://topology-tool-kit.github.io/examples/persistenceClustering0/
-        
+
         - https://topology-tool-kit.github.io/examples/persistenceClustering1/
-        
+
         - https://topology-tool-kit.github.io/examples/persistenceClustering2/
-        
+
         - https://topology-tool-kit.github.io/examples/persistenceClustering3/
-        
+
         - https://topology-tool-kit.github.io/examples/persistenceClustering4/
 
         - https://topology-tool-kit.github.io/examples/persistentGenerators_at/
@@ -56,9 +55,9 @@
         - https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/
 
         - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
-        
+
         - https://topology-tool-kit.github.io/examples/tribute/
-        
+
       </Documentation>
       <InputProperty
         name="Input"
@@ -70,7 +69,7 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
+        <InputArrayDomain name="input_scalars" attribute_type="point"  number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
@@ -276,22 +275,27 @@
             value="1" />
         </Hints>
          <Documentation>
-           Saddle Connectors Persistence Threshold.
+           Saddle Connectors Persistence Threshold (by default relative to the function range, i.e. between 0 and 1).
          </Documentation>
        </DoubleVectorProperty>
 
-      <!--
-      <IntVectorProperty name="IterationThreshold"
-        label="Iteration Threshold"
-        command="SetIterationThreshold"
-        number_of_elements="1"
-        default_values="-1"
-        panel_visibility="default">
-        <IntRangeDomain name="range" min="0" max="100" />
+       <IntVectorProperty name="ThresholdIsAbsolute"
+                          command="SetThresholdIsAbsolute"
+                          number_of_elements="1"
+                          default_values="0">
+        <BooleanDomain name="bool" />
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ReturnSaddleConnectors"
+            value="1" />
+        </Hints>
         <Documentation>
-          Number of iterations in the gradient reversal pass.
+          This parameter determines if the saddle connectors
+          persistence threshold is an absolute scalar value, or a
+          fraction (0-1) of the function range.
         </Documentation>
-      </IntVectorProperty>-->
+      </IntVectorProperty>
 
       ${DEBUG_WIDGETS}
 
@@ -313,6 +317,7 @@
         <Property name="ComputeFinalSegmentation"/>
         <Property name="ReturnSaddleConnectors"/>
         <Property name="SaddleConnectorsPersistenceThreshold"/>
+        <Property name="ThresholdIsAbsolute" />
       </PropertyGroup>
 
       <OutputPort name="Critical Points" index="0" id="port0"/>

@@ -120,7 +120,7 @@ Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
                 </Hints>
-                <Documentation>Determines how vertex values are compared agains each value of the expression.</Documentation>
+                <Documentation>Determines how vertex values are compared against each value of the expression.</Documentation>
             </IntVectorProperty>
 
             <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">

@@ -1,5 +1,5 @@
 name: 'Install dependencies for Unix'
-description: 'Install TTK optionall dependencies on Ubuntu & macOS'
+description: 'Install TTK optional dependencies on Ubuntu & macOS'
 runs:
   using: "composite"
   steps:
@@ -7,29 +7,20 @@ runs:
     - name: Install Spectra dependency
       shell: bash
       run: |
-        wget https://github.com/yixuan/spectra/archive/v1.0.0.tar.gz
-        tar xvf v1.0.0.tar.gz
+        wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
+        tar xvf v1.0.1.tar.gz
         mkdir build_spectra && cd build_spectra
-        cmake ../spectra-1.0.0
+        cmake ../spectra-1.0.1
         sudo cmake --build . --target install --parallel
 
     - name: Install ZFP dependency
       shell: bash
       run: |
-        wget https://github.com/LLNL/zfp/archive/0.5.5.tar.gz
-        tar xvf 0.5.5.tar.gz
+        wget https://github.com/LLNL/zfp/archive/1.0.0.tar.gz
+        tar xvf 1.0.0.tar.gz
         mkdir build_zfp && cd build_zfp
         cmake \
           -DBUILD_SHARED_LIBS=OFF \
           -DBUILD_TESTING=OFF \
-          ../zfp-0.5.5
-        sudo cmake --build . --target install --parallel
-
-    - name: Install WebSocket++ dependency
-      shell: bash
-      run: |
-        wget https://github.com/zaphoyd/websocketpp/archive/0.8.2.tar.gz
-        tar xvf 0.8.2.tar.gz
-        mkdir build_websocketpp && cd build_websocketpp
-        cmake ../websocketpp-0.8.2
+          ../zfp-1.0.0
         sudo cmake --build . --target install --parallel

@@ -40,11 +40,14 @@ namespace ttk {
 
     protected:
       // global
-      Params *const params_;
-      Scalars *const scalars_;
+      std::shared_ptr<Params> params_;
+      std::shared_ptr<Scalars> scalars_;
 
       // local
       TreeData treeData_;
+
+      // storage
+      std::list<ExtendedUnionFind> storageEUF_;
 
     public:
       // CONSTRUCT
@@ -52,8 +55,8 @@ namespace ttk {
       // {
 
       // Tree with global data and partition number
-      MergeTree(Params *const params,
-                Scalars *const scalars,
+      MergeTree(std::shared_ptr<Params> params,
+                std::shared_ptr<Scalars> scalars,
                 TreeType type,
                 idPartition part = nullPartition);
 
@@ -70,7 +73,7 @@ namespace ttk {
         scalars_->size = tri->getNumberOfVertices();
       }
 
-      /// \brief init the type of the current tree froms params
+      /// \brief init the type of the current tree from params
       void initTreeType() {
         treeData_.treeType = params_->treeType;
       }
@@ -165,7 +168,7 @@ namespace ttk {
        * @pre For this function to behave correctly in the absence of
        * the VTK wrapper, ttk::preconditionOrderArray() needs to be
        * called to fill the @p offsets buffer prior to any
-       * computation (the VTK wrapper already includes a mecanism to
+       * computation (the VTK wrapper already includes a mechanism to
        * automatically generate such a preconditioned buffer).
        * @see examples/c++/main.cpp for an example use.
        */
@@ -327,7 +330,7 @@ namespace ttk {
       }
 
       // }
-      // Get vertex correponding object
+      // Get vertex corresponding object
       // ................................{
 
       inline SuperArc *vertex2SuperArc(const SimplexId &vert) {
@@ -398,14 +401,18 @@ namespace ttk {
 
       // BFS simplification for local CT
       template <typename scalarType>
-      SimplexId localSimplify(const SimplexId &podSeed0,
-                              const SimplexId &podSeed1);
+      SimplexId localSimplify(
+        const SimplexId &podSeed0,
+        const SimplexId &podSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage);
 
       // BFS simpliciation for global CT
       template <typename scalarType, typename triangulationType>
-      SimplexId globalSimplify(const SimplexId posSeed0,
-                               const SimplexId posSeed1,
-                               const triangulationType &mesh);
+      SimplexId globalSimplify(
+        const SimplexId posSeed0,
+        const SimplexId posSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+        const triangulationType &mesh);
 
       // Having sorted std::pairs, simplify the current tree
       // in accordance with threashol, between the two seeds.
@@ -413,6 +420,7 @@ namespace ttk {
       SimplexId simplifyTree(
         const SimplexId &posSeed0,
         const SimplexId &posSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
         const std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
           &sortedPairs);
 
@@ -524,12 +532,13 @@ namespace ttk {
       idNode getParent(const idNode &n);
 
       void delNode(const idNode &node,
+                   std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
                    const std::pair<SimplexId, bool> *mv = nullptr,
                    const SimplexId &nbm = 0);
 
       void hideNode(const idNode &node);
 
-      // For persistance std::pair on CT
+      // For persistence std::pair on CT
       // these function allow to make a JT / ST od the CT
       std::vector<idNode> getNodeNeighbors(const idNode &node);
 
@@ -547,14 +556,14 @@ namespace ttk {
                                        const SimplexId &v);
 
       // }
-      // Update informations
+      // Update information
       // ...........................{
 
       void updateSegmentation();
 
       void parallelUpdateSegmentation(const bool ct = false);
 
-      // will disapear
+      // will disappear
       void parallelInitNodeValence(const int nbThreadValence);
 
       // }
@@ -617,7 +626,7 @@ namespace ttk {
       }
 
       // Clone
-      MergeTree *clone() const;
+      std::shared_ptr<MergeTree> clone() const;
 
       void clone(const MergeTree *mt);
 

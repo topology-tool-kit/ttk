@@ -17,21 +17,9 @@
 # /// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
 # /// of IEEE VIS 2017.
 
+import sys
+
 from paraview.simple import *
-
-# paraview 5.9 VS 5.10 compatibility ===========================================
-def ThresholdBetween(threshold, lower, upper):
-    try:
-        # paraview 5.9
-        threshold.ThresholdRange = [lower, upper]
-    except:
-        # paraview 5.10
-        threshold.ThresholdMethod = "Between"
-        threshold.LowerThreshold = lower
-        threshold.UpperThreshold = upper
-
-
-# end of comphatibility ========================================================
 
 if len(sys.argv) == 2:
     inputFilePath = sys.argv[1]
@@ -44,23 +32,26 @@ else:
 # 1. loading the input data
 inputData = XMLUnstructuredGridReader(FileName=[inputFilePath])
 
-# 2. computing the persistence curve
-persistenceCurve = TTKPersistenceCurve(inputData)
-persistenceCurve.ScalarField = ["POINTS", "data"]
-
-# 3. computing the persitence diagram
+# 2. computing the persistence diagram
 persistenceDiagram = TTKPersistenceDiagram(inputData)
 persistenceDiagram.ScalarField = ["POINTS", "data"]
+
+# 3. computing the persistence curve from the persistence diagram
+persistenceCurve = TTKPersistenceCurve(persistenceDiagram)
 
 # 4. selecting the critical point pairs
 criticalPointPairs = Threshold(persistenceDiagram)
 criticalPointPairs.Scalars = ["CELLS", "PairIdentifier"]
-ThresholdBetween(criticalPointPairs, -0.1, 999999999)
+criticalPointPairs.ThresholdMethod = "Between"
+criticalPointPairs.LowerThreshold = -0.1
+criticalPointPairs.UpperThreshold = 999999999
 
 # 5. selecting the most persistent pairs
 persistentPairs = Threshold(criticalPointPairs)
 persistentPairs.Scalars = ["CELLS", "Persistence"]
-ThresholdBetween(persistentPairs, 0.05, 999999999)
+persistentPairs.ThresholdMethod = "Between"
+persistentPairs.LowerThreshold = 0.05
+persistentPairs.UpperThreshold = 999999999
 
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = TTKTopologicalSimplification(

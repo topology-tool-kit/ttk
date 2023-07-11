@@ -13,7 +13,8 @@
 /// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
 /// Scalar Data -- An Algorithm and A Benchmark" \n
 /// Pierre Guillou, Jules Vidal, Julien Tierny \n
-/// Technical Report, arXiv:2206.13932, 2022
+/// IEEE Transactions on Visualization and Computer Graphics, 2023.\n
+/// arXiv:2206.13932, 2023.
 ///
 ///
 /// \sa ttk::dcg::DiscreteGradient
@@ -22,6 +23,7 @@
 
 #include <DiscreteGradient.h>
 
+#include <algorithm>
 #include <numeric>
 
 namespace ttk {
@@ -53,6 +55,16 @@ namespace ttk {
       this->dg_.setInputOffsets(offsets);
     }
 
+    inline void setComputeMinSad(const bool data) {
+      this->ComputeMinSad = data;
+    }
+    inline void setComputeSadSad(const bool data) {
+      this->ComputeSadSad = data;
+    }
+    inline void setComputeSadMax(const bool data) {
+      this->ComputeSadMax = data;
+    }
+
     template <typename triangulationType>
     inline int buildGradient(const void *const scalars,
                              const size_t scalarsMTime,
@@ -65,11 +77,36 @@ namespace ttk {
       return this->dg_.buildGradient(triangulation);
     }
 
+    /**
+     * @brief Ugly hack to avoid a call to buildGradient()
+     *
+     * An externally computed gradient can be retrofitted into this
+     * class using move semantics with setGradient().
+     * The internal gradient can be fetched back with getGradient()
+     * once the persistence pairs are computed .
+     * c.f. ttk::MorseSmaleComplex::returnSaddleConnectors
+     *
+     * @param[in] dg External gradient instance
+     */
+    inline void setGradient(ttk::dcg::DiscreteGradient &&dg) {
+      this->dg_ = std::move(dg);
+      // reset gradient pointer to local storage
+      this->dg_.setLocalGradient();
+    }
+    inline ttk::dcg::DiscreteGradient &&getGradient() {
+      return std::move(this->dg_);
+    }
+
     template <typename triangulationType>
     inline SimplexId
       getCellGreaterVertex(const dcg::Cell &c,
                            const triangulationType &triangulation) {
       return this->dg_.getCellGreaterVertex(c, triangulation);
+    }
+
+    inline const std::vector<std::vector<SimplexId>> &
+      get2SaddlesChildren() const {
+      return this->s2Children_;
     }
 
     /**
@@ -82,6 +119,7 @@ namespace ttk {
      * @param[in] offsets Order field
      * @param[in] triangulation Preconditionned triangulation
      * @param[in] ignoreBoundary Ignore the boundary component
+     * @param[in] compute2SaddlesChildren Extract links between 2-saddles
      *
      * @return 0 when success
      */
@@ -89,7 +127,8 @@ namespace ttk {
     int computePersistencePairs(std::vector<PersistencePair> &pairs,
                                 const SimplexId *const offsets,
                                 const triangulationType &triangulation,
-                                const bool ignoreBoundary);
+                                const bool ignoreBoundary,
+                                const bool compute2SaddlesChildren = false);
 
     /**
      * @brief Type for exporting persistent generators
@@ -134,8 +173,6 @@ namespace ttk {
      * @param[in] isOnBoundary Either isEdgeOnBoundary (in 2D) or
      * isTriangleOnBoundary (in 3D)
      * @param[in] triangulation Triangulation
-     * @param[in] ignoreBoundary FTM compatibility (ignore saddles on
-     * boundary)
      *
      * @return a vector of maxima per 2-saddle
      */
@@ -148,8 +185,7 @@ namespace ttk {
                          const GFS &getFaceStar,
                          const GFSN &getFaceStarNumber,
                          const OB &isOnBoundary,
-                         const triangulationType &triangulation,
-                         const bool ignoreBoundary) const;
+                         const triangulationType &triangulation) const;
 
     /**
      * @brief Compute the pairs of dimension 0
@@ -181,7 +217,6 @@ namespace ttk {
      * @param[in] critSaddlesOrder Filtration order on critical saddles
      * @param[in] critMaxsOrder Filtration order on maxima
      * @param[in] triangulation Triangulation
-     * @param[in] ignoreBoundary Ignore the boundary component
      */
     template <typename triangulationType>
     void getMaxSaddlePairs(std::vector<PersistencePair> &pairs,
@@ -190,8 +225,7 @@ namespace ttk {
                            const std::vector<SimplexId> &criticalSaddles,
                            const std::vector<SimplexId> &critSaddlesOrder,
                            const std::vector<SimplexId> &critMaxsOrder,
-                           const triangulationType &triangulation,
-                           const bool ignoreBoundary) const;
+                           const triangulationType &triangulation) const;
 
     /**
      * @brief Compute the saddle-saddle pairs (in 3D)
@@ -291,9 +325,12 @@ namespace ttk {
      * @param[in] s2 Input 2-saddle (critical triangle)
      * @param[in,out] onBoundary Propagation mask
      * @param[in,out] s2Boundaries Boundaries storage (compact)
-     * @param[in] s2Mapping From (critical) triangle id to compact id in
-     * s2Boundaries
+     * @param[in] s1Mapping From edge id to 1-saddle compact id in @p s1Locks
+     * @param[in] s2Mapping From triangle id to compact id
+     *   in @p s2Boundaries and @p s2Locks
      * @param[in] partners Get 2-saddles paired to 1-saddles on boundary
+     * @param[in] s1Locks Vector of locks over 1-saddles
+     * @param[in] s2Locks Vector of locks over 2-saddles
      * @param[in] triangulation Simplicial complex
      *
      * @return Identifier of paired 1-saddle or -1
@@ -304,7 +341,10 @@ namespace ttk {
                                   std::vector<bool> &onBoundary,
                                   std::vector<Container> &s2Boundaries,
                                   const std::vector<SimplexId> &s2Mapping,
-                                  const std::vector<SimplexId> &partners,
+                                  const std::vector<SimplexId> &s1Mapping,
+                                  std::vector<SimplexId> &partners,
+                                  std::vector<Lock> &s1Locks,
+                                  std::vector<Lock> &s2Locks,
                                   const triangulationType &triangulation) const;
 
     /**
@@ -390,6 +430,9 @@ namespace ttk {
     void alloc(const triangulationType &triangulation) {
       Timer tm{};
       const auto dim{this->dg_.getDimensionality()};
+      if(dim > 3 || dim < 1) {
+        return;
+      }
       this->firstRepMin_.resize(triangulation.getNumberOfVertices());
       if(dim > 1) {
         this->firstRepMax_.resize(triangulation.getNumberOfCells());
@@ -399,6 +442,7 @@ namespace ttk {
         this->edgeTrianglePartner_.resize(triangulation.getNumberOfEdges(), -1);
         this->onBoundary_.resize(triangulation.getNumberOfEdges(), false);
         this->s2Mapping_.resize(triangulation.getNumberOfTriangles(), -1);
+        this->s1Mapping_.resize(triangulation.getNumberOfEdges(), -1);
       }
       for(int i = 0; i < dim + 1; ++i) {
         this->pairedCritCells_[i].resize(
@@ -418,6 +462,7 @@ namespace ttk {
       this->firstRepMax_ = {};
       this->edgeTrianglePartner_ = {};
       this->s2Mapping_ = {};
+      this->s1Mapping_ = {};
       this->critEdges_ = {};
       this->pairedCritCells_ = {};
       this->onBoundary_ = {};
@@ -430,11 +475,17 @@ namespace ttk {
 
     // factor memory allocations outside computation loops
     mutable std::vector<SimplexId> firstRepMin_{}, firstRepMax_{},
-      edgeTrianglePartner_{}, s2Mapping_{};
+      edgeTrianglePartner_{}, s2Mapping_{}, s1Mapping_{};
     mutable std::vector<EdgeSimplex> critEdges_{};
     mutable std::array<std::vector<bool>, 4> pairedCritCells_{};
     mutable std::vector<bool> onBoundary_{};
     mutable std::array<std::vector<SimplexId>, 4> critCellsOrder_{};
+    mutable std::vector<std::vector<SimplexId>> s2Children_{};
+
+    bool ComputeMinSad{true};
+    bool ComputeSadSad{true};
+    bool ComputeSadMax{true};
+    bool Compute2SaddlesChildren{false};
   };
 } // namespace ttk
 
@@ -488,8 +539,7 @@ std::vector<std::vector<SimplexId>>
     const GFS &getFaceStar,
     const GFSN &getFaceStarNumber,
     const OB &isOnBoundary,
-    const triangulationType &triangulation,
-    const bool ignoreBoundary) const {
+    const triangulationType &triangulation) const {
 
   Timer tm{};
 
@@ -524,8 +574,7 @@ std::vector<std::vector<SimplexId>>
       followVPath(cellId);
     }
 
-    // ignoreBoundary: skip triplets with saddles on boundary
-    if(!ignoreBoundary && isOnBoundary(sid)) {
+    if(isOnBoundary(sid)) {
       // critical saddle is on boundary
       maxs.emplace_back(-1);
     }
@@ -593,8 +642,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
   const std::vector<SimplexId> &criticalSaddles,
   const std::vector<SimplexId> &critSaddlesOrder,
   const std::vector<SimplexId> &critMaxsOrder,
-  const triangulationType &triangulation,
-  const bool ignoreBoundary) const {
+  const triangulationType &triangulation) const {
 
   Timer tm{};
 
@@ -613,7 +661,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
           [&triangulation](const SimplexId a) {
             return triangulation.isTriangleOnBoundary(a);
           },
-          triangulation, ignoreBoundary)
+          triangulation)
         : getSaddle2ToMaxima(
           criticalSaddles,
           [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
@@ -625,7 +673,7 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
           [&triangulation](const SimplexId a) {
             return triangulation.isEdgeOnBoundary(a);
           },
-          triangulation, ignoreBoundary);
+          triangulation);
 
   Timer tmseq{};
 
@@ -684,10 +732,14 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
   std::vector<bool> &onBoundary,
   std::vector<Container> &s2Boundaries,
   const std::vector<SimplexId> &s2Mapping,
-  const std::vector<SimplexId> &partners,
+  const std::vector<SimplexId> &s1Mapping,
+  std::vector<SimplexId> &partners,
+  std::vector<Lock> &s1Locks,
+  std::vector<Lock> &s2Locks,
   const triangulationType &triangulation) const {
 
   auto &boundaryIds{s2Boundaries[s2Mapping[s2]]};
+
   const auto addBoundary = [&boundaryIds, &onBoundary](const SimplexId e) {
     // add edge e to boundaryIds/onBoundary modulo 2
     if(!onBoundary[e]) {
@@ -696,6 +748,13 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
     } else {
       const auto it = boundaryIds.find(e);
       boundaryIds.erase(it);
+      onBoundary[e] = false;
+    }
+  };
+
+  const auto clearOnBoundary = [&boundaryIds, &onBoundary]() {
+    // clear the onBoundary vector (set everything to false)
+    for(const auto e : boundaryIds) {
       onBoundary[e] = false;
     }
   };
@@ -714,6 +773,10 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
     }
   }
 
+  // lock the 2-saddle to ensure that only one thread can perform the
+  // boundary expansion
+  s2Locks[s2Mapping[s2]].lock();
+
   while(!boundaryIds.empty()) {
     // tau: youngest edge on boundary
     const auto tau{*boundaryIds.begin()};
@@ -722,29 +785,93 @@ SimplexId ttk::DiscreteMorseSandwich::eliminateBoundariesSandwich(
     bool critical{false};
     if(pTau == -1) {
       // maybe tau is critical and paired to a critical triangle
-      pTau = partners[tau];
+      do {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif // TTK_ENABLE_OPENMP
+        pTau = partners[tau];
+        if(pTau == -1 || s2Boundaries[s2Mapping[pTau]].empty()) {
+          break;
+        }
+      } while(*s2Boundaries[s2Mapping[pTau]].begin() != tau);
+
       critical = true;
     }
     if(pTau == -1) {
       // tau is critical and not paired
-      return tau;
-    }
-    // expand boundary
-    if(critical && s2Mapping[pTau] != -1) { // pTau is a non-paired 2-saddle
-      // merge pTau boundary into s2 boundary
-      for(const auto e : s2Boundaries[s2Mapping[pTau]]) {
-        addBoundary(e);
+
+      // compare-and-swap from "Towards Lockfree Persistent Homology"
+      // using locks over 1-saddles instead of atomics (OpenMP compatibility)
+      s1Locks[s1Mapping[tau]].lock();
+      const auto cap = partners[tau];
+      if(partners[tau] == -1) {
+        partners[tau] = s2;
       }
-    } else { // pTau is a regular triangle
-      // add pTau triangle boundary (3 edges)
-      for(SimplexId i = 0; i < 3; ++i) {
-        SimplexId e{};
-        triangulation.getTriangleEdge(pTau, i, e);
-        addBoundary(e);
+      s1Locks[s1Mapping[tau]].unlock();
+
+      // cleanup before exiting
+      clearOnBoundary();
+      s2Locks[s2Mapping[s2]].unlock();
+      if(cap == -1) {
+        return tau;
+      } else {
+        return this->eliminateBoundariesSandwich(
+          s2, onBoundary, s2Boundaries, s2Mapping, s1Mapping, partners, s1Locks,
+          s2Locks, triangulation);
+      }
+
+    } else {
+      // expand boundary
+      if(critical && s2Mapping[pTau] != -1) {
+        if(s2Mapping[pTau] < s2Mapping[s2]) {
+          // pTau is an already-paired 2-saddle
+          // merge pTau boundary into s2 boundary
+
+          // make sure that pTau boundary is not modified by another
+          // thread while we merge the two boundaries...
+          s2Locks[s2Mapping[pTau]].lock();
+          for(const auto e : s2Boundaries[s2Mapping[pTau]]) {
+            addBoundary(e);
+          }
+          s2Locks[s2Mapping[pTau]].unlock();
+          if(this->Compute2SaddlesChildren) {
+            this->s2Children_[s2Mapping[s2]].emplace_back(s2Mapping[pTau]);
+          }
+
+        } else if(s2Mapping[pTau] > s2Mapping[s2]) {
+
+          // compare-and-swap from "Towards Lockfree Persistent
+          // Homology" using locks over 1-saddles
+          s1Locks[s1Mapping[tau]].lock();
+          const auto cap = partners[tau];
+          if(partners[tau] == pTau) {
+            partners[tau] = s2;
+          }
+          s1Locks[s1Mapping[tau]].unlock();
+
+          if(cap == pTau) {
+            // cleanup before exiting
+            clearOnBoundary();
+            s2Locks[s2Mapping[s2]].unlock();
+            return this->eliminateBoundariesSandwich(
+              pTau, onBoundary, s2Boundaries, s2Mapping, s1Mapping, partners,
+              s1Locks, s2Locks, triangulation);
+          }
+        }
+      } else { // pTau is a regular triangle
+        // add pTau triangle boundary (3 edges)
+        for(SimplexId i = 0; i < 3; ++i) {
+          SimplexId e{};
+          triangulation.getTriangleEdge(pTau, i, e);
+          addBoundary(e);
+        }
       }
     }
   }
 
+  // cleanup before exiting
+  clearOnBoundary();
+  s2Locks[s2Mapping[s2]].unlock();
   return -1;
 }
 
@@ -780,6 +907,10 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
 
   Timer tmpar{};
 
+  if(this->Compute2SaddlesChildren) {
+    this->s2Children_.resize(saddles2.size());
+  }
+
   // sort every triangulation edges by filtration order
   const auto &edgesFiltrOrder{crit1SaddlesOrder};
 
@@ -792,6 +923,7 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
       };
   using Container = std::set<SimplexId, decltype(cmpEdges)>;
   std::vector<Container> s2Boundaries(saddles2.size(), Container(cmpEdges));
+
   // unpaired critical triangle id -> index in saddle2 vector
   auto &s2Mapping{this->s2Mapping_};
 #ifdef TTK_ENABLE_OPENMP
@@ -801,8 +933,22 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     s2Mapping[saddles2[i]] = i;
   }
 
-  // first parallel pass to pre-determine the boundary of every
-  // unpaired 2-saddle to the first unpaired 1-saddle on its wall
+  // unpaired critical edge id -> index in saddle1 vector
+  auto &s1Mapping{this->s1Mapping_};
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < saddles1.size(); ++i) {
+    s1Mapping[saddles1[i]] = i;
+  }
+
+  // one lock per 1-saddle
+  std::vector<Lock> s1Locks(saddles1.size());
+  // one lock per 2-saddle
+  std::vector<Lock> s2Locks(saddles2.size());
+
+  // compute 2-saddles boundaries in parallel
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
   firstprivate(onBoundary)
@@ -811,44 +957,21 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     // 2-saddles sorted in increasing order
     const auto s2 = saddles2[i];
     this->eliminateBoundariesSandwich(s2, onBoundary, s2Boundaries, s2Mapping,
-                                      edgeTrianglePartner, triangulation);
-    // reset onBoundary to false
-    for(const auto e : s2Boundaries[i]) {
-      onBoundary[e] = false;
-    }
+                                      s1Mapping, edgeTrianglePartner, s1Locks,
+                                      s2Locks, triangulation);
   }
-
-  this->printMsg("Precomputed 2-saddle boundaries", 1.0, tmpar.getElapsedTime(),
-                 this->threadNumber_, debug::LineMode::NEW,
-                 debug::Priority::DETAIL);
 
   Timer tmseq{};
 
+  // extract saddle-saddle pairs from computed boundaries
   for(size_t i = 0; i < saddles2.size(); ++i) {
-    // 2-saddles sorted in increasing order
-    const auto s2 = saddles2[i];
-    SimplexId s1{-1};
-
-    if(!s2Boundaries[i].empty()
-       && edgeTrianglePartner[*s2Boundaries[i].begin()] == -1) {
-      // use shortcut if first 1-saddle on wall is non-paired
-      s1 = *s2Boundaries[i].begin();
-    } else {
-      s1 = this->eliminateBoundariesSandwich(s2, onBoundary, s2Boundaries,
-                                             s2Mapping, edgeTrianglePartner,
-                                             triangulation);
-    }
-
-    if(s1 != -1) {
+    if(!s2Boundaries[i].empty()) {
+      const auto s2 = saddles2[i];
+      const auto s1 = *s2Boundaries[i].begin();
       // we found a pair
       pairs.emplace_back(s1, s2, 1);
       paired1Saddles[s1] = true;
       paired2Saddles[s2] = true;
-      edgeTrianglePartner[s1] = s2;
-      // reset onBoundary to false
-      for(const auto e : s2Boundaries[i]) {
-        onBoundary[e] = false;
-      }
     }
   }
 
@@ -890,37 +1013,8 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
   const bool sortEdges) const {
 
   Timer tm{};
-  const auto dim = this->dg_.getDimensionality();
 
-  for(int i = 0; i < dim + 1; ++i) {
-
-    // map: store critical cell per dimension per thread
-    std::vector<std::vector<SimplexId>> critCellsPerThread(this->threadNumber_);
-
-    const SimplexId numberOfCells
-      = this->dg_.getNumberOfCells(i, triangulation);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId j = 0; j < numberOfCells; ++j) {
-#ifdef TTK_ENABLE_OPENMP
-      const auto tid = omp_get_thread_num();
-#else
-      const auto tid = 0;
-#endif // TTK_ENABLE_OPENMP
-      if(this->dg_.isCellCritical(i, j)) {
-        critCellsPerThread[tid].emplace_back(j);
-      }
-    }
-
-    // reduce: aggregate critical cells per thread
-    criticalCellsByDim[i] = std::move(critCellsPerThread[0]);
-    for(size_t j = 1; j < critCellsPerThread.size(); ++j) {
-      const auto &vec{critCellsPerThread[j]};
-      criticalCellsByDim[i].insert(
-        criticalCellsByDim[i].end(), vec.begin(), vec.end());
-    }
-  }
+  this->dg_.getCriticalPoints(criticalCellsByDim, triangulation);
 
   this->printMsg("Extracted critical cells", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
@@ -974,21 +1068,6 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
   TTK_PSORT(this->threadNumber_, critTriangles.begin(), critTriangles.end());
   TTK_PSORT(this->threadNumber_, critTetras.begin(), critTetras.end());
 
-  if(sortEdges) {
-    TTK_PSORT(this->threadNumber_, criticalCellsByDim[1].begin(),
-              criticalCellsByDim[1].end(),
-              [&critCellsOrder](const SimplexId a, const SimplexId b) {
-                return critCellsOrder[1][a] < critCellsOrder[1][b];
-              });
-  } else {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(size_t i = 0; i < critEdges.size(); ++i) {
-      criticalCellsByDim[1][i] = critEdges[i].id_;
-    }
-  }
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -1017,6 +1096,21 @@ void ttk::DiscreteMorseSandwich::extractCriticalCells(
     }
   }
 
+  if(sortEdges) {
+    TTK_PSORT(this->threadNumber_, criticalCellsByDim[1].begin(),
+              criticalCellsByDim[1].end(),
+              [&critCellsOrder](const SimplexId a, const SimplexId b) {
+                return critCellsOrder[1][a] < critCellsOrder[1][b];
+              });
+  } else {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(size_t i = 0; i < critEdges.size(); ++i) {
+      criticalCellsByDim[1][i] = critEdges[i].id_;
+    }
+  }
+
   this->printMsg("Extracted & sorted critical cells", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
                  debug::Priority::DETAIL);
@@ -1027,7 +1121,8 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   std::vector<PersistencePair> &pairs,
   const SimplexId *const offsets,
   const triangulationType &triangulation,
-  const bool ignoreBoundary) {
+  const bool ignoreBoundary,
+  const bool compute2SaddlesChildren) {
 
   // allocate memory
   this->alloc(triangulation);
@@ -1035,6 +1130,7 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   Timer tm{};
   pairs.clear();
   const auto dim = this->dg_.getDimensionality();
+  this->Compute2SaddlesChildren = compute2SaddlesChildren;
 
   // get every critical cell sorted them by dimension
   std::array<std::vector<SimplexId>, 4> criticalCellsByDim{};
@@ -1053,37 +1149,66 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   // if maxima are paired
   auto &pairedMaxima{this->pairedCritCells_[dim]};
 
-  // minima - saddle pairs
-  this->getMinSaddlePairs(pairs, pairedMinima, paired1Saddles,
-                          criticalCellsByDim[1], critCellsOrder[1], offsets,
-                          triangulation);
-
   // connected components (global min/max pair)
   size_t nConnComp{};
-  for(const auto min : criticalCellsByDim[0]) {
-    if(!pairedMinima[min]) {
-      pairs.emplace_back(min, -1, 0);
-      pairedMinima[min] = true;
-      nConnComp++;
+
+  if(this->ComputeMinSad) {
+    // minima - saddle pairs
+    this->getMinSaddlePairs(pairs, pairedMinima, paired1Saddles,
+                            criticalCellsByDim[1], critCellsOrder[1], offsets,
+                            triangulation);
+
+    // non-paired minima
+    for(const auto min : criticalCellsByDim[0]) {
+      if(!pairedMinima[min]) {
+        pairs.emplace_back(min, -1, 0);
+        pairedMinima[min] = true;
+        nConnComp++;
+      }
+    }
+  } else {
+    // still extract the global pair
+    const auto globMin{*std::min_element(
+      criticalCellsByDim[0].begin(), criticalCellsByDim[0].end(),
+      [offsets](const SimplexId a, const SimplexId b) {
+        return offsets[a] < offsets[b];
+      })};
+    pairs.emplace_back(globMin, -1, 0);
+    pairedMinima[globMin] = true;
+    nConnComp++;
+  }
+
+  if(dim > 1 && this->ComputeSadMax) {
+    // saddle - maxima pairs
+    this->getMaxSaddlePairs(
+      pairs, pairedMaxima, paired2Saddles, criticalCellsByDim[dim - 1],
+      critCellsOrder[dim - 1], critCellsOrder[dim], triangulation);
+  }
+
+  if(ignoreBoundary) {
+    // post-process saddle-max pairs: remove the one with the global
+    // maximum (if it exists) to be (more) compatible with FTM
+    const auto it
+      = std::find_if(pairs.begin(), pairs.end(), [&](const PersistencePair &p) {
+          if(p.type < dim - 1) {
+            return false;
+          }
+          const Cell cmax{dim, p.death};
+          const auto vmax{this->getCellGreaterVertex(cmax, triangulation)};
+          return offsets[vmax] == triangulation.getNumberOfVertices() - 1;
+        });
+
+    if(it != pairs.end()) {
+      // remove saddle-max pair with global maximum
+      paired2Saddles[it->birth] = false;
+      pairedMaxima[it->death] = false;
+      pairs.erase(it);
     }
   }
 
-  if(dim == 1) {
-    // early return in 1D
-    this->printMsg(
-      "Computed " + std::to_string(pairs.size()) + " persistence pairs", 1.0,
-      tm.getElapsedTime(), this->threadNumber_);
-    return 0;
-  }
-
-  // saddle - maxima pairs
-  this->getMaxSaddlePairs(pairs, pairedMaxima, paired2Saddles,
-                          criticalCellsByDim[dim - 1], critCellsOrder[dim - 1],
-                          critCellsOrder[dim], triangulation, ignoreBoundary);
-
   // saddle - saddle pairs
   if(dim == 3 && !criticalCellsByDim[1].empty()
-     && !criticalCellsByDim[2].empty()) {
+     && !criticalCellsByDim[2].empty() && this->ComputeSadSad) {
     std::vector<GeneratorType> tmp{};
     this->getSaddleSaddlePairs(
       pairs, paired1Saddles, paired2Saddles, false, tmp, criticalCellsByDim[1],
@@ -1091,9 +1216,12 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
   }
 
   if(std::is_same<triangulationType, ttk::ExplicitTriangulation>::value) {
-    // create infinite pairs from non-paired 1-saddles
+    // create infinite pairs from non-paired 1-saddles, 2-saddles and maxima
     size_t nHandles{}, nCavities{}, nNonPairedMax{};
-    if((dim == 2 && !ignoreBoundary) || dim == 3) {
+    if((dim == 2 && !ignoreBoundary && this->ComputeMinSad
+        && this->ComputeSadMax)
+       || (dim == 3 && this->ComputeMinSad && this->ComputeSadSad)) {
+      // non-paired 1-saddles
       for(const auto s1 : criticalCellsByDim[1]) {
         if(!paired1Saddles[s1]) {
           paired1Saddles[s1] = true;
@@ -1103,7 +1231,9 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
         }
       }
     }
-    if(dim == 3 && !ignoreBoundary) {
+    if(dim == 3 && !ignoreBoundary && this->ComputeSadMax
+       && this->ComputeSadSad) {
+      // non-paired 2-saddles
       for(const auto s2 : criticalCellsByDim[2]) {
         if(!paired2Saddles[s2]) {
           paired2Saddles[s2] = true;
@@ -1113,7 +1243,8 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
         }
       }
     }
-    if(dim == 2 && !ignoreBoundary) {
+    if(dim == 2 && !ignoreBoundary && this->ComputeSadMax) {
+      // non-paired maxima
       for(const auto max : criticalCellsByDim[dim]) {
         if(!pairedMaxima[max]) {
           pairs.emplace_back(max, -1, 2);
@@ -1122,13 +1253,16 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
       }
     }
 
+    int nBoundComp
+      = (dim == 3 ? nCavities : nHandles) + nConnComp - nNonPairedMax;
+    nBoundComp = std::max(nBoundComp, 0);
+
     // print Betti numbers
     std::vector<std::vector<std::string>> rows{
       {" #Connected components", std::to_string(nConnComp)},
       {" #Topological handles", std::to_string(nHandles)},
       {" #Cavities", std::to_string(nCavities)},
-      {" #Boundary components", std::to_string((dim == 3 ? nCavities : nHandles)
-                                               + nConnComp - nNonPairedMax)},
+      {" #Boundary components", std::to_string(nBoundComp)},
     };
 
     this->printMsg(rows, debug::Priority::DETAIL);

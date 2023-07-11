@@ -16,6 +16,7 @@
 #include "FTRPropagation.h"
 
 // c++ includes
+#include <memory>
 #include <vector>
 
 namespace ttk {
@@ -31,15 +32,11 @@ namespace ttk {
 
     // Split in one up one down ?
     class Propagations : public Allocable {
-      FTRAtomicVector<Propagation *> propagations_;
+      FTRAtomicVector<std::unique_ptr<Propagation>> propagations_;
       Visits visits_;
 
     public:
-      ~Propagations() override {
-        for(Propagation *p : propagations_) {
-          delete p;
-        }
-      }
+      ~Propagations() override = default;
 
       void alloc() override {
         propagations_.reserve(nbElmt_);
@@ -60,10 +57,10 @@ namespace ttk {
       Propagation *newPropagation(const idVertex leaf,
                                   const VertCompFN &comp,
                                   const bool fromMin) {
-        Propagation *localProp = new Propagation(leaf, comp, fromMin);
         const auto propId = propagations_.getNext();
-        propagations_[propId] = localProp;
-        return localProp;
+        propagations_[propId]
+          = std::make_unique<Propagation>(leaf, comp, fromMin);
+        return propagations_[propId].get();
       }
 
       void toVisit(const idVertex v, Propagation *const prop) {

@@ -9,7 +9,7 @@
 /// for n contour trees. To compute the alignment, use the execute function.
 /// Each contour tree is represented by an integer array for the topology,  an
 /// integer array for each of the edge scalars `regionSize` and
-/// `segementationId`, a `<scalarType>` array for the vertex scalars and two
+/// `segmentationId`, a `<scalarType>` array for the vertex scalars and two
 /// integers for the number of edges and vertices. These properties are passed
 /// as vectors of arrays, where the i-th array in a vector represents the
 /// corresponding array for the i-th tree. The alignment tree is written to the
@@ -99,7 +99,7 @@ namespace ttk {
      *
      * It stores the following alignment information:
      * - frequency
-     * - references to the ids of the represented nodes of the origial contour
+     * - references to the ids of the represented nodes of the original contour
      * trees
      *
      * \sa ttk::ContourTreeAlignment
@@ -134,7 +134,7 @@ namespace ttk {
      *
      * It stores the following alignment information:
      * - frequency
-     * - references to the ids of the represented arcs of the origial contour
+     * - references to the ids of the represented arcs of the original contour
      * trees
      *
      * \sa ttk::ContourTreeAlignment
@@ -245,7 +245,7 @@ namespace ttk {
     /// will be filled by this algorithm. outputSegmentationIds[i*n+j] should be
     /// the id of the segment from the jth input field associated the ith node
     /// of the alignment tree. \param outputArcIds Vector for the alignment edge
-    /// maching that will be filled by this algorithm. outputArcIds[i*n+j]
+    /// matching that will be filled by this algorithm. outputArcIds[i*n+j]
     /// should be the id of the arc from the jth input tree associated the ith
     /// node of the alignment tree. \param outputEdges Vector for the alignment
     /// graph connectivity. The ith edge of the alignment connects the nodes of
@@ -518,9 +518,15 @@ int ttk::ContourTreeAlignment::execute(
   for(size_t i = 0; i < nTrees; i++) {
     permutation.push_back(i);
   }
-  std::srand(seed);
-  if(alignmenttreeType != ttk::cta::lastMatchedValue)
-    std::random_shuffle(permutation.begin(), permutation.end());
+
+  // initialize random engine using user-provided seed
+  std::mt19937 random_engine{};
+  random_engine.seed(seed);
+
+  if(alignmenttreeType != ttk::cta::lastMatchedValue) {
+    // shuffle using the random engine
+    std::shuffle(permutation.begin(), permutation.end(), random_engine);
+  }
 
   this->printMsg(
     "Shuffling input trees. Used seed: " + std::to_string(seed), 1);
@@ -549,11 +555,11 @@ int ttk::ContourTreeAlignment::execute(
 
   std::vector<std::shared_ptr<ContourTree>> contourtreesToAlign;
   for(size_t i = 0; i < nTrees; i++) {
-    std::shared_ptr<ContourTree> ct(new ContourTree(
+    auto ct = std::make_shared<ContourTree>(
       scalars[permutation[i]], regionSizes[permutation[i]],
       segmentationIds[permutation[i]], topologies[permutation[i]],
       nVertices[permutation[i]], nEdges[permutation[i]],
-      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]));
+      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]);
     if(ct->isBinary()) {
       contourtreesToAlign.push_back(ct);
     } else {

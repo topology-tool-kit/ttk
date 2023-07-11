@@ -41,13 +41,17 @@ These backends are different through 3 parameters:
 
 These parameters can be configured manually by selecting the Custom backend.
 
-The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optionnal).
+The input of this filter is a vtkMultiBlockDataset. Each block is itself a vtkMultiBlockDataset containing the outputs of the FTMTree filter (the segmentation output is optional).
 
-When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the ditance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
+When using the clustering algorithm, this filter allows to use the join tree and the split tree at the same time (each input data and each centroid is considered to be two objects: its join and split tree, the distance between data is the sum of the distance between their join tree and the distance between their split tree). The first input should containing all the join or split tree and the second input should contains all the trees of the other type.
 
 Online examples:
 
 - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+- https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/
+
+- https://topology-tool-kit.github.io/examples/mergeTreePGA/
            </Documentation>
 
             <!-- INPUT -->
@@ -86,7 +90,8 @@ Online examples:
                     <Property name="Input" function="FieldDataSelection" />
                   </InputArrayDomain>
                   <Documentation>
-                    This input is used for the clustering of merge trees that can use join and split tree together. Pass as input either join or split trees in the first input and the other type of trees in the second input.
+                    If input are merge trees, then this input can be used to process join and split trees together (only for clustering). Pass as input either join or split trees in the first input and the other type of trees in the second input.
+                    If input are persistence diagrams, then this has no effect to use this input.
                   </Documentation>
                 </InputProperty>
 
@@ -141,8 +146,8 @@ Online examples:
                   <Hints>
                   <PropertyWidgetDecorator type="CompositeDecorator">
                     <Expression type="and">
-                      <Expression type="and">
-                        <Expression type="or">
+                      <Expression type="or">
+                        <Expression type="and">
                           <Expression type="and">
                             <PropertyWidgetDecorator type="GenericDecorator"
                                                     mode="visibility"
@@ -155,12 +160,12 @@ Online examples:
                           </Expression>
                           <PropertyWidgetDecorator type="GenericDecorator"
                                                   mode="visibility"
-                                                  property="Backend"
+                                                  property="KeepSubtree"
                                                   value="0" />
                         </Expression>
                         <PropertyWidgetDecorator type="GenericDecorator"
                                                 mode="visibility"
-                                                property="KeepSubtree"
+                                                property="Backend"
                                                 value="0" />
                       </Expression>
                       <PropertyWidgetDecorator type="GenericDecorator"
@@ -185,8 +190,8 @@ Online examples:
                   <Hints>
                   <PropertyWidgetDecorator type="CompositeDecorator">
                     <Expression type="and">
-                      <Expression type="and">
-                        <Expression type="or">
+                      <Expression type="or">
+                        <Expression type="and">
                           <Expression type="and">
                             <PropertyWidgetDecorator type="GenericDecorator"
                                                     mode="visibility"
@@ -199,12 +204,12 @@ Online examples:
                           </Expression>
                           <PropertyWidgetDecorator type="GenericDecorator"
                                                   mode="visibility"
-                                                  property="Backend"
+                                                  property="KeepSubtree"
                                                   value="0" />
                         </Expression>
                         <PropertyWidgetDecorator type="GenericDecorator"
                                                 mode="visibility"
-                                                property="KeepSubtree"
+                                                property="Backend"
                                                 value="0" />
                       </Expression>
                       <PropertyWidgetDecorator type="GenericDecorator"
@@ -229,8 +234,8 @@ Online examples:
                   <Hints>
                   <PropertyWidgetDecorator type="CompositeDecorator">
                     <Expression type="and">
-                      <Expression type="and">
-                        <Expression type="or">
+                      <Expression type="or">
+                        <Expression type="and">
                           <Expression type="and">
                             <PropertyWidgetDecorator type="GenericDecorator"
                                                     mode="visibility"
@@ -243,12 +248,12 @@ Online examples:
                           </Expression>
                           <PropertyWidgetDecorator type="GenericDecorator"
                                                   mode="visibility"
-                                                  property="Backend"
+                                                  property="KeepSubtree"
                                                   value="0" />
                         </Expression>
                         <PropertyWidgetDecorator type="GenericDecorator"
                                                 mode="visibility"
-                                                property="KeepSubtree"
+                                                property="Backend"
                                                 value="0" />
                       </Expression>
                       <PropertyWidgetDecorator type="GenericDecorator"
@@ -281,7 +286,7 @@ Online examples:
                                            value="1" />
                   </Hints>
                   <Documentation>
-                    Set the alpha coefficent of the first tree. Use to work when there is only 2 input trees, the alpha of the second input will be (1-alpha).
+                    Set the alpha coefficient of the first tree. Use to work when there is only 2 input trees, the alpha of the second input will be (1-alpha).
                   </Documentation>
                   <DoubleRangeDomain name="range" min="0" max="1" />
                 </DoubleVectorProperty> 
@@ -289,18 +294,13 @@ Online examples:
                 <DoubleVectorProperty
                 name="JoinSplitMixtureCoefficient"
                 command="SetJoinSplitMixtureCoefficient"
-                label="Join Split Mixture Coefficient"
+                label="Pair Type Mixture Coefficient"
                 number_of_elements="1"
                 default_values="0.5"
                 panel_visibility="advanced">
-                  <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                                           mode="visibility"
-                                           property="ComputeBarycenter"
-                                           value="1" />
-                  </Hints>
                   <Documentation>
-                    When Input2 is filled, either it contains split tree and Input1 join tree or the other way around. This parameter allows to ponderate more or less the second input or the first one in the computation of the barycenter.
+                    If input are merge trees, this parameter allows to weight between the first input and the second input (only for clustering), typically join and split trees (0 for only the second input and 1 for only the first one).
+                    If input are persistence diagrams, this parameter allows to weight between min-sad and sad-max pairs (0 for only sad-max and 1 for only min-sad).
                   </Documentation>
                   <DoubleRangeDomain name="range" min="0" max="1" />
                 </DoubleVectorProperty>

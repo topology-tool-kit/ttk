@@ -9,7 +9,7 @@
 /// \brief Baseclass of all VTK filters that wrap ttk modules.
 ///
 /// This is an abstract vtkAlgorithm that provides standardized input/output
-/// managment for VTK wrappers of ttk filters. The class also provides a static
+/// management for VTK wrappers of ttk filters. The class also provides a static
 /// method to retrieve a ttk::Triangulation of a vtkDataSet.
 
 #pragma once
@@ -35,7 +35,6 @@ class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
 private:
   int ThreadNumber{1};
   bool UseAllCores{true};
-  float CompactTriangulationCacheSize{0.2f};
 
 public:
   static ttkAlgorithm *New();
@@ -54,7 +53,7 @@ public:
 
   /**
    * Explicitly sets the maximum number of threads for the base code
-   * (overriden by UseAllCores member).
+   * (overridden by UseAllCores member).
    */
   void SetThreadNumber(int threadNumber) {
     this->ThreadNumber = threadNumber;
@@ -123,7 +122,7 @@ public:
 
   /**
    * Retrieve an identifier field and provides a ttk::SimplexId
-   * pointer to the underlaying buffer.
+   * pointer to the underlying buffer.
    *
    * Use the same parameters as GetOptionalArray to fetch the VTK data
    * array.
@@ -162,7 +161,7 @@ public:
    * To pass the triangulation along the pipeline, filters have to perform a
    * shallow or deep copy of an input that already has a triangulation.
    */
-  ttk::Triangulation *GetTriangulation(vtkDataSet *object);
+  ttk::Triangulation *GetTriangulation(vtkDataSet *dataSet);
 
   /**
    * This key can be used during the FillOutputPortInformation() call to
@@ -205,16 +204,88 @@ public:
   void AddInputData(vtkDataSet *);
   void AddInputData(int, vtkDataSet *);
 
+  /**
+   * @brief This method tests whether the input is a nullptr.
+   * If the computation is being done on multiple processes, it is possible
+   * that the domain of one process or more is empty, but not others, therefore
+   * in that particular case the rest of the filter will not be computed but
+   * an error message will not be sent.
+   *
+   * @tparam inputType
+   * @param input  the input to assess
+   * @return int 0: error, 1: stop without error, 2: continue
+   */
+  template <typename inputType>
+  inline int checkEmptyMPIInput(inputType *input) {
+    if(!input) {
+#ifdef TTK_ENABLE_MPI
+      if(ttk::isRunningWithMPI()) {
+        return 1;
+      } else {
+#endif
+        return 0;
+#ifdef TTK_ENABLE_MPI
+      }
+#endif
+    }
+    return 2;
+  };
+
 protected:
   ttkAlgorithm();
   ~ttkAlgorithm() override;
+  float CompactTriangulationCacheSize{0.2f};
+
+#ifdef TTK_ENABLE_MPI
+  /**
+   * @brief Creates a new communicator if one of the processes doesn't contain
+   * any point or cells. In this case, the RankArray is update for vertices and
+   * cells to match the new ranks.
+   *
+   * @param input input data set
+   * @return int 0 if input contains no points or no cells
+   */
+  int updateMPICommunicator(vtkDataSet *input);
+#endif
+  /**
+   * This method is called in GetTriangulation, after the triangulation as been
+   * created. It verifies that ghost cells and points are present and if they
+   * are not, computes them.
+   */
+
+  void MPIGhostPipelinePreconditioning(vtkDataSet *input);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been
    * created. It verifies that several attributes necessary for MPI computation
    * are present in the pipeline and if not, computes them.
    */
-  void MPIPipelinePreconditioning(vtkDataSet *input);
+  void MPIPipelinePreconditioning(vtkDataSet *input,
+                                  std::vector<int> &neighbors,
+                                  ttk::Triangulation *triangulation = nullptr);
+
+  /**
+   * This method checks the validity of the global identifiers given in
+   * argument. A set of global identifiers is valid if the highest global id is
+   * equal to the global number of simplices (without ghosts) - 1 and if the
+   * lowest global id is equal to 0. Simplices can either be vertices or
+   * simplices of highest dimension.
+   */
+
+  bool checkGlobalIdValidity(ttk::LongSimplexId *globalIds,
+                             ttk::SimplexId simplexNumber,
+                             unsigned char *ghost,
+                             int *rankArray);
+  /**
+   * This methods generates global ids and is called during the MPI
+   * preconditioning. It behaves differently for PolyData and ImageData
+   * datasets.
+   */
+
+  int GenerateGlobalIds(
+    vtkDataSet *input,
+    std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
+    std::vector<int> &neighborRanks);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been
@@ -228,7 +299,7 @@ protected:
   /**
    * This method is called during the first pipeline pass in
    * ProcessRequest() to create empty output data objects. The data type of
-   * the generated outputs is specified in FillOutputPortInfomration().
+   * the generated outputs is specified in FillOutputPortInformation().
    *
    * In general it should not be necessary to override this method.
    */

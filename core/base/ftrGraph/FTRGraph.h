@@ -75,7 +75,7 @@ namespace ttk {
 
     template <typename ScalarType, typename triangulationType>
     class FTRGraph : public Allocable {
-      // Exernal fields
+      // External fields
       Params params_{};
       Scalars<ScalarType> scalars_{};
 
@@ -164,7 +164,7 @@ namespace ttk {
       // Parameters
       // ----------
 
-      /// The nuber of threads to be used during the computation
+      /// The number of threads to be used during the computation
       /// of the reeb graph
       int setThreadNumber(const int nb) override {
         params_.threadNumber = nb;
@@ -186,11 +186,12 @@ namespace ttk {
 
       /// Scalar field used to compute the Reeb Graph
       void setScalars(const void *scalars) {
-        scalars_.setScalars((ScalarType *)scalars);
+        scalars_.setScalars(
+          const_cast<ScalarType *>((const ScalarType *)scalars));
       }
 
       /// When several points have the same scalar value,
-      /// we use simulation of simplicity to distingish between
+      /// we use simulation of simplicity to distinguish between
       /// them in a morse discret geometry compliant way.
       /// This is explained in the TTK report.
       /// Set the array to use here
@@ -266,7 +267,7 @@ namespace ttk {
       /// has been completely visited and then continue. When a 1 Saddle is met,
       /// we split the local propagation with a BFS to continue locally. if arc
       /// is supplied, this arc will be used for the growth NOTE: use an
-      /// insertion/deletion list to add lazyness on DynGraph
+      /// insertion/deletion list to add laziness on DynGraph
       void growthFromSeed(const idVertex seed,
                           Propagation *localProp,
                           idSuperArc currentArc = nullSuperArc);
@@ -286,7 +287,7 @@ namespace ttk {
         lowerComps(const std::vector<idEdge> &finishingEdges,
                    const Propagation *const localProp);
 
-      /// Symetric to lowerComps
+      /// Symmetric to lowerComps
       /// \ref lowerComps
       std::set<DynGraphNode<idVertex> *>
         upperComps(const std::vector<idEdge> &startingEdges,
@@ -381,7 +382,7 @@ namespace ttk {
 
       /// local growth replacing the global sort
       /// Add vertices above the current one in the propagation,
-      /// return true if vertices aboves the current one have been found.
+      /// return true if vertices above the current one have been found.
       /// Note, these vertices may not have been added if already marked as in
       /// the propagation.
       void localGrowth(Propagation *const localProp,
@@ -415,7 +416,7 @@ namespace ttk {
                          const std::set<DynGraphNode<idVertex> *> &upperComp,
                          const bool hidden = false);
 
-      // Retrun one triangle by upper CC of the vertex v
+      // Return one triangle by upper CC of the vertex v
       std::set<idCell> upCCtriangleSeeds(const idVertex v,
                                          const Propagation *const localProp);
 
@@ -428,7 +429,7 @@ namespace ttk {
                    const Propagation *const localProp);
 
       // bfs on triangles/edges crossing the level set at saddle, starting
-      // at seed. upper vertices encountred are added to newLocalProp
+      // at seed. upper vertices encountered are added to newLocalProp
       // : saddle is the starting saddle,
       // : seed is at first call the first triangle of this bfs (will change
       // during recursive call)
@@ -441,7 +442,7 @@ namespace ttk {
                           Propagation *const newLocalProp,
                           const idSuperArc arc);
 
-      // visit a vertex in terms of segmantation and history,
+      // visit a vertex in terms of segmentation and history,
       // also check if the current arc is merging through an opposite one.
       idSuperArc visit(Propagation *const localProp, const idSuperArc curArc);
 
@@ -450,7 +451,7 @@ namespace ttk {
       // Create a new propagation starting at leaf
       Propagation *newPropagation(const idVertex leaf, const bool fromMax);
 
-      // Compute the wieght of the edge in the dyngraph between e1 and e2.
+      // Compute the weight of the edge in the dyngraph between e1 and e2.
       // This weight is the min value of the two endpoints, we use the mirror
       // array (int)
       idVertex getWeight(const orderedEdge &e1,

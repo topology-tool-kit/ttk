@@ -41,7 +41,7 @@ int ttkMandatoryCriticalPoints::FillOutputPortInformation(
   return 0;
 }
 
-void buildVtkTree(
+static void buildVtkTree(
   vtkUnstructuredGrid *outputTree,
   const ttk::Graph &graph,
   const std::vector<double> &xCoord,

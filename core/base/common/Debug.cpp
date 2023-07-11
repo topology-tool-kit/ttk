@@ -33,11 +33,11 @@ Debug::~Debug() {
 
 int Debug::welcomeMsg(ostream &stream) {
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
   if(MPIrank_ != 0) {
     ttk::welcomeMsg_ = false;
   }
-#endif
+#endif // TTK_ENABLE_MPI
 
   int priorityAsInt = (int)debug::Priority::PERFORMANCE;
 
@@ -61,6 +61,25 @@ int Debug::welcomeMsg(ostream &stream) {
       debug::Priority::WARNING, debug::LineMode::NEW, stream);
     printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
+#ifndef TTK_ENABLE_OPENMP
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "TTK has *NOT* been built in parallel mode!",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+
+    printMsg(
+      debug::output::YELLOW + "To enable the parallel mode, rebuild TTK with:",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_OPENMP=ON",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+#endif
 #ifndef TTK_ENABLE_KAMIKAZE
     printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
     printMsg(
@@ -81,23 +100,23 @@ int Debug::welcomeMsg(ostream &stream) {
     printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
 #ifndef TTK_ENABLE_DOUBLE_TEMPLATING
-    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::DETAIL, debug::LineMode::NEW, stream);
     printMsg(debug::output::YELLOW
                + "TTK has *NOT* been built in double-templating mode!",
-             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
     printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
-             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
     printMsg(
       debug::output::YELLOW + "Expect unsupported types for bivariate data.",
-      debug::Priority::WARNING, debug::LineMode::NEW, stream);
-    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+      debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::DETAIL, debug::LineMode::NEW, stream);
 
     printMsg(debug::output::YELLOW
                + "To enable the double-templating mode, rebuild TTK with:",
-             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
     printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_DOUBLE_TEMPLATING=ON",
-             debug::Priority::WARNING, debug::LineMode::NEW, stream);
-    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::DETAIL, debug::LineMode::NEW, stream);
 #endif
 #ifdef TTK_REDUCE_TEMPLATE_INSTANTIATIONS
     printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);

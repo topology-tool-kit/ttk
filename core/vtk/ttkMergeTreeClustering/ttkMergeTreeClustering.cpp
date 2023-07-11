@@ -4,7 +4,6 @@
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
 #include <ttkFTMTreeUtils.h>
-#include <ttkMacros.h>
 #include <ttkMergeTreeClustering.h>
 #include <ttkMergeTreeVisualization.h>
 
@@ -117,27 +116,37 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
   auto blocks2 = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
 
+  if(Backend == 0) {
+    baseModule = 0;
+  } else if(Backend == 1) {
+    baseModule = 0;
+  } else if(Backend == 3) {
+    baseModule = 1;
+  } else if(Backend == 4) {
+    baseModule = 2;
+  } else {
+    baseModule = 0;
+  }
+
+  // filter out new backends (not yet supported)
+  if(baseModule != 0) {
+    printErr("Invalid Backend chosen. Path Mapping Distance and Branch Mapping "
+             "Distance not yet supported. Canceling computation.");
+    return 1;
+  }
+
   // ------------------------------------------------------------------------------------
   // --- Load blocks
   // ------------------------------------------------------------------------------------
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> inputTrees, inputTrees2;
   loadBlocks(inputTrees, blocks);
   loadBlocks(inputTrees2, blocks2);
-  int dataTypeInt
-    = vtkUnstructuredGrid::SafeDownCast(inputTrees[0]->GetBlock(0))
-        ->GetPointData()
-        ->GetArray("Scalar")
-        ->GetDataType();
 
   // If we have already computed once but the input has changed
   if(treesNodes.size() != 0 and inputTrees[0]->GetBlock(0) != treesNodes[0])
     resetDataVisualization();
 
-  int res = 0;
-  switch(dataTypeInt) {
-    vtkTemplateMacro(res = run<VTK_TT>(outputVector, inputTrees, inputTrees2););
-  }
-  return res;
+  return run<float>(outputVector, inputTrees, inputTrees2);
 }
 
 template <class dataType>
@@ -159,21 +168,35 @@ int ttkMergeTreeClustering::runCompute(
   // ------------------------------------------------------------------------------------
   // --- Construct trees
   // ------------------------------------------------------------------------------------
-
   const int numInputs = inputTrees.size();
-  const int numInputs2 = inputTrees2.size();
+  const int numInputs2
+    = (not inputTrees[0]->GetBlock(0)->IsA("vtkUnstructuredGrid")
+         ? inputTrees2.size()
+         : (JoinSplitMixtureCoefficient != 0
+                and JoinSplitMixtureCoefficient != 1
+              ? numInputs
+              : 0));
 
   setDataVisualization(numInputs, numInputs2);
 
   std::vector<MergeTree<dataType>> intermediateMTrees(numInputs),
-    intermediateMTrees2(numInputs2), barycenters(NumberOfBarycenters);
+    intermediateMTrees2(numInputs2), barycenters(NumberOfBarycenters),
+    barycenters2((numInputs2 != 0) * NumberOfBarycenters);
   std::vector<FTMTree_MT *> intermediateTrees(numInputs),
     intermediateTrees2(numInputs2);
 
-  constructTrees<dataType>(
-    inputTrees, intermediateMTrees, treesNodes, treesArcs, treesSegmentation);
-  constructTrees<dataType>(inputTrees2, intermediateMTrees2, treesNodes2,
-                           treesArcs2, treesSegmentation2);
+  bool useSadMaxPairs = (JoinSplitMixtureCoefficient == 0);
+  IsPersistenceDiagram
+    = constructTrees<dataType>(inputTrees, intermediateMTrees, treesNodes,
+                               treesArcs, treesSegmentation, useSadMaxPairs);
+  if(not IsPersistenceDiagram
+     or (JoinSplitMixtureCoefficient != 0
+         and JoinSplitMixtureCoefficient != 1)) {
+    auto &inputTrees2ToUse
+      = (not IsPersistenceDiagram ? inputTrees2 : inputTrees);
+    constructTrees<dataType>(inputTrees2ToUse, intermediateMTrees2, treesNodes2,
+                             treesArcs2, treesSegmentation2, !useSadMaxPairs);
+  }
 
   mergeTreeToFTMTree<dataType>(intermediateMTrees, intermediateTrees);
   mergeTreeToFTMTree<dataType>(intermediateMTrees2, intermediateTrees2);
@@ -195,6 +218,9 @@ int ttkMergeTreeClustering::runCompute(
     NormalizedWasserstein = false;
     KeepSubtree = true;
     ComputeBarycenter = false;
+  }
+  if(IsPersistenceDiagram) {
+    BranchDecomposition = true;
   }
   if(ComputeBarycenter) {
     if(not BranchDecomposition)
@@ -229,18 +255,16 @@ int ttkMergeTreeClustering::runCompute(
     mergeTreeDistance.setEpsilon2Tree2(Epsilon2Tree2);
     mergeTreeDistance.setEpsilon3Tree1(Epsilon3Tree1);
     mergeTreeDistance.setEpsilon3Tree2(Epsilon3Tree2);
-    mergeTreeDistance.setProgressiveComputation(ProgressiveComputation);
     mergeTreeDistance.setBranchDecomposition(BranchDecomposition);
     mergeTreeDistance.setPersistenceThreshold(PersistenceThreshold);
     mergeTreeDistance.setNormalizedWasserstein(NormalizedWasserstein);
-    mergeTreeDistance.setNormalizedWassersteinReg(NormalizedWassersteinReg);
-    mergeTreeDistance.setRescaledWasserstein(RescaledWasserstein);
     mergeTreeDistance.setKeepSubtree(KeepSubtree);
     mergeTreeDistance.setUseMinMaxPair(UseMinMaxPair);
     mergeTreeDistance.setCleanTree(true);
     mergeTreeDistance.setPostprocess(OutputTrees);
     mergeTreeDistance.setDeleteMultiPersPairs(DeleteMultiPersPairs);
     mergeTreeDistance.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
+    mergeTreeDistance.setIsPersistenceDiagram(IsPersistenceDiagram);
     mergeTreeDistance.setThreadNumber(this->threadNumber_);
     mergeTreeDistance.setDebugLevel(this->debugLevel_);
 
@@ -258,26 +282,21 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeBarycenter.setEpsilon2Tree2(Epsilon2Tree2);
       mergeTreeBarycenter.setEpsilon3Tree1(Epsilon3Tree1);
       mergeTreeBarycenter.setEpsilon3Tree2(Epsilon3Tree2);
-      mergeTreeBarycenter.setProgressiveComputation(ProgressiveComputation);
       mergeTreeBarycenter.setBranchDecomposition(BranchDecomposition);
       mergeTreeBarycenter.setPersistenceThreshold(PersistenceThreshold);
       mergeTreeBarycenter.setNormalizedWasserstein(NormalizedWasserstein);
-      mergeTreeBarycenter.setNormalizedWassersteinReg(NormalizedWassersteinReg);
-      mergeTreeBarycenter.setRescaledWasserstein(RescaledWasserstein);
       mergeTreeBarycenter.setKeepSubtree(KeepSubtree);
       mergeTreeBarycenter.setUseMinMaxPair(UseMinMaxPair);
-      mergeTreeBarycenter.setTol(Tol);
       mergeTreeBarycenter.setAddNodes(AddNodes);
       mergeTreeBarycenter.setDeterministic(Deterministic);
       mergeTreeBarycenter.setBarycenterSizeLimitPercent(
         BarycenterSizeLimitPercent);
-      mergeTreeBarycenter.setProgressiveBarycenter(ProgressiveBarycenter);
-      mergeTreeBarycenter.setProgressiveSpeedDivisor(ProgressiveSpeedDivisor);
       mergeTreeBarycenter.setAlpha(Alpha);
       mergeTreeBarycenter.setPostprocess(OutputTrees);
       mergeTreeBarycenter.setDeleteMultiPersPairs(DeleteMultiPersPairs);
       mergeTreeBarycenter.setEpsilon1UseFarthestSaddle(
         Epsilon1UseFarthestSaddle);
+      mergeTreeBarycenter.setIsPersistenceDiagram(IsPersistenceDiagram);
       mergeTreeBarycenter.setThreadNumber(this->threadNumber_);
       mergeTreeBarycenter.setDebugLevel(this->debugLevel_);
 
@@ -294,33 +313,29 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeClustering.setEpsilon2Tree2(Epsilon2Tree2);
       mergeTreeClustering.setEpsilon3Tree1(Epsilon3Tree1);
       mergeTreeClustering.setEpsilon3Tree2(Epsilon3Tree2);
-      mergeTreeClustering.setProgressiveComputation(ProgressiveComputation);
       mergeTreeClustering.setBranchDecomposition(BranchDecomposition);
       mergeTreeClustering.setPersistenceThreshold(PersistenceThreshold);
       mergeTreeClustering.setNormalizedWasserstein(NormalizedWasserstein);
-      mergeTreeClustering.setNormalizedWassersteinReg(NormalizedWassersteinReg);
-      mergeTreeClustering.setRescaledWasserstein(RescaledWasserstein);
       mergeTreeClustering.setKeepSubtree(KeepSubtree);
       mergeTreeClustering.setUseMinMaxPair(UseMinMaxPair);
-      mergeTreeClustering.setTol(Tol);
       mergeTreeClustering.setAddNodes(AddNodes);
       mergeTreeClustering.setDeterministic(Deterministic);
       mergeTreeClustering.setNoCentroids(NumberOfBarycenters);
       mergeTreeClustering.setBarycenterSizeLimitPercent(
         BarycenterSizeLimitPercent);
-      mergeTreeClustering.setProgressiveBarycenter(ProgressiveBarycenter);
-      mergeTreeClustering.setProgressiveSpeedDivisor(ProgressiveSpeedDivisor);
       mergeTreeClustering.setPostprocess(OutputTrees);
       mergeTreeClustering.setDeleteMultiPersPairs(DeleteMultiPersPairs);
       mergeTreeClustering.setEpsilon1UseFarthestSaddle(
         Epsilon1UseFarthestSaddle);
+      mergeTreeClustering.setIsPersistenceDiagram(IsPersistenceDiagram);
       mergeTreeClustering.setMixtureCoefficient(JoinSplitMixtureCoefficient);
       mergeTreeClustering.setThreadNumber(this->threadNumber_);
       mergeTreeClustering.setDebugLevel(this->debugLevel_);
 
       mergeTreeClustering.template execute<dataType>(
         intermediateMTrees, outputMatchingBarycenter, clusteringAssignment,
-        intermediateMTrees2, outputMatchingBarycenter2, barycenters);
+        intermediateMTrees2, outputMatchingBarycenter2, barycenters,
+        barycenters2);
       trees1NodeCorrMesh = mergeTreeClustering.getTreesNodeCorr();
       trees2NodeCorrMesh = mergeTreeClustering.getTrees2NodeCorr();
       finalDistances = mergeTreeClustering.getFinalDistances();
@@ -331,10 +346,89 @@ int ttkMergeTreeClustering::runCompute(
   if(numInputs2 != 0)
     mergeTreesTemplateToDouble<dataType>(
       intermediateMTrees2, intermediateSTrees2);
-  if(ComputeBarycenter)
+  if(ComputeBarycenter) {
     mergeTreesTemplateToDouble<dataType>(barycenters, barycentersS);
+    if(numInputs2 != 0)
+      mergeTreesTemplateToDouble<dataType>(barycenters2, barycentersS2);
+  }
 
   return 1;
+}
+
+static void addFieldData(vtkDataSet *in, vtkDataSet *out) {
+  auto inFieldData = in->GetFieldData();
+  auto outFieldData = out->GetFieldData();
+  for(int i = 0; i < inFieldData->GetNumberOfArrays(); ++i) {
+    outFieldData->AddArray(inFieldData->GetAbstractArray(i));
+  }
+}
+
+template <class dataType>
+void makeDoubleInputPersistenceDiagramOutput(
+  ttkMergeTreeVisualization &visuMaker,
+  vtkSmartPointer<vtkUnstructuredGrid> &vtkOutputNode,
+  std::vector<FTMTree_MT *> &intermediateTrees2,
+  std::vector<FTMTree_MT *> &barycentersTree2,
+  std::vector<std::vector<
+    std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>
+    &outputMatchingBarycenter2,
+  std::vector<std::vector<int>> &trees2NodeCorrMesh,
+  vtkUnstructuredGrid *treeNodes,
+  int i,
+  std::vector<SimplexId> &nodeCorr2) {
+  int nodeCorrShift = vtkOutputNode->GetNumberOfPoints();
+  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
+    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  visuMaker.setVtkOutputNode(vtkOutputNode2);
+  visuMaker.setVtkOutputArc(vtkOutputNode2);
+  visuMaker.setOutputMatchingBarycenter(outputMatchingBarycenter2);
+  visuMaker.clearAllCustomArrays();
+  if(treeNodes)
+    visuMaker.copyPointData(treeNodes, trees2NodeCorrMesh[i]);
+  visuMaker.setTreesNodeCorrMesh(trees2NodeCorrMesh);
+  visuMaker.setIsPDSadMax(true);
+  visuMaker.makeTreesOutput<dataType>(intermediateTrees2, barycentersTree2);
+  auto nodeCorrT = visuMaker.getNodeCorr();
+  nodeCorr2 = nodeCorrT[i];
+  for(unsigned int j = 0; j < nodeCorr2.size(); ++j)
+    nodeCorr2[j] += nodeCorrShift;
+
+  vtkNew<vtkAppendFilter> appendFilter{};
+  appendFilter->AddInputData(vtkOutputNode);
+  appendFilter->AddInputData(vtkOutputNode2);
+  appendFilter->SetMergePoints(false);
+  appendFilter->Update();
+  vtkOutputNode->ShallowCopy(appendFilter->GetOutput());
+}
+
+template <class dataType>
+void makeDoubleInputPersistenceDiagramMatching(
+  ttkMergeTreeVisualization &visuMakerMatching,
+  vtkSmartPointer<vtkUnstructuredGrid> &vtkOutputMatching,
+  std::vector<FTMTree_MT *> &intermediateTrees2,
+  std::vector<FTMTree_MT *> &barycentersTree2,
+  std::vector<std::vector<
+    std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>
+    &outputMatchingBarycenter2,
+  std::vector<std::vector<SimplexId>> &nodeCorr2,
+  std::vector<std::vector<SimplexId>> &nodeCorrBary2,
+  std::vector<std::vector<float>> &allBaryPercentMatch2) {
+  vtkSmartPointer<vtkUnstructuredGrid> vtkOutputMatching2
+    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  visuMakerMatching.setVtkOutputMatching(vtkOutputMatching2);
+  visuMakerMatching.setOutputMatchingBarycenter(outputMatchingBarycenter2);
+  visuMakerMatching.setAllBaryPercentMatch(allBaryPercentMatch2);
+  visuMakerMatching.setNodeCorr1(nodeCorr2);
+  visuMakerMatching.setNodeCorr2(nodeCorrBary2);
+  visuMakerMatching.makeMatchingOutput<dataType>(
+    intermediateTrees2, barycentersTree2);
+
+  vtkNew<vtkAppendFilter> appendFilter{};
+  appendFilter->AddInputData(vtkOutputMatching);
+  appendFilter->AddInputData(vtkOutputMatching2);
+  appendFilter->SetMergePoints(false);
+  appendFilter->Update();
+  vtkOutputMatching->ShallowCopy(appendFilter->GetOutput());
 }
 
 template <class dataType>
@@ -342,17 +436,22 @@ int ttkMergeTreeClustering::runOutput(
   vtkInformationVector *outputVector,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &ttkNotUsed(inputTrees2)) {
-  std::vector<MergeTree<dataType>> intermediateMTrees;
+  std::vector<MergeTree<dataType>> intermediateMTrees, intermediateMTrees2;
   mergeTreesDoubleToTemplate<dataType>(intermediateSTrees, intermediateMTrees);
-  std::vector<FTMTree_MT *> intermediateTrees;
+  mergeTreesDoubleToTemplate<dataType>(
+    intermediateSTrees2, intermediateMTrees2);
+  std::vector<FTMTree_MT *> intermediateTrees, intermediateTrees2;
   mergeTreeToFTMTree<dataType>(intermediateMTrees, intermediateTrees);
+  mergeTreeToFTMTree<dataType>(intermediateMTrees2, intermediateTrees2);
 
-  std::vector<MergeTree<dataType>> barycenters;
-  if(ComputeBarycenter)
+  std::vector<MergeTree<dataType>> barycenters, barycenters2;
+  if(ComputeBarycenter) {
     mergeTreesDoubleToTemplate<dataType>(barycentersS, barycenters);
+    mergeTreesDoubleToTemplate<dataType>(barycentersS2, barycenters2);
+  }
 
   const int numInputs = inputTrees.size();
-  // const int numInputs2 = inputTrees2.size();
+  const int numInputs2 = intermediateMTrees2.size();
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
@@ -363,7 +462,8 @@ int ttkMergeTreeClustering::runOutput(
   auto output_matchings = vtkMultiBlockDataSet::GetData(outputVector, 2);
 
   // Declare internal arrays
-  std::vector<std::vector<SimplexId>> nodeCorr(numInputs);
+  std::vector<std::vector<SimplexId>> nodeCorr(numInputs),
+    nodeCorr2(numInputs2);
 
   if(not ComputeBarycenter) {
     // ---------------------------------------------------------------
@@ -414,6 +514,7 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
       visuMaker.setExcludeImportantPairsHigher(ExcludeImportantPairsHigher);
       visuMaker.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
+      visuMaker.setIsPersistenceDiagram(IsPersistenceDiagram);
 
       nodeCorr.clear();
       // First tree
@@ -423,9 +524,13 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setTreesNodeCorrMesh(trees1NodeCorrMesh[0]);
       visuMaker.setTreesSegmentation(treesSegmentation[0]);
       visuMaker.setVtkOutputNode(vtkOutputNode1);
-      visuMaker.setVtkOutputArc(vtkOutputArc1);
+      if(IsPersistenceDiagram)
+        visuMaker.setVtkOutputArc(vtkOutputNode1);
+      else
+        visuMaker.setVtkOutputArc(vtkOutputArc1);
       visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
       visuMaker.setDebugLevel(this->debugLevel_);
+      visuMaker.setIsPersistenceDiagram(IsPersistenceDiagram);
 
       visuMaker.makeTreesOutput<dataType>(tree1);
       nodeCorr.push_back(visuMaker.getNodeCorr()[0]);
@@ -438,9 +543,11 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setTreesNodeCorrMesh(trees1NodeCorrMesh[1]);
       visuMaker.setTreesSegmentation(treesSegmentation[1]);
       visuMaker.setVtkOutputNode(vtkOutputNode2);
-      visuMaker.setVtkOutputArc(vtkOutputArc2);
+      if(IsPersistenceDiagram)
+        visuMaker.setVtkOutputArc(vtkOutputNode2);
+      else
+        visuMaker.setVtkOutputArc(vtkOutputArc2);
       visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation2);
-      visuMaker.setDebugLevel(this->debugLevel_);
 
       visuMaker.makeTreesOutput<dataType>(tree2);
       nodeCorr.push_back(visuMaker.getNodeCorr()[0]);
@@ -450,8 +557,16 @@ int ttkMergeTreeClustering::runOutput(
         treesNodes[0]->GetFieldData());
       vtkOutputNode2->GetFieldData()->ShallowCopy(
         treesNodes[1]->GetFieldData());
-      vtkOutputArc1->GetFieldData()->ShallowCopy(treesArcs[0]->GetFieldData());
-      vtkOutputArc2->GetFieldData()->ShallowCopy(treesArcs[1]->GetFieldData());
+      if(not IsPersistenceDiagram) {
+        vtkOutputArc1->GetFieldData()->ShallowCopy(
+          treesArcs[0]->GetFieldData());
+        vtkOutputArc2->GetFieldData()->ShallowCopy(
+          treesArcs[1]->GetFieldData());
+      }
+      if(treesSegmentation[0])
+        addFieldData(treesSegmentation[0], vtkOutputNode1);
+      if(treesSegmentation[1])
+        addFieldData(treesSegmentation[1], vtkOutputNode2);
       if(OutputSegmentation) {
         vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
           treesSegmentation[0]->GetFieldData());
@@ -460,22 +575,33 @@ int ttkMergeTreeClustering::runOutput(
       }
 
       // Construct multiblock
-      vtkBlockNodes->SetNumberOfBlocks(2);
-      vtkBlockNodes->SetBlock(0, vtkOutputNode1);
-      vtkBlockNodes->SetBlock(1, vtkOutputNode2);
+      if(IsPersistenceDiagram and not OutputSegmentation) {
+        output_clusters->SetNumberOfBlocks(2);
+        output_clusters->SetBlock(0, vtkOutputNode1);
+        output_clusters->SetBlock(1, vtkOutputNode2);
+      } else {
+        vtkBlockNodes->SetNumberOfBlocks(2);
+        vtkBlockNodes->SetBlock(0, vtkOutputNode1);
+        vtkBlockNodes->SetBlock(1, vtkOutputNode2);
 
-      vtkBlockArcs->SetNumberOfBlocks(2);
-      vtkBlockArcs->SetBlock(0, vtkOutputArc1);
-      vtkBlockArcs->SetBlock(1, vtkOutputArc2);
+        if(not IsPersistenceDiagram) {
+          vtkBlockArcs->SetNumberOfBlocks(2);
+          vtkBlockArcs->SetBlock(0, vtkOutputArc1);
+          vtkBlockArcs->SetBlock(1, vtkOutputArc2);
+        }
 
-      output_clusters->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-      output_clusters->SetBlock(0, vtkBlockNodes);
-      output_clusters->SetBlock(1, vtkBlockArcs);
-      if(OutputSegmentation) {
-        vtkBlockSegs->SetNumberOfBlocks(2);
-        vtkBlockSegs->SetBlock(0, vtkOutputSegmentation1);
-        vtkBlockSegs->SetBlock(1, vtkOutputSegmentation2);
-        output_clusters->SetBlock(2, vtkBlockSegs);
+        output_clusters->SetNumberOfBlocks(1 + !IsPersistenceDiagram
+                                           + OutputSegmentation);
+        output_clusters->SetBlock(0, vtkBlockNodes);
+        if(not IsPersistenceDiagram)
+          output_clusters->SetBlock(1, vtkBlockArcs);
+        if(OutputSegmentation) {
+          vtkBlockSegs->SetNumberOfBlocks(2);
+          vtkBlockSegs->SetBlock(0, vtkOutputSegmentation1);
+          vtkBlockSegs->SetBlock(1, vtkOutputSegmentation2);
+          int segBlockID = 1 + !IsPersistenceDiagram;
+          output_clusters->SetBlock(segBlockID, vtkBlockSegs);
+        }
       }
 
       // ------------------------------------------
@@ -513,28 +639,35 @@ int ttkMergeTreeClustering::runOutput(
     // ---------------------------------------------------------------
     if(OutputTrees) {
       // --- Declare internal arrays
-      std::vector<std::vector<SimplexId>> nodeCorrBary(NumberOfBarycenters);
-      std::vector<std::vector<float>> allBaryPercentMatch(NumberOfBarycenters);
-      std::vector<FTMTree_MT *> barycentersTree;
+      std::vector<std::vector<SimplexId>> nodeCorrBary(NumberOfBarycenters),
+        nodeCorrBary2((numInputs2 != 0) * NumberOfBarycenters);
+      std::vector<std::vector<float>> allBaryPercentMatch(NumberOfBarycenters),
+        allBaryPercentMatch2((numInputs2 != 0) * NumberOfBarycenters);
+      std::vector<FTMTree_MT *> barycentersTree, barycentersTree2;
       mergeTreeToFTMTree<dataType>(barycenters, barycentersTree);
+      mergeTreeToFTMTree<dataType>(barycenters2, barycentersTree2);
 
       // ------------------------------------------
       // --- Input trees
       // ------------------------------------------
-      output_clusters->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
-        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      vtkBlockNodes->SetNumberOfBlocks(numInputs);
-      output_clusters->SetBlock(0, vtkBlockNodes);
-      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
-        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      vtkBlockArcs->SetNumberOfBlocks(numInputs);
-      output_clusters->SetBlock(1, vtkBlockArcs);
-      if(OutputSegmentation) {
-        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+      if(IsPersistenceDiagram and not OutputSegmentation) {
+        output_clusters->SetNumberOfBlocks(numInputs);
+      } else {
+        output_clusters->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
           = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-        vtkBlockSegs->SetNumberOfBlocks(numInputs);
-        output_clusters->SetBlock(2, vtkBlockSegs);
+        vtkBlockNodes->SetNumberOfBlocks(numInputs);
+        output_clusters->SetBlock(0, vtkBlockNodes);
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+        vtkBlockArcs->SetNumberOfBlocks(numInputs);
+        output_clusters->SetBlock(1, vtkBlockArcs);
+        if(OutputSegmentation) {
+          vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+            = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+          vtkBlockSegs->SetNumberOfBlocks(numInputs);
+          output_clusters->SetBlock(2, vtkBlockSegs);
+        }
       }
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
 #ifdef TTK_ENABLE_OPENMP
@@ -545,11 +678,11 @@ int ttkMergeTreeClustering::runOutput(
             continue;
 
           // Declare vtk objects
-          vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
+          vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
-          vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc1
+          vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
-          vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation1
+          vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
           // Fill vtk objects
@@ -570,70 +703,97 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
           visuMaker.setExcludeImportantPairsHigher(ExcludeImportantPairsHigher);
           visuMaker.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
+          visuMaker.setIsPersistenceDiagram(IsPersistenceDiagram);
           visuMaker.setTreesNodes(treesNodes);
           visuMaker.copyPointData(treesNodes[i], trees1NodeCorrMesh[i]);
           visuMaker.setTreesNodeCorrMesh(trees1NodeCorrMesh);
           visuMaker.setTreesSegmentation(treesSegmentation);
-          visuMaker.setVtkOutputNode(vtkOutputNode1);
-          visuMaker.setVtkOutputArc(vtkOutputArc1);
-          visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation1);
+          visuMaker.setVtkOutputNode(vtkOutputNode);
+          if(IsPersistenceDiagram)
+            visuMaker.setVtkOutputArc(vtkOutputNode);
+          else
+            visuMaker.setVtkOutputArc(vtkOutputArc);
+          visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation);
           visuMaker.setClusteringAssignment(clusteringAssignment);
           visuMaker.setOutputMatchingBarycenter(outputMatchingBarycenter);
           visuMaker.setPrintTreeId(i);
           visuMaker.setPrintClusterId(c);
           visuMaker.setDebugLevel(this->debugLevel_);
+          visuMaker.setIsPersistenceDiagram(IsPersistenceDiagram);
+          visuMaker.setIsPDSadMax(JoinSplitMixtureCoefficient == 0);
 
           visuMaker.makeTreesOutput<dataType>(
             intermediateTrees, barycentersTree);
           auto nodeCorrT = visuMaker.getNodeCorr();
           nodeCorr[i] = nodeCorrT[i];
+          if(IsPersistenceDiagram and JoinSplitMixtureCoefficient != 0
+             and JoinSplitMixtureCoefficient != 1)
+            makeDoubleInputPersistenceDiagramOutput<dataType>(
+              visuMaker, vtkOutputNode, intermediateTrees2, barycentersTree2,
+              outputMatchingBarycenter2, trees2NodeCorrMesh, treesNodes[i], i,
+              nodeCorr2[i]);
 
           // Field data
-          vtkOutputNode1->GetFieldData()->ShallowCopy(
+          vtkOutputNode->GetFieldData()->ShallowCopy(
             treesNodes[i]->GetFieldData());
-          vtkOutputArc1->GetFieldData()->ShallowCopy(
-            treesArcs[i]->GetFieldData());
+          if(not IsPersistenceDiagram)
+            vtkOutputArc->GetFieldData()->ShallowCopy(
+              treesArcs[i]->GetFieldData());
+          if(treesSegmentation[i])
+            addFieldData(treesSegmentation[i], vtkOutputNode);
           if(OutputSegmentation)
-            vtkOutputSegmentation1->GetFieldData()->ShallowCopy(
+            vtkOutputSegmentation->GetFieldData()->ShallowCopy(
               treesSegmentation[i]->GetFieldData());
 
           vtkNew<vtkDoubleArray> vtkClusterAssignment{};
           vtkClusterAssignment->SetName("ClusterAssignment");
           vtkClusterAssignment->SetNumberOfTuples(1);
           vtkClusterAssignment->SetTuple1(0, clusteringAssignment[i]);
-          vtkOutputNode1->GetFieldData()->AddArray(vtkClusterAssignment);
+          vtkOutputNode->GetFieldData()->AddArray(vtkClusterAssignment);
 
           // Construct multiblock
-          vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))
-            ->SetBlock(i, vtkOutputNode1);
-          vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(1))
-            ->SetBlock(i, vtkOutputArc1);
-          if(OutputSegmentation)
-            vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(2))
-              ->SetBlock(i, vtkOutputSegmentation1);
+          if(IsPersistenceDiagram and not OutputSegmentation) {
+            output_clusters->SetBlock(i, vtkOutputNode);
+          } else {
+            vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))
+              ->SetBlock(i, vtkOutputNode);
+            if(not IsPersistenceDiagram)
+              vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(1))
+                ->SetBlock(i, vtkOutputArc);
+            if(OutputSegmentation) {
+              int segBlockID = 1 + !IsPersistenceDiagram;
+              vtkMultiBlockDataSet::SafeDownCast(
+                output_clusters->GetBlock(segBlockID))
+                ->SetBlock(i, vtkOutputSegmentation);
+            }
+          }
         }
       }
 
       // ------------------------------------------
       // --- Barycenter(s)
       // ------------------------------------------
-      output_centroids->SetNumberOfBlocks(2);
-      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes2
-        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      vtkBlockNodes2->SetNumberOfBlocks(NumberOfBarycenters);
-      output_centroids->SetBlock(0, vtkBlockNodes2);
-      vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs2
-        = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      vtkBlockArcs2->SetNumberOfBlocks(NumberOfBarycenters);
-      output_centroids->SetBlock(1, vtkBlockArcs2);
+      if(IsPersistenceDiagram) {
+        output_centroids->SetNumberOfBlocks(NumberOfBarycenters);
+      } else {
+        output_centroids->SetNumberOfBlocks(2);
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes2
+          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+        vtkBlockNodes2->SetNumberOfBlocks(NumberOfBarycenters);
+        output_centroids->SetBlock(0, vtkBlockNodes2);
+        vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs2
+          = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+        vtkBlockArcs2->SetNumberOfBlocks(NumberOfBarycenters);
+        output_centroids->SetBlock(1, vtkBlockArcs2);
+      }
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
 
         // Declare vtk objects
-        vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
+        vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
-        vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc2
+        vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
-        vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation2
+        vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation
           = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
         // Fill vtk objects
@@ -655,13 +815,17 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setExcludeImportantPairsHigher(
           ExcludeImportantPairsHigher);
         visuMakerBary.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
+        visuMakerBary.setIsPersistenceDiagram(IsPersistenceDiagram);
         visuMakerBary.setShiftMode(1); // Star Barycenter
         visuMakerBary.setTreesNodes(treesNodes);
         visuMakerBary.setTreesNodeCorrMesh(trees1NodeCorrMesh);
         visuMakerBary.setTreesSegmentation(treesSegmentation);
-        visuMakerBary.setVtkOutputNode(vtkOutputNode2);
-        visuMakerBary.setVtkOutputArc(vtkOutputArc2);
-        visuMakerBary.setVtkOutputSegmentation(vtkOutputSegmentation2);
+        visuMakerBary.setVtkOutputNode(vtkOutputNode);
+        if(IsPersistenceDiagram)
+          visuMakerBary.setVtkOutputArc(vtkOutputNode);
+        else
+          visuMakerBary.setVtkOutputArc(vtkOutputArc);
+        visuMakerBary.setVtkOutputSegmentation(vtkOutputSegmentation);
         visuMakerBary.setClusteringAssignment(clusteringAssignment);
         visuMakerBary.setOutputMatchingBarycenter(outputMatchingBarycenter);
         visuMakerBary.setPrintTreeId(c);
@@ -671,6 +835,8 @@ int ttkMergeTreeClustering::runOutput(
           visuMakerBary.setAlpha(Alpha);
         }
         visuMakerBary.setDebugLevel(this->debugLevel_);
+        visuMakerBary.setIsPersistenceDiagram(IsPersistenceDiagram);
+        visuMakerBary.setIsPDSadMax(JoinSplitMixtureCoefficient == 0);
 
         visuMakerBary.makeTreesOutput<dataType>(
           intermediateTrees, barycentersTree);
@@ -679,20 +845,32 @@ int ttkMergeTreeClustering::runOutput(
         auto allBaryPercentMatchT = visuMakerBary.getAllBaryPercentMatch();
         allBaryPercentMatch[c] = allBaryPercentMatchT[c];
 
+        if(IsPersistenceDiagram and JoinSplitMixtureCoefficient != 0
+           and JoinSplitMixtureCoefficient != 1) {
+          makeDoubleInputPersistenceDiagramOutput<dataType>(
+            visuMakerBary, vtkOutputNode, intermediateTrees2, barycentersTree2,
+            outputMatchingBarycenter2, trees2NodeCorrMesh, nullptr, c,
+            nodeCorrBary2[c]);
+          allBaryPercentMatchT = visuMakerBary.getAllBaryPercentMatch();
+          allBaryPercentMatch2[c] = allBaryPercentMatchT[c];
+        }
+
         // Field data
         vtkNew<vtkDoubleArray> vtkClusterAssignment{};
         vtkClusterAssignment->SetName("ClusterAssignment");
         vtkClusterAssignment->SetNumberOfTuples(1);
         vtkClusterAssignment->SetTuple1(0, c);
-
-        vtkOutputNode2->GetFieldData()->AddArray(vtkClusterAssignment);
-        vtkOutputArc2->GetFieldData()->AddArray(vtkClusterAssignment);
+        vtkOutputNode->GetFieldData()->AddArray(vtkClusterAssignment);
 
         // Construct multiblock
-        vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(0))
-          ->SetBlock(c, vtkOutputNode2);
-        vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(1))
-          ->SetBlock(c, vtkOutputArc2);
+        if(IsPersistenceDiagram) {
+          output_centroids->SetBlock(c, vtkOutputNode);
+        } else {
+          vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(0))
+            ->SetBlock(c, vtkOutputNode);
+          vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(1))
+            ->SetBlock(c, vtkOutputArc);
+        }
       }
 
       // ------------------------------------------
@@ -709,12 +887,17 @@ int ttkMergeTreeClustering::runOutput(
             = vtkSmartPointer<vtkUnstructuredGrid>::New();
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
             = vtkUnstructuredGrid::SafeDownCast(
-              vtkMultiBlockDataSet::SafeDownCast(output_clusters->GetBlock(0))
-                ->GetBlock(i));
+              (IsPersistenceDiagram and not OutputSegmentation
+                 ? output_clusters->GetBlock(i)
+                 : vtkMultiBlockDataSet::SafeDownCast(
+                     output_clusters->GetBlock(0))
+                     ->GetBlock(i)));
           vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
             = vtkUnstructuredGrid::SafeDownCast(
-              vtkMultiBlockDataSet::SafeDownCast(output_centroids->GetBlock(0))
-                ->GetBlock(c));
+              (IsPersistenceDiagram ? output_centroids->GetBlock(c)
+                                    : vtkMultiBlockDataSet::SafeDownCast(
+                                        output_centroids->GetBlock(0))
+                                        ->GetBlock(c)));
 
           // Fill vtk objects
           ttkMergeTreeVisualization visuMakerMatching;
@@ -732,6 +915,12 @@ int ttkMergeTreeClustering::runOutput(
 
           visuMakerMatching.makeMatchingOutput<dataType>(
             intermediateTrees, barycentersTree);
+          if(IsPersistenceDiagram and JoinSplitMixtureCoefficient != 0
+             and JoinSplitMixtureCoefficient != 1)
+            makeDoubleInputPersistenceDiagramMatching<dataType>(
+              visuMakerMatching, vtkOutputMatching, intermediateTrees2,
+              barycentersTree2, outputMatchingBarycenter2, nodeCorr2,
+              nodeCorrBary2, allBaryPercentMatch2);
 
           // Field data
           vtkNew<vtkDoubleArray> vtkDistance{};

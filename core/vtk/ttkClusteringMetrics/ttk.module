@@ -1,0 +1,9 @@
+NAME
+  ttkClusteringMetrics
+SOURCES
+  ttkClusteringMetrics.cpp
+HEADERS
+  ttkClusteringMetrics.h
+DEPENDS
+  clusteringMetrics
+  ttkAlgorithm

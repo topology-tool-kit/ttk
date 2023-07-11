@@ -18,17 +18,17 @@
 /// Triangulation supports both explicit and implicit triangulations:
 ///   -# Explicit triangulations: Given a list of points and a list of cells,
 /// Triangulation provides time efficient accesses (requiring adequate
-/// pre-processing, see the documentation furtherdown).
+/// preconditioning, see the documentation furtherdown).
 ///   -# Implicit triangulations: Given a regular grid (origin, spacings and
 /// dimensions), Triangulation will perform an implicit triangulation of the
 /// grid, enabling both time and memory efficient traversals of triangulations
 /// of regular grids.
 ///
-/// Apart from pre-processes, Triangulation requires no memory overhead in
+/// Apart from preconditions, Triangulation requires no memory overhead in
 /// addition to the input data.
 ///
 /// \note
-/// Only pre-process the information you need! See the documentation further
+/// Only precondition the information you need! See the documentation further
 /// down.
 /// \sa ttkTriangulation
 
@@ -111,7 +111,7 @@ namespace ttk {
     /// preconditionCellEdges() needs to be called on this object prior to any
     /// traversal, in a clearly distinct pre-processing step that involves no
     /// traversal at all. An error will be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param cellId Input global cell identifier.
@@ -147,7 +147,7 @@ namespace ttk {
     /// needs to be called on this object prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param cellId Input global cell identifier.
     /// \return Returns the number of cell edges.
@@ -184,7 +184,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell edge list.
     /// \sa getCellNeighbors()
@@ -215,7 +215,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param cellId Input global cell identifier.
@@ -248,7 +248,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param cellId Input global cell identifier.
     /// \return Returns the number of cell neighbors.
@@ -284,7 +284,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell neighbor list.
     inline const std::vector<std::vector<SimplexId>> *
@@ -308,7 +308,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param cellId Input global cell identifier.
@@ -345,7 +345,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param cellId Input global cell identifier.
     /// \return Returns the number of cell triangles.
@@ -386,7 +386,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell triangle list.
     /// \sa getCellNeighbors()
@@ -407,7 +407,7 @@ namespace ttk {
     /// \param cellId Input global cell identifier.
     /// \param localVertexId Input local vertex identifier,
     /// in [0, getCellVertexNumber()].
-    /// \param vertexId Ouput global vertex identifier.
+    /// \param vertexId Output global vertex identifier.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellVertexNumber()
     inline int getCellVertex(const SimplexId &cellId,
@@ -474,7 +474,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge list.
     inline const std::vector<std::array<SimplexId, 2>> *getEdges() override {
@@ -535,7 +535,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \param localLinkId Input local link simplex identifier,
@@ -566,7 +566,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \return Returns the number of cells in the link of the edge.
@@ -598,7 +598,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge link list.
     inline const std::vector<std::vector<SimplexId>> *getEdgeLinks() override {
@@ -622,7 +622,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param edgeId Input global edge identifier.
@@ -657,7 +657,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier
     /// \return Returns the number of star cells.
@@ -694,7 +694,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge star list.
     inline const std::vector<std::vector<SimplexId>> *getEdgeStars() override {
@@ -714,7 +714,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param edgeId Input global edge identifier.
@@ -748,7 +748,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \return Returns the number of edge triangles.
@@ -783,7 +783,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge triangle list.
     /// \sa getEdgeStars
@@ -806,7 +806,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \param localVertexId Input local vertex identifier (0 or 1).
@@ -857,7 +857,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns the number of edges.
     /// \sa getNumberOfCells()
@@ -878,7 +878,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns the number of triangles.
     /// \sa getNumberOfCells()
@@ -937,7 +937,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle list.
     inline const std::vector<std::array<SimplexId, 3>> *
@@ -958,7 +958,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \param localEdgeId Input local edge identifier,
@@ -990,7 +990,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \return Returns the number of cells in the link of the triangle.
@@ -1025,7 +1025,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle edge list.
     /// \sa getCellEdges()
@@ -1049,7 +1049,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \param localLinkId Input local link simplex identifier,
@@ -1082,7 +1082,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \return Returns the number of simplices in the link of the triangle.
@@ -1116,7 +1116,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle link list.
     inline const std::vector<std::vector<SimplexId>> *
@@ -1139,7 +1139,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param triangleId Input global triangle identifier.
@@ -1172,7 +1172,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \return Returns the number of star cells.
@@ -1207,7 +1207,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle star list.
     inline const std::vector<std::vector<SimplexId>> *
@@ -1229,7 +1229,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global edge identifier.
     /// \param localVertexId Input local vertex identifier (in [0, 2]).
@@ -1282,7 +1282,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \param localEdgeId Input local edge identifier,
@@ -1315,7 +1315,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number of edges connected to the vertex.
@@ -1351,7 +1351,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex edge list.
     /// \sa getVertexStars()
@@ -1367,63 +1367,141 @@ namespace ttk {
       return abstractTriangulation_->getVertexEdges();
     }
 
-#if TTK_ENABLE_MPI
+#ifdef TTK_ENABLE_MPI
+
     /// Get the corresponding global id for a given local id of a vertex.
     ///    ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param leid Input local vertex identifier.
     /// \return vertexId Input global vertex identifier.
-    inline SimplexId getVertexGlobalId(const SimplexId &leid) const override {
+    inline SimplexId getVertexGlobalId(const SimplexId lvid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-      return abstractTriangulation_->getVertexGlobalId(leid);
+      return abstractTriangulation_->getVertexGlobalId(lvid);
     }
 
     /// Get the global id to local id map for the triangulation.
     ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
-    /// our GidToLidMap. \return 0 if succesful, -1 else.
-    inline const std::unordered_map<SimplexId, SimplexId> *
-      getVertexGlobalIdMap() const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return nullptr;
-#endif
-      return abstractTriangulation_->getVertexGlobalIdMap();
+    /// our GidToLidMap. \return 0 if successful, -1 else.
+    inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
+      return this->explicitTriangulation_.getVertexGlobalIdMap();
+    }
+
+    /// Set the flag for precondtioning of distributed vertices of the
+    /// triangulation.
+    inline void setHasPreconditionedDistributedVertices(bool flag) override {
+      abstractTriangulation_->setHasPreconditionedDistributedVertices(flag);
+    }
+
+    inline bool hasPreconditionedDistributedCells() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedCells();
+    }
+    inline bool hasPreconditionedDistributedVertices() const override {
+      return abstractTriangulation_->hasPreconditionedDistributedVertices();
+    }
+
+    inline const std::vector<int> &getNeighborRanks() const override {
+      return abstractTriangulation_->getNeighborRanks();
+    }
+    inline std::vector<int> &getNeighborRanks() override {
+      return abstractTriangulation_->getNeighborRanks();
+    }
+
+    inline const std::vector<std::array<ttk::SimplexId, 6>> &
+      getNeighborVertexBBoxes() const override {
+      return abstractTriangulation_->getNeighborVertexBBoxes();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> &
+      getGhostCellsPerOwner() const override {
+      return abstractTriangulation_->getGhostCellsPerOwner();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> &
+      getRemoteGhostCells() const override {
+      return abstractTriangulation_->getRemoteGhostCells();
+    }
+
+    inline int getVertexRank(const SimplexId lvid) const override {
+      return this->abstractTriangulation_->getVertexRank(lvid);
     }
 
     /// Get the corresponding local id for a given global id of a vertex.
     ///
     /// \pre For this function to behave correctly,
-    /// preconditonDistributedVertices() needs to be called
+    /// preconditionDistributedVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param geid Input global vertex identifier.
     /// \return vertexId Input local vertex identifier.
-    inline SimplexId getVertexLocalId(const SimplexId &geid) const override {
+    inline SimplexId getVertexLocalId(const SimplexId geid) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
       return abstractTriangulation_->getVertexLocalId(geid);
+    }
+
+    /**
+     * @brief Create a meta grid for implicit triangulations
+     *
+     * In an MPI context, input domains are split into separate,
+     * overlapping local grids. This methods makes each of the local
+     * implicit triangulations aware of the dimensions of the
+     * original, global grid.
+     *
+     * @param[in] dimensions Global grid dimensions
+     */
+    inline void createMetaGrid(const double *const bounds) {
+      this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
+      this->periodicImplicitTriangulation_.createMetaGrid(bounds);
+      this->implicitTriangulation_.createMetaGrid(bounds);
+      this->periodicPreconditionsTriangulation_.createMetaGrid(bounds);
+      // also pass bounding box to ExplicitTriangulation...
+      this->explicitTriangulation_.setBoundingBox(bounds);
+    }
+
+    inline void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary) {
+      this->periodicImplicitTriangulation_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation_.setIsBoundaryPeriodic(boundary);
+    }
+
+    /**
+     * @brief  Get the Global Id of the simplex by calling the appropriate
+     * global id retrieval function based on the simplex dimension cellDim
+     *
+     * @param localCellId: local id of the simplex
+     * @param cellDim: dimension of the simplex
+     * @param globalCellId global id of the simplex
+     */
+    inline int getDistributedGlobalCellId(const ttk::SimplexId &localCellId,
+                                          const int &cellDim,
+                                          ttk::SimplexId &globalCellId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return this->abstractTriangulation_->getDistributedGlobalCellId(
+        localCellId, cellDim, globalCellId);
     }
 
 #endif // TTK_ENABLE_MPI
@@ -1439,7 +1517,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \param localLinkId Input local link simplex identifier,
@@ -1472,7 +1550,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number of cells in the link of the vertex.
@@ -1507,7 +1585,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex link list.
     inline const std::vector<std::vector<SimplexId>> *
@@ -1528,7 +1606,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \param localNeighborId Input local neighbor identifier,
@@ -1558,7 +1636,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number vertex neighbors.
@@ -1592,7 +1670,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex neighbor list.
     inline const std::vector<std::vector<SimplexId>> *
@@ -1638,7 +1716,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param vertexId Input global vertex identifier.
@@ -1672,7 +1750,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier
     /// \return Returns the number of star cells.
@@ -1707,7 +1785,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex star list.
     inline const std::vector<std::vector<SimplexId>> *
@@ -1729,7 +1807,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     ///
     /// \param vertexId Input global vertex identifier.
@@ -1763,7 +1841,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number of vertex triangles.
@@ -1799,7 +1877,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex triangle list.
     /// \sa getVertexStars()
@@ -1828,7 +1906,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \return Returns true if the edge is on the boundary, false otherwise.
@@ -1846,6 +1924,46 @@ namespace ttk {
       return !abstractTriangulation_;
     }
 
+    /// Check if the triangulation is manifold or not (Rips Complexes
+    /// are not manifold)
+    /// \return True if the triangulation is manifold
+    inline bool isManifold() const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->isEmptyCheck()) {
+        return true;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->abstractTriangulation_->isManifold();
+    }
+
+    /// Check if the triangulation is manifold or not.
+    ///
+    /// \ref ttk::ExplicitTriangulation (and maybe \ref
+    /// ttk::CompactTriangulation too) can be generated from
+    /// non-manifold datasets (such as a Rips Complex). Some TTK
+    /// modules may be valid only for manifold triangulations, other
+    /// may have alternatives for non-manifold data-sets (\see
+    /// ttk::PersistenceDiagram::checkManifold).
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following function(s):
+    ///   - isManifold()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa isManifold()
+    inline int preconditionManifold() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(this->isEmptyCheck())
+        return false;
+#endif // TTK_ENABLE_KAMIKAZE
+      return this->abstractTriangulation_->preconditionManifold();
+    }
+
     /// Check if the triangle with global identifier \p triangleId is on the
     /// boundary of the domain.
     ///
@@ -1861,7 +1979,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \return Returns true if the triangle is on the boundary, false
@@ -1887,7 +2005,7 @@ namespace ttk {
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
+    /// \note It is recommended to exclude such a preconditioning step
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns true if the vertex is on the boundary, false
@@ -1909,7 +2027,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isEdgeOnBoundary()
@@ -1930,7 +2048,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isTriangleOnBoundary()
@@ -1952,7 +2070,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isVertexOnBoundary()
@@ -1974,7 +2092,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellEdge()
@@ -1999,7 +2117,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellNeighbor()
@@ -2025,7 +2143,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellTriangle()
@@ -2051,7 +2169,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getEdges()
@@ -2078,7 +2196,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getEdgeLink()
@@ -2104,7 +2222,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getEdgeStar()
@@ -2130,7 +2248,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getEdgeTriangle()
@@ -2157,7 +2275,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getNumberOfTriangles()
@@ -2183,7 +2301,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getTriangleEdge()
@@ -2209,7 +2327,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getTriangleLink()
@@ -2235,7 +2353,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getTriangleStar()
@@ -2262,7 +2380,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getVertexEdge()
@@ -2278,7 +2396,27 @@ namespace ttk {
       return abstractTriangulation_->preconditionVertexEdges();
     }
 
-#if TTK_ENABLE_MPI
+    ///
+    /// \pre Get the VTK id of a cell using the TTK id of a cell.
+    /// For implicit triangulations, VTK cells are squares or cubes,
+    /// whereas TTK cells are triangles and tetrahedron.
+    /// For other triangulations, the TTK and VTK cells coincide.
+    ///
+    /// \param ttkId TTK cell id
+    /// \param vtkId Output VTK cell id
+    /// \return Returns 0 upon success, negative values otherwise.
+    ///
+    inline int getCellVTKID(const int &ttkId, int &vtkId) const override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+
+      return abstractTriangulation_->getCellVTKID(ttkId, vtkId);
+    }
+
+#ifdef TTK_ENABLE_MPI
     /// Pre-process the distributed vertex ids.
     ///
     /// This function should ONLY be called as a pre-condition to the
@@ -2290,7 +2428,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getVertexGlobalId()
@@ -2303,6 +2441,118 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->preconditionDistributedVertices();
+    }
+
+    inline int preconditionEdgeRankArray() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionEdgeRankArray();
+    }
+
+    inline int preconditionTriangleRankArray() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionTriangleRankArray();
+    }
+
+    inline int setVertexRankArray(const int *rankArray) override {
+      return abstractTriangulation_->setVertexRankArray(rankArray);
+    }
+
+    inline int setCellRankArray(const int *rankArray) override {
+      return abstractTriangulation_->setCellRankArray(rankArray);
+    }
+
+    /// Pre-process the global boundaries when using MPI. Local bounds should
+    /// be set prior to using this function.
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa globalBounds_
+
+    inline int preconditionGlobalBoundary() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionGlobalBoundary();
+    }
+    /// Pre-process the distributed ghost cells .
+    ///
+    /// This function should ONLY be called as a pre-condition for
+    /// handling cells when executing with MPI.
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    inline int preconditionDistributedCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionDistributedCells();
+    }
+
+    /// Pre-process the distributed ghost cells .
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getGhostCellsPerOwner()
+    ///   - getRemoteGhostCells()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getGhostCellsPerOwner()
+    /// \sa getRemoteGhostCells()
+    inline int preconditionExchangeGhostCells() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionExchangeGhostCells();
+    }
+
+    /// Pre-process the distributed ghost vertices .
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getGhostVerticesPerOwner()
+    ///   - getRemoteGhostVertices()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this preconditioning function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getGhostVerticesPerOwner()
+    /// \sa getRemoteGhostVertices()
+    inline int preconditionExchangeGhostVertices() override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->preconditionExchangeGhostVertices();
     }
 #endif // TTK_ENABLE_MPI
 
@@ -2317,7 +2567,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getVertexLink()
@@ -2344,7 +2594,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getVertexNeighbor()
@@ -2370,7 +2620,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getVertexStar()
@@ -2397,7 +2647,7 @@ namespace ttk {
     /// \pre This function should be called prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
+    /// \note It is recommended to exclude this preconditioning function from
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getVertexTriangle()
@@ -2415,6 +2665,7 @@ namespace ttk {
     /// Tune the debug level (default: 0)
     inline int setDebugLevel(const int &debugLevel) override {
       explicitTriangulation_.setDebugLevel(debugLevel);
+      compactTriangulation_.setDebugLevel(debugLevel);
       implicitTriangulation_.setDebugLevel(debugLevel);
       implicitPreconditionsTriangulation_.setDebugLevel(debugLevel);
       periodicImplicitTriangulation_.setDebugLevel(debugLevel);
@@ -2450,7 +2701,7 @@ namespace ttk {
     ///
     /// \warning If this ttk::Triangulation object is already representing a
     /// valid triangulation, this information will be over-written (which
-    /// means that pre-processing functions should be called again).
+    /// means that preconditioning functions should be called again).
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *connectivity,
                              const LongSimplexId *offset) {
@@ -2488,7 +2739,7 @@ namespace ttk {
     ///
     /// \warning If this ttk::Triangulation object is already representing a
     /// valid triangulation, this information will be over-written (which
-    /// means that pre-processing functions should be called again).
+    /// means that preconditioning functions should be called again).
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *cellArray) {
       abstractTriangulation_ = &explicitTriangulation_;
@@ -2524,7 +2775,7 @@ namespace ttk {
     ///
     /// \warning If this ttk::Triangulation object is already representing a
     /// valid triangulation, this information will be over-written (which
-    /// means that pre-processing functions should be called again).
+    /// means that preconditioning functions should be called again).
     inline int setInputGrid(const float &xOrigin,
                             const float &yOrigin,
                             const float &zOrigin,
@@ -2627,7 +2878,7 @@ namespace ttk {
     ///
     /// \warning If this ttk::Triangulation object is already representing a
     /// valid triangulation, this information will be over-written (which
-    /// means that pre-processing functions should be called again).
+    /// means that preconditioning functions should be called again).
     inline int setInputPoints(const SimplexId &pointNumber,
                               const void *pointSet,
                               const bool &doublePrecision = false) {
@@ -2680,38 +2931,38 @@ namespace ttk {
     }
 
 #ifdef TTK_ENABLE_MPI
-    inline void setGlobalIds(const LongSimplexId *const cellGid,
-                             const unsigned char *const ghostCellMask) {
-      this->abstractTriangulation_->setGlobalIds(cellGid, ghostCellMask);
+
+    // GlobalPointIds, GlobalCellIds (only for ExplicitTriangulation)
+
+    inline void setVertsGlobalIds(const LongSimplexId *data) {
+      this->explicitTriangulation_.setVertsGlobalIds(data);
+    }
+    inline void setCellsGlobalIds(const LongSimplexId *const data) {
+      this->explicitTriangulation_.setCellsGlobalIds(data);
     }
 
-    inline void setRankArray(int *rankArray) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setRankArray(rankArray);
+    // "vtkGhostType" on vertices & cells
+
+    inline void setVertexGhostArray(const unsigned char *data) {
+      this->abstractTriangulation_->setVertexGhostArray(data);
+    }
+    inline void setCellGhostArray(const unsigned char *data) {
+      this->abstractTriangulation_->setCellGhostArray(data);
     }
 
-    inline int *getRankArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getRankArray();
-
-      return nullptr;
+    inline bool getIsMPIValid() const {
+      return isMPIValid_;
     }
 
-    inline void setGlobalIdsArray(long int *globalIds) {
-      if(this->abstractTriangulation_)
-        this->abstractTriangulation_->setGlobalIdsArray(globalIds);
+    inline void setIsMPIValid(bool flag) {
+      isMPIValid_ = flag;
     }
-
-    inline long int *getGlobalIdsArray() const {
-      if(this->abstractTriangulation_)
-        return this->abstractTriangulation_->getGlobalIdsArray();
-
-      return nullptr;
-    }
-
 #endif // TTK_ENABLE_MPI
 
   protected:
+#ifdef TTK_ENABLE_MPI
+    bool isMPIValid_{true};
+#endif
     inline bool isEmptyCheck() const {
       if(!abstractTriangulation_) {
         printErr("Trying to access an empty data-structure!");

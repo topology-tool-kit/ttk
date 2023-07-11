@@ -8,7 +8,7 @@
 /// \brief TTK VTK-filter for the computation of merge and contour trees.
 ///
 /// The computation of the Merge / Contour tree done by this package is done in
-/// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approch
+/// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
 /// described in the article mention below.
 /// The VTK wrapper will first call a connectivity filter, and then call
 /// a contour / merge tree computation for each connected components. The final
@@ -30,7 +30,7 @@
 /// 1. The nodes of the tree
 /// 2. The arcs of the tree
 /// 3. The semgentation of the initial dataset
-/// The structure of the tree (Nodes+Arcs) have a concept of nodeId, wich is
+/// The structure of the tree (Nodes+Arcs) have a concept of nodeId, which is
 /// an id that is consistent between execution if SetWithNormalize is set to
 /// True. The downNodeId of an arc is its starting node (directed towards the
 /// leaves as the computation starts here) and the upNodeId it the ending node,
@@ -65,6 +65,12 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
 ///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
+///   Tree Feature Tracking example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
 ///   Tree Temporal Reduction</a> \n

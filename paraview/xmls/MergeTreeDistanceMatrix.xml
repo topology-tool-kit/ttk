@@ -11,6 +11,8 @@
 Online examples:
 
 - https://topology-tool-kit.github.io/examples/mergeTreeClustering/
+
+- https://topology-tool-kit.github.io/examples/mergeTreePGA/
            </Documentation>
 
             <!-- INPUT -->
@@ -47,7 +49,8 @@ Online examples:
                     <Property name="Input" function="FieldDataSelection" />
                   </InputArrayDomain>
                   <Documentation>
-
+                    If input are merge trees, then this input can be used to process join and split trees together (only for clustering). Pass as input either join or split trees in the first input and the other type of trees in the second input.
+                    If input are persistence diagrams, then this has no effect to use this input.
                   </Documentation>
                 </InputProperty>
 
@@ -64,12 +67,25 @@ Online examples:
                   </Documentation>
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
-
+                
+                <DoubleVectorProperty
+                name="MixtureCoefficient"
+                command="SetmixtureCoefficient_"
+                label="Mixture Coefficient"
+                number_of_elements="1"
+                default_values="0.5"
+                panel_visibility="advanced">
+                  <Documentation>
+                    If input are merge trees, this parameter allows to weight between the first input and the second input, typically join and split trees (0 for only the second input and 1 for only the first one).
+                    If input are persistence diagrams, this parameter allows to weight between min-sad and sad-max pairs (0 for only sad-max and 1 for only min-sad).
+                  </Documentation>
+                  <DoubleRangeDomain name="range" min="0" max="1" />
+                </DoubleVectorProperty>
                 ${MERGE_TREE_INPUT_WIDGETS}
 
                 <IntVectorProperty
-                name="DistanceSquared"
-                command="SetDistanceSquared"
+                name="DistanceSquaredRoot"
+                command="SetDistanceSquaredRoot"
                 label="Distance Square Root"
                 number_of_elements="1"
                 default_values="1"
@@ -82,7 +98,8 @@ Online examples:
                 
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="UseFieldDataParameters"/>
-              <Property name="DistanceSquared"/>
+              <Property name="MixtureCoefficient"/>
+              <Property name="DistanceSquaredRoot"/>
             </PropertyGroup>
             ${MERGE_TREE_PREPROCESS_WIDGETS}
 

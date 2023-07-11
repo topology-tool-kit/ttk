@@ -17,6 +17,8 @@
         Online examples:
 
         - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+        
+        - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
 
         - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
 
@@ -33,7 +35,7 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
+        <InputArrayDomain name="input_scalars" attribute_type="point" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>

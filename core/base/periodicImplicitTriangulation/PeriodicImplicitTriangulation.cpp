@@ -1,5 +1,4 @@
 #include <PeriodicImplicitTriangulation.h>
-
 using namespace std;
 using namespace ttk;
 
@@ -18,9 +17,9 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
                                                 const float &xSpacing,
                                                 const float &ySpacing,
                                                 const float &zSpacing,
-                                                const int &xDim,
-                                                const int &yDim,
-                                                const int &zDim) {
+                                                const SimplexId &xDim,
+                                                const SimplexId &yDim,
+                                                const SimplexId &zDim) {
 
   // Dimensionality //
   if(xDim < 1 or yDim < 1 or zDim < 1)
@@ -560,6 +559,307 @@ const vector<vector<SimplexId>> *
 
   return &vertexStarList_;
 }
+
+#ifdef TTK_ENABLE_MPI
+
+void PeriodicImplicitTriangulation::setIsBoundaryPeriodic(
+  std::array<unsigned char, 6> boundary) {
+  this->isBoundaryPeriodic = boundary;
+}
+
+void PeriodicImplicitTriangulation::createMetaGrid(const double *const bounds) {
+  // only works with 2 processes or more
+  if(!ttk::isRunningWithMPI()) {
+    return;
+  }
+
+  // no need to create it anew?
+  if(this->metaGrid_ != nullptr) {
+    return;
+  }
+
+  // Reorganize bounds to only execute Allreduce twice
+  std::array<double, 6> tempBounds = {
+    bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
+  };
+
+  for(int i = 0; i < 3; i++) {
+    if(dimensionality_ > i) {
+      if(this->isBoundaryPeriodic[2 * i] == 1) {
+        tempBounds[i] += spacing_[i];
+      }
+      if(this->isBoundaryPeriodic[2 * i + 1] == 1) {
+        tempBounds[3 + i] -= spacing_[i];
+      }
+    }
+  }
+
+  std::array<double, 6> tempGlobalBounds{};
+  // Compute and send to all processes the lower bounds of the data set
+  MPI_Allreduce(tempBounds.data(), tempGlobalBounds.data(), 3, MPI_DOUBLE,
+                MPI_MIN, ttk::MPIcomm_);
+  // Compute and send to all processes the higher bounds of the data set
+  MPI_Allreduce(&tempBounds[3], &tempGlobalBounds[3], 3, MPI_DOUBLE, MPI_MAX,
+                ttk::MPIcomm_);
+
+  // re-order tempGlobalBounds
+  std::array<double, 6> globalBounds{
+    tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
+    tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5],
+  };
+
+  const std::array<ttk::SimplexId, 3> dimensions = {
+    static_cast<ttk::SimplexId>(
+      std::round((globalBounds[1] - globalBounds[0]) / this->spacing_[0]))
+      + 1,
+    static_cast<ttk::SimplexId>(
+      std::round((globalBounds[3] - globalBounds[2]) / this->spacing_[1]))
+      + 1,
+    static_cast<ttk::SimplexId>(
+      std::round((globalBounds[5] - globalBounds[4]) / this->spacing_[2]))
+      + 1,
+  };
+
+  this->localGridOffset_ = {
+    static_cast<SimplexId>(
+      std::round((this->origin_[0] - globalBounds[0]) / this->spacing_[0])),
+    static_cast<SimplexId>(
+      std::round((this->origin_[1] - globalBounds[2]) / this->spacing_[1])),
+    static_cast<SimplexId>(
+      std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
+  };
+
+  this->metaGrid_ = std::make_shared<PeriodicNoPreconditions>();
+  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
+                                globalBounds[2], this->spacing_[0],
+                                this->spacing_[1], this->spacing_[2],
+                                dimensions[0], dimensions[1], dimensions[2]);
+}
+
+int PeriodicImplicitTriangulation::preconditionDistributedCells() {
+  if(this->hasPreconditionedDistributedCells_) {
+    return 0;
+  }
+  if(!ttk::hasInitializedMPI()) {
+    return -1;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return 0;
+  }
+  if(this->cellGhost_ == nullptr) {
+    if(ttk::isRunningWithMPI()) {
+      this->printErr("Missing cell ghost array!");
+    }
+    return -3;
+  }
+
+  Timer tm{};
+
+  // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+
+  // number of local cells (with ghost cells but without the additional periodic
+  // cells)
+  const auto nLocCells{(this->dimensions_[0] - 1) * (this->dimensions_[1] - 1)
+                       * (this->dimensions_[2] - 1) * nTetraPerCube};
+
+  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
+
+  this->neighborCellBBoxes_.resize(ttk::MPIsize_);
+  auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
+  // "good" starting values?
+  localBBox = {
+    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
+    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
+    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
+  };
+  const auto &dims{this->metaGrid_->getGridDimensions()};
+
+  for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    // only keep non-ghost cells
+    if(this->cellGhost_[lcid / nTetraPerCube] != 0) {
+      continue;
+    }
+    // local vertex coordinates
+    std::array<SimplexId, 3> p{};
+    if(this->dimensionality_ == 3) {
+      this->tetrahedronToPosition(lcid, p.data());
+    } else if(this->dimensionality_ == 2) {
+      this->triangleToPosition2d(lcid, p.data());
+      // compatibility with tetrahedronToPosition; fix a bounding box
+      // error in the first axis
+      p[0] /= 2;
+    }
+
+    // global vertex coordinates
+    p[0] += this->localGridOffset_[0];
+    p[1] += this->localGridOffset_[1];
+    p[2] += this->localGridOffset_[2];
+
+    if(p[0] < localBBox[0]) {
+      localBBox[0] = max(p[0], static_cast<ttk::SimplexId>(0));
+    }
+    if(p[0] > localBBox[1]) {
+      localBBox[1] = min(p[0], dims[0]);
+    }
+    if(p[1] < localBBox[2]) {
+      localBBox[2] = max(p[1], static_cast<ttk::SimplexId>(0));
+    }
+    if(p[1] > localBBox[3]) {
+      localBBox[3] = min(p[1], dims[1]);
+    }
+    if(p[2] < localBBox[4]) {
+      localBBox[4] = max(p[2], static_cast<ttk::SimplexId>(0));
+    }
+    if(p[2] > localBBox[5]) {
+      localBBox[5] = min(p[2], dims[2]);
+    }
+  }
+  localBBox[0] -= isBoundaryPeriodic[0];
+  if(dimensionality_ > 1) {
+    localBBox[2] -= isBoundaryPeriodic[2];
+    if(dimensionality_ > 2)
+      localBBox[4] -= isBoundaryPeriodic[4];
+  }
+
+  localBBox[1]++;
+  localBBox[3]++;
+  localBBox[5]++;
+
+  for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
+    const auto neigh{this->neighborRanks_[i]};
+    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
+                 this->neighborCellBBoxes_[neigh].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
+                 MPI_STATUS_IGNORE);
+  }
+
+  this->hasPreconditionedDistributedCells_ = true;
+
+  return 0;
+}
+
+std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertGlobalCoords(
+  const SimplexId lvid) const {
+  // local vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->vertexToPosition(lvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->vertexToPosition2d(lvid, p.data());
+  }
+  // global vertex coordinates
+  p[0] += this->localGridOffset_[0];
+  p[1] += this->localGridOffset_[1];
+  p[2] += this->localGridOffset_[2];
+
+  const auto &dims{this->metaGrid_->getGridDimensions()};
+
+  p[0] = (p[0] + dims[0]) % dims[0];
+  if(dimensionality_ > 1) {
+    p[1] = (p[1] + dims[1]) % dims[1];
+    if(dimensionality_ > 2)
+      p[2] = (p[2] + dims[2]) % dims[2];
+  }
+
+  return p;
+}
+
+std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
+  const SimplexId gvid) const {
+  // global vertex coordinates
+  std::array<SimplexId, 3> pGlobal{};
+  if(this->dimensionality_ == 3) {
+    this->metaGrid_->vertexToPosition(gvid, pGlobal.data());
+  } else if(this->dimensionality_ == 2) {
+    this->metaGrid_->vertexToPosition2d(gvid, pGlobal.data());
+  }
+  std::array<SimplexId, 3> p{pGlobal};
+  // local vertex coordinates
+  p[0] -= this->localGridOffset_[0];
+  p[1] -= this->localGridOffset_[1];
+  p[2] -= this->localGridOffset_[2];
+
+  const auto &dims{this->getGridDimensions()};
+
+  if(p[0] >= 0 && p[1] >= 0 && p[2] >= 0 && p[0] <= dims[0] - 1
+     && p[1] <= dims[1] - 1 && p[2] <= dims[2] - 1) {
+    return p;
+  }
+  for(int i = 0; i < 3; i++) {
+    if((p[i] < 0 || p[i] > dims[i] - 1) && pGlobal[i] == 0) {
+      p[i] = dims[i] - 1;
+    }
+    if((p[i] < 0 || p[i] > dims[i] - 1)
+       && pGlobal[i] == this->metaGrid_->dimensions_[i] - 1) {
+      p[i] = 0;
+    }
+  }
+
+  if(p[0] >= 0 && p[1] >= 0 && p[2] >= 0 && p[0] <= dims[0] - 1
+     && p[1] <= dims[1] - 1 && p[2] <= dims[2] - 1) {
+    if(this->vertexGhost_[p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1]]
+       != 0) {
+      return p;
+    }
+  }
+  return std::array<SimplexId, 3>{-1, -1, -1};
+}
+
+int ttk::PeriodicImplicitTriangulation::getCellRankInternal(
+  const SimplexId lcid) const {
+
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  const auto locCubeId{lcid / nTetraPerCube};
+
+  if(this->cellGhost_[locCubeId] == 0) {
+    return ttk::MPIrank_;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty()) {
+    this->printErr("Empty neighborsRanks_!");
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto nVertsCell{this->getCellVertexNumber(lcid)};
+  std::vector<bool> inRank(nVertsCell);
+  std::map<int, int> neighborOccurrences;
+  for(const auto neigh : this->neighborRanks_) {
+    std::fill(inRank.begin(), inRank.end(), false);
+    const auto &bbox{this->neighborCellBBoxes_[neigh]};
+    for(SimplexId i = 0; i < nVertsCell; ++i) {
+      SimplexId v{};
+      this->getCellVertex(lcid, i, v);
+      if(this->vertexGhost_[v] == 0) {
+        inRank[i] = true;
+      } else {
+        const auto p{this->getVertGlobalCoords(v)};
+        if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
+           && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+          inRank[i] = true;
+        }
+      }
+    }
+    if(std::all_of(
+         inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
+      return neigh;
+    }
+    neighborOccurrences[neigh]
+      = std::accumulate(inRank.begin(), inRank.end(), 0);
+  }
+
+  auto pr = std::max_element(
+    std::begin(neighborOccurrences), std::end(neighborOccurrences),
+    [](const std::pair<int, int> &p1, const std::pair<int, int> &p2) {
+      return p1.second < p2.second;
+    });
+  return pr->first;
+}
+
+#endif // TTK_ENABLE_MPI
 
 template <typename Derived>
 int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
@@ -1795,39 +2095,6 @@ const vector<vector<SimplexId>> *
 
   return &cellNeighborList_;
 }
-#if TTK_ENABLE_MPI
-int PeriodicImplicitTriangulation::preconditionDistributedVertices() {
-  if(this->hasPreconditionedDistributedVertices_) {
-    return 0;
-  }
-  if(!isRunningWithMPI()) {
-    return -1;
-  }
-  if(this->globalIdsArray_ == nullptr) {
-    this->printWrn("Missing global identifiers array!");
-    return -2;
-  }
-
-  // allocate memory
-  this->vertexLidToGid_.resize(this->vertexNumber_, -1);
-  this->vertexGidToLid_.reserve(this->vertexNumber_);
-
-  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexLidToGid_[i] = this->globalIdsArray_[i];
-    this->vertexGidToLid_[this->globalIdsArray_[i]] = i;
-  }
-
-  if(MPIrank_ == 0) {
-    this->printMsg("Domain contains "
-                   + std::to_string(this->getNumberOfVerticesInternal())
-                   + " vertices");
-  }
-
-  this->hasPreconditionedDistributedVertices_ = true;
-
-  return 0;
-}
-#endif // TTK_ENABLE_MPI
 
 // explicit instantiations
 template class ttk::PeriodicImplicitTriangulationCRTP<

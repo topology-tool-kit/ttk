@@ -6,7 +6,12 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkProjectionFromTable" class="ttkProjectionFromTable" label="TTK ProjectionFromTable">
-      <Documentation long_help="ProjectionFromTable Long" short_help="ProjectionFromTable Short">This filter projects on a surface points in a vtkTable.</Documentation>
+      <Documentation long_help="ProjectionFromTable Long" short_help="ProjectionFromTable Short">This filter projects on a surface points in a vtkTable.
+
+      Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+      </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty

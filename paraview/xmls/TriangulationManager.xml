@@ -11,7 +11,7 @@
         periodic regular grid (vtkImageData), in all dimensions OR compacts an
         unstructured grid (vtkUnstructuredGrid, vtkPolyData) triangulation.
 
-        Given a simplicial mesh, this filter uses the PR star octree to divide
+        Alternatively, given a simplicial mesh, this filter also uses the PR star octree to divide
         the mesh into different regions, and adds this clustering information as
         a new scalar field to the original dataset. This clustering index scalar
         field can be further used by TopoCluster data structure.
@@ -24,6 +24,13 @@
         "TopoCluster: A Localized Data Structure for Topology-based Visualization"
         Guoxi Liu, Federico Iuricich, Riccardo Fellegara, and Leila De Floriani
         IEEE Transactions on Visualization and Computer Graphics, 2021.
+        
+        
+        Online examples:
+        
+        - https://topology-tool-kit.github.io/examples/compactTriangulation/
+        
+        - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
       </Documentation>
 
       <InputProperty name="Input" command="SetInputConnection">

@@ -31,9 +31,9 @@ namespace ttk {
       /** second (higher) vertex id */
       SimplexId death;
       /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
-      SimplexId type;
+      int type;
 
-      PersistencePair(SimplexId b, SimplexId d, SimplexId t)
+      PersistencePair(SimplexId b, SimplexId d, int t)
         : birth{b}, death{d}, type{t} {
       }
     };
@@ -226,9 +226,9 @@ int ttk::PersistentSimplexPairs::computePersistencePairs(
 
   this->pairCells(pairs, boundaries, filtration, filtOrder);
 
-  this->printMsg(
-    "Computed " + std::to_string(pairs.size()) + " persistence pairs", 1.0,
-    tm.getElapsedTime(), 1);
+  this->printMsg("Computed " + std::to_string(pairs.size())
+                   + " persistence pair" + (pairs.size() > 1 ? "s" : ""),
+                 1.0, tm.getElapsedTime(), 1);
 
   return 0;
 }
@@ -245,34 +245,39 @@ std::vector<ttk::PersistentSimplexPairs::Simplex>
                            + this->nTetra_);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < this->nVerts_; ++i) {
-    res[i].fillVert(i, offset);
-  }
+  {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp for nowait
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < this->nVerts_; ++i) {
+      res[i].fillVert(i, offset);
+    }
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp for nowait
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < this->nEdges_; ++i) {
-    const auto o = this->nVerts_ + i;
-    res[o].fillEdge(i, o, offset, triangulation);
-  }
+    for(SimplexId i = 0; i < this->nEdges_; ++i) {
+      const auto o = this->nVerts_ + i;
+      res[o].fillEdge(i, o, offset, triangulation);
+    }
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp for nowait
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < this->nTri_; ++i) {
-    const auto o = this->nVerts_ + this->nEdges_ + i;
-    res[o].fillTriangle(i, o, offset, triangulation);
-  }
+    for(SimplexId i = 0; i < this->nTri_; ++i) {
+      const auto o = this->nVerts_ + this->nEdges_ + i;
+      res[o].fillTriangle(i, o, offset, triangulation);
+    }
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp for
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < this->nTetra_; ++i) {
-    const auto o = this->nVerts_ + this->nEdges_ + this->nTri_ + i;
-    res[o].fillTetra(i, o, offset, triangulation);
+    for(SimplexId i = 0; i < this->nTetra_; ++i) {
+      const auto o = this->nVerts_ + this->nEdges_ + this->nTri_ + i;
+      res[o].fillTetra(i, o, offset, triangulation);
+    }
   }
 
   TTK_PSORT(this->threadNumber_, res.begin(), res.end());

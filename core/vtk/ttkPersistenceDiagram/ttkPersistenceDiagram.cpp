@@ -64,23 +64,29 @@ int ttkPersistenceDiagram::dispatch(
                          inputOrder, triangulation);
 
   // something wrong in baseCode
-  if(status != 0 || CTDiagram.empty()) {
-    this->printErr("PersistenceDiagram::execute() error code : "
+  if(status != 0) {
+    this->printErr("PersistenceDiagram::execute() error code: "
                    + std::to_string(status));
     return 0;
   }
 
-  vtkNew<vtkUnstructuredGrid> vtu{};
+  if(CTDiagram.empty()) {
+    this->printErr("Empty diagram!");
+    return 0;
+  }
 
-  // fill missing data in CTDiagram (critical points coordinates & value)
-  fillPersistenceDiagram(
-    CTDiagram, outputScalars, *triangulation, this->threadNumber_);
+  vtkNew<vtkUnstructuredGrid> vtu{};
 
   // convert CTDiagram to vtkUnstructuredGrid
   DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
                triangulation->getDimensionality(), this->ShowInsideDomain);
 
   outputCTPersistenceDiagram->ShallowCopy(vtu);
+
+  if(this->ClearDGCache && this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
+    this->printMsg("Clearing DiscreteGradient cache...");
+    ttk::dcg::DiscreteGradient::clearCache(*triangulation);
+  }
 
   return 1;
 }

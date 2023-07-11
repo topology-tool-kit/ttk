@@ -122,8 +122,7 @@ int ttk::TopologicalCompression::PerformSimplification(
   std::vector<int> inputOffsets(vertexNumber);
   std::vector<SimplexId> critConstraints(nbConstraints);
   std::vector<double> inArray(vertexNumber);
-  // std::vector<int> *oo = new std::vector<int>(vertexNumber);
-  decompressedOffsets_.resize(vertexNumber); // oo->data();
+  decompressedOffsets_.resize(vertexNumber);
   int status = 0;
 
   // Offsets
@@ -131,15 +130,11 @@ int ttk::TopologicalCompression::PerformSimplification(
     inputOffsets[i] = i;
 
   // Preprocess simplification.
-  // std::vector<int>* authorizedSaddles = new std::vector<int>();
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
     int id = std::get<0>(t);
     double val = std::get<1>(t);
     int type = std::get<2>(t);
-
-    // if (type == 0)
-    // authorizedSaddles->push_back(id);
 
     array[id] = val;
 
@@ -347,8 +342,6 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     int nbJ = JTPairs.size();
     int nbS = STPairs.size();
     std::vector<int> critConstraints(2 * nbJ + 2 * nbS);
-
-    // auto* authorizedSaddles = new std::vector<int>();
 
     dataType maxEpsilon = 0;
     dataType epsilonSum2 = 0;
@@ -579,7 +572,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     else if(seg >= 0)
       affectedSegments[seg] = true;
     else {
-      this->printErr("Negative segment encoutered (" + std::to_string(i) + ")");
+      this->printErr("Negative segment encountered (" + std::to_string(i)
+                     + ")");
     }
   }
   std::vector<int> empty;

@@ -148,12 +148,13 @@ void Segments::sortAll(const Scalars *s) {
 // ----------
 // Arc Region
 // ----------
-
-ArcRegion::ArcRegion() {
 #ifndef TTK_ENABLE_KAMIKAZE
+ArcRegion::ArcRegion() {
   segmented_ = false;
-#endif
 }
+#else
+ArcRegion::ArcRegion() = default;
+#endif
 
 ArcRegion::ArcRegion(const segm_it &begin, const segm_it &end) : ArcRegion() {
   concat(begin, end);
@@ -389,7 +390,7 @@ tuple<SimplexId, ArcRegion> ArcRegion::splitFront(SimplexId v,
       remainingRegion.concat(reg.segmentBegin, reg.segmentEnd);
       willErase.emplace_back(it);
       if(splitVert == nullVertex || s->isLower(*reg.segmentBegin, splitVert)) {
-        // we ignore vertices that does not come frome this arc
+        // we ignore vertices that does not come from this arc
         splitVert = *reg.segmentBegin;
       }
     }

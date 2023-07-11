@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreePrincipalGeodesics" class="ttkMergeTreePrincipalGeodesics" label="TTK MergeTreePrincipalGeodesics">
+      <Documentation long_help="MergeTreePrincipalGeodesics Long" short_help="MergeTreePrincipalGeodesics Short">
+
+        This filter computes Principal Geodesic Analysis on the space of merge trees or persistence diagrams, that is, a set of orthogonal geodesic axes defining an optimized basis with the barycenter as origin.
+
+        Related publication:
+
+        'Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)'
+        Mathieu Pont, Jules Vidal, Julien Tierny.
+        IEEE Transactions on Visualization and Computer Graphics, 2022
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+
+        </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="Input"
+        port_index="0"
+        command="SetInputConnection">
+      <ProxyGroupDomain name="groups">
+        <Group name="sources"/>
+        <Group name="filters"/>
+      </ProxyGroupDomain>
+      <DataTypeDomain name="input_type">
+        <DataType value="vtkMultiBlockDataSet"/>
+      </DataTypeDomain>
+      <InputArrayDomain name="input_scalars" number_of_components="1">
+        <Property name="Input" function="FieldDataSelection" />
+      </InputArrayDomain>
+      <Documentation>
+        Merge trees to process.
+      </Documentation>
+    </InputProperty>
+    
+    <InputProperty
+        name="Optional Input"
+        port_index="1"
+        command="SetInputConnection">
+      <ProxyGroupDomain name="groups">
+        <Group name="sources"/>
+        <Group name="filters"/>
+      </ProxyGroupDomain>
+      <DataTypeDomain name="input_type">
+        <DataType value="vtkMultiBlockDataSet"/>
+      </DataTypeDomain>
+      <InputArrayDomain name="input_scalars" number_of_components="1">
+        <Property name="Input" function="FieldDataSelection" />
+      </InputArrayDomain>
+      <Documentation>
+        If input are merge trees, then this input can be used to process join and split trees together. Pass as input either join or split trees in the first input and the other type of trees in the second input.
+        If input are persistence diagrams, then this has no effect to use this input.
+      </Documentation>
+    </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->      
+      <IntVectorProperty
+      name="NormalizedWasserstein"
+      command="SetNormalizedWasserstein"
+      label="Normalized Wasserstein"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+    
+      <IntVectorProperty
+      name="NumberOfGeodesics"
+      command="SetNumberOfGeodesics"
+      label="Number Of Geodesics"
+      number_of_elements="1"
+      default_values="2">
+        <Documentation>
+          Number of geodesics to compute.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="NumberOfProjectionIntervals"
+      command="SetNumberOfProjectionIntervals"
+      label="Number Of Projection Intervals"
+      number_of_elements="1"
+      default_values="16">
+        <Documentation>
+          Number of intervals in the geodesic to compute the projection of each input.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="NumberOfProjectionSteps"
+      command="SetNumberOfProjectionSteps"
+      label="Number Of Projection Steps"
+      number_of_elements="1"
+      default_values="8"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="BarycenterSizeLimitPercent"
+      command="SetBarycenterSizeLimitPercent"
+      label="Barycenter Size Limit Percent"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="100" />
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+      name="Deterministic"
+      command="SetDeterministic"
+      label="Deterministic"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="JoinSplitMixtureCoefficient"
+      command="SetJoinSplitMixtureCoefficient"
+      label="Pair Type Mixture Coefficient"
+      number_of_elements="1"
+      default_values="0.5"
+      panel_visibility="advanced">
+        <Documentation>
+          If input are merge trees, this parameter allows to weight between the first input and the second input, typically join and split trees (0 for only the second input and 1 for only the first one).
+          If input are persistence diagrams, this parameter allows to weight between min-sad and sad-max pairs (0 for only sad-max and 1 for only min-sad).
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
+      </DoubleVectorProperty>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      <IntVectorProperty
+      name="ComputeReconstructionError"
+      command="SetComputeReconstructionError"
+      label="Compute Reconstruction Error"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <!-- Create a UI group that contains all input parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="NormalizedWasserstein"/>
+        <Property name="NumberOfGeodesics"/>
+        <Property name="NumberOfProjectionIntervals"/>
+        <Property name="NumberOfProjectionSteps"/>
+        <Property name="BarycenterSizeLimitPercent"/>
+        <Property name="Deterministic"/>
+        <Property name="JoinSplitMixtureCoefficient"/>
+      </PropertyGroup>
+      ${MERGE_TREE_PREPROCESS_WIDGETS}
+
+      <!-- Create a UI group that contains all output parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="ComputeReconstructionError"/>
+      </PropertyGroup>
+      
+      <!-- OUTPUT PORT -->
+      <OutputPort name="Barycenter" index="0" id="port0" />
+      <OutputPort name="Coefficients" index="1" id="port1" />
+      <OutputPort name="Geodesics Vectors" index="2" id="port2" />
+      <OutputPort name="Correlation Matrix" index="3" id="port3" />
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

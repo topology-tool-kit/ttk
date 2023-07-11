@@ -2,17 +2,18 @@
 
 #include <Triangulation.h>
 #include <ttkUtils.h>
+
+#include <vtkCallbackCommand.h>
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
+#include <vtkCommand.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVersion.h>
 
-#include <vtkCallbackCommand.h>
-#include <vtkCommand.h>
-
-vtkCellArray *GetCells(vtkDataSet *dataSet) {
+static vtkCellArray *GetCells(vtkDataSet *dataSet) {
   switch(dataSet->GetDataObjectType()) {
     case VTK_UNSTRUCTURED_GRID: {
       auto dataSetAsUG = static_cast<vtkUnstructuredGrid *>(dataSet);
@@ -28,11 +29,22 @@ vtkCellArray *GetCells(vtkDataSet *dataSet) {
   return nullptr;
 }
 
-int checkCellTypes(vtkPointSet *object) {
-  auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
-  object->GetCellTypes(cellTypes);
+static int checkCellTypes(vtkPointSet *object) {
 
-  size_t nTypes = cellTypes->GetNumberOfTypes();
+  size_t nTypes = 0;
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 2, 0)
+  if(object->GetDataObjectType() == VTK_UNSTRUCTURED_GRID) {
+    auto objectAsUG = vtkUnstructuredGrid::SafeDownCast(object);
+    auto distinctCellTypes = objectAsUG->GetDistinctCellTypesArray();
+    nTypes = distinctCellTypes->GetNumberOfTuples();
+  } else
+#endif
+  {
+    auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
+    object->GetCellTypes(cellTypes);
+    nTypes = cellTypes->GetNumberOfTypes();
+  }
 
   // if cells are empty
   if(nTypes == 0)
@@ -44,7 +56,7 @@ int checkCellTypes(vtkPointSet *object) {
 
   // if cells are not simplices
   if(nTypes == 1) {
-    const auto &cellType = cellTypes->GetCellType(0);
+    const auto &cellType = object->GetCellType(0);
     if(cellType != VTK_VERTEX && cellType != VTK_LINE
        && cellType != VTK_TRIANGLE && cellType != VTK_TETRA)
       return -2;
@@ -133,7 +145,11 @@ bool RegistryValue::isValid(vtkDataSet *dataSet) const {
     image->GetSpacing(spacing_);
     image->GetDimensions(dimensions_);
 
+#ifdef TTK_ENABLE_MPI
+    bool isValid = triangulation->getIsMPIValid();
+#else
     bool isValid = true;
+#endif
     for(int i = 0; i < 6; i++)
       if(this->extent[i] != extent_[i])
         isValid = false;
@@ -158,7 +174,7 @@ RegistryTriangulation
   this->printMsg("Initializing Implicit Triangulation", 0, 0,
                  ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-  auto triangulation = RegistryTriangulation(new ttk::Triangulation());
+  auto triangulation = std::make_unique<ttk::Triangulation>();
 
   int extent[6];
   image->GetExtent(extent);
@@ -204,7 +220,7 @@ RegistryTriangulation
     return nullptr;
   }
 
-  auto triangulation = RegistryTriangulation(new ttk::Triangulation());
+  auto triangulation = std::make_unique<ttk::Triangulation>();
   int hasIndexArray
     = pointSet->GetPointData()->HasArray(ttk::compactTriangulationIndex);
 

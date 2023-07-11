@@ -27,7 +27,6 @@
 #include <vtkNew.h>
 #include <vtkTableWriter.h>
 #include <vtkThreshold.h>
-#include <vtkVersion.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
@@ -46,44 +45,33 @@ int main(int argc, char **argv) {
   vtkNew<vtkXMLUnstructuredGridReader> reader{};
   reader->SetFileName(inputFilePath.data());
 
-  // 2. computing the persistence curve
-  vtkNew<ttkPersistenceCurve> curve{};
-  curve->SetInputConnection(reader->GetOutputPort());
-  curve->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
-
-  // 3. computing the persitence diagram
+  // 2. computing the persistence diagram
   vtkNew<ttkPersistenceDiagram> diagram{};
   diagram->SetInputConnection(reader->GetOutputPort());
   diagram->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
+
+  // 3. computing the persistence curve from the persistence diagram
+  vtkNew<ttkPersistenceCurve> curve{};
+  curve->SetInputConnection(diagram->GetOutputPort());
 
   // 4. selecting the critical point pairs
   vtkNew<vtkThreshold> criticalPairs{};
   criticalPairs->SetInputConnection(diagram->GetOutputPort());
   criticalPairs->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "PairIdentifier");
-
-#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
-  criticalPairs->ThresholdBetween(-0.1, 999999);
-#else
   criticalPairs->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
   criticalPairs->SetLowerThreshold(-0.1);
   criticalPairs->SetUpperThreshold(999999);
-#endif
 
   // 5. selecting the most persistent pairs
   vtkNew<vtkThreshold> persistentPairs{};
   persistentPairs->SetInputConnection(criticalPairs->GetOutputPort());
   persistentPairs->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Persistence");
-#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
-  persistentPairs->ThresholdBetween(0.05, 999999);
-#else
   persistentPairs->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
   persistentPairs->SetLowerThreshold(0.05);
   persistentPairs->SetUpperThreshold(999999);
-#endif
 
   // 6. simplifying the input data to remove non-persistent pairs
   vtkNew<ttkTopologicalSimplification> topologicalSimplification{};

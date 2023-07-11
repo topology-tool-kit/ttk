@@ -4,6 +4,7 @@ SOURCES
   ttkFTRGraph.cpp
 HEADERS
   ttkFTRGraph.h
+  ttkFTRGraphStructures.h
 DEPENDS
   ftrGraph
   ttkAlgorithm

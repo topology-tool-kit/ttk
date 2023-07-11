@@ -84,21 +84,12 @@ namespace ttk {
     }
 
     inline int preconditionVerticesInternal() override {
-#ifdef TTK_ENABLE_MPI
-      return this->preconditionDistributedVertices();
-#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionEdgesInternal() override {
-#ifdef TTK_ENABLE_MPI
-      return this->preconditionDistributedEdges();
-#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionTrianglesInternal() override {
-#ifdef TTK_ENABLE_MPI
-      return this->preconditionDistributedTriangles();
-#endif // TTK_ENABLE_MPI
       return 0;
     }
     inline int preconditionTetrahedronsInternal() override {

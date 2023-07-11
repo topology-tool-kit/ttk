@@ -88,8 +88,7 @@ int ttkTableDistanceMatrix::RequestData(vtkInformation * /*request*/,
     inputPtrs[i] = vec.data();
   }
 
-  std::vector<std::vector<double>> distanceMatrix{};
-  this->execute(distanceMatrix, inputPtrs, inputMatrix[0].size());
+  std::vector<double *> distanceMatrix(inputMatrix.size());
 
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad
@@ -108,11 +107,12 @@ int ttkTableDistanceMatrix::RequestData(vtkInformation * /*request*/,
     vtkNew<vtkDoubleArray> col{};
     col->SetNumberOfTuples(numberOfRows);
     col->SetName(name.c_str());
-    for(int j = 0; j < numberOfRows; ++j) {
-      col->SetTuple1(j, distanceMatrix[i][j]);
-    }
     output->AddColumn(col);
+    distanceMatrix[i]
+      = ttkUtils::GetPointer<double>(vtkDoubleArray::SafeDownCast(col));
   }
+
+  this->execute(distanceMatrix, inputPtrs, inputMatrix[0].size());
 
   this->printMsg("Complete (#dimensions: " + std::to_string(numberOfColumns)
                    + ", #points: " + std::to_string(numberOfRows) + ")",

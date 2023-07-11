@@ -51,9 +51,9 @@
 // base code includes
 #include <Geometry.h>
 
-#include "ContourForests.h"
-#include "ContourForestsTree.h"
-#include "DeprecatedDataTypes.h"
+#include <ContourForests.h>
+#include <ContourForestsTree.h>
+#include <DeprecatedDataTypes.h>
 
 class TTKCONTOURFORESTS_EXPORT ttkContourForests
   : public ttkAlgorithm,

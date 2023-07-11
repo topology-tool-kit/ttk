@@ -1,5 +1,7 @@
 #include <ImplicitTriangulation.h>
 
+#include <numeric>
+
 using namespace std;
 using namespace ttk;
 
@@ -55,9 +57,13 @@ using namespace ttk;
   case EdgePosition::H_Ny_2D
 
 ImplicitTriangulation::ImplicitTriangulation()
-  : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
-    triangleNumber_{}, tetrahedronNumber_{}, isAccelerated_{} {
+  : cellNumber_{}, vertexNumber_{}, edgeNumber_{}, triangleNumber_{},
+    tetrahedronNumber_{}, isAccelerated_{} {
   setDebugMsgPrefix("ImplicitTriangulation");
+#ifdef TTK_ENABLE_MPI
+  this->hasPreconditionedDistributedEdges_ = true;
+  this->hasPreconditionedDistributedTriangles_ = true;
+#endif // TTK_ENABLE_MPI
 }
 
 ImplicitTriangulation::~ImplicitTriangulation() = default;
@@ -277,6 +283,12 @@ template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isVertexOnBoundary)(const SimplexId &vertexId) const {
 
+#ifdef TTK_ENABLE_MPI
+  if(this->metaGrid_ != nullptr) {
+    return this->isVertexOnGlobalBoundaryInternal(vertexId);
+  }
+#endif // TTK_ENABLE_MPI
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return false;
@@ -295,6 +307,12 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
 template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isEdgeOnBoundary)(const SimplexId &edgeId) const {
+
+#ifdef TTK_ENABLE_MPI
+  if(this->metaGrid_ != nullptr) {
+    return this->isEdgeOnGlobalBoundaryInternal(edgeId);
+  }
+#endif // TTK_ENABLE_MPI
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
@@ -321,6 +339,12 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
   const SimplexId &triangleId) const {
+
+#ifdef TTK_ENABLE_MPI
+  if(this->metaGrid_ != nullptr) {
+    return this->isTriangleOnGlobalBoundaryInternal(triangleId);
+  }
+#endif // TTK_ENABLE_MPI
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -3050,67 +3074,87 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
-  if(!ttk::isRunningWithMPI()) {
+  if(!ttk::hasInitializedMPI()) {
     return -1;
   }
-  if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
-    return -2;
-  }
-  if(this->ghostCellMask_ == nullptr) {
-    this->printWrn("Missing ghost mask on cells");
+  if(this->cellGhost_ == nullptr) {
+    if(ttk::isRunningWithMPI()) {
+      this->printErr("Missing cell ghost array!");
+    }
     return -3;
   }
+
+  Timer tm{};
 
   // number of local cells (with ghost cells...)
   const auto nLocCells{this->getNumberOfCells()};
 
-  // there are 6 tetrahedra per cell
-  const int nTetraPerCube{6};
+  // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
   std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
-  // local (simplicial) cell id -> global cell id
-  this->cellLidToGid_.resize(nLocCells);
-  // global (simplicial) cell id -> local cell id (reverse of
-  // this->cellLidToGid_)
-  this->cellGidToLid_.reserve(nLocCells);
-  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    const auto locCubeId{lcid / nTetraPerCube};
-    const auto globCellId{nTetraPerCube * this->cellGid_[locCubeId]
-                          + fillCells[locCubeId]++};
-    this->cellGidToLid_[globCellId] = lcid;
-    this->cellLidToGid_[lcid] = globCellId;
-  }
+  this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
-  // global cell ids for cell owned by current rank
-  std::vector<LongSimplexId> globalCellsInRank{};
-  globalCellsInRank.reserve(nLocCells);
+  this->neighborCellBBoxes_.resize(ttk::MPIsize_);
+  auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
+  // "good" starting values?
+  localBBox = {
+    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
+    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
+    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
+  };
 
-  for(LongSimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    const auto locCubeId{lcid / nTetraPerCube};
-    if(this->ghostCellMask_[locCubeId] == 0) {
-      globalCellsInRank.emplace_back(this->cellLidToGid_[lcid]);
+  for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
+    // only keep non-ghost cells
+    if(this->cellGhost_[lcid / nTetraPerCube] == 1) {
+      continue;
+    }
+    // local vertex coordinates
+    std::array<SimplexId, 3> p{};
+    if(this->dimensionality_ == 3) {
+      this->tetrahedronToPosition(lcid, p.data());
+    } else if(this->dimensionality_ == 2) {
+      this->triangleToPosition2d(lcid, p.data());
+      // compatibility with tetrahedronToPosition; fix a bounding box
+      // error in the first axis
+      p[0] /= 2;
+    }
+
+    // global vertex coordinates
+    p[0] += this->localGridOffset_[0];
+    p[1] += this->localGridOffset_[1];
+    p[2] += this->localGridOffset_[2];
+
+    if(p[0] < localBBox[0]) {
+      localBBox[0] = p[0];
+    }
+    if(p[0] > localBBox[1]) {
+      localBBox[1] = p[0];
+    }
+    if(p[1] < localBBox[2]) {
+      localBBox[2] = p[1];
+    }
+    if(p[1] > localBBox[3]) {
+      localBBox[3] = p[1];
+    }
+    if(p[2] < localBBox[4]) {
+      localBBox[4] = p[2];
+    }
+    if(p[2] > localBBox[5]) {
+      localBBox[5] = p[2];
     }
   }
+  localBBox[1]++;
+  localBBox[3]++;
+  localBBox[5]++;
 
-  // global cell ids per rank (used by rank 0)
-  std::vector<std::vector<LongSimplexId>> cellsRankPerProc{};
-
-  gatherVectors(cellsRankPerProc, globalCellsInRank, 0);
-
-  if(ttk::MPIrank_ == 0) {
-    // global number of cells
-    auto nGlobalCells = cellsRankPerProc[0].size();
-    for(int i = 1; i < MPIsize_; ++i) {
-      nGlobalCells += cellsRankPerProc[i].size();
-    }
-
-    this->cellGidToRank_.resize(nGlobalCells, -1);
-    for(int i = 0; i < MPIsize_; ++i) {
-      for(const auto gcid : cellsRankPerProc[i]) {
-        this->cellGidToRank_[gcid] = i;
-      }
-    }
+  for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
+    const auto neigh{this->neighborRanks_[i]};
+    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
+                 this->neighborCellBBoxes_[neigh].data(), 6,
+                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
+                 MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedCells_ = true;
@@ -3118,257 +3162,220 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   return 0;
 }
 
-template <typename Func>
-int preconditionDistributedIntermediate(size_t &globalCount,
-                                        const std::vector<int> &cellGidToRank,
-                                        const Func &processCells) {
+void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
 
+  // only works with 2 processes or more
   if(!ttk::isRunningWithMPI()) {
-    return -1;
+    return;
   }
 
-  const int COMPUTE = 1, STOP = 2;
-
-  if(ttk::MPIrank_ == 0) {
-    size_t gcid{};
-    while(gcid < cellGidToRank.size()) {
-      const auto currRank{cellGidToRank[gcid]};
-      size_t endCurrRank{gcid + 1};
-      if(gcid < cellGidToRank.size() - 1) {
-        for(size_t j = gcid + 1; j < cellGidToRank.size(); ++j) {
-          if(cellGidToRank[j] != currRank) {
-            endCurrRank = j;
-            break;
-          }
-        }
-        if(endCurrRank == gcid + 1 && cellGidToRank[endCurrRank] == currRank) {
-          endCurrRank = cellGidToRank.size();
-        }
-      }
-
-      if(currRank == 0) {
-        // process local edges
-        processCells(gcid, endCurrRank, globalCount);
-      } else {
-        // send to relevant process
-        std::array<unsigned long, 3> toSend{globalCount, gcid, endCurrRank};
-        MPI_Send(toSend.data(), 3, MPI_UNSIGNED_LONG, currRank, COMPUTE,
-                 ttk::MPIcomm_);
-        // receive updated edgeCount
-        MPI_Recv(&globalCount, 1, MPI_UNSIGNED_LONG, currRank, MPI_ANY_TAG,
-                 ttk::MPIcomm_, MPI_STATUS_IGNORE);
-      }
-
-      gcid = endCurrRank;
-    }
-
-    // send STOP signal to break infinite loop
-    std::array<unsigned long, 3> dummy{};
-    for(int i = 1; i < ttk::MPIsize_; ++i) {
-      MPI_Send(dummy.data(), 3, MPI_UNSIGNED_LONG, i, STOP, ttk::MPIcomm_);
-    }
-
-  } else {
-    while(true) {
-      // receive data
-      std::array<unsigned long, 3> toRecv{};
-      MPI_Status status;
-      MPI_Recv(toRecv.data(), 3, MPI_UNSIGNED_LONG, 0, MPI_ANY_TAG,
-               ttk::MPIcomm_, &status);
-      if(status.MPI_TAG == STOP) {
-        break;
-      }
-      // process local edges
-      globalCount = toRecv[0];
-      processCells(toRecv[1], toRecv[2], globalCount);
-      // send back updated edgeCount to rank 0
-      MPI_Send(&globalCount, 1, MPI_UNSIGNED_LONG, 0, 1, ttk::MPIcomm_);
-    }
+  // no need to create it anew?
+  if(this->metaGrid_ != nullptr) {
+    return;
   }
 
-  return 0;
-}
+  // Reorganize bounds to only execute Allreduce twice
+  std::array<double, 6> tempBounds = {
+    bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
+  };
+  std::array<double, 6> tempGlobalBounds{};
 
-int ttk::ImplicitTriangulation::preconditionDistributedEdges() {
-  if(this->hasPreconditionedDistributedEdges_) {
-    return 0;
-  }
-  if(!ttk::isRunningWithMPI()) {
-    return -1;
-  }
-  if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
-    return -2;
-  }
+  // Compute and send to all processes the lower bounds of the data set
+  MPI_Allreduce(tempBounds.data(), tempGlobalBounds.data(), 3, MPI_DOUBLE,
+                MPI_MIN, ttk::MPIcomm_);
+  // Compute and send to all processes the higher bounds of the data set
+  MPI_Allreduce(&tempBounds[3], &tempGlobalBounds[3], 3, MPI_DOUBLE, MPI_MAX,
+                ttk::MPIcomm_);
 
-  if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
-    return -3;
-  }
-
-  this->preconditionDistributedCells();
-
-  // allocate memory
-  this->edgeLidToGid_.resize(this->getNumberOfEdgesInternal(), -1);
-  this->edgeGidToLid_.reserve(this->getNumberOfEdgesInternal());
-
-  const auto processEdge = [this](const SimplexId leid, const SimplexId lcid,
-                                  size_t &edgeCount) {
-    bool alreadyProcessed{false};
-    const auto nStar{this->TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(leid)};
-    for(SimplexId i = 0; i < nStar; ++i) {
-      SimplexId sid{-1};
-      this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(leid, i, sid);
-      if(sid == -1 || sid == lcid) {
-        continue;
-      }
-      // rule: an edge is owned by the cell in its star with the
-      // lowest global id
-      if(this->cellLidToGid_[sid] < this->cellLidToGid_[lcid]) {
-        alreadyProcessed = true;
-        break;
-      }
-    }
-    if(!alreadyProcessed) {
-      this->edgeLidToGid_[leid] = edgeCount;
-      this->edgeGidToLid_[edgeCount] = leid;
-      edgeCount++;
-    }
+  // re-order tempGlobalBounds
+  std::array<double, 6> globalBounds{
+    tempGlobalBounds[0], tempGlobalBounds[3], tempGlobalBounds[1],
+    tempGlobalBounds[4], tempGlobalBounds[2], tempGlobalBounds[5],
   };
 
-  const auto processCellsEdges
-    = [this, &processEdge](
-        const size_t gcid, const size_t endCurrRank, size_t &edgeCount) {
-        for(size_t j = gcid; j < endCurrRank; ++j) {
-          // local cell id
-          const auto lcid{this->cellGidToLid_[j]};
-          for(SimplexId i = 0; i < this->getCellEdgeNumberInternal(lcid); ++i) {
-            SimplexId leid{-1};
-            this->getCellEdgeInternal(lcid, i, leid);
-            processEdge(leid, lcid, edgeCount);
-          }
-        }
-      };
+  const std::array<int, 3> dimensions = {
+    static_cast<int>(
+      std::round((globalBounds[1] - globalBounds[0]) / this->spacing_[0]))
+      + 1,
+    static_cast<int>(
+      std::round((globalBounds[3] - globalBounds[2]) / this->spacing_[1]))
+      + 1,
+    static_cast<int>(
+      std::round((globalBounds[5] - globalBounds[4]) / this->spacing_[2]))
+      + 1,
+  };
 
-  size_t edgeCount{};
-  preconditionDistributedIntermediate(
-    edgeCount, this->cellGidToRank_, processCellsEdges);
+  this->localGridOffset_ = {
+    static_cast<SimplexId>(
+      std::round((this->origin_[0] - globalBounds[0]) / this->spacing_[0])),
+    static_cast<SimplexId>(
+      std::round((this->origin_[1] - globalBounds[2]) / this->spacing_[1])),
+    static_cast<SimplexId>(
+      std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
+  };
 
-  if(MPIrank_ == 0) {
-    this->printMsg("Domain contains " + std::to_string(edgeCount) + " edges");
-  }
-
-  this->hasPreconditionedDistributedEdges_ = true;
-
-  return 0;
+  this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
+  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
+                                globalBounds[2], this->spacing_[0],
+                                this->spacing_[1], this->spacing_[2],
+                                dimensions[0], dimensions[1], dimensions[2]);
+  this->metaGrid_->preconditionBoundaryVertices();
+  this->metaGrid_->preconditionBoundaryEdges();
+  this->metaGrid_->preconditionBoundaryTriangles();
 }
 
-int ttk::ImplicitTriangulation::preconditionDistributedTriangles() {
-  if(this->hasPreconditionedDistributedTriangles_) {
-    return 0;
+std::array<SimplexId, 3>
+  ttk::ImplicitTriangulation::getVertGlobalCoords(const SimplexId lvid) const {
+
+  // local vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->vertexToPosition(lvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->vertexToPosition2d(lvid, p.data());
   }
+
+  // global vertex coordinates
+  p[0] += this->localGridOffset_[0];
+  p[1] += this->localGridOffset_[1];
+  p[2] += this->localGridOffset_[2];
+
+  return p;
+}
+
+std::array<SimplexId, 3>
+  ttk::ImplicitTriangulation::getVertLocalCoords(const SimplexId gvid) const {
+
+  // global vertex coordinates
+  std::array<SimplexId, 3> p{};
+  if(this->dimensionality_ == 3) {
+    this->metaGrid_->vertexToPosition(gvid, p.data());
+  } else if(this->dimensionality_ == 2) {
+    this->metaGrid_->vertexToPosition2d(gvid, p.data());
+  }
+
+  // local vertex coordinates
+  p[0] -= this->localGridOffset_[0];
+  p[1] -= this->localGridOffset_[1];
+  p[2] -= this->localGridOffset_[2];
+
+  return p;
+}
+
+bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(
+  const SimplexId lvid) const {
+
   if(!ttk::isRunningWithMPI()) {
-    return -1;
-  }
-  if(this->cellGid_ == nullptr) {
-    this->printWrn("Missing global identifiers on cells");
-    return -2;
+    return this->isVertexOnBoundary(lvid);
   }
 
-  if(this->getDimensionality() != 3) {
-    return -3;
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(lvid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
+     || lvid < 0) {
+    return false;
   }
-
-  this->preconditionDistributedCells();
-
-  // allocate memory
-  this->triangleLidToGid_.resize(this->getNumberOfTrianglesInternal(), -1);
-  this->triangleGidToLid_.reserve(this->getNumberOfTrianglesInternal());
-
-  const auto processTriangle =
-    [this](const SimplexId ltid, const SimplexId lcid, size_t &triangleCount) {
-      bool alreadyProcessed{false};
-      const auto nStar{
-        this->TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(ltid)};
-      for(SimplexId i = 0; i < nStar; ++i) {
-        SimplexId sid{-1};
-        this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(ltid, i, sid);
-        if(sid == -1 || sid == lcid) {
-          continue;
-        }
-        // rule: an edge is owned by the cell in its star with the
-        // lowest global id
-        if(this->cellLidToGid_[sid] < this->cellLidToGid_[lcid]) {
-          alreadyProcessed = true;
-          break;
-        }
-      }
-      if(!alreadyProcessed) {
-        this->triangleLidToGid_[ltid] = triangleCount;
-        this->triangleGidToLid_[triangleCount] = ltid;
-        triangleCount++;
-      }
-    };
-
-  const auto processCellsTriangles
-    = [this, &processTriangle](
-        const size_t gcid, const size_t endCurrRank, size_t &triangleCount) {
-        for(size_t j = gcid; j < endCurrRank; ++j) {
-          // local cell id
-          const auto lcid{this->cellGidToLid_[j]};
-          for(SimplexId i = 0; i < this->getCellTriangleNumberInternal(lcid);
-              ++i) {
-            SimplexId ltid{-1};
-            this->getCellTriangleInternal(lcid, i, ltid);
-            processTriangle(ltid, lcid, triangleCount);
-          }
-        }
-      };
-
-  size_t triangleCount{};
-  preconditionDistributedIntermediate(
-    triangleCount, this->cellGidToRank_, processCellsTriangles);
-
-  if(MPIrank_ == 0) {
-    this->printMsg("Domain contains " + std::to_string(triangleCount)
-                   + " triangles");
+  if(this->metaGrid_ == nullptr) {
+    return false;
   }
+#endif // TTK_ENABLE_KAMIKAZE
 
-  this->hasPreconditionedDistributedTriangles_ = true;
-
-  return 0;
+  const auto gvid{this->getVertexGlobalIdInternal(lvid)};
+  if(gvid == -1) {
+    return false;
+  }
+  return this->metaGrid_->isVertexOnBoundary(gvid);
 }
 
-int ImplicitTriangulation::preconditionDistributedVertices() {
-  if(this->hasPreconditionedDistributedVertices_) {
-    return 0;
+bool ImplicitTriangulation::isEdgeOnGlobalBoundaryInternal(
+  const SimplexId leid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return this->isEdgeOnBoundary(leid);
   }
-  if(!isRunningWithMPI()) {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(leid > this->getNumberOfEdgesInternal() - 1 || leid < 0) {
+    return false;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return false;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto geid{this->getEdgeGlobalIdInternal(leid)};
+  if(geid == -1) {
+    return false;
+  }
+  return this->metaGrid_->isEdgeOnBoundary(geid);
+}
+
+bool ImplicitTriangulation::isTriangleOnGlobalBoundaryInternal(
+  const SimplexId ltid) const {
+
+  if(!ttk::isRunningWithMPI()) {
+    return this->isTriangleOnBoundary(ltid);
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ltid > this->getNumberOfTrianglesInternal() - 1 || ltid < 0) {
+    return false;
+  }
+  if(this->metaGrid_ == nullptr) {
+    return false;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto gtid{this->getTriangleGlobalIdInternal(ltid)};
+  if(gtid == -1) {
+    return false;
+  }
+  return this->metaGrid_->isTriangleOnBoundary(gtid);
+}
+
+int ttk::ImplicitTriangulation::getCellRankInternal(
+  const SimplexId lcid) const {
+
+  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  const auto locCubeId{lcid / nTetraPerCube};
+
+  if(this->cellGhost_[locCubeId] == 0) {
+    return ttk::MPIrank_;
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(this->neighborRanks_.empty() && ttk::MPIsize_ > 1) {
+    this->printErr("Empty neighborsRanks_!");
     return -1;
   }
-  if(this->globalIdsArray_ == nullptr) {
-    this->printWrn("Missing global identifiers array!");
-    return -2;
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto nVertsCell{this->getCellVertexNumber(lcid)};
+  std::vector<bool> inRank(nVertsCell);
+  for(const auto neigh : this->neighborRanks_) {
+    std::fill(inRank.begin(), inRank.end(), false);
+    const auto &bbox{this->neighborCellBBoxes_[neigh]};
+    for(SimplexId i = 0; i < nVertsCell; ++i) {
+      SimplexId v{};
+      this->getCellVertex(lcid, i, v);
+      if(this->vertexGhost_[v] == 0) {
+        inRank[i] = true;
+      } else {
+        const auto p{this->getVertGlobalCoords(v)};
+        if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
+           && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
+          inRank[i] = true;
+        }
+      }
+    }
+    if(std::all_of(
+         inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
+      return neigh;
+    }
   }
 
-  // allocate memory
-  this->vertexLidToGid_.resize(this->vertexNumber_, -1);
-  this->vertexGidToLid_.reserve(this->vertexNumber_);
-
-  for(SimplexId i = 0; i < this->vertexNumber_; ++i) {
-    this->vertexLidToGid_[i] = this->globalIdsArray_[i];
-    this->vertexGidToLid_[this->globalIdsArray_[i]] = i;
-  }
-
-  if(MPIrank_ == 0) {
-    this->printMsg("Domain contains "
-                   + std::to_string(this->getNumberOfVerticesInternal())
-                   + " vertices");
-  }
-
-  this->hasPreconditionedDistributedVertices_ = true;
-
-  return 0;
+  return -1;
 }
+
 #endif // TTK_ENABLE_MPI
 
 // explicit instantiations

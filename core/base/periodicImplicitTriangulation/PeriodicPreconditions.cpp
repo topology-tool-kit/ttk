@@ -27,9 +27,6 @@ int ttk::PeriodicWithPreconditions::preconditionVerticesInternal() {
       vertexToPosition(i, p.data());
     }
   }
-#ifdef TTK_ENABLE_MPI
-  return this->preconditionDistributedVertices();
-#endif // TTK_ENABLE_MPI
 
   return 0;
 }

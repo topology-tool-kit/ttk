@@ -388,7 +388,7 @@ int FiberSurface::computeTriangleIntersection(
   std::array<double, 3> baryA = barypA, baryB = barypB;
   if(fabs(barypB[(pivotVertexId + 1) % 3])
      < fabs(barypA[(pivotVertexId + 1) % 3])) {
-    // let's swith the two
+    // let's switch the two
     A = pB;
     B = pA;
     baryA = barypB;

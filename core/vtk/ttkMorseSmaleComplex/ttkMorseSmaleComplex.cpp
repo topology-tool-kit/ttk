@@ -484,7 +484,6 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                           ttkUtils::GetPointer<SimplexId>(descendingManifold),
                           ttkUtils::GetPointer<SimplexId>(morseSmaleManifold)};
 
-  this->setIterationThreshold(IterationThreshold);
   this->setReturnSaddleConnectors(ReturnSaddleConnectors);
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);

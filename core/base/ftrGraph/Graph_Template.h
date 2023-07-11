@@ -21,12 +21,11 @@ namespace ttk {
       std::map<std::pair<idVertex, idVertex>, idSuperArc> masterArcs;
 
       // int totalArc = getNumberOfArcs();
-      int merged = 0;
 
       // Arc created by increasing and decreasing tasks are reversed in
       // terms of up/down node. We use this property to merge such arcs. in
       // order to distinguish between arcs around a loop, and arc is
-      // described by the fisrt and last vertex of its segmentation if any.
+      // described by the first and last vertex of its segmentation if any.
       // Otherwise by its up / last node.
 
       const idSuperArc nbArcs = arcs_.size();
@@ -70,8 +69,6 @@ namespace ttk {
         }
 
         if(arc.merged()) {
-          ++merged;
-          // std::cout << "arc merged: " << printArc(arcId) << std::endl;
           const idSuperArc target = arc.mergedIn();
           if(mapArcs.count(target) == 0) {
             mapArcs[arcId] = target;
@@ -79,8 +76,6 @@ namespace ttk {
           }
         }
       }
-
-      // std::cout << "Merged: " << merged << " / " << totalArc << std::endl;
 
       if(!mapArcs.size())
         return;

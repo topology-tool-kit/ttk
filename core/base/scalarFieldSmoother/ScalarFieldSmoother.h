@@ -26,14 +26,18 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
 ///   Harmonic Skeleton example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/morseMolecule/">
-/// Morse molecule example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">
 ///   Morse Molecule example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
+///   segmentation example</a> \n
 
 #pragma once
 
@@ -68,6 +72,9 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
+#ifdef TTK_ENABLE_MPI
+        triangulation->preconditionExchangeGhostVertices();
+#endif // TTK_ENABLE_MPI
       }
       return 0;
     }
@@ -101,24 +108,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
   if(!outputData_)
     return -4;
 #endif
-  int *rankArray{nullptr};
-  SimplexId *globalIds{nullptr};
-  bool useMPI = false;
-  const std::unordered_map<SimplexId, SimplexId> *map = nullptr;
-  TTK_FORCE_USE(useMPI);
-  TTK_FORCE_USE(map);
-  TTK_FORCE_USE(rankArray);
-  TTK_FORCE_USE(globalIds);
 
-#if TTK_ENABLE_MPI
-  rankArray = triangulation->getRankArray();
-  globalIds = (SimplexId *)triangulation->getGlobalIdsArray();
-  if(ttk::isRunningWithMPI() && rankArray != nullptr && globalIds != nullptr) {
-    useMPI = true;
-    map = triangulation->getVertexGlobalIdMap();
-  }
-
-#endif
   SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
@@ -176,14 +166,14 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
         }
       }
     }
-#if TTK_ENABLE_MPI
-    if(useMPI) {
+#ifdef TTK_ENABLE_MPI
+    if(ttk::isRunningWithMPI()) {
       // after each iteration we need to exchange the ghostcell values with our
       // neighbors
-      exchangeGhostCells<dataType, SimplexId>(
-        outputData, rankArray, globalIds, *map, vertexNumber, ttk::MPIcomm_);
+      exchangeGhostVertices<dataType, triangulationType>(
+        outputData, triangulation, ttk::MPIcomm_, dimensionNumber_);
     }
-#endif
+#endif // TTK_ENABLE_MPI
 
     if(debugLevel_ >= (int)(debug::Priority::INFO)) {
       if(!(it % ((numberOfIterations) / timeBuckets))) {

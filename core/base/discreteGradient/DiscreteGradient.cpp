@@ -23,10 +23,6 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
     numberOfCells[i] = this->getNumberOfCells(i, triangulation);
   }
 
-  dmtMax2PL_.clear();
-  dmt1Saddle2PL_.clear();
-  dmt2Saddle2PL_.clear();
-
   // clear & init gradient memory
   for(int i = 0; i < dimensionality_; ++i) {
     (*gradient_)[2 * i].clear();
@@ -168,21 +164,23 @@ bool DiscreteGradient::isCellCritical(const int cellDim,
   }
 
   if(cellDim == 0) {
-    return ((*gradient_)[0][cellId] == -1);
+    return ((*gradient_)[0][cellId] == NULL_GRADIENT);
   }
 
   if(cellDim == 1) {
-    return ((*gradient_)[1][cellId] == -1
-            && (dimensionality_ == 1 || (*gradient_)[2][cellId] == -1));
+    return (
+      (*gradient_)[1][cellId] == NULL_GRADIENT
+      && (dimensionality_ == 1 || (*gradient_)[2][cellId] == NULL_GRADIENT));
   }
 
   if(cellDim == 2) {
-    return ((*gradient_)[3][cellId] == -1
-            && (dimensionality_ == 2 || (*gradient_)[4][cellId] == -1));
+    return (
+      (*gradient_)[3][cellId] == NULL_GRADIENT
+      && (dimensionality_ == 2 || (*gradient_)[4][cellId] == NULL_GRADIENT));
   }
 
   if(cellDim == 3) {
-    return ((*gradient_)[5][cellId] == -1);
+    return ((*gradient_)[5][cellId] == NULL_GRADIENT);
   }
 
   return false;
@@ -192,36 +190,20 @@ bool DiscreteGradient::isCellCritical(const Cell &cell) const {
   return isCellCritical(cell.dim_, cell.id_);
 }
 
-int DiscreteGradient::getCriticalPointMap(
-  const vector<pair<SimplexId, char>> &criticalPoints, vector<char> &isPL) {
-  isPL.resize(numberOfVertices_);
-  std::fill(isPL.begin(), isPL.end(), 0);
-  for(pair<SimplexId, char> criticalPoint : criticalPoints) {
-    const SimplexId criticalPointId = criticalPoint.first;
-    const char criticalPointType = criticalPoint.second;
-
-    isPL[criticalPointId] = criticalPointType;
-  }
-
-  return 0;
-}
-
 int DiscreteGradient::setManifoldSize(
-  const size_t nCritPoints,
-  const std::vector<size_t> &nCriticalPointsByDim,
+  const std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   std::vector<SimplexId> &manifoldSize) const {
 
-  // in the manifoldSize vector, critical points are sorted first by
-  // dim then by index
+  const auto nCritPoints{
+    criticalCellsByDim[0].size() + criticalCellsByDim[1].size()
+    + criticalCellsByDim[2].size() + criticalCellsByDim[3].size()};
 
-  // ascendingManifold (resp. descendingManifold) region indices are
-  // numbered from 0 to #maxima == nCriticalPointsByDim.back()
-  // (resp. #minina == nCriticalPointsByDim[0])
+  const auto dim{this->dimensionality_};
 
   if(nCritPoints == 0
-     || (nCriticalPointsByDim[0] == 0 && nCriticalPointsByDim.back() == 0)) {
+     || (criticalCellsByDim[0].empty() && criticalCellsByDim[dim].empty())) {
     // no critical points || no extrema
     return 0;
   }
@@ -229,7 +211,7 @@ int DiscreteGradient::setManifoldSize(
   manifoldSize.resize(nCritPoints, 0);
 
   // descending manifold cells size
-  if(nCriticalPointsByDim[0] > 0) {
+  if(!criticalCellsByDim[0].empty()) {
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {
       if(descendingManifold[i] != -1) {
         manifoldSize[descendingManifold[i]]++;
@@ -237,9 +219,9 @@ int DiscreteGradient::setManifoldSize(
     }
   }
 
-  if(nCriticalPointsByDim.back() > 0) {
+  if(!criticalCellsByDim[dim].empty()) {
     // index of first maximum in critical points array
-    const auto nFirstMaximum{nCritPoints - nCriticalPointsByDim.back()};
+    const auto nFirstMaximum{nCritPoints - criticalCellsByDim[dim].size()};
 
     // ascending manifold cells size
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {
@@ -251,3 +233,26 @@ int DiscreteGradient::setManifoldSize(
 
   return 0;
 }
+
+#ifdef TTK_ENABLE_MPI
+void DiscreteGradient::setCellToGhost(const int cellDim,
+                                      const SimplexId cellId) {
+  if(cellDim == 0) {
+    (*gradient_)[0][cellId] = GHOST_GRADIENT;
+  }
+
+  if(cellDim == 1) {
+    (*gradient_)[1][cellId] = GHOST_GRADIENT;
+    (*gradient_)[2][cellId] = GHOST_GRADIENT;
+  }
+
+  if(cellDim == 2) {
+    (*gradient_)[3][cellId] = GHOST_GRADIENT;
+    (*gradient_)[4][cellId] = GHOST_GRADIENT;
+  }
+
+  if(cellDim == 3) {
+    (*gradient_)[5][cellId] = GHOST_GRADIENT;
+  }
+}
+#endif

@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "TTK-Default",
+      "hidden": true,
+      "binaryDir": "build",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "TTK_ENABLE_DOUBLE_TEMPLATING": "ON"
+      }
+    },
+    {
+      "name": "TTK-Release",
+      "inherits": "TTK-Default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TTK_ENABLE_CPU_OPTIMIZATION": "OFF",
+        "TTK_ENABLE_MPI": "OFF",
+        "TTK_ENABLE_KAMIKAZE": "ON"
+      }
+    },
+    {
+      "name": "TTK-PerformanceBenchmark",
+      "inherits": "TTK-Default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TTK_ENABLE_CPU_OPTIMIZATION": "ON",
+        "TTK_ENABLE_KAMIKAZE": "ON"
+      }
+    },
+    {
+      "name": "TTK-Debug",
+      "inherits": "TTK-Default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TTK_ENABLE_KAMIKAZE": "OFF"
+      }
+    }
+  ]
+}

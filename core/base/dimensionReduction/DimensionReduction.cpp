@@ -49,25 +49,28 @@ bool DimensionReduction::isPythonFound() const {
 #endif
 }
 
-int DimensionReduction::execute() const {
+int DimensionReduction::execute(
+  std::vector<std::vector<double>> &outputEmbedding,
+  const std::vector<double> &inputMatrix,
+  const int nRows,
+  const int nColumns) const {
+
 #ifdef TTK_ENABLE_SCIKIT_LEARN
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_ < '3')
     return -1;
-  if(ModulePath.length() <= 0)
-    return -1;
-  if(ModuleName.length() <= 0)
-    return -1;
-  if(FunctionName.length() <= 0)
-    return -1;
-  if(!matrix_)
-    return -1;
+  if(ModulePath.empty())
+    return -2;
+  if(ModuleName.empty())
+    return -3;
+  if(FunctionName.empty())
+    return -4;
 #endif
 
   Timer t;
 
-  const int numberOfComponents = std::max(2, numberOfComponents_);
-  const int numberOfNeighbors = std::max(1, numberOfNeighbors_);
+  const int numberOfComponents = std::max(2, this->NumberOfComponents);
+  const int numberOfNeighbors = std::max(1, this->NumberOfNeighbors);
 
   // declared here to avoid crossing initialization with goto
   vector<PyObject *> gc;
@@ -104,18 +107,18 @@ int DimensionReduction::execute() const {
 #endif // __clang_analyzer__
   }
   if(PyArray_API == nullptr) {
-    return -1;
+    return -5;
   }
 
   // convert the input matrix into a NumPy array.
   const int numberOfDimensions = 2;
-  npy_intp dimensions[2]{numberOfRows_, numberOfColumns_};
+  npy_intp dimensions[2]{nRows, nColumns};
 
   std::vector<std::string> methodToString{
     "SE", "LLE", "MDS", "t-SNE", "IsoMap", "PCA"};
 
-  pArray = PyArray_SimpleNewFromData(
-    numberOfDimensions, dimensions, NPY_DOUBLE, matrix_);
+  pArray = PyArray_SimpleNewFromData(numberOfDimensions, dimensions, NPY_DOUBLE,
+                                     const_cast<double *>(inputMatrix.data()));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pArray) {
     this->printErr("Python: failed to convert the array.");
@@ -171,7 +174,7 @@ int DimensionReduction::execute() const {
 #endif
   gc.push_back(pNumberOfNeighbors);
 
-  pMethod = PyLong_FromLong(method_);
+  pMethod = PyLong_FromLong(static_cast<long>(this->Method));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pMethod) {
     this->printErr("Python: cannot convert pMethod.");
@@ -180,7 +183,7 @@ int DimensionReduction::execute() const {
 #endif
   gc.push_back(pMethod);
 
-  if(threadNumber_ > 1 && method_ == 2) { // MDS
+  if(threadNumber_ > 1 && this->Method == METHOD::MDS) { // MDS
     this->printWrn(
       "MDS is known to be instable when used with multiple threads");
   }
@@ -192,7 +195,7 @@ int DimensionReduction::execute() const {
   }
 #endif
 
-  pIsDeterministic = PyLong_FromLong(randomState_);
+  pIsDeterministic = PyLong_FromLong(static_cast<long>(this->IsDeterministic));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pIsDeterministic) {
     this->printErr("Python: cannot convert pIsDeterministic.");
@@ -331,20 +334,21 @@ int DimensionReduction::execute() const {
   }
 #endif
 
-  if(PyLong_AsLong(pNRows) == numberOfRows_
+  if(PyLong_AsLong(pNRows) == nRows
      and PyLong_AsLong(pNColumns) == numberOfComponents) {
     npEmbedding = reinterpret_cast<PyArrayObject *>(pEmbedding);
 
-    embedding_->resize(numberOfComponents);
+    outputEmbedding.resize(numberOfComponents);
     for(int i = 0; i < numberOfComponents; ++i) {
+      outputEmbedding[i].resize(nRows);
       if(PyArray_TYPE(npEmbedding) == NPY_FLOAT) {
         float *c_out = reinterpret_cast<float *>(PyArray_DATA(npEmbedding));
-        for(int j = 0; j < numberOfRows_; ++j)
-          (*embedding_)[i].push_back(c_out[i * numberOfRows_ + j]);
+        for(int j = 0; j < nRows; ++j)
+          outputEmbedding[i][j] = c_out[i * nRows + j];
       } else if(PyArray_TYPE(npEmbedding) == NPY_DOUBLE) {
         double *c_out = reinterpret_cast<double *>(PyArray_DATA(npEmbedding));
-        for(int j = 0; j < numberOfRows_; ++j)
-          (*embedding_)[i].push_back(c_out[i * numberOfRows_ + j]);
+        for(int j = 0; j < nRows; ++j)
+          outputEmbedding[i][j] = c_out[i * nRows + j];
       }
     }
   }
@@ -353,8 +357,8 @@ int DimensionReduction::execute() const {
   for(auto i : gc)
     Py_DECREF(i);
 
-  this->printMsg("Computed " + methodToString[this->method_], 1.0,
-                 t.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Computed " + methodToString[static_cast<int>(this->Method)],
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 
@@ -364,7 +368,7 @@ collect_garbage:
 #endif
   for(auto i : gc)
     Py_DECREF(i);
-  return -1;
+  return -6;
 
 #endif
 

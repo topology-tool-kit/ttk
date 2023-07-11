@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkClusteringMetrics" class="ttkClusteringMetrics" label="TTK ClusteringMetrics">
+      <Documentation long_help="ClusteringMetrics Long" short_help="ClusteringMetrics Short">This filters takes two columns of a vtkTable, each representing a clustering of the points. It computes two metrics indicating how the two clustering are similar: the NMI and the ARI values.</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Clustering1"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+          </DataTypeDomain>
+          <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Clustering1" function="FieldDataSelection" />
+        </InputArrayDomain>
+ 
+        <Documentation>
+          A first clustering (for instance the ground truth)
+        </Documentation>
+      </InputProperty>
+
+     <InputProperty
+        name="Clustering2"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+          </DataTypeDomain>
+          <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Clustering2" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          A second clustering (for instance one computed by a clustering algorithm).
+        </Documentation>
+      </InputProperty>
+
+
+      <StringVectorProperty
+        name="SelectClustering1"
+        label="Clustering1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5" default_values="0">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Clustering1" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the columns representing the first clustering.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="SelectClustering2"
+        label="Clustering2"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5" default_values="1">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Clustering2" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the columns representing the second clustering.
+        </Documentation>
+      </StringVectorProperty>
+
+ 
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+      
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SelectClustering1"/>
+        <Property name="SelectClustering2" />
+      </PropertyGroup>
+     
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -69,7 +69,7 @@ namespace ttk {
       // create a new arc region with the associated Segment in Segments
       ArcRegion(const segmentIterator &s);
 
-      // During combinaison: concat some segmentations
+      // During combinations: concat some segmentations
       void addSegment(const segmentIterator &begin, const segmentIterator &end);
 
       // Put all segments in one std::vector in the arc

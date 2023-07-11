@@ -17,9 +17,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
 
     - name: Install Ubuntu dependencies
@@ -59,7 +59,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload Debian package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-headless-${{ matrix.os }}
         path: build/ttk-paraview.deb
@@ -71,12 +71,8 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
-
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /usr/local/Frameworks/Python.framework
 
     - name: Install macOS dependencies
       run: |
@@ -91,7 +87,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DPARAVIEW_USE_MPI=ON \
           -DPARAVIEW_USE_QT=OFF \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \
           $GITHUB_WORKSPACE
 
@@ -99,15 +94,14 @@ jobs:
       run: |
         cd build
         cmake --build . --parallel
-        sudo cmake --build . --target install
 
     - name: Create ParaView package
       run: |
         cd build
-        sudo cpack -G TGZ
+        cpack -G TGZ
 
     - name: Upload compressed binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-headless-macOS
         path: build/ttk-paraview.tar.gz
@@ -122,7 +116,7 @@ jobs:
       CONDA_ROOT: C:\Miniconda
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       name: Checkout TTK-ParaView source code
 
     - uses: s-weigand/setup-conda@v1
@@ -164,7 +158,7 @@ jobs:
         mv ttk-paraview.exe $GITHUB_WORKSPACE
 
     - name: Upload install executable
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ttk-paraview-headless-windows
         path: ttk-paraview.exe
@@ -177,27 +171,36 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-ubuntu, build-macos, build-windows]
     steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Delete previous release
+      uses: actions/github-script@v6
+      continue-on-error: true
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: true
+        script: |
+          const { owner, repo } = context.repo
+          const { data: { id } } = await github.rest.repos.getReleaseByTag({
+            owner,
+            repo,
+            tag: "${{ github.ref_name }}"
+          })
+          await github.rest.repos.deleteRelease({ owner, repo, release_id: id })
+
+    - name: Create Release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { owner, repo } = context.repo
+          await github.rest.repos.createRelease({
+            owner,
+            repo,
+            tag_name: "${{ github.ref_name }}",
+            name: "Release ${{ github.ref_name }}",
+            draft: false,
+            prerelease: true
+          })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v2
-
-    - name: Upload Ubuntu Bionic .deb as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: ttk-paraview-headless-ubuntu-18.04/ttk-paraview.deb
-        asset_name: ttk-paraview-headless-ubuntu-18.04.deb
+      uses: actions/download-artifact@v3
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
@@ -230,3 +233,9 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-paraview-headless-windows/ttk-paraview.exe
         asset_name: ttk-paraview-headless.exe
+
+    - name: Delete package artifacts
+      uses: geekyeggo/delete-artifact@v2
+      with:
+          name: |
+              ttk-paraview-headless*

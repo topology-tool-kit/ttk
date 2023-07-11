@@ -47,6 +47,9 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" attribute_type="point" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
@@ -225,7 +228,7 @@
         </Documentation>
       </IntVectorProperty>-->
 
-      <IntVectorProperty name="Independant Merge Trees"
+      <IntVectorProperty name="Independent Merge Trees"
         command="SetLessPartition"
         label="Parallel Join/Split tree computation"
         number_of_elements="1"
@@ -255,7 +258,7 @@
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Parallelism">
-        <Property name="Independant Merge Trees"/>
+        <Property name="Independent Merge Trees"/>
         <Property name="Partition Number"/>
       </PropertyGroup>
 

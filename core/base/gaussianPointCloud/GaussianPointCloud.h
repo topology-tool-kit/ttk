@@ -22,6 +22,7 @@ namespace ttk {
 
     template <class dataType>
     int castSample(const int &dimension,
+                   std::mt19937 &gen,
                    dataType &x,
                    dataType &y,
                    dataType &z) const;
@@ -30,18 +31,17 @@ namespace ttk {
     template <class dataType>
     int generate(const int &dimension,
                  const int &numberOfSamples,
+                 const int &seed,
                  dataType *const outputData) const;
   };
 } // namespace ttk
 
 template <class dataType>
 int ttk::GaussianPointCloud::castSample(const int &dimension,
+                                        std::mt19937 &gen,
                                         dataType &x,
                                         dataType &y,
                                         dataType &z) const {
-
-  std::random_device rd{};
-  std::mt19937 gen{rd()};
 
   dataType u, v, w;
 
@@ -66,22 +66,23 @@ int ttk::GaussianPointCloud::castSample(const int &dimension,
 template <class dataType>
 int ttk::GaussianPointCloud::generate(const int &dimension,
                                       const int &numberOfSamples,
+                                      const int &seed,
                                       dataType *const outputData) const {
 
   Timer t;
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
+  std::mt19937 gen{};
+  gen.seed(seed);
+
   for(int i = 0; i < numberOfSamples; i++) {
-    castSample<dataType>(dimension, outputData[3 * i], outputData[3 * i + 1],
-                         outputData[3 * i + 2]);
+    this->castSample(dimension, gen, outputData[3 * i], outputData[3 * i + 1],
+                     outputData[3 * i + 2]);
   }
 
   this->printMsg(std::vector<std::vector<std::string>>{
     {"#Samples", std::to_string(numberOfSamples)}});
   this->printMsg("Samples generated in " + std::to_string(dimension) + "D", 1.0,
-                 t.getElapsedTime(), this->threadNumber_);
+                 t.getElapsedTime(), 1);
 
   return 0;
 }

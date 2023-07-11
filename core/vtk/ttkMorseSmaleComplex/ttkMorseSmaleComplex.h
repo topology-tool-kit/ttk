@@ -163,6 +163,9 @@ public:
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
+  vtkSetMacro(ThresholdIsAbsolute, bool);
+  vtkGetMacro(ThresholdIsAbsolute, bool);
+
 protected:
   template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,

@@ -8,7 +8,7 @@
 ///
 /// VTK wrapping code for the ttk::TrackingFromOverlap package.
 ///
-/// This filter identifies and tracks labled vtkPointSets across time (and
+/// This filter identifies and tracks labeled vtkPointSets across time (and
 /// optionally levels) based on spatial overlap, where two points overlap iff
 /// their corresponding coordinates are equal. This filter can be executed
 /// iteratively and can generate nested tracking graphs.

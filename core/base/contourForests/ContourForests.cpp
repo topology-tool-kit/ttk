@@ -20,8 +20,8 @@ Interface::Interface(const SimplexId &seed) : seed_(seed) {
 // ------------------------- ContourForests
 
 ContourForests::ContourForests()
-  : ContourForestsTree(new Params(), new Scalars()), parallelParams_(),
-    parallelData_() {
+  : ContourForestsTree(std::make_shared<Params>(), std::make_shared<Scalars>()),
+    parallelParams_(), parallelData_() {
   this->setDebugMsgPrefix("ContourForests");
   this->printWrn(
     "DEPRECATED This module will be removed in a future release, please use "
@@ -30,8 +30,8 @@ ContourForests::ContourForests()
 }
 
 ContourForests::~ContourForests() {
-  delete params_;
-  delete scalars_;
+  params_.reset();
+  scalars_.reset();
 }
 
 // Get
@@ -105,8 +105,8 @@ void ContourForests::initNbPartitions() {
 // {
 
 void ContourForests::stitch() {
-  // We need goods informations here befor starting
-  // Get the arc/NODE correspoding to the seed + crossingEdges
+  // We need goods information here before starting
+  // Get the arc/NODE corresponding to the seed + crossingEdges
 
   if(params_->treeType == TreeType::Contour) {
     stitchTree(2);
@@ -221,7 +221,7 @@ void ContourForests::stitchTree(const char treetype) {
       curTreeStitchNode->clearUpSuperArcs();
 
       // for the other tree we need to replace arc (hide the one that is
-      // replaced) Exeption : the seed may contain noise directly above: we
+      // replaced) Exception : the seed may contain noise directly above: we
       // clear its down arcs if it is the stitch node.
       if(stitchVertex == seedPair.first) {
         if(DEBUG) {
@@ -332,7 +332,7 @@ void ContourForests::unifyTree(const char treetype) {
   tmpTree.treeData_.nodes.reserve(scalars_->size / 50);
   tmpTree.treeData_.superArcs.reserve(scalars_->size / 50);
 
-  // partition, node in partion, is a leaf
+  // partition, node in partition, is a leaf
   queue<tuple<idInterface, idNode>> leavesNodes;
   vector<unsigned> nbVisit(scalars_->size, 0);
 
@@ -485,7 +485,8 @@ void ContourForests::unifyTree(const char treetype) {
 
       // Finish the current Arc (segmentation + close)
       if(totalSize) {
-        newArc_tt->appendVertLists(listVertList, listVertSize, totalSize);
+        newArc_tt->appendVertLists(
+          listVertList, listVertSize, this->storage_, totalSize);
       }
       const idNode &closingNode_tt = tmpTree.makeNode(currentNode);
       tmpTree.closeSuperArc(newArcId_tt, closingNode_tt, false, false);
@@ -527,9 +528,9 @@ void ContourForests::unifyTree(const char treetype) {
 
   // could use swap, more efficient
   if(treetype == 0) {
-    jt_->clone(&tmpTree);
+    jt_.clone(&tmpTree);
   } else if(treetype == 1) {
-    st_->clone(&tmpTree);
+    st_.clone(&tmpTree);
   } else if(treetype == 2) {
     clone(&tmpTree);
   }

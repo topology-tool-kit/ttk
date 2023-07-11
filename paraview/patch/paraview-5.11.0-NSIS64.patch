@@ -1,0 +1,11 @@
+diff --git a/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt b/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt
+index 507e84874..93f1c2415 100644
+--- a/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt
++++ b/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt
+@@ -113,5 +113,5 @@ set(ALL_DATA_FILE
+ install(
+   FILES ${ALL_DATA_FILE}
+   DESTINATION ${DATADIR}
+-  COMPONENT "libproj-data"
++  COMPONENT "libproj_data"
+ )

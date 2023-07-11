@@ -9,7 +9,11 @@
 
 namespace ttk {
   /// \brief Identifier type for simplices of any dimension.
+#ifdef TTK_HW_IS_32BITS // i386
+  using LongSimplexId = int;
+#else // amd64
   using LongSimplexId = long long int;
+#endif // TTK_HW_IS_32BITS
 
   /// \brief Identifier type for simplices of any dimension.
 #ifdef TTK_ENABLE_64BIT_IDS
@@ -29,6 +33,9 @@ namespace ttk {
 
   /// default name for vertex scalar field
   const char VertexScalarFieldName[] = "ttkVertexScalarField";
+
+  /// default name for cell scalar field
+  const char CellScalarFieldName[] = "ttkCellScalarField";
 
   /// default name for offset scalar field
   const char OffsetScalarFieldName[] = "ttkOffsetScalarField";

@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreePrincipalGeodesicsDecoding" class="ttkMergeTreePrincipalGeodesicsDecoding" label="TTK MergeTreePrincipalGeodesicsDecoding">
+      <Documentation long_help="MergeTreePrincipalGeodesicsDecoding Long" short_help="MergeTreePrincipalGeodesicsDecoding Short">
+
+        This filter reconstructs merge trees (or persistence diagrams) given their coordinates in a basis computed via Principal Geodesic Analysis.
+
+        Related publication:
+
+        'Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)'
+        Mathieu Pont, Jules Vidal, Julien Tierny.
+        IEEE Transactions on Visualization and Computer Graphics, 2022
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+
+        </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="Barycenter"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Merge trees to process.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Coefficients"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Projection coefficients of the input trees in the new basis.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Geodesics Vectors"
+        port_index="2"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Vectors defining the principal geodesics.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Correlation Matrix (optional)"
+        port_index="3"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Correlation between branches and geodesics axis.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Input Trees (optional)"
+        port_index="4"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Original input trees.
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      <IntVectorProperty
+      name="OutputInputTrees"
+      command="SetOutputInputTrees"
+      label="Output Input Trees"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="OutputInputTreesSegmentation"
+      command="SetOutputInputTreesSegmentation"
+      label="Output Input Trees Segmentation"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="OutputInputTrees"
+                                value="1" />
+        </Hints>
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="OutputBarycenter"
+      command="SetOutputBarycenter"
+      label="Output Barycenter"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ReconstructInputTrees"
+      command="SetReconstructInputTrees"
+      label="Reconstruct Input Trees"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ComputeReconstructionError"
+      command="SetcomputeReconstructionError_"
+      label="Compute Reconstruction Error"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="ReconstructInputTrees"
+                                value="1" />
+        </Hints>
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="TransferInputTreesInformation"
+      command="SettransferInputTreesInformation_"
+      label="Transfer Input Trees Information"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="ReconstructInputTrees"
+                                value="1" />
+        </Hints>
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="TransferBarycenterInformation"
+      command="SettransferBarycenterInformation_"
+      label="Transfer Barycenter Information"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="ReconstructInputTrees"
+                                value="1" />
+        </Hints>
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ConstructGeodesicsTrees"
+      command="SetConstructGeodesicsTrees"
+      label="Construct Geodesics Trees"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ConstructEllipses"
+      command="SetConstructEllipses"
+      label="Construct Ellipses"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ConstructRectangle"
+      command="SetConstructRectangle"
+      label="Construct Rectangle"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+       <IntVectorProperty
+      name="RectangleMultiplier"
+      command="SetRectangleMultiplier"
+      label="Rectangle Multiplier"
+      number_of_elements="1"
+      default_values="1">
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="ConstructRectangle"
+                                value="1" />
+        </Hints>
+        <Documentation>
+          Number of intervals in the geodesic.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ConstructSurface"
+      command="SetConstructSurface"
+      label="Construct Surface"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="NumberOfGeodesicsIntervals"
+      command="SetNumberOfGeodesicsIntervals"
+      label="Number Of Geodesics Intervals"
+      number_of_elements="1"
+      default_values="8">
+        <Hints>
+        <PropertyWidgetDecorator type="CompositeDecorator">
+          <Expression type="or">
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ConstructGeodesicsTrees"
+                                    value="1" />
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ConstructEllipses"
+                                    value="1" />
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ConstructRectangle"
+                                    value="1" />
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ConstructSurface"
+                                    value="1" />
+          </Expression>
+        </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Number of intervals in the geodesic.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ProcessSecondInput"
+      command="SetProcessSecondInput"
+      label="Process Second Input"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <!-- Create a UI group that contains all input parameter widgets -->
+
+      <!-- Create a UI group that contains all output parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="OutputInputTrees"/>
+        <Property name="OutputInputTreesSegmentation"/>
+        <Property name="OutputBarycenter"/>
+        <Property name="ReconstructInputTrees"/>
+        <Property name="ComputeReconstructionError"/>
+        <Property name="TransferInputTreesInformation"/>
+        <Property name="TransferBarycenterInformation"/>
+        <Property name="ConstructGeodesicsTrees"/>
+        <Property name="ConstructEllipses"/>
+        <Property name="ConstructRectangle"/>
+        <Property name="RectangleMultiplier"/>
+        <Property name="ConstructSurface"/>
+        <Property name="NumberOfGeodesicsIntervals"/>
+        <Property name="ProcessSecondInput"/>
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
