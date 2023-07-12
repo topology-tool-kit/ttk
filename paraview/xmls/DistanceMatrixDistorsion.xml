@@ -169,8 +169,10 @@
         <Property name="RegexpLow" />
       </PropertyGroup>
 
-
- 
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
     </SourceProxy>
   </ProxyGroup>
 </ServerManagerConfiguration>
