@@ -1,14 +1,14 @@
-#include <DistanceMatrixDistorsion.h>
+#include <DistanceMatrixDistortion.h>
 #include <Geometry.h> // To check wheter a double is zero.
 #include <Os.h>
 #include <random>
 #include <vector>
 
-ttk::DistanceMatrixDistorsion::DistanceMatrixDistorsion() {
-  this->setDebugMsgPrefix("DistanceMatrixDistorsion");
+ttk::DistanceMatrixDistortion::DistanceMatrixDistortion() {
+  this->setDebugMsgPrefix("DistanceMatrixDistortion");
 }
 
-int ttk::DistanceMatrixDistorsion::execute(
+int ttk::DistanceMatrixDistortion::execute(
   const std::vector<double *> &highDistMatrix,
   const std::vector<double *> &lowDistMatrix,
   double &distorsionValue,
@@ -20,7 +20,7 @@ int ttk::DistanceMatrixDistorsion::execute(
     this->printErr(" Sizes mismatch: the high distance matrix has "
                    + std::to_string(n)
                    + " rows and the low distance matrix has "
-                   + std::to_string(lowDistMatrix.size()) + " rows\n.");
+                   + std::to_string(lowDistMatrix.size()) + " rows.");
     return 0;
   }
 
@@ -55,7 +55,7 @@ int ttk::DistanceMatrixDistorsion::execute(
   if(maxi <= EPS) // We consider maxi is equal to zero.
   {
     this->printMsg(
-      "The two distance matrices provided for SIM computation are equal.\n");
+      "The two distance matrices provided for SIM computation are equal.");
     maxi = 1;
   }
 
@@ -78,7 +78,7 @@ int ttk::DistanceMatrixDistorsion::execute(
 
   distorsionValue = totalSum / n;
 
-  this->printMsg("Size of output in ttk/base = " + std::to_string(n) + "\n");
+  this->printMsg("Size of output in ttk/base = " + std::to_string(n));
 
   this->printMsg("Computed distorsion value: "
                  + std::to_string(distorsionValue));

@@ -1,4 +1,4 @@
-#include <ttkDistanceMatrixDistorsion.h>
+#include <ttkDistanceMatrixDistortion.h>
 
 #include <vtkInformation.h>
 
@@ -18,14 +18,14 @@
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
-vtkStandardNewMacro(ttkDistanceMatrixDistorsion);
+vtkStandardNewMacro(ttkDistanceMatrixDistortion);
 
-ttkDistanceMatrixDistorsion::ttkDistanceMatrixDistorsion() {
+ttkDistanceMatrixDistortion::ttkDistanceMatrixDistortion() {
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkDistanceMatrixDistorsion::FillInputPortInformation(
+int ttkDistanceMatrixDistortion::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
@@ -37,7 +37,7 @@ int ttkDistanceMatrixDistorsion::FillInputPortInformation(
   return 0;
 }
 
-int ttkDistanceMatrixDistorsion::FillOutputPortInformation(
+int ttkDistanceMatrixDistortion::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
@@ -60,7 +60,7 @@ inline void fillWithInputColumns(vtkTable *input,
   }
 }
 
-int ttkDistanceMatrixDistorsion::RequestData(
+int ttkDistanceMatrixDistortion::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
@@ -136,7 +136,7 @@ int ttkDistanceMatrixDistorsion::RequestData(
   tmpCol->SetName("SimValue");
   // No deep copy, makes output->RowData points to the data of tmpCol.
   output->AddColumn(tmpCol);
-  distorsionValArray->SetName("DistorsionValue");
+  distorsionValArray->SetName("DistortionValue");
   distorsionValArray->SetNumberOfTuples(1);
   distorsionValArray->SetTuple1(0, distorsionValue);
   output->GetFieldData()->AddArray(distorsionValArray);

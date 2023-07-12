@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkDistanceMatrixDistorsion" class="ttkDistanceMatrixDistorsion" label="TTK DistanceMatrixDistorsion">
-      <Documentation long_help="DistanceMatrixDistorsion plugin" short_help="DistanceMatrixDistorsion plugin">This plugin, given two distance matrices representing the same points, computes the distortion between the two, according the SIM formula. It also provides, for each point, the distorsion for its own distances to the other points.</Documentation>
+    <SourceProxy name="ttkDistanceMatrixDistortion" class="ttkDistanceMatrixDistortion" label="TTK DistanceMatrixDistortion">
+      <Documentation long_help="DistanceMatrixDistortion plugin" short_help="DistanceMatrixDistortion plugin">This plugin, given two distance matrices representing the same points, computes the distortion between the two, according the SIM formula. It also provides, for each point, the distorsion for its own distances to the other points.</Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty
