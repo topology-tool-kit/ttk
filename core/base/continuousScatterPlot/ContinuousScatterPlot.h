@@ -107,6 +107,10 @@ int ttk::ContinuousScatterPlot::execute(
     return -3;
   if(!density_)
     return -4;
+  if(!scalarMax_)
+    return -5;
+  if(!scalarMin_)
+    return -6;
 
   if(triangulation->getNumberOfCells() <= 0) {
     this->printErr("no cells.");
