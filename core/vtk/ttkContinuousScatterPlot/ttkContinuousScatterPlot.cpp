@@ -103,8 +103,8 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  double scalarMin[2];
-  double scalarMax[2];
+  std::array<double, 2> scalarMin{0, 0};
+  std::array<double, 2> scalarMax{0, 0};
   for(SimplexId k = 0; k < numberOfPoints; ++k) {
     double d1 = inputScalars1->GetTuple1(k);
     double d2 = inputScalars2->GetTuple1(k);

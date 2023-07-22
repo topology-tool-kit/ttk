@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <array>
 #include <limits>
 
 // base code includes
@@ -61,12 +62,12 @@ namespace ttk {
       return 0;
     }
 
-    inline int setScalarMin(double *scalarMin) {
+    inline int setScalarMin(const std::array<double, 2> &scalarMin) {
       scalarMin_ = scalarMin;
       return 0;
     }
 
-    inline int setScalarMax(double *scalarMax) {
+    inline int setScalarMax(const std::array<double, 2> &scalarMax) {
       scalarMax_ = scalarMax;
       return 0;
     }
@@ -86,8 +87,8 @@ namespace ttk {
     bool withDummyValue_;
     double dummyValue_;
     SimplexId resolutions_[2];
-    double *scalarMin_;
-    double *scalarMax_;
+    std::array<double, 2> scalarMin_{0, 0};
+    std::array<double, 2> scalarMax_{0, 0};
     std::vector<std::vector<double>> *density_;
     std::vector<std::vector<char>> *validPointMask_;
   };
@@ -107,10 +108,6 @@ int ttk::ContinuousScatterPlot::execute(
     return -3;
   if(!density_)
     return -4;
-  if(!scalarMax_)
-    return -5;
-  if(!scalarMin_)
-    return -6;
 
   if(triangulation->getNumberOfCells() <= 0) {
     this->printErr("no cells.");
