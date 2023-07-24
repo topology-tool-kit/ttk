@@ -1192,7 +1192,7 @@ int SubLevelSetTree::buildExtremumList(vector<int> &extremumList,
     bool isExtremum = true;
     SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
-      SimplexId otherId;
+      SimplexId otherId = -1;
       triangulation_->getVertexNeighbor(i, j, otherId);
 
       if(isSubLevelSet) {
@@ -2348,7 +2348,7 @@ int ContourTree::build() {
     bool isMin = true, isMax = true;
     SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
-      SimplexId nId;
+      SimplexId nId = -1;
       triangulation_->getVertexNeighbor(i, j, nId);
 
       if(((*vertexScalars_)[nId] > (*vertexScalars_)[i])
