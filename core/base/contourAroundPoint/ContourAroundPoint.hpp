@@ -122,7 +122,7 @@ namespace ttk {
     template <class triangulationType = AbstractTriangulation>
     double compRadius() {
       if(_inpFldTriang) {
-        float x, y, z;
+        float x = 0, y = 0, z = 0;
         reinterpret_cast<triangulationType *>(_inpFldTriang)
           ->getVertexPoint(0, x, y, z);
         _radius = std::sqrt(x * x + y * y + z * z);
