@@ -65,7 +65,7 @@ namespace ttk {
 
     void printTableVector(std::vector<std::vector<dataType>> &table) {
       for(auto vecTemp : table) {
-        std::stringstream ss;
+        const std::stringstream ss;
         for(auto valTemp : vecTemp) {
           ss << valTemp << " ";
         }
