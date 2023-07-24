@@ -26,7 +26,7 @@ void Octree::initialize(const AbstractTriangulation *t, const int k) {
   float maxs[3] = {FLT_MIN, FLT_MIN, FLT_MIN};
   SimplexId vertexNum = t->getNumberOfVertices();
   for(int i = 0; i < vertexNum; i++) {
-    float coord[3];
+    float coord[3] = {0, 0, 0};
     t->getVertexPoint(i, coord[0], coord[1], coord[2]);
     for(int j = 0; j < 3; j++) {
       if(coord[j] < mins[j])
