@@ -357,7 +357,7 @@ int ttk::ApproximateTopology::executeApproximateTopology(
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);
 
   if(preallocateMemory_) {
-    double tm_prealloc = timer.getElapsedTime();
+    const double tm_prealloc = timer.getElapsedTime();
     printMsg("Pre-allocating data structures", 0, 0, threadNumber_,
              ttk::debug::LineMode::REPLACE);
     for(SimplexId i = 0; i < vertexNumber; ++i) {
@@ -403,7 +403,6 @@ int ttk::ApproximateTopology::executeApproximateTopology(
   double delta = epsilon_ * delta_;
 
   while(decimationLevel_ > stoppingDecimationLevel_) {
-    Timer tmIter{};
     decimationLevel_--;
     multiresTriangulation_.setDecimationLevel(decimationLevel_);
     // double progress = (double)(startingDecimationLevel_ - decimationLevel_)
@@ -474,7 +473,8 @@ void ttk::ApproximateTopology::computePersistencePairsFromSaddles(
   const SimplexId nbDecVert = multiresTriangulation_.getDecimatedVertexNumber();
 
   for(SimplexId localId = 0; localId < nbDecVert; localId++) {
-    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(localId);
+    const SimplexId globalId
+      = multiresTriangulation_.localToGlobalVertexId(localId);
     if(toPropagateMin[globalId]) {
       getTripletsFromSaddles(globalId, tripletsMin, vertexRepresentativesMin);
     }
@@ -625,7 +625,7 @@ void ttk::ApproximateTopology::tripletsToPersistencePairs(
   }
 
   if(debugLevel_ > 3) {
-    std::string prefix = splitTree ? "[sad-max]" : "[min-sad]";
+    const std::string prefix = splitTree ? "[sad-max]" : "[min-sad]";
     std::cout << prefix << "  found all pairs in " << tm.getElapsedTime()
               << " s." << std::endl;
   }
@@ -639,8 +639,6 @@ void ttk::ApproximateTopology::sortVertices(
   const scalarType *const fakeScalars,
   const offsetType *const offsets,
   const int *const monotonyOffsets) {
-
-  Timer tm;
 
   sortedVertices.resize(vertexNumber);
 
@@ -663,10 +661,6 @@ void ttk::ApproximateTopology::sortVertices(
   for(size_t i = 0; i < sortedVertices.size(); ++i) {
     vertsOrder[sortedVertices[i]] = i;
   }
-
-  // if(debugLevel_ > 2) {
-  //   std::cout << "SORT " << tm.getElapsedTime() << std::endl;
-  // }
 }
 
 template <typename scalarType, typename offsetType>
@@ -706,7 +700,7 @@ int ttk::ApproximateTopology::getMonotonyChangeByOldPointCPApproximate(
 
     if(isUpperDynamic != isUpperOld) { // change of monotony
       SimplexId oldNeighbor = -1;
-      int oldDecimation = pow(2, decimationLevel_ + 1);
+      const int oldDecimation = pow(2, decimationLevel_ + 1);
       multiresTriangulation_.getVertexNeighborAtDecimation(
         vertexId, i, oldNeighbor, oldDecimation);
 
@@ -718,7 +712,7 @@ int ttk::ApproximateTopology::getMonotonyChangeByOldPointCPApproximate(
 
       //=====================
       SimplexId oldNeighNumber = 0;
-      SimplexId nnumber
+      const SimplexId nnumber
         = multiresTriangulation_.getVertexNeighborNumber(neighborId);
       for(SimplexId iii = 0; iii < nnumber; iii++) {
         SimplexId neighborId2 = -1;
@@ -849,7 +843,7 @@ ttk::SimplexId ttk::ApproximateTopology::propagateFromSaddles(
     reps.reserve(CC.size());
     for(size_t r = 0; r < CC.size(); r++) {
       SimplexId neighborId = -1;
-      SimplexId localId = CC[r];
+      const SimplexId localId = CC[r];
       multiresTriangulation_.getVertexNeighbor(vertexId, localId, neighborId);
       // printMsg("       CC " + std::to_string(CC[r]) + " "
       //          + std::to_string(neighborId) + " ("
@@ -882,7 +876,7 @@ ttk::SimplexId ttk::ApproximateTopology::propagateFromSaddles(
                + std::to_string(saddleCC[vertexId].size()));
 
     SimplexId ret = vertexId;
-    SimplexId neighborNumber
+    const SimplexId neighborNumber
       = multiresTriangulation_.getVertexNeighborNumber(vertexId);
     SimplexId maxNeighbor = vertexId;
     // std::cout << "neigh number" << neighborNumber << std::endl;
@@ -962,7 +956,7 @@ void ttk::ApproximateTopology::updatePropagation(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId v = multiresTriangulation_.localToGlobalVertexId(i);
+    const SimplexId v = multiresTriangulation_.localToGlobalVertexId(i);
     isUpdatedMin[v] = 0;
     isUpdatedMax[v] = 0;
   }
@@ -1211,7 +1205,6 @@ int ttk::ApproximateTopology::updateGlobalPolarity(
   const offsetType *const offsets,
   int *monotonyOffsets) const {
 
-  Timer tm;
   const auto nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
 
 #ifdef TTK_ENABLE_OPENMP
