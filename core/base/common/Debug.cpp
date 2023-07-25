@@ -39,12 +39,12 @@ int Debug::welcomeMsg(ostream &stream) {
   }
 #endif // TTK_ENABLE_MPI
 
-  int priorityAsInt = (int)debug::Priority::PERFORMANCE;
+  const int priorityAsInt = (int)debug::Priority::PERFORMANCE;
 
   if((ttk::welcomeMsg_) && (debugLevel_ > priorityAsInt)) {
     ttk::welcomeMsg_ = false;
 
-    string currentPrefix = debugMsgPrefix_;
+    const string currentPrefix = debugMsgPrefix_;
     debugMsgPrefix_ = "[Common] ";
 
 #include <welcomeLogo.inl>
