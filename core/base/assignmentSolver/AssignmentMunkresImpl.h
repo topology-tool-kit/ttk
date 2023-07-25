@@ -9,7 +9,7 @@ int ttk::AssignmentMunkres<dataType>::run(
   std::vector<MatchingType> &matchings) {
   int step = 1;
   int iter = 0;
-  int maxIter = 100000;
+  const int maxIter = 100000;
   bool done = false;
   Timer t;
 
@@ -24,7 +24,8 @@ int ttk::AssignmentMunkres<dataType>::run(
       debug::Priority::DETAIL);
 
     if(iter > 20 && (iter % (int)std::round((double)maxIter / 5.0) == 0)) {
-      double progress = std::round(100.0 * (double)iter / (double)maxIter);
+      double const progress
+        = std::round(100.0 * (double)iter / (double)maxIter);
       this->printMsg("Progress", progress / 100.0, t.getElapsedTime());
     }
 
@@ -249,8 +250,8 @@ template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::stepThree(int &step) // ~ 10% perf
 {
   for(int r = 0; r < this->rowSize; ++r) {
-    int start = rowLimitsMinus[r];
-    int end = rowLimitsPlus[r];
+    const int start = rowLimitsMinus[r];
+    const int end = rowLimitsPlus[r];
     for(int c = start; c < end; ++c)
       if(M[r][c] == 1)
         colCover[c] = true;
@@ -291,7 +292,7 @@ int ttk::AssignmentMunkres<dataType>::stepFour(int &step) // ~ 45% perf
 
     else {
       M[row][col] = 2;
-      int colOfStarInRow = findStarInRow(row);
+      const int colOfStarInRow = findStarInRow(row);
       // If a star was found and it is not in the last row
       if(colOfStarInRow > -1 && row < this->rowSize - 1) {
         rowCover[row] = true;
@@ -312,8 +313,8 @@ int ttk::AssignmentMunkres<dataType>::stepFour(int &step) // ~ 45% perf
 
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::findStarInRow(int row) {
-  int start = rowLimitsMinus[row];
-  int end = rowLimitsPlus[row];
+  const int start = rowLimitsMinus[row];
+  const int end = rowLimitsPlus[row];
   for(int c = start; c < end; ++c)
     if(M[row][c] == 1)
       return c;
@@ -328,9 +329,9 @@ int ttk::AssignmentMunkres<dataType>::findZero(int &row, int &col) {
   col = -1;
 
   while(createdZeros.size() > 0) {
-    std::pair<int, int> zero = createdZeros.back();
-    int f = zero.first;
-    int s = zero.second;
+    const std::pair<int, int> zero = createdZeros.back();
+    const int f = zero.first;
+    const int s = zero.second;
     createdZeros.pop_back();
     if(!rowCover[f] && !colCover[s]) {
       row = f;
@@ -340,8 +341,8 @@ int ttk::AssignmentMunkres<dataType>::findZero(int &row, int &col) {
   }
 
   for(int r = 0; r < this->rowSize; ++r) {
-    int start = rowLimitsMinus[r];
-    int end = rowLimitsPlus[r];
+    const int start = rowLimitsMinus[r];
+    const int end = rowLimitsPlus[r];
     if(rowCover[r])
       continue;
 
@@ -418,8 +419,8 @@ int ttk::AssignmentMunkres<dataType>::stepFive(int &step) // ~ 10% perf
 
   // erase primes
   for(int r = 0; r < this->rowSize; ++r) {
-    int start = rowLimitsMinus[r];
-    int end = rowLimitsPlus[r];
+    const int start = rowLimitsMinus[r];
+    const int end = rowLimitsPlus[r];
     for(int c = start; c < end; ++c)
       if(M[r][c] == 2)
         M[r][c] = 0;
@@ -431,8 +432,8 @@ int ttk::AssignmentMunkres<dataType>::stepFive(int &step) // ~ 10% perf
 
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::findStarInCol(int col) {
-  int start = colLimitsMinus[col];
-  int end = colLimitsPlus[col];
+  const int start = colLimitsMinus[col];
+  const int end = colLimitsPlus[col];
   for(int r = start; r < end; ++r)
     if(M[r][col] == 1)
       return r;
@@ -444,8 +445,8 @@ int ttk::AssignmentMunkres<dataType>::findStarInCol(int col) {
 
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::findPrimeInRow(int row) {
-  int start = rowLimitsMinus[row];
-  int end = rowLimitsPlus[row];
+  const int start = rowLimitsMinus[row];
+  const int end = rowLimitsPlus[row];
   for(int c = start; c < end; ++c)
     if(M[row][c] == 2)
       return c;
@@ -467,8 +468,8 @@ int ttk::AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
     if(rowCover[r])
       continue;
 
-    int start = rowLimitsMinus[r];
-    int end = rowLimitsPlus[r];
+    const int start = rowLimitsMinus[r];
+    const int end = rowLimitsPlus[r];
 
     for(int c = start; c < end; ++c) {
       if(colCover[c])
@@ -483,8 +484,8 @@ int ttk::AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
   // add and subtract
   for(int r = 0; r < this->rowSize; ++r) {
 
-    int start = rowLimitsMinus[r];
-    int end = rowLimitsPlus[r];
+    const int start = rowLimitsMinus[r];
+    const int end = rowLimitsPlus[r];
 
     for(int c = start; c < end; ++c) {
       if(rowCover[r])
@@ -512,8 +513,8 @@ template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::affect(
   std::vector<MatchingType> &matchings,
   const std::vector<std::vector<dataType>> &C) {
-  int nbC = this->colSize;
-  int nbR = this->rowSize;
+  const int nbC = this->colSize;
+  const int nbR = this->rowSize;
 
   matchings.clear();
 
@@ -544,8 +545,8 @@ int ttk::AssignmentMunkres<dataType>::affect(
 template <typename dataType>
 int ttk::AssignmentMunkres<dataType>::computeAffectationCost(
   const std::vector<std::vector<dataType>> &C) {
-  int nbC = this->colSize;
-  int nbR = this->rowSize;
+  const int nbC = this->colSize;
+  const int nbR = this->rowSize;
 
   dataType total = 0;
 
