@@ -77,7 +77,8 @@ namespace ttk {
 
       for(unsigned int j = 0, k = MaxSize; j < Size2; ++j, ++k) {
         auto val = (*C_)[Size1][j];
-        Edges.emplace_back(Edge(Size1 + (k - MaxSize), k, val));
+        const Edge localEdge(Size1 + (k - MaxSize), k, val);
+        Edges.emplace_back(localEdge);
       }
 
       std::sort(Edges.begin(), Edges.end());
