@@ -122,7 +122,7 @@ namespace ttk {
     MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
-    int tagMultiplier = rankToSend + 1;
+    const int tagMultiplier = rankToSend + 1;
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors.size();
@@ -189,7 +189,7 @@ namespace ttk {
     MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
-    int tagMultiplier = rankToSend + 1;
+    const int tagMultiplier = rankToSend + 1;
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors.size();
@@ -280,7 +280,7 @@ namespace ttk {
                                               const IT nVerts,
                                               MPI_Comm communicator,
                                               const int dimensionNumber) {
-    int neighborNumber = neighbors.size();
+    const int neighborNumber = neighbors.size();
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }
@@ -290,7 +290,7 @@ namespace ttk {
     MPI_Datatype MPI_GIT = getMPIType(static_cast<globalIdType>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
-    int tagMultiplier = rankToSend + 1;
+    const int tagMultiplier = rankToSend + 1;
     int amountTag = 101 * tagMultiplier;
     int idsTag = 102 * tagMultiplier;
     int valuesTag = 103 * tagMultiplier;
@@ -420,7 +420,7 @@ namespace ttk {
       auto end = rootVector.begin();
       for(int i = 0; i < ttk::MPIsize_; i++) {
         end = begin + sizes[i];
-        std::unordered_set<int> s(begin, end);
+        const std::unordered_set<int> s(begin, end);
         setsFromRanks[i] = s;
         begin = end;
       }
@@ -458,13 +458,13 @@ namespace ttk {
                  MPI_INT, receivedNeighbors.data(), receivedSize, MPI_INT, 0,
                  communicator);
     // then we turn the vector back into a set
-    std::unordered_set<int> finalSet(
+    const std::unordered_set<int> finalSet(
       receivedNeighbors.begin(), receivedNeighbors.end());
     neighborSet = finalSet;
 
     // We copy the set as a vector
     neighbors.clear();
-    for(int neighbor : neighborSet) {
+    for(const int neighbor : neighborSet) {
       neighbors.push_back(neighbor);
     }
     std::sort(neighbors.begin(), neighbors.end());
@@ -589,7 +589,7 @@ namespace ttk {
       MPI_Bcast(rankBoundingBoxes[r].data(), 6, MPI_DOUBLE, r, ttk::MPIcomm_);
     }
 
-    double epsilon = 0.00001;
+    const double epsilon = 0.00001;
     // inflate our own bounding box by epsilon
     for(int i = 0; i < 6; i++) {
       if(i % 2 == 0)
@@ -628,13 +628,12 @@ namespace ttk {
     }
     MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
     std::vector<ttk::SimplexId> currentRankUnknownIds;
-    std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);
     std::unordered_set<ttk::SimplexId> gIdSet;
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> gIdToLocalMap;
 
     for(int i = 0; i < nVertices; i++) {
-      int ghostCellVal = ghostCells[i];
-      ttk::SimplexId globalId = globalIds[i];
+      const int ghostCellVal = ghostCells[i];
+      const ttk::SimplexId globalId = globalIds[i];
       if(ghostCellVal == 0) {
         // if the ghost cell value is 0, then this vertex mainly belongs to
         // this rank
@@ -655,7 +654,7 @@ namespace ttk {
     receivedGlobals.resize(sizeOfCurrentRank);
     ttk::SimplexId sizeOfNeighbor;
     std::vector<ttk::SimplexId> neighborUnknownIds;
-    for(int neighbor : neighbors) {
+    for(const int neighbor : neighbors) {
       // we first send the size and then all needed ids to the neighbor
       MPI_Sendrecv(&sizeOfCurrentRank, 1, MIT, neighbor, ttk::MPIrank_,
                    &sizeOfNeighbor, 1, MIT, neighbor, neighbor, ttk::MPIcomm_,
@@ -670,7 +669,7 @@ namespace ttk {
 
       // then we check if the needed globalid values are present in the local
       // globalid set if so, we send the rank value to the requesting rank
-      for(ttk::SimplexId gId : neighborUnknownIds) {
+      for(const ttk::SimplexId gId : neighborUnknownIds) {
         if(gIdSet.count(gId)) {
           // add the value to the vector which will be sent
           gIdsToSend.push_back(gId);
@@ -687,8 +686,8 @@ namespace ttk {
       MPI_Get_count(&status, MIT, &amount);
       receivedGlobals.resize(amount);
 
-      for(ttk::SimplexId receivedGlobal : receivedGlobals) {
-        ttk::SimplexId localVal = gIdToLocalMap[receivedGlobal];
+      for(const ttk::SimplexId receivedGlobal : receivedGlobals) {
+        const ttk::SimplexId localVal = gIdToLocalMap[receivedGlobal];
         rankArray[localVal] = neighbor;
       }
       // cleanup
@@ -944,7 +943,6 @@ namespace ttk {
     using IT = decltype(getVertexGlobalId(0));
     MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
 
-    ttk::Timer fillAndSortTimer;
     std::vector<value<DT, IT>> sortingValues;
     populateVector(
       sortingValues, nVerts, scalarArray, getVertexGlobalId, getVertexRank);
@@ -959,7 +957,6 @@ namespace ttk {
 
     std::vector<IT> orderedValuesForRank;
     IT processedValueCounter = 0;
-    ttk::Timer mergeTimer;
     IT localSize = sortingValues.size();
     IT totalSize;
     // get the complete size  of the dataset by summing up the local sizes
@@ -1024,7 +1021,6 @@ namespace ttk {
     // all ranks do the following
     MPI_Barrier(ttk::MPIcomm_);
 
-    ttk::Timer orderTimer;
     buildArrayForReceivedData<IT>(orderedValuesForRank.size(),
                                   orderedValuesForRank.data(), getVertexLocalId,
                                   orderArray, ttk::globalThreadNumber_);
