@@ -1596,7 +1596,8 @@ namespace ttk {
           cacheMaps_[threadId].erase(caches_[threadId].back().nid);
           caches_[threadId].pop_back();
         }
-        caches_[threadId].emplace_front(ImplicitCluster(nodeId));
+        const ImplicitCluster localCluster(nodeId);
+        caches_[threadId].emplace_front(localCluster);
         cacheMaps_[threadId][nodeId] = caches_[threadId].begin();
       }
       return &(*cacheMaps_[threadId][nodeId]);
