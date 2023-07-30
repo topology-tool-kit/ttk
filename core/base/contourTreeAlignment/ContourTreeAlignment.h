@@ -662,7 +662,7 @@ int ttk::ContourTreeAlignment::execute(
     outputBranchIds.push_back(node->branchID);
     std::vector<long long> refs(nTrees, -1);
     std::vector<long long> segRefs(nTrees, -1);
-    for(const std::pair<int, int> ref : node->nodeRefs) {
+    for(std::pair<int, int> ref : node->nodeRefs) {
       refs[permutation[ref.first]] = ref.second;
       const int eId
         = contourtrees[ref.first]->getGraph().first[ref.second]->edgeList[0];
