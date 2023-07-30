@@ -33,7 +33,7 @@ namespace ttk {
     int ContourForests::build(const triangulationType &mesh) {
 
 #ifdef TTK_ENABLE_OPENMP
-      ParallelGuard pg{parallelParams_.nbThreads};
+      const ParallelGuard pg{parallelParams_.nbThreads};
 #endif
 
       DebugTimer timerTOTAL;
@@ -280,7 +280,7 @@ namespace ttk {
       std::vector<std::vector<ExtendedUnionFind *>> &vect_baseUF_ST,
       const triangulationType &mesh) {
 
-      std::vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
+      const std::vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
       std::vector<float> speedProcess(parallelParams_.nbPartitions * 2, 0);
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
       SimplexId nbPairMerged = 0;
@@ -336,7 +336,7 @@ namespace ttk {
             if(params_->treeType == TreeType::Join
                || params_->treeType == TreeType::Contour
                || params_->treeType == TreeType::JoinAndSplit) {
-              DebugTimer timerSimplify;
+
               DebugTimer timerBuild;
               parallelData_.trees[i].getJoinTree()->build(
                 vect_baseUF_JT[i], std::get<0>(overlaps), std::get<1>(overlaps),
@@ -345,6 +345,7 @@ namespace ttk {
               speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
+              DebugTimer timerSimplify;
               timerSimplify.reStart();
               const SimplexId tmpMerge =
 
@@ -369,7 +370,7 @@ namespace ttk {
             if(params_->treeType == TreeType::Split
                || params_->treeType == TreeType::Contour
                || params_->treeType == TreeType::JoinAndSplit) {
-              DebugTimer timerSimplify;
+
               DebugTimer timerBuild;
               parallelData_.trees[i].getSplitTree()->build(
                 vect_baseUF_ST[i], std::get<1>(overlaps), std::get<0>(overlaps),
@@ -379,6 +380,7 @@ namespace ttk {
                 = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
+              DebugTimer timerSimplify;
               timerSimplify.reStart();
               const SimplexId tmpMerge =
 
@@ -531,7 +533,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
 #endif
-      for(SimplexId e = 0; e < nbEdges; e++) {
+      for(const SimplexId e = 0; e < nbEdges; e++) {
 
 #ifdef TTK_ENABLE_OPENMP
         idPartition part = omp_get_thread_num();
