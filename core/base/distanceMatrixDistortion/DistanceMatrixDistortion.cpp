@@ -47,7 +47,7 @@ int ttk::DistanceMatrixDistortion::execute(
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < n; i++) {
     for(size_t j = i + 1; j < n; j++) {
-      double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
+      const double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
       maxi = std::max(maxi, diff * diff);
     }
   }
@@ -67,11 +67,11 @@ int ttk::DistanceMatrixDistortion::execute(
   for(size_t i = 0; i < n; i++) {
     double sum = 0;
     for(size_t j = 0; j < n; j++) {
-      double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
-      double diff2 = diff * diff;
+      const double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
+      const double diff2 = diff * diff;
       sum += diff2;
     }
-    double sumHarmonized = sum / maxi;
+    const double sumHarmonized = sum / maxi;
     distorsionVerticesValues[i] = 1 - sumHarmonized / n;
     totalSum += 1 - sumHarmonized / n;
   }
