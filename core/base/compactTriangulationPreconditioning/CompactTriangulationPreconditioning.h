@@ -68,9 +68,6 @@ namespace ttk {
       // Compute Octree
       // -----------------------------------------------------------------------
       {
-        // start a local timer for this subprocedure
-        ttk::Timer localTimer;
-
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!triangulation)
           return -1;
