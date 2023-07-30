@@ -533,7 +533,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
 #endif
-      for(const SimplexId e = 0; e < nbEdges; e++) {
+      for(SimplexId e = 0; e < nbEdges; e++) {
 
 #ifdef TTK_ENABLE_OPENMP
         idPartition part = omp_get_thread_num();

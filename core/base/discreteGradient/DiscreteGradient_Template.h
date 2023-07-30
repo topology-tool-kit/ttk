@@ -292,8 +292,8 @@ inline void
             }
             j++;
           }
-          CellExt localCellExt{2, triangleId, lowVerts, faces};
-          ls[2].emplace_back(localCellExt);
+          CellExt localCellExt2{2, triangleId, lowVerts, faces};
+          ls[2].emplace_back(localCellExt2);
         }
       };
 
@@ -381,8 +381,8 @@ inline void
             j++;
           }
 
-          CellExt localCellExt{3, cellId, lowVerts, faces};
-          ls[3].emplace_back(localCellExt);
+          CellExt localCellExt3{3, cellId, lowVerts, faces};
+          ls[3].emplace_back(localCellExt3);
         }
       }
     }
