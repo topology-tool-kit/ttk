@@ -246,7 +246,8 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   std::vector<char> vertexTypes(vertexNumber_, (char)(CriticalType::Regular));
 
 #ifdef TTK_ENABLE_OPENMP
-  int chunkSize = std::max(1000, (int)vertexNumber_ / (threadNumber_ * 100));
+  int const chunkSize
+    = std::max(1000, (int)vertexNumber_ / (threadNumber_ * 100));
 #endif
 
   if(triangulation) {
@@ -422,7 +423,7 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
       if(neighborId0 != vertexId) {
         // we are on the link
 
-        bool lower0 = offsets[neighborId0] < offsets[vertexId];
+        bool const lower0 = offsets[neighborId0] < offsets[vertexId];
 
         // connect it to everybody except himself and vertexId
         for(SimplexId k = j + 1; k < cellSize; k++) {
@@ -432,7 +433,7 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
 
           if((neighborId1 != neighborId0) && (neighborId1 != vertexId)) {
 
-            bool lower1 = offsets[neighborId1] < offsets[vertexId];
+            bool const lower1 = offsets[neighborId1] < offsets[vertexId];
 
             std::vector<SimplexId> *neighbors = &lowerNeighbors;
             std::vector<UnionFind *> *seeds = &lowerList;
@@ -541,8 +542,8 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   }
   getLowerUpperComponents(vertexId, offsets, triangulation, isLowerOnBoundary,
                           isUpperOnBoundary, upperComponents, lowerComponents);
-  ttk::SimplexId lowerComponentNumber = lowerComponents->size();
-  ttk::SimplexId upperComponentNumber = upperComponents->size();
+  ttk::SimplexId const lowerComponentNumber = lowerComponents->size();
+  ttk::SimplexId const upperComponentNumber = upperComponents->size();
 
   if(dimension_ == 1) {
     if(lowerComponentNumber == 0 && upperComponentNumber != 0) {

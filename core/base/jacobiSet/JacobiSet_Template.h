@@ -181,8 +181,8 @@ int ttk::JacobiSet::executeLegacy(
 #endif
 
       // processing here!
-      SimplexId pivotVertexId = (*edgeList_)[i].first;
-      SimplexId otherExtremityId = (*edgeList_)[i].second;
+      SimplexId const pivotVertexId = (*edgeList_)[i].first;
+      SimplexId const otherExtremityId = (*edgeList_)[i].second;
 
       // A) compute the distance field
       double projectedPivotVertex[2];
@@ -204,7 +204,7 @@ int ttk::JacobiSet::executeLegacy(
       for(size_t j = 0; j < (*edgeFans_)[i].size() / 4; j++) {
         for(int k = 0; k < 3; k++) {
 
-          SimplexId vertexId = (*edgeFans_)[i][j * 4 + 1 + k];
+          SimplexId const vertexId = (*edgeFans_)[i][j * 4 + 1 + k];
 
           // we can compute the distance field (in the rage)
           double projectedVertex[2];
@@ -228,13 +228,12 @@ int ttk::JacobiSet::executeLegacy(
       // also, lots of things in there can be done out of the loop
 
       // in the loop
-      char type = threadedCriticalPoints[threadId].getCriticalType(
+      char const type = threadedCriticalPoints[threadId].getCriticalType(
         pivotVertexId, sosOffsetsU_, (*edgeFanLinkEdgeLists_)[i]);
 
       if(type != -2) {
         // -2: regular vertex
-        threadedCriticalTypes[threadId].push_back(
-          std::pair<SimplexId, char>(i, type));
+        threadedCriticalTypes[threadId].emplace_back(i, type);
       }
 
       // update the progress bar of the wrapping code -- to adapt
