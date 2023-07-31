@@ -426,7 +426,7 @@ int ttk::TopologicalCompression::execute(
 // if (tol < 0 || tol > 100) return -4;
 #endif
 
-  int vertexNumber = triangulation.getNumberOfVertices();
+  int const vertexNumber = triangulation.getNumberOfVertices();
 
   int const res = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)

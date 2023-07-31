@@ -51,7 +51,7 @@ namespace ttk {
 
       // Build Merge treeString using tasks
       Timer precomputeTime;
-      int alreadyDone = leafSearch(mesh);
+      int const alreadyDone = leafSearch(mesh);
       printTime(precomputeTime, "leafSearch " + treeString, 3 + alreadyDone);
 
       Timer buildTime;
@@ -175,7 +175,7 @@ namespace ttk {
 
       for(idNode n = 0; n < nbLeaves; ++n) {
         const idNode l = mt_data_.leaves[n];
-        SimplexId v = getNode(l)->getVertexId();
+        SimplexId const v = getNode(l)->getVertexId();
         // for each node: get vert, create uf and launch
         mt_data_.storage[n] = AtomicUF{v};
         mt_data_.ufs[v] = &mt_data_.storage[n];
@@ -232,7 +232,7 @@ namespace ttk {
       while(!currentState->empty()) {
         // Next vertex
 
-        SimplexId currentVert = currentState->getNextMinVertex();
+        SimplexId const currentVert = currentState->getNextMinVertex();
 
         // ignore duplicate
         if(!isCorrespondingNull(currentVert)

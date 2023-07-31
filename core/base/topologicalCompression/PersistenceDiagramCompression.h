@@ -314,8 +314,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
   topoIndices.push_back(std::make_tuple(maxValue, maxIndex));
   topoIndices.push_back(std::make_tuple(minValue, minIndex));
-  double tolerance = 0.01 * tol * (maxValue - minValue);
-  double maxError = 0.01 * MaximumError * (maxValue - minValue);
+  double const tolerance = 0.01 * tol * (maxValue - minValue);
+  double const maxError = 0.01 * MaximumError * (maxValue - minValue);
 
   this->printMsg(
     "Computed min/max", 1.0, t.getElapsedTime(), this->threadNumber_);
@@ -339,8 +339,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
                    this->threadNumber_);
     t.reStart();
 
-    int nbJ = JTPairs.size();
-    int nbS = STPairs.size();
+    int const nbJ = JTPairs.size();
+    int const nbS = STPairs.size();
     std::vector<int> critConstraints(2 * nbJ + 2 * nbS);
 
     dataType maxEpsilon = 0;
@@ -351,17 +351,17 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
     // Join
     for(int i = 0; i < nbJ; ++i) {
-      SimplexId cp1 = std::get<0>(JTPairs[i]);
-      SimplexId cp2 = std::get<1>(JTPairs[i]);
+      SimplexId const cp1 = std::get<0>(JTPairs[i]);
+      SimplexId const cp2 = std::get<1>(JTPairs[i]);
       dataType idt1 = inputData[cp1];
       dataType idt2 = inputData[cp2];
       dataType p1 = std::max(idt2, idt1) - std::min(idt2, idt1);
       if(p1 > tolerance) {
         persistentSum2 += (p1 * p1);
         persistentSum1 += abs<dataType>(p1);
-        int type1 = topologicalSimplification.getCriticalType(
+        int const type1 = topologicalSimplification.getCriticalType(
           cp1, inputOffsets, triangulation);
-        int type2 = topologicalSimplification.getCriticalType(
+        int const type2 = topologicalSimplification.getCriticalType(
           cp2, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
@@ -392,8 +392,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     // Split
     for(int i = nbJ; i < nbJ + nbS; ++i) {
       int const si = i - nbJ;
-      SimplexId cp1 = std::get<0>(STPairs[si]);
-      SimplexId cp2 = std::get<1>(STPairs[si]);
+      SimplexId const cp1 = std::get<0>(STPairs[si]);
+      SimplexId const cp2 = std::get<1>(STPairs[si]);
       dataType idt1 = inputData[cp1];
       dataType idt2 = inputData[cp2];
       dataType p1 = std::max(idt2, idt1) - std::min(idt2, idt1);
@@ -401,9 +401,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum2 += (p1 * p1);
         persistentSum1 += abs<dataType>(p1);
         // Saddle selection.
-        int type1 = topologicalSimplification.getCriticalType(
+        int const type1 = topologicalSimplification.getCriticalType(
           cp1, inputOffsets, triangulation);
-        int type2 = topologicalSimplification.getCriticalType(
+        int const type2 = topologicalSimplification.getCriticalType(
           cp2, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
@@ -497,7 +497,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
 
       dataType v1 = std::get<0>(topoIndices[i + 1]);
-      int i1 = std::get<1>(topoIndices[i + 1]);
+      int const i1 = std::get<1>(topoIndices[i + 1]);
       auto diff = (double)(v1 - v0);
 
       if(diff == 0)
@@ -509,7 +509,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         double const nSegments = std::ceil(diff / maxError);
         for(int j = 0, nbs = (int)nSegments; j < nbs; ++j) {
           dataType sample = v0 + j * maxError;
-          int int1 = i1;
+          int const int1 = i1;
           segments.push_back(std::make_tuple(sample, int1));
         }
       }
@@ -537,8 +537,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
     if(it != end) {
       std::tuple<dataType, int> tt = *it;
-      int j = it - begin;
-      int last = (int)segments.size() - 1;
+      int const j = it - begin;
+      int const last = (int)segments.size() - 1;
       if(j < last) {
         dataType dtv = std::get<0>(tt);
         if(j > 0) {
@@ -653,7 +653,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     already[i] = false; // init
 
   for(int i = 0; i < vertexNumber; ++i) {
-    int vert = segmentation_[i];
+    int const vert = segmentation_[i];
     if(!already[vert]) {
       already[vert] = true;
       dataType dttt = outputData[i];
@@ -692,7 +692,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
       while(!s.empty()) {
         // Get next element.
-        int vertex = s.top();
+        int const vertex = s.top();
         s.pop();
 
         // Mark vertex as processed.
@@ -711,7 +711,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         }
 
         // Get neighbors.
-        SimplexId neighborNumber
+        SimplexId const neighborNumber
           = triangulation.getVertexNeighborNumber(vertex);
         for(SimplexId j = 0; j < neighborNumber; ++j) {
           SimplexId neighbor{-1};
@@ -741,9 +741,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   // 7. [ZFP]: max constraints, min constraints
   if(!sqDomain && !sqRange && !ZFPOnly) {
     for(int i = 0; i < nbCrit; ++i) {
-      SimplexId id = simplifiedConstraints[i];
+      SimplexId const id = simplifiedConstraints[i];
       dataType val = inputData[id];
-      int type = topologicalSimplification.getCriticalType(
+      int const type = topologicalSimplification.getCriticalType(
         id, inputOffsets, triangulation);
       if(type == -1 // Local_minimum
          || type == 1 // Local_maximum
@@ -765,7 +765,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
                      + std::to_string(mapping_.size()) + ")");
     }
 
-    int nSegments = indexLast > -1 ? indexLast + 1 : (int)segments.size() - 1;
+    int const nSegments
+      = indexLast > -1 ? indexLast + 1 : (int)segments.size() - 1;
     this->NbSegments = nSegments;
     this->NbVertices = vertexNumber;
 

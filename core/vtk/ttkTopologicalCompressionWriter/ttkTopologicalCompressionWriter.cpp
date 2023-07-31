@@ -105,7 +105,7 @@ int ttkTopologicalCompressionWriter::Write() {
     return 0;
   }
 
-  int dt = inputScalarField->GetDataType();
+  int const dt = inputScalarField->GetDataType();
   auto vp = static_cast<double *>(ttkUtils::GetVoidPointer(inputScalarField));
 
   this->setFileName(FileName);
