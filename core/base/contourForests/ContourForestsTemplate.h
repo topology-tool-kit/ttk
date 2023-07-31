@@ -536,7 +536,7 @@ namespace ttk {
       for(SimplexId e = 0; e < nbEdges; e++) {
 
 #ifdef TTK_ENABLE_OPENMP
-        idPartition part = omp_get_thread_num();
+        idPartition const part = omp_get_thread_num();
 #else
         idPartition part = 0;
 #endif
