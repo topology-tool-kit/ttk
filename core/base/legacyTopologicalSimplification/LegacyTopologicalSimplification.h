@@ -370,7 +370,7 @@ int ttk::LegacyTopologicalSimplification::execute(
 
     for(int j = 0; j < 2; ++j) {
 
-      bool isIncreasingOrder = !j;
+      bool const isIncreasingOrder = !j;
 
       if(isIncreasingOrder && authorizedMinima.empty()) {
         continue;
@@ -468,7 +468,7 @@ int ttk::LegacyTopologicalSimplification::execute(
       debug::Priority::DETAIL);
 
     if(!needForMoreIterations) {
-      for(SimplexId k : minima) {
+      for(SimplexId const k : minima) {
         if(!authorizedExtrema[k]) {
           needForMoreIterations = true;
           break;
@@ -476,7 +476,7 @@ int ttk::LegacyTopologicalSimplification::execute(
       }
     }
     if(!needForMoreIterations) {
-      for(SimplexId k : maxima) {
+      for(SimplexId const k : maxima) {
         if(!authorizedExtrema[k]) {
           needForMoreIterations = true;
           break;
