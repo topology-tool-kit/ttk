@@ -89,8 +89,6 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
   SimplexId *origin = static_cast<SimplexId *>(outputIdentifiers_);
   SimplexId *seg = static_cast<SimplexId *>(outputSegmentation_);
 
-  Timer t;
-
   std::fill(dist, dist + vertexNumber_, std::numeric_limits<dataType>::max());
   std::fill(origin, origin + vertexNumber_, -1);
 
