@@ -209,7 +209,7 @@ bool ttk::ContourTreeAlignment::initialize(
 
   nodes.push_back(currNode);
 
-  q.emplace(std::make_pair(t, currNode));
+  q.emplace(t, currNode);
 
   while(!q.empty()) {
 
@@ -241,7 +241,7 @@ bool ttk::ContourTreeAlignment::initialize(
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      q.emplace(std::make_pair(currTree->child1, childNode));
+      q.emplace(currTree->child1, childNode);
     }
 
     if(currTree->child2 != nullptr) {
@@ -268,7 +268,7 @@ bool ttk::ContourTreeAlignment::initialize(
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      q.emplace(std::make_pair(currTree->child2, childNode));
+      q.emplace(currTree->child2, childNode);
     }
   }
 
@@ -305,7 +305,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
 
   nodes.push_back(currNode);
 
-  q.emplace(std::make_pair(t, currNode));
+  q.emplace(t, currNode);
 
   while(!q.empty()) {
 
@@ -341,7 +341,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      q.emplace(std::make_pair(currTree->child1, childNode));
+      q.emplace(currTree->child1, childNode);
     }
 
     if(currTree->child2 != nullptr) {
@@ -372,7 +372,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      q.emplace(std::make_pair(currTree->child2, childNode));
+      q.emplace(currTree->child2, childNode);
     }
   }
 
@@ -576,9 +576,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
 
   nodes.push_back(currNode);
 
-  q.emplace(std::make_tuple(
-    res, currNode, std::vector<std::shared_ptr<ttk::cta::AlignmentEdge>>(),
-    std::vector<std::shared_ptr<ttk::cta::AlignmentEdge>>()));
+  q.emplace(res, currNode,
+            std::vector<std::shared_ptr<ttk::cta::AlignmentEdge>>(),
+            std::vector<std::shared_ptr<ttk::cta::AlignmentEdge>>());
 
   while(!q.empty()) {
 
@@ -766,8 +766,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      q.emplace(std::make_tuple(
-        currTree->child1, childNode, openEdgesOld1, openEdgesNew1));
+      q.emplace(currTree->child1, childNode, openEdgesOld1, openEdgesNew1);
     }
 
     if(currTree->child2 != nullptr) {
@@ -945,8 +944,7 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
       arcs.push_back(childEdge);
 
       // q.push(std::make_pair(currTree->child2,childNode));
-      q.emplace(std::make_tuple(
-        currTree->child2, childNode, openEdgesOld2, openEdgesNew2));
+      q.emplace(currTree->child2, childNode, openEdgesOld2, openEdgesNew2);
     }
   }
 }
