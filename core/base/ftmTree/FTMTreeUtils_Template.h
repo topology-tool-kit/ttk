@@ -92,7 +92,7 @@ namespace ttk {
         }
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           queue.emplace(child);
       }
       return inconsistency;
@@ -137,7 +137,7 @@ namespace ttk {
         }
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           queue.emplace(child);
       }
       return lowestNode;
@@ -217,8 +217,8 @@ namespace ttk {
 
     template <class dataType>
     dataType FTMTree_MT::getMaximumPersistence() {
-      idNode root = this->getRoot();
-      bool fullMerge = this->isFullMerge();
+      idNode const root = this->getRoot();
+      bool const fullMerge = this->isFullMerge();
 
       // Classic case
       if(not fullMerge)
@@ -236,13 +236,13 @@ namespace ttk {
 
     template <class dataType>
     ftm::idNode FTMTree_MT::getSecondMaximumPersistenceNode() {
-      idNode root = this->getRoot();
+      idNode const root = this->getRoot();
       dataType pers = std::numeric_limits<dataType>::lowest();
       ftm::idNode nodeSecMax = -1;
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i) {
         if(not this->isRoot(i) and not this->isNodeAlone(i)
            and this->isNodeOriginDefined(i)) {
-          idNode nodeOrigin = this->getNode(i)->getOrigin();
+          idNode const nodeOrigin = this->getNode(i)->getOrigin();
           if(not(nodeOrigin == root
                  and this->getNode(nodeOrigin)->getOrigin() == (int)i)) {
             auto nodePers = this->getNodePersistence<dataType>(i);
@@ -347,9 +347,9 @@ namespace ttk {
     std::stringstream FTMTree_MT::printTreeScalars(bool printNodeAlone,
                                                    bool doPrint) {
       std::stringstream wholeSS;
-      std::streamsize sSize = std::cout.precision();
+      std::streamsize const sSize = std::cout.precision();
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i) {
-        idNode iOrigin
+        idNode const iOrigin
           = this->isNodeOriginDefined(i) ? this->getNode(i)->getOrigin() : i;
         if(printNodeAlone
            or (not printNodeAlone

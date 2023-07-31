@@ -189,8 +189,8 @@ namespace ttk {
 
       // Add multi persistence nodes origins
       if(doSplitMultiPersPairs) {
-        for(ftm::idNode nodeOrigin : multiPersOrigins) {
-          int nodeCpt = treeNew->getNumberOfNodes();
+        for(ftm::idNode const nodeOrigin : multiPersOrigins) {
+          int const nodeCpt = treeNew->getNumberOfNodes();
           treeNew->makeNode(nodeCpt);
           treeNew->getNode(nodeCpt)->setOrigin(nodeOrigin);
           treeNew->getNode(nodeOrigin)->setOrigin(nodeCpt);
@@ -257,7 +257,7 @@ namespace ttk {
           nodeCorr[nodeOrigin] = nodeOriginIndex;
           nodeCorr[node] = nodeIndex;
         } else {
-          int nodeCpt = treeNew->getNumberOfNodes();
+          int const nodeCpt = treeNew->getNumberOfNodes();
           treeNew->makeNode(nodeCpt);
           if(!tree->isLeaf(node)) {
             treeNew->getNode(nodeCpt)->setOrigin(nodeCorr[nodeOrigin]);
@@ -279,11 +279,11 @@ namespace ttk {
 
         std::vector<idNode> children;
         tree->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           treeNew->makeSuperArc(nodeCorr[child], nodeCorr[node]);
 
         if(!tree->isRoot(node)) {
-          ftm::idNode parent = tree->getParentSafe(node);
+          ftm::idNode const parent = tree->getParentSafe(node);
           nodeDone[parent] += 1;
           if(nodeDone[parent] == tree->getNumberOfChildren(parent))
             queue.push(parent);

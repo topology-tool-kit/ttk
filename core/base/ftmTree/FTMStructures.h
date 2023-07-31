@@ -123,7 +123,7 @@ namespace ttk {
       }
 
       void addArc(const idSuperArc arc) {
-        idSuperArc thisArc = openedArcs.getNext();
+        idSuperArc const thisArc = openedArcs.getNext();
         openedArcs[thisArc] = arc;
       }
 
