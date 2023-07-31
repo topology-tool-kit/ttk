@@ -428,7 +428,7 @@ int ttk::TopologicalCompression::execute(
 
   int vertexNumber = triangulation.getNumberOfVertices();
 
-  int res = 0;
+  int const res = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
     compressForPersistenceDiagram(vertexNumber, inputData, inputOffsets,
                                   outputData, Tolerance, triangulation);
@@ -451,7 +451,7 @@ int ttk::TopologicalCompression::ReadFromFile(
     return -4;
   }
 
-  bool useZlib = Read<uint8_t>(fp);
+  bool const useZlib = Read<uint8_t>(fp);
   unsigned char *dest;
   std::vector<unsigned char> ddest;
   unsigned long destLen;

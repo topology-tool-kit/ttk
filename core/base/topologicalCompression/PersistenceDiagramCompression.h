@@ -26,9 +26,9 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   }
 
   // Prepare array reconstruction.
-  int nx = 1 + dataExtent_[1] - dataExtent_[0];
-  int ny = 1 + dataExtent_[3] - dataExtent_[2];
-  int nz = 1 + dataExtent_[5] - dataExtent_[4];
+  int const nx = 1 + dataExtent_[1] - dataExtent_[0];
+  int const ny = 1 + dataExtent_[3] - dataExtent_[2];
+  int const nz = 1 + dataExtent_[5] - dataExtent_[4];
   int vertexNumber = nx * ny * nz;
 
   decompressedData_.resize(vertexNumber);
@@ -36,14 +36,14 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
 
     // 2.a. (2.) Assign values to points thanks to topology indices.
     for(int i = 0; i < vertexNumber; ++i) {
-      int seg = segmentation_[i];
+      int const seg = segmentation_[i];
       auto end = mapping_.end();
       auto it = std::lower_bound(
         mapping_.begin(), mapping_.end(), std::make_tuple(0, seg), cmp);
       if(it != end) {
         std::tuple<double, int> tt = *it;
-        double value = std::get<0>(tt);
-        int sseg = std::get<1>(tt);
+        double const value = std::get<0>(tt);
+        int const sseg = std::get<1>(tt);
         if(seg != sseg) {
           this->printErr("Decompression mismatch (" + std::to_string(seg) + ", "
                          + std::to_string(sseg) + ")");
@@ -52,7 +52,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
       } else {
         this->printErr("Could not find " + std::to_string(seg) + " index.");
         std::tuple<double, int> tt = *it;
-        double value = std::get<0>(tt);
+        double const value = std::get<0>(tt);
         decompressedData_[i] = value;
       }
     }
@@ -76,8 +76,8 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   if(SQMethodInt == 0 || SQMethodInt == 3) {
     for(int i = 0; i < (int)criticalConstraints_.size(); ++i) {
       std::tuple<int, double, int> t = criticalConstraints_[i];
-      int id = std::get<0>(t);
-      double val = std::get<1>(t);
+      int const id = std::get<0>(t);
+      double const val = std::get<1>(t);
       decompressedData_[id] = val;
     }
   }
@@ -133,8 +133,8 @@ int ttk::TopologicalCompression::PerformSimplification(
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
     int id = std::get<0>(t);
-    double val = std::get<1>(t);
-    int type = std::get<2>(t);
+    double const val = std::get<1>(t);
+    int const type = std::get<2>(t);
 
     array[id] = val;
 
@@ -194,7 +194,7 @@ void ttk::TopologicalCompression::CropIntervals(
 
   int numberOfMisses = 0;
   for(int i = 0; i < vertexNumber; ++i) {
-    int seg = segmentation[i];
+    int const seg = segmentation[i];
     auto end = mappings.end();
     auto it = lower_bound(
       mappings.begin(), mappings.end(), std::make_tuple(0, seg), cmp);
@@ -391,7 +391,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
     // Split
     for(int i = nbJ; i < nbJ + nbS; ++i) {
-      int si = i - nbJ;
+      int const si = i - nbJ;
       SimplexId cp1 = std::get<0>(STPairs[si]);
       SimplexId cp2 = std::get<1>(STPairs[si]);
       dataType idt1 = inputData[cp1];
@@ -435,7 +435,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     {
       int j = 0;
       for(int i = 0; i < 2 * nbJ + 2 * nbS; ++i) {
-        int c = critConstraints[i];
+        int const c = critConstraints[i];
         if(c != -1)
           simplifiedConstraints[j++] = c;
       }
@@ -506,7 +506,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         segments.push_back(std::make_tuple(v1, i1));
       } else {
         // Subdivide.
-        double nSegments = std::ceil(diff / maxError);
+        double const nSegments = std::ceil(diff / maxError);
         for(int j = 0, nbs = (int)nSegments; j < nbs; ++j) {
           dataType sample = v0 + j * maxError;
           int int1 = i1;
@@ -546,7 +546,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         }
 
         outputData[i] = dtv;
-        int seg = j;
+        int const seg = j;
         segmentation_[i] = seg;
       } else {
         segmentation_[i] = last;
@@ -565,7 +565,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   affectedSegments.resize(segmentsSize);
   std::vector<int> oob;
   for(int i = 0; i < vertexNumber; ++i) {
-    int seg = segmentation_[i];
+    int const seg = segmentation_[i];
     if(seg >= segmentsSize
        && std::find(oob.begin(), oob.end(), seg) == oob.end())
       oob.push_back(seg);
@@ -591,13 +591,13 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   } else {
     // Replace
     for(int i = 0; i < vertexNumber; ++i) {
-      int seg = segmentation_[i];
+      int const seg = segmentation_[i];
       if(seg >= segmentsSize) {
         auto begin = oob.begin();
         auto end = oob.end();
         auto it = std::lower_bound(begin, end, seg);
         if(it != end) {
-          int j = (int)(it - begin);
+          int const j = (int)(it - begin);
           segmentation_[i] = empty[j];
           affectedSegments[j] = true;
         }
@@ -636,7 +636,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
 
       for(int i = 0; i < vertexNumber; ++i) {
-        int seg = segmentation_[i];
+        int const seg = segmentation_[i];
         if(map2[seg] > 0)
           segmentation_[i] = map2[seg];
       }
@@ -677,8 +677,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       if(markedVertices[i])
         continue;
 
-      int seg = segmentation_[i];
-      bool newSegment = markedSegments[seg];
+      int const seg = segmentation_[i];
+      bool const newSegment = markedSegments[seg];
       dataType minNewSegment = inputData[i];
       dataType maxNewSegment = minNewSegment;
 
