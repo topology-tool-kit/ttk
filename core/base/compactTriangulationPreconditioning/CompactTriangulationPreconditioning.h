@@ -74,7 +74,7 @@ namespace ttk {
 #endif
 
         SimplexId vertexNumber = triangulation->getNumberOfVertices();
-        SimplexId cellNumber = triangulation->getNumberOfCells();
+        SimplexId const cellNumber = triangulation->getNumberOfCells();
 
         // create the octree
         Octree preOctree(triangulation, argument);
