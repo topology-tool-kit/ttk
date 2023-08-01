@@ -374,7 +374,8 @@ int SubLevelSetTree::clearArc(const int &vertexId0, const int &vertexId1) {
   if((vertexId1 < 0) || (vertexId1 >= vertexNumber_))
     return -2;
 
-  int nodeId0 = vertex2node_[vertexId0], nodeId1 = vertex2node_[vertexId1];
+  const int nodeId0 = vertex2node_[vertexId0],
+            nodeId1 = vertex2node_[vertexId1];
 
   for(int i = 0; i < nodeList_[nodeId0].getNumberOfUpArcs(); i++) {
     if(nodeList_[arcList_[nodeList_[nodeId0].getUpArcId(i)].getUpNodeId()]
@@ -408,8 +409,8 @@ int SubLevelSetTree::clearRegularNode(const int &vertexId) {
        && (nodeList_[nodeId].getNumberOfUpArcs() == 1)))
     return -2;
 
-  int downArcId = nodeList_[nodeId].getDownArcId(0),
-      upArcId = nodeList_[nodeId].getUpArcId(0);
+  const int downArcId = nodeList_[nodeId].getDownArcId(0),
+            upArcId = nodeList_[nodeId].getUpArcId(0);
 
   int const upNodeId = arcList_[upArcId].getUpNodeId();
 
@@ -2484,8 +2485,8 @@ int ContourTree::combineTrees() {
 
             n1 = mergeTree_.getNodeUpNeighbor(n0, 0);
 
-            int newNode0 = makeNode(n0->getVertexId()),
-                newNode1 = makeNode(n1->getVertexId());
+            const int newNode0 = makeNode(n0->getVertexId()),
+                      newNode1 = makeNode(n1->getVertexId());
 
             // "we move v and its incident edge from JT to the contour tree".
             makeArc(newNode0, newNode1);
@@ -2534,8 +2535,8 @@ int ContourTree::combineTrees() {
 
             n1 = splitTree_.getNodeUpNeighbor(n0, 0);
 
-            int newNode0 = makeNode(n0->getVertexId()),
-                newNode1 = makeNode(n1->getVertexId());
+            const int newNode0 = makeNode(n0->getVertexId()),
+                      newNode1 = makeNode(n1->getVertexId());
 
             makeArc(newNode1, newNode0);
             splitTree_.clearArc(n0->getVertexId(), n1->getVertexId());
