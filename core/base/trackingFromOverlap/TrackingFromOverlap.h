@@ -269,7 +269,7 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
   std::map<labelType, size_t> labelIndexMap;
   this->computeLabelIndexMap(pointLabels, nPoints, labelIndexMap);
 
-  size_t nNodes = labelIndexMap.size();
+  size_t const nNodes = labelIndexMap.size();
 
   nodes.resize(nNodes);
   for(size_t i = 0, q = 0; i < nPoints; i++) {
@@ -367,18 +367,18 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   std::unordered_map<size_t, std::unordered_map<size_t, size_t>> edgesMap;
   // Iterate over both point sets synchronously using comparison function
   while(i < nPoints0 && j < nPoints1) {
-    size_t pointIndex0 = sortedIndices0[i];
-    size_t pointIndex1 = sortedIndices1[j];
+    size_t const pointIndex0 = sortedIndices0[i];
+    size_t const pointIndex1 = sortedIndices1[j];
 
     // Determine point configuration
-    int c = compare(pointIndex0, pointIndex1);
+    int const c = compare(pointIndex0, pointIndex1);
 
     if(c == 0) { // Points have same coordinates -> track
       labelType label0 = pointLabels0[pointIndex0];
       labelType label1 = pointLabels1[pointIndex1];
 
-      size_t &nodeIndex0 = labelIndexMap0[label0];
-      size_t &nodeIndex1 = labelIndexMap1[label1];
+      size_t const &nodeIndex0 = labelIndexMap0[label0];
+      size_t const &nodeIndex1 = labelIndexMap1[label1];
 
       // Find edge and increase overlap counter
       auto edges0 = edgesMap.find(nodeIndex0); // Edges from label0 to nodes1
