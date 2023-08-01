@@ -920,7 +920,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
 
   if(oldVal == -1) {
     // First task to touch this saddle, compute the valence
-    idVertex totalVal = starVect.size();
+    idVertex const totalVal = starVect.size();
     valence newVal = 0;
     if(localProp->goUp()) {
       valence *const vd = &graph_.valDown_[curSaddle];

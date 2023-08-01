@@ -36,7 +36,7 @@ namespace ttk {
 
     template <typename ScalarType, typename triangulationType>
     void FTRGraph<ScalarType, triangulationType>::build() {
-      Timer t;
+      Timer const t;
 
       // init some values
 
