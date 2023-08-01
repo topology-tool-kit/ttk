@@ -68,8 +68,8 @@ vtkSmartPointer<vtkDataObject>
     std::ifstream is(pathToFile.data());
     char prefix[10] = "";
     is.get(prefix, 10);
-    bool isXML = std::string(prefix).compare("<VTKFile ") == 0
-                 || std::string(prefix).compare("<?xml ver") == 0;
+    bool const isXML = std::string(prefix).compare("<VTKFile ") == 0
+                       || std::string(prefix).compare("<?xml ver") == 0;
 
     if(isXML)
       // If isXML use vtkXMLGenericDataObjectReader
@@ -107,8 +107,8 @@ int ttkCinemaProductReader::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto outputMB = vtkMultiBlockDataSet::GetData(outputVector);
 
-  size_t n = inputTable->GetNumberOfRows();
-  size_t m = inputTable->GetNumberOfColumns();
+  size_t const n = inputTable->GetNumberOfRows();
+  size_t const m = inputTable->GetNumberOfColumns();
   // Determine number of files
   this->printMsg(
     {{"#Files", std::to_string(n)}, {"FILE Column", this->FilepathColumnName}});
@@ -141,8 +141,8 @@ int ttkCinemaProductReader::RequestData(vtkInformation *ttkNotUsed(request),
 
       // read local file
       {
-        std::ifstream infile(path.data());
-        bool exists = infile.good();
+        std::ifstream const infile(path.data());
+        bool const exists = infile.good();
         if(!exists) {
           this->printErr("File does not exist.");
           return 0;

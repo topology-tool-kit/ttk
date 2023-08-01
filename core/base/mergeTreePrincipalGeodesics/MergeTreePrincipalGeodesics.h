@@ -159,7 +159,7 @@ namespace ttk {
                                  bool isFirstInput = true) {
       ftm::FTMTree_MT *barycenterTree = &(barycenter.tree);
       ftm::FTMTree_MT *extremityTree = &(extremity.tree);
-      double t = (isV1 ? -1.0 : 1.0);
+      double const t = (isV1 ? -1.0 : 1.0);
 
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching;
       dataType distance;
@@ -173,7 +173,7 @@ namespace ttk {
         matchingVector.resize(barycenterTree->getNumberOfNodes(),
                               std::numeric_limits<ftm::idNode>::max());
 
-      std::vector<std::vector<double>> oriV = v;
+      std::vector<std::vector<double>> const oriV = v;
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
         if(barycenter.tree.isNodeAlone(i))
           continue;
@@ -199,7 +199,7 @@ namespace ttk {
       }
 
       // Compute distance between old and new extremity
-      double cost = ttk::Geometry::distanceFlatten(v, oriV);
+      double const cost = ttk::Geometry::distanceFlatten(v, oriV);
       return cost;
     }
 
@@ -247,9 +247,9 @@ namespace ttk {
       std::vector<double> v1_flatten, v2_flatten;
       ttk::Geometry::flattenMultiDimensionalVector(v1, v1_flatten);
       ttk::Geometry::flattenMultiDimensionalVector(v2, v2_flatten);
-      double v1_norm = ttk::Geometry::magnitude(v1_flatten);
-      double v2_norm = ttk::Geometry::magnitude(v2_flatten);
-      double beta = v2_norm / (v1_norm + v2_norm);
+      double const v1_norm = ttk::Geometry::magnitude(v1_flatten);
+      double const v2_norm = ttk::Geometry::magnitude(v2_flatten);
+      double const beta = v2_norm / (v1_norm + v2_norm);
       std::vector<double> v;
       ttk::Geometry::addVectors(v1_flatten, v2_flatten, v);
       ttk::Geometry::scaleVector(v, (1 - beta), v1_flatten);
@@ -416,7 +416,7 @@ namespace ttk {
 #pragma omp task shared(best) firstprivate(i, k)
               {
 #endif
-                double kT = (k % 2 == 0 ? k / 2 : k_ - 1 - (int)(k / 2));
+                double const kT = (k % 2 == 0 ? k / 2 : k_ - 1 - (int)(k / 2));
                 double t = 1.0 / (k_ - 1) * kT;
 
                 dataType distance, distance2;
@@ -630,9 +630,9 @@ namespace ttk {
                         * (allMatched[j][1] - allDeathBary[j]
                            + (1 - tss[i][j]) * multDeathV2);
         }
-        double divisorV1
+        double const divisorV1
           = one_min_ti_squared - ti_one_min_ti * ti_one_min_ti / ti_squared;
-        double divisorV2
+        double const divisorV2
           = ti_squared - ti_one_min_ti * ti_one_min_ti / one_min_ti_squared;
         newBirthV1 /= divisorV1;
         newDeathV1 /= divisorV1;
@@ -1009,7 +1009,7 @@ namespace ttk {
       }
 
       // --- Compute global variance
-      double globalVariance
+      double const globalVariance
         = computeVarianceFromDistances(inputToBaryDistances_);
 
       // --- Manage maximum number of geodesics
@@ -1027,7 +1027,7 @@ namespace ttk {
       }
 
       // --- Init
-      unsigned int oldNoGeod = allTs_.size();
+      unsigned int const oldNoGeod = allTs_.size();
       if(not keepState_) {
         allTs_.resize(numberOfGeodesics_, std::vector<double>(trees.size()));
         inputToGeodesicsDistances_.resize(
@@ -1195,16 +1195,16 @@ namespace ttk {
                                  std::vector<ftm::MergeTree<dataType>> &trees2,
                                  int geodesicNumber,
                                  double globalVariance) {
-      bool printOriginalVariances = false;
-      bool printSurfaceVariance = false;
-      bool printTVariances = true;
+      bool const printOriginalVariances = false;
+      bool const printSurfaceVariance = false;
+      bool const printTVariances = true;
 
       if(printOriginalVariances) {
         // Variance
         double variance = computeExplainedVariance<dataType>(
           barycenter, trees, vS_[geodesicNumber], v2s_[geodesicNumber],
           allTs_[geodesicNumber]);
-        double variancePercent = variance / globalVariance * 100.0;
+        double const variancePercent = variance / globalVariance * 100.0;
         std::stringstream ssVariance, ssCumul;
         ssVariance << "Variance explained            : "
                    << round(variancePercent * 100.0) / 100.0 << " %";
@@ -1212,7 +1212,8 @@ namespace ttk {
 
         // Cumul Variance
         cumulVariance_ += variance;
-        double cumulVariancePercent = cumulVariance_ / globalVariance * 100.0;
+        double const cumulVariancePercent
+          = cumulVariance_ / globalVariance * 100.0;
         ssCumul << "Cumulative explained variance : "
                 << round(cumulVariancePercent * 100.0) / 100.0 << " %";
         printMsg(ssCumul.str());
@@ -1222,7 +1223,7 @@ namespace ttk {
         // Surface Variance
         double surfaceVariance = computeSurfaceExplainedVariance<dataType>(
           barycenter, trees, vS_, v2s_, allTs_);
-        double surfaceVariancePercent
+        double const surfaceVariancePercent
           = surfaceVariance / globalVariance * 100.0;
         std::stringstream ssSurface;
         ssSurface << "Surface Variance explained    : "
@@ -1242,7 +1243,7 @@ namespace ttk {
           tVariance = computeExplainedVarianceT(barycenter, vS_[geodesicNumber],
                                                 v2s_[geodesicNumber],
                                                 allTs_[geodesicNumber]);
-        double tVariancePercent = tVariance / globalVariance * 100.0;
+        double const tVariancePercent = tVariance / globalVariance * 100.0;
         std::stringstream ssTVariance, ssCumulT;
         ssTVariance << "Explained T-Variance            : "
                     << round(tVariancePercent * 100.0) / 100.0 << " %";
@@ -1250,7 +1251,8 @@ namespace ttk {
 
         // Cumul T-Variance
         cumulTVariance_ += tVariance;
-        double cumulTVariancePercent = cumulTVariance_ / globalVariance * 100.0;
+        double const cumulTVariancePercent
+          = cumulTVariance_ / globalVariance * 100.0;
         ssCumulT << "Cumulative explained T-Variance : "
                  << round(cumulTVariancePercent * 100.0) / 100.0 << " %";
         printMsg(ssCumulT.str());

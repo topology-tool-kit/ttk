@@ -88,7 +88,7 @@ int ttk::LDistance::execute(const dataType *const inputData1,
   if(distanceType == "inf") {
     status = computeLinf(inputData1, inputData2, outputData, vertexNumber);
   } else {
-    int n = stoi(distanceType);
+    int const n = stoi(distanceType);
     if(n < 1)
       return -4;
 

@@ -29,7 +29,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   int const nx = 1 + dataExtent_[1] - dataExtent_[0];
   int const ny = 1 + dataExtent_[3] - dataExtent_[2];
   int const nz = 1 + dataExtent_[5] - dataExtent_[4];
-  int vertexNumber = nx * ny * nz;
+  int const vertexNumber = nx * ny * nz;
 
   decompressedData_.resize(vertexNumber);
   if(ZFPTolerance < 0.0) {
@@ -132,14 +132,14 @@ int ttk::TopologicalCompression::PerformSimplification(
   // Preprocess simplification.
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
-    int id = std::get<0>(t);
+    int const id = std::get<0>(t);
     double const val = std::get<1>(t);
     int const type = std::get<2>(t);
 
     array[id] = val;
 
     // Smoothe neighborhood (along with offsets).
-    SimplexId neighborNumber = triangulation.getVertexNeighborNumber(id);
+    SimplexId const neighborNumber = triangulation.getVertexNeighborNumber(id);
     for(SimplexId j = 0; j < neighborNumber; ++j) {
       SimplexId neighbor{-1};
       triangulation.getVertexNeighbor(id, j, neighbor);
@@ -200,8 +200,8 @@ void ttk::TopologicalCompression::CropIntervals(
       mappings.begin(), mappings.end(), std::make_tuple(0, seg), cmp);
     if(it != end) {
       std::tuple<dataType, int> tt = *it;
-      double value = std::get<0>(tt);
-      int sseg = std::get<1>(tt);
+      double const value = std::get<0>(tt);
+      int const sseg = std::get<1>(tt);
       if(seg != sseg) {
         this->printErr("Decompression mismatch.");
       }

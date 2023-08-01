@@ -41,7 +41,7 @@ int ttkDistanceField::FillOutputPortInformation(int port,
 int ttkDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
-  ttk::Timer globalTimer;
+  ttk::Timer const globalTimer;
 
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0]);
   vtkPointSet *sources = vtkPointSet::GetData(inputVector[1]);

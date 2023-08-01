@@ -108,7 +108,7 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(size_t i = 0; i < sources.size(); ++i) {
-    int ret = Dijkstra::shortestPath<dataType>(
+    int const ret = Dijkstra::shortestPath<dataType>(
       sources[i], *triangulation_, scalars[i]);
     if(ret != 0) {
       this->printErr(

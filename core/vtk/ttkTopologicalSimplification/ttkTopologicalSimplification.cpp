@@ -109,7 +109,7 @@ int ttkTopologicalSimplification::RequestData(
   outputOrder->DeepCopy(inputOrder);
 
   // constraint identifier field
-  int numberOfConstraints = constraints->GetNumberOfPoints();
+  int const numberOfConstraints = constraints->GetNumberOfPoints();
 
   std::vector<ttk::SimplexId> idSpareStorage{};
   auto identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField, 1,

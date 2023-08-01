@@ -621,7 +621,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_2D(
     edgeStartIndex[t] = numEdges[t - 1] + edgeStartIndex[t - 1];
   }
 
-  size_t numTotalEdges = edgeStartIndex[this->threadNumber_];
+  size_t const numTotalEdges = edgeStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalEdges = numEdges[0];
 #endif // TTK_ENABLE_OPENMP
@@ -733,7 +733,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_2D(
     edgeStartIndex[t] = numEdges[t - 1] + edgeStartIndex[t - 1];
   }
 
-  size_t numTotalEdges = edgeStartIndex[this->threadNumber_];
+  size_t const numTotalEdges = edgeStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalEdges = numEdges[0];
 #endif // TTK_ENABLE_OPENMP
@@ -1007,7 +1007,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
     triangleStartIndex[t] = numTriangles[t - 1] + triangleStartIndex[t - 1];
   }
 
-  size_t numTotalTriangles = triangleStartIndex[this->threadNumber_];
+  size_t const numTotalTriangles = triangleStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalTriangles = numTriangles[0];
 #endif // TTK_ENABLE_OPENMP
@@ -1089,7 +1089,7 @@ int ttk::MarchingTetrahedra::writeSeparators_3D(
           vertPos[0], vertPos[1], vertPos[2], vertPos[3], tetCenter);
 
         // Create a hashes from all four label combinations
-        unsigned long long sparseMSIds[6] = {
+        unsigned long long const sparseMSIds[6] = {
           mth::getHash(label[0], label[1]), mth::getHash(label[0], label[2]),
           mth::getHash(label[0], label[3]), mth::getHash(label[1], label[2]),
           mth::getHash(label[1], label[3]), mth::getHash(label[2], label[3])};
@@ -1319,7 +1319,7 @@ int ttk::MarchingTetrahedra::writeBoundaries_3D(
     triangleStartIndex[t] = numTriangles[t - 1] + triangleStartIndex[t - 1];
   }
 
-  size_t numTotalTriangles = triangleStartIndex[this->threadNumber_];
+  size_t const numTotalTriangles = triangleStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalTriangles = numTriangles[0];
 #endif // TTK_ENABLE_OPENMP
@@ -1441,7 +1441,7 @@ int ttk::MarchingTetrahedra::writeBoundariesDetailed_3D(
     triangleStartIndex[t] = numTriangles[t - 1] + triangleStartIndex[t - 1];
   }
 
-  size_t numTotalTriangles = triangleStartIndex[this->threadNumber_];
+  size_t const numTotalTriangles = triangleStartIndex[this->threadNumber_];
 #else // TTK_ENABLE_OPENMP
   size_t numTotalTriangles = numTriangles[0];
 #endif // TTK_ENABLE_OPENMP

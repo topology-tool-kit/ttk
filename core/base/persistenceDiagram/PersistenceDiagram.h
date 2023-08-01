@@ -425,7 +425,7 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
-  Timer tm{};
+  Timer const tm{};
   const auto dim = triangulation->getDimensionality();
 
   std::vector<ttk::PersistentSimplexPairs::PersistencePair> pairs{};
@@ -499,7 +499,7 @@ int ttk::PersistenceDiagram::executeDiscreteMorseSandwich(
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
-  Timer tm{};
+  Timer const tm{};
   const auto dim = triangulation->getDimensionality();
 
   dms_.buildGradient(inputScalars, scalarsMTime, inputOffsets, *triangulation);

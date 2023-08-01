@@ -141,7 +141,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   for(auto paramName : paramNames) {
     auto array = tableCoefficients->GetFieldData()->GetArray(paramName.c_str());
     if(array) {
-      double value = array->GetTuple1(0);
+      double const value = array->GetTuple1(0);
       setParamValueFromName(paramName, value);
     } else
       printMsg(" - " + paramName + " was not found in the field data.");
@@ -157,7 +157,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   // --- Load tables
   // ------------------------------------------------------------------------------------
   auto tableVNoCols = tableVectors->GetNumberOfColumns() / inputBary.size();
-  unsigned int numberOfGeodesics = tableVNoCols / 4;
+  unsigned int const numberOfGeodesics = tableVNoCols / 4;
   auto numberOfInputs = tableCoefficients->GetNumberOfRows();
 
   auto baryNoNodes = tableVectors->GetNumberOfRows();
@@ -183,12 +183,13 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   allTs_.resize(numberOfGeodesics, std::vector<double>(numberOfInputs, 0.0));
   for(unsigned int i = 0; i < numberOfGeodesics; ++i)
     for(unsigned int j = 0; j < numberOfInputs; ++j) {
-      std::string name = getTableCoefficientName(numberOfGeodesics, i);
+      std::string const name = getTableCoefficientName(numberOfGeodesics, i);
       allTs_[i][j] = tableCoefficients->GetColumnByName(name.c_str())
                        ->GetVariantValue(j)
                        .ToDouble();
       nonFieldDataNames.push_back(name);
-      std::string normName = getTableCoefficientNormName(numberOfGeodesics, i);
+      std::string const normName
+        = getTableCoefficientNormName(numberOfGeodesics, i);
       nonFieldDataNames.push_back(normName);
     }
   ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
@@ -196,7 +197,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   // - aggregate input field data
   vtkNew<vtkFieldData> fd{};
   for(int i = 0; i < tableCoefficients->GetNumberOfColumns(); ++i) {
-    std::string name{tableCoefficients->GetColumnName(i)};
+    std::string const name{tableCoefficients->GetColumnName(i)};
     if(std::count(nonFieldDataNames.begin(), nonFieldDataNames.end(), name)
        == 0) {
       auto array = tableCoefficients->GetColumn(i);
@@ -219,12 +220,12 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   for(unsigned int h = 0; h < inputBary.size(); ++h) {
     auto &pVS = (h == 0 ? pVS_ : pTrees2Vs_);
     auto &pV2s = (h == 0 ? pV2s_ : pTrees2V2s_);
-    bool secondInput = (h == 1);
+    bool const secondInput = (h == 1);
     for(unsigned int i = 0; i < numberOfGeodesics; ++i) {
       for(unsigned int k = 0; k < 2; ++k) {
-        std::string name1
+        std::string const name1
           = getTableVectorName(numberOfGeodesics, i, 0, k, secondInput);
-        std::string name2
+        std::string const name2
           = getTableVectorName(numberOfGeodesics, i, 1, k, secondInput);
         pVS[i][k] = ttkUtils::GetPointer<double>(vtkDataArray::SafeDownCast(
           tableVectors->GetColumnByName(name1.c_str())));
@@ -247,8 +248,9 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
     auto baryNodeIdArray = tableCorrelation->GetColumnByName("BaryNodeId");
 
     for(unsigned int j = 0; j < numberOfGeodesics; ++j) {
-      std::string name = getTableCorrelationName(numberOfGeodesics, j);
-      std::string name2 = getTableCorrelationPersName(numberOfGeodesics, j);
+      std::string const name = getTableCorrelationName(numberOfGeodesics, j);
+      std::string const name2
+        = getTableCorrelationPersName(numberOfGeodesics, j);
       pBranchesCorrelationMatrix_[j]
         = ttkUtils::GetPointer<double>(vtkDataArray::SafeDownCast(
           tableCorrelation->GetColumnByName(name.c_str())));
@@ -261,7 +263,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
     // later
     baryMatchings_.resize(numberOfInputs);
     for(unsigned int i = 0; i < numberOfInputs; ++i) {
-      std::string name = getTableCorrelationTreeName(numberOfInputs, i);
+      std::string const name = getTableCorrelationTreeName(numberOfInputs, i);
       auto array = tableCorrelation->GetColumnByName(name.c_str());
       if(array) {
         baryMatchings_[i].resize(tableCorrNoRows);
@@ -320,9 +322,9 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runCompute(
   if(OutputInputTrees
      or (ReconstructInputTrees
          and (computeReconstructionError_ or transferInputTreesInformation_))) {
-    bool useSadMaxPairs
+    bool const useSadMaxPairs
       = (useDoubleInput_ and not processFirstInput) or mixtureCoefficient_ == 0;
-    bool isInputPD = ttk::ftm::constructTrees<dataType>(
+    bool const isInputPD = ttk::ftm::constructTrees<dataType>(
       inputTrees, inputDTrees, inputTreesNodes, inputTreesArcs,
       inputTreesSegmentation, useSadMaxPairs);
     if(not isInputPD and isPersistenceDiagram_)
@@ -332,7 +334,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runCompute(
   //------------------------------------------------------------------------------------
   // --- Call base
   //------------------------------------------------------------------------------------
-  std::string preFix{(processFirstInput ? "" : "Second Input ")};
+  std::string const preFix{(processFirstInput ? "" : "Second Input ")};
   auto &baryToUse = (processFirstInput ? baryDTree[0] : baryDTree[1]);
 
   // Geodesics distances
@@ -428,15 +430,15 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
   // ------------------------------------------------------------------------------------
   auto output = vtkMultiBlockDataSet::GetData(outputVector, 0);
 
-  unsigned int noInput = (OutputInputTrees ? inputTrees.size() : 0);
-  unsigned int noReconst = reconstructedTrees.size();
-  unsigned int noBary = (OutputBarycenter ? 1 : 0);
-  unsigned int noGeod
+  unsigned int const noInput = (OutputInputTrees ? inputTrees.size() : 0);
+  unsigned int const noReconst = reconstructedTrees.size();
+  unsigned int const noBary = (OutputBarycenter ? 1 : 0);
+  unsigned int const noGeod
     = geodesicsTrees.size()
       * (geodesicsTrees.size() == 0 ? 0 : geodesicsTrees[0].size());
-  unsigned int noEllipses = geodesicsEllipses.size();
-  unsigned int noRectangle = geodesicsRectangle.size();
-  unsigned int noSurface = geodesicsSurface.size();
+  unsigned int const noEllipses = geodesicsEllipses.size();
+  unsigned int const noRectangle = geodesicsRectangle.size();
+  unsigned int const noSurface = geodesicsSurface.size();
 
   printMsg("noInput     = " + std::to_string(noInput));
   printMsg("noReconst   = " + std::to_string(noReconst));
@@ -452,29 +454,29 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
   for(unsigned int i = 0; i < allNo.size(); ++i)
     steps[i] = (i == 0 ? 0 : steps[i - 1]) + allNo[i];
 
-  unsigned int noTreesTotal = steps[steps.size() - 1];
+  unsigned int const noTreesTotal = steps[steps.size() - 1];
 
-  unsigned int noBlocks
+  unsigned int const noBlocks
     = 2 - isPersistenceDiagram_ + OutputInputTreesSegmentation;
   output->SetNumberOfBlocks(noBlocks);
-  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
+  vtkSmartPointer<vtkMultiBlockDataSet> const vtkBlockNodes
     = vtkSmartPointer<vtkMultiBlockDataSet>::New();
   vtkBlockNodes->SetNumberOfBlocks(noTreesTotal);
   output->SetBlock(0, vtkBlockNodes);
   if(not isPersistenceDiagram_) {
-    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+    vtkSmartPointer<vtkMultiBlockDataSet> const vtkBlockArcs
       = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     vtkBlockArcs->SetNumberOfBlocks(noTreesTotal);
     output->SetBlock(1, vtkBlockArcs);
   }
   if(OutputInputTreesSegmentation) {
-    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+    vtkSmartPointer<vtkMultiBlockDataSet> const vtkBlockSegs
       = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     vtkBlockSegs->SetNumberOfBlocks(noTreesTotal);
     output->SetBlock(2 - isPersistenceDiagram_, vtkBlockSegs);
   }
 
-  int geodesicsTreesOffset = std::max((int)geodesicsTrees.size() - 1, 0);
+  int const geodesicsTreesOffset = std::max((int)geodesicsTrees.size() - 1, 0);
 
   // ------------------------------------------
   // --- Trees
@@ -522,8 +524,8 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
     } else if(i < steps[3]) {
       // Geodesics Trees
       index = i - steps[2];
-      int i0 = index / geodesicsTrees[0].size();
-      int i1 = index % geodesicsTrees[0].size();
+      int const i0 = index / geodesicsTrees[0].size();
+      int const i1 = index % geodesicsTrees[0].size();
       ttk::ftm::mergeTreeDoubleToTemplate<dataType>(geodesicsTrees[i0][i1], mt);
       treeType = 2 + i0;
       ts = tGeodesics_[i0][i1];
@@ -550,17 +552,18 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
       ts = tSurface_[index];
     }
 
-    bool isInputTree = (i < steps[0]);
-    bool isInputTreeAndGotMesh
+    bool const isInputTree = (i < steps[0]);
+    bool const isInputTreeAndGotMesh
       = (isInputTree and inputTrees[i]->GetNumberOfBlocks() >= 3);
-    bool isReconstructedTree = (i >= steps[0] and i < steps[1]);
-    bool isInputOrReconstructedTree = (isInputTree or isReconstructedTree);
+    bool const isReconstructedTree = (i >= steps[0] and i < steps[1]);
+    bool const isInputOrReconstructedTree
+      = (isInputTree or isReconstructedTree);
 
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputNode
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputArc
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputSegmentation
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     ttkMergeTreeVisualization visuMaker;
@@ -704,29 +707,29 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
 
     for(unsigned int j = 0; j < ts.size(); ++j) {
       vtkNew<vtkDoubleArray> tArray{};
-      std::string name = getTableCoefficientName(ts.size(), j);
+      std::string const name = getTableCoefficientName(ts.size(), j);
       tArray->SetName(name.c_str());
       tArray->InsertNextTuple1(ts[j]);
       vtkOutputNode->GetFieldData()->AddArray(tArray);
 
       vtkNew<vtkDoubleArray> scaledTArray{};
-      std::string name2 = getTableCoefficientNormName(ts.size(), j);
+      std::string const name2 = getTableCoefficientNormName(ts.size(), j);
       scaledTArray->SetName(name2.c_str());
       scaledTArray->InsertNextTuple1(ts[j] * geodesicsDistances_[j]);
       vtkOutputNode->GetFieldData()->AddArray(scaledTArray);
     }
 
-    bool isSurfaceTree = (treeType == 5 + geodesicsTreesOffset);
+    bool const isSurfaceTree = (treeType == 5 + geodesicsTreesOffset);
     vtkNew<vtkIntArray> isSurfaceArray{};
     isSurfaceArray->SetName("isSurface");
     isSurfaceArray->InsertNextTuple1(isSurfaceTree);
     vtkOutputNode->GetFieldData()->AddArray(isSurfaceArray);
-    bool isBoundary = (isSurfaceTree ? surfaceIsBoundary_[index] : false);
+    bool const isBoundary = (isSurfaceTree ? surfaceIsBoundary_[index] : false);
     vtkNew<vtkIntArray> isBoundaryArray{};
     isBoundaryArray->SetName("isBoundary");
     isBoundaryArray->InsertNextTuple1(isBoundary);
     vtkOutputNode->GetFieldData()->AddArray(isBoundaryArray);
-    int boundaryID = (isSurfaceTree ? surfaceBoundaryID_[index] : -1);
+    int const boundaryID = (isSurfaceTree ? surfaceBoundaryID_[index] : -1);
     vtkNew<vtkIntArray> BoundaryIDArray{};
     BoundaryIDArray->SetName("BoundaryID");
     BoundaryIDArray->InsertNextTuple1(boundaryID);

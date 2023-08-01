@@ -60,7 +60,7 @@ namespace ttk {
     /// Get the number of vertices in the cell with the id: cellid
     /// \param cellId global id of the cell
     /// \return dimension + 1 for now as we only accept regular meshes
-    inline SimplexId getCellVertexNumber(const LongSimplexId cellId) const {
+    inline SimplexId getCellVertexNumber(const LongSimplexId /*cellId*/) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(cellId >= this->nbCells_) {
         std::cerr << "TTK: access to cell " << cellId << " on "

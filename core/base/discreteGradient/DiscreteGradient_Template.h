@@ -240,7 +240,7 @@ inline void
   }
 
   // a belongs to its lower star
-  CellExt localCellExt{0, a};
+  CellExt const localCellExt{0, a};
   ls[0].emplace_back(localCellExt);
 
   // store lower edges
@@ -292,7 +292,7 @@ inline void
             }
             j++;
           }
-          CellExt localCellExt2{2, triangleId, lowVerts, faces};
+          CellExt const localCellExt2{2, triangleId, lowVerts, faces};
           ls[2].emplace_back(localCellExt2);
         }
       };
@@ -381,7 +381,7 @@ inline void
             j++;
           }
 
-          CellExt localCellExt3{3, cellId, lowVerts, faces};
+          CellExt const localCellExt3{3, cellId, lowVerts, faces};
           ls[3].emplace_back(localCellExt3);
         }
       }

@@ -66,7 +66,7 @@ namespace ttk {
       mergeTreeDistance.setDistanceSquaredRoot(true); // squared root
       mergeTreeDistance.setNodePerTask(nodePerTask_);
       if(useDoubleInput) {
-        double weight = mixDistancesMinMaxPairWeight(isFirstInput);
+        double const weight = mixDistancesMinMaxPairWeight(isFirstInput);
         mergeTreeDistance.setMinMaxPairWeight(weight);
       }
       distance = mergeTreeDistance.computeDistance<dataType>(
@@ -142,7 +142,7 @@ namespace ttk {
       }
 
       // Change the norm of the random vector to be the average norm
-      double normV = ttk::Geometry::magnitudeFlatten(v);
+      double const normV = ttk::Geometry::magnitudeFlatten(v);
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {
         if(barycenter.tree.isNodeAlone(i))
           continue;
@@ -344,7 +344,7 @@ namespace ttk {
       double barycenterSizeLimitPercent,
       bool useDoubleInput = false,
       bool isFirstInput = true) {
-      unsigned int barycenterMaximumNumberOfPairs = 0;
+      unsigned int const barycenterMaximumNumberOfPairs = 0;
       computeOneBarycenter(trees, baryMergeTree, matchings, finalDistances,
                            barycenterSizeLimitPercent,
                            barycenterMaximumNumberOfPairs, useDoubleInput,
@@ -564,9 +564,9 @@ namespace ttk {
     void zeroPadding(std::string &colName,
                      const size_t numberCols,
                      const size_t colIdx) {
-      std::string max{std::to_string(numberCols - 1)};
-      std::string cur{std::to_string(colIdx)};
-      std::string zer(max.size() - cur.size(), '0');
+      std::string const max{std::to_string(numberCols - 1)};
+      std::string const cur{std::to_string(colIdx)};
+      std::string const zer(max.size() - cur.size(), '0');
       colName.append(zer).append(cur);
     }
 
@@ -589,7 +589,7 @@ namespace ttk {
                                    bool isSecondInput = false) {
       std::string indexString{};
       zeroPadding(indexString, noGeodesics, geodesicNum);
-      std::string prefix{(isSecondInput ? "T2_" : "")};
+      std::string const prefix{(isSecondInput ? "T2_" : "")};
       std::string name{prefix + "V" + indexString + "_" + std::to_string(vId)
                        + "_" + std::to_string(vComp)};
       return name;

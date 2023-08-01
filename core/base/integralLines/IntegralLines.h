@@ -484,7 +484,7 @@ inline void
                                      ttk::SimplexId &fnext,
                                      std::vector<ttk::SimplexId> &component,
                                      const SimplexId *offsets) const {
-  ttk::SimplexId elementInComponentNumber = component.size();
+  ttk::SimplexId const elementInComponentNumber = component.size();
   for(ttk::SimplexId k = 0; k < elementInComponentNumber; ++k) {
     if(direction_ == static_cast<int>(Direction::Forward)) {
       if(fnext < offsets[component[k]]) {
@@ -516,7 +516,7 @@ void ttk::IntegralLines::computeIntegralLine(
     std::vector<std::vector<ttk::SimplexId>> upperComponents;
     std::vector<std::vector<ttk::SimplexId>> lowerComponents;
     // Computation of the critical type
-    char criticalType
+    char const criticalType
       = this->scalarFieldCriticalPoints_.getCriticalType<triangulationType>(
         v, offsets, triangulation, &upperComponents, &lowerComponents);
     // End of integral line if an appropriate maxima is reached
@@ -550,7 +550,7 @@ void ttk::IntegralLines::computeIntegralLine(
          && EnableForking) {
         // For each connected components, the max (or the min) is computed
         // and a task is created to further the computation of the integral line
-        ttk::SimplexId numberOfComponents = components->size();
+        ttk::SimplexId const numberOfComponents = components->size();
 #ifdef TTK_ENABLE_MPI
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update seq_cst
@@ -571,10 +571,10 @@ void ttk::IntegralLines::computeIntegralLine(
           ttk::SimplexId forkIdentifier
             = triangulation->getVertexGlobalId(vnext);
 #else
-          ttk::SimplexId forkIdentifier = vnext;
+          ttk::SimplexId const forkIdentifier = vnext;
 #endif
           triangulation->getVertexPoint(vnext, p1[0], p1[1], p1[2]);
-          double distanceFork = Geometry::distance(p0, p1, 3);
+          double const distanceFork = Geometry::distance(p0, p1, 3);
           int threadNum{0};
 #ifdef TTK_ENABLE_OPENMP
           threadNum = omp_get_thread_num();
@@ -612,7 +612,7 @@ void ttk::IntegralLines::computeIntegralLine(
         // In case the vertex is not a saddle point, all neighbor vertices
         // are used for the computation
         components->clear();
-        ttk::SimplexId neighborNumber
+        ttk::SimplexId const neighborNumber
           = triangulation->getVertexNeighborNumber(v);
         components->push_back(std::vector<ttk::SimplexId>());
         ttk::SimplexId id;
@@ -655,7 +655,7 @@ void ttk::IntegralLines::prepareForTask(
   std::vector<SimplexId> *seeds) const {
 
   for(SimplexId j = 0; j < nbElement; j++) {
-    SimplexId v{seeds->at(j + startingIndex)};
+    SimplexId const v{seeds->at(j + startingIndex)};
     int seedIdentifier;
 #ifdef TTK_ENABLE_MPI
     seedIdentifier = triangulation->getVertexGlobalId(v);
@@ -705,7 +705,7 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
   Timer t;
 
   std::vector<ttk::intgl::IntegralLine *> chunkIntegralLine(chunkSize_);
-  int taskNumber = (int)seedNumber_ / chunkSize_;
+  int const taskNumber = (int)seedNumber_ / chunkSize_;
 #ifdef TTK_ENABLE_OPENMP
 #ifdef TTK_ENABLE_MPI
 #pragma omp parallel shared(                                        \
@@ -725,7 +725,7 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
         this->createTask<triangulationType>(
           triangulation, chunkIntegralLine, offsets, chunkSize_);
       }
-      int rest = seedNumber_ % chunkSize_;
+      int const rest = seedNumber_ % chunkSize_;
       if(rest > 0) {
         this->prepareForTask<triangulationType>(
           triangulation, chunkIntegralLine, taskNumber * chunkSize_, rest,

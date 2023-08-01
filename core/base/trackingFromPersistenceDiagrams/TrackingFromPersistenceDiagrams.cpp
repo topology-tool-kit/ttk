@@ -96,7 +96,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
 
     auto matchingsSize1 = (int)matchings1.size();
     auto matchingsSize2 = (int)matchings2.size();
-    int endIndex = numPersistenceDiagramsInput - 2;
+    int const endIndex = numPersistenceDiagramsInput - 2;
 
     for(int i = 0; i < matchingsSize1; ++i) {
       const auto m1ai0 = std::get<0>(matchings1[i]);
@@ -112,8 +112,8 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
         // Detect in trackings and push.
         bool found = false;
         for(trackingTuple &tt : trackings) {
-          int chainStart = std::get<0>(tt);
-          int chainEnd = std::get<1>(tt);
+          int const chainStart = std::get<0>(tt);
+          int const chainEnd = std::get<1>(tt);
           std::vector<SimplexId> &chain = std::get<2>(tt);
 
           if(chainEnd == -1) {
@@ -125,7 +125,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
                       && chain.at((unsigned long)chainSize - 1) == m1ai0) {
               found = true;
               chain.push_back(m1ai1);
-              int numEnd = in == endIndex ? endIndex : -1;
+              int const numEnd = in == endIndex ? endIndex : -1;
               if(in == endIndex) {
                 chain.push_back(m2aj1);
                 std::get<1>(tt) = numEnd;
@@ -143,8 +143,8 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
           if(in == endIndex) {
             chain.push_back(m2aj1);
           }
-          int numEnd = in == endIndex ? endIndex : -1;
-          trackingTuple tt = std::make_tuple(in - 1, numEnd, chain);
+          int const numEnd = in == endIndex ? endIndex : -1;
+          trackingTuple const tt = std::make_tuple(in - 1, numEnd, chain);
           trackings.push_back(tt);
         }
         // Create new.
@@ -153,10 +153,10 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
 
     // End non-matched chains.
     for(trackingTuple &tt : trackings) {
-      int chainStart = std::get<0>(tt);
-      int chainEnd = std::get<1>(tt);
+      int const chainStart = std::get<0>(tt);
+      int const chainEnd = std::get<1>(tt);
       if(chainEnd == -1) {
-        std::vector<SimplexId> &chain = std::get<2>(tt);
+        std::vector<SimplexId> const &chain = std::get<2>(tt);
         auto chainSize = (int)chain.size();
         if(chainStart + chainSize - 1 < in)
           std::get<1>(tt) = in - 1;
@@ -184,7 +184,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
   // Merge close connected components with threshold.
   for(size_t k = 0; k < trackings.size(); ++k) {
     const auto &tk = trackings[k];
-    int startK = std::get<0>(tk);
+    int const startK = std::get<0>(tk);
     int endK = std::get<1>(tk);
     if(endK < 0)
       endK = numPersistenceDiagramsInput - 1;
@@ -201,13 +201,13 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
     const auto point1Type1 = tuple1.birth.type;
     const auto point1Type2 = tuple1.death.type;
-    bool t11Min = point1Type1 == CriticalType::Local_minimum;
-    bool t11Max = point1Type1 == CriticalType::Local_maximum;
-    bool t12Min = point1Type2 == CriticalType::Local_minimum;
-    bool t12Max = point1Type2 == CriticalType::Local_maximum;
+    bool const t11Min = point1Type1 == CriticalType::Local_minimum;
+    bool const t11Max = point1Type1 == CriticalType::Local_maximum;
+    bool const t12Min = point1Type2 == CriticalType::Local_minimum;
+    bool const t12Max = point1Type2 == CriticalType::Local_maximum;
     // bool bothEx1 = t11Ex && t12Ex;
-    bool t1Max = t11Max || t12Max;
-    bool t1Min = !t1Max && (t11Min || t12Min);
+    bool const t1Max = t11Max || t12Max;
+    bool const t1Min = !t1Max && (t11Min || t12Min);
 
     x1 = t1Max ? tuple1.death.coords[0] : t1Min ? tuple1.birth.coords[0] : 0;
     y1 = t1Max ? tuple1.death.coords[1] : t1Min ? tuple1.birth.coords[1] : 0;
@@ -215,13 +215,13 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
     const auto point2Type1 = tuple2.birth.type;
     const auto point2Type2 = tuple2.death.type;
-    bool t21Min = point2Type1 == CriticalType::Local_minimum;
-    bool t21Max = point2Type1 == CriticalType::Local_maximum;
-    bool t22Min = point2Type2 == CriticalType::Local_minimum;
-    bool t22Max = point2Type2 == CriticalType::Local_maximum;
+    bool const t21Min = point2Type1 == CriticalType::Local_minimum;
+    bool const t21Max = point2Type1 == CriticalType::Local_maximum;
+    bool const t22Min = point2Type2 == CriticalType::Local_minimum;
+    bool const t22Max = point2Type2 == CriticalType::Local_maximum;
     // bool bothEx2 = t21Ex && t22Ex;
-    bool t2Max = t21Max || t22Max;
-    bool t2Min = !t2Max && (t21Min || t22Min);
+    bool const t2Max = t21Max || t22Max;
+    bool const t2Min = !t2Max && (t21Min || t22Min);
 
     // if (bothEx2) {
     x2 = t2Max ? tuple2.death.coords[0] : t2Min ? tuple2.birth.coords[0] : 0;
@@ -238,15 +238,15 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     // Check every other tracking trajectory.
     for(size_t m = k + 1; m < trackings.size(); ++m) {
       const auto &tm = trackings[m];
-      int startM = std::get<0>(tm);
-      int endM = std::get<1>(tm);
+      int const startM = std::get<0>(tm);
+      int const endM = std::get<1>(tm);
       const std::vector<SimplexId> &chainM = std::get<2>(tm);
       if((endK > 0 && startM > endK) || (endM > 0 && startK > endM))
         continue;
 
       for(int c = 0; c < (int)chainM.size(); ++c) {
-        bool doMatch1 = startM + c == startK;
-        bool doMatch2 = startM + c == endK;
+        bool const doMatch1 = startM + c == startK;
+        bool const doMatch2 = startM + c == endK;
 
         // if (startM + c != startK && startM + c != endK) continue;
         if(!doMatch1 && !doMatch2)
@@ -259,15 +259,15 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         double x3, y3, z3;
         const auto point3Type1 = tuple3.birth.type;
         const auto point3Type2 = tuple3.death.type;
-        bool t31Min = point3Type1 == CriticalType::Local_minimum;
-        bool t31Max = point3Type1 == CriticalType::Local_maximum;
-        bool t32Min = point3Type2 == CriticalType::Local_minimum;
-        bool t32Max = point3Type2 == CriticalType::Local_maximum;
+        bool const t31Min = point3Type1 == CriticalType::Local_minimum;
+        bool const t31Max = point3Type1 == CriticalType::Local_maximum;
+        bool const t32Min = point3Type2 == CriticalType::Local_minimum;
+        bool const t32Max = point3Type2 == CriticalType::Local_maximum;
         // bool bothEx3 = t31Ex && t32Ex;
         // if (!bothEx3)
         //  continue;
-        bool t3Max = t31Max || t32Max;
-        bool t3Min = !t3Max && (t31Min || t32Min);
+        bool const t3Max = t31Max || t32Max;
+        bool const t3Min = !t3Max && (t31Min || t32Min);
 
         x3 = t3Max   ? tuple3.death.coords[0]
              : t3Min ? tuple3.birth.coords[0]
@@ -283,7 +283,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         bool hasMatched = false;
         const auto square = [](const double a) { return a * a; };
         if(doMatch1 && ((t3Max && t1Max) || (t3Min && t1Min))) {
-          double dist13
+          double const dist13
             = std::sqrt(square(x1 - x3) + square(y1 - y3) + square(z1 - z3));
           dist = dist13;
           if(dist13 >= postProcThresh)
@@ -292,7 +292,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         }
 
         if(doMatch2 && ((t3Max && t2Max) || (t3Min && t2Min))) {
-          double dist23
+          double const dist23
             = std::sqrt(square(x2 - x3) + square(y2 - y3) + square(z2 - z3));
           dist = dist23;
           if(dist23 >= postProcThresh)

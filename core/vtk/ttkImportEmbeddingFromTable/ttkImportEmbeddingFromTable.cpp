@@ -99,7 +99,7 @@ int ttkImportEmbeddingFromTable::RequestData(
     return -1;
   }
 
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> const points = vtkSmartPointer<vtkPoints>::New();
   points->SetNumberOfPoints(numberOfPoints);
 
   switch(xarr->GetDataType()) {

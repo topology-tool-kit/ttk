@@ -371,7 +371,8 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
   std::vector<std::vector<ttk::SimplexId>> *upperComponents,
   std::vector<std::vector<ttk::SimplexId>> *lowerComponents) const {
 
-  SimplexId neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
+  SimplexId const neighborNumber
+    = triangulation->getVertexNeighborNumber(vertexId);
   std::vector<SimplexId> lowerNeighbors, upperNeighbors;
 
   for(SimplexId i = 0; i < neighborNumber; i++) {
@@ -409,13 +410,13 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
     upperList[i] = &(upperSeeds[i]);
   }
 
-  SimplexId vertexStarSize = triangulation->getVertexStarNumber(vertexId);
+  SimplexId const vertexStarSize = triangulation->getVertexStarNumber(vertexId);
 
   for(SimplexId i = 0; i < vertexStarSize; i++) {
     SimplexId cellId = 0;
     triangulation->getVertexStar(vertexId, i, cellId);
 
-    SimplexId cellSize = triangulation->getCellVertexNumber(cellId);
+    SimplexId const cellSize = triangulation->getCellVertexNumber(cellId);
     for(SimplexId j = 0; j < cellSize; j++) {
       SimplexId neighborId0 = -1;
       triangulation->getCellVertex(cellId, j, neighborId0);

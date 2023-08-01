@@ -164,8 +164,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     return data[dimension * i1 + coords_number_]
            < data[dimension * i2 + coords_number_];
   });
-  int median_loc = (int)(ptNumber - 1) / 2;
-  int median_idx = idx[median_loc];
+  int const median_loc = (int)(ptNumber - 1) / 2;
+  int const median_idx = idx[median_loc];
   correspondence_map[median_idx] = this;
 
   for(int axis = 0; axis < dimension; axis++) {
@@ -233,8 +233,8 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
     return data[dimension * i1 + coords_number_]
            < data[dimension * i2 + coords_number_];
   });
-  int median_loc = (int)(idx_side.size() - 1) / 2;
-  int median_idx = idx_side[median_loc];
+  int const median_loc = (int)(idx_side.size() - 1) / 2;
+  int const median_idx = idx_side[median_loc];
   correspondence_map[median_idx] = this;
 
   for(int axis = 0; axis < dimension; axis++) {

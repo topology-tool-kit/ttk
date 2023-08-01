@@ -57,8 +57,8 @@ int ttkMeshGraph::RequestData(vtkInformation *ttkNotUsed(request),
     return -1;
   }
 
-  size_t nInputPoints = input->GetNumberOfPoints();
-  size_t nInputCells = input->GetNumberOfCells();
+  size_t const nInputPoints = input->GetNumberOfPoints();
+  size_t const nInputCells = input->GetNumberOfCells();
 
   auto inputPointSizes = this->GetInputArrayToProcess(0, inputVector);
   if(!inputPointSizes) {

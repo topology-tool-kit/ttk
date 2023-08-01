@@ -41,7 +41,7 @@ namespace ttk {
       // init some values
 
 #ifdef TTK_ENABLE_OPENMP
-      ParallelGuard pg{params_.threadNumber};
+      ParallelGuard const pg{params_.threadNumber};
       omp_set_nested(1);
 #ifdef TTK_ENABLE_OMP_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
@@ -189,7 +189,7 @@ namespace ttk {
       const bool addMin = true;
       const bool addMax = !params_.singleSweep;
 
-      ScalarFieldCriticalPoints critPoints;
+      ScalarFieldCriticalPoints const critPoints;
 
       TaskChunk leafChunkParams(scalars_.getSize());
       leafChunkParams.grainSize = 10000;
@@ -255,7 +255,7 @@ namespace ttk {
       {
         for(idNode i = 0; i < nbSeed; i++) {
           // alterneate min/max, string at the deepest
-          idVertex l = (i % 2) ? i / 2 : nbSeed - 1 - i / 2;
+          idVertex const l = (i % 2) ? i / 2 : nbSeed - 1 - i / 2;
           // increasing order, min first
           // idVertex l = i;
           // initialize structure

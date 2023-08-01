@@ -125,7 +125,7 @@ namespace ttk {
       const int numberTriangles = end - start;
       if(numberTriangles == 1) {
         const Triangle &t = triangles[start];
-        std::vector<int> indices = {t.m_index};
+        std::vector<int> const indices = {t.m_index};
         float pMin[3] = {t.m_minX, t.m_minY, t.m_minZ};
         float pMax[3] = {t.m_maxX, t.m_maxY, t.m_maxZ};
         return std::make_shared<Node>(indices, 1, pMin, pMax);
@@ -166,7 +166,7 @@ namespace ttk {
           minToCheck = cminZ;
           maxToCheck = cmaxZ;
         }
-        size_t half = (start + end) / 2;
+        size_t const half = (start + end) / 2;
         // partition triangles into two sets and build children
         if(minToCheck == maxToCheck) {
 
@@ -299,7 +299,7 @@ namespace ttk {
 
             for(int i = 0; i < node->numTriangles; i++) {
               bool hasHit = false;
-              int triIdx = node->indices[i];
+              int const triIdx = node->indices[i];
 
               IT v0 = connectivityList[triIdx * 3 + 0];
               IT v1 = connectivityList[triIdx * 3 + 1];

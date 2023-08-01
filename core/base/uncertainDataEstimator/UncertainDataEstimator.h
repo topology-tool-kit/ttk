@@ -126,7 +126,7 @@ namespace ttk {
       if(numberOfInputs_ == 0) {
         /* Initialize */
         probability_.resize(numberOfBins_);
-        double dx
+        double const dx
           = (rangeMax_ - rangeMin_) / static_cast<double>(numberOfBins_);
         for(size_t i = 0; i < static_cast<size_t>(numberOfBins_); i++) {
           probability_[i].resize(numberOfVertices_);
@@ -379,7 +379,7 @@ int ttk::UncertainDataEstimator::execute() {
     }
 
     // Interval between bins
-    double dx = (range[1] - range[0]) / (double)BinCount;
+    double const dx = (range[1] - range[0]) / (double)BinCount;
 
     // Bin values
     for(int b = 0; b < BinCount; b++) {
@@ -387,7 +387,7 @@ int ttk::UncertainDataEstimator::execute() {
     }
 
     int idx;
-    double increment = 1.0 / (double)numberOfInputs_;
+    double const increment = 1.0 / (double)numberOfInputs_;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for private(idx) num_threads(threadNumber_)
 #endif

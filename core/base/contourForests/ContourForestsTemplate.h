@@ -217,7 +217,7 @@ namespace ttk {
       if(params_->treeType == TreeType::Contour
          && parallelParams_.partitionNum == -1 && params_->simplifyThreshold) {
         DebugTimer timerGlobalSimplify;
-        SimplexId simplified
+        SimplexId const simplified
           = globalSimplify<scalarType>(-1, nullVertex, this->storage_, mesh);
         if(params_->debugLevel >= 1) {
           printDebug(timerGlobalSimplify, "Simplify Contour tree            ");

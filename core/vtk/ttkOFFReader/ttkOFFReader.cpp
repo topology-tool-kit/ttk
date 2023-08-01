@@ -181,7 +181,7 @@ int ttkOFFReader::RequestData(vtkInformation *ttkNotUsed(request),
     vertScalars[i]->SetName(name.c_str());
   }
 
-  vtkNew<vtkPoints> points{};
+  vtkNew<vtkPoints> const points{};
 
   // read vertices
   while(

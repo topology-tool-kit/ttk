@@ -27,12 +27,12 @@ void ttk::PersistenceDiagramBarycenter::execute(
     DiagramType &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
-      PersistencePair &t = CTDiagram[j];
+      PersistencePair const &t = CTDiagram[j];
 
-      ttk::CriticalType nt1 = t.birth.type;
-      ttk::CriticalType nt2 = t.death.type;
+      ttk::CriticalType const nt1 = t.birth.type;
+      ttk::CriticalType const nt2 = t.death.type;
 
-      double dt = t.persistence();
+      double const dt = t.persistence();
       // if (abs<double>(dt) < zeroThresh) continue;
       if(dt > 0) {
         if(nt1 == ttk::CriticalType::Local_minimum
@@ -169,7 +169,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     if(do_min) {
       for(size_t j = 0; j < matching_min[i].size(); j++) {
         MatchingType t = matching_min[i][j];
-        int bidder_id = std::get<0>(t);
+        int const bidder_id = std::get<0>(t);
         std::get<0>(t) = data_min_idx[i][bidder_id];
         if(std::get<1>(t) < 0) {
           std::get<1>(t) = -1;
@@ -181,7 +181,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     if(do_sad) {
       for(size_t j = 0; j < matching_sad[i].size(); j++) {
         MatchingType t = matching_sad[i][j];
-        int bidder_id = std::get<0>(t);
+        int const bidder_id = std::get<0>(t);
         std::get<0>(t) = data_sad_idx[i][bidder_id];
         if(std::get<1>(t) >= 0) {
           std::get<1>(t) = std::get<1>(t) + barycenter_min.size();
@@ -195,7 +195,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     if(do_max) {
       for(size_t j = 0; j < matching_max[i].size(); j++) {
         MatchingType t = matching_max[i][j];
-        int bidder_id = std::get<0>(t);
+        int const bidder_id = std::get<0>(t);
         std::get<0>(t) = data_max_idx[i][bidder_id];
         if(std::get<1>(t) >= 0) {
           std::get<1>(t)
@@ -243,8 +243,8 @@ void ttk::PersistenceDiagramBarycenter::execute(
     DiagramType &CTDiagram = intermediateDiagrams[i];
     for(unsigned j = 0; j < all_matchings[0][i].size(); j++) {
       MatchingType t = all_matchings[0][i][j];
-      int bidder_id = std::get<0>(t);
-      int bary_id = std::get<1>(t);
+      int const bidder_id = std::get<0>(t);
+      int const bary_id = std::get<1>(t);
 
       const auto &bidder = CTDiagram[bidder_id];
       number_of_matchings_for_point[bary_id] += 1;

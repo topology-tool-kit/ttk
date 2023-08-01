@@ -109,7 +109,7 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     return -4;
 #endif
 
-  SimplexId vertexNumber = triangulation->getNumberOfVertices();
+  SimplexId const vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
 

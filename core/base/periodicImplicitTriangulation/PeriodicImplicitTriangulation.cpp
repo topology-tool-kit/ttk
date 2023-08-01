@@ -200,9 +200,9 @@ int PeriodicImplicitTriangulation::checkAcceleration() {
       isAccelerated_ = true;
     }
   } else if(dimensionality_ == 2) {
-    bool isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
-    bool isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
-    bool allDimensionsArePowerOfTwo = (isDi and isDj);
+    bool const isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
+    bool const isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
+    bool const allDimensionsArePowerOfTwo = (isDi and isDj);
 
     if(allDimensionsArePowerOfTwo) {
       mod_[0] = dimensions_[Di_] - 1;

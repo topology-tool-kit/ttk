@@ -143,8 +143,8 @@ namespace ttk {
   template <typename dataType>
   dataType AssignmentExhaustive<dataType>::tryAssignment(
     std::vector<int> &asgn, std::vector<MatchingType> &matchings) {
-    unsigned int nRows = this->costMatrix.size() - 1;
-    unsigned int nCols = this->costMatrix[0].size() - 1;
+    unsigned int const nRows = this->costMatrix.size() - 1;
+    unsigned int const nCols = this->costMatrix[0].size() - 1;
     // int max_dim = std::max(nRows, nCols);
     unsigned int const min_dim = std::min(nRows, nCols);
     bool const transpose = nRows > nCols;
@@ -152,8 +152,8 @@ namespace ttk {
     dataType cost = 0;
     for(unsigned int ind = 0; ind < asgn.size(); ++ind) {
       int const indMatrix = std::min(ind, min_dim);
-      int i = (!transpose) ? indMatrix : asgn[ind];
-      int j = (!transpose) ? asgn[ind] : indMatrix;
+      int const i = (!transpose) ? indMatrix : asgn[ind];
+      int const j = (!transpose) ? asgn[ind] : indMatrix;
       cost += this->costMatrix[i][j];
       matchings.push_back(std::make_tuple(i, j, this->costMatrix[i][j]));
     }
@@ -163,10 +163,10 @@ namespace ttk {
   template <typename dataType>
   int AssignmentExhaustive<dataType>::run(
     std::vector<MatchingType> &matchings) {
-    int nRows = this->costMatrix.size() - 1;
-    int nCols = this->costMatrix[0].size() - 1;
-    int max_dim = std::max(nRows, nCols);
-    int min_dim = std::min(nRows, nCols);
+    int const nRows = this->costMatrix.size() - 1;
+    int const nCols = this->costMatrix[0].size() - 1;
+    int const max_dim = std::max(nRows, nCols);
+    int const min_dim = std::min(nRows, nCols);
 
     // --- Construct all possible assignments
     std::vector<std::vector<int>> allAsgn;
@@ -198,7 +198,7 @@ namespace ttk {
     else {
       std::stringstream ss;
       ss << min_dim << "_" << max_dim;
-      std::string asgnName = ss.str();
+      std::string const asgnName = ss.str();
       // not found
       if(not saveAsgn or savedAsgn.find(asgnName) == savedAsgn.end()) {
         if(saveAsgn)

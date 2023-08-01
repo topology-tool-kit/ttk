@@ -58,7 +58,7 @@ int ttkPointMerger::RequestData(vtkInformation *ttkNotUsed(request),
     triangulation->preconditionBoundaryVertices();
   }
 
-  SimplexId vertexNumber = input->GetNumberOfPoints();
+  SimplexId const vertexNumber = input->GetNumberOfPoints();
   std::vector<SimplexId> candidateVertices;
 
   if(BoundaryOnly) {
@@ -85,13 +85,13 @@ int ttkPointMerger::RequestData(vtkInformation *ttkNotUsed(request),
     double distance = -1;
     std::array<double, 3> p0{};
 
-    SimplexId vertexId0 = candidateVertices[i];
+    SimplexId const vertexId0 = candidateVertices[i];
 
     input->GetPoint(vertexId0, p0.data());
     for(SimplexId j = 0; j < (SimplexId)candidateVertices.size(); j++) {
       if(i != j) {
         std::array<double, 3> p1{};
-        SimplexId vertexId1 = candidateVertices[j];
+        SimplexId const vertexId1 = candidateVertices[j];
         input->GetPoint(vertexId1, p1.data());
         distance = ttk::Geometry::distance(p0.data(), p1.data());
         if(distance < DistanceThreshold) {
@@ -128,7 +128,7 @@ int ttkPointMerger::RequestData(vtkInformation *ttkNotUsed(request),
         std::array<double, 3> p0{}, p1{};
         input->GetPoint(i, p0.data());
         input->GetPoint(targetVertexId, p1.data());
-        double distance = ttk::Geometry::distance(p0.data(), p1.data());
+        double const distance = ttk::Geometry::distance(p0.data(), p1.data());
         if((minMergeDistance[targetVertexId] == -1)
            || (distance < minMergeDistance[targetVertexId])) {
           minMergeDistance[targetVertexId] = distance;
@@ -224,7 +224,7 @@ int ttkPointMerger::RequestData(vtkInformation *ttkNotUsed(request),
 
     std::vector<SimplexId> newVertexIds;
     for(int j = 0; j < c->GetNumberOfPoints(); j++) {
-      SimplexId vertexId = old2new[c->GetPointId(j)];
+      SimplexId const vertexId = old2new[c->GetPointId(j)];
       bool isIn = false;
       for(SimplexId k = 0; k < (SimplexId)newVertexIds.size(); k++) {
         if(newVertexIds[k] == vertexId) {

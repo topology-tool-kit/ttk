@@ -51,7 +51,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   auto output = vtkDataSet::GetData(outputVector);
   ttk::Timer tm{};
 
-  int keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
+  int const keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
   if(keepGoing < 2) {
     return keepGoing;
   }
@@ -61,7 +61,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();
-  size_t nVertices = input->GetNumberOfPoints();
+  size_t const nVertices = input->GetNumberOfPoints();
 
   std::vector<vtkDataArray *> scalarArrays{};
 

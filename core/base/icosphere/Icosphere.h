@@ -143,7 +143,7 @@ namespace ttk {
         &processedEdges,
       DT *vertexCoords,
       IT &vertexIndex) const {
-      bool firstIsSmaller = i < j;
+      bool const firstIsSmaller = i < j;
       IT a = firstIsSmaller ? i : j;
       IT b = firstIsSmaller ? j : i;
 

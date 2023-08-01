@@ -181,7 +181,7 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetName(this->GetOrderArrayName(scalarArray).data());
       newOrderArray->SetNumberOfComponents(1);
       newOrderArray->SetNumberOfTuples(nVertices);
-      std::vector<int> neighbors;
+      std::vector<int> const neighbors;
 #ifdef TTK_ENABLE_MPI
       if(ttk::hasInitializedMPI()) {
         this->MPIGhostPipelinePreconditioning(inputData);
@@ -382,7 +382,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
                        + " not specified");
         return 0;
       }
-      std::string outputType
+      std::string const outputType
         = outputPortInfo->Get(vtkDataObject::DATA_TYPE_NAME());
 
       if(outputType == "vtkUnstructuredGrid") {

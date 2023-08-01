@@ -197,7 +197,7 @@ namespace ttk {
       for(unsigned int i = 0; i < bestDistance_.size(); ++i)
         distancesAndIndexes[i] = std::make_tuple(-bestDistance_[i], i);
       std::sort(distancesAndIndexes.begin(), distancesAndIndexes.end());
-      int bestIndex = std::get<1>(distancesAndIndexes[noNewCentroid]);
+      int const bestIndex = std::get<1>(distancesAndIndexes[noNewCentroid]);
       centroid = ftm::copyMergeTree<dataType>(trees[bestIndex], true);
       limitSizeBarycenter(centroid, trees);
       ftm::cleanMergeTree<dataType>(centroid);
@@ -448,7 +448,7 @@ namespace ttk {
             distances[j] = mixDistances<dataType>(distances[j], distances2[j]);
         }
         for(unsigned int j = 0; j < assignedTreesIndex[i].size(); ++j) {
-          int index = assignedTreesIndex[i][j];
+          int const index = assignedTreesIndex[i][j];
           bestDistanceT[index] = distances[j];
         }
       }
@@ -510,7 +510,7 @@ namespace ttk {
     void matchingCorrespondence(treesMatchingVector &matchingT,
                                 std::vector<int> &nodeCorr,
                                 std::vector<int> &assignedTreesIndex) {
-      for(int i : assignedTreesIndex) {
+      for(int const i : assignedTreesIndex) {
         std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> newMatching;
         for(auto tup : matchingT[i])
           newMatching.emplace_back(
@@ -738,8 +738,8 @@ namespace ttk {
       // Manage output
       std::vector<int> cptCentroid(centroids.size(), 0);
       for(auto asgn : assignmentC) {
-        int centroid = std::get<0>(asgn);
-        int tree = std::get<1>(asgn);
+        int const centroid = std::get<0>(asgn);
+        int const tree = std::get<1>(asgn);
         // std::cout << centroid << " " << tree << std::endl;
         clusteringAssignment[tree] = centroid;
         outputMatching[centroid][tree]

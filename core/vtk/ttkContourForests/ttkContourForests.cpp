@@ -220,7 +220,7 @@ void ttkContourForests::getSkeletonArcs() {
   vtkIntArray *typeScalars{};
   ttkSimplexIdTypeArray *sizeScalars{};
   vtkDoubleArray *spanScalars{};
-  int type = static_cast<int>(TreeComponent::Arc);
+  int const type = static_cast<int>(TreeComponent::Arc);
 
   float point1[3];
   vector<double> point2(3);
@@ -239,14 +239,14 @@ void ttkContourForests::getSkeletonArcs() {
     a = tree_->getSuperArc(i);
 
     if(a->isVisible()) {
-      SimplexId upNodeId = tree_->getSuperArc(i)->getUpNodeId();
-      SimplexId upVertex = tree_->getNode(upNodeId)->getVertexId();
+      SimplexId const upNodeId = tree_->getSuperArc(i)->getUpNodeId();
+      SimplexId const upVertex = tree_->getNode(upNodeId)->getVertexId();
       float coordUp[3];
       triangulation_->getVertexPoint(
         upVertex, coordUp[0], coordUp[1], coordUp[2]);
 
-      SimplexId downNodeId = tree_->getSuperArc(i)->getDownNodeId();
-      SimplexId downVertex = tree_->getNode(downNodeId)->getVertexId();
+      SimplexId const downNodeId = tree_->getSuperArc(i)->getDownNodeId();
+      SimplexId const downVertex = tree_->getNode(downNodeId)->getVertexId();
       float coordDown[3];
       triangulation_->getVertexPoint(
         downVertex, coordDown[0], coordDown[1], coordDown[2]);
@@ -396,13 +396,14 @@ void ttkContourForests::getSkeletonArcs() {
       } else {
         vtkNew<vtkLineSource> line{};
 
-        SimplexId downNodeVId
+        SimplexId const downNodeVId
           = tree_->getNode(a->getDownNodeId())->getVertexId();
         triangulation_->getVertexPoint(
           downNodeVId, point1[0], point1[1], point1[2]);
         line->SetPoint1(point1);
 
-        SimplexId upNodeVId = tree_->getNode(a->getUpNodeId())->getVertexId();
+        SimplexId const upNodeVId
+          = tree_->getNode(a->getUpNodeId())->getVertexId();
         std::array<float, 3> pt{};
         triangulation_->getVertexPoint(upNodeVId, pt[0], pt[1], pt[2]);
         point2[0] = pt[0];
@@ -566,11 +567,11 @@ void ttkContourForests::getSkeletonNodes() {
 
   SimplexId identifier{};
   for(unsigned i = 0; i < criticalPoints_.size(); ++i) {
-    SimplexId nodeId = criticalPoints_[i];
+    SimplexId const nodeId = criticalPoints_[i];
     if(tree_->getNode(nodeId)->isHidden())
       continue;
-    SimplexId vertexId = tree_->getNode(nodeId)->getVertexId();
-    CriticalType nodeType = getNodeType(nodeId);
+    SimplexId const vertexId = tree_->getNode(nodeId)->getVertexId();
+    CriticalType const nodeType = getNodeType(nodeId);
 
     if((nodeType == CriticalType::Local_minimum and showMin_)
        or (nodeType == CriticalType::Local_maximum and showMax_)
@@ -634,7 +635,7 @@ CriticalType
     downDegree = tree->getNode(id)->getUpValence();
     upDegree = tree->getNode(id)->getDownValence();
   }
-  int degree = upDegree + downDegree;
+  int const degree = upDegree + downDegree;
 
   // saddle point
   if(degree > 1) {
@@ -670,15 +671,15 @@ void ttkContourForests::getCriticalPoints() {
     auto a = tree_->getSuperArc(i);
 
     if(!a->isPruned()) {
-      SimplexId upId = a->getUpNodeId();
-      SimplexId up_vId = tree_->getNode(upId)->getVertexId();
+      SimplexId const upId = a->getUpNodeId();
+      SimplexId const up_vId = tree_->getNode(upId)->getVertexId();
       if(!isCriticalPoint[up_vId]) {
         isCriticalPoint[up_vId] = true;
         criticalPoints_.push_back(upId);
       }
 
-      SimplexId downId = a->getDownNodeId();
-      SimplexId down_vId = tree_->getNode(downId)->getVertexId();
+      SimplexId const downId = a->getDownNodeId();
+      SimplexId const down_vId = tree_->getNode(downId)->getVertexId();
       if(!isCriticalPoint[down_vId]) {
         isCriticalPoint[down_vId] = true;
         criticalPoints_.push_back(downId);
@@ -790,7 +791,7 @@ int ttkContourForests::computeBarycenters() {
             barycenter[k] /= sample.size();
 
           // update the arc
-          unsigned int nbBar
+          unsigned int const nbBar
             = barycenters_[static_cast<int>(treeType_)][i].size();
           barycenters_[static_cast<int>(treeType_)][i].resize(nbBar + 1);
           barycenters_[static_cast<int>(treeType_)][i][nbBar].resize(3);
@@ -822,7 +823,7 @@ void ttkContourForests::smoothSkeleton(unsigned int skeletonSmoothing) {
 }
 
 void ttkContourForests::smooth(const SimplexId idArc, bool order) {
-  int N = barycenters_[static_cast<int>(treeType_)][idArc].size();
+  int const N = barycenters_[static_cast<int>(treeType_)][idArc].size();
   if(N) {
     // init //
     vector<vector<double>> barycenterList(N);
@@ -947,8 +948,8 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 
   // nodes
   for(SimplexId it = 0; it < (SimplexId)criticalPoints_.size(); ++it) {
-    SimplexId nodeId = criticalPoints_[it];
-    SimplexId vertexId = tree_->getNode(nodeId)->getVertexId();
+    SimplexId const nodeId = criticalPoints_[it];
+    SimplexId const vertexId = tree_->getNode(nodeId)->getVertexId();
 
     // RegionType
     regionType = -1;
@@ -959,16 +960,16 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
   for(SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     auto a = tree_->getSuperArc(i);
     if(a->isVisible()) {
-      SimplexId upNodeId = tree_->getSuperArc(i)->getUpNodeId();
-      CriticalType upNodeType = getNodeType(upNodeId);
-      SimplexId upVertex = tree_->getNode(upNodeId)->getVertexId();
+      SimplexId const upNodeId = tree_->getSuperArc(i)->getUpNodeId();
+      CriticalType const upNodeType = getNodeType(upNodeId);
+      SimplexId const upVertex = tree_->getNode(upNodeId)->getVertexId();
       float coordUp[3];
       triangulation_->getVertexPoint(
         upVertex, coordUp[0], coordUp[1], coordUp[2]);
 
-      SimplexId downNodeId = tree_->getSuperArc(i)->getDownNodeId();
-      CriticalType downNodeType = getNodeType(downNodeId);
-      SimplexId downVertex = tree_->getNode(downNodeId)->getVertexId();
+      SimplexId const downNodeId = tree_->getSuperArc(i)->getDownNodeId();
+      CriticalType const downNodeType = getNodeType(downNodeId);
+      SimplexId const downVertex = tree_->getNode(downNodeId)->getVertexId();
       float coordDown[3];
       triangulation_->getVertexPoint(
         downVertex, coordDown[0], coordDown[1], coordDown[2]);
@@ -1005,8 +1006,8 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 
       for(SimplexId j = 0; j < tree_->getSuperArc(i)->getNumberOfRegularNodes();
           ++j) {
-        SimplexId nodeId = tree_->getSuperArc(i)->getRegularNodeId(j);
-        SimplexId vertexId = nodeId;
+        SimplexId const nodeId = tree_->getSuperArc(i)->getRegularNodeId(j);
+        SimplexId const vertexId = nodeId;
         // cout << vertexId << ", ";
         if(tree_->getSuperArc(i)->isMasqued(j)) {
           // cout << vertexId << ", ";
@@ -1040,12 +1041,12 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 
       for(SimplexId j = 0; j < tree_->getSuperArc(i)->getNumberOfRegularNodes();
           ++j) {
-        SimplexId nodeId = tree_->getSuperArc(i)->getRegularNodeId(j);
+        SimplexId const nodeId = tree_->getSuperArc(i)->getRegularNodeId(j);
         if(tree_->getSuperArc(i)->isMasqued(j)) {
           // Ignore masqued ones
           continue;
         }
-        SimplexId vertexId = nodeId;
+        SimplexId const vertexId = nodeId;
         scalarsRegionType->SetTuple1(vertexId, regionType);
       }
     }
@@ -1195,8 +1196,8 @@ int ttkContourForests::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto result
     = std::minmax_element(vertexScalars_.begin(), vertexScalars_.end());
-  double scalarMin = *result.first;
-  double scalarMax = *result.second;
+  double const scalarMin = *result.first;
+  double const scalarMax = *result.second;
   deltaScalar_ = (scalarMax - scalarMin);
 
   // offsets

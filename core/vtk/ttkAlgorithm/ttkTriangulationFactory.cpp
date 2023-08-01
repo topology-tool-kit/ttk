@@ -221,7 +221,7 @@ RegistryTriangulation
   }
 
   auto triangulation = std::make_unique<ttk::Triangulation>();
-  int hasIndexArray
+  int const hasIndexArray
     = pointSet->GetPointData()->HasArray(ttk::compactTriangulationIndex);
 
   if(hasIndexArray) {
@@ -255,7 +255,7 @@ RegistryTriangulation
   }
 
   // check if cell types are simplices
-  int cellTypeStatus = checkCellTypes(pointSet);
+  int const cellTypeStatus = checkCellTypes(pointSet);
   if(cellTypeStatus == -1) {
     this->printWrn("Inhomogeneous cell dimensions detected.");
     this->printWrn(
@@ -268,12 +268,12 @@ RegistryTriangulation
   }
 
   // Cells
-  int nCells = cells->GetNumberOfCells();
+  int const nCells = cells->GetNumberOfCells();
   if(nCells > 0) {
     if(!cells->IsStorage64Bit()) {
       if(cells->CanConvertTo64BitStorage()) {
         this->printWrn("Converting the cell array to 64-bit storage");
-        bool success = cells->ConvertTo64BitStorage();
+        bool const success = cells->ConvertTo64BitStorage();
         if(!success) {
           this->printErr(
             "Error converting the provided cell array to 64-bit storage");

@@ -24,7 +24,7 @@ int ttkProgramBase::load(const std::vector<std::string> &inputPaths) {
 
   for(int i = 0; i < (int)inputPaths.size(); i++) {
 
-    string extension
+    string const extension
       = inputPaths[i].substr(inputPaths[i].find_last_of('.') + 1);
 
     if(extension == "vti") {

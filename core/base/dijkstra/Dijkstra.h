@@ -33,7 +33,7 @@ namespace ttk {
       // should we process the whole mesh or stop at some point?
       bool const processAllVertices = bounds.empty();
       // total number of vertices in the mesh
-      size_t vertexNumber = triangulation.getNumberOfVertices();
+      size_t const vertexNumber = triangulation.getNumberOfVertices();
       // is there a mask?
       bool const isMask = !mask.empty();
 

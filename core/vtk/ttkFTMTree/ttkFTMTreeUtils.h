@@ -155,9 +155,9 @@ namespace ttk {
             or (not useSadMaxPairs and ct1 != locMin and ct2 != locMin))
            and i != minMaxPairIndex)
           continue;
-        int index1
+        int const index1
           = (gotNodeArrays ? treeNodeId2Array->GetTuple1(pts[0]) : i * 2);
-        int index2
+        int const index2
           = (gotNodeArrays ? treeNodeIdArray->GetTuple1(pts[0]) : i * 2 + 1);
         mergeTree.tree.getNode(index1)->setOrigin(index2);
         mergeTree.tree.getNode(index2)->setOrigin(index1);
@@ -257,7 +257,8 @@ namespace ttk {
       std::vector<vtkUnstructuredGrid *> &treesArcs,
       std::vector<vtkDataSet *> &treesSegmentation,
       bool useSadMaxPairs = true) {
-      std::vector<bool> useSadMaxPairsVec(inputTrees.size(), useSadMaxPairs);
+      std::vector<bool> const useSadMaxPairsVec(
+        inputTrees.size(), useSadMaxPairs);
       return constructTrees(inputTrees, intermediateTrees, treesNodes,
                             treesArcs, treesSegmentation, useSadMaxPairsVec);
     }

@@ -72,7 +72,8 @@ namespace ttk {
       auto birthDeath = this->getBirthDeath<dataType>(nodeId);
       dataType birth = std::get<0>(birthDeath);
       dataType death = std::get<1>(birthDeath);
-      bool parentInconsistent = parentDeath < death or parentBirth > birth;
+      bool const parentInconsistent
+        = parentDeath < death or parentBirth > birth;
       return parentInconsistent;
     }
 
@@ -294,8 +295,8 @@ namespace ttk {
       std::vector<std::vector<idNode>> origins(this->getNumberOfNodes());
       std::vector<bool> birthFound(this->getNumberOfNodes(), false);
       for(auto pair : pairs) {
-        idNode nodeBirth = std::get<0>(pair);
-        idNode nodeDeath = std::get<1>(pair);
+        idNode const nodeBirth = std::get<0>(pair);
+        idNode const nodeDeath = std::get<1>(pair);
 
         origins[nodeDeath].push_back(nodeBirth);
         birthFound[nodeBirth] = true;

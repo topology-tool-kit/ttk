@@ -34,14 +34,14 @@ void ttk::PDBarycenter::runMatching(
   std::vector<std::vector<MatchingType>> *all_matchings,
   bool use_kdt,
   bool actual_distance) {
-  Timer time_matchings;
+  Timer const time_matchings;
 
   double local_cost = *total_cost;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
-    double delta_lim = 0.01;
+    double const delta_lim = 0.01;
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
       geometrical_factor_, lambda_, delta_lim, kdt, correspondence_kdt_map,
@@ -56,7 +56,7 @@ void ttk::PDBarycenter::runMatching(
     min_diag_price->at(i) = auction.getMinimalDiagonalPrice();
     min_price->at(i) = getMinimalPrice(i);
     std::vector<MatchingType> matchings;
-    double cost = auction.getMatchingsAndDistance(matchings, true);
+    double const cost = auction.getMatchingsAndDistance(matchings, true);
     all_matchings->at(i) = matchings;
     if(actual_distance) {
       local_cost += sqrt(cost);
@@ -64,7 +64,8 @@ void ttk::PDBarycenter::runMatching(
       local_cost += cost;
     }
 
-    double quotient = epsilon * auction.getAugmentedNumberOfBidders() / cost;
+    double const quotient
+      = epsilon * auction.getAugmentedNumberOfBidders() / cost;
     precision_[i] = quotient < 1 ? 1. / sqrt(1 - quotient) - 1 : 10;
     if(auction.getRelativePrecision() == 0)
       precision_[i] = 0;
@@ -95,7 +96,7 @@ void ttk::PDBarycenter::runMatchingAuction(
       geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map, 0,
       (*min_diag_price)[i], use_kdt);
     std::vector<MatchingType> matchings;
-    double cost = auction.run(matchings, i);
+    double const cost = auction.run(matchings, i);
     all_matchings->at(i) = matchings;
     if(actual_distance) {
       local_cost += sqrt(cost);
@@ -140,7 +141,7 @@ std::vector<std::vector<ttk::MatchingType>> ttk::PDBarycenter::correctMatchings(
     // 1. Invert the current_bidder_ids_ vector
     std::vector<int> new_to_old_id(current_bidder_diagrams_[i].size());
     for(size_t j = 0; j < current_bidder_ids_[i].size(); j++) {
-      int new_id = current_bidder_ids_[i][j];
+      int const new_id = current_bidder_ids_[i][j];
       if(new_id >= 0) {
         new_to_old_id[new_id] = j;
       }
@@ -149,7 +150,7 @@ std::vector<std::vector<ttk::MatchingType>> ttk::PDBarycenter::correctMatchings(
     std::vector<MatchingType> matchings_diagram_i;
     for(size_t j = 0; j < previous_matchings[i].size(); j++) {
       MatchingType m = previous_matchings[i][j];
-      int new_id = std::get<0>(m);
+      int const new_id = std::get<0>(m);
       if(new_id >= 0 && std::get<1>(m) >= 0) {
         std::get<0>(m) = new_to_old_id[new_id];
         matchings_diagram_i.push_back(m);
@@ -163,10 +164,10 @@ std::vector<std::vector<ttk::MatchingType>> ttk::PDBarycenter::correctMatchings(
 double ttk::PDBarycenter::updateBarycenter(
   std::vector<std::vector<MatchingType>> &matchings) {
   // 1. Initialize variables used in the sequel
-  Timer t_update;
-  size_t n_goods = barycenter_goods_[0].size();
+  Timer const t_update;
+  size_t const n_goods = barycenter_goods_[0].size();
 
-  size_t n_diagrams = current_bidder_diagrams_.size();
+  size_t const n_diagrams = current_bidder_diagrams_.size();
   points_added_ = 0;
   points_deleted_ = 0;
   double max_shift = 0;
@@ -196,8 +197,8 @@ double ttk::PDBarycenter::updateBarycenter(
   // 2. Preprocess the matchings
   for(size_t j = 0; j < matchings.size(); j++) {
     for(size_t i = 0; i < matchings[j].size(); i++) {
-      int bidder_id = std::get<0>(matchings[j][i]);
-      int good_id = std::get<1>(matchings[j][i]);
+      int const bidder_id = std::get<0>(matchings[j][i]);
+      int const good_id = std::get<1>(matchings[j][i]);
       if(good_id < 0 && bidder_id >= 0) {
         // Future new barycenter point
         points_to_append.push_back(&current_bidder_diagrams_[j].at(bidder_id));
@@ -228,30 +229,34 @@ double ttk::PDBarycenter::updateBarycenter(
     if(count_diag_matchings[i] < n_diagrams) {
       // Barycenter point i is matched at least to one off-diagonal bidder
       // 3.1 Compute the arithmetic mean of off-diagonal bidders linked to it
-      double x_bar = x[i] / (double)(n_diagrams - count_diag_matchings[i]);
-      double y_bar = y[i] / (double)(n_diagrams - count_diag_matchings[i]);
+      double const x_bar
+        = x[i] / (double)(n_diagrams - count_diag_matchings[i]);
+      double const y_bar
+        = y[i] / (double)(n_diagrams - count_diag_matchings[i]);
       // 3.2 Compute the new coordinates of the point (the more linked to the
       // diagonal it was, the closer to the diagonal it'll be)
-      double new_x = ((double)(n_diagrams - count_diag_matchings[i]) * x_bar
-                      + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
-                     / (double)n_diagrams;
-      double new_y = ((double)(n_diagrams - count_diag_matchings[i]) * y_bar
-                      + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
-                     / (double)n_diagrams;
+      double const new_x
+        = ((double)(n_diagrams - count_diag_matchings[i]) * x_bar
+           + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
+          / (double)n_diagrams;
+      double const new_y
+        = ((double)(n_diagrams - count_diag_matchings[i]) * y_bar
+           + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
+          / (double)n_diagrams;
       // TODO Weight by persistence
-      double new_crit_coord_x
+      double const new_crit_coord_x
         = crit_coords_x[i] / (double)(n_diagrams - count_diag_matchings[i]);
-      double new_crit_coord_y
+      double const new_crit_coord_y
         = crit_coords_y[i] / (double)(n_diagrams - count_diag_matchings[i]);
-      double new_crit_coord_z
+      double const new_crit_coord_z
         = crit_coords_z[i] / (double)(n_diagrams - count_diag_matchings[i]);
 
       // 3.3 Compute and store how much the point has shifted
       // TODO adjust shift with geometrical_factor_
-      double dx = barycenter_goods_[0].at(i).x_ - new_x;
-      double dy = barycenter_goods_[0].at(i).y_ - new_y;
-      double shift = Geometry::pow(std::abs(dx), wasserstein_)
-                     + Geometry::pow(std::abs(dy), wasserstein_);
+      double const dx = barycenter_goods_[0].at(i).x_ - new_x;
+      double const dy = barycenter_goods_[0].at(i).y_ - new_y;
+      double const shift = Geometry::pow(std::abs(dx), wasserstein_)
+                           + Geometry::pow(std::abs(dy), wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -280,7 +285,7 @@ double ttk::PDBarycenter::updateBarycenter(
   for(size_t i = 0; i < n_goods; i++) {
     if(count_diag_matchings[i] == n_diagrams) {
       points_deleted_ += 1;
-      double shift
+      double const shift
         = 2
           * Geometry::pow(
             barycenter_goods_[0].at(i).getPersistence() / 2., wasserstein_);
@@ -297,9 +302,9 @@ double ttk::PDBarycenter::updateBarycenter(
   for(size_t k = 0; k < points_to_append.size(); k++) {
     points_added_ += 1;
     Bidder *b = points_to_append[k];
-    double gx
+    double const gx
       = (b->x_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
-    double gy
+    double const gy
       = (b->y_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
     const auto &critical_coordinates = b->GetCriticalCoordinates();
     for(size_t j = 0; j < n_diagrams; j++) {
@@ -311,7 +316,7 @@ double ttk::PDBarycenter::updateBarycenter(
                                  std::get<2>(critical_coordinates));
       }
       barycenter_goods_[j].emplace_back(g);
-      double shift
+      double const shift
         = 2
           * Geometry::pow(
             barycenter_goods_[j].at(g.id_).getPersistence() / 2., wasserstein_);
@@ -391,7 +396,7 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
       max_diagram_size = current_bidder_diagrams_[i].size();
     }
   }
-  int max_points_to_add = std::max(
+  int const max_points_to_add = std::max(
     min_points_to_add, min_points_to_add + (int)(max_diagram_size / 10));
 
   // 2. Get which points can be added, deduce the new minimal persistence
@@ -401,8 +406,8 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
 
     std::vector<double> persistences;
     for(size_t j = 0; j < bidder_diagrams_[i].size(); j++) {
-      Bidder b = bidder_diagrams_[i].at(j);
-      double persistence = b.getPersistence();
+      Bidder const b = bidder_diagrams_[i].at(j);
+      double const persistence = b.getPersistence();
       if(persistence >= min_persistence
          && persistence < previous_min_persistence) {
         candidates_to_be_added[i].push_back(j);
@@ -414,9 +419,9 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
       return ((persistences[a] > persistences[b])
               || ((persistences[a] == persistences[b]) && (a > b)));
     });
-    int size = candidates_to_be_added[i].size();
+    int const size = candidates_to_be_added[i].size();
     if(size >= max_points_to_add) {
-      double last_persistence_added
+      double const last_persistence_added
         = persistences[idx[i][max_points_to_add - 1]];
       if(last_persistence_added > new_min_persistence) {
         new_min_persistence = last_persistence_added;
@@ -430,7 +435,7 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
   int compteur_for_adding_points = 0;
 
   for(int i = 0; i < numberOfInputs_; i++) {
-    int size = candidates_to_be_added[i].size();
+    int const size = candidates_to_be_added[i].size();
     for(int j = 0; j < std::min(max_points_to_add, size); j++) {
       Bidder b = bidder_diagrams_[i].at(candidates_to_be_added[i][idx[i][j]]);
       if(b.getPersistence() >= new_min_persistence) {
@@ -442,7 +447,7 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
         current_bidder_ids_[i][candidates_to_be_added[i][idx[i][j]]]
           = current_bidder_diagrams_[i].size() - 1;
 
-        int to_be_added_to_barycenter
+        int const to_be_added_to_barycenter
           = deterministic_ ? compteur_for_adding_points % numberOfInputs_
                            : rand() % numberOfInputs_;
         // We add the bidder as a good with probability 1/n_diagrams
@@ -467,8 +472,8 @@ double ttk::PDBarycenter::getMaxPersistence() {
     BidderDiagram &D = bidder_diagrams_[i];
     for(size_t j = 0; j < D.size(); j++) {
       // Add bidder to bidders
-      Bidder &b = D.at(j);
-      double persistence = b.getPersistence();
+      Bidder const &b = D.at(j);
+      double const persistence = b.getPersistence();
       if(persistence > max_persistence) {
         max_persistence = persistence;
       }
@@ -485,8 +490,8 @@ double ttk::PDBarycenter::getMinimalPrice(int i) {
     return 0;
   }
   for(size_t j = 0; j < D.size(); j++) {
-    Good &b = D.at(j);
-    double price = b.getPrice();
+    Good const &b = D.at(j);
+    double const price = b.getPrice();
     if(price < min_price) {
       min_price = price;
     }
@@ -503,8 +508,8 @@ double ttk::PDBarycenter::getLowestPersistence() {
     BidderDiagram &D = bidder_diagrams_[i];
     for(size_t j = 0; j < D.size(); j++) {
       // Add bidder to bidders
-      Bidder &b = D.at(j);
-      double persistence = b.getPersistence();
+      Bidder const &b = D.at(j);
+      double const persistence = b.getPersistence();
       if(persistence < lowest_persistence && persistence > 0) {
         lowest_persistence = persistence;
       }
@@ -530,7 +535,7 @@ void ttk::PDBarycenter::setInitialBarycenter(double min_persistence) {
       int count = 0;
       for(size_t j = 0; j < CTDiagram->size(); j++) {
         // Add bidder to bidders
-        Good g = Good((*CTDiagram)[j], count, lambda_);
+        Good const g = Good((*CTDiagram)[j], count, lambda_);
         if(g.getPersistence() >= min_persistence) {
           goods.emplace_back(g);
           count++;
@@ -568,7 +573,7 @@ typename ttk::PDBarycenter::KDTreePair ttk::PDBarycenter::getKDTree() const {
   }
 
   for(size_t idx = 0; idx < barycenter_goods_.size(); idx++) {
-    std::vector<double> empty_weights;
+    std::vector<double> const empty_weights;
     weights.push_back(empty_weights);
     for(size_t i = 0; i < barycenter_goods_[idx].size(); i++) {
       const Good &g = barycenter_goods_[idx].at(i);
@@ -589,7 +594,7 @@ std::vector<std::vector<ttk::MatchingType>>
   ttk::PDBarycenter::executeAuctionBarycenter(DiagramType &barycenter) {
 
   std::vector<std::vector<MatchingType>> previous_matchings;
-  double min_persistence = 0;
+  double const min_persistence = 0;
   double min_cost = std::numeric_limits<double>::max();
   int last_min_cost_obtained = 0;
 
@@ -597,7 +602,7 @@ std::vector<std::vector<ttk::MatchingType>>
   this->setInitialBarycenter(
     min_persistence); // false for a determinist initialization
 
-  double max_persistence = getMaxPersistence();
+  double const max_persistence = getMaxPersistence();
 
   std::vector<double> min_diag_price(numberOfInputs_);
   std::vector<double> min_price(numberOfInputs_);
@@ -606,7 +611,7 @@ std::vector<std::vector<ttk::MatchingType>>
     min_price[i] = 0;
   }
 
-  int min_points_to_add = std::numeric_limits<int>::max();
+  int const min_points_to_add = std::numeric_limits<int>::max();
   this->enrichCurrentBidderDiagrams(2 * max_persistence, min_persistence,
                                     min_diag_price, min_price,
                                     min_points_to_add, false);
@@ -616,7 +621,7 @@ std::vector<std::vector<ttk::MatchingType>>
   double total_cost;
 
   while(!finished) {
-    Timer tm;
+    Timer const tm;
 
     std::pair<std::unique_ptr<KDT>, std::vector<KDT *>> pair;
     bool use_kdt = false;
@@ -637,13 +642,13 @@ std::vector<std::vector<ttk::MatchingType>>
 
     barycenter.clear();
     for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
-      Good &g = barycenter_goods_[0].at(j);
+      Good const &g = barycenter_goods_[0].at(j);
       barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
                                               CriticalVertex{0, nt2_, g.y_, {}},
                                               diagramType_, true});
     }
 
-    bool actual_distance = (numberOfInputs_ == 2);
+    bool const actual_distance = (numberOfInputs_ == 2);
     runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
                        &min_diag_price, &all_matchings, use_kdt,
                        actual_distance);
@@ -688,7 +693,7 @@ std::vector<std::vector<ttk::MatchingType>>
   }
   barycenter.resize(0);
   for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
-    Good &g = barycenter_goods_[0].at(j);
+    Good const &g = barycenter_goods_[0].at(j);
     barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
                                             CriticalVertex{0, nt2_, g.y_, {}},
                                             diagramType_, true});
@@ -706,10 +711,10 @@ double ttk::PDBarycenter::computeRealCost() {
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
       wasserstein_, geometrical_factor_, lambda_, 0.01, true);
-    GoodDiagram current_barycenter = barycenter_goods_[0];
-    BidderDiagram current_bidder_diagram = bidder_diagrams_[i];
+    GoodDiagram const current_barycenter = barycenter_goods_[0];
+    BidderDiagram const current_bidder_diagram = bidder_diagrams_[i];
     auction.BuildAuctionDiagrams(current_bidder_diagram, current_barycenter);
-    double cost = auction.run(fake_matchings);
+    double const cost = auction.run(fake_matchings);
     total_real_cost += cost * cost;
   }
   return sqrt(total_real_cost);
@@ -724,7 +729,7 @@ bool ttk::PDBarycenter::isPrecisionObjectiveMet(double precision_objective,
       }
     }
   } else if(mode == 1) { // AVERAGE PRECISION
-    double average_precision
+    double const average_precision
       = std::accumulate(precision_.begin(), precision_.end(), 0.0)
         / numberOfInputs_;
     if(average_precision > precision_objective) {

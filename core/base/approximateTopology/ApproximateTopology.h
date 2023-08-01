@@ -400,7 +400,7 @@ int ttk::ApproximateTopology::executeApproximateTopology(
   initGlobalPolarity(isNew, vertexLinkPolarity, toProcess, fakeScalars, offsets,
                      monotonyOffsets);
 
-  double delta = epsilon_ * delta_;
+  double const delta = epsilon_ * delta_;
 
   while(decimationLevel_ > stoppingDecimationLevel_) {
     decimationLevel_--;
@@ -411,9 +411,9 @@ int ttk::ApproximateTopology::executeApproximateTopology(
     //                progress, timer.getElapsedTime() - tm_allocation,
     //                threadNumber_);
 
-    int ret = updateGlobalPolarity(delta, isNew, vertexLinkPolarity, toProcess,
-                                   toReprocess, fakeScalars, offsets,
-                                   monotonyOffsets);
+    int const ret = updateGlobalPolarity(delta, isNew, vertexLinkPolarity,
+                                         toProcess, toReprocess, fakeScalars,
+                                         offsets, monotonyOffsets);
     if(ret == -1) {
       std::cout << "Found ERROR - aborting" << std::endl;
       return -1;
@@ -595,7 +595,7 @@ void ttk::ApproximateTopology::tripletsToPersistencePairs(
     SimplexId r1 = getRep(std::get<1>(t));
     SimplexId r2 = getRep(std::get<2>(t));
     if(r1 != r2) {
-      SimplexId s = std::get<0>(t);
+      SimplexId const s = std::get<0>(t);
 
       // Add pair
       if(splitTree) {
@@ -704,10 +704,10 @@ int ttk::ApproximateTopology::getMonotonyChangeByOldPointCPApproximate(
       multiresTriangulation_.getVertexNeighborAtDecimation(
         vertexId, i, oldNeighbor, oldDecimation);
 
-      double replacementValueDynamic
+      double const replacementValueDynamic
         = (0.5 * (double)fakeScalars[oldNeighbor]
            + .5 * (double)fakeScalars[vertexId]); // depends on epsilon
-      double deltaDynamic
+      double const deltaDynamic
         = fabs((double)fakeScalars[neighborId] - replacementValueDynamic);
 
       //=====================
@@ -849,7 +849,7 @@ ttk::SimplexId ttk::ApproximateTopology::propagateFromSaddles(
       //          + std::to_string(neighborId) + " ("
       //          + std::to_string(fakeScalars[neighborId]) + " , "
       //          + std::to_string(offsets[neighborId]) + ")");
-      SimplexId ret = propagateFromSaddles(
+      SimplexId const ret = propagateFromSaddles(
         neighborId, vertLock, toPropagate, vertexRepresentatives, saddleCC,
         isUpdated, globalExtremum, splitTree, fakeScalars, offsets,
         monotonyOffsets);
@@ -966,7 +966,7 @@ void ttk::ApproximateTopology::updatePropagation(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId v = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const v = multiresTriangulation_.localToGlobalVertexId(i);
     if(toPropagateMin[v]) {
       propagateFromSaddles(v, vertLockMin, toPropagateMin,
                            vertexRepresentativesMin, saddleCCMin, isUpdatedMin,
@@ -997,7 +997,7 @@ void ttk::ApproximateTopology::updatePropagation(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t i = 0; i < nDecVerts; i++) {
-      SimplexId v = multiresTriangulation_.localToGlobalVertexId(i);
+      SimplexId const v = multiresTriangulation_.localToGlobalVertexId(i);
 
 #ifdef TTK_ENABLE_OPENMP
       const auto tid = omp_get_thread_num();
@@ -1184,7 +1184,7 @@ void ttk::ApproximateTopology::initGlobalPolarity(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
     buildVertexLinkPolarityApproximate(globalId, vertexLinkPolarity[globalId],
                                        fakeScalars, offsets, monotonyOffsets);
     toProcess[globalId] = 255;
@@ -1211,7 +1211,8 @@ int ttk::ApproximateTopology::updateGlobalPolarity(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId localId = 0; localId < nDecVerts; localId++) {
-    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(localId);
+    SimplexId const globalId
+      = multiresTriangulation_.localToGlobalVertexId(localId);
     if(!isNew[globalId]) {
       getMonotonyChangeByOldPointCPApproximate(
         globalId, eps, isNew, toProcess, toReprocess,
@@ -1224,7 +1225,7 @@ int ttk::ApproximateTopology::updateGlobalPolarity(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < multiresTriangulation_.getDecimatedVertexNumber(); i++) {
-    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
     if(isNew[globalId]) { // new point
       if(decimationLevel_ > stoppingDecimationLevel_) {
         buildVertexLinkPolarityApproximate(
@@ -1266,7 +1267,7 @@ void ttk::ApproximateTopology::computeCriticalPoints(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < multiresTriangulation_.getDecimatedVertexNumber(); i++) {
-    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
 
     if(toProcess[globalId]) {
       // nbComputations++;
