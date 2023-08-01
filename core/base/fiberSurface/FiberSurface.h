@@ -1506,7 +1506,7 @@ inline int ttk::FiberSurface::computeContour(
 
   do {
 
-    SimplexId tetId = tetQueue.front();
+    SimplexId const tetId = tetQueue.front();
     tetQueue.pop();
 
     if(!visitedTets[tetId]) {
@@ -1516,7 +1516,7 @@ inline int ttk::FiberSurface::computeContour(
 
       if(createdVertices) {
         // only propagate if we created a triangle
-        SimplexId tetNeighborNumber
+        SimplexId const tetNeighborNumber
           = triangulation->getCellNeighborNumber(tetId);
 
         for(SimplexId i = 0; i < tetNeighborNumber; i++) {
