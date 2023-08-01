@@ -178,9 +178,9 @@ int ttk::PlanarGraphLayout::computeDotString(
 
   this->printMsg("Generating DOT String", 0, debug::LineMode::REPLACE);
 
-  bool useSequences = pointSequences != nullptr;
+  bool const useSequences = pointSequences != nullptr;
   bool const useSizes = sizes != nullptr;
-  bool useBranches = branches != nullptr;
+  bool const useBranches = branches != nullptr;
 
   std::string const headString = "digraph g {rankdir=LR;";
   std::string nodeString = "";
@@ -208,7 +208,7 @@ int ttk::PlanarGraphLayout::computeDotString(
   // Ranks
   // ---------------------------------------------------------------------------
   if(useSequences) {
-    size_t nSequenceValues = sequenceValueToIndexMap.size();
+    size_t const nSequenceValues = sequenceValueToIndexMap.size();
 
     // Sequence Chain
     {
@@ -393,10 +393,10 @@ int ttk::PlanarGraphLayout::computeLayout(
   Timer t;
 
   // Init Input
-  bool useSequences = pointSequences != nullptr;
+  bool const useSequences = pointSequences != nullptr;
   bool const useSizes = sizes != nullptr;
-  bool useBranches = branches != nullptr;
-  bool useLevels = levels != nullptr;
+  bool const useBranches = branches != nullptr;
+  bool const useLevels = levels != nullptr;
 
   // Print Input
   {
@@ -450,7 +450,7 @@ int ttk::PlanarGraphLayout::computeLayout(
 
     // Extract nodes and edges at certain level
     {
-      int status = this->extractLevel<IT, CT>(
+      int const status = this->extractLevel<IT, CT>(
         // Output
         nodeIndices, edgeIndices,
 
@@ -463,7 +463,7 @@ int ttk::PlanarGraphLayout::computeLayout(
     // Compute Dot String
     std::string dotString;
     {
-      int status = this->computeDotString<ST, IT, CT>(
+      int const status = this->computeDotString<ST, IT, CT>(
         // Output
         dotString,
 
