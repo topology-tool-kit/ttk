@@ -183,7 +183,7 @@ namespace ttk {
       unassignedBidders.push(i);
 
     while(!unassignedBidders.empty()) {
-      int bidderId = unassignedBidders.front();
+      int const bidderId = unassignedBidders.front();
       unassignedBidders.pop();
 
       // Get good with highest value
@@ -346,7 +346,7 @@ namespace ttk {
     dataType d = 0;
     for(unsigned int bidderId = 0; bidderId < bidderAssignments.size();
         ++bidderId) {
-      int i = bidderId;
+      int const i = bidderId;
       int j = bidderAssignments[bidderId];
       d += cMatrix[i][j];
     }

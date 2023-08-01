@@ -60,19 +60,19 @@ namespace ttk {
         queue;
 
       std::vector<int> asgn_temp, unasgn_temp;
-      std::vector<bool> done_temp(max_dim, false);
-      queue.push(std::make_tuple(asgn_temp, unasgn_temp, false, done_temp, -1));
+      std::vector<bool> const done_temp(max_dim, false);
+      queue.emplace(asgn_temp, unasgn_temp, false, done_temp, -1);
 
       while(!queue.empty()) {
         auto queueElem = queue.front();
         queue.pop();
-        std::vector<int> asgn = std::get<0>(queueElem);
-        std::vector<int> unasgn = std::get<1>(queueElem);
-        bool toUnasgn = std::get<2>(queueElem);
+        std::vector<int> const asgn = std::get<0>(queueElem);
+        std::vector<int> const unasgn = std::get<1>(queueElem);
+        bool const toUnasgn = std::get<2>(queueElem);
         std::vector<bool> done = std::get<3>(queueElem);
-        unsigned int maxDone = std::get<4>(queueElem);
+        unsigned int const maxDone = std::get<4>(queueElem);
 
-        unsigned int ind = asgn.size();
+        unsigned int const ind = asgn.size();
         for(unsigned int j = 0; j < max_dim + 1; ++j) {
           std::vector<int> new_asgn(asgn);
           std::vector<int> new_unasgn(unasgn);
@@ -95,7 +95,7 @@ namespace ttk {
             }
             new_done[j] = true;
 
-            unsigned int new_ind = new_asgn.size();
+            unsigned int const new_ind = new_asgn.size();
             if(new_ind == max_dim) {
               // A new assignment is made here
               for(auto &new_unasgn_elem : new_unasgn)
@@ -103,14 +103,12 @@ namespace ttk {
               // std::sort(new_asgn.begin()+min_dim, new_asgn.end());
               allAsgn.push_back(new_asgn);
             } else
-              queue.push(std::make_tuple(
-                new_asgn, new_unasgn, false, new_done, new_maxDone));
+              queue.emplace(new_asgn, new_unasgn, false, new_done, new_maxDone);
 
           } else {
             if(not toUnasgn and ind < min_dim) {
               new_asgn.push_back(max_dim);
-              queue.push(std::make_tuple(
-                new_asgn, new_unasgn, true, new_done, new_maxDone));
+              queue.emplace(new_asgn, new_unasgn, true, new_done, new_maxDone);
             }
           }
         }
@@ -148,12 +146,12 @@ namespace ttk {
     unsigned int nRows = this->costMatrix.size() - 1;
     unsigned int nCols = this->costMatrix[0].size() - 1;
     // int max_dim = std::max(nRows, nCols);
-    unsigned int min_dim = std::min(nRows, nCols);
-    bool transpose = nRows > nCols;
+    unsigned int const min_dim = std::min(nRows, nCols);
+    bool const transpose = nRows > nCols;
 
     dataType cost = 0;
     for(unsigned int ind = 0; ind < asgn.size(); ++ind) {
-      int indMatrix = std::min(ind, min_dim);
+      int const indMatrix = std::min(ind, min_dim);
       int i = (!transpose) ? indMatrix : asgn[ind];
       int j = (!transpose) ? asgn[ind] : indMatrix;
       cost += this->costMatrix[i][j];
