@@ -618,4 +618,13 @@ void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
 
     BackEnd = BACKEND::GENERIC;
   }
+
+#ifdef TTK_ENABLE_MPI
+  if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
+    printWrn("MPI run detected.");
+    printWrn("Defaulting to the generic backend.");
+
+    BackEnd = BACKEND::GENERIC;
+  }
+#endif // TTK_ENABLE_MPI
 }
