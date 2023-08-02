@@ -226,7 +226,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
   const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   this->setVertexNumber(numberOfPointsInDomain);
-  int const numberOfPointsInSeeds = seeds->GetNumberOfPoints();
+  int numberOfPointsInSeeds = seeds->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   int totalSeeds;
 #else
