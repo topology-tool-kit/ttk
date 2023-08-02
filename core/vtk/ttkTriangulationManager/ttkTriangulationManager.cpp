@@ -166,12 +166,12 @@ int ttkTriangulationManager::processExplicit(
   ttk::Timer tm{};
 
 #ifdef TTK_ENABLE_MPI
-  if(ttk::hasInitializedMPI()) {
-    this->printErr(
-      "Compact triangulation not (yet) supported in an MPI context!");
-    this->printErr("Keeping the Explicit triangulation.");
+  if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
+    this->printWrn("Compact triangulation not supported with MPI!");
+    this->printWrn("Keeping the Explicit triangulation.");
+    printf("\n\n\ngoing for the explicit\n\n\n");
     output->ShallowCopy(input);
-    return 0;
+    return 1;
   }
 #endif // TTK_ENABLE_MPI
 
