@@ -43,10 +43,10 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
                    + std::string(dataSet->GetClassName()) + "'",
                  ttk::debug::Priority::DETAIL);
 #ifdef TTK_ENABLE_MPI
-  if(ttk::hasInitializedMPI()) {
+  if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
     if(!hasMPISupport_) {
-      printErr(
-        "MPI is not supported for this filter, the results will be incorrect");
+      printErr("MPI is not formally supported for this filter :(");
+      printErr("The results are likely to be incorrect.");
     }
     this->MPIGhostPipelinePreconditioning(dataSet);
   }
