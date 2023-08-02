@@ -147,7 +147,7 @@ jobs:
       run: |
         git ls-files \
         | grep core \
-        | grep -E "\.cpp$|\.cxx$" \
+        | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
         | xargs -n1 -P$(nproc) clang-tidy -p build --warnings-as-errors="*" 2> /dev/null
 
     - name: Use Clang static analyzer
@@ -155,7 +155,7 @@ jobs:
       run: |
         git ls-files \
         | grep core \
-        | grep -E "\.cpp$|\.cxx$" \
+        | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
         | xargs -n1 -P$(nproc) clang-tidy -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
@@ -231,5 +231,5 @@ jobs:
       run: |
         git ls-files \
         | grep core \
-        | grep -E "\.cpp$|\.cxx$" \
+        | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
         | xargs -n1 -P$(nproc) clang-check -p build --extra-arg=-Werror
