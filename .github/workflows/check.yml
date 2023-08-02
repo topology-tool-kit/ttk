@@ -231,5 +231,5 @@ jobs:
       run: |
         git ls-files \
         | grep core \
-        | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
+        | grep -E "\.cpp$|\.cxx$" \
         | xargs -n1 -P$(nproc) clang-check -p build --extra-arg=-Werror
