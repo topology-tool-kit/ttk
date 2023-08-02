@@ -684,29 +684,6 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
 
   ttk::SimplexId vertexNumber = input->GetNumberOfPoints();
   ttk::SimplexId cellNumber = input->GetNumberOfCells();
-  if((input->GetDataObjectType() == VTK_POLY_DATA
-      || input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)) {
-    if((input->GetCellData()->GetGlobalIds() == nullptr)
-       || (input->GetPointData()->GetGlobalIds() == nullptr)) {
-      printWrn("Up to Paraview 5.10.1, bugs have been found in VTK for the "
-               "distribution of Unstructured Grids and Poly Data");
-      printWrn("As a consequence, the generation of Global ids is "
-               "incorrect for those simplices");
-      printWrn(
-        "Beware when using TTK for such data set types, some results may "
-        "be false");
-    }
-    if((input->GetPointData()->GetArray("RankArray") == nullptr)
-       || (input->GetCellData()->GetArray("RankArray") == nullptr)) {
-      printWrn("Up to Paraview 5.10.1, bugs have been found in VTK for the "
-               "distribution of Unstructured Grids and Poly Data");
-      printWrn("As a consequence, the generation of RankArray is "
-               "incorrect for those simplices");
-      printWrn(
-        "Beware when using TTK for such data set types, some results may "
-        "be false");
-    }
-  }
 
   // Get the neighbor ranks
   std::vector<int> &neighborRanks{
