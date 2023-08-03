@@ -16,7 +16,7 @@ Octree::~Octree() = default;
 // Initialize the octree with the given triangulation and bucket threshold.
 void Octree::initialize(const AbstractTriangulation *t, const int k) {
   this->setDebugMsgPrefix("PR Octree");
-  OctreeNode root(1);
+  OctreeNode const root(1);
   allNodes_[1] = root;
   capacity_ = k;
   triangulation_ = t;
@@ -24,9 +24,9 @@ void Octree::initialize(const AbstractTriangulation *t, const int k) {
   // find the minimum and maximum coordinate values
   float mins[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
   float maxs[3] = {FLT_MIN, FLT_MIN, FLT_MIN};
-  SimplexId vertexNum = t->getNumberOfVertices();
+  SimplexId const vertexNum = t->getNumberOfVertices();
   for(int i = 0; i < vertexNum; i++) {
-    float coord[3];
+    float coord[3] = {0, 0, 0};
     t->getVertexPoint(i, coord[0], coord[1], coord[2]);
     for(int j = 0; j < 3; j++) {
       if(coord[j] < mins[j])
@@ -160,7 +160,7 @@ int Octree::insertCell(SimplexId &cellId) {
     return -1;
   }
 
-  int dim = triangulation_->getCellVertexNumber(cellId);
+  int const dim = triangulation_->getCellVertexNumber(cellId);
   std::array<float, 3> ncenter{}, nsize{};
   for(int i = 0; i < dim; i++) {
     SimplexId vertexId{};
@@ -197,7 +197,7 @@ int Octree::insertCell(SimplexId &cellId) {
 void Octree::reindex(vector<SimplexId> &vertices,
                      vector<SimplexId> &nodes,
                      vector<SimplexId> &cells) {
-  int totalCells = triangulation_->getNumberOfCells();
+  int const totalCells = triangulation_->getNumberOfCells();
   vector<int> cellMap(totalCells, -1);
 
   OctreeNode *root = lookupNode(1);
@@ -345,7 +345,7 @@ void Octree::subdivide(OctreeNode *node) {
 
     computeCenterSize(node->locCode_, ncenter, nsize);
 
-    for(int v : node->vertexIds_) {
+    for(int const v : node->vertexIds_) {
       childCode = getChildLocation(node->locCode_, v, ncenter);
       OctreeNode *childNode = lookupNode(childCode);
 

@@ -240,7 +240,8 @@ inline void
   }
 
   // a belongs to its lower star
-  ls[0].emplace_back(CellExt{0, a});
+  CellExt const localCellExt{0, a};
+  ls[0].emplace_back(localCellExt);
 
   // store lower edges
   const auto nedges = triangulation.getVertexEdgeNumber(a);
@@ -291,7 +292,8 @@ inline void
             }
             j++;
           }
-          ls[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
+          CellExt const localCellExt2{2, triangleId, lowVerts, faces};
+          ls[2].emplace_back(localCellExt2);
         }
       };
 
@@ -379,7 +381,8 @@ inline void
             j++;
           }
 
-          ls[3].emplace_back(CellExt{3, cellId, lowVerts, faces});
+          CellExt const localCellExt3{3, cellId, lowVerts, faces};
+          ls[3].emplace_back(localCellExt3);
         }
       }
     }

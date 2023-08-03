@@ -14,7 +14,8 @@ namespace ttk {
     // Is
     // --------------------
     bool FTMTree_MT::isNodeOriginDefined(idNode nodeId) {
-      unsigned int origin = (unsigned int)this->getNode(nodeId)->getOrigin();
+      unsigned int const origin
+        = (unsigned int)this->getNode(nodeId)->getOrigin();
       return origin != nullNodes && origin < this->getNumberOfNodes();
     }
 
@@ -31,7 +32,7 @@ namespace ttk {
     }
 
     bool FTMTree_MT::isFullMerge() {
-      idNode treeRoot = this->getRoot();
+      idNode const treeRoot = this->getRoot();
       return (unsigned int)this->getNode(treeRoot)->getOrigin() == treeRoot;
     }
 
@@ -53,7 +54,7 @@ namespace ttk {
     }
 
     bool FTMTree_MT::isThereOnlyOnePersistencePair() {
-      idNode treeRoot = this->getRoot();
+      idNode const treeRoot = this->getRoot();
       unsigned int cptNodeAlone = 0;
       idNode otherNode = treeRoot;
       for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i)
@@ -63,7 +64,7 @@ namespace ttk {
           otherNode = i;
       // unsigned int origin = (unsigned
       // int)tree->getNode(otherNode)->getOrigin();
-      idNode treeRootOrigin = this->getNode(treeRoot)->getOrigin();
+      idNode const treeRootOrigin = this->getNode(treeRoot)->getOrigin();
       return (otherNode != treeRoot
               and this->getNumberOfNodes() - cptNodeAlone == 2
               and (treeRootOrigin == otherNode or treeRootOrigin == treeRoot));
@@ -103,8 +104,8 @@ namespace ttk {
     idNode FTMTree_MT::getParentSafe(idNode nodeId) {
       if(!this->isRoot(nodeId)) {
         // _ Nodes in merge trees should have only one parent
-        idSuperArc arcId = this->getNode(nodeId)->getUpSuperArcId(0);
-        idNode parentNodeId = this->getSuperArc(arcId)->getUpNodeId();
+        idSuperArc const arcId = this->getNode(nodeId)->getUpSuperArcId(0);
+        idNode const parentNodeId = this->getSuperArc(arcId)->getUpNodeId();
         return parentNodeId;
       }
       return nodeId;
@@ -115,7 +116,7 @@ namespace ttk {
       childrens.clear();
       for(idSuperArc i = 0;
           i < this->getNode(nodeId)->getNumberOfDownSuperArcs(); ++i) {
-        idSuperArc arcId = this->getNode(nodeId)->getDownSuperArcId(i);
+        idSuperArc const arcId = this->getNode(nodeId)->getDownSuperArcId(i);
         childrens.push_back(this->getSuperArc(arcId)->getDownNodeId());
       }
     }
@@ -148,7 +149,7 @@ namespace ttk {
       idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res) {
       std::vector<idNode> branchOrigins, nonBranchOrigins;
 
-      idNode nodeOrigin = this->getNode(node)->getOrigin();
+      idNode const nodeOrigin = this->getNode(node)->getOrigin();
       idNode nodeParent = this->getParentSafe(nodeOrigin);
       while(nodeParent != node) {
         if(this->isBranchOrigin(nodeParent))
@@ -173,7 +174,7 @@ namespace ttk {
       std::queue<idNode> queue;
       queue.emplace(this->getRoot());
       while(!queue.empty()) {
-        idNode node = queue.front();
+        idNode const node = queue.front();
         queue.pop();
         if(this->isLeaf(node))
           continue;
@@ -192,7 +193,7 @@ namespace ttk {
         ++branchID;
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           queue.emplace(child);
       }
     }
@@ -225,17 +226,17 @@ namespace ttk {
     int FTMTree_MT::getTreeDepth() {
       int maxDepth = 0;
       std::queue<std::tuple<idNode, int>> queue;
-      queue.push(std::make_tuple(this->getRoot(), 0));
+      queue.emplace(this->getRoot(), 0);
       while(!queue.empty()) {
         auto tup = queue.front();
         queue.pop();
-        idNode node = std::get<0>(tup);
-        int depth = std::get<1>(tup);
+        idNode const node = std::get<0>(tup);
+        int const depth = std::get<1>(tup);
         maxDepth = std::max(maxDepth, depth);
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
-          queue.push(std::make_tuple(child, depth + 1));
+        for(idNode const child : children)
+          queue.emplace(child, depth + 1);
       }
       return maxDepth;
     }
@@ -243,7 +244,7 @@ namespace ttk {
     int FTMTree_MT::getNodeLevel(idNode nodeId) {
       int level = 0;
       auto root = this->getRoot();
-      int noRoot = this->getNumberOfRoot();
+      int const noRoot = this->getNumberOfRoot();
       if(noRoot != 1) {
         std::stringstream ss;
         ss << "problem, there is " << noRoot << " root(s)";
@@ -263,17 +264,17 @@ namespace ttk {
     void FTMTree_MT::getAllNodeLevel(std::vector<int> &allNodeLevel) {
       allNodeLevel = std::vector<int>(this->getNumberOfNodes());
       std::queue<std::tuple<idNode, int>> queue;
-      queue.push(std::make_tuple(this->getRoot(), 0));
+      queue.emplace(this->getRoot(), 0);
       while(!queue.empty()) {
         auto tup = queue.front();
         queue.pop();
-        idNode node = std::get<0>(tup);
-        int level = std::get<1>(tup);
+        idNode const node = std::get<0>(tup);
+        int const level = std::get<1>(tup);
         allNodeLevel[node] = level;
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
-          queue.push(std::make_tuple(child, level + 1));
+        for(idNode const child : children)
+          queue.emplace(child, level + 1);
       }
     }
 
@@ -281,7 +282,8 @@ namespace ttk {
       std::vector<std::vector<idNode>> &levelToNode) {
       std::vector<int> allNodeLevel;
       this->getAllNodeLevel(allNodeLevel);
-      int maxLevel = *max_element(allNodeLevel.begin(), allNodeLevel.end());
+      int const maxLevel
+        = *max_element(allNodeLevel.begin(), allNodeLevel.end());
       levelToNode = std::vector<std::vector<idNode>>(maxLevel + 1);
       for(unsigned int i = 0; i < allNodeLevel.size(); ++i) {
         levelToNode[allNodeLevel[i]].push_back(i);
@@ -295,7 +297,7 @@ namespace ttk {
       std::queue<idNode> queue;
       queue.push(branchRoot);
       while(!queue.empty()) {
-        idNode node = queue.front();
+        idNode const node = queue.front();
         queue.pop();
 
         if(branching[node] != branchRoot
@@ -305,7 +307,7 @@ namespace ttk {
         branchSubtree.push_back(node);
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           queue.push(child);
       }
     }
@@ -341,18 +343,18 @@ namespace ttk {
       if(this->isRoot(nodeId) and !this->isLeaf(nodeId))
         printErr("deletion of root!");
 
-      idNode parentNodeId = this->getParentSafe(nodeId);
+      idNode const parentNodeId = this->getParentSafe(nodeId);
       if(!this->isRoot(nodeId)) {
         // Delete down arc from parent node
         // _ Nodes in trees should have only one parent
-        idSuperArc nodeArcId = this->getNode(nodeId)->getUpSuperArcId(0);
+        idSuperArc const nodeArcId = this->getNode(nodeId)->getUpSuperArcId(0);
         this->getNode(parentNodeId)->removeDownSuperArc(nodeArcId);
       }
       // Delete up arc from child nodes
       for(idSuperArc i = 0;
           i < this->getNode(nodeId)->getNumberOfDownSuperArcs(); ++i) {
-        idSuperArc arcId = this->getNode(nodeId)->getDownSuperArcId(i);
-        idNode childNodeId = this->getSuperArc(arcId)->getDownNodeId();
+        idSuperArc const arcId = this->getNode(nodeId)->getDownSuperArcId(i);
+        idNode const childNodeId = this->getSuperArc(arcId)->getDownNodeId();
         this->getNode(childNodeId)->removeUpSuperArc(arcId);
         if(!this->isRoot(nodeId))
           this->makeSuperArc(childNodeId, parentNodeId);
@@ -363,9 +365,10 @@ namespace ttk {
     }
 
     void FTMTree_MT::deleteIthUpArc(idNode nodeId, int arcIth) {
-      idSuperArc nodeArcId = this->getNode(nodeId)->getUpSuperArcId(arcIth);
+      idSuperArc const nodeArcId
+        = this->getNode(nodeId)->getUpSuperArcId(arcIth);
       // Delete down arc from old parent
-      idNode parentNodeId = this->getSuperArc(nodeArcId)->getUpNodeId();
+      idNode const parentNodeId = this->getSuperArc(nodeArcId)->getUpNodeId();
       this->getNode(parentNodeId)->removeDownSuperArc(nodeArcId);
       // Delete up arc from node
       this->getNode(nodeId)->removeUpSuperArc(nodeArcId);
@@ -382,11 +385,11 @@ namespace ttk {
       std::queue<idNode> queue;
       queue.push(nodeId);
       while(!queue.empty()) {
-        idNode node = queue.front();
+        idNode const node = queue.front();
         queue.pop();
         std::vector<idNode> children;
         this->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           queue.push(child);
         this->deleteNode(node);
       }
@@ -420,7 +423,7 @@ namespace ttk {
 
       std::vector<idNode> children;
       this->getChildren(node, children);
-      for(idNode child : children)
+      for(idNode const child : children)
         ss << "+" << child << " ";
 
       if(!this->isRoot(node))
@@ -441,14 +444,14 @@ namespace ttk {
         std::queue<idNode> queue;
         queue.push(allRoots[i]);
         while(!queue.empty()) {
-          idNode node = queue.front();
+          idNode const node = queue.front();
           queue.pop();
 
           printNodeSS(node, ss);
 
           std::vector<idNode> children;
           this->getChildren(node, children);
-          for(idNode child : children)
+          for(idNode const child : children)
             queue.push(child);
         }
       }
@@ -515,14 +518,15 @@ namespace ttk {
 
           for(long unsigned int j = 0;
               j < tree->getNode(i)->getNumberOfUpSuperArcs(); ++j) {
-            ftm::idSuperArc nodeArcId = tree->getNode(i)->getUpSuperArcId(j);
+            ftm::idSuperArc const nodeArcId
+              = tree->getNode(i)->getUpSuperArcId(j);
             auto tParent = tree->getSuperArc(nodeArcId)->getUpNodeId();
             if(tParent != lowestParent) {
 
               if(tParent == treeRoot) {
                 for(long unsigned int k = 0;
                     k < tree->getNode(i)->getNumberOfDownSuperArcs(); ++k) {
-                  ftm::idSuperArc nodeArcId2
+                  ftm::idSuperArc const nodeArcId2
                     = tree->getNode(i)->getDownSuperArcId(k);
                   auto tChildren
                     = tree->getSuperArc(nodeArcId2)->getDownNodeId();
@@ -548,7 +552,8 @@ namespace ttk {
       for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
         for(unsigned int j = 0; j < tree->getNode(i)->getNumberOfUpSuperArcs();
             ++j) {
-          ftm::idSuperArc nodeArcId = tree->getNode(i)->getUpSuperArcId(j);
+          ftm::idSuperArc const nodeArcId
+            = tree->getNode(i)->getUpSuperArcId(j);
           auto tParent = tree->getSuperArc(nodeArcId)->getUpNodeId();
           if(tParent == i) {
             // Delete down arc

@@ -128,7 +128,7 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *ttkNotUsed(request),
                  + "'...");
 
   // allocate the memory for the output scalar field
-  vtkSmartPointer<vtkDataArray> outputArray
+  vtkSmartPointer<vtkDataArray> const outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputScalarField->NewInstance());
   outputArray->SetName(inputScalarField->GetName());
   outputArray->SetNumberOfComponents(1);

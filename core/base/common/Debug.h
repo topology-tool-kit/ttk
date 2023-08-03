@@ -279,8 +279,8 @@ namespace ttk {
          && (globalDebugLevel_ < (int)priority))
         return 0;
 
-      int nRows = rows.size();
-      int nCols = nRows > 0 ? rows[0].size() : 0;
+      const int nRows = rows.size();
+      const int nCols = nRows > 0 ? rows[0].size() : 0;
       if(nCols < 1)
         return 0;
 
@@ -293,7 +293,7 @@ namespace ttk {
       auto formatCell = [](const std::string &value, const size_t &width,
                            const std::string &fillSymbol) {
         std::string cell = value;
-        int diff = width - cell.size();
+        const int diff = width - cell.size();
         for(int i = 0; i < diff; i++)
           cell += fillSymbol;
         return cell;

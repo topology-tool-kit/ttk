@@ -68,6 +68,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
 
     std::vector<double> inputData;
     std::vector<vtkAbstractArray *> arrays;
+    arrays.reserve(ScalarFields.size());
     for(const auto &s : ScalarFields)
       arrays.push_back(input->GetColumnByName(s.data()));
     for(SimplexId i = 0; i < numberOfRows; ++i) {
@@ -85,7 +86,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
         output->ShallowCopy(input);
 
       for(int i = 0; i < NumberOfComponents; ++i) {
-        std::string s = "Component_" + std::to_string(i);
+        std::string const s = "Component_" + std::to_string(i);
         vtkNew<vtkDoubleArray> arr{};
         ttkUtils::SetVoidArray(arr, outputData_[i].data(), numberOfRows, 1);
         arr->SetName(s.data());

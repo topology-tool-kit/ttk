@@ -176,7 +176,8 @@ namespace ttk {
               mergeTreeDistance.setPostprocess(false);
               mergeTreeDistance.setIsPersistenceDiagram(isPersistenceDiagram_);
               if(useDoubleInput_) {
-                double weight = mixDistancesMinMaxPairWeight(isFirstInput);
+                double const weight
+                  = mixDistancesMinMaxPairWeight(isFirstInput);
                 mergeTreeDistance.setMinMaxPairWeight(weight);
                 mergeTreeDistance.setDistanceSquaredRoot(true);
               }

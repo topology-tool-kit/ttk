@@ -31,11 +31,11 @@ namespace ttk {
                      const std::vector<bool> &mask = std::vector<bool>()) {
 
       // should we process the whole mesh or stop at some point?
-      bool processAllVertices = bounds.empty();
+      bool const processAllVertices = bounds.empty();
       // total number of vertices in the mesh
-      size_t vertexNumber = triangulation.getNumberOfVertices();
+      size_t const vertexNumber = triangulation.getNumberOfVertices();
       // is there a mask?
-      bool isMask = !mask.empty();
+      bool const isMask = !mask.empty();
 
       // check mask size
       if(isMask && mask.size() != vertexNumber) {

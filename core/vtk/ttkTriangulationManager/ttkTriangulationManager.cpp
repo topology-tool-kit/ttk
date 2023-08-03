@@ -178,7 +178,7 @@ int ttkTriangulationManager::processExplicit(
   // If all checks pass then log which array is going to be processed.
   this->printMsg("Compact explicit triangulation...");
   int status = 0; // this integer checks if the base code returns an error
-  ttk::CompactTriangulationPreconditioning worker{};
+  ttk::CompactTriangulationPreconditioning const worker{};
   ttkTemplateMacro(
     triangulation.getType(),
     (status = worker.execute(
@@ -264,7 +264,8 @@ int ttkTriangulationManager::processExplicit(
 
   // Modify the selected point data arrays with new indices
   for(vtkDataArray *scalarArray : pointDataArrays) {
-    vtkSmartPointer<vtkDataArray> updatedField(scalarArray->NewInstance());
+    vtkSmartPointer<vtkDataArray> const updatedField(
+      scalarArray->NewInstance());
     updatedField->SetName(scalarArray->GetName());
     for(size_t j = 0; j < vertices.size(); j++) {
       updatedField->InsertTuple(j, scalarArray->GetTuple(vertices[j]));
@@ -275,7 +276,8 @@ int ttkTriangulationManager::processExplicit(
 
   // Modify the selected cell data arrays with new indices
   for(vtkDataArray *scalarArray : cellDataArrays) {
-    vtkSmartPointer<vtkDataArray> updatedField(scalarArray->NewInstance());
+    vtkSmartPointer<vtkDataArray> const updatedField(
+      scalarArray->NewInstance());
     updatedField->SetName(scalarArray->GetName());
     for(size_t j = 0; j < cells.size(); j++) {
       updatedField->InsertTuple(j, scalarArray->GetTuple(cells[j]));

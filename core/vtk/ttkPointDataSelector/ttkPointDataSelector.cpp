@@ -38,7 +38,7 @@ int ttkPointDataSelector::FillOutputPortInformation(int port,
 }
 
 void ttkPointDataSelector::FillAvailableFields(vtkDataSet *input) {
-  int nbScalars = input->GetPointData()->GetNumberOfArrays();
+  int const nbScalars = input->GetPointData()->GetNumberOfArrays();
   AvailableFields.clear();
   AvailableFields.resize(nbScalars);
   for(int i = 0; i < nbScalars; ++i) {
@@ -92,7 +92,7 @@ int ttkPointDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
         continue;
       }
       // check bounds in the range
-      std::ptrdiff_t pos
+      std::ptrdiff_t const pos
         = std::find(AvailableFields.begin(), AvailableFields.end(), scalar)
           - AvailableFields.begin();
       if(pos < RangeId[0] || pos > RangeId[1]) {
@@ -112,7 +112,8 @@ int ttkPointDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
             return 0;
           }
 
-          vtkSmartPointer<vtkDataArray> localFieldCopy{arr->NewInstance()};
+          vtkSmartPointer<vtkDataArray> const localFieldCopy{
+            arr->NewInstance()};
           if(localFieldCopy) {
             localFieldCopy->DeepCopy(arr);
             localFieldCopy->SetName(SelectedFieldName.data());

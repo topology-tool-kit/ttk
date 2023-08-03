@@ -221,7 +221,7 @@ bool ttkContourAroundPoint::process() {
 //----------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::postprocess() {
-  ttk::SimplexId nc = _outContoursNc;
+  ttk::SimplexId const nc = _outContoursNc;
   if(nc == 0) // very fine area filter
     return true;
 

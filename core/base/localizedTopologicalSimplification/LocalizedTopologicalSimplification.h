@@ -496,7 +496,7 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic, 1) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
-          int localStatus = this->computeSimplePropagation<IT, TT>(
+          int const localStatus = this->computeSimplePropagation<IT, TT>(
             propagations[p], propagationMask, segmentation, queueMask,
 
             triangulation, inputOrder);
@@ -539,7 +539,7 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic, 1) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
-          int localStatus
+          int const localStatus
             = this->computePersistenceSensitivePropagation<IT, DT, TT>(
               propagations[p], propagationMask, segmentation, queueMask,
 
@@ -685,7 +685,7 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
-          int localStatus
+          int const localStatus
             = this->computeSegment<IT, TT>(segmentation, propagations[p],
 
                                            order, triangulation);
@@ -920,7 +920,7 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
-          int localStatus = this->computeLocalOrderOfSegment<IT>(
+          int const localStatus = this->computeLocalOrderOfSegment<IT>(
             localOrder,
 
             propagations[p], triangulation, segmentation, inputOrder);
@@ -1008,7 +1008,7 @@ namespace ttk {
         this->printMsg("Flattening Scalar Array", 0, 0, this->threadNumber_,
                        debug::LineMode::REPLACE);
 
-        std::vector<const std::vector<Propagation<IT>> *> propagationsPair
+        std::vector<const std::vector<Propagation<IT>> *> const propagationsPair
           = {&propagationsA, &propagationsB};
 
         for(const auto propagations : propagationsPair) {

@@ -60,8 +60,8 @@ int ttkPlanarGraphLayout::planarGraphLayoutCall(
   // Copy input to output
   output->ShallowCopy(input);
 
-  size_t nPoints = output->GetNumberOfPoints();
-  size_t nEdges = output->GetNumberOfCells();
+  size_t const nPoints = output->GetNumberOfPoints();
+  size_t const nEdges = output->GetNumberOfCells();
 
   // Get input arrays
   auto sequenceArray = this->GetInputArrayToProcess(0, inputVector);

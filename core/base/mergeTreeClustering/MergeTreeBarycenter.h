@@ -213,7 +213,7 @@ namespace ttk {
                              double sizeLimitPercent,
                              bool distMinimizer = true) {
       std::vector<std::vector<double>> distanceMatrix, distanceMatrix2;
-      bool useDoubleInput = (trees2.size() != 0);
+      bool const useDoubleInput = (trees2.size() != 0);
       getParametrizedDistanceMatrix<dataType>(trees, distanceMatrix,
                                               barycenterMaximumNumberOfPairs,
                                               sizeLimitPercent, useDoubleInput);
@@ -273,7 +273,8 @@ namespace ttk {
     void initBarycenterTree(std::vector<ftm::FTMTree_MT *> &trees,
                             ftm::MergeTree<dataType> &baryTree,
                             bool distMinimizer = true) {
-      int bestIndex = getBestInitTreeIndex<dataType>(trees, distMinimizer);
+      int const bestIndex
+        = getBestInitTreeIndex<dataType>(trees, distMinimizer);
       baryTree = ftm::copyMergeTree<dataType>(trees[bestIndex], true);
       limitSizeBarycenter(baryTree, trees);
     }
@@ -293,12 +294,12 @@ namespace ttk {
       int i) {
       // Get nodes and scalars to add
       std::queue<std::tuple<ftm::idNode, ftm::idNode>> queue;
-      queue.emplace(std::make_tuple(nodeId2, nodeId1));
+      queue.emplace(nodeId2, nodeId1);
       nodesToProcess.emplace_back(nodeId2, nodeId1, i);
       while(!queue.empty()) {
         auto queueTuple = queue.front();
         queue.pop();
-        ftm::idNode node = std::get<0>(queueTuple);
+        ftm::idNode const node = std::get<0>(queueTuple);
         // Get scalars
         newScalarsVector.push_back(
           tree2->getValue<dataType>(tree2->getNode(node)->getOrigin()));
@@ -307,7 +308,7 @@ namespace ttk {
         std::vector<ftm::idNode> children;
         tree2->getChildren(node, children);
         for(auto child : children) {
-          queue.emplace(std::make_tuple(child, nodeCpt + 1));
+          queue.emplace(child, nodeCpt + 1);
           nodesToProcess.emplace_back(child, nodeCpt + 1, i);
         }
         nodeCpt += 2; // we will add two nodes (birth and death)
@@ -329,11 +330,11 @@ namespace ttk {
       nodesProcessed.clear();
       nodesProcessed.resize(noTrees);
       for(auto processTuple : nodesToProcess) {
-        ftm::idNode parent = std::get<1>(processTuple);
-        ftm::idNode nodeTree1 = tree1->getNumberOfNodes();
-        int index = std::get<2>(processTuple);
-        nodesProcessed[index].push_back(
-          std::make_tuple(nodeTree1 + 1, std::get<0>(processTuple)));
+        ftm::idNode const parent = std::get<1>(processTuple);
+        ftm::idNode const nodeTree1 = tree1->getNumberOfNodes();
+        int const index = std::get<2>(processTuple);
+        nodesProcessed[index].emplace_back(
+          nodeTree1 + 1, std::get<0>(processTuple));
         // Make node and its origin
         tree1->makeNode(nodeTree1);
         tree1->makeNode(nodeTree1 + 1);
@@ -376,7 +377,7 @@ namespace ttk {
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings) {
       ftm::FTMTree_MT *baryTree = &(baryMergeTree.tree);
-      ftm::idNode baryTreeRoot = baryTree->getRoot();
+      ftm::idNode const baryTreeRoot = baryTree->getRoot();
 
       // Init matching matrix
       // m[i][j] contains the node in the barycenter matched to the jth node of
@@ -396,11 +397,11 @@ namespace ttk {
       // Iterate through trees to get the nodes to add in the barycenter
       std::vector<std::vector<ftm::idNode>> nodesToAdd(trees.size());
       for(unsigned int i = 0; i < trees.size(); ++i) {
-        ftm::idNode root = trees[i]->getRoot();
+        ftm::idNode const root = trees[i]->getRoot();
         std::queue<ftm::idNode> queue;
         queue.emplace(root);
         while(!queue.empty()) {
-          ftm::idNode node = queue.front();
+          ftm::idNode const node = queue.front();
           queue.pop();
           bool processChildren = true;
           // if node in trees[i] is not matched
@@ -545,7 +546,7 @@ namespace ttk {
           tempDeath += tTempDeath * alphas[i] / alphaSum;
         }
       }
-      double projec = (tempBirth + tempDeath) / 2;
+      double const projec = (tempBirth + tempDeath) / 2;
 
       // Compute newBirth and newDeath
       for(unsigned int i = 0; i < trees.size(); ++i) {
@@ -585,7 +586,7 @@ namespace ttk {
       auto birthDeath = getParametrizedBirthDeath<dataType>(tree, nodeId);
       double newBirth = std::get<0>(birthDeath);
       double newDeath = std::get<1>(birthDeath);
-      double projec = (newBirth + newDeath) / 2;
+      double const projec = (newBirth + newDeath) / 2;
 
       newBirth = alpha * newBirth + (1 - alpha) * projec;
       newDeath = alpha * newDeath + (1 - alpha) * projec;
@@ -609,7 +610,7 @@ namespace ttk {
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings) {
       ftm::FTMTree_MT *baryTree = &(baryMergeTree.tree);
-      bool isJT = baryTree->isJoinTree<dataType>();
+      bool const isJT = baryTree->isJoinTree<dataType>();
 
       // Init matching matrix
       // m[i][j] contains the node in trees[j] matched to the node i in the
@@ -631,11 +632,11 @@ namespace ttk {
 
       // Interpolate scalars
       std::vector<dataType> newScalarsVector(baryTree->getNumberOfNodes());
-      ftm::idNode root = baryTree->getRoot();
+      ftm::idNode const root = baryTree->getRoot();
       std::queue<ftm::idNode> queue;
       queue.emplace(root);
       while(!queue.empty()) {
-        ftm::idNode node = queue.front();
+        ftm::idNode const node = queue.front();
         queue.pop();
         std::tuple<dataType, dataType> newBirthDeath;
         if(node < indexAddedNodes) {
@@ -643,8 +644,8 @@ namespace ttk {
             = interpolation<dataType>(baryMergeTree, node, newScalarsVector,
                                       trees, baryMatching[node], alphas);
         } else {
-          int i = nodesAddedTree[node];
-          ftm::idNode nodeT = baryMatching[node][i];
+          int const i = nodesAddedTree[node];
+          ftm::idNode const nodeT = baryMatching[node][i];
           newBirthDeath = interpolationAdded<dataType>(
             trees[i], nodeT, alphas[i], baryMergeTree, node, newScalarsVector);
         }
@@ -687,7 +688,7 @@ namespace ttk {
       std::vector<double> &alphas,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings) {
-      int indexAddedNodes = baryMergeTree.tree.getNumberOfNodes();
+      int const indexAddedNodes = baryMergeTree.tree.getNumberOfNodes();
       updateBarycenterTreeStructure<dataType>(trees, baryMergeTree, matchings);
       updateBarycenterTreeScalars<dataType>(
         trees, baryMergeTree, alphas, indexAddedNodes, matchings);
@@ -718,7 +719,7 @@ namespace ttk {
       mergeTreeDistance.setDistanceSquaredRoot(true); // squared root
       mergeTreeDistance.setNodePerTask(nodePerTask_);
       if(useDoubleInput) {
-        double weight = mixDistancesMinMaxPairWeight(isFirstInput);
+        double const weight = mixDistancesMinMaxPairWeight(isFirstInput);
         mergeTreeDistance.setMinMaxPairWeight(weight);
       }
       /*if(progressiveBarycenter_){
@@ -842,7 +843,7 @@ namespace ttk {
         double persistenceThreshold = 50.0;
         if(iterationNumber != -1) {
           // Get number of pairs in scaled merge tree
-          int noPairs = mergeTrees[i].tree.getRealNumberOfNodes();
+          int const noPairs = mergeTrees[i].tree.getRealNumberOfNodes();
 
           // Get pairs in original merge tree
           std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> pairs;
@@ -850,10 +851,11 @@ namespace ttk {
             pairs, branchDecomposition_);
 
           // Compute new persistence threshold
-          double multiplier = (progressiveSpeedDivisor_ < 1e-6
-                                 ? 1.
-                                 : iterationNumber / progressiveSpeedDivisor_);
-          int decrement = multiplier * pairs.size() / 10;
+          double const multiplier
+            = (progressiveSpeedDivisor_ < 1e-6
+                 ? 1.
+                 : iterationNumber / progressiveSpeedDivisor_);
+          int const decrement = multiplier * pairs.size() / 10;
           int thresholdIndex = pairs.size() - noPairs - std::max(decrement, 2);
           thresholdIndex = std::max(thresholdIndex, 0);
           const double persistence = std::get<2>(pairs[thresholdIndex]);
@@ -990,7 +992,7 @@ namespace ttk {
 
         // --- Persistence scaling
         if(progressiveBarycenter_) {
-          unsigned int noTreesUnscaled = persistenceScaling<dataType>(
+          unsigned int const noTreesUnscaled = persistenceScaling<dataType>(
             trees, scaledMergeTrees, oriTrees, NoIteration, deletedNodes);
           treesUnscaled = (noTreesUnscaled == oriTrees.size());
         }
@@ -1060,7 +1062,7 @@ namespace ttk {
 
       // --- Postprocessing
       if(postprocess_) {
-        std::vector<int> allRealNodes(trees.size());
+        std::vector<int> const allRealNodes(trees.size());
         for(unsigned int i = 0; i < trees.size(); ++i) {
           postprocessingPipeline<dataType>(treesT[i]);
         }
@@ -1104,10 +1106,10 @@ namespace ttk {
                           double percent,
                           bool useBD) {
       auto metric = getSizeLimitMetric(trees);
-      unsigned int newNoNodes = metric * percent / 100.0;
+      unsigned int const newNoNodes = metric * percent / 100.0;
       keepMostImportantPairs<dataType>(&(bary.tree), newNoNodes, useBD);
 
-      unsigned int noNodesAfter = bary.tree.getRealNumberOfNodes();
+      unsigned int const noNodesAfter = bary.tree.getRealNumberOfNodes();
       if(bary.tree.isFullMerge() and noNodesAfter > newNoNodes * 1.1 + 1
          and noNodesAfter > 3) {
         std::cout << "metric = " << metric << std::endl;
@@ -1158,7 +1160,7 @@ namespace ttk {
       dataType oldOriginValue = std::get<1>(tup);
 
       // Verify that scalars are consistent
-      ftm::idNode treeRoot = tree->getRoot();
+      ftm::idNode const treeRoot = tree->getRoot();
       std::vector<dataType> newScalarsVector;
       ftm::getTreeScalars<dataType>(tree, newScalarsVector);
       bool isJT = tree->isJoinTree<dataType>();

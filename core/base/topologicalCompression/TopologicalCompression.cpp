@@ -21,7 +21,7 @@ int ttk::TopologicalCompression::CompressWithZFP(
   const double zfpTolerance) const {
 
   int n1 = 0, n2 = 0;
-  bool is2D = nx == 1 || ny == 1 || nz == 1;
+  bool const is2D = nx == 1 || ny == 1 || nz == 1;
   if(is2D) {
     if(nx + ny == 2 || ny + nz == 2 || nx + nz == 2) {
       this->printErr("One-dimensional arrays not supported.");
@@ -166,7 +166,7 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
   numberOfBytesRead += sizeof(int);
   numberOfSegments = Read<int32_t>(fm);
 
-  unsigned int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
+  unsigned int const numberOfBitsPerSegment = log2(numberOfSegments) + 1;
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // avoid left shift with negative operand
@@ -221,7 +221,7 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
           currentSegment >>= (32 - numberOfBitsPerSegment);
         }
 
-        int nextSegment = currentSegment;
+        int const nextSegment = currentSegment;
 
         if(oldCompressedInt < 0) {
           oldCompressedInt &= 2147483647;
@@ -266,7 +266,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
 
   // Compute number of bits per segment
   // (can be deduced at read-time from numberOfSegments)
-  unsigned int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
+  unsigned int const numberOfBitsPerSegment = log2(numberOfSegments) + 1;
 
   // [MEDIUM] TODO: support long int
   if(numberOfBitsPerSegment > 32)
@@ -298,7 +298,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
         compressedInt |= currentSegment;
 
       } else {
-        int cursor = (currentSegment << offset); // 0es after <<
+        int const cursor = (currentSegment << offset); // 0es after <<
         compressedInt |= cursor;
         offset += numberOfBitsPerSegment;
       }
@@ -316,12 +316,12 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
     // Write current segment into last part of current container,
     // to be continued into next container.
     {
-      int currentSegment = segmentation[currentCell];
+      int const currentSegment = segmentation[currentCell];
 
       if(offset == 32) {
         // currentCell++;
       } else {
-        int cursor = (currentSegment << offset);
+        int const cursor = (currentSegment << offset);
         compressedInt = compressedInt | cursor;
 
         maskerRank = 32 - offset;
@@ -421,7 +421,7 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
   // Segmentation values for each particular index.
   for(int i = 0; i < mappingSize; ++i) {
     std::tuple<double, int> t = mapping[i];
-    int idv = std::get<1>(t);
+    int const idv = std::get<1>(t);
     numberOfBytesWritten += sizeof(int);
     Write<int32_t>(fm, idv);
 
@@ -436,9 +436,9 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
 
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
-    int idVertex = std::get<0>(t);
+    int const idVertex = std::get<0>(t);
     auto value = std::get<1>(t);
-    int vertexType = std::get<2>(t);
+    int const vertexType = std::get<2>(t);
 
     numberOfBytesWritten += sizeof(int);
     Write<int32_t>(fm, idVertex);
@@ -465,8 +465,8 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
 
   if(!zfpOnly) {
     // Topological segments.
-    int numberOfBitsPerSegment = log2(nSegments) + 1;
-    double nbCharPerSegment = (double)numberOfBitsPerSegment / 8.0;
+    int const numberOfBitsPerSegment = log2(nSegments) + 1;
+    double const nbCharPerSegment = (double)numberOfBitsPerSegment / 8.0;
     totalSize += (sizeof(int) * 2 + std::ceil(nbCharPerSegment * nVertices));
 
     // Geometrical mapping.
@@ -486,8 +486,8 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
 int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
   int numberOfBytesWritten = 0;
 
-  int numberOfVertices = getNbVertices();
-  int numberOfSegments = getNbSegments();
+  int const numberOfVertices = getNbVertices();
+  int const numberOfSegments = getNbSegments();
 
   // Test arguments.
   if(numberOfSegments < 1)
@@ -526,9 +526,9 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
   if(zfpTolerance >= 0.0) {
 #ifdef TTK_ENABLE_ZFP
     // (1. or 3.) Write zfp-compressed array.
-    int nx = 1 + dataExtent[1] - dataExtent[0];
-    int ny = 1 + dataExtent[3] - dataExtent[2];
-    int nz = 1 + dataExtent[5] - dataExtent[4];
+    int const nx = 1 + dataExtent[1] - dataExtent[0];
+    int const ny = 1 + dataExtent[3] - dataExtent[2];
+    int const nz = 1 + dataExtent[5] - dataExtent[4];
 
     std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
     numberOfBytesWritten
@@ -552,7 +552,7 @@ int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
   int numberOfSegments;
   int numberOfVertices;
 
-  int numberOfBytesRead = ReadCompactSegmentation(
+  int const numberOfBytesRead = ReadCompactSegmentation(
     fm, segmentation_, numberOfVertices, numberOfSegments);
 
   this->rawFileLength += numberOfBytesRead;
@@ -630,24 +630,24 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   Write<uint8_t>(fp, false);
 #endif
 
-  bool usePersistence
+  bool const usePersistence
     = compressionType == (int)ttk::CompressionType::PersistenceDiagram;
-  bool useOther = compressionType == (int)ttk::CompressionType::Other;
+  bool const useOther = compressionType == (int)ttk::CompressionType::Other;
 
   int numberOfVertices = 1;
   for(int i = 0; i < 3; ++i)
     numberOfVertices *= (1 + dataExtent[2 * i + 1] - dataExtent[2 * i]);
   NbVertices = numberOfVertices;
 
-  int totalSize = usePersistence ? ComputeTotalSizeForPersistenceDiagram(
-                    getMapping(), getCriticalConstraints(), zfpOnly,
-                    getNbSegments(), getNbVertices(), zfpTolerance)
-                  : useOther ? ComputeTotalSizeForOther()
-                             : 0;
+  int const totalSize = usePersistence ? ComputeTotalSizeForPersistenceDiagram(
+                          getMapping(), getCriticalConstraints(), zfpOnly,
+                          getNbSegments(), getNbVertices(), zfpTolerance)
+                        : useOther ? ComputeTotalSizeForOther()
+                                   : 0;
 
   std::vector<char> bbuf(totalSize);
   char *buf = bbuf.data();
-  size_t len = (size_t)totalSize;
+  size_t const len = (size_t)totalSize;
 
   // #ifndef _MSC_VER
   // FILE *fm = fmemopen(buf, len, "r+");
@@ -678,7 +678,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   fclose(fm); // !Close stream to write changes!
   // #ifdef _MSC_VER
   fm = fopen(ffn, "rb");
-  int ret = fread(buf, len, sizeof(char), fm);
+  int const ret = fread(buf, len, sizeof(char), fm);
   fclose(fm);
   remove(ffn);
   // #endif
@@ -757,10 +757,10 @@ int ttk::TopologicalCompression::WriteMetaData(
 
   // 0. SQ type
   const char *sq = sqMethod;
-  int sqType = (strcmp(sq, "") == 0)                            ? 0
-               : (strcmp(sq, "r") == 0 || strcmp(sq, "R") == 0) ? 1
-               : (strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) ? 2
-                                                                : 3;
+  int const sqType = (strcmp(sq, "") == 0)                            ? 0
+                     : (strcmp(sq, "r") == 0 || strcmp(sq, "R") == 0) ? 1
+                     : (strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) ? 2
+                                                                      : 3;
 
   Write<int32_t>(fp, sqType);
 
@@ -855,7 +855,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   ZFPTolerance = Read<double>(fm);
 
   // 6. Length of array name
-  size_t dataArrayNameLength = Read<uint64_t>(fm);
+  size_t const dataArrayNameLength = Read<uint64_t>(fm);
 
   // 7. Array name (as unsigned chars)
   dataArrayName_.resize(dataArrayNameLength + 1);

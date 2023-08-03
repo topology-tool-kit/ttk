@@ -1037,8 +1037,8 @@ inline ttk::SimplexId
 inline ttk::SimplexId
   ttk::PeriodicImplicitTriangulation::getEdgeLink2dD1(const SimplexId p[2],
                                                       const int id) const {
-  SimplexId wrapX = (p[0] < nbvoxels_[Di_]) ? 0 : wrap_[0];
-  SimplexId wrapY = (p[1] < nbvoxels_[Dj_]) ? 0 : wrap_[1];
+  const SimplexId wrapX = (p[0] < nbvoxels_[Di_]) ? 0 : wrap_[0];
+  const SimplexId wrapY = (p[1] < nbvoxels_[Dj_]) ? 0 : wrap_[1];
   switch(id) {
     case 0:
       return p[0] + p[1] * vshift_[0];

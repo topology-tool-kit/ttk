@@ -146,7 +146,7 @@ int ttk::PlanarGraphLayout::extractLevel(
       nodeIndices.push_back(i);
 
   // Get edges at level
-  size_t nEdges2 = nEdges * 2;
+  size_t const nEdges2 = nEdges * 2;
   for(size_t i = 0; i < nEdges2; i += 2) {
     auto n0l = levels[connectivityList[i + 0]];
     auto n1l = levels[connectivityList[i + 1]];
@@ -178,11 +178,11 @@ int ttk::PlanarGraphLayout::computeDotString(
 
   this->printMsg("Generating DOT String", 0, debug::LineMode::REPLACE);
 
-  bool useSequences = pointSequences != nullptr;
-  bool useSizes = sizes != nullptr;
-  bool useBranches = branches != nullptr;
+  bool const useSequences = pointSequences != nullptr;
+  bool const useSizes = sizes != nullptr;
+  bool const useBranches = branches != nullptr;
 
-  std::string headString = "digraph g {rankdir=LR;";
+  std::string const headString = "digraph g {rankdir=LR;";
   std::string nodeString = "";
   std::string edgeString = "";
   std::string rankString = "";
@@ -208,7 +208,7 @@ int ttk::PlanarGraphLayout::computeDotString(
   // Ranks
   // ---------------------------------------------------------------------------
   if(useSequences) {
-    size_t nSequenceValues = sequenceValueToIndexMap.size();
+    size_t const nSequenceValues = sequenceValueToIndexMap.size();
 
     // Sequence Chain
     {
@@ -243,7 +243,7 @@ int ttk::PlanarGraphLayout::computeDotString(
   // ---------------------------------------------------------------------------
   {
     for(auto &edgeIndex : edgeIndices) {
-      size_t temp = edgeIndex * 2;
+      size_t const temp = edgeIndex * 2;
       auto &i0 = connectivityList[temp + 0];
       auto &i1 = connectivityList[temp + 1];
       edgeString += nl(i0) + "->" + nl(i1);
@@ -314,7 +314,7 @@ int ttk::PlanarGraphLayout::computeSlots(
   // ---------------------------------------------------------------------------
   std::vector<std::vector<size_t>> nodeIndexChildrenIndexMap(nPoints);
 
-  size_t nEdges2 = nEdges * 2;
+  size_t const nEdges2 = nEdges * 2;
   for(size_t i = 0; i < nEdges2; i += 2) {
     auto n0 = connectivityList[i + 0];
     auto n1 = connectivityList[i + 1];
@@ -340,7 +340,7 @@ int ttk::PlanarGraphLayout::computeSlots(
     // for each parent adjust position of children
     for(auto &parent : nodeIndices) {
       auto &children = nodeIndexChildrenIndexMap[parent];
-      size_t nChildren = children.size();
+      size_t const nChildren = children.size();
       if(nChildren < 1)
         continue;
 
@@ -348,7 +348,7 @@ int ttk::PlanarGraphLayout::computeSlots(
       sort(children.begin(), children.end(), comparator);
 
       // size of parent
-      float sizeParent = sizes[parent];
+      float const sizeParent = sizes[parent];
 
       // size of child
       float sizeChildren = 0;
@@ -356,12 +356,12 @@ int ttk::PlanarGraphLayout::computeSlots(
         sizeChildren += sizes[child];
 
       // gap space
-      float gap = sizeParent - sizeChildren;
-      float gapDelta = (gap / (nChildren + 1)) / 2;
+      float const gap = sizeParent - sizeChildren;
+      float const gapDelta = (gap / (nChildren + 1)) / 2;
 
       float y = layout[parent * 2 + 1] + sizeParent * 0.5 - gapDelta;
       for(auto &child : children) {
-        float temp = gapDelta + sizes[child] / 2;
+        float const temp = gapDelta + sizes[child] / 2;
         layout[child * 2 + 1] = y - temp;
         y -= 2 * temp;
       }
@@ -393,10 +393,10 @@ int ttk::PlanarGraphLayout::computeLayout(
   Timer t;
 
   // Init Input
-  bool useSequences = pointSequences != nullptr;
-  bool useSizes = sizes != nullptr;
-  bool useBranches = branches != nullptr;
-  bool useLevels = levels != nullptr;
+  bool const useSequences = pointSequences != nullptr;
+  bool const useSizes = sizes != nullptr;
+  bool const useBranches = branches != nullptr;
+  bool const useLevels = levels != nullptr;
 
   // Print Input
   {
@@ -450,7 +450,7 @@ int ttk::PlanarGraphLayout::computeLayout(
 
     // Extract nodes and edges at certain level
     {
-      int status = this->extractLevel<IT, CT>(
+      int const status = this->extractLevel<IT, CT>(
         // Output
         nodeIndices, edgeIndices,
 
@@ -463,7 +463,7 @@ int ttk::PlanarGraphLayout::computeLayout(
     // Compute Dot String
     std::string dotString;
     {
-      int status = this->computeDotString<ST, IT, CT>(
+      int const status = this->computeDotString<ST, IT, CT>(
         // Output
         dotString,
 
@@ -476,7 +476,7 @@ int ttk::PlanarGraphLayout::computeLayout(
 
     // Compute Dot Layout
     {
-      int status = this->computeDotLayout(layout, nodeIndices, dotString);
+      int const status = this->computeDotLayout(layout, nodeIndices, dotString);
       if(status != 1)
         return 0;
     }

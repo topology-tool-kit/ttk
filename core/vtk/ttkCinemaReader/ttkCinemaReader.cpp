@@ -86,7 +86,7 @@ int ttkCinemaReader::RequestData(vtkInformation *ttkNotUsed(request),
       auto filepathColumn = vtkStringArray::SafeDownCast(
         outTable->GetColumnByName(filePathColumnNames[j].data()));
       if(filepathColumn) {
-        size_t n = filepathColumn->GetNumberOfValues();
+        size_t const n = filepathColumn->GetNumberOfValues();
         for(size_t i = 0; i < n; i++)
           filepathColumn->SetValue(
             i, this->GetDatabasePath() + "/" + filepathColumn->GetValue(i));

@@ -105,9 +105,9 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad
     = [](std::string &colName, const size_t numberCols, const size_t colIdx) {
-        std::string max{std::to_string(numberCols - 1)};
-        std::string cur{std::to_string(colIdx)};
-        std::string zer(max.size() - cur.size(), '0');
+        std::string const max{std::to_string(numberCols - 1)};
+        std::string const cur{std::to_string(colIdx)};
+        std::string const zer(max.size() - cur.size(), '0');
         colName.append(zer).append(cur);
       };
 

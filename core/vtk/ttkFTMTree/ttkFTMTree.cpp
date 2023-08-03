@@ -503,7 +503,7 @@ int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
 
 int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
   vtkNew<vtkUnstructuredGrid> skeletonArcs{};
-  vtkNew<vtkPoints> points{};
+  vtkNew<vtkPoints> const points{};
 
   ttk::ftm::ArcData arcData;
   arcData.init(ftmTree_, params_);

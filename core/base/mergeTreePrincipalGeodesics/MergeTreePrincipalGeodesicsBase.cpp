@@ -59,7 +59,7 @@ namespace ttk {
     std::vector<double *> &pVec,
     size_t size,
     std::vector<std::vector<double>> &vec) {
-    std::vector<size_t> sizes(pVec.size(), size);
+    std::vector<size_t> const sizes(pVec.size(), size);
     pointersToVectors(pVec, sizes, vec);
   }
 } // namespace ttk

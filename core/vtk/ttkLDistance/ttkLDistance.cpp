@@ -74,10 +74,10 @@ int ttkLDistance::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 
   // Allocate memory for the output scalar field, based on the first input.
-  vtkSmartPointer<vtkDataArray> outputScalarField{
+  vtkSmartPointer<vtkDataArray> const outputScalarField{
     inputScalarField1->NewInstance()};
 
-  ttk::SimplexId numberOfPoints = input->GetNumberOfPoints();
+  ttk::SimplexId const numberOfPoints = input->GetNumberOfPoints();
 
   outputScalarField->SetNumberOfTuples(numberOfPoints);
   outputScalarField->SetName(DistanceFieldName.data());

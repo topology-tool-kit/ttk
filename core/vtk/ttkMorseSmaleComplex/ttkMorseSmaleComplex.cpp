@@ -77,7 +77,8 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     vtkNew<vtkPoints> points{};
     vtkNew<vtkSignedCharArray> cellDimensions{};
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
-    vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
+    vtkSmartPointer<vtkDataArray> const cellScalars{
+      inputScalars->NewInstance()};
     vtkNew<vtkSignedCharArray> isOnBoundary{};
     vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
     vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};

@@ -599,7 +599,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
         newArr->SetName(arr->GetName());
         newArr->SetNumberOfComponents(1);
 
-        for(SimplexId v : vertices)
+        for(SimplexId const v : vertices)
           newArr->InsertNextTuple1(arr->GetTuple1(v));
 
         outputPointData->AddArray(newArr);

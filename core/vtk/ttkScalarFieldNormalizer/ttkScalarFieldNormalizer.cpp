@@ -57,7 +57,7 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
   double min = 0, max = 0;
   for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
 
-    double value = input->GetTuple1(i);
+    double const value = input->GetTuple1(i);
 
     if((!i) || (value < min)) {
       min = value;
@@ -97,12 +97,13 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
 
-  int keepGoing = ttkAlgorithm::checkEmptyMPIInput<vtkDataArray>(inputArray);
+  int const keepGoing
+    = ttkAlgorithm::checkEmptyMPIInput<vtkDataArray>(inputArray);
   if(keepGoing < 2) {
     return keepGoing;
   }
 
-  vtkSmartPointer<vtkDataArray> outputArray
+  vtkSmartPointer<vtkDataArray> const outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
   outputArray->SetName(inputArray->GetName());
   outputArray->SetNumberOfComponents(1);

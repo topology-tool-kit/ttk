@@ -45,7 +45,7 @@ int ttkProjectionFromField::projectPersistenceDiagram(
   // ensure we have the right arrays
   const auto critCoordinates = vtkFloatArray::SafeDownCast(
     pointData->GetAbstractArray(ttk::PersistenceCoordinatesName));
-  bool embed = critCoordinates == nullptr;
+  bool const embed = critCoordinates == nullptr;
   int ret{0};
 
   if(embed) {

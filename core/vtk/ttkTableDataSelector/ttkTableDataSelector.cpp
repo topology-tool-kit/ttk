@@ -57,7 +57,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  vtkSmartPointer<vtkDataSetAttributes> outputRowData
+  vtkSmartPointer<vtkDataSetAttributes> const outputRowData
     = vtkSmartPointer<vtkDataSetAttributes>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputRowData) {
@@ -77,8 +77,8 @@ int ttkTableDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
       continue;
     }
     // check bounds in the range
-    ptrdiff_t pos = find(AvailableCols.begin(), AvailableCols.end(), col)
-                    - AvailableCols.begin();
+    ptrdiff_t const pos = find(AvailableCols.begin(), AvailableCols.end(), col)
+                          - AvailableCols.begin();
     if(pos < RangeId[0] || pos > RangeId[1]) {
       continue;
     }
@@ -104,7 +104,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *ttkNotUsed(request),
 }
 
 void ttkTableDataSelector::FillAvailableCols(vtkTable *input) {
-  int nbColumns = input->GetNumberOfColumns();
+  int const nbColumns = input->GetNumberOfColumns();
   AvailableCols.clear();
   AvailableCols.resize(nbColumns);
   for(int i = 0; i < nbColumns; ++i) {

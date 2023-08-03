@@ -57,7 +57,7 @@ namespace ttk {
           downDegree = node->getNumberOfUpSuperArcs();
           upDegree = node->getNumberOfDownSuperArcs();
         }
-        int degree = upDegree + downDegree;
+        int const degree = upDegree + downDegree;
 
         // saddle point
         if(degree > 1) {
@@ -282,7 +282,7 @@ namespace ttk {
           arrIdx, static_cast<int>(getNodeType(*tree, nodeId, params)));
 
         if(params.advStats) {
-          idSuperArc saId = getAdjSa(node);
+          idSuperArc const saId = getAdjSa(node);
           if(params.segm) {
             regionSize->SetTuple1(arrIdx, tree->getArcSize(saId));
           }
@@ -414,7 +414,7 @@ namespace ttk {
           = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
         const double regionSpan = Geometry::distance(coordUp, coordDown);
 
-        idSuperArc nid = arc->getNormalizedId();
+        idSuperArc const nid = arc->getNormalizedId();
 
         ArcType regionType;
         // RegionType

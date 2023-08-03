@@ -47,14 +47,14 @@ int ttkFiber::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Unable to retrieve input array U.");
     return 0;
   }
-  std::string uArrayName(uArray->GetName());
+  std::string const uArrayName(uArray->GetName());
 
   auto vArray = this->GetInputArrayToProcess(1, inputVector);
   if(!vArray) {
     this->printErr("Unable to retrieve input array V.");
     return 0;
   }
-  std::string vArrayName(vArray->GetName());
+  std::string const vArrayName(vArray->GetName());
 
   this->printMsg("Computing Fiber (" + uArrayName + ": "
                    + std::to_string(UValue) + ", " + vArrayName + ": "

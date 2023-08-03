@@ -150,9 +150,9 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
     // go triangle by triangle
     for(SimplexId j = 0; j < nbVertCell; j++) {
 
-      SimplexId v0 = cellArray.getCellVertex(cid, j);
-      SimplexId v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
-      SimplexId v2 = cellArray.getCellVertex(cid, (j + 2) % nbVertCell);
+      SimplexId const v0 = cellArray.getCellVertex(cid, j);
+      SimplexId const v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
+      SimplexId const v2 = cellArray.getCellVertex(cid, (j + 2) % nbVertCell);
 
       // perform an intersection of the 3 (sorted) star lists
       SimplexId pos0 = 0, pos1 = 0, pos2 = 0;

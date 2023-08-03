@@ -509,7 +509,7 @@ std::vector<std::vector<SimplexId>>
     const auto followVPath = [this, &mins, &triangulation](const SimplexId v) {
       std::vector<Cell> vpath{};
       this->dg_.getDescendingPath(Cell{0, v}, vpath, triangulation);
-      Cell &lastCell = vpath.back();
+      const Cell &lastCell = vpath.back();
       if(lastCell.dim_ == 0 && this->dg_.isCellCritical(lastCell)) {
         mins.emplace_back(lastCell.id_);
       }
@@ -558,7 +558,7 @@ std::vector<std::vector<SimplexId>>
       = [this, dim, &maxs, &triangulation](const SimplexId v) {
           std::vector<Cell> vpath{};
           this->dg_.getAscendingPath(Cell{dim, v}, vpath, triangulation);
-          Cell &lastCell = vpath.back();
+          const Cell &lastCell = vpath.back();
           if(lastCell.dim_ == dim && this->dg_.isCellCritical(lastCell)) {
             maxs.emplace_back(lastCell.id_);
           } else if(lastCell.dim_ == dim - 1) {
@@ -904,8 +904,6 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
       saddles2.emplace_back(s2);
     }
   }
-
-  Timer tmpar{};
 
   if(this->Compute2SaddlesChildren) {
     this->s2Children_.resize(saddles2.size());
@@ -1258,7 +1256,7 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
     nBoundComp = std::max(nBoundComp, 0);
 
     // print Betti numbers
-    std::vector<std::vector<std::string>> rows{
+    const std::vector<std::vector<std::string>> rows{
       {" #Connected components", std::to_string(nConnComp)},
       {" #Topological handles", std::to_string(nHandles)},
       {" #Cavities", std::to_string(nCavities)},

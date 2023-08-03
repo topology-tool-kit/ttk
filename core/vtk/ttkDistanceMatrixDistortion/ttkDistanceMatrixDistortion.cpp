@@ -105,7 +105,7 @@ int ttkDistanceMatrixDistortion::RequestData(
     return 0;
   }
 
-  int n = nRowsHigh;
+  int const n = nRowsHigh;
   std::vector<double *> vectMatHigh(n),
     vectMatLow(n); // No 2D vectors to avoid copy of data from the VTK layer.
 

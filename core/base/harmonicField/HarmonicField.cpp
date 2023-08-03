@@ -114,7 +114,7 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   }
 
   // unique constraint number
-  size_t uniqueConstraintNumber = idValues.size();
+  size_t const uniqueConstraintNumber = idValues.size();
 
   // graph laplacian of current mesh
   SpMat lap;

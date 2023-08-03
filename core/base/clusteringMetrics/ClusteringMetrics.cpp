@@ -21,15 +21,15 @@ inline int checkContingencyMatSize(const ttk::ClusteringMetrics *object,
     return 0;
   }
 
-  size_t nLin = matrix.size();
+  const size_t nLin = matrix.size();
   if(nLin == 0) {
     object->printErr("The provided contingency matrix is empty.\n");
     return 0;
   }
-  size_t nCol = matrix[0].size();
+  const size_t nCol = matrix[0].size();
 
   for(size_t i = 0; i < nLin; i++) {
-    size_t curNCol = matrix[i].size();
+    const size_t curNCol = matrix[i].size();
     if(curNCol == 0) {
       object->printErr("Line " + std::to_string(i)
                        + " of the contingency matrix is empty.\n");
@@ -61,7 +61,7 @@ int ttk::ClusteringMetrics::computeContingencyTables(
   std::map<int, int> values1ToId, values2ToId;
   size_t nbVal1 = 0, nbVal2 = 0;
   for(size_t i = 0; i < nPoint; i++) {
-    int x1 = clust1[i], x2 = clust2[i];
+    const int x1 = clust1[i], x2 = clust2[i];
     auto found1 = values1ToId.find(x1), found2 = values2ToId.find(x2);
 
     if(found1 == values1ToId.end()) {
@@ -75,7 +75,7 @@ int ttk::ClusteringMetrics::computeContingencyTables(
     }
   }
 
-  size_t nCluster1 = nbVal1, nCluster2 = nbVal2;
+  const size_t nCluster1 = nbVal1, nCluster2 = nbVal2;
   contingencyMatrix.resize(nCluster1);
   for(size_t i = 0; i < nCluster1; i++)
     contingencyMatrix[i].resize(nCluster2, 0);
@@ -83,7 +83,7 @@ int ttk::ClusteringMetrics::computeContingencyTables(
   sumCol.resize(nCluster2, 0);
 
   for(size_t i = 0; i < nPoint; i++) {
-    int x1 = values1ToId[clust1[i]], x2 = values2ToId[clust2[i]];
+    const int x1 = values1ToId[clust1[i]], x2 = values2ToId[clust2[i]];
     contingencyMatrix[x1][x2]++;
   }
 
@@ -109,8 +109,8 @@ int ttk::ClusteringMetrics::computeARI(
   if(!checkContingencyMatSize(this, contingencyMatrix, nPoint))
     return 0;
 
-  size_t nCluster1 = contingencyMatrix.size();
-  size_t nCluster2 = contingencyMatrix[0].size();
+  const size_t nCluster1 = contingencyMatrix.size();
+  const size_t nCluster2 = contingencyMatrix[0].size();
 
   double sumNChooseContingency = 0;
 #ifdef TTK_ENABLE_OPENMP
@@ -137,10 +137,11 @@ int ttk::ClusteringMetrics::computeARI(
     sumNChoose2_2 += nChoose2(sumCol[i]);
   }
 
-  double numerator = sumNChooseContingency
-                     - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
-  double denominator = 0.5 * (sumNChoose2_1 + sumNChoose2_2)
-                       - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
+  const double numerator = sumNChooseContingency
+                           - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
+  const double denominator
+    = 0.5 * (sumNChoose2_1 + sumNChoose2_2)
+      - (sumNChoose2_1 * sumNChoose2_2) / nChoose2(nPoint);
   if(denominator < ttk::Geometry::powIntTen(-DBL_DIG))
     ariValue = 1;
   else
@@ -158,8 +159,8 @@ int ttk::ClusteringMetrics::computeNMI(
   if(!checkContingencyMatSize(this, contingencyMatrix, nPoint))
     return 0;
 
-  size_t nCluster1 = contingencyMatrix.size();
-  size_t nCluster2 = contingencyMatrix[0].size();
+  const size_t nCluster1 = contingencyMatrix.size();
+  const size_t nCluster2 = contingencyMatrix[0].size();
 
   double mutualInfo = 0;
   bool invalidCell = false;
@@ -177,9 +178,9 @@ int ttk::ClusteringMetrics::computeNMI(
         continue;
       }
 
-      double logArg = (double)nPoint * contingencyMatrix[i1][i2]
-                      / (sumLin[i1] * sumCol[i2]);
-      double curAdd = contingencyMatrix[i1][i2] * log2(logArg) / (nPoint);
+      const double logArg = (double)nPoint * contingencyMatrix[i1][i2]
+                            / (sumLin[i1] * sumCol[i2]);
+      const double curAdd = contingencyMatrix[i1][i2] * log2(logArg) / (nPoint);
       mutualInfo += curAdd;
     }
   }
@@ -188,11 +189,11 @@ int ttk::ClusteringMetrics::computeNMI(
 
   double entropy1 = 0, entropy2 = 0;
   for(size_t i = 0; i < nCluster1; i++) {
-    double eltLin = (double)sumLin[i] / nPoint;
+    const double eltLin = (double)sumLin[i] / nPoint;
     entropy1 -= eltLin * log2(eltLin);
   }
   for(size_t i = 0; i < nCluster2; i++) {
-    double eltCol = (double)sumCol[i] / nPoint;
+    const double eltCol = (double)sumCol[i] / nPoint;
     entropy2 -= eltCol * log2(eltCol);
   }
 

@@ -60,7 +60,7 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector *outputVector) {
 
   using ttk::SimplexId;
-  ttk::Timer t;
+  ttk::Timer const t;
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
   const auto polygon = vtkUnstructuredGrid::GetData(inputVector[1]);
@@ -114,7 +114,7 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
 
   inputPolygon_.clear();
 
-  SimplexId cellNumber = polygon->GetNumberOfCells();
+  SimplexId const cellNumber = polygon->GetNumberOfCells();
   vtkCellArray *connectivity = polygon->GetCells();
 
   if(connectivity->GetData()->GetNumberOfTuples() < 3 * cellNumber) {

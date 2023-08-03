@@ -159,7 +159,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   auto noCells = inputSurface->GetNumberOfCells();
 
   vtkTable *distanceMatrixVTK = vtkTable::GetData(inputVector[1]);
-  bool validDistanceMatrix
+  bool const validDistanceMatrix
     = (distanceMatrixVTK
        and distanceMatrixVTK->GetNumberOfColumns() == noPoints);
   if(distanceMatrixVTK and not validDistanceMatrix) {
@@ -173,7 +173,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
     printErr("Distance matrix should be square.");
     return -3;
   }
-  int tableDataType
+  int const tableDataType
     = (validDistanceMatrix ? distanceMatrixVTK->GetColumn(0)->GetDataType()
                            : VTK_DOUBLE);
 
@@ -226,7 +226,7 @@ int ttkMetricDistortion::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   for(unsigned int i = 0; i < 3; ++i) {
-    std::string type{(i == 0 ? "Min" : (i == 1) ? "Max" : "Avg")};
+    std::string const type{(i == 0 ? "Min" : (i == 1) ? "Max" : "Avg")};
     vtkNew<vtkDoubleArray> surfaceIDistanceArray{};
     surfaceIDistanceArray->SetName((type + "SurfaceEdgeLength").c_str());
     surfaceIDistanceArray->SetNumberOfTuples(noPoints);

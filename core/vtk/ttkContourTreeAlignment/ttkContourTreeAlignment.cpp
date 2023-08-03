@@ -58,7 +58,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
   auto inputMB = vtkMultiBlockDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  size_t n = inputMB->GetNumberOfBlocks();
+  size_t const n = inputMB->GetNumberOfBlocks();
 
   //==================================================================================================================
   // print input info
@@ -281,7 +281,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
   };
 
   // Points
-  size_t nOutputVertices = outputVertices.size();
+  size_t const nOutputVertices = outputVertices.size();
   auto points = vtkSmartPointer<vtkPoints>::New();
   points->SetNumberOfPoints(nOutputVertices);
   alignmentTree->SetPoints(points);
@@ -338,7 +338,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
   pointData->AddArray(segmentationIDs);
 
   // Cells
-  size_t nOutputEdges = outputEdges.size() / 2;
+  size_t const nOutputEdges = outputEdges.size() / 2;
   auto cellArray = vtkSmartPointer<vtkCellArray>::New();
   // cellArray->SetCells(nOutputEdges, cells);
 
@@ -389,15 +389,15 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
 
     std::vector<std::vector<int>> alignmentIDs;
     for(size_t i = 0; i < n; i++) {
-      std::vector<int> vertices_i(nVertices[i], -1);
+      std::vector<int> const vertices_i(nVertices[i], -1);
       alignmentIDs.push_back(vertices_i);
     }
 
     for(size_t i = 0; i < nOutputEdges; i++) {
-      int id1 = outputEdges[i * 2];
-      int id2 = outputEdges[i * 2 + 1];
-      float v1 = scalar->GetValue(id1);
-      float v2 = scalar->GetValue(id2);
+      int const id1 = outputEdges[i * 2];
+      int const id2 = outputEdges[i * 2 + 1];
+      float const v1 = scalar->GetValue(id1);
+      float const v2 = scalar->GetValue(id2);
       if(v1 > v2) {
         downEdges[id1].push_back(i);
         upEdges[id2].push_back(i);
@@ -449,8 +449,8 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
 
     for(size_t i = 0; i < nOutputEdges; i++) {
       fileJSON << "    {";
-      int id1 = outputEdges[i * 2];
-      int id2 = outputEdges[i * 2 + 1];
+      int const id1 = outputEdges[i * 2];
+      int const id2 = outputEdges[i * 2 + 1];
       fileJSON << "\"node1\": " << id1 << ", \"node2\": " << id2;
       fileJSON << (i == nOutputEdges - 1 ? "}\n" : "},\n");
     }
@@ -478,10 +478,10 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
       downEdges = std::vector<std::vector<int>>(nVertices[t]);
 
       for(size_t i = 0; i < nEdges[t]; i++) {
-        int id1 = topologies[t][i * 2 + 0];
-        int id2 = topologies[t][i * 2 + 1];
-        float v1 = ((float *)scalars[t])[id1];
-        float v2 = ((float *)scalars[t])[id2];
+        int const id1 = topologies[t][i * 2 + 0];
+        int const id2 = topologies[t][i * 2 + 1];
+        float const v1 = ((float *)scalars[t])[id1];
+        float const v2 = ((float *)scalars[t])[id2];
         if(v1 > v2) {
           downEdges[id1].push_back(i);
           upEdges[id2].push_back(i);
@@ -497,7 +497,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
 
       bool first = true;
       for(size_t k = 0; k < nOutputVertices; k++) {
-        int i = vertexIDs->GetComponent(k, t);
+        int const i = vertexIDs->GetComponent(k, t);
         if(i < 0)
           continue;
         fileJSON << (first ? "    {" : ",\n    {");
@@ -527,8 +527,8 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
 
       for(size_t i = 0; i < nEdges[t]; i++) {
         fileJSON << "    {";
-        int id1 = alignmentIDs[t][topologies[t][i * 2 + 0]];
-        int id2 = alignmentIDs[t][topologies[t][i * 2 + 1]];
+        int const id1 = alignmentIDs[t][topologies[t][i * 2 + 0]];
+        int const id2 = alignmentIDs[t][topologies[t][i * 2 + 1]];
         fileJSON << "\"node1\": " << id1 << ", \"node2\": " << id2;
         fileJSON << (i == nEdges[t] - 1 ? "}\n" : "},\n");
       }

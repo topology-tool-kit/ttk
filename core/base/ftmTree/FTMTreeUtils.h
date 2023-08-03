@@ -133,7 +133,7 @@ namespace ttk {
       params->treeType = ftm::Join_Split;
 
       // Init tree
-      MergeTree<dataType> mergeTree(scalars, params);
+      MergeTree<dataType> const mergeTree(scalars, params);
 
       return mergeTree;
     }
@@ -171,7 +171,7 @@ namespace ttk {
       std::vector<ftm::idNode> multiPersOrigins;
       if(doSplitMultiPersPairs) {
         multiPersOrigins = tree->getMultiPersOrigins<dataType>(true);
-        for(ftm::idNode nodeOrigin : multiPersOrigins) {
+        for(ftm::idNode const nodeOrigin : multiPersOrigins) {
           scalarsVector[nodeOrigin]
             = tree->getValue<dataType>(tree->getNode(nodeOrigin)->getOrigin());
           scalarsVector.push_back(tree->getValue<dataType>(nodeOrigin));
@@ -189,8 +189,8 @@ namespace ttk {
 
       // Add multi persistence nodes origins
       if(doSplitMultiPersPairs) {
-        for(ftm::idNode nodeOrigin : multiPersOrigins) {
-          int nodeCpt = treeNew->getNumberOfNodes();
+        for(ftm::idNode const nodeOrigin : multiPersOrigins) {
+          int const nodeCpt = treeNew->getNumberOfNodes();
           treeNew->makeNode(nodeCpt);
           treeNew->getNode(nodeCpt)->setOrigin(nodeOrigin);
           treeNew->getNode(nodeOrigin)->setOrigin(nodeCpt);
@@ -212,7 +212,7 @@ namespace ttk {
                                        std::vector<int> &nodeCorr,
                                        bool useBD = true) {
       // Create new tree
-      int newNoNodes = tree->getRealNumberOfNodes() * 2;
+      int const newNoNodes = tree->getRealNumberOfNodes() * 2;
       MergeTree<dataType> mTreeNew = createEmptyMergeTree<dataType>(newNoNodes);
       ftm::FTMTree_MT *treeNew = &(mTreeNew.tree);
       std::vector<dataType> newScalarsVector(newNoNodes, 0);
@@ -229,7 +229,7 @@ namespace ttk {
       for(auto leaf : leaves)
         queue.push(leaf);
       while(!queue.empty()) {
-        ftm::idNode node = queue.front();
+        ftm::idNode const node = queue.front();
         queue.pop();
         ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
         if(tree->isRoot(node) and tree->isFullMerge())
@@ -257,7 +257,7 @@ namespace ttk {
           nodeCorr[nodeOrigin] = nodeOriginIndex;
           nodeCorr[node] = nodeIndex;
         } else {
-          int nodeCpt = treeNew->getNumberOfNodes();
+          int const nodeCpt = treeNew->getNumberOfNodes();
           treeNew->makeNode(nodeCpt);
           if(!tree->isLeaf(node)) {
             treeNew->getNode(nodeCpt)->setOrigin(nodeCorr[nodeOrigin]);
@@ -279,11 +279,11 @@ namespace ttk {
 
         std::vector<idNode> children;
         tree->getChildren(node, children);
-        for(idNode child : children)
+        for(idNode const child : children)
           treeNew->makeSuperArc(nodeCorr[child], nodeCorr[node]);
 
         if(!tree->isRoot(node)) {
-          ftm::idNode parent = tree->getParentSafe(node);
+          ftm::idNode const parent = tree->getParentSafe(node);
           nodeDone[parent] += 1;
           if(nodeDone[parent] == tree->getNumberOfChildren(parent))
             queue.push(parent);

@@ -226,15 +226,15 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
     for(size_t y = 0; y < yl; y++) {
-      size_t yOffset = y * resolutionST[0];
+      size_t const yOffset = y * resolutionST[0];
       size_t triangleIndexOffset = y * trianglesPerRow * 3;
       size_t triangleDistortionOffset = y * trianglesPerRow;
 
       for(size_t x = 0; x < xl; x++) {
-        size_t i0 = x + yOffset;
-        size_t i1 = i0 + 1;
-        size_t i2 = i0 + resolutionST[0];
-        size_t i3 = i2 + 1;
+        size_t const i0 = x + yOffset;
+        size_t const i1 = i0 + 1;
+        size_t const i2 = i0 + resolutionST[0];
+        size_t const i3 = i2 + 1;
 
         connectivityList[triangleIndexOffset++] = i0;
         connectivityList[triangleIndexOffset++] = i2;

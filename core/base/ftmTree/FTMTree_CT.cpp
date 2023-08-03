@@ -138,7 +138,7 @@ int FTMTree_CT::combine() {
         continue;
       }
 
-      idNode correspondingNodeId
+      idNode const correspondingNodeId
         = yt->getCorrespondingNodeId(currentNode->getVertexId());
 
       if(yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs() > 1) {
@@ -159,7 +159,7 @@ int FTMTree_CT::combine() {
       // NODES IN CT
 
       idNode node1, node2;
-      SimplexId curVert = currentNode->getVertexId();
+      SimplexId const curVert = currentNode->getVertexId();
       // NODE1
       if(isCorrespondingNode(curVert)) {
         // already a node in the tree
@@ -175,15 +175,15 @@ int FTMTree_CT::combine() {
       }
 
       // j <- GetAdj(XT, i)
-      idSuperArc curUpArc = currentNode->getUpSuperArcId(0);
-      idNode parentId = xt->getSuperArc(curUpArc)->getUpNodeId();
+      idSuperArc const curUpArc = currentNode->getUpSuperArcId(0);
+      idNode const parentId = xt->getSuperArc(curUpArc)->getUpNodeId();
       const Node *parentNode = xt->getNode(parentId);
 
       if(DEBUG) {
         cout << " parent node :" << parentNode->getVertexId() << endl;
       }
 
-      SimplexId parVert = parentNode->getVertexId();
+      SimplexId const parVert = parentNode->getVertexId();
       // NODE2
       if(isCorrespondingNode(parVert)) {
         // already a node in the tree
@@ -197,7 +197,7 @@ int FTMTree_CT::combine() {
 
       // CREATE ARC
 
-      idSuperArc processArc = currentNode->getUpSuperArcId(0);
+      idSuperArc const processArc = currentNode->getUpSuperArcId(0);
 
       // create the arc in in the good direction
       // and add it to crossing if needed
@@ -275,7 +275,7 @@ void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
   const list<Region> &xtRegions = xt->getSuperArc(xtArc)->getRegions();
   for(const Region &reg : xtRegions) {
     segm_it cur = reg.segmentBegin;
-    segm_it end = reg.segmentEnd;
+    segm_it const end = reg.segmentEnd;
     segm_it tmpBeg = reg.segmentBegin;
     // each element inside this region
     for(; cur != end; ++cur) {
@@ -313,12 +313,12 @@ void FTMTree_CT::finalizeSegmentation() {
 }
 
 void FTMTree_CT::insertNodes() {
-  vector<idNode> sortedJTNodes = jt_.sortedNodes(true);
-  vector<idNode> sortedSTNodes = st_.sortedNodes(true);
+  vector<idNode> const sortedJTNodes = jt_.sortedNodes(true);
+  vector<idNode> const sortedSTNodes = st_.sortedNodes(true);
 
   for(const idNode &t : sortedSTNodes) {
 
-    SimplexId vertId = st_.getNode(t)->getVertexId();
+    SimplexId const vertId = st_.getNode(t)->getVertexId();
     if(jt_.isCorrespondingNode(vertId)) {
       continue;
     }
@@ -327,7 +327,7 @@ void FTMTree_CT::insertNodes() {
 
   for(const idNode &t : sortedJTNodes) {
 
-    SimplexId vertId = jt_.getNode(t)->getVertexId();
+    SimplexId const vertId = jt_.getNode(t)->getVertexId();
     if(st_.isCorrespondingNode(vertId)) {
       continue;
     }

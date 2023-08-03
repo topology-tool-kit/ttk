@@ -382,7 +382,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *ttkNotUsed(request),
                        + " not specified");
         return 0;
       }
-      std::string outputType
+      std::string const outputType
         = outputPortInfo->Get(vtkDataObject::DATA_TYPE_NAME());
 
       if(outputType == "vtkUnstructuredGrid") {

@@ -122,10 +122,10 @@ namespace ttk {
         maxY = std::max(t.m_maxY, maxY);
         maxZ = std::max(t.m_maxZ, maxZ);
       }
-      int numberTriangles = end - start;
+      const int numberTriangles = end - start;
       if(numberTriangles == 1) {
         const Triangle &t = triangles[start];
-        std::vector<int> indices = {t.m_index};
+        std::vector<int> const indices = {t.m_index};
         float pMin[3] = {t.m_minX, t.m_minY, t.m_minZ};
         float pMax[3] = {t.m_maxX, t.m_maxY, t.m_maxZ};
         return std::make_shared<Node>(indices, 1, pMin, pMax);
@@ -147,10 +147,10 @@ namespace ttk {
           cmaxZ = std::max(t.m_centroid_z, cmaxZ);
         }
         // figure out the biggest extent, use that dimension
-        float diffX = std::abs(cmaxX - cminX);
-        float diffY = std::abs(cmaxY - cminY);
-        float diffZ = std::abs(cmaxZ - cminZ);
-        float maximumExtent = std::max({diffX, diffY, diffZ});
+        const float diffX = std::abs(cmaxX - cminX);
+        const float diffY = std::abs(cmaxY - cminY);
+        const float diffZ = std::abs(cmaxZ - cminZ);
+        const float maximumExtent = std::max({diffX, diffY, diffZ});
         int axis;
         float minToCheck, maxToCheck;
         if(maximumExtent == diffX) {
@@ -166,7 +166,7 @@ namespace ttk {
           minToCheck = cminZ;
           maxToCheck = cmaxZ;
         }
-        size_t half = (start + end) / 2;
+        size_t const half = (start + end) / 2;
         // partition triangles into two sets and build children
         if(minToCheck == maxToCheck) {
 
@@ -253,23 +253,23 @@ namespace ttk {
       ttk::Geometry::subtractVectors(
         &vertexCoords[v0], &vertexCoords[v2], v0v2);
       ttk::Geometry::crossProduct(ray.m_direction, v0v2, pvec);
-      float det = ttk::Geometry::dotProduct(v0v1, pvec);
+      const float det = ttk::Geometry::dotProduct(v0v1, pvec);
       if(det > -kEpsilon && det < kEpsilon)
         return false;
 
-      float invDet = 1.0f / det;
+      const float invDet = 1.0f / det;
 
       ttk::Geometry::subtractVectors(&vertexCoords[v0], ray.m_origin, tvec);
-      float u = ttk::Geometry::dotProduct(tvec, pvec) * invDet;
+      const float u = ttk::Geometry::dotProduct(tvec, pvec) * invDet;
       if(u < 0.0 || u > 1.0)
         return false;
 
       ttk::Geometry::crossProduct(tvec, v0v1, qvec);
-      float v = ttk::Geometry::dotProduct(ray.m_direction, qvec) * invDet;
+      const float v = ttk::Geometry::dotProduct(ray.m_direction, qvec) * invDet;
       if(v < 0.0 || u + v > 1.0)
         return false;
 
-      float t = ttk::Geometry::dotProduct(v0v2, qvec) * invDet;
+      const float t = ttk::Geometry::dotProduct(v0v2, qvec) * invDet;
       ray.distance = t;
       ray.u = u;
       ray.v = v;
@@ -299,7 +299,7 @@ namespace ttk {
 
             for(int i = 0; i < node->numTriangles; i++) {
               bool hasHit = false;
-              int triIdx = node->indices[i];
+              int const triIdx = node->indices[i];
 
               IT v0 = connectivityList[triIdx * 3 + 0];
               IT v1 = connectivityList[triIdx * 3 + 1];
