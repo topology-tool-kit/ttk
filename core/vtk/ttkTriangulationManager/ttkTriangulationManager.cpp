@@ -169,7 +169,6 @@ int ttkTriangulationManager::processExplicit(
   if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
     this->printWrn("Compact triangulation not supported with MPI!");
     this->printWrn("Keeping the Explicit triangulation.");
-    printf("\n\n\ngoing for the explicit\n\n\n");
     output->ShallowCopy(input);
     return 1;
   }
