@@ -613,16 +613,21 @@ void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
      && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
      && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
 
-    printWrn("Explicit, Compact or Periodic triangulation detected.");
+    printMsg(ttk::debug::Separator::L2);
+    printWrn("Explicit, Compact or Periodic");
+    printWrn("triangulation detected.");
     printWrn("Defaulting to the generic backend.");
+    printMsg(ttk::debug::Separator::L2);
 
     BackEnd = BACKEND::GENERIC;
   }
 
 #ifdef TTK_ENABLE_MPI
   if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
+    printMsg(ttk::debug::Separator::L2);
     printWrn("MPI run detected.");
     printWrn("Defaulting to the generic backend.");
+    printMsg(ttk::debug::Separator::L2);
 
     BackEnd = BACKEND::GENERIC;
   }

@@ -170,11 +170,13 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   switch(isValidOrderArray(orderArray)) {
     case -4: {
       ttk::Timer timer;
+      printMsg(ttk::debug::Separator::L2);
       this->printWrn("No pre-existing order for array:");
       this->printWrn("  `" + std::string(scalarArray->GetName()) + "`.");
 
       this->printMsg("Initializing order array.", 0, 0, this->threadNumber_,
                      ttk::debug::LineMode::REPLACE);
+      printMsg(ttk::debug::Separator::L2);
 
       auto nVertices = scalarArray->GetNumberOfTuples();
       auto newOrderArray = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -205,8 +207,10 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
+      printMsg(ttk::debug::Separator::L2);
       this->printWrn("TIP: run `ttkArrayPreconditioning` first");
       this->printWrn("for improved performances :)");
+      printMsg(ttk::debug::Separator::L2);
 
       return newOrderArray;
     }
@@ -684,6 +688,29 @@ void ttkAlgorithm::MPIPipelinePreconditioning(
 
   ttk::SimplexId vertexNumber = input->GetNumberOfPoints();
   ttk::SimplexId cellNumber = input->GetNumberOfCells();
+
+  if((input->GetDataObjectType() == VTK_POLY_DATA
+      || input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)) {
+
+    if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
+      printMsg(ttk::debug::Separator::L2);
+      printWrn("The distribution by VTK of Unstructured");
+      printWrn("Grids and Poly Data has been reported");
+      printWrn("to be affected by bugs (at least up");
+      printWrn("to ParaView 5.10.1).");
+
+      if((input->GetCellData()->GetGlobalIds() == nullptr)
+         || (input->GetPointData()->GetGlobalIds() == nullptr)) {
+
+        printWrn("=> Global identifiers may be incorrect.");
+      }
+      if((input->GetPointData()->GetArray("RankArray") == nullptr)
+         || (input->GetCellData()->GetArray("RankArray") == nullptr)) {
+        printWrn("=> Rank arrays may be incorrect.");
+      }
+      printMsg(ttk::debug::Separator::L2);
+    }
+  }
 
   // Get the neighbor ranks
   std::vector<int> &neighborRanks{
