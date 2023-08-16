@@ -181,7 +181,7 @@ jobs:
         brew install --cask xquartz
         brew install wget llvm libomp mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz numpy embree websocketpp 
+        brew install boost eigen graphviz numpy embree@3 websocketpp 
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -254,7 +254,7 @@ jobs:
         brew install --cask xquartz
         brew install wget llvm libomp mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz numpy websocketpp embree
+        brew install boost eigen graphviz numpy websocketpp embree@3
 
     - name: Fetch TTK-ParaView
       run: |
