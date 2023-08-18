@@ -473,7 +473,7 @@ int ttk::RegularGridTriangulation::preconditionExchangeGhostVertices() {
   if(this->hasPreconditionedExchangeGhostVertices_) {
     return 0;
   }
-  if(!ttk::hasInitializedMPI()) {
+  if((!ttk::hasInitializedMPI()) || (!ttk::isRunningWithMPI())) {
     return -1;
   }
 
