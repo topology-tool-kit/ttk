@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkDistanceMatrixDistortion" class="ttkDistanceMatrixDistortion" label="TTK DistanceMatrixDistortion">
-      <Documentation long_help="DistanceMatrixDistortion plugin" short_help="DistanceMatrixDistortion plugin">This plugin, given two distance matrices representing the same points, computes the distortion between the two, according the SIM formula. It also provides, for each point, the distorsion for its own distances to the other points.</Documentation>
+      <Documentation long_help="DistanceMatrixDistortion plugin" short_help="DistanceMatrixDistortion plugin">This plugin, given two distance matrices representing the same points, computes the distortion between the two, according the SIM formula. It also provides, for each point, the distortion for its own distances to the other points.</Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty
@@ -24,7 +24,18 @@
           High dimension distance matrix.
         </Documentation>
       </InputProperty>
-      
+
+      <IntVectorProperty
+        name="DoNotNormalize"
+        label="Do not normalize computations"
+        command="SetDoNotNormalize"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        If the box is not checked, we normalize the results by dividing the sums by the maximum element of the line. Warning: if the box is checked, the values will lie between -inf and 1 (best similarity).
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
         name="SelectFieldsWithRegexpHigh"
@@ -161,6 +172,7 @@
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="DoNotNormalize" />
         <Property name="SelectFieldsWithRegexpHigh" />
         <Property name="ScalarFieldsHigh" />
         <Property name="RegexpHigh" />

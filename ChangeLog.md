@@ -15,7 +15,7 @@
 - Wasserstein distance performance improvements
 - Support for Persistence Diagrams in Merge Tree Clustering
 - Clustering scores (NMI/ARI)
-- Dimensionality reduction metric preservation score (DistanceMatrixDistorsion)
+- Dimensionality reduction metric preservation score (DistanceMatrixDistortion)
 - On-surface smoothing
 - API improvements
 - Bug fixes

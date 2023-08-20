@@ -126,20 +126,20 @@ int ttkDistanceMatrixDistortion::RequestData(
     vectMatLow[i] = ttkUtils::GetPointer<double>(arraysLow[i]);
   }
 
-  double distorsionValue = 0;
-  vtkNew<vtkDoubleArray> tmpCol{}, distorsionValArray{};
+  double distortionValue = 0;
+  vtkNew<vtkDoubleArray> tmpCol{}, distortionValArray{};
   tmpCol->SetNumberOfTuples(n);
-  this->printMsg("Starting computation of sim distorsion value...");
-  this->execute(vectMatHigh, vectMatLow, distorsionValue,
+  this->printMsg("Starting computation of sim distortion value...");
+  this->execute(vectMatHigh, vectMatLow, distortionValue,
                 ttkUtils::GetPointer<double>(tmpCol));
 
   tmpCol->SetName("SimValue");
   // No deep copy, makes output->RowData points to the data of tmpCol.
   output->AddColumn(tmpCol);
-  distorsionValArray->SetName("DistortionValue");
-  distorsionValArray->SetNumberOfTuples(1);
-  distorsionValArray->SetTuple1(0, distorsionValue);
-  output->GetFieldData()->AddArray(distorsionValArray);
+  distortionValArray->SetName("DistortionValue");
+  distortionValArray->SetNumberOfTuples(1);
+  distortionValArray->SetTuple1(0, distortionValue);
+  output->GetFieldData()->AddArray(distortionValArray);
 
   return 1;
 }
