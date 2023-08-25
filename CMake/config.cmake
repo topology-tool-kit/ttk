@@ -44,6 +44,7 @@ option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
   option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" TRUE)
+  mark_as_advanced(TTK_ENABLE_MPI_TIME)
 endif()
 
 if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
