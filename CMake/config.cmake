@@ -43,7 +43,7 @@ mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
-  option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" TRUE)
+  option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" FALSE)
   mark_as_advanced(TTK_ENABLE_MPI_TIME)
 endif()
 
