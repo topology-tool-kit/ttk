@@ -5,6 +5,15 @@
 using namespace std;
 using namespace ttk;
 
+const std::array<ttk::SimplexId, 64*14*3> offsetsLUT{
+0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,-1,0,1,0,0,1,-1,0,0,-1,1,0,0,1,0,-1,1,1,0,1,1,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,0,0,-1,0,-1,-1,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,1,0,0,1,0,-1,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1,1,0,0,-1,1,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,-1,0,0,-1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,-1,0,0,-1,0,1,0,0,1,0,-1,-1,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,0,-1,0,1,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,-1,0,1,0,0,0,0,1,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,-1,1,0,0,1,0,-1,0,1,0,0,1,-1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,-1,0,0,-1,0,1,0,0,1,1,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,1,-1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,-1,0,0,-1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,-1,0,0,-1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,0,0,-1,1,0,0,1,0,0,-1,-1,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,0,0,-1,1,0,0,1,0,1,0,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,1,0,-1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,0,0,-1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,-1,-1,0,0,-1,1,0,-1,0,-1,0,1,-1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,0,0,-1,0,-1,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+};
+std::array<ttk::SimplexId, 64*14> offsetsLUT2;
+
+const std::array<ttk::SimplexId,64> nNeighborsLUT{
+14,10,10,0,10,6,8,0,10,8,6,0,0,0,0,0,10,6,8,0,8,4,7,0,6,4,4,0,0,0,0,0,10,8,6,0,6,4,4,0,8,7,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+};
+
 #define CASE_EDGE_POSITION_L_3D \
   case EdgePosition::L_xnn_3D:  \
   case EdgePosition::L_xn0_3D:  \
@@ -280,6 +289,27 @@ bool ImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
 }
 
 template <typename Derived>
+SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexNeighborNumber)(const SimplexId &vertexId) const {
+
+  ttk::SimplexId xyz[3];
+  ttk::SimplexId& x = xyz[0];
+  ttk::SimplexId& y = xyz[1];
+  ttk::SimplexId& z = xyz[2];
+  xyz[2] = vertexId / this->vshift_[1];
+  const auto idx2 = vertexId - (xyz[2] * this->vshift_[1]);
+  xyz[1] = idx2 / this->dimensions_[0];
+  xyz[0] = idx2 % this->dimensions_[0];
+
+  int key =
+    (x==0?1:x==this->nbvoxels_[0]?2:0)+
+    (y==0?4:y==this->nbvoxels_[1]?8:0)+
+    (z==0?16:z==this->nbvoxels_[2]?32:0)
+  ;
+
+  return nNeighborsLUT[key];
+}
+template <typename Derived>
 bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   isVertexOnBoundary)(const SimplexId &vertexId) const {
 
@@ -359,138 +389,26 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
 
 template <typename Derived>
 int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexNeighbor)(const SimplexId &vertexId,
-                     const int &localNeighborId,
+  getVertexNeighbor)(const SimplexId &idx,
+                     const int &n,
                      SimplexId &neighborId) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(localNeighborId < 0
-     or localNeighborId >= getVertexNeighborNumber(vertexId))
-    return -1;
-#endif // !TTK_ENABLE_KAMIKAZE
+  ttk::SimplexId xyz[3];
+  ttk::SimplexId& x = xyz[0];
+  ttk::SimplexId& y = xyz[1];
+  ttk::SimplexId& z = xyz[2];
+  xyz[2] = idx / this->vshift_[1];
+  const auto idx2 = idx - (xyz[2] * this->vshift_[1]);
+  xyz[1] = idx2 / this->dimensions_[0];
+  xyz[0] = idx2 % this->dimensions_[0];
 
-  switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      neighborId = vertexId + this->vertexNeighborABCDEFGH_[localNeighborId];
-      break;
-    case VertexPosition::FRONT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborABCD_[localNeighborId];
-      break;
-    case VertexPosition::BACK_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborEFGH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborAEFB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborGHDC_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborAEGC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborBFHD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      neighborId = vertexId + this->vertexNeighborAB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      neighborId = vertexId + this->vertexNeighborCD_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      neighborId = vertexId + this->vertexNeighborAC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      neighborId = vertexId + this->vertexNeighborBD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      neighborId = vertexId + this->vertexNeighborEF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      neighborId = vertexId + this->vertexNeighborGH_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      neighborId = vertexId + this->vertexNeighborEG_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      neighborId = vertexId + this->vertexNeighborFH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      neighborId = vertexId + this->vertexNeighborAE_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      neighborId = vertexId + this->vertexNeighborBF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      neighborId = vertexId + this->vertexNeighborCG_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      neighborId = vertexId + this->vertexNeighborDH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      neighborId = vertexId + this->vertexNeighborA_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      neighborId = vertexId + this->vertexNeighborB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      neighborId = vertexId + this->vertexNeighborC_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      neighborId = vertexId + this->vertexNeighborD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      neighborId = vertexId + this->vertexNeighborE_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      neighborId = vertexId + this->vertexNeighborF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      neighborId = vertexId + this->vertexNeighborG_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      neighborId = vertexId + this->vertexNeighborH_[localNeighborId];
-      break;
-    case VertexPosition::CENTER_2D:
-      neighborId = vertexId + this->vertexNeighbor2dABCD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dAB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dCD_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dAC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dBD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      neighborId = vertexId + this->vertexNeighbor2dA_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      neighborId = vertexId + this->vertexNeighbor2dB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      neighborId = vertexId + this->vertexNeighbor2dC_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      neighborId = vertexId + this->vertexNeighbor2dD_[localNeighborId];
-      break;
-    case VertexPosition::CENTER_1D:
-      neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
-      break;
-    case VertexPosition::LEFT_CORNER_1D:
-      neighborId = vertexId + 1;
-      break;
-    case VertexPosition::RIGHT_CORNER_1D:
-      neighborId = vertexId - 1;
-      break;
-    default:
-      neighborId = -1;
-      break;
-  }
+  int key =
+    (x==0?1:x==this->nbvoxels_[0]?2:0)+
+    (y==0?4:y==this->nbvoxels_[1]?8:0)+
+    (z==0?16:z==this->nbvoxels_[2]?32:0)
+  ;
+
+  neighborId = idx + offsetsLUT2[key*14+n];
 
   return 0;
 }
@@ -2725,6 +2643,16 @@ const vector<vector<SimplexId>> *
 }
 
 int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
+
+
+  for(int i=0,j=0; i<64*14; i++,j+=3){
+    const auto& dx =  offsetsLUT[j+0];
+    const auto& dy =  offsetsLUT[j+1];
+    const auto& dz =  offsetsLUT[j+2];
+
+    offsetsLUT2[i] = dx + dy*this->dimensions_[0] + dz*this->vshift_[1];
+  }
+
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
   this->vertexNeighborABCDEFGH_ = {
     -vshift_[0] - vshift_[1], // a

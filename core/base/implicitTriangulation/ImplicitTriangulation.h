@@ -850,67 +850,8 @@ namespace ttk {
     }
 
   public:
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
-      const SimplexId &vertexId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(vertexId < 0 or vertexId >= vertexNumber_)
-        return -1;
-#endif // !TTK_ENABLE_KAMIKAZE
-
-      switch(this->underlying().getVertexPosition(vertexId)) {
-        case VertexPosition::CENTER_3D:
-          return 14;
-        case VertexPosition::FRONT_FACE_3D:
-        case VertexPosition::BACK_FACE_3D:
-        case VertexPosition::TOP_FACE_3D:
-        case VertexPosition::BOTTOM_FACE_3D:
-        case VertexPosition::LEFT_FACE_3D:
-        case VertexPosition::RIGHT_FACE_3D:
-          return 10;
-        case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-        case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-        case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-        case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-        case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-        case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-          return 8;
-        case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-        case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-          return 7;
-        case VertexPosition::TOP_BACK_EDGE_3D: // ef
-        case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-        case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-        case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-        case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-        case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-        case VertexPosition::CENTER_2D:
-          return 6;
-        case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-        case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-        case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-        case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-        case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-        case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-        case VertexPosition::TOP_EDGE_2D:
-        case VertexPosition::BOTTOM_EDGE_2D:
-        case VertexPosition::LEFT_EDGE_2D:
-        case VertexPosition::RIGHT_EDGE_2D:
-          return 4;
-        case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-        case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-          return 3;
-        case VertexPosition::TOP_LEFT_CORNER_2D: // a
-        case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-        case VertexPosition::CENTER_1D:
-          return 2;
-        case VertexPosition::LEFT_CORNER_1D:
-        case VertexPosition::RIGHT_CORNER_1D:
-          return 1;
-      }
-
-      return -1;
-    }
+    SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
+      const SimplexId &vertexId) const override;
 
     bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
       const SimplexId &vertexId) const override;
