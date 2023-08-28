@@ -3,6 +3,7 @@ NAME
 SOURCES
   ttkHelloWorld.cpp
 HEADERS
+  NewImplicitTriangulation.h
   ttkHelloWorld.h
 DEPENDS
   helloWorld

@@ -185,37 +185,38 @@ int ttkHelloWorld::RequestData(vtkInformation *ttkNotUsed(request),
   int status = 0; // this integer checks if the base code returns an error
   NewImplicitTriangulation trian;
   int dim[3];
-  ((vtkImageData*)inputDataSet)->GetDimensions(dim);
+  ((vtkImageData *)inputDataSet)->GetDimensions(dim);
   trian.setDimension(dim);
   trian.preconditionVertexNeighbors();
 
-  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
-                      (status = this->computeAverages<VTK_TT,NewImplicitTriangulation>(
-                         (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
-                         (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
-                         &trian)));
+  ttkVtkTemplateMacro(
+    inputArray->GetDataType(), triangulation->getType(),
+    (status = this->computeAverages<VTK_TT, NewImplicitTriangulation>(
+       (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputArray), &trian)));
   this->printMsg("New Triangulation");
 
   // int status = 0; // this integer checks if the base code returns an error
   ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
                       (status = this->computeAverages<VTK_TT, TTK_TT>(
-                        (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
-                        (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
-                        (TTK_TT *)triangulation->getData())));
-  this->printMsg("Using ImplictTriangulation via TTK_TT");
-
-  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
-                      (status = this->computeAverages<VTK_TT, ttk::ImplicitTriangulation>(
-                        (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
-                        (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
-                        (ttk::ImplicitTriangulation *)triangulation->getData())));
-  this->printMsg("Using ImplictTriangulation via explicit template");
-
-  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
-                      (status = this->computeAverages<VTK_TT,NewImplicitTriangulation>(
                          (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
-                         &trian)));
+                         (TTK_TT *)triangulation->getData())));
+  this->printMsg("Using ImplictTriangulation via TTK_TT");
+
+  ttkVtkTemplateMacro(
+    inputArray->GetDataType(), triangulation->getType(),
+    (status = this->computeAverages<VTK_TT, ttk::ImplicitTriangulation>(
+       (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
+       (ttk::ImplicitTriangulation *)triangulation->getData())));
+  this->printMsg("Using ImplictTriangulation via explicit template");
+
+  ttkVtkTemplateMacro(
+    inputArray->GetDataType(), triangulation->getType(),
+    (status = this->computeAverages<VTK_TT, NewImplicitTriangulation>(
+       (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputArray), &trian)));
   this->printMsg("New Triangulation Again");
   // On error cancel filter execution
   if(status != 1)
