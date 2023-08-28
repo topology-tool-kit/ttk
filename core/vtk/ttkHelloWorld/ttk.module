@@ -3,7 +3,7 @@ NAME
 SOURCES
   ttkHelloWorld.cpp
 HEADERS
-  NewImplicitTriangulation.h
+  CellComplex.h
   ttkHelloWorld.h
 DEPENDS
   helloWorld

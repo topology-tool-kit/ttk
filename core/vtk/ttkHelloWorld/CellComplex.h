@@ -1,6 +1,15 @@
-#include <Debug.h>
+// #include <Debug.h>
+#include <AbstractTriangulation.h>
 
-struct NewImplicitTriangulationBase : ttk::Debug {
+struct CellComplex : ttk::Debug {
+
+  virtual ttk::SimplexId getNumberOfVertices() const {return 0;}
+  virtual ttk::SimplexId getVertexNeighborNumber(const ttk::SimplexId) const {return 0;}
+  virtual void getVertexNeighbor(const ttk::SimplexId,const ttk::SimplexId,ttk::SimplexId &) const {}
+  virtual void preconditionVertexNeighbors() {}
+};
+
+struct ImplicitFreudenthalTriangulation : CellComplex {
 
   const std::array<ttk::SimplexId, 64> nNeighborsLUT{
     14, 10, 10, 0, 10, 6, 8, 0, 10, 8, 6,  0, 0, 0, 0, 0, 10, 6, 8, 0, 8, 4,
@@ -151,26 +160,11 @@ struct NewImplicitTriangulationBase : ttk::Debug {
     0,  0,  0,  0,  0,  0,  0,  0,  0};
   std::array<ttk::SimplexId, 64 * 14> offsetsLUT2;
 
-  virtual ttk::SimplexId getNumberOfVertices() const {
-    return 0;
-  }
-  virtual ttk::SimplexId getVertexNeighborNumber(const ttk::SimplexId) const {
-    return 0;
-  }
-  virtual void getVertexNeighbor(const ttk::SimplexId,
-                                 const ttk::SimplexId,
-                                 ttk::SimplexId &) const {
-  }
-  virtual void preconditionVertexNeighbors() {
-  }
-};
-
-struct NewImplicitTriangulation : NewImplicitTriangulationBase {
-
   ttk::SimplexId dim[3];
   ttk::SimplexId dimM1[3];
   float dimM1F[3];
   ttk::SimplexId dimXY;
+
 
   void setDimension(int *dim_) {
     this->dim[0] = dim_[0];
