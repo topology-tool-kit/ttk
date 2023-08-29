@@ -29,6 +29,7 @@
         name="DoNotNormalize"
         label="Do not normalize computations"
         command="SetDoNotNormalize"
+        panel_visibility="advanced"
         number_of_elements="1"
         default_values="0">
         <BooleanDomain name="bool"/>
@@ -172,7 +173,6 @@
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="DoNotNormalize" />
         <Property name="SelectFieldsWithRegexpHigh" />
         <Property name="ScalarFieldsHigh" />
         <Property name="RegexpHigh" />
@@ -180,6 +180,11 @@
         <Property name="ScalarFieldsLow" />
         <Property name="RegexpLow" />
       </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="DoNotNormalize" />
+      </PropertyGroup>
+
 
       <!-- MENU CATEGORY -->
       <Hints>
