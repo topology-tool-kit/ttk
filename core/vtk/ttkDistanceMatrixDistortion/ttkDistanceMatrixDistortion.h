@@ -6,7 +6,7 @@
 /// \brief TTK VTK-filter that wraps the ttk::DistanceMatrixDistortion module.
 ///
 /// This VTK filter uses the ttk::DistanceMatrixDistortion module to compute the
-/// distorsion between two distance matrices representing the same points (for
+/// distortion between two distance matrices representing the same points (for
 /// instance in low and high dimensions), according to the SIM formula.
 ///
 /// \param Input0 vtkTable.
@@ -61,6 +61,8 @@ public:
   vtkGetMacro(SelectFieldsWithRegexpHigh, bool);
   vtkSetMacro(SelectFieldsWithRegexpLow, bool);
   vtkGetMacro(SelectFieldsWithRegexpLow, bool);
+  vtkSetMacro(DoNotNormalize, bool);
+  vtkGetMacro(DoNotNormalize, bool);
 
   vtkSetMacro(RegexpStringHigh, const std::string &);
   vtkGetMacro(RegexpStringHigh, std::string);

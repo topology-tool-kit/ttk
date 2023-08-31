@@ -11,8 +11,8 @@ ttk::DistanceMatrixDistortion::DistanceMatrixDistortion() {
 int ttk::DistanceMatrixDistortion::execute(
   const std::vector<double *> &highDistMatrix,
   const std::vector<double *> &lowDistMatrix,
-  double &distorsionValue,
-  double *distorsionVerticesValues) const {
+  double &distortionValue,
+  double *distortionVerticesValues) const {
   ttk::Timer timer;
   auto n = highDistMatrix.size();
 
@@ -28,14 +28,14 @@ int ttk::DistanceMatrixDistortion::execute(
    * as follows: compute for each (x,y) delta(x,y) =
    * (dist_low(x,y)-dist_high(x,y))^2. Compute maxi = maximum (delta(x,y)) over
    * all (x,y). Compute delta2(x,y) = 1-delta(x,y) for each (x,y). The sim value
-   * is the mean of the n^2 values of delta2(x,y). The distorsion for a vertex
+   * is the mean of the n^2 values of delta2(x,y). The distortion for a vertex
    * x0 is the mean of delta2(x0,y) over all y's.
    */
 
   double maxi = 0;
-  if(distorsionVerticesValues == nullptr) {
+  if(distortionVerticesValues == nullptr) {
     this->printErr(
-      " The output pointer to the distorsionValues must be non NULL. "
+      " The output pointer to the distortionValues must be non NULL. "
       "It must point to an allocated array of the right size.");
     return 1;
   }
@@ -71,17 +71,17 @@ int ttk::DistanceMatrixDistortion::execute(
       const double diff2 = diff * diff;
       sum += diff2;
     }
-    const double sumHarmonized = sum / maxi;
-    distorsionVerticesValues[i] = 1 - sumHarmonized / n;
-    totalSum += 1 - sumHarmonized / n;
+    const double sumNormalized = (this->DoNotNormalize ? sum : sum / maxi);
+    distortionVerticesValues[i] = 1 - sumNormalized / n;
+    totalSum += 1 - sumNormalized / n;
   }
 
-  distorsionValue = totalSum / n;
+  distortionValue = totalSum / n;
 
   this->printMsg("Size of output in ttk/base = " + std::to_string(n));
 
-  this->printMsg("Computed distorsion value: "
-                 + std::to_string(distorsionValue));
+  this->printMsg("Computed distortion value: "
+                 + std::to_string(distortionValue));
   this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
   this->printMsg("Complete", 1, timer.getElapsedTime());
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
