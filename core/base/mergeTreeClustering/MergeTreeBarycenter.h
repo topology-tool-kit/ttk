@@ -57,7 +57,7 @@ namespace ttk {
       this->setDebugMsgPrefix(
         "MergeTreeBarycenter"); // inherited from Debug: prefix will be printed
                                 // at the beginning of every msg
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
       omp_set_nested(1);
 #endif
     }
@@ -133,7 +133,7 @@ namespace ttk {
                            bool isFirstInput = true) {
       distanceMatrix.clear();
       distanceMatrix.resize(trees.size(), std::vector<double>(trees.size(), 0));
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic) \
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
@@ -789,7 +789,7 @@ namespace ttk {
       std::vector<dataType> &distances,
       bool useDoubleInput = false,
       bool isFirstInput = true) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel num_threads(this->threadNumber_) \
   shared(baryMergeTree) if(parallelize_)
       {
@@ -797,7 +797,7 @@ namespace ttk {
 #endif
         assignmentTask(trees, baryMergeTree, matchings, distances,
                        useDoubleInput, isFirstInput);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
       } // pragma omp parallel
 #endif
     }
@@ -812,14 +812,14 @@ namespace ttk {
       bool useDoubleInput = false,
       bool isFirstInput = true) {
       for(unsigned int i = 0; i < trees.size(); ++i)
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(i) UNTIED() \
   shared(baryMergeTree, matchings, distances)
 #endif
         computeOneDistance<dataType>(trees[i], baryMergeTree, matchings[i],
                                      distances[i], useDoubleInput,
                                      isFirstInput);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
     }

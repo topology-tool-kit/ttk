@@ -259,7 +259,7 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
   idSuperArc joinParentArc{};
   bool hideFromHere = false; // if true, new arc are hidden to stop propagation.
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp critical
 #endif
   {
@@ -358,14 +358,14 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
 
   // starting from the saddle
   if(isSplit && (!isJoin || isJoinLast)) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
     growthFromSeed(upVert, localProp);
 
   } else if(isJoinLast) {
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
     growthFromSeed(upVert, localProp, joinParentArc);
@@ -902,7 +902,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
   if(localProp->goUp()) {
     // for gcc 4.8 and old openMP
     valence *const vd = &graph_.valDown_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
 #endif
     {
@@ -912,7 +912,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
 
   } else {
     valence *const vu = &graph_.valUp_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
 #endif
     {
@@ -927,7 +927,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
     valence newVal = 0;
     if(localProp->goUp()) {
       valence *const vd = &graph_.valDown_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
 #endif
       {
@@ -937,7 +937,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
 
     } else {
       valence *const vu = &graph_.valUp_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
 #endif
       {
@@ -1038,7 +1038,7 @@ ttk::ftr::idSuperArc ttk::ftr::FTRGraph<ScalarType, triangulationType>::visit(
     propagations_.visit(curVert, localProp);
     opposite = propagations_.visitOpposite(curVert, localProp);
     bool done;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic read seq_cst
 #endif
     done = opposite.done;

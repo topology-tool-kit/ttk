@@ -163,7 +163,7 @@ namespace ttk {
 
         if(i == noCentroids_ - 1)
           continue;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP44
 #pragma omp parallel for schedule(dynamic) shared(allCentroids) \
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
@@ -268,7 +268,7 @@ namespace ttk {
         // Compute distance between old and new corresponding centroids
         std::vector<dataType> distanceShift(centroids.size()),
           distanceShift2(centroids2.size());
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic)                     \
   shared(centroids, centroids2, oldCentroids_, oldCentroids2_) \
     num_threads(this->threadNumber_) if(parallelize_)
@@ -325,7 +325,7 @@ namespace ttk {
         identified[i] = (upperBound_[i] <= centroidScore[bestCentroid_[i]]);
 
         // Step 3
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
@@ -429,7 +429,7 @@ namespace ttk {
             trees2[std::get<1>(asgn)]);
       }
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
@@ -464,7 +464,7 @@ namespace ttk {
       std::vector<ftm::MergeTree<dataType>> &centroids2) {
       std::vector<int> bestCentroidT(trees.size(), -1);
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
@@ -555,7 +555,7 @@ namespace ttk {
           ++cpt;
         }
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel num_threads(this->threadNumber_) \
   shared(centroids) if(parallelize_ and parallelizeUpdate_)
       {
@@ -563,7 +563,7 @@ namespace ttk {
         {
 #endif
           for(unsigned int i = 0; i < centroids.size(); ++i) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(i) shared(centroids)
             {
 #endif
@@ -595,11 +595,11 @@ namespace ttk {
                   &(centroids[i].tree), 0, deletedNodesT);
                 ftm::cleanMergeTree<dataType>(centroids[i]);
               }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
             } // pragma omp task
 #endif
           }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
         } // pragma omp single nowait
       } // pragma omp parallel
