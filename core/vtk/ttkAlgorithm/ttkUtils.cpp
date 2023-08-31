@@ -341,17 +341,26 @@ int ttkUtils::CellVertexFromPoints(vtkDataSet *const dataSet,
     return 0;
   }
 
+  vtkNew<vtkIdTypeArray> offsets{};
+  offsets->SetNumberOfTuples(nPoints + 1);
+  auto offsetsData = ttkUtils::GetPointer<vtkIdType>(offsets);
+  for(size_t i = 0; i <= nPoints; i++)
+    offsetsData[i] = i;
+
+  vtkNew<vtkIdTypeArray> connectivity{};
+  connectivity->SetNumberOfTuples(nPoints);
+  auto connectivityData = ttkUtils::GetPointer<vtkIdType>(connectivity);
+  for(size_t i = 0; i < nPoints; i++)
+    connectivityData[i] = i;
+
   vtkNew<vtkCellArray> cells{};
-  cells->InsertNextCell(nPoints);
-  for(size_t i = 0; i < nPoints; ++i) {
-    cells->InsertCellPoint(i);
-  }
+  cells->SetData(offsets, connectivity);
 
   if(dataSet->IsA("vtkUnstructuredGrid")) {
     const auto vtu{vtkUnstructuredGrid::SafeDownCast(dataSet)};
     if(vtu != nullptr) {
       vtu->SetPoints(points);
-      vtu->SetCells(VTK_POLY_VERTEX, cells);
+      vtu->SetCells(VTK_VERTEX, cells);
     }
   } else if(dataSet->IsA("vtkPolyData")) {
     const auto vtp{vtkPolyData::SafeDownCast(dataSet)};
