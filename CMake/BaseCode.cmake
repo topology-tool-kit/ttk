@@ -95,6 +95,9 @@ function(ttk_add_base_template_library library)
 
   if(TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP)
+    if(TTK_ENABLE_OPENMP4)
+      target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP4)
+    endif()
     target_link_libraries(${library} INTERFACE OpenMP::OpenMP_CXX)
   endif()
 
@@ -149,6 +152,9 @@ function(ttk_set_compile_options library)
 
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
+    if (TTK_ENABLE_OPENMP4)
+      target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP4)
+    endif()
     target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
   endif()
 

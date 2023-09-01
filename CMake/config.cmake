@@ -243,9 +243,15 @@ else()
 endif()
 
 if(MSVC)
-  option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+  option(TTK_ENABLE_OPENMP4 "Enable OpenMP4 support" FALSE)
+  set(OpenMP_CXX_FLAGS /openmp:llvm
+      CACHE STRING "CXX compiler flags for OpenMP parallelization")
+  set(OpenMP_C_FLAGS /openmp:llvm
+      CACHE STRING "C compiler flags for OpenMP parallelization")
 else()
   option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+  option(TTK_ENABLE_OPENMP4 "Enable OpenMP support" TRUE)
 endif()
 if(TTK_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
@@ -260,7 +266,7 @@ if(TTK_ENABLE_OPENMP)
         OFF
         CACHE
         BOOL
-        "Enable priorities on opnemp tasks"
+        "Enable priorities on openmp tasks"
         FORCE
         )
     endif()
