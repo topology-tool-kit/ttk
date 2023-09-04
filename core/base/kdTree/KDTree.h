@@ -64,8 +64,8 @@ namespace ttk {
                     const int &ptNumber,
                     const int &dimension,
                     const std::vector<std::vector<dataType>> &weights = {},
-                    const int weight_number = 1,
-                    int nodeNumber = -1);
+                    const int &weightNumber = 1,
+                    const int &nodeNumber = -1);
 
     void buildRecursive(dataType *data,
                         std::vector<int> &idx_side,
@@ -73,11 +73,11 @@ namespace ttk {
                         const int &dimension,
                         KDTree<dataType, Container> *parent,
                         KDTreeMap &correspondence_map,
-                        const int nodeNumber,
-                        const int maximumLevel,
+                        const int &nodeNumber,
+                        const int &maximumLevel,
                         int &createdNumberNode,
                         const std::vector<std::vector<dataType>> &weights = {},
-                        const int weight_number = 1);
+                        const int &weightNumber = 1);
 
     inline void updateWeight(const dataType new_weight,
                              const int weight_index = 0) {
@@ -150,8 +150,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     const int &ptNumber,
     const int &dimension,
     const std::vector<std::vector<dataType>> &weights,
-    const int weight_number,
-    int nodeNumber) {
+    const int &weightNumber,
+    const int &nodeNumber) {
 
   int createdNumberNode = 1;
   int idGenerator = createdNumberNode - 1;
@@ -242,10 +242,10 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
   this->min_subweights_.clear();
 
   if(weights.empty()) {
-    this->weight_.resize(weight_number);
-    this->min_subweights_.resize(weight_number);
+    this->weight_.resize(weightNumber);
+    this->min_subweights_.resize(weightNumber);
   } else {
-    for(int i = 0; i < weight_number; i++) {
+    for(int i = 0; i < weightNumber; i++) {
       weight_.push_back(weights[i][median_idx]);
       min_subweights_.push_back(weights[i][median_idx]);
     }
@@ -263,7 +263,7 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
                                 correspondence_map, nodeNumber, maximumLevel,
-                                createdNumberNode, weights, weight_number);
+                                createdNumberNode, weights, weightNumber);
   }
 
   if(((nodeNumber == -1) && (idx.size() > 1))
@@ -277,7 +277,7 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                  correspondence_map, nodeNumber, maximumLevel,
-                                 createdNumberNode, weights, weight_number);
+                                 createdNumberNode, weights, weightNumber);
   }
 
   return correspondence_map;
@@ -291,11 +291,11 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
   const int &dimension,
   KDTree<dataType, Container> *parent,
   KDTreeMap &correspondence_map,
-  const int nodeNumber,
-  const int maximumLevel,
+  const int &nodeNumber,
+  const int &maximumLevel,
   int &createdNumberNode,
   const std::vector<std::vector<dataType>> &weights,
-  const int weight_number) {
+  const int &weightNumber) {
 
   createdNumberNode++;
   int idGenerator = createdNumberNode - 1;
@@ -327,17 +327,17 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
   this->min_subweights_.clear();
 
   if(weights.empty()) {
-    this->weight_.resize(weight_number);
-    this->min_subweights_.resize(weight_number);
+    this->weight_.resize(weightNumber);
+    this->min_subweights_.resize(weightNumber);
   } else {
-    for(int i = 0; i < weight_number; i++) {
+    for(int i = 0; i < weightNumber; i++) {
       weight_.push_back(weights[i][median_idx]);
       min_subweights_.push_back(weights[i][median_idx]);
     }
 
     if(idx_side.size() > 1) {
       // Once we get to a leaf, update min_subweights of the parents
-      for(int w = 0; w < weight_number; w++) {
+      for(int w = 0; w < weightNumber; w++) {
         this->updateMinSubweight(w);
       }
     }
@@ -369,7 +369,7 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, true);
     this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
                                 correspondence_map, nodeNumber, maximumLevel,
-                                createdNumberNode, weights, weight_number);
+                                createdNumberNode, weights, weightNumber);
   }
 
   if(((nodeNumber == -1) && (idx_side.size() > 1))
@@ -384,7 +384,7 @@ void ttk::KDTree<dataType, Container>::buildRecursive(
       = std::make_unique<KDTree>(this, (coords_number_ + 1) % dimension, false);
     this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
                                  correspondence_map, nodeNumber, maximumLevel,
-                                 createdNumberNode, weights, weight_number);
+                                 createdNumberNode, weights, weightNumber);
   }
 }
 
