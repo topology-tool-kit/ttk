@@ -1,6 +1,9 @@
 #include <Debug.h>
 #include <PersistenceDiagramUtils.h>
 
+// VTK Module
+#include <ttkPersistenceDiagramModule.h>
+
 class vtkUnstructuredGrid;
 class vtkDataArray;
 
@@ -15,9 +18,9 @@ class vtkDataArray;
  *
  * @return 0 in case of success, negative number otherwise
  */
-int VTUToDiagram(ttk::DiagramType &diagram,
-                 vtkUnstructuredGrid *vtu,
-                 const ttk::Debug &dbg);
+TTKPERSISTENCEDIAGRAM_EXPORT int VTUToDiagram(ttk::DiagramType &diagram,
+                                              vtkUnstructuredGrid *vtu,
+                                              const ttk::Debug &dbg);
 
 /**
  * @brief Converts a Persistence Diagram in the
@@ -35,12 +38,12 @@ int VTUToDiagram(ttk::DiagramType &diagram,
  *
  * @return 0 in case of success, negative number otherwise
  */
-int DiagramToVTU(vtkUnstructuredGrid *vtu,
-                 const ttk::DiagramType &diagram,
-                 vtkDataArray *const inputScalars,
-                 const ttk::Debug &dbg,
-                 const int dim,
-                 const bool embedInDomain);
+TTKPERSISTENCEDIAGRAM_EXPORT int DiagramToVTU(vtkUnstructuredGrid *vtu,
+                                              const ttk::DiagramType &diagram,
+                                              vtkDataArray *const inputScalars,
+                                              const ttk::Debug &dbg,
+                                              const int dim,
+                                              const bool embedInDomain);
 
 /**
  * @brief Generate the spatial embedding of a given Persistence Diagram
@@ -53,9 +56,10 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
  *
  * @return 0 in case of success
  */
-int ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
-                               vtkUnstructuredGrid *const outputDiagram,
-                               const ttk::Debug &dbg);
+TTKPERSISTENCEDIAGRAM_EXPORT int
+  ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
+                             vtkUnstructuredGrid *const outputDiagram,
+                             const ttk::Debug &dbg);
 
 /**
  * @brief Generate the 2D embedding of a given Persistence Diagram
@@ -68,9 +72,10 @@ int ProjectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
  *
  * @return 0 in case of success
  */
-int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
-                       vtkUnstructuredGrid *const outputDiagram,
-                       const ttk::Debug &dbg);
+TTKPERSISTENCEDIAGRAM_EXPORT int
+  ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
+                     vtkUnstructuredGrid *const outputDiagram,
+                     const ttk::Debug &dbg);
 
 /**
  * @brief Translate a diagram to a new position.
@@ -80,8 +85,9 @@ int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
  *
  * @return 0 in case of success
  */
-int TranslateDiagram(vtkUnstructuredGrid *const diagram,
-                     const std::array<double, 3> &trans);
+TTKPERSISTENCEDIAGRAM_EXPORT int
+  TranslateDiagram(vtkUnstructuredGrid *const diagram,
+                   const std::array<double, 3> &trans);
 
 /**
  * @brief Translate back a canonical diagram into its original position.
@@ -93,5 +99,6 @@ int TranslateDiagram(vtkUnstructuredGrid *const diagram,
  *
  * @return 0 in case of success
  */
-int ResetDiagramPosition(vtkUnstructuredGrid *const diagram,
-                         const ttk::Debug &dbg);
+TTKPERSISTENCEDIAGRAM_EXPORT int
+  ResetDiagramPosition(vtkUnstructuredGrid *const diagram,
+                       const ttk::Debug &dbg);

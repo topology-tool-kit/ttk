@@ -22,6 +22,15 @@ function(ttk_add_base_library library)
     PROPERTIES
       POSITION_INDEPENDENT_CODE TRUE
     )
+
+  if(TTK_ENABLE_SHARED_BASE_LIBRARIES AND MSVC)
+    set_target_properties(${library}
+      PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+  endif()
+
+
   target_include_directories(${library}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
