@@ -3097,13 +3097,22 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
 
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
   auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
-  // "good" starting values?
-  localBBox = {
-    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
-    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
-    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
-  };
 
+  ttk::SimplexId localBBox_x_min{this->localGridOffset_[0]
+                                 + this->dimensions_[0]},
+    localBBox_y_min{this->localGridOffset_[1] + this->dimensions_[1]},
+    localBBox_z_min{this->localGridOffset_[2] + this->dimensions_[2]};
+  ttk::SimplexId localBBox_x_max{this->localGridOffset_[0]},
+    localBBox_y_max{this->localGridOffset_[1]},
+    localBBox_z_max{this->localGridOffset_[2]};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for reduction(                    \
+  min                                                  \
+  : localBBox_x_min, localBBox_y_min, localBBox_z_min) \
+  reduction(max                                        \
+            : localBBox_x_max, localBBox_y_max, localBBox_z_max)
+#endif
   for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     // only keep non-ghost cells
     if(this->cellGhost_[lcid / nTetraPerCube] == 1) {
@@ -3125,28 +3134,33 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     p[1] += this->localGridOffset_[1];
     p[2] += this->localGridOffset_[2];
 
-    if(p[0] < localBBox[0]) {
-      localBBox[0] = p[0];
+    if(p[0] < localBBox_x_min) {
+      localBBox_x_min = p[0];
     }
-    if(p[0] > localBBox[1]) {
-      localBBox[1] = p[0];
+    if(p[0] > localBBox_x_max) {
+      localBBox_x_max = p[0];
     }
-    if(p[1] < localBBox[2]) {
-      localBBox[2] = p[1];
+    if(p[1] < localBBox_y_min) {
+      localBBox_y_min = p[1];
     }
-    if(p[1] > localBBox[3]) {
-      localBBox[3] = p[1];
+    if(p[1] > localBBox_y_max) {
+      localBBox_y_max = p[1];
     }
-    if(p[2] < localBBox[4]) {
-      localBBox[4] = p[2];
+    if(p[2] < localBBox_z_min) {
+      localBBox_z_min = p[2];
     }
-    if(p[2] > localBBox[5]) {
-      localBBox[5] = p[2];
+    if(p[2] > localBBox_z_max) {
+      localBBox_z_max = p[2];
     }
   }
-  localBBox[1]++;
-  localBBox[3]++;
-  localBBox[5]++;
+  localBBox_x_max++;
+  localBBox_y_max++;
+  localBBox_z_max++;
+
+  localBBox = {
+    localBBox_x_min, localBBox_x_max, localBBox_y_min,
+    localBBox_y_max, localBBox_z_min, localBBox_z_max,
+  };
 
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
