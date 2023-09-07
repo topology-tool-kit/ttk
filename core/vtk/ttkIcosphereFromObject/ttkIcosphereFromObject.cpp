@@ -41,9 +41,9 @@ int ttkIcosphereFromObject::RequestData(vtkInformation *request,
     return 0;
   }
 
-  double dx = bounds[1] - bounds[0];
-  double dy = bounds[3] - bounds[2];
-  double dz = bounds[5] - bounds[4];
+  double const dx = bounds[1] - bounds[0];
+  double const dy = bounds[3] - bounds[2];
+  double const dz = bounds[5] - bounds[4];
 
   this->SetRadius(this->Scale * std::sqrt(dx * dx + dy * dy + dz * dz) / 2.0);
   this->SetCenter(

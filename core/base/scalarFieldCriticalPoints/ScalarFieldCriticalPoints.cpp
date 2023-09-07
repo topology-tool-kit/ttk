@@ -104,17 +104,17 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
 
   for(SimplexId i = 0; i < (SimplexId)vertexLink.size(); i++) {
 
-    SimplexId neighborId0 = vertexLink[i].first;
-    SimplexId neighborId1 = vertexLink[i].second;
+    SimplexId const neighborId0 = vertexLink[i].first;
+    SimplexId const neighborId1 = vertexLink[i].second;
 
     // process the lower link
     if(offsets[neighborId0] < offsets[vertexId]
        && offsets[neighborId1] < offsets[vertexId]) {
 
       // both vertices are lower, let's add that edge and update the UF
-      std::map<SimplexId, SimplexId>::iterator n0It
+      std::map<SimplexId, SimplexId>::iterator const n0It
         = global2LowerLink.find(neighborId0);
-      std::map<SimplexId, SimplexId>::iterator n1It
+      std::map<SimplexId, SimplexId>::iterator const n1It
         = global2LowerLink.find(neighborId1);
 
       lowerList[n0It->second] = UnionFind::makeUnion(
@@ -127,9 +127,9 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
        && offsets[neighborId1] > offsets[vertexId]) {
 
       // both vertices are lower, let's add that edge and update the UF
-      std::map<SimplexId, SimplexId>::iterator n0It
+      std::map<SimplexId, SimplexId>::iterator const n0It
         = global2UpperLink.find(neighborId0);
-      std::map<SimplexId, SimplexId>::iterator n1It
+      std::map<SimplexId, SimplexId>::iterator const n1It
         = global2UpperLink.find(neighborId1);
 
       upperList[n0It->second] = UnionFind::makeUnion(

@@ -22,7 +22,7 @@ CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
     upDegree = node->getNumberOfDownSuperArcs();
     downDegree = node->getNumberOfUpSuperArcs();
   }
-  int degree = upDegree + downDegree;
+  int const degree = upDegree + downDegree;
 
   // saddle point
   if(degree > 1) {

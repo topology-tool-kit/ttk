@@ -1,12 +1,12 @@
 /// \ingroup vtk
-/// \class ttkDistanceMatrixDistorsion
+/// \class ttkDistanceMatrixDistortion
 /// \author Alexandre Talon <alexandre.talon@lip6.fr>
 /// \date January 2022.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::DistanceMatrixDistorsion module.
+/// \brief TTK VTK-filter that wraps the ttk::DistanceMatrixDistortion module.
 ///
-/// This VTK filter uses the ttk::DistanceMatrixDistorsion module to compute the
-/// distorsion between two distance matrices representing the same points (for
+/// This VTK filter uses the ttk::DistanceMatrixDistortion module to compute the
+/// distortion between two distance matrices representing the same points (for
 /// instance in low and high dimensions), according to the SIM formula.
 ///
 /// \param Input0 vtkTable.
@@ -27,24 +27,24 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::DistanceMatrixDistorsion
+/// \sa ttk::DistanceMatrixDistortion
 /// \sa ttkAlgorithm
 
 #pragma once
 
 // VTK Module
-#include <ttkDistanceMatrixDistorsionModule.h>
+#include <ttkDistanceMatrixDistortionModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
 
 // TTK Base Includes
-#include <DistanceMatrixDistorsion.h>
+#include <DistanceMatrixDistortion.h>
 
-class TTKDISTANCEMATRIXDISTORSION_EXPORT ttkDistanceMatrixDistorsion
+class TTKDISTANCEMATRIXDISTORTION_EXPORT ttkDistanceMatrixDistortion
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
   ,
-    protected ttk::DistanceMatrixDistorsion // and we inherit from the base
+    protected ttk::DistanceMatrixDistortion // and we inherit from the base
                                             // class
 {
 private:
@@ -61,6 +61,8 @@ public:
   vtkGetMacro(SelectFieldsWithRegexpHigh, bool);
   vtkSetMacro(SelectFieldsWithRegexpLow, bool);
   vtkGetMacro(SelectFieldsWithRegexpLow, bool);
+  vtkSetMacro(DoNotNormalize, bool);
+  vtkGetMacro(DoNotNormalize, bool);
 
   vtkSetMacro(RegexpStringHigh, const std::string &);
   vtkGetMacro(RegexpStringHigh, std::string);
@@ -77,8 +79,8 @@ public:
     Modified();
   }
 
-  static ttkDistanceMatrixDistorsion *New();
-  vtkTypeMacro(ttkDistanceMatrixDistorsion, ttkAlgorithm);
+  static ttkDistanceMatrixDistortion *New();
+  vtkTypeMacro(ttkDistanceMatrixDistortion, ttkAlgorithm);
 
   // Two functions because two inputs. Used for columns selection.
   void SetScalarFieldsHigh(const std::string &s) {
@@ -91,8 +93,8 @@ public:
   }
 
 protected:
-  ttkDistanceMatrixDistorsion();
-  ~ttkDistanceMatrixDistorsion() override = default;
+  ttkDistanceMatrixDistortion();
+  ~ttkDistanceMatrixDistortion() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

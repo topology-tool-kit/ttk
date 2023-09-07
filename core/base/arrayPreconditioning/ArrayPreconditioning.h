@@ -32,7 +32,12 @@ namespace ttk {
                            const GVLID &getVertexLocalId,
                            const size_t nVerts,
                            const int burstSize,
+#ifdef TTK_ENABLE_MPI
                            std::vector<int> neighbors
+#else
+                           const std::vector<int> &neighbors
+#endif
+
                            = {}) const { // start global timer
       ttk::Timer globalTimer;
 

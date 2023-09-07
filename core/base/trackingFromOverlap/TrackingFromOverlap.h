@@ -81,8 +81,8 @@ namespace ttk {
       }
 
       inline bool operator()(const size_t &i, const size_t &j) {
-        size_t ic = i * 3;
-        size_t jc = j * 3;
+        size_t const ic = i * 3;
+        size_t const jc = j * 3;
         return coordinates[ic] == coordinates[jc]
                  ? coordinates[ic + 1] == coordinates[jc + 1]
                      ? coordinates[ic + 2] < coordinates[jc + 2]
@@ -101,7 +101,7 @@ namespace ttk {
       sortedIndices.resize(nPoints);
       for(size_t i = 0; i < nPoints; i++)
         sortedIndices[i] = i;
-      CoordinateComparator c = CoordinateComparator(pointCoordinates);
+      CoordinateComparator const c = CoordinateComparator(pointCoordinates);
       sort(sortedIndices.begin(), sortedIndices.end(), c);
 
       std::stringstream msg;
@@ -116,7 +116,7 @@ namespace ttk {
       printMsg("Computing branches  ... ", debug::Priority::PERFORMANCE);
       Timer tm;
 
-      size_t nT = timeNodesMap.size();
+      size_t const nT = timeNodesMap.size();
 
       // Compute max pred and succ
       for(size_t t = 1; t < nT; t++) {
@@ -124,7 +124,7 @@ namespace ttk {
         auto &nodes1 = timeNodesMap[t];
         auto &edges = timeEdgesMap[t - 1];
 
-        size_t nE = edges.size();
+        size_t const nE = edges.size();
 
         for(size_t i = 0; i < nE; i += 4) {
           auto n0Index = edges[i];
@@ -132,9 +132,9 @@ namespace ttk {
           auto &n0 = nodes0[n0Index];
           auto &n1 = nodes1[n1Index];
 
-          sizeType n0MaxSuccSize
+          sizeType const n0MaxSuccSize
             = n0.maxSuccID != -1 ? nodes1[n0.maxSuccID].size : 0;
-          sizeType n1MaxPredSize
+          sizeType const n1MaxPredSize
             = n1.maxPredID != -1 ? nodes0[n1.maxPredID].size : 0;
           if(n0MaxSuccSize < n1.size)
             n0.maxSuccID = n1Index;
@@ -168,7 +168,7 @@ namespace ttk {
         auto &nodes1 = timeNodesMap[t];
         auto &edges = timeEdgesMap[t - 1];
 
-        size_t nE = edges.size();
+        size_t const nE = edges.size();
 
         for(size_t i = 0; i < nE; i += 4) {
           auto n0Index = edges[i];
@@ -187,7 +187,7 @@ namespace ttk {
         auto &nodes1 = timeNodesMap[t];
         auto &edges = timeEdgesMap[t - 1];
 
-        size_t nE = edges.size();
+        size_t const nE = edges.size();
 
         for(size_t i = 0; i < nE; i += 4) {
           auto n0Index = edges[i];
@@ -269,7 +269,7 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
   std::map<labelType, size_t> labelIndexMap;
   this->computeLabelIndexMap(pointLabels, nPoints, labelIndexMap);
 
-  size_t nNodes = labelIndexMap.size();
+  size_t const nNodes = labelIndexMap.size();
 
   nodes.resize(nNodes);
   for(size_t i = 0, q = 0; i < nPoints; i++) {
@@ -284,7 +284,7 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
 
   for(size_t i = 0; i < nNodes; i++) {
     Node &n = nodes[i];
-    float size = (float)n.size;
+    float const size = (float)n.size;
     n.x /= size;
     n.y /= size;
     n.z /= size;
@@ -343,13 +343,13 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
     size_t p0CoordIndex = p0 * 3;
     size_t p1CoordIndex = p1 * 3;
 
-    float p0_X = pointCoordinates0[p0CoordIndex++];
-    float p0_Y = pointCoordinates0[p0CoordIndex++];
-    float p0_Z = pointCoordinates0[p0CoordIndex];
+    float const p0_X = pointCoordinates0[p0CoordIndex++];
+    float const p0_Y = pointCoordinates0[p0CoordIndex++];
+    float const p0_Z = pointCoordinates0[p0CoordIndex];
 
-    float p1_X = pointCoordinates1[p1CoordIndex++];
-    float p1_Y = pointCoordinates1[p1CoordIndex++];
-    float p1_Z = pointCoordinates1[p1CoordIndex];
+    float const p1_X = pointCoordinates1[p1CoordIndex++];
+    float const p1_Y = pointCoordinates1[p1CoordIndex++];
+    float const p1_Z = pointCoordinates1[p1CoordIndex];
 
     return p0_X == p1_X  ? p0_Y == p1_Y  ? p0_Z == p1_Z  ? 0
                                            : p0_Z < p1_Z ? -1
@@ -367,18 +367,18 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   std::unordered_map<size_t, std::unordered_map<size_t, size_t>> edgesMap;
   // Iterate over both point sets synchronously using comparison function
   while(i < nPoints0 && j < nPoints1) {
-    size_t pointIndex0 = sortedIndices0[i];
-    size_t pointIndex1 = sortedIndices1[j];
+    size_t const pointIndex0 = sortedIndices0[i];
+    size_t const pointIndex1 = sortedIndices1[j];
 
     // Determine point configuration
-    int c = compare(pointIndex0, pointIndex1);
+    int const c = compare(pointIndex0, pointIndex1);
 
     if(c == 0) { // Points have same coordinates -> track
       labelType label0 = pointLabels0[pointIndex0];
       labelType label1 = pointLabels1[pointIndex1];
 
-      size_t &nodeIndex0 = labelIndexMap0[label0];
-      size_t &nodeIndex1 = labelIndexMap1[label1];
+      size_t const &nodeIndex0 = labelIndexMap0[label0];
+      size_t const &nodeIndex1 = labelIndexMap1[label1];
 
       // Find edge and increase overlap counter
       auto edges0 = edgesMap.find(nodeIndex0); // Edges from label0 to nodes1

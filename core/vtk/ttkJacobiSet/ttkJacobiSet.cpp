@@ -128,7 +128,7 @@ int ttkJacobiSet::RequestData(vtkInformation *ttkNotUsed(request),
   std::array<double, 3> p{};
   for(size_t i = 0; i < jacobiSet_.size(); i++) {
 
-    int edgeId = jacobiSet_[i].first;
+    int const edgeId = jacobiSet_[i].first;
     ttk::SimplexId vertexId0 = -1, vertexId1 = -1;
     triangulation->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation->getEdgeVertex(edgeId, 1, vertexId1);
@@ -177,7 +177,8 @@ int ttkJacobiSet::RequestData(vtkInformation *ttkNotUsed(request),
     for(int i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
 
       const auto scalarField = input->GetPointData()->GetArray(i);
-      vtkSmartPointer<vtkDataArray> scalarArray{scalarField->NewInstance()};
+      vtkSmartPointer<vtkDataArray> const scalarArray{
+        scalarField->NewInstance()};
 
       scalarArray->SetNumberOfComponents(scalarField->GetNumberOfComponents());
       scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
@@ -185,7 +186,7 @@ int ttkJacobiSet::RequestData(vtkInformation *ttkNotUsed(request),
       std::vector<double> value(scalarField->GetNumberOfComponents());
 
       for(size_t j = 0; j < jacobiSet_.size(); j++) {
-        int edgeId = jacobiSet_[j].first;
+        int const edgeId = jacobiSet_[j].first;
         ttk::SimplexId vertexId0 = -1, vertexId1 = -1;
         triangulation->getEdgeVertex(edgeId, 0, vertexId0);
         triangulation->getEdgeVertex(edgeId, 1, vertexId1);

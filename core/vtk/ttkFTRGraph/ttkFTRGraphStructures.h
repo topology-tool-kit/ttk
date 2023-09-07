@@ -143,7 +143,7 @@ namespace ttk {
         const ttk::ftr::idSuperArc curArcId = graph.getArcId(v);
         ids->SetTuple1(v, curArcId);
 
-        int downNodeType
+        int const downNodeType
           = (int)graph.getNode(graph.getArc(curArcId).getDownNodeId())
               .getType();
         regionType->SetTuple1(v, downNodeType);

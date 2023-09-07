@@ -51,7 +51,7 @@ namespace ttk {
 
       // Build Merge treeString using tasks
       Timer precomputeTime;
-      int alreadyDone = leafSearch(mesh);
+      int const alreadyDone = leafSearch(mesh);
       printTime(precomputeTime, "leafSearch " + treeString, 3 + alreadyDone);
 
       Timer buildTime;
@@ -175,7 +175,7 @@ namespace ttk {
 
       for(idNode n = 0; n < nbLeaves; ++n) {
         const idNode l = mt_data_.leaves[n];
-        SimplexId v = getNode(l)->getVertexId();
+        SimplexId const v = getNode(l)->getVertexId();
         // for each node: get vert, create uf and launch
         mt_data_.storage[n] = AtomicUF{v};
         mt_data_.ufs[v] = &mt_data_.storage[n];
@@ -219,8 +219,8 @@ namespace ttk {
       bool seenFirst = false;
 
       // ARC OPENING
-      idNode startNode = getCorrespondingNodeId(startVert);
-      idSuperArc currentArc = openSuperArc(startNode);
+      idNode const startNode = getCorrespondingNodeId(startVert);
+      idSuperArc const currentArc = openSuperArc(startNode);
       startUF->addArcToClose(currentArc);
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
       (*mt_data_.activeTasksStats)[currentArc].begin
@@ -232,7 +232,7 @@ namespace ttk {
       while(!currentState->empty()) {
         // Next vertex
 
-        SimplexId currentVert = currentState->getNextMinVertex();
+        SimplexId const currentVert = currentState->getNextMinVertex();
 
         // ignore duplicate
         if(!isCorrespondingNull(currentVert)
@@ -323,12 +323,13 @@ namespace ttk {
 
       // close root
       const SimplexId closeVert = getSuperArc(currentArc)->getLastVisited();
-      bool existCloseNode = isCorrespondingNode(closeVert);
-      idNode closeNode = (existCloseNode) ? getCorrespondingNodeId(closeVert)
-                                          : makeNode(closeVert);
+      bool const existCloseNode = isCorrespondingNode(closeVert);
+      idNode const closeNode = (existCloseNode)
+                                 ? getCorrespondingNodeId(closeVert)
+                                 : makeNode(closeVert);
       closeSuperArc(currentArc, closeNode);
       getSuperArc(currentArc)->decrNbSeen();
-      idNode rootPos = mt_data_.roots->getNext();
+      idNode const rootPos = mt_data_.roots->getNext();
       (*mt_data_.roots)[rootPos] = closeNode;
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
@@ -424,8 +425,9 @@ namespace ttk {
       // Arcs
       const auto &nbNodes = trunkVerts.size();
       for(idNode n = 1; n < nbNodes; ++n) {
-        idSuperArc na = makeSuperArc(getCorrespondingNodeId(trunkVerts[n - 1]),
-                                     getCorrespondingNodeId(trunkVerts[n]));
+        idSuperArc const na
+          = makeSuperArc(getCorrespondingNodeId(trunkVerts[n - 1]),
+                         getCorrespondingNodeId(trunkVerts[n]));
         getSuperArc(na)->setLastVisited(trunkVerts[n]);
       }
 
@@ -464,7 +466,7 @@ namespace ttk {
     template <class triangulationType>
     void FTMTree_MT::closeAndMergeOnSaddle(const triangulationType *mesh,
                                            SimplexId saddleVert) {
-      idNode closeNode = makeNode(saddleVert);
+      idNode const closeNode = makeNode(saddleVert);
 
       // Union of the UF coming here (merge propagation and closing arcs)
       const auto &nbNeigh = mesh->getVertexNeighborNumber(saddleVert);
@@ -492,7 +494,7 @@ namespace ttk {
     template <class triangulationType>
     void FTMTree_MT::closeOnBackBone(const triangulationType *mesh,
                                      SimplexId saddleVert) {
-      idNode closeNode = makeNode(saddleVert);
+      idNode const closeNode = makeNode(saddleVert);
 
       // Union of the UF coming here (merge propagation and closing arcs)
       const auto &nbNeigh = mesh->getVertexNeighborNumber(saddleVert);

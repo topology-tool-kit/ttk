@@ -108,6 +108,7 @@ int ttkRipsComplex::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   std::vector<vtkAbstractArray *> arrays{};
+  arrays.reserve(ScalarFields.size());
   for(const auto &s : ScalarFields) {
     arrays.push_back(input->GetColumnByName(s.data()));
   }

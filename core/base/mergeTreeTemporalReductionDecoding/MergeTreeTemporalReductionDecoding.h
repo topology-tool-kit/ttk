@@ -139,9 +139,9 @@ namespace ttk {
       size_t cpt = 0;
       while(cpt < coefs.size()) {
         while(cpt < coefs.size() and std::get<2>(coefs[cpt]) <= index) {
-          double alpha = std::get<0>(coefs[cpt]);
-          int index1 = std::get<1>(coefs[cpt]);
-          int index2 = std::get<2>(coefs[cpt]);
+          double const alpha = std::get<0>(coefs[cpt]);
+          int const index1 = std::get<1>(coefs[cpt]);
+          int const index2 = std::get<2>(coefs[cpt]);
           ftm::MergeTree<dataType> tree = computeBarycenter<dataType>(
             mTrees[index1], mTrees[index2], alpha);
           allMT.push_back(tree);

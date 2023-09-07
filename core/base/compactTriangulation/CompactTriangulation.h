@@ -241,8 +241,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
-      SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
+      const SimplexId nid
+        = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
+      const SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->tetraEdges_.empty()) {
         getClusterTetraEdges(exnode);
@@ -302,8 +303,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
-      SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
+      const SimplexId nid
+        = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
+      const SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->cellNeighbors_.empty()) {
         getClusterCellNeighbors(exnode);
@@ -325,8 +327,9 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
-      SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
+      const SimplexId nid
+        = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
+      const SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->cellNeighbors_.empty()) {
         getClusterCellNeighbors(exnode);
@@ -367,8 +370,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
-      SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
+      const SimplexId nid
+        = vertexIndices_[cellArray_->getCellVertex(cellId, 0)];
+      const SimplexId localCellId = cellId - cellIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->tetraTriangles_.empty()) {
         getClusterCellTriangles(exnode);
@@ -473,8 +477,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeLinks_.empty()) {
         getClusterEdgeLinks(exnode);
@@ -496,8 +500,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeLinks_.empty()) {
         getClusterEdgeLinks(exnode);
@@ -537,8 +541,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeStars_.empty()) {
         getClusterEdgeStars(exnode);
@@ -559,9 +563,9 @@ namespace ttk {
       if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
         return -1;
 #endif
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
       ImplicitCluster *exnode = searchCache(nid);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       if(exnode->edgeStars_.empty()) {
         getClusterEdgeStars(exnode);
       }
@@ -599,8 +603,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeTriangles_.empty()) {
         getClusterEdgeTriangles(exnode);
@@ -622,8 +626,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->edgeTriangles_.empty()) {
         getClusterEdgeTriangles(exnode);
@@ -663,8 +667,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localEdgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->internalEdgeList_.empty()) {
         buildInternalEdgeMap(exnode, true, false);
@@ -748,8 +752,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localTriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleEdges_.empty()) {
         getClusterTriangleEdges(exnode);
@@ -804,8 +809,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localTriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleLinks_.empty()) {
         getClusterTriangleLinks(exnode);
@@ -827,8 +833,9 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localTriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleLinks_.empty()) {
         getClusterTriangleLinks(exnode);
@@ -870,8 +877,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localTriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleStars_.empty()) {
         getClusterTriangleStars(exnode);
@@ -894,8 +902,9 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localTriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->triangleStars_.empty()) {
         getClusterTriangleStars(exnode);
@@ -934,8 +943,9 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localTriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localTriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->internalTriangleList_.empty()) {
         buildInternalTriangleMap(exnode, true, false);
@@ -960,8 +970,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexEdges_.empty()) {
         getClusterVertexEdges(exnode);
@@ -982,8 +992,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexEdges_.empty()) {
         getClusterVertexEdges(exnode);
@@ -1024,8 +1034,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexLinks_.empty()) {
         getClusterVertexLinks(exnode);
@@ -1046,8 +1056,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexLinks_.empty()) {
         getClusterVertexLinks(exnode);
@@ -1086,8 +1096,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode == nullptr) {
         return -1;
@@ -1112,8 +1122,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexNeighbors_.empty()) {
         getClusterVertexNeighbors(exnode);
@@ -1175,8 +1185,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexStars_.empty()) {
         getClusterVertexStars(exnode);
@@ -1197,8 +1207,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexStars_.empty()) {
         getClusterVertexStars(exnode);
@@ -1237,8 +1247,8 @@ namespace ttk {
       }
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexTriangles_.empty()) {
         getClusterVertexTriangles(exnode);
@@ -1260,8 +1270,8 @@ namespace ttk {
         return -1;
 #endif
 
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       if(exnode->vertexTriangles_.empty()) {
         getClusterVertexTriangles(exnode);
@@ -1292,8 +1302,8 @@ namespace ttk {
       if((edgeId < 0) || (edgeId > edgeIntervals_.back()))
         return false;
 #endif
-      SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
-      SimplexId localedgeId = edgeId - edgeIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(edgeId, SIMPLEX_ID::EDGE_ID);
+      const SimplexId localedgeId = edgeId - edgeIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       getBoundaryCells(exnode, 1);
       return (exnode->boundaryEdges_)[localedgeId];
@@ -1312,8 +1322,9 @@ namespace ttk {
       if((triangleId < 0) || (triangleId > triangleIntervals_.back()))
         return false;
 #endif
-      SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
-      SimplexId localtriangleId = triangleId - triangleIntervals_[nid - 1] - 1;
+      const SimplexId nid = findNodeIndex(triangleId, SIMPLEX_ID::TRIANGLE_ID);
+      const SimplexId localtriangleId
+        = triangleId - triangleIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       getBoundaryCells(exnode);
       return (exnode->boundaryTriangles_)[localtriangleId];
@@ -1325,8 +1336,8 @@ namespace ttk {
       if((vertexId < 0) || (vertexId >= vertexNumber_))
         return false;
 #endif
-      SimplexId nid = vertexIndices_[vertexId];
-      SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
+      const SimplexId nid = vertexIndices_[vertexId];
+      const SimplexId localVertexId = vertexId - vertexIntervals_[nid - 1] - 1;
       ImplicitCluster *exnode = searchCache(nid);
       getBoundaryCells(exnode, 0);
       return (exnode->boundaryVertices_)[localVertexId];
@@ -1561,7 +1572,7 @@ namespace ttk {
         return -1;
       }
 
-      std::vector<SimplexId>::const_iterator low
+      const std::vector<SimplexId>::const_iterator low
         = lower_bound(intervals->begin(), intervals->end(), id);
       return (low - intervals->begin());
     }
@@ -1585,7 +1596,8 @@ namespace ttk {
           cacheMaps_[threadId].erase(caches_[threadId].back().nid);
           caches_[threadId].pop_back();
         }
-        caches_[threadId].push_front(ImplicitCluster(nodeId));
+        const ImplicitCluster localCluster(nodeId);
+        caches_[threadId].emplace_front(localCluster);
         cacheMaps_[threadId][nodeId] = caches_[threadId].begin();
       }
       return &(*cacheMaps_[threadId][nodeId]);

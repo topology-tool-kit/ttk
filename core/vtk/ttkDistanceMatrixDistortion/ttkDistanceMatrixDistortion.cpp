@@ -1,4 +1,4 @@
-#include <ttkDistanceMatrixDistorsion.h>
+#include <ttkDistanceMatrixDistortion.h>
 
 #include <vtkInformation.h>
 
@@ -18,14 +18,14 @@
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
-vtkStandardNewMacro(ttkDistanceMatrixDistorsion);
+vtkStandardNewMacro(ttkDistanceMatrixDistortion);
 
-ttkDistanceMatrixDistorsion::ttkDistanceMatrixDistorsion() {
+ttkDistanceMatrixDistortion::ttkDistanceMatrixDistortion() {
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkDistanceMatrixDistorsion::FillInputPortInformation(
+int ttkDistanceMatrixDistortion::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
@@ -37,7 +37,7 @@ int ttkDistanceMatrixDistorsion::FillInputPortInformation(
   return 0;
 }
 
-int ttkDistanceMatrixDistorsion::FillOutputPortInformation(
+int ttkDistanceMatrixDistortion::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
@@ -60,7 +60,7 @@ inline void fillWithInputColumns(vtkTable *input,
   }
 }
 
-int ttkDistanceMatrixDistorsion::RequestData(
+int ttkDistanceMatrixDistortion::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
@@ -105,7 +105,7 @@ int ttkDistanceMatrixDistorsion::RequestData(
     return 0;
   }
 
-  int n = nRowsHigh;
+  int const n = nRowsHigh;
   std::vector<double *> vectMatHigh(n),
     vectMatLow(n); // No 2D vectors to avoid copy of data from the VTK layer.
 
@@ -126,20 +126,20 @@ int ttkDistanceMatrixDistorsion::RequestData(
     vectMatLow[i] = ttkUtils::GetPointer<double>(arraysLow[i]);
   }
 
-  double distorsionValue = 0;
-  vtkNew<vtkDoubleArray> tmpCol{}, distorsionValArray{};
+  double distortionValue = 0;
+  vtkNew<vtkDoubleArray> tmpCol{}, distortionValArray{};
   tmpCol->SetNumberOfTuples(n);
-  this->printMsg("Starting computation of sim distorsion value...");
-  this->execute(vectMatHigh, vectMatLow, distorsionValue,
+  this->printMsg("Starting computation of sim distortion value...");
+  this->execute(vectMatHigh, vectMatLow, distortionValue,
                 ttkUtils::GetPointer<double>(tmpCol));
 
   tmpCol->SetName("SimValue");
   // No deep copy, makes output->RowData points to the data of tmpCol.
   output->AddColumn(tmpCol);
-  distorsionValArray->SetName("DistorsionValue");
-  distorsionValArray->SetNumberOfTuples(1);
-  distorsionValArray->SetTuple1(0, distorsionValue);
-  output->GetFieldData()->AddArray(distorsionValArray);
+  distortionValArray->SetName("DistortionValue");
+  distortionValArray->SetNumberOfTuples(1);
+  distortionValArray->SetTuple1(0, distortionValue);
+  output->GetFieldData()->AddArray(distortionValArray);
 
   return 1;
 }

@@ -280,7 +280,7 @@ int Geometry::computeTriangleAreaFromSides(const T s0,
                                            const T s2,
                                            T &area) {
 
-  double s = (s0 + s1 + s2) / 2.0;
+  double const s = (s0 + s1 + s2) / 2.0;
   area = std::sqrt(s * (s - s0) * (s - s1) * (s - s2));
 
   return 0;

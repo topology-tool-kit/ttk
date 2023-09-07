@@ -35,7 +35,7 @@ int copyArrayData(vtkDataArray *oldArray,
   auto newData = ttkUtils::GetPointer<VTK_TT>(newArray);
 
   for(size_t i = 0; i < nSpheres; i++) {
-    size_t sphereIndex = i * nVerticesPerSphere * nComponents;
+    size_t const sphereIndex = i * nVerticesPerSphere * nComponents;
     for(size_t j = 0; j < nComponents; j++) {
       const auto &value = oldData[i * nComponents + j];
       size_t newIndex = sphereIndex + j;
@@ -54,14 +54,14 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
   auto input = vtkPointSet::GetData(inputVector[0], 0);
   if(!input)
     return 1;
-  size_t nPoints = input->GetNumberOfPoints();
+  size_t const nPoints = input->GetNumberOfPoints();
   if(nPoints < 1)
     return 1;
 
   this->SetCenters(input->GetPoints()->GetData());
 
   // compute spheres
-  int status
+  int const status
     = this->ttkIcosphere::RequestData(request, inputVector, outputVector);
   if(!status)
     return 0;
@@ -83,13 +83,13 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
       if(!oldArray || oldArray->GetName() == nullptr) {
         continue;
       }
-      std::string oldArrayName(oldArray->GetName());
+      std::string const oldArrayName(oldArray->GetName());
       if(this->GetComputeNormals() && oldArrayName.compare("Normals") == 0) {
         continue;
       }
       auto newArray
         = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());
-      size_t nComponents = oldArray->GetNumberOfComponents();
+      size_t const nComponents = oldArray->GetNumberOfComponents();
       newArray->SetName(oldArray->GetName());
       newArray->SetNumberOfComponents(nComponents);
       newArray->SetNumberOfTuples(nVertices * nPoints);

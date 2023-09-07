@@ -52,7 +52,7 @@ namespace ttk {
     /// \return Returns the id of the new node
     inline int addNode() {
       node_.emplace_back();
-      int id = static_cast<int>(node_.size());
+      int const id = static_cast<int>(node_.size());
       node_[id].setAncestor(id);
       return id;
     }

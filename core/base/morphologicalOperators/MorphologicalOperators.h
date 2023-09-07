@@ -119,7 +119,7 @@ int ttk::MorphologicalOperators::performElementaryMorphoOp(
   const DT &pivotLabel,
   TT *triangulation) const {
 
-  SimplexId nVertices = triangulation->getNumberOfVertices();
+  SimplexId const nVertices = triangulation->getNumberOfVertices();
 
   std::vector<DT> temp;
   if(iterations > 1) {
@@ -131,9 +131,9 @@ int ttk::MorphologicalOperators::performElementaryMorphoOp(
                    this->threadNumber_);
   }
 
-  std::string msg = std::string(mode == 0 ? "Dilating " : "Eroding ")
-                    + std::to_string(iterations) + "x value "
-                    + std::to_string(pivotLabel);
+  std::string const msg = std::string(mode == 0 ? "Dilating " : "Eroding ")
+                          + std::to_string(iterations) + "x value "
+                          + std::to_string(pivotLabel);
 
   this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
 

@@ -83,7 +83,7 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph &graph,
       arcData.setPointInfo(graph, arcId, pointIds[1], true);
     }
     if(pointIds[0] != pointIds[1]) {
-      vtkIdType nextCellId
+      vtkIdType const nextCellId
         = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
       arcData.setArcInfo(graph, arcId, nextCellId);
     }
@@ -100,7 +100,8 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph &graph,
     arcData.setPointInfo(graph, arcId, pointIds[1]);
   }
   if(pointIds[0] != pointIds[1]) {
-    vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
+    vtkIdType const nextCellId
+      = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
     arcData.setArcInfo(graph, arcId, nextCellId);
   }
 
@@ -146,7 +147,8 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph &graph,
     arcData.points.emplace(upVertId, pointIds[1]);
     arcData.setPointInfo(graph, arcId, pointIds[1]);
   }
-  vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
+  vtkIdType const nextCellId
+    = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
   // Scalar arrays
   arcData.setArcInfo(graph, arcId, nextCellId);
@@ -221,7 +223,7 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
         arcData.setPointInfo(graph, arcId, pointIds[1], true);
 
         if(pointIds[0] != pointIds[1]) {
-          vtkIdType nextCellId
+          vtkIdType const nextCellId
             = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
           arcData.setArcInfo(graph, arcId, nextCellId);
         }
@@ -248,7 +250,8 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
     arcData.setPointInfo(graph, arcId, pointIds[1]);
   }
   if(pointIds[0] != pointIds[1]) {
-    vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
+    vtkIdType const nextCellId
+      = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
     arcData.setArcInfo(graph, arcId, nextCellId);
   }
 
@@ -389,7 +392,7 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph &graph,
 
   ttk::ftr::ArcData arcData(nbFinArc);
   vtkNew<vtkUnstructuredGrid> arcs{};
-  vtkNew<vtkPoints> points{};
+  vtkNew<vtkPoints> const points{};
 
   for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
     if(!graph.getArc(arcId).isVisible())
@@ -430,7 +433,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
     triangulation_->getVertexPoint(vertId, point[0], point[1], point[2]);
     points->InsertNextPoint(point);
 
-    double scalar = inputScalars_->GetTuple1(vertId);
+    double const scalar = inputScalars_->GetTuple1(vertId);
     nodeData.addNode(graph, nodeId, scalar);
   }
 

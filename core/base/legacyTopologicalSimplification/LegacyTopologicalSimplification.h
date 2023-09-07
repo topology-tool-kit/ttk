@@ -204,7 +204,8 @@ int ttk::LegacyTopologicalSimplification::getCriticalType(
 
   bool isMinima{true};
   bool isMaxima{true};
-  SimplexId neighborNumber = triangulation.getVertexNeighborNumber(vertex);
+  SimplexId const neighborNumber
+    = triangulation.getVertexNeighborNumber(vertex);
   for(SimplexId i = 0; i < neighborNumber; ++i) {
     SimplexId neighbor{-1};
     triangulation.getVertexNeighbor(vertex, i, neighbor);
@@ -296,7 +297,7 @@ int ttk::LegacyTopologicalSimplification::addPerturbation(
     std::get<2>(perturbation[i]) = i;
   }
 
-  SweepCmp cmp(true);
+  SweepCmp const cmp(true);
   sort(perturbation.begin(), perturbation.end(), cmp);
 
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
@@ -370,7 +371,7 @@ int ttk::LegacyTopologicalSimplification::execute(
 
     for(int j = 0; j < 2; ++j) {
 
-      bool isIncreasingOrder = !j;
+      bool const isIncreasingOrder = !j;
 
       if(isIncreasingOrder && authorizedMinima.empty()) {
         continue;
@@ -387,13 +388,13 @@ int ttk::LegacyTopologicalSimplification::execute(
 
       // add the seeds
       if(isIncreasingOrder) {
-        for(SimplexId k : authorizedMinima) {
+        for(SimplexId const k : authorizedMinima) {
           authorizedExtrema[k] = true;
           sweepFront.emplace(outputScalars[k], offsets[k], k);
           visitedVertices[k] = true;
         }
       } else {
-        for(SimplexId k : authorizedMaxima) {
+        for(SimplexId const k : authorizedMaxima) {
           authorizedExtrema[k] = true;
           sweepFront.emplace(outputScalars[k], offsets[k], k);
           visitedVertices[k] = true;
@@ -407,10 +408,10 @@ int ttk::LegacyTopologicalSimplification::execute(
         if(front == sweepFront.end())
           return -1;
 
-        SimplexId vertexId = std::get<2>(*front);
+        SimplexId const vertexId = std::get<2>(*front);
         sweepFront.erase(front);
 
-        SimplexId neighborNumber
+        SimplexId const neighborNumber
           = triangulation.getVertexNeighborNumber(vertexId);
         for(SimplexId k = 0; k < neighborNumber; ++k) {
           SimplexId neighbor{-1};
@@ -468,7 +469,7 @@ int ttk::LegacyTopologicalSimplification::execute(
       debug::Priority::DETAIL);
 
     if(!needForMoreIterations) {
-      for(SimplexId k : minima) {
+      for(SimplexId const k : minima) {
         if(!authorizedExtrema[k]) {
           needForMoreIterations = true;
           break;
@@ -476,7 +477,7 @@ int ttk::LegacyTopologicalSimplification::execute(
       }
     }
     if(!needForMoreIterations) {
-      for(SimplexId k : maxima) {
+      for(SimplexId const k : maxima) {
         if(!authorizedExtrema[k]) {
           needForMoreIterations = true;
           break;

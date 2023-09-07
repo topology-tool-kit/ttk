@@ -93,7 +93,7 @@
 
       <!-- MENU CATEGORY -->
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

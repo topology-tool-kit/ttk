@@ -9,7 +9,8 @@
 /// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
 /// Scalar Data -- An Algorithm and A Benchmark" \n
 /// Pierre Guillou, Jules Vidal, Julien Tierny \n
-/// Technical Report, arXiv:2206.13932, 2022
+/// IEEE Transactions on Visualization and Computer Graphics, 2023.\n
+/// arXiv:2206.13932, 2023.
 ///
 /// \b Online \b examples: \n
 ///   - <a

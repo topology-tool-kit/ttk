@@ -49,10 +49,10 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   // 2. call feature tracking with threshold.
   std::vector<std::vector<ttk::MatchingType>> outputMatchings(fieldNumber - 1);
 
-  double spacing = Spacing;
-  std::string algorithm = DistanceAlgorithm;
-  double tolerance = Tolerance;
-  std::string wasserstein = WassersteinMetric;
+  double const spacing = Spacing;
+  std::string const algorithm = DistanceAlgorithm;
+  double const tolerance = Tolerance;
+  std::string const wasserstein = WassersteinMetric;
 
   ttk::TrackingFromPersistenceDiagrams tfp{};
   tfp.setThreadNumber(this->threadNumber_);
@@ -63,8 +63,8 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
     wasserstein, tolerance, PX, PY, PZ, PS, PE // Coefficients
   );
 
-  vtkNew<vtkPoints> points{};
-  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
+  vtkNew<vtkPoints> const points{};
+  vtkNew<vtkUnstructuredGrid> const persistenceDiagram{};
 
   vtkNew<vtkDoubleArray> persistenceScalars{};
   vtkNew<vtkDoubleArray> valueScalars{};
@@ -93,7 +93,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
                            trackingTupleToMerged, PostProcThresh);
   }
 
-  bool useGeometricSpacing = UseGeometricSpacing;
+  bool const useGeometricSpacing = UseGeometricSpacing;
 
   // Build mesh.
   ttkTrackingFromPersistenceDiagrams::buildMesh(
@@ -142,7 +142,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
        || currentScalarField->GetName() == nullptr) {
       continue;
     }
-    std::string sfname{currentScalarField->GetName()};
+    std::string const sfname{currentScalarField->GetName()};
     if(sfname.rfind("_Order") == (sfname.size() - 6)) {
       continue;
     }
@@ -164,8 +164,8 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
             });
 
   numberOfInputFields = inputScalarFieldsRaw.size();
-  int end = EndTimestep <= 0 ? numberOfInputFields
-                             : std::min(numberOfInputFields, EndTimestep);
+  int const end = EndTimestep <= 0 ? numberOfInputFields
+                                   : std::min(numberOfInputFields, EndTimestep);
   for(int i = StartTimestep; i < end; i += Sampling) {
     vtkDataArray *currentScalarField = inputScalarFieldsRaw[i];
     // Print scalar field names:
@@ -174,8 +174,8 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   // Input -> persistence filter.
-  std::string algorithm = DistanceAlgorithm;
-  int pvalg = PVAlgorithm;
+  std::string const algorithm = DistanceAlgorithm;
+  int const pvalg = PVAlgorithm;
   bool useTTKMethod = false;
 
   if(pvalg >= 0) {
@@ -215,7 +215,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   // 0. get data
-  int fieldNumber = inputScalarFields.size();
+  int const fieldNumber = inputScalarFields.size();
   std::vector<void *> inputFields(fieldNumber);
   for(int i = 0; i < fieldNumber; ++i) {
     inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);

@@ -263,7 +263,7 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
 #pragma omp critical
 #endif
   {
-    bool alreadyNode = graph_.isNode(upVert);
+    bool const alreadyNode = graph_.isNode(upVert);
     hideFromHere = alreadyNode;
     if(isJoin) {
       PRINT(upVert << " join " << isJoinLast << " h " << hideFromHere);
@@ -288,7 +288,8 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
       comp.lower = lowerComps(star.lower, localProp);
     }
     saddleNode = graph_.getNodeId(upVert);
-    idSuperArc visibleMerged = mergeAtSaddle(saddleNode, localProp, comp.lower);
+    idSuperArc const visibleMerged
+      = mergeAtSaddle(saddleNode, localProp, comp.lower);
     localProp->lessArc(visibleMerged - 1);
 
     localGrowth(localProp, star.upper);
@@ -637,7 +638,8 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::updatePreimage(
     mesh_.getVertexTriangle(localProp->getCurVertex(), t, curTriangleid);
 
     mesh_.getOrderedTriangle(curTriangleid, localProp->goUp(), oTriangle);
-    vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localProp);
+    vertPosInTriangle const curVertPos
+      = getVertPosInTriangle(oTriangle, localProp);
 
     // Update DynGraph
     // We can have an end pos on an unvisited triangle
@@ -746,7 +748,8 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::lazyUpdatePreimage(
     mesh_.getVertexTriangle(localProp->getCurVertex(), t, curTriangleid);
 
     mesh_.getOrderedTriangle(curTriangleid, localProp->goUp(), oTriangle);
-    vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localProp);
+    vertPosInTriangle const curVertPos
+      = getVertPosInTriangle(oTriangle, localProp);
 
     // Update DynGraph
     // We can have an end pos on an unvisited triangle
@@ -878,7 +881,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
   // Using propagation id allows to decrement by the number of time this
   // propagation has reached the saddle, even if the propagation take care
   // of several of these arcs (after a Hole-split).
-  for(idEdge edgeId : starVect) {
+  for(idEdge const edgeId : starVect) {
     const idSuperArc edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
     if(edgeArc == nullSuperArc) {
       continue;
@@ -920,7 +923,7 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkLast(
 
   if(oldVal == -1) {
     // First task to touch this saddle, compute the valence
-    idVertex totalVal = starVect.size();
+    idVertex const totalVal = starVect.size();
     valence newVal = 0;
     if(localProp->goUp()) {
       valence *const vd = &graph_.valDown_[curSaddle];

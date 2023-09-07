@@ -101,7 +101,7 @@ char ttk::MultiresTopology::getCriticalTypeFromLink(
 
   const auto nbCC = link.getNbCC();
 
-  int dimensionality = multiresTriangulation_.getDimensionality();
+  int const dimensionality = multiresTriangulation_.getDimensionality();
   SimplexId downValence = 0, upValence = 0;
 
   std::vector<size_t> CCIds;

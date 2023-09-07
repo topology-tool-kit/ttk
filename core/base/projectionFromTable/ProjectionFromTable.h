@@ -39,7 +39,7 @@ namespace ttk {
       const yDataType *const tableYValues,
       const size_t nTableValues,
       std::vector<std::vector<double>> &inputPoints) {
-      unsigned int noPoints = nTableValues;
+      unsigned int const noPoints = nTableValues;
       inputPoints = std::vector<std::vector<double>>(
         noPoints, std::vector<double>(3, 0.0));
 
@@ -111,7 +111,7 @@ namespace ttk {
           tableValues.data(), trianglePoints[1].data(),
           trianglePoints[2].data(), coef[i][indexes[0]]);
 
-        double sumArea
+        double const sumArea
           = coef[i][indexes[2]] + coef[i][indexes[1]] + coef[i][indexes[0]];
         for(unsigned int j = 0; j < 3; ++j)
           coef[i][indexes[j]] /= sumArea;

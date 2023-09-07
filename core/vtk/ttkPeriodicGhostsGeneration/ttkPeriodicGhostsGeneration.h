@@ -53,14 +53,18 @@
 #include <vtkExtentTranslator.h>
 #include <vtkExtractVOI.h>
 #endif
-namespace periodicGhosts {
-  struct partialGlobalBound {
-    unsigned char isBound{0};
-    double x{0};
-    double y{0};
-    double z{0};
-  };
-} // namespace periodicGhosts
+
+namespace ttk {
+
+  namespace periodicGhosts {
+    struct partialGlobalBound {
+      unsigned char isBound{0};
+      double x{0};
+      double y{0};
+      double z{0};
+    };
+  } // namespace periodicGhosts
+} // namespace ttk
 
 class TTKPERIODICGHOSTSGENERATION_EXPORT ttkPeriodicGhostsGeneration
   : public ttkAlgorithm {
@@ -74,7 +78,7 @@ private:
   std::array<double, 3> origin_;
   std::array<double, 3> spacing_;
   bool isOutputExtentComputed_{false};
-  std::array<periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
+  std::array<ttk::periodicGhosts::partialGlobalBound, 6> localGlobalBounds_;
   std::vector<int> neighbors_;
   std::vector<std::array<ttk::SimplexId, 6>> neighborVertexBBoxes_;
   std::array<unsigned char, 6> isBoundaryPeriodic_{};

@@ -43,6 +43,8 @@ mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
+  option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" FALSE)
+  mark_as_advanced(TTK_ENABLE_MPI_TIME)
 endif()
 
 if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
@@ -98,7 +100,7 @@ endif()
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
 mark_as_advanced(TTK_ENABLE_64BIT_IDS)
 
-option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
+option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" ON)
 mark_as_advanced(TTK_ENABLE_KAMIKAZE)
 
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
@@ -127,9 +129,6 @@ mark_as_advanced(TTK_SCRIPTS_PATH)
 
 option(TTK_ENABLE_SHARED_BASE_LIBRARIES "Generate shared base libraries instead of static ones" ON)
 mark_as_advanced(TTK_ENABLE_SHARED_BASE_LIBRARIES)
-if(TTK_ENABLE_SHARED_BASE_LIBRARIES AND MSVC)
-  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)

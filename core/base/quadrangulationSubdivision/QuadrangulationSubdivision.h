@@ -221,8 +221,8 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findEdgeMiddle(
   Point edgeEuclBary = (outputPoints_[e[0]] + outputPoints_[e[1]]) * 0.5F;
 
   for(size_t i = 0; i < vertexDistance_[e[0]].size(); ++i) {
-    float m = vertexDistance_[e[0]][i];
-    float n = vertexDistance_[e[1]][i];
+    float const m = vertexDistance_[e[0]][i];
+    float const n = vertexDistance_[e[1]][i];
     // stay on the shortest path between a and b
     float sum = m + n;
 

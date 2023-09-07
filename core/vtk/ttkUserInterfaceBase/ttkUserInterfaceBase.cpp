@@ -113,7 +113,7 @@ int ttkUserInterfaceBase::init(int &argc, char **argv) {
 int ttkUserInterfaceBase::refresh() {
 
   // collect the output and update the rendering
-  int outputPortNumber = vtkWrapper_->GetNumberOfOutputPorts();
+  int const outputPortNumber = vtkWrapper_->GetNumberOfOutputPorts();
 
   if((int)visibleOutputs_.size() != outputPortNumber) {
     visibleOutputs_.resize(outputPortNumber, true);

@@ -303,7 +303,7 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
   for(const auto &diag : current_bidder_diags) {
     max_diagram_size = std::max(diag.size(), max_diagram_size);
   }
-  size_t max_points_to_add = std::max(
+  size_t const max_points_to_add = std::max(
     this->MaxNumberOfPairs, this->MaxNumberOfPairs + max_diagram_size / 10);
   // 2. Get which points can be added, deduce the new minimal persistence
   std::vector<std::vector<int>> candidates_to_be_added(nInputs);
@@ -314,7 +314,7 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
     std::vector<double> persistences;
     for(size_t j = 0; j < bidder_diags[i].size(); j++) {
       const auto &b = bidder_diags[i][j];
-      double persistence = b.getPersistence();
+      double const persistence = b.getPersistence();
       if(persistence >= 0.0 && persistence <= prev_min_persistence) {
         candidates_to_be_added[i].emplace_back(j);
         idx[i].emplace_back(idx[i].size());
@@ -328,7 +328,7 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
     std::sort(idx[i].begin(), idx[i].end(), cmp);
     const auto size = candidates_to_be_added[i].size();
     if(size >= max_points_to_add) {
-      double last_persistence_added
+      double const last_persistence_added
         = persistences[idx[i][max_points_to_add - 1]];
       if(last_persistence_added > local_min_persistence) {
         local_min_persistence = last_persistence_added;

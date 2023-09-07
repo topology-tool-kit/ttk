@@ -100,8 +100,8 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
 
     for(SimplexId j = 0; j < nbVertCell; j++) {
 
-      SimplexId v0 = cellArray.getCellVertex(cid, j);
-      SimplexId v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
+      SimplexId const v0 = cellArray.getCellVertex(cid, j);
+      SimplexId const v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
 
       // perform an intersection of the 2 sorted star lists
       SimplexId pos0 = 0, pos1 = 0;
@@ -465,7 +465,7 @@ int TwoSkeleton::buildTriangleEdgeList(
     std::sort(triangleEdgeList[i].begin(), triangleEdgeList[i].end());
   }
 
-  SimplexId triangleNumber = localTriangleList->size();
+  SimplexId const triangleNumber = localTriangleList->size();
 
   printMsg("Built " + std::to_string(triangleNumber) + " triangle edges", 1,
            tm.getElapsedTime(), threadNumber_);

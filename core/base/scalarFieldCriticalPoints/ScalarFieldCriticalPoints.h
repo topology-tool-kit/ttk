@@ -246,7 +246,8 @@ int ttk::ScalarFieldCriticalPoints::executeLegacy(
   std::vector<char> vertexTypes(vertexNumber_, (char)(CriticalType::Regular));
 
 #ifdef TTK_ENABLE_OPENMP
-  int chunkSize = std::max(1000, (int)vertexNumber_ / (threadNumber_ * 100));
+  int const chunkSize
+    = std::max(1000, (int)vertexNumber_ / (threadNumber_ * 100));
 #endif
 
   if(triangulation) {
@@ -370,7 +371,8 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
   std::vector<std::vector<ttk::SimplexId>> *upperComponents,
   std::vector<std::vector<ttk::SimplexId>> *lowerComponents) const {
 
-  SimplexId neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
+  SimplexId const neighborNumber
+    = triangulation->getVertexNeighborNumber(vertexId);
   std::vector<SimplexId> lowerNeighbors, upperNeighbors;
 
   for(SimplexId i = 0; i < neighborNumber; i++) {
@@ -408,13 +410,13 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
     upperList[i] = &(upperSeeds[i]);
   }
 
-  SimplexId vertexStarSize = triangulation->getVertexStarNumber(vertexId);
+  SimplexId const vertexStarSize = triangulation->getVertexStarNumber(vertexId);
 
   for(SimplexId i = 0; i < vertexStarSize; i++) {
     SimplexId cellId = 0;
     triangulation->getVertexStar(vertexId, i, cellId);
 
-    SimplexId cellSize = triangulation->getCellVertexNumber(cellId);
+    SimplexId const cellSize = triangulation->getCellVertexNumber(cellId);
     for(SimplexId j = 0; j < cellSize; j++) {
       SimplexId neighborId0 = -1;
       triangulation->getCellVertex(cellId, j, neighborId0);
@@ -422,7 +424,7 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
       if(neighborId0 != vertexId) {
         // we are on the link
 
-        bool lower0 = offsets[neighborId0] < offsets[vertexId];
+        bool const lower0 = offsets[neighborId0] < offsets[vertexId];
 
         // connect it to everybody except himself and vertexId
         for(SimplexId k = j + 1; k < cellSize; k++) {
@@ -432,7 +434,7 @@ int ttk::ScalarFieldCriticalPoints::getLowerUpperComponents(
 
           if((neighborId1 != neighborId0) && (neighborId1 != vertexId)) {
 
-            bool lower1 = offsets[neighborId1] < offsets[vertexId];
+            bool const lower1 = offsets[neighborId1] < offsets[vertexId];
 
             std::vector<SimplexId> *neighbors = &lowerNeighbors;
             std::vector<UnionFind *> *seeds = &lowerList;
@@ -541,8 +543,8 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   }
   getLowerUpperComponents(vertexId, offsets, triangulation, isLowerOnBoundary,
                           isUpperOnBoundary, upperComponents, lowerComponents);
-  ttk::SimplexId lowerComponentNumber = lowerComponents->size();
-  ttk::SimplexId upperComponentNumber = upperComponents->size();
+  ttk::SimplexId const lowerComponentNumber = lowerComponents->size();
+  ttk::SimplexId const upperComponentNumber = upperComponents->size();
 
   if(dimension_ == 1) {
     if(lowerComponentNumber == 0 && upperComponentNumber != 0) {
@@ -611,9 +613,23 @@ void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
      && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
      && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
 
-    printWrn("Explicit, Compact or Periodic triangulation detected.");
+    printMsg(ttk::debug::Separator::L2);
+    printWrn("Explicit, Compact or Periodic");
+    printWrn("triangulation detected.");
     printWrn("Defaulting to the generic backend.");
+    printMsg(ttk::debug::Separator::L2);
 
     BackEnd = BACKEND::GENERIC;
   }
+
+#ifdef TTK_ENABLE_MPI
+  if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
+    printMsg(ttk::debug::Separator::L2);
+    printWrn("MPI run detected.");
+    printWrn("Defaulting to the generic backend.");
+    printMsg(ttk::debug::Separator::L2);
+
+    BackEnd = BACKEND::GENERIC;
+  }
+#endif // TTK_ENABLE_MPI
 }

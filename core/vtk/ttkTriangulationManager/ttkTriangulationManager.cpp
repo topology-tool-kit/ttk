@@ -166,19 +166,18 @@ int ttkTriangulationManager::processExplicit(
   ttk::Timer tm{};
 
 #ifdef TTK_ENABLE_MPI
-  if(ttk::hasInitializedMPI()) {
-    this->printErr(
-      "Compact triangulation not (yet) supported in an MPI context!");
-    this->printErr("Keeping the Explicit triangulation.");
+  if((ttk::hasInitializedMPI()) && (ttk::isRunningWithMPI())) {
+    this->printWrn("Compact triangulation not supported with MPI!");
+    this->printWrn("Keeping the Explicit triangulation.");
     output->ShallowCopy(input);
-    return 0;
+    return 1;
   }
 #endif // TTK_ENABLE_MPI
 
   // If all checks pass then log which array is going to be processed.
   this->printMsg("Compact explicit triangulation...");
   int status = 0; // this integer checks if the base code returns an error
-  ttk::CompactTriangulationPreconditioning worker{};
+  ttk::CompactTriangulationPreconditioning const worker{};
   ttkTemplateMacro(
     triangulation.getType(),
     (status = worker.execute(
@@ -264,7 +263,8 @@ int ttkTriangulationManager::processExplicit(
 
   // Modify the selected point data arrays with new indices
   for(vtkDataArray *scalarArray : pointDataArrays) {
-    vtkSmartPointer<vtkDataArray> updatedField(scalarArray->NewInstance());
+    vtkSmartPointer<vtkDataArray> const updatedField(
+      scalarArray->NewInstance());
     updatedField->SetName(scalarArray->GetName());
     for(size_t j = 0; j < vertices.size(); j++) {
       updatedField->InsertTuple(j, scalarArray->GetTuple(vertices[j]));
@@ -275,7 +275,8 @@ int ttkTriangulationManager::processExplicit(
 
   // Modify the selected cell data arrays with new indices
   for(vtkDataArray *scalarArray : cellDataArrays) {
-    vtkSmartPointer<vtkDataArray> updatedField(scalarArray->NewInstance());
+    vtkSmartPointer<vtkDataArray> const updatedField(
+      scalarArray->NewInstance());
     updatedField->SetName(scalarArray->GetName());
     for(size_t j = 0; j < cells.size(); j++) {
       updatedField->InsertTuple(j, scalarArray->GetTuple(cells[j]));

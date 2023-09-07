@@ -80,7 +80,7 @@ void makeTemporalSubsamplingOutput(
 
   if(displayRemoved) {
     for(unsigned int i = 0; i < removed.size(); ++i) {
-      int index = removed[i];
+      int const index = removed[i];
       // First cell
       if(i == 0) {
         vtkIdType pointIds[2];
@@ -191,7 +191,7 @@ void makeTemporalSubsamplingETDOutput(
 
   std::array<std::vector<double>, 2> embedding{};
   for(size_t i = 0; i < intermediateMTrees.size() + removed.size(); ++i) {
-    double y = emptyTreeDistances[i] * DistanceAxisStretch;
+    double const y = emptyTreeDistances[i] * DistanceAxisStretch;
     double x = i;
     if(i >= intermediateMTrees.size())
       x = removed[i - intermediateMTrees.size()];

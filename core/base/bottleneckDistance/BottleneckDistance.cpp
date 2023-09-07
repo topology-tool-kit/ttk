@@ -17,7 +17,7 @@ int ttk::BottleneckDistance::execute(const ttk::DiagramType &diag0,
     return -1;
   }
 
-  bool fromParaView = this->PVAlgorithm >= 0;
+  const bool fromParaView = this->PVAlgorithm >= 0;
   if(fromParaView) {
     switch(this->PVAlgorithm) {
       case 0:
@@ -108,10 +108,10 @@ void ttk::BottleneckDistance::buildCostMatrices(
                    || p1.death.type == CriticalType::Local_minimum);
     bool isMax1 = (p1.birth.type == CriticalType::Local_maximum
                    || p1.death.type == CriticalType::Local_maximum);
-    bool isSad1 = (p1.birth.type == CriticalType::Saddle1
-                   && p1.death.type == CriticalType::Saddle2)
-                  || (p1.birth.type == CriticalType::Saddle2
-                      && p1.death.type == CriticalType::Saddle1);
+    const bool isSad1 = (p1.birth.type == CriticalType::Saddle1
+                         && p1.death.type == CriticalType::Saddle2)
+                        || (p1.birth.type == CriticalType::Saddle2
+                            && p1.death.type == CriticalType::Saddle1);
     if(p1.birth.type == CriticalType::Local_minimum
        && p1.death.type == CriticalType::Local_maximum) {
       isMin1 = false;
@@ -130,10 +130,10 @@ void ttk::BottleneckDistance::buildCostMatrices(
                      || p2.death.type == CriticalType::Local_minimum);
       bool isMax2 = (p2.birth.type == CriticalType::Local_maximum
                      || p2.death.type == CriticalType::Local_maximum);
-      bool isSad2 = (p2.birth.type == CriticalType::Saddle1
-                     && p2.death.type == CriticalType::Saddle2)
-                    || (p2.birth.type == CriticalType::Saddle2
-                        && p2.death.type == CriticalType::Saddle1);
+      const bool isSad2 = (p2.birth.type == CriticalType::Saddle1
+                           && p2.death.type == CriticalType::Saddle2)
+                          || (p2.birth.type == CriticalType::Saddle2
+                              && p2.death.type == CriticalType::Saddle1);
       if(p2.birth.type == CriticalType::Local_minimum
          && p2.death.type == CriticalType::Local_maximum) {
         isMin2 = false;
@@ -143,8 +143,8 @@ void ttk::BottleneckDistance::buildCostMatrices(
         continue;
 
       double distance = this->distanceFunction(p1, p2, wasserstein);
-      double diag1 = this->diagonalDistanceFunction(p1, wasserstein);
-      double diag2 = this->diagonalDistanceFunction(p2, wasserstein);
+      const double diag1 = this->diagonalDistanceFunction(p1, wasserstein);
+      const double diag2 = this->diagonalDistanceFunction(p2, wasserstein);
 
       if(distance > diag1 + diag2)
         distance = std::numeric_limits<double>::max();
@@ -167,7 +167,8 @@ void ttk::BottleneckDistance::buildCostMatrices(
       }
     }
 
-    double distanceToDiagonal = this->diagonalDistanceFunction(p1, wasserstein);
+    const double distanceToDiagonal
+      = this->diagonalDistanceFunction(p1, wasserstein);
     if(isMin1) {
       if(reverseMin)
         minMatrix[minJ++][minI] = distanceToDiagonal;
@@ -208,17 +209,18 @@ void ttk::BottleneckDistance::buildCostMatrices(
                    || p3.death.type == CriticalType::Local_minimum);
     bool isMax2 = (p3.birth.type == CriticalType::Local_maximum
                    || p3.death.type == CriticalType::Local_maximum);
-    bool isSad2 = (p3.birth.type == CriticalType::Saddle1
-                   && p3.death.type == CriticalType::Saddle2)
-                  || (p3.birth.type == CriticalType::Saddle2
-                      && p3.death.type == CriticalType::Saddle1);
+    const bool isSad2 = (p3.birth.type == CriticalType::Saddle1
+                         && p3.death.type == CriticalType::Saddle2)
+                        || (p3.birth.type == CriticalType::Saddle2
+                            && p3.death.type == CriticalType::Saddle1);
     if(p3.birth.type == CriticalType::Local_minimum
        && p3.death.type == CriticalType::Local_maximum) {
       isMin2 = false;
       isMax2 = true;
     }
 
-    double distanceToDiagonal = this->diagonalDistanceFunction(p3, wasserstein);
+    const double distanceToDiagonal
+      = this->diagonalDistanceFunction(p3, wasserstein);
     if(isMin2) {
       if(reverseMin)
         minMatrix[minJ++][minI] = distanceToDiagonal;
@@ -311,7 +313,7 @@ double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
   const ttk::DiagramType &CTDiagram2) const {
 
   const auto sp = this->Tolerance;
-  double s = sp > 0.0 && sp < 100.0 ? sp / 100.0 : 0;
+  const double s = sp > 0.0 && sp < 100.0 ? sp / 100.0 : 0;
 
   std::vector<double> toSort(CTDiagram1.size() + CTDiagram2.size());
   for(size_t i = 0; i < CTDiagram1.size(); ++i) {
@@ -370,29 +372,31 @@ void ttk::BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
   }
 }
 
-static void solvePWasserstein(std::vector<std::vector<double>> &matrix,
-                              std::vector<ttk::MatchingType> &matchings,
-                              ttk::AssignmentMunkres<double> &solver) {
+namespace {
+  void solvePWasserstein(std::vector<std::vector<double>> &matrix,
+                         std::vector<ttk::MatchingType> &matchings,
+                         ttk::AssignmentMunkres<double> &solver) {
 
-  solver.setInput(matrix);
-  solver.run(matchings);
-  solver.clearMatrix();
-}
+    solver.setInput(matrix);
+    solver.run(matchings);
+    solver.clearMatrix();
+  }
 
-static void solveInfinityWasserstein(const int nbRow,
-                                     const int nbCol,
-                                     std::vector<std::vector<double>> &matrix,
-                                     std::vector<ttk::MatchingType> &matchings,
-                                     ttk::GabowTarjan &solver) {
+  void solveInfinityWasserstein(const int nbRow,
+                                const int nbCol,
+                                std::vector<std::vector<double>> &matrix,
+                                std::vector<ttk::MatchingType> &matchings,
+                                ttk::GabowTarjan &solver) {
 
-  // Copy input matrix.
-  auto bottleneckMatrix = matrix;
+    // Copy input matrix.
+    auto bottleneckMatrix = matrix;
 
-  // Solve.
-  solver.setInput(nbRow, nbCol, &bottleneckMatrix);
-  solver.run(matchings);
-  solver.clear();
-}
+    // Solve.
+    solver.setInput(nbRow, nbCol, &bottleneckMatrix);
+    solver.run(matchings);
+    solver.clear();
+  }
+} // namespace
 
 double ttk::BottleneckDistance::buildMappings(
   const std::vector<MatchingType> &inputMatchings,
@@ -475,7 +479,7 @@ double ttk::BottleneckDistance::distanceFunction(const ttk::PersistencePair &a,
                    - std::abs(b.birth.coords[2] + b.death.coords[2]) / 2,
                  w));
 
-  double persDistance = x + y;
+  const double persDistance = x + y;
   return Geometry::pow(persDistance + geoDistance, 1.0 / w);
 }
 
@@ -640,8 +644,8 @@ int ttk::BottleneckDistance::computeBottleneck(
   double partialDistance{};
 
   for(const auto &mt : matchings) {
-    int i = transposeOriginal ? std::get<1>(mt) : std::get<0>(mt);
-    int j = transposeOriginal ? std::get<0>(mt) : std::get<1>(mt);
+    const int i = transposeOriginal ? std::get<1>(mt) : std::get<0>(mt);
+    const int j = transposeOriginal ? std::get<0>(mt) : std::get<1>(mt);
 
     const auto &t1 = CTDiagram1[i];
     const auto &t2 = CTDiagram2[j];
@@ -682,7 +686,6 @@ int ttk::BottleneckDistance::computeBottleneck(
         : std::max(affectationD, *std::max_element(addedPersistence.begin(),
                                                    addedPersistence.end()));
 
-  std::stringstream msg;
   this->printMsg("Computed distance:");
   this->printMsg("diagMax(" + std::to_string(addedPersistence[2])
                  + "), diagMin(" + std::to_string(addedPersistence[0])
@@ -704,7 +707,7 @@ int ttk::BottleneckDistance::computeBottleneck(
   this->costs_ = costs;
 
   // display results
-  std::vector<std::vector<std::string>> rows{
+  const std::vector<std::vector<std::string>> rows{
     {" Min-saddle cost", std::to_string(this->costs_[0])},
     {" Saddle-saddle cost", std::to_string(this->costs_[1])},
     {" Saddle-max cost", std::to_string(this->costs_[2])},
