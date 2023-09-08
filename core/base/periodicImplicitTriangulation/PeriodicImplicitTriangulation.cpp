@@ -668,13 +668,21 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
   auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
   // "good" starting values?
-  localBBox = {
-    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
-    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
-    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
-  };
+  ttk::SimplexId localBBox_x_min{this->localGridOffset_[0]
+                                 + this->dimensions_[0]},
+    localBBox_y_min{this->localGridOffset_[1] + this->dimensions_[1]},
+    localBBox_z_min{this->localGridOffset_[2] + this->dimensions_[2]};
+  ttk::SimplexId localBBox_x_max{this->localGridOffset_[0]},
+    localBBox_y_max{this->localGridOffset_[1]},
+    localBBox_z_max{this->localGridOffset_[2]};
   const auto &dims{this->metaGrid_->getGridDimensions()};
-
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for reduction(                    \
+  min                                                  \
+  : localBBox_x_min, localBBox_y_min, localBBox_z_min) \
+  reduction(max                                        \
+            : localBBox_x_max, localBBox_y_max, localBBox_z_max)
+#endif
   for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     // only keep non-ghost cells
     if(this->cellGhost_[lcid / nTetraPerCube] != 0) {
@@ -696,35 +704,40 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
     p[1] += this->localGridOffset_[1];
     p[2] += this->localGridOffset_[2];
 
-    if(p[0] < localBBox[0]) {
-      localBBox[0] = max(p[0], static_cast<ttk::SimplexId>(0));
+    if(p[0] < localBBox_x_min) {
+      localBBox_x_min = max(p[0], static_cast<ttk::SimplexId>(0));
     }
-    if(p[0] > localBBox[1]) {
-      localBBox[1] = min(p[0], dims[0]);
+    if(p[0] > localBBox_x_max) {
+      localBBox_x_max = min(p[0], dims[0]);
     }
-    if(p[1] < localBBox[2]) {
-      localBBox[2] = max(p[1], static_cast<ttk::SimplexId>(0));
+    if(p[1] < localBBox_y_min) {
+      localBBox_y_min = max(p[1], static_cast<ttk::SimplexId>(0));
     }
-    if(p[1] > localBBox[3]) {
-      localBBox[3] = min(p[1], dims[1]);
+    if(p[1] > localBBox_y_max) {
+      localBBox_y_max = min(p[1], dims[1]);
     }
-    if(p[2] < localBBox[4]) {
-      localBBox[4] = max(p[2], static_cast<ttk::SimplexId>(0));
+    if(p[2] < localBBox_z_min) {
+      localBBox_z_min = max(p[2], static_cast<ttk::SimplexId>(0));
     }
-    if(p[2] > localBBox[5]) {
-      localBBox[5] = min(p[2], dims[2]);
+    if(p[2] > localBBox_z_max) {
+      localBBox_z_max = min(p[2], dims[2]);
     }
   }
-  localBBox[0] -= isBoundaryPeriodic[0];
+  localBBox_x_min -= isBoundaryPeriodic[0];
   if(dimensionality_ > 1) {
-    localBBox[2] -= isBoundaryPeriodic[2];
+    localBBox_y_min -= isBoundaryPeriodic[2];
     if(dimensionality_ > 2)
-      localBBox[4] -= isBoundaryPeriodic[4];
+      localBBox_z_min -= isBoundaryPeriodic[4];
   }
 
-  localBBox[1]++;
-  localBBox[3]++;
-  localBBox[5]++;
+  localBBox_x_max++;
+  localBBox_y_max++;
+  localBBox_z_max++;
+
+  localBBox = {
+    localBBox_x_min, localBBox_x_max, localBBox_y_min,
+    localBBox_y_max, localBBox_z_min, localBBox_z_max,
+  };
 
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
