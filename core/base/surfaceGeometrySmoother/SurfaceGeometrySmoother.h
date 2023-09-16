@@ -610,7 +610,7 @@ int ttk::SurfaceGeometrySmoother::relaxProject(
   std::stack<SimplexId> trianglesToTest{};
 
   // main loop
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for num_threads(threadNumber_) \
   firstprivate(trianglesTested, visitedTriangles, dists, trianglesToTest)
 #endif // TTK_ENABLE_OPENMP
