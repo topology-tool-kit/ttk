@@ -267,6 +267,8 @@ namespace ttk {
 #endif // TTK_ENABLE_MPI
 
   protected:
+    std::array<ttk::SimplexId, 64 * 14> neighborIndexLUT_;
+
     enum class VertexPosition : char {
       // a--------b
 
@@ -851,65 +853,59 @@ namespace ttk {
 
   public:
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
-      const SimplexId &vertexId) const override {
+      const SimplexId &vertexId) const final {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(vertexId < 0 or vertexId >= vertexNumber_)
         return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-      switch(this->underlying().getVertexPosition(vertexId)) {
-        case VertexPosition::CENTER_3D:
-          return 14;
-        case VertexPosition::FRONT_FACE_3D:
-        case VertexPosition::BACK_FACE_3D:
-        case VertexPosition::TOP_FACE_3D:
-        case VertexPosition::BOTTOM_FACE_3D:
-        case VertexPosition::LEFT_FACE_3D:
-        case VertexPosition::RIGHT_FACE_3D:
-          return 10;
-        case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-        case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-        case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-        case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-        case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-        case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-          return 8;
-        case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-        case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-          return 7;
-        case VertexPosition::TOP_BACK_EDGE_3D: // ef
-        case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-        case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-        case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-        case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-        case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-        case VertexPosition::CENTER_2D:
-          return 6;
-        case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-        case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-        case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-        case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-        case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-        case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-        case VertexPosition::TOP_EDGE_2D:
-        case VertexPosition::BOTTOM_EDGE_2D:
-        case VertexPosition::LEFT_EDGE_2D:
-        case VertexPosition::RIGHT_EDGE_2D:
-          return 4;
-        case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-        case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-          return 3;
-        case VertexPosition::TOP_LEFT_CORNER_2D: // a
-        case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-        case VertexPosition::CENTER_1D:
-          return 2;
-        case VertexPosition::LEFT_CORNER_1D:
-        case VertexPosition::RIGHT_CORNER_1D:
-          return 1;
-      }
+      if(dimensionality_ == 3) {
+        const ttk::SimplexId z = vertexId / vshift_[1];
+        const auto idx2 = vertexId - (z * vshift_[1]);
+        const ttk::SimplexId y = idx2 / vshift_[0];
+        const ttk::SimplexId x = idx2 % vshift_[0];
 
-      return -1;
+        int key = (x == 0              ? 1
+                   : x == nbvoxels_[0] ? 2
+                                       : 0)
+                  + (y == 0              ? 4
+                     : y == nbvoxels_[1] ? 8
+                                         : 0)
+                  + (z == 0              ? 16
+                     : z == nbvoxels_[2] ? 32
+                                         : 0);
+
+        constexpr std::array<ttk::SimplexId, 64> nNeighborsLUT{
+          14, 10, 10, 0, 10, 6, 8, 0, 10, 8, 6, 0, 0, 0, 0, 0,
+          10, 6,  8,  0, 8,  4, 7, 0, 6,  4, 4, 0, 0, 0, 0, 0,
+          10, 8,  6,  0, 6,  4, 4, 0, 8,  7, 4, 0, 0, 0, 0, 0,
+          0,  0,  0,  0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0};
+
+        return nNeighborsLUT[key];
+      } else {
+        switch(this->underlying().getVertexPosition(vertexId)) {
+          case VertexPosition::CENTER_2D:
+            return 6;
+          case VertexPosition::TOP_EDGE_2D:
+          case VertexPosition::BOTTOM_EDGE_2D:
+          case VertexPosition::LEFT_EDGE_2D:
+          case VertexPosition::RIGHT_EDGE_2D:
+            return 4;
+          case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+          case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+            return 3;
+          case VertexPosition::TOP_LEFT_CORNER_2D: // a
+          case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+          case VertexPosition::CENTER_1D:
+            return 2;
+          case VertexPosition::LEFT_CORNER_1D:
+          case VertexPosition::RIGHT_CORNER_1D:
+            return 1;
+          default:
+            return -1;
+        }
+      }
     }
 
     bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
@@ -918,10 +914,83 @@ namespace ttk {
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;
 
-    int TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
+    inline int TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
       const SimplexId &vertexId,
       const int &localNeighborId,
-      SimplexId &neighborId) const override;
+      SimplexId &neighborId) const final {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(localNeighborId < 0
+         or localNeighborId >= getVertexNeighborNumber(vertexId))
+        return -1;
+#endif // !TTK_ENABLE_KAMIKAZE
+
+      if(dimensionality_ == 3) {
+        const ttk::SimplexId z = vertexId / vshift_[1];
+        const auto idx2 = vertexId - (z * vshift_[1]);
+        const ttk::SimplexId y = idx2 / vshift_[0];
+        const ttk::SimplexId x = idx2 % vshift_[0];
+
+        int key = (x == 0              ? 1
+                   : x == nbvoxels_[0] ? 2
+                                       : 0)
+                  + (y == 0              ? 4
+                     : y == nbvoxels_[1] ? 8
+                                         : 0)
+                  + (z == 0              ? 16
+                     : z == nbvoxels_[2] ? 32
+                                         : 0);
+
+        neighborId = vertexId + neighborIndexLUT_[key * 14 + localNeighborId];
+
+        return 0;
+      } else {
+        switch(this->underlying().getVertexPosition(vertexId)) {
+          case VertexPosition::CENTER_2D:
+            neighborId
+              = vertexId + this->vertexNeighbor2dABCD_[localNeighborId];
+            break;
+          case VertexPosition::TOP_EDGE_2D:
+            neighborId = vertexId + this->vertexNeighbor2dAB_[localNeighborId];
+            break;
+          case VertexPosition::BOTTOM_EDGE_2D:
+            neighborId = vertexId + this->vertexNeighbor2dCD_[localNeighborId];
+            break;
+          case VertexPosition::LEFT_EDGE_2D:
+            neighborId = vertexId + this->vertexNeighbor2dAC_[localNeighborId];
+            break;
+          case VertexPosition::RIGHT_EDGE_2D:
+            neighborId = vertexId + this->vertexNeighbor2dBD_[localNeighborId];
+            break;
+          case VertexPosition::TOP_LEFT_CORNER_2D: // a
+            neighborId = vertexId + this->vertexNeighbor2dA_[localNeighborId];
+            break;
+          case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+            neighborId = vertexId + this->vertexNeighbor2dB_[localNeighborId];
+            break;
+          case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+            neighborId = vertexId + this->vertexNeighbor2dC_[localNeighborId];
+            break;
+          case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+            neighborId = vertexId + this->vertexNeighbor2dD_[localNeighborId];
+            break;
+          case VertexPosition::CENTER_1D:
+            neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
+            break;
+          case VertexPosition::LEFT_CORNER_1D:
+            neighborId = vertexId + 1;
+            break;
+          case VertexPosition::RIGHT_CORNER_1D:
+            neighborId = vertexId - 1;
+            break;
+          default:
+            neighborId = -1;
+            break;
+        }
+
+        return 0;
+      }
+    }
 
     int getVertexEdgeInternal(const SimplexId &vertexId,
                               const int &id,
