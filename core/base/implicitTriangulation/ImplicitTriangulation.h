@@ -98,9 +98,8 @@ namespace ttk {
     }
 
     inline SimplexId
-      getCellEdgeNumberInternal(const SimplexId &cellId) const override {
+      getCellEdgeNumberInternal(const SimplexId & /*cellId*/) const override {
 
-      TTK_FORCE_USE(cellId);
       if(dimensionality_ == 3)
         return 6;
       else if(dimensionality_ == 2)
@@ -182,8 +181,8 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
-      const SimplexId &cellId) const override {
-      TTK_FORCE_USE(cellId);
+      const SimplexId & /*cellId*/) const override {
+
       return dimensionality_ + 1;
     }
 
