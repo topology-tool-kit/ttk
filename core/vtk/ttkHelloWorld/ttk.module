@@ -3,6 +3,7 @@ NAME
 SOURCES
   ttkHelloWorld.cpp
 HEADERS
+  CellComplex.h
   ttkHelloWorld.h
 DEPENDS
   helloWorld

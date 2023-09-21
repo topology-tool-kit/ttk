@@ -11,6 +11,10 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <CellComplex.h>
+#include <Triangulation.h>
+#include <vtkImageData.h>
+
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
 vtkStandardNewMacro(ttkHelloWorld);
@@ -162,29 +166,39 @@ int ttkHelloWorld::RequestData(vtkInformation *ttkNotUsed(request),
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
   //       (https://vtk.org/Wiki/VTK/Tutorials/SmartPointers)
-  vtkSmartPointer<vtkDataArray> const outputArray
+  vtkSmartPointer<vtkDataArray> outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
   outputArray->SetName(this->OutputArrayName.data()); // set array name
   outputArray->SetNumberOfComponents(1); // only one component per tuple
   outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
 
-  // Get ttk::triangulation of the input vtkDataSet (will create one if one does
-  // not exist already).
-  ttk::Triangulation *triangulation
-    = ttkAlgorithm::GetTriangulation(inputDataSet);
-  if(!triangulation)
-    return 0;
+  int status = 0; // this integer checks if the base code returns an error
+
+#if 0
+this->printMsg("ImplictTriangulation");
+  auto *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
+  if(!triangulation) return 0;
 
   // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
   this->preconditionTriangulation(triangulation); // implemented in base class
-
-  // Templatize over the different input array data types and call the base code
-  int status = 0; // this integer checks if the base code returns an error
   ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
                       (status = this->computeAverages<VTK_TT, TTK_TT>(
                          (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
                          (TTK_TT *)triangulation->getData())));
+
+#else
+  this->printMsg("ImplicitFreudenthalTriangulation");
+  std::array<int, 3> dim;
+  static_cast<vtkImageData *>(inputDataSet)->GetDimensions(dim.data());
+  ImplicitFreudenthalTriangulation trian{dim};
+
+  ttkVtkTemplateMacro(
+    inputArray->GetDataType(), ttk::Triangulation::Type::IMPLICIT,
+    (status = this->computeAverages<VTK_TT, ImplicitFreudenthalTriangulation>(
+       (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputArray), &trian)));
+#endif
 
   // On error cancel filter execution
   if(status != 1)
