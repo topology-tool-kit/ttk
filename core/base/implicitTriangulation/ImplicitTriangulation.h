@@ -319,7 +319,17 @@ namespace ttk {
     virtual SimplexId
       getTriangleNeighborNumber(const SimplexId &triangleId) const = 0;
 
-    int getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
+    inline int
+      getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors) {
+
+      neighbors.resize(triangleNumber_);
+      for(SimplexId i = 0; i < triangleNumber_; ++i) {
+        neighbors[i].resize(getTriangleNeighborNumber(i));
+        for(SimplexId j = 0; j < (SimplexId)neighbors[i].size(); ++j)
+          getTriangleNeighbor(i, j, neighbors[i][j]);
+      }
+      return 0;
+    }
 
     const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getTriangleStars)() override;

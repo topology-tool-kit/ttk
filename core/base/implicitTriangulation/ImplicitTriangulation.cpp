@@ -461,17 +461,6 @@ const vector<vector<SimplexId>> *
   return &triangleStarList_;
 }
 
-int ImplicitTriangulation::getTriangleNeighbors(
-  vector<vector<SimplexId>> &neighbors) {
-  neighbors.resize(triangleNumber_);
-  for(SimplexId i = 0; i < triangleNumber_; ++i) {
-    neighbors[i].resize(getTriangleNeighborNumber(i));
-    for(SimplexId j = 0; j < (SimplexId)neighbors[i].size(); ++j)
-      getTriangleNeighbor(i, j, neighbors[i][j]);
-  }
-  return 0;
-}
-
 const vector<vector<SimplexId>> *ImplicitTriangulation::getCellEdgesInternal() {
   if(cellEdgeVector_.empty()) {
     Timer t;
