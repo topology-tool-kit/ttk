@@ -38,6 +38,12 @@
 ///   Generators Periodic Picture example</a> \n
 ///
 
+/// \b Related \b publication: \n
+/// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
+/// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
+/// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
+/// Visualization and Computer Graphics 27(2): 561-571, 2020.
+
 #pragma once
 
 #include <Debug.h>
@@ -63,6 +69,8 @@ namespace ttk {
       ISOMAP = 4,
       /** Principal Component Analysis */
       PCA = 5,
+      /** Topological Mapper */
+      TOPOMAP = 6,
     };
 
     inline void setSEParameters(const std::string &Affinity,
@@ -161,6 +169,10 @@ namespace ttk {
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
     }
+    inline void setTopoParameters(const size_t AngularSampleNb, bool CheckMST) {
+      topomap_AngularSampleNb = AngularSampleNb;
+      topomap_CheckMST = CheckMST;
+    }
 
     inline void setInputModulePath(const std::string &modulePath) {
       ModulePath = modulePath;
@@ -191,6 +203,7 @@ namespace ttk {
     }
 
     inline void setIsInputDistanceMatrix(const bool data) {
+      this->IsInputADistanceMatrix = data;
       if(data) {
         this->se_Affinity = "precomputed";
         this->mds_Dissimilarity = "precomputed";
@@ -263,6 +276,10 @@ namespace ttk {
     float pca_Tolerance{0};
     std::string pca_MaxIteration{"auto"};
 
+    // Topological Mapper
+    size_t topomap_AngularSampleNb;
+    bool topomap_CheckMST;
+
     // testing
     std::string ModulePath{"default"};
     std::string ModuleName{"dimensionReduction"};
@@ -273,5 +290,6 @@ namespace ttk {
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
     char majorVersion_{'0'};
+    bool IsInputADistanceMatrix{false};
   };
 } // namespace ttk

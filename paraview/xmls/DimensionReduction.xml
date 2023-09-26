@@ -30,6 +30,11 @@
 
         - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
 
+        Related publication:
+
+        "Topomap: A 0-dimensional homology preserving projection of high-dimensional data".
+        H.Doraiswamy, J. Tierny, P. J. S. Silva, L. G. Nonato and C. Silva.
+IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       </Documentation>
       <InputProperty
         name="Input"
@@ -92,8 +97,7 @@
          name="Regexp"
          command="SetRegexpString"
          number_of_elements="1"
-         default_values=".*"
-         panel_visibility="advanced">
+         default_values=".*" >
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -119,6 +123,7 @@
           <Entry value="3" text="t-distributed Stochastic Neighbor Embedding"/>
           <Entry value="4" text="Isomap Embedding"/>
           <Entry value="5" text="Principal Component Analysis" />
+          <Entry value="6" text="TopoMap (IEEE VIS 2020)" />
         </EnumerationDomain>
         <Documentation>
         </Documentation>
@@ -130,7 +135,38 @@
         number_of_elements="1"
         default_values="2"
         panel_visibility="default">
-        <IntRangeDomain name="range" min="0" max="100" />
+      <IntRangeDomain name="range" min="0" max="100" />
+      <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="3" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="4" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="5" />
+         
+             </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
         <Documentation>
           Set the number of output components (i.e. dimensions).
         </Documentation>
@@ -142,7 +178,38 @@
         number_of_elements="1"
         default_values="5"
         panel_visibility="default">
-        <IntRangeDomain name="range" min="0" max="100" />
+      <IntRangeDomain name="range" min="0" max="100" />
+      <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="3" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="4" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="5" />
+         
+             </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
         <Documentation>
           Set the number of neighbors.
         </Documentation>
@@ -185,7 +252,11 @@
                                        mode="visibility"
                                        property="Method"
                                        value="4" />
-            </Expression>
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="6" />
+             </Expression>
           </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
@@ -663,29 +734,66 @@
         </Documentation>
       </StringVectorProperty>
 
-      <StringVectorProperty name="ModulePath"
-        label="Module Path"
-        command="SetModulePath"
+      <IntVectorProperty
+        name="topomap_AngularSampleNb"
+        label="Anglular samples"
+        command="Settopomap_AngularSampleNb"
         number_of_elements="1"
-        default_values="default"
-        panel_visibility="advanced">
-        <FileListDomain name="files"/>
-        <Documentation>
-          Set the path of the Python module.
-        </Documentation>
-        <Hints>
-          <UseDirectoryName/>
-          <AcceptAnyFile/>
-        </Hints>
-      </StringVectorProperty>
+        default_values="2">
+      <IntRangeDomain name="range" min="1" max="100" />
+      <Documentation>
+        When projecting in 2D, we regularly need to merge two already projected subsets of the points. We put them apart the right distance, but we may rotate each by some angle between two bounds. We test several angles and keep the best one. This parameter defines how many tests we do for each rotation. Beware, this parameter appears squared in the algorithm complexity.
+      </Documentation>
+    </IntVectorProperty>
 
-      <StringVectorProperty name="ModuleName"
-        label="Module Name"
-        command="SetModuleName"
-        number_of_elements="1"
-        default_values="dimensionReduction"
-        panel_visibility="advanced">
-        <Documentation>
+
+
+
+    <IntVectorProperty
+      name="topomap_CheckMST"
+      label="MST Preservation Check"
+      command="Settopomap_CheckMST"
+      number_of_elements="1"
+      panel_visibility="advanced"
+      default_values="0">
+    <BooleanDomain name="bool"/>
+    <Hints>
+      <PropertyWidgetDecorator type="GenericDecorator"
+        mode="visibility"
+        property="Method"
+        value="6" />
+    </Hints>
+
+    <Documentation>
+      This way to embedd points in 2D is based on preserving the lengths of the edges selected by Kruskal Algortihm to build a spanning tree. Checking this box enables testing that these lengths are indeed preserved. This test is very quick.
+    </Documentation>
+  </IntVectorProperty>
+
+
+
+  <StringVectorProperty name="ModulePath"
+    label="Module Path"
+    command="SetModulePath"
+    number_of_elements="1"
+    default_values="default"
+    panel_visibility="advanced">
+  <FileListDomain name="files"/>
+  <Documentation>
+    Set the path of the Python module.
+  </Documentation>
+  <Hints>
+    <UseDirectoryName/>
+    <AcceptAnyFile/>
+  </Hints>
+</StringVectorProperty>
+
+<StringVectorProperty name="ModuleName"
+  label="Module Name"
+  command="SetModuleName"
+  number_of_elements="1"
+  default_values="dimensionReduction"
+  panel_visibility="advanced">
+<Documentation>
           Set the name of the Python module.
         </Documentation>
       </StringVectorProperty>
@@ -716,6 +824,7 @@
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputDistanceMatrix" />
         <Property name="SelectFieldsWithRegexp" />
         <Property name="ScalarFields" />
         <Property name="Regexp" />
@@ -726,7 +835,6 @@
         <Property name="NumberOfComponents" />
         <Property name="NumberOfNeighbors" />
         <Property name="KeepAllDataArrays" />
-        <Property name="InputDistanceMatrix" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Spectral Embedding">
@@ -819,6 +927,27 @@
             property="Method"
             value="5" />
         </Hints>
+    </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="TopoMap (IEEE VIS 2020)">
+        <Property name="topomap_AngularSampleNb" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="6" />
+        </Hints>
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="topomap_CheckMST" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="6" />
+
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
@@ -826,8 +955,37 @@
         <Property name="ModuleName" />
         <Property name="FunctionName" />
         <Property name="IsDeterministic" />
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                mode="visibility"
+                property="Method"
+                value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                mode="visibility"
+                property="Method"
+                value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                mode="visibility"
+                property="Method"
+                value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                mode="visibility"
+                property="Method"
+                value="3" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                mode="visibility"
+                property="Method"
+                value="4" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                mode="visibility"
+                property="Method"
+                value="5" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
       </PropertyGroup>
-
       <Hints>
         <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
       </Hints>

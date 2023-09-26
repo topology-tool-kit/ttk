@@ -75,7 +75,7 @@ static double computeAngle(const T *ptA, const T *ptB, const T *ptC);
 template <typename T>
 static void rotate(T *ptToRotate, const T *center, double angle);
 
-// Rotate the set of coords by the given angle, considering the given center as
+// Rotate the set of points by the given angle, considering the given center as
 // center of the rotation.
 template <typename T>
 static void
@@ -109,14 +109,23 @@ namespace ttk {
      * @brief Computes the topological mapper
      *
      * @param[out] outputCoords the final coordinates of the points, computed by
-     * the topological mapper
+     the topological mapper
      *
-     * @param[in] distMatrix the high-dimension input distance matrix
+     * @param[in] inputMatrix the high-dimension input distance matrix or
+     coordinates of the points
      *
+     * @param[in] isDistMat equal to true if inputMatrix is a distance matrix,
+     false if it stores input point coordinates
+     *
+     * @param[in] n the number of input points
+
      * @return 0 in case of success.
      */
     template <typename T>
-    int execute(T *outputCoords, const std::vector<std::vector<T>> &distMatrix);
+    int execute(T *outputCoords,
+                const std::vector<T> &inputMatrix,
+                bool isDistMat,
+                size_t n);
 
   protected:
     size_t AngularSampleNb{2};
@@ -143,8 +152,9 @@ namespace ttk {
                              const std::vector<size_t> &comp2,
                              size_t iPt1,
                              size_t iPt2,
-                             const std::vector<std::vector<T>> &distMatrix,
+                             const std::vector<T> &distMatrix,
                              T *allCoords,
+                             size_t n,
                              size_t angularSampleNb,
                              size_t nThread);
 
@@ -175,6 +185,7 @@ namespace ttk {
   //      points in comp(u),comp(v): the two components are facing each other at
   //      pU and pV.
   //
+  //
   //      f. Try several rotations of comp(u) and comp(v) such that pU and pV
   //      still are the closest pair of vertices from the two components. We
   //      keep the angle of rotation which minimizes the difference between the
@@ -186,7 +197,9 @@ namespace ttk {
 
   template <typename T>
   int ttk::TopoMap::execute(T *outputCoords,
-                            const std::vector<std::vector<T>> &distMatrix) {
+                            const std::vector<T> &inputMatrix,
+                            bool isDistMat,
+                            size_t n) {
     ttk::Timer timer;
 
 #ifdef TTK_ENABLE_QHULL
@@ -219,24 +232,53 @@ namespace ttk {
       printErr("Error, template type must be either double or float.\n");
       return 1;
     }
+#ifndef TTK_KAMIKAZE
+    if(isDistMat) {
+      this->printMsg("Input data: " + std::to_string(n) + " points.");
+    } else {
+      this->printMsg("Input data: " + std::to_string(n) + " points, dimension "
+                     + std::to_string(inputMatrix.size() / n) + ".");
+    }
+#endif
+    std::vector<T> computedDistMatrix(n * n);
+    if(!isDistMat) {
+      size_t dim = inputMatrix.size() / n;
+      if(n * dim != inputMatrix.size()) {
+        this->printErr("Error, the coordinates input matrix has invalid size.");
+        return 1;
+      }
+      for(size_t i1 = 0; i1 < n; i1++) {
+        for(size_t i2 = i1; i2 < n; i2++) {
+          T dist2 = 0;
+          for(size_t k = 0; k < dim; k++)
+            dist2 += (inputMatrix[dim * i1 + k] - inputMatrix[dim * i2 + k])
+                     * (inputMatrix[dim * i1 + k] - inputMatrix[dim * i2 + k]);
+          T dist = sqrt(dist2);
+          computedDistMatrix[i1 * n + i2] = dist;
+          computedDistMatrix[i2 * n + i1] = dist;
+        }
+      }
+    } else {
+      if(inputMatrix.size() != n * n) {
+        this->printErr("Invalid size for the distance matrix.");
+        return 1;
+      }
+    }
 
-    size_t n = distMatrix.size();
     std::vector<double> edgesMSTBefore,
       edgesMSTAfter; // Only used for minimum spanning tree checking;
     edgesMSTBefore.reserve(n);
-    this->printMsg("Input data: " + std::to_string(n) + " points.");
+    const std::vector<T> &distMatrix
+      = isDistMat ? inputMatrix : computedDistMatrix;
 
     // 1. Sorting the edges
     std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
     edgeHeapVect.reserve(n * (n - 1) / 2);
     for(size_t u1 = 0; u1 < n; u1++) {
-      if(distMatrix[u1].size() != n) {
-        this->printErr("Error: the distance matrix is not a square matrix.");
-        return 1;
-      }
+
       for(size_t u2 = u1 + 1; u2 < n; u2++) {
         edgeHeapVect.emplace_back(
-          std::make_pair(distMatrix[u1][u2], std::make_pair(u1, u2)));
+          std::make_pair(distMatrix[u1 * n + u2], std::make_pair(u1, u2)));
       }
     }
     sort(edgeHeapVect.begin(), edgeHeapVect.end());
@@ -298,15 +340,15 @@ namespace ttk {
       // 2.c We want to select, among all vertices in the convex hull, the one
       // which is closest to the vertex of the edge we work on.
       for(size_t vert : idsInHullBig) {
-        T dist = distMatrix[vert][idBig];
-        if(dist < distMatrix[idChosenBig][idBig]) {
+        T dist = distMatrix[vert * n + idBig];
+        if(dist < distMatrix[idChosenBig * n + idBig]) {
           idChosenBig = vert;
         }
       }
 
       for(size_t vert : idsInHullSmall) {
-        T dist = distMatrix[vert][idSmall];
-        if(dist < distMatrix[idChosenSmall][idSmall]) {
+        T dist = distMatrix[vert * n + idSmall];
+        if(dist < distMatrix[idChosenSmall * n + idSmall]) {
           idChosenSmall = vert;
         }
       }
@@ -404,7 +446,7 @@ namespace ttk {
       if(nBig > 1) {
         finalDistortion = rotateMergingCompsBest(
           idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall,
-          idChosenBig, distMatrix, outputCoords, this->AngularSampleNb,
+          idChosenBig, distMatrix, outputCoords, n, this->AngularSampleNb,
           this->threadNumber_);
         if(finalDistortion < -1) {
           return 1;
@@ -563,17 +605,17 @@ namespace ttk {
   }
 
   template <typename T>
-  T TopoMap::rotateMergingCompsBest(
-    const std::vector<size_t> &hull1,
-    const std::vector<size_t> &hull2,
-    const std::vector<size_t> &comp1,
-    const std::vector<size_t> &comp2,
-    size_t iPt1,
-    size_t iPt2,
-    const std::vector<std::vector<T>> &distMatrix,
-    T *allCoords,
-    size_t angularSampleNb,
-    size_t nThread) {
+  T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1,
+                                    const std::vector<size_t> &hull2,
+                                    const std::vector<size_t> &comp1,
+                                    const std::vector<size_t> &comp2,
+                                    size_t iPt1,
+                                    size_t iPt2,
+                                    const std::vector<T> &distMatrix,
+                                    T *allCoords,
+                                    size_t n,
+                                    size_t angularSampleNb,
+                                    size_t nThread) {
     TTK_FORCE_USE(nThread);
     // The distance between the two components.
     T shortestDistPossible
@@ -614,7 +656,7 @@ namespace ttk {
     for(size_t i = 0; i < comp1Size; i++) {
       origDistMatrix[i].resize(comp2Size);
       for(size_t j = 0; j < comp2Size; j++) {
-        origDistMatrix[i][j] = distMatrix[comp1[i]][comp2[j]];
+        origDistMatrix[i][j] = distMatrix[comp1[i] * n + comp2[j]];
       }
     }
     std::vector<T> initialCoords1(2 * comp1Size), initialCoords2(2 * comp2Size);

@@ -1,4 +1,5 @@
 #include <DimensionReduction.h>
+#include <TopoMap.h>
 
 #include <map>
 
@@ -70,6 +71,28 @@ int DimensionReduction::execute(
   Timer t;
 
   const int numberOfComponents = std::max(2, this->NumberOfComponents);
+  if(this->Method == METHOD::TOPOMAP) {
+    TopoMap topomap(this->topomap_AngularSampleNb, topomap_CheckMST);
+    topomap.setDebugLevel(this->debugLevel_);
+    topomap.setThreadNumber(this->threadNumber_);
+
+    double *ptrForCoordsTopomap = (double *)new double[2 * nRows];
+    topomap.execute<double>(
+      ptrForCoordsTopomap, inputMatrix, IsInputADistanceMatrix, nRows);
+    outputEmbedding.resize(2);
+    outputEmbedding[0].resize(nRows);
+    outputEmbedding[1].resize(nRows);
+    for(int i = 0; i < nRows; i++) {
+      outputEmbedding[0][i] = ptrForCoordsTopomap[2 * i];
+      outputEmbedding[1][i] = ptrForCoordsTopomap[2 * i + 1];
+    }
+    delete[] ptrForCoordsTopomap;
+
+    this->printMsg("Computed Topological Mapper", 1.0, t.getElapsedTime(),
+                   this->threadNumber_);
+    return 0;
+  }
+
   const int numberOfNeighbors = std::max(1, this->NumberOfNeighbors);
 
   // declared here to avoid crossing initialization with goto
