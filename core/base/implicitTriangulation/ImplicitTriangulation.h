@@ -83,78 +83,28 @@ namespace ttk {
       return this->dimensions_;
     }
 
-    inline int getCellEdgeInternal(const SimplexId &cellId,
-                                   const int &localEdgeId,
-                                   SimplexId &edgeId) const override {
+    int getCellEdgeInternal(const SimplexId &cellId,
+                            const int &id,
+                            SimplexId &edgeId) const override;
 
-      if(dimensionality_ == 3)
-        getTetrahedronEdge(cellId, localEdgeId, edgeId);
-      else if(dimensionality_ == 2)
-        getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
-      else if(dimensionality_ == 1)
-        getCellNeighbor(cellId, localEdgeId, edgeId);
-
-      return 0;
-    }
-
-    inline SimplexId
-      getCellEdgeNumberInternal(const SimplexId &cellId) const override {
-
-      TTK_FORCE_USE(cellId);
-      if(dimensionality_ == 3)
-        return 6;
-      else if(dimensionality_ == 2)
-        return 3;
-
-      return 0;
-    }
+    SimplexId getCellEdgeNumberInternal(const SimplexId &cellId) const override;
 
     const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() override;
 
-    inline int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
+    int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
       const SimplexId &cellId,
       const int &localNeighborId,
-      SimplexId &neighborId) const override {
+      SimplexId &neighborId) const override;
 
-      if(dimensionality_ == 3)
-        getTetrahedronNeighbor(cellId, localNeighborId, neighborId);
-      else if(dimensionality_ == 2)
-        getTriangleNeighbor(cellId, localNeighborId, neighborId);
-      else if(dimensionality_ == 1) {
-        printErr("getCellNeighbor() not implemented in 1D! (TODO)");
-        return -1;
-      }
-
-      return 0;
-    }
-
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellNeighborNumber)(
-      const SimplexId &cellId) const override {
-
-      if(dimensionality_ == 3)
-        return getTetrahedronNeighborNumber(cellId);
-      else if(dimensionality_ == 2)
-        return getTriangleNeighborNumber(cellId);
-      else if(dimensionality_ == 1) {
-        printErr("getCellNeighborNumber() not implemented in 1D! (TODO)");
-        return -1;
-      }
-
-      return 0;
-    }
+    SimplexId TTK_TRIANGULATION_INTERNAL(getCellNeighborNumber)(
+      const SimplexId &cellId) const override;
 
     const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() override;
 
-    inline int getCellTriangleInternal(const SimplexId &cellId,
-                                       const int &localTriangleId,
-                                       SimplexId &triangleId) const override {
-
-      if(dimensionality_ == 3)
-        getTetrahedronTriangle(cellId, localTriangleId, triangleId);
-
-      return 0;
-    }
+    int getCellTriangleInternal(const SimplexId &cellId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
     SimplexId getCellTriangleNumberInternal(
       const SimplexId & /*cellId*/) const override {
@@ -166,26 +116,13 @@ namespace ttk {
     const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() override;
 
-    inline int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
+    int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
       const SimplexId &cellId,
       const int &localVertexId,
-      SimplexId &vertexId) const override {
+      SimplexId &vertexId) const override;
 
-      if(dimensionality_ == 3)
-        getTetrahedronVertex(cellId, localVertexId, vertexId);
-      else if(dimensionality_ == 2)
-        getTriangleVertexInternal(cellId, localVertexId, vertexId);
-      else if(dimensionality_ == 1)
-        getEdgeVertexInternal(cellId, localVertexId, vertexId);
-
-      return 0;
-    }
-
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
-      const SimplexId &cellId) const override {
-      TTK_FORCE_USE(cellId);
-      return dimensionality_ + 1;
-    }
+    SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
+      const SimplexId &cellId) const override;
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
@@ -229,34 +166,14 @@ namespace ttk {
                                    const int &id,
                                    SimplexId &edgeId) const = 0;
 
-    inline int
-      getTetrahedronEdges(std::vector<std::vector<SimplexId>> &edges) const {
-      edges.resize(tetrahedronNumber_);
-      for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
-        edges[i].resize(6);
-        for(int j = 0; j < 6; ++j)
-          getTetrahedronEdge(i, j, edges[i][j]);
-      }
-
-      return 0;
-    }
+    int getTetrahedronEdges(std::vector<std::vector<SimplexId>> &edges) const;
 
     virtual int getTetrahedronTriangle(const SimplexId &tetId,
                                        const int &id,
                                        SimplexId &triangleId) const = 0;
 
-    inline int getTetrahedronTriangles(
-      std::vector<std::vector<SimplexId>> &triangles) const {
-
-      triangles.resize(tetrahedronNumber_);
-      for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
-        triangles[i].resize(4);
-        for(int j = 0; j < 4; ++j)
-          getTetrahedronTriangle(i, j, triangles[i][j]);
-      }
-
-      return 0;
-    }
+    int getTetrahedronTriangles(
+      std::vector<std::vector<SimplexId>> &triangles) const;
 
     virtual int getTetrahedronNeighbor(const SimplexId &tetId,
                                        const int &localNeighborId,
@@ -265,18 +182,7 @@ namespace ttk {
     virtual SimplexId
       getTetrahedronNeighborNumber(const SimplexId &tetId) const = 0;
 
-    inline int
-      getTetrahedronNeighbors(std::vector<std::vector<SimplexId>> &neighbors) {
-
-      neighbors.resize(tetrahedronNumber_);
-      for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
-        neighbors[i].resize(getTetrahedronNeighborNumber(i));
-        for(SimplexId j = 0; j < (SimplexId)neighbors[i].size(); ++j)
-          getTetrahedronNeighbor(i, j, neighbors[i][j]);
-      }
-
-      return 0;
-    }
+    int getTetrahedronNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
 
     virtual int getTetrahedronVertex(const SimplexId &tetId,
                                      const int &localVertexId,
@@ -292,23 +198,11 @@ namespace ttk {
     const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() override;
 
-    inline int getTriangleEdgesInternal(
-      std::vector<std::vector<SimplexId>> &edges) const {
+    int getTriangleEdgesInternal(
+      std::vector<std::vector<SimplexId>> &edges) const;
 
-      edges.resize(triangleNumber_);
-      for(SimplexId i = 0; i < triangleNumber_; ++i) {
-        edges[i].resize(3);
-        for(int j = 0; j < 3; ++j)
-          getTriangleEdgeInternal(i, j, edges[i][j]);
-      }
-      return 0;
-    }
-
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
-      const SimplexId &triangleId) const override {
-
-      return TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId);
-    }
+    SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
+      const SimplexId &triangleId) const override;
 
     const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() override;
@@ -432,160 +326,19 @@ namespace ttk {
 
   public:
     void createMetaGrid(const double *const bounds) override;
-    inline int getCellRankInternal(const SimplexId lcid) const override {
-      const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
-      const auto locCubeId{lcid / nTetraPerCube};
-
-      if(this->cellGhost_[locCubeId] == 0) {
-        return ttk::MPIrank_;
-      }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(this->neighborRanks_.empty() && ttk::MPIsize_ > 1) {
-        this->printErr("Empty neighborsRanks_!");
-        return -1;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-
-      const auto nVertsCell{this->getCellVertexNumber(lcid)};
-      std::vector<bool> inRank(nVertsCell);
-      for(const auto neigh : this->neighborRanks_) {
-        std::fill(inRank.begin(), inRank.end(), false);
-        const auto &bbox{this->neighborCellBBoxes_[neigh]};
-        for(SimplexId i = 0; i < nVertsCell; ++i) {
-          SimplexId v{};
-          this->getCellVertex(lcid, i, v);
-          if(this->vertexGhost_[v] == 0) {
-            inRank[i] = true;
-          } else {
-            const auto p{this->getVertGlobalCoords(v)};
-            if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
-               && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
-              inRank[i] = true;
-            }
-          }
-        }
-        if(std::all_of(
-             inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
-          return neigh;
-        }
-      }
-
-      return -1;
-    }
+    int getCellRankInternal(const SimplexId lcid) const override;
 
   protected:
-    inline bool
-      isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override {
-
-      if(!ttk::isRunningWithMPI()) {
-        // NOTE: perf killer
-        return this->isVertexOnBoundary(lvid);
-      }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(lvid > this->TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() - 1
-         || lvid < 0) {
-        return false;
-      }
-      if(this->metaGrid_ == nullptr) {
-        return false;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-
-      const auto gvid{this->getVertexGlobalIdInternal(lvid)};
-      if(gvid == -1) {
-        return false;
-      }
-      return this->metaGrid_->isVertexOnBoundary(gvid);
-    }
-
-    inline bool
-      isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override {
-
-      if(!ttk::isRunningWithMPI()) {
-        // NOTE: perf killer
-        return this->isEdgeOnBoundary(leid);
-      }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(leid > this->getNumberOfEdgesInternal() - 1 || leid < 0) {
-        return false;
-      }
-      if(this->metaGrid_ == nullptr) {
-        return false;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-
-      const auto geid{this->getEdgeGlobalIdInternal(leid)};
-      if(geid == -1) {
-        return false;
-      }
-      return this->metaGrid_->isEdgeOnBoundary(geid);
-    }
-
-    inline bool
-      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override {
-
-      if(!ttk::isRunningWithMPI()) {
-        // NOTE: perf killer
-        return this->isTriangleOnBoundary(ltid);
-      }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ltid > this->getNumberOfTrianglesInternal() - 1 || ltid < 0) {
-        return false;
-      }
-      if(this->metaGrid_ == nullptr) {
-        return false;
-      }
-#endif // TTK_ENABLE_KAMIKAZE
-
-      const auto gtid{this->getTriangleGlobalIdInternal(ltid)};
-      if(gtid == -1) {
-        return false;
-      }
-      return this->metaGrid_->isTriangleOnBoundary(gtid);
-    }
+    bool isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override;
+    bool isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override;
+    bool
+      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override;
 
   private:
-    inline std::array<SimplexId, 3>
-      getVertGlobalCoords(const SimplexId lvid) const override {
-
-      // local vertex coordinates
-      std::array<SimplexId, 3> p{};
-      if(this->dimensionality_ == 3) {
-        this->vertexToPosition(lvid, p.data());
-      } else if(this->dimensionality_ == 2) {
-        this->vertexToPosition2d(lvid, p.data());
-      }
-
-      // global vertex coordinates
-      p[0] += this->localGridOffset_[0];
-      p[1] += this->localGridOffset_[1];
-      p[2] += this->localGridOffset_[2];
-
-      return p;
-    }
-
-    inline std::array<SimplexId, 3>
-      getVertLocalCoords(const SimplexId gvid) const override {
-
-      // global vertex coordinates
-      std::array<SimplexId, 3> p{};
-      if(this->dimensionality_ == 3) {
-        this->metaGrid_->vertexToPosition(gvid, p.data());
-      } else if(this->dimensionality_ == 2) {
-        this->metaGrid_->vertexToPosition2d(gvid, p.data());
-      }
-
-      // local vertex coordinates
-      p[0] -= this->localGridOffset_[0];
-      p[1] -= this->localGridOffset_[1];
-      p[2] -= this->localGridOffset_[2];
-
-      return p;
-    }
+    std::array<SimplexId, 3>
+      getVertGlobalCoords(const SimplexId lvid) const override;
+    std::array<SimplexId, 3>
+      getVertLocalCoords(const SimplexId gvid) const override;
 
 #endif // TTK_ENABLE_MPI
 
@@ -856,72 +609,50 @@ namespace ttk {
     void triangleToPosition2d(const SimplexId triangle,
                               SimplexId p[2]) const override;
 
-    inline SimplexId getVertexEdge2dA(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexEdge2dB(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexEdge2dC(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexEdge2dD(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexEdge2dAB(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexEdge2dCD(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexEdge2dAC(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexEdge2dBD(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexEdge2dABCD(const SimplexId p[2],
-                                         const int id) const;
+    SimplexId getVertexEdge2dA(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dB(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dC(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dAB(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dCD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dAC(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dBD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexEdge2dABCD(const SimplexId p[2], const int id) const;
 
-    inline SimplexId getVertexStar2dA(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexStar2dB(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexStar2dC(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexStar2dD(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexStar2dAB(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexStar2dCD(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexStar2dAC(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexStar2dBD(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexStar2dABCD(const SimplexId p[2],
-                                         const int id) const;
+    SimplexId getVertexStar2dA(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dB(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dC(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dAB(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dCD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dAC(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dBD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexStar2dABCD(const SimplexId p[2], const int id) const;
 
-    inline SimplexId getVertexLink2dA(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexLink2dB(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexLink2dC(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexLink2dD(const SimplexId p[2], const int id) const;
-    inline SimplexId getVertexLink2dAB(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexLink2dCD(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexLink2dAC(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexLink2dBD(const SimplexId p[2],
-                                       const int id) const;
-    inline SimplexId getVertexLink2dABCD(const SimplexId p[2],
-                                         const int id) const;
+    SimplexId getVertexLink2dA(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dB(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dC(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dAB(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dCD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dAC(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dBD(const SimplexId p[2], const int id) const;
+    SimplexId getVertexLink2dABCD(const SimplexId p[2], const int id) const;
 
-    inline SimplexId getEdgeTriangleL_x0(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getEdgeTriangleL_xn(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getEdgeTriangleL_xN(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getEdgeTriangleH_0y(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getEdgeTriangleH_ny(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getEdgeTriangleH_Ny(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getEdgeTriangleD1_xy(const SimplexId p[3],
-                                          const int id) const;
+    SimplexId getEdgeTriangleL_x0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xN(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_0y(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_ny(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_Ny(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD1_xy(const SimplexId p[3], const int id) const;
 
-    inline SimplexId getEdgeLink2dL(const SimplexId p[2], const int id) const;
-    inline SimplexId getEdgeLink2dH(const SimplexId p[2], const int id) const;
-    inline SimplexId getEdgeLink2dD1(const SimplexId p[2], const int id) const;
+    SimplexId getEdgeLink2dL(const SimplexId p[2], const int id) const;
+    SimplexId getEdgeLink2dH(const SimplexId p[2], const int id) const;
+    SimplexId getEdgeLink2dD1(const SimplexId p[2], const int id) const;
 
-    inline SimplexId getEdgeStar2dL(const SimplexId p[2], const int id) const;
-    inline SimplexId getEdgeStar2dH(const SimplexId p[2], const int id) const;
+    SimplexId getEdgeStar2dL(const SimplexId p[2], const int id) const;
+    SimplexId getEdgeStar2dH(const SimplexId p[2], const int id) const;
 
     // 3D //
     void vertexToPosition(const SimplexId vertex,
@@ -934,377 +665,263 @@ namespace ttk {
     void tetrahedronToPosition(const SimplexId tetrahedron,
                                SimplexId p[3]) const override;
 
-    inline SimplexId getVertexEdgeA(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeB(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeC(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeE(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeAB(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeCD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeEF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeGH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeAC(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeBD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeEG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeFH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeAE(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeBF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeCG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeDH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexEdgeABDC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexEdgeEFHG(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexEdgeAEGC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexEdgeBFHD(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexEdgeAEFB(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexEdgeGHDC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexEdgeABCDEFGH(const SimplexId p[3],
-                                           const int id) const;
+    SimplexId getVertexEdgeA(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeAB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeCD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeEF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeGH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeAC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeBD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeEG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeFH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeAE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeBF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeCG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeDH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeABDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeEFHG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeAEGC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeBFHD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeAEFB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeGHDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexEdgeABCDEFGH(const SimplexId p[3], const int id) const;
 
-    inline SimplexId getVertexTriangleA(const SimplexId p[3],
+    SimplexId getVertexTriangleA(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleAB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleCD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleEF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleGH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleAC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleBD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleEG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleFH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleAE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleBF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleCG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleDH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleABDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleEFHG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleAEGC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleBFHD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleAEFB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleGHDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexTriangleABCDEFGH(const SimplexId p[3],
                                         const int id) const;
-    inline SimplexId getVertexTriangleB(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleC(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleD(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleE(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleF(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleG(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleH(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getVertexTriangleAB(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleCD(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleEF(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleGH(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleAC(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleBD(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleEG(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleFH(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleAE(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleBF(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleCG(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleDH(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getVertexTriangleABDC(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getVertexTriangleEFHG(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getVertexTriangleAEGC(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getVertexTriangleBFHD(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getVertexTriangleAEFB(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getVertexTriangleGHDC(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getVertexTriangleABCDEFGH(const SimplexId p[3],
-                                               const int id) const;
 
-    inline SimplexId getVertexLinkA(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkB(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkC(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkE(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkAB(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkCD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkEF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkGH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkAC(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkBD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkEG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkFH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkAE(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkBF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkCG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkDH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexLinkABDC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexLinkEFHG(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexLinkAEGC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexLinkBFHD(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexLinkAEFB(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexLinkGHDC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexLinkABCDEFGH(const SimplexId p[3],
-                                           const int id) const;
+    SimplexId getVertexLinkA(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkAB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkCD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkEF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkGH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkAC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkBD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkEG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkFH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkAE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkBF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkCG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkDH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkABDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkEFHG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkAEGC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkBFHD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkAEFB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkGHDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexLinkABCDEFGH(const SimplexId p[3], const int id) const;
 
-    inline SimplexId getVertexStarA(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarB(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarC(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarE(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarAB(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarCD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarEF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarGH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarAC(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarBD(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarEG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarFH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarAE(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarBF(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarCG(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarDH(const SimplexId p[3], const int id) const;
-    inline SimplexId getVertexStarABDC(const SimplexId p[3],
+    SimplexId getVertexStarA(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarAB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarCD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarEF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarGH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarAC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarBD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarEG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarFH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarAE(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarBF(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarCG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarDH(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarABDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarEFHG(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarAEGC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarBFHD(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarAEFB(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarGHDC(const SimplexId p[3], const int id) const;
+    SimplexId getVertexStarABCDEFGH(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleL_x00(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_x0n(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_x0N(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xn0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xnn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xnN(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xN0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xNn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleL_xNN(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleH_0y0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_0yn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_0yN(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_ny0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_nyn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_nyN(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_Ny0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_Nyn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleH_NyN(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleP_00z(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_0nz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_0Nz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_n0z(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_nnz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_nNz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_N0z(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_Nnz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleP_NNz(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleD1_xy0(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD1_xyn(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD1_xyN(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleD2_0yz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD2_nyz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD2_Nyz(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleD3_x0z(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD3_xnz(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeTriangleD3_xNz(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeTriangleD4_xyz(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeLinkL(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeLinkH(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeLinkP(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeLinkD1(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeLinkD2(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeLinkD3(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeLinkD4(const SimplexId p[3], const int id) const;
+
+    SimplexId getEdgeStarL(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeStarH(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeStarP(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeStarD1(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeStarD2(const SimplexId p[3], const int id) const;
+    SimplexId getEdgeStarD3(const SimplexId p[3], const int id) const;
+
+    SimplexId getTriangleVertexF(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleVertexH(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleVertexC(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleVertexD1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleVertexD2(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleVertexD3(const SimplexId p[3], const int id) const;
+
+    SimplexId getTriangleEdgeF_0(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeF_1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeH_0(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeH_1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeC_0(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeC_1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeD1_0(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeD1_1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeD2_0(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeD2_1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeD3_0(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleEdgeD3_1(const SimplexId p[3], const int id) const;
+
+    SimplexId getTriangleLinkF(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleLinkH(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleLinkC(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleLinkD1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleLinkD2(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleLinkD3(const SimplexId p[3], const int id) const;
+
+    SimplexId getTriangleStarF(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleStarH(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleStarC(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleStarD1(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleStarD2(const SimplexId p[3], const int id) const;
+    SimplexId getTriangleStarD3(const SimplexId p[3], const int id) const;
+
+    SimplexId getTetrahedronVertexABCG(const SimplexId p[3],
                                        const int id) const;
-    inline SimplexId getVertexStarEFHG(const SimplexId p[3],
+    SimplexId getTetrahedronVertexBCDG(const SimplexId p[3],
                                        const int id) const;
-    inline SimplexId getVertexStarAEGC(const SimplexId p[3],
+    SimplexId getTetrahedronVertexABEG(const SimplexId p[3],
                                        const int id) const;
-    inline SimplexId getVertexStarBFHD(const SimplexId p[3],
+    SimplexId getTetrahedronVertexBEFG(const SimplexId p[3],
                                        const int id) const;
-    inline SimplexId getVertexStarAEFB(const SimplexId p[3],
+    SimplexId getTetrahedronVertexBFGH(const SimplexId p[3],
                                        const int id) const;
-    inline SimplexId getVertexStarGHDC(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getVertexStarABCDEFGH(const SimplexId p[3],
-                                           const int id) const;
-
-    inline SimplexId getEdgeTriangleL_x00(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_x0n(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_x0N(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_xn0(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_xnn(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_xnN(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_xN0(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_xNn(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleL_xNN(const SimplexId p[3],
-                                          const int id) const;
-
-    inline SimplexId getEdgeTriangleH_0y0(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_0yn(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_0yN(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_ny0(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_nyn(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_nyN(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_Ny0(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_Nyn(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleH_NyN(const SimplexId p[3],
-                                          const int id) const;
-
-    inline SimplexId getEdgeTriangleP_00z(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_0nz(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_0Nz(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_n0z(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_nnz(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_nNz(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_N0z(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_Nnz(const SimplexId p[3],
-                                          const int id) const;
-    inline SimplexId getEdgeTriangleP_NNz(const SimplexId p[3],
-                                          const int id) const;
-
-    inline SimplexId getEdgeTriangleD1_xy0(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getEdgeTriangleD1_xyn(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getEdgeTriangleD1_xyN(const SimplexId p[3],
-                                           const int id) const;
-
-    inline SimplexId getEdgeTriangleD2_0yz(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getEdgeTriangleD2_nyz(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getEdgeTriangleD2_Nyz(const SimplexId p[3],
-                                           const int id) const;
-
-    inline SimplexId getEdgeTriangleD3_x0z(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getEdgeTriangleD3_xnz(const SimplexId p[3],
-                                           const int id) const;
-    inline SimplexId getEdgeTriangleD3_xNz(const SimplexId p[3],
-                                           const int id) const;
-
-    inline SimplexId getEdgeTriangleD4_xyz(const SimplexId p[3],
-                                           const int id) const;
-
-    inline SimplexId getEdgeLinkL(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeLinkH(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeLinkP(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeLinkD1(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeLinkD2(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeLinkD3(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeLinkD4(const SimplexId p[3], const int id) const;
-
-    inline SimplexId getEdgeStarL(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeStarH(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeStarP(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeStarD1(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeStarD2(const SimplexId p[3], const int id) const;
-    inline SimplexId getEdgeStarD3(const SimplexId p[3], const int id) const;
-
-    inline SimplexId getTriangleVertexF(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleVertexH(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleVertexC(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleVertexD1(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleVertexD2(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleVertexD3(const SimplexId p[3],
-                                         const int id) const;
-
-    inline SimplexId getTriangleEdgeF_0(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleEdgeF_1(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleEdgeH_0(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleEdgeH_1(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleEdgeC_0(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleEdgeC_1(const SimplexId p[3],
-                                        const int id) const;
-    inline SimplexId getTriangleEdgeD1_0(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleEdgeD1_1(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleEdgeD2_0(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleEdgeD2_1(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleEdgeD3_0(const SimplexId p[3],
-                                         const int id) const;
-    inline SimplexId getTriangleEdgeD3_1(const SimplexId p[3],
-                                         const int id) const;
-
-    inline SimplexId getTriangleLinkF(const SimplexId p[3], const int id) const;
-    inline SimplexId getTriangleLinkH(const SimplexId p[3], const int id) const;
-    inline SimplexId getTriangleLinkC(const SimplexId p[3], const int id) const;
-    inline SimplexId getTriangleLinkD1(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getTriangleLinkD2(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getTriangleLinkD3(const SimplexId p[3],
+    SimplexId getTetrahedronVertexBDGH(const SimplexId p[3],
                                        const int id) const;
 
-    inline SimplexId getTriangleStarF(const SimplexId p[3], const int id) const;
-    inline SimplexId getTriangleStarH(const SimplexId p[3], const int id) const;
-    inline SimplexId getTriangleStarC(const SimplexId p[3], const int id) const;
-    inline SimplexId getTriangleStarD1(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getTriangleStarD2(const SimplexId p[3],
-                                       const int id) const;
-    inline SimplexId getTriangleStarD3(const SimplexId p[3],
-                                       const int id) const;
+    SimplexId getTetrahedronEdgeABCG(const SimplexId p[3], const int id) const;
+    SimplexId getTetrahedronEdgeBCDG(const SimplexId p[3], const int id) const;
+    SimplexId getTetrahedronEdgeABEG(const SimplexId p[3], const int id) const;
+    SimplexId getTetrahedronEdgeBEFG(const SimplexId p[3], const int id) const;
+    SimplexId getTetrahedronEdgeBFGH(const SimplexId p[3], const int id) const;
+    SimplexId getTetrahedronEdgeBDGH(const SimplexId p[3], const int id) const;
 
-    inline SimplexId getTetrahedronVertexABCG(const SimplexId p[3],
-                                              const int id) const;
-    inline SimplexId getTetrahedronVertexBCDG(const SimplexId p[3],
-                                              const int id) const;
-    inline SimplexId getTetrahedronVertexABEG(const SimplexId p[3],
-                                              const int id) const;
-    inline SimplexId getTetrahedronVertexBEFG(const SimplexId p[3],
-                                              const int id) const;
-    inline SimplexId getTetrahedronVertexBFGH(const SimplexId p[3],
-                                              const int id) const;
-    inline SimplexId getTetrahedronVertexBDGH(const SimplexId p[3],
-                                              const int id) const;
+    SimplexId getTetrahedronTriangleABCG(const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronTriangleBCDG(const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronTriangleABEG(const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronTriangleBEFG(const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronTriangleBFGH(const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronTriangleBDGH(const SimplexId p[3],
+                                         const int id) const;
 
-    inline SimplexId getTetrahedronEdgeABCG(const SimplexId p[3],
-                                            const int id) const;
-    inline SimplexId getTetrahedronEdgeBCDG(const SimplexId p[3],
-                                            const int id) const;
-    inline SimplexId getTetrahedronEdgeABEG(const SimplexId p[3],
-                                            const int id) const;
-    inline SimplexId getTetrahedronEdgeBEFG(const SimplexId p[3],
-                                            const int id) const;
-    inline SimplexId getTetrahedronEdgeBFGH(const SimplexId p[3],
-                                            const int id) const;
-    inline SimplexId getTetrahedronEdgeBDGH(const SimplexId p[3],
-                                            const int id) const;
-
-    inline SimplexId getTetrahedronTriangleABCG(const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronTriangleBCDG(const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronTriangleABEG(const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronTriangleBEFG(const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronTriangleBFGH(const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronTriangleBDGH(const SimplexId p[3],
-                                                const int id) const;
-
-    inline SimplexId getTetrahedronNeighborABCG(const SimplexId t,
-                                                const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronNeighborBCDG(const SimplexId t,
-                                                const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronNeighborABEG(const SimplexId t,
-                                                const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronNeighborBEFG(const SimplexId t,
-                                                const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronNeighborBFGH(const SimplexId t,
-                                                const SimplexId p[3],
-                                                const int id) const;
-    inline SimplexId getTetrahedronNeighborBDGH(const SimplexId t,
-                                                const SimplexId p[3],
-                                                const int id) const;
+    SimplexId getTetrahedronNeighborABCG(const SimplexId t,
+                                         const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronNeighborBCDG(const SimplexId t,
+                                         const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronNeighborABEG(const SimplexId t,
+                                         const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronNeighborBEFG(const SimplexId t,
+                                         const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronNeighborBFGH(const SimplexId t,
+                                         const SimplexId p[3],
+                                         const int id) const;
+    SimplexId getTetrahedronNeighborBDGH(const SimplexId t,
+                                         const SimplexId p[3],
+                                         const int id) const;
     //\endcond
   };
 
@@ -2710,624 +2327,52 @@ namespace ttk {
       return 0;
     }
 
-    inline int getTriangleVertexInternal(const SimplexId &triangleId,
-                                         const int &localVertexId,
-                                         SimplexId &vertexId) const override {
+    int getTriangleVertexInternal(const SimplexId &triangleId,
+                                  const int &localVertexId,
+                                  SimplexId &vertexId) const override;
 
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(triangleId < 0 or triangleId >= triangleNumber_)
-        return -1;
-      if(localVertexId < 0 or localVertexId >= 3)
-        return -2;
-#endif
+    int getTriangleEdgeInternal(const SimplexId &triangleId,
+                                const int &id,
+                                SimplexId &edgeId) const override;
 
-      //    e--------f
-      //   /|       /|
-      //  / |      / |
-      // a--g-----b--h
-      // | /      | /
-      // |/       |/
-      // c--------d
-      //
-      // Classement des "Triangles" et dans cet ordre:
-      // F: face (type abc/bcd)
-      // C: cote (type abe/bef)
-      // H: haut (type acg/aeg)
-      // D1: diagonale1 (type bdg/beg)
-      // D2: diagonale2 (type abg/bgh)
-      // D3: diagonale3 (type bcg/bfg)
-
-      const auto &p = this->underlying().getTriangleCoords(triangleId);
-      vertexId = -1;
-
-      switch(this->underlying().getTrianglePosition(triangleId)) {
-        case TrianglePosition::F_3D:
-          vertexId = getTriangleVertexF(p.data(), localVertexId);
-          break;
-        case TrianglePosition::H_3D:
-          vertexId = getTriangleVertexH(p.data(), localVertexId);
-          break;
-        case TrianglePosition::C_3D:
-          vertexId = getTriangleVertexC(p.data(), localVertexId);
-          break;
-        case TrianglePosition::D1_3D:
-          vertexId = getTriangleVertexD1(p.data(), localVertexId);
-          break;
-        case TrianglePosition::D2_3D:
-          vertexId = getTriangleVertexD2(p.data(), localVertexId);
-          break;
-        case TrianglePosition::D3_3D:
-          vertexId = getTriangleVertexD3(p.data(), localVertexId);
-          break;
-        case TrianglePosition::TOP_2D:
-          switch(localVertexId) {
-            break;
-            case 0:
-              vertexId = p[0] / 2 + p[1] * vshift_[0];
-              break;
-            case 1:
-              vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
-              break;
-            case 2:
-              vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
-              break;
-          }
-          break;
-        case TrianglePosition::BOTTOM_2D:
-          switch(localVertexId) {
-            break;
-            case 0:
-              vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
-              break;
-            case 1:
-              vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1;
-              break;
-            case 2:
-              vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
-              break;
-          }
-      }
-
-      return 0;
-    }
-
-    inline int getTriangleEdgeInternal(const SimplexId &triangleId,
-                                       const int &localEdgeId,
-                                       SimplexId &edgeId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(triangleId < 0 or triangleId >= triangleNumber_)
-        return -1;
-      if(localEdgeId < 0 or localEdgeId >= 3)
-        return -2;
-#endif
-
-      const auto &p = this->underlying().getTriangleCoords(triangleId);
-      const auto par = triangleId % 2;
-      edgeId = -1;
-
-      switch(this->underlying().getTrianglePosition(triangleId)) {
-        case TrianglePosition::F_3D:
-          edgeId = (par == 1) ? getTriangleEdgeF_1(p.data(), localEdgeId)
-                              : getTriangleEdgeF_0(p.data(), localEdgeId);
-          break;
-        case TrianglePosition::H_3D:
-          edgeId = (par == 1) ? getTriangleEdgeH_1(p.data(), localEdgeId)
-                              : getTriangleEdgeH_0(p.data(), localEdgeId);
-          break;
-        case TrianglePosition::C_3D:
-          edgeId = (par == 1) ? getTriangleEdgeC_1(p.data(), localEdgeId)
-                              : getTriangleEdgeC_0(p.data(), localEdgeId);
-          break;
-        case TrianglePosition::D1_3D:
-          edgeId = (par == 1) ? getTriangleEdgeD1_1(p.data(), localEdgeId)
-                              : getTriangleEdgeD1_0(p.data(), localEdgeId);
-          break;
-        case TrianglePosition::D2_3D:
-          edgeId = (par == 1) ? getTriangleEdgeD2_1(p.data(), localEdgeId)
-                              : getTriangleEdgeD2_0(p.data(), localEdgeId);
-          break;
-        case TrianglePosition::D3_3D:
-          edgeId = (par == 1) ? getTriangleEdgeD3_1(p.data(), localEdgeId)
-                              : getTriangleEdgeD3_0(p.data(), localEdgeId);
-          break;
-        case TrianglePosition::TOP_2D:
-          switch(localEdgeId) {
-            break;
-            case 0:
-              edgeId = p[0] / 2 + p[1] * eshift_[0];
-              break;
-            case 1:
-              edgeId = esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
-              break;
-            case 2:
-              edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
-              break;
-          }
-          break;
-        case TrianglePosition::BOTTOM_2D:
-          switch(localEdgeId) {
-            break;
-            case 0:
-              edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0];
-              break;
-            case 1:
-              edgeId = esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2];
-              break;
-            case 2:
-              edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
-              break;
-          }
-      }
-
-      return 0;
-    }
-
-    inline int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
+    int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
       const SimplexId &triangleId,
       const int &localLinkId,
-      SimplexId &linkId) const override {
+      SimplexId &linkId) const override;
 
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(localLinkId < 0 or localLinkId >= getTriangleLinkNumber(triangleId))
-        return -1;
-#endif
-
-      const auto &p = this->underlying().getTriangleCoords(triangleId);
-
-      switch(this->underlying().getTrianglePosition(triangleId)) {
-        case TrianglePosition::F_3D:
-          linkId = getTriangleLinkF(p.data(), localLinkId);
-          break;
-        case TrianglePosition::H_3D:
-          linkId = getTriangleLinkH(p.data(), localLinkId);
-          break;
-        case TrianglePosition::C_3D:
-          linkId = getTriangleLinkC(p.data(), localLinkId);
-          break;
-        case TrianglePosition::D1_3D:
-          linkId = getTriangleLinkD1(p.data(), localLinkId);
-          break;
-        case TrianglePosition::D2_3D:
-          linkId = getTriangleLinkD2(p.data(), localLinkId);
-          break;
-        case TrianglePosition::D3_3D:
-          linkId = getTriangleLinkD3(p.data(), localLinkId);
-          break;
-        default: // 2D
-          linkId = -1;
-          break;
-      }
-
-      return 0;
-    }
-
-    inline int TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
+    int TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
       const SimplexId &triangleId,
       const int &localStarId,
-      SimplexId &starId) const override {
+      SimplexId &starId) const override;
 
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(localStarId < 0 or localStarId >= getTriangleStarNumber(triangleId))
-        return -1;
-#endif
+    SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
+      const SimplexId &triangleId) const override;
 
-      const auto &p = this->underlying().getTriangleCoords(triangleId);
+    int getTriangleNeighbor(const SimplexId &triangleId,
+                            const int &localNeighborId,
+                            SimplexId &neighborId) const override;
 
-      switch(this->underlying().getTrianglePosition(triangleId)) {
-        case TrianglePosition::F_3D:
-          starId = getTriangleStarF(p.data(), localStarId);
-          break;
-        case TrianglePosition::H_3D:
-          starId = getTriangleStarH(p.data(), localStarId);
-          break;
-        case TrianglePosition::C_3D:
-          starId = getTriangleStarC(p.data(), localStarId);
-          break;
-        case TrianglePosition::D1_3D:
-          starId = getTriangleStarD1(p.data(), localStarId);
-          break;
-        case TrianglePosition::D2_3D:
-          starId = getTriangleStarD2(p.data(), localStarId);
-          break;
-        case TrianglePosition::D3_3D:
-          starId = getTriangleStarD3(p.data(), localStarId);
-          break;
-        default: // 2D
-          starId = -1;
-          break;
-      }
+    SimplexId
+      getTriangleNeighborNumber(const SimplexId &triangleId) const override;
 
-      return 0;
-    }
+    int getTetrahedronVertex(const SimplexId &tetId,
+                             const int &localVertexId,
+                             SimplexId &vertexId) const override;
 
-    inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
-      const SimplexId &triangleId) const override {
+    int getTetrahedronEdge(const SimplexId &tetId,
+                           const int &id,
+                           SimplexId &edgeId) const override;
 
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(triangleId < 0 or triangleId >= triangleNumber_)
-        return -1;
-#endif
+    int getTetrahedronTriangle(const SimplexId &tetId,
+                               const int &id,
+                               SimplexId &triangleId) const override;
 
-      const auto &p = this->underlying().getTriangleCoords(triangleId);
+    SimplexId
+      getTetrahedronNeighborNumber(const SimplexId &tetId) const override;
 
-      switch(this->underlying().getTrianglePosition(triangleId)) {
-        case TrianglePosition::F_3D:
-          return (p[2] > 0 and p[2] < nbvoxels_[2]) ? 2 : 1;
-        case TrianglePosition::H_3D:
-          return (p[1] > 0 and p[1] < nbvoxels_[1]) ? 2 : 1;
-        case TrianglePosition::C_3D:
-          return (p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2)) ? 1 : 2;
-
-        case TrianglePosition::D1_3D:
-        case TrianglePosition::D2_3D:
-        case TrianglePosition::D3_3D:
-          return 2;
-        default: // 2D
-          break;
-      }
-      return 0;
-    }
-
-    inline int getTriangleNeighbor(const SimplexId &triangleId,
-                                   const int &localNeighborId,
-                                   SimplexId &neighborId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(localNeighborId < 0
-         or localNeighborId >= getTriangleNeighborNumber(triangleId))
-        return -1;
-#endif
-
-      neighborId = -1;
-
-      if(dimensionality_ == 2) {
-        const auto &p = this->underlying().getTriangleCoords(triangleId);
-        const SimplexId id = triangleId % 2;
-
-        if(id) {
-          if(p[0] / 2 == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
-            neighborId = triangleId - 1;
-          else if(p[0] / 2 == nbvoxels_[Di_] - 1) {
-            switch(localNeighborId) {
-              case 0:
-                neighborId = triangleId - 1;
-                break;
-              case 1:
-                neighborId = triangleId + tshift_[0] - 1;
-                break;
-            }
-          } else if(p[1] == nbvoxels_[Dj_] - 1) {
-            switch(localNeighborId) {
-              case 0:
-                neighborId = triangleId - 1;
-                break;
-              case 1:
-                neighborId = triangleId + 1;
-                break;
-            }
-          } else {
-            switch(localNeighborId) {
-              case 0:
-                neighborId = triangleId - 1;
-                break;
-              case 1:
-                neighborId = triangleId + 1;
-                break;
-              case 2:
-                neighborId = triangleId + tshift_[0] - 1;
-                break;
-            }
-          }
-        } else {
-          if(p[0] == 0 and p[1] == 0)
-            neighborId = triangleId + 1;
-          else if(p[0] == 0) {
-            switch(localNeighborId) {
-              case 0:
-                neighborId = triangleId + 1;
-                break;
-              case 1:
-                neighborId = triangleId - tshift_[0] + 1;
-                break;
-            }
-          } else if(p[1] == 0) {
-            switch(localNeighborId) {
-              case 0:
-                neighborId = triangleId + 1;
-                break;
-              case 1:
-                neighborId = triangleId - 1;
-                break;
-            }
-          } else {
-            switch(localNeighborId) {
-              case 0:
-                neighborId = triangleId + 1;
-                break;
-              case 1:
-                neighborId = triangleId - 1;
-                break;
-              case 2:
-                neighborId = triangleId - tshift_[0] + 1;
-                break;
-            }
-          }
-        }
-      }
-
-      return 0;
-    }
-
-    inline SimplexId
-      getTriangleNeighborNumber(const SimplexId &triangleId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(triangleId < 0 or triangleId >= triangleNumber_)
-        return -1;
-#endif
-
-      if(dimensionality_ == 2) {
-        const auto &p = this->underlying().getTriangleCoords(triangleId);
-        const SimplexId id = triangleId % 2;
-
-        if(id) {
-          if(p[0] / 2 == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
-            return 1;
-          else if(p[0] / 2 == nbvoxels_[Di_] - 1 or p[1] == nbvoxels_[Dj_] - 1)
-            return 2;
-          else
-            return 3;
-        } else {
-          if(p[0] == 0 and p[1] == 0)
-            return 1;
-          else if(p[0] == 0 or p[1] == 0)
-            return 2;
-          else
-            return 3;
-        }
-      }
-
-      return 0;
-    }
-
-    inline int getTetrahedronVertex(const SimplexId &tetId,
-                                    const int &localVertexId,
-                                    SimplexId &vertexId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(tetId < 0 or tetId >= tetrahedronNumber_)
-        return -1;
-      if(localVertexId < 0 or localVertexId >= 4)
-        return -2;
-#endif
-
-      vertexId = -1;
-
-      if(dimensionality_ == 3) {
-        const SimplexId id = tetId % 6;
-        const auto &c = this->underlying().getTetrahedronCoords(tetId);
-        const auto p{c.data()};
-
-        switch(id) {
-          case 0:
-            vertexId = getTetrahedronVertexABCG(p, localVertexId);
-            break;
-          case 1:
-            vertexId = getTetrahedronVertexBCDG(p, localVertexId);
-            break;
-          case 2:
-            vertexId = getTetrahedronVertexABEG(p, localVertexId);
-            break;
-          case 3:
-            vertexId = getTetrahedronVertexBEFG(p, localVertexId);
-            break;
-          case 4:
-            vertexId = getTetrahedronVertexBFGH(p, localVertexId);
-            break;
-          case 5:
-            vertexId = getTetrahedronVertexBDGH(p, localVertexId);
-            break;
-        }
-      }
-      return 0;
-    }
-
-    inline int getTetrahedronEdge(const SimplexId &tetId,
-                                  const int &localEdgeId,
-                                  SimplexId &edgeId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(tetId < 0 or tetId >= tetrahedronNumber_)
-        return -1;
-      if(localEdgeId < 0 or localEdgeId >= 6)
-        return -2;
-#endif
-
-      edgeId = -1;
-
-      if(dimensionality_ == 3) {
-        const SimplexId id = tetId % 6;
-        const auto &c = this->underlying().getTetrahedronCoords(tetId);
-        const auto p{c.data()};
-
-        switch(id) {
-          case 0:
-            edgeId = getTetrahedronEdgeABCG(p, localEdgeId);
-            break;
-          case 1:
-            edgeId = getTetrahedronEdgeBCDG(p, localEdgeId);
-            break;
-          case 2:
-            edgeId = getTetrahedronEdgeABEG(p, localEdgeId);
-            break;
-          case 3:
-            edgeId = getTetrahedronEdgeBEFG(p, localEdgeId);
-            break;
-          case 4:
-            edgeId = getTetrahedronEdgeBFGH(p, localEdgeId);
-            break;
-          case 5:
-            edgeId = getTetrahedronEdgeBDGH(p, localEdgeId);
-            break;
-        }
-      }
-
-      return 0;
-    }
-
-    inline int getTetrahedronTriangle(const SimplexId &tetId,
-                                      const int &localTriangleId,
-                                      SimplexId &triangleId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(tetId < 0 or tetId >= tetrahedronNumber_)
-        return -1;
-      if(localTriangleId < 0 or localTriangleId >= 4)
-        return -2;
-#endif
-
-      triangleId = -1;
-
-      if(dimensionality_ == 3) {
-        const SimplexId id = tetId % 6;
-        const auto &c = this->underlying().getTetrahedronCoords(tetId);
-        const auto p{c.data()};
-
-        switch(id) {
-          case 0:
-            triangleId = getTetrahedronTriangleABCG(p, localTriangleId);
-            break;
-          case 1:
-            triangleId = getTetrahedronTriangleBCDG(p, localTriangleId);
-            break;
-          case 2:
-            triangleId = getTetrahedronTriangleABEG(p, localTriangleId);
-            break;
-          case 3:
-            triangleId = getTetrahedronTriangleBEFG(p, localTriangleId);
-            break;
-          case 4:
-            triangleId = getTetrahedronTriangleBFGH(p, localTriangleId);
-            break;
-          case 5:
-            triangleId = getTetrahedronTriangleBDGH(p, localTriangleId);
-            break;
-        }
-      }
-
-      return 0;
-    }
-
-    inline SimplexId
-      getTetrahedronNeighborNumber(const SimplexId &tetId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(tetId < 0 or tetId >= tetrahedronNumber_)
-        return -1;
-#endif
-
-      if(dimensionality_ == 3) {
-        const SimplexId id = tetId % 6;
-        const auto &c = this->underlying().getTetrahedronCoords(tetId);
-        const auto p{c.data()};
-
-        switch(id) {
-          case 0: // ABCG
-            if(p[0] == 0 and p[2] == 0)
-              return 2;
-            else if(p[0] == 0 or p[2] == 0)
-              return 3;
-            else
-              return 4;
-            break;
-          case 1: // BCDG
-            if(p[1] == nbvoxels_[1] - 1 and p[2] == 0)
-              return 2;
-            else if(p[1] == nbvoxels_[1] - 1 or p[2] == 0)
-              return 3;
-            else
-              return 4;
-            break;
-          case 2: // ABEG
-            if(p[0] == 0 and p[1] == 0)
-              return 2;
-            else if(p[0] == 0 or p[1] == 0)
-              return 3;
-            else
-              return 4;
-            break;
-          case 3: // BEFG
-            if(p[1] == 0 and p[2] == nbvoxels_[2] - 1)
-              return 2;
-            else if(p[1] == 0 or p[2] == nbvoxels_[2] - 1)
-              return 3;
-            else
-              return 4;
-            break;
-          case 4: // BFGH
-            if(p[0] == nbvoxels_[0] - 1 and p[2] == nbvoxels_[2] - 1)
-              return 2;
-            else if(p[0] == nbvoxels_[0] - 1 or p[2] == nbvoxels_[2] - 1)
-              return 3;
-            else
-              return 4;
-            break;
-          case 5: // BDGH
-            if(p[0] == nbvoxels_[0] - 1 and p[1] == nbvoxels_[1] - 1)
-              return 2;
-            else if(p[0] == nbvoxels_[0] - 1 or p[1] == nbvoxels_[1] - 1)
-              return 3;
-            else
-              return 4;
-            break;
-        }
-      }
-
-      return 0;
-    }
-
-    inline int getTetrahedronNeighbor(const SimplexId &tetId,
-                                      const int &localNeighborId,
-                                      SimplexId &neighborId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(localNeighborId < 0
-         or localNeighborId >= getTetrahedronNeighborNumber(tetId))
-        return -1;
-#endif
-
-      neighborId = -1;
-
-      if(dimensionality_ == 3) {
-        const SimplexId id = tetId % 6;
-        const auto &c = this->underlying().getTetrahedronCoords(tetId);
-        const auto p{c.data()};
-
-        switch(id) {
-          case 0:
-            neighborId = getTetrahedronNeighborABCG(tetId, p, localNeighborId);
-            break;
-          case 1:
-            neighborId = getTetrahedronNeighborBCDG(tetId, p, localNeighborId);
-            break;
-          case 2:
-            neighborId = getTetrahedronNeighborABEG(tetId, p, localNeighborId);
-            break;
-          case 3:
-            neighborId = getTetrahedronNeighborBEFG(tetId, p, localNeighborId);
-            break;
-          case 4:
-            neighborId = getTetrahedronNeighborBFGH(tetId, p, localNeighborId);
-            break;
-          case 5:
-            neighborId = getTetrahedronNeighborBDGH(tetId, p, localNeighborId);
-            break;
-        }
-      }
-
-      return 0;
-    }
+    int getTetrahedronNeighbor(const SimplexId &tetId,
+                               const int &localNeighborId,
+                               SimplexId &neighborId) const override;
   };
 } // namespace ttk
 
