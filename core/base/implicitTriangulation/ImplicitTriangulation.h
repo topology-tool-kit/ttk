@@ -851,7 +851,7 @@ namespace ttk {
 
   public:
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
-      const SimplexId &vertexId) const override {
+      const SimplexId &vertexId) const final {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -921,7 +921,7 @@ namespace ttk {
     inline int TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
       const SimplexId &vertexId,
       const int &localNeighborId,
-      SimplexId &neighborId) const override {
+      SimplexId &neighborId) const final {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localNeighborId < 0
