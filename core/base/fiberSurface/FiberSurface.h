@@ -764,7 +764,7 @@ inline int ttk::FiberSurface::computeCase0(
     Geometry::computeBarycentricCoordinates(
       p0.data(), p1.data(), p.data(), baryCentrics, 2);
 
-    float pA[3] = {0, 0, 0}, pB[3] = {0, 0, 0};
+    float pA[3], pB[3];
     if(triangulation) {
       triangulation->getVertexPoint(vertexId0, pA[0], pA[1], pA[2]);
       triangulation->getVertexPoint(vertexId1, pB[0], pB[1], pB[2]);

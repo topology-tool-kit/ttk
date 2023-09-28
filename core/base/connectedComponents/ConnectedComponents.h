@@ -63,7 +63,7 @@ namespace ttk {
       TID id = seed;
 
       float size = 0;
-      float x = 0, y = 0, z = 0;
+      float x, y, z;
       float center[3] = {0, 0, 0};
 
       while(!stack.empty()) {
