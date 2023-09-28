@@ -13,10 +13,10 @@ namespace ttk {
       this->setDebugMsgPrefix("ImplicitTriangulationWithPreconditions");
     }
 
-    int preconditionVerticesInternal() final;
-    int preconditionEdgesInternal() final;
-    int preconditionTrianglesInternal() final;
-    int preconditionTetrahedronsInternal() final;
+    int preconditionVerticesInternal() override;
+    int preconditionEdgesInternal() override;
+    int preconditionTrianglesInternal() override;
+    int preconditionTetrahedronsInternal() override;
 
     inline VertexPosition getVertexPosition(const SimplexId v) const {
       return this->vertexPositions_[v];
@@ -83,16 +83,16 @@ namespace ttk {
       this->setDebugMsgPrefix("ImplicitTriangulationNoPreconditions");
     }
 
-    inline int preconditionVerticesInternal() final {
+    inline int preconditionVerticesInternal() override {
       return 0;
     }
-    inline int preconditionEdgesInternal() final {
+    inline int preconditionEdgesInternal() override {
       return 0;
     }
-    inline int preconditionTrianglesInternal() final {
+    inline int preconditionTrianglesInternal() override {
       return 0;
     }
-    inline int preconditionTetrahedronsInternal() final {
+    inline int preconditionTetrahedronsInternal() override {
       return 0;
     }
 

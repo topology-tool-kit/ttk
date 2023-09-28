@@ -79,13 +79,13 @@ namespace ttk {
     ImplicitTriangulation &operator=(const ImplicitTriangulation &) = default;
     ImplicitTriangulation &operator=(ImplicitTriangulation &&) = default;
 
-    inline const std::array<SimplexId, 3> &getGridDimensions() const final {
+    inline const std::array<SimplexId, 3> &getGridDimensions() const override {
       return this->dimensions_;
     }
 
     inline int getCellEdgeInternal(const SimplexId &cellId,
                                    const int &localEdgeId,
-                                   SimplexId &edgeId) const final {
+                                   SimplexId &edgeId) const override {
 
       if(dimensionality_ == 3)
         getTetrahedronEdge(cellId, localEdgeId, edgeId);
@@ -98,7 +98,7 @@ namespace ttk {
     }
 
     inline SimplexId
-      getCellEdgeNumberInternal(const SimplexId & /*cellId*/) const final {
+      getCellEdgeNumberInternal(const SimplexId & /*cellId*/) const override {
 
       if(dimensionality_ == 3)
         return 6;
@@ -108,12 +108,12 @@ namespace ttk {
       return 0;
     }
 
-    const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() final;
+    const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() override;
 
     inline int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
       const SimplexId &cellId,
       const int &localNeighborId,
-      SimplexId &neighborId) const final {
+      SimplexId &neighborId) const override {
 
       if(dimensionality_ == 3)
         getTetrahedronNeighbor(cellId, localNeighborId, neighborId);
@@ -128,7 +128,7 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellNeighborNumber)(
-      const SimplexId &cellId) const final {
+      const SimplexId &cellId) const override {
 
       if(dimensionality_ == 3)
         return getTetrahedronNeighborNumber(cellId);
@@ -143,11 +143,11 @@ namespace ttk {
     }
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() final;
+      TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() override;
 
     inline int getCellTriangleInternal(const SimplexId &cellId,
                                        const int &localTriangleId,
-                                       SimplexId &triangleId) const final {
+                                       SimplexId &triangleId) const override {
 
       if(dimensionality_ == 3)
         getTetrahedronTriangle(cellId, localTriangleId, triangleId);
@@ -155,19 +155,20 @@ namespace ttk {
       return 0;
     }
 
-    inline SimplexId
-      getCellTriangleNumberInternal(const SimplexId & /*cellId*/) const final {
+    SimplexId getCellTriangleNumberInternal(
+      const SimplexId & /*cellId*/) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
     }
 
-    const std::vector<std::vector<SimplexId>> *getCellTrianglesInternal() final;
+    const std::vector<std::vector<SimplexId>> *
+      getCellTrianglesInternal() override;
 
     inline int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
       const SimplexId &cellId,
       const int &localVertexId,
-      SimplexId &vertexId) const final {
+      SimplexId &vertexId) const override {
 
       if(dimensionality_ == 3)
         getTetrahedronVertex(cellId, localVertexId, vertexId);
@@ -180,47 +181,46 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
-      const SimplexId & /*cellId*/) const final {
+      const SimplexId & /*cellId*/) const override {
 
       return dimensionality_ + 1;
     }
 
-    inline int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const final {
+    int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
-      const SimplexId &edgeId) const final {
+      const SimplexId &edgeId) const override {
 
       return TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(edgeId);
     }
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() final;
+      TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() override;
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getEdgeStars)() final;
+      TTK_TRIANGULATION_INTERNAL(getEdgeStars)() override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeTrianglesInternal() final;
+    const std::vector<std::vector<SimplexId>> *
+      getEdgeTrianglesInternal() override;
 
     const std::vector<std::array<SimplexId, 2>> *
-      TTK_TRIANGULATION_INTERNAL(getEdges)() final;
+      TTK_TRIANGULATION_INTERNAL(getEdges)() override;
 
-    inline SimplexId
-      TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const final {
+    SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
       return cellNumber_;
     }
 
-    inline SimplexId getNumberOfEdgesInternal() const final {
+    SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
     }
 
-    inline SimplexId getNumberOfTrianglesInternal() const final {
+    SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
     }
 
-    inline SimplexId
-      TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const final {
+    SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const override {
       return vertexNumber_;
     }
 
@@ -281,14 +281,15 @@ namespace ttk {
                                      const int &localVertexId,
                                      SimplexId &vertexId) const = 0;
 
-    inline SimplexId getTriangleEdgeNumberInternal(
-      const SimplexId & /*triangleId*/) const final {
+    SimplexId getTriangleEdgeNumberInternal(
+      const SimplexId & /*triangleId*/) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
     }
 
-    const std::vector<std::vector<SimplexId>> *getTriangleEdgesInternal() final;
+    const std::vector<std::vector<SimplexId>> *
+      getTriangleEdgesInternal() override;
 
     inline int getTriangleEdgesInternal(
       std::vector<std::vector<SimplexId>> &edges) const {
@@ -303,13 +304,13 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
-      const SimplexId &triangleId) const final {
+      const SimplexId &triangleId) const override {
 
       return TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId);
     }
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() final;
+      TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() override;
 
     virtual int getTriangleNeighbor(const SimplexId &triangleId,
                                     const int &localNeighborId,
@@ -331,41 +332,42 @@ namespace ttk {
     }
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getTriangleStars)() final;
+      TTK_TRIANGULATION_INTERNAL(getTriangleStars)() override;
 
     const std::vector<std::array<SimplexId, 3>> *
-      TTK_TRIANGULATION_INTERNAL(getTriangles)() final;
+      TTK_TRIANGULATION_INTERNAL(getTriangles)() override;
 
     inline SimplexId
-      getVertexEdgeNumberInternal(const SimplexId &vertexId) const final {
+      getVertexEdgeNumberInternal(const SimplexId &vertexId) const override {
       return TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(vertexId);
     }
 
-    const std::vector<std::vector<SimplexId>> *getVertexEdgesInternal() final;
+    const std::vector<std::vector<SimplexId>> *
+      getVertexEdgesInternal() override;
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLinkNumber)(
-      const SimplexId &vertexId) const final {
+      const SimplexId &vertexId) const override {
       return TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(vertexId);
     }
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getVertexLinks)() final;
+      TTK_TRIANGULATION_INTERNAL(getVertexLinks)() override;
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() final;
+      TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() override;
 
     const std::vector<std::vector<SimplexId>> *
-      TTK_TRIANGULATION_INTERNAL(getVertexStars)() final;
+      TTK_TRIANGULATION_INTERNAL(getVertexStars)() override;
 
     const std::vector<std::vector<SimplexId>> *
-      getVertexTrianglesInternal() final;
+      getVertexTrianglesInternal() override;
 
-    inline bool isEmpty() const final {
+    inline bool isEmpty() const override {
       return !vertexNumber_;
     }
 
     inline bool TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
-      const SimplexId &triangleId) const final {
+      const SimplexId &triangleId) const override {
 
 #ifdef TTK_ENABLE_MPI
       if(this->metaGrid_ != nullptr) {
@@ -393,10 +395,10 @@ namespace ttk {
                      const float &zSpacing,
                      const SimplexId &xDim,
                      const SimplexId &yDim,
-                     const SimplexId &zDim) final;
+                     const SimplexId &zDim) override;
 
     virtual int preconditionVerticesInternal() = 0;
-    int preconditionVertexNeighborsInternal() final;
+    int preconditionVertexNeighborsInternal() override;
     int preconditionEdgesInternal() override = 0;
     int preconditionTrianglesInternal() override = 0;
     virtual int preconditionTetrahedronsInternal() = 0;
@@ -420,7 +422,8 @@ namespace ttk {
       return 0;
     }
 
-    inline int getCellVTKIDInternal(const int &ttkId, int &vtkId) const final {
+    inline int getCellVTKIDInternal(const int &ttkId,
+                                    int &vtkId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(ttkId < 0) {
         return -1;
@@ -434,11 +437,11 @@ namespace ttk {
 #ifdef TTK_ENABLE_MPI
 
   protected:
-    int preconditionDistributedCells() final;
+    int preconditionDistributedCells() override;
 
   public:
-    void createMetaGrid(const double *const bounds) final;
-    inline int getCellRankInternal(const SimplexId lcid) const final {
+    void createMetaGrid(const double *const bounds) override;
+    inline int getCellRankInternal(const SimplexId lcid) const override {
       const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
       const auto locCubeId{lcid / nTetraPerCube};
 
@@ -482,7 +485,7 @@ namespace ttk {
 
   protected:
     inline bool
-      isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const final {
+      isVertexOnGlobalBoundaryInternal(const SimplexId lvid) const override {
 
       if(!ttk::isRunningWithMPI()) {
         // NOTE: perf killer
@@ -507,7 +510,7 @@ namespace ttk {
     }
 
     inline bool
-      isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const final {
+      isEdgeOnGlobalBoundaryInternal(const SimplexId leid) const override {
 
       if(!ttk::isRunningWithMPI()) {
         // NOTE: perf killer
@@ -531,7 +534,7 @@ namespace ttk {
     }
 
     inline bool
-      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const final {
+      isTriangleOnGlobalBoundaryInternal(const SimplexId ltid) const override {
 
       if(!ttk::isRunningWithMPI()) {
         // NOTE: perf killer
@@ -556,7 +559,7 @@ namespace ttk {
 
   private:
     inline std::array<SimplexId, 3>
-      getVertGlobalCoords(const SimplexId lvid) const final {
+      getVertGlobalCoords(const SimplexId lvid) const override {
 
       // local vertex coordinates
       std::array<SimplexId, 3> p{};
@@ -575,7 +578,7 @@ namespace ttk {
     }
 
     inline std::array<SimplexId, 3>
-      getVertLocalCoords(const SimplexId gvid) const final {
+      getVertLocalCoords(const SimplexId gvid) const override {
 
       // global vertex coordinates
       std::array<SimplexId, 3> p{};
@@ -855,11 +858,12 @@ namespace ttk {
 
     //\cond
     // 2D //
-    void vertexToPosition2d(const SimplexId vertex, SimplexId p[2]) const final;
+    void vertexToPosition2d(const SimplexId vertex,
+                            SimplexId p[2]) const override;
     void
       edgeToPosition2d(const SimplexId edge, const int k, SimplexId p[2]) const;
     void triangleToPosition2d(const SimplexId triangle,
-                              SimplexId p[2]) const final;
+                              SimplexId p[2]) const override;
 
     inline SimplexId getVertexEdge2dA(const SimplexId p[2], const int id) const;
     inline SimplexId getVertexEdge2dB(const SimplexId p[2], const int id) const;
@@ -929,14 +933,15 @@ namespace ttk {
     inline SimplexId getEdgeStar2dH(const SimplexId p[2], const int id) const;
 
     // 3D //
-    void vertexToPosition(const SimplexId vertex, SimplexId p[3]) const final;
+    void vertexToPosition(const SimplexId vertex,
+                          SimplexId p[3]) const override;
     void
       edgeToPosition(const SimplexId edge, const int k, SimplexId p[3]) const;
     void triangleToPosition(const SimplexId triangle,
                             const int k,
-                            SimplexId p[3]) const final;
+                            SimplexId p[3]) const override;
     void tetrahedronToPosition(const SimplexId tetrahedron,
-                               SimplexId p[3]) const final;
+                               SimplexId p[3]) const override;
 
     inline SimplexId getVertexEdgeA(const SimplexId p[3], const int id) const;
     inline SimplexId getVertexEdgeB(const SimplexId p[3], const int id) const;
@@ -1323,7 +1328,7 @@ namespace ttk {
 
   public:
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
-      const SimplexId &vertexId) const final {
+      const SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -1385,7 +1390,7 @@ namespace ttk {
     }
 
     inline bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
-      const SimplexId &vertexId) const final {
+      const SimplexId &vertexId) const override {
 #ifdef TTK_ENABLE_MPI
       if(this->metaGrid_ != nullptr) {
         return this->isVertexOnGlobalBoundaryInternal(vertexId);
@@ -1408,7 +1413,7 @@ namespace ttk {
     }
 
     inline bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
-      const SimplexId &edgeId) const final {
+      const SimplexId &edgeId) const override {
 
 #ifdef TTK_ENABLE_MPI
       if(this->metaGrid_ != nullptr) {
@@ -1442,7 +1447,7 @@ namespace ttk {
     inline int TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
       const SimplexId &vertexId,
       const int &localNeighborId,
-      SimplexId &neighborId) const final {
+      SimplexId &neighborId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localNeighborId < 0
@@ -1579,7 +1584,7 @@ namespace ttk {
 
     inline int getVertexEdgeInternal(const SimplexId &vertexId,
                                      const int &localEdgeId,
-                                     SimplexId &edgeId) const final {
+                                     SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localEdgeId < 0
@@ -1730,8 +1735,8 @@ namespace ttk {
       return 0;
     }
 
-    inline SimplexId
-      getVertexTriangleNumberInternal(const SimplexId &vertexId) const final {
+    inline SimplexId getVertexTriangleNumberInternal(
+      const SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -1781,7 +1786,7 @@ namespace ttk {
 
     inline int getVertexTriangleInternal(const SimplexId &vertexId,
                                          const int &localTriangleId,
-                                         SimplexId &triangleId) const final {
+                                         SimplexId &triangleId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localTriangleId < 0
          or localTriangleId >= getVertexTriangleNumberInternal(vertexId))
@@ -1880,10 +1885,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int
-      TTK_TRIANGULATION_INTERNAL(getVertexLink)(const SimplexId &vertexId,
-                                                const int &localLinkId,
-                                                SimplexId &linkId) const final {
+    inline int TTK_TRIANGULATION_INTERNAL(getVertexLink)(
+      const SimplexId &vertexId,
+      const int &localLinkId,
+      SimplexId &linkId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localLinkId < 0 or localLinkId >= getVertexLinkNumber(vertexId))
@@ -2010,7 +2015,7 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(
-      const SimplexId &vertexId) const final {
+      const SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -2069,10 +2074,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int
-      TTK_TRIANGULATION_INTERNAL(getVertexStar)(const SimplexId &vertexId,
-                                                const int &localStarId,
-                                                SimplexId &starId) const final {
+    inline int TTK_TRIANGULATION_INTERNAL(getVertexStar)(
+      const SimplexId &vertexId,
+      const int &localStarId,
+      SimplexId &starId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localStarId < 0 or localStarId >= getVertexStarNumber(vertexId))
@@ -2199,7 +2204,7 @@ namespace ttk {
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getVertexPoint)(
-      const SimplexId &vertexId, float &x, float &y, float &z) const final {
+      const SimplexId &vertexId, float &x, float &y, float &z) const override {
       if(dimensionality_ == 3) {
         const auto &p = this->underlying().getVertexCoords(vertexId);
 
@@ -2243,7 +2248,7 @@ namespace ttk {
 
     inline int getEdgeVertexInternal(const SimplexId &edgeId,
                                      const int &localVertexId,
-                                     SimplexId &vertexId) const final {
+                                     SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(edgeId < 0 or edgeId >= edgeNumber_)
@@ -2323,7 +2328,7 @@ namespace ttk {
     }
 
     inline SimplexId
-      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const final {
+      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(edgeId < 0 or edgeId >= edgeNumber_)
@@ -2390,7 +2395,7 @@ namespace ttk {
 
     inline int getEdgeTriangleInternal(const SimplexId &edgeId,
                                        const int &localTriangleId,
-                                       SimplexId &triangleId) const final {
+                                       SimplexId &triangleId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localTriangleId < 0
          or localTriangleId >= getEdgeTriangleNumberInternal(edgeId))
@@ -2542,10 +2547,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int
-      TTK_TRIANGULATION_INTERNAL(getEdgeLink)(const SimplexId &edgeId,
-                                              const int &localLinkId,
-                                              SimplexId &linkId) const final {
+    inline int TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
+      const SimplexId &edgeId,
+      const int &localLinkId,
+      SimplexId &linkId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localLinkId < 0 or localLinkId >= getEdgeLinkNumber(edgeId))
@@ -2595,10 +2600,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int
-      TTK_TRIANGULATION_INTERNAL(getEdgeStar)(const SimplexId &edgeId,
-                                              const int &localStarId,
-                                              SimplexId &starId) const final {
+    inline int TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
+      const SimplexId &edgeId,
+      const int &localStarId,
+      SimplexId &starId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localStarId < 0 or localStarId >= getEdgeStarNumber(edgeId))
         return -1;
@@ -2649,7 +2654,7 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(
-      const SimplexId &edgeId) const final {
+      const SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(edgeId < 0 or edgeId >= edgeNumber_)
@@ -2716,7 +2721,7 @@ namespace ttk {
 
     inline int getTriangleVertexInternal(const SimplexId &triangleId,
                                          const int &localVertexId,
-                                         SimplexId &vertexId) const final {
+                                         SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -2797,7 +2802,7 @@ namespace ttk {
 
     inline int getTriangleEdgeInternal(const SimplexId &triangleId,
                                        const int &localEdgeId,
-                                       SimplexId &edgeId) const final {
+                                       SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -2870,7 +2875,7 @@ namespace ttk {
     inline int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
       const SimplexId &triangleId,
       const int &localLinkId,
-      SimplexId &linkId) const final {
+      SimplexId &linkId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localLinkId < 0 or localLinkId >= getTriangleLinkNumber(triangleId))
@@ -2909,7 +2914,7 @@ namespace ttk {
     inline int TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
       const SimplexId &triangleId,
       const int &localStarId,
-      SimplexId &starId) const final {
+      SimplexId &starId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localStarId < 0 or localStarId >= getTriangleStarNumber(triangleId))
@@ -2946,7 +2951,7 @@ namespace ttk {
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
-      const SimplexId &triangleId) const final {
+      const SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -2975,7 +2980,7 @@ namespace ttk {
 
     inline int getTriangleNeighbor(const SimplexId &triangleId,
                                    const int &localNeighborId,
-                                   SimplexId &neighborId) const final {
+                                   SimplexId &neighborId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localNeighborId < 0
@@ -3064,7 +3069,7 @@ namespace ttk {
     }
 
     inline SimplexId
-      getTriangleNeighborNumber(const SimplexId &triangleId) const final {
+      getTriangleNeighborNumber(const SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -3097,7 +3102,7 @@ namespace ttk {
 
     inline int getTetrahedronVertex(const SimplexId &tetId,
                                     const int &localVertexId,
-                                    SimplexId &vertexId) const final {
+                                    SimplexId &vertexId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -3139,7 +3144,7 @@ namespace ttk {
 
     inline int getTetrahedronEdge(const SimplexId &tetId,
                                   const int &localEdgeId,
-                                  SimplexId &edgeId) const final {
+                                  SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -3182,7 +3187,7 @@ namespace ttk {
 
     inline int getTetrahedronTriangle(const SimplexId &tetId,
                                       const int &localTriangleId,
-                                      SimplexId &triangleId) const final {
+                                      SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -3224,7 +3229,7 @@ namespace ttk {
     }
 
     inline SimplexId
-      getTetrahedronNeighborNumber(const SimplexId &tetId) const final {
+      getTetrahedronNeighborNumber(const SimplexId &tetId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -3293,7 +3298,7 @@ namespace ttk {
 
     inline int getTetrahedronNeighbor(const SimplexId &tetId,
                                       const int &localNeighborId,
-                                      SimplexId &neighborId) const final {
+                                      SimplexId &neighborId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(localNeighborId < 0
