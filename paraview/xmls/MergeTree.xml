@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTree" class="ttkMergeTree" label="TTK MergeTree">
+      <Documentation long_help="MergeTree Long" short_help="MergeTree Short">TODO.</Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+      </InputProperty>
+
+      <StringVectorProperty name="ScalarArray" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="Type" command="SetType" number_of_elements="1" default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Split Tree" />
+          <Entry value="1" text="Join Tree" />
+        </EnumerationDomain>
+        <Documentation>Merge Tree Type.</Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="ScalarArray" />
+      </PropertyGroup>
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        <Property name="Type" />
+      </PropertyGroup>
+
+      <OutputPort name="Skeleton Nodes" index="0" />
+      <OutputPort name="Skeleton Arcs" index="1" />
+      <OutputPort name="Segmentation" index="2" />
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

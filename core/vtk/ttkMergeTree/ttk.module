@@ -1,0 +1,10 @@
+NAME
+  ttkMergeTree
+SOURCES
+  ttkMergeTree.cpp
+HEADERS
+  ttkMergeTree.h
+DEPENDS
+  exTreeM
+  pathCompression
+  ttkAlgorithm
