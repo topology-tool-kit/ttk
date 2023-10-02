@@ -5,8 +5,8 @@
 <!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkMergeTreeTemporalReductionEncoding" class="ttkMergeTreeTemporalReductionEncoding" label="TTK MergeTreeTemporalReductionEncoding">
-      <Documentation long_help="MergeTreeTemporalReductionEncoding Long" short_help="MergeTreeTemporalReductionEncoding Short">
+    <SourceProxy name="ttkMergeTreeTemporalReduction" class="ttkMergeTreeTemporalReduction" label="TTK MergeTreeTemporalReduction">
+      <Documentation long_help="MergeTreeTemporalReduction Long" short_help="MergeTreeTemporalReduction Short">
 This filter allows to compute a temporal reduction of a sequence of merge trees.
 
 It greedily removes trees in the sequence that can be accurately reconstructed with the geodesic computation. This iterated removal reveals key frames in the sequence (the trees that are not removed and used to reconstruct the removed trees). 

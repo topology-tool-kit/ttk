@@ -1,9 +1,9 @@
 /// \ingroup base
-/// \class ttk::MergeTreeTemporalReductionEncoding
+/// \class ttk::MergeTreeTemporalReduction
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
-/// This module defines the %MergeTreeTemporalReductionEncoding class that
+/// This module defines the %MergeTreeTemporalReduction class that
 /// computes a temporal reduction of a sequence of merge trees.
 ///
 /// \b Related \b publication \n
@@ -30,11 +30,11 @@
 namespace ttk {
 
   /**
-   * The MergeTreeTemporalReductionEncoding class provides methods to compute
+   * The MergeTreeTemporalReduction class provides methods to compute
    * a temporal reduction of a sequence of merge trees.
    */
-  class MergeTreeTemporalReductionEncoding : virtual public Debug,
-                                             public MergeTreeBase {
+  class MergeTreeTemporalReduction : virtual public Debug,
+                                     public MergeTreeBase {
   protected:
     double removalPercentage_ = 50.;
     bool useL2Distance_ = false;
@@ -43,7 +43,7 @@ namespace ttk {
     std::vector<double> timeVariable_;
 
   public:
-    MergeTreeTemporalReductionEncoding();
+    MergeTreeTemporalReduction();
 
     void setRemovalPercentage(double rs) {
       removalPercentage_ = rs;
@@ -397,6 +397,6 @@ namespace ttk {
       return removed;
     }
 
-  }; // MergeTreeTemporalReductionEncoding class
+  }; // MergeTreeTemporalReduction class
 
 } // namespace ttk
