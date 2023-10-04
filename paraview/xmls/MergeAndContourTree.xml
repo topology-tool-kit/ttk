@@ -1,9 +1,9 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy
-            name="ttkftmtree"
-            class="ttkFTMTree"
-            label="TTK Merge and Contour Tree (FTM)">
+            name="ttkMergeAndContourTree"
+            class="ttkMergeAndContourTree"
+            label="TTK MergeAndContourTree">
             <Documentation
               long_help="TTK plugin that efficiently computes the contour tree of
               scalar data and more."

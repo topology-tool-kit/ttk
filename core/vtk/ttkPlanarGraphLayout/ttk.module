@@ -8,5 +8,5 @@ HEADERS
 DEPENDS
   planarGraphLayout
   ttkAlgorithm
-  ttkFTMTree
+  ttkMergeAndContourTree
   ftmTreePP

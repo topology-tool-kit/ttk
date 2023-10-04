@@ -6,5 +6,5 @@ HEADERS
   ttkMergeTreeDistanceMatrix.h
 DEPENDS
   mergeTreeDistanceMatrix
-  ttkFTMTree
+  ttkMergeAndContourTree
   ttkAlgorithm
