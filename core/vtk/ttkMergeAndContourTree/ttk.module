@@ -1,11 +1,11 @@
 NAME
-  ttkFTMTree
+  ttkMergeAndContourTree
 SOURCES
-  ttkFTMTree.cpp
+  ttkMergeAndContourTree.cpp
 HEADERS
-  ttkFTMTree.h
-  ttkFTMStructures.h
-  ttkFTMTreeUtils.h
+  ttkMergeAndContourTree.h
+  ttkMergeAndContourStructures.h
+  ttkMergeAndContourTreeUtils.h
 DEPENDS
   ftmTree
   ttkAlgorithm

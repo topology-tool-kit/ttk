@@ -37,8 +37,9 @@ namespace ttk {
 
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!arr) {
-          std::cerr << "[ttkFTMTree] Error, unable to allocate " << fieldName
-                    << " the program will likely crash" << std::endl;
+          std::cerr << "[ttkMergeAndContourTree] Error, unable to allocate "
+                    << fieldName << " the program will likely crash"
+                    << std::endl;
         }
 #endif
         return arr;
@@ -341,8 +342,8 @@ namespace ttk {
 
         // Empty node
 #ifndef TTK_ENABLE_KAMIKAZE
-        std::cerr << "[ttkFTMTree]: node without arcs:" << node->getVertexId()
-                  << std::endl;
+        std::cerr << "[ttkMergeAndContourTree]: node without arcs:"
+                  << node->getVertexId() << std::endl;
 #endif
         return nullSuperArc;
       }

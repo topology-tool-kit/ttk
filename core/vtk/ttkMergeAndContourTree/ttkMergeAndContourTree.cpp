@@ -1,5 +1,5 @@
-#include <ttkFTMTree.h>
 #include <ttkMacros.h>
+#include <ttkMergeAndContourTree.h>
 #include <ttkUtils.h>
 
 // VTK includes
@@ -13,15 +13,16 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkVersion.h> // for VTK_VERSION_CHECK via ParaView 5.8.1
 
-vtkStandardNewMacro(ttkFTMTree);
+vtkStandardNewMacro(ttkMergeAndContourTree);
 
-ttkFTMTree::ttkFTMTree() {
-  this->setDebugMsgPrefix("FTMTree");
+ttkMergeAndContourTree::ttkMergeAndContourTree() {
+  this->setDebugMsgPrefix("MergeAndContourTree");
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
 }
 
-int ttkFTMTree::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkMergeAndContourTree::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -29,7 +30,8 @@ int ttkFTMTree::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkMergeAndContourTree::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
   if(port == 0 || port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
@@ -40,9 +42,9 @@ int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
-                            vtkInformationVector **inputVector,
-                            vtkInformationVector *outputVector) {
+int ttkMergeAndContourTree::RequestData(vtkInformation *ttkNotUsed(request),
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto outputSkeletonNodes = vtkUnstructuredGrid::GetData(outputVector, 0);
@@ -209,11 +211,12 @@ int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
   return 1;
 }
 
-int ttkFTMTree::addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                                       const int cc,
-                                       vtkPoints *points,
-                                       vtkUnstructuredGrid *skeletonArcs,
-                                       ttk::ftm::ArcData &arcData) {
+int ttkMergeAndContourTree::addCompleteSkeletonArc(
+  const ttk::ftm::idSuperArc arcId,
+  const int cc,
+  vtkPoints *points,
+  vtkUnstructuredGrid *skeletonArcs,
+  ttk::ftm::ArcData &arcData) {
   auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
@@ -279,11 +282,12 @@ int ttkFTMTree::addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
   return 1;
 }
 
-int ttkFTMTree::addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                                     const int cc,
-                                     vtkPoints *points,
-                                     vtkUnstructuredGrid *skeletonArcs,
-                                     ttk::ftm::ArcData &arcData) {
+int ttkMergeAndContourTree::addDirectSkeletonArc(
+  const ttk::ftm::idSuperArc arcId,
+  const int cc,
+  vtkPoints *points,
+  vtkUnstructuredGrid *skeletonArcs,
+  ttk::ftm::ArcData &arcData) {
   auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
@@ -330,11 +334,12 @@ int ttkFTMTree::addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
   return 1;
 }
 
-int ttkFTMTree::addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                                      const int cc,
-                                      vtkPoints *points,
-                                      vtkUnstructuredGrid *skeletonArcs,
-                                      ttk::ftm::ArcData &arcData) {
+int ttkMergeAndContourTree::addSampledSkeletonArc(
+  const ttk::ftm::idSuperArc arcId,
+  const int cc,
+  vtkPoints *points,
+  vtkUnstructuredGrid *skeletonArcs,
+  ttk::ftm::ArcData &arcData) {
   auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
@@ -429,7 +434,7 @@ int ttkFTMTree::addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
   return 1;
 }
 
-int ttkFTMTree::getOffsets() {
+int ttkMergeAndContourTree::getOffsets() {
   // should be called after getScalars for inputScalars_ needs to be filled
 
   offsets_.resize(nbCC_);
@@ -456,7 +461,7 @@ int ttkFTMTree::getOffsets() {
   return 1;
 }
 
-int ttkFTMTree::getScalars() {
+int ttkMergeAndContourTree::getScalars() {
   inputScalars_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
     inputScalars_[cc]
@@ -475,7 +480,7 @@ int ttkFTMTree::getScalars() {
   return 1;
 }
 
-int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
+int ttkMergeAndContourTree::getSegmentation(vtkDataSet *outputSegmentation) {
   ttk::ftm::VertData vertData;
   vertData.init(ftmTree_, params_);
 
@@ -501,7 +506,8 @@ int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
   return 1;
 }
 
-int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
+int ttkMergeAndContourTree::getSkeletonArcs(
+  vtkUnstructuredGrid *outputSkeletonArcs) {
   vtkNew<vtkUnstructuredGrid> skeletonArcs{};
   vtkNew<vtkPoints> const points{};
 
@@ -549,7 +555,8 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
   return 1;
 }
 
-int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
+int ttkMergeAndContourTree::getSkeletonNodes(
+  vtkUnstructuredGrid *outputSkeletonNodes) {
   vtkNew<vtkUnstructuredGrid> skeletonNodes{};
   vtkNew<vtkPoints> points{};
 
@@ -601,7 +608,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
 }
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-void ttkFTMTree::printCSVStats() {
+void ttkMergeAndContourTree::printCSVStats() {
   using namespace ttk;
 
   for(auto &t : ftmTree_) {
@@ -624,7 +631,8 @@ void ttkFTMTree::printCSVStats() {
   }
 }
 
-void ttkFTMTree::printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const {
+void ttkMergeAndContourTree::printCSVTree(
+  const ttk::ftm::FTMTree_MT *const tree) const {
   using namespace ttk::ftm;
 
   const idSuperArc nbArc = tree->getNumberOfLeaves();
@@ -644,7 +652,7 @@ void ttkFTMTree::printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const {
 }
 #endif
 
-int ttkFTMTree::preconditionTriangulation() {
+int ttkMergeAndContourTree::preconditionTriangulation() {
   triangulation_.resize(nbCC_);
   ftmTree_ = std::vector<ttk::ftm::LocalFTM>(nbCC_);
 
@@ -676,7 +684,7 @@ int ttkFTMTree::preconditionTriangulation() {
 
 // protected
 
-void ttkFTMTree::identify(vtkDataSet *ds) const {
+void ttkMergeAndContourTree::identify(vtkDataSet *ds) const {
   vtkNew<ttkSimplexIdTypeArray> identifiers{};
   const auto nbPoints = ds->GetNumberOfPoints();
   identifiers->SetName(ttk::VertexScalarFieldName);

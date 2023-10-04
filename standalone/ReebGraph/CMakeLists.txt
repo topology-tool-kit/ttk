@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(ttkFTRGraphCmd)
+project(ttkReebGraphCmd)
 
-if(TARGET ttkFTRGraph)
+if(TARGET ttkReebGraph)
   add_executable(${PROJECT_NAME} main.cpp)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
-      ttkFTRGraph
+      ttkReebGraph
       VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}

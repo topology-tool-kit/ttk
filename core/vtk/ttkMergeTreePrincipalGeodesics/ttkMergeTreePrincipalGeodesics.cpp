@@ -1,4 +1,4 @@
-#include <ttkFTMTreeUtils.h>
+#include <ttkMergeAndContourTreeUtils.h>
 #include <ttkMergeTreePrincipalGeodesics.h>
 
 #include <vtkInformation.h>
