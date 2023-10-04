@@ -7,7 +7,7 @@
      <SourceProxy
         name="ttkReebGraph"
         class="ttkReebGraph"
-        label="TTK Reeb graph">
+        label="TTK ReebGraph">
         <Documentation
            long_help="TTK fTRGraph plugin."
            short_help="TTK fTRGraph plugin.">
