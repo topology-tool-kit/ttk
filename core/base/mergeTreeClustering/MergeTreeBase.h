@@ -40,6 +40,7 @@ namespace ttk {
     int wassersteinPower_ = 2;
     bool normalizedWasserstein_ = true;
     bool keepSubtree_ = false;
+    double nonMatchingWeight_ = 1.0;
 
     bool distanceSquaredRoot_ = true; // squared root
     bool useFullMerge_ = false;
@@ -120,6 +121,10 @@ namespace ttk {
 
     void setKeepSubtree(bool keepSubtree) {
       keepSubtree_ = keepSubtree;
+    }
+
+    void setNonMatchingWeight(double weight) {
+      nonMatchingWeight_ = weight;
     }
 
     void setBarycenterMergeTree(bool imt) {
@@ -1128,6 +1133,7 @@ namespace ttk {
       // Divide cost by two if not branch decomposition and not merged
       /*if(! branchDecomposition_ and ! tree->isNodeMerged(nodeId))
         cost /= 2;*/
+      cost *= nonMatchingWeight_;
 
       return cost;
     }

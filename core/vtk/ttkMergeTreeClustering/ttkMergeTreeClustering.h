@@ -96,6 +96,7 @@ private:
   int pathMetric = 0;
   int branchMetric = 0;
   int baseModule = 0;
+  double NonMatchingWeight = 1.0;
 
   // Output Options
   bool OutputTrees = true;
@@ -340,6 +341,13 @@ public:
     pathMetric = m;
     Modified();
   }
+
+  void SetNonMatchingWeight(double weight) {
+    NonMatchingWeight = weight;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(NonMatchingWeight, double);
 
   // Output Options
   vtkSetMacro(BarycenterPositionAlpha, bool);

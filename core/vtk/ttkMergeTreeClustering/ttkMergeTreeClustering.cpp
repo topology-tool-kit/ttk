@@ -265,6 +265,7 @@ int ttkMergeTreeClustering::runCompute(
     mergeTreeDistance.setDeleteMultiPersPairs(DeleteMultiPersPairs);
     mergeTreeDistance.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
     mergeTreeDistance.setIsPersistenceDiagram(IsPersistenceDiagram);
+    mergeTreeDistance.setNonMatchingWeight(NonMatchingWeight);
     mergeTreeDistance.setThreadNumber(this->threadNumber_);
     mergeTreeDistance.setDebugLevel(this->debugLevel_);
 
