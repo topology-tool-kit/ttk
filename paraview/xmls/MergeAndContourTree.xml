@@ -202,11 +202,11 @@ between nodes, ...)
                 <Property name="Scalar Field"/>
                 <Property name="ForceInputOffsetScalarField"/>
                 <Property name="Input Offset Field"/>
+                <Property name="Backend"/>
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Output options">
                 <Property name="Tree Type"/>
-                <Property name="Backend"/>
                 <Property name="SuperArcSamplingLevel"/>
                 <Property name="NormalizeId" />
                 <Property name="AdvancedStats" />

@@ -76,8 +76,16 @@ int ttkMergeAndContourTree::RequestData(vtkInformation *ttkNotUsed(request),
     printMsg(ttk::debug::Separator::L2);
   }
 
+  if((Backend == (int)BACKEND::EXTREEM) && (!input->IsA("vtkImageData"))) {
+    printMsg(ttk::debug::Separator::L2);
+    printWrn("The input is not a regular grid.");
+    printWrn("Defaulting to the FTM backend.");
+    printMsg(ttk::debug::Separator::L2);
+  }
+
   if((Backend == (int)BACKEND::EXTREEM)
-     && (!(params_.treeType == ttk::ftm::TreeType::Contour))) {
+     && (!(params_.treeType == ttk::ftm::TreeType::Contour))
+     && (input->IsA("vtkImageData"))) {
     printMsg("Triggering ExTreeM Backend.");
     // insert ExTreeM vtk execution flow here.
   } else {
