@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
       contourTree->SetInputArrayToProcess(0, 0, 0, 0, inputArrayName.data());
       contourTree->SetUseAllCores(false);
       contourTree->SetThreadNumber(threadNumber);
-      contourTree->SetTreeType(2); // Contour tree
+      contourTree->SetTreeType(1); // split tree
       contourTree->Modified();
       contourTree->Update();
     }
