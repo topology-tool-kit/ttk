@@ -68,145 +68,161 @@ int ttkMergeAndContourTree::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  // Arrays
+  if((params_.treeType == ttk::ftm::TreeType::Contour)
+     && (Backend == (int)BACKEND::EXTREEM)) {
+    printMsg(ttk::debug::Separator::L2);
+    printWrn("Contour tree computation triggered.");
+    printWrn("Defaulting to the FTM backend.");
+    printMsg(ttk::debug::Separator::L2);
+  }
 
-  vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
-  if(!inputArray)
-    return 0;
-
-  // Connected components
-  if(input->IsA("vtkUnstructuredGrid")) {
-    // This data set may have several connected components,
-    // we need to apply the FTM Tree for each one of these components
-    // We then reconstruct the global tree using an offset mechanism
-    auto inputWithId = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    inputWithId->ShallowCopy(input);
-    identify(inputWithId);
-
-    vtkNew<vtkConnectivityFilter> connectivity{};
-    connectivity->SetInputData(inputWithId);
-    connectivity->SetExtractionModeToAllRegions();
-    connectivity->ColorRegionsOn();
-    connectivity->Update();
-
-    nbCC_ = connectivity->GetOutput()
-              ->GetCellData()
-              ->GetArray("RegionId")
-              ->GetRange()[1]
-            + 1;
-    connected_components_.resize(nbCC_);
-
-    if(nbCC_ > 1) {
-      // Warning, in case of several connected components, the ids seen by
-      // the base code will not be consistent with those of the original
-      // mesh
-      for(int cc = 0; cc < nbCC_; cc++) {
-        vtkNew<vtkThreshold> threshold{};
-        threshold->SetInputConnection(connectivity->GetOutputPort());
-        threshold->SetInputArrayToProcess(
-          0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
-#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
-        threshold->ThresholdBetween(cc, cc);
-#else
-        threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
-        threshold->SetLowerThreshold(cc);
-        threshold->SetUpperThreshold(cc);
-#endif
-        threshold->Update();
-        connected_components_[cc] = vtkSmartPointer<vtkUnstructuredGrid>::New();
-        connected_components_[cc]->ShallowCopy(threshold->GetOutput());
-      }
-    } else {
-      connected_components_[0] = inputWithId;
-    }
-  } else if(input->IsA("vtkPolyData")) {
-    // NOTE: CC check should not be implemented on a per vtk module layer.
-    nbCC_ = 1;
-    connected_components_.resize(nbCC_);
-    connected_components_[0] = vtkSmartPointer<vtkPolyData>::New();
-    connected_components_[0]->ShallowCopy(input);
-    identify(connected_components_[0]);
+  if((Backend == (int)BACKEND::EXTREEM)
+     && (!(params_.treeType == ttk::ftm::TreeType::Contour))) {
+    printMsg("Triggering ExTreeM Backend.");
+    // insert ExTreeM vtk execution flow here.
   } else {
-    nbCC_ = 1;
-    connected_components_.resize(nbCC_);
-    connected_components_[0] = vtkSmartPointer<vtkImageData>::New();
-    connected_components_[0]->ShallowCopy(input);
-    identify(connected_components_[0]);
-  }
+    // Arrays
 
-  // now proceed for each triangulation obtained.
+    vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
+    if(!inputArray)
+      return 0;
 
-  if(preconditionTriangulation() == 0) {
-#ifndef TTK_ENABLE_KAMIKAZE
-    this->printErr("Error : wrong triangulation.");
-    return 0;
+    // Connected components
+    if(input->IsA("vtkUnstructuredGrid")) {
+      // This data set may have several connected components,
+      // we need to apply the FTM Tree for each one of these components
+      // We then reconstruct the global tree using an offset mechanism
+      auto inputWithId = vtkSmartPointer<vtkUnstructuredGrid>::New();
+      inputWithId->ShallowCopy(input);
+      identify(inputWithId);
+
+      vtkNew<vtkConnectivityFilter> connectivity{};
+      connectivity->SetInputData(inputWithId);
+      connectivity->SetExtractionModeToAllRegions();
+      connectivity->ColorRegionsOn();
+      connectivity->Update();
+
+      nbCC_ = connectivity->GetOutput()
+                ->GetCellData()
+                ->GetArray("RegionId")
+                ->GetRange()[1]
+              + 1;
+      connected_components_.resize(nbCC_);
+
+      if(nbCC_ > 1) {
+        // Warning, in case of several connected components, the ids seen by
+        // the base code will not be consistent with those of the original
+        // mesh
+        for(int cc = 0; cc < nbCC_; cc++) {
+          vtkNew<vtkThreshold> threshold{};
+          threshold->SetInputConnection(connectivity->GetOutputPort());
+          threshold->SetInputArrayToProcess(
+            0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
+#if VTK_VERSION_NUMBER < VTK_VERSION_CHECK(9, 2, 0)
+          threshold->ThresholdBetween(cc, cc);
+#else
+          threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
+          threshold->SetLowerThreshold(cc);
+          threshold->SetUpperThreshold(cc);
 #endif
-  }
+          threshold->Update();
+          connected_components_[cc]
+            = vtkSmartPointer<vtkUnstructuredGrid>::New();
+          connected_components_[cc]->ShallowCopy(threshold->GetOutput());
+        }
+      } else {
+        connected_components_[0] = inputWithId;
+      }
+    } else if(input->IsA("vtkPolyData")) {
+      // NOTE: CC check should not be implemented on a per vtk module layer.
+      nbCC_ = 1;
+      connected_components_.resize(nbCC_);
+      connected_components_[0] = vtkSmartPointer<vtkPolyData>::New();
+      connected_components_[0]->ShallowCopy(input);
+      identify(connected_components_[0]);
+    } else {
+      nbCC_ = 1;
+      connected_components_.resize(nbCC_);
+      connected_components_[0] = vtkSmartPointer<vtkImageData>::New();
+      connected_components_[0]->ShallowCopy(input);
+      identify(connected_components_[0]);
+    }
 
-  // Fill the vector of scalar/offset, cut the array in pieces if needed
-  if(getScalars() == 0) {
+    // now proceed for each triangulation obtained.
+
+    if(preconditionTriangulation() == 0) {
 #ifndef TTK_ENABLE_KAMIKAZE
-    this->printErr("Error : wrong input scalars.");
-    return 0;
-#endif
-  }
-  getOffsets();
-
-  this->printMsg("Launching on field "
-                 + std::string{inputScalars_[0]->GetName()});
-
-  ttk::ftm::idNode acc_nbNodes = 0;
-
-  // Build tree
-  for(int cc = 0; cc < nbCC_; cc++) {
-    ftmTree_[cc].tree.setVertexScalars(
-      ttkUtils::GetVoidPointer(inputScalars_[cc]));
-    ftmTree_[cc].tree.setVertexSoSoffsets(offsets_[cc].data());
-    ftmTree_[cc].tree.setTreeType(GetTreeType());
-    ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
-    ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
-
-    ttkVtkTemplateMacro(inputArray->GetDataType(),
-                        triangulation_[cc]->getType(),
-                        (ftmTree_[cc].tree.build<VTK_TT, TTK_TT>(
-                          (TTK_TT *)triangulation_[cc]->getData())));
-
-    ftmTree_[cc].offset = acc_nbNodes;
-    acc_nbNodes += ftmTree_[cc].tree.getTree(GetTreeType())->getNumberOfNodes();
-  }
-
-  UpdateProgress(0.50);
-
-  // Construct output
-  if(getSkeletonNodes(outputSkeletonNodes) == 0) {
-#ifndef TTK_ENABLE_KAMIKAZE
-    this->printErr("Error : wrong properties on skeleton nodes.");
-    return 0;
-#endif
-  }
-
-  if(getSkeletonArcs(outputSkeletonArcs) == 0) {
-#ifndef TTK_ENABLE_KAMIKAZE
-    this->printErr("Error : wrong properties on skeleton arcs.");
-    return 0;
-#endif
-  }
-
-  if(GetWithSegmentation()) {
-    outputSegmentation->ShallowCopy(input);
-    if(getSegmentation(outputSegmentation) == 0) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      this->printErr("Error : wrong properties on segmentation.");
+      this->printErr("Error : wrong triangulation.");
       return 0;
 #endif
     }
-  }
 
-  UpdateProgress(1);
+    // Fill the vector of scalar/offset, cut the array in pieces if needed
+    if(getScalars() == 0) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      this->printErr("Error : wrong input scalars.");
+      return 0;
+#endif
+    }
+    getOffsets();
+
+    this->printMsg("Launching on field "
+                   + std::string{inputScalars_[0]->GetName()});
+
+    ttk::ftm::idNode acc_nbNodes = 0;
+
+    // Build tree
+    for(int cc = 0; cc < nbCC_; cc++) {
+      ftmTree_[cc].tree.setVertexScalars(
+        ttkUtils::GetVoidPointer(inputScalars_[cc]));
+      ftmTree_[cc].tree.setVertexSoSoffsets(offsets_[cc].data());
+      ftmTree_[cc].tree.setTreeType(GetTreeType());
+      ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
+      ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
+
+      ttkVtkTemplateMacro(inputArray->GetDataType(),
+                          triangulation_[cc]->getType(),
+                          (ftmTree_[cc].tree.build<VTK_TT, TTK_TT>(
+                            (TTK_TT *)triangulation_[cc]->getData())));
+
+      ftmTree_[cc].offset = acc_nbNodes;
+      acc_nbNodes
+        += ftmTree_[cc].tree.getTree(GetTreeType())->getNumberOfNodes();
+    }
+
+    UpdateProgress(0.50);
+
+    // Construct output
+    if(getSkeletonNodes(outputSkeletonNodes) == 0) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      this->printErr("Error : wrong properties on skeleton nodes.");
+      return 0;
+#endif
+    }
+
+    if(getSkeletonArcs(outputSkeletonArcs) == 0) {
+#ifndef TTK_ENABLE_KAMIKAZE
+      this->printErr("Error : wrong properties on skeleton arcs.");
+      return 0;
+#endif
+    }
+
+    if(GetWithSegmentation()) {
+      outputSegmentation->ShallowCopy(input);
+      if(getSegmentation(outputSegmentation) == 0) {
+#ifndef TTK_ENABLE_KAMIKAZE
+        this->printErr("Error : wrong properties on segmentation.");
+        return 0;
+#endif
+      }
+    }
+
+    UpdateProgress(1);
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-  printCSVStats();
+    printCSVStats();
 #endif
+  }
 
   return 1;
 }

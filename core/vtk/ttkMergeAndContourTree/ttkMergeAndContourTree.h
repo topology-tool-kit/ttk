@@ -94,6 +94,11 @@ class TTKMERGEANDCONTOURTREE_EXPORT ttkMergeAndContourTree
   : public ttkAlgorithm {
 
 public:
+  enum class BACKEND {
+    FTM = 0,
+    EXTREEM = 1,
+  };
+
   static ttkMergeAndContourTree *New();
 
   vtkTypeMacro(ttkMergeAndContourTree, ttkAlgorithm);
@@ -102,6 +107,12 @@ public:
   /// @{
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
+  /// @}
+
+  /// @brief the backend to use for computations.
+  /// @{
+  vtkGetMacro(Backend, int);
+  vtkSetMacro(Backend, int);
   /// @}
 
   // Parameters uses a structure, we can't use vtkMacro on them
@@ -210,6 +221,9 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField = false;
+
+  int Backend{(int)BACKEND::FTM};
+
   ttk::ftm::Params params_;
 
   int nbCC_;

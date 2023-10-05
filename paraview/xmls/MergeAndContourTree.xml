@@ -144,6 +144,18 @@
                 </Documentation>
             </IntVectorProperty>
 
+            <IntVectorProperty name="Backend" command="SetBackend"
+                number_of_elements="1" default_values="0"
+                panel_visibility="advanced">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="FTM (IEEE TPDS 2019)"/>
+                    <Entry value="1" text="ExTreeM (IEEE TVCG 2023)"/>
+                </EnumerationDomain>
+                <Documentation>
+                    0 is FTM (IEEE TPDS 2019), 1 is ExTreeM (IEEE TVCG 2023)
+                </Documentation>
+            </IntVectorProperty>
+
             <IntVectorProperty name="SuperArcSamplingLevel"
                 command="SetSuperArcSamplingLevel"
                 label="Arc Sampling"
@@ -194,6 +206,7 @@ between nodes, ...)
 
             <PropertyGroup panel_widget="Line" label="Output options">
                 <Property name="Tree Type"/>
+                <Property name="Backend"/>
                 <Property name="SuperArcSamplingLevel"/>
                 <Property name="NormalizeId" />
                 <Property name="AdvancedStats" />
