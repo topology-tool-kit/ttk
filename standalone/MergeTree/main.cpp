@@ -5,7 +5,7 @@
 
 // TTK Includes
 #include <CommandLineParser.h>
-#include <ttkFTMTree.h>
+#include <ttkMergeAndContourTree.h>
 #include <ttkMergeTree.h>
 
 // VTK Includes
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
   if(compare) {
     for(int i = 0; i < repetitions; i++) {
       msg.setDebugMsgPrefix("FTMTree");
-      auto contourTree = vtkSmartPointer<ttkFTMTree>::New();
+      auto contourTree = vtkSmartPointer<ttkMergeAndContourTree>::New();
       contourTree->SetInputDataObject(0, reader->GetOutput());
       contourTree->SetInputArrayToProcess(0, 0, 0, 0, inputArrayName.data());
       contourTree->SetUseAllCores(false);

@@ -6,7 +6,7 @@ if(TARGET ttkMergeTree)
   add_executable(${PROJECT_NAME} main.cpp)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
-      ttkFTMTree
+      ttkMergeAndContourTree
       ttkMergeTree
       VTK::IOXML
     )
