@@ -30,7 +30,7 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttkFTMTreePP
+/// \sa ttkMergeAndContourTreePP
 /// \sa ttkPersistenceDiagram
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceCurve

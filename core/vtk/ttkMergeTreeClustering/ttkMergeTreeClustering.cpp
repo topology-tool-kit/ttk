@@ -3,7 +3,7 @@
 #include <FTMTreeUtils.h>
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
-#include <ttkFTMTreeUtils.h>
+#include <ttkMergeAndContourTreeUtils.h>
 #include <ttkMergeTreeClustering.h>
 #include <ttkMergeTreeVisualization.h>
 

@@ -9,5 +9,5 @@ DEPENDS
   ftmTree
   planarGraphLayout
   ttkPlanarGraphLayout
-  ttkFTMTree
+  ttkMergeAndContourTree
   ttkAlgorithm

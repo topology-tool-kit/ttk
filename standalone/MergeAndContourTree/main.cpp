@@ -5,7 +5,7 @@
 
 // include the local headers
 #include <CommandLineParser.h>
-#include <ttkFTMTree.h>
+#include <ttkMergeAndContourTree.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   ttk::Debug msg;
   msg.setDebugMsgPrefix("FTMTree");
 
-  vtkNew<ttkFTMTree> ftmTree{};
+  vtkNew<ttkMergeAndContourTree> macTree{};
 
   vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
       }
     } else {
       // feed input object to the filter
-      ftmTree->SetInputDataObject(i, reader->GetOutput());
+      macTree->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -110,21 +110,21 @@ int main(int argc, char **argv) {
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    ftmTree->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+    macTree->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
   // Execute the filter
   // ---------------------------------------------------------------------------
-  ftmTree->SetTreeType(treeType);
-  ftmTree->SetForceInputOffsetScalarField(forceOffset);
-  ftmTree->Update();
+  macTree->SetTreeType(treeType);
+  macTree->SetForceInputOffsetScalarField(forceOffset);
+  macTree->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < ftmTree->GetNumberOfOutputPorts(); i++) {
-      auto output = ftmTree->GetOutputDataObject(i);
+    for(int i = 0; i < macTree->GetNumberOfOutputPorts(); i++) {
+      auto output = macTree->GetOutputDataObject(i);
       auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
         vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
