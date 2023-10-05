@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
   std::string inputArrayName = "";
   bool listArrays{false};
   bool compare{false};
-  int threadNumber{112};
   int repetitions{1};
 
   // ---------------------------------------------------------------------------
@@ -40,13 +39,11 @@ int main(int argc, char **argv) {
     // -------------------------------------------------------------------------
     parser.setArgument(
       "i", &inputFilePath, "Input data-set (*.vti, *vtu, *vtp)", false);
-    parser.setArgument("a", &inputArrayName, "Input array name", false);
+    parser.setArgument("a", &inputArrayName, "Input array name", true);
     parser.setArgument("r", &repetitions,
                        "Number of times you want to run the algorithms", true);
     parser.setOption("l", &listArrays, "List available arrays");
     parser.setOption("c", &compare, "Also build the TTK FTM Tree to compare");
-    parser.setArgument(
-      "n", &threadNumber, "The number of OMP Threads to run the filters", true);
 
     parser.parse(argc, argv);
   }
@@ -107,14 +104,9 @@ int main(int argc, char **argv) {
   }
 
   for(int i = 0; i < repetitions; i++) {
-    auto mergeTree = vtkSmartPointer<ttkMergeTree>::New();
-
+    vtkNew<ttkMergeTree> mergeTree;
     mergeTree->SetInputDataObject(0, inputDataObject);
-
     mergeTree->SetInputArrayToProcess(0, 0, 0, 0, inputArrayName.data());
-
-    mergeTree->SetUseAllCores(false);
-    mergeTree->SetThreadNumber(threadNumber);
     mergeTree->Modified();
     mergeTree->Update();
   }
@@ -122,11 +114,9 @@ int main(int argc, char **argv) {
   if(compare) {
     for(int i = 0; i < repetitions; i++) {
       msg.setDebugMsgPrefix("FTMTree");
-      auto contourTree = vtkSmartPointer<ttkMergeAndContourTree>::New();
+      vtkNew<ttkMergeAndContourTree> contourTree;
       contourTree->SetInputDataObject(0, reader->GetOutput());
       contourTree->SetInputArrayToProcess(0, 0, 0, 0, inputArrayName.data());
-      contourTree->SetUseAllCores(false);
-      contourTree->SetThreadNumber(threadNumber);
       contourTree->SetTreeType(1); // split tree
       contourTree->Modified();
       contourTree->Update();

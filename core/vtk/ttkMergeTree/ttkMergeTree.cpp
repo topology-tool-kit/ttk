@@ -178,6 +178,7 @@ int ttkMergeTree::getMergeTreePoints(
 int ttkMergeTree::RequestData(vtkInformation *,
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
+
 #ifndef TTK_ENABLE_OPENMP
   printMsg(ttk::debug::Separator::L2);
   this->printErr("ExTreeM requires OpenMP.");
