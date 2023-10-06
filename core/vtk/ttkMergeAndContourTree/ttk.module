@@ -1,0 +1,11 @@
+NAME
+  ttkMergeAndContourTree
+SOURCES
+  ttkMergeAndContourTree.cpp
+HEADERS
+  ttkMergeAndContourTree.h
+  ttkMergeAndContourStructures.h
+  ttkMergeAndContourTreeUtils.h
+DEPENDS
+  ftmTree
+  ttkAlgorithm

@@ -1,4 +1,4 @@
-#include "ttkFTRGraph.h"
+#include "ttkReebGraph.h"
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
@@ -9,15 +9,15 @@
 
 using namespace ttk::ftr;
 
-vtkStandardNewMacro(ttkFTRGraph);
+vtkStandardNewMacro(ttkReebGraph);
 
-ttkFTRGraph::ttkFTRGraph() {
+ttkReebGraph::ttkReebGraph() {
   this->setDebugMsgPrefix("FTRGraph");
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(3);
 }
 
-int ttkFTRGraph::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkReebGraph::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -25,7 +25,7 @@ int ttkFTRGraph::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFTRGraph::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkReebGraph::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0 || port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
@@ -36,11 +36,11 @@ int ttkFTRGraph::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFTRGraph::addCompleteSkeletonArc(const Graph &graph,
-                                        const idSuperArc arcId,
-                                        vtkPoints *points,
-                                        vtkUnstructuredGrid *skeletonArcs,
-                                        ttk::ftr::ArcData &arcData) {
+int ttkReebGraph::addCompleteSkeletonArc(const Graph &graph,
+                                         const idSuperArc arcId,
+                                         vtkPoints *points,
+                                         vtkUnstructuredGrid *skeletonArcs,
+                                         ttk::ftr::ArcData &arcData) {
   const SuperArc &arc = graph.getArc(arcId);
   float pointCoord[3];
   const idNode upNodeId = arc.getUpNodeId();
@@ -108,11 +108,11 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph &graph,
   return 0;
 }
 
-int ttkFTRGraph::addDirectSkeletonArc(const Graph &graph,
-                                      const idSuperArc arcId,
-                                      vtkPoints *points,
-                                      vtkUnstructuredGrid *skeletonArcs,
-                                      ttk::ftr::ArcData &arcData) {
+int ttkReebGraph::addDirectSkeletonArc(const Graph &graph,
+                                       const idSuperArc arcId,
+                                       vtkPoints *points,
+                                       vtkUnstructuredGrid *skeletonArcs,
+                                       ttk::ftr::ArcData &arcData) {
   float pointCoord[3];
   const idNode upNodeId = graph.getArc(arcId).getUpNodeId();
   const idNode downNodeId = graph.getArc(arcId).getDownNodeId();
@@ -155,11 +155,11 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph &graph,
   return 0;
 }
 
-int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
-                                       const idSuperArc arcId,
-                                       vtkPoints *points,
-                                       vtkUnstructuredGrid *skeletonArcs,
-                                       ttk::ftr::ArcData &arcData) {
+int ttkReebGraph::addSampledSkeletonArc(const Graph &graph,
+                                        const idSuperArc arcId,
+                                        vtkPoints *points,
+                                        vtkUnstructuredGrid *skeletonArcs,
+                                        ttk::ftr::ArcData &arcData) {
   const SuperArc &arc = graph.getArc(arcId);
   float pointCoord[3];
   const idNode upNodeId = arc.getUpNodeId();
@@ -259,7 +259,7 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
 }
 
 template <typename VTK_TT, typename TTK_TT>
-int ttkFTRGraph::dispatch(Graph &graph) {
+int ttkReebGraph::dispatch(Graph &graph) {
   ttk::ftr::FTRGraph<VTK_TT, TTK_TT> ftrGraph_(
     static_cast<TTK_TT *>(triangulation_->getData()));
 
@@ -281,9 +281,9 @@ int ttkFTRGraph::dispatch(Graph &graph) {
   return 0;
 }
 
-int ttkFTRGraph::RequestData(vtkInformation *ttkNotUsed(request),
-                             vtkInformationVector **inputVector,
-                             vtkInformationVector *outputVector) {
+int ttkReebGraph::RequestData(vtkInformation *ttkNotUsed(request),
+                              vtkInformationVector **inputVector,
+                              vtkInformationVector *outputVector) {
 
   // Input
   mesh_ = vtkDataSet::GetData(inputVector[0]);
@@ -355,8 +355,8 @@ int ttkFTRGraph::RequestData(vtkInformation *ttkNotUsed(request),
   return 1;
 }
 
-int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph &graph,
-                                 vtkDataSet *outputSegmentation) {
+int ttkReebGraph::getSegmentation(const ttk::ftr::Graph &graph,
+                                  vtkDataSet *outputSegmentation) {
   outputSegmentation->ShallowCopy(mesh_);
 
   const idVertex numberOfVertices = mesh_->GetNumberOfPoints();
@@ -372,8 +372,8 @@ int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph &graph,
   return 0;
 }
 
-int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph &graph,
-                                 vtkUnstructuredGrid *outputSkeletonArcs) {
+int ttkReebGraph::getSkeletonArcs(const ttk::ftr::Graph &graph,
+                                  vtkUnstructuredGrid *outputSkeletonArcs) {
   const idSuperArc nbArcs = graph.getNumberOfArcs();
 
   idSuperArc nbFinArc = 0;
@@ -418,8 +418,8 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph &graph,
   return 0;
 }
 
-int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
-                                  vtkUnstructuredGrid *outputSkeletonNodes) {
+int ttkReebGraph::getSkeletonNodes(const Graph &graph,
+                                   vtkUnstructuredGrid *outputSkeletonNodes) {
   const idNode nbNodes = graph.getNumberOfNodes();
 
   ttk::ftr::NodeData nodeData(nbNodes);
@@ -447,7 +447,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
 
 // protected
 
-void ttkFTRGraph::identify(vtkDataSet *ds) const {
+void ttkReebGraph::identify(vtkDataSet *ds) const {
   vtkNew<vtkIntArray> identifiers{};
   const vtkIdType nbPoints = ds->GetNumberOfPoints();
   identifiers->SetName("VertexIdentifier");

@@ -3,7 +3,7 @@
 #include <FTMTreeUtils.h>
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
-#include <ttkFTMTreeUtils.h>
+#include <ttkMergeAndContourTreeUtils.h>
 #include <ttkMergeTreeClustering.h>
 #include <ttkMergeTreeVisualization.h>
 
@@ -265,6 +265,7 @@ int ttkMergeTreeClustering::runCompute(
     mergeTreeDistance.setDeleteMultiPersPairs(DeleteMultiPersPairs);
     mergeTreeDistance.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
     mergeTreeDistance.setIsPersistenceDiagram(IsPersistenceDiagram);
+    mergeTreeDistance.setNonMatchingWeight(NonMatchingWeight);
     mergeTreeDistance.setThreadNumber(this->threadNumber_);
     mergeTreeDistance.setDebugLevel(this->debugLevel_);
 

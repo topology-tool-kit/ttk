@@ -5,7 +5,7 @@
 
 // include the local headers
 #include <CommandLineParser.h>
-#include <ttkFTRGraph.h>
+#include <ttkReebGraph.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   ttk::Debug msg;
   msg.setDebugMsgPrefix("FTRGraph");
 
-  vtkNew<ttkFTRGraph> ftrG{};
+  vtkNew<ttkReebGraph> ftrG{};
 
   vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {

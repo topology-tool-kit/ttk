@@ -1,11 +1,11 @@
 /// \ingroup vtk
-/// \class ttkFTMTree
+/// \class ttkMergeAndContourTree
 /// \author Charles Gueunet <charles.gueunet@kitware.com>
 /// \date June 2017.
 ///
 /// \sa ttk::ftm::FTMTree
 ///
-/// \brief TTK VTK-filter for the computation of merge and contour trees.
+/// \brief TTK filter for the computation of the Merge And Contour (MAC) trees.
 ///
 /// The computation of the Merge / Contour tree done by this package is done in
 /// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
@@ -81,26 +81,38 @@
 #include <vtkSmartPointer.h>
 
 // VTK module
-#include <ttkFTMTreeModule.h>
+#include <ttkMergeAndContourTreeModule.h>
 
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
-#include <ttkFTMStructures.h>
+#include <ttkMergeAndContourStructures.h>
 
 class vtkDataSet;
 
-class TTKFTMTREE_EXPORT ttkFTMTree : public ttkAlgorithm {
+class TTKMERGEANDCONTOURTREE_EXPORT ttkMergeAndContourTree
+  : public ttkAlgorithm {
 
 public:
-  static ttkFTMTree *New();
+  enum class BACKEND {
+    FTM = 0,
+    EXTREEM = 1,
+  };
 
-  vtkTypeMacro(ttkFTMTree, ttkAlgorithm);
+  static ttkMergeAndContourTree *New();
+
+  vtkTypeMacro(ttkMergeAndContourTree, ttkAlgorithm);
 
   /// @brief the offset array to use for simulation of simplicity
   /// @{
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
+  /// @}
+
+  /// @brief the backend to use for computations.
+  /// @{
+  vtkGetMacro(Backend, int);
+  vtkSetMacro(Backend, int);
   /// @}
 
   // Parameters uses a structure, we can't use vtkMacro on them
@@ -196,7 +208,7 @@ public:
 #endif
 
 protected:
-  ttkFTMTree();
+  ttkMergeAndContourTree();
 
   // vtkDataSetAlgorithm methods
   int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -209,6 +221,9 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField = false;
+
+  int Backend{(int)BACKEND::FTM};
+
   ttk::ftm::Params params_;
 
   int nbCC_;

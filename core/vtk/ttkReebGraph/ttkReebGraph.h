@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkFTRGraph
+/// \class ttkReebGraph
 /// \author Charles Gueunet <charles.gueunet@kitware.com>
 /// \date June 2017.
 ///
@@ -52,18 +52,18 @@
 #include <FTRGraph.h>
 #include <Graph.h>
 #include <ttkAlgorithm.h>
-#include <ttkFTRGraphStructures.h>
+#include <ttkReebGraphStructures.h>
 
 // VTK includes
 #include <vtkDataArray.h>
 
 // VTK Module
-#include <ttkFTRGraphModule.h>
+#include <ttkReebGraphModule.h>
 
-class TTKFTRGRAPH_EXPORT ttkFTRGraph : public ttkAlgorithm {
+class TTKREEBGRAPH_EXPORT ttkReebGraph : public ttkAlgorithm {
 public:
-  static ttkFTRGraph *New();
-  vtkTypeMacro(ttkFTRGraph, ttkAlgorithm);
+  static ttkReebGraph *New();
+  vtkTypeMacro(ttkReebGraph, ttkAlgorithm);
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
@@ -146,7 +146,7 @@ public:
   int dispatch(ttk::ftr::Graph &graph);
 
 protected:
-  ttkFTRGraph();
+  ttkReebGraph();
 
   void identify(vtkDataSet *ds) const;
 

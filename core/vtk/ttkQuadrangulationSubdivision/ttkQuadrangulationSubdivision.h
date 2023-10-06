@@ -19,7 +19,7 @@
 ///
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
-/// \sa ttkFTMTree
+/// \sa ttkMergeAndContourTree
 /// \sa ttkIdentifiers
 /// \sa ttk::QuadrangulationSubdivision
 ///
