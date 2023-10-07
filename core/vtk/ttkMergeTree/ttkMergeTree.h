@@ -1,17 +1,17 @@
 /// \ingroup vtk
-/// \class ttkMergeAndContourTree
+/// \class ttkMergeTree
 /// \author Charles Gueunet <charles.gueunet@kitware.com>
 /// \date June 2017.
 ///
 /// \sa ttk::ftm::FTMTree
 ///
-/// \brief TTK filter for the computation of the Merge And Contour (MAC) trees.
+/// \brief TTK filter for the computation of merge trees.
 ///
-/// The computation of the Merge / Contour tree done by this package is done in
+/// The computation of the merge tree done by this package is done in
 /// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
 /// described in the article mention below.
 /// The VTK wrapper will first call a connectivity filter, and then call
-/// a contour / merge tree computation for each connected components. The final
+/// a merge tree computation for each connected components. The final
 /// tree is then aggregated.
 ///
 /// \param Input Input scalar field, either 2D or 3D, regular
@@ -19,8 +19,6 @@
 /// \param TreeType the Type of three to Compute:\n
 /// * Join Tree (leaves corresponds to minima of the scalar field)
 /// * Split Tree (leaves corresponds to maxima of the scalar field)
-/// * Contour Tree (combination of both)
-/// * JoinSplit (compute both merge trees but do not combine them (advanced))
 /// \param Segmentation control wethear or not the output should be augmented
 /// with the segmentation.
 /// \param SuperArcSamplingLevel control the number of subdivision of each
@@ -52,13 +50,8 @@
 /// Pages 1889-1905
 ///
 /// \b Online \b examples: \n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
-///   Tree Alignment example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
-///   example</a>\n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
@@ -81,17 +74,16 @@
 #include <vtkSmartPointer.h>
 
 // VTK module
-#include <ttkMergeAndContourTreeModule.h>
+#include <ttkMergeTreeModule.h>
 
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
-#include <ttkMergeAndContourStructures.h>
+#include <ttkMergeTreeStructures.h>
 
 class vtkDataSet;
 
-class TTKMERGEANDCONTOURTREE_EXPORT ttkMergeAndContourTree
-  : public ttkAlgorithm {
+class TTKMERGETREE_EXPORT ttkMergeTree : public ttkAlgorithm {
 
 public:
   enum class BACKEND {
@@ -99,9 +91,9 @@ public:
     EXTREEM = 1,
   };
 
-  static ttkMergeAndContourTree *New();
+  static ttkMergeTree *New();
 
-  vtkTypeMacro(ttkMergeAndContourTree, ttkAlgorithm);
+  vtkTypeMacro(ttkMergeTree, ttkAlgorithm);
 
   /// @brief the offset array to use for simulation of simplicity
   /// @{
@@ -208,7 +200,7 @@ public:
 #endif
 
 protected:
-  ttkMergeAndContourTree();
+  ttkMergeTree();
 
   // vtkDataSetAlgorithm methods
   int FillInputPortInformation(int port, vtkInformation *info) override;

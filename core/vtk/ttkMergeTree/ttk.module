@@ -1,0 +1,11 @@
+NAME
+  ttkMergeTree
+SOURCES
+  ttkMergeTree.cpp
+HEADERS
+  ttkMergeTree.h
+  ttkMergeTreeStructures.h
+  ttkMergeTreeUtils.h
+DEPENDS
+  ftmTree
+  ttkAlgorithm

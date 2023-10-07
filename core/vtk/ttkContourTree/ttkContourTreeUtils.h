@@ -3,7 +3,7 @@
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
-/// Utils function for manipulating MergeAndContourTree class
+/// Utils function for manipulating the ContourTree class
 
 #pragma once
 

@@ -5,13 +5,13 @@
 ///
 /// \sa ttk::ftm::FTMTree
 ///
-/// \brief TTK filter for the computation of the Merge And Contour (MAC) trees.
+/// \brief TTK filter for the computation of contour trees.
 ///
-/// The computation of the Merge / Contour tree done by this package is done in
+/// The computation of the contour tree done by this package is done in
 /// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
 /// described in the article mention below.
 /// The VTK wrapper will first call a connectivity filter, and then call
-/// a contour / merge tree computation for each connected components. The final
+/// a contour tree computation for each connected components. The final
 /// tree is then aggregated.
 ///
 /// \param Input Input scalar field, either 2D or 3D, regular

@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(ttkMergeAndContourTreeCmd)
+project(ttkMergeTreeCmd)
 
-if(TARGET ttkMergeAndContourTree)
+if(TARGET ttkMergeTree)
   add_executable(${PROJECT_NAME} main.cpp)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
-      ttkMergeAndContourTree
+      ttkMergeTree
       VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}

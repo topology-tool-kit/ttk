@@ -22,7 +22,6 @@ int main(int argc, char **argv) {
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
   bool forceOffset{false};
-  int treeType{};
 
   {
     ttk::CommandLineParser parser;
@@ -35,7 +34,6 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("T", &treeType, "Tree type {0: JT, 1: ST, 2: CT}", true);
 
     parser.setOption("l", &listArrays, "List available arrays");
     parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
@@ -44,7 +42,7 @@ int main(int argc, char **argv) {
   }
 
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("FTMTree");
+  msg.setDebugMsgPrefix("ContourTree");
 
   vtkNew<ttkContourTree> macTree{};
 
