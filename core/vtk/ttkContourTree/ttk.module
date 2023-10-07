@@ -1,0 +1,11 @@
+NAME
+  ttkContourTree
+SOURCES
+  ttkContourTree.cpp
+HEADERS
+  ttkContourTree.h
+  ttkContourTreeStructures.h
+  ttkContourTreeUtils.h
+DEPENDS
+  ftmTree
+  ttkAlgorithm
