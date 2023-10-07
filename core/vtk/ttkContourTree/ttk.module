@@ -4,8 +4,7 @@ SOURCES
   ttkContourTree.cpp
 HEADERS
   ttkContourTree.h
-  ttkContourTreeStructures.h
-  ttkContourTreeUtils.h
 DEPENDS
   ftmTree
+  ttkMergeTree
   ttkAlgorithm

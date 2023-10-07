@@ -64,7 +64,7 @@
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
-#include <ttkContourTreeStructures.h>
+#include <ttkMergeTreeStructures.h>
 
 class vtkDataSet;
 
