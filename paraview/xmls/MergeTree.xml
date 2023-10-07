@@ -3,7 +3,7 @@
         <SourceProxy
             name="ttkMergeTree"
             class="ttkMergeTree"
-            label="TTK MergeAndContourTree">
+            label="TTK MergeTree">
             <Documentation
               long_help="TTK plugin that efficiently computes the merge tree of
               scalar data and more."
