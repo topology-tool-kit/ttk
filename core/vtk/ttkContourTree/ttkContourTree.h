@@ -64,11 +64,13 @@
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
+#include <ttkMergeTreeBase.h>
 #include <ttkMergeTreeStructures.h>
 
 class vtkDataSet;
 
-class TTKCONTOURTREE_EXPORT ttkContourTree : public ttkAlgorithm {
+class TTKCONTOURTREE_EXPORT ttkContourTree : public ttkAlgorithm,
+                                             public ttkMergeTreeBase {
 
 public:
   static ttkContourTree *New();
@@ -133,35 +135,6 @@ public:
   int getScalars();
   int getOffsets();
 
-  int getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes);
-
-  int addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                           const int cc,
-                           vtkPoints *points,
-                           vtkUnstructuredGrid *skeletonArcs,
-                           ttk::ftm::ArcData &arcData);
-
-  int addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                            const int cc,
-                            vtkPoints *points,
-                            vtkUnstructuredGrid *skeletonArcs,
-                            ttk::ftm::ArcData &arcData);
-
-  int addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                             const int cc,
-                             vtkPoints *points,
-                             vtkUnstructuredGrid *skeletonArcs,
-                             ttk::ftm::ArcData &arcData);
-
-  int getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs);
-
-  int getSegmentation(vtkDataSet *outputSegmentation);
-
-#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-  void printCSVStats();
-  void printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const;
-#endif
-
 protected:
   ttkContourTree();
 
@@ -172,17 +145,5 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  void identify(vtkDataSet *ds) const;
-
 private:
-  bool ForceInputOffsetScalarField = false;
-
-  ttk::ftm::Params params_;
-
-  int nbCC_;
-  std::vector<vtkSmartPointer<vtkDataSet>> connected_components_;
-  std::vector<ttk::Triangulation *> triangulation_;
-  std::vector<ttk::ftm::LocalFTM> ftmTree_;
-  std::vector<vtkDataArray *> inputScalars_;
-  std::vector<std::vector<ttk::SimplexId>> offsets_;
 };
