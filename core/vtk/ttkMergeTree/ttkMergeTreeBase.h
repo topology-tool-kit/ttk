@@ -107,14 +107,14 @@ public:
     return params_.treeType;
   }
 
+  void identify(vtkDataSet *ds) const;
+
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
   void printCSVStats();
   void printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const;
 #endif
 
 protected:
-  void identify(vtkDataSet *ds) const;
-
   bool ForceInputOffsetScalarField = false;
   ttk::ftm::Params params_;
   int nbCC_;
