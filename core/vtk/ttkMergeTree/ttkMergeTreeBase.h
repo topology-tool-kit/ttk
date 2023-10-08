@@ -5,7 +5,7 @@
 ///
 /// \sa ttk::ftm::FTMTree
 ///
-/// \brief TTK filter for the computation of merge trees.
+/// \brief VTK-level features for merge tree representation.
 ///
 /// The computation of the merge tree done by this package is done in
 /// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
@@ -70,116 +70,57 @@
 
 #pragma once
 
-// VTK includes
-#include <vtkSmartPointer.h>
-
-// VTK module
-#include <ttkMergeTreeModule.h>
-
 // ttk code includes
-#include <FTMTree.h>
-#include <ttkAlgorithm.h>
-#include <ttkMergeTreeBase.h>
 #include <ttkMergeTreeStructures.h>
 
-class vtkDataSet;
-
-class TTKMERGETREE_EXPORT ttkMergeTree : public ttkAlgorithm,
-                                         public ttkMergeTreeBase {
+class ttkMergeTreeBase : virtual public ttk::Debug {
 
 public:
-  enum class BACKEND {
-    FTM = 0,
-    EXTREEM = 1,
-  };
+  ttkMergeTreeBase();
+  ~ttkMergeTreeBase(){};
 
-  static ttkMergeTree *New();
+  int getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes);
 
-  vtkTypeMacro(ttkMergeTree, ttkAlgorithm);
+  int addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
+                           const int cc,
+                           vtkPoints *points,
+                           vtkUnstructuredGrid *skeletonArcs,
+                           ttk::ftm::ArcData &arcData);
 
-  /// @brief the offset array to use for simulation of simplicity
-  /// @{
-  vtkGetMacro(ForceInputOffsetScalarField, bool);
-  vtkSetMacro(ForceInputOffsetScalarField, bool);
-  /// @}
+  int addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
+                            const int cc,
+                            vtkPoints *points,
+                            vtkUnstructuredGrid *skeletonArcs,
+                            ttk::ftm::ArcData &arcData);
 
-  /// @brief the backend to use for computations.
-  /// @{
-  vtkGetMacro(Backend, int);
-  vtkSetMacro(Backend, int);
-  /// @}
+  int addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
+                             const int cc,
+                             vtkPoints *points,
+                             vtkUnstructuredGrid *skeletonArcs,
+                             ttk::ftm::ArcData &arcData);
 
-  // Parameters uses a structure, we can't use vtkMacro on them
+  int getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs);
 
-  /// @brief the type of tree to compute (Join, Split, Contour, JoinSplit)
-  /// @{
-  void SetTreeType(const int type) {
-    params_.treeType = (ttk::ftm::TreeType)type;
-    Modified();
+  int getSegmentation(vtkDataSet *outputSegmentation);
+
+  ttk::ftm::TreeType GetTreeType() const {
+    return params_.treeType;
   }
-  /// @}
 
-  /// @brief control if the output should contains the segmentation information
-  /// @{
-  void SetWithSegmentation(const bool segm) {
-    params_.segm = segm;
-    Modified();
-  }
-  bool GetWithSegmentation() const {
-    return params_.segm;
-  }
-  /// @}
-
-  /// @brief if true, a post process pass will ensure NodesId have a
-  /// deterministic order
-  /// @{
-  void SetWithNormalize(const bool norm) {
-    params_.normalize = norm;
-    Modified();
-  }
-  bool GetWithNormalize() const {
-    return params_.normalize;
-  }
-  /// @}
-
-  /// @brief Compute additional information on the segmentation
-  /// like the span and size (in nb of vertex) of each region
-  /// @{
-  void SetWithAdvStats(const bool adv) {
-    params_.advStats = adv;
-    Modified();
-  }
-  bool GetWithAdvStats() const {
-    return params_.advStats;
-  }
-  /// @}
-
-  /// @brief control the sampling level of the superarc. By default: 0
-  /// @{
-  void SetSuperArcSamplingLevel(int lvl) {
-    params_.samplingLvl = lvl;
-    Modified();
-  }
-  int GetSuperArcSamplingLevel() const {
-    return params_.samplingLvl;
-  }
-  /// @}
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
+  void printCSVStats();
+  void printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const;
+#endif
 
 protected:
-  ttkMergeTree();
+  void identify(vtkDataSet *ds) const;
 
-  int getOffsets();
-  int getScalars();
-
-  int preconditionTriangulation();
-
-  // vtkDataSetAlgorithm methods
-  int FillInputPortInformation(int port, vtkInformation *info) override;
-  int FillOutputPortInformation(int port, vtkInformation *info) override;
-  int RequestData(vtkInformation *request,
-                  vtkInformationVector **inputVector,
-                  vtkInformationVector *outputVector) override;
-
-private:
-  int Backend{(int)BACKEND::FTM};
+  bool ForceInputOffsetScalarField = false;
+  ttk::ftm::Params params_;
+  int nbCC_;
+  std::vector<vtkSmartPointer<vtkDataSet>> connected_components_;
+  std::vector<ttk::Triangulation *> triangulation_;
+  std::vector<ttk::ftm::LocalFTM> ftmTree_;
+  std::vector<vtkDataArray *> inputScalars_;
+  std::vector<std::vector<ttk::SimplexId>> offsets_;
 };
