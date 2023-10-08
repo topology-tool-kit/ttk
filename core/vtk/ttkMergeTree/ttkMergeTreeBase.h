@@ -77,7 +77,7 @@ class ttkMergeTreeBase : virtual public ttk::Debug {
 
 public:
   ttkMergeTreeBase();
-  ~ttkMergeTreeBase(){};
+  ~ttkMergeTreeBase() = default;
 
   int getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes);
 
