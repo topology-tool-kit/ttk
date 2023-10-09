@@ -74,6 +74,7 @@ namespace ttk {
     double DeltaLim{0.01};
     double Lambda{1.0};
     double TimeLimit{999999};
+    double NonMatchingWeight = 1.0;
 
     int NumberOfClusters{1};
     bool UseAccelerated{false};

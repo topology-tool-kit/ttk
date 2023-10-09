@@ -30,9 +30,11 @@ namespace ttk {
                               double geometricalFactor,
                               double lambda,
                               double delta_lim,
-                              bool use_kdTree)
+                              bool use_kdTree,
+                              double nonMatchingWeight = 1.0)
       : wasserstein_{wasserstein}, geometricalFactor_{geometricalFactor},
-        lambda_{lambda}, delta_lim_{delta_lim}, use_kdt_{use_kdTree} {
+        lambda_{lambda}, delta_lim_{delta_lim}, use_kdt_{use_kdTree},
+        nonMatchingWeight_{nonMatchingWeight} {
     }
 
     PersistenceDiagramAuction(BidderDiagram &bidders,
@@ -45,7 +47,8 @@ namespace ttk {
                               std::vector<KDT *> &correspondence_kdt_map,
                               double epsilon = {},
                               double initial_diag_price = {},
-                              bool use_kdTree = true)
+                              bool use_kdTree = true,
+                              double nonMatchingWeight = 1.0)
       : kdt_{kdt}, correspondence_kdt_map_{correspondence_kdt_map},
         bidders_{bidders}, goods_{goods} {
 
@@ -80,6 +83,7 @@ namespace ttk {
       delta_lim_ = delta_lim;
       geometricalFactor_ = geometricalFactor;
       lambda_ = lambda;
+      nonMatchingWeight_ = nonMatchingWeight;
 
       use_kdt_ = (use_kdTree && !goods_.empty());
     }
@@ -240,7 +244,8 @@ namespace ttk {
       double d = 0;
       for(size_t i = 0; i < bidders_.size(); i++) {
         Bidder const &b = bidders_[i];
-        d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
+        d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_,
+                    nonMatchingWeight_);
       }
       return d;
     }
@@ -306,6 +311,7 @@ namespace ttk {
     double delta_lim_{};
     double lowerBoundCost_, lowerBoundCostWeight_;
     bool use_kdt_{true};
+    double nonMatchingWeight_ = 1.0;
 
   }; // namespace ttk
 } // namespace ttk

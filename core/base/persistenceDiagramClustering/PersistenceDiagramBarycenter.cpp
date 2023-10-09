@@ -99,6 +99,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_min.setEarlyStoppage(early_stoppage_);
     bary_min.setEpsilonDecreases(epsilon_decreases_);
     bary_min.setReinitPrices(reinit_prices_);
+    bary_min.setNonMatchingWeight(nonMatchingWeight_);
     bary_min.setDiagrams(&data_min);
     matching_min = bary_min.execute(barycenter_min);
     min_cost = bary_min.getCost();
@@ -126,6 +127,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_sad.setEpsilonDecreases(epsilon_decreases_);
     bary_sad.setDeterministic(deterministic_);
     bary_sad.setReinitPrices(reinit_prices_);
+    bary_sad.setNonMatchingWeight(nonMatchingWeight_);
     bary_sad.setDiagrams(&data_sad);
     matching_sad = bary_sad.execute(barycenter_sad);
     sad_cost = bary_sad.getCost();
@@ -153,6 +155,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_max.setDeterministic(deterministic_);
     bary_max.setEpsilonDecreases(epsilon_decreases_);
     bary_max.setReinitPrices(reinit_prices_);
+    bary_max.setNonMatchingWeight(nonMatchingWeight_);
     bary_max.setDiagrams(&data_max);
     matching_max = bary_max.execute(barycenter_max);
     max_cost = bary_max.getCost();
