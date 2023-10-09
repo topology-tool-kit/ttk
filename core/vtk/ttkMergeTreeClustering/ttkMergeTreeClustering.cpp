@@ -3,8 +3,8 @@
 #include <FTMTreeUtils.h>
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
-#include <ttkMergeAndContourTreeUtils.h>
 #include <ttkMergeTreeClustering.h>
+#include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
 
 #include <vtkDataObject.h> // For port information
