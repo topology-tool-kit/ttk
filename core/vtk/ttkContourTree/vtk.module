@@ -2,3 +2,4 @@ NAME
  ttkContourTree
 DEPENDS
  ttkAlgorithm
+ ttkMergeTree
