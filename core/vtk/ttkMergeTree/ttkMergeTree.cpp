@@ -245,6 +245,15 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
 
 #ifndef TTK_ENABLE_KAMIKAZE
+
+#ifndef TTK_ENABLE_OPENMP
+  printMsg(ttk::debug::Separator::L2);
+  this->printErr("ExTreeM requires OpenMP.");
+  printMsg(ttk::debug::Separator::L2);
+  return 0;
+#endif
+  // Get the input
+  auto input = vtkImageData::GetData(inputVector[0]);
   if(!input) {
     this->printErr("Error: input pointer is NULL.");
     return 0;
