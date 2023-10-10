@@ -81,8 +81,8 @@ int ttkPersistenceDiagramClustering::RequestData(
   if(numInputs != 2 and NonMatchingWeight != 1.0) {
     // We need to modify the update of the barycenter by taking into account the
     // non-matching weight
-    printWrn("Weight for non-matching is not yet supported for barycenter or "
-             "clustering computation, non-matching weight is set to 1.");
+    printWrn("Custom weight only supported for pairwise distance.");
+    printWrn("Non-matching weight is set to 1.");
     NonMatchingWeight = 1.0;
   }
 
