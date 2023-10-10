@@ -1,11 +1,11 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for FTR Graph computation.
+/// \brief Command line program for contour tree computation.
 
 // include the local headers
 #include <CommandLineParser.h>
-#include <ttkFTRGraph.h>
+#include <ttkContourTree.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -22,7 +22,6 @@ int main(int argc, char **argv) {
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
   bool forceOffset{false};
-  bool singleSweep{false};
 
   {
     ttk::CommandLineParser parser;
@@ -35,17 +34,17 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
+
     parser.setOption("l", &listArrays, "List available arrays");
-    parser.setOption("s", &singleSweep, "Single sweep");
     parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
     parser.parse(argc, argv);
   }
 
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("FTRGraph");
+  msg.setDebugMsgPrefix("ContourTree");
 
-  vtkNew<ttkFTRGraph> ftrG{};
+  vtkNew<ttkContourTree> macTree{};
 
   vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
@@ -85,7 +84,7 @@ int main(int argc, char **argv) {
       }
     } else {
       // feed input object to the filter
-      ftrG->SetInputDataObject(i, reader->GetOutput());
+      macTree->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -109,23 +108,20 @@ int main(int argc, char **argv) {
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    ftrG->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
-
-  // TODO manage the offset array?
+    macTree->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
   // Execute the filter
   // ---------------------------------------------------------------------------
-  ftrG->SetForceInputOffsetScalarField(forceOffset);
-  ftrG->SetSingleSweep(singleSweep);
-  ftrG->Update();
+  macTree->SetForceInputOffsetScalarField(forceOffset);
+  macTree->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < ftrG->GetNumberOfOutputPorts(); i++) {
-      auto output = ftrG->GetOutputDataObject(i);
+    for(int i = 0; i < macTree->GetNumberOfOutputPorts(); i++) {
+      auto output = macTree->GetOutputDataObject(i);
       auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
         vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 

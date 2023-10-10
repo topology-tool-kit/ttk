@@ -1,11 +1,11 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for FTM Tree computation.
+/// \brief Command line program for FTR Graph computation.
 
 // include the local headers
 #include <CommandLineParser.h>
-#include <ttkFTMTree.h>
+#include <ttkReebGraph.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
   bool forceOffset{false};
-  int treeType{};
+  bool singleSweep{false};
 
   {
     ttk::CommandLineParser parser;
@@ -35,18 +35,17 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("T", &treeType, "Tree type {0: JT, 1: ST, 2: CT}", true);
-
     parser.setOption("l", &listArrays, "List available arrays");
+    parser.setOption("s", &singleSweep, "Single sweep");
     parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
     parser.parse(argc, argv);
   }
 
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("FTMTree");
+  msg.setDebugMsgPrefix("FTRGraph");
 
-  vtkNew<ttkFTMTree> ftmTree{};
+  vtkNew<ttkReebGraph> ftrG{};
 
   vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
@@ -86,7 +85,7 @@ int main(int argc, char **argv) {
       }
     } else {
       // feed input object to the filter
-      ftmTree->SetInputDataObject(i, reader->GetOutput());
+      ftrG->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -110,21 +109,23 @@ int main(int argc, char **argv) {
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    ftmTree->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+    ftrG->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+
+  // TODO manage the offset array?
 
   // ---------------------------------------------------------------------------
   // Execute the filter
   // ---------------------------------------------------------------------------
-  ftmTree->SetTreeType(treeType);
-  ftmTree->SetForceInputOffsetScalarField(forceOffset);
-  ftmTree->Update();
+  ftrG->SetForceInputOffsetScalarField(forceOffset);
+  ftrG->SetSingleSweep(singleSweep);
+  ftrG->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < ftmTree->GetNumberOfOutputPorts(); i++) {
-      auto output = ftmTree->GetOutputDataObject(i);
+    for(int i = 0; i < ftrG->GetNumberOfOutputPorts(); i++) {
+      auto output = ftrG->GetOutputDataObject(i);
       auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
         vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 

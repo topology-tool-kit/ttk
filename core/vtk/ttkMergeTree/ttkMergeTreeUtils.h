@@ -1,9 +1,9 @@
 /// \ingroup vtk
-/// \class ttk::ttkFTMTreeUtils
+/// \class ttk::ttkMergeTreeUtils
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
-/// Utils function for manipulating FTMTree class
+/// Utils function for manipulating merge and contour tree classes
 
 #pragma once
 

@@ -1,37 +1,29 @@
-/// \author Julien Tierny <julien.tierny@sorbonne-universite.fr>.
+/// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for critical point computation.
+/// \brief Command line program for FTM Tree computation.
 
-// TTK Includes
+// include the local headers
 #include <CommandLineParser.h>
-#include <ttkFTMTree.h>
 #include <ttkMergeTree.h>
 
-// VTK Includes
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkXMLDataObjectWriter.h>
 #include <vtkXMLGenericDataObjectReader.h>
 
 int main(int argc, char **argv) {
 
-  // ---------------------------------------------------------------------------
-  // Program variables
-  // ---------------------------------------------------------------------------
-  std::string inputFilePath = "";
-  std::string inputArrayName = "";
+  std::vector<std::string> inputFilePaths;
+  std::vector<std::string> inputArrayNames;
+  std::string outputPathPrefix{"output"};
   bool listArrays{false};
-  bool compare{false};
-  int threadNumber{112};
-  int repetitions{1};
+  bool forceOffset{false};
+  int treeType{};
 
-  // ---------------------------------------------------------------------------
-  // Set program variables based on command line arguments
-  // ---------------------------------------------------------------------------
   {
     ttk::CommandLineParser parser;
 
@@ -39,97 +31,110 @@ int main(int argc, char **argv) {
     // Standard options and arguments
     // -------------------------------------------------------------------------
     parser.setArgument(
-      "i", &inputFilePath, "Input data-set (*.vti, *vtu, *vtp)", false);
-    parser.setArgument("a", &inputArrayName, "Input array name", false);
-    parser.setArgument("r", &repetitions,
-                       "Number of times you want to run the algorithms", true);
-    parser.setOption("l", &listArrays, "List available arrays");
-    parser.setOption("c", &compare, "Also build the TTK FTM Tree to compare");
+      "i", &inputFilePaths, "Input data-sets (*.vti, *vtu, *vtp)", false);
+    parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
-      "n", &threadNumber, "The number of OMP Threads to run the filters", true);
+      "o", &outputPathPrefix, "Output file prefix (no extension)", true);
+    parser.setArgument("T", &treeType, "Tree type {0: JT, 1: ST}", true);
+
+    parser.setOption("l", &listArrays, "List available arrays");
+    parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
     parser.parse(argc, argv);
   }
 
-  // ---------------------------------------------------------------------------
-  // Command line output messages.
-  // ---------------------------------------------------------------------------
   ttk::Debug msg;
   msg.setDebugMsgPrefix("MergeTree");
 
-  // ---------------------------------------------------------------------------
-  // Initialize ttkPairExtrema module (adjust parameters)
-  // ---------------------------------------------------------------------------
+  vtkNew<ttkMergeTree> macTree{};
 
-  // ---------------------------------------------------------------------------
-  // Read input vtkDataObjects (optionally: print available arrays)
-  // ---------------------------------------------------------------------------
   vtkDataArray *defaultArray = nullptr;
-  // init a reader that can parse any vtkDataObject stored in xml format
-  auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
-  reader->SetFileName(inputFilePath.data());
-  reader->Update();
+  for(size_t i = 0; i < inputFilePaths.size(); i++) {
+    // init a reader that can parse any vtkDataObject stored in xml format
+    vtkNew<vtkXMLGenericDataObjectReader> reader{};
+    reader->SetFileName(inputFilePaths[i].data());
+    reader->Update();
 
-  // check if input vtkDataObject was successfully read
-  auto inputDataObject = reader->GetOutput();
-  if(!inputDataObject) {
-    msg.printErr("Unable to read input file `" + inputFilePath + "' :(");
-    return 1;
-  }
-
-  auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
-
-  // if requested print list of arrays, otherwise proceed with execution
-  if(listArrays) {
-    msg.printMsg(inputFilePath + ":");
-    if(inputAsVtkDataSet) {
-      // Point Data
-      msg.printMsg("  PointData:");
-      auto pointData = inputAsVtkDataSet->GetPointData();
-      for(int j = 0; j < pointData->GetNumberOfArrays(); j++)
-        msg.printMsg("    - " + std::string(pointData->GetArrayName(j)));
-      return 0;
-    } else {
-      msg.printErr("Unable to list arrays on file `" + inputFilePath + "'");
+    // check if input vtkDataObject was successfully read
+    auto inputDataObject = reader->GetOutput();
+    if(!inputDataObject) {
+      msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
       return 1;
     }
+
+    auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
+
+    // if requested print list of arrays, otherwise proceed with execution
+    if(listArrays) {
+      msg.printMsg(inputFilePaths[i] + ":");
+      if(inputAsVtkDataSet) {
+        // Point Data
+        msg.printMsg("  PointData:");
+        auto pointData = inputAsVtkDataSet->GetPointData();
+        for(int j = 0; j < pointData->GetNumberOfArrays(); j++)
+          msg.printMsg("    - " + std::string(pointData->GetArrayName(j)));
+
+        // Cell Data
+        msg.printMsg("  CellData:");
+        auto cellData = inputAsVtkDataSet->GetCellData();
+        for(int j = 0; j < cellData->GetNumberOfArrays(); j++)
+          msg.printMsg("    - " + std::string(cellData->GetArrayName(j)));
+      } else {
+        msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
+                     + "'");
+        return 1;
+      }
+    } else {
+      // feed input object to the filter
+      macTree->SetInputDataObject(i, reader->GetOutput());
+
+      // default arrays
+      if(!defaultArray) {
+        defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
+        if(!defaultArray)
+          defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
+      }
+    }
+  }
+
+  // terminate program if it was just asked to list arrays
+  if(listArrays) {
+    return 0;
   }
 
   // ---------------------------------------------------------------------------
   // Specify which arrays of the input vtkDataObjects will be processed
   // ---------------------------------------------------------------------------
-  if(!defaultArray) {
-    defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
-  }
-  if(inputArrayName == "") {
+  if(!inputArrayNames.size()) {
     if(defaultArray)
-      inputArrayName = defaultArray->GetName();
+      inputArrayNames.emplace_back(defaultArray->GetName());
   }
+  for(size_t i = 0; i < inputArrayNames.size(); i++)
+    macTree->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
-  for(int i = 0; i < repetitions; i++) {
-    auto mergeTree = vtkSmartPointer<ttkMergeTree>::New();
+  // ---------------------------------------------------------------------------
+  // Execute the filter
+  // ---------------------------------------------------------------------------
+  macTree->SetTreeType(treeType);
+  macTree->SetForceInputOffsetScalarField(forceOffset);
+  macTree->Update();
 
-    mergeTree->SetInputDataObject(0, inputDataObject);
+  // ---------------------------------------------------------------------------
+  // If output prefix is specified then write all output objects to disk
+  // ---------------------------------------------------------------------------
+  if(!outputPathPrefix.empty()) {
+    for(int i = 0; i < macTree->GetNumberOfOutputPorts(); i++) {
+      auto output = macTree->GetOutputDataObject(i);
+      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
+        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 
-    mergeTree->SetInputArrayToProcess(0, 0, 0, 0, inputArrayName.data());
-
-    mergeTree->SetUseAllCores(false);
-    mergeTree->SetThreadNumber(threadNumber);
-    mergeTree->Modified();
-    mergeTree->Update();
-  }
-
-  if(compare) {
-    for(int i = 0; i < repetitions; i++) {
-      msg.setDebugMsgPrefix("FTMTree");
-      auto contourTree = vtkSmartPointer<ttkFTMTree>::New();
-      contourTree->SetInputDataObject(0, reader->GetOutput());
-      contourTree->SetInputArrayToProcess(0, 0, 0, 0, inputArrayName.data());
-      contourTree->SetUseAllCores(false);
-      contourTree->SetThreadNumber(threadNumber);
-      contourTree->SetTreeType(2); // Contour tree
-      contourTree->Modified();
-      contourTree->Update();
+      std::string outputFileName = outputPathPrefix + "_port_"
+                                   + std::to_string(i) + "."
+                                   + writer->GetDefaultFileExtension();
+      msg.printMsg("Writing output file `" + outputFileName + "'...");
+      writer->SetInputDataObject(output);
+      writer->SetFileName(outputFileName.data());
+      writer->Update();
     }
   }
 

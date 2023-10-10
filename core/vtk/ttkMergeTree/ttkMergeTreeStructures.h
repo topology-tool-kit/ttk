@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ExTreeM.h>
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
 
@@ -37,7 +38,7 @@ namespace ttk {
 
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!arr) {
-          std::cerr << "[ttkFTMTree] Error, unable to allocate " << fieldName
+          std::cerr << "[ttkMergeTree] Error, unable to allocate " << fieldName
                     << " the program will likely crash" << std::endl;
         }
 #endif
@@ -341,7 +342,7 @@ namespace ttk {
 
         // Empty node
 #ifndef TTK_ENABLE_KAMIKAZE
-        std::cerr << "[ttkFTMTree]: node without arcs:" << node->getVertexId()
+        std::cerr << "[ttkMergeTree]: node without arcs:" << node->getVertexId()
                   << std::endl;
 #endif
         return nullSuperArc;

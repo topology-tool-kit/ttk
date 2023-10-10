@@ -2,9 +2,14 @@ NAME
   ttkMergeTree
 SOURCES
   ttkMergeTree.cpp
+  ttkMergeTreeBase.cpp
 HEADERS
   ttkMergeTree.h
+  ttkMergeTreeBase.h
+  ttkMergeTreeStructures.h
+  ttkMergeTreeUtils.h
 DEPENDS
+  ftmTree
   exTreeM
   pathCompression
   ttkAlgorithm

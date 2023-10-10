@@ -305,6 +305,24 @@ Online examples:
                   <DoubleRangeDomain name="range" min="0" max="1" />
                 </DoubleVectorProperty>
                 
+                <DoubleVectorProperty
+                name="NonMatchingWeight"
+                command="SetNonMatchingWeight"
+                label="Non Matching Weight"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                  <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="ComputeBarycenter"
+                                           value="0" />
+                  </Hints>
+                  <Documentation>
+                    Weight given to the insertion and deletion costs in the distance computation.
+                  </Documentation>
+                </DoubleVectorProperty>
+                
                 <!-- Input options -->
                 <!-- TODO <IntVectorProperty
                 name="UseMinMaxPair"
@@ -461,6 +479,7 @@ Online examples:
               <Property name="Deterministic"/>
               <Property name="Alpha"/>
               <Property name="JoinSplitMixtureCoefficient"/>
+              <Property name="NonMatchingWeight"/>
               <!-- <Property name="UseMinMaxPair"/> -->
             </PropertyGroup>
             ${MERGE_TREE_PREPROCESS_WIDGETS}

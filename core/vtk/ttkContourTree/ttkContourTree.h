@@ -1,26 +1,21 @@
 /// \ingroup vtk
-/// \class ttkFTMTree
+/// \class ttkContourTree
 /// \author Charles Gueunet <charles.gueunet@kitware.com>
 /// \date June 2017.
 ///
 /// \sa ttk::ftm::FTMTree
 ///
-/// \brief TTK VTK-filter for the computation of merge and contour trees.
+/// \brief TTK filter for the computation of contour trees.
 ///
-/// The computation of the Merge / Contour tree done by this package is done in
+/// The computation of the contour tree done by this package is done in
 /// parallel if TTK_ENABLE_OPENMP is set to ON, using a task based approach
 /// described in the article mention below.
 /// The VTK wrapper will first call a connectivity filter, and then call
-/// a contour / merge tree computation for each connected components. The final
+/// a contour tree computation for each connected components. The final
 /// tree is then aggregated.
 ///
 /// \param Input Input scalar field, either 2D or 3D, regular
 /// grid or triangulation (vtkDataSet)
-/// \param TreeType the Type of three to Compute:\n
-/// * Join Tree (leaves corresponds to minima of the scalar field)
-/// * Split Tree (leaves corresponds to maxima of the scalar field)
-/// * Contour Tree (combination of both)
-/// * JoinSplit (compute both merge trees but do not combine them (advanced))
 /// \param Segmentation control wethear or not the output should be augmented
 /// with the segmentation.
 /// \param SuperArcSamplingLevel control the number of subdivision of each
@@ -55,25 +50,8 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
 ///   Tree Alignment example</a> \n
-///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
-///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 ///   example</a>\n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
-///   Interaction sites</a> \n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
-///   Tree Clustering example</a> \n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
-///   Tree Feature Tracking example</a> \n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
-///   Tree Principal Geodesic Analysis example</a> \n
-///   - <a
-///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
-///   Tree Temporal Reduction</a> \n
 
 #pragma once
 
@@ -81,21 +59,23 @@
 #include <vtkSmartPointer.h>
 
 // VTK module
-#include <ttkFTMTreeModule.h>
+#include <ttkContourTreeModule.h>
 
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
-#include <ttkFTMStructures.h>
+#include <ttkMergeTreeBase.h>
+#include <ttkMergeTreeStructures.h>
 
 class vtkDataSet;
 
-class TTKFTMTREE_EXPORT ttkFTMTree : public ttkAlgorithm {
+class TTKCONTOURTREE_EXPORT ttkContourTree : public ttkAlgorithm,
+                                             public ttkMergeTreeBase {
 
 public:
-  static ttkFTMTree *New();
+  static ttkContourTree *New();
 
-  vtkTypeMacro(ttkFTMTree, ttkAlgorithm);
+  vtkTypeMacro(ttkContourTree, ttkAlgorithm);
 
   /// @brief the offset array to use for simulation of simplicity
   /// @{
@@ -104,17 +84,6 @@ public:
   /// @}
 
   // Parameters uses a structure, we can't use vtkMacro on them
-
-  /// @brief the type of tree to compute (Join, Split, Contour, JoinSplit)
-  /// @{
-  void SetTreeType(const int type) {
-    params_.treeType = (ttk::ftm::TreeType)type;
-    Modified();
-  }
-  ttk::ftm::TreeType GetTreeType() const {
-    return params_.treeType;
-  }
-  /// @}
 
   /// @brief control if the output should contains the segmentation information
   /// @{
@@ -166,37 +135,8 @@ public:
   int getScalars();
   int getOffsets();
 
-  int getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes);
-
-  int addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                           const int cc,
-                           vtkPoints *points,
-                           vtkUnstructuredGrid *skeletonArcs,
-                           ttk::ftm::ArcData &arcData);
-
-  int addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                            const int cc,
-                            vtkPoints *points,
-                            vtkUnstructuredGrid *skeletonArcs,
-                            ttk::ftm::ArcData &arcData);
-
-  int addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
-                             const int cc,
-                             vtkPoints *points,
-                             vtkUnstructuredGrid *skeletonArcs,
-                             ttk::ftm::ArcData &arcData);
-
-  int getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs);
-
-  int getSegmentation(vtkDataSet *outputSegmentation);
-
-#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-  void printCSVStats();
-  void printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const;
-#endif
-
 protected:
-  ttkFTMTree();
+  ttkContourTree();
 
   // vtkDataSetAlgorithm methods
   int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -205,16 +145,5 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  void identify(vtkDataSet *ds) const;
-
 private:
-  bool ForceInputOffsetScalarField = false;
-  ttk::ftm::Params params_;
-
-  int nbCC_;
-  std::vector<vtkSmartPointer<vtkDataSet>> connected_components_;
-  std::vector<ttk::Triangulation *> triangulation_;
-  std::vector<ttk::ftm::LocalFTM> ftmTree_;
-  std::vector<vtkDataArray *> inputScalars_;
-  std::vector<std::vector<ttk::SimplexId>> offsets_;
 };
