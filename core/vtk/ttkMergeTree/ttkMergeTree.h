@@ -180,19 +180,6 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  template <class triangulationType>
-  int getMergeTree(vtkUnstructuredGrid *outputSkeletonArcs,
-                   std::vector<ttk::ExTreeM::Branch> &mergeTree,
-                   vtkDataArray *inputScalars,
-                   const triangulationType *triangulation);
-
-  template <class triangulationType>
-  int getMergeTreePoints(
-    vtkUnstructuredGrid *outputSkeletonNodes,
-    std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &persistencePairs,
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
 private:
   int Backend{(int)BACKEND::FTM};
 };
