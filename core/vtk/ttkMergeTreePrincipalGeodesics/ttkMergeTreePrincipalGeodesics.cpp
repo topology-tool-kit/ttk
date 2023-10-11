@@ -1,5 +1,5 @@
-#include <ttkMergeAndContourTreeUtils.h>
 #include <ttkMergeTreePrincipalGeodesics.h>
+#include <ttkMergeTreeUtils.h>
 
 #include <vtkInformation.h>
 
