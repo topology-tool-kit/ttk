@@ -380,6 +380,18 @@ between matched critical points.
           Set to 0.5 to choose the geometrical middle of the pair points (bad stability)
         </Documentation>
       </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="NonMatchingWeight"
+      command="SetNonMatchingWeight"
+      label="Non Matching Weight"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Documentation>
+          Weight given to the insertion and deletion costs in the distance computation.
+        </Documentation>
+      </DoubleVectorProperty>
 
       ${DEBUG_WIDGETS}
 

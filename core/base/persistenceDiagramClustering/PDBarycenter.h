@@ -179,6 +179,10 @@ namespace ttk {
       }
     }
 
+    inline void setNonMatchingWeight(double nonMatchingWeight) {
+      nonMatchingWeight_ = nonMatchingWeight;
+    }
+
     double getCost() {
       return cost_;
     }
@@ -192,6 +196,7 @@ namespace ttk {
 
     std::string method_{"Partial Bidding"};
     int wasserstein_{2};
+    double nonMatchingWeight_ = 1.0;
 
     double geometrical_factor_{1.0};
 

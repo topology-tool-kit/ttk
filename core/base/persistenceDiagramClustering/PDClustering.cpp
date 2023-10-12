@@ -830,8 +830,8 @@ double ttk::PDClustering::computeDistance(const BidderDiagram &D1,
                                           const double delta_lim) {
   std::vector<MatchingType> matchings;
   const auto D2_bis = centroidWithZeroPrices(D2);
-  PersistenceDiagramAuction auction(
-    wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
+  PersistenceDiagramAuction auction(wasserstein_, geometrical_factor_, lambda_,
+                                    delta_lim, use_kdtree_, nonMatchingWeight_);
   auction.BuildAuctionDiagrams(D1, D2_bis);
   double const cost = auction.run(matchings);
   return cost;
@@ -841,8 +841,8 @@ double ttk::PDClustering::computeDistance(BidderDiagram *const D1,
                                           const GoodDiagram *const D2,
                                           const double delta_lim) {
   std::vector<MatchingType> matchings;
-  PersistenceDiagramAuction auction(
-    wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
+  PersistenceDiagramAuction auction(wasserstein_, geometrical_factor_, lambda_,
+                                    delta_lim, use_kdtree_, nonMatchingWeight_);
   int const size1 = D1->size();
   auction.BuildAuctionDiagrams(*D1, *D2);
   double const cost = auction.run(matchings);
@@ -2398,6 +2398,7 @@ void ttk::PDClustering::initializeBarycenterComputers(
       barycenter_computer_min_[c].setDebugLevel(debugLevel_);
       barycenter_computer_min_[c].setNumberOfInputs(diagrams_c.size());
       barycenter_computer_min_[c].setCurrentBidders(diagrams_c);
+      barycenter_computer_min_[c].setNonMatchingWeight(nonMatchingWeight_);
     }
   }
   if(do_sad_) {
@@ -2417,6 +2418,7 @@ void ttk::PDClustering::initializeBarycenterComputers(
       barycenter_computer_sad_[c].setDebugLevel(debugLevel_);
       barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c.size());
       barycenter_computer_sad_[c].setCurrentBidders(diagrams_c);
+      barycenter_computer_sad_[c].setNonMatchingWeight(nonMatchingWeight_);
 
       std::vector<GoodDiagram> barycenter_goods(clustering_[c].size());
       for(size_t i_diagram = 0; i_diagram < clustering_[c].size();
@@ -2445,6 +2447,7 @@ void ttk::PDClustering::initializeBarycenterComputers(
       barycenter_computer_max_[c].setDebugLevel(debugLevel_);
       barycenter_computer_max_[c].setNumberOfInputs(diagrams_c.size());
       barycenter_computer_max_[c].setCurrentBidders(diagrams_c);
+      barycenter_computer_max_[c].setNonMatchingWeight(nonMatchingWeight_);
 
       std::vector<GoodDiagram> barycenter_goods(clustering_[c].size());
       for(size_t i_diagram = 0; i_diagram < clustering_[c].size();
@@ -2637,8 +2640,9 @@ void ttk::PDClustering::computeBarycenterForTwo(
         double gy = (bx + by) / 2;
         gx = (gx + bx) / 2;
         gy = (gy + by) / 2;
-        double const cost = Geometry::pow((gx - bx), wasserstein_)
-                            + Geometry::pow((gy - by), wasserstein_);
+        double const cost = nonMatchingWeight_
+                            * (Geometry::pow((gx - bx), wasserstein_)
+                               + Geometry::pow((gy - by), wasserstein_));
         MatchingType const t2
           = std::make_tuple(bidderId, barycenter.size(), cost);
         MatchingType const t3 = std::make_tuple(-1, barycenter.size(), cost);

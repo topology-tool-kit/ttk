@@ -45,7 +45,7 @@ void ttk::PDBarycenter::runMatching(
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
       geometrical_factor_, lambda_, delta_lim, kdt, correspondence_kdt_map,
-      epsilon, min_diag_price->at(i), use_kdt);
+      epsilon, min_diag_price->at(i), use_kdt, nonMatchingWeight_);
     int n_biddings = 0;
     auction.initLowerBoundCostWeight(delta_lim);
     auction.initLowerBoundCost(i);
@@ -94,7 +94,7 @@ void ttk::PDBarycenter::runMatchingAuction(
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
       geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map, 0,
-      (*min_diag_price)[i], use_kdt);
+      (*min_diag_price)[i], use_kdt, nonMatchingWeight_);
     std::vector<MatchingType> matchings;
     double const cost = auction.run(matchings, i);
     all_matchings->at(i) = matchings;
@@ -709,8 +709,8 @@ double ttk::PDBarycenter::computeRealCost() {
   double total_real_cost = 0;
   std::vector<MatchingType> fake_matchings;
   for(int i = 0; i < numberOfInputs_; i++) {
-    PersistenceDiagramAuction auction(
-      wasserstein_, geometrical_factor_, lambda_, 0.01, true);
+    PersistenceDiagramAuction auction(wasserstein_, geometrical_factor_,
+                                      lambda_, 0.01, true, nonMatchingWeight_);
     GoodDiagram const current_barycenter = barycenter_goods_[0];
     BidderDiagram const current_bidder_diagram = bidder_diagrams_[i];
     auction.BuildAuctionDiagrams(current_bidder_diagram, current_barycenter);

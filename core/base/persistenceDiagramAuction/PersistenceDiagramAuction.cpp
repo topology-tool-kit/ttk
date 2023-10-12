@@ -22,21 +22,23 @@ void ttk::PersistenceDiagramAuction::runAuctionRound(int &n_biddings,
       if(use_kdt_) {
         idx_reassigned = b.runDiagonalKDTBidding(
           &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_,
-          correspondence_kdt_map_, diagonal_queue_, kdt_index);
+          nonMatchingWeight_, correspondence_kdt_map_, diagonal_queue_,
+          kdt_index);
       } else {
-        idx_reassigned
-          = b.runDiagonalBidding(&all_goods, twin_good, wasserstein_, epsilon,
-                                 geometricalFactor_, diagonal_queue_);
+        idx_reassigned = b.runDiagonalBidding(
+          &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_,
+          nonMatchingWeight_, diagonal_queue_);
       }
     } else {
       if(use_kdt_) {
         // We can use the kd-tree to speed up the search
-        idx_reassigned
-          = b.runKDTBidding(&all_goods, twin_good, wasserstein_, epsilon,
-                            geometricalFactor_, &kdt_, kdt_index);
+        idx_reassigned = b.runKDTBidding(&all_goods, twin_good, wasserstein_,
+                                         epsilon, geometricalFactor_,
+                                         nonMatchingWeight_, &kdt_, kdt_index);
       } else {
-        idx_reassigned = b.runBidding(
-          &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_);
+        idx_reassigned
+          = b.runBidding(&all_goods, twin_good, wasserstein_, epsilon,
+                         geometricalFactor_, nonMatchingWeight_);
       }
     }
     if(idx_reassigned >= 0) {
@@ -79,7 +81,8 @@ double ttk::PersistenceDiagramAuction::getMatchingsAndDistance(
 
       if(good_id > -1) {
         // good is not diagonal
-        cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
+        cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_,
+                      nonMatchingWeight_);
         MatchingType const t = std::make_tuple(i, good_id, cost);
         matchings.emplace_back(t);
       } else {
@@ -123,12 +126,12 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
       bidders_[i].GetKDTCoordinates(geometricalFactor_, coordinates);
       kdt_.getKClosest(1, coordinates, neighbours, costs, kdt_index);
       int const bestIndex = neighbours[0]->id_;
-      bestCost
-        = bidders_[i].cost(goods_[bestIndex], wasserstein_, geometricalFactor_);
+      bestCost = bidders_[i].cost(goods_[bestIndex], wasserstein_,
+                                  geometricalFactor_, nonMatchingWeight_);
     } else {
       for(unsigned int j = 0; j < goods_.size(); ++j) {
-        double const cost
-          = bidders_[i].cost(goods_[j], wasserstein_, geometricalFactor_);
+        double const cost = bidders_[i].cost(
+          goods_[j], wasserstein_, geometricalFactor_, nonMatchingWeight_);
         if(cost < bestCost)
           bestCost = cost;
       }
@@ -137,7 +140,8 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
     // Compare with diagonal good
     Good g{bidders_[i].x_, bidders_[i].y_, true, -bidders_[i].id_ - 1};
     g.projectOnDiagonal();
-    double const cost = bidders_[i].cost(g, wasserstein_, geometricalFactor_);
+    double const cost = bidders_[i].cost(
+      g, wasserstein_, geometricalFactor_, nonMatchingWeight_);
     if(cost < bestCost)
       bestCost = cost;
 
@@ -169,18 +173,24 @@ double ttk::PersistenceDiagramAuction::run(std::vector<MatchingType> &matchings,
 double ttk::PersistenceDiagramAuctionActor::cost(
   const PersistenceDiagramAuctionActor &g,
   const int wasserstein,
-  const double geometricalFactor) const {
+  const double geometricalFactor,
+  const double nonMatchingWeight) const {
 
   if(is_diagonal_ && g.isDiagonal()) {
     return 0;
   } else if(is_diagonal_) {
-    return geometricalFactor
-             * (2 * Geometry::pow(std::abs(g.y_ / 2 - g.x_ / 2), wasserstein))
-           + (1 - geometricalFactor) * getPairGeometricalLength(wasserstein);
+    return nonMatchingWeight
+           * (geometricalFactor
+                * (2
+                   * Geometry::pow(std::abs(g.y_ / 2 - g.x_ / 2), wasserstein))
+              + (1 - geometricalFactor)
+                  * getPairGeometricalLength(wasserstein));
   } else if(g.isDiagonal()) {
-    return geometricalFactor
-             * (2 * Geometry::pow(std::abs(y_ / 2 - x_ / 2), wasserstein))
-           + (1 - geometricalFactor) * g.getPairGeometricalLength(wasserstein);
+    return nonMatchingWeight
+           * (geometricalFactor
+                * (2 * Geometry::pow(std::abs(y_ / 2 - x_ / 2), wasserstein))
+              + (1 - geometricalFactor)
+                  * g.getPairGeometricalLength(wasserstein));
   } else {
     return geometricalFactor
              * (Geometry::pow(std::abs(x_ - g.x_), wasserstein)
@@ -199,13 +209,15 @@ int ttk::Bidder::runBidding(GoodDiagram *goods,
                             Good &twinGood,
                             int wasserstein,
                             double epsilon,
-                            double geometricalFactor) {
+                            double geometricalFactor,
+                            double nonMatchingWeight) {
   double best_val = std::numeric_limits<double>::lowest();
   double second_val = std::numeric_limits<double>::lowest();
   Good *best_good{};
   for(size_t i = 0; i < goods->size(); i++) {
     Good &g = (*goods)[i];
-    double val = -this->cost(g, wasserstein, geometricalFactor);
+    double val
+      = -this->cost(g, wasserstein, geometricalFactor, nonMatchingWeight);
     val -= g.getPrice();
     if(val > best_val) {
       second_val = best_val;
@@ -217,7 +229,8 @@ int ttk::Bidder::runBidding(GoodDiagram *goods,
   }
   // And now check for the corresponding twin bidder
   Good &g = twinGood;
-  double val = -this->cost(g, wasserstein, geometricalFactor);
+  double val
+    = -this->cost(g, wasserstein, geometricalFactor, nonMatchingWeight);
   val -= g.getPrice();
   if(val > best_val) {
     second_val = best_val;
@@ -256,6 +269,7 @@ int ttk::Bidder::runDiagonalBidding(
   int wasserstein,
   double epsilon,
   double geometricalFactor,
+  double nonMatchingWeight,
   std::priority_queue<std::pair<int, double>,
                       std::vector<std::pair<int, double>>,
                       Compare> &diagonal_queue) {
@@ -318,7 +332,8 @@ int ttk::Bidder::runDiagonalBidding(
   // And now check for the corresponding twin bidder
   bool is_twin = false;
   Good &g = twinGood;
-  double val = -this->cost(g, wasserstein, geometricalFactor);
+  double val
+    = -this->cost(g, wasserstein, geometricalFactor, nonMatchingWeight);
   val -= g.getPrice();
   if(non_empty_goods) {
     if(val > best_val) {
@@ -369,6 +384,7 @@ int ttk::Bidder::runDiagonalKDTBidding(
   int wasserstein,
   double epsilon,
   double geometricalFactor,
+  double nonMatchingWeight,
   std::vector<KDT *> &correspondence_kdt_map,
   std::priority_queue<std::pair<int, double>,
                       std::vector<std::pair<int, double>>,
@@ -433,7 +449,8 @@ int ttk::Bidder::runDiagonalKDTBidding(
   // And now check for the corresponding twin bidder
   bool is_twin = false;
   Good &g = twinGood;
-  double val = -this->cost(g, wasserstein, geometricalFactor);
+  double val
+    = -this->cost(g, wasserstein, geometricalFactor, nonMatchingWeight);
   val -= g.getPrice();
   if(non_empty_goods) {
     if(val > best_val) {
@@ -489,6 +506,7 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
                                int wasserstein,
                                double epsilon,
                                double geometricalFactor,
+                               double nonMatchingWeight,
                                KDT *kdt,
                                const int kdt_index) {
 
@@ -524,7 +542,8 @@ int ttk::Bidder::runKDTBidding(GoodDiagram *goods,
   // And now check for the corresponding twin bidder
   bool twin_chosen = false;
   Good &g = twinGood;
-  double val = -this->cost(g, wasserstein, geometricalFactor);
+  double val
+    = -this->cost(g, wasserstein, geometricalFactor, nonMatchingWeight);
   val -= g.getPrice();
   if(val > best_val) {
     second_val = best_val;
