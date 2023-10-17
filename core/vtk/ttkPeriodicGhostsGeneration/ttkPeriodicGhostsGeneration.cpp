@@ -113,7 +113,9 @@ int ttkPeriodicGhostsGeneration::ComputeOutputExtent() {
                      origin_[2] + inExtent_[4] * spacing_[2],
                      origin_[2] + inExtent_[5] * spacing_[2]};
 
-    ttk::preconditionNeighborsUsingBoundingBox(bounds, neighbors_);
+    std::map<int, int> neighborsToId{};
+    ttk::preconditionNeighborsUsingBoundingBox(
+      bounds, neighbors_, neighborsToId);
 
     // Compute the 1D boundary matches of local process: if the process is on
     // the global boundary, then the center of its other dimension is computed
