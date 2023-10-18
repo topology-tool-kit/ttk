@@ -25,12 +25,9 @@ bool computeConvexHull_aux(const std::vector<double> &coords,
   // Qhull gives us the coordinates of the points in the convex hull. Here we
   // retrive the indices of this points in the list we provided. We will also
   // compute the barycenter of the points in the convex hull.
-  double sumX = 0, sumY = 0;
   for(const auto &u : qhull.vertexList()) {
     const orgQhull::QhullPoint &qhullPt = u.point();
     auto coordsCur = qhullPt.coordinates();
-    sumX += coordsCur[0];
-    sumY += coordsCur[1];
     for(size_t j = 0; j < coords.size() / 2; j++) {
       if(fabs(coords[2 * j] - coordsCur[0])
            + fabs(coords[2 * j + 1] - coordsCur[1])
@@ -40,24 +37,6 @@ bool computeConvexHull_aux(const std::vector<double> &coords,
       }
     }
   }
-
-  // In its C++ API, Qhull does not return the points of the convex hull in
-  // (anti-)clockwise order. We then reorder them b by sorting them according to
-  // the angle they form with the center and a fictitious point at its right.
-  double bary[2] = {sumX / res.size(), sumY / res.size()};
-  double baryRight[2] = {bary[0] + 2, bary[1]};
-  std::vector<std::pair<double, size_t>> ptsToSort;
-  ptsToSort.reserve(res.size());
-  for(size_t u : res) {
-    const double curPt[2] = {coords[2 * u], coords[2 * u + 1]};
-    double curAngle = computeAngle(bary, baryRight, curPt);
-    ptsToSort.emplace_back(std::make_pair(curAngle, u));
-  }
-
-  // We sort the points according to the angle, keeping the indices associated.
-  sort(ptsToSort.begin(), ptsToSort.end());
-  for(size_t i = 0; i < ptsToSort.size(); i++)
-    res[i] = ptsToSort[i].second;
 
   if(res.size() != qhull.vertexList().size()) {
     errMsg = "Error : could not retrieve all vertices in the convex hull.";

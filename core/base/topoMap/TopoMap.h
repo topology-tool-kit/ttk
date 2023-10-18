@@ -346,7 +346,7 @@ namespace ttk {
       double angleSmall
         = computeAngle(coordPtSmall, coordPrevSmall, coordPostSmall);
       double angleBig = computeAngle(coordPtBig, coordPrevBig, coordPostBig);
-      if(angleSmall > M_PI || angleBig > M_PI) {
+      if(angleSmall - M_PI > EpsilonDBL || angleBig - M_PI > EpsilonDBL) {
         this->printErr("Error, angle out of bound (greater than pi).");
       }
       T coordscenterBig[2] = {coordPrevBig[0], coordPrevBig[1]};
@@ -554,14 +554,6 @@ namespace ttk {
       return false;
     }
 
-    // Finding if we did go in the right direction: not mistaking previous edge
-    // for next edge.
-    double angle
-      = computeAngle(&allCoords[2 * idCenter], &allCoords[2 * iPtPrev],
-                     &allCoords[2 * iPtPost]);
-    if(angle > M_PI) {
-      std::swap(iPtPrev, iPtPost);
-    }
     coordPrev[0] = allCoords[2 * iPtPrev];
     coordPrev[1] = allCoords[2 * iPtPrev + 1];
     coordPost[0] = allCoords[2 * iPtPost];
@@ -597,7 +589,7 @@ namespace ttk {
 
     double angle1 = computeAngle(coordPt1, coordPrev1, coordPost1);
     double angle2 = computeAngle(coordPt2, coordPrev2, coordPost2);
-    if(angle1 > M_PI || angle2 > M_PI) {
+    if(angle1 - M_PI > EpsilonDBL || angle2 - M_PI > EpsilonDBL) {
       this->printErr("One angle of the convex hull is greater than pi. "
                      "Convexity error, aborting.");
       return -2;
@@ -607,8 +599,9 @@ namespace ttk {
     rotate(coordBissect1, coordPt1, angle1 / 2);
     rotate(coordBissect2, coordPt2, angle2 / 2);
 
-    double semiAngle1 = angle1 / 2;
-    double semiAngle2 = angle2 / 2;
+    // If a component has only one vertex, no need to try several angles.
+    double semiAngle1 = comp1Size == 1 ? M_PI / 2 : angle1 / 2;
+    double semiAngle2 = comp2Size == 1 ? M_PI / 2 : angle2 / 2;
 
     double angleMax1 = M_PI / 2 - semiAngle1, angleMin1 = -angleMax1;
     double angleMax2 = M_PI / 2 - semiAngle2, angleMin2 = -angleMax2;
@@ -833,6 +826,33 @@ namespace ttk {
       this->printErr(errMsg);
       return false;
     }
+
+    // In its C++ API, Qhull does not return the points of the convex hull in
+    // (anti-)clockwise order. Boost does not seem consistent with the
+    // orientation of the hull. So we reorder the points by sorting them
+    // according to the angle they form with the center and a fictitious point
+    // at its right.
+    double sumX = 0, sumY = 0;
+    for(size_t u : idsInHull) {
+      sumX += compCoords[2 * u];
+      sumY += compCoords[2 * u + 1];
+    }
+    double bary[2] = {sumX / idsInHull.size(), sumY / idsInHull.size()};
+    double baryRight[2] = {bary[0] + 2, bary[1]};
+    std::vector<std::pair<double, size_t>> ptsToSort;
+    ptsToSort.reserve(idsInHull.size());
+    for(size_t u : idsInHull) {
+      const double curPt[2] = {compCoords[2 * u], compCoords[2 * u + 1]};
+      double curAngle = computeAngle(bary, baryRight, curPt);
+      ptsToSort.emplace_back(std::make_pair(-curAngle, u));
+    }
+
+    // We sort the points according to the angle, keeping the indices
+    // associated.
+    sort(ptsToSort.begin(), ptsToSort.end());
+    for(size_t i = 0; i < ptsToSort.size(); i++)
+      idsInHull[i] = ptsToSort[i].second;
+
     // We obtained the indices of the points belonging to the hull. We replace
     // them by the global ids of the chosen points.
     for(size_t &x : idsInHull) {
