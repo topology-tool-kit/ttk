@@ -1,12 +1,12 @@
 /// \ingroup vtk
-/// \class ttkMergeTreeTemporalReductionEncoding
+/// \class ttkMergeTreeTemporalReduction
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::MergeTreeTemporalReductionEncoding
+/// \brief TTK VTK-filter that wraps the ttk::MergeTreeTemporalReduction
 /// module.
 ///
-/// This VTK filter uses the ttk::MergeTreeTemporalReductionEncoding module to
+/// This VTK filter uses the ttk::MergeTreeTemporalReduction module to
 /// compute a temporal reduction of a sequence of merge trees.
 ///
 /// \param Input vtkMultiBlockDataSet Input trees
@@ -19,7 +19,7 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::MergeTreeTemporalReductionEncoding
+/// \sa ttk::MergeTreeTemporalReduction
 /// \sa ttkAlgorithm
 ///
 /// \b Related \b publication \n
@@ -36,7 +36,7 @@
 #pragma once
 
 // VTK Module
-#include <ttkMergeTreeTemporalReductionEncodingModule.h>
+#include <ttkMergeTreeTemporalReductionModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
@@ -45,14 +45,13 @@
 #include <vtkUnstructuredGrid.h>
 
 // TTK Base Includes
-#include <MergeTreeTemporalReductionEncoding.h>
+#include <MergeTreeTemporalReduction.h>
 
-class TTKMERGETREETEMPORALREDUCTIONENCODING_EXPORT
-  ttkMergeTreeTemporalReductionEncoding
+class TTKMERGETREETEMPORALREDUCTION_EXPORT ttkMergeTreeTemporalReduction
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
   ,
-    protected ttk::MergeTreeTemporalReductionEncoding // and we inherit from the
-                                                      // base class
+    protected ttk::MergeTreeTemporalReduction // and we inherit from the
+                                              // base class
 {
 private:
   // Execution options
@@ -213,16 +212,16 @@ public:
    * This static method and the macro below are VTK conventions on how to
    * instantiate VTK objects. You don't have to modify this.
    */
-  static ttkMergeTreeTemporalReductionEncoding *New();
-  vtkTypeMacro(ttkMergeTreeTemporalReductionEncoding, ttkAlgorithm);
+  static ttkMergeTreeTemporalReduction *New();
+  vtkTypeMacro(ttkMergeTreeTemporalReduction, ttkAlgorithm);
 
 protected:
   /**
    * Implement the filter constructor and destructor
    * (see cpp file)
    */
-  ttkMergeTreeTemporalReductionEncoding();
-  ~ttkMergeTreeTemporalReductionEncoding() override;
+  ttkMergeTreeTemporalReduction();
+  ~ttkMergeTreeTemporalReduction() override;
 
   /**
    * Specify the input data type of each input port
