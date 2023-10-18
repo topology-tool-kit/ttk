@@ -590,7 +590,7 @@ namespace ttk {
     }
     const std::vector<int> &neighbors = triangulation->getNeighborRanks();
     const int neighborNumber = neighbors.size();
-    const std::map<int, int> neighborsToId = triangulation->getNeighborsToId();
+    const std::map<int, int> &neighborsToId = triangulation->getNeighborsToId();
 
     if(!ttk::isRunningWithMPI()) {
       return -1;
