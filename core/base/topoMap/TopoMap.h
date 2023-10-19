@@ -111,6 +111,9 @@ namespace ttk {
      * @param[out] outputCoords the final coordinates of the points, computed by
      the topological mapper
      *
+     * @param[out] insertionTime an optional array indicating for each point at
+     what time it was inserted in the projection.
+     *
      * @param[in] inputMatrix the high-dimension input distance matrix or
      coordinates of the points
      *
@@ -123,6 +126,7 @@ namespace ttk {
      */
     template <typename T>
     int execute(T *outputCoords,
+                int *insertionTime,
                 const std::vector<T> &inputMatrix,
                 bool isDistMat,
                 size_t n);
@@ -197,6 +201,7 @@ namespace ttk {
 
   template <typename T>
   int ttk::TopoMap::execute(T *outputCoords,
+                            int *insertionTime,
                             const std::vector<T> &inputMatrix,
                             bool isDistMat,
                             size_t n) {
@@ -271,6 +276,10 @@ namespace ttk {
     const std::vector<T> &distMatrix
       = isDistMat ? inputMatrix : computedDistMatrix;
 
+    if(insertionTime != nullptr)
+      for(size_t i = 0; i < n; i++)
+        insertionTime[i] = -1;
+
     // 1. Sorting the edges
     std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
     edgeHeapVect.reserve(n * (n - 1) / 2);
@@ -313,6 +322,14 @@ namespace ttk {
       }
       nbEdgesMerged++;
 
+      if(insertionTime != nullptr) {
+        if(insertionTime[u] == -1) {
+          insertionTime[u] = nbEdgesMerged;
+        }
+        if(insertionTime[v] == -1) {
+          insertionTime[v] = nbEdgesMerged;
+        }
+      }
       edgesMSTBefore.push_back(edgeCost);
       std::vector<size_t> &compU = ufToComp[reprU], &compV = ufToComp[reprV];
       size_t idSmall = compU.size() < compV.size() ? u : v;

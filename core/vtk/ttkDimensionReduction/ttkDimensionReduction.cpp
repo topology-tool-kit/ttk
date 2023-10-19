@@ -3,6 +3,7 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkTable.h>
@@ -78,8 +79,17 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
 
     outputData_.clear();
 
-    const int errorCode = this->execute(
-      this->outputData_, inputData, numberOfRows, numberOfColumns);
+    vtkNew<vtkIntArray> insertionTimeCol{};
+    int *insertionPtr = nullptr;
+    if(this->Method == DimensionReduction::METHOD::TOPOMAP) {
+      insertionTimeCol->SetNumberOfTuples(numberOfRows);
+      insertionTimeCol->SetName("InsertionTime");
+      insertionPtr = ttkUtils::GetPointer<int>(insertionTimeCol);
+    }
+
+    const int errorCode
+      = this->execute(this->outputData_, insertionPtr, inputData, numberOfRows,
+                      numberOfColumns);
 
     if(!errorCode) {
       if(KeepAllDataArrays)
@@ -91,6 +101,9 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
         ttkUtils::SetVoidArray(arr, outputData_[i].data(), numberOfRows, 1);
         arr->SetName(s.data());
         output->AddColumn(arr);
+      }
+      if(this->Method == DimensionReduction::METHOD::TOPOMAP) {
+        output->AddColumn(insertionTimeCol);
       }
     }
   } else {

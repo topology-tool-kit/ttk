@@ -52,6 +52,7 @@ bool DimensionReduction::isPythonFound() const {
 
 int DimensionReduction::execute(
   std::vector<std::vector<double>> &outputEmbedding,
+  int *insertionTimeForTopomap,
   const std::vector<double> &inputMatrix,
   const int nRows,
   const int nColumns) const {
@@ -77,8 +78,8 @@ int DimensionReduction::execute(
     topomap.setThreadNumber(this->threadNumber_);
 
     double *ptrForCoordsTopomap = (double *)new double[2 * nRows];
-    topomap.execute<double>(
-      ptrForCoordsTopomap, inputMatrix, IsInputADistanceMatrix, nRows);
+    topomap.execute<double>(ptrForCoordsTopomap, insertionTimeForTopomap,
+                            inputMatrix, IsInputADistanceMatrix, nRows);
     outputEmbedding.resize(2);
     outputEmbedding[0].resize(nRows);
     outputEmbedding[1].resize(nRows);

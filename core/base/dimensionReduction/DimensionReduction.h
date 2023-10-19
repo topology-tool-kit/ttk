@@ -220,6 +220,7 @@ namespace ttk {
     bool isPythonFound() const;
 
     int execute(std::vector<std::vector<double>> &outputEmbedding,
+                int *insertionTimeForTopoMap,
                 const std::vector<double> &inputMatrix,
                 const int nRows,
                 const int nColumns) const;
