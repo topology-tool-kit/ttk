@@ -734,6 +734,22 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="topomap_Strategy"
+                         label="MST Algorithm"
+                         command="Settopomap_Strategy"
+                         number_of_elements="1"
+                         default_values="0"
+                         panel_visibility="default">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Kruskal"/>
+          <Entry value="1" text="Prim"/>
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+
+
       <IntVectorProperty
         name="topomap_AngularSampleNb"
         label="Anglular samples"
@@ -930,6 +946,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
     </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="TopoMap (IEEE VIS 2020)">
+        <Property name="topomap_Strategy" />
         <Property name="topomap_AngularSampleNb" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"

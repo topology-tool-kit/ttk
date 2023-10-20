@@ -73,7 +73,8 @@ int DimensionReduction::execute(
 
   const int numberOfComponents = std::max(2, this->NumberOfComponents);
   if(this->Method == METHOD::TOPOMAP) {
-    TopoMap topomap(this->topomap_AngularSampleNb, topomap_CheckMST);
+    TopoMap topomap(
+      this->topomap_AngularSampleNb, topomap_CheckMST, topomap_Strategy);
     topomap.setDebugLevel(this->debugLevel_);
     topomap.setThreadNumber(this->threadNumber_);
 

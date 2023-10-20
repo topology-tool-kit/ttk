@@ -56,6 +56,7 @@
 
 // TTK includes
 #include <DimensionReduction.h>
+#include <TopoMap.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 
@@ -233,6 +234,9 @@ public:
 
   vtkSetMacro(topomap_CheckMST, bool);
   vtkGetMacro(topomap_CheckMST, bool);
+
+  ttkSetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
+  vtkGetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
 
   // testing
   vtkSetMacro(ModulePath, const std::string &);

@@ -29,6 +29,7 @@
 
 // STL includes
 #include <map>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <utility> // For std::pair
@@ -95,9 +96,15 @@ namespace ttk {
   class TopoMap : virtual public Debug {
 
   public:
+    /** We rely on constructing a minimal spanning tree. We allow for the two
+     * main algorithms to build one: Kruskal and Prim.
+     */
+    enum class STRATEGY { KRUSKAL = 0, PRIM = 1 };
+
     TopoMap();
-    TopoMap(size_t angularSampleNb, bool checkMST)
-      : AngularSampleNb(angularSampleNb), CheckMST(checkMST) {
+    TopoMap(size_t angularSampleNb, bool checkMST, STRATEGY strategy)
+      : AngularSampleNb(angularSampleNb), CheckMST(checkMST),
+        Strategy(strategy) {
 
       // inherited from Debug: prefix will be printed at the beginning of every
       // msg
@@ -135,6 +142,7 @@ namespace ttk {
     size_t AngularSampleNb{2};
     bool CheckMST{false};
     bool errorConvexHull{false};
+    STRATEGY Strategy{STRATEGY::KRUSKAL};
 
   private:
     // Fills its last two arguments with the position of the end of the previous
@@ -281,16 +289,25 @@ namespace ttk {
         insertionTime[i] = -1;
 
     // 1. Sorting the edges
-    std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
-    edgeHeapVect.reserve(n * (n - 1) / 2);
-    for(size_t u1 = 0; u1 < n; u1++) {
-
-      for(size_t u2 = u1 + 1; u2 < n; u2++) {
-        edgeHeapVect.emplace_back(
-          std::make_pair(distMatrix[u1 * n + u2], std::make_pair(u1, u2)));
+    using heapType = std::pair<T, std::pair<size_t, size_t>>;
+    std::priority_queue<heapType, std::vector<heapType>, std::greater<heapType>>
+      edgeHeap;
+    if(this->Strategy == STRATEGY::KRUSKAL) {
+      for(size_t u1 = 0; u1 < n; u1++) {
+        for(size_t u2 = u1 + 1; u2 < n; u2++) {
+          edgeHeap.push(
+            std::make_pair(distMatrix[u1 * n + u2], std::make_pair(u1, u2)));
+        }
       }
+    } else if(this->Strategy == STRATEGY::PRIM) {
+      for(size_t u1 = 0; u1 < n; u1++) {
+        edgeHeap.push(std::make_pair(distMatrix[u1], std::make_pair(0, u1)));
+      }
+    } else {
+      this->printErr("Invalid stategy for the MST: only Kruskal (0) or Prim "
+                     "(1) algorithm can be used.");
+      return 1;
     }
-    sort(edgeHeapVect.begin(), edgeHeapVect.end());
 
     // ufVectors is the union find vector
     std::map<UnionFind *, std::vector<size_t>> ufToComp;
@@ -306,13 +323,25 @@ namespace ttk {
     T finalDistortion = 0;
     // 2. Processing the edges
     size_t nbEdgesMerged = 0;
-    for(const auto &elt : edgeHeapVect) {
-      if(nbEdgesMerged == n - 1) { // Our spanning tree is finished
-        break;
+    double MSTWeight = 0;
+
+    std::set<size_t>
+      stillToDo; // List of vertices not yet embedded, used for Prim strategy.
+    if(this->Strategy == STRATEGY::PRIM) {
+      for(size_t i = 1; i < n; i++) {
+        stillToDo.insert(i);
       }
+    }
+    while(nbEdgesMerged != n - 1) {
+      if(edgeHeap.empty()) {
+        this->printErr("Error building the MST. Aborting.");
+        return 1;
+      }
+      const auto &elt = edgeHeap.top();
       T edgeCost = elt.first;
       size_t u = elt.second.first;
       size_t v = elt.second.second;
+      edgeHeap.pop();
 
       // 2.a Getting the components
       UnionFind *reprU = ufVector[u].find();
@@ -321,6 +350,7 @@ namespace ttk {
         continue;
       }
       nbEdgesMerged++;
+      MSTWeight += edgeCost;
 
       if(insertionTime != nullptr) {
         if(insertionTime[u] == -1) {
@@ -489,6 +519,14 @@ namespace ttk {
       unionSet.insert(unionSet.end(), otherSet.begin(), otherSet.end());
 
       ufToComp.erase(otherRepr);
+
+      if(this->Strategy == STRATEGY::PRIM) {
+        stillToDo.erase(v);
+        for(size_t uToDo : stillToDo) {
+          edgeHeap.push(std::make_pair(
+            distMatrix[v * n + uToDo], std::make_pair(v, uToDo)));
+        }
+      }
     }
     std::stringstream ssDistortion;
     ssDistortion << std::scientific << 2 * finalDistortion;
@@ -504,6 +542,8 @@ namespace ttk {
         "may be less optimal than it could have been. If you are using Boost, "
         "consider switching to Qhull to avoid this.");
     }
+    this->printMsg("The minimum spanning tree has weight "
+                   + std::to_string(MSTWeight));
 
     // We check that the lengths of the edges selected to build a minimum
     // spanning tree are preserved by our algorithm, as should be.
@@ -511,16 +551,24 @@ namespace ttk {
 
       edgesMSTAfter.reserve(n);
       this->printMsg("Checking the new minimum spanning tree.");
-      std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVectAfter;
-      edgeHeapVectAfter.reserve(n * (n - 1) / 2);
-      for(size_t u1 = 0; u1 < n; u1++) {
-        for(size_t u2 = u1 + 1; u2 < n; u2++) {
-          edgeHeapVectAfter.emplace_back(std::make_pair(
-            compute_dist(&outputCoords[2 * u1], &outputCoords[2 * u2]),
-            std::make_pair(u1, u2)));
+      std::priority_queue<heapType, std::vector<heapType>,
+                          std::greater<heapType>>
+        edgeHeapAfter;
+      if(this->Strategy == STRATEGY::KRUSKAL) {
+        for(size_t u1 = 0; u1 < n; u1++) {
+          for(size_t u2 = u1 + 1; u2 < n; u2++) {
+            edgeHeapAfter.push(std::make_pair(
+              compute_dist(&outputCoords[2 * u1], &outputCoords[2 * u2]),
+              std::make_pair(u1, u2)));
+          }
+        }
+      } else if(this->Strategy == STRATEGY::PRIM) {
+        for(size_t u1 = 0; u1 < n; u1++) {
+          edgeHeapAfter.push(std::make_pair(
+            compute_dist(&outputCoords[0], &outputCoords[2 * u1]),
+            std::make_pair(0, u1)));
         }
       }
-      sort(edgeHeapVectAfter.begin(), edgeHeapVectAfter.end());
 
       std::map<UnionFind *, std::vector<size_t>> ufToCompAfter;
       std::vector<UnionFind> ufVectorAfter(n);
@@ -530,10 +578,20 @@ namespace ttk {
         ufToCompAfter[ufPtrVectorAfter[i]].push_back(i);
       }
 
-      for(const auto &elt : edgeHeapVectAfter) {
+      nbEdgesMerged = 0;
+      stillToDo.clear();
+      for(size_t i = 1; i < n; i++)
+        stillToDo.insert(i);
+      while(nbEdgesMerged != n - 1) {
+        if(edgeHeapAfter.empty()) {
+          this->printErr("Error building the MST for the check. Aborting.");
+          return 1;
+        }
+        const auto &elt = edgeHeapAfter.top();
         T edgeCost = elt.first;
         size_t u = elt.second.first;
         size_t v = elt.second.second;
+        edgeHeapAfter.pop();
 
         UnionFind *reprU = ufPtrVectorAfter[u]->find();
         UnionFind *reprV = ufPtrVectorAfter[v]->find();
@@ -546,6 +604,7 @@ namespace ttk {
           printErr("Error with the union find module results. Aborting.");
           return 1;
         }
+        nbEdgesMerged++;
         std::vector<size_t> &unionSet = ufToCompAfter[unionRepr];
         std::vector<size_t> &otherSet = ufToCompAfter[otherRepr];
 
@@ -555,12 +614,25 @@ namespace ttk {
         ufPtrVectorAfter[v] = unionRepr;
 
         ufToCompAfter.erase(otherRepr);
+        if(this->Strategy == STRATEGY::PRIM) {
+          stillToDo.erase(v);
+          for(size_t uToDo : stillToDo) {
+            edgeHeapAfter.push(std::make_pair(
+              compute_dist(&outputCoords[2 * v], &outputCoords[2 * uToDo]),
+              std::make_pair(v, uToDo)));
+          }
+        }
+
         edgesMSTAfter.push_back(edgeCost);
       }
 
       const T epsilonCheck = Epsilon * 5;
       double sumDiff = 0, maxDiff = 0;
       size_t nbProblematic = 0;
+      if(this->Strategy == STRATEGY::PRIM) {
+        sort(edgesMSTBefore.begin(), edgesMSTBefore.end());
+        sort(edgesMSTAfter.begin(), edgesMSTAfter.end());
+      }
       for(size_t i = 0; i < edgesMSTBefore.size(); i++) {
         if(fabs(edgesMSTBefore[i] - edgesMSTAfter[i]) >= epsilonCheck) {
           nbProblematic++;

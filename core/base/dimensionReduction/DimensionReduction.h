@@ -47,6 +47,7 @@
 #pragma once
 
 #include <Debug.h>
+#include <TopoMap.h>
 
 namespace ttk {
 
@@ -280,6 +281,7 @@ namespace ttk {
     // Topological Mapper
     size_t topomap_AngularSampleNb;
     bool topomap_CheckMST;
+    TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
 
     // testing
     std::string ModulePath{"default"};
