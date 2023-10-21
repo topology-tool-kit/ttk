@@ -1,4 +1,4 @@
-#include <ttkMergeTreeTemporalReductionEncoding.h>
+#include <ttkMergeTreeTemporalReduction.h>
 
 #include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
@@ -20,7 +20,7 @@ using namespace ttk::ftm;
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
-vtkStandardNewMacro(ttkMergeTreeTemporalReductionEncoding);
+vtkStandardNewMacro(ttkMergeTreeTemporalReduction);
 
 /**
  * The constructor has to specify the number of input and output ports
@@ -32,20 +32,19 @@ vtkStandardNewMacro(ttkMergeTreeTemporalReductionEncoding);
  * explicitly, by for example allocating memory on the heap that needs
  * to be freed when the filter is destroyed.
  */
-ttkMergeTreeTemporalReductionEncoding::ttkMergeTreeTemporalReductionEncoding() {
+ttkMergeTreeTemporalReduction::ttkMergeTreeTemporalReduction() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(2);
 }
 
-ttkMergeTreeTemporalReductionEncoding::~ttkMergeTreeTemporalReductionEncoding()
-  = default;
+ttkMergeTreeTemporalReduction::~ttkMergeTreeTemporalReduction() = default;
 
 /**
  * This method specifies the required input object data types of the
  * filter by adding the vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE() key to
  * the port information.
  */
-int ttkMergeTreeTemporalReductionEncoding::FillInputPortInformation(
+int ttkMergeTreeTemporalReduction::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
@@ -67,7 +66,7 @@ int ttkMergeTreeTemporalReductionEncoding::FillInputPortInformation(
  * Note: prior to the execution of the RequestData method the pipeline will
  * initialize empty output data objects based on this information.
  */
-int ttkMergeTreeTemporalReductionEncoding::FillOutputPortInformation(
+int ttkMergeTreeTemporalReduction::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
@@ -89,7 +88,7 @@ int ttkMergeTreeTemporalReductionEncoding::FillOutputPortInformation(
  *     2) The output objects are already initialized based on the information
  *        provided by the FillOutputPortInformation method.
  */
-int ttkMergeTreeTemporalReductionEncoding::RequestData(
+int ttkMergeTreeTemporalReduction::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
@@ -116,7 +115,7 @@ int ttkMergeTreeTemporalReductionEncoding::RequestData(
 }
 
 template <class dataType>
-int ttkMergeTreeTemporalReductionEncoding::run(
+int ttkMergeTreeTemporalReduction::run(
   vtkInformationVector *outputVector,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   if(not isDataVisualizationFilled())
@@ -153,7 +152,7 @@ static std::vector<vtkSmartPointer<vtkDataSet>>
 }
 
 template <class dataType>
-int ttkMergeTreeTemporalReductionEncoding::runCompute(
+int ttkMergeTreeTemporalReduction::runCompute(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   // ------------------------------------------------------------------------------------
   // --- Construct trees
@@ -221,7 +220,7 @@ int ttkMergeTreeTemporalReductionEncoding::runCompute(
 }
 
 template <class dataType>
-int ttkMergeTreeTemporalReductionEncoding::runOutput(
+int ttkMergeTreeTemporalReduction::runOutput(
   vtkInformationVector *outputVector,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees) {
   bool const OutputSegmentation = (inputTrees[0]->GetNumberOfBlocks() == 3);
