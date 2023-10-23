@@ -262,6 +262,7 @@ protected:
    */
   void MPIPipelinePreconditioning(vtkDataSet *input,
                                   std::vector<int> &neighbors,
+                                  std::map<int, int> &neighToId,
                                   ttk::Triangulation *triangulation = nullptr);
 
   /**
@@ -285,7 +286,8 @@ protected:
   int GenerateGlobalIds(
     vtkDataSet *input,
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
-    std::vector<int> &neighborRanks);
+    std::vector<int> &neighborRanks,
+    std::map<int, int> &neighborsToId);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been

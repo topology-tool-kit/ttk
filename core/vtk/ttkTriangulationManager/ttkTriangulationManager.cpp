@@ -101,7 +101,10 @@ static void
         newTriangulation->setPeriodicBoundaryConditions(periodic);
         // Retrieve neighbors from the PeriodicGhostGenerator
         std::vector<int> &neighbors = newTriangulation->getNeighborRanks();
+        std::map<int, int> &neighborsToId
+          = newTriangulation->getNeighborsToId();
         neighbors = periodicGhostGenerator->getNeighbors();
+        neighborsToId = periodicGhostGenerator->getNeighborsToId();
         newTriangulation->setIsBoundaryPeriodic(
           periodicGhostGenerator->getIsBoundaryPeriodic());
       }
