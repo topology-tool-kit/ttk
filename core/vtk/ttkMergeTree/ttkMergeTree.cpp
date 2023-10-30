@@ -250,6 +250,8 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
     // compute joinTree
     auto exTreeMTree = ttk::ExTreeM();
+    exTreeMTree.setThreadNumber(this->threadNumber_);
+    exTreeMTree.setDebugLevel(this->debugLevel_);
     if(params_.treeType == ttk::ftm::TreeType::Join) {
       std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>
         persistencePairsJoin{};
