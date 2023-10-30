@@ -77,7 +77,7 @@
 #include <ttkMergeTreeModule.h>
 
 // ttk code includes
-#include <FTMTree.h>
+#include <PathCompression.h>
 #include <ttkAlgorithm.h>
 #include <ttkMergeTreeBase.h>
 #include <ttkMergeTreeStructures.h>

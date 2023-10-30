@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ExTreeM.h>
 #include <FTMTree.h>
 #include <ttkAlgorithm.h>
 

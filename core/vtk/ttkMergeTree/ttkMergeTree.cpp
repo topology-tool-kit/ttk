@@ -4,11 +4,14 @@
 
 // VTK includes
 #include <vtkConnectivityFilter.h>
+#include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkPolyData.h>
+#include <vtkSignedCharArray.h>
 #include <vtkThreshold.h>
+#include <vtkUnsignedCharArray.h>
 
 vtkStandardNewMacro(ttkMergeTree);
 
@@ -158,7 +161,165 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
      && (!(params_.treeType == ttk::ftm::TreeType::Contour))
      && (input->IsA("vtkImageData"))) {
     printMsg("Triggering ExTreeM Backend.");
-    // insert ExTreeM vtk execution flow here.
+    const size_t nVertices = input->GetNumberOfPoints();
+
+    // Get triangulation of the input object
+    auto triangulation = ttkAlgorithm::GetTriangulation(input);
+    if(!triangulation)
+      return 0;
+
+    triangulation->preconditionVertexNeighbors();
+
+    // Get input array
+    auto scalarArray = this->GetInputArrayToProcess(0, inputVector);
+    if(!scalarArray) {
+      this->printErr("Unable to retrieve scalar array.");
+      return 0;
+    }
+
+    // Order Array
+    auto orderArray = this->GetOrderArray(input, 0);
+    auto orderArrayData = ttkUtils::GetPointer<ttk::SimplexId>(orderArray);
+
+    auto segmentation = vtkDataSet::GetData(outputVector, 2);
+    segmentation->ShallowCopy(input);
+    auto segmentationPD = segmentation->GetPointData();
+
+    // enforce that ascending and descending manifolds exist
+    if(!segmentationPD->HasArray(ttk::MorseSmaleAscendingName)
+       || !segmentationPD->HasArray(ttk::MorseSmaleDescendingName)) {
+      printMsg(ttk::debug::Separator::L2);
+      this->printWrn("TIP: run `ttkPathCompression` first");
+      this->printWrn("for improved performances :)");
+      printMsg(ttk::debug::Separator::L2);
+      bool doAscend = false;
+      bool doDescend = false;
+      if(!segmentationPD->HasArray(ttk::MorseSmaleAscendingName)) {
+        doAscend = true;
+        auto ascendingManifold = vtkSmartPointer<vtkIdTypeArray>::New();
+        ascendingManifold->SetNumberOfComponents(1);
+        ascendingManifold->SetNumberOfTuples(nVertices);
+        ascendingManifold->SetName(ttk::MorseSmaleAscendingName);
+        segmentationPD->AddArray(ascendingManifold);
+      }
+      if(!segmentationPD->HasArray(ttk::MorseSmaleDescendingName)) {
+        doDescend = true;
+        auto descendingManifold = vtkSmartPointer<vtkIdTypeArray>::New();
+        descendingManifold->SetNumberOfComponents(1);
+        descendingManifold->SetNumberOfTuples(nVertices);
+        descendingManifold->SetName(ttk::MorseSmaleDescendingName);
+        segmentationPD->AddArray(descendingManifold);
+      }
+      ttk::PathCompression subModule;
+      subModule.setThreadNumber(this->threadNumber_);
+      subModule.setDebugLevel(this->debugLevel_);
+      // only compute the segmentation which doesn't exist (maybe both)
+      subModule.setComputeSegmentation(doAscend, doDescend, false);
+
+      ttk::PathCompression::OutputSegmentation om{
+        ttkUtils::GetPointer<ttk::SimplexId>(
+          segmentationPD->GetArray(ttk::MorseSmaleAscendingName)),
+        ttkUtils::GetPointer<ttk::SimplexId>(
+          segmentationPD->GetArray(ttk::MorseSmaleDescendingName)),
+        nullptr};
+
+      int status = 0;
+      ttkTypeMacroT(
+        triangulation->getType(),
+        (status = subModule.execute<T0>(
+           om, ttkUtils::GetPointer<const ttk::SimplexId>(orderArray),
+           *(T0 *)triangulation->getData())));
+      if(status != 0)
+        return 0;
+    }
+
+    auto ascendingManifold
+      = segmentationPD->GetArray(ttk::MorseSmaleAscendingName);
+    auto descendingManifold
+      = segmentationPD->GetArray(ttk::MorseSmaleDescendingName);
+
+    vtkNew<ttkSimplexIdTypeArray> segmentationId{};
+    segmentationId->SetNumberOfComponents(1);
+    segmentationId->SetNumberOfTuples(nVertices);
+    segmentationId->SetName("SegmentationId");
+
+    vtkNew<vtkUnsignedCharArray> isLeaf{};
+    isLeaf->SetNumberOfComponents(1);
+    isLeaf->SetNumberOfTuples(nVertices);
+    isLeaf->SetName("IsLeaf");
+
+    // compute joinTree
+    auto exTreeMTree = ttk::ExTreeM();
+    if(params_.treeType == ttk::ftm::TreeType::Join) {
+      std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>
+        persistencePairsJoin{};
+      std::vector<ttk::ExTreeM::Branch> mergeTreeJoin{};
+
+      int status = 0;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+      for(size_t i = 0; i < nVertices; i++) {
+        orderArrayData[i] = nVertices - orderArrayData[i] - 1;
+      }
+      ttkTypeMacroT(triangulation->getType(),
+                    (status = exTreeMTree.computePairs<T0>(
+                       persistencePairsJoin, mergeTreeJoin,
+                       ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
+                       ttkUtils::GetPointer<unsigned char>(isLeaf),
+                       ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
+                       ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
+                       orderArrayData, (T0 *)triangulation->getData())));
+
+      if(status != 1)
+        return 0;
+
+      auto outputPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
+      auto outputMergeTreeJoin = vtkUnstructuredGrid::GetData(outputVector, 1);
+      ttkTypeMacroT(
+        triangulation->getType(),
+        getMergeTree<T0>(outputMergeTreeJoin, mergeTreeJoin, scalarArray,
+                         (T0 *)triangulation->getData()));
+      ttkTypeMacroT(
+        triangulation->getType(),
+        getMergeTreePoints<T0>(outputPoints, persistencePairsJoin, scalarArray,
+                               (T0 *)triangulation->getData()));
+
+    } else {
+      std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>
+        persistencePairsSplit{};
+      std::vector<ttk::ExTreeM::Branch> mergeTreeSplit{};
+
+      int status = 0;
+
+      ttkTypeMacroT(triangulation->getType(),
+                    (status = exTreeMTree.computePairs<T0>(
+                       persistencePairsSplit, mergeTreeSplit,
+                       ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
+                       ttkUtils::GetPointer<unsigned char>(isLeaf),
+                       ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
+                       ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
+                       orderArrayData, (T0 *)triangulation->getData())));
+
+      if(status != 1)
+        return 0;
+
+      auto outputPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
+      auto outputMergeTreeSplit = vtkUnstructuredGrid::GetData(outputVector, 1);
+
+      ttkTypeMacroT(
+        triangulation->getType(),
+        getMergeTree<T0>(outputMergeTreeSplit, mergeTreeSplit, scalarArray,
+                         (T0 *)triangulation->getData()));
+      ttkTypeMacroT(
+        triangulation->getType(),
+        getMergeTreePoints<T0>(outputPoints, persistencePairsSplit, scalarArray,
+                               (T0 *)triangulation->getData()));
+    }
+    {
+      segmentationPD->AddArray(segmentationId);
+      segmentationPD->AddArray(isLeaf);
+    }
   } else {
     // Arrays
 

@@ -10,4 +10,6 @@ HEADERS
   ttkMergeTreeUtils.h
 DEPENDS
   ftmTree
+  exTreeM
+  pathCompression
   ttkAlgorithm
