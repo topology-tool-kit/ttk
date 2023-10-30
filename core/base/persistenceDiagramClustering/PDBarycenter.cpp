@@ -343,7 +343,7 @@ double ttk::PDBarycenter::updateBarycenter(
     Bidder *b = points_to_append[k].first;
     double gx
       = (b->x_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
-    double const gy
+    double gy
       = (b->y_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
     if(useCustomWeights_) {
       // need to retrieve the correct weight here
