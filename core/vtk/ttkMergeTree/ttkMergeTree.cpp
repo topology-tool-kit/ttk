@@ -286,7 +286,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
         triangulation->getType(),
         getMergeTreePoints<T0>(outputPoints, persistencePairsJoin, scalarArray,
                                (T0 *)triangulation->getData()));
-      //swap the data back
+      // swap the data back
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
