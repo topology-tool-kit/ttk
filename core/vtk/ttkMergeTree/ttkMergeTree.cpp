@@ -186,28 +186,32 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
     auto segmentationPD = segmentation->GetPointData();
 
     // enforce that ascending and descending manifolds exist
-    if(!segmentationPD->HasArray(ttk::MorseSmaleAscendingName)
-       || !segmentationPD->HasArray(ttk::MorseSmaleDescendingName)) {
+    std::string ascendingName = std::string(scalarArray->GetName()) + "_"
+                                + std::string(ttk::MorseSmaleAscendingName);
+    std::string descendingName = std::string(scalarArray->GetName()) + "_"
+                                 + std::string(ttk::MorseSmaleDescendingName);
+    if(!segmentationPD->HasArray(ascendingName.data())
+       || !segmentationPD->HasArray(descendingName.data())) {
       printMsg(ttk::debug::Separator::L2);
       this->printWrn("TIP: run `ttkPathCompression` first");
       this->printWrn("for improved performances :)");
       printMsg(ttk::debug::Separator::L2);
       bool doAscend = false;
       bool doDescend = false;
-      if(!segmentationPD->HasArray(ttk::MorseSmaleAscendingName)) {
+      if(!segmentationPD->HasArray(ascendingName.data())) {
         doAscend = true;
         auto ascendingManifold = vtkSmartPointer<vtkIdTypeArray>::New();
         ascendingManifold->SetNumberOfComponents(1);
         ascendingManifold->SetNumberOfTuples(nVertices);
-        ascendingManifold->SetName(ttk::MorseSmaleAscendingName);
+        ascendingManifold->SetName(ascendingName.data());
         segmentationPD->AddArray(ascendingManifold);
       }
-      if(!segmentationPD->HasArray(ttk::MorseSmaleDescendingName)) {
+      if(!segmentationPD->HasArray(descendingName.data())) {
         doDescend = true;
         auto descendingManifold = vtkSmartPointer<vtkIdTypeArray>::New();
         descendingManifold->SetNumberOfComponents(1);
         descendingManifold->SetNumberOfTuples(nVertices);
-        descendingManifold->SetName(ttk::MorseSmaleDescendingName);
+        descendingManifold->SetName(descendingName.data());
         segmentationPD->AddArray(descendingManifold);
       }
       ttk::PathCompression subModule;
@@ -218,9 +222,9 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
       ttk::PathCompression::OutputSegmentation om{
         ttkUtils::GetPointer<ttk::SimplexId>(
-          segmentationPD->GetArray(ttk::MorseSmaleAscendingName)),
+          segmentationPD->GetArray(ascendingName.data())),
         ttkUtils::GetPointer<ttk::SimplexId>(
-          segmentationPD->GetArray(ttk::MorseSmaleDescendingName)),
+          segmentationPD->GetArray(descendingName.data())),
         nullptr};
 
       int status = 0;
@@ -233,10 +237,8 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
         return 0;
     }
 
-    auto ascendingManifold
-      = segmentationPD->GetArray(ttk::MorseSmaleAscendingName);
-    auto descendingManifold
-      = segmentationPD->GetArray(ttk::MorseSmaleDescendingName);
+    auto ascendingManifold = segmentationPD->GetArray(ascendingName.data());
+    auto descendingManifold = segmentationPD->GetArray(descendingName.data());
 
     vtkNew<ttkSimplexIdTypeArray> segmentationId{};
     segmentationId->SetNumberOfComponents(1);
@@ -272,7 +274,13 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
                        ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
                        ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
                        orderArrayData, (T0 *)triangulation->getData())));
-
+      // swap the data back (even if the execution failed)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+      for(size_t i = 0; i < nVertices; i++) {
+        orderArrayData[i] = nVertices - orderArrayData[i] - 1;
+      }
       if(status != 1)
         return 0;
 

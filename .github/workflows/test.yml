@@ -360,7 +360,7 @@ jobs:
       run: |
         cd ttk-data/tests
         mkdir output_screenshots
-        python3 -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
+        pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
 
