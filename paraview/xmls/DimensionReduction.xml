@@ -12,7 +12,8 @@
       <Documentation
         long_help="TTK dimensionReduction plugin."
         short_help="TTK dimensionReduction plugin.">
-        TTK dimensionReduction plugin documentation.
+        TTK filter for generic dimension reduction methods.
+        This filter supports various methods via the scikit-learn third party dependency (spectral embedding, local linear embedding, multi-dimensional scaling, t-SNE, isomap, PCA) as well as TopoMap (IEEE VIS 2020)
 
         Online examples:
 
