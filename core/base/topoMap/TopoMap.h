@@ -230,8 +230,8 @@ namespace ttk {
 #endif
 
     if(AngularSampleNb < 2) {
-      this->printWrn("The number of angular samples set is less than 2. "
-                     "Setting it to 2, which is the minimum possible.");
+      this->printWrn("The number of angular samples set is less than 2.");
+      this->printWrn("Setting it to 2 (minimum possible value).");
       this->AngularSampleNb = 2;
     }
     // We first set the minimum value we consider as null. We multiply by 100
@@ -249,8 +249,8 @@ namespace ttk {
     if(isDistMat) {
       this->printMsg("Input data: " + std::to_string(n) + " points.");
     } else {
-      this->printMsg("Input data: " + std::to_string(n) + " points, dimension "
-                     + std::to_string(inputMatrix.size() / n) + ".");
+      this->printMsg("Input data: " + std::to_string(n) + " points ("
+                     + std::to_string(inputMatrix.size() / n) + " dimensions).");
     }
 #endif
     std::vector<T> computedDistMatrix(n * n);
@@ -532,9 +532,7 @@ namespace ttk {
     ssDistortion << std::scientific << 2 * finalDistortion;
     this->printMsg("Non normalized distance matrix distortion: "
                    + ssDistortion.str());
-    this->printMsg(
-      "This number can be very big, you can use the DistanceMatrixDistorsion "
-      "class to have a normalized version between 0 and 1.");
+    this->printMsg("(for normalized distortion values, use DistanceMatrixDistorsion).");
 
     if(this->errorConvexHull) {
       this->printWrn(

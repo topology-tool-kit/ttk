@@ -949,6 +949,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       <PropertyGroup panel_widget="Line" label="TopoMap (IEEE VIS 2020)">
         <Property name="topomap_Strategy" />
         <Property name="topomap_AngularSampleNb" />
+        <Property name="topomap_CheckMST" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"
@@ -957,17 +958,6 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         </Hints>
       </PropertyGroup>
       
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="topomap_CheckMST" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="Method"
-            value="6" />
-
-        </Hints>
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="ModulePath" />
         <Property name="ModuleName" />
