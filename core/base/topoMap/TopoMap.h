@@ -217,16 +217,16 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_QHULL
 #ifndef Qhull_FOUND
-    this->printErr(
-      "Qhull was enabled but it is not installed or was not found. If you want "
-      "to use Boost instead, configure the CMake variable TTK_ENABLE_QHULL to "
-      "FALSE, but you may encounter some errors due to bugs in Boost "
-      "computations for the convex hull.");
-#endif
-#else
     this->printWrn(
-      "Using boost for convex hull. We found some errors in its convex hull "
-      "computations, consider enabling Qhull instead.");
+      "Qhull was enabled but it is not installed or was not found.");
+    this->printWrn("Defaulting to Boost support instead.");
+#endif
+#endif
+
+#ifndef Qhull_FOUND
+    this->printMsg("Using Boost for convex hulls.");
+    this->printWrn("Bugs have been reported in Boost's implementation.");
+    this->printWrn("Consider enabling Qhull instead.");
 #endif
 
     if(AngularSampleNb < 2) {
