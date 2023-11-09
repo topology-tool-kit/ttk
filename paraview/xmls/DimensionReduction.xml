@@ -740,7 +740,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
                          command="Settopomap_Strategy"
                          number_of_elements="1"
                          default_values="0"
-                         panel_visibility="default">
+                         panel_visibility="advanced">
         <EnumerationDomain name="enum">
           <Entry value="0" text="Kruskal"/>
           <Entry value="1" text="Prim"/>
@@ -753,10 +753,11 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
 
       <IntVectorProperty
         name="topomap_AngularSampleNb"
-        label="Anglular samples"
+        label="Angular samples"
         command="Settopomap_AngularSampleNb"
         number_of_elements="1"
-        default_values="2">
+        default_values="2"
+        panel_visibility="advanced">
       <IntRangeDomain name="range" min="1" max="100" />
       <Documentation>
         When projecting in 2D, we regularly need to merge two already projected subsets of the points. We put them apart the right distance, but we may rotate each by some angle between two bounds. We test several angles and keep the best one. This parameter defines how many tests we do for each rotation. Beware, this parameter appears squared in the algorithm complexity.
@@ -771,15 +772,9 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       label="MST Preservation Check"
       command="Settopomap_CheckMST"
       number_of_elements="1"
-      panel_visibility="advanced"
-      default_values="0">
+      default_values="0"
+      panel_visibility="advanced">
     <BooleanDomain name="bool"/>
-    <Hints>
-      <PropertyWidgetDecorator type="GenericDecorator"
-        mode="visibility"
-        property="Method"
-        value="6" />
-    </Hints>
 
     <Documentation>
       This way to embedd points in 2D is based on preserving the lengths of the edges selected by Kruskal Algortihm to build a spanning tree. Checking this box enables testing that these lengths are indeed preserved. This test is very quick.
