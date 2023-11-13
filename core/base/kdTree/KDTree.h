@@ -60,12 +60,18 @@ namespace ttk {
         include_weights_{father->include_weights_}, parent_{father} {
     }
 
+    // ptNumber : Number of points in the dataset.
+    // nodeNumber : Number of nodes in the tree.
+    // preciseBoundingBox : Allows for a bounding box that is accurate relative
+    // to the input data. It is recommended to set it to false for persistence
+    // diagrams and true otherwise.
     KDTreeMap build(dataType *data,
                     const int &ptNumber,
                     const int &dimension,
                     const std::vector<std::vector<dataType>> &weights = {},
                     const int &weightNumber = 1,
-                    const int &nodeNumber = -1);
+                    const int &nodeNumber = -1,
+                    const bool &preciseBoundingBox = false);
 
     void buildRecursive(dataType *data,
                         std::vector<int> &idx_side,
@@ -151,7 +157,8 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
     const int &dimension,
     const std::vector<std::vector<dataType>> &weights,
     const int &weightNumber,
-    const int &nodeNumber) {
+    const int &nodeNumber,
+    const bool &preciseBoundingBox) {
 
   int createdNumberNode = 1;
   int idGenerator = createdNumberNode - 1;
@@ -168,47 +175,54 @@ typename ttk::KDTree<dataType, Container>::KDTreeMap
 
   KDTreeMap correspondence_map(correspondence_map_size);
 
-  // First, perform a argsort on the data
-  // initialize original index locations
-  dataType x_max = std::numeric_limits<dataType>::lowest();
-  dataType x_min = std::numeric_limits<dataType>::max();
-  dataType y_max = std::numeric_limits<dataType>::lowest();
-  dataType y_min = std::numeric_limits<dataType>::max();
-  dataType z_max = std::numeric_limits<dataType>::lowest();
-  dataType z_min = std::numeric_limits<dataType>::max();
+  if(preciseBoundingBox) {
+    // First, perform a argsort on the data
+    // initialize original index locations
+    dataType x_max = std::numeric_limits<dataType>::lowest();
+    dataType x_min = std::numeric_limits<dataType>::max();
+    dataType y_max = std::numeric_limits<dataType>::lowest();
+    dataType y_min = std::numeric_limits<dataType>::max();
+    dataType z_max = std::numeric_limits<dataType>::lowest();
+    dataType z_min = std::numeric_limits<dataType>::max();
 
-  for(int i = 0; i < ptNumber * dimension; i += dimension) {
-    if(x_max < data[i]) {
-      x_max = data[i];
-    }
-    if(x_min > data[i]) {
-      x_min = data[i];
+    for(int i = 0; i < ptNumber * dimension; i += dimension) {
+      if(x_max < data[i]) {
+        x_max = data[i];
+      }
+      if(x_min > data[i]) {
+        x_min = data[i];
+      }
+
+      if(y_max < data[i + 1]) {
+        y_max = data[i + 1];
+      }
+      if(y_min > data[i + 1]) {
+        y_min = data[i + 1];
+      }
+
+      if(dimension > 2) {
+        if(z_max < data[i + 2]) {
+          z_max = data[i + 2];
+        }
+        if(z_min > data[i + 2]) {
+          z_min = data[i + 2];
+        }
+      }
     }
 
-    if(y_max < data[i + 1]) {
-      y_max = data[i + 1];
-    }
-    if(y_min > data[i + 1]) {
-      y_min = data[i + 1];
-    }
-
+    coords_min_[0] = x_min;
+    coords_max_[0] = x_max;
+    coords_min_[1] = y_min;
+    coords_max_[1] = y_max;
     if(dimension > 2) {
-      if(z_max < data[i + 2]) {
-        z_max = data[i + 2];
-      }
-      if(z_min > data[i + 2]) {
-        z_min = data[i + 2];
-      }
+      coords_min_[2] = z_min;
+      coords_max_[2] = z_max;
     }
-  }
-
-  coords_min_[0] = x_min;
-  coords_max_[0] = x_max;
-  coords_min_[1] = y_min;
-  coords_max_[1] = y_max;
-  if(dimension > 2) {
-    coords_min_[2] = z_min;
-    coords_max_[2] = z_max;
+  } else {
+    for(int axis = 0; axis < dimension; axis++) {
+      coords_min_[axis] = std::numeric_limits<dataType>::lowest();
+      coords_max_[axis] = std::numeric_limits<dataType>::max();
+    }
   }
 
   std::vector<int> idx(ptNumber);
