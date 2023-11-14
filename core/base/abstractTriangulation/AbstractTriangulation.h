@@ -2877,6 +2877,14 @@ namespace ttk {
       return this->neighborRanks_;
     }
 
+    virtual inline std::map<int, int> &getNeighborsToId() {
+      return this->neighborsToId_;
+    }
+
+    virtual inline const std::map<int, int> &getNeighborsToId() const {
+      return this->neighborsToId_;
+    }
+
     virtual inline const std::vector<std::array<ttk::SimplexId, 6>> &
       getNeighborVertexBBoxes() const {
       return this->neighborVertexBBoxes_;
@@ -3821,6 +3829,8 @@ namespace ttk {
 
     // list of neighboring ranks (sharing ghost cells to current rank)
     std::vector<int> neighborRanks_{};
+    // list of ids in the neighborRanks_ vector of neighboring ranks
+    std::map<int, int> neighborsToId_{};
     // global ids of (local) ghost cells per each MPI (neighboring) rank
     std::vector<std::vector<SimplexId>> ghostCellsPerOwner_{};
     // global ids of local (owned) cells that are ghost cells of other

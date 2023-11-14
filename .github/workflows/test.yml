@@ -270,11 +270,16 @@ jobs:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
 
+    - name: Remove hosted Python
+      run: |
+        sudo rm -rf /Library/Frameworks/Python.framework/
+        sudo rm -rf /usr/local/Frameworks/Python.framework/
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
+        brew reinstall python
         brew install --cask xquartz
-        brew install wget llvm libomp ninja python open-mpi
+        brew install wget llvm libomp ninja open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy websocketpp ccache
         # prepend ccache to system path
@@ -360,7 +365,7 @@ jobs:
       run: |
         cd ttk-data/tests
         mkdir output_screenshots
-        python3 -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
+        pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
 

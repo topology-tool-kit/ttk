@@ -357,144 +357,6 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
   return false;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexNeighbor)(const SimplexId &vertexId,
-                     const int &localNeighborId,
-                     SimplexId &neighborId) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(localNeighborId < 0
-     or localNeighborId >= getVertexNeighborNumber(vertexId))
-    return -1;
-#endif // !TTK_ENABLE_KAMIKAZE
-
-  switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      neighborId = vertexId + this->vertexNeighborABCDEFGH_[localNeighborId];
-      break;
-    case VertexPosition::FRONT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborABCD_[localNeighborId];
-      break;
-    case VertexPosition::BACK_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborEFGH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborAEFB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborGHDC_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborAEGC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborBFHD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      neighborId = vertexId + this->vertexNeighborAB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      neighborId = vertexId + this->vertexNeighborCD_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      neighborId = vertexId + this->vertexNeighborAC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      neighborId = vertexId + this->vertexNeighborBD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      neighborId = vertexId + this->vertexNeighborEF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      neighborId = vertexId + this->vertexNeighborGH_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      neighborId = vertexId + this->vertexNeighborEG_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      neighborId = vertexId + this->vertexNeighborFH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      neighborId = vertexId + this->vertexNeighborAE_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      neighborId = vertexId + this->vertexNeighborBF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      neighborId = vertexId + this->vertexNeighborCG_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      neighborId = vertexId + this->vertexNeighborDH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      neighborId = vertexId + this->vertexNeighborA_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      neighborId = vertexId + this->vertexNeighborB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      neighborId = vertexId + this->vertexNeighborC_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      neighborId = vertexId + this->vertexNeighborD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      neighborId = vertexId + this->vertexNeighborE_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      neighborId = vertexId + this->vertexNeighborF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      neighborId = vertexId + this->vertexNeighborG_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      neighborId = vertexId + this->vertexNeighborH_[localNeighborId];
-      break;
-    case VertexPosition::CENTER_2D:
-      neighborId = vertexId + this->vertexNeighbor2dABCD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dAB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dCD_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dAC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dBD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      neighborId = vertexId + this->vertexNeighbor2dA_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      neighborId = vertexId + this->vertexNeighbor2dB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      neighborId = vertexId + this->vertexNeighbor2dC_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      neighborId = vertexId + this->vertexNeighbor2dD_[localNeighborId];
-      break;
-    case VertexPosition::CENTER_1D:
-      neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
-      break;
-    case VertexPosition::LEFT_CORNER_1D:
-      neighborId = vertexId + 1;
-      break;
-    case VertexPosition::RIGHT_CORNER_1D:
-      neighborId = vertexId - 1;
-      break;
-    default:
-      neighborId = -1;
-      break;
-  }
-
-  return 0;
-}
-
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() {
   if(vertexNeighborList_.empty()) {
@@ -3097,13 +2959,22 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
 
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
   auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
-  // "good" starting values?
-  localBBox = {
-    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
-    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
-    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
-  };
 
+  ttk::SimplexId localBBox_x_min{this->localGridOffset_[0]
+                                 + this->dimensions_[0]},
+    localBBox_y_min{this->localGridOffset_[1] + this->dimensions_[1]},
+    localBBox_z_min{this->localGridOffset_[2] + this->dimensions_[2]};
+  ttk::SimplexId localBBox_x_max{this->localGridOffset_[0]},
+    localBBox_y_max{this->localGridOffset_[1]},
+    localBBox_z_max{this->localGridOffset_[2]};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for reduction(                    \
+  min                                                  \
+  : localBBox_x_min, localBBox_y_min, localBBox_z_min) \
+  reduction(max                                        \
+            : localBBox_x_max, localBBox_y_max, localBBox_z_max)
+#endif
   for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
     // only keep non-ghost cells
     if(this->cellGhost_[lcid / nTetraPerCube] == 1) {
@@ -3125,28 +2996,33 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
     p[1] += this->localGridOffset_[1];
     p[2] += this->localGridOffset_[2];
 
-    if(p[0] < localBBox[0]) {
-      localBBox[0] = p[0];
+    if(p[0] < localBBox_x_min) {
+      localBBox_x_min = p[0];
     }
-    if(p[0] > localBBox[1]) {
-      localBBox[1] = p[0];
+    if(p[0] > localBBox_x_max) {
+      localBBox_x_max = p[0];
     }
-    if(p[1] < localBBox[2]) {
-      localBBox[2] = p[1];
+    if(p[1] < localBBox_y_min) {
+      localBBox_y_min = p[1];
     }
-    if(p[1] > localBBox[3]) {
-      localBBox[3] = p[1];
+    if(p[1] > localBBox_y_max) {
+      localBBox_y_max = p[1];
     }
-    if(p[2] < localBBox[4]) {
-      localBBox[4] = p[2];
+    if(p[2] < localBBox_z_min) {
+      localBBox_z_min = p[2];
     }
-    if(p[2] > localBBox[5]) {
-      localBBox[5] = p[2];
+    if(p[2] > localBBox_z_max) {
+      localBBox_z_max = p[2];
     }
   }
-  localBBox[1]++;
-  localBBox[3]++;
-  localBBox[5]++;
+  localBBox_x_max++;
+  localBBox_y_max++;
+  localBBox_z_max++;
+
+  localBBox = {
+    localBBox_x_min, localBBox_x_max, localBBox_y_min,
+    localBBox_y_max, localBBox_z_min, localBBox_z_max,
+  };
 
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};

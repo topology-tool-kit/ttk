@@ -113,6 +113,15 @@ public:
     return neighbors_;
   }
 
+  inline std::map<int, int> getNeighborsToId() {
+    std::map<int, int> neighborsToId{};
+    int neighborNumber = neighbors_.size();
+    for(int i = 0; i < neighborNumber; i++) {
+      neighborsToId[neighbors_[i]] = i;
+    }
+    return neighborsToId;
+  }
+
   inline std::array<unsigned char, 6> getIsBoundaryPeriodic() {
     return isBoundaryPeriodic_;
   }

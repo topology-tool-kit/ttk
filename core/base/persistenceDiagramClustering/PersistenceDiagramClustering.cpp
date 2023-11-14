@@ -120,6 +120,7 @@ std::vector<int> ttk::PersistenceDiagramClustering::execute(
   KMeans.setK(NumberOfClusters);
   KMeans.setDiagrams(&data_min, &data_sad, &data_max);
   KMeans.setDos(do_min, do_sad, do_max);
+  KMeans.setNonMatchingWeight(NonMatchingWeight);
   inv_clustering
     = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
   std::vector<std::vector<int>> centroids_sizes = KMeans.get_centroids_sizes();

@@ -111,15 +111,21 @@ int ttkPathCompression::RequestData(vtkInformation *ttkNotUsed(request),
 
   ascendingSegmentation->SetNumberOfComponents(1);
   ascendingSegmentation->SetNumberOfTuples(numberOfVertices);
-  ascendingSegmentation->SetName("AscendingSegmentation");
+  ascendingSegmentation->SetName((std::string(inputScalars->GetName()) + "_"
+                                  + std::string(ttk::MorseSmaleAscendingName))
+                                   .data());
 
   descendingSegmentation->SetNumberOfComponents(1);
   descendingSegmentation->SetNumberOfTuples(numberOfVertices);
-  descendingSegmentation->SetName("DescendingSegmentation");
+  descendingSegmentation->SetName((std::string(inputScalars->GetName()) + "_"
+                                   + std::string(ttk::MorseSmaleDescendingName))
+                                    .data());
 
   morseSmaleSegmentation->SetNumberOfComponents(1);
   morseSmaleSegmentation->SetNumberOfTuples(numberOfVertices);
-  morseSmaleSegmentation->SetName("MorseSmaleSegmentation");
+  morseSmaleSegmentation->SetName((std::string(inputScalars->GetName()) + "_"
+                                   + std::string(ttk::MorseSmaleManifoldName))
+                                    .data());
 
   this->segmentations_
     = {ttkUtils::GetPointer<SimplexId>(ascendingSegmentation),

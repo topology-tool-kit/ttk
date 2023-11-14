@@ -658,8 +658,8 @@ public:
     // Node fields
     vtkNew<vtkIntArray> criticalType{};
     criticalType->SetName(ttk::PersistenceCriticalTypeName);
-    vtkNew<vtkFloatArray> persistenceNode{};
-    persistenceNode->SetName("Persistence");
+    vtkNew<vtkDoubleArray> persistenceNode{};
+    persistenceNode->SetName(ttk::PersistenceName);
     vtkNew<vtkIntArray> clusterIDNode{};
     clusterIDNode->SetName("ClusterID");
     vtkNew<vtkIntArray> isDummyNode{};
@@ -692,8 +692,6 @@ public:
     vtkNew<vtkIntArray> persistenceBaryOrderNode{};
     persistenceBaryOrderNode->SetName("PersistenceBarycenterOrder");
 
-    vtkNew<vtkDoubleArray> pairPersistenceNode{};
-    pairPersistenceNode->SetName(ttk::PersistenceName);
     vtkNew<vtkDoubleArray> pairBirthNode{};
     pairBirthNode->SetName(ttk::PersistenceBirthName);
 
@@ -715,8 +713,8 @@ public:
       customStringArrays.size());
 
     // Arc fields
-    vtkNew<vtkFloatArray> persistenceArc{};
-    persistenceArc->SetName("Persistence");
+    vtkNew<vtkDoubleArray> persistenceArc{};
+    persistenceArc->SetName(ttk::PersistenceName);
     vtkNew<vtkIntArray> clusterIDArc{};
     clusterIDArc->SetName("ClusterID");
     vtkNew<vtkIntArray> isImportantPairsArc{};
@@ -750,8 +748,6 @@ public:
     pairType->SetName(ttk::PersistencePairTypeName);
     vtkNew<vtkIntArray> pairIsFinite{};
     pairIsFinite->SetName(ttk::PersistenceIsFinite);
-    vtkNew<vtkDoubleArray> pairPersistence{};
-    pairPersistence->SetName(ttk::PersistenceName);
     vtkNew<vtkDoubleArray> pairBirth{};
     pairBirth->SetName(ttk::PersistenceBirthName);
 
@@ -1194,10 +1190,16 @@ public:
               // Add arc persistence
               printMsg(
                 "// Push arc persistence", ttk::debug::Priority::VERBOSE);
-              idNode const nodeToGetPers = nodeBranching;
+              idNode const nodeToGetPers
+                = (isPersistenceDiagram ? node : nodeBranching);
               double const persToAdd
                 = trees[i]->getNodePersistence<dataType>(nodeToGetPers);
               persistenceArc->InsertNextTuple1(persToAdd);
+
+              // Add birth
+              auto birthDeath
+                = trees[i]->getBirthDeath<dataType>(nodeToGetPers);
+              pairBirth->InsertNextTuple1(std::get<0>(birthDeath));
 
               // Add arc persistence barycenter and order
               if(clusteringOutput and ShiftMode != 1) {
@@ -1235,12 +1237,6 @@ public:
 
               // Add pairIdentifier
               pairIdentifier->InsertNextTuple1(treeSimplexId[node]);
-
-              // Add birth and death
-              auto birthDeath = trees[i]->getBirthDeath<dataType>(node);
-              pairBirth->InsertNextTuple1(std::get<0>(birthDeath));
-              pairPersistence->InsertNextTuple1(std::get<1>(birthDeath)
-                                                - std::get<0>(birthDeath));
 
               // Add isMinMaxPair
               bool const isMinMaxPair
@@ -1374,6 +1370,10 @@ public:
             persistenceNode->InsertNextTuple1(
               trees[i]->getNodePersistence<dataType>(node));
 
+            // Add birth
+            auto birthDeath = trees[i]->getBirthDeath<dataType>(node);
+            pairBirthNode->InsertNextTuple1(std::get<0>(birthDeath));
+
             // Add node persistence barycenter
             if(clusteringOutput and ShiftMode != 1) {
               if(treeMatching[node] < allBaryBranchingID[c].size()) {
@@ -1398,12 +1398,6 @@ public:
 
             // Add isInterpolatedTree
             isInterpolatedTreeNode->InsertNextTuple1(isInterpolatedTree);
-
-            // Add birth and death
-            auto birthDeath = trees[i]->getBirthDeath<dataType>(node);
-            pairBirthNode->InsertNextTuple1(std::get<0>(birthDeath));
-            pairPersistenceNode->InsertNextTuple1(std::get<1>(birthDeath)
-                                                  - std::get<0>(birthDeath));
 
             // Add isImportantPair
             bool isImportant = false;
@@ -1462,7 +1456,7 @@ public:
 
           pairIdentifier->InsertNextTuple1(-1);
           pairType->InsertNextTuple1(-1);
-          pairPersistence->InsertNextTuple1(-1);
+          persistenceArc->InsertNextTuple1(-1);
           pairIsFinite->InsertNextTuple1(0);
           pairBirth->InsertNextTuple1(0);
 
@@ -1575,7 +1569,6 @@ public:
       if(!treesNodes.empty() and ShiftMode != 1)
         vtkOutputNode->GetPointData()->AddArray(coordinates);
     }
-    vtkOutputNode->GetPointData()->AddArray(pairPersistenceNode);
     vtkOutputNode->GetPointData()->AddArray(pairBirthNode);
 
     // - Manage arc output
@@ -1613,7 +1606,6 @@ public:
       vtkArcs->GetCellData()->AddArray(pairType);
       vtkArcs->GetCellData()->AddArray(pairIsFinite);
     }
-    vtkArcs->GetCellData()->AddArray(pairPersistence);
     vtkArcs->GetCellData()->AddArray(pairBirth);
     if(vtkOutputArc == vtkOutputNode)
       vtkArcs->GetPointData()->ShallowCopy(vtkOutputNode->GetPointData());

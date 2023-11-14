@@ -137,6 +137,9 @@ public:
   ttkSetEnumMacro(Method, METHOD);
   vtkGetEnumMacro(Method, METHOD);
 
+  vtkSetMacro(NonMatchingWeight, double);
+  vtkGetMacro(NonMatchingWeight, double);
+
 protected:
   ttkPersistenceDiagramClustering();
 

@@ -79,12 +79,14 @@ namespace ttk {
 
     double cost(const PersistenceDiagramAuctionActor &g,
                 const int wasserstein,
-                const double geometricalFactor) const;
+                const double geometricalFactor,
+                const double nonMatchingWeight) const;
 
     inline double cost(const PersistenceDiagramAuctionActor *g,
                        const int wasserstein,
-                       const double geometricalFactor) const {
-      return this->cost(*g, wasserstein, geometricalFactor);
+                       const double geometricalFactor,
+                       const double nonMatchingWeight) const {
+      return this->cost(*g, wasserstein, geometricalFactor, nonMatchingWeight);
     }
 
     double getPairGeometricalLength(const int wasserstein) const {
@@ -250,12 +252,14 @@ namespace ttk {
                    Good &diagonalGood,
                    int wasserstein,
                    double epsilon,
-                   double geometricalFactor);
+                   double geometricalFactor,
+                   double nonMatchingWeight);
     int runKDTBidding(GoodDiagram *goods,
                       Good &diagonalGood,
                       int wasserstein,
                       double epsilon,
                       double geometricalFactor,
+                      double nonMatchingWeight,
                       KDT *kdt,
                       const int kdt_index = 0);
 
@@ -266,6 +270,7 @@ namespace ttk {
       int wasserstein,
       double epsilon,
       double geometricalFactor,
+      double nonMatchingWeight,
       std::priority_queue<std::pair<int, double>,
                           std::vector<std::pair<int, double>>,
                           Compare> &diagonal_queue);
@@ -275,6 +280,7 @@ namespace ttk {
       int wasserstein,
       double epsilon,
       double geometricalFactor,
+      double nonMatchingWeight,
       std::vector<KDT *> &correspondence_kdt_map,
       std::priority_queue<std::pair<int, double>,
                           std::vector<std::pair<int, double>>,

@@ -43,6 +43,8 @@ mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
+  option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" FALSE)
+  mark_as_advanced(TTK_ENABLE_MPI_TIME)
 endif()
 
 if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
@@ -127,9 +129,6 @@ mark_as_advanced(TTK_SCRIPTS_PATH)
 
 option(TTK_ENABLE_SHARED_BASE_LIBRARIES "Generate shared base libraries instead of static ones" ON)
 mark_as_advanced(TTK_ENABLE_SHARED_BASE_LIBRARIES)
-if(TTK_ENABLE_SHARED_BASE_LIBRARIES AND MSVC)
-  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)
@@ -241,9 +240,16 @@ else()
 endif()
 
 if(MSVC)
-  option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+  option(TTK_ENABLE_OPENMP4 "Enable OpenMP4 support" FALSE)
+  set(OpenMP_CXX_FLAGS /openmp:llvm
+      CACHE STRING "CXX compiler flags for OpenMP parallelization")
+  set(OpenMP_C_FLAGS /openmp:llvm
+      CACHE STRING "C compiler flags for OpenMP parallelization")
 else()
   option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+  option(TTK_ENABLE_OPENMP4 "Enable OpenMP4 support" TRUE)
+  mark_as_advanced(TTK_ENABLE_OPENMP4)
 endif()
 if(TTK_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
@@ -258,7 +264,7 @@ if(TTK_ENABLE_OPENMP)
         OFF
         CACHE
         BOOL
-        "Enable priorities on opnemp tasks"
+        "Enable priorities on openmp tasks"
         FORCE
         )
     endif()

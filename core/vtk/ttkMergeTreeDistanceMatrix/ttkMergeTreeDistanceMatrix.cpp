@@ -1,5 +1,5 @@
-#include <ttkFTMTreeUtils.h>
 #include <ttkMergeTreeDistanceMatrix.h>
+#include <ttkMergeTreeUtils.h>
 #include <ttkUtils.h>
 
 #include <vtkDataObject.h> // For port information

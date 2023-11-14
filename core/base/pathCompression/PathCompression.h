@@ -145,6 +145,17 @@ namespace ttk {
       const triangulationType &triangulation) const;
 
     /**
+     * Enable/Disable computation of the geometrical embedding of the
+     * manifolds of the critical points.
+     */
+    inline void setComputeSegmentation(const bool doAscending,
+                                       const bool doDescending,
+                                       const bool doMorseSmale) {
+      this->ComputeAscendingSegmentation = doAscending;
+      this->ComputeDescendingSegmentation = doDescending;
+      this->ComputeMSSegmentationHash = doMorseSmale;
+    }
+    /**
      * @brief Computes a MS segmentation hash
      *
      * Computes a hash from the ascending and descending segmentation as keys.

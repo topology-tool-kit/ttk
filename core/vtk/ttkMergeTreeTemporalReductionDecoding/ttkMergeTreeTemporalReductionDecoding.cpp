@@ -1,6 +1,6 @@
 #include <ttkMergeTreeTemporalReductionDecoding.h>
 
-#include <ttkFTMTreeUtils.h>
+#include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
 
 #include <vtkInformation.h>

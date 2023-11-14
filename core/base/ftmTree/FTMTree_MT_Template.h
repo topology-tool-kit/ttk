@@ -87,7 +87,7 @@ namespace ttk {
 
         // Extrema extract and launch tasks
         for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(chunkId) OPTIONAL_PRIORITY(isPrior())
 #endif
           {
@@ -113,7 +113,7 @@ namespace ttk {
           }
         }
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
       } else {
@@ -180,13 +180,13 @@ namespace ttk {
         mt_data_.storage[n] = AtomicUF{v};
         mt_data_.ufs[v] = &mt_data_.storage[n];
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task UNTIED() OPTIONAL_PRIORITY(isPrior())
 #endif
         arcGrowth(mesh, v, n);
       }
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
     }
@@ -257,7 +257,7 @@ namespace ttk {
         std::tie(isSaddle, isLast) = propagate(mesh, *currentState, startUF);
 
         // regular propagation
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic write seq_cst
 #endif
         mt_data_.ufs[currentVert] = startUF;
@@ -270,7 +270,7 @@ namespace ttk {
             = _launchGlobalTime.getElapsedTime();
 #endif
           // need a node on this vertex
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic write seq_cst
 #endif
           mt_data_.openedNodes[currentVert] = 1;
@@ -282,7 +282,7 @@ namespace ttk {
 
             // last task detection
             idNode remainingTasks;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic read seq_cst
 #endif
             remainingTasks = mt_data_.activeTasks;
@@ -292,19 +292,19 @@ namespace ttk {
             }
 
             // made a node on this vertex
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic write seq_cst
 #endif
             mt_data_.openedNodes[currentVert] = 0;
 
             // recursively continue
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskyield
 #endif
             arcGrowth(mesh, currentVert, orig);
           } else {
             // Active tasks / threads
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic update seq_cst
 #endif
             mt_data_.activeTasks--;
@@ -378,7 +378,7 @@ namespace ttk {
       // is last
       valence oldVal;
       valence &tmp = mt_data_.valences[currentState.vertex];
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
 #endif
       {

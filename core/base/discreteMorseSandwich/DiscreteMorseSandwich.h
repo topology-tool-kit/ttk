@@ -947,10 +947,10 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
 
   // compute 2-saddles boundaries in parallel
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
   firstprivate(onBoundary)
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
   for(size_t i = 0; i < saddles2.size(); ++i) {
     // 2-saddles sorted in increasing order
     const auto s2 = saddles2[i];

@@ -25,7 +25,7 @@ namespace ttk {
 
   /**
    * The DistanceMatrixDistortion class provides a method to compute the
-   * distorsion score between two distance matrices representing the same
+   * distortion score between two distance matrices representing the same
    * points.
    */
   class DistanceMatrixDistortion : virtual public Debug {
@@ -35,8 +35,13 @@ namespace ttk {
 
     int execute(const std::vector<double *> &highDistMatrix,
                 const std::vector<double *> &lowDistMatrix,
-                double &distorsionValue,
-                double *distorsionVerticesValues) const;
+                double &distortionValue,
+                double *distortionVerticesValues) const;
+
+  protected:
+    // Warning: If this is set to true, then the similarity values we return
+    // will lie between -inf and 1 (best similarity).
+    bool DoNotNormalize{false};
   };
 
 } // namespace ttk

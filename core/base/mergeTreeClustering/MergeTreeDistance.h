@@ -64,7 +64,7 @@ namespace ttk {
       this->setDebugMsgPrefix(
         "MergeTreeDistance"); // inherited from Debug: prefix will be printed at
                               // the beginning of every msg
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
       omp_set_nested(1);
 #endif
     }
@@ -881,7 +881,7 @@ namespace ttk {
       std::vector<int> &treeChildDone,
       std::vector<bool> &treeNodeDone,
       std::queue<ftm::idNode> &treeQueue) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel num_threads(this->threadNumber_) if(firstCall)
       {
 #pragma omp single nowait
@@ -891,7 +891,7 @@ namespace ttk {
                                  tree2NodeChildSize, treeTable, forestTable,
                                  treeBackTable, forestBackTable, nodeT,
                                  treeChildDone, treeNodeDone, treeQueue);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
       } // pragma omp parallel
 #endif
 
@@ -927,7 +927,7 @@ namespace ttk {
           treeQueue.pop();
           taskQueue.emplace(nodeT);
         }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(taskQueue, nodeT) UNTIED()         \
   shared(treeTable, forestTable, treeBackTable, forestBackTable, \
          treeChildDone, treeNodeDone) if(isTree1)
@@ -973,13 +973,13 @@ namespace ttk {
             int const childSize = (isTree1) ? tree1NodeChildSize[nodeTParent]
                                             : tree2NodeChildSize[nodeTParent];
             int oldTreeChildDone;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
             {
 #endif
               oldTreeChildDone = treeChildDone[nodeTParent];
               treeChildDone[nodeTParent]++;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
             } // pragma omp atomic capture
 #endif
             if(not treeNodeDone[nodeTParent]
@@ -987,18 +987,18 @@ namespace ttk {
               // nodeT = nodeTParent;
               taskQueue.emplace(nodeTParent);
               treeNodeDone[nodeTParent] = true;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskyield
 #endif
             } else
               nodeT = -1;
 
           } // while nodeI loop
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
         } // pragma omp task
 #endif
       } // while treeQueue loop
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
     }
@@ -1048,7 +1048,7 @@ namespace ttk {
       std::vector<int> &treeChildDone,
       std::vector<bool> &treeNodeDone,
       std::queue<ftm::idNode> &treeQueue) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel num_threads(this->threadNumber_)
       {
 #pragma omp single nowait
@@ -1057,7 +1057,7 @@ namespace ttk {
                                       treeNodeChildSize, treeTable, forestTable,
                                       treeBackTable, forestBackTable, nodeT,
                                       treeChildDone, treeNodeDone, treeQueue);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
       } // pragma omp parallel
 #endif
     }
@@ -1081,7 +1081,7 @@ namespace ttk {
         nodeT = treeQueue.front();
         treeQueue.pop();
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(nodeT) UNTIED()                    \
   shared(treeTable, forestTable, treeBackTable, forestBackTable, \
          treeChildDone, treeNodeDone)
@@ -1111,31 +1111,31 @@ namespace ttk {
             // Manage parent
             ftm::idNode const nodeTParent = tree->getParentSafe(nodeT);
             int oldTreeChildDone;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic capture
             {
 #endif
               oldTreeChildDone = treeChildDone[nodeTParent];
               treeChildDone[nodeTParent]++;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
             } // pragma omp atomic capture
 #endif
             if(not treeNodeDone[nodeTParent]
                and oldTreeChildDone + 1 == treeNodeChildSize[nodeTParent]) {
               nodeT = nodeTParent;
               treeNodeDone[nodeTParent] = true;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskyield
 #endif
             } else
               nodeT = -1;
 
           } // while nodeI loop
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
         } // pragma omp task
 #endif
       } // while treeQueue loop
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
 

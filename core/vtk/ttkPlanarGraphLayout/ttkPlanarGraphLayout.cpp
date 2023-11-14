@@ -13,7 +13,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <FTMTreePPUtils.h>
-#include <ttkFTMTreeUtils.h>
+#include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
 
 vtkStandardNewMacro(ttkPlanarGraphLayout);

@@ -107,12 +107,12 @@ namespace ttk {
         // reversed
         bool res;
         if(prop->goUp()) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic read seq_cst
 #endif
           res = visits_.down[v].done;
         } else {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic read seq_cst
 #endif
           res = visits_.up[v].done;

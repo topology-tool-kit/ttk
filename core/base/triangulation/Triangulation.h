@@ -1423,6 +1423,14 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
+    inline std::map<int, int> &getNeighborsToId() override {
+      return abstractTriangulation_->getNeighborsToId();
+    }
+
+    inline const std::map<int, int> &getNeighborsToId() const override {
+      return abstractTriangulation_->getNeighborsToId();
+    }
+
     inline const std::vector<std::array<ttk::SimplexId, 6>> &
       getNeighborVertexBBoxes() const override {
       return abstractTriangulation_->getNeighborVertexBBoxes();

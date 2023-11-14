@@ -71,7 +71,7 @@
 /// "Algorithm and Theory of Computation Handbook (Second Edition)
 /// - Special Topics and Techniques" by Atallah and Blanton on page 97.
 ///
-/// \sa ttkFTMTreePP
+/// \sa ttkMergeTreePP
 /// \sa ttkPersistenceCurve
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkTopologicalSimplification

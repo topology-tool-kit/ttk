@@ -249,7 +249,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       sweepStart_.reStart();
 #endif
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskgroup
 #endif
       {
@@ -266,7 +266,7 @@ namespace ttk {
             = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
           // graph_.visit(corLeaf, newArc);
           // process
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
 #endif
           growthFromSeed(corLeaf, localPropagation, newArc);

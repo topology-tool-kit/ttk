@@ -118,7 +118,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
                [triangulation](const ttk::SimplexId a) {
                  return triangulation->getVertexLocalId(a);
                },
-               nVertices, BurstSize, triangulation->getNeighborRanks())));
+               nVertices, BurstSize, triangulation->getNeighborsToId(),
+               triangulation->getNeighborRanks())));
 
           // On error cancel filter execution
           if(status != 1)
