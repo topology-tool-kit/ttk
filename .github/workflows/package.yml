@@ -170,14 +170,15 @@ jobs:
     - uses: actions/checkout@v3
       name: Checkout TTK source code
 
-#    - name: Remove hosted Python
-#      run: |
-#        sudo rm -rf /Library/Frameworks/Python.framework
-#        sudo rm -rf /usr/local/Frameworks/Python.framework
+    - name: Remove hosted Python
+      run: |
+        sudo rm -rf /Library/Frameworks/Python.framework/
+        sudo rm -rf /usr/local/Frameworks/Python.framework/
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
+        brew reinstall python
         brew install --cask xquartz
         brew install wget llvm libomp mesa glew qt@5 ninja 
         # TTK dependencies
