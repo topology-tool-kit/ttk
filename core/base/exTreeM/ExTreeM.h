@@ -1212,6 +1212,7 @@ namespace ttk {
      * of the branch for each vertex
      * @param[out] regionType type of the segmentation region, see FTMTree for
      * more detail
+     * @param[in] cpMap a point id -> critical type map
      * @param[in] branches mergetree as vector of branch structs
      * @param[in] order order array
      * @param[in] descendingManifold descending manifold
