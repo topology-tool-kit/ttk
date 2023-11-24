@@ -86,12 +86,18 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
   auto sheet2 = vtkUnstructuredGrid::GetData(outputVector, 2);
   auto sheet3 = vtkDataSet::GetData(outputVector, 3);
 
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    return -3;
+  }
+  this->preconditionTriangulation(triangulation);
+
   const auto uComponent = this->GetInputArrayToProcess(0, inputVector);
   const auto vComponent = this->GetInputArrayToProcess(1, inputVector);
-  const auto offsetFieldU
-    = this->GetOrderArray(input, 0, 2, ForceInputOffsetScalarField);
-  const auto offsetFieldV
-    = this->GetOrderArray(input, 1, 3, ForceInputOffsetScalarField);
+  const auto offsetFieldU = this->GetOrderArray(
+    input, 0, triangulation, false, 2, ForceInputOffsetScalarField);
+  const auto offsetFieldV = this->GetOrderArray(
+    input, 1, triangulation, false, 3, ForceInputOffsetScalarField);
 
   // check data components
 
@@ -101,12 +107,6 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
 
   this->printMsg("U-component: `" + std::string{uComponent->GetName()} + "'");
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(triangulation == nullptr) {
-    return -3;
-  }
-  this->preconditionTriangulation(triangulation);
 
   this->setSosOffsetsU(
     static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsetFieldU)));

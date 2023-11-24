@@ -67,21 +67,21 @@ int ttkJacobiSet::RequestData(vtkInformation *ttkNotUsed(request),
   this->printMsg("U-component: `" + std::string{uComponent->GetName()} + "'");
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
 
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr)
+    return -1;
+  this->preconditionTriangulation(triangulation);
+
   // point data
-  const auto offsetFieldU
-    = this->GetOrderArray(input, 0, 2, ForceInputOffsetScalarField);
-  const auto offsetFieldV
-    = this->GetOrderArray(input, 1, 3, ForceInputOffsetScalarField);
+  const auto offsetFieldU = this->GetOrderArray(
+    input, 0, triangulation, false, 2, ForceInputOffsetScalarField);
+  const auto offsetFieldV = this->GetOrderArray(
+    input, 1, triangulation, false, 3, ForceInputOffsetScalarField);
 
   this->setSosOffsetsU(
     static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsetFieldU)));
   this->setSosOffsetsV(
     static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsetFieldV)));
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(triangulation == nullptr)
-    return -1;
-  this->preconditionTriangulation(triangulation);
 
 #ifndef TTK_ENABLE_DOUBLE_TEMPLATING
   if(uComponent->GetDataType() != vComponent->GetDataType()) {

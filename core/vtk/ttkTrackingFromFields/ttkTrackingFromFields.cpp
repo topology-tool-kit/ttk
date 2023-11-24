@@ -226,7 +226,8 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<ttk::SimplexId *> inputOrders(fieldNumber);
   for(int i = 0; i < fieldNumber; ++i) {
     this->SetInputArrayToProcess(0, 0, 0, 0, inputScalarFields[i]->GetName());
-    auto orderArray = this->GetOrderArray(input, 0, 0, false);
+    auto orderArray
+      = this->GetOrderArray(input, 0, triangulation, false, 0, false);
     inputOrders[i]
       = static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
   }

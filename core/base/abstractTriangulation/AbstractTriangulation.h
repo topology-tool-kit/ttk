@@ -2975,6 +2975,14 @@ namespace ttk {
       return 0;
     }
 
+    inline bool isOrderArrayGlobal() const {
+      return isOrderArrayGlobal_;
+    }
+
+    inline void setIsOrderArrayGlobal(bool flag) {
+      isOrderArrayGlobal_ = flag;
+    }
+
   protected:
     virtual inline SimplexId
       getVertexGlobalIdInternal(const SimplexId ttkNotUsed(lvid)) const {
@@ -3853,6 +3861,7 @@ namespace ttk {
     bool hasPreconditionedDistributedVertices_{false};
     bool hasPreconditionedExchangeGhostVertices_{false};
     bool hasPreconditionedGlobalBoundary_{false};
+    bool isOrderArrayGlobal_{false};
 
 #endif // TTK_ENABLE_MPI
 

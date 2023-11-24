@@ -1,3 +1,4 @@
+#include "Triangulation.h"
 #include <string>
 #include <ttkIntegralLines.h>
 #include <ttkMacros.h>
@@ -221,8 +222,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   if(keepGoing < 2) {
     return keepGoing;
   }
-  vtkDataArray *inputOffsets
-    = this->GetOrderArray(domain, 0, 1, ForceInputOffsetScalarField);
+  vtkDataArray *inputOffsets = this->GetOrderArray(
+    domain, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
   const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   this->setVertexNumber(numberOfPointsInDomain);
