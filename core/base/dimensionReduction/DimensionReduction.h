@@ -70,7 +70,7 @@ namespace ttk {
       ISOMAP = 4,
       /** Principal Component Analysis */
       PCA = 5,
-      /** Topological Mapper */
+      /** TopoMap */
       TOPOMAP = 6,
     };
 
