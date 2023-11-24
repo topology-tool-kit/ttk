@@ -97,7 +97,7 @@
       </IntVectorProperty>    
 
       <IntVectorProperty name="ChunkSize"
-        label="Size of chunk of vector"
+        label="Chunk Size"
         command="SetChunkSize"
         number_of_elements="1"
         default_values="1000000000"

@@ -411,7 +411,7 @@ namespace ttk {
     // This value has been chosen for systems of 128 Gb of memory per computing
     // node. For systems with much smaller memory, it may be inadequate and
     // require a smaller value.
-    int ChunkSize{10000000};
+    int ChunkSize{1000000000};
   }; // ArrayPreconditioning class
 
 } // namespace ttk
