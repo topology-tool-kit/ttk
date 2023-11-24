@@ -41,20 +41,6 @@ static double Epsilon{ttk::Geometry::pow(10.0, -FLT_DIG + 2)};
 static double EpsilonDBL{ttk::Geometry::pow(10.0, -DBL_DIG + 2)};
 
 template <typename T>
-static inline T compute_dist2(const T *ptA, const T *ptB) {
-  T dx = ptB[0] - ptA[0], dy = ptB[1] - ptA[1];
-
-  return dx * dx + dy * dy;
-}
-
-template <typename T>
-static inline T compute_dist(const T *ptA, const T *ptB) {
-  T dx = ptB[0] - ptA[0], dy = ptB[1] - ptA[1];
-
-  return sqrt(dx * dx + dy * dy);
-}
-
-template <typename T>
 inline bool are_colinear(const T *pptA, const T *pptB, const T *pptC) {
   double ptA[2] = {pptA[0], pptA[1]}, ptB[2] = {pptB[0], pptB[1]},
          ptC[2] = {pptC[0], pptC[1]};
@@ -465,7 +451,7 @@ namespace ttk {
            goalCoordChosenSmall[1] - outputCoords[idChosenSmall * 2 + 1]};
 
       T distBaryPointSmall
-        = compute_dist(&outputCoords[idChosenSmall * 2], coordscenterSmall);
+        = ttk::Geometry::distance(&outputCoords[idChosenSmall * 2], coordscenterSmall, 2);
       T preFinalPosBarySmall[2] = {coordscenterSmall[0] + smallCompMoveVect[0],
                                    coordscenterSmall[1] + smallCompMoveVect[1]};
       T finalPosBarySmall[2]
@@ -501,8 +487,8 @@ namespace ttk {
         }
       }
 
-      T finalDist = compute_dist(
-        &outputCoords[2 * idChosenSmall], &outputCoords[2 * idChosenBig]);
+      T finalDist = ttk::Geometry::distance(
+        &outputCoords[2 * idChosenSmall], &outputCoords[2 * idChosenBig], 2);
       if(fabs(finalDist - edgeCost) > Epsilon) {
         this->printErr(
           "The distance we set is too far from the goal distance.");
@@ -558,14 +544,14 @@ namespace ttk {
         for(size_t u1 = 0; u1 < n; u1++) {
           for(size_t u2 = u1 + 1; u2 < n; u2++) {
             edgeHeapAfter.push(std::make_pair(
-              compute_dist(&outputCoords[2 * u1], &outputCoords[2 * u2]),
+              ttk::Geometry::distance(&outputCoords[2 * u1], &outputCoords[2 * u2], 2),
               std::make_pair(u1, u2)));
           }
         }
       } else if(this->Strategy == STRATEGY::PRIM) {
         for(size_t u1 = 0; u1 < n; u1++) {
           edgeHeapAfter.push(std::make_pair(
-            compute_dist(&outputCoords[0], &outputCoords[2 * u1]),
+            ttk::Geometry::distance(&outputCoords[0], &outputCoords[2 * u1], 2),
             std::make_pair(0, u1)));
         }
       }
@@ -618,7 +604,7 @@ namespace ttk {
           stillToDo.erase(v);
           for(size_t uToDo : stillToDo) {
             edgeHeapAfter.push(std::make_pair(
-              compute_dist(&outputCoords[2 * v], &outputCoords[2 * uToDo]),
+              ttk::Geometry::distance(&outputCoords[2 * v], &outputCoords[2 * uToDo], 2),
               std::make_pair(v, uToDo)));
           }
         }
@@ -708,7 +694,7 @@ namespace ttk {
     TTK_FORCE_USE(nThread);
     // The distance between the two components.
     T shortestDistPossible
-      = compute_dist(&allCoords[2 * iPt1], &allCoords[2 * iPt2]);
+      = ttk::Geometry::distance(&allCoords[2 * iPt1], &allCoords[2 * iPt2], 2);
     T coordPt1[2] = {allCoords[2 * iPt1], allCoords[2 * iPt1 + 1]};
     T coordPt2[2] = {allCoords[2 * iPt2], allCoords[2 * iPt2 + 1]};
     size_t comp1Size = comp1.size(), comp2Size = comp2.size();
@@ -797,7 +783,7 @@ namespace ttk {
           T coordARotate[2] = {coords1Test[2 * i], coords1Test[2 * i + 1]};
           for(size_t j = 0; j < comp2Size; j++) {
             T coordBRotate[2] = {coords2Test[2 * j], coords2Test[2 * j + 1]};
-            T newDist = compute_dist(coordARotate, coordBRotate);
+            T newDist = ttk::Geometry::distance(coordARotate, coordBRotate, 2);
             curScore += (newDist - origDistMatrix[i][j])
                         * (newDist - origDistMatrix[i][j]);
             if(newDist + Epsilon < shortestDistPossible) {
@@ -874,7 +860,7 @@ namespace ttk {
     if(nbPoint <= 2) {
       idsInHull.push_back(compPtsIds[0]);
       if(nbPoint == 2) {
-        double dist = compute_dist(&compCoords[0], &compCoords[2]);
+        double dist = ttk::Geometry::distance(&compCoords[0], &compCoords[2], 2);
 
         if(dist > Epsilon) {
           idsInHull.push_back(compPtsIds[1]);
