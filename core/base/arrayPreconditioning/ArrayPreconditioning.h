@@ -13,12 +13,9 @@
 #pragma once
 
 // ttk common includes
-#include "DataTypes.h"
 #include <Debug.h>
 #include <Triangulation.h>
 #include <psort.h>
-#include <random>
-#include <string>
 #include <vector>
 
 namespace ttk {

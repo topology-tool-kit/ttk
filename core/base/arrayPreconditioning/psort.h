@@ -38,7 +38,6 @@ THE SOFTWARE.
 */
 
 #pragma once
-#include "BaseClass.h"
 #include <Debug.h>
 
 #ifdef TTK_ENABLE_MPI
