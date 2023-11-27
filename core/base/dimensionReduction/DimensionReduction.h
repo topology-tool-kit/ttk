@@ -278,7 +278,7 @@ namespace ttk {
     float pca_Tolerance{0};
     std::string pca_MaxIteration{"auto"};
 
-    // Topological Mapper
+    // TopoMap
     size_t topomap_AngularSampleNb;
     bool topomap_CheckMST;
     TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};

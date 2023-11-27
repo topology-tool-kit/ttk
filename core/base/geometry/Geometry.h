@@ -9,6 +9,7 @@
 
 #include <Debug.h>
 #include <array>
+#include <cmath>
 
 namespace ttk {
 
@@ -21,6 +22,20 @@ namespace ttk {
     /// \param vB1 xyz coordinates of vB's destination
     template <typename T>
     T angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
+
+    template <typename T>
+    T angle2D(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
+   
+    // Computes the BAC angle, in the interval [0, 2pi]
+    template <typename T>
+    inline double angle2DUndirected(const T *vA, const T *vB, const T *vC)
+    {
+      double angle = angle2D<T>(vA, vB, vA, vC);
+      if (angle < 0) {
+        angle += 2 * M_PI;
+      }
+      return angle;
+    }
 
     /// Check if two 3D std::vectors vA and vB are colinear.
     /// \param vA0 xyz coordinates of vA's origin
@@ -39,6 +54,11 @@ namespace ttk {
                             const T *vB1,
                             std::array<T, 3> *coefficients = nullptr,
                             const T *tolerance = NULL);
+    template <typename T>
+    bool isTriangleColinear2D(const T *pptA,
+                              const T *pptB,
+                              const T *pptC,
+                              const T tolerance);
 
     /// Compute the barycentric coordinates of point \p p with regard to the
     /// edge defined by the 3D points \p p0 and \p p1.
