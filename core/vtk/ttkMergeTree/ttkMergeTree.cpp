@@ -161,7 +161,6 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
      && (!(params_.treeType == ttk::ftm::TreeType::Contour))
      && (input->IsA("vtkImageData"))) {
     printMsg("Triggering ExTreeM Backend.");
-    // TODO: add CriticalType PointData Array and change isLeaf to RegionType
     const size_t nVertices = input->GetNumberOfPoints();
 
     // Get triangulation of the input object
@@ -269,14 +268,15 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
       for(size_t i = 0; i < nVertices; i++) {
         orderArrayData[i] = nVertices - orderArrayData[i] - 1;
       }
-      ttkTypeMacroT(triangulation->getType(),
-                    (status = exTreeMTree.computePairs<T0>(
-                       persistencePairsJoin, cpMap, mergeTreeJoin,
-                       ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
-                       ttkUtils::GetPointer<char>(regionType),
-                       ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
-                       ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
-                       orderArrayData, (T0 *)triangulation->getData())));
+      ttkTypeMacroT(
+        triangulation->getType(),
+        (status = exTreeMTree.computePairs<T0>(
+           persistencePairsJoin, cpMap, mergeTreeJoin,
+           ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
+           ttkUtils::GetPointer<char>(regionType),
+           ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
+           ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
+           orderArrayData, (T0 *)triangulation->getData(), params_.treeType)));
       // swap the data back (even if the execution failed)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -306,18 +306,18 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
       int status = 0;
 
-      ttkTypeMacroT(triangulation->getType(),
-                    (status = exTreeMTree.computePairs<T0>(
-                       persistencePairsSplit, cpMap, mergeTreeSplit,
-                       ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
-                       ttkUtils::GetPointer<char>(regionType),
-                       ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
-                       ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
-                       orderArrayData, (T0 *)triangulation->getData())));
+      ttkTypeMacroT(
+        triangulation->getType(),
+        (status = exTreeMTree.computePairs<T0>(
+           persistencePairsSplit, cpMap, mergeTreeSplit,
+           ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
+           ttkUtils::GetPointer<char>(regionType),
+           ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
+           ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
+           orderArrayData, (T0 *)triangulation->getData(), params_.treeType)));
 
       if(status != 1)
         return 0;
-
       auto outputPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
       auto outputMergeTreeSplit = vtkUnstructuredGrid::GetData(outputVector, 1);
 

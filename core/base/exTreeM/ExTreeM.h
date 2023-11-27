@@ -1400,7 +1400,8 @@ namespace ttk {
       ttk::SimplexId *descendingManifold,
       ttk::SimplexId *tempArray,
       const ttk::SimplexId *order,
-      const triangulationType *triangulation) {
+      const triangulationType *triangulation,
+      const char type) {
 
       // start global timer
       ttk::Timer globalTimer;
@@ -1423,7 +1424,11 @@ namespace ttk {
         // flatten the criticalpoints for the segmentation
         for(int i = 0; i < 4; i++) {
           for(ttk::SimplexId point : criticalPoints[i]) {
-            cpMap[point] = 3 - i;
+            if(type == 0) {
+              cpMap[point] = 3 - i;
+            } else {
+              cpMap[point] = i;
+            }
           }
         }
 
