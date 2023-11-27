@@ -205,6 +205,7 @@ protected:
   template <class triangulationType>
   int getMergeTreePoints(
     vtkUnstructuredGrid *outputSkeletonNodes,
+    std::map<ttk::SimplexId, int> cpMap,
     std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &persistencePairs,
     vtkDataArray *inputScalars,
     const triangulationType *triangulation) {
@@ -218,6 +219,10 @@ protected:
       = vtkSmartPointer<vtkDataArray>::Take(inputScalars->NewInstance());
     scalarArray->SetNumberOfComponents(1);
     scalarArray->SetName("Scalar");
+    vtkNew<vtkIntArray> cpArray{};
+    cpArray->SetNumberOfComponents(1);
+    cpArray->SetName("CriticalType");
+
     float point[3];
     long long pointId = 0;
 
@@ -226,10 +231,12 @@ protected:
       points->InsertNextPoint(point);
       gIdArray->InsertNextTuple1(pair.first);
       scalarArray->InsertNextTuple1(inputScalars->GetTuple1(pair.first));
+      cpArray->InsertNextTuple1(cpMap[pair.first]);
       triangulation->getVertexPoint(pair.second, point[0], point[1], point[2]);
       points->InsertNextPoint(point);
       gIdArray->InsertNextTuple1(pair.second);
       scalarArray->InsertNextTuple1(inputScalars->GetTuple1(pair.second));
+      cpArray->InsertNextTuple1(cpMap[pair.second]);
       skeletonNodes->InsertNextCell(VTK_VERTEX, 1, &pointId);
       pointId++;
       skeletonNodes->InsertNextCell(VTK_VERTEX, 1, &pointId);
@@ -239,6 +246,7 @@ protected:
     outputSkeletonNodes->ShallowCopy(skeletonNodes);
     outputSkeletonNodes->GetPointData()->AddArray(gIdArray);
     outputSkeletonNodes->GetPointData()->AddArray(scalarArray);
+    outputSkeletonNodes->GetPointData()->AddArray(cpArray);
 
     return 1;
   }

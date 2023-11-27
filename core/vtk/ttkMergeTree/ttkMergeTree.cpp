@@ -161,6 +161,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
      && (!(params_.treeType == ttk::ftm::TreeType::Contour))
      && (input->IsA("vtkImageData"))) {
     printMsg("Triggering ExTreeM Backend.");
+    // TODO: add CriticalType PointData Array and change isLeaf to RegionType
     const size_t nVertices = input->GetNumberOfPoints();
 
     // Get triangulation of the input object
@@ -245,15 +246,17 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
     segmentationId->SetNumberOfTuples(nVertices);
     segmentationId->SetName("SegmentationId");
 
-    vtkNew<vtkUnsignedCharArray> isLeaf{};
-    isLeaf->SetNumberOfComponents(1);
-    isLeaf->SetNumberOfTuples(nVertices);
-    isLeaf->SetName("IsLeaf");
+    vtkNew<vtkCharArray> regionType{};
+    regionType->SetNumberOfComponents(1);
+    regionType->SetNumberOfTuples(nVertices);
+    regionType->SetName("RegionType");
 
     // compute joinTree
     auto exTreeMTree = ttk::ExTreeM();
     exTreeMTree.setThreadNumber(this->threadNumber_);
     exTreeMTree.setDebugLevel(this->debugLevel_);
+    std::map<ttk::SimplexId, int> cpMap{};
+
     if(params_.treeType == ttk::ftm::TreeType::Join) {
       std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>
         persistencePairsJoin{};
@@ -268,9 +271,9 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
       }
       ttkTypeMacroT(triangulation->getType(),
                     (status = exTreeMTree.computePairs<T0>(
-                       persistencePairsJoin, mergeTreeJoin,
+                       persistencePairsJoin, cpMap, mergeTreeJoin,
                        ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
-                       ttkUtils::GetPointer<unsigned char>(isLeaf),
+                       ttkUtils::GetPointer<char>(regionType),
                        ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
                        ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
                        orderArrayData, (T0 *)triangulation->getData())));
@@ -286,14 +289,15 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
       auto outputPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
       auto outputMergeTreeJoin = vtkUnstructuredGrid::GetData(outputVector, 1);
+
       ttkTypeMacroT(
         triangulation->getType(),
         getMergeTree<T0>(outputMergeTreeJoin, mergeTreeJoin, scalarArray,
                          (T0 *)triangulation->getData()));
       ttkTypeMacroT(
         triangulation->getType(),
-        getMergeTreePoints<T0>(outputPoints, persistencePairsJoin, scalarArray,
-                               (T0 *)triangulation->getData()));
+        getMergeTreePoints<T0>(outputPoints, cpMap, persistencePairsJoin,
+                               scalarArray, (T0 *)triangulation->getData()));
 
     } else {
       std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>
@@ -304,9 +308,9 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
       ttkTypeMacroT(triangulation->getType(),
                     (status = exTreeMTree.computePairs<T0>(
-                       persistencePairsSplit, mergeTreeSplit,
+                       persistencePairsSplit, cpMap, mergeTreeSplit,
                        ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
-                       ttkUtils::GetPointer<unsigned char>(isLeaf),
+                       ttkUtils::GetPointer<char>(regionType),
                        ttkUtils::GetPointer<ttk::SimplexId>(descendingManifold),
                        ttkUtils::GetPointer<ttk::SimplexId>(ascendingManifold),
                        orderArrayData, (T0 *)triangulation->getData())));
@@ -323,12 +327,12 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
                          (T0 *)triangulation->getData()));
       ttkTypeMacroT(
         triangulation->getType(),
-        getMergeTreePoints<T0>(outputPoints, persistencePairsSplit, scalarArray,
-                               (T0 *)triangulation->getData()));
+        getMergeTreePoints<T0>(outputPoints, cpMap, persistencePairsSplit,
+                               scalarArray, (T0 *)triangulation->getData()));
     }
     {
       segmentationPD->AddArray(segmentationId);
-      segmentationPD->AddArray(isLeaf);
+      segmentationPD->AddArray(regionType);
     }
   } else {
     // Arrays
