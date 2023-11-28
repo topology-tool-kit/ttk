@@ -140,8 +140,7 @@ namespace ttk {
                              const std::vector<T> &distMatrix,
                              T *allCoords,
                              size_t n,
-                             size_t angularSampleNb,
-                             size_t nThread);
+                             size_t angularSampleNb);
 
     template <typename T>
     bool computeConvexHull(T *allCoords,
@@ -408,9 +407,10 @@ namespace ttk {
         = {outputCoords[2 * idChosenBig], outputCoords[2 * idChosenBig + 1]};
 
       // Computing the angles.
-      double angleSmall
-        = ttk::Geometry::angle2DUndirected(coordPtSmall, coordPrevSmall, coordPostSmall);
-      double angleBig = ttk::Geometry::angle2DUndirected(coordPtBig, coordPrevBig, coordPostBig);
+      double angleSmall = ttk::Geometry::angle2DUndirected(
+        coordPtSmall, coordPrevSmall, coordPostSmall);
+      double angleBig = ttk::Geometry::angle2DUndirected(
+        coordPtBig, coordPrevBig, coordPostBig);
       if(angleSmall - M_PI > EpsilonDBL || angleBig - M_PI > EpsilonDBL) {
         this->printErr("Error, angle out of bound (greater than pi).");
       }
@@ -439,8 +439,8 @@ namespace ttk {
         = {goalCoordChosenSmall[0] - outputCoords[idChosenSmall * 2],
            goalCoordChosenSmall[1] - outputCoords[idChosenSmall * 2 + 1]};
 
-      T distBaryPointSmall = ttk::Geometry::distance(
-        &outputCoords[idChosenSmall * 2], coordscenterSmall, 2);
+      T distBaryPointSmall = ttk::Geometry::distance2D(
+        &outputCoords[idChosenSmall * 2], coordscenterSmall);
       T preFinalPosBarySmall[2] = {coordscenterSmall[0] + smallCompMoveVect[0],
                                    coordscenterSmall[1] + smallCompMoveVect[1]};
       T finalPosBarySmall[2]
@@ -469,15 +469,14 @@ namespace ttk {
       if(nBig > 1) {
         finalDistortion = rotateMergingCompsBest(
           idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall,
-          idChosenBig, distMatrix, outputCoords, n, this->AngularSampleNb,
-          this->threadNumber_);
+          idChosenBig, distMatrix, outputCoords, n, this->AngularSampleNb);
         if(finalDistortion < -1) {
           return 1;
         }
       }
 
-      T finalDist = ttk::Geometry::distance(
-        &outputCoords[2 * idChosenSmall], &outputCoords[2 * idChosenBig], 2);
+      T finalDist = ttk::Geometry::distance2D(
+        &outputCoords[2 * idChosenSmall], &outputCoords[2 * idChosenBig]);
       if(fabs(finalDist - edgeCost) > Epsilon) {
         this->printErr(
           "The distance we set is too far from the goal distance.");
@@ -518,7 +517,7 @@ namespace ttk {
         "consider switching to Qhull to avoid this.");
     }
     this->printMsg("The minimum spanning tree has weight "
-                   + std::to_string(MSTWeight));
+                   + std::to_string(MSTWeight) + ".");
 
     // We check that the lengths of the edges selected to build a minimum
     // spanning tree are preserved by our algorithm, as should be.
@@ -533,15 +532,15 @@ namespace ttk {
         for(size_t u1 = 0; u1 < n; u1++) {
           for(size_t u2 = u1 + 1; u2 < n; u2++) {
             edgeHeapAfter.push(
-              std::make_pair(ttk::Geometry::distance(
-                               &outputCoords[2 * u1], &outputCoords[2 * u2], 2),
+              std::make_pair(ttk::Geometry::distance2D(
+                               &outputCoords[2 * u1], &outputCoords[2 * u2]),
                              std::make_pair(u1, u2)));
           }
         }
       } else if(this->Strategy == STRATEGY::PRIM) {
         for(size_t u1 = 0; u1 < n; u1++) {
           edgeHeapAfter.push(std::make_pair(
-            ttk::Geometry::distance(&outputCoords[0], &outputCoords[2 * u1], 2),
+            ttk::Geometry::distance2D(&outputCoords[0], &outputCoords[2 * u1]),
             std::make_pair(0, u1)));
         }
       }
@@ -593,10 +592,10 @@ namespace ttk {
         if(this->Strategy == STRATEGY::PRIM) {
           stillToDo.erase(v);
           for(size_t uToDo : stillToDo) {
-            edgeHeapAfter.push(std::make_pair(
-              ttk::Geometry::distance(
-                &outputCoords[2 * v], &outputCoords[2 * uToDo], 2),
-              std::make_pair(v, uToDo)));
+            edgeHeapAfter.push(
+              std::make_pair(ttk::Geometry::distance2D(
+                               &outputCoords[2 * v], &outputCoords[2 * uToDo]),
+                             std::make_pair(v, uToDo)));
           }
         }
 
@@ -680,12 +679,10 @@ namespace ttk {
                                     const std::vector<T> &distMatrix,
                                     T *allCoords,
                                     size_t n,
-                                    size_t angularSampleNb,
-                                    size_t nThread) { // TODO remove nThread
-    TTK_FORCE_USE(nThread);
+                                    size_t angularSampleNb) {
     // The distance between the two components.
     T shortestDistPossible
-      = ttk::Geometry::distance(&allCoords[2 * iPt1], &allCoords[2 * iPt2], 2);
+      = ttk::Geometry::distance2D(&allCoords[2 * iPt1], &allCoords[2 * iPt2]);
     T coordPt1[2] = {allCoords[2 * iPt1], allCoords[2 * iPt1 + 1]};
     T coordPt2[2] = {allCoords[2 * iPt2], allCoords[2 * iPt2 + 1]};
     size_t comp1Size = comp1.size(), comp2Size = comp2.size();
@@ -695,8 +692,10 @@ namespace ttk {
     getPrevNextEdges(hull1, iPt1, allCoords, coordPrev1, coordPost1);
     getPrevNextEdges(hull2, iPt2, allCoords, coordPrev2, coordPost2);
 
-    double angle1 = ttk::Geometry::angle2DUndirected(coordPt1, coordPrev1, coordPost1);
-    double angle2 = ttk::Geometry::angle2DUndirected(coordPt2, coordPrev2, coordPost2);
+    double angle1
+      = ttk::Geometry::angle2DUndirected(coordPt1, coordPrev1, coordPost1);
+    double angle2
+      = ttk::Geometry::angle2DUndirected(coordPt2, coordPrev2, coordPost2);
     if(angle1 - M_PI > EpsilonDBL || angle2 - M_PI > EpsilonDBL) {
       this->printErr("One angle of the convex hull is greater than pi. "
                      "Convexity error, aborting.");
@@ -750,7 +749,7 @@ namespace ttk {
     bool errorDuringLoop = false;
     bool foundValidAngle = false;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(nThread) shared(allCoords)
+#pragma omp parallel for num_threads(this->threadNumber_) shared(allCoords)
 #endif
     // We enumerate the rotation angles for the first component.
     for(size_t i1 = 0; i1 < nbIter1; i1++) {
@@ -774,7 +773,7 @@ namespace ttk {
           T coordARotate[2] = {coords1Test[2 * i], coords1Test[2 * i + 1]};
           for(size_t j = 0; j < comp2Size; j++) {
             T coordBRotate[2] = {coords2Test[2 * j], coords2Test[2 * j + 1]};
-            T newDist = ttk::Geometry::distance(coordARotate, coordBRotate, 2);
+            T newDist = ttk::Geometry::distance2D(coordARotate, coordBRotate);
             curScore += (newDist - origDistMatrix[i][j])
                         * (newDist - origDistMatrix[i][j]);
             if(newDist + Epsilon < shortestDistPossible) {
@@ -851,8 +850,7 @@ namespace ttk {
     if(nbPoint <= 2) {
       idsInHull.push_back(compPtsIds[0]);
       if(nbPoint == 2) {
-        double dist
-          = ttk::Geometry::distance(&compCoords[0], &compCoords[2], 2);
+        double dist = ttk::Geometry::distance2D(&compCoords[0], &compCoords[2]);
 
         if(dist > Epsilon) {
           idsInHull.push_back(compPtsIds[1]);
@@ -953,7 +951,8 @@ namespace ttk {
     ptsToSort.reserve(idsInHull.size());
     for(size_t u : idsInHull) {
       const double curPt[2] = {compCoords[2 * u], compCoords[2 * u + 1]};
-      double curAngle = ttk::Geometry::angle2DUndirected(bary, baryRight, curPt);
+      double curAngle
+        = ttk::Geometry::angle2DUndirected(bary, baryRight, curPt);
       ptsToSort.emplace_back(std::make_pair(-curAngle, u));
     }
 
@@ -985,7 +984,6 @@ static void
     coordVect[1] = tmp[1] / dist;
   }
 }
-
 
 template <typename T>
 static void rotate(T *ptToRotate, const T *center, double angle) {
