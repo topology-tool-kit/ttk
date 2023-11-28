@@ -67,6 +67,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
 ///   Tree Temporal Reduction</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeExTreeM/">Merge
+///   Trees Via ExTreeM</a> \n
 
 #pragma once
 
