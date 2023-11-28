@@ -1210,7 +1210,9 @@ namespace ttk {
      *
      * @param[out] segmentation segmentation array, representing the upper end
      * of the branch for each vertex
-     * @param[out] isLeaf vector of bools, 1 if vertex is a leaf, 0 otherwise
+     * @param[out] regionType type of the segmentation region, see FTMTree for
+     * more detail
+     * @param[in] cpMap a point id -> critical type map
      * @param[in] branches mergetree as vector of branch structs
      * @param[in] order order array
      * @param[in] descendingManifold descending manifold
@@ -1220,7 +1222,8 @@ namespace ttk {
      */
     template <typename triangulationType>
     int constructSegmentation(ttk::SimplexId *segmentation,
-                              unsigned char *isLeaf,
+                              char *regionType,
+                              const std::map<ttk::SimplexId, int> &cpMap,
                               const std::vector<Branch> &branches,
                               const ttk::SimplexId *order,
                               ttk::SimplexId *descendingManifold,
@@ -1239,7 +1242,7 @@ namespace ttk {
         auto orderForVertex = order[i];
         if(orderForVertex <= trunkSaddle.first) {
           segmentation[i] = trunkSaddle.second;
-          isLeaf[i] = 0;
+          regionType[i] = 1;
           continue;
         }
         auto maximum
@@ -1249,16 +1252,28 @@ namespace ttk {
         auto lowestOrder = (*(cBranch->vertices.rbegin())).first;
         while(lowestOrder
               >= orderForVertex) { // finding the branch on which we are
+          // save previous maximum as downNode
           cBranch = cBranch->parentBranch;
           lowestOrder = (*(cBranch->vertices.rbegin())).first;
         }
         auto vect = &cBranch->vertices;
         auto lower = std::lower_bound(
           vect->rbegin(), vect->rend(), std::make_pair(orderForVertex, i));
-        if(lower == vect->rend() - 1) {
-          isLeaf[i] = 1;
+        auto upNode = (*lower).second;
+        auto downNode = (*(lower - 1)).second;
+        int upNodeType = cpMap.at(upNode);
+        int downNodeType = cpMap.at(downNode);
+        if((upNodeType == 0 && downNodeType == 3)
+           || (upNodeType == 0 || downNodeType == 0)) {
+          regionType[i] = 0;
+        } else if(upNodeType == 3 || downNodeType == 3) {
+          regionType[i] = 1;
+        } else if(upNodeType == 1 && downNodeType == 1) {
+          regionType[i] = 2;
+        } else if(upNodeType == 2 && downNodeType == 2) {
+          regionType[i] = 3;
         } else {
-          isLeaf[i] = 0;
+          regionType[i] = 4;
         }
 
         segmentation[i] = (*lower).second;
@@ -1378,13 +1393,15 @@ namespace ttk {
     template <class triangulationType>
     int computePairs(
       std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &persistencePairs,
+      std::map<ttk::SimplexId, int> &cpMap,
       std::vector<Branch> &branches,
       ttk::SimplexId *segmentation,
-      unsigned char *isLeaf,
+      char *regionType,
       ttk::SimplexId *descendingManifold,
       ttk::SimplexId *tempArray,
       const ttk::SimplexId *order,
-      const triangulationType *triangulation) {
+      const triangulationType *triangulation,
+      const char type) {
 
       // start global timer
       ttk::Timer globalTimer;
@@ -1399,11 +1416,22 @@ namespace ttk {
 
       // -----------------------------------------------------------------------
       {
-        std::array<std::vector<ttk::SimplexId>, 4> criticalPoints;
         std::array<std::vector<std::vector<ttk::SimplexId>>, 4> criticalPoints_;
+        std::array<std::vector<ttk::SimplexId>, 4> criticalPoints;
         this->computeCriticalPoints(criticalPoints_, order, descendingManifold,
                                     descendingManifold, triangulation);
         this->mergeCriticalPointVectors(criticalPoints, criticalPoints_);
+        // flatten the criticalpoints for the segmentation
+        for(int i = 0; i < 4; i++) {
+          for(ttk::SimplexId point : criticalPoints[i]) {
+            if(type == 0) {
+              cpMap[point] = 3 - i;
+            } else {
+              cpMap[point] = i;
+            }
+          }
+        }
+
         ttk::SimplexId *minimaIds = criticalPoints[0].data();
         ttk::SimplexId *saddle2Ids = criticalPoints[2].data();
         ttk::SimplexId *maximaIds = criticalPoints[3].data();
@@ -1472,9 +1500,9 @@ namespace ttk {
         ttk::Timer segmentationTimer;
         this->printMsg("Starting with mergetree segmentation", 0,
                        ttk::debug::LineMode::REPLACE);
-        constructSegmentation<triangulationType>(segmentation, isLeaf, branches,
-                                                 order, descendingManifold,
-                                                 tempArray, triangulation);
+        constructSegmentation<triangulationType>(
+          segmentation, regionType, cpMap, branches, order, descendingManifold,
+          tempArray, triangulation);
         this->printMsg("Finished mergetree segmentation", 1,
                        segmentationTimer.getElapsedTime(), this->threadNumber_);
 //  print the progress of the current subprocedure with elapsed time
