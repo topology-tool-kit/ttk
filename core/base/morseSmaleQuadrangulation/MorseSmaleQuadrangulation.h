@@ -627,8 +627,9 @@ size_t ttk::MorseSmaleQuadrangulation::findSeparatrixMiddle(
   }
 
   // index in separatrices point data array of separatrix middle
-  auto pos = a + std::min_element(distFromA.begin(), distFromA.end())
-             - distFromA.begin();
+  auto pos = a
+             + (std::min_element(distFromA.begin(), distFromA.end())
+                - distFromA.begin());
 
   // new point!
   outputPoints_.emplace_back(sepPoints_[dim * pos]);
