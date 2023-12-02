@@ -1,6 +1,6 @@
 #include <PlanarGraphLayout.h>
 
-#if TTK_ENABLE_GRAPHVIZ
+#ifdef TTK_ENABLE_GRAPHVIZ
 #include <cgraph.h>
 #include <gvc.h>
 #endif
