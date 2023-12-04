@@ -209,6 +209,7 @@ namespace ttk {
         this->se_Affinity = "precomputed";
         this->mds_Dissimilarity = "precomputed";
         this->tsne_Metric = "precomputed";
+        this->tsne_Init = "random";
         this->iso_Metric = "precomputed";
       } else {
         this->se_Affinity = "nearest_neighbors";
@@ -258,7 +259,7 @@ namespace ttk {
     int tsne_MaxIterationProgress{300};
     float tsne_GradientThreshold{1e-7};
     std::string tsne_Metric{"euclidean"};
-    std::string tsne_Init{"random"};
+    std::string tsne_Init{"pca"};
     int tsne_Verbose{0};
     std::string tsne_Method{"barnes_hut"};
     float tsne_Angle{0.5};

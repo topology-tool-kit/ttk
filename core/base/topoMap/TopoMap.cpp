@@ -23,7 +23,7 @@ bool computeConvexHull_aux(const std::vector<double> &coords,
   }
 
   // Qhull gives us the coordinates of the points in the convex hull. Here we
-  // retrive the indices of this points in the list we provided. We will also
+  // retrieve the indices of this points in the list we provided. We will also
   // compute the barycenter of the points in the convex hull.
   for(const auto &u : qhull.vertexList()) {
     const orgQhull::QhullPoint &qhullPt = u.point();
