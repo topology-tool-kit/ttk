@@ -215,7 +215,7 @@ namespace ttk {
     // se
     std::string se_Affinity{"nearest_neighbors"};
     float se_Gamma{1};
-    std::string se_EigenSolver{"auto"};
+    std::string se_EigenSolver{"None"};
 
     // lle
     float lle_Regularization{1e-3};
