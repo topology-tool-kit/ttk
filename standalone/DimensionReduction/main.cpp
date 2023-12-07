@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
       "compressed in a dense cloud with few outliers. If the cost function "
       "gets stuck in a bad local minimum increasing the learning rate may "
       "help. Usually: [10.0, 1000.0]",
-      true);
+      true); // TODO allow 'auto'?
     parser.setArgument("tsne_maxIter", &tsne_MaxIteration,
                        "t-sne: Maximum number of iterations for the "
                        "optimization. Should be at least 250.",
