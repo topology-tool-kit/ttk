@@ -5,6 +5,7 @@ ttk_add_base_library(dimensionReduction
     DimensionReduction.h
   DEPENDS
     triangulation
+    topoMap
   )
 
 install(

@@ -9,6 +9,7 @@
 
 #include <Debug.h>
 #include <array>
+#include <cmath>
 
 namespace ttk {
 
@@ -21,6 +22,19 @@ namespace ttk {
     /// \param vB1 xyz coordinates of vB's destination
     template <typename T>
     T angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
+
+    template <typename T>
+    T angle2D(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
+
+    // Computes the BAC angle, in the interval [0, 2pi]
+    template <typename T>
+    inline double angle2DUndirected(const T *vA, const T *vB, const T *vC) {
+      double angle = angle2D<T>(vA, vB, vA, vC);
+      if(angle < 0) {
+        angle += 2 * M_PI;
+      }
+      return angle;
+    }
 
     /// Check if two 3D std::vectors vA and vB are colinear.
     /// \param vA0 xyz coordinates of vA's origin
@@ -39,6 +53,11 @@ namespace ttk {
                             const T *vB1,
                             std::array<T, 3> *coefficients = nullptr,
                             const T *tolerance = NULL);
+    template <typename T>
+    bool isTriangleColinear2D(const T *pptA,
+                              const T *pptB,
+                              const T *pptC,
+                              const T tolerance);
 
     /// Compute the barycentric coordinates of point \p p with regard to the
     /// edge defined by the 3D points \p p0 and \p p1.
@@ -174,6 +193,30 @@ namespace ttk {
     /// \param p1 xyz coordinates of the second input point.
     template <typename T>
     T distance(const std::vector<T> &p0, const std::vector<T> &p1);
+
+    template <typename T>
+    inline T distance2D(const T *p0, const T *p1) {
+      T distance = 0;
+      T di0 = (p0[0] - p1[0]);
+      T di1 = (p0[1] - p1[1]);
+      if(std::is_same<T, float>::value) { // TODO constexpr when c++17
+        distance = fmaf(di0, di0, distance);
+        distance = fmaf(di1, di1, distance);
+      } else {
+        distance = fma(di0, di0, distance);
+        distance = fma(di1, di1, distance);
+      }
+
+      return sqrt(distance);
+    }
+
+    /// Compute the Euclidean distance between two vectors by first flattening
+    /// them
+    /// \param p0 xyz coordinates of the first input point.
+    /// \param p1 xyz coordinates of the second input point.
+    template <typename T>
+    T distanceFlatten(const std::vector<std::vector<T>> &p0,
+                      const std::vector<std::vector<T>> &p1);
 
     /// Compute the Euclidean distance between two vectors by first flattening
     /// them

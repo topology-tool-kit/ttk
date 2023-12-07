@@ -64,6 +64,7 @@ jobs:
           graphviz \
           ninja-build \
           zlib1g-dev \
+          libqhull-dev \
           dpkg-dev
         sudo python3 -m pip install scikit-learn
 
@@ -281,7 +282,7 @@ jobs:
         brew install --cask xquartz
         brew install wget llvm libomp ninja open-mpi
         # TTK dependencies
-        brew install boost eigen graphviz numpy websocketpp ccache
+        brew install boost eigen graphviz numpy qhull websocketpp ccache
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
 
@@ -428,7 +429,7 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge boost glew eigen spectralib zfp \
-          scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib
+          scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib qhull
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH
@@ -465,7 +466,7 @@ jobs:
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake
         set CC=clang-cl.exe
         set CXX=clang-cl.exe
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"

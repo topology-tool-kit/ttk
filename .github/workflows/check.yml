@@ -113,6 +113,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
+          libqhull-dev \
           doxygen \
           clang-tidy
 
@@ -197,6 +198,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
+          libqhull-dev \
           clang-tools \
           libomp-dev
 
