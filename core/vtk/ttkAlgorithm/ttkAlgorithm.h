@@ -127,7 +127,7 @@ public:
 
   /**
    * Initializes and computes the order array. When using MPI processes,
-   * the order will be local when getGlobalOrder is set to true, and global
+   * the order will be local when getGlobalOrder is set to false, and global
    * otherwise. This function is called in GetOrderArray and should not be
    * called directly in other functions or algorithms.
    */
