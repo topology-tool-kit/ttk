@@ -1007,9 +1007,10 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
 #pragma omp taskwait
 #endif
   // count added
-  SimplexId const tot = 0;
+  SimplexId tot = 0;
+  TTK_FORCE_USE(tot);
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-  for(const auto &l : *mt_data_.trunkSegments) {
+  for(const auto &l : mt_data_.trunkSegments) {
     SimplexId arcSize = 0;
     for(const auto &v : l) {
       arcSize += v.size();
@@ -1031,7 +1032,8 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
   const auto chunkSize = getChunkSize(sizeBackBone, nbTasksThreads);
   const auto chunkNb = getChunkCount(sizeBackBone, nbTasksThreads);
   // si pas efficace vecteur de la taille de node ici a la place de acc
-  SimplexId const tot = 0;
+  SimplexId tot = 0;
+  TTK_FORCE_USE(tot);
   for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId) shared(trunkVerts, tot) \
