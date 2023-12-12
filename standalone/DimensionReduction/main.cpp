@@ -12,10 +12,10 @@
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
 #include <vtkDelimitedTextReader.h>
+#include <vtkDelimitedTextWriter.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
-#include <vtkXMLDataObjectWriter.h>
 
 int main(int argc, char **argv) {
   std::vector<std::string> inputFilePaths;
@@ -421,15 +421,13 @@ int main(int argc, char **argv) {
   // If output prefix is specified then write all output objects to disk
   if(!outputPathPrefix.empty()) {
     for(int i = 0; i < dimRed->GetNumberOfOutputPorts(); i++) {
-      auto output = dimRed->GetOutputDataObject(i);
-      auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
-        vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
+      auto output = dimRed->GetOutputPort(i);
+      auto writer = vtkSmartPointer<vtkDelimitedTextWriter>::New();
 
-      std::string outputFileName = outputPathPrefix + "_port_"
-                                   + std::to_string(i) + "."
-                                   + writer->GetDefaultFileExtension();
+      std::string outputFileName
+        = outputPathPrefix + "_port_" + std::to_string(i) + ".csv";
       msg.printMsg("Writing output file `" + outputFileName + "'...");
-      writer->SetInputDataObject(output);
+      writer->SetInputConnection(output);
       writer->SetFileName(outputFileName.data());
       writer->Update();
     }
