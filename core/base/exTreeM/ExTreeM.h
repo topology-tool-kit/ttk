@@ -10,6 +10,11 @@
 /// \b Related \b publication \n
 /// "ExTreeM: Scalable Augmented Merge Tree Computation via Extremum Graphs"
 /// \n Lukasczyk et al. \n IEEE VIS 2023
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeExTreeM/">Merge
+///   Trees Via ExTreeM</a> \n
 #ifdef TTK_ENABLE_OPENMP
 #pragma once
 #endif

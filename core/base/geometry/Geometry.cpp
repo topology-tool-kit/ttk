@@ -17,6 +17,13 @@ T Geometry::angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
 }
 
 template <typename T>
+T Geometry::angle2D(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
+  double vecA[2] = {vA1[0] - vA0[0], vA1[1] - vA0[1]};
+  double vecB[2] = {vB1[0] - vB0[0], vB1[1] - vB0[1]};
+  return atan2(vecB[1], vecB[0]) - atan2(vecA[1], vecA[0]);
+}
+
+template <typename T>
 bool Geometry::areVectorsColinear(const T *vA0,
                                   const T *vA1,
                                   const T *vB0,
@@ -114,10 +121,21 @@ bool Geometry::areVectorsColinear(const T *vA0,
       return true;
     }
   }
-
   k[0] = k[1] = k[2] = 0;
 
   return false;
+}
+
+template <typename T>
+bool Geometry::isTriangleColinear2D(const T *pptA,
+                                    const T *pptB,
+                                    const T *pptC,
+                                    const T tolerance) {
+  double ptA[2] = {pptA[0], pptA[1]}, ptB[2] = {pptB[0], pptB[1]},
+         ptC[2] = {pptC[0], pptC[1]};
+  return fabs(ptA[0] * (ptB[1] - ptC[1]) + ptB[0] * (ptC[1] - ptA[1])
+              + ptC[0] * (ptA[1] - ptB[1]))
+         <= tolerance;
 }
 
 template <typename T>
@@ -754,9 +772,13 @@ void Geometry::transposeMatrix(const std::vector<std::vector<T>> &a,
 #define GEOMETRY_SPECIALIZE(TYPE)                                              \
   template TYPE Geometry::angle<TYPE>(                                         \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                   \
+  template TYPE Geometry::angle2D<TYPE>(                                       \
+    TYPE const *, TYPE const *, TYPE const *, TYPE const *);                   \
   template bool Geometry::areVectorsColinear<TYPE>(                            \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *,                    \
     std::array<TYPE, 3> *, TYPE const *);                                      \
+  template bool Geometry::isTriangleColinear2D<TYPE>(                          \
+    TYPE const *, TYPE const *, TYPE const *, TYPE const);                     \
   template int Geometry::computeBarycentricCoordinates<TYPE>(                  \
     TYPE const *, TYPE const *, TYPE const *, std::array<TYPE, 2> &,           \
     int const &);                                                              \

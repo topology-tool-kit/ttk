@@ -298,6 +298,20 @@ else()
   message(STATUS "WebSocketPP not found, disabling WebSocketIO module in TTK.")
 endif()
 
+
+option(TTK_ENABLE_QHULL "Use Qhull instead of Boost for convex hulls" ON)
+if (TTK_ENABLE_QHULL)
+  find_package(Qhull QUIET)
+  if(Qhull_FOUND AND TARGET Qhull::qhullcpp)
+    message(STATUS "Found Qhull::qhullcpp ${Qhull_VERSION} (${Qhull_DIR})")
+  else()
+    set(Qhull_FOUND FALSE)
+  endif()
+  if(NOT Qhull_FOUND)
+    message(STATUS "Qhull::qhullcpp not found, disabling Qhull support in TTK.")
+  endif()
+endif()
+
 # --- Install path
 
 include(GNUInstallDirs)

@@ -43,6 +43,12 @@
 ///   Generators Periodic Picture example</a> \n
 ///
 
+/// \b Related \b publication: \n
+/// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
+/// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
+/// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
+/// Visualization and Computer Graphics 27(2): 561-571, 2020.
+
 #pragma once
 
 // VTK Module
@@ -50,6 +56,7 @@
 
 // TTK includes
 #include <DimensionReduction.h>
+#include <TopoMap.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 
@@ -220,6 +227,16 @@ public:
 
   vtkSetMacro(pca_MaxIteration, const std::string &);
   vtkGetMacro(pca_MaxIteration, std::string);
+
+  // TopoMap
+  vtkSetMacro(topomap_AngularSampleNb, unsigned long int);
+  vtkGetMacro(topomap_AngularSampleNb, unsigned long int);
+
+  vtkSetMacro(topomap_CheckMST, bool);
+  vtkGetMacro(topomap_CheckMST, bool);
+
+  ttkSetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
+  vtkGetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
 
   // testing
   vtkSetMacro(ModulePath, const std::string &);
