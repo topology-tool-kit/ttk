@@ -116,6 +116,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
           if(status != 1)
             return 0;
           output->GetPointData()->AddArray(orderArray);
+          triangulation->setIsOrderArrayGlobal(
+            ttkUtils::GetVoidPointer(scalarArray), true);
         }
       }
       this->printMsg("Preconditioned selected scalar arrays", 1.0,
@@ -143,6 +145,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
         this->threadNumber_));
     }
 
+    triangulation->setIsOrderArrayGlobal(
+      ttkUtils::GetVoidPointer(scalarArray), false);
     output->GetPointData()->AddArray(orderArray);
     this->printMsg("Generated order array for scalar array `"
                    + std::string{scalarArray->GetName()} + "'");

@@ -2975,12 +2975,21 @@ namespace ttk {
       return 0;
     }
 
-    inline bool isOrderArrayGlobal() const {
-      return isOrderArrayGlobal_;
+    inline bool isOrderArrayGlobal(const void *data) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isOrderArrayGlobal_.find(data) != isOrderArrayGlobal_.end())
+#endif
+        return isOrderArrayGlobal_.at(data);
+#ifndef TTK_ENABLE_KAMIKAZE
+      else {
+        printErr("No global array flag has been found for this scalar field");
+        return false;
+      }
+#endif
     }
 
-    inline void setIsOrderArrayGlobal(bool flag) {
-      isOrderArrayGlobal_ = flag;
+    inline void setIsOrderArrayGlobal(const void *data, bool flag) {
+      isOrderArrayGlobal_[data] = flag;
     }
 
   protected:
@@ -3861,7 +3870,7 @@ namespace ttk {
     bool hasPreconditionedDistributedVertices_{false};
     bool hasPreconditionedExchangeGhostVertices_{false};
     bool hasPreconditionedGlobalBoundary_{false};
-    bool isOrderArrayGlobal_{false};
+    std::map<const void *, bool> isOrderArrayGlobal_;
 
 #endif // TTK_ENABLE_MPI
 
