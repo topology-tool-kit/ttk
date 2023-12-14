@@ -144,9 +144,10 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
         static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray)),
         this->threadNumber_));
     }
-
+#ifdef TTK_ENABLE_MPI
     triangulation->setIsOrderArrayGlobal(
       ttkUtils::GetVoidPointer(scalarArray), false);
+#endif // TTK_ENABLE_MPI
     output->GetPointData()->AddArray(orderArray);
     this->printMsg("Generated order array for scalar array `"
                    + std::string{scalarArray->GetName()} + "'");
