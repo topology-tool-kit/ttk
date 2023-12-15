@@ -52,10 +52,10 @@ bool DimensionReduction::isPythonFound() const {
 
 int DimensionReduction::execute(
   std::vector<std::vector<double>> &outputEmbedding,
-  int *insertionTimeForTopomap,
   const std::vector<double> &inputMatrix,
   const int nRows,
-  const int nColumns) const {
+  const int nColumns,
+  int *insertionTimeForTopomap) const {
 
 #ifdef TTK_ENABLE_SCIKIT_LEARN
 #ifndef TTK_ENABLE_KAMIKAZE

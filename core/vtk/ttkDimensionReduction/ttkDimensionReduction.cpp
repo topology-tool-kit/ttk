@@ -88,8 +88,8 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
     }
 
     const int errorCode
-      = this->execute(this->outputData_, insertionPtr, inputData, numberOfRows,
-                      numberOfColumns);
+      = this->execute(this->outputData_, inputData, numberOfRows,
+                      numberOfColumns, insertionPtr);
 
     if(!errorCode) {
       if(KeepAllDataArrays)
