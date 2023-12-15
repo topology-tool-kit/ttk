@@ -37,8 +37,8 @@
 
 // cos and sin computations, so we are cautious on testing equalities between
 // double.
-static double Epsilon{ttk::Geometry::pow(10.0, -FLT_DIG + 2)};
-static double EpsilonDBL{ttk::Geometry::pow(10.0, -DBL_DIG + 2)};
+static double Epsilon{ttk::Geometry::powInt(10.0, -FLT_DIG + 2)};
+static double EpsilonDBL{ttk::Geometry::powInt(10.0, -DBL_DIG + 2)};
 
 // Normalizes a given vector.
 template <typename T>
@@ -210,9 +210,9 @@ namespace ttk {
     // the smallest significative value because we use sqrt/cos/sin so we take
     // precautionary measures.
     if(std::is_same<T, double>::value) {
-      Epsilon = ttk::Geometry::pow(10.0, -DBL_DIG + 2);
+      Epsilon = ttk::Geometry::powInt(10.0, -DBL_DIG + 2);
     } else if(std::is_same<T, float>::value) {
-      Epsilon = ttk::Geometry::pow(10.0, -FLT_DIG + 2);
+      Epsilon = ttk::Geometry::powInt(10.0, -FLT_DIG + 2);
     } else {
       printErr("Error, template type must be either double or float.\n");
       return 1;
