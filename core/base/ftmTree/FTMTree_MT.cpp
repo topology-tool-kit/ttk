@@ -735,12 +735,6 @@ int FTMTree_MT::printTime(Timer &t,
       st << "-";
     st << s;
 
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-    const auto nbScalars = scalars_->size;
-    int speed = nbScalars / t.getElapsedTime();
-    st << " at " << speed << " vert/s";
-#endif
-
     this->printMsg(st.str(), 1, t.getElapsedTime(), this->threadNumber_);
   }
   return 1;
@@ -1006,18 +1000,7 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-  // count added
-  SimplexId const tot = 0;
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-  for(const auto &l : *mt_data_.trunkSegments) {
-    SimplexId arcSize = 0;
-    for(const auto &v : l) {
-      arcSize += v.size();
-    }
-    tot += arcSize;
-  }
-#endif
-  return tot;
+  return {};
 }
 
 SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
@@ -1031,10 +1014,9 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
   const auto chunkSize = getChunkSize(sizeBackBone, nbTasksThreads);
   const auto chunkNb = getChunkCount(sizeBackBone, nbTasksThreads);
   // si pas efficace vecteur de la taille de node ici a la place de acc
-  SimplexId const tot = 0;
   for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId) shared(trunkVerts, tot) \
+#pragma omp task firstprivate(chunkId) shared(trunkVerts) \
   OPTIONAL_PRIORITY(isPrior())
 #endif
     {
@@ -1062,12 +1044,6 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
               const idSuperArc oldArc
                 = upArcFromVert(trunkVerts[oldVertInRange]);
               getSuperArc(oldArc)->atomicIncVisited(acc);
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif
-              tot += acc;
-#endif
               acc = 1;
             }
           }
@@ -1078,18 +1054,12 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
         = getCorrespondingNodeId(trunkVerts[lastVertInRange]);
       const idSuperArc upArc = getNode(baseNode)->getUpSuperArcId(0);
       getSuperArc(upArc)->atomicIncVisited(acc);
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif
-      tot += acc;
-#endif
     } // end task
   }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-  return tot;
+  return {};
 }
 
 std::ostream &ttk::ftm::operator<<(std::ostream &o,
