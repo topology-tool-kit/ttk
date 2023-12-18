@@ -126,6 +126,19 @@ public:
                               const bool enforceOrderArrayIdx = false);
 
   /**
+   * Checks whether the global order should be global or not, then triggers the
+   * computation accordingly.
+   */
+  vtkDataArray *
+    checkForGlobalAndComputeOrderArray(vtkDataSet *const inputData,
+                                       vtkDataArray *scalarArray,
+                                       const int scalarArrayIdx,
+                                       const bool getGlobalOrder,
+                                       vtkDataArray *orderArray,
+                                       ttk::Triangulation *triangulation,
+                                       const bool enforceOrderArrayIdx);
+
+  /**
    * Initializes and computes the order array. When using MPI processes,
    * the order will be local when getGlobalOrder is set to false, and global
    * otherwise. This function is called in GetOrderArray and should not be
