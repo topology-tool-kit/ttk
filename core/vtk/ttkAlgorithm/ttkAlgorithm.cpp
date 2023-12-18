@@ -171,11 +171,12 @@ vtkDataArray *ttkAlgorithm::checkForGlobalAndComputeOrderArray(
   vtkDataArray *orderArray,
   ttk::Triangulation *triangulation,
   const bool enforceOrderArrayIdx) {
-#ifdef TTK_ENABLE_MPI
+
   std::string enforcedArray = "";
   if(enforceOrderArrayIdx) {
     enforcedArray = " enforced ";
   }
+#ifdef TTK_ENABLE_MPI
   if(getGlobalOrder) {
     if(triangulation->isOrderArrayGlobal(
          ttkUtils::GetVoidPointer(scalarArray))) {
@@ -212,6 +213,12 @@ vtkDataArray *ttkAlgorithm::checkForGlobalAndComputeOrderArray(
       return orderArray;
     }
   } else {
+#else
+  TTK_FORCE_USE(inputData);
+  TTK_FORCE_USE(scalarArray);
+  TTK_FORCE_USE(scalarArrayIdx);
+  TTK_FORCE_USE(getGlobalOrder);
+  TTK_FORCE_USE(triangulation);
 #endif // TTK_ENABLE_MPI
     this->printMsg("Retrieved " + enforcedArray + " order array `"
                      + std::string(orderArray->GetName()) + "`.",
