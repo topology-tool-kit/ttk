@@ -163,6 +163,65 @@ vtkDataArray *
   return newOrderArray;
 }
 
+vtkDataArray *ttkAlgorithm::checkForGlobalAndComputeOrderArray(
+  vtkDataSet *const inputData,
+  vtkDataArray *scalarArray,
+  const int scalarArrayIdx,
+  const bool getGlobalOrder,
+  vtkDataArray *orderArray,
+  ttk::Triangulation *triangulation,
+  const bool enforceOrderArrayIdx) {
+#ifdef TTK_ENABLE_MPI
+  std::string enforcedArray = "";
+  if(enforceOrderArrayIdx) {
+    enforcedArray = " enforced ";
+  }
+  if(getGlobalOrder) {
+    if(triangulation->isOrderArrayGlobal(
+         ttkUtils::GetVoidPointer(scalarArray))) {
+      this->printMsg("Retrieved " + enforcedArray + " order array `"
+                       + std::string(orderArray->GetName()) + "`.",
+                     ttk::debug::Priority::DETAIL);
+      return orderArray;
+    } else {
+      ttk::Timer timer;
+      printMsg(ttk::debug::Separator::L2);
+      this->printWrn("Order array `" + std::string(orderArray->GetName())
+                     + "` is local, but a global order array is "
+                       "required. Re-computing.");
+
+      this->printMsg("Initializing order array.", 0, 0, this->threadNumber_,
+                     ttk::debug::LineMode::REPLACE);
+      printMsg(ttk::debug::Separator::L2);
+
+      orderArray
+        = this->ComputeOrderArray(inputData, scalarArray, scalarArrayIdx,
+                                  getGlobalOrder, orderArray, triangulation);
+
+      triangulation->setIsOrderArrayGlobal(
+        ttkUtils::GetVoidPointer(scalarArray), true);
+
+      this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
+                     this->threadNumber_);
+
+      printMsg(ttk::debug::Separator::L2);
+      this->printWrn("TIP: run `ttkArrayPreconditioning` first with "
+                     "GlobalOrder enabled");
+      this->printWrn("for improved performances :)");
+      printMsg(ttk::debug::Separator::L2);
+      return orderArray;
+    }
+  } else {
+#endif // TTK_ENABLE_MPI
+    this->printMsg("Retrieved " + enforcedArray + " order array `"
+                     + std::string(orderArray->GetName()) + "`.",
+                   ttk::debug::Priority::DETAIL);
+    return orderArray;
+#ifdef TTK_ENABLE_MPI
+  }
+#endif
+}
+
 vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
                                           const int scalarArrayIdx,
                                           ttk::Triangulation *triangulation,
@@ -212,52 +271,9 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
         return nullptr;
       }
       default: {
-#ifdef TTK_ENABLE_MPI
-        if(getGlobalOrder) {
-          if(triangulation->isOrderArrayGlobal(
-               ttkUtils::GetVoidPointer(scalarArray))) {
-            this->printMsg("Retrieved enforced order array `"
-                             + std::string(orderArray->GetName()) + "`.",
-                           ttk::debug::Priority::DETAIL);
-            return orderArray;
-          } else {
-            ttk::Timer timer;
-            printMsg(ttk::debug::Separator::L2);
-            this->printMsg("Order array `" + std::string(orderArray->GetName())
-                             + "` is local, but a global order array is "
-                               "required. Re-computing.",
-                           ttk::debug::Priority::DETAIL);
-
-            this->printMsg("Initializing order array.", 0, 0,
-                           this->threadNumber_, ttk::debug::LineMode::REPLACE);
-            printMsg(ttk::debug::Separator::L2);
-
-            orderArray = this->ComputeOrderArray(inputData, scalarArray,
-                                                 scalarArrayIdx, getGlobalOrder,
-                                                 orderArray, triangulation);
-
-            triangulation->setIsOrderArrayGlobal(
-              ttkUtils::GetVoidPointer(scalarArray), true);
-
-            this->printMsg("Initializing order array.", 1,
-                           timer.getElapsedTime(), this->threadNumber_);
-
-            printMsg(ttk::debug::Separator::L2);
-            this->printWrn("TIP: run `ttkArrayPreconditioning` first with "
-                           "GlobalOrder enabled");
-            this->printWrn("for improved performances :)");
-            printMsg(ttk::debug::Separator::L2);
-            return orderArray;
-          }
-        } else {
-#endif // TTK_ENABLE_MPI
-          this->printMsg("Retrieved enforced order array `"
-                           + std::string(orderArray->GetName()) + "`.",
-                         ttk::debug::Priority::DETAIL);
-          return orderArray;
-#ifdef TTK_ENABLE_MPI
-        }
-#endif
+        return checkForGlobalAndComputeOrderArray(
+          inputData, scalarArray, scalarArrayIdx, getGlobalOrder, orderArray,
+          triangulation, enforceOrderArrayIdx);
       }
     }
   }
@@ -334,38 +350,9 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
     }
 
     default: {
-#ifdef TTK_ENABLE_MPI
-      if(getGlobalOrder) {
-        if(triangulation->isOrderArrayGlobal(
-             ttkUtils::GetVoidPointer(scalarArray))) {
-          this->printMsg("Retrieved order array `"
-                           + std::string(orderArray->GetName())
-                           + "` for scalar array `"
-                           + std::string(scalarArray->GetName()) + "`.",
-                         ttk::debug::Priority::DETAIL);
-          return orderArray;
-        } else {
-          this->printWrn("Order array `" + std::string(orderArray->GetName())
-                         + "` is local, but a global order array is "
-                           "required. Re-computing.");
-          orderArray = this->ComputeOrderArray(inputData, scalarArray,
-                                               scalarArrayIdx, getGlobalOrder,
-                                               orderArray, triangulation);
-          triangulation->setIsOrderArrayGlobal(
-            ttkUtils::GetVoidPointer(scalarArray), getGlobalOrder);
-          return orderArray;
-        }
-      } else {
-#endif // TTK_ENABLE_MPI
-        this->printMsg("Retrieved order array `"
-                         + std::string(orderArray->GetName())
-                         + "` for scalar array `"
-                         + std::string(scalarArray->GetName()) + "`.",
-                       ttk::debug::Priority::DETAIL);
-        return orderArray;
-#ifdef TTK_ENABLE_MPI
-      }
-#endif
+      return checkForGlobalAndComputeOrderArray(
+        inputData, scalarArray, scalarArrayIdx, getGlobalOrder, orderArray,
+        triangulation, enforceOrderArrayIdx);
     }
   }
 }
