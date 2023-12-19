@@ -82,10 +82,6 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="BurstSize" label="BurstSize" number_of_elements="1" default_values="100" command="SetBurstSize" >
-                <Documentation>Controls how many elements are sent from the ranks at once.</Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="GlobalOrder"
         label="Global Order Array"
         command="SetGlobalOrder"
@@ -96,9 +92,21 @@
         <Documentation>
         Request a global order array. By default, order arrays are computed locally on each process.
         This forces the filter to compute an order for all processes. 
-        It is a costly and sometimes unnecessary computation. Requires MPI to have an effect. 
+        Requires MPI to have an effect. 
         </Documentation>
-      </IntVectorProperty>      
+      </IntVectorProperty>    
+
+      <IntVectorProperty name="ChunkSize"
+        label="Chunk Size"
+        command="SetChunkSize"
+        number_of_elements="1"
+        default_values="1000000000"
+        panel_visibility="advanced">
+        <Documentation>
+        Sets the size for segmenting computation in case there is not enough memory
+        to do so at once. Requires MPI and GlobalOrder to be on to have an effect. 
+        </Documentation>
+      </IntVectorProperty> 
 
       ${DEBUG_WIDGETS}
 
@@ -106,7 +114,8 @@
         <Property name="SelectFieldsWithRegexp" />
         <Property name="PointDataArrays" />
         <Property name="Regexp" />
-        <Property name="BurstSize" />
+        <Property name="GlobalOrder" />
+        <Property name="ChunkSize" />
       </PropertyGroup>
 
       <Hints>

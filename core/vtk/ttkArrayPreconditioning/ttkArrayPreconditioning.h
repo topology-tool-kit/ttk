@@ -44,14 +44,14 @@ public:
   vtkSetMacro(SelectFieldsWithRegexp, bool);
   vtkGetMacro(SelectFieldsWithRegexp, bool);
 
-  vtkSetMacro(BurstSize, int);
-  vtkGetMacro(BurstSize, int);
-
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
   vtkSetMacro(GlobalOrder, bool);
   vtkGetMacro(GlobalOrder, bool);
+
+  vtkSetMacro(ChunkSize, int);
+  vtkGetMacro(ChunkSize, int);
 
   // copy the vtkPassSelectedArray ("PassArrays" filter) API
   vtkDataArraySelection *GetPointDataArraySelection() {
@@ -70,5 +70,4 @@ private:
   vtkNew<vtkDataArraySelection> ArraySelection{};
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
-  int BurstSize{100};
 };

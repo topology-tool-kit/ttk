@@ -12,3 +12,4 @@ HEADERS
 DEPENDS
   triangulation
   identifiers
+  arrayPreconditioning

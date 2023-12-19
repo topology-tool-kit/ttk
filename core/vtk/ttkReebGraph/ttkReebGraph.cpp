@@ -320,7 +320,8 @@ int ttkReebGraph::RequestData(vtkInformation *ttkNotUsed(request),
     return -3;
   }
 
-  offsets_ = this->GetOrderArray(mesh_, 0, 1, ForceInputOffsetScalarField);
+  offsets_ = this->GetOrderArray(
+    mesh_, 0, triangulation_, false, 1, ForceInputOffsetScalarField);
 
   // compute graph
   ttkVtkTemplateMacro(inputScalars_->GetDataType(), triangulation_->getType(),

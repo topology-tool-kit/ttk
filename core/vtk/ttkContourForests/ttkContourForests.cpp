@@ -1203,8 +1203,8 @@ int ttkContourForests::RequestData(vtkInformation *ttkNotUsed(request),
   // offsets
   if(varyingMesh_ || varyingDataValues_ || vertexSoSoffsets_ == nullptr) {
 
-    const auto offsets
-      = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
+    const auto offsets = this->GetOrderArray(
+      input, 0, triangulation_, false, 1, ForceInputOffsetScalarField);
 
     if(offsets != nullptr) {
       vertexSoSoffsets_

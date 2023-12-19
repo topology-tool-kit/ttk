@@ -117,8 +117,8 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  vtkDataArray *offsetField
-    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
+  vtkDataArray *offsetField = this->GetOrderArray(
+    input, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {

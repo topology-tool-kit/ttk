@@ -196,8 +196,8 @@ int ttkPersistentGenerators::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  vtkDataArray *offsetField
-    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
+  vtkDataArray *offsetField = this->GetOrderArray(
+    input, 0, triangulation, false, 1, ForceInputOffsetScalarField);
   if(offsetField == nullptr) {
     this->printErr("Wrong input offsets");
     return 0;

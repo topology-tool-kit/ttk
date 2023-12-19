@@ -1512,6 +1512,14 @@ namespace ttk {
         localCellId, cellDim, globalCellId);
     }
 
+    inline bool isOrderArrayGlobal(const void *data) const {
+      return this->abstractTriangulation_->isOrderArrayGlobal(data);
+    }
+
+    inline void setIsOrderArrayGlobal(const void *data, bool flag) {
+      this->abstractTriangulation_->setIsOrderArrayGlobal(data, flag);
+    }
+
 #endif // TTK_ENABLE_MPI
 
     /// Get the \p localLinkId-th simplex of the link of the \p vertexId-th

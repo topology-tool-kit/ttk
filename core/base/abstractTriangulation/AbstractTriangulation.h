@@ -2975,6 +2975,23 @@ namespace ttk {
       return 0;
     }
 
+    inline bool isOrderArrayGlobal(const void *data) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isOrderArrayGlobal_.find(data) != isOrderArrayGlobal_.end())
+#endif
+        return isOrderArrayGlobal_.at(data);
+#ifndef TTK_ENABLE_KAMIKAZE
+      else {
+        printErr("No global array flag has been found for this scalar field");
+        return false;
+      }
+#endif
+    }
+
+    inline void setIsOrderArrayGlobal(const void *data, bool flag) {
+      isOrderArrayGlobal_[data] = flag;
+    }
+
   protected:
     virtual inline SimplexId
       getVertexGlobalIdInternal(const SimplexId ttkNotUsed(lvid)) const {
@@ -3853,6 +3870,7 @@ namespace ttk {
     bool hasPreconditionedDistributedVertices_{false};
     bool hasPreconditionedExchangeGhostVertices_{false};
     bool hasPreconditionedGlobalBoundary_{false};
+    std::map<const void *, bool> isOrderArrayGlobal_;
 
 #endif // TTK_ENABLE_MPI
 

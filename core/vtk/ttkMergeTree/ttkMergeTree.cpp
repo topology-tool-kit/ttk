@@ -26,8 +26,9 @@ int ttkMergeTree::getOffsets() {
 
   offsets_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
-    const auto offsets = this->GetOrderArray(
-      connected_components_[cc], 0, 1, ForceInputOffsetScalarField);
+    const auto offsets
+      = this->GetOrderArray(connected_components_[cc], 0, triangulation_[cc],
+                            false, 1, ForceInputOffsetScalarField);
 
     offsets_[cc].resize(connected_components_[cc]->GetNumberOfPoints());
 
@@ -178,7 +179,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
     }
 
     // Order Array
-    auto orderArray = this->GetOrderArray(input, 0);
+    auto orderArray = this->GetOrderArray(input, 0, triangulation, false);
     auto orderArrayData = ttkUtils::GetPointer<ttk::SimplexId>(orderArray);
 
     auto segmentation = vtkDataSet::GetData(outputVector, 2);
