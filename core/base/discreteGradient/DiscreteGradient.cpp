@@ -26,8 +26,8 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
   // clear & init gradient memory
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel master num_threads(threadNumber_)
-  {
 #endif
+  {
     for(int i = 0; i < dimensionality_; ++i) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task
@@ -44,9 +44,7 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
         (*gradient_)[2 * i + 1].resize(numberOfCells[i + 1], -1);
       }
     }
-#ifdef TTK_ENABLE_OPENMP
   }
-#endif
 
   std::vector<std::vector<std::string>> rows{
     {"#Vertices", std::to_string(numberOfCells[0])},

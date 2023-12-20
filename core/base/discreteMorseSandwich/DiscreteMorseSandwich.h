@@ -435,7 +435,9 @@ namespace ttk {
       }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel master num_threads(threadNumber_)
+#endif
       {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task
 #endif // TTK_ENABLE_OPENMP
         this->firstRepMin_.resize(triangulation.getNumberOfVertices());
@@ -482,9 +484,7 @@ namespace ttk {
           this->critCellsOrder_[i].resize(
             this->dg_.getNumberOfCells(i, triangulation), -1);
         }
-#ifdef TTK_ENABLE_OPENMP
       }
-#endif
       this->printMsg("Memory allocations", 1.0, tm.getElapsedTime(), 1,
                      debug::LineMode::NEW, debug::Priority::DETAIL);
     }
