@@ -15,15 +15,25 @@
 using namespace std;
 using namespace ttk;
 
+DimensionReduction::~DimensionReduction()
+    {
+#ifdef TTK_ENABLE_SCIKIT_LEARN
+      // If Python was not initialized by a still alive object.
+      if (!this->wasPythonInitialized_) {
+        Py_Finalize();
+      }
+#endif
+    }
+
+
+
 DimensionReduction::DimensionReduction() {
   this->setDebugMsgPrefix("DimensionReduction");
 
 #ifdef TTK_ENABLE_SCIKIT_LEARN
-  auto finalize_callback = []() { Py_Finalize(); };
-
   if(!Py_IsInitialized()) {
+    this->wasPythonInitialized_ = false;
     Py_Initialize();
-    atexit(finalize_callback);
   }
 
   const char *version = Py_GetVersion();

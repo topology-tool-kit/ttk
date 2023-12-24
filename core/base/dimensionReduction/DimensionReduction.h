@@ -56,6 +56,8 @@ namespace ttk {
   public:
     DimensionReduction();
 
+    ~DimensionReduction();
+
     /** Scikit-Learn Dimension Reduction algorithms */
     enum class METHOD {
       /** Spectral Embedding */
@@ -295,5 +297,8 @@ namespace ttk {
     int IsDeterministic{true};
     char majorVersion_{'0'};
     bool IsInputADistanceMatrix{false};
+
+  private:
+    bool wasPythonInitialized_{true};
   };
 } // namespace ttk
