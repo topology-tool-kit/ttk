@@ -282,8 +282,8 @@ namespace ttk {
     std::string pca_MaxIteration{"auto"};
 
     // TopoMap
-    size_t topomap_AngularSampleNb;
-    bool topomap_CheckMST;
+    size_t topomap_AngularSampleNb{2};
+    bool topomap_CheckMST{false};
     TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
 
     // testing
