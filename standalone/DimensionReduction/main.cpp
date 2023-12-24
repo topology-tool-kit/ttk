@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   bool listArrays{false};
 
   // Variables for the module options.
-  int backend{0};
+  int backend{2}; // MDS
   bool isInputDistMat{false};
   int nbComp{2}, nbNeighb{5};
   bool isDeterministic{true};
