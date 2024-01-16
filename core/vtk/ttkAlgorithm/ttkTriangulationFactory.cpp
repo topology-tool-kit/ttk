@@ -11,7 +11,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVersion.h>
+#include <vtkVersionMacros.h>
 
 static vtkCellArray *GetCells(vtkDataSet *dataSet) {
   switch(dataSet->GetDataObjectType()) {

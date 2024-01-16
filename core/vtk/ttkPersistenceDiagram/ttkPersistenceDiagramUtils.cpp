@@ -11,7 +11,7 @@
 #include <vtkTransformFilter.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVersion.h> // for VTK_VERSION_CHECK via ParaView 5.8.1
+#include <vtkVersionMacros.h> // for VTK_VERSION_CHECK
 
 int VTUToDiagram(ttk::DiagramType &diagram,
                  vtkUnstructuredGrid *vtu,

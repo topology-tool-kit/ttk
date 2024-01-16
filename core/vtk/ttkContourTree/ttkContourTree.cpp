@@ -9,6 +9,7 @@
 #include <vtkInformationVector.h>
 #include <vtkPolyData.h>
 #include <vtkThreshold.h>
+#include <vtkVersionMacros.h>
 
 vtkStandardNewMacro(ttkContourTree);
 
