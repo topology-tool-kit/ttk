@@ -18,6 +18,7 @@
 #include <vtkPointData.h>
 #include <vtkSignedCharArray.h>
 #include <vtkThreshold.h>
+#include <vtkVersionMacros.h>
 
 #include <ttkUtils.h>
 

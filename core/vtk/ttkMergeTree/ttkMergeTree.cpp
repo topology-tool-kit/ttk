@@ -12,6 +12,7 @@
 #include <vtkSignedCharArray.h>
 #include <vtkThreshold.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVersionMacros.h>
 
 vtkStandardNewMacro(ttkMergeTree);
 
