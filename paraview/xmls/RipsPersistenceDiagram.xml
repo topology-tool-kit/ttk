@@ -1,0 +1,61 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkRipsPersistenceDiagram" class="ttkRipsPersistenceDiagram" label="TTK RipsPersistenceDiagram">
+      <Documentation long_help="RipsPersistenceDiagram Long" short_help="RipsPersistenceDiagram Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1" />
+        <Documentation>Point cloud to process.</Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty
+              name="MaxDim"
+              label="Max Dimension"
+              command="SetMaxDim"
+              number_of_elements="1"
+              default_values="1">
+        <Documentation>
+          Maximum dimension of the computed Rips persistence diagram.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+              name="Threshold"
+              label="Rips Threshold"
+              command="SetThreshold"
+              number_of_elements="1"
+              default_values="1.0">
+        <Documentation>
+          Distance threshold for the Rips complex.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="MaxDim" />
+        <Property name="Threshold" />
+      </PropertyGroup>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      <PropertyGroup panel_widget="Line" label="Output options">
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
