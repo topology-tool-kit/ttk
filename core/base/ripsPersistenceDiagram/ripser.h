@@ -1,5 +1,8 @@
-#ifndef CGAL_RNG_RIPSER_H
-#define CGAL_RNG_RIPSER_H
+/// \ingroup base
+/// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
+/// \date January 2024.
+
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -47,5 +50,3 @@ static const auto pers_pair_t_comp = [](pers_pair_t const& p1, pers_pair_t const
 };
 
 void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, std::vector<std::vector<pers_pair_t> >& ph);
-
-#endif //CGAL_RNG_RIPSER_H

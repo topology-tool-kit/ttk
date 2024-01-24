@@ -7,11 +7,10 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkTable.h>
-#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkRipsPersistenceDiagram);
 
-int DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<pers_pair_t> > &diagram) {
+int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<pers_pair_t> > &diagram) {
   const auto pd = vtu->GetPointData();
   const auto cd = vtu->GetCellData();
 
