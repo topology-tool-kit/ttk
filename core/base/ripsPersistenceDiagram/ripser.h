@@ -42,11 +42,5 @@ typedef uint16_t coefficient_t;
 typedef std::vector<index_t> simplex_t;
 typedef std::pair<simplex_t, value_t> simplex_diam_t;
 typedef std::pair<simplex_diam_t,simplex_diam_t> pers_pair_t;
-static const auto pers_pair_t_comp = [](pers_pair_t const& p1, pers_pair_t const& p2) {
-    if (p1.first.second == p2.first.second)
-        return p1.second.second < p2.second.second;
-    else
-        return p1.first.second < p2.first.second;
-};
 
 void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, std::vector<std::vector<pers_pair_t> >& ph);

@@ -1,7 +1,7 @@
 ttk_add_base_library(ripsPersistenceDiagram
   SOURCES
     RipsPersistenceDiagram.cpp
-    ripser.cpp
+    ripserpy.cpp
   HEADERS
     RipsPersistenceDiagram.h
     ripser.h
