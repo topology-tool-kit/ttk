@@ -604,17 +604,17 @@ public:
 
             if (u != v) {
                 if (get_diameter(e) != 0)
-                    ph[0].emplace_back(simplex_diam_t{simplex_t{-1},0.},simplex_diam_t{simplex_t{vertices_of_edge[0], vertices_of_edge[1]},get_diameter(e)});
+                    ph[0].emplace_back(simplex_diam_t{{-1},0.},simplex_diam_t{{vertices_of_edge[0], vertices_of_edge[1]},get_diameter(e)});
                 dset.link(u, v);
             } else
                 columns_to_reduce.push_back(e);
         }
         std::reverse(columns_to_reduce.begin(), columns_to_reduce.end());
 
-        /*for (index_t i = 0; i < n; ++i)
-            if (dset.find(i) == i) {
-                ph[0].emplace_back(simplex_diam_t{simplex_t{-1},0.},simplex_diam_t{simplex_t{},std::numeric_limits<value_t>::infinity()});
-            }*/
+        for (index_t i = 0; i < n; ++i) {
+            if (dset.find(i) == i)
+                ph[0].emplace_back(simplex_diam_t{{-1},0.},simplex_diam_t{{},std::numeric_limits<value_t>::infinity()});
+        }
     }
 
     template <typename Column>
@@ -806,7 +806,9 @@ public:
                         break;
                     }
                 } else {
-                    //ph[dim].emplace_back(simplex_diam_t{vertices_birth, diameter}, simplex_diam_t{vertices_death, std::numeric_limits<value_t>::infinity()});
+                    std::vector<index_t> vertices_birth(dim+1);
+                    get_simplex_vertices(get_index(column_to_reduce), dim, n, vertices_birth.rbegin());
+                    ph[dim].emplace_back(simplex_diam_t{vertices_birth, diameter}, simplex_diam_t{{}, std::numeric_limits<value_t>::infinity()});
                     break;
                 }
             }

@@ -74,17 +74,17 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
       const unsigned i0 = 2*i, i1 = 2*i+1;
       pairsId->SetTuple1(i, i);
       pairsDim->SetTuple1(i, d);
-      isFinite->SetTuple1(i, true);
-      persistence->SetTuple1(i, pair.first.second + pair.second.second);
+
+      isFinite->SetTuple1(i, pair.second.second < std::numeric_limits<value_t>::infinity());
+      persistence->SetTuple1(i, pair.second.second - pair.first.second);
       birthScalars->SetTuple1(i, pair.first.second);
+      points->SetPoint(i0, pair.first.second, pair.first.second, 0);
+      points->SetPoint(i1, pair.first.second, std::min(Threshold, pair.second.second), 0);
 
       if(pair.first.second > birth_max) {
         birth_max = pair.first.second;
         i_max = i;
       }
-
-      points->SetPoint(i0, pair.first.second, pair.first.second, 0);
-      points->SetPoint(i1, pair.first.second, pair.second.second, 0);
 
       connectivity->SetTuple1(i0, i0);
       connectivity->SetTuple1(i1, i1);
