@@ -19,10 +19,10 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
     n_pairs += diagram_d.size();
 
   // point data arrays
-  /*vtkNew<ttkSimplexIdTypeArray> vertsId{};
+  vtkNew<ttkSimplexIdTypeArray> vertsId{};
   vertsId->SetName(ttk::VertexScalarFieldName);
   vertsId->SetNumberOfTuples(2 * n_pairs);
-  pd->AddArray(vertsId);*/
+  pd->AddArray(vertsId);
 
   vtkNew<vtkIntArray> critType{};
   critType->SetName(ttk::PersistenceCriticalTypeName);
@@ -90,8 +90,11 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
       connectivity->SetTuple1(i1, i1);
       offsets->SetTuple1(i, 2 * i);
 
-      critType->SetTuple1(i0, static_cast<ttk::SimplexId>(d));
-      critType->SetTuple1(i1, static_cast<ttk::SimplexId>(d+1));
+      critType->SetTuple1(i0, d);
+      critType->SetTuple1(i1, d+1);
+
+      vertsId->SetTuple1(i0, *std::max_element(pair.first.first.begin(), pair.first.first.end()));
+      vertsId->SetTuple1(i1, *std::max_element(pair.second.first.begin(), pair.second.first.end()));
 
       ++i;
     }

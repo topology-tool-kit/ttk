@@ -613,7 +613,7 @@ public:
 
         for (index_t i = 0; i < n; ++i) {
             if (dset.find(i) == i)
-                ph[0].emplace_back(simplex_diam_t{{-1},0.},simplex_diam_t{{},std::numeric_limits<value_t>::infinity()});
+                ph[0].emplace_back(simplex_diam_t{{-1},0.},simplex_diam_t{{-1},std::numeric_limits<value_t>::infinity()});
         }
     }
 
@@ -808,7 +808,7 @@ public:
                 } else {
                     std::vector<index_t> vertices_birth(dim+1);
                     get_simplex_vertices(get_index(column_to_reduce), dim, n, vertices_birth.rbegin());
-                    ph[dim].emplace_back(simplex_diam_t{vertices_birth, diameter}, simplex_diam_t{{}, std::numeric_limits<value_t>::infinity()});
+                    ph[dim].emplace_back(simplex_diam_t{vertices_birth, diameter}, simplex_diam_t{{-1}, std::numeric_limits<value_t>::infinity()});
                     break;
                 }
             }
