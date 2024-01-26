@@ -603,9 +603,9 @@ public:
                     v = dset.find(vertices_of_edge[1]);
 
             if (u != v) {
-                if (get_diameter(e) != 0)
-                    ph[0].emplace_back(simplex_diam_t{{-1},0.},simplex_diam_t{{vertices_of_edge[0], vertices_of_edge[1]},get_diameter(e)});
                 dset.link(u, v);
+                if (get_diameter(e) != 0)
+                    ph[0].emplace_back(simplex_diam_t{{u == dset.find(vertices_of_edge[0]) ? vertices_of_edge[1] : vertices_of_edge[0]},0.},simplex_diam_t{{vertices_of_edge[0], vertices_of_edge[1]},get_diameter(e)});
             } else
                 columns_to_reduce.push_back(e);
         }
@@ -613,7 +613,7 @@ public:
 
         for (index_t i = 0; i < n; ++i) {
             if (dset.find(i) == i)
-                ph[0].emplace_back(simplex_diam_t{{-1},0.},simplex_diam_t{{-1},std::numeric_limits<value_t>::infinity()});
+                ph[0].emplace_back(simplex_diam_t{{i},0.},simplex_diam_t{{-1},std::numeric_limits<value_t>::infinity()});
         }
     }
 
