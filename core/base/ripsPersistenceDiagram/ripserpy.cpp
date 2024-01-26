@@ -74,6 +74,8 @@ derivative works thereof, in binary and source code form.
 #include <sstream>
 #include <unordered_map>
 
+using namespace Ripser;
+
 static const size_t num_coefficient_bits = 8;
 
 // 1L on windows is ALWAYS 32 bits, when on unix systems is pointer size
@@ -998,7 +1000,7 @@ std::vector<diameter_index_t> ripser<sparse_distance_matrix>::get_edges()
     return edges;
 }
 
-void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph) {
+void Ripser::Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph) {
   double ratio = 1;
   coefficient_t modulus = 2;
 

@@ -15,6 +15,8 @@
 #include <sstream>
 #include <unordered_map>
 
+namespace Ripser {
+
 //#define USE_COEFFICIENTS
 //#define INDICATE_PROGRESS
 //#define PRINT_PERSISTENCE_PAIRS
@@ -44,3 +46,5 @@ typedef std::pair<simplex_t, value_t> simplex_diam_t;
 typedef std::pair<simplex_diam_t,simplex_diam_t> pers_pair_t;
 
 void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph);
+
+}
