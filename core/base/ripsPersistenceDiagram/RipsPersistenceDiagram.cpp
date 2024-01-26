@@ -9,7 +9,7 @@ int ttk::RipsPersistenceDiagram::execute(
   const std::vector<std::vector<double>> &points,
   std::vector<std::vector<pers_pair_t> >& ph) const {
 
-  Ripser(points, Threshold, MaxDim, ph);
+  Ripser(points, Threshold, MaxDim, InputIsDistanceMatrix, ph);
 
   return 0;
 }

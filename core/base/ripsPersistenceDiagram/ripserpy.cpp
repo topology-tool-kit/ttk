@@ -123,7 +123,7 @@ public:
 };
 
 /* Modulo operator is expensive, using a mask when modulus is equal 2
- * is much less expesive and speed-ups where observed
+ * is much less expensive and speed-ups where observed
  */
 const coefficient_t get_modulo(const coefficient_t val,
                                const coefficient_t modulus)
@@ -141,7 +141,7 @@ std::vector<coefficient_t> multiplicative_inverse_vector(const coefficient_t m)
     std::vector<coefficient_t> inverse(m);
     inverse[1] = 1;
     // m = a * (m / a) + m % a
-    // Multipying with inverse(a) * inverse(m % a):
+    // Multiplying with inverse(a) * inverse(m % a):
     // 0 = inverse(m % a) * (m / a)  + inverse(a)  (mod m)
     for (coefficient_t a = 2; a < m; ++a)
         inverse[a] = m - (inverse[m % a] * (m / a)) % m;
@@ -998,14 +998,21 @@ std::vector<diameter_index_t> ripser<sparse_distance_matrix>::get_edges()
     return edges;
 }
 
-void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, std::vector<std::vector<pers_pair_t> >& ph) {
+void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph) {
   double ratio = 1;
   coefficient_t modulus = 2;
 
-  euclidean_distance_matrix eucl_dist(std::move(points));
-  sparse_distance_matrix dist(eucl_dist, threshold);
-
   ph = std::vector<std::vector<pers_pair_t> > (dim_max+1, std::vector<pers_pair_t>(0));
-  ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
-  ripser.compute_barcodes(ph);
+
+  if (!distanceMatrix) {
+    euclidean_distance_matrix eucl_dist(std::move(points));
+    sparse_distance_matrix dist(eucl_dist, threshold);
+    ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
+    ripser.compute_barcodes(ph);
+  } else {
+    compressed_lower_distance_matrix lower_dist(std::move(points[0]));
+    sparse_distance_matrix dist(lower_dist, threshold);
+    ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
+    ripser.compute_barcodes(ph);
+  }
 }

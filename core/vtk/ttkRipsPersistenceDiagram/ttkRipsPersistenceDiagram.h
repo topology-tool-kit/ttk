@@ -46,6 +46,9 @@ public:
   vtkSetMacro(Threshold, double);
   vtkGetMacro(Threshold, double);
 
+  vtkSetMacro(InputIsDistanceMatrix, int);
+  vtkGetMacro(InputIsDistanceMatrix, int);
+
 protected:
   ttkRipsPersistenceDiagram();
   ~ttkRipsPersistenceDiagram() override = default;

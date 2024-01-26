@@ -152,20 +152,35 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   if(!input)
     return 0;
 
-  const int numberOfPoints = input->GetNumberOfRows();
-  const int dimension = input->GetNumberOfColumns();
+  std::vector<std::vector<double>> points;
+  if (!InputIsDistanceMatrix) {
+    const int numberOfPoints = input->GetNumberOfRows();
+    const int dimension = input->GetNumberOfColumns();
 
-  std::vector<std::vector<double>> points(numberOfPoints);
-  for (int i = 0; i<numberOfPoints; ++i) {
-    for (int j = 0; j<dimension; ++j)
-      points[i].push_back(input->GetValue(i,j).ToDouble());
+    points = std::vector<std::vector<double>>(numberOfPoints);
+    for (int i = 0; i<numberOfPoints; ++i) {
+      for (int j = 0; j<dimension; ++j)
+        points[i].push_back(input->GetValue(i,j).ToDouble());
+    }
+    this->printMsg("Ripser starts (#dim: "+std::to_string(dimension)+
+                     ", #pts: "+std::to_string(numberOfPoints) + ")",
+                   1.0, tm.getElapsedTime(), this->threadNumber_);
+  }
+  else {
+    const int n = std::min(input->GetNumberOfRows(), input->GetNumberOfColumns());
+    const int column_offset = input->GetNumberOfColumns() - n;
+
+    points = std::vector<std::vector<double>>(1);
+    for (int i = 1; i<n; ++i) {
+      for (int j = 0; j<i; ++j)
+        points[0].push_back(input->GetValue(i, j + column_offset).ToDouble());
+    }
+    this->printMsg("Ripser starts ("+std::to_string(n)+"x"+std::to_string(n)+" dist mat)",
+                   1.0, tm.getElapsedTime(), this->threadNumber_);
   }
 
   std::vector<std::vector<pers_pair_t> > diagram(0);
 
-  this->printMsg("Ripser starts (#dim: "+std::to_string(dimension)+
-                   ", #pts: "+std::to_string(numberOfPoints) + ")",
-                 1.0, tm.getElapsedTime(), this->threadNumber_);
   const auto ret = this->execute(points, diagram);
   if(ret != 0) {
     return 0;

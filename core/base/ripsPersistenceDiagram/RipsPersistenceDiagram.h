@@ -41,6 +41,8 @@ namespace ttk {
     int MaxDim{1};
     /** Rips threshold */
     double Threshold{1.0};
+    /** is input a distance matrix */
+    int InputIsDistanceMatrix{0};
 
   }; // RipsPersistenceDiagram class
 

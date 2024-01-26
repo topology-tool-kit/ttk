@@ -40,9 +40,23 @@
         </Documentation>
       </DoubleVectorProperty>
 
+      <IntVectorProperty
+              name="InputIsDistanceMatrix"
+              label="Input is a distance matrix"
+              command="SetInputIsDistanceMatrix"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to read the input table as a distance matrix instead of a point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="MaxDim" />
         <Property name="Threshold" />
+        <Property name="InputIsDistanceMatrix" />
       </PropertyGroup>
 
       <!-- OUTPUT PARAMETER WIDGETS -->

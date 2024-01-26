@@ -43,4 +43,4 @@ typedef std::vector<index_t> simplex_t;
 typedef std::pair<simplex_t, value_t> simplex_diam_t;
 typedef std::pair<simplex_diam_t,simplex_diam_t> pers_pair_t;
 
-void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, std::vector<std::vector<pers_pair_t> >& ph);
+void Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph);
