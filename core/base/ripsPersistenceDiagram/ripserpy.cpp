@@ -58,23 +58,13 @@ derivative works thereof, in binary and source code form.
 
 #include "ripser.h"
 
-#include <algorithm>
-#include <atomic>
-#include <cassert>
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <limits>
-#include <numeric>
-#include <queue>
-#include <sstream>
-#include <unordered_map>
-
 using namespace Ripser;
+
+#ifdef INDICATE_PROGRESS
+static const std::chrono::milliseconds time_step(40);
+#endif
+
+static const std::string clear_line("\r\033[K");
 
 static const size_t num_coefficient_bits = 8;
 
@@ -127,7 +117,7 @@ public:
 /* Modulo operator is expensive, using a mask when modulus is equal 2
  * is much less expensive and speed-ups where observed
  */
-const coefficient_t get_modulo(const coefficient_t val,
+coefficient_t get_modulo(const coefficient_t val,
                                const coefficient_t modulus)
 {
     return (modulus == 2) ? val & 1 : val % modulus;
@@ -186,30 +176,30 @@ std::ostream& operator<<(std::ostream& stream, const entry_t& e)
 
 #else
 
-typedef index_t entry_t;
-const index_t get_index(const entry_t& i) { return i; }
-index_t get_coefficient(const entry_t& i) { return 1; }
-entry_t make_entry(index_t _index, coefficient_t _value)
+using entry_t = index_t;
+index_t get_index(const entry_t& i) { return i; }
+index_t get_coefficient(const entry_t&  /*i*/) { return 1; }
+entry_t make_entry(index_t _index, coefficient_t  /*_value*/)
 {
     return entry_t(_index);
 }
-void set_coefficient(entry_t& e, const coefficient_t c) {}
+void set_coefficient(entry_t& /*e*/, const coefficient_t /*c*/) {}
 
 #endif
 
 const entry_t& get_entry(const entry_t& e) { return e; }
 
-typedef std::pair<value_t, index_t> diameter_index_t;
+using diameter_index_t = std::pair<value_t, index_t>;
 value_t get_diameter(const diameter_index_t& i) { return i.first; }
 index_t get_index(const diameter_index_t& i) { return i.second; }
 
-typedef std::pair<index_t, value_t> index_diameter_t;
+using index_diameter_t = std::pair<index_t, value_t>;
 index_t get_index(const index_diameter_t& i) { return i.first; }
 value_t get_diameter(const index_diameter_t& i) { return i.second; }
 
 struct diameter_entry_t : std::pair<value_t, entry_t> {
     using std::pair<value_t, entry_t>::pair;
-    diameter_entry_t() {}
+    diameter_entry_t() = default;
     diameter_entry_t(value_t _diameter, index_t _index,
                      coefficient_t _coefficient)
         : diameter_entry_t(_diameter, make_entry(_index, _coefficient))
@@ -226,11 +216,11 @@ struct diameter_entry_t : std::pair<value_t, entry_t> {
 
 const entry_t& get_entry(const diameter_entry_t& p) { return p.second; }
 entry_t& get_entry(diameter_entry_t& p) { return p.second; }
-const index_t get_index(const diameter_entry_t& p)
+index_t get_index(const diameter_entry_t& p)
 {
     return get_index(get_entry(p));
 }
-const coefficient_t get_coefficient(const diameter_entry_t& p)
+coefficient_t get_coefficient(const diameter_entry_t& p)
 {
     return get_coefficient(get_entry(p));
 }
@@ -250,7 +240,7 @@ struct greater_diameter_or_smaller_index {
     }
 };
 
-enum compressed_matrix_layout { LOWER_TRIANGULAR, UPPER_TRIANGULAR };
+enum compressed_matrix_layout : std::uint8_t { LOWER_TRIANGULAR, UPPER_TRIANGULAR };
 
 template <compressed_matrix_layout Layout>
 class compressed_distance_matrix
@@ -284,10 +274,8 @@ public:
     void init_rows();
 };
 
-typedef compressed_distance_matrix<LOWER_TRIANGULAR>
-    compressed_lower_distance_matrix;
-typedef compressed_distance_matrix<UPPER_TRIANGULAR>
-    compressed_upper_distance_matrix;
+using compressed_lower_distance_matrix = compressed_distance_matrix<LOWER_TRIANGULAR>;
+using compressed_upper_distance_matrix = compressed_distance_matrix<UPPER_TRIANGULAR>;
 
 template <>
 void compressed_lower_distance_matrix::init_rows()
@@ -345,7 +333,7 @@ struct sparse_distance_matrix {
             for (size_t j = 0; j < size(); ++j)
                 if (i != j && mat(i, j) <= threshold) {
                     ++num_edges;
-                    neighbors[i].push_back({j, mat(i, j)});
+                    neighbors[i].emplace_back(j, mat(i, j));
                 }
     }
 
@@ -418,8 +406,8 @@ class compressed_sparse_matrix
     std::vector<size_t> bounds;
     std::vector<ValueType> entries;
 
-    typedef typename std::vector<ValueType>::iterator iterator;
-    typedef std::pair<iterator, iterator> iterator_pair;
+    using iterator = typename std::vector<ValueType>::iterator;
+    using iterator_pair = std::pair<iterator, iterator>;
 
 public:
     size_t size() const { return bounds.size(); }
@@ -477,7 +465,7 @@ class ripser
         }
     };
 
-    typedef hash_map<entry_t, size_t, entry_hash, equal_index> entry_hash_map;
+    using entry_hash_map = hash_map<entry_t, size_t, entry_hash, equal_index>;
 
 public:
     ripser(DistanceMatrix&& _dist, index_t _dim_max, value_t _threshold,
@@ -490,18 +478,18 @@ public:
     }
 
     index_t get_max_vertex(const index_t idx, const index_t k,
-                           const index_t n) const
+                           const index_t n_) const
     {
-        auto top = n;
+        auto top = n_;
         auto bottom = k - 1;
-        if (!(binomial_coeff(top, k) <= idx)) {
+        if (binomial_coeff(top, k) > idx) {
             index_t count = top - bottom;
             index_t step;
             index_t mid;
             while (count > 0) {
                 step = count >> 1;
                 mid = top - step;
-                if (!(binomial_coeff(mid, k) <= idx)) {
+                if (binomial_coeff(mid, k) > idx) {
                     top = mid - 1;
                     count -= step + 1;
                 } else
@@ -518,13 +506,13 @@ public:
 
     template <typename OutputIterator>
     OutputIterator get_simplex_vertices(index_t idx, const index_t dim,
-                                        index_t n, OutputIterator out) const
+                                        index_t n_, OutputIterator out) const
     {
-        --n;
+        --n_;
         for (index_t k = dim + 1; k > 0; --k) {
-            n = get_max_vertex(idx, k, n);
-            *out++ = n;
-            idx -= binomial_coeff(n, k);
+          n_ = get_max_vertex(idx, k, n_);
+            *out++ = n_;
+            idx -= binomial_coeff(n_, k);
         }
         return out;
     }
@@ -563,13 +551,11 @@ public:
                 auto cofacet = cofacets.next();
                 if (get_diameter(cofacet) <= threshold) {
                     if (dim != dim_max)
-                        next_simplices.push_back(
-                            {get_diameter(cofacet), get_index(cofacet)});
+                        next_simplices.emplace_back(get_diameter(cofacet), get_index(cofacet));
 
                     if (pivot_column_index.find(get_entry(cofacet)) ==
                         pivot_column_index.end())
-                        columns_to_reduce.push_back(
-                            {get_diameter(cofacet), get_index(cofacet)});
+                        columns_to_reduce.emplace_back(get_diameter(cofacet), get_index(cofacet));
                 }
             }
         }
@@ -982,7 +968,7 @@ ripser<compressed_lower_distance_matrix>::get_edges()
         get_simplex_vertices(index, 1, dist.size(), vertices.rbegin());
         value_t length = dist(vertices[0], vertices[1]);
         if (length <= threshold)
-            edges.push_back({length, index});
+            edges.emplace_back(length, index);
     }
     return edges;
 }
@@ -992,10 +978,10 @@ std::vector<diameter_index_t> ripser<sparse_distance_matrix>::get_edges()
 {
     std::vector<diameter_index_t> edges;
     for (index_t i = 0; i < n; ++i)
-        for (auto n : dist.neighbors[i]) {
-            index_t j = get_index(n);
+        for (auto n_ : dist.neighbors[i]) {
+            index_t j = get_index(n_);
             if (i > j)
-                edges.push_back({get_diameter(n), get_edge_index(i, j)});
+                edges.emplace_back(get_diameter(n_), get_edge_index(i, j));
         }
     return edges;
 }
