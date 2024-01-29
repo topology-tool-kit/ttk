@@ -10,7 +10,7 @@
 
 vtkStandardNewMacro(ttkRipsPersistenceDiagram);
 
-int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<Ripser::pers_pair_t> > &diagram) {
+int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<ripser::pers_pair_t> > &diagram) {
   const auto pd = vtu->GetPointData();
   const auto cd = vtu->GetCellData();
 
@@ -75,7 +75,7 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
       pairsId->SetTuple1(i, i);
       pairsDim->SetTuple1(i, d);
 
-      isFinite->SetTuple1(i, pair.second.second < std::numeric_limits<Ripser::value_t>::infinity());
+      isFinite->SetTuple1(i, pair.second.second < std::numeric_limits<ripser::value_t>::infinity());
       persistence->SetTuple1(i, pair.second.second - pair.first.second);
       birthScalars->SetTuple1(i, pair.first.second);
       points->SetPoint(i0, pair.first.second, pair.first.second, 0);
@@ -179,7 +179,7 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
                    1.0, tm.getElapsedTime(), 1);
   }
 
-  std::vector<std::vector<Ripser::pers_pair_t> > diagram(0);
+  std::vector<std::vector<ripser::pers_pair_t> > diagram(0);
 
   const auto ret = this->execute(points, diagram);
   if(ret != 0) {

@@ -39,7 +39,7 @@ namespace ttk {
      * @param[in] points Input point cloud in any dimension
      * @param[out] ph Computed Rips persistence diagram
      */
-    int execute(const std::vector<std::vector<double>> &points, std::vector<std::vector<Ripser::pers_pair_t> >& ph) const;
+    int execute(const std::vector<std::vector<double>> &points, std::vector<std::vector<ripser::pers_pair_t> >& ph) const;
 
   protected:
     /** Max dimension of computed persistence diagram */

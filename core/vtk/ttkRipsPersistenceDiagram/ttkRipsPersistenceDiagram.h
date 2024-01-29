@@ -34,7 +34,7 @@
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
                                                                    protected ttk::RipsPersistenceDiagram  { // and we inherit from the base class
 private:
-  int DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<Ripser::pers_pair_t> > &diagram);
+  int DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<ripser::pers_pair_t> > &diagram);
 
 public:
   static ttkRipsPersistenceDiagram *New();

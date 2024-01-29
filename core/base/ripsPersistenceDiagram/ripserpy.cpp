@@ -58,7 +58,7 @@ derivative works thereof, in binary and source code form.
 
 #include "ripser.h"
 
-using namespace Ripser;
+using namespace ripser;
 
 void check_overflow(index_t i);
 coefficient_t get_modulo(const coefficient_t val, const coefficient_t modulus);
@@ -479,7 +479,7 @@ public:
 };
 
 template <typename DistanceMatrix>
-class ripser
+class Ripser
 {
     const DistanceMatrix dist;
     index_t n, dim_max;
@@ -511,7 +511,7 @@ class ripser
     using entry_hash_map = hash_map<entry_t, size_t, entry_hash, equal_index>;
 
 public:
-    ripser(DistanceMatrix&& _dist, index_t _dim_max, value_t _threshold,
+    Ripser(DistanceMatrix&& _dist, index_t _dim_max, value_t _threshold,
            float _ratio, coefficient_t _modulus)
         : dist(std::move(_dist)), n(dist.size()), dim_max(_dim_max),
           threshold(_threshold), ratio(_ratio), modulus(_modulus),
@@ -874,7 +874,7 @@ public:
 };
 
 template <>
-class ripser<compressed_lower_distance_matrix>::simplex_coboundary_enumerator
+class Ripser<compressed_lower_distance_matrix>::simplex_coboundary_enumerator
 {
 private:
     index_t idx_below, idx_above, v, k;
@@ -887,7 +887,7 @@ private:
 public:
     simplex_coboundary_enumerator(
         const diameter_entry_t _simplex, index_t _dim,
-        const ripser<compressed_lower_distance_matrix>& parent)
+        const Ripser<compressed_lower_distance_matrix>& parent)
         : idx_below(get_index(_simplex)), idx_above(0), v(parent.n - 1),
           k(_dim + 1), vertices(_dim + 1), simplex(_simplex),
           modulus(parent.modulus), dist(parent.dist),
@@ -924,7 +924,7 @@ public:
 };
 
 template <>
-class ripser<sparse_distance_matrix>::simplex_coboundary_enumerator
+class Ripser<sparse_distance_matrix>::simplex_coboundary_enumerator
 {
     index_t idx_below, idx_above, k;
     std::vector<index_t> vertices;
@@ -941,7 +941,7 @@ class ripser<sparse_distance_matrix>::simplex_coboundary_enumerator
 public:
     simplex_coboundary_enumerator(const diameter_entry_t _simplex,
                                   const index_t _dim,
-                                  const ripser<sparse_distance_matrix>& parent)
+                                  const Ripser<sparse_distance_matrix>& parent)
         : idx_below(get_index(_simplex)), idx_above(0), k(_dim + 1),
           vertices(_dim + 1), simplex(_simplex), modulus(parent.modulus),
           dist(parent.dist), binomial_coeff(parent.binomial_coeff),
@@ -1003,7 +1003,7 @@ public:
 
 template <>
 std::vector<diameter_index_t>
-ripser<compressed_lower_distance_matrix>::get_edges()
+Ripser<compressed_lower_distance_matrix>::get_edges()
 {
     std::vector<diameter_index_t> edges;
     std::vector<index_t> vertices(2);
@@ -1017,7 +1017,7 @@ ripser<compressed_lower_distance_matrix>::get_edges()
 }
 
 template <>
-std::vector<diameter_index_t> ripser<sparse_distance_matrix>::get_edges()
+std::vector<diameter_index_t> Ripser<sparse_distance_matrix>::get_edges()
 {
     std::vector<diameter_index_t> edges;
     for (index_t i = 0; i < n; ++i)
@@ -1029,7 +1029,7 @@ std::vector<diameter_index_t> ripser<sparse_distance_matrix>::get_edges()
     return edges;
 }
 
-void Ripser::Ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph) {
+void ripser::ripser(std::vector<std::vector<value_t> > points, value_t threshold, index_t dim_max, bool distanceMatrix, std::vector<std::vector<pers_pair_t> >& ph) {
   double ratio = 1;
   coefficient_t modulus = 2;
 
@@ -1038,12 +1038,12 @@ void Ripser::Ripser(std::vector<std::vector<value_t> > points, value_t threshold
   if (!distanceMatrix) {
     euclidean_distance_matrix eucl_dist(std::move(points));
     sparse_distance_matrix dist(eucl_dist, threshold);
-    ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
+    Ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
     ripser.compute_barcodes(ph);
   } else {
     compressed_lower_distance_matrix lower_dist(std::move(points[0]));
     sparse_distance_matrix dist(lower_dist, threshold);
-    ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
+    Ripser<sparse_distance_matrix> ripser(std::move(dist), dim_max, threshold, ratio, modulus);
     ripser.compute_barcodes(ph);
   }
 }
