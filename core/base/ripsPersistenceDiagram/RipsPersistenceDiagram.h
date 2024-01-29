@@ -3,12 +3,17 @@
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date January 2024.
 ///
-/// This module defines the %RipsPersistenceDiagram class that computes the persistence diagram
-/// of the Rips complex of the input point cloud.
-
+/// \brief TTK VTK-filter that computes the persistence diagram of a Rips complex.
+///
 /// \param Input Input table (vtkTable)
 /// \param Output PersistenceDiagram (vtkUnstructuredGrid)
 ///
+/// This module defines the %RipsPersistenceDiagram class that takes a point
+/// cloud or a distance matrix (vtkTable) and computes the persistence diagram
+/// of its Rips complex.
+///
+/// \sa ttk::Triangulation
+/// \sa ttkRipsPersistenceDiagram.cpp %for a usage example.
 
 #pragma once
 
@@ -20,8 +25,8 @@
 namespace ttk {
 
   /**
-   * The RipsPersistenceDiagram class provides methods to compute for each vertex of a
-   * triangulation the average scalar value of itself and its direct neighbors.
+   * The RipsPersistenceDiagram class provides a method to call the code Ripser
+   * in order to compute the persistence diagram of the Rips complex of the input.
    */
   class RipsPersistenceDiagram : virtual public Debug {
 
