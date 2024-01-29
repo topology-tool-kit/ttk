@@ -75,11 +75,12 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
       pairsId->SetTuple1(i, i);
       pairsDim->SetTuple1(i, d);
 
+      const double death = std::min(Threshold, pair.second.second);
       isFinite->SetTuple1(i, pair.second.second < std::numeric_limits<ripser::value_t>::infinity());
-      persistence->SetTuple1(i, pair.second.second - pair.first.second);
+      persistence->SetTuple1(i, death - pair.first.second);
       birthScalars->SetTuple1(i, pair.first.second);
       points->SetPoint(i0, pair.first.second, pair.first.second, 0);
-      points->SetPoint(i1, pair.first.second, std::min(Threshold, pair.second.second), 0);
+      points->SetPoint(i1, pair.first.second, death, 0);
 
       if(pair.first.second > birth_max) {
         birth_max = pair.first.second;

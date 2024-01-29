@@ -1,7 +1,22 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkRipsPersistenceDiagram" class="ttkRipsPersistenceDiagram" label="TTK RipsPersistenceDiagram">
-      <Documentation long_help="RipsPersistenceDiagram Long" short_help="RipsPersistenceDiagram Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+      <Documentation long_help="RipsPersistenceDiagram Long" short_help="RipsPersistenceDiagram Short">
+        TTK plugin for the computation of the persistence diagram of Rips complexes.
+
+        This plugin computes the persistence diagram of the Rips complex of the
+        input point cloud or distance matrix. The X-coordinate of each pair
+        corresponds to its birth, while its smallest and highest Y-coordinates
+        correspond to its birth and death respectively.
+
+        In practice, the diagram is represented by a vtkUnstructuredGrid. Each
+        vertex of this mesh represent a critical point of the input data. It is
+        associated with point data (vertexId, critical type). Each vertical edge
+        of this mesh represent a persistence pair. It is associated with cell data
+        (persistence of the pair, critical index of the extremum of the pair).
+        The diagonal of the diagram can be filtered out by considering its
+        PairIdentifier value (set at -1).
+      </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
       <InputProperty name="Input" command="SetInputConnection">
