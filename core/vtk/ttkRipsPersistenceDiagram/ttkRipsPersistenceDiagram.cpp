@@ -10,12 +10,14 @@
 
 vtkStandardNewMacro(ttkRipsPersistenceDiagram);
 
-int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std::vector<std::vector<ripser::pers_pair_t> > &diagram) {
+int ttkRipsPersistenceDiagram::DiagramToVTU(
+  vtkUnstructuredGrid *vtu,
+  const std::vector<std::vector<ripser::pers_pair_t>> &diagram) {
   const auto pd = vtu->GetPointData();
   const auto cd = vtu->GetCellData();
 
   int n_pairs = 0;
-  for (auto const& diagram_d : diagram)
+  for(auto const &diagram_d : diagram)
     n_pairs += diagram_d.size();
 
   // point data arrays
@@ -40,13 +42,13 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
   pairsDim->SetNumberOfTuples(n_pairs);
   cd->AddArray(pairsDim);
 
-  //vtkSmartPointer<vtkDataArray> const persistence{};
+  // vtkSmartPointer<vtkDataArray> const persistence{};
   vtkNew<vtkDoubleArray> persistence{};
   persistence->SetName(ttk::PersistenceName);
   persistence->SetNumberOfTuples(n_pairs);
   cd->AddArray(persistence);
 
-  //vtkSmartPointer<vtkDataArray> const birthScalars{};
+  // vtkSmartPointer<vtkDataArray> const birthScalars{};
   vtkNew<vtkDoubleArray> birthScalars{};
   birthScalars->SetName(ttk::PersistenceBirthName);
   birthScalars->SetNumberOfTuples(n_pairs);
@@ -69,14 +71,16 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
   unsigned i = 0;
   unsigned i_max = 0;
   double birth_max = 0.;
-  for (unsigned d = 0; d < diagram.size(); ++d) {
-    for (auto const& pair : diagram[d]) {
-      const unsigned i0 = 2*i, i1 = 2*i+1;
+  for(unsigned d = 0; d < diagram.size(); ++d) {
+    for(auto const &pair : diagram[d]) {
+      const unsigned i0 = 2 * i, i1 = 2 * i + 1;
       pairsId->SetTuple1(i, i);
       pairsDim->SetTuple1(i, d);
 
       const double death = std::min(Threshold, pair.second.second);
-      isFinite->SetTuple1(i, pair.second.second < std::numeric_limits<ripser::value_t>::infinity());
+      isFinite->SetTuple1(
+        i,
+        pair.second.second < std::numeric_limits<ripser::value_t>::infinity());
       persistence->SetTuple1(i, death - pair.first.second);
       birthScalars->SetTuple1(i, pair.first.second);
       points->SetPoint(i0, pair.first.second, pair.first.second, 0);
@@ -92,10 +96,12 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
       offsets->SetTuple1(i, 2 * i);
 
       critType->SetTuple1(i0, d);
-      critType->SetTuple1(i1, d+1);
+      critType->SetTuple1(i1, d + 1);
 
-      vertsId->SetTuple1(i0, *std::max_element(pair.first.first.begin(), pair.first.first.end()));
-      vertsId->SetTuple1(i1, *std::max_element(pair.second.first.begin(), pair.second.first.end()));
+      vertsId->SetTuple1(i0, *std::max_element(pair.first.first.begin(),
+                                               pair.first.first.end()));
+      vertsId->SetTuple1(i1, *std::max_element(pair.second.first.begin(),
+                                               pair.second.first.end()));
 
       ++i;
     }
@@ -109,7 +115,7 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(vtkUnstructuredGrid *vtu, const std:
   vtu->SetCells(VTK_LINE, cells);
 
   // add diagonal
-  std::array<vtkIdType, 2> diag{0, 2*i_max};
+  std::array<vtkIdType, 2> diag{0, 2 * i_max};
   vtu->InsertNextCell(VTK_LINE, 2, diag.data());
   pairsId->InsertTuple1(n_pairs, -1);
   pairsDim->InsertTuple1(n_pairs, -1);
@@ -125,7 +131,8 @@ ttkRipsPersistenceDiagram::ttkRipsPersistenceDiagram() {
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkRipsPersistenceDiagram::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkRipsPersistenceDiagram::FillInputPortInformation(int port,
+                                                        vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
@@ -133,7 +140,8 @@ int ttkRipsPersistenceDiagram::FillInputPortInformation(int port, vtkInformation
   return 0;
 }
 
-int ttkRipsPersistenceDiagram::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkRipsPersistenceDiagram::FillOutputPortInformation(int port,
+                                                         vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
@@ -142,45 +150,48 @@ int ttkRipsPersistenceDiagram::FillOutputPortInformation(int port, vtkInformatio
 }
 
 int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                           vtkInformationVector **inputVector,
+                                           vtkInformationVector *outputVector) {
 
   ttk::Timer tm{};
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
-  vtkUnstructuredGrid *outputPersistenceDiagram = vtkUnstructuredGrid::GetData(outputVector);
+  vtkUnstructuredGrid *outputPersistenceDiagram
+    = vtkUnstructuredGrid::GetData(outputVector);
 
   if(!input)
     return 0;
 
   std::vector<std::vector<double>> points;
-  if (!InputIsDistanceMatrix) {
+  if(!InputIsDistanceMatrix) {
     const int numberOfPoints = input->GetNumberOfRows();
     const int dimension = input->GetNumberOfColumns();
 
     points = std::vector<std::vector<double>>(numberOfPoints);
-    for (int i = 0; i<numberOfPoints; ++i) {
-      for (int j = 0; j<dimension; ++j)
-        points[i].push_back(input->GetValue(i,j).ToDouble());
+    for(int i = 0; i < numberOfPoints; ++i) {
+      for(int j = 0; j < dimension; ++j)
+        points[i].push_back(input->GetValue(i, j).ToDouble());
     }
-    this->printMsg("Ripser starts (#dim: "+std::to_string(dimension)+
-                     ", #pts: "+std::to_string(numberOfPoints) + ")",
+    this->printMsg("Ripser starts (#dim: " + std::to_string(dimension)
+                     + ", #pts: " + std::to_string(numberOfPoints) + ")",
                    1.0, tm.getElapsedTime(), 1);
-  }
-  else {
-    const int n = std::min(input->GetNumberOfRows(), input->GetNumberOfColumns());
+  } else {
+    const int n
+      = std::min(input->GetNumberOfRows(), input->GetNumberOfColumns());
     const int column_offset = input->GetNumberOfColumns() - n;
 
     points = {std::vector<double>(n * (n - 1) / 2)};
-    for (int i = 1; i<n; ++i) {
-      for (int j = 0; j<i; ++j)
-        points[0][i * (i - 1) / 2 + j] = input->GetValue(i, j + column_offset).ToDouble();
+    for(int i = 1; i < n; ++i) {
+      for(int j = 0; j < i; ++j)
+        points[0][i * (i - 1) / 2 + j]
+          = input->GetValue(i, j + column_offset).ToDouble();
     }
-    this->printMsg("Ripser starts ("+std::to_string(n)+"x"+std::to_string(n)+" dist mat)",
+    this->printMsg("Ripser starts (" + std::to_string(n) + "x"
+                     + std::to_string(n) + " dist mat)",
                    1.0, tm.getElapsedTime(), 1);
   }
 
-  std::vector<std::vector<ripser::pers_pair_t> > diagram(0);
+  std::vector<std::vector<ripser::pers_pair_t>> diagram(0);
 
   const auto ret = this->execute(points, diagram);
   if(ret != 0) {
@@ -191,8 +202,7 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
 
   // shallow copy input Field Data
-  outputPersistenceDiagram->GetFieldData()->ShallowCopy(
-    input->GetFieldData());
+  outputPersistenceDiagram->GetFieldData()->ShallowCopy(input->GetFieldData());
 
   // return success
   return 1;

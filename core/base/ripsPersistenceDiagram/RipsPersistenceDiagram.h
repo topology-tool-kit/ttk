@@ -3,7 +3,8 @@
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date January 2024.
 ///
-/// \brief TTK VTK-filter that computes the persistence diagram of a Rips complex.
+/// \brief TTK VTK-filter that computes the persistence diagram of a Rips
+/// complex.
 ///
 /// \param Input Input table (vtkTable)
 /// \param Output PersistenceDiagram (vtkUnstructuredGrid)
@@ -26,7 +27,8 @@ namespace ttk {
 
   /**
    * The RipsPersistenceDiagram class provides a method to call the code Ripser
-   * in order to compute the persistence diagram of the Rips complex of the input.
+   * in order to compute the persistence diagram of the Rips complex of the
+   * input.
    */
   class RipsPersistenceDiagram : virtual public Debug {
 
@@ -39,7 +41,8 @@ namespace ttk {
      * @param[in] points Input point cloud in any dimension
      * @param[out] ph Computed Rips persistence diagram
      */
-    int execute(const std::vector<std::vector<double>> &points, std::vector<std::vector<ripser::pers_pair_t> >& ph) const;
+    int execute(const std::vector<std::vector<double>> &points,
+                std::vector<std::vector<ripser::pers_pair_t>> &ph) const;
 
   protected:
     /** Max dimension of computed persistence diagram */
