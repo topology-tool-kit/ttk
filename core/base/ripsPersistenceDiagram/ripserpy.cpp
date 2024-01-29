@@ -60,6 +60,26 @@ derivative works thereof, in binary and source code form.
 
 using namespace Ripser;
 
+void check_overflow(index_t i);
+coefficient_t get_modulo(const coefficient_t val, const coefficient_t modulus);
+coefficient_t normalize(const coefficient_t n, const coefficient_t modulus);
+std::vector<coefficient_t> multiplicative_inverse_vector(const coefficient_t m);
+
+#ifdef USE_ROBINHOOD_HASHMAP
+
+#include "robin_hood.h"
+
+template <class Key, class T, class H, class E>
+using hash_map = robin_hood::unordered_map<Key, T, H, E>;
+template <class Key> using hash = robin_hood::hash<Key>;
+
+#else
+
+template <class Key, class T, class H, class E> using hash_map = std::unordered_map<Key, T, H, E>;
+template <class Key> using hash = std::hash<Key>;
+
+#endif
+
 #ifdef INDICATE_PROGRESS
 static const std::chrono::milliseconds time_step(40);
 #endif
@@ -163,6 +183,12 @@ PACK(struct entry_t {
 static_assert(sizeof(entry_t) == sizeof(index_t),
               "size of entry_t is not the same as index_t");
 
+entry_t make_entry(index_t i, coefficient_t c);
+index_t get_index(const entry_t& e);
+index_t get_coefficient(const entry_t& e);
+void set_coefficient(entry_t& e, const coefficient_t c);
+std::ostream& operator<<(std::ostream& stream, const entry_t& e);
+
 entry_t make_entry(index_t i, coefficient_t c) { return entry_t(i, c); }
 index_t get_index(const entry_t& e) { return e.index; }
 index_t get_coefficient(const entry_t& e) { return e.coefficient; }
@@ -177,6 +203,11 @@ std::ostream& operator<<(std::ostream& stream, const entry_t& e)
 #else
 
 using entry_t = index_t;
+index_t get_index(const entry_t& i);
+index_t get_coefficient(const entry_t&  /*i*/);
+entry_t make_entry(index_t _index, coefficient_t  /*_value*/);
+void set_coefficient(entry_t& /*e*/, const coefficient_t /*c*/);
+
 index_t get_index(const entry_t& i) { return i; }
 index_t get_coefficient(const entry_t&  /*i*/) { return 1; }
 entry_t make_entry(index_t _index, coefficient_t  /*_value*/)
@@ -187,13 +218,18 @@ void set_coefficient(entry_t& /*e*/, const coefficient_t /*c*/) {}
 
 #endif
 
+const entry_t& get_entry(const entry_t& e);
 const entry_t& get_entry(const entry_t& e) { return e; }
 
 using diameter_index_t = std::pair<value_t, index_t>;
+value_t get_diameter(const diameter_index_t& i);
+index_t get_index(const diameter_index_t& i);
 value_t get_diameter(const diameter_index_t& i) { return i.first; }
 index_t get_index(const diameter_index_t& i) { return i.second; }
 
 using index_diameter_t = std::pair<index_t, value_t>;
+index_t get_index(const index_diameter_t& i);
+value_t get_diameter(const index_diameter_t& i);
 index_t get_index(const index_diameter_t& i) { return i.first; }
 value_t get_diameter(const index_diameter_t& i) { return i.second; }
 
@@ -213,6 +249,13 @@ struct diameter_entry_t : std::pair<value_t, entry_t> {
     }
     diameter_entry_t(const index_t& _index) : diameter_entry_t(0, _index, 0) {}
 };
+
+const entry_t& get_entry(const diameter_entry_t& p);
+entry_t& get_entry(diameter_entry_t& p);
+index_t get_index(const diameter_entry_t& p);
+coefficient_t get_coefficient(const diameter_entry_t& p);
+const value_t& get_diameter(const diameter_entry_t& p);
+void set_coefficient(diameter_entry_t& p, const coefficient_t c);
 
 const entry_t& get_entry(const diameter_entry_t& p) { return p.second; }
 entry_t& get_entry(diameter_entry_t& p) { return p.second; }

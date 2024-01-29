@@ -19,24 +19,7 @@
 //#define INDICATE_PROGRESS
 //#define USE_ROBINHOOD_HASHMAP
 
-#ifdef USE_ROBINHOOD_HASHMAP
-
-#include "robin_hood.h"
-
 namespace Ripser {
-
-template <class Key, class T, class H, class E>
-using hash_map = robin_hood::unordered_map<Key, T, H, E>;
-template <class Key> using hash = robin_hood::hash<Key>;
-
-#else
-
-namespace Ripser {
-
-template <class Key, class T, class H, class E> using hash_map = std::unordered_map<Key, T, H, E>;
-template <class Key> using hash = std::hash<Key>;
-
-#endif
 
 using value_t = double;
 using index_t = int64_t;
