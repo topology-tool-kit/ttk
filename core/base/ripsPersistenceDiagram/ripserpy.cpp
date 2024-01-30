@@ -408,9 +408,6 @@ struct euclidean_distance_matrix {
 
   euclidean_distance_matrix(std::vector<std::vector<value_t>> &&_points)
     : points(std::move(_points)) {
-    for(__attribute__((unused)) const auto& p : points) {
-      assert(p.size() == points.front().size());
-    }
   }
 
   value_t operator()(const index_t i, const index_t j) const {
