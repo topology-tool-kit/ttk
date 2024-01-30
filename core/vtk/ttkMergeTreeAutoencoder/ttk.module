@@ -1,0 +1,13 @@
+NAME
+  ttkMergeTreeAutoencoder
+SOURCES
+  ttkMergeTreeAutoencoder.cpp
+  ttkMergeTreeAutoencoderUtils.cpp
+HEADERS
+  ttkMergeTreeAutoencoder.h
+  ttkMergeTreeAutoencoderUtils.h
+DEPENDS
+  mergeTreeAutoencoder
+  ttkMergeTree
+  ttkPlanarGraphLayout
+  ttkAlgorithm

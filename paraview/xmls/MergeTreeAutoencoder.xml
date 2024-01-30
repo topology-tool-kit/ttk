@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreeAutoencoder" class="ttkMergeTreeAutoencoder" label="TTK MergeTreeAutoencoder">
+      <Documentation long_help="MergeTreeAutoencoder Long" short_help="MergeTreeAutoencoder Short">This VTK filter uses the ttk::MergeTreeAutoencoder module to compute an auto-encoder of merge trees or persistence diagrams.</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="Input"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Merge trees to process.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+          name="Optional Input"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          If input are merge trees, then this input can be used to process join and split trees together. Pass as input either join or split trees in the first input and the other type of trees in the second input.
+          If input are persistence diagrams, then this has no effect to use this input.
+        </Documentation>
+      </InputProperty>
+    
+      <InputProperty
+        name="Info"
+        port_index="2"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Additionnal information such as cluster assignment for cluster loss (the name of this array must be "ClusterAssignment").
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->       
+      <IntVectorProperty
+      name="NormalizedWasserstein"
+      command="SetNormalizedWasserstein"
+      label="Normalized Wasserstein"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+    
+      <IntVectorProperty
+      name="NumberOfEncoderLayers"
+      command="SetNumberOfEncoderLayers"
+      label="Number of Encoder Layers"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          Number of layers in the encoder (without counting the latent space layer).
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ScaleLayerAfterLatent"
+      command="SetScaleLayerAfterLatent"
+      label="ScaleLayerAfterLatent"
+      number_of_elements="1"
+      default_values="0">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="InputNumberOfGeodesics"
+      command="SetInputNumberOfGeodesics"
+      label="Input Number of Geodesics"
+      number_of_elements="1"
+      default_values="16">
+        <Documentation>
+          Number of geodesics in the input layer.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="InputOriginPrimeSizePercent"
+      command="SetInputOriginPrimeSizePercent"
+      label="Input Origin Prime Size Percent"
+      number_of_elements="1"
+      default_values="15">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+      name="LatentSpaceNumberOfGeodesics"
+      command="SetNumberOfGeodesics"
+      label="Latent Space Number of Geodesics"
+      number_of_elements="1"
+      default_values="2">
+        <Documentation>
+          Number of geodesics in the latent space.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="LatentSpaceOriginPrimeSizePercent"
+      command="SetLatentSpaceOriginPrimeSizePercent"
+      label="Latent Space Origin Prime Size Percent"
+      number_of_elements="1"
+      default_values="10">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="BarycenterSizeLimitPercent"
+      command="SetBarycenterSizeLimitPercent"
+      label="Barycenter Size Limit Percent"
+      number_of_elements="1"
+      default_values="20"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="100" />
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+      name="MinIteration"
+      command="SetMinIteration"
+      label="Min Iteration"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="MaxIteration"
+      command="SetMaxIteration"
+      label="Max Iteration"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="IterationGap"
+      command="SetIterationGap"
+      label="Iteration Gap"
+      number_of_elements="1"
+      default_values="100"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+       <DoubleVectorProperty
+      name="BatchSize"
+      command="SetBatchSize"
+      label="Batch Size"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+      name="Optimizer"
+      label="Optimizer"
+      command="SetOptimizer"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+      <EnumerationDomain name="enum">
+          <Entry value="0" text="Adam"/>
+          <Entry value="1" text="SGD"/>
+          <Entry value="2" text="RMSprop"/>
+      </EnumerationDomain>
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="GradientStepSize"
+      command="SetGradientStepSize"
+      label="Gradient Step Size"
+      number_of_elements="1"
+      default_values="0.1">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="Beta1"
+      command="SetBeta1"
+      label="Beta1"
+      number_of_elements="1"
+      default_values="0.9"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="Beta2"
+      command="SetBeta2"
+      label="Beta2"
+      number_of_elements="1"
+      default_values="0.999"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="ReconstructionLossWeight"
+      command="SetReconstructionLossWeight"
+      label="ReconstructionLossWeight"
+      number_of_elements="1"
+      default_values="1.0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="TrackingLossWeight"
+      command="SetTrackingLossWeight"
+      label="TrackingLossWeight"
+      number_of_elements="1"
+      default_values="0.0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="MetricLossWeight"
+      command="SetMetricLossWeight"
+      label="MetricLossWeight"
+      number_of_elements="1"
+      default_values="0.0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="ClusteringLossWeight"
+      command="SetClusteringLossWeight"
+      label="ClusteringLossWeight"
+      number_of_elements="1"
+      default_values="0.0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+      name="ClusteringLossTemperature"
+      command="SetClusteringLossTemperature"
+      label="ClusteringLossTemperature"
+      number_of_elements="1"
+      default_values="10.0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+      name="CustomLossDynamicWeight"
+      command="SetCustomLossDynamicWeight"
+      label="CustomLossDynamicWeight"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="CustomLossSpace"
+      command="SetCustomLossSpace"
+      label="CustomLossSpace"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          0 : latent coefficients ; 1 : latent PD/MT
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="CustomLossActivate"
+      command="SetCustomLossActivate"
+      label="CustomLossActivate"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="CustomLossSpace"
+                                  value="0" />
+        </Hints>
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="NormalizeMetricLoss"
+      command="SetNormalizeMetricLoss"
+      label="NormalizeMetricLoss"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="NumberOfInit"
+      command="SetNumberOfInit"
+      label="Number of init."
+      number_of_elements="1"
+      default_values="4"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="EuclideanVectorsInit"
+      command="SetEuclideanVectorsInit"
+      label="Euclidean Vectors Init"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="InitOriginPrimeStructByCopy"
+      command="SetInitOriginPrimeStructByCopy"
+      label="InitOriginPrimeStructByCopy"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="TrackingLossDecoding"
+      command="SetTrackingLossDecoding"
+      label="TrackingLossDecoding"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="TrackingLossInitRandomness"
+      command="SetTrackingLossInitRandomness"
+      label="TrackingLossInitRandomness"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+      name="NumberOfProjectionSteps"
+      command="SetNumberOfProjectionSteps"
+      label="Number Of Projection Steps"
+      number_of_elements="1"
+      default_values="2">
+        <Documentation>
+          Number of steps to compute the projection of each input.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="Deterministic"
+      command="SetDeterministic"
+      label="Deterministic"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="Activate"
+      command="SetActivate"
+      label="Activate"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ActivationFunction"
+      label="Activation Function"
+      command="SetActivationFunction"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+      <EnumerationDomain name="enum">
+          <Entry value="0" text="ReLU"/>
+          <Entry value="1" text="Leaky ReLU"/>
+      </EnumerationDomain>
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="FullSymmetricAE"
+      command="SetFullSymmetricAE"
+      label="FullSymmetricAE"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ActivateOutputInit"
+      command="SetActivateOutputInit"
+      label="Activate Output Init"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+      name="JoinSplitMixtureCoefficient"
+      command="SetJoinSplitMixtureCoefficient"
+      label="Pair Type Mixture Coefficient"
+      number_of_elements="1"
+      default_values="0.5"
+      panel_visibility="advanced">
+        <Documentation>
+          If input are merge trees, this parameter allows to weight between the first input and the second input, typically join and split trees (0 for only the second input and 1 for only the first one).
+          If input are persistence diagrams, this parameter allows to weight between min-sad and sad-max pairs (0 for only sad-max and 1 for only min-sad).
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
+      </DoubleVectorProperty>
+      
+      <!-- Testing -->
+      <IntVectorProperty
+      name="NodePerTask"
+      command="SetNodePerTask"
+      label="NodePerTask"
+      number_of_elements="1"
+      default_values="32"
+      panel_visibility="advanced">
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      <IntVectorProperty
+      name="CreateOutput"
+      command="SetCreateOutput"
+      label="CreateOutput"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+
+      <!-- Create a UI group that contains all input parameter widgets -->      
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="NormalizedWasserstein"/>
+        <Property name="Deterministic"/>
+        <Property name="JoinSplitMixtureCoefficient"/>
+      </PropertyGroup>
+      ${MERGE_TREE_PREPROCESS_WIDGETS}
+      
+      <PropertyGroup panel_widget="Line" label="Architecture options">
+        <Property name="NumberOfEncoderLayers"/>
+        <Property name="ScaleLayerAfterLatent"/>
+        <Property name="InputNumberOfGeodesics"/>
+        <Property name="InputOriginPrimeSizePercent"/>
+        <Property name="LatentSpaceNumberOfGeodesics"/>
+        <Property name="LatentSpaceOriginPrimeSizePercent"/>
+        <Property name="BarycenterSizeLimitPercent"/>
+        <Property name="Activate"/>
+        <Property name="ActivationFunction"/>
+        <Property name="FullSymmetricAE"/>
+        <Property name="ActivateOutputInit"/>
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Optimization options">
+        <Property name="MinIteration"/>
+        <Property name="MaxIteration"/>
+        <Property name="IterationGap"/>
+        <Property name="BatchSize"/>
+        <Property name="Optimizer"/>
+        <Property name="GradientStepSize"/>
+        <Property name="Beta1"/>
+        <Property name="Beta2"/>
+        <Property name="ReconstructionLossWeight"/>
+        <Property name="TrackingLossWeight"/>
+        <Property name="MetricLossWeight"/>
+        <Property name="ClusteringLossWeight"/>
+        <Property name="ClusteringLossTemperature"/>
+        <Property name="CustomLossDynamicWeight"/>
+        <Property name="CustomLossSpace"/>
+        <Property name="CustomLossActivate"/>
+        <Property name="NormalizeMetricLoss"/>
+        <Property name="NumberOfInit"/>
+        <Property name="EuclideanVectorsInit"/>
+        <Property name="InitOriginPrimeStructByCopy"/>
+        <Property name="TrackingLossDecoding"/>
+        <Property name="TrackingLossInitRandomness"/>
+        <Property name="NumberOfProjectionSteps"/>
+      </PropertyGroup>
+
+      <!-- Create a UI group that contains all output parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="CreateOutput"/>
+      </PropertyGroup>
+      
+      <!-- OUTPUT PORT -->
+      <OutputPort name="Data" index="0" id="port0" />
+      <OutputPort name="Origins" index="1" id="port1" />
+      <OutputPort name="Coefficients" index="2" id="port2" />
+      <OutputPort name="Axes Vectors" index="3" id="port3" />
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

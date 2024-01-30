@@ -38,7 +38,7 @@
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Merge trees to process.
+          Barycenter of the input merge trees.
         </Documentation>
       </InputProperty>
       

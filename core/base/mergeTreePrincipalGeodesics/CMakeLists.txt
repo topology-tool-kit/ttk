@@ -1,10 +1,12 @@
 ttk_add_base_library(mergeTreePrincipalGeodesics
   SOURCES
     MergeTreeAxesAlgorithmBase.cpp
+    MergeTreeAxesAlgorithmUtils.cpp
     MergeTreePrincipalGeodesicsBase.cpp
     MergeTreePrincipalGeodesics.cpp
   HEADERS
     MergeTreeAxesAlgorithmBase.h
+    MergeTreeAxesAlgorithmUtils.h
     MergeTreePrincipalGeodesicsBase.h
     MergeTreePrincipalGeodesics.h
     MergeTreePrincipalGeodesicsUtils.h

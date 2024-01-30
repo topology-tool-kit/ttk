@@ -130,7 +130,8 @@ namespace ttk {
     }
 
     int FTMTree_MT::getNumberOfLeavesFromTree() {
-      auto leaves = this->getLeaves();
+      std::vector<idNode> leaves;
+      this->getLeavesFromTree(leaves);
       return leaves.size();
     }
 
@@ -249,7 +250,6 @@ namespace ttk {
         std::stringstream ss;
         ss << "problem, there is " << noRoot << " root(s)";
         printErr(ss.str());
-        this->printTree2();
         this->printTree();
       }
       if(this->isNodeAlone(nodeId))
@@ -431,6 +431,25 @@ namespace ttk {
       ss << std::endl;
     }
 
+    std::stringstream FTMTree_MT::printSubTree(idNode subRoot) {
+      std::stringstream ss;
+      ss << "Nodes----------" << std::endl;
+      std::queue<idNode> queue;
+      queue.push(subRoot);
+      while(!queue.empty()) {
+        idNode node = queue.front();
+        queue.pop();
+
+        printNodeSS(node, ss);
+
+        std::vector<idNode> children;
+        this->getChildren(node, children);
+        for(idNode child : children)
+          queue.push(child);
+      }
+      return ss;
+    }
+
     std::stringstream FTMTree_MT::printTree(bool doPrint) {
       std::stringstream ss;
       std::vector<idNode> allRoots;
@@ -440,20 +459,7 @@ namespace ttk {
       for(unsigned int i = 0; i < allRoots.size(); ++i) {
         if(allRoots.size() != 1)
           ss << i << " _ ";
-        ss << "Nodes----------" << std::endl;
-        std::queue<idNode> queue;
-        queue.push(allRoots[i]);
-        while(!queue.empty()) {
-          idNode const node = queue.front();
-          queue.pop();
-
-          printNodeSS(node, ss);
-
-          std::vector<idNode> children;
-          this->getChildren(node, children);
-          for(idNode const child : children)
-            queue.push(child);
-        }
+        ss << this->printSubTree(allRoots[i]).str();
       }
       if(allRoots.size() == 0)
         for(unsigned int i = 0; i < this->getNumberOfNodes(); ++i)

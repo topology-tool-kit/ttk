@@ -11,8 +11,8 @@
 /// Principal Geodesic Analysis basis and projection coefficients.
 ///
 /// \param Input vtkMultiBlockDataSet Barycenter
-/// \param Input vtkMultiBlockDataSet Geodesics
 /// \param Input vtkTable Coefficients
+/// \param Input vtkTable Geodesics
 /// \param Input vtkTable Branches Correlation
 /// \param Output vtkMultiBlockDataSet Trees
 ///
