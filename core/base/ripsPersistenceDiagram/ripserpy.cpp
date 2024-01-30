@@ -127,7 +127,7 @@ public:
   }
 
   index_t operator()(index_t n, index_t k) const {
-    assert(n < (B.size() / offset) && k < offset && n >= k - 1);
+    assert(n < index_t(B.size() / offset) && k < index_t(offset) && n >= k - 1);
     return B[n * offset + k];
   }
 };
@@ -408,14 +408,14 @@ struct euclidean_distance_matrix {
 
   euclidean_distance_matrix(std::vector<std::vector<value_t>> &&_points)
     : points(std::move(_points)) {
-    for(auto p : points) {
+    for(__attribute__((unused)) const auto& p : points) {
       assert(p.size() == points.front().size());
     }
   }
 
   value_t operator()(const index_t i, const index_t j) const {
-    assert(i < points.size());
-    assert(j < points.size());
+    assert(i < index_t(points.size()));
+    assert(j < index_t(points.size()));
     return std::sqrt(std::inner_product(
       points[i].begin(), points[i].end(), points[j].begin(), value_t(),
       std::plus<value_t>(),
