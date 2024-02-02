@@ -1,5 +1,5 @@
-/// \class ttkRipsPersistenceDiagram
 /// \ingroup vtk
+/// \class ttkRipsPersistenceDiagram
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date January 2024.
 ///
@@ -25,11 +25,11 @@
 #include <ttkRipsPersistenceDiagramModule.h>
 
 // VTK Includes
-#include <ttkAlgorithm.h>
-
-// TTK Base Includes
-#include <RipsPersistenceDiagram.h>
 #include <vtkUnstructuredGrid.h>
+
+// TTK Includes
+#include <RipsPersistenceDiagram.h>
+#include <ttkAlgorithm.h>
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
@@ -44,11 +44,11 @@ public:
   static ttkRipsPersistenceDiagram *New();
   vtkTypeMacro(ttkRipsPersistenceDiagram, ttkAlgorithm);
 
-  vtkSetMacro(MaxDim, int);
-  vtkGetMacro(MaxDim, int);
+  vtkSetMacro(SimplexMaximumDimension, int);
+  vtkGetMacro(SimplexMaximumDimension, int);
 
-  vtkSetMacro(Threshold, double);
-  vtkGetMacro(Threshold, double);
+  vtkSetMacro(SimplexMaximumDiameter, double);
+  vtkGetMacro(SimplexMaximumDiameter, double);
 
   vtkSetMacro(InputIsDistanceMatrix, int);
   vtkGetMacro(InputIsDistanceMatrix, int);

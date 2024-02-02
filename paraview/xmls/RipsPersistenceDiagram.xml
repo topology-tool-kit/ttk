@@ -27,16 +27,15 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkTable" />
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1" />
         <Documentation>Point cloud to process.</Documentation>
       </InputProperty>
 
       <!-- INPUT PARAMETER WIDGETS -->
 
       <IntVectorProperty
-              name="MaxDim"
-              label="Max Dimension"
-              command="SetMaxDim"
+              name="SimplexMaximumDimension"
+              label="Max dimension"
+              command="SetSimplexMaximumDimension"
               number_of_elements="1"
               default_values="1">
         <Documentation>
@@ -45,9 +44,9 @@
       </IntVectorProperty>
 
       <DoubleVectorProperty
-              name="Threshold"
-              label="Rips Threshold"
-              command="SetThreshold"
+              name="SimplexMaximumDiameter"
+              label="Max diameter"
+              command="SetSimplexMaximumDiameter"
               number_of_elements="1"
               default_values="1.0">
         <Documentation>
@@ -69,8 +68,8 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="MaxDim" />
-        <Property name="Threshold" />
+        <Property name="SimplexMaximumDimension" />
+        <Property name="SimplexMaximumDiameter" />
         <Property name="InputIsDistanceMatrix" />
       </PropertyGroup>
 

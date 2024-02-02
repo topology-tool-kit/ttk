@@ -42,13 +42,11 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(
   pairsDim->SetNumberOfTuples(n_pairs);
   cd->AddArray(pairsDim);
 
-  // vtkSmartPointer<vtkDataArray> const persistence{};
   vtkNew<vtkDoubleArray> persistence{};
   persistence->SetName(ttk::PersistenceName);
   persistence->SetNumberOfTuples(n_pairs);
   cd->AddArray(persistence);
 
-  // vtkSmartPointer<vtkDataArray> const birthScalars{};
   vtkNew<vtkDoubleArray> birthScalars{};
   birthScalars->SetName(ttk::PersistenceBirthName);
   birthScalars->SetNumberOfTuples(n_pairs);
@@ -77,7 +75,7 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(
       pairsId->SetTuple1(i, i);
       pairsDim->SetTuple1(i, d);
 
-      const double death = std::min(Threshold, pair.second.second);
+      const double death = std::min(SimplexMaximumDiameter, pair.second.second);
       isFinite->SetTuple1(
         i,
         pair.second.second < std::numeric_limits<ripser::value_t>::infinity());
@@ -190,6 +188,12 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
                      + std::to_string(n) + " dist mat)",
                    1.0, tm.getElapsedTime(), 1);
   }
+  this->printMsg(
+    "Simplex maximum dimension: " + std::to_string(SimplexMaximumDimension),
+    1.0, tm.getElapsedTime(), 1);
+  this->printMsg(
+    "Simplex maximum diameter: " + std::to_string(SimplexMaximumDiameter), 1.0,
+    tm.getElapsedTime(), 1);
 
   std::vector<std::vector<ripser::pers_pair_t>> diagram(0);
 

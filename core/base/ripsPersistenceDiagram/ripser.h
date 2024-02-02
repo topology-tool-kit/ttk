@@ -15,10 +15,6 @@
 #include <sstream>
 #include <unordered_map>
 
-//#define USE_COEFFICIENTS
-//#define INDICATE_PROGRESS
-//#define USE_ROBINHOOD_HASHMAP
-
 namespace ripser {
 
   using value_t = double;

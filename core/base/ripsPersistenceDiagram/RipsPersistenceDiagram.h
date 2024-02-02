@@ -3,15 +3,12 @@
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date January 2024.
 ///
-/// \brief TTK VTK-filter that computes the persistence diagram of a Rips
+/// \brief TTK base class that computes the persistence diagram of a Rips
 /// complex.
 ///
-/// \param Input Input table (vtkTable)
-/// \param Output PersistenceDiagram (vtkUnstructuredGrid)
-///
 /// This module defines the %RipsPersistenceDiagram class that takes a point
-/// cloud or a distance matrix (vtkTable) and computes the persistence diagram
-/// of its Rips complex.
+/// cloud or a distance matrix and computes the persistence diagram of its Rips
+/// complex.
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkRipsPersistenceDiagram.cpp %for a usage example.
@@ -38,7 +35,8 @@ namespace ttk {
     /**
      * @brief Main entry point
      *
-     * @param[in] points Input point cloud in any dimension
+     * @param[in] points Input point cloud in any dimension or input distance
+     * matrix
      * @param[out] ph Computed Rips persistence diagram
      */
     int execute(const std::vector<std::vector<double>> &points,
@@ -46,9 +44,9 @@ namespace ttk {
 
   protected:
     /** Max dimension of computed persistence diagram */
-    int MaxDim{1};
+    int SimplexMaximumDimension{1};
     /** Rips threshold */
-    double Threshold{1.0};
+    double SimplexMaximumDiameter{1.0};
     /** is input a distance matrix */
     int InputIsDistanceMatrix{0};
 
