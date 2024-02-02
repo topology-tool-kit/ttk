@@ -194,7 +194,6 @@ namespace ttk {
       this->Method = method;
 
 #ifndef TTK_ENABLE_SCIKIT_LEARN
-      TTK_FORCE_USE(nColumns);
       if(this->Method != METHOD::TOPOMAP) {
         this->printWrn("TTK has been built without scikit-learn.");
         this->printWrn("Defaulting to the `TopoMap` backend.");
