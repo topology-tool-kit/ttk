@@ -57,7 +57,13 @@ int DimensionReduction::execute(
   const int nColumns,
   int *insertionTimeForTopomap) const {
 
-#ifdef TTK_ENABLE_SCIKIT_LEARN
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+  TTK_FORCE_USE(inputMatrix);
+  TTK_FORCE_USE(outputEmbedding);
+  TTK_FORCE_USE(nRows);
+  TTK_FORCE_USE(nColumns);
+  TTK_FORCE_USE(insertionTimeForTopomap);
+#elif
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_ < '3')
     return -1;
