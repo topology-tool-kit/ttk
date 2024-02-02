@@ -57,6 +57,15 @@ int DimensionReduction::execute(
   const int nColumns,
   int *insertionTimeForTopomap) const {
 
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+  TTK_FORCE_USE(nColumns);
+  if(this->Method != METHOD::TOPOMAP) {
+    this->printWrn("TTK has been built without scikit-learn.");
+    this->printWrn("Defaulting to the `TopoMap` backend.");
+    this->Method = METHOD::TOPOMAP;
+  }
+#endif
+
   Timer t;
 
   if(this->Method == METHOD::TOPOMAP) {
@@ -81,12 +90,7 @@ int DimensionReduction::execute(
     return 0;
   }
 
-#ifndef TTK_ENABLE_SCIKIT_LEARN
-  TTK_FORCE_USE(inputMatrix);
-  TTK_FORCE_USE(outputEmbedding);
-  TTK_FORCE_USE(nRows);
-  TTK_FORCE_USE(nColumns);
-#elif
+#ifdef TTK_ENABLE_SCIKIT_LEARN
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_ < '3')
     return -1;
