@@ -192,6 +192,15 @@ namespace ttk {
 
     inline void setInputMethod(METHOD method) {
       this->Method = method;
+
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+      TTK_FORCE_USE(nColumns);
+      if(this->Method != METHOD::TOPOMAP) {
+        this->printWrn("TTK has been built without scikit-learn.");
+        this->printWrn("Defaulting to the `TopoMap` backend.");
+        this->Method = METHOD::TOPOMAP;
+      }
+#endif
     }
 
     inline void setInputNumberOfComponents(const int numberOfComponents) {
@@ -291,7 +300,11 @@ namespace ttk {
     std::string ModuleName{"dimensionReduction"};
     std::string FunctionName{"doIt"};
 
+#ifdef TTK_ENABLE_SCIKIT_LEARN
     METHOD Method{METHOD::MDS};
+#elif
+    METHOD Method{METHOD::TOPOMAP};
+#endif
     int NumberOfComponents{2};
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
