@@ -44,6 +44,9 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   vtkTable *output = vtkTable::GetData(outputVector);
 
+  // initialize method
+  this->setInputMethod(Method);
+
   if(SelectFieldsWithRegexp) {
     // select all input columns whose name is matching the regexp
     ScalarFields.clear();

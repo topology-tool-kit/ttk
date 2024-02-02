@@ -191,6 +191,7 @@ namespace ttk {
     }
 
     inline void setInputMethod(METHOD method) {
+
       this->Method = method;
 
 #ifndef TTK_ENABLE_SCIKIT_LEARN

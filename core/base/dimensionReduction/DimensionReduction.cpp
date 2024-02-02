@@ -19,7 +19,7 @@ DimensionReduction::DimensionReduction() {
   this->setDebugMsgPrefix("DimensionReduction");
 
   // default backend
-  this->Method = METHOD::MDS;
+  this->setInputMethod(METHOD::MDS);
 
 #ifdef TTK_ENABLE_SCIKIT_LEARN
   auto finalize_callback = []() { Py_Finalize(); };
