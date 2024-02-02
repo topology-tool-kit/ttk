@@ -1,0 +1,10 @@
+ttk_add_base_library(ripsPersistenceDiagram
+  SOURCES
+    RipsPersistenceDiagram.cpp
+    ripserpy.cpp
+  HEADERS
+    RipsPersistenceDiagram.h
+    ripser.h
+  DEPENDS
+    common
+)
