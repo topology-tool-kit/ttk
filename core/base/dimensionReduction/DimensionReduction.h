@@ -201,6 +201,32 @@ namespace ttk {
         this->Method = METHOD::TOPOMAP;
       }
 #endif
+
+      std::string methodName;
+      switch(this->Method) {
+        case METHOD::SE:
+          methodName = "Spectral Embedding";
+          break;
+        case METHOD::LLE:
+          methodName = "Locally Linear Embedding";
+          break;
+        case METHOD::MDS:
+          methodName = "Multi-Dimensional Scaling";
+          break;
+        case METHOD::T_SNE:
+          methodName = "t-distributed Stochastic Neighbor Embedding";
+          break;
+        case METHOD::ISOMAP:
+          methodName = "Isomap Embedding";
+          break;
+        case METHOD::PCA:
+          methodName = "Principal Component Analysis";
+          break;
+        case METHOD::TOPOMAP:
+          methodName = "TopoMap (IEEE VIS 2020)";
+          break;
+      }
+      this->printMsg("Using backend `" + methodName + "`");
     }
 
     inline void setInputNumberOfComponents(const int numberOfComponents) {
