@@ -302,7 +302,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_SCIKIT_LEARN
     METHOD Method{METHOD::MDS};
-#elif
+#else
     METHOD Method{METHOD::TOPOMAP};
 #endif
     int NumberOfComponents{2};
