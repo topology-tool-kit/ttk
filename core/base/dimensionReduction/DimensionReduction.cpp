@@ -18,6 +18,9 @@ using namespace ttk;
 DimensionReduction::DimensionReduction() {
   this->setDebugMsgPrefix("DimensionReduction");
 
+  // default backend
+  this->Method = METHOD::MDS;
+
 #ifdef TTK_ENABLE_SCIKIT_LEARN
   auto finalize_callback = []() { Py_Finalize(); };
 
@@ -36,17 +39,6 @@ DimensionReduction::DimensionReduction() {
   }
 
   majorVersion_ = version[0];
-#endif
-}
-
-bool DimensionReduction::isPythonFound() const {
-#ifdef TTK_ENABLE_SCIKIT_LEARN
-  return true;
-#else
-  this->printErr("Warning: scikit-learn support disabled: Python/Numpy may "
-                 "not be installed properly");
-  this->printErr("Module features disabled.");
-  return false;
 #endif
 }
 

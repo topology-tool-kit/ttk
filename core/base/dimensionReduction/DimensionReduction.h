@@ -229,8 +229,6 @@ namespace ttk {
       }
     }
 
-    bool isPythonFound() const;
-
     int execute(std::vector<std::vector<double>> &outputEmbedding,
                 const std::vector<double> &inputMatrix,
                 const int nRows,
@@ -299,11 +297,8 @@ namespace ttk {
     std::string ModuleName{"dimensionReduction"};
     std::string FunctionName{"doIt"};
 
-#ifdef TTK_ENABLE_SCIKIT_LEARN
-    METHOD Method{METHOD::MDS};
-#else
-    METHOD Method{METHOD::TOPOMAP};
-#endif
+    METHOD Method;
+
     int NumberOfComponents{2};
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
