@@ -57,27 +57,8 @@ int DimensionReduction::execute(
   const int nColumns,
   int *insertionTimeForTopomap) const {
 
-#ifndef TTK_ENABLE_SCIKIT_LEARN
-  TTK_FORCE_USE(inputMatrix);
-  TTK_FORCE_USE(outputEmbedding);
-  TTK_FORCE_USE(nRows);
-  TTK_FORCE_USE(nColumns);
-  TTK_FORCE_USE(insertionTimeForTopomap);
-#elif
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(majorVersion_ < '3')
-    return -1;
-  if(ModulePath.empty())
-    return -2;
-  if(ModuleName.empty())
-    return -3;
-  if(FunctionName.empty())
-    return -4;
-#endif
-
   Timer t;
 
-  const int numberOfComponents = std::max(2, this->NumberOfComponents);
   if(this->Method == METHOD::TOPOMAP) {
     TopoMap topomap(
       this->topomap_AngularSampleNb, topomap_CheckMST, topomap_Strategy);
@@ -99,6 +80,25 @@ int DimensionReduction::execute(
       "Computed TopoMap", 1.0, t.getElapsedTime(), this->threadNumber_);
     return 0;
   }
+
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+  TTK_FORCE_USE(inputMatrix);
+  TTK_FORCE_USE(outputEmbedding);
+  TTK_FORCE_USE(nRows);
+  TTK_FORCE_USE(nColumns);
+#elif
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(majorVersion_ < '3')
+    return -1;
+  if(ModulePath.empty())
+    return -2;
+  if(ModuleName.empty())
+    return -3;
+  if(FunctionName.empty())
+    return -4;
+#endif
+
+  const int numberOfComponents = std::max(2, this->NumberOfComponents);
 
   const int numberOfNeighbors = std::max(1, this->NumberOfNeighbors);
 
