@@ -34,23 +34,23 @@
 
       <IntVectorProperty
               name="SimplexMaximumDimension"
-              label="Max dimension"
+              label="Simplex maximum dimension"
               command="SetSimplexMaximumDimension"
               number_of_elements="1"
               default_values="1">
-        <Documentation>
-          Maximum dimension of the computed Rips persistence diagram.
+      <Documentation>
+          Simplex maximum dimension in the Rips complex.
         </Documentation>
       </IntVectorProperty>
 
       <DoubleVectorProperty
               name="SimplexMaximumDiameter"
-              label="Max diameter"
+              label="Simplex maximum diameter"
               command="SetSimplexMaximumDiameter"
               number_of_elements="1"
               default_values="1.0">
         <Documentation>
-          Distance threshold for the Rips complex.
+          Simplex maximum diameter in the Rips complex.
         </Documentation>
       </DoubleVectorProperty>
 
