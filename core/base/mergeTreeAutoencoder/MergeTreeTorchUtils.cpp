@@ -6,29 +6,28 @@ using namespace ttk;
 #ifdef TTK_ENABLE_TORCH
 using namespace torch::indexing;
 
-void MergeTreeTorchUtils::copyTensor(torch::Tensor &a, torch::Tensor &b) {
+void mtu::copyTensor(torch::Tensor &a, torch::Tensor &b) {
   b = a.detach().clone();
   b.requires_grad_(a.requires_grad());
 }
 
-void MergeTreeTorchUtils::getDeltaProjTensor(torch::Tensor &diagTensor,
-                                             torch::Tensor &deltaProjTensor) {
+void mtu::getDeltaProjTensor(torch::Tensor &diagTensor,
+                             torch::Tensor &deltaProjTensor) {
   deltaProjTensor
     = (diagTensor.index({Slice(), 0}) + diagTensor.index({Slice(), 1})) / 2.0;
   deltaProjTensor = deltaProjTensor.reshape({-1, 1});
   deltaProjTensor = torch::cat({deltaProjTensor, deltaProjTensor}, 1);
 }
 
-void MergeTreeTorchUtils::dataReorderingGivenMatching(
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-  torch::Tensor &tree1ProjIndexer,
-  torch::Tensor &tree2ReorderingIndexes,
-  torch::Tensor &tree2ReorderedTensor,
-  torch::Tensor &tree2DeltaProjTensor,
-  torch::Tensor &tree1ReorderedTensor,
-  torch::Tensor &tree2ProjIndexer,
-  bool doubleReordering) {
+void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
+                                      mtu::TorchMergeTree<float> &tree2,
+                                      torch::Tensor &tree1ProjIndexer,
+                                      torch::Tensor &tree2ReorderingIndexes,
+                                      torch::Tensor &tree2ReorderedTensor,
+                                      torch::Tensor &tree2DeltaProjTensor,
+                                      torch::Tensor &tree1ReorderedTensor,
+                                      torch::Tensor &tree2ProjIndexer,
+                                      bool doubleReordering) {
   // Reorder tree2 tensor
   torch::Tensor tree2DiagTensor = tree2.tensor.reshape({-1, 2});
   tree2ReorderedTensor = torch::cat({tree2DiagTensor, torch::zeros({1, 2})});
@@ -60,13 +59,12 @@ void MergeTreeTorchUtils::dataReorderingGivenMatching(
   tree2DeltaProjTensor = tree2DeltaProjTensor.reshape({-1, 1});
 }
 
-void MergeTreeTorchUtils::dataReorderingGivenMatching(
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-  torch::Tensor &tree1ProjIndexer,
-  torch::Tensor &tree2ReorderingIndexes,
-  torch::Tensor &tree2ReorderedTensor,
-  torch::Tensor &tree2DeltaProjTensor) {
+void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
+                                      mtu::TorchMergeTree<float> &tree2,
+                                      torch::Tensor &tree1ProjIndexer,
+                                      torch::Tensor &tree2ReorderingIndexes,
+                                      torch::Tensor &tree2ReorderedTensor,
+                                      torch::Tensor &tree2DeltaProjTensor) {
   torch::Tensor tree1ReorderedTensor;
   torch::Tensor tree2ProjIndexer;
   bool doubleReordering = false;
@@ -76,16 +74,16 @@ void MergeTreeTorchUtils::dataReorderingGivenMatching(
                               tree2ProjIndexer, doubleReordering);
 }
 
-void MergeTreeTorchUtils::dataReorderingGivenMatching(
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
+void mtu::dataReorderingGivenMatching(
+  mtu::TorchMergeTree<float> &tree,
+  mtu::TorchMergeTree<float> &tree2,
   std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
   torch::Tensor &tree1ReorderedTensor,
   torch::Tensor &tree2ReorderedTensor,
   bool doubleReordering) {
   // Get tensor matching
   std::vector<int> tensorMatching;
-  MergeTreeTorchUtils::getTensorMatching(tree, tree2, matching, tensorMatching);
+  mtu::getTensorMatching(tree, tree2, matching, tensorMatching);
   torch::Tensor tree2ReorderingIndexes = torch::tensor(tensorMatching);
   torch::Tensor tree1ProjIndexer
     = (tree2ReorderingIndexes == -1).reshape({-1, 1});
@@ -97,8 +95,7 @@ void MergeTreeTorchUtils::dataReorderingGivenMatching(
                                 tree2DeltaProjTensor);
   } else {
     std::vector<int> tensorMatching2;
-    MergeTreeTorchUtils::getInverseTensorMatching(
-      tree, tree2, matching, tensorMatching);
+    mtu::getInverseTensorMatching(tree, tree2, matching, tensorMatching);
     torch::Tensor tree1ReorderingIndexes = torch::tensor(tensorMatching);
     torch::Tensor tree2ProjIndexer
       = (tree1ReorderingIndexes == -1).reshape({-1, 1});
@@ -110,9 +107,9 @@ void MergeTreeTorchUtils::dataReorderingGivenMatching(
   tree2ReorderedTensor = tree2ReorderedTensor + tree2DeltaProjTensor;
 }
 
-void MergeTreeTorchUtils::dataReorderingGivenMatching(
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-  MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
+void mtu::dataReorderingGivenMatching(
+  mtu::TorchMergeTree<float> &tree,
+  mtu::TorchMergeTree<float> &tree2,
   std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
   torch::Tensor &tree2ReorderedTensor) {
   torch::Tensor tree1ReorderedTensor;
@@ -121,8 +118,8 @@ void MergeTreeTorchUtils::dataReorderingGivenMatching(
                               tree2ReorderedTensor, doubleReordering);
 }
 
-void MergeTreeTorchUtils::meanBirthShift(torch::Tensor &diagTensor,
-                                         torch::Tensor &diagBaseTensor) {
+void mtu::meanBirthShift(torch::Tensor &diagTensor,
+                         torch::Tensor &diagBaseTensor) {
   torch::Tensor birthShiftValue = diagBaseTensor.index({Slice(), 0}).mean()
                                   - diagTensor.index({Slice(), 0}).mean();
   torch::Tensor shiftTensor
@@ -130,8 +127,8 @@ void MergeTreeTorchUtils::meanBirthShift(torch::Tensor &diagTensor,
   diagTensor.index_put_({None}, diagTensor + shiftTensor);
 }
 
-void MergeTreeTorchUtils::meanBirthMaxPersShift(torch::Tensor &tensor,
-                                                torch::Tensor &baseTensor) {
+void mtu::meanBirthMaxPersShift(torch::Tensor &tensor,
+                                torch::Tensor &baseTensor) {
   torch::Tensor diagTensor = tensor.reshape({-1, 2});
   torch::Tensor diagBaseTensor = baseTensor.reshape({-1, 2});
   // Shift to have same max pers
@@ -147,8 +144,8 @@ void MergeTreeTorchUtils::meanBirthMaxPersShift(torch::Tensor &tensor,
   meanBirthShift(diagTensor, diagBaseTensor);
 }
 
-void MergeTreeTorchUtils::belowDiagonalPointsShift(
-  torch::Tensor &tensor, torch::Tensor &backupTensor) {
+void mtu::belowDiagonalPointsShift(torch::Tensor &tensor,
+                                   torch::Tensor &backupTensor) {
   torch::Tensor oPDiag = tensor.reshape({-1, 2});
   torch::Tensor badPointsIndexer
     = (oPDiag.index({Slice(), 0}) > oPDiag.index({Slice(), 1}));
@@ -175,15 +172,14 @@ void MergeTreeTorchUtils::belowDiagonalPointsShift(
   tensor = oPDiag.reshape({-1, 1}).detach();
 }
 
-void MergeTreeTorchUtils::normalizeVectors(torch::Tensor &originTensor,
-                                           torch::Tensor &vectorsTensor) {
+void mtu::normalizeVectors(torch::Tensor &originTensor,
+                           torch::Tensor &vectorsTensor) {
   torch::Tensor vSliced = vectorsTensor.index({Slice(2, None)});
   vSliced.index_put_({None}, vSliced / (originTensor[1] - originTensor[0]));
 }
 
-void MergeTreeTorchUtils::normalizeVectors(
-  MergeTreeTorchUtils::TorchMergeTree<float> &origin,
-  std::vector<std::vector<double>> &vectors) {
+void mtu::normalizeVectors(mtu::TorchMergeTree<float> &origin,
+                           std::vector<std::vector<double>> &vectors) {
   std::queue<ftm::idNode> queue;
   queue.emplace(origin.mTree.tree.getRoot());
   while(!queue.empty()) {
@@ -200,8 +196,7 @@ void MergeTreeTorchUtils::normalizeVectors(
 }
 
 // TODO make it work for merge trees
-bool MergeTreeTorchUtils::isThereMissingPairs(
-  MergeTreeTorchUtils::TorchMergeTree<float> &interpolation) {
+bool mtu::isThereMissingPairs(mtu::TorchMergeTree<float> &interpolation) {
   float maxPers
     = interpolation.mTree.tree.template getMaximumPersistence<float>();
   torch::Tensor interTensor = interpolation.tensor;

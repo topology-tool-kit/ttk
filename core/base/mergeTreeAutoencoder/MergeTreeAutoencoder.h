@@ -78,18 +78,16 @@ namespace ttk {
     // Model optimized parameters
     std::vector<torch::Tensor> vSTensor_, vSPrimeTensor_, vS2Tensor_,
       vS2PrimeTensor_, latentCentroids_;
-    std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> origins_,
-      originsPrime_, origins2_, origins2Prime_;
+    std::vector<mtu::TorchMergeTree<float>> origins_, originsPrime_, origins2_,
+      origins2Prime_;
 
-    std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> originsCopy_,
-      originsPrimeCopy_;
+    std::vector<mtu::TorchMergeTree<float>> originsCopy_, originsPrimeCopy_;
 
     // Filled by the algorithm
     std::vector<std::vector<torch::Tensor>> allAlphas_, allScaledAlphas_,
       allActAlphas_, allActScaledAlphas_;
-    std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>> recs_,
-      recs2_;
-    std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> customRecs_;
+    std::vector<std::vector<mtu::TorchMergeTree<float>>> recs_, recs2_;
+    std::vector<mtu::TorchMergeTree<float>> customRecs_;
 #endif
 
     // Filled by the algorithm
@@ -117,8 +115,8 @@ namespace ttk {
       origins2PrimeNoZeroGrad_, vS2NoZeroGrad_, vS2PrimeNoZeroGrad_;
     bool outputInit_ = true;
 #ifdef TTK_ENABLE_TORCH
-    std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> initOrigins_,
-      initOriginsPrime_, initRecs_;
+    std::vector<mtu::TorchMergeTree<float>> initOrigins_, initOriginsPrime_,
+      initRecs_;
 #endif
     float bigValuesThreshold_ = 0;
 
@@ -129,10 +127,9 @@ namespace ttk {
     //  -----------------------------------------------------------------------
     //  --- Init
     //  -----------------------------------------------------------------------
-    void initOutputBasisTreeStructure(
-      MergeTreeTorchUtils::TorchMergeTree<float> &originPrime,
-      bool isJT,
-      MergeTreeTorchUtils::TorchMergeTree<float> &baseOrigin);
+    void initOutputBasisTreeStructure(mtu::TorchMergeTree<float> &originPrime,
+                                      bool isJT,
+                                      mtu::TorchMergeTree<float> &baseOrigin);
 
     void initOutputBasis(unsigned int l, unsigned int dim, unsigned int dim2);
 
@@ -150,8 +147,8 @@ namespace ttk {
       double barycenterSizeLimitPercent,
       unsigned int barycenterMaxNoPairs,
       unsigned int barycenterMaxNoPairs2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin2,
+      mtu::TorchMergeTree<float> &origin,
+      mtu::TorchMergeTree<float> &origin2,
       std::vector<double> &inputToBaryDistances,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &baryMatchings,
@@ -159,12 +156,12 @@ namespace ttk {
         &baryMatchings2);
 
     void initInputBasisVectors(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &tmTreesToUse,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &tmTrees2ToUse,
+      std::vector<mtu::TorchMergeTree<float>> &tmTreesToUse,
+      std::vector<mtu::TorchMergeTree<float>> &tmTrees2ToUse,
       std::vector<ftm::MergeTree<float>> &treesToUse,
       std::vector<ftm::MergeTree<float>> &trees2ToUse,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin2,
+      mtu::TorchMergeTree<float> &origin,
+      mtu::TorchMergeTree<float> &origin2,
       unsigned int noVectors,
       std::vector<std::vector<torch::Tensor>> &allAlphasInit,
       unsigned int l,
@@ -178,41 +175,37 @@ namespace ttk {
 
     void initClusteringLossParameters();
 
-    float initParameters(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees2,
-      bool computeReconstructionError = false);
+    float initParameters(std::vector<mtu::TorchMergeTree<float>> &trees,
+                         std::vector<mtu::TorchMergeTree<float>> &trees2,
+                         bool computeReconstructionError = false);
 
-    void
-      initStep(std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees,
-               std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees2);
+    void initStep(std::vector<mtu::TorchMergeTree<float>> &trees,
+                  std::vector<mtu::TorchMergeTree<float>> &trees2);
 
     //  -----------------------------------------------------------------------
     //  --- Interpolation
     //  -----------------------------------------------------------------------
     void interpolationDiagonalProjection(
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolationTensor);
+      mtu::TorchMergeTree<float> &interpolationTensor);
 
-    void interpolationNestingProjection(
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolation);
+    void
+      interpolationNestingProjection(mtu::TorchMergeTree<float> &interpolation);
 
-    void interpolationProjection(
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolation);
+    void interpolationProjection(mtu::TorchMergeTree<float> &interpolation);
 
-    void getMultiInterpolation(
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
-      torch::Tensor &vS,
-      torch::Tensor &alphas,
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolation);
+    void getMultiInterpolation(mtu::TorchMergeTree<float> &origin,
+                               torch::Tensor &vS,
+                               torch::Tensor &alphas,
+                               mtu::TorchMergeTree<float> &interpolation);
 
     //  -----------------------------------------------------------------------
     //  --- Forward
     //  -----------------------------------------------------------------------
     void getAlphasOptimizationTensors(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
+      mtu::TorchMergeTree<float> &tree,
+      mtu::TorchMergeTree<float> &origin,
       torch::Tensor &vSTensor,
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolated,
+      mtu::TorchMergeTree<float> &interpolated,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
       torch::Tensor &reorderedTreeTensor,
       torch::Tensor &deltaOrigin,
@@ -221,24 +214,24 @@ namespace ttk {
       torch::Tensor &vSTensor_f);
 
     void computeAlphas(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
+      mtu::TorchMergeTree<float> &tree,
+      mtu::TorchMergeTree<float> &origin,
       torch::Tensor &vSTensor,
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolated,
+      mtu::TorchMergeTree<float> &interpolated,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin2,
+      mtu::TorchMergeTree<float> &tree2,
+      mtu::TorchMergeTree<float> &origin2,
       torch::Tensor &vS2Tensor,
-      MergeTreeTorchUtils::TorchMergeTree<float> &interpolated2,
+      mtu::TorchMergeTree<float> &interpolated2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching2,
       torch::Tensor &alphasOut);
 
     float assignmentOneData(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
+      mtu::TorchMergeTree<float> &tree,
+      mtu::TorchMergeTree<float> &origin,
       torch::Tensor &vSTensor,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin2,
+      mtu::TorchMergeTree<float> &tree2,
+      mtu::TorchMergeTree<float> &origin2,
       torch::Tensor &vS2Tensor,
       unsigned int k,
       torch::Tensor &alphasInit,
@@ -247,11 +240,11 @@ namespace ttk {
       torch::Tensor &bestAlphas,
       bool isCalled = false);
 
-    float assignmentOneData(MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-                            MergeTreeTorchUtils::TorchMergeTree<float> &origin,
+    float assignmentOneData(mtu::TorchMergeTree<float> &tree,
+                            mtu::TorchMergeTree<float> &origin,
                             torch::Tensor &vSTensor,
-                            MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-                            MergeTreeTorchUtils::TorchMergeTree<float> &origin2,
+                            mtu::TorchMergeTree<float> &tree2,
+                            mtu::TorchMergeTree<float> &origin2,
                             torch::Tensor &vS2Tensor,
                             unsigned int k,
                             torch::Tensor &alphasInit,
@@ -260,85 +253,79 @@ namespace ttk {
 
     torch::Tensor activation(torch::Tensor &in);
 
-    void outputBasisReconstruction(
-      MergeTreeTorchUtils::TorchMergeTree<float> &originPrime,
-      torch::Tensor &vSPrimeTensor,
-      MergeTreeTorchUtils::TorchMergeTree<float> &origin2Prime,
-      torch::Tensor &vS2PrimeTensor,
-      torch::Tensor &alphas,
-      MergeTreeTorchUtils::TorchMergeTree<float> &out,
-      MergeTreeTorchUtils::TorchMergeTree<float> &out2,
-      bool activate = true);
+    void outputBasisReconstruction(mtu::TorchMergeTree<float> &originPrime,
+                                   torch::Tensor &vSPrimeTensor,
+                                   mtu::TorchMergeTree<float> &origin2Prime,
+                                   torch::Tensor &vS2PrimeTensor,
+                                   torch::Tensor &alphas,
+                                   mtu::TorchMergeTree<float> &out,
+                                   mtu::TorchMergeTree<float> &out2,
+                                   bool activate = true);
 
-    bool
-      forwardOneLayer(MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &origin,
-                      torch::Tensor &vSTensor,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &originPrime,
-                      torch::Tensor &vSPrimeTensor,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &origin2,
-                      torch::Tensor &vS2Tensor,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &origin2Prime,
-                      torch::Tensor &vS2PrimeTensor,
-                      unsigned int k,
-                      torch::Tensor &alphasInit,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &out,
-                      MergeTreeTorchUtils::TorchMergeTree<float> &out2,
-                      torch::Tensor &bestAlphas);
+    bool forwardOneLayer(mtu::TorchMergeTree<float> &tree,
+                         mtu::TorchMergeTree<float> &origin,
+                         torch::Tensor &vSTensor,
+                         mtu::TorchMergeTree<float> &originPrime,
+                         torch::Tensor &vSPrimeTensor,
+                         mtu::TorchMergeTree<float> &tree2,
+                         mtu::TorchMergeTree<float> &origin2,
+                         torch::Tensor &vS2Tensor,
+                         mtu::TorchMergeTree<float> &origin2Prime,
+                         torch::Tensor &vS2PrimeTensor,
+                         unsigned int k,
+                         torch::Tensor &alphasInit,
+                         mtu::TorchMergeTree<float> &out,
+                         mtu::TorchMergeTree<float> &out2,
+                         torch::Tensor &bestAlphas);
 
-    bool forwardOneData(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      unsigned int treeIndex,
-      unsigned int k,
-      std::vector<torch::Tensor> &alphasInit,
-      MergeTreeTorchUtils::TorchMergeTree<float> &out,
-      MergeTreeTorchUtils::TorchMergeTree<float> &out2,
-      std::vector<torch::Tensor> &dataAlphas,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs2);
+    bool forwardOneData(mtu::TorchMergeTree<float> &tree,
+                        mtu::TorchMergeTree<float> &tree2,
+                        unsigned int treeIndex,
+                        unsigned int k,
+                        std::vector<torch::Tensor> &alphasInit,
+                        mtu::TorchMergeTree<float> &out,
+                        mtu::TorchMergeTree<float> &out2,
+                        std::vector<torch::Tensor> &dataAlphas,
+                        std::vector<mtu::TorchMergeTree<float>> &outs,
+                        std::vector<mtu::TorchMergeTree<float>> &outs2);
 
     bool forwardStep(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees2,
+      std::vector<mtu::TorchMergeTree<float>> &trees,
+      std::vector<mtu::TorchMergeTree<float>> &trees2,
       std::vector<unsigned int> &indexes,
       unsigned int k,
       std::vector<std::vector<torch::Tensor>> &allAlphasInit,
       bool computeReconstructionError,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs2,
+      std::vector<mtu::TorchMergeTree<float>> &outs,
+      std::vector<mtu::TorchMergeTree<float>> &outs2,
       std::vector<std::vector<torch::Tensor>> &bestAlphas,
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>>
-        &layersOuts,
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>>
-        &layersOuts2,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &layersOuts,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &layersOuts2,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings2,
       float &loss);
 
-    bool forwardStep(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees2,
-      std::vector<unsigned int> &indexes,
-      unsigned int k,
-      std::vector<std::vector<torch::Tensor>> &allAlphasInit,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs2,
-      std::vector<std::vector<torch::Tensor>> &bestAlphas);
+    bool forwardStep(std::vector<mtu::TorchMergeTree<float>> &trees,
+                     std::vector<mtu::TorchMergeTree<float>> &trees2,
+                     std::vector<unsigned int> &indexes,
+                     unsigned int k,
+                     std::vector<std::vector<torch::Tensor>> &allAlphasInit,
+                     std::vector<mtu::TorchMergeTree<float>> &outs,
+                     std::vector<mtu::TorchMergeTree<float>> &outs2,
+                     std::vector<std::vector<torch::Tensor>> &bestAlphas);
 
     //  -----------------------------------------------------------------------
     //  --- Backward
     //  -----------------------------------------------------------------------
     bool backwardStep(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs,
+      std::vector<mtu::TorchMergeTree<float>> &trees,
+      std::vector<mtu::TorchMergeTree<float>> &outs,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees2,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs2,
+      std::vector<mtu::TorchMergeTree<float>> &trees2,
+      std::vector<mtu::TorchMergeTree<float>> &outs2,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings2,
       torch::optim::Optimizer &optimizer,
@@ -356,18 +343,18 @@ namespace ttk {
     //  --- Convergence
     //  -----------------------------------------------------------------------
     float computeOneLoss(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree,
-      MergeTreeTorchUtils::TorchMergeTree<float> &out,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &out2,
+      mtu::TorchMergeTree<float> &tree,
+      mtu::TorchMergeTree<float> &out,
+      mtu::TorchMergeTree<float> &tree2,
+      mtu::TorchMergeTree<float> &out2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching2);
 
     float computeLoss(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &trees2,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &outs2,
+      std::vector<mtu::TorchMergeTree<float>> &trees,
+      std::vector<mtu::TorchMergeTree<float>> &outs,
+      std::vector<mtu::TorchMergeTree<float>> &trees2,
+      std::vector<mtu::TorchMergeTree<float>> &outs2,
       std::vector<unsigned int> &indexes,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &matchings,
@@ -392,46 +379,42 @@ namespace ttk {
     //  -----------------------------------------------------------------------
     double getCustomLossDynamicWeight(double recLoss, double &baseLoss);
 
-    void getDistanceMatrix(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &tmts,
-      std::vector<std::vector<float>> &distanceMatrix,
-      bool useDoubleInput = false,
-      bool isFirstInput = true);
+    void getDistanceMatrix(std::vector<mtu::TorchMergeTree<float>> &tmts,
+                           std::vector<std::vector<float>> &distanceMatrix,
+                           bool useDoubleInput = false,
+                           bool isFirstInput = true);
 
-    void getDistanceMatrix(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &tmts,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &tmts2,
-      std::vector<std::vector<float>> &distanceMatrix);
+    void getDistanceMatrix(std::vector<mtu::TorchMergeTree<float>> &tmts,
+                           std::vector<mtu::TorchMergeTree<float>> &tmts2,
+                           std::vector<std::vector<float>> &distanceMatrix);
 
     void getDifferentiableDistanceFromMatchings(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree1,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree1_2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2_2,
+      mtu::TorchMergeTree<float> &tree1,
+      mtu::TorchMergeTree<float> &tree2,
+      mtu::TorchMergeTree<float> &tree1_2,
+      mtu::TorchMergeTree<float> &tree2_2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matchings,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matchings2,
       torch::Tensor &tensorDist,
       bool doSqrt);
 
-    void getDifferentiableDistance(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree1,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree1_2,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2_2,
-      torch::Tensor &tensorDist,
-      bool isCalled,
-      bool doSqrt);
+    void getDifferentiableDistance(mtu::TorchMergeTree<float> &tree1,
+                                   mtu::TorchMergeTree<float> &tree2,
+                                   mtu::TorchMergeTree<float> &tree1_2,
+                                   mtu::TorchMergeTree<float> &tree2_2,
+                                   torch::Tensor &tensorDist,
+                                   bool isCalled,
+                                   bool doSqrt);
 
-    void getDifferentiableDistance(
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree1,
-      MergeTreeTorchUtils::TorchMergeTree<float> &tree2,
-      torch::Tensor &tensorDist,
-      bool isCalled,
-      bool doSqrt);
+    void getDifferentiableDistance(mtu::TorchMergeTree<float> &tree1,
+                                   mtu::TorchMergeTree<float> &tree2,
+                                   torch::Tensor &tensorDist,
+                                   bool isCalled,
+                                   bool doSqrt);
 
     void getDifferentiableDistanceMatrix(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float> *> &trees,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float> *> &trees2,
+      std::vector<mtu::TorchMergeTree<float> *> &trees,
+      std::vector<mtu::TorchMergeTree<float> *> &trees2,
       std::vector<std::vector<torch::Tensor>> &outDistMat);
 
     void getAlphasTensor(std::vector<std::vector<torch::Tensor>> &alphas,
@@ -440,10 +423,8 @@ namespace ttk {
                          torch::Tensor &alphasOut);
 
     void computeMetricLoss(
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>>
-        &layersOuts,
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>>
-        &layersOuts2,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &layersOuts,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &layersOuts2,
       std::vector<std::vector<torch::Tensor>> alphas,
       std::vector<std::vector<float>> &baseDistanceMatrix,
       std::vector<unsigned int> &indexes,
@@ -475,30 +456,27 @@ namespace ttk {
     //  -----------------------------------------------------------------------
     //  --- Utils
     //  -----------------------------------------------------------------------
-    void copyParams(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &srcOrigins,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &srcOriginsPrime,
-      std::vector<torch::Tensor> &srcVS,
-      std::vector<torch::Tensor> &srcVSPrime,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &srcOrigins2,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &srcOrigins2Prime,
-      std::vector<torch::Tensor> &srcVS2,
-      std::vector<torch::Tensor> &srcVS2Prime,
-      std::vector<std::vector<torch::Tensor>> &srcAlphas,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &dstOrigins,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &dstOriginsPrime,
-      std::vector<torch::Tensor> &dstVS,
-      std::vector<torch::Tensor> &dstVSPrime,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &dstOrigins2,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &dstOrigins2Prime,
-      std::vector<torch::Tensor> &dstVS2,
-      std::vector<torch::Tensor> &dstVS2Prime,
-      std::vector<std::vector<torch::Tensor>> &dstAlphas);
+    void copyParams(std::vector<mtu::TorchMergeTree<float>> &srcOrigins,
+                    std::vector<mtu::TorchMergeTree<float>> &srcOriginsPrime,
+                    std::vector<torch::Tensor> &srcVS,
+                    std::vector<torch::Tensor> &srcVSPrime,
+                    std::vector<mtu::TorchMergeTree<float>> &srcOrigins2,
+                    std::vector<mtu::TorchMergeTree<float>> &srcOrigins2Prime,
+                    std::vector<torch::Tensor> &srcVS2,
+                    std::vector<torch::Tensor> &srcVS2Prime,
+                    std::vector<std::vector<torch::Tensor>> &srcAlphas,
+                    std::vector<mtu::TorchMergeTree<float>> &dstOrigins,
+                    std::vector<mtu::TorchMergeTree<float>> &dstOriginsPrime,
+                    std::vector<torch::Tensor> &dstVS,
+                    std::vector<torch::Tensor> &dstVSPrime,
+                    std::vector<mtu::TorchMergeTree<float>> &dstOrigins2,
+                    std::vector<mtu::TorchMergeTree<float>> &dstOrigins2Prime,
+                    std::vector<torch::Tensor> &dstVS2,
+                    std::vector<torch::Tensor> &dstVS2Prime,
+                    std::vector<std::vector<torch::Tensor>> &dstAlphas);
 
-    void copyParams(
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>> &src,
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>>
-        &dst);
+    void copyParams(std::vector<std::vector<mtu::TorchMergeTree<float>>> &src,
+                    std::vector<std::vector<mtu::TorchMergeTree<float>>> &dst);
 
     unsigned int getLatentLayerIndex();
 

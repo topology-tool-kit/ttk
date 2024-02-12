@@ -168,8 +168,8 @@ namespace ttk {
     }
 
     void computeTrackingInformation(
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &origins,
-      std::vector<MergeTreeTorchUtils::TorchMergeTree<float>> &originsPrime,
+      std::vector<mtu::TorchMergeTree<float>> &origins,
+      std::vector<mtu::TorchMergeTree<float>> &originsPrime,
       std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVectorT,
       std::vector<std::vector<ttk::ftm::idNode>> &invOriginsMatchingVectorT,
       bool isPersistenceDiagram,
@@ -247,8 +247,7 @@ namespace ttk {
     }
 
     void computeCustomArrays(
-      std::vector<std::vector<MergeTreeTorchUtils::TorchMergeTree<float>>>
-        &recs,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &recs,
       std::vector<std::vector<double>> &persCorrelationMatrix,
       std::vector<std::vector<std::vector<ttk::ftm::idNode>>>
         &invDataMatchingVectorT,
