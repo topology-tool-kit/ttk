@@ -116,8 +116,11 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   getParamNames(paramNames);
   paramNames.emplace_back("activate");
   paramNames.emplace_back("activationFunction");
+  auto fd = coefficients->GetFieldData();
+  if(not fd->GetArray("activate"))
+    fd = coefficients->GetBlock(0)->GetFieldData();
   for(auto paramName : paramNames) {
-    auto array = coefficients->GetFieldData()->GetArray(paramName.c_str());
+    auto array = fd->GetArray(paramName.c_str());
     if(array) {
       double const value = array->GetTuple1(0);
       if(paramName == "activate")

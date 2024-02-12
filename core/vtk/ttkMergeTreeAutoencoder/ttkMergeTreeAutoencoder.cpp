@@ -642,7 +642,7 @@ int ttkMergeTreeAutoencoder::runOutput(
            << ttk::axa::getTableTreeName(reconstMatchingVectorT.size(), i);
         matchingArray->SetName(ss.str().c_str());
         for(unsigned int j = 0; j < reconstMatchingVectorT[i].size(); ++j)
-          matchingArray->SetTuple1(j, reconstMatchingVectorT[i][j]);
+          matchingArray->SetTuple1(j, (int)reconstMatchingVectorT[i][j]);
         vectorsPrimeTable->AddColumn(matchingArray);
       }
     }
