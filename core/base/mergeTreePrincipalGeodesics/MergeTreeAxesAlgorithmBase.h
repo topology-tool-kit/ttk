@@ -26,9 +26,9 @@ namespace ttk {
 
   protected:
     bool deterministic_ = true;
-    unsigned int numberOfAxes_ = 1;
-    unsigned int k_ = 10;
-    double barycenterSizeLimitPercent_ = 0.0;
+    unsigned int numberOfAxes_ = 2;
+    unsigned int k_ = 16;
+    double barycenterSizeLimitPercent_ = 20.0;
 
     // Clean correspondence
     std::vector<std::vector<int>> trees2NodeCorr_;

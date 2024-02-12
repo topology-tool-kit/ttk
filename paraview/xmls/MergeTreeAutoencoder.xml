@@ -71,7 +71,7 @@
       number_of_elements="1"
       default_values="1">
         <Documentation>
-          
+          Choose between the normalizd Wasserstein or the usual Wasserstein metric. If merge trees are provided in input, they will automatically be converted to persistence diagrams if this option is disabled.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -92,9 +92,10 @@
       command="SetScaleLayerAfterLatent"
       label="ScaleLayerAfterLatent"
       number_of_elements="1"
-      default_values="0">
+      default_values="0"
+      panel_visibility="advanced">
         <Documentation>
-          
+          By default, the latent layer and the layer after it will have the same number of axes. This option allows to set the number of axes in the layer after the latent one as the average with the layer after it.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -104,7 +105,8 @@
       command="SetInputNumberOfAxes"
       label="Input Number of Axes"
       number_of_elements="1"
-      default_values="16">
+      default_values="16"
+      panel_visibility="advanced">
         <Documentation>
           Number of axes in the input layer.
         </Documentation>
@@ -115,9 +117,10 @@
       command="SetInputOriginPrimeSizePercent"
       label="Input Origin Prime Size Percent"
       number_of_elements="1"
-      default_values="15">
+      default_values="15"
+      panel_visibility="advanced">
         <Documentation>
-          
+          Adjust the maximum size of the origin of the first output basis, given the total number of nodes in the input.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -137,9 +140,10 @@
       command="SetLatentSpaceOriginPrimeSizePercent"
       label="Latent Space Origin Prime Size Percent"
       number_of_elements="1"
-      default_values="10">
+      default_values="10"
+      panel_visibility="advanced">
         <Documentation>
-          
+          Adjust the maximum size of the origin of the latent output basis, given the total number of nodes in the input.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -151,7 +155,7 @@
       default_values="20"
       panel_visibility="advanced">
         <Documentation>
-          
+          Adjust the maximum size of the origins of the input bases, given the total number of nodes in the output of the previous layer.
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
@@ -164,7 +168,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Minimum number of iterations during the optimization.
         </Documentation>
       </IntVectorProperty>
       
@@ -176,7 +180,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Maximum number of iterations during the optimization.
         </Documentation>
       </IntVectorProperty>
       
@@ -188,7 +192,7 @@
       default_values="100"
       panel_visibility="advanced">
         <Documentation>
-          
+          Choose the number of iterations between two displays of information in the console.
         </Documentation>
       </IntVectorProperty>
       
@@ -200,7 +204,7 @@
       default_values="1"
       panel_visibility="advanced">
         <Documentation>
-          
+          Determine the batch size, proportion of the ensemble size (between 0 and 1).
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="1" />
       </DoubleVectorProperty>
@@ -218,7 +222,7 @@
           <Entry value="2" text="RMSprop"/>
       </EnumerationDomain>
         <Documentation>
-          
+          Choose the optimizer method.
         </Documentation>
       </IntVectorProperty>
       
@@ -229,7 +233,7 @@
       number_of_elements="1"
       default_values="0.1">
         <Documentation>
-          
+          Choose the step use for gradient descent.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -241,7 +245,7 @@
       default_values="0.9"
       panel_visibility="advanced">
         <Documentation>
-          
+          Coefficients used for computing running averages of gradient and its square.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -253,7 +257,7 @@
       default_values="0.999"
       panel_visibility="advanced">
         <Documentation>
-          
+          Coefficients used for computing running averages of gradient and its square.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -265,7 +269,7 @@
       default_values="1.0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Weight of the reconstruction loss in the optimization.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -277,7 +281,7 @@
       default_values="0.0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Weight of the tracking loss in the optimization.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -289,7 +293,7 @@
       default_values="0.0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Weight of the metric loss in the optimization.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -301,7 +305,7 @@
       default_values="0.0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Weight of the clustering loss in the optimization.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -313,7 +317,7 @@
       default_values="10.0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Temperature of the clustering loss in the optimization.
         </Documentation>
       </DoubleVectorProperty>
       
@@ -325,7 +329,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Adapt the weight of the custom losses (tracking, metric, clustering) given the reconstruction loss.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -338,7 +342,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          0 : latent coefficients ; 1 : latent PD/MT
+          0 : latent coefficients ; 1 : latent PD/MT.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -357,7 +361,7 @@
                                   value="0" />
         </Hints>
         <Documentation>
-          
+          Use activation function on the coefficient for custom losses.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -370,7 +374,7 @@
       default_values="1"
       panel_visibility="advanced">
         <Documentation>
-          
+          Normalize the metric loss by dividing by the maximum distance.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -383,7 +387,7 @@
       default_values="4"
       panel_visibility="advanced">
         <Documentation>
-          
+          Number of initialization steps, the best one will be kept.
         </Documentation>
       </IntVectorProperty>
       
@@ -395,7 +399,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Initialize with Euclidean distance instead of the Wasserstein one. It will be faster but less accurate.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -405,10 +409,10 @@
       command="SetInitOriginPrimeStructByCopy"
       label="InitOriginPrimeStructByCopy"
       number_of_elements="1"
-      default_values="0"
+      default_values="1"
       panel_visibility="advanced">
         <Documentation>
-          
+          Initialize the tree structure of origins of the output bases by copying the structure of the origin of the corresponding input basis.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -421,7 +425,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Choose to use the tracking loss in the decoding layers.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -434,7 +438,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          When the tracking loss is used, the origin of each output basis is the strict copy of the one in the input basis. This parameter allows to add randomess in this copy.
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="1" />
       </DoubleVectorProperty>
@@ -444,9 +448,10 @@
       command="SetNumberOfProjectionSteps"
       label="Number Of Projection Steps"
       number_of_elements="1"
-      default_values="2">
+      default_values="2"
+      panel_visibility="advanced">
         <Documentation>
-          Number of steps to compute the projection of each input.
+          Number of steps to compute the projection of each input on a basis.
         </Documentation>
       </IntVectorProperty>
       
@@ -470,7 +475,7 @@
       default_values="1"
       panel_visibility="advanced">
         <Documentation>
-          
+          Choose to use activation functions.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -487,7 +492,7 @@
           <Entry value="1" text="Leaky ReLU"/>
       </EnumerationDomain>
         <Documentation>
-          
+          Choose the activation function to use.
         </Documentation>
       </IntVectorProperty>
       
@@ -499,7 +504,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Initialize the decoding layers symmetrically to the encoding layers.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
@@ -512,7 +517,7 @@
       default_values="0"
       panel_visibility="advanced">
         <Documentation>
-          
+          Use activation function in the initialization steps.
         </Documentation>
         <BooleanDomain name="bool"/>
       </IntVectorProperty>

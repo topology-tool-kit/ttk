@@ -38,28 +38,41 @@ namespace ttk {
     bool hasComputedOnce_ = false;
 
     // Model hyper-parameters;
-    int encoderNoLayers_, optimizer_;
-    unsigned int inputNumberOfAxes_, noInit_;
-    double inputOriginPrimeSizePercent_, latentSpaceOriginPrimeSizePercent_;
-    double gradientStepSize_, beta1_, beta2_, batchSize_,
-      reconstructionLossWeight_, trackingLossWeight_, metricLossWeight_,
-      clusteringLossWeight_, baseRecLoss_, baseRecLoss2_;
-    bool activate_, euclideanVectorsInit_, activateOutputInit_,
-      customLossSpace_, customLossActivate_, customLossDynamicWeight_,
-      scaleLayerAfterLatent_, initOriginPrimeStructByCopy_,
-      normalizeMetricLoss_;
-    unsigned int minIteration_, maxIteration_, activationFunction_,
-      iterationGap_;
-    std::vector<unsigned int> clusterAsgn_;
+    int encoderNoLayers_ = 1;
+    bool scaleLayerAfterLatent_ = false;
+    unsigned int inputNumberOfAxes_ = 16;
+    double inputOriginPrimeSizePercent_ = 15;
+    double latentSpaceOriginPrimeSizePercent_ = 10;
+    unsigned int minIteration_ = 0;
+    unsigned int maxIteration_ = 0;
+    unsigned int iterationGap_ = 100;
+    double batchSize_ = 1;
+    int optimizer_ = 0;
+    double gradientStepSize_ = 0.1;
+    double beta1_ = 0.9;
+    double beta2_ = 0.999;
+    double reconstructionLossWeight_ = 1;
+    double trackingLossWeight_ = 0;
+    double metricLossWeight_ = 0;
+    double clusteringLossWeight_ = 0;
     float clusteringLossTemp_ = 10;
-    bool createOutput_;
-    std::vector<std::vector<float>> distanceMatrix_, customAlphas_;
+    bool customLossDynamicWeight_ = false;
+    bool customLossSpace_ = false;
+    bool customLossActivate_ = false;
+    bool normalizeMetricLoss_ = false;
+    unsigned int noInit_ = 4;
+    bool euclideanVectorsInit_ = false;
+    bool initOriginPrimeStructByCopy_ = true;
+    bool trackingLossDecoding_ = false;
+    double trackingLossInitRandomness_ = 0.0;
+    bool activate_ = true;
+    unsigned int activationFunction_ = 1;
+    bool activateOutputInit_ = false;
 
-    bool trackingLossDecoding_;
+    bool createOutput_ = true;
 
     // Old hyper-parameters
     bool fullSymmetricAE_ = false;
-    double trackingLossInitRandomness_ = 0.0;
 
 #ifdef TTK_ENABLE_TORCH
     // Model optimized parameters
@@ -81,6 +94,9 @@ namespace ttk {
 
     // Filled by the algorithm
     unsigned noLayers_;
+    double baseRecLoss_, baseRecLoss2_;
+    std::vector<unsigned int> clusterAsgn_;
+    std::vector<std::vector<float>> distanceMatrix_, customAlphas_;
     std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
       baryMatchings_L0_, baryMatchings2_L0_;
     std::vector<double> inputToBaryDistances_L0_;
