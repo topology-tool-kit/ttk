@@ -164,9 +164,6 @@ void mtu::belowDiagonalPointsShift(torch::Tensor &tensor,
       / 2.0;
   shiftTensor = torch::cat({-shiftTensor, shiftTensor}, 1);
   badPoints = badPoints + shiftTensor;
-  // Shift to have same birth mean
-  /*if(goodPoints.sizes()[0] != 1 or badPoints.sizes()[0] != 1)
-    meanBirthShift(badPoints, goodPoints);*/
   // Update tensor
   oPDiag.index_put_({badPointsIndexer}, badPoints);
   tensor = oPDiag.reshape({-1, 1}).detach();
@@ -195,7 +192,7 @@ void mtu::normalizeVectors(mtu::TorchMergeTree<float> &origin,
   }
 }
 
-// TODO make it work for merge trees
+// Work only for persistence diagrams
 bool mtu::isThereMissingPairs(mtu::TorchMergeTree<float> &interpolation) {
   float maxPers
     = interpolation.mTree.tree.template getMaximumPersistence<float>();

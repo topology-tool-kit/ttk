@@ -44,12 +44,13 @@ namespace ttk {
      * @param[in] scalarsVector vector containing the scalars value.
      * @param[out] childrenFinal output vector containing the children of each
      * node, representing the tree structure.
+     * @param[in] threadNumber number of threads for parallel sort.
      */
-    void
-      createBalancedBDT(std::vector<std::vector<ftm::idNode>> &parents,
-                        std::vector<std::vector<ftm::idNode>> &children,
-                        std::vector<float> &scalarsVector,
-                        std::vector<std::vector<ftm::idNode>> &childrenFinal);
+    void createBalancedBDT(std::vector<std::vector<ftm::idNode>> &parents,
+                           std::vector<std::vector<ftm::idNode>> &children,
+                           std::vector<float> &scalarsVector,
+                           std::vector<std::vector<ftm::idNode>> &childrenFinal,
+                           int threadNumber = 1);
 
     /**
      * @brief Util function to print pairs of a merge tree.

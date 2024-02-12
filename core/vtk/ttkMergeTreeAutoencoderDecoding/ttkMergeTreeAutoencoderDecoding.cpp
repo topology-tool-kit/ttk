@@ -95,7 +95,6 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-  return 1;
 #ifndef TTK_ENABLE_TORCH
   TTK_FORCE_USE(inputVector);
   TTK_FORCE_USE(outputVector);
@@ -171,9 +170,12 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     = vtkTable::SafeDownCast(coefficients->GetBlock(0))->GetNumberOfRows();
   noLayers_ = vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(0))
                 ->GetNumberOfBlocks();
-  std::vector<unsigned int> allNoAxes;
+  std::vector<unsigned int> allNoAxes(noLayers_);
 
   allAlphas_.resize(numberOfInputs, std::vector<torch::Tensor>(noLayers_));
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
   for(unsigned int l = 0; l < noLayers_; ++l) {
     auto layerCoefficientsTable
       = vtkTable::SafeDownCast(coefficients->GetBlock(l));
@@ -185,7 +187,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     while(layerCoefficientsTable->GetColumnByName(
       ttk::axa::getTableCoefficientName(maxBoundNoAxes, noAxes).c_str()))
       noAxes += 1;
-    allNoAxes.emplace_back(noAxes);
+    allNoAxes[l] = noAxes;
     std::vector<std::vector<float>> alphas(
       numberOfInputs, std::vector<float>(noAxes));
     for(unsigned int g = 0; g < noAxes; ++g) {
@@ -211,6 +213,9 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     allRevNodeCorrPrime(noLayers_);
   std::vector<unsigned int> allRevNodeCorrSize(noLayers_),
     allRevNodeCorrPrimeSize(noLayers_);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
   for(unsigned int l = 0; l < vSTensor_.size(); ++l) {
     auto layerVectorsTable = vtkTable::SafeDownCast(vS->GetBlock(l));
     auto layerVectorsPrimeTable = vtkTable::SafeDownCast(vSPrime->GetBlock(l));

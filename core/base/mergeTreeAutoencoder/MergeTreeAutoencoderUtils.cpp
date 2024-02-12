@@ -79,7 +79,8 @@ void ttk::wae::createBalancedBDT(
   std::vector<std::vector<ftm::idNode>> &parents,
   std::vector<std::vector<ftm::idNode>> &children,
   std::vector<float> &scalarsVector,
-  std::vector<std::vector<ftm::idNode>> &childrenFinal) {
+  std::vector<std::vector<ftm::idNode>> &childrenFinal,
+  int threadNumber) {
   // ----- Some variables
   unsigned int noNodes = scalarsVector.size() / 2;
   childrenFinal.resize(noNodes);
@@ -109,8 +110,7 @@ void ttk::wae::createBalancedBDT(
   }
 
   // ----- Sort heuristic lambda
-  // TODO should sortIndexes be called each time a struct is found/created?
-  auto sortChildren = [&parents, &scalarsVector, &noNodes](
+  auto sortChildren = [&parents, &scalarsVector, &noNodes, &threadNumber](
                         ftm::idNode nodeOrigin, std::vector<bool> &nodeDone,
                         std::vector<std::vector<ftm::idNode>> &childrenT) {
     double refPers = scalarsVector[1] - scalarsVector[0];
@@ -126,8 +126,8 @@ void ttk::wae::createBalancedBDT(
       parentsRemaining[child] = getRemaining(parents[child]);
       childrenRemaining[child] = getRemaining(childrenT[child]);
     }
-    std::sort(
-      childrenT[nodeOrigin].begin(), childrenT[nodeOrigin].end(),
+    TTK_PSORT(
+      threadNumber, childrenT[nodeOrigin].begin(), childrenT[nodeOrigin].end(),
       [&](ftm::idNode nodeI, ftm::idNode nodeJ) {
         double persI = scalarsVector[nodeI * 2 + 1] - scalarsVector[nodeI * 2];
         double persJ = scalarsVector[nodeJ * 2 + 1] - scalarsVector[nodeJ * 2];
@@ -183,7 +183,6 @@ void ttk::wae::createBalancedBDT(
               childrenFinalOut[nodeOrigin].emplace_back(child);
               nodeDone[child] = true;
               dimFound[0] = true;
-              // TODO return value for searchMaxDim
               if(dimToFound <= 1 or searchMaxDim)
                 return true;
               ++dim;

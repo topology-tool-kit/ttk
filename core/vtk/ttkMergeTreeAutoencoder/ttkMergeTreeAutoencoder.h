@@ -76,11 +76,6 @@ private:
     treesSegmentation2.clear();
   }
 
-  // TODO
-  bool isDataVisualizationFilled() {
-    return false;
-  }
-
 public:
   /**
    * Automatically generate getters and setters of filter
@@ -547,42 +542,6 @@ protected:
     vtkInformationVector *outputVector,
     std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
     std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2);
-
-  void makeOneOutput(
-    ttk::ftm::MergeTree<float> &tree,
-    vtkUnstructuredGrid *treeNodes,
-    std::vector<int> &treeNodeCorr,
-    vtkDataSet *treeSegmentation,
-    vtkSmartPointer<vtkUnstructuredGrid> &vtkOutputNode,
-    vtkSmartPointer<vtkUnstructuredGrid> &vtkOutputArc,
-    vtkSmartPointer<vtkDataSet> &vtkOutputSegmentation,
-    unsigned int treeID,
-    std::vector<std::tuple<std::string, std::vector<int>>> &customIntArrays,
-    std::vector<std::tuple<std::string, std::vector<double>>>
-      &customDoubleArrays,
-    bool outputSegmentation);
-
-  void makeManyOutput(
-    std::vector<ttk::ftm::MergeTree<float> *> &trees,
-    std::vector<vtkUnstructuredGrid *> &treesNodesT,
-    std::vector<std::vector<int>> &treesNodeCorr,
-    std::vector<vtkDataSet *> &treesSegmentationT,
-    vtkSmartPointer<vtkMultiBlockDataSet> &output,
-    std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
-      &customIntArrays,
-    std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
-      &customDoubleArrays);
-
-  void makeManyOutput(
-    std::vector<ttk::ftm::MergeTree<float> *> &trees,
-    vtkSmartPointer<vtkMultiBlockDataSet> &output,
-    std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
-      &customIntArrays,
-    std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
-      &customDoubleArrays);
-
-  void makeManyOutput(std::vector<ttk::ftm::MergeTree<float> *> &trees,
-                      vtkSmartPointer<vtkMultiBlockDataSet> &output);
 
   int runOutput(
     vtkInformationVector *outputVector,

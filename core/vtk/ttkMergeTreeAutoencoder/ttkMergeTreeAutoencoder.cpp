@@ -172,8 +172,7 @@ int ttkMergeTreeAutoencoder::run(
   vtkInformationVector *outputVector,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees2) {
-  if(not isDataVisualizationFilled())
-    runCompute(outputVector, inputTrees, inputTrees2);
+  runCompute(outputVector, inputTrees, inputTrees2);
   runOutput(outputVector, inputTrees, inputTrees2);
   return 1;
 }

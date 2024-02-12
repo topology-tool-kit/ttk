@@ -9,9 +9,6 @@ using namespace torch::indexing;
 ttk::MergeTreeAutoencoder::MergeTreeAutoencoder() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("MergeTreeAutoencoder");
-#ifdef TTK_ENABLE_OPENMP
-  omp_set_nested(1);
-#endif
 }
 
 #ifdef TTK_ENABLE_TORCH
@@ -79,7 +76,8 @@ void ttk::MergeTreeAutoencoder::initOutputBasisTreeStructure(
           }
         }
       }
-      wae::createBalancedBDT(parents, children, scalarsVector, childrenFinal);
+      wae::createBalancedBDT(
+        parents, children, scalarsVector, childrenFinal, this->threadNumber_);
     } else {
       ftm::MergeTree<float> mTreeTemp
         = ftm::copyMergeTree<float>(baseOrigin.mTree);
@@ -2556,6 +2554,10 @@ void ttk::MergeTreeAutoencoder::execute(
   TTK_FORCE_USE(trees2);
   printErr("This filter requires Torch.");
 #else
+#ifdef TTK_ENABLE_OPENMP
+  int ompNested = omp_get_nested();
+  omp_set_nested(1);
+#endif
   // --- Preprocessing
   Timer t_preprocess;
   preprocessingTrees<float>(trees, treesNodeCorr_);
@@ -2639,6 +2641,9 @@ void ttk::MergeTreeAutoencoder::execute(
                                                 &(recs_[i][l].mTree.tree),
                                                 reconstMatchings_[i]);
     }
+#ifdef TTK_ENABLE_OPENMP
+    omp_set_nested(ompNested);
+#endif
   }
 #endif
 }

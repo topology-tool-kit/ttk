@@ -31,9 +31,6 @@ namespace ttk {
         visuMakerBary.setVtkOutputArc(vtkOutputArc);
       else {
         visuMakerBary.setVtkOutputArc(vtkOutputNode);
-        /*if(mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1)
-          visuMakerBary.setIsPDSadMax(blockId);
-        else*/
         visuMakerBary.setIsPDSadMax(mixtureCoefficient == 0);
       }
       for(auto &tup : customIntArrays)
@@ -75,18 +72,15 @@ namespace ttk {
       int debugLevel) {
       vtkSmartPointer<vtkMultiBlockDataSet> allNodes
         = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-      // allNodes->SetNumberOfBlocks(trees.size());
       vtkSmartPointer<vtkMultiBlockDataSet> allArcs;
       if(not isPersistenceDiagram) {
         allArcs = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-        // allArcs->SetNumberOfBlocks(trees.size());
       }
       bool outputSegmentation
         = !treesSegmentationT.empty() and treesSegmentationT[0];
       vtkSmartPointer<vtkMultiBlockDataSet> allSegs;
       if(outputSegmentation) {
         allSegs = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-        // allSegs->SetNumberOfBlocks(trees.size());
       }
       int shift = 0;
       for(unsigned int i = 0; i < trees.size(); ++i) {
