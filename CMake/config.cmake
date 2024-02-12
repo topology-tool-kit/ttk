@@ -153,7 +153,6 @@ endif()
 
 # optional packages
 
-find_package(PythonInterp QUIET)
 find_package(Torch QUIET)
 if(TORCH_FOUND)
   option(TTK_ENABLE_TORCH "Enable Torch support" ON)
