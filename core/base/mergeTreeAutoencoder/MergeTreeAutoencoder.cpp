@@ -2046,99 +2046,6 @@ void ttk::MergeTreeAutoencoder::fit(
   printMsg("Copy time", 1, t_allVectorCopy_time_, threadNumber_);
 }
 
-void ttk::MergeTreeAutoencoder::execute(
-  std::vector<ftm::MergeTree<float>> &trees,
-  std::vector<ftm::MergeTree<float>> &trees2) {
-  // makeExponentialExample(trees, trees2);
-
-  // --- Preprocessing
-  Timer t_preprocess;
-  preprocessingTrees<float>(trees, treesNodeCorr_);
-  if(trees2.size() != 0)
-    preprocessingTrees<float>(trees2, trees2NodeCorr_);
-  printMsg("Preprocessing", 1, t_preprocess.getElapsedTime(), threadNumber_);
-  useDoubleInput_ = (trees2.size() != 0);
-
-  // --- Fit autoencoder
-  Timer t_total;
-  fit(trees, trees2);
-  auto totalTime = t_total.getElapsedTime() - t_allVectorCopy_time_;
-  printMsg(debug::Separator::L1);
-  printMsg("Total time", 1, totalTime, threadNumber_);
-  hasComputedOnce_ = true;
-
-  // --- End functions
-  createScaledAlphas();
-  createActivatedAlphas();
-  computeTrackingInformation();
-  // Correlation
-  auto latLayer = getLatentLayerIndex();
-  std::vector<std::vector<double>> allTs;
-  auto noGeod = allAlphas_[0][latLayer].sizes()[0];
-  allTs.resize(noGeod);
-  for(unsigned int i = 0; i < noGeod; ++i) {
-    allTs[i].resize(allAlphas_.size());
-    for(unsigned int j = 0; j < allAlphas_.size(); ++j)
-      allTs[i][j] = allAlphas_[j][latLayer][i].item<double>();
-  }
-  computeBranchesCorrelationMatrix(origins_[0].mTree, trees, dataMatchings_[0],
-                                   allTs, branchesCorrelationMatrix_,
-                                   persCorrelationMatrix_);
-  // Custom recs
-  originsCopy_.resize(origins_.size());
-  originsPrimeCopy_.resize(originsPrime_.size());
-  for(unsigned int l = 0; l < origins_.size(); ++l) {
-    MergeTreeTorchUtils::copyTorchMergeTree<float>(
-      origins_[l], originsCopy_[l]);
-    MergeTreeTorchUtils::copyTorchMergeTree<float>(
-      originsPrime_[l], originsPrimeCopy_[l]);
-  }
-  createCustomRecs();
-
-  // --- Postprocessing
-  if(createOutput_) {
-    for(unsigned int i = 0; i < trees.size(); ++i)
-      postprocessingPipeline<float>(&(trees[i].tree));
-    for(unsigned int i = 0; i < trees2.size(); ++i)
-      postprocessingPipeline<float>(&(trees2[i].tree));
-    for(unsigned int l = 0; l < origins_.size(); ++l) {
-      fillMergeTreeStructure(origins_[l]);
-      postprocessingPipeline<float>(&(origins_[l].mTree.tree));
-      fillMergeTreeStructure(originsPrime_[l]);
-      postprocessingPipeline<float>(&(originsPrime_[l].mTree.tree));
-    }
-    for(unsigned int j = 0; j < recs_[0].size(); ++j) {
-      for(unsigned int i = 0; i < recs_.size(); ++i) {
-        postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
-        wae::fixTreePrecisionScalars(recs_[i][j].mTree);
-      }
-    }
-  }
-
-  if(not isPersistenceDiagram_) {
-    for(unsigned int l = 0; l < originsMatchings_.size(); ++l) {
-      auto &tree1 = (l == 0 ? origins_[0] : originsPrime_[l - 1]);
-      auto &tree2 = (l == 0 ? originsPrime_[0] : originsPrime_[l]);
-      convertBranchDecompositionMatching<float>(
-        &(tree1.mTree.tree), &(tree2.mTree.tree), originsMatchings_[l]);
-    }
-    for(unsigned int l = 0; l < dataMatchings_.size(); ++l) {
-      for(unsigned int i = 0; i < recs_.size(); ++i) {
-        auto &origin = (l == 0 ? origins_[0] : originsPrime_[l - 1]);
-        convertBranchDecompositionMatching<float>(&(origin.mTree.tree),
-                                                  &(recs_[i][l].mTree.tree),
-                                                  dataMatchings_[l][i]);
-      }
-    }
-    for(unsigned int i = 0; i < reconstMatchings_.size(); ++i) {
-      auto l = recs_[i].size() - 1;
-      convertBranchDecompositionMatching<float>(&(recs_[i][0].mTree.tree),
-                                                &(recs_[i][l].mTree.tree),
-                                                reconstMatchings_[i]);
-    }
-  }
-}
-
 //  ---------------------------------------------------------------------------
 //  --- Custom Losses
 //  ---------------------------------------------------------------------------
@@ -2672,3 +2579,104 @@ bool ttk::MergeTreeAutoencoder::isTreeHasBigValues(ftm::MergeTree<float> &mTree,
   return found;
 }
 #endif
+
+//  ---------------------------------------------------------------------------
+//  --- Main Functions
+//  ---------------------------------------------------------------------------
+
+void ttk::MergeTreeAutoencoder::execute(
+  std::vector<ftm::MergeTree<float>> &trees,
+  std::vector<ftm::MergeTree<float>> &trees2) {
+#ifndef TTK_ENABLE_TORCH
+  TTK_FORCE_USE(trees);
+  TTK_FORCE_USE(trees2);
+  printErr("This filter requires Torch.");
+#else
+  // --- Preprocessing
+  Timer t_preprocess;
+  preprocessingTrees<float>(trees, treesNodeCorr_);
+  if(trees2.size() != 0)
+    preprocessingTrees<float>(trees2, trees2NodeCorr_);
+  printMsg("Preprocessing", 1, t_preprocess.getElapsedTime(), threadNumber_);
+  useDoubleInput_ = (trees2.size() != 0);
+
+  // --- Fit autoencoder
+  Timer t_total;
+  fit(trees, trees2);
+  auto totalTime = t_total.getElapsedTime() - t_allVectorCopy_time_;
+  printMsg(debug::Separator::L1);
+  printMsg("Total time", 1, totalTime, threadNumber_);
+  hasComputedOnce_ = true;
+
+  // --- End functions
+  createScaledAlphas();
+  createActivatedAlphas();
+  computeTrackingInformation();
+  // Correlation
+  auto latLayer = getLatentLayerIndex();
+  std::vector<std::vector<double>> allTs;
+  auto noGeod = allAlphas_[0][latLayer].sizes()[0];
+  allTs.resize(noGeod);
+  for(unsigned int i = 0; i < noGeod; ++i) {
+    allTs[i].resize(allAlphas_.size());
+    for(unsigned int j = 0; j < allAlphas_.size(); ++j)
+      allTs[i][j] = allAlphas_[j][latLayer][i].item<double>();
+  }
+  computeBranchesCorrelationMatrix(origins_[0].mTree, trees, dataMatchings_[0],
+                                   allTs, branchesCorrelationMatrix_,
+                                   persCorrelationMatrix_);
+  // Custom recs
+  originsCopy_.resize(origins_.size());
+  originsPrimeCopy_.resize(originsPrime_.size());
+  for(unsigned int l = 0; l < origins_.size(); ++l) {
+    MergeTreeTorchUtils::copyTorchMergeTree<float>(
+      origins_[l], originsCopy_[l]);
+    MergeTreeTorchUtils::copyTorchMergeTree<float>(
+      originsPrime_[l], originsPrimeCopy_[l]);
+  }
+  createCustomRecs();
+
+  // --- Postprocessing
+  if(createOutput_) {
+    for(unsigned int i = 0; i < trees.size(); ++i)
+      postprocessingPipeline<float>(&(trees[i].tree));
+    for(unsigned int i = 0; i < trees2.size(); ++i)
+      postprocessingPipeline<float>(&(trees2[i].tree));
+    for(unsigned int l = 0; l < origins_.size(); ++l) {
+      fillMergeTreeStructure(origins_[l]);
+      postprocessingPipeline<float>(&(origins_[l].mTree.tree));
+      fillMergeTreeStructure(originsPrime_[l]);
+      postprocessingPipeline<float>(&(originsPrime_[l].mTree.tree));
+    }
+    for(unsigned int j = 0; j < recs_[0].size(); ++j) {
+      for(unsigned int i = 0; i < recs_.size(); ++i) {
+        postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
+        wae::fixTreePrecisionScalars(recs_[i][j].mTree);
+      }
+    }
+  }
+
+  if(not isPersistenceDiagram_) {
+    for(unsigned int l = 0; l < originsMatchings_.size(); ++l) {
+      auto &tree1 = (l == 0 ? origins_[0] : originsPrime_[l - 1]);
+      auto &tree2 = (l == 0 ? originsPrime_[0] : originsPrime_[l]);
+      convertBranchDecompositionMatching<float>(
+        &(tree1.mTree.tree), &(tree2.mTree.tree), originsMatchings_[l]);
+    }
+    for(unsigned int l = 0; l < dataMatchings_.size(); ++l) {
+      for(unsigned int i = 0; i < recs_.size(); ++i) {
+        auto &origin = (l == 0 ? origins_[0] : originsPrime_[l - 1]);
+        convertBranchDecompositionMatching<float>(&(origin.mTree.tree),
+                                                  &(recs_[i][l].mTree.tree),
+                                                  dataMatchings_[l][i]);
+      }
+    }
+    for(unsigned int i = 0; i < reconstMatchings_.size(); ++i) {
+      auto l = recs_[i].size() - 1;
+      convertBranchDecompositionMatching<float>(&(recs_[i][0].mTree.tree),
+                                                &(recs_[i][l].mTree.tree),
+                                                reconstMatchings_[i]);
+    }
+  }
+#endif
+}

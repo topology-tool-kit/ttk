@@ -6,7 +6,6 @@ ttk::MergeTreeAutoencoderDecoding::MergeTreeAutoencoderDecoding() {
   this->setDebugMsgPrefix("MergeTreeAutoencoderDecoding");
 }
 
-#ifdef TTK_ENABLE_TORCH
 void ttk::MergeTreeAutoencoderDecoding::execute(
   std::vector<ttk::ftm::MergeTree<float>> &originsTrees,
   std::vector<ttk::ftm::MergeTree<float>> &originsPrimeTrees,
@@ -14,6 +13,15 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
   std::vector<unsigned int *> &allRevNodeCorrPrime,
   std::vector<unsigned int> &allRevNodeCorrSize,
   std::vector<unsigned int> &allRevNodeCorrPrimeSize) {
+#ifndef TTK_ENABLE_TORCH
+  TTK_FORCE_USE(originsTrees);
+  TTK_FORCE_USE(originsPrimeTrees);
+  TTK_FORCE_USE(allRevNodeCorr);
+  TTK_FORCE_USE(allRevNodeCorrPrime);
+  TTK_FORCE_USE(allRevNodeCorrSize);
+  TTK_FORCE_USE(allRevNodeCorrPrimeSize);
+  printErr("This filter requires Torch.");
+#else
   // --- Preprocessing
   if(not isPersistenceDiagram_) {
     for(unsigned int i = 0; i < originsPrimeTrees.size(); ++i) {
@@ -69,5 +77,5 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
       }
     }
   }
-}
 #endif
+}

@@ -100,9 +100,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   TTK_FORCE_USE(outputVector);
   printErr("This filter requires Torch.");
   return 0;
-#endif
-
-#ifdef TTK_ENABLE_TORCH
+#else
   // --------------------------------------------------------------------------
   // --- Read Input
   // --------------------------------------------------------------------------

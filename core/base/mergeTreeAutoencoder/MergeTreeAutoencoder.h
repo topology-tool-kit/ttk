@@ -371,9 +371,6 @@ namespace ttk {
     void fit(std::vector<ftm::MergeTree<float>> &trees,
              std::vector<ftm::MergeTree<float>> &trees2);
 
-    void execute(std::vector<ftm::MergeTree<float>> &trees,
-                 std::vector<ftm::MergeTree<float>> &trees2);
-
     //  -----------------------------------------------------------------------
     //  --- Custom Losses
     //  -----------------------------------------------------------------------
@@ -495,6 +492,12 @@ namespace ttk {
     bool isTreeHasBigValues(ftm::MergeTree<float> &mTree,
                             float threshold = 10000);
 #endif
+
+    //  ---------------------------------------------------------------------------
+    //  --- Main Functions
+    //  ---------------------------------------------------------------------------
+    void execute(std::vector<ftm::MergeTree<float>> &trees,
+                 std::vector<ftm::MergeTree<float>> &trees2);
   }; // MergeTreeAutoencoder class
 
 } // namespace ttk

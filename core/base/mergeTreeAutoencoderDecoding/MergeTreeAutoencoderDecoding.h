@@ -31,14 +31,12 @@ namespace ttk {
   public:
     MergeTreeAutoencoderDecoding();
 
-#ifdef TTK_ENABLE_TORCH
     void execute(std::vector<ttk::ftm::MergeTree<float>> &originsTrees,
                  std::vector<ttk::ftm::MergeTree<float>> &originsPrimeTrees,
                  std::vector<unsigned int *> &allRevNodeCorr,
                  std::vector<unsigned int *> &allRevNodeCorrPrime,
                  std::vector<unsigned int> &allRevNodeCorrSize,
                  std::vector<unsigned int> &allRevNodeCorrPrimeSize);
-#endif
 
   }; // MergeTreeAutoencoderDecoding class
 
