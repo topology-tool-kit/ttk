@@ -4,6 +4,5 @@ ttk_add_base_library(mergeTreeAutoencoderDecoding
   HEADERS
     MergeTreeAutoencoderDecoding.h
   DEPENDS
-    triangulation
     mergeTreeAutoencoder
 )

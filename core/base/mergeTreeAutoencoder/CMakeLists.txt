@@ -8,7 +8,6 @@ ttk_add_base_library(mergeTreeAutoencoder
     MergeTreeAutoencoderUtils.h
     MergeTreeTorchUtils.h
   DEPENDS
-    triangulation
     mergeTreePrincipalGeodesics
     geometry
 )
