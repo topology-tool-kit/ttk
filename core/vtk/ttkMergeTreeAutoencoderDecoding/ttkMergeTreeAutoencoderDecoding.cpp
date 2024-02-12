@@ -95,6 +95,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
+  return 1;
 #ifndef TTK_ENABLE_TORCH
   TTK_FORCE_USE(inputVector);
   TTK_FORCE_USE(outputVector);
@@ -105,8 +106,8 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   // --- Read Input
   // --------------------------------------------------------------------------
   auto blockBary = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
-  auto coefficients = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
-  auto vectors = vtkMultiBlockDataSet::GetData(inputVector[2], 0);
+  auto vectors = vtkMultiBlockDataSet::GetData(inputVector[1], 0);
+  auto coefficients = vtkMultiBlockDataSet::GetData(inputVector[2], 0);
 
   // Parameters
   printMsg("Load parameters from field data.");
@@ -170,27 +171,27 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     = vtkTable::SafeDownCast(coefficients->GetBlock(0))->GetNumberOfRows();
   noLayers_ = vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(0))
                 ->GetNumberOfBlocks();
-  std::vector<unsigned int> allNoGeodesics;
+  std::vector<unsigned int> allNoAxes;
 
   allAlphas_.resize(numberOfInputs, std::vector<torch::Tensor>(noLayers_));
   for(unsigned int l = 0; l < noLayers_; ++l) {
     auto layerCoefficientsTable
       = vtkTable::SafeDownCast(coefficients->GetBlock(l));
-    unsigned int maxBoundNoGeodesics = 1;
+    unsigned int maxBoundNoAxes = 1;
     while(not layerCoefficientsTable->GetColumnByName(
-      ttk::axa::getTableCoefficientName(maxBoundNoGeodesics, 0).c_str()))
-      maxBoundNoGeodesics *= 10;
-    unsigned int noGeodesics = 1;
+      ttk::axa::getTableCoefficientName(maxBoundNoAxes, 0).c_str()))
+      maxBoundNoAxes *= 10;
+    unsigned int noAxes = 1;
     while(layerCoefficientsTable->GetColumnByName(
-      ttk::axa::getTableCoefficientName(maxBoundNoGeodesics, noGeodesics)
+      ttk::axa::getTableCoefficientName(maxBoundNoAxes, noAxes)
         .c_str()))
-      noGeodesics += 1;
-    allNoGeodesics.emplace_back(noGeodesics);
+      noAxes += 1;
+    allNoAxes.emplace_back(noAxes);
     std::vector<std::vector<float>> alphas(
-      numberOfInputs, std::vector<float>(noGeodesics));
-    for(unsigned int g = 0; g < noGeodesics; ++g) {
+      numberOfInputs, std::vector<float>(noAxes));
+    for(unsigned int g = 0; g < noAxes; ++g) {
       auto array = layerCoefficientsTable->GetColumnByName(
-        ttk::axa::getTableCoefficientName(maxBoundNoGeodesics, g).c_str());
+        ttk::axa::getTableCoefficientName(maxBoundNoAxes, g).c_str());
       for(unsigned int i = 0; i < numberOfInputs; ++i)
         alphas[i][g] = array->GetVariantValue(i).ToFloat();
     }
@@ -216,25 +217,25 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     auto layerVectorsPrimeTable = vtkTable::SafeDownCast(vSPrime->GetBlock(l));
     auto noRows = layerVectorsTable->GetNumberOfRows();
     auto noRows2 = layerVectorsPrimeTable->GetNumberOfRows();
-    std::vector<float> vSTensor(noRows * allNoGeodesics[l]),
-      vSPrimeTensor(noRows2 * allNoGeodesics[l]);
-    for(unsigned int v = 0; v < allNoGeodesics[l]; ++v) {
+    std::vector<float> vSTensor(noRows * allNoAxes[l]),
+      vSPrimeTensor(noRows2 * allNoAxes[l]);
+    for(unsigned int v = 0; v < allNoAxes[l]; ++v) {
       std::string name
-        = ttk::axa::getTableVectorName(allNoGeodesics[l], v, 0, 0, false);
+        = ttk::axa::getTableVectorName(allNoAxes[l], v, 0, 0, false);
       for(unsigned int i = 0; i < noRows; ++i)
-        vSTensor[i * allNoGeodesics[l] + v]
+        vSTensor[i * allNoAxes[l] + v]
           = layerVectorsTable->GetColumnByName(name.c_str())
               ->GetVariantValue(i)
               .ToFloat();
       for(unsigned int i = 0; i < noRows2; ++i)
-        vSPrimeTensor[i * allNoGeodesics[l] + v]
+        vSPrimeTensor[i * allNoAxes[l] + v]
           = layerVectorsPrimeTable->GetColumnByName(name.c_str())
               ->GetVariantValue(i)
               .ToFloat();
     }
-    vSTensor_[l] = torch::tensor(vSTensor).reshape({noRows, allNoGeodesics[l]});
+    vSTensor_[l] = torch::tensor(vSTensor).reshape({noRows, allNoAxes[l]});
     vSPrimeTensor_[l]
-      = torch::tensor(vSPrimeTensor).reshape({noRows2, allNoGeodesics[l]});
+      = torch::tensor(vSPrimeTensor).reshape({noRows2, allNoAxes[l]});
     allRevNodeCorr[l]
       = ttkUtils::GetPointer<unsigned int>(vtkDataArray::SafeDownCast(
         layerVectorsTable->GetColumnByName("revNodeCorr")));

@@ -11,7 +11,7 @@
 /// Wasserstein Auto-Encoder.
 ///
 /// \param Input vtkMultiBlockDataSet Origins
-/// \param Input vtkMultiBlockDataSet Geodesic Axes
+/// \param Input vtkMultiBlockDataSet Bases Axes
 /// \param Input vtkMultiBlockDataSet Coefficients
 /// \param Output vtkMultiBlockDataSet Trees
 ///

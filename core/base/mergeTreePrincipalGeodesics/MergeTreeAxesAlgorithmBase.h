@@ -26,7 +26,7 @@ namespace ttk {
 
   protected:
     bool deterministic_ = true;
-    unsigned int numberOfGeodesics_ = 1;
+    unsigned int numberOfAxes_ = 1;
     unsigned int k_ = 10;
     double barycenterSizeLimitPercent_ = 0.0;
 
@@ -153,7 +153,7 @@ namespace ttk {
 
     template <class dataType, typename F>
     int initVectors(
-      int geodesicNumber,
+      int axeNumber,
       ftm::MergeTree<dataType> &barycenter,
       std::vector<ftm::MergeTree<dataType>> &trees,
       ftm::MergeTree<dataType> &barycenter2,
@@ -168,7 +168,7 @@ namespace ttk {
         &baryMatchings,
       std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
         &baryMatchings2,
-      std::vector<std::vector<double>> &inputToGeodesicsDistances,
+      std::vector<std::vector<double>> &inputToAxesDistances,
       std::vector<std::vector<std::vector<double>>> &vS,
       std::vector<std::vector<std::vector<double>>> &v2s,
       std::vector<std::vector<std::vector<double>>> &trees2Vs,
@@ -188,7 +188,7 @@ namespace ttk {
         dataType distance = 0.0, distance2 = 0.0;
         std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching,
           matching2;
-        if(geodesicNumber == 0) {
+        if(axeNumber == 0) {
           if(inputToOriginDistances.size() == 0) {
             computeOneDistance<dataType>(
               barycenter, trees[i], matching, distance, false, useDoubleInput_);
@@ -205,8 +205,8 @@ namespace ttk {
               matching2 = baryMatchings2[i];
           }
         } else {
-          for(unsigned j = 0; j < inputToGeodesicsDistances.size(); ++j)
-            distance += inputToGeodesicsDistances[j][i];
+          for(unsigned j = 0; j < inputToAxesDistances.size(); ++j)
+            distance += inputToAxesDistances[j][i];
           distancesAndIndexes[i] = std::make_tuple(distance, i);
         }
         if(distance > bestDistance) {
@@ -218,7 +218,7 @@ namespace ttk {
       }
 
       // Sort all distances and their respective indexes
-      if(geodesicNumber != 0)
+      if(axeNumber != 0)
         std::sort(distancesAndIndexes.begin(), distancesAndIndexes.end(),
                   [](const std::tuple<double, unsigned int> &a,
                      const std::tuple<double, unsigned int> &b) -> bool {
@@ -232,7 +232,7 @@ namespace ttk {
       while(not foundGoodIndex) {
         // Get matching of the ith farthest input
         if(bestIndex >= 0 and bestIndex < (int)trees.size()) {
-          if(geodesicNumber != 0) {
+          if(axeNumber != 0) {
             if(baryMatchings.size() == 0
                and (baryMatchings.size() == 0 or trees2.size() == 0)) {
               dataType distance;
@@ -271,13 +271,13 @@ namespace ttk {
         // Project initialized vectors to satisfy constraints
         if(projectInitializedVectors) {
           initializedVectorsProjection(
-            geodesicNumber, barycenter, v1, v2, vS, v2s, barycenter2, trees2V1,
+            axeNumber, barycenter, v1, v2, vS, v2s, barycenter2, trees2V1,
             trees2V2, trees2Vs, trees2V2s, (trees2.size() != 0), 1);
         }
 
         // Check if the initialized vectors are good
         foundGoodIndex
-          = (geodesicNumber == 0 or not ttk::Geometry::isVectorNullFlatten(v1));
+          = (axeNumber == 0 or not ttk::Geometry::isVectorNullFlatten(v1));
 
         // Init next bestIndex
         if(not foundGoodIndex) {

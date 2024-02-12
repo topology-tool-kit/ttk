@@ -14,40 +14,40 @@ namespace ttk {
       colName.append(zer).append(cur);
     }
 
-    std::string getTableCoefficientName(int noGeodesics, int geodesicNum) {
+    std::string getTableCoefficientName(int noAxes, int axeNum) {
       std::string name{"T"};
-      zeroPadding(name, noGeodesics, geodesicNum);
+      zeroPadding(name, noAxes, axeNum);
       return name;
     }
 
-    std::string getTableCoefficientNormName(int noGeodesics, int geodesicNum) {
+    std::string getTableCoefficientNormName(int noAxes, int axeNum) {
       std::string name{"TNorm"};
-      zeroPadding(name, noGeodesics, geodesicNum);
+      zeroPadding(name, noAxes, axeNum);
       return name;
     }
 
-    std::string getTableVectorName(int noGeodesics,
-                                   int geodesicNum,
+    std::string getTableVectorName(int noAxes,
+                                   int axeNum,
                                    int vId,
                                    int vComp,
                                    bool isSecondInput) {
       std::string indexString{};
-      zeroPadding(indexString, noGeodesics, geodesicNum);
+      zeroPadding(indexString, noAxes, axeNum);
       std::string const prefix{(isSecondInput ? "T2_" : "")};
       std::string name{prefix + "V" + indexString + "_" + std::to_string(vId)
                        + "_" + std::to_string(vComp)};
       return name;
     }
 
-    std::string getTableCorrelationName(int noGeodesics, int geodesicNum) {
+    std::string getTableCorrelationName(int noAxes, int axeNum) {
       std::string name{"Corr"};
-      zeroPadding(name, noGeodesics, geodesicNum);
+      zeroPadding(name, noAxes, axeNum);
       return name;
     }
 
-    std::string getTableCorrelationPersName(int noGeodesics, int geodesicNum) {
+    std::string getTableCorrelationPersName(int noAxes, int axeNum) {
       std::string name{"CorrPers"};
-      zeroPadding(name, noGeodesics, geodesicNum);
+      zeroPadding(name, noAxes, axeNum);
       return name;
     }
 

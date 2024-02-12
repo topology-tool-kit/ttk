@@ -1016,22 +1016,22 @@ namespace ttk {
       unsigned int maxNoGeodesics = barycenter.tree.getRealNumberOfNodes() * 2;
       if(trees2.size() != 0)
         maxNoGeodesics += barycenter2.tree.getRealNumberOfNodes() * 2;
-      if(maxNoGeodesics < numberOfGeodesics_) {
+      if(maxNoGeodesics < numberOfAxes_) {
         std::stringstream ss;
-        ss << numberOfGeodesics_ << " principal geodesics are asked but only "
+        ss << numberOfAxes_ << " principal geodesics are asked but only "
            << maxNoGeodesics << " can be computed.";
         printMsg(ss.str());
         printMsg("(the maximum is twice the number of persistence pairs in the "
                  "barycenter)");
-        numberOfGeodesics_ = maxNoGeodesics;
+        numberOfAxes_ = maxNoGeodesics;
       }
 
       // --- Init
       unsigned int const oldNoGeod = allTs_.size();
       if(not keepState_) {
-        allTs_.resize(numberOfGeodesics_, std::vector<double>(trees.size()));
+        allTs_.resize(numberOfAxes_, std::vector<double>(trees.size()));
         inputToGeodesicsDistances_.resize(
-          numberOfGeodesics_, std::vector<double>(trees.size()));
+          numberOfAxes_, std::vector<double>(trees.size()));
         vS_.clear();
         v2s_.clear();
         trees2Vs_.clear();
@@ -1043,10 +1043,10 @@ namespace ttk {
         cumulVariance_ = 0.0;
         cumulTVariance_ = 0.0;
       } else {
-        allTs_.resize(numberOfGeodesics_, std::vector<double>(trees.size()));
+        allTs_.resize(numberOfAxes_, std::vector<double>(trees.size()));
         ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
         inputToGeodesicsDistances_.resize(
-          numberOfGeodesics_, std::vector<double>(trees.size()));
+          numberOfAxes_, std::vector<double>(trees.size()));
         if(oldNoGeod != 0)
           printMsg(
             "KeepState is enabled, restart the computation at geodesic number "
@@ -1054,7 +1054,7 @@ namespace ttk {
       }
 
       // --- Compute each geodesic
-      for(unsigned int geodNum = oldNoGeod; geodNum < numberOfGeodesics_;
+      for(unsigned int geodNum = oldNoGeod; geodNum < numberOfAxes_;
           ++geodNum) {
         printMsg(debug::Separator::L1);
         std::stringstream ss;
@@ -1149,7 +1149,7 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic) \
   num_threads(this->threadNumber_) if(parallelize_)
 #endif
-      for(unsigned int i = 0; i < numberOfGeodesics_; ++i) {
+      for(unsigned int i = 0; i < numberOfAxes_; ++i) {
         ftm::MergeTree<dataType> extremityV1, extremityV2;
         getInterpolation<dataType>(
           barycenter, vS_[i], v2s_[i], 0.0, extremityV1);

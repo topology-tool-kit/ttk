@@ -317,7 +317,7 @@ void ttk::MergeTreeAutoencoder::initInputBasisVectors(
   torch::Tensor &vS2Tensor) {
   // --- Initialized vectors projection function to avoid collinearity
   auto initializedVectorsProjection
-    = [=](int ttkNotUsed(_geodesicNumber),
+    = [=](int ttkNotUsed(_axeNumber),
           ftm::MergeTree<float> &ttkNotUsed(_barycenter),
           std::vector<std::vector<double>> &_v,
           std::vector<std::vector<double>> &ttkNotUsed(_v2),
@@ -352,7 +352,7 @@ void ttk::MergeTreeAutoencoder::initInputBasisVectors(
       };
 
   // --- Init vectors
-  std::vector<std::vector<double>> inputToGeodesicsDistances;
+  std::vector<std::vector<double>> inputToAxesDistances;
   std::vector<std::vector<std::vector<double>>> vS, v2s, trees2Vs, trees2V2s;
   std::stringstream ss;
   for(unsigned int vecNum = 0; vecNum < noVectors; ++vecNum) {
@@ -365,7 +365,7 @@ void ttk::MergeTreeAutoencoder::initInputBasisVectors(
     int bestIndex = MergeTreeAxesAlgorithmBase::initVectors<float>(
       vecNum, origin.mTree, treesToUse, origin2.mTree, trees2ToUse, v1, v2,
       trees2V1, trees2V2, newVectorOffset, inputToBaryDistances, baryMatchings,
-      baryMatchings2, inputToGeodesicsDistances, vS, v2s, trees2Vs, trees2V2s,
+      baryMatchings2, inputToAxesDistances, vS, v2s, trees2Vs, trees2V2s,
       projectInitializedVectors, initializedVectorsProjection);
     vS.emplace_back(v1);
     v2s.emplace_back(v2);
@@ -376,9 +376,9 @@ void ttk::MergeTreeAutoencoder::initInputBasisVectors(
     ss << "bestIndex = " << bestIndex;
     printMsg(ss.str(), debug::Priority::VERBOSE);
 
-    // Update inputToGeodesicsDistances
-    printMsg("Update inputToGeodesicsDistances", debug::Priority::VERBOSE);
-    inputToGeodesicsDistances.resize(1, std::vector<double>(treesToUse.size()));
+    // Update inputToAxesDistances
+    printMsg("Update inputToAxesDistances", debug::Priority::VERBOSE);
+    inputToAxesDistances.resize(1, std::vector<double>(treesToUse.size()));
     if(bestIndex == -1 and normalizedWasserstein_) {
       MergeTreeTorchUtils::normalizeVectors(origin, vS[vS.size() - 1]);
       if(useDoubleInput_)
@@ -410,7 +410,7 @@ void ttk::MergeTreeAutoencoder::initInputBasisVectors(
                                  : newAlpha);
         torch::Tensor bestAlphas;
         bool isCalled = true;
-        inputToGeodesicsDistances[0][i] = assignmentOneData(
+        inputToAxesDistances[0][i] = assignmentOneData(
           tmTreesToUse[i], origin, vSTensor, tmt2ToUse, origin2, vS2Tensor, k,
           allAlphasInit[i][l], bestAlphas, isCalled);
         allAlphasInit[i][l] = bestAlphas.detach();
@@ -430,7 +430,7 @@ void ttk::MergeTreeAutoencoder::initInputBasisVectors(
         getDifferentiableDistanceFromMatchings(
           interpolated, tmTreesToUse[i], interpolated2, tmt2ToUse,
           baryMatchings[i], baryMatching2ToUse, tensorDist, doSqrt);
-        inputToGeodesicsDistances[0][i] = tensorDist.item<double>();
+        inputToAxesDistances[0][i] = tensorDist.item<double>();
         allAlphasInit[i][l] = alphas.detach();
       }
     }
@@ -481,21 +481,21 @@ float ttk::MergeTreeAutoencoder::initParameters(
   if(encoderNoLayers_ <= -1)
     noLayers_ = 1;
   std::vector<double> layersOriginPrimeSizePercent(noLayers_);
-  std::vector<unsigned int> layersNoGeodesics(noLayers_);
+  std::vector<unsigned int> layersNoAxes(noLayers_);
   if(noLayers_ <= 2) {
-    layersNoGeodesics[0] = numberOfGeodesics_;
+    layersNoAxes[0] = numberOfAxes_;
     layersOriginPrimeSizePercent[0] = latentSpaceOriginPrimeSizePercent_;
     if(noLayers_ == 2) {
-      layersNoGeodesics[1] = inputNumberOfGeodesics_;
+      layersNoAxes[1] = inputNumberOfAxes_;
       layersOriginPrimeSizePercent[1] = barycenterSizeLimitPercent_;
     }
   } else {
     for(unsigned int l = 0; l < noLayers_ / 2; ++l) {
       double alpha = (double)(l) / (noLayers_ / 2 - 1);
-      unsigned int noGeodesics
-        = (1 - alpha) * inputNumberOfGeodesics_ + alpha * numberOfGeodesics_;
-      layersNoGeodesics[l] = noGeodesics;
-      layersNoGeodesics[noLayers_ - 1 - l] = noGeodesics;
+      unsigned int noAxes
+        = (1 - alpha) * inputNumberOfAxes_ + alpha * numberOfAxes_;
+      layersNoAxes[l] = noAxes;
+      layersNoAxes[noLayers_ - 1 - l] = noAxes;
       double originPrimeSizePercent
         = (1 - alpha) * inputOriginPrimeSizePercent_
           + alpha * latentSpaceOriginPrimeSizePercent_;
@@ -503,9 +503,9 @@ float ttk::MergeTreeAutoencoder::initParameters(
       layersOriginPrimeSizePercent[noLayers_ - 1 - l] = originPrimeSizePercent;
     }
     if(scaleLayerAfterLatent_)
-      layersNoGeodesics[noLayers_ / 2]
-        = (layersNoGeodesics[noLayers_ / 2 - 1]
-           + layersNoGeodesics[noLayers_ / 2 + 1])
+      layersNoAxes[noLayers_ / 2]
+        = (layersNoAxes[noLayers_ / 2 - 1]
+           + layersNoAxes[noLayers_ / 2 + 1])
           / 2.0;
   }
 
@@ -596,7 +596,7 @@ float ttk::MergeTreeAutoencoder::initParameters(
       auto &tmTrees2ToUse = (l == 0 ? trees2 : recs2);
       initInputBasisVectors(tmTreesToUse, tmTrees2ToUse, treesToUse,
                             trees2ToUse, origins_[l], origins2_[l],
-                            layersNoGeodesics[l], allAlphasInit, l,
+                            layersNoAxes[l], allAlphasInit, l,
                             inputToBaryDistances, baryMatchings, baryMatchings2,
                             vSTensor_[l], vS2Tensor_[l]);
       printMsg("Compute vectors time", 1, t_vectors.getElapsedTime(),
@@ -623,7 +623,7 @@ float ttk::MergeTreeAutoencoder::initParameters(
     }
 
     // --- Init Output Basis
-    auto initOutputBasisSpecialCase = [this, &l, &layersNoGeodesics, &trees,
+    auto initOutputBasisSpecialCase = [this, &l, &layersNoAxes, &trees,
                                        &trees2]() {
       // - Compute Origin
       printMsg("Compute output basis origin", debug::Priority::DETAIL);
@@ -633,7 +633,7 @@ float ttk::MergeTreeAutoencoder::initParameters(
           origins2_[0], origins2Prime_[l]);
       // - Compute vectors
       printMsg("Compute output basis vectors", debug::Priority::DETAIL);
-      if(layersNoGeodesics[l] != layersNoGeodesics[0]) {
+      if(layersNoAxes[l] != layersNoAxes[0]) {
         // TODO is there a way to avoid copy of merge trees?
         std::vector<ftm::MergeTree<float>> treesToUse, trees2ToUse;
         for(unsigned int i = 0; i < trees.size(); ++i) {
@@ -645,7 +645,7 @@ float ttk::MergeTreeAutoencoder::initParameters(
           trees.size(), std::vector<torch::Tensor>(noLayers_));
         initInputBasisVectors(
           trees, trees2, treesToUse, trees2ToUse, originsPrime_[l],
-          origins2Prime_[l], layersNoGeodesics[l], allAlphasInitT, l,
+          origins2Prime_[l], layersNoAxes[l], allAlphasInitT, l,
           inputToBaryDistances_L0_, baryMatchings_L0_, baryMatchings2_L0_,
           vSPrimeTensor_[l], vS2PrimeTensor_[l]);
       } else {

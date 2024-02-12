@@ -25,7 +25,7 @@
       </InputProperty>
       
       <InputProperty
-        name="Coefficients"
+        name="Bases Vectors"
         port_index="1"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -39,12 +39,12 @@
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Coefficients of the input trees in each basis.
+          Vectors defining each basis.
         </Documentation>
       </InputProperty>
       
       <InputProperty
-        name="Geodesics Vectors"
+        name="Coefficients"
         port_index="2"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -58,7 +58,7 @@
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Vectors defining the principal geodesics.
+          Coefficients of the input trees in each basis.
         </Documentation>
       </InputProperty>
 

@@ -20,7 +20,7 @@
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Merge trees to process.
+          Merge trees or persistence diagrams to process.
         </Documentation>
       </InputProperty>
       
@@ -100,13 +100,13 @@
       </IntVectorProperty>
       
       <IntVectorProperty
-      name="InputNumberOfGeodesics"
-      command="SetInputNumberOfGeodesics"
-      label="Input Number of Geodesics"
+      name="InputNumberOfAxes"
+      command="SetInputNumberOfAxes"
+      label="Input Number of Axes"
       number_of_elements="1"
       default_values="16">
         <Documentation>
-          Number of geodesics in the input layer.
+          Number of axes in the input layer.
         </Documentation>
       </IntVectorProperty>
       
@@ -122,13 +122,13 @@
       </DoubleVectorProperty>
       
       <IntVectorProperty
-      name="LatentSpaceNumberOfGeodesics"
-      command="SetNumberOfGeodesics"
-      label="Latent Space Number of Geodesics"
+      name="LatentSpaceNumberOfAxes"
+      command="SetNumberOfAxes"
+      label="Latent Space Number of Axes"
       number_of_elements="1"
       default_values="2">
         <Documentation>
-          Number of geodesics in the latent space.
+          Number of axes in the latent space.
         </Documentation>
       </IntVectorProperty>
       
@@ -569,9 +569,9 @@
       <PropertyGroup panel_widget="Line" label="Architecture options">
         <Property name="NumberOfEncoderLayers"/>
         <Property name="ScaleLayerAfterLatent"/>
-        <Property name="InputNumberOfGeodesics"/>
+        <Property name="InputNumberOfAxes"/>
         <Property name="InputOriginPrimeSizePercent"/>
-        <Property name="LatentSpaceNumberOfGeodesics"/>
+        <Property name="LatentSpaceNumberOfAxes"/>
         <Property name="LatentSpaceOriginPrimeSizePercent"/>
         <Property name="BarycenterSizeLimitPercent"/>
         <Property name="Activate"/>
@@ -614,8 +614,8 @@
       <!-- OUTPUT PORT -->
       <OutputPort name="Data" index="0" id="port0" />
       <OutputPort name="Origins" index="1" id="port1" />
-      <OutputPort name="Coefficients" index="2" id="port2" />
-      <OutputPort name="Axes Vectors" index="3" id="port3" />
+      <OutputPort name="Axes Vectors" index="2" id="port2" />
+      <OutputPort name="Coefficients" index="3" id="port3" />
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}

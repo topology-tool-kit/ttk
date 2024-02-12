@@ -13,7 +13,7 @@
 /// \param Input (optional) vtkTable Info (such as clustering assigment)
 /// \param Output vtkMultiBlockDataSet Processed Input Trees
 /// \param Output vtkMultiBlockDataSet Origins
-/// \param Output vtkMultiBlockDataSet Geodesic Axes
+/// \param Output vtkMultiBlockDataSet Bases Axes
 /// \param Output vtkMultiBlockDataSet Coefficients
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
@@ -123,13 +123,13 @@ public:
     return scaleLayerAfterLatent_;
   }
 
-  void SetInputNumberOfGeodesics(unsigned int numberOfGeodesics) {
-    inputNumberOfGeodesics_ = numberOfGeodesics;
+  void SetInputNumberOfAxes(unsigned int numberOfAxes) {
+    inputNumberOfAxes_ = numberOfAxes;
     Modified();
     resetDataVisualization();
   }
-  unsigned int GetInputNumberOfGeodesics() {
-    return inputNumberOfGeodesics_;
+  unsigned int GetInputNumberOfAxes() {
+    return inputNumberOfAxes_;
   }
 
   void SetInputOriginPrimeSizePercent(double originSize) {
@@ -141,14 +141,14 @@ public:
     return inputOriginPrimeSizePercent_;
   }
 
-  //  Latent space number of geodesics
-  void SetNumberOfGeodesics(unsigned int numberOfGeodesics) {
-    numberOfGeodesics_ = numberOfGeodesics;
+  //  Latent space number of axes
+  void SetNumberOfAxes(unsigned int numberOfAxes) {
+    numberOfAxes_ = numberOfAxes;
     Modified();
     resetDataVisualization();
   }
-  unsigned int GetNumberOfGeodesics() {
-    return numberOfGeodesics_;
+  unsigned int GetNumberOfAxes() {
+    return numberOfAxes_;
   }
 
   void SetLatentSpaceOriginPrimeSizePercent(double originSize) {

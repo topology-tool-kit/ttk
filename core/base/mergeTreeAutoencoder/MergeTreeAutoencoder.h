@@ -39,7 +39,7 @@ namespace ttk {
 
     // Model hyper-parameters;
     int encoderNoLayers_, optimizer_;
-    unsigned int inputNumberOfGeodesics_, noInit_;
+    unsigned int inputNumberOfAxes_, noInit_;
     double inputOriginPrimeSizePercent_, latentSpaceOriginPrimeSizePercent_;
     double gradientStepSize_, beta1_, beta2_, batchSize_,
       reconstructionLossWeight_, trackingLossWeight_, metricLossWeight_,

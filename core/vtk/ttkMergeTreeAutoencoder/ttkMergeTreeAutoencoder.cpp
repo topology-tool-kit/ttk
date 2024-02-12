@@ -232,8 +232,8 @@ int ttkMergeTreeAutoencoder::runOutput(
   // ------------------------------------------------------------------------------------
   auto output_data = vtkMultiBlockDataSet::GetData(outputVector, 0);
   auto output_origins = vtkMultiBlockDataSet::GetData(outputVector, 1);
-  auto output_coef = vtkMultiBlockDataSet::GetData(outputVector, 2);
-  auto output_vectors = vtkMultiBlockDataSet::GetData(outputVector, 3);
+  auto output_vectors = vtkMultiBlockDataSet::GetData(outputVector, 2);
+  auto output_coef = vtkMultiBlockDataSet::GetData(outputVector, 3);
 
   // ------------------------------------------
   // --- Tracking information
@@ -527,7 +527,7 @@ int ttkMergeTreeAutoencoder::runOutput(
   output_coef->GetFieldData()->AddArray(arrayActivateFunction);
 
   // ------------------------------------------
-  // --- Geodesics Vectors
+  // --- Axes Vectors
   // ------------------------------------------
   std::vector<std::vector<std::vector<ttk::ftm::idNode>>> dataMatchingVectorT(
     dataMatchings_.size());
