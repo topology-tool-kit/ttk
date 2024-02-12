@@ -183,8 +183,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
       maxBoundNoAxes *= 10;
     unsigned int noAxes = 1;
     while(layerCoefficientsTable->GetColumnByName(
-      ttk::axa::getTableCoefficientName(maxBoundNoAxes, noAxes)
-        .c_str()))
+      ttk::axa::getTableCoefficientName(maxBoundNoAxes, noAxes).c_str()))
       noAxes += 1;
     allNoAxes.emplace_back(noAxes);
     std::vector<std::vector<float>> alphas(

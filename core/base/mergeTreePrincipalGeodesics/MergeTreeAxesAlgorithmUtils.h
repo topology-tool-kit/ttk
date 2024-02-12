@@ -15,11 +15,8 @@ namespace ttk {
 
     std::string getTableCoefficientNormName(int noAxes, int axeNum);
 
-    std::string getTableVectorName(int noAxes,
-                                   int axeNum,
-                                   int vId,
-                                   int vComp,
-                                   bool isSecondInput = false);
+    std::string getTableVectorName(
+      int noAxes, int axeNum, int vId, int vComp, bool isSecondInput = false);
 
     std::string getTableCorrelationName(int noAxes, int axeNum);
 

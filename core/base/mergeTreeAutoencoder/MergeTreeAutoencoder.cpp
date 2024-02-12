@@ -504,8 +504,7 @@ float ttk::MergeTreeAutoencoder::initParameters(
     }
     if(scaleLayerAfterLatent_)
       layersNoAxes[noLayers_ / 2]
-        = (layersNoAxes[noLayers_ / 2 - 1]
-           + layersNoAxes[noLayers_ / 2 + 1])
+        = (layersNoAxes[noLayers_ / 2 - 1] + layersNoAxes[noLayers_ / 2 + 1])
           / 2.0;
   }
 
@@ -594,11 +593,10 @@ float ttk::MergeTreeAutoencoder::initParameters(
       Timer t_vectors;
       auto &tmTreesToUse = (l == 0 ? trees : recs);
       auto &tmTrees2ToUse = (l == 0 ? trees2 : recs2);
-      initInputBasisVectors(tmTreesToUse, tmTrees2ToUse, treesToUse,
-                            trees2ToUse, origins_[l], origins2_[l],
-                            layersNoAxes[l], allAlphasInit, l,
-                            inputToBaryDistances, baryMatchings, baryMatchings2,
-                            vSTensor_[l], vS2Tensor_[l]);
+      initInputBasisVectors(
+        tmTreesToUse, tmTrees2ToUse, treesToUse, trees2ToUse, origins_[l],
+        origins2_[l], layersNoAxes[l], allAlphasInit, l, inputToBaryDistances,
+        baryMatchings, baryMatchings2, vSTensor_[l], vS2Tensor_[l]);
       printMsg("Compute vectors time", 1, t_vectors.getElapsedTime(),
                threadNumber_, debug::LineMode::NEW, debug::Priority::DETAIL);
     } else {

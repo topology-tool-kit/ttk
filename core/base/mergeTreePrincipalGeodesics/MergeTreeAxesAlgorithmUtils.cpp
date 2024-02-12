@@ -26,11 +26,8 @@ namespace ttk {
       return name;
     }
 
-    std::string getTableVectorName(int noAxes,
-                                   int axeNum,
-                                   int vId,
-                                   int vComp,
-                                   bool isSecondInput) {
+    std::string getTableVectorName(
+      int noAxes, int axeNum, int vId, int vComp, bool isSecondInput) {
       std::string indexString{};
       zeroPadding(indexString, noAxes, axeNum);
       std::string const prefix{(isSecondInput ? "T2_" : "")};
