@@ -126,7 +126,7 @@ int ttkMergeTreeAutoencoder::RequestData(vtkInformation *ttkNotUsed(request),
   clusterAsgn_.clear();
   vtkAbstractArray *clusterAsgn;
   if(table) {
-    clusterAsgn = table->GetColumnByName("ClusterAssignment");
+    clusterAsgn = this->GetInputArrayToProcess(0, inputVector);
     if(clusterAsgn) {
       clusterAsgn_.resize(clusterAsgn->GetNumberOfValues());
       for(unsigned int i = 0; i < clusterAsgn_.size(); ++i)
@@ -134,8 +134,8 @@ int ttkMergeTreeAutoencoder::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
   if((not table or not clusterAsgn) and clusteringLossWeight_ != 0) {
-    printErr("You must provide ClusterAssignment table column in info input to "
-             "use clustering loss");
+    printErr(
+      "You must provide a table column in info input to use clustering loss");
     return 0;
   }
   if(clusteringLossWeight_ != 0) {

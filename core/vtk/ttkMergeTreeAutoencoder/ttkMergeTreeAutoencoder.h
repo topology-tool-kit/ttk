@@ -82,6 +82,10 @@ public:
    * parameters via vtkMacros.
    */
   // Input Options
+  void SetInputArrayToProcess(const char *name) {
+    vtkAlgorithm::SetInputArrayToProcess(0, 2, 0, 6, name);
+  }
+
   void SetDoCompute(bool doCompute) {
     doCompute_ = doCompute;
     Modified();

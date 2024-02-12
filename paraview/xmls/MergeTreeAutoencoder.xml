@@ -321,6 +321,23 @@
         </Documentation>
       </DoubleVectorProperty>
       
+      <StringVectorProperty 
+        name="ClusteringArrayName"
+        label="Clustering Array Name"
+        command="SetInputArrayToProcess" 
+        element_types="2"
+        number_of_elements="1" 
+        panel_visibility="advanced">
+          <ArrayListDomain attribute_type="Scalars" name="array_list">
+            <RequiredProperties>
+              <Property function="Input" name="Info" />
+            </RequiredProperties>
+          </ArrayListDomain>
+          <Documentation>
+            Clustering array name.
+          </Documentation>
+      </StringVectorProperty>
+      
       <IntVectorProperty
       name="CustomLossDynamicWeight"
       command="SetCustomLossDynamicWeight"
@@ -599,6 +616,7 @@
         <Property name="MetricLossWeight"/>
         <Property name="ClusteringLossWeight"/>
         <Property name="ClusteringLossTemperature"/>
+        <Property name="ClusteringArrayName"/>
         <Property name="CustomLossDynamicWeight"/>
         <Property name="CustomLossSpace"/>
         <Property name="CustomLossActivate"/>
