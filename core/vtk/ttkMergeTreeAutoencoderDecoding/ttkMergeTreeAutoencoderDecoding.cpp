@@ -298,7 +298,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
       dataMatchingVectorT[l][i].resize(array->GetNumberOfTuples());
       for(unsigned int j = 0; j < dataMatchingVectorT[l][i].size(); ++j)
         dataMatchingVectorT[l][i][j]
-          = array->GetVariantValue(i).ToUnsignedInt();
+          = array->GetVariantValue(j).ToUnsignedInt();
       auto noNodes = (l == 0 ? vtkTable::SafeDownCast(coefficients->GetBlock(0))
                                  ->GetColumnByName("treeNoNodes")
                                  ->GetVariantValue(i)

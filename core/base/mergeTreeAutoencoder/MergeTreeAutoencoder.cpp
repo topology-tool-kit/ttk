@@ -2270,7 +2270,6 @@ void ttk::MergeTreeAutoencoder::computeClusteringLoss(
   // Compute KL div.
   clusteringLoss = torch::nn::KLDivLoss(
     torch::nn::KLDivLossOptions().reduction(torch::kBatchMean))(asgn, realAsgn);
-  // clusteringLoss = torch::nn::MSELoss()(asgn, realAsgn);
 }
 
 void ttk::MergeTreeAutoencoder::computeTrackingLoss(
@@ -2642,9 +2641,9 @@ void ttk::MergeTreeAutoencoder::execute(
                                                 &(recs_[i][l].mTree.tree),
                                                 reconstMatchings_[i]);
     }
-#ifdef TTK_ENABLE_OPENMP
-    omp_set_nested(ompNested);
-#endif
   }
+#ifdef TTK_ENABLE_OPENMP
+  omp_set_nested(ompNested);
+#endif
 #endif
 }
