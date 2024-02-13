@@ -93,6 +93,7 @@ namespace ttk {
     // Filled by the algorithm
     unsigned noLayers_;
     double baseRecLoss_, baseRecLoss2_;
+    float bestLoss_;
     std::vector<unsigned int> clusterAsgn_;
     std::vector<std::vector<float>> distanceMatrix_, customAlphas_;
     std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>

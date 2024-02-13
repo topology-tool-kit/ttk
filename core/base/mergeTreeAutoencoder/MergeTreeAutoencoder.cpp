@@ -2000,6 +2000,7 @@ void ttk::MergeTreeAutoencoder::fit(
   printLoss(minLoss, minRecLoss, minMetricLoss, minClustLoss, minTrackLoss,
             bestIteration, iteration, bestTime);
   printMsg(debug::Separator::L2);
+  bestLoss_ = minLoss;
 
   Timer t_copy;
   copyParams(bestOrigins, bestOriginsPrime, bestVSTensor, bestVSPrimeTensor,

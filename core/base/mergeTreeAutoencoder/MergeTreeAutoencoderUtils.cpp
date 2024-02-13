@@ -126,6 +126,7 @@ void ttk::wae::createBalancedBDT(
       parentsRemaining[child] = getRemaining(parents[child]);
       childrenRemaining[child] = getRemaining(childrenT[child]);
     }
+    TTK_FORCE_USE(threadNumber);
     TTK_PSORT(
       threadNumber, childrenT[nodeOrigin].begin(), childrenT[nodeOrigin].end(),
       [&](ftm::idNode nodeI, ftm::idNode nodeJ) {

@@ -329,6 +329,10 @@ int ttkMergeTreeAutoencoder::runOutput(
     vtkCompositeDataSet::NAME(), "layersTrees");
   if(outputSegmentation)
     output_data->SetBlock(1, dataSeg);
+  vtkNew<vtkFloatArray> lossArray{};
+  lossArray->SetName("Loss");
+  lossArray->InsertNextTuple1(bestLoss_);
+  output_data->GetFieldData()->AddArray(lossArray);
 
   // ------------------------------------------
   // --- Origins
@@ -538,13 +542,6 @@ int ttkMergeTreeAutoencoder::runOutput(
                         dataMatchingVectorT[l][i]);
     }
   }
-  std::vector<std::vector<ttk::ftm::idNode>> reconstMatchingVectorT(
-    reconstMatchings_.size());
-  for(unsigned int i = 0; i < reconstMatchingVectorT.size(); ++i) {
-    auto l = recs_[i].size() - 1;
-    getInverseMatchingVector(recs_[i][0].mTree, recs_[i][l].mTree,
-                             reconstMatchings_[i], reconstMatchingVectorT[i]);
-  }
   output_vectors->SetNumberOfBlocks(2);
   vtkSmartPointer<vtkMultiBlockDataSet> vectors
     = vtkSmartPointer<vtkMultiBlockDataSet>::New();
@@ -631,15 +628,15 @@ int ttkMergeTreeAutoencoder::runOutput(
       addDataMatchingArray(vectorsPrimeTable, dataMatchingVectorT[l + 1]);
     // Reconst Matchings
     if(l == vSTensor_.size() - 1) {
-      for(unsigned int i = 0; i < reconstMatchingVectorT.size(); ++i) {
+      for(unsigned int i = 0; i < invReconstMatchingVectorT.size(); ++i) {
         vtkNew<vtkIntArray> matchingArray{};
-        matchingArray->SetNumberOfTuples(reconstMatchingVectorT[i].size());
+        matchingArray->SetNumberOfTuples(invReconstMatchingVectorT[i].size());
         std::stringstream ss;
         ss << "reconstMatching"
-           << ttk::axa::getTableTreeName(reconstMatchingVectorT.size(), i);
+           << ttk::axa::getTableTreeName(invReconstMatchingVectorT.size(), i);
         matchingArray->SetName(ss.str().c_str());
-        for(unsigned int j = 0; j < reconstMatchingVectorT[i].size(); ++j)
-          matchingArray->SetTuple1(j, (int)reconstMatchingVectorT[i][j]);
+        for(unsigned int j = 0; j < invReconstMatchingVectorT[i].size(); ++j)
+          matchingArray->SetTuple1(j, (int)invReconstMatchingVectorT[i][j]);
         vectorsPrimeTable->AddColumn(matchingArray);
       }
     }
