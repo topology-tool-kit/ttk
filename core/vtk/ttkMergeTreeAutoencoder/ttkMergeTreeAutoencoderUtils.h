@@ -94,6 +94,37 @@ namespace ttk {
      * objects of a set of merge trees.
      *
      * @param[in] trees input trees to process.
+     * @param[in] treesNodesT original vtk nodes object of the trees.
+     * @param[in] treesNodeCorr correspondence between the input trees and the
+     * vtk objects.
+     * @param[out] output output blocks.
+     * @param[in] customIntArrays custom arrays to add on nodes.
+     * @param[in] customDoubleArrays custom arrays to add on nodes.
+     * @param[in] mixtureCoefficient weight of pairs type.
+     * @param[in] isPersistenceDiagram if input is a diagram.
+     * @param[in] convertToDiagram if input is a diagram but the vtk object is a
+     * tree.
+     * @param[in] debugLevel debug level.
+     */
+    void makeManyOutput(
+      std::vector<ttk::ftm::MergeTree<float> *> &trees,
+      std::vector<vtkUnstructuredGrid *> &treesNodesT,
+      std::vector<std::vector<int>> &treesNodeCorr,
+      vtkSmartPointer<vtkMultiBlockDataSet> &output,
+      std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
+        &customIntArrays,
+      std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
+        &customDoubleArrays,
+      double mixtureCoefficient,
+      bool isPersistenceDiagram,
+      bool convertToDiagram,
+      int debugLevel);
+
+    /**
+     * @brief Proxy function to use ttkMergeTreeVisualization to create the vtk
+     * objects of a set of merge trees.
+     *
+     * @param[in] trees input trees to process.
      * @param[out] output output blocks.
      * @param[in] customIntArrays custom arrays to add on nodes.
      * @param[in] customDoubleArrays custom arrays to add on nodes.

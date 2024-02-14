@@ -59,7 +59,7 @@
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Additionnal information such as cluster assignment for cluster loss (the name of this array must be "ClusterAssignment").
+          Additionnal information such as cluster assignment for cluster loss.
         </Documentation>
       </InputProperty>
 

@@ -308,10 +308,10 @@ int ttkMergeTreeAutoencoder::runOutput(
       customIntArrays, customDoubleArrays);
 
     // Create output
-    ttk::wae::makeManyOutput(trees, out_layer_i, customIntArrays,
-                             customDoubleArrays, mixtureCoefficient_,
-                             isPersistenceDiagram_, convertToDiagram_,
-                             this->debugLevel_);
+    ttk::wae::makeManyOutput(trees, treesNodes, treesNodeCorr_, out_layer_i,
+                             customIntArrays, customDoubleArrays,
+                             mixtureCoefficient_, isPersistenceDiagram_,
+                             convertToDiagram_, this->debugLevel_);
     if(outputSegmentation and l == 0) {
       ttk::wae::makeManyOutput(
         trees, treesNodes, treesNodeCorr_, treesSegmentation, dataSeg,

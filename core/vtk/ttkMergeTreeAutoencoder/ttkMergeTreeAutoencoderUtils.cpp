@@ -33,6 +33,7 @@ namespace ttk {
         visuMakerBary.setVtkOutputArc(vtkOutputNode);
         visuMakerBary.setIsPDSadMax(mixtureCoefficient == 0);
       }
+      visuMakerBary.copyPointData(treeNodes, treeNodeCorr);
       for(auto &tup : customIntArrays)
         visuMakerBary.addCustomIntArray(std::get<0>(tup), std::get<1>(tup));
       for(auto &tup : customDoubleArrays)
@@ -92,8 +93,10 @@ namespace ttk {
         vtkDataSet *treeSegmentation = nullptr;
         std::vector<int> treeNodeCorr;
         if(outputSegmentation) {
-          treeNodes = treesNodesT[i];
           treeSegmentation = treesSegmentationT[i];
+        }
+        if(i < treesNodesT.size()) {
+          treeNodes = treesNodesT[i];
           treeNodeCorr = treesNodeCorr[i];
         }
         vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode, vtkOutputArc;
@@ -128,6 +131,26 @@ namespace ttk {
 
     void makeManyOutput(
       std::vector<ttk::ftm::MergeTree<float> *> &trees,
+      std::vector<vtkUnstructuredGrid *> &treesNodesT,
+      std::vector<std::vector<int>> &treesNodeCorr,
+      vtkSmartPointer<vtkMultiBlockDataSet> &output,
+      std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
+        &customIntArrays,
+      std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
+        &customDoubleArrays,
+      double mixtureCoefficient,
+      bool isPersistenceDiagram,
+      bool convertToDiagram,
+      int debugLevel) {
+      std::vector<vtkDataSet *> treesSegmentationT;
+      makeManyOutput(trees, treesNodesT, treesNodeCorr, treesSegmentationT,
+                     output, customIntArrays, customDoubleArrays,
+                     mixtureCoefficient, isPersistenceDiagram, convertToDiagram,
+                     debugLevel);
+    }
+
+    void makeManyOutput(
+      std::vector<ttk::ftm::MergeTree<float> *> &trees,
       vtkSmartPointer<vtkMultiBlockDataSet> &output,
       std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
         &customIntArrays,
@@ -138,12 +161,10 @@ namespace ttk {
       bool convertToDiagram,
       int debugLevel) {
       std::vector<vtkUnstructuredGrid *> treesNodesT;
-      std::vector<vtkDataSet *> treesSegmentationT;
       std::vector<std::vector<int>> treesNodeCorr;
-      makeManyOutput(trees, treesNodesT, treesNodeCorr, treesSegmentationT,
-                     output, customIntArrays, customDoubleArrays,
-                     mixtureCoefficient, isPersistenceDiagram, convertToDiagram,
-                     debugLevel);
+      makeManyOutput(trees, treesNodesT, treesNodeCorr, output, customIntArrays,
+                     customDoubleArrays, mixtureCoefficient,
+                     isPersistenceDiagram, convertToDiagram, debugLevel);
     }
 
     void makeManyOutput(std::vector<ttk::ftm::MergeTree<float> *> &trees,

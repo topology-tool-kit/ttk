@@ -1786,14 +1786,6 @@ void ttk::MergeTreeAutoencoder::fit(
       if(clusteringLossWeight_ != 0) {
         torch::Tensor asgn;
         computeClusteringLoss(bestAlphas, indexes, clusteringLoss, asgn);
-        if(iteration % 100 == 0) {
-          std::vector<float> asgnVec(
-            asgn.data_ptr<float>(), asgn.data_ptr<float>() + asgn.numel());
-          std::stringstream ss;
-          for(auto &e : asgnVec)
-            ss << e << " ";
-          printMsg(ss.str());
-        }
         float clusteringLossF = clusteringLoss.item<float>();
         clusteringLosses.emplace_back(clusteringLossF);
         iterationClusteringLosses.emplace_back(clusteringLossF);
@@ -1986,7 +1978,8 @@ void ttk::MergeTreeAutoencoder::fit(
           ss << "origins_[" << l << "] has big values!" << std::endl;
         if(isTreeHasBigValues(originsPrime_[l].mTree, bigValuesThreshold_))
           ss << "originsPrime_[" << l << "] has big values!" << std::endl;
-        printMsg(ss.str(), debug::Priority::DETAIL);
+        if(ss.rdbuf()->in_avail() != 0)
+          printMsg(ss.str(), debug::Priority::DETAIL);
       }
     }
 
