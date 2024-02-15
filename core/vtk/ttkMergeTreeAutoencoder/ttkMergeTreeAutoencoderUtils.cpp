@@ -41,9 +41,11 @@ namespace ttk {
       visuMakerBary.setDebugLevel(debugLevel);
       visuMakerBary.setIsPersistenceDiagram(isPersistenceDiagram);
       visuMakerBary.setConvertedToDiagram(convertToDiagram);
-      if(outputSegmentation) {
+      if(treeNodes) {
         visuMakerBary.setTreesNodes(treeNodes);
         visuMakerBary.setTreesNodeCorrMesh(treeNodeCorr);
+      }
+      if(outputSegmentation) {
         vtkOutputSegmentation = vtkSmartPointer<vtkUnstructuredGrid>::New();
         visuMakerBary.setTreesSegmentation(treeSegmentation);
         visuMakerBary.setPlanarLayout(false);
