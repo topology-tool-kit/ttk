@@ -277,6 +277,23 @@ namespace ttk {
                          torch::Tensor &alphasInit,
                          mtu::TorchMergeTree<float> &out,
                          mtu::TorchMergeTree<float> &out2,
+                         torch::Tensor &bestAlphas,
+                         float &bestDistance);
+
+    bool forwardOneLayer(mtu::TorchMergeTree<float> &tree,
+                         mtu::TorchMergeTree<float> &origin,
+                         torch::Tensor &vSTensor,
+                         mtu::TorchMergeTree<float> &originPrime,
+                         torch::Tensor &vSPrimeTensor,
+                         mtu::TorchMergeTree<float> &tree2,
+                         mtu::TorchMergeTree<float> &origin2,
+                         torch::Tensor &vS2Tensor,
+                         mtu::TorchMergeTree<float> &origin2Prime,
+                         torch::Tensor &vS2PrimeTensor,
+                         unsigned int k,
+                         torch::Tensor &alphasInit,
+                         mtu::TorchMergeTree<float> &out,
+                         mtu::TorchMergeTree<float> &out2,
                          torch::Tensor &bestAlphas);
 
     bool forwardOneData(mtu::TorchMergeTree<float> &tree,
@@ -441,7 +458,9 @@ namespace ttk {
     //  ---------------------------------------------------------------------------
     //  --- End Functions
     //  ---------------------------------------------------------------------------
-    void createCustomRecs();
+    void
+      createCustomRecs(std::vector<mtu::TorchMergeTree<float>> &origins,
+                       std::vector<mtu::TorchMergeTree<float>> &originsPrime);
 
     void computeTrackingInformation();
 

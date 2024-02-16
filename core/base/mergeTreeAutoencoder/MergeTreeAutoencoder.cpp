@@ -1157,13 +1157,15 @@ bool ttk::MergeTreeAutoencoder::forwardOneLayer(
   torch::Tensor &alphasInit,
   mtu::TorchMergeTree<float> &out,
   mtu::TorchMergeTree<float> &out2,
-  torch::Tensor &bestAlphas) {
+  torch::Tensor &bestAlphas,
+  float &bestDistance) {
   bool goodOutput = false;
   int noReset = 0;
   while(not goodOutput) {
     bool isCalled = true;
-    assignmentOneData(tree, origin, vSTensor, tree2, origin2, vS2Tensor, k,
-                      alphasInit, bestAlphas, isCalled);
+    bestDistance
+      = assignmentOneData(tree, origin, vSTensor, tree2, origin2, vS2Tensor, k,
+                          alphasInit, bestAlphas, isCalled);
     outputBasisReconstruction(originPrime, vSPrimeTensor, origin2Prime,
                               vS2PrimeTensor, bestAlphas, out, out2);
     goodOutput = (out.mTree.tree.getRealNumberOfNodes() != 0
@@ -1179,6 +1181,29 @@ bool ttk::MergeTreeAutoencoder::forwardOneLayer(
     }
   }
   return false;
+}
+
+bool ttk::MergeTreeAutoencoder::forwardOneLayer(
+  mtu::TorchMergeTree<float> &tree,
+  mtu::TorchMergeTree<float> &origin,
+  torch::Tensor &vSTensor,
+  mtu::TorchMergeTree<float> &originPrime,
+  torch::Tensor &vSPrimeTensor,
+  mtu::TorchMergeTree<float> &tree2,
+  mtu::TorchMergeTree<float> &origin2,
+  torch::Tensor &vS2Tensor,
+  mtu::TorchMergeTree<float> &origin2Prime,
+  torch::Tensor &vS2PrimeTensor,
+  unsigned int k,
+  torch::Tensor &alphasInit,
+  mtu::TorchMergeTree<float> &out,
+  mtu::TorchMergeTree<float> &out2,
+  torch::Tensor &bestAlphas) {
+  float bestDistance;
+  return forwardOneLayer(tree, origin, vSTensor, originPrime, vSPrimeTensor,
+                         tree2, origin2, vS2Tensor, origin2Prime,
+                         vS2PrimeTensor, k, alphasInit, out, out2, bestAlphas,
+                         bestDistance);
 }
 
 bool ttk::MergeTreeAutoencoder::forwardOneData(
@@ -2290,16 +2315,23 @@ void ttk::MergeTreeAutoencoder::computeTrackingLoss(
 //  ---------------------------------------------------------------------------
 //  --- End Functions
 //  ---------------------------------------------------------------------------
-void ttk::MergeTreeAutoencoder::createCustomRecs() {
+void ttk::MergeTreeAutoencoder::createCustomRecs(
+  std::vector<mtu::TorchMergeTree<float>> &origins,
+  std::vector<mtu::TorchMergeTree<float>> &originsPrime) {
   if(customAlphas_.empty())
     return;
 
-  std::vector<torch::Tensor> allTreesAlphas(allAlphas_[0].size());
-  for(unsigned int l = 0; l < allTreesAlphas.size(); ++l) {
-    allTreesAlphas[l] = allAlphas_[0][l].reshape({-1, 1});
-    for(unsigned int i = 1; i < allAlphas_.size(); ++i)
-      allTreesAlphas[l] = torch::cat({allTreesAlphas[l], allAlphas_[i][l]}, 1);
-    allTreesAlphas[l] = allTreesAlphas[l].transpose(0, 1);
+  bool initByTreesAlphas = not allAlphas_.empty();
+  std::vector<torch::Tensor> allTreesAlphas;
+  if(initByTreesAlphas) {
+    allTreesAlphas.resize(allAlphas_[0].size());
+    for(unsigned int l = 0; l < allTreesAlphas.size(); ++l) {
+      allTreesAlphas[l] = allAlphas_[0][l].reshape({-1, 1});
+      for(unsigned int i = 1; i < allAlphas_.size(); ++i)
+        allTreesAlphas[l]
+          = torch::cat({allTreesAlphas[l], allAlphas_[i][l]}, 1);
+      allTreesAlphas[l] = allTreesAlphas[l].transpose(0, 1);
+    }
   }
 
   unsigned int latLayer = getLatentLayerIndex();
@@ -2311,12 +2343,14 @@ void ttk::MergeTreeAutoencoder::createCustomRecs() {
   for(unsigned int i = 0; i < customAlphas_.size(); ++i) {
     torch::Tensor alphas = torch::tensor(customAlphas_[i]).reshape({-1, 1});
 
-    auto driver = "gelsd";
-    torch::Tensor alphasWeight
-      = std::get<0>(
-          torch::linalg::lstsq(allTreesAlphas[latLayer].transpose(0, 1), alphas,
-                               c10::nullopt, driver))
-          .transpose(0, 1);
+    torch::Tensor alphasWeight;
+    if(initByTreesAlphas) {
+      auto driver = "gelsd";
+      alphasWeight = std::get<0>(torch::linalg::lstsq(
+                                   allTreesAlphas[latLayer].transpose(0, 1),
+                                   alphas, c10::nullopt, driver))
+                       .transpose(0, 1);
+    }
 
     // Reconst latent
     std::vector<mtu::TorchMergeTree<float>> outs, outs2;
@@ -2324,23 +2358,48 @@ void ttk::MergeTreeAutoencoder::createCustomRecs() {
     outs.resize(noOuts);
     outs2.resize(noOuts);
     mtu::TorchMergeTree<float> out, out2;
-    outputBasisReconstruction(
-      originsPrimeCopy_[latLayer], vSPrimeTensor_[latLayer],
-      origins2Prime_[latLayer], vS2PrimeTensor_[latLayer], alphas, outs[0],
-      outs2[0]);
+    outputBasisReconstruction(originsPrime[latLayer], vSPrimeTensor_[latLayer],
+                              origins2Prime_[latLayer],
+                              vS2PrimeTensor_[latLayer], alphas, outs[0],
+                              outs2[0]);
     // Decoding
     unsigned int k = 16;
     for(unsigned int l = latLayer + 1; l < noLayers_; ++l) {
-      torch::Tensor alphasInit
-        = torch::matmul(alphasWeight, allTreesAlphas[l]).transpose(0, 1),
-        dataAlphas;
+      unsigned int noIter = (initByTreesAlphas ? 1 : 16);
+      std::vector<torch::Tensor> allAlphasInit(noIter);
+      torch::Tensor maxNorm;
+      for(unsigned int j = 0; j < allAlphasInit.size(); ++j) {
+        allAlphasInit[j] = torch::randn({vSTensor_[l].sizes()[1], 1});
+        auto norm = torch::linalg::vector_norm(
+          allAlphasInit[j], 2, 0, false, c10::nullopt);
+        if(j == 0 or maxNorm.item<float>() < norm.item<float>())
+          maxNorm = norm;
+      }
+      for(unsigned int j = 0; j < allAlphasInit.size(); ++j)
+        allAlphasInit[j] /= maxNorm;
+      float bestDistance = std::numeric_limits<float>::max();
       auto outIndex = l - latLayer;
-      auto &outToUse = (l != noLayers_ - 1 ? outs[outIndex] : customRecs_[i]);
-      forwardOneLayer(outs[outIndex - 1], originsCopy_[l], vSTensor_[l],
-                      originsPrimeCopy_[l], vSPrimeTensor_[l],
-                      outs2[outIndex - 1], origins2_[l], vS2Tensor_[l],
-                      origins2Prime_[l], vS2PrimeTensor_[l], k, alphasInit,
-                      outToUse, outs2[outIndex], dataAlphas);
+      mtu::TorchMergeTree<float> outToUse;
+      for(unsigned int j = 0; j < noIter; ++j) {
+        torch::Tensor alphasInit, dataAlphas;
+        if(initByTreesAlphas) {
+          alphasInit
+            = torch::matmul(alphasWeight, allTreesAlphas[l]).transpose(0, 1);
+        } else {
+          alphasInit = allAlphasInit[j];
+        }
+        float distance;
+        forwardOneLayer(outs[outIndex - 1], origins[l], vSTensor_[l],
+                        originsPrime[l], vSPrimeTensor_[l], outs2[outIndex - 1],
+                        origins2_[l], vS2Tensor_[l], origins2Prime_[l],
+                        vS2PrimeTensor_[l], k, alphasInit, outToUse,
+                        outs2[outIndex], dataAlphas, distance);
+        if(distance < bestDistance) {
+          bestDistance = distance;
+          mtu::copyTorchMergeTree<float>(
+            outToUse, (l != noLayers_ - 1 ? outs[outIndex] : customRecs_[i]));
+        }
+      }
     }
   }
 
@@ -2352,7 +2411,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs() {
   for(unsigned int i = 0; i < customRecs_.size(); ++i) {
     bool isCalled = true;
     float distance;
-    computeOneDistance<float>(originsCopy_[0].mTree, customRecs_[i].mTree,
+    computeOneDistance<float>(origins[0].mTree, customRecs_[i].mTree,
                               customMatchings_[i], distance, isCalled,
                               useDoubleInput_);
   }
@@ -2361,7 +2420,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs() {
     postprocessingPipeline<float>(&(customRecs_[i].mTree.tree));
     if(not isPersistenceDiagram_) {
       mtu::TorchMergeTree<float> originCopy;
-      mtu::copyTorchMergeTree<float>(originsCopy_[0], originCopy);
+      mtu::copyTorchMergeTree<float>(origins[0], originCopy);
       postprocessingPipeline<float>(&(originCopy.mTree.tree));
       convertBranchDecompositionMatching<float>(&(originCopy.mTree.tree),
                                                 &(customRecs_[i].mTree.tree),
@@ -2591,7 +2650,7 @@ void ttk::MergeTreeAutoencoder::execute(
     mtu::copyTorchMergeTree<float>(origins_[l], originsCopy_[l]);
     mtu::copyTorchMergeTree<float>(originsPrime_[l], originsPrimeCopy_[l]);
   }
-  createCustomRecs();
+  createCustomRecs(originsCopy_, originsPrimeCopy_);
 
   // --- Postprocessing
   if(createOutput_) {

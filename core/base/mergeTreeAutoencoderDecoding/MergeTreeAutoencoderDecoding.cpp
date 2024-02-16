@@ -50,7 +50,8 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
       customAlphas_[i] = std::vector<float>(
         allAlphas_[i][0].data_ptr<float>(),
         allAlphas_[i][0].data_ptr<float>() + allAlphas_[i][0].numel());
-    createCustomRecs();
+    allAlphas_.clear();
+    createCustomRecs(origins_, originsPrime_);
   } else {
     recs_.resize(allAlphas_.size());
     for(unsigned int i = 0; i < recs_.size(); ++i) {
@@ -75,6 +76,11 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
         postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
         wae::fixTreePrecisionScalars(recs_[i][j].mTree);
       }
+    }
+  }
+  if(!customRecs_.empty()) {
+    for(unsigned int i = 0; i < customRecs_.size(); ++i) {
+      wae::fixTreePrecisionScalars(customRecs_[i].mTree);
     }
   }
 #endif

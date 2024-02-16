@@ -164,35 +164,45 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     = (not isPersistenceDiagram_ and not normalizedWasserstein_);
 
   // -----------------
+  // Number of axes per layer
+  // -----------------
+  auto vS = vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(0));
+  noLayers_ = vS->GetNumberOfBlocks();
+  std::vector<unsigned int> allNoAxes(noLayers_);
+  for(unsigned int l = 0; l < noLayers_; ++l) {
+    auto layerVectorsTable = vtkTable::SafeDownCast(vS->GetBlock(l));
+    unsigned int maxBoundNoAxes = 1;
+    while(not layerVectorsTable->GetColumnByName(
+      ttk::axa::getTableVectorName(maxBoundNoAxes, 0, 0, 0, false).c_str()))
+      maxBoundNoAxes *= 10;
+    unsigned int noAxes = 1;
+    while(layerVectorsTable->GetColumnByName(
+      ttk::axa::getTableVectorName(maxBoundNoAxes, noAxes, 0, 0, false)
+        .c_str()))
+      noAxes += 1;
+    allNoAxes[l] = noAxes;
+  }
+
+  // -----------------
   // Coefficients
   // -----------------
   auto numberOfInputs
     = vtkTable::SafeDownCast(coefficients->GetBlock(0))->GetNumberOfRows();
-  noLayers_ = vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(0))
-                ->GetNumberOfBlocks();
-  std::vector<unsigned int> allNoAxes(noLayers_);
-
-  allAlphas_.resize(numberOfInputs, std::vector<torch::Tensor>(noLayers_));
+  auto noCoefs = coefficients->GetNumberOfBlocks();
+  bool customRec = (noCoefs != noLayers_);
+  allAlphas_.resize(numberOfInputs, std::vector<torch::Tensor>(noCoefs));
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif
-  for(unsigned int l = 0; l < noLayers_; ++l) {
+  for(unsigned int l = 0; l < noCoefs; ++l) {
     auto layerCoefficientsTable
       = vtkTable::SafeDownCast(coefficients->GetBlock(l));
-    unsigned int maxBoundNoAxes = 1;
-    while(not layerCoefficientsTable->GetColumnByName(
-      ttk::axa::getTableCoefficientName(maxBoundNoAxes, 0).c_str()))
-      maxBoundNoAxes *= 10;
-    unsigned int noAxes = 1;
-    while(layerCoefficientsTable->GetColumnByName(
-      ttk::axa::getTableCoefficientName(maxBoundNoAxes, noAxes).c_str()))
-      noAxes += 1;
-    allNoAxes[l] = noAxes;
+    auto noAxes = (customRec ? allNoAxes[getLatentLayerIndex()] : allNoAxes[l]);
     std::vector<std::vector<float>> alphas(
       numberOfInputs, std::vector<float>(noAxes));
     for(unsigned int g = 0; g < noAxes; ++g) {
       auto array = layerCoefficientsTable->GetColumnByName(
-        ttk::axa::getTableCoefficientName(maxBoundNoAxes, g).c_str());
+        ttk::axa::getTableCoefficientName(noAxes, g).c_str());
       for(unsigned int i = 0; i < numberOfInputs; ++i)
         alphas[i][g] = array->GetVariantValue(i).ToFloat();
     }
@@ -205,10 +215,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   // -----------------
   vSTensor_.resize(noLayers_);
   vSPrimeTensor_.resize(noLayers_);
-  auto vS = vtkMultiBlockDataSet::SafeDownCast(
-    vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(0)));
-  auto vSPrime = vtkMultiBlockDataSet::SafeDownCast(
-    vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(1)));
+  auto vSPrime = vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(1));
   std::vector<unsigned int *> allRevNodeCorr(noLayers_),
     allRevNodeCorrPrime(noLayers_);
   std::vector<unsigned int> allRevNodeCorrSize(noLayers_),
@@ -284,42 +291,45 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   std::vector<std::vector<std::vector<ttk::ftm::idNode>>> dataMatchingVectorT(
     dataMatchingSize),
     invDataMatchingVectorT = dataMatchingVectorT;
-  for(unsigned int l = 0; l < dataMatchingVectorT.size(); ++l) {
-    dataMatchingVectorT[l].resize(numberOfInputs);
-    invDataMatchingVectorT[l].resize(numberOfInputs);
-    for(unsigned int i = 0; i < dataMatchingVectorT[l].size(); ++i) {
-      std::stringstream ss;
-      ss << "matching"
-         << ttk::axa::getTableTreeName(dataMatchingVectorT[l].size(), i);
-      auto array = vtkTable::SafeDownCast(
-                     (l == 0 ? vS : vSPrime)->GetBlock((l == 0 ? l : l - 1)))
-                     ->GetColumnByName(ss.str().c_str());
-      dataMatchingVectorT[l][i].clear();
-      dataMatchingVectorT[l][i].resize(array->GetNumberOfTuples());
-      for(unsigned int j = 0; j < dataMatchingVectorT[l][i].size(); ++j)
-        dataMatchingVectorT[l][i][j]
-          = array->GetVariantValue(j).ToUnsignedInt();
-      auto noNodes = (l == 0 ? vtkTable::SafeDownCast(coefficients->GetBlock(0))
-                                 ->GetColumnByName("treeNoNodes")
-                                 ->GetVariantValue(i)
-                                 .ToUnsignedInt()
-                             : recs_[i][l - 1].mTree.tree.getNumberOfNodes());
-      reverseMatchingVector(
-        noNodes, dataMatchingVectorT[l][i], invDataMatchingVectorT[l][i]);
-    }
-  }
   std::vector<std::vector<ttk::ftm::idNode>> invReconstMatchingVectorT(
     numberOfInputs);
-  for(unsigned int i = 0; i < invReconstMatchingVectorT.size(); ++i) {
-    std::stringstream ss;
-    ss << "reconstMatching"
-       << ttk::axa::getTableTreeName(invReconstMatchingVectorT.size(), i);
-    auto array = vtkTable::SafeDownCast(vSPrime->GetBlock(noLayers_ - 1))
-                   ->GetColumnByName(ss.str().c_str());
-    invReconstMatchingVectorT[i].resize(array->GetNumberOfTuples());
-    for(unsigned int j = 0; j < invReconstMatchingVectorT[i].size(); ++j)
-      invReconstMatchingVectorT[i][j]
-        = array->GetVariantValue(j).ToUnsignedInt();
+  if(not customRec) {
+    for(unsigned int l = 0; l < dataMatchingVectorT.size(); ++l) {
+      dataMatchingVectorT[l].resize(numberOfInputs);
+      invDataMatchingVectorT[l].resize(numberOfInputs);
+      for(unsigned int i = 0; i < dataMatchingVectorT[l].size(); ++i) {
+        std::stringstream ss;
+        ss << "matching"
+           << ttk::axa::getTableTreeName(dataMatchingVectorT[l].size(), i);
+        auto array = vtkTable::SafeDownCast(
+                       (l == 0 ? vS : vSPrime)->GetBlock((l == 0 ? l : l - 1)))
+                       ->GetColumnByName(ss.str().c_str());
+        dataMatchingVectorT[l][i].clear();
+        dataMatchingVectorT[l][i].resize(array->GetNumberOfTuples());
+        for(unsigned int j = 0; j < dataMatchingVectorT[l][i].size(); ++j)
+          dataMatchingVectorT[l][i][j]
+            = array->GetVariantValue(j).ToUnsignedInt();
+        auto noNodes
+          = (l == 0 ? vtkTable::SafeDownCast(coefficients->GetBlock(0))
+                        ->GetColumnByName("treeNoNodes")
+                        ->GetVariantValue(i)
+                        .ToUnsignedInt()
+                    : recs_[i][l - 1].mTree.tree.getNumberOfNodes());
+        reverseMatchingVector(
+          noNodes, dataMatchingVectorT[l][i], invDataMatchingVectorT[l][i]);
+      }
+    }
+    for(unsigned int i = 0; i < invReconstMatchingVectorT.size(); ++i) {
+      std::stringstream ss;
+      ss << "reconstMatching"
+         << ttk::axa::getTableTreeName(invReconstMatchingVectorT.size(), i);
+      auto array = vtkTable::SafeDownCast(vSPrime->GetBlock(noLayers_ - 1))
+                     ->GetColumnByName(ss.str().c_str());
+      invReconstMatchingVectorT[i].resize(array->GetNumberOfTuples());
+      for(unsigned int j = 0; j < invReconstMatchingVectorT[i].size(); ++j)
+        invReconstMatchingVectorT[i][j]
+          = array->GetVariantValue(j).ToUnsignedInt();
+    }
   }
 
   // ------------------------------------------
@@ -387,10 +397,10 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
       customRecsIntArrays(customRecs_.size());
     std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
       customRecsDoubleArrays(customRecs_.size());
-    std::vector<std::vector<int>> customOriginPersOrder(customRecs_.size());
-    vtkSmartPointer<vtkMultiBlockDataSet> dataCustom
-      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     std::vector<ttk::ftm::MergeTree<float> *> trees(customRecs_.size());
+    for(unsigned int i = 0; i < customRecs_.size(); ++i)
+      trees[i] = &(customRecs_[i].mTree);
+    std::vector<std::vector<int>> customOriginPersOrder(customRecs_.size());
     for(unsigned int i = 0; i < customRecs_.size(); ++i) {
       trees[i] = &(customRecs_[i].mTree);
       std::vector<ttk::ftm::idNode> matchingVector;
@@ -409,6 +419,8 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
       customRecsIntArrays[i].emplace_back(
         std::make_tuple(name4, customOriginPersOrder[i]));
     }
+    vtkSmartPointer<vtkMultiBlockDataSet> dataCustom
+      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     ttk::wae::makeManyOutput(trees, dataCustom, customRecsIntArrays,
                              customRecsDoubleArrays, mixtureCoefficient_,
                              isPersistenceDiagram_, convertToDiagram_,
