@@ -129,8 +129,12 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
         setParamValueFromName(paramName, value);
     } else
       printMsg(" - " + paramName + " was not found in the field data.");
-    printMsg(" - " + paramName + " = "
-             + std::to_string(getParamValueFromName(paramName)));
+    auto stringValue = std::to_string(
+      (paramName == "activate" ? activate_
+                               : (paramName == "activationFunction"
+                                    ? activationFunction_
+                                    : getParamValueFromName(paramName))));
+    printMsg(" - " + paramName + " = " + stringValue);
   }
   if(normalizedWasserstein_)
     printMsg("Computation with normalized Wasserstein.");

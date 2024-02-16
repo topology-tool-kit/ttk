@@ -2363,9 +2363,9 @@ void ttk::MergeTreeAutoencoder::createCustomRecs(
                               vS2PrimeTensor_[latLayer], alphas, outs[0],
                               outs2[0]);
     // Decoding
-    unsigned int k = 16;
+    unsigned int k = 32;
     for(unsigned int l = latLayer + 1; l < noLayers_; ++l) {
-      unsigned int noIter = (initByTreesAlphas ? 1 : 16);
+      unsigned int noIter = (initByTreesAlphas ? 1 : 32);
       std::vector<torch::Tensor> allAlphasInit(noIter);
       torch::Tensor maxNorm;
       for(unsigned int j = 0; j < allAlphasInit.size(); ++j) {
