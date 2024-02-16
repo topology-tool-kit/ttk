@@ -66,7 +66,7 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
 
   // --- Postprocessing
   for(unsigned int l = 0; l < origins_.size(); ++l) {
-    // postprocessingPipeline<float>(&(origins_[l].mTree.tree));
+    postprocessingPipeline<float>(&(origins_[l].mTree.tree));
     postprocessingPipeline<float>(&(originsPrime_[l].mTree.tree));
   }
   if(!recs_.empty()) {
