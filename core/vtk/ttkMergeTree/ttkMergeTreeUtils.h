@@ -33,8 +33,8 @@ namespace ttk {
         = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
       scalars->size = nodesScalar->GetNumberOfTuples();
       if(treeNodeIdArray)
-        scalars->size
-          = std::max((int)treeNodeIdArray->GetRange()[1] + 1, scalars->size);
+        scalars->size = std::max(
+          (ttk::SimplexId)treeNodeIdArray->GetRange()[1] + 1, scalars->size);
       auto scalarsValues
         = std::make_shared<std::vector<dataType>>(scalars->size);
       for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i) {
