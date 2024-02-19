@@ -1,28 +1,33 @@
 #include <MergeTreeAutoencoderUtils.h>
 
 void ttk::wae::fixTreePrecisionScalars(ftm::MergeTree<float> &mTree) {
-  bool isJT = mTree.tree.isJoinTree<float>();
+  double eps = 1e-5;
   auto getSign = [](float v) { return (v > 0 ? 1.0 : -1.0); };
   auto shiftSubtree
-    = [&mTree, &isJT, &getSign](ftm::idNode node, std::vector<float> &scalars) {
+    = [&mTree, &getSign, &eps](ftm::idNode node, ftm::idNode birthNodeParent,
+                               ftm::idNode deathNodeParent,
+                               std::vector<float> &scalars, bool invalidBirth,
+                               bool invalidDeath) {
         std::queue<ftm::idNode> queue;
         queue.emplace(node);
         while(!queue.empty()) {
           ftm::idNode nodeT = queue.front();
           queue.pop();
-          ftm::idNode nodeParent = mTree.tree.getParentSafe(nodeT);
-          float s = getSign(scalars[nodeParent]);
-          if((isJT and scalars[nodeT] >= scalars[nodeParent] * (1 - s * 1e-6))
-             or (not isJT
-                 and scalars[nodeT] <= scalars[nodeParent] * (1 + s * 1e-6))) {
-            float newValue
-              = scalars[nodeParent] * (1 + (isJT ? -1.0 : 1.0) * s * 1e-6);
-            scalars[nodeT] = newValue;
-            std::vector<ftm::idNode> children;
-            mTree.tree.getChildren(nodeT, children);
-            for(auto &child : children)
-              queue.emplace(child);
+          auto birthDeathNode = mTree.tree.getBirthDeathNode<float>(node);
+          auto birthNode = std::get<0>(birthDeathNode);
+          auto deathNode = std::get<1>(birthDeathNode);
+          if(invalidBirth) {
+            float s = getSign(scalars[birthNodeParent]);
+            scalars[birthNode] = scalars[birthNodeParent] * (1 + s * eps);
           }
+          if(invalidDeath) {
+            float s = getSign(scalars[deathNodeParent]);
+            scalars[deathNode] = scalars[deathNodeParent] * (1 - s * eps);
+          }
+          std::vector<ftm::idNode> children;
+          mTree.tree.getChildren(nodeT, children);
+          for(auto &child : children)
+            queue.emplace(child);
         }
       };
   std::vector<float> scalars;
@@ -33,14 +38,22 @@ void ttk::wae::fixTreePrecisionScalars(ftm::MergeTree<float> &mTree) {
   while(!queue.empty()) {
     ftm::idNode node = queue.front();
     queue.pop();
-    ftm::idNode nodeParent = mTree.tree.getParentSafe(node);
-    float s = getSign(scalars[nodeParent]);
-    if(!mTree.tree.isRoot(node)
-       and ((isJT and scalars[node] >= scalars[nodeParent] * (1 - s * 1e-6))
-            or (not isJT
-                and scalars[node] <= scalars[nodeParent] * (1 + s * 1e-6)))) {
-      shiftSubtree(node, scalars);
-    }
+    auto birthDeathNode = mTree.tree.getBirthDeathNode<float>(node);
+    auto birthNode = std::get<0>(birthDeathNode);
+    auto deathNode = std::get<1>(birthDeathNode);
+    auto birthDeathNodeParent
+      = mTree.tree.getBirthDeathNode<float>(mTree.tree.getParentSafe(node));
+    auto birthNodeParent = std::get<0>(birthDeathNodeParent);
+    auto deathNodeParent = std::get<1>(birthDeathNodeParent);
+    float s1 = getSign(scalars[birthNodeParent]);
+    bool invalidBirth
+      = (scalars[birthNode] <= scalars[birthNodeParent] * (1 + s1 * eps));
+    float s2 = getSign(scalars[deathNodeParent]);
+    bool invalidDeath
+      = (scalars[deathNode] >= scalars[deathNodeParent] * (1 - s2 * eps));
+    if(!mTree.tree.isRoot(node) and (invalidBirth or invalidDeath))
+      shiftSubtree(node, birthNodeParent, deathNodeParent, scalars,
+                   invalidBirth, invalidDeath);
     std::vector<ftm::idNode> children;
     mTree.tree.getChildren(node, children);
     for(auto &child : children)

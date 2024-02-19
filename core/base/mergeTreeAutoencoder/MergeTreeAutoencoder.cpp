@@ -2416,12 +2416,13 @@ void ttk::MergeTreeAutoencoder::createCustomRecs(
                               useDoubleInput_);
   }
 
+  mtu::TorchMergeTree<float> originCopy;
+  mtu::copyTorchMergeTree<float>(origins[0], originCopy);
+  postprocessingPipeline<float>(&(originCopy.mTree.tree));
   for(unsigned int i = 0; i < customRecs_.size(); ++i) {
+    wae::fixTreePrecisionScalars(customRecs_[i].mTree);
     postprocessingPipeline<float>(&(customRecs_[i].mTree.tree));
     if(not isPersistenceDiagram_) {
-      mtu::TorchMergeTree<float> originCopy;
-      mtu::copyTorchMergeTree<float>(origins[0], originCopy);
-      postprocessingPipeline<float>(&(originCopy.mTree.tree));
       convertBranchDecompositionMatching<float>(&(originCopy.mTree.tree),
                                                 &(customRecs_[i].mTree.tree),
                                                 customMatchings_[i]);
@@ -2666,8 +2667,8 @@ void ttk::MergeTreeAutoencoder::execute(
     }
     for(unsigned int j = 0; j < recs_[0].size(); ++j) {
       for(unsigned int i = 0; i < recs_.size(); ++i) {
-        postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
         wae::fixTreePrecisionScalars(recs_[i][j].mTree);
+        postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
       }
     }
   }

@@ -73,14 +73,9 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
   if(!recs_.empty()) {
     for(unsigned int j = 0; j < recs_[0].size(); ++j) {
       for(unsigned int i = 0; i < recs_.size(); ++i) {
-        postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
         wae::fixTreePrecisionScalars(recs_[i][j].mTree);
+        postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
       }
-    }
-  }
-  if(!customRecs_.empty()) {
-    for(unsigned int i = 0; i < customRecs_.size(); ++i) {
-      wae::fixTreePrecisionScalars(customRecs_[i].mTree);
     }
   }
 #endif
