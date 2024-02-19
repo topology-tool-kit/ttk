@@ -1,13 +1,11 @@
 #include <MergeTreeAutoencoderUtils.h>
 
 void ttk::wae::fixTreePrecisionScalars(ftm::MergeTree<float> &mTree) {
-  double eps = 1e-5;
-  auto getSign = [](float v) { return (v > 0 ? 1.0 : -1.0); };
+  double eps = 1e-6;
   auto shiftSubtree
-    = [&mTree, &getSign, &eps](ftm::idNode node, ftm::idNode birthNodeParent,
-                               ftm::idNode deathNodeParent,
-                               std::vector<float> &scalars, bool invalidBirth,
-                               bool invalidDeath) {
+    = [&mTree, &eps](ftm::idNode node, ftm::idNode birthNodeParent,
+                     ftm::idNode deathNodeParent, std::vector<float> &scalars,
+                     bool invalidBirth, bool invalidDeath) {
         std::queue<ftm::idNode> queue;
         queue.emplace(node);
         while(!queue.empty()) {
@@ -16,14 +14,10 @@ void ttk::wae::fixTreePrecisionScalars(ftm::MergeTree<float> &mTree) {
           auto birthDeathNode = mTree.tree.getBirthDeathNode<float>(node);
           auto birthNode = std::get<0>(birthDeathNode);
           auto deathNode = std::get<1>(birthDeathNode);
-          if(invalidBirth) {
-            float s = getSign(scalars[birthNodeParent]);
-            scalars[birthNode] = scalars[birthNodeParent] * (1 + s * eps);
-          }
-          if(invalidDeath) {
-            float s = getSign(scalars[deathNodeParent]);
-            scalars[deathNode] = scalars[deathNodeParent] * (1 - s * eps);
-          }
+          if(invalidBirth)
+            scalars[birthNode] = scalars[birthNodeParent] + 2 * eps;
+          if(invalidDeath)
+            scalars[deathNode] = scalars[deathNodeParent] - 2 * eps;
           std::vector<ftm::idNode> children;
           mTree.tree.getChildren(nodeT, children);
           for(auto &child : children)
@@ -45,12 +39,8 @@ void ttk::wae::fixTreePrecisionScalars(ftm::MergeTree<float> &mTree) {
       = mTree.tree.getBirthDeathNode<float>(mTree.tree.getParentSafe(node));
     auto birthNodeParent = std::get<0>(birthDeathNodeParent);
     auto deathNodeParent = std::get<1>(birthDeathNodeParent);
-    float s1 = getSign(scalars[birthNodeParent]);
-    bool invalidBirth
-      = (scalars[birthNode] <= scalars[birthNodeParent] * (1 + s1 * eps));
-    float s2 = getSign(scalars[deathNodeParent]);
-    bool invalidDeath
-      = (scalars[deathNode] >= scalars[deathNodeParent] * (1 - s2 * eps));
+    bool invalidBirth = (scalars[birthNode] <= scalars[birthNodeParent] + eps);
+    bool invalidDeath = (scalars[deathNode] >= scalars[deathNodeParent] - eps);
     if(!mTree.tree.isRoot(node) and (invalidBirth or invalidDeath))
       shiftSubtree(node, birthNodeParent, deathNodeParent, scalars,
                    invalidBirth, invalidDeath);
