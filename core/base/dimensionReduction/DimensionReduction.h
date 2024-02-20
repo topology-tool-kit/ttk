@@ -191,7 +191,42 @@ namespace ttk {
     }
 
     inline void setInputMethod(METHOD method) {
+
       this->Method = method;
+
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+      if(this->Method != METHOD::TOPOMAP) {
+        this->printWrn("TTK has been built without scikit-learn.");
+        this->printWrn("Defaulting to the `TopoMap` backend.");
+        this->Method = METHOD::TOPOMAP;
+      }
+#endif
+
+      std::string methodName;
+      switch(this->Method) {
+        case METHOD::SE:
+          methodName = "Spectral Embedding";
+          break;
+        case METHOD::LLE:
+          methodName = "Locally Linear Embedding";
+          break;
+        case METHOD::MDS:
+          methodName = "Multi-Dimensional Scaling";
+          break;
+        case METHOD::T_SNE:
+          methodName = "t-distributed Stochastic Neighbor Embedding";
+          break;
+        case METHOD::ISOMAP:
+          methodName = "Isomap Embedding";
+          break;
+        case METHOD::PCA:
+          methodName = "Principal Component Analysis";
+          break;
+        case METHOD::TOPOMAP:
+          methodName = "TopoMap (IEEE VIS 2020)";
+          break;
+      }
+      this->printMsg("Using backend `" + methodName + "`");
     }
 
     inline void setInputNumberOfComponents(const int numberOfComponents) {
@@ -220,8 +255,6 @@ namespace ttk {
         this->iso_Metric = "euclidean";
       }
     }
-
-    bool isPythonFound() const;
 
     int execute(std::vector<std::vector<double>> &outputEmbedding,
                 const std::vector<double> &inputMatrix,
@@ -291,7 +324,8 @@ namespace ttk {
     std::string ModuleName{"dimensionReduction"};
     std::string FunctionName{"doIt"};
 
-    METHOD Method{METHOD::MDS};
+    METHOD Method;
+
     int NumberOfComponents{2};
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
