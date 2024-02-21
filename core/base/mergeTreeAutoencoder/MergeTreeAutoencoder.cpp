@@ -2605,7 +2605,7 @@ void ttk::MergeTreeAutoencoder::execute(
 #ifndef TTK_ENABLE_TORCH
   TTK_FORCE_USE(trees);
   TTK_FORCE_USE(trees2);
-  printErr("This filter requires Torch.");
+  printErr("This module requires Torch.");
 #else
 #ifdef TTK_ENABLE_OPENMP
   int ompNested = omp_get_nested();

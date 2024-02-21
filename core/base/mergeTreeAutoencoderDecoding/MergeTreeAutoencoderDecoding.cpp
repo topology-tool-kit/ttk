@@ -20,7 +20,7 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
   TTK_FORCE_USE(allRevNodeCorrPrime);
   TTK_FORCE_USE(allRevNodeCorrSize);
   TTK_FORCE_USE(allRevNodeCorrPrimeSize);
-  printErr("This filter requires Torch.");
+  printErr("This module requires Torch.");
 #else
   // --- Preprocessing
   if(not isPersistenceDiagram_) {
