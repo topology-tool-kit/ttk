@@ -428,7 +428,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge boost glew eigen spectralib zfp sqlite \
+        conda install -c conda-forge boost glew eigen spectralib zfp libsqlite \
           scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib qhull
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
