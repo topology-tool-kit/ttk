@@ -478,7 +478,7 @@ jobs:
         cmake ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
-          -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+          -DCMAKE_POLICY_DEFAULT_CMP0074=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
           -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
