@@ -582,6 +582,15 @@ jobs:
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
+        # as of February 2024, the sqlite installation by conda seems broken
+        # under Windows. it is installed indeed, but cmake can't seem to find 
+        # it anymore.
+        # let's remove the related state files
+        rm python\cinemaIO.py
+        rm python\clusteringKelvinHelmholtzInstabilities.py
+        rm python\contourTreeAlignment.py
+        rm python\mergeTreeFeatureTracking.py
+        rm python\nestedTrackingFromOverlap.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
