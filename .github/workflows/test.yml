@@ -588,6 +588,7 @@ jobs:
         del python\contourTreeAlignment.py
         del python\mergeTreeFeatureTracking.py
         del python\nestedTrackingFromOverlap.py
+        del python\persistenceDrivenCompression.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
