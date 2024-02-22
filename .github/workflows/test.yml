@@ -428,7 +428,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge boost glew eigen spectralib zfp libsqlite sqlite \
+        conda install -c conda-forge boost glew eigen spectralib zfp  \
           scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib qhull
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
@@ -583,12 +583,6 @@ jobs:
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
-        del python\cinemaIO.py
-        del python\clusteringKelvinHelmholtzInstabilities.py
-        del python\contourTreeAlignment.py
-        del python\mergeTreeFeatureTracking.py
-        del python\nestedTrackingFromOverlap.py
-        del python\persistenceDrivenCompression.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
