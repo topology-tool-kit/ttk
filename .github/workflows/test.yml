@@ -435,6 +435,7 @@ jobs:
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
+        conda info --all
 
     - name: Remove hosted Python
       shell: bash
