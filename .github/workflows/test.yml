@@ -586,11 +586,11 @@ jobs:
         # under Windows. it is installed indeed, but cmake can't seem to find 
         # it anymore.
         # let's remove the related state files
-        rm python\cinemaIO.py
-        rm python\clusteringKelvinHelmholtzInstabilities.py
-        rm python\contourTreeAlignment.py
-        rm python\mergeTreeFeatureTracking.py
-        rm python\nestedTrackingFromOverlap.py
+        del python\cinemaIO.py
+        del python\clusteringKelvinHelmholtzInstabilities.py
+        del python\contourTreeAlignment.py
+        del python\mergeTreeFeatureTracking.py
+        del python\nestedTrackingFromOverlap.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
