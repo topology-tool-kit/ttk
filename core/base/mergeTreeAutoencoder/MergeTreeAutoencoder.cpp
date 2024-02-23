@@ -1279,11 +1279,9 @@ bool ttk::MergeTreeAutoencoder::forwardStep(
     matchings2.resize(trees2.size());
   mtu::TorchMergeTree<float> dummyTMT;
   bool reset = false;
-  std::vector<bool> allReset(indexes.size(), false);
-  std::vector<float> allLosses(indexes.size(), 0);
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) \
-  num_threads(this->threadNumber_) if(parallelize_)
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) \
+  if(parallelize_) reduction(||: reset) reduction(+:loss)
 #endif
   for(unsigned int ind = 0; ind < indexes.size(); ++ind) {
     unsigned int i = indexes[ind];
@@ -1294,14 +1292,10 @@ bool ttk::MergeTreeAutoencoder::forwardStep(
     if(computeReconstructionError) {
       float iLoss = computeOneLoss(
         trees[i], outs[i], trees2[i], outs2[i], matchings[i], matchings2[i]);
-      allLosses[ind] = iLoss;
+      loss += iLoss;
     }
-    allReset[ind] = dReset;
-  }
-  for(unsigned int ind = 0; ind < indexes.size(); ++ind) {
-    if(allReset[ind])
-      reset = reset || allReset[ind];
-    loss += allLosses[ind];
+    if(dReset)
+      reset = reset || dReset;
   }
   loss /= indexes.size();
   return reset;
@@ -1493,7 +1487,6 @@ float ttk::MergeTreeAutoencoder::computeLoss(
   matchings.resize(trees.size());
   if(useDoubleInput_)
     matchings2.resize(trees2.size());
-  std::vector<float> allLosses(indexes.size(), 0);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) \
   if(parallelize_) reduction(+:loss)
@@ -1502,10 +1495,8 @@ float ttk::MergeTreeAutoencoder::computeLoss(
     unsigned int i = indexes[ind];
     float iLoss = computeOneLoss(
       trees[i], outs[i], trees2[i], outs2[i], matchings[i], matchings2[i]);
-    allLosses[ind] = iLoss;
+    loss += iLoss;
   }
-  for(unsigned int ind = 0; ind < indexes.size(); ++ind)
-    loss += allLosses[ind];
   return loss / indexes.size();
 }
 
