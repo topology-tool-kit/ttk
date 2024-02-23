@@ -22,10 +22,6 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
   TTK_FORCE_USE(allRevNodeCorrPrimeSize);
   printErr("This module requires Torch.");
 #else
-#ifdef TTK_ENABLE_OPENMP
-  int ompNested = omp_get_max_active_levels();
-  omp_set_max_active_levels(99);
-#endif
   // --- Preprocessing
   if(not isPersistenceDiagram_) {
     for(unsigned int i = 0; i < originsPrimeTrees.size(); ++i) {
@@ -82,8 +78,5 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
       }
     }
   }
-#ifdef TTK_ENABLE_OPENMP
-  omp_set_max_active_levels(ompNested);
-#endif
 #endif
 }
