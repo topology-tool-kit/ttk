@@ -428,7 +428,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge boost glew eigen spectralib zfp libsqlite sqlite \
+        conda install -c conda-forge boost glew eigen spectralib zfp  \
           scikit-learn openmp graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib qhull
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
@@ -478,6 +478,7 @@ jobs:
         cmake ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
+          -DCMAKE_POLICY_DEFAULT_CMP0074=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
           -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
@@ -487,6 +488,8 @@ jobs:
           -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
           -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
           -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
+          -DZLIB_ROOT="%CONDA_ROOT%\Library" ^
+          -DSQLite3_ROOT="%CONDA_ROOT%\Library" ^
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
           -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
@@ -583,12 +586,6 @@ jobs:
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
-        del python\cinemaIO.py
-        del python\clusteringKelvinHelmholtzInstabilities.py
-        del python\contourTreeAlignment.py
-        del python\mergeTreeFeatureTracking.py
-        del python\nestedTrackingFromOverlap.py
-        del python\persistenceDrivenCompression.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
