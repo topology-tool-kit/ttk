@@ -11,10 +11,10 @@
 /// \param Input vtkMultiBlockDataSet Input trees
 /// \param Input (optional) vtkMultiBlockDataSet Input trees
 /// \param Input (optional) vtkTable Info (such as clustering assigment)
-/// \param Output vtkMultiBlockDataSet Processed Input Trees
 /// \param Output vtkMultiBlockDataSet Origins
 /// \param Output vtkMultiBlockDataSet Bases Axes
 /// \param Output vtkMultiBlockDataSet Coefficients
+/// \param Output vtkMultiBlockDataSet Processed Input Trees
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).

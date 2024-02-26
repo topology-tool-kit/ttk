@@ -229,10 +229,10 @@ int ttkMergeTreeAutoencoder::runOutput(
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
-  auto output_data = vtkMultiBlockDataSet::GetData(outputVector, 0);
-  auto output_origins = vtkMultiBlockDataSet::GetData(outputVector, 1);
-  auto output_vectors = vtkMultiBlockDataSet::GetData(outputVector, 2);
-  auto output_coef = vtkMultiBlockDataSet::GetData(outputVector, 3);
+  auto output_origins = vtkMultiBlockDataSet::GetData(outputVector, 0);
+  auto output_vectors = vtkMultiBlockDataSet::GetData(outputVector, 1);
+  auto output_coef = vtkMultiBlockDataSet::GetData(outputVector, 2);
+  auto output_data = vtkMultiBlockDataSet::GetData(outputVector, 3);
 
   // ------------------------------------------
   // --- Tracking information

@@ -635,10 +635,10 @@
       </PropertyGroup>
       
       <!-- OUTPUT PORT -->
-      <OutputPort name="Data" index="0" id="port0" />
-      <OutputPort name="Origins" index="1" id="port1" />
-      <OutputPort name="Axes Vectors" index="2" id="port2" />
-      <OutputPort name="Coefficients" index="3" id="port3" />
+      <OutputPort name="Origins" index="0" id="port0" />
+      <OutputPort name="Axes Vectors" index="1" id="port1" />
+      <OutputPort name="Coefficients" index="2" id="port2" />
+      <OutputPort name="Data" index="3" id="port3" />
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}
