@@ -674,6 +674,9 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
   std::vector<Separatrix> &separatrices,
   const triangulationType &triangulation) const {
 
+  if(saddles.empty())
+    return 0;
+
   const auto dim{triangulation.getDimensionality()};
 
   // Triangulation method pointers for 3D
@@ -728,6 +731,9 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
   const std::vector<SimplexId> &saddles2,
   std::vector<Separatrix> &separatrices,
   const triangulationType &triangulation) const {
+
+  if(saddles2.empty())
+    return 0;
 
   const auto nTriangles = triangulation.getNumberOfTriangles();
   // visited triangles (one vector per thread)
