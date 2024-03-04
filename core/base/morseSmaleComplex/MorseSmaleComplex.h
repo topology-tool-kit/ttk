@@ -1758,14 +1758,30 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
   const auto &s2Children{dms.get2SaddlesChildren()};
   std::vector<bool> simplifyS2(s2Children.size(), true);
 
+  // Sort pairs to process by persistence
+  std::vector<std::tuple<PersPairType, size_t, dataType>> pairs;
   for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
     const auto &pair{dms_pairs[i]};
+    pairs.emplace_back(std::make_tuple(pair, i, getPersistence(pair)));
+  }
+  const auto comparePersistence
+    = [](std::tuple<PersPairType, size_t, dataType> &pair1,
+         std::tuple<PersPairType, size_t, dataType> &pair2) {
+        return std::get<2>(pair1) < std::get<2>(pair2);
+      };
+  std::sort(pairs.begin(), pairs.end(), comparePersistence);
 
-    if(pair.type != 1 || getPersistence(pair) > persistenceThreshold) {
+  // Process pairs
+  for(const auto &pairTup : pairs) {
+    const auto &pair = std::get<0>(pairTup);
+    const auto &pairIndex = std::get<1>(pairTup);
+    const auto &pairPersistence = std::get<2>(pairTup);
+
+    if(pair.type != 1 || pairPersistence > persistenceThreshold) {
       continue;
     }
 
-    const auto o{i - firstSadSadPair};
+    const auto o{pairIndex - firstSadSadPair};
     const Cell birth{1, pair.birth};
     const Cell death{2, pair.death};
     bool skip{false};
