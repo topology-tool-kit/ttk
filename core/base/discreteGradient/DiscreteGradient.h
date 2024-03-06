@@ -485,9 +485,9 @@ gradient, false otherwise.
        * Reverse the given ascending VPath restricted on a 2-separatrice.
        */
       template <typename triangulationType>
-      int reverseAscendingPathOnWall(
-        const std::vector<Cell> &vpath,
-        const triangulationType &triangulation) const;
+      int reverseAscendingPathOnWall(const std::vector<Cell> &vpath,
+                                     const triangulationType &triangulation,
+                                     bool cancelReversal = false) const;
 
       /**
        * Reverse the given descending VPath restricted on a 2-separatrice.

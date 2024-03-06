@@ -1354,14 +1354,22 @@ int DiscreteGradient::reverseDescendingPath(
 template <typename triangulationType>
 int DiscreteGradient::reverseAscendingPathOnWall(
   const std::vector<Cell> &vpath,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation,
+  bool cancelReversal) const {
 
   if(dimensionality_ == 3) {
     // assume that the first cell is an edge
+    if(cancelReversal) {
+      (*gradient_)[2][vpath[0].id_] = -1;
+      (*gradient_)[3][vpath[vpath.size() - 1].id_] = -1;
+    }
     const SimplexId numberOfCellsInPath = vpath.size();
-    for(SimplexId i = 0; i < numberOfCellsInPath; i += 2) {
-      const SimplexId edgeId = vpath[i].id_;
-      const SimplexId triangleId = vpath[i + 1].id_;
+    const SimplexId startIndex = (cancelReversal ? 2 : 0);
+    for(SimplexId i = startIndex; i < numberOfCellsInPath; i += 2) {
+      const SimplexId vpathEdgeIndex = i;
+      const SimplexId vpathTriangleIndex = (cancelReversal ? i - 1 : i + 1);
+      const SimplexId edgeId = vpath[vpathEdgeIndex].id_;
+      const SimplexId triangleId = vpath[vpathTriangleIndex].id_;
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
       for(int k = 0; k < 3; ++k) {
