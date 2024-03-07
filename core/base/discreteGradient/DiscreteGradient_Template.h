@@ -1360,8 +1360,13 @@ int DiscreteGradient::reverseAscendingPathOnWall(
   if(dimensionality_ == 3) {
     // assume that the first cell is an edge
     if(cancelReversal) {
-      (*gradient_)[2][vpath[0].id_] = -1;
-      (*gradient_)[3][vpath[vpath.size() - 1].id_] = -1;
+      if(vpath.empty())
+        return 0;
+      (*gradient_)[2][vpath[0].id_] = NULL_GRADIENT;
+      // assume that the last cell is a triangle
+      if(vpath.size() <= 1)
+        return 0;
+      (*gradient_)[3][vpath[vpath.size() - 1].id_] = NULL_GRADIENT;
     }
     const SimplexId numberOfCellsInPath = vpath.size();
     const SimplexId startIndex = (cancelReversal ? 2 : 0);
