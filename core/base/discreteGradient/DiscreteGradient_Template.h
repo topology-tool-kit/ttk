@@ -1116,6 +1116,51 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 }
 
 template <typename triangulationType>
+bool DiscreteGradient::detectGradientCycle(
+  const Cell &cell, const triangulationType &triangulation) const {
+  if(dimensionality_ == 3) {
+    if(cell.dim_ == 1) {
+      const SimplexId originId = getPairedCell(cell, triangulation);
+      if(originId == -1)
+        return false;
+
+      std::queue<SimplexId> bfs;
+      bfs.push(cell.id_);
+      std::vector<bool> isVisited(triangulation.getNumberOfTriangles(), false);
+
+      // BFS traversal
+      while(!bfs.empty()) {
+        const SimplexId triangleId = bfs.front();
+        bfs.pop();
+
+        if(isVisited[triangleId])
+          continue;
+        isVisited[triangleId] = true;
+
+        for(int j = 0; j < 3; ++j) {
+          SimplexId edgeId;
+          triangulation.getTriangleEdge(triangleId, j, edgeId);
+
+          if(edgeId == cell.id_ and triangleId == originId)
+            continue;
+
+          if(edgeId == cell.id_)
+            return true;
+
+          const SimplexId pairedCellId
+            = getPairedCell(Cell(1, edgeId), triangulation);
+
+          if(pairedCellId != -1 and pairedCellId != triangleId
+             and not isVisited[pairedCellId])
+            bfs.push(pairedCellId);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+template <typename triangulationType>
 int DiscreteGradient::getDescendingWall(
   const Cell &cell,
   VisitedMask &mask,

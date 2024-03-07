@@ -259,6 +259,14 @@ in the gradient.
                                        = false) const;
 
       /**
+       * Detect the presence of a cycle on a edge-triangle path starting from an
+       * edge.
+       */
+      template <typename triangulationType>
+      bool detectGradientCycle(const Cell &cell,
+                               const triangulationType &triangulation) const;
+
+      /**
        * Return the 2-separatrice terminating at the given 2-saddle.
        */
       template <typename triangulationType>

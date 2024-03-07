@@ -470,6 +470,12 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                      debug::Priority::DETAIL);
     }
 
+    std::array<std::vector<SimplexId>, 4> criticalPoints{};
+    discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
+    std::cout << "==============================" << std::endl;
+    for(auto &critPoints : criticalPoints)
+      std::cout << critPoints.size() << std::endl;
+
     this->returnSaddleConnectors(
       persistenceThreshold, scalars, offsets, triangulation);
   }
@@ -481,6 +487,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     this->printMsg("  Critical points extracted", 1.0, tm.getElapsedTime(),
                    this->threadNumber_, debug::LineMode::NEW,
                    debug::Priority::DETAIL);
+    std::cout << "==============================" << std::endl;
+    for(auto &critPoints : criticalPoints)
+      std::cout << critPoints.size() << std::endl;
   }
 
   std::vector<std::vector<Separatrix>> separatrices1{};
@@ -1794,7 +1803,7 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     if(skip) {
       this->printMsg("Skipping saddle connector " + birth.to_string() + " -> "
                        + death.to_string(),
-                     debug::Priority::DETAIL);
+                     debug::Priority::VERBOSE);
       simplifyS2[o] = false;
       continue;
     }
@@ -1808,11 +1817,19 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     // 3. reverse the gradient on the saddle connector path
     if(vpath.back() == death) {
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
-      nReturned++;
+      if(this->discreteGradient_.detectGradientCycle(birth, triangulation)) {
+        this->printMsg("Could not return saddle connector " + birth.to_string()
+                         + " -> " + death.to_string()
+                         + " without creating a cycle.",
+                       debug::Priority::VERBOSE);
+        this->discreteGradient_.reverseAscendingPathOnWall(
+          vpath, triangulation, true);
+      } else
+        nReturned++;
     } else {
       this->printMsg("Could not return saddle connector " + birth.to_string()
                        + " -> " + death.to_string(),
-                     debug::Priority::DETAIL);
+                     debug::Priority::VERBOSE);
       simplifyS2[o] = false;
     }
   }
