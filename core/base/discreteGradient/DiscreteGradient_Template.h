@@ -1008,7 +1008,8 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   std::vector<Cell> *const vpath,
   const triangulationType &triangulation,
   const bool stopIfMultiConnected,
-  const bool enableCycleDetector) const {
+  const bool enableCycleDetector,
+  bool *const cycleFound) const {
 
   // debug
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -1061,8 +1062,17 @@ bool DiscreteGradient::getAscendingPathThroughWall(
         if(isCycle[currentId] == 0) {
           isCycle[currentId] = 1;
         } else {
-          this->printErr("Cycle detected on the wall of 2-saddle "
-                         + std::to_string(saddle2.id_));
+          /*std::cout << "cycle path : ";
+          for(auto &c : *vpath)
+            std::cout << c.id_ << " ";
+          std::cout << currentId;
+          std::cout << std::endl;*/
+          if(cycleFound)
+            *cycleFound = true;
+          else
+            this->printErr("Cycle detected on the wall of 2-saddle "
+                           + std::to_string(saddle2.id_));
+          // return true;
           break;
         }
       }
@@ -1118,15 +1128,21 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 template <typename triangulationType>
 bool DiscreteGradient::detectGradientCycle(
   const Cell &cell, const triangulationType &triangulation) const {
+  std::stringstream ss;
+  bool debug = true;
+
   if(dimensionality_ == 3) {
     if(cell.dim_ == 1) {
       const SimplexId originId = getPairedCell(cell, triangulation);
       if(originId == -1)
         return false;
 
+      ss << "(1, " << cell.id_ << ")";
+
       std::queue<SimplexId> bfs;
-      bfs.push(cell.id_);
+      bfs.push(originId);
       std::vector<bool> isVisited(triangulation.getNumberOfTriangles(), false);
+      // bool firstTriangle = true;
 
       // BFS traversal
       while(!bfs.empty()) {
@@ -1137,26 +1153,47 @@ bool DiscreteGradient::detectGradientCycle(
           continue;
         isVisited[triangleId] = true;
 
+        ss << " -> (2, " << triangleId << ")";
+
         for(int j = 0; j < 3; ++j) {
           SimplexId edgeId;
           triangulation.getTriangleEdge(triangleId, j, edgeId);
 
-          if(edgeId == cell.id_ and triangleId == originId)
+          /*if(edgeId == cell.id_ and firstTriangle) {
+            firstTriangle = false;
             continue;
+          }
 
           if(edgeId == cell.id_)
-            return true;
+            return true;*/
 
           const SimplexId pairedCellId
             = getPairedCell(Cell(1, edgeId), triangulation);
 
-          if(pairedCellId != -1 and pairedCellId != triangleId
-             and not isVisited[pairedCellId])
+          if(triangleId == pairedCellId or pairedCellId == -1)
+            continue;
+
+          ss << " -> (1, " << edgeId << "/" << pairedCellId << ")";
+
+          if(isVisited[pairedCellId]) {
+            ss << " true";
+            if(debug)
+              std::cout << ss.str() << std::endl
+                        << std::endl
+                        << std::endl
+                        << std::endl;
+            return true;
+          }
+
+          if(pairedCellId != -1 and not isVisited[pairedCellId])
             bfs.push(pairedCellId);
         }
       }
     }
   }
+  /*ss << " false";
+  if(debug)
+    std::cout << ss.str() << std::endl << std::endl << std::endl << std::endl;*/
   return false;
 }
 

@@ -255,8 +255,8 @@ in the gradient.
                                        std::vector<Cell> *const vpath,
                                        const triangulationType &triangulation,
                                        const bool stopIfMultiConnected = false,
-                                       const bool enableCycleDetector
-                                       = false) const;
+                                       const bool enableCycleDetector = false,
+                                       bool *const cycleFound = nullptr) const;
 
       /**
        * Detect the presence of a cycle on a edge-triangle path starting from an
