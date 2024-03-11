@@ -413,6 +413,7 @@ namespace ttk {
     bool ReturnSaddleConnectors{false};
     double SaddleConnectorsPersistenceThreshold{};
     bool ThresholdIsAbsolute{false};
+    bool ForceLoopFreeGradient{false};
   };
 } // namespace ttk
 
@@ -1818,46 +1819,21 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     if(vpath.back() == death) {
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
 
+      // 3.1 Detect cycle
       bool cycle = false;
-      // cycle = this->discreteGradient_.detectGradientCycle(birth,
-      // triangulation);
-
-      std::vector<SimplexId> saddles2{};
-      /*std::vector<bool> isVisitedT2(
-        triangulation.getNumberOfTriangles(), false);
-      std::vector<SimplexId> visitedTrianglesT2{};
-      VisitedMask maskT2{isVisitedT2, visitedTrianglesT2};
-      this->discreteGradient_.getAscendingWall(
-        birth, maskT2, triangulation, nullptr, &saddles2);*/
-      saddles2.emplace_back(death.id_);
-
-      // #ifdef TTK_ENABLE_OPENMP
-      // #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
-      //   firstprivate(isVisitedT, visitedTrianglesT, saddles1)
-      // #endif
-      for(const auto &saddle2Id : saddles2) {
-        const Cell s2{2, saddle2Id};
-        //         for(const auto &pairTupT : pairs) {
-        //           const auto &pairT = std::get<0>(pairTupT);
-        //           const Cell s2{2, pairT.death};
-
+      if(ForceLoopFreeGradient)
+        cycle
+          = this->discreteGradient_.detectGradientCycle(birth, triangulation);
+      else {
         std::vector<bool> isVisitedT(
           triangulation.getNumberOfTriangles(), false);
         std::vector<SimplexId> visitedTrianglesT{};
-        std::vector<SimplexId> saddles1{};
-
         VisitedMask maskT{isVisitedT, visitedTrianglesT};
-        discreteGradient_.getDescendingWall(
-          s2, maskT, triangulation, nullptr, &saddles1);
-
-        for(const auto saddle1Id : saddles1) {
-          const Cell s1{1, saddle1Id};
-          std::vector<Cell> vpathT;
-          discreteGradient_.getAscendingPathThroughWall(
-            s1, s2, isVisitedT, &vpathT, triangulation, false, true, &cycle);
-        }
+        discreteGradient_.getDescendingWall(death, maskT, triangulation);
+        discreteGradient_.getAscendingPathThroughWall(birth, death, isVisitedT,
+                                                      nullptr, triangulation,
+                                                      false, true, &cycle);
       }
-
       if(cycle) {
         this->printMsg("Could not return saddle connector " + birth.to_string()
                          + " -> " + death.to_string()
@@ -1867,6 +1843,7 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
           vpath, triangulation, true);
       } else
         nReturned++;
+
     } else {
       this->printMsg("Could not return saddle connector " + birth.to_string()
                        + " -> " + death.to_string(),
