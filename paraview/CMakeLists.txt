@@ -20,7 +20,7 @@ set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
 
 paraview_plugin_scan(
   PLUGIN_FILES
-    "singlePlugin/paraview.plugin"
+    "paraview.plugin"
   PROVIDES_PLUGINS
     TTK_PLUGINS
   REQUIRES_MODULES
@@ -43,14 +43,21 @@ paraview_plugin_build(
   INSTALL_HEADERS
     OFF
   RUNTIME_DESTINATION
-    "${CMAKE_INSTALL_BINDIR}/plugins"
+    "${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}"
   LIBRARY_DESTINATION
-    "${CMAKE_INSTALL_BINDIR}/plugins"
+    "${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}"
   )
 
-install(
-  TARGETS
-    TTKPVTargets
-  DESTINATION
-    "${TTK_INSTALL_PLUGIN_DIR}"
+set(_paraview_add_plugin_MODULES_FILES TRUE)
+
+list(REMOVE_DUPLICATES TTK_MODULES)
+
+paraview_add_plugin(TopologyToolKit
+  VERSION ${CMAKE_PROJECT_VERSION}
+  REQUIRED_ON_CLIENT
+  REQUIRED_ON_SERVER
+  MODULES
+    ${TTK_MODULES}
+  SERVER_MANAGER_XML
+    ${TTK_XMLS}
   )
