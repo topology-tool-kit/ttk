@@ -1765,23 +1765,22 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
   size_t nReturned{};
 
   // Sort pairs to process by persistence
-  std::vector<std::tuple<PersPairType, size_t, dataType>> pairs;
+  std::vector<std::tuple<size_t, dataType>> pairs;
   for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
     const auto &pair{dms_pairs[i]};
-    pairs.emplace_back(std::make_tuple(pair, i, getPersistence(pair)));
+    pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
   }
-  const auto comparePersistence
-    = [](std::tuple<PersPairType, size_t, dataType> &pair1,
-         std::tuple<PersPairType, size_t, dataType> &pair2) {
-        return std::get<2>(pair1) < std::get<2>(pair2);
-      };
+  const auto comparePersistence = [](std::tuple<size_t, dataType> &pair1,
+                                     std::tuple<size_t, dataType> &pair2) {
+    return std::get<1>(pair1) < std::get<1>(pair2);
+  };
   std::sort(pairs.begin(), pairs.end(), comparePersistence);
 
   // Process pairs
   for(const auto &pairTup : pairs) {
-    const auto &pair = std::get<0>(pairTup);
-    const auto &pairIndex = std::get<1>(pairTup);
-    const auto &pairPersistence = std::get<2>(pairTup);
+    const auto &pairIndex = std::get<0>(pairTup);
+    const auto &pair{dms_pairs[pairIndex]};
+    const auto &pairPersistence = std::get<1>(pairTup);
 
     if(pair.type != 1 || pairPersistence > persistenceThreshold) {
       continue;
@@ -1795,35 +1794,35 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     this->discreteGradient_.getDescendingWall(death, mask, triangulation);
     // 2. get the saddle connector
     std::vector<Cell> vpath{};
-    bool noForkReversal = not ForceLoopFreeGradient;
+    bool disableForkReversal = not ForceLoopFreeGradient;
     this->discreteGradient_.getAscendingPathThroughWall(
-      birth, death, isVisited, &vpath, triangulation, noForkReversal);
+      birth, death, isVisited, &vpath, triangulation, disableForkReversal);
     // 3. reverse the gradient on the saddle connector path
     if(vpath.back() == death) {
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
 
       // 3.1 Detect cycle
       bool cycle = false;
-      if(ForceLoopFreeGradient)
+      if(ForceLoopFreeGradient) {
         cycle
           = this->discreteGradient_.detectGradientCycle(birth, triangulation);
-      else {
-        std::vector<bool> isVisitedT(
+      } else {
+        std::vector<bool> isVisitedUpdated(
           triangulation.getNumberOfTriangles(), false);
-        std::vector<SimplexId> visitedTrianglesT{};
-        VisitedMask maskT{isVisitedT, visitedTrianglesT};
-        discreteGradient_.getDescendingWall(death, maskT, triangulation);
-        discreteGradient_.getAscendingPathThroughWall(birth, death, isVisitedT,
-                                                      nullptr, triangulation,
-                                                      false, true, &cycle);
+        std::vector<SimplexId> visitedTrianglesUpdated{};
+        VisitedMask maskUpdated{isVisitedUpdated, visitedTrianglesUpdated};
+        discreteGradient_.getDescendingWall(death, maskUpdated, triangulation);
+        discreteGradient_.getAscendingPathThroughWall(
+          birth, death, isVisitedUpdated, nullptr, triangulation, false, true,
+          &cycle);
       }
       if(cycle) {
+        this->discreteGradient_.reverseAscendingPathOnWall(
+          vpath, triangulation, true);
         this->printMsg("Could not return saddle connector " + birth.to_string()
                          + " -> " + death.to_string()
                          + " without creating a cycle.",
                        debug::Priority::VERBOSE);
-        this->discreteGradient_.reverseAscendingPathOnWall(
-          vpath, triangulation, true);
       } else
         nReturned++;
 
