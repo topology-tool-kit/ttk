@@ -165,7 +165,7 @@ public:
 
   vtkSetMacro(ThresholdIsAbsolute, bool);
   vtkGetMacro(ThresholdIsAbsolute, bool);
-  
+
   vtkSetMacro(ForceLoopFreeGradient, bool);
   vtkGetMacro(ForceLoopFreeGradient, bool);
 
