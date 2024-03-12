@@ -1813,8 +1813,9 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     this->discreteGradient_.getDescendingWall(death, mask, triangulation);
     // 2. get the saddle connector
     std::vector<Cell> vpath{};
+    bool noForkReversal = not ForceLoopFreeGradient;
     this->discreteGradient_.getAscendingPathThroughWall(
-      birth, death, isVisited, &vpath, triangulation, true);
+      birth, death, isVisited, &vpath, triangulation, noForkReversal);
     // 3. reverse the gradient on the saddle connector path
     if(vpath.back() == death) {
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
