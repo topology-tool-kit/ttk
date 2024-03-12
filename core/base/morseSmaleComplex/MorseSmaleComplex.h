@@ -413,7 +413,7 @@ namespace ttk {
     bool ReturnSaddleConnectors{false};
     double SaddleConnectorsPersistenceThreshold{};
     bool ThresholdIsAbsolute{false};
-    bool ForceLoopFreeGradient{false};
+    bool ForceLoopFreeGradient{true};
   };
 } // namespace ttk
 
