@@ -471,12 +471,6 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                      debug::Priority::DETAIL);
     }
 
-    std::array<std::vector<SimplexId>, 4> criticalPoints{};
-    discreteGradient_.getCriticalPoints(criticalPoints, triangulation);
-    std::cout << "==============================" << std::endl;
-    for(auto &critPoints : criticalPoints)
-      std::cout << critPoints.size() << std::endl;
-
     this->returnSaddleConnectors(
       persistenceThreshold, scalars, offsets, triangulation);
   }
@@ -488,9 +482,6 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
     this->printMsg("  Critical points extracted", 1.0, tm.getElapsedTime(),
                    this->threadNumber_, debug::LineMode::NEW,
                    debug::Priority::DETAIL);
-    std::cout << "==============================" << std::endl;
-    for(auto &critPoints : criticalPoints)
-      std::cout << critPoints.size() << std::endl;
   }
 
   std::vector<std::vector<Separatrix>> separatrices1{};
