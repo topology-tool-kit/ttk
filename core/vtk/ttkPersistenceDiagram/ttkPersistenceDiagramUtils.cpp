@@ -35,7 +35,7 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   }
 
   // cell data
-  const auto pairId = vtkIntArray::SafeDownCast(
+  const auto pairId = ttkSimplexIdTypeArray::SafeDownCast(
     cd->GetArray(ttk::PersistencePairIdentifierName));
   const auto pairType
     = vtkIntArray::SafeDownCast(cd->GetArray(ttk::PersistencePairTypeName));
@@ -44,8 +44,8 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   const auto isFinite = cd->GetArray(ttk::PersistenceIsFinite);
 
   // point data
-  const auto vertexId
-    = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
+  const auto vertexId = ttkSimplexIdTypeArray::SafeDownCast(
+    pd->GetArray(ttk::VertexScalarFieldName));
   const auto critType
     = vtkIntArray::SafeDownCast(pd->GetArray(ttk::PersistenceCriticalTypeName));
   const auto coords = vtkFloatArray::SafeDownCast(
