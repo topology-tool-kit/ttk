@@ -1764,10 +1764,6 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
 
   size_t nReturned{};
 
-  // offset from firstSadSadPair should index s2Children and simplifyS2
-  const auto &s2Children{dms.get2SaddlesChildren()};
-  std::vector<bool> simplifyS2(s2Children.size(), true);
-
   // Sort pairs to process by persistence
   std::vector<std::tuple<PersPairType, size_t, dataType>> pairs;
   for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
@@ -1791,23 +1787,9 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
       continue;
     }
 
-    const auto o{pairIndex - firstSadSadPair};
     const Cell birth{1, pair.birth};
     const Cell death{2, pair.death};
-    bool skip{false};
-    for(const auto child : s2Children[o]) {
-      if(!simplifyS2[child]) {
-        skip = true;
-        break;
-      }
-    }
-    if(skip) {
-      this->printMsg("Skipping saddle connector " + birth.to_string() + " -> "
-                       + death.to_string(),
-                     debug::Priority::VERBOSE);
-      simplifyS2[o] = false;
-      continue;
-    }
+
     // 1. get the 2-saddle wall
     VisitedMask mask{isVisited, visitedTriangles};
     this->discreteGradient_.getDescendingWall(death, mask, triangulation);
@@ -1849,7 +1831,6 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
       this->printMsg("Could not return saddle connector " + birth.to_string()
                        + " -> " + death.to_string(),
                      debug::Priority::VERBOSE);
-      simplifyS2[o] = false;
     }
   }
 
