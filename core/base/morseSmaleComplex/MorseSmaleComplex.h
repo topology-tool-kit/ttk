@@ -1761,11 +1761,13 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     const auto &pair{dms_pairs[i]};
     pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
   }
-  const auto comparePersistence = [](std::tuple<size_t, dataType> &pair1,
-                                     std::tuple<size_t, dataType> &pair2) {
-    return std::get<1>(pair1) < std::get<1>(pair2);
-  };
-  std::sort(pairs.begin(), pairs.end(), comparePersistence);
+  const auto comparePersistence
+    = [](const std::tuple<size_t, dataType> &pair1,
+         const std::tuple<size_t, dataType> &pair2) {
+        return std::get<1>(pair1) < std::get<1>(pair2);
+      };
+  TTK_PSORT(
+    this->threadNumber_, pairs.begin(), pairs.end(), comparePersistence);
 
   // Process pairs
   for(const auto &pairTup : pairs) {
