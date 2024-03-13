@@ -787,9 +787,9 @@ bool DiscreteGradient::getDescendingPathThroughWall(
 
   // debug
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
-  std::vector<char> isCycle;
+  std::vector<bool> isCycle;
   if(enableCycleDetector) {
-    isCycle.resize(numberOfEdges, 0);
+    isCycle.resize(numberOfEdges, false);
   }
 
   if(dimensionality_ == 3) {
@@ -827,8 +827,8 @@ bool DiscreteGradient::getDescendingPathThroughWall(
 
       // debug
       if(enableCycleDetector) {
-        if(isCycle[currentId] == 0) {
-          isCycle[currentId] = 1;
+        if(not isCycle[currentId]) {
+          isCycle[currentId] = true;
         } else {
           this->printErr("Cycle detected on the wall of 1-saddle "
                          + std::to_string(saddle1.id_));
@@ -888,9 +888,9 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
                                        const bool enableCycleDetector) const {
 
   const SimplexId numberOfCells = triangulation.getNumberOfCells();
-  std::vector<char> isCycle;
+  std::vector<bool> isCycle;
   if(enableCycleDetector) {
-    isCycle.resize(numberOfCells, 0);
+    isCycle.resize(numberOfCells, false);
   }
 
   if(dimensionality_ == 2) {
@@ -947,8 +947,8 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
 
         // debug
         if(enableCycleDetector) {
-          if(isCycle[currentId] == 0) {
-            isCycle[currentId] = 1;
+          if(not isCycle[currentId]) {
+            isCycle[currentId] = true;
           } else {
             this->printErr("cycle detected in the path from tetra "
                            + std::to_string(cell.id_));
@@ -1008,13 +1008,14 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   std::vector<Cell> *const vpath,
   const triangulationType &triangulation,
   const bool stopIfMultiConnected,
-  const bool enableCycleDetector) const {
+  const bool enableCycleDetector,
+  bool *const cycleFound) const {
 
   // debug
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
-  std::vector<char> isCycle;
+  std::vector<bool> isCycle;
   if(enableCycleDetector) {
-    isCycle.resize(numberOfTriangles, 0);
+    isCycle.resize(numberOfTriangles, false);
   }
 
   if(dimensionality_ == 3) {
@@ -1058,11 +1059,14 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
       // debug
       if(enableCycleDetector) {
-        if(isCycle[currentId] == 0) {
-          isCycle[currentId] = 1;
+        if(not isCycle[currentId]) {
+          isCycle[currentId] = true;
         } else {
-          this->printErr("Cycle detected on the wall of 2-saddle "
-                         + std::to_string(saddle2.id_));
+          if(cycleFound)
+            *cycleFound = true;
+          else
+            this->printErr("Cycle detected on the wall of 2-saddle "
+                           + std::to_string(saddle2.id_));
           break;
         }
       }
@@ -1112,6 +1116,47 @@ bool DiscreteGradient::getAscendingPathThroughWall(
     } while(currentId != oldId);
   }
 
+  return false;
+}
+
+template <typename triangulationType>
+bool DiscreteGradient::detectGradientCycle(
+  const Cell &cell, const triangulationType &triangulation) const {
+  if(dimensionality_ == 3) {
+    if(cell.dim_ == 1) {
+      const SimplexId originId = getPairedCell(cell, triangulation);
+      if(originId == -1)
+        return false;
+
+      std::queue<SimplexId> bfs;
+      bfs.push(originId);
+      std::vector<bool> isVisited(triangulation.getNumberOfTriangles(), false);
+
+      // BFS traversal
+      while(!bfs.empty()) {
+        const SimplexId triangleId = bfs.front();
+        bfs.pop();
+
+        isVisited[triangleId] = true;
+
+        for(int j = 0; j < 3; ++j) {
+          SimplexId edgeId;
+          triangulation.getTriangleEdge(triangleId, j, edgeId);
+
+          const SimplexId pairedCellId
+            = getPairedCell(Cell(1, edgeId), triangulation);
+
+          if(triangleId == pairedCellId or pairedCellId == -1)
+            continue;
+
+          if(isVisited[pairedCellId])
+            return true;
+          else
+            bfs.push(pairedCellId);
+        }
+      }
+    }
+  }
   return false;
 }
 
@@ -1354,14 +1399,27 @@ int DiscreteGradient::reverseDescendingPath(
 template <typename triangulationType>
 int DiscreteGradient::reverseAscendingPathOnWall(
   const std::vector<Cell> &vpath,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation,
+  bool cancelReversal) const {
 
   if(dimensionality_ == 3) {
     // assume that the first cell is an edge
+    if(cancelReversal) {
+      if(vpath.empty())
+        return 0;
+      (*gradient_)[2][vpath[0].id_] = NULL_GRADIENT;
+      // assume that the last cell is a triangle
+      if(vpath.size() <= 1)
+        return 0;
+      (*gradient_)[3][vpath[vpath.size() - 1].id_] = NULL_GRADIENT;
+    }
     const SimplexId numberOfCellsInPath = vpath.size();
-    for(SimplexId i = 0; i < numberOfCellsInPath; i += 2) {
-      const SimplexId edgeId = vpath[i].id_;
-      const SimplexId triangleId = vpath[i + 1].id_;
+    const SimplexId startIndex = (cancelReversal ? 2 : 0);
+    for(SimplexId i = startIndex; i < numberOfCellsInPath; i += 2) {
+      const SimplexId vpathEdgeIndex = i;
+      const SimplexId vpathTriangleIndex = (cancelReversal ? i - 1 : i + 1);
+      const SimplexId edgeId = vpath[vpathEdgeIndex].id_;
+      const SimplexId triangleId = vpath[vpathTriangleIndex].id_;
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
       for(int k = 0; k < 3; ++k) {

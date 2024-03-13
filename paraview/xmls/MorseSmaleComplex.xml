@@ -282,7 +282,8 @@
        <IntVectorProperty name="ThresholdIsAbsolute"
                           command="SetThresholdIsAbsolute"
                           number_of_elements="1"
-                          default_values="0">
+                          default_values="0"
+                          panel_visibility="advanced">
         <BooleanDomain name="bool" />
          <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
@@ -297,6 +298,25 @@
         </Documentation>
       </IntVectorProperty>
 
+       <IntVectorProperty name="ForceLoopFreeGradient"
+         label="Force loop-free gradient"
+         command="SetForceLoopFreeGradient"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="advanced">
+         <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ReturnSaddleConnectors"
+            value="1" />
+        </Hints>
+         <Documentation>
+           If set to true, the saddle connectors that would create a loop in the whole gradient after returning them will not be processed.
+           Otherwise, only the saddle connectors that will create a loop in the wall of the corresponding 2-saddle will not be processed.
+         </Documentation>
+       </IntVectorProperty>
+      
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
@@ -318,6 +338,7 @@
         <Property name="ReturnSaddleConnectors"/>
         <Property name="SaddleConnectorsPersistenceThreshold"/>
         <Property name="ThresholdIsAbsolute" />
+        <Property name="ForceLoopFreeGradient"/>
       </PropertyGroup>
 
       <OutputPort name="Critical Points" index="0" id="port0"/>

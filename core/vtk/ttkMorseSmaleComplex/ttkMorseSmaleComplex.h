@@ -166,6 +166,9 @@ public:
   vtkSetMacro(ThresholdIsAbsolute, bool);
   vtkGetMacro(ThresholdIsAbsolute, bool);
 
+  vtkSetMacro(ForceLoopFreeGradient, bool);
+  vtkGetMacro(ForceLoopFreeGradient, bool);
+
 protected:
   template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,

@@ -255,8 +255,16 @@ in the gradient.
                                        std::vector<Cell> *const vpath,
                                        const triangulationType &triangulation,
                                        const bool stopIfMultiConnected = false,
-                                       const bool enableCycleDetector
-                                       = false) const;
+                                       const bool enableCycleDetector = false,
+                                       bool *const cycleFound = nullptr) const;
+
+      /**
+       * Detect the presence of a cycle on a edge-triangle path starting from an
+       * edge.
+       */
+      template <typename triangulationType>
+      bool detectGradientCycle(const Cell &cell,
+                               const triangulationType &triangulation) const;
 
       /**
        * Return the 2-separatrice terminating at the given 2-saddle.
@@ -485,9 +493,9 @@ gradient, false otherwise.
        * Reverse the given ascending VPath restricted on a 2-separatrice.
        */
       template <typename triangulationType>
-      int reverseAscendingPathOnWall(
-        const std::vector<Cell> &vpath,
-        const triangulationType &triangulation) const;
+      int reverseAscendingPathOnWall(const std::vector<Cell> &vpath,
+                                     const triangulationType &triangulation,
+                                     bool cancelReversal = false) const;
 
       /**
        * Reverse the given descending VPath restricted on a 2-separatrice.
