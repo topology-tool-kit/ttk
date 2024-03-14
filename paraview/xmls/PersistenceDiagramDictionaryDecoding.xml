@@ -1,0 +1,142 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistenceDiagramDictionaryDecoding"
+        class="ttkPersistenceDiagramDictionaryDecoding"
+        label="TTK PersistenceDiagramDictionaryDecoding">
+      <Documentation
+          long_help="Decodes new persistence diagrams encoded by a dictionary and a vector of number."
+          shorthelp="Persistence Diagrams Dictionary Decoding."
+          >
+        This filter encodes new persistence diagrams by a dictionary and a vector of number.
+
+        Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+        Jules Vidal, Joseph Budin, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proceedings of IEEE VIS 2019.
+
+        See also PersistenceDiagram, BottleneckDistance
+      </Documentation>
+
+      <InputProperty
+          name="Dict"
+          command="SetInputConnection"
+          port_index = "0">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1"/>
+          <!--Property name="Input" function="FieldDataSelection" /-->
+        <!--/InputArrayDomain-->
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="Weights"
+          command="SetInputConnection"
+          port_index = "1">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1"/>
+          <!--Property name="Input" function="FieldDataSelection" /-->
+        <!--/InputArrayDomain-->
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- This is the VTK way of selecting arrays for processing by calling the SetInputArrayToProcess method -->
+      <!-- (see ttkTestModule.cpp for details) -->
+
+
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+      <!-- OUTPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty
+         name="ProjMet"
+         label="Projection Method"
+         command="SetProjMet"
+         number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced" >
+    <EnumerationDomain name="enum">
+         <Entry value="0" text="Multi-Dimensional Scaling"/>
+         <Entry value="1" text="Dictionary of Persistence Diagrams"/>
+       </EnumerationDomain>
+       <Documentation>
+           Backend for the computation of the 2D projection when the size of the dictionary is greater than 4.
+       </Documentation>
+     </IntVectorProperty>
+
+
+      <DoubleVectorProperty
+        name="Spacing"
+        label="Spacing"
+        command="SetSpacing"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        >
+      <Documentation>
+          Ajust the spacing for the display of diagrams.
+      </Documentation>
+    </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="ShowAtoms"
+        label="Show atoms"
+        command="SetShowAtoms"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        >
+        <BooleanDomain name="bool"/>
+      <Documentation>
+          Includes the atoms of the dictionnary in the output representation
+      </Documentation>
+    </IntVectorProperty>
+
+      
+      <IntVectorProperty
+        name="ProgBarycenter"
+        label="Progressive barycenter"
+        command="SetProgBarycenter"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        >
+        <BooleanDomain name="bool"/>
+      <Documentation>
+          Compute the barycenters using progressivity
+      </Documentation>
+    </IntVectorProperty>
+
+      <!-- A string parameter that controls the name of the output array -->
+
+
+      <!-- Create a UI group that contains all output parameter widgets (here only one) -->
+
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

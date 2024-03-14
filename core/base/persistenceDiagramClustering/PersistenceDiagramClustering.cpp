@@ -1,5 +1,57 @@
 #include <PersistenceDiagramClustering.h>
 
+void ttk::computeWeightedBarycenter(
+  std::vector<DiagramType> &intermediateDiagrams,
+  std::vector<double> &weights,
+  DiagramType &barycenter,
+  std::vector<std::vector<MatchingType>> &matchings,
+  const ttk::Debug &dbg,
+  const bool ProgBarycenter) {
+
+  std::vector<DiagramType> final_centroids;
+  std::vector<std::vector<std::vector<MatchingType>>> all_matchings;
+
+  bool useCustomWeights = true;
+
+  if(weights.size() == 0) {
+    dbg.printMsg("Uniform weights");
+    useCustomWeights = false;
+  } else if(weights.size() != intermediateDiagrams.size()) {
+    dbg.printErr("Number of weights != Number of inputs");
+    dbg.printErr("Defaulting to uniform barycenter");
+    useCustomWeights = false;
+  } else {
+    std::stringstream msg;
+    double sum = 0.0;
+    // msg << "Weights: ";
+    for(auto w : weights) {
+      // msg << " " << w;
+      sum += w;
+    }
+    // msg << " | sum: " << sum;
+    // dbg.printMsg(msg.str());
+    if(sum != 1) {
+      dbg.printWrn("Sum of weights different from 1");
+      // dbg.printErr("Defaulting to uniform barycenter");
+      // useCustomWeights = false;
+    }
+  }
+
+  PersistenceDiagramClustering barycenterComputer{};
+  barycenterComputer.setForceUseOfAlgorithm(true);
+  barycenterComputer.setUseCustomWeights(useCustomWeights);
+  barycenterComputer.setUseInterruptible(true);
+  barycenterComputer.setUseProgressive(ProgBarycenter);
+  barycenterComputer.setCustomWeights(&weights);
+  barycenterComputer.setDebugLevel(0);
+  barycenterComputer.setTimeLimit(10);
+  barycenterComputer.setThreadNumber(1);
+  barycenterComputer.execute(
+    intermediateDiagrams, final_centroids, all_matchings);
+  barycenter = std::move(final_centroids[0]);
+  matchings = std::move(all_matchings[0]);
+}
+
 std::vector<int> ttk::PersistenceDiagramClustering::execute(
   std::vector<DiagramType> &intermediateDiagrams,
   std::vector<DiagramType> &final_centroids,
@@ -121,6 +173,10 @@ std::vector<int> ttk::PersistenceDiagramClustering::execute(
   KMeans.setDiagrams(&data_min, &data_sad, &data_max);
   KMeans.setDos(do_min, do_sad, do_max);
   KMeans.setNonMatchingWeight(NonMatchingWeight);
+
+  KMeans.setUseCustomWeights(UseCustomWeights);
+  KMeans.setCustomWeights(CustomWeights);
+
   inv_clustering
     = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
   std::vector<std::vector<int>> centroids_sizes = KMeans.get_centroids_sizes();

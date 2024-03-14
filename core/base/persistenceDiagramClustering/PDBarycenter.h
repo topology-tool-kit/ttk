@@ -187,6 +187,13 @@ namespace ttk {
       return cost_;
     }
 
+    inline void setUseCustomWeights(bool data) {
+      useCustomWeights_ = data;
+    }
+    inline void setCustomWeights(std::vector<double> *pdata) {
+      customWeights_ = pdata;
+    }
+
   protected:
     // std::vector<bool> precision_objective_;
     std::vector<double> precision_;
@@ -225,6 +232,9 @@ namespace ttk {
     std::vector<BidderDiagram> current_bidder_diagrams_;
     std::vector<std::vector<int>> current_bidder_ids_;
     std::vector<GoodDiagram> barycenter_goods_;
+
+    std::vector<double> *customWeights_{};
+    bool useCustomWeights_{false};
 
     bool reinit_prices_{true};
     bool epsilon_decreases_{true};

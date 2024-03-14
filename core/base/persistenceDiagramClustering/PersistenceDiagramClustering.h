@@ -53,6 +53,25 @@ namespace ttk {
       return this->distances;
     }
 
+    inline void setTimeLimit(const double tl) {
+      TimeLimit = tl;
+    }
+    inline void setForceUseOfAlgorithm(bool data) {
+      ForceUseOfAlgorithm = data;
+    }
+    inline void setUseInterruptible(bool data) {
+      UseInterruptible = data;
+    }
+    inline void setUseProgressive(bool data) {
+      UseProgressive = data;
+    }
+    inline void setUseCustomWeights(bool data) {
+      UseCustomWeights = data;
+    }
+    inline void setCustomWeights(std::vector<double> *pdata) {
+      CustomWeights = pdata;
+    }
+
   protected:
     // Critical pairs used for clustering
     // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
@@ -82,6 +101,17 @@ namespace ttk {
 
     int points_added_;
     int points_deleted_;
+
+    std::vector<double> *CustomWeights{};
+    bool UseCustomWeights{false};
   };
+
+  void
+    computeWeightedBarycenter(std::vector<DiagramType> &intermediateDiagrams,
+                              std::vector<double> &weights,
+                              DiagramType &barycenter,
+                              std::vector<std::vector<MatchingType>> &matchings,
+                              const ttk::Debug &dbg,
+                              const bool ProgBarycenter);
 
 } // namespace ttk

@@ -2025,7 +2025,8 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
   bool add_points_to_barycenter,
   bool first_enrichment) {
 
-  std::vector<double> new_min_persistence = min_persistence;
+  std::vector<double> new_min_persistence
+    = first_enrichment ? previous_min_persistence : min_persistence;
 
   if(!do_min_) {
     new_min_persistence[0] = previous_min_persistence[0];
@@ -2084,31 +2085,37 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
   if(do_min_) {
     for(int i = 0; i < numberOfInputs_; i++) {
       std::vector<double> persistences;
+      int number_of_added_pairs = current_bidder_diagrams_min_[i].size();
+      double last_added_persistence = number_of_added_pairs
+                                        ? current_bidder_diagrams_min_[i]
+                                            .at(number_of_added_pairs - 1)
+                                            .getPersistence()
+                                        : previous_min_persistence[0];
       for(size_t j = 0; j < bidder_diagrams_min_[i].size(); j++) {
-        Bidder const b = bidder_diagrams_min_[i].at(j);
-        double const persistence = b.getPersistence();
+        const auto &b = bidder_diagrams_min_[i].at(j);
+        const auto persistence = b.getPersistence();
         if(persistence >= min_persistence[0]
-           && persistence <= previous_min_persistence[0]) {
+           && persistence < last_added_persistence) {
           candidates_to_be_added_min[i].emplace_back(j);
           idx_min[i].emplace_back(idx_min[i].size());
           persistences.emplace_back(persistence);
         }
       }
-      sort(
+      std::sort(
         idx_min[i].begin(), idx_min[i].end(), [&persistences](int &a, int &b) {
           return ((persistences[a] > persistences[b])
                   || ((persistences[a] == persistences[b]) && (a > b)));
         });
-      int const size = candidates_to_be_added_min[i].size();
-      if(size >= max_points_to_add_min) {
-        double const last_persistence_added_min
-          = persistences[idx_min[i][max_points_to_add_min - 1]];
+      int size = candidates_to_be_added_min[i].size();
+      if(size > 0) {
+        double last_persistence_added_min
+          = persistences[idx_min[i][std::min(size, max_points_to_add_min) - 1]];
         if(first_enrichment) { // a minima min_point_to_add (=max_point_to_add)
                                // added per diagram
           if(i == 0) {
             new_min_persistence[0] = last_persistence_added_min;
           } else {
-            if(last_persistence_added_min < new_min_persistence[0])
+            if(last_persistence_added_min > new_min_persistence[0])
               new_min_persistence[0] = last_persistence_added_min;
           }
         } else { // a maxima max_point_to_add added per diagram
@@ -2123,31 +2130,37 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
   if(do_sad_) {
     for(int i = 0; i < numberOfInputs_; i++) {
       std::vector<double> persistences;
+      int number_of_added_pairs = current_bidder_diagrams_saddle_[i].size();
+      double last_added_persistence = number_of_added_pairs
+                                        ? current_bidder_diagrams_saddle_[i]
+                                            .at(number_of_added_pairs - 1)
+                                            .getPersistence()
+                                        : previous_min_persistence[1];
       for(size_t j = 0; j < bidder_diagrams_saddle_[i].size(); j++) {
-        Bidder const b = bidder_diagrams_saddle_[i].at(j);
-        double const persistence = b.getPersistence();
+        const auto &b = bidder_diagrams_saddle_[i].at(j);
+        const auto persistence = b.getPersistence();
         if(persistence >= min_persistence[1]
-           && persistence <= previous_min_persistence[1]) {
+           && persistence < last_added_persistence) {
           candidates_to_be_added_sad[i].emplace_back(j);
           idx_sad[i].emplace_back(idx_sad[i].size());
           persistences.emplace_back(persistence);
         }
       }
-      sort(
+      std::sort(
         idx_sad[i].begin(), idx_sad[i].end(), [&persistences](int &a, int &b) {
           return ((persistences[a] > persistences[b])
                   || ((persistences[a] == persistences[b]) && (a > b)));
         });
-      int const size = candidates_to_be_added_sad[i].size();
-      if(size >= max_points_to_add_sad) {
-        double const last_persistence_added_sad
-          = persistences[idx_sad[i][max_points_to_add_sad - 1]];
+      int size = candidates_to_be_added_sad[i].size();
+      if(size > 0) {
+        double last_persistence_added_sad
+          = persistences[idx_sad[i][std::min(size, max_points_to_add_sad) - 1]];
         if(first_enrichment) { // a minima min_point_to_add (=max_point_to_add)
                                // added per diagram
           if(i == 0) {
             new_min_persistence[1] = last_persistence_added_sad;
           } else {
-            if(last_persistence_added_sad < new_min_persistence[1])
+            if(last_persistence_added_sad > new_min_persistence[1])
               new_min_persistence[1] = last_persistence_added_sad;
           }
         } else { // a maxima max_point_to_add added per diagram
@@ -2161,31 +2174,38 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
   if(do_max_) {
     for(int i = 0; i < numberOfInputs_; i++) {
       std::vector<double> persistences;
+      int number_of_added_pairs = current_bidder_diagrams_max_[i].size();
+      double last_added_persistence = number_of_added_pairs
+                                        ? current_bidder_diagrams_max_[i]
+                                            .at(number_of_added_pairs - 1)
+                                            .getPersistence()
+                                        : previous_min_persistence[2];
       for(size_t j = 0; j < bidder_diagrams_max_[i].size(); j++) {
-        Bidder const b = bidder_diagrams_max_[i].at(j);
-        double const persistence = b.getPersistence();
+        const auto &b = bidder_diagrams_max_[i].at(j);
+        const auto persistence = b.getPersistence();
+
         if(persistence >= min_persistence[2]
-           && persistence <= previous_min_persistence[2]) {
+           && persistence < last_added_persistence) {
           candidates_to_be_added_max[i].emplace_back(j);
           idx_max[i].emplace_back(idx_max[i].size());
           persistences.emplace_back(persistence);
         }
       }
-      sort(
+      std::sort(
         idx_max[i].begin(), idx_max[i].end(), [&persistences](int &a, int &b) {
           return ((persistences[a] > persistences[b])
                   || ((persistences[a] == persistences[b]) && (a > b)));
         });
-      int const size = candidates_to_be_added_max[i].size();
-      if(size >= max_points_to_add_max) {
-        double const last_persistence_added_max
-          = persistences[idx_max[i][max_points_to_add_max - 1]];
+      int size = candidates_to_be_added_max[i].size();
+      if(size > 0) {
+        double last_persistence_added_max
+          = persistences[idx_max[i][std::min(size, max_points_to_add_max) - 1]];
         if(first_enrichment) { // a minima min_point_to_add (=max_point_to_add)
                                // added per diagram
           if(i == 0) {
             new_min_persistence[2] = last_persistence_added_max;
           } else {
-            if(last_persistence_added_max < new_min_persistence[2])
+            if(last_persistence_added_max > new_min_persistence[2])
               new_min_persistence[2] = last_persistence_added_max;
           }
         } else { // a maxima max_point_to_add added per diagram
@@ -2205,8 +2225,8 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
       for(int j = 0; j < std::min(max_points_to_add_min, size); j++) {
         Bidder b = bidder_diagrams_min_[i].at(
           candidates_to_be_added_min[i][idx_min[i][j]]);
-        double const persistence = b.getPersistence();
-        if(persistence >= new_min_persistence[0]) {
+        double persistence = b.getPersistence();
+        if(persistence >= new_min_persistence[0] or first_enrichment) {
           b.id_ = current_bidder_diagrams_min_[i].size();
           b.setPositionInAuction(current_bidder_diagrams_min_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[0][i]);
@@ -2265,8 +2285,8 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
       for(int j = 0; j < std::min(max_points_to_add_sad, size); j++) {
         Bidder b = bidder_diagrams_saddle_[i].at(
           candidates_to_be_added_sad[i][idx_sad[i][j]]);
-        double const persistence = b.getPersistence();
-        if(persistence >= new_min_persistence[1]) {
+        double persistence = b.getPersistence();
+        if(persistence >= new_min_persistence[1] or first_enrichment) {
           b.id_ = current_bidder_diagrams_saddle_[i].size();
           b.setPositionInAuction(current_bidder_diagrams_saddle_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[1][i]);
@@ -2321,8 +2341,8 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
       for(int j = 0; j < std::min(max_points_to_add_max, size); j++) {
         Bidder b = bidder_diagrams_max_[i].at(
           candidates_to_be_added_max[i][idx_max[i][j]]);
-        double const persistence = b.getPersistence();
-        if(persistence >= new_min_persistence[2]) {
+        double persistence = b.getPersistence();
+        if(persistence >= new_min_persistence[2] or first_enrichment) {
           b.id_ = current_bidder_diagrams_max_[i].size();
           b.setPositionInAuction(current_bidder_diagrams_max_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[2][i]);
@@ -2396,6 +2416,16 @@ void ttk::PDClustering::initializeBarycenterComputers(
       barycenter_computer_min_[c].setDeterministic(true);
       barycenter_computer_min_[c].setGeometricalFactor(geometrical_factor_);
       barycenter_computer_min_[c].setDebugLevel(debugLevel_);
+      if(useCustomWeights_) {
+        if(customWeights_ != nullptr
+           and customWeights_->size() == diagrams_c.size()) {
+          barycenter_computer_min_[c].setUseCustomWeights(useCustomWeights_);
+          barycenter_computer_min_[c].setCustomWeights(customWeights_);
+        } else {
+          printErr("Weights incorrectly initialized, returning to balanced "
+                   "barycenter");
+        }
+      }
       barycenter_computer_min_[c].setNumberOfInputs(diagrams_c.size());
       barycenter_computer_min_[c].setCurrentBidders(diagrams_c);
       barycenter_computer_min_[c].setNonMatchingWeight(nonMatchingWeight_);
@@ -2418,7 +2448,16 @@ void ttk::PDClustering::initializeBarycenterComputers(
       barycenter_computer_sad_[c].setDebugLevel(debugLevel_);
       barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c.size());
       barycenter_computer_sad_[c].setCurrentBidders(diagrams_c);
-      barycenter_computer_sad_[c].setNonMatchingWeight(nonMatchingWeight_);
+      if(useCustomWeights_) {
+        if(customWeights_ != nullptr
+           and customWeights_->size() == diagrams_c.size()) {
+          barycenter_computer_sad_[c].setUseCustomWeights(useCustomWeights_);
+          barycenter_computer_sad_[c].setCustomWeights(customWeights_);
+        } else {
+          printErr("Weights incorrectly initialized, returning to balanced "
+                   "barycenter");
+        }
+      }
 
       std::vector<GoodDiagram> barycenter_goods(clustering_[c].size());
       for(size_t i_diagram = 0; i_diagram < clustering_[c].size();
@@ -2447,7 +2486,16 @@ void ttk::PDClustering::initializeBarycenterComputers(
       barycenter_computer_max_[c].setDebugLevel(debugLevel_);
       barycenter_computer_max_[c].setNumberOfInputs(diagrams_c.size());
       barycenter_computer_max_[c].setCurrentBidders(diagrams_c);
-      barycenter_computer_max_[c].setNonMatchingWeight(nonMatchingWeight_);
+      if(useCustomWeights_) {
+        if(customWeights_ != nullptr
+           and customWeights_->size() == diagrams_c.size()) {
+          barycenter_computer_max_[c].setUseCustomWeights(useCustomWeights_);
+          barycenter_computer_max_[c].setCustomWeights(customWeights_);
+        } else {
+          printErr("Weights incorrectly initialized, returning to balanced "
+                   "barycenter");
+        }
+      }
 
       std::vector<GoodDiagram> barycenter_goods(clustering_[c].size());
       for(size_t i_diagram = 0; i_diagram < clustering_[c].size();

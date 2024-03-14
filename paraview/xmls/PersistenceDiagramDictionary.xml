@@ -1,0 +1,303 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistenceDiagramDictionary"
+        class="ttkPersistenceDiagramDictionary"
+        label="TTK PersistenceDiagramDictionary">
+      <Documentation
+          long_help="Encodes new persistence diagrams by a dictionary and a vector of number."
+          shorthelp="Persistence Diagrams Dictionary Encoding."
+          >
+        This filter encodes new persistence diagrams by a dictionary and a vector of number.
+
+        Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+        Jules Vidal, Joseph Budin, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proceedings of IEEE VIS 2019.
+
+        See also PersistenceDiagram, BottleneckDistance
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+                    port_index="0"
+          command="SetInputConnection"
+          multiple_input="1">
+        <!-- clean_command="RemoveAllInputs" -->
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="optional input"
+                    port_index="1"
+          command="SetInputConnection"
+          multiple_input="1">
+        <!-- clean_command="RemoveAllInputs" -->
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Input Atoms
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+         name="BackEnd"
+         label="BackEnd"
+         command="SetBackEnd"
+         number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced" >
+    <EnumerationDomain name="enum">
+         <Entry value="0" text="Border initialization"/>
+         <Entry value="1" text="Random initialization"/>
+         <Entry value="2" text="First Elem initialization"/>
+         <Entry value="3" text="Input atome (optional input)"/>
+         <Entry value="4" text="Greddy initialization"/>
+       </EnumerationDomain>
+       <Documentation>
+           Backend for the computation of the dictionary of the persistence diagrams.
+       </Documentation>
+     </IntVectorProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- This is the VTK way of selecting arrays for processing by calling the SetInputArrayToProcess method -->
+      <!-- (see ttkTestModule.cpp for details) -->
+
+
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+      <!-- OUTPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty name = "AtomNumber_" label = "Number of Atoms" command="SetAtomNumber_" number_of_elements = "1" default_values="3" >
+      <IntRangeDomain name = "Range" min = "0" max = "20" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="3"
+            inverse="1"/>
+        </Hints>
+      </IntVectorProperty>
+
+
+      <DoubleVectorProperty name = "Percent_" label = "percent threshold" command="SetPercent_" number_of_elements = "1" default_values="0" >
+      <DoubleRangeDomain name = "Range" min = "0.0" max = "50.0" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="3"
+            inverse="1"/>
+        </Hints>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name = "CompressionFactor" label = "Compression factor" command="SetCompressionFactor" number_of_elements = "1" default_values="1.5" >
+      <DoubleRangeDomain name = "Range" min = "1.0" max = "50.0" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="3"
+            inverse="1"/>
+        </Hints>
+      </DoubleVectorProperty>
+
+        <IntVectorProperty
+        name="OptimizeWeights_"
+        command="SetOptimizeWeights_"
+        label="Optimize weights"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs the weight optimization
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="OptimizeAtoms_"
+        command="SetOptimizeAtoms_"
+        label="Optimize atoms"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs the atoms optimization
+        </Documentation>
+      </IntVectorProperty>
+
+
+
+        <IntVectorProperty
+        name="MaxEigenValue_"
+        command="SetMaxEigenValue_"
+        label="Max Eigen Value"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Set strategy step to Max Eigen Value
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="Fusion_"
+        command="SetFusion_"
+        label="Fusion"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs fusion
+        </Documentation>
+      </IntVectorProperty>
+
+
+        <IntVectorProperty
+        name="ProgBarycenter_"
+        command="SetProgBarycenter_"
+        label="Progressive barycenter"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs progressivity for computing barycenters
+        </Documentation>
+      </IntVectorProperty>
+
+
+
+        <IntVectorProperty
+        name="ProgApproach_"
+        command="SetProgApproach_"
+        label="Progressive approach"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate progressive approach
+        </Documentation>
+      </IntVectorProperty>
+
+
+        <IntVectorProperty
+        name="StopCondition_"
+        command="SetStopCondition_"
+        label="Stopping condition"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate the interrupt condition
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="sortedForTest_"
+        command="SetsortedForTest_"
+        label="sort for testing"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Sort each diagrams by persistence for test
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="CreationFeatures_"
+        command="SetCreationFeatures_"
+        label="Creation of features"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs the creation of features
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="CompressionMode_"
+        command="SetCompressionMode_"
+        label="Compression Mode"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate compression mode
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DimReductMode_"
+        command="SetDimReductMode_"
+        label="Dimension Reduction Mode"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate dimension reduction mode
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty name = "MaxEpoch_" label = "Max Epoch" command="SetMaxEpoch_" number_of_elements = "1" default_values="1000" >
+      <IntRangeDomain name = "Range" min = "0" max = "1000" />
+      </IntVectorProperty>
+
+      <IntVectorProperty name = "Seed_" label = "Seed for random init" command="SetSeed_" number_of_elements = "1" default_values="0" >
+      <IntRangeDomain name = "Range" min = "0" max = "1000" />
+      </IntVectorProperty>
+
+
+      <!-- A string parameter that controls the name of the output array -->
+
+
+      <!-- Create a UI group that contains all output parameter widgets (here only one) -->
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="AtomNumber_" />
+      </PropertyGroup>
+
+
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,0 +1,10 @@
+NAME
+  ttkPersistenceDiagramDictionaryDecoding
+SOURCES
+  ttkPersistenceDiagramDictionaryDecoding.cpp
+HEADERS
+  ttkPersistenceDiagramDictionaryDecoding.h
+DEPENDS
+  persistenceDiagramDictionaryDecoding
+  ttkAlgorithm
+  ttkPersistenceDiagram
