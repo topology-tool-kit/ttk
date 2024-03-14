@@ -187,9 +187,15 @@ namespace ttk {
       return cost_;
     }
 
+    inline void setDeltaLim(double delta_lim) {
+      delta_lim_ = delta_lim;
+    }
+
   protected:
     // std::vector<bool> precision_objective_;
     std::vector<double> precision_;
+
+    double delta_lim_{0.01};
 
     // to kill any randomness
     bool deterministic_{false};
