@@ -155,6 +155,7 @@ int ttkPersistenceDiagramClustering::RequestData(
       pdBarycenter.setAlpha(Alpha);
       pdBarycenter.setLambda(Lambda);
       pdBarycenter.setNonMatchingWeight(NonMatchingWeight);
+      pdBarycenter.setDeltaLim(DeltaLim);
       pdBarycenter.execute(
         intermediateDiagrams_, final_centroids_[0], all_matchings_);
 
