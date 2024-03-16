@@ -41,7 +41,7 @@ void ttk::PDBarycenter::runMatching(
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
-    double const delta_lim = 0.01;
+    double const delta_lim = delta_lim_;
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
       geometrical_factor_, lambda_, delta_lim, kdt, correspondence_kdt_map,
@@ -93,7 +93,7 @@ void ttk::PDBarycenter::runMatchingAuction(
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondence_kdt_map, 0,
+      geometrical_factor_, lambda_, delta_lim_, kdt, correspondence_kdt_map, 0,
       (*min_diag_price)[i], use_kdt, nonMatchingWeight_);
     std::vector<MatchingType> matchings;
     double const cost = auction.run(matchings, i);
@@ -671,6 +671,8 @@ std::vector<std::vector<ttk::MatchingType>>
       }
 
       converged = converged || last_min_cost_obtained > 1;
+      if(numberOfInputs_ == 2)
+        finished = true;
     }
 
     previous_matchings = std::move(all_matchings);

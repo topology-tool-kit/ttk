@@ -139,6 +139,7 @@ double ttk::PersistenceDiagramAuction::initLowerBoundCost(const int kdt_index) {
 
     // Compare with diagonal good
     Good g{bidders_[i].x_, bidders_[i].y_, true, -bidders_[i].id_ - 1};
+    g.SetCriticalCoordinates(bidders_[i].GetCriticalCoordinates());
     g.projectOnDiagonal();
     double const cost = bidders_[i].cost(
       g, wasserstein_, geometricalFactor_, nonMatchingWeight_);

@@ -257,7 +257,7 @@ namespace ttk {
       }
       double const denominator = d - bidders_.size() * epsilon_;
       if(denominator <= 0) {
-        return 1;
+        return std::numeric_limits<double>::max();
       } else {
         return Geometry::pow(d / denominator, 1 / ((float)wasserstein_)) - 1;
       }
