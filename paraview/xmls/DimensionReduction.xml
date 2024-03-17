@@ -297,6 +297,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          Kernel coefficient for rbf kernel. Only used if the affinity is set to rbf.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -350,6 +351,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          Not used if the solver is set to dense.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -437,6 +439,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
+          Number of times the SMACOF algorithm will be run with different initializations. The final results will be the best output of the runs, determined by the run with the smallest final stress.
         </Documentation>
       </IntVectorProperty>
 
@@ -448,6 +451,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
+          Maximum number of iterations of the SMACOF algorithm for a single run.
         </Documentation>
       </IntVectorProperty>
 
@@ -470,6 +474,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          Relative tolerance with respect to stress at which to declare convergence.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -479,8 +484,9 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         number_of_elements="1"
         default_values="30"
         panel_visibility="advanced">
-        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <DoubleRangeDomain name="range" min="5.0" max="50.0" />
         <Documentation>
+        The perplexity is related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -492,6 +498,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          Controls how tight natural clusters in the original space are in the embedded space and how much space will be between them. For larger values, the space between natural clusters will be larger in the embedded space.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -503,6 +510,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          The learning rate for t-SNE is usually in the range [10.0, 1000.0]. If the learning rate is too high, the data may look like a ‘ball’ with any point approximately equidistant from its nearest neighbours. If the learning rate is too low, most points may look compressed in a dense cloud with few outliers. If the cost function gets stuck in a bad local minimum increasing the learning rate may help.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -514,6 +522,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
+          Maximum number of iterations for the optimization. Should be at least 250.
         </Documentation>
       </IntVectorProperty>
 
@@ -525,7 +534,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
-          Documentation.
+          Maximum number of iterations without progress before we abort the optimization, used after 250 initial iterations with early exaggeration. This value is rounded to the next multiple of 50.
         </Documentation>
       </IntVectorProperty>
 
@@ -537,6 +546,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          If the gradient norm is below this threshold, the optimization will be stopped.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -546,7 +556,8 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         number_of_elements="1"
         default_values="euclidean"
         panel_visibility="advanced">
-        <Documentation>
+      <Documentation>
+        The metric to use when calculating distance between instances in a feature array.
         </Documentation>
       </StringVectorProperty>
 
@@ -554,13 +565,14 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         label="Init"
         command="Settsne_Init"
         number_of_elements="1"
-        default_values="random"
+        default_values="pca"
         panel_visibility="advanced">
         <StringListDomain name="enum">
           <String value="random"/>
           <String value="pca"/>
         </StringListDomain>
         <Documentation>
+          Initialization of embedding. PCA initialization cannot be used with precomputed distances and is usually more globally stable than random initialization.
         </Documentation>
       </StringVectorProperty>
 
@@ -586,6 +598,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
           <String value="exact"/>
         </StringListDomain>
         <Documentation>
+          By default the gradient calculation algorithm uses Barnes-Hut approximation running in O(NlogN) time. exact will run in time O(N^2) time. The exact algorithm should be used when nearest-neighbor errors need to be better than 3%.
         </Documentation>
       </StringVectorProperty>
 
@@ -597,6 +610,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          Only used for Barnes Hut. This is the trade-off between speed and accuracy for Barnes-Hut T-SNE. Angle less than 0.2 has quickly increasing computation time and angle greater 0.8 has quickly increasing error.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -623,6 +637,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
+          Only used if the solver is set to arpack.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -634,6 +649,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
+          Only used if the solver is set to arpack.
         </Documentation>
       </IntVectorProperty>
 
@@ -649,6 +665,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
           <String value="D"/>
         </StringListDomain>
         <Documentation>
+          Choosing between Floyd-Warshall and Dijkstra algorithm.
         </Documentation>
       </StringVectorProperty>
 

@@ -59,6 +59,8 @@ namespace ttk {
   public:
     DimensionReduction();
 
+    ~DimensionReduction();
+
     /** Scikit-Learn Dimension Reduction algorithms */
     enum class METHOD {
       /** Spectral Embedding */
@@ -247,6 +249,7 @@ namespace ttk {
         this->se_Affinity = "precomputed";
         this->mds_Dissimilarity = "precomputed";
         this->tsne_Metric = "precomputed";
+        this->tsne_Init = "random";
         this->iso_Metric = "precomputed";
       } else {
         this->se_Affinity = "nearest_neighbors";
@@ -294,7 +297,7 @@ namespace ttk {
     int tsne_MaxIterationProgress{300};
     float tsne_GradientThreshold{1e-7};
     std::string tsne_Metric{"euclidean"};
-    std::string tsne_Init{"random"};
+    std::string tsne_Init{"pca"};
     int tsne_Verbose{0};
     std::string tsne_Method{"barnes_hut"};
     float tsne_Angle{0.5};
@@ -315,8 +318,8 @@ namespace ttk {
     std::string pca_MaxIteration{"auto"};
 
     // TopoMap
-    size_t topomap_AngularSampleNb;
-    bool topomap_CheckMST;
+    size_t topomap_AngularSampleNb{2};
+    bool topomap_CheckMST{false};
     TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
 
     // testing
@@ -331,5 +334,8 @@ namespace ttk {
     int IsDeterministic{true};
     char majorVersion_{'0'};
     bool IsInputADistanceMatrix{false};
+
+  private:
+    bool wasPythonInitialized_{true};
   };
 } // namespace ttk
