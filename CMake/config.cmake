@@ -153,6 +153,15 @@ endif()
 
 # optional packages
 
+find_package(Torch QUIET)
+if(TORCH_FOUND)
+  option(TTK_ENABLE_TORCH "Enable Torch support" ON)
+  message(STATUS "Found Torch ${TORCH_VERSION} (${TORCH_LIBRARIES})")
+else()
+  option(TTK_ENABLE_TORCH "Enable Torch support" OFF)
+  message(STATUS "Torch not found, disabling Torch support in TTK.")
+endif()
+
 find_package(ZLIB QUIET)
 if(ZLIB_FOUND)
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)

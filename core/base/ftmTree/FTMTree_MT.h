@@ -775,6 +775,8 @@ namespace ttk {
       template <class dataType>
       std::stringstream printMergedRoot(bool doPrint = true);
 
+      std::stringstream printSubTree(idNode subRoot);
+
       std::stringstream printTree(bool doPrint = true);
 
       std::stringstream printTreeStats(bool doPrint = true);

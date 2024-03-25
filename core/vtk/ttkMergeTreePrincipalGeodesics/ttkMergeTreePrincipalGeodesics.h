@@ -113,12 +113,12 @@ public:
   }
 
   void SetNumberOfGeodesics(unsigned int numberOfGeodesics) {
-    numberOfGeodesics_ = numberOfGeodesics;
+    numberOfAxes_ = numberOfGeodesics;
     Modified();
     resetDataVisualization();
   }
   unsigned int GetNumberOfGeodesics() {
-    return numberOfGeodesics_;
+    return numberOfAxes_;
   }
 
   void SetNumberOfProjectionIntervals(unsigned int intervals) {
