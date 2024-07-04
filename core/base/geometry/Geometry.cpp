@@ -535,6 +535,60 @@ T Geometry::magnitude(const T *o, const T *d) {
 }
 
 template <typename T>
+void Geometry::projectOnTrianglePlane(const T *p,
+                                      const T *a,
+                                      const T *normTri,
+                                      T *out) {
+  std::array<T, 3> ap{};
+  subtractVectors(a, p, ap.data());
+  std::array<T, 3> normTriScaled{};
+  scaleVector(normTri, dotProduct(normTri, ap.data()), normTriScaled.data());
+  subtractVectors(normTriScaled.data(), p, out);
+}
+
+template <typename T>
+void Geometry::projectOnEdge(const T *p, const T *a, const T *b, T *out) {
+  std::array<T, 3> ab{};
+  subtractVectors(a, b, ab.data());
+  std::array<T, 3> ap{};
+  subtractVectors(a, p, ap.data());
+  std::array<T, 3> abScaled{};
+  scaleVector(
+    ab.data(),
+    dotProduct(ap.data(), ab.data()) / dotProduct(ab.data(), ab.data()),
+    abScaled.data());
+  addVectors(a, abScaled.data(), out);
+}
+
+template <typename T>
+void Geometry::computeTriangleNormal(const T *a,
+                                     const T *b,
+                                     const T *c,
+                                     T *out) {
+
+  // triangle normal: cross product of two edges
+  // ab, ac vectors
+  std::array<T, 3> ab{};
+  subtractVectors(a, b, ab.data());
+  std::array<T, 3> ac{};
+  subtractVectors(a, c, ac.data());
+  // compute ab ^ ac
+  crossProduct(ab.data(), ac.data(), out);
+  // magnitude
+  const auto mag = magnitude(out);
+
+  if(mag > powf(10, -FLT_DIG)) {
+    // unitary normal vector
+    scaleVector(out, 1 / mag, out);
+    return;
+  }
+
+  out[0] = -1.0F;
+  out[1] = -1.0F;
+  out[2] = -1.0F;
+}
+
+template <typename T>
 int Geometry::subtractVectors(const T *a,
                               const T *b,
                               T *out,
@@ -831,6 +885,12 @@ void Geometry::transposeMatrix(const std::vector<std::vector<T>> &a,
   template TYPE Geometry::magnitudeFlatten<TYPE>(                              \
     std::vector<std::vector<TYPE>> const &);                                   \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);         \
+  template void Geometry::projectOnTrianglePlane<TYPE>(                        \
+    TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
+  template void Geometry::projectOnEdge<TYPE>(                                 \
+    TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
+  template void Geometry::computeTriangleNormal<TYPE>(                         \
+    TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
   template int Geometry::subtractVectors<TYPE>(                                \
     TYPE const *, TYPE const *, TYPE *, int const &);                          \
   template int Geometry::subtractVectors<TYPE>(std::vector<TYPE> const &,      \

@@ -8,8 +8,10 @@
 #pragma once
 
 #include <Debug.h>
+#include <VisitedMask.h>
 #include <array>
 #include <cmath>
+#include <stack>
 
 namespace ttk {
 
@@ -466,6 +468,63 @@ namespace ttk {
       return T1{};
     }
 
+    /**
+     * @brief Compute euclidean projection in a triangle plane
+     *
+     * @param[in] p Point to be projected
+     * @param[in] a Triangle vertex coordinates
+     * @param[in] normTri Triangle normal vector
+     * @param[out] out Result
+     * @return Projection coordinates
+     */
+    template <typename T>
+    void
+      projectOnTrianglePlane(const T *p, const T *a, const T *normTri, T *out);
+
+    /**
+     * @brief Compute euclidean projection on a 3D segment
+     *
+     * @param[in] p Point to be projected
+     * @param[in] a First segment vertex coordinates
+     * @param[in] b Second segment vertex coordinates
+     * @param[out] out Result
+     * @return Projection coordinates
+     */
+    template <typename T>
+    void projectOnEdge(const T *p, const T *a, const T *b, T *out);
+
+    /**
+     * @brief Compute normal vector to triangle
+     *
+     * @param[in] a First triangle vertex coordinates
+     * @param[in] b Second triangle vertex coordinates
+     * @param[in] c Third triangle vertex coordinates
+     * @param[out] out Result
+     * @return Triangle unitary normal
+     */
+    template <typename T>
+    void computeTriangleNormal(const T *a, const T *b, const T *c, T *out);
+
+    /**
+     * @brief Find nearest vertex on the surface.
+     *
+     * @param[in] pa Input point
+     * @param[in] dists Pre-allocated distances vector
+     * @param[in] triangulation Surface triangulation
+     * @return Nearest vertex id on the surface
+     */
+    template <typename T, typename triangulationType>
+    SimplexId getNearestSurfaceVertex(const T *pa,
+                                      std::vector<T> &dists,
+                                      const triangulationType &triangulation) {
+      for(SimplexId i = 0; i < triangulation.getNumberOfVertices(); ++i) {
+        std::array<T, 3> pv{};
+        triangulation.getVertexPoint(i, pv[0], pv[1], pv[2]);
+        dists[i] = distance(pa, pv.data());
+      }
+      return std::min_element(dists.begin(), dists.end()) - dists.begin();
+    }
+
     /// Computes the difference between two vectors (\p b subtracted by \p a).
     /// \param a coordinates of the first vector
     /// \param b coordinates of the second vector
@@ -682,6 +741,377 @@ namespace ttk {
     template <typename T>
     void transposeMatrix(const std::vector<std::vector<T>> &a,
                          std::vector<std::vector<T>> &out);
+
+    /**
+     * @brief Compute (mean) surface normal at given surface vertex
+     *
+     * @param[in] a Surface vertex id
+     * @param[in] triangulation Mesh
+     * @return Mean of surface normals in star of @p a
+     */
+    template <typename triangulationType>
+    std::array<float, 3>
+      computeSurfaceNormalAtPoint(const SimplexId a,
+                                  const triangulationType &triangulation) {
+
+      std::array<float, 3> res{};
+
+      // store for each triangle in a's star a's two direct neighbors
+      std::vector<std::array<SimplexId, 2>> edges{};
+
+      const auto nStar{triangulation.getVertexStarNumber(a)};
+
+      if(triangulation.getCellVertexNumber(0) == 3) {
+        // triangle mesh
+        for(SimplexId i = 0; i < nStar; ++i) {
+          SimplexId c{};
+          triangulation.getVertexStar(a, i, c);
+          SimplexId v0{}, v1{};
+          triangulation.getCellVertex(c, 0, v0);
+          if(v0 == a) {
+            triangulation.getCellVertex(c, 1, v0);
+          } else {
+            triangulation.getCellVertex(c, 1, v1);
+            if(v1 == a) {
+              triangulation.getCellVertex(c, 2, v1);
+            }
+          }
+          edges.emplace_back(std::array<SimplexId, 2>{v0, v1});
+        }
+      } else if(triangulation.getCellVertexNumber(0) == 4) {
+        // quad mesh
+        for(SimplexId i = 0; i < nStar; ++i) {
+          SimplexId c{};
+          triangulation.getVertexStar(a, i, c);
+          std::array<SimplexId, 4> q{};
+          triangulation.getCellVertex(c, 0, q[0]);
+          triangulation.getCellVertex(c, 1, q[1]);
+          triangulation.getCellVertex(c, 2, q[2]);
+          triangulation.getCellVertex(c, 3, q[3]);
+          if(q[0] == a) {
+            edges.emplace_back(std::array<SimplexId, 2>{
+              static_cast<SimplexId>(q[3]),
+              static_cast<SimplexId>(q[1]),
+            });
+          } else if(q[1] == a) {
+            edges.emplace_back(std::array<SimplexId, 2>{
+              static_cast<SimplexId>(q[0]),
+              static_cast<SimplexId>(q[2]),
+            });
+          } else if(q[2] == a) {
+            edges.emplace_back(std::array<SimplexId, 2>{
+              static_cast<SimplexId>(q[1]),
+              static_cast<SimplexId>(q[3]),
+            });
+          } else if(q[3] == a) {
+            edges.emplace_back(std::array<SimplexId, 2>{
+              static_cast<SimplexId>(q[2]),
+              static_cast<SimplexId>(q[0]),
+            });
+          }
+        }
+      }
+
+      // current vertex 3d coordinates
+      std::array<float, 3> pa{};
+      triangulation.getVertexPoint(a, pa[0], pa[1], pa[2]);
+
+      // triangle normals around current surface vertex
+      std::vector<std::array<float, 3>> normals{};
+      normals.reserve(nStar);
+
+      for(auto &e : edges) {
+        std::array<float, 3> pb{}, pc{};
+        triangulation.getVertexPoint(e[0], pb[0], pb[1], pb[2]);
+        triangulation.getVertexPoint(e[1], pc[0], pc[1], pc[2]);
+
+        std::array<float, 3> normal{};
+        computeTriangleNormal(pa.data(), pb.data(), pc.data(), normal.data());
+        // ensure normal not null
+        if(normal[0] != -1.0F && normal[1] != -1.0F && normal[2] != -1.0F) {
+          // unitary normal vector
+          normals.emplace_back(normal);
+        }
+      }
+
+      if(!normals.empty()) {
+
+        // ensure normals have same direction
+        for(size_t i = 1; i < normals.size(); ++i) {
+          const auto dotProd = dotProduct(normals[0].data(), normals[i].data());
+          if(dotProd < 0.0F) {
+            scaleVector(normals[i].data(), -1.0F, normals[i].data());
+          }
+        }
+
+        // compute mean of normals
+        for(unsigned int i = 0; i < normals.size(); ++i)
+          addVectors(res.data(), normals[i].data(), res.data());
+        scaleVector(res.data(), static_cast<float>(normals.size()), res.data());
+
+      } else {
+
+        // set error value directly in output variable...
+        res[0] = NAN;
+      }
+
+      return res;
+    }
+
+    /**
+     * @brief Stores the findProjection() result
+     */
+    struct ProjectionResult {
+      /** Projection coordinates */
+      std::array<float, 3> pt;
+      /** Nearest vertex id in the surface */
+      SimplexId nearestVertex;
+      /** Number of triangles processed */
+      size_t trianglesChecked;
+      /** Projection status */
+      bool projSuccess;
+      /** If reverse projection was used */
+      bool reverseProjection;
+    };
+
+    /**
+     * @brief Stores the findProjection() input
+     */
+    struct ProjectionInput {
+      /** Vertex id in the surface to project */
+      size_t id;
+      /** Input point coordinates */
+      std::array<float, 3> &pt;
+      /** Nearest vertex in the reference surface */
+      SimplexId nearestVertex;
+    };
+
+    template <typename triangulationType0, typename triangulationType1>
+    ProjectionResult
+      findProjection(const ProjectionInput &pi,
+                     VisitedMask &trianglesTested,
+                     std::vector<float> &dists,
+                     std::stack<SimplexId> &trianglesToTest,
+                     const bool reverseProjection,
+                     const triangulationType0 &triangulationToSmooth,
+                     const triangulationType1 &triangulation) {
+
+      ProjectionResult res{pi.pt, pi.nearestVertex, 0, false, false};
+
+      std::array<float, 3> surfaceNormal{};
+      if(reverseProjection) {
+        surfaceNormal
+          = computeSurfaceNormalAtPoint(pi.id, triangulationToSmooth);
+        res.reverseProjection = !std::isnan(surfaceNormal[0]);
+      }
+
+      // clean trianglesToTest
+      while(!trianglesToTest.empty()) {
+        trianglesToTest.pop();
+      }
+
+      // init pipeline by checking in the first triangle around selected vertex
+      if(triangulation.getVertexTriangleNumber(res.nearestVertex) > 0) {
+        SimplexId next{};
+        triangulation.getVertexTriangle(res.nearestVertex, 0, next);
+        trianglesToTest.push(next);
+      }
+
+      while(!trianglesToTest.empty()) {
+
+        const auto curr = trianglesToTest.top();
+        trianglesToTest.pop();
+
+        // skip if already tested
+        if(trianglesTested.isVisited_[curr]) {
+          continue;
+        }
+
+        // get triangle vertices
+        std::array<SimplexId, 3> tverts{};
+        triangulation.getTriangleVertex(curr, 0, tverts[0]);
+        triangulation.getTriangleVertex(curr, 1, tverts[1]);
+        triangulation.getTriangleVertex(curr, 2, tverts[2]);
+
+        // get coordinates of triangle vertices (lets name is MNO)
+        std::array<std::array<float, 3>, 3>
+          mno{}; // [0] is M, [1] is N and [2] is O
+        triangulation.getVertexPoint(
+          tverts[0], mno[0][0], mno[0][1], mno[0][2]);
+        triangulation.getVertexPoint(
+          tverts[1], mno[1][0], mno[1][1], mno[1][2]);
+        triangulation.getVertexPoint(
+          tverts[2], mno[2][0], mno[2][1], mno[2][2]);
+
+        std::array<float, 3> normTri{};
+        computeTriangleNormal(
+          mno[0].data(), mno[1].data(), mno[2].data(), normTri.data());
+
+        static const float PREC_FLT{powf(10, -FLT_DIG)};
+
+        if(res.reverseProjection) {
+
+          const auto denom = dotProduct(surfaceNormal.data(), normTri.data());
+
+          // check if triangle plane is parallel to surface to project normal
+          if(std::abs(denom) < PREC_FLT) {
+            // fill pipeline with neighboring triangles
+            for(auto &vert : tverts) {
+              auto ntr = triangulation.getVertexTriangleNumber(vert);
+              for(SimplexId j = 0; j < ntr; ++j) {
+                SimplexId tid;
+                triangulation.getVertexTriangle(vert, j, tid);
+                if(tid != curr) {
+                  trianglesToTest.push(tid);
+                }
+              }
+            }
+            continue;
+          }
+
+          // compute intersection between _surface to project normal at
+          // current vertex line_ and _reference surface triangle plane_
+          std::array<float, 3> tmp{};
+          subtractVectors(pi.pt.data(), mno[0].data(), tmp.data());
+          auto alpha = dotProduct(tmp.data(), normTri.data()) / denom;
+          std::array<float, 3> surfaceNormalScaled{};
+          scaleVector(surfaceNormal.data(), alpha, surfaceNormalScaled.data());
+          addVectors(pi.pt.data(), surfaceNormalScaled.data(), res.pt.data());
+
+        } else {
+          projectOnTrianglePlane(
+            pi.pt.data(), mno[0].data(), normTri.data(), res.pt.data());
+        }
+
+        // compute barycentric coords of projection
+        std::array<float, 3> baryCoords{};
+        computeBarycentricCoordinates(mno[0].data(), mno[1].data(),
+                                      mno[2].data(), res.pt.data(), baryCoords);
+
+        // check if projection in triangle
+        bool inTriangle = true;
+
+        for(auto &coord : baryCoords) {
+          if(coord < -PREC_FLT) {
+            inTriangle = false;
+          }
+          if(coord > 1 + PREC_FLT) {
+            inTriangle = false;
+          }
+        }
+
+        // mark triangle as tested
+        trianglesTested.insert(curr);
+        res.trianglesChecked++;
+
+        if(inTriangle) {
+          res.projSuccess = true;
+          // should we check if we have the nearest triangle?
+          break;
+        }
+
+        // extrema values in baryCoords
+        const auto extrema
+          = std::minmax_element(baryCoords.begin(), baryCoords.end());
+
+        // find the nearest triangle vertices local ids (with the
+        // highest/positive values in baryCoords) from proj
+        std::array<SimplexId, 2> vid{
+          static_cast<SimplexId>(extrema.second - baryCoords.begin()), 0};
+        for(size_t j = 0; j < baryCoords.size(); j++) {
+          if(j != static_cast<size_t>(extrema.first - baryCoords.begin())
+             && j != static_cast<size_t>(extrema.second - baryCoords.begin())) {
+            vid[1] = j;
+            break;
+          }
+        }
+
+        // store vertex with highest barycentric coordinate
+        res.nearestVertex = tverts[vid[0]];
+        const auto secondNearVert{tverts[vid[1]]};
+
+        // get the triangle edge with the two vertices
+        SimplexId edge{};
+        const auto nEdges{triangulation.getVertexEdgeNumber(res.nearestVertex)};
+        for(SimplexId i = 0; i < nEdges; ++i) {
+          triangulation.getVertexEdge(res.nearestVertex, i, edge);
+          SimplexId v{};
+          triangulation.getEdgeVertex(edge, 0, v);
+          if(v == res.nearestVertex) {
+            triangulation.getEdgeVertex(edge, 1, v);
+          }
+          if(v == secondNearVert) {
+            break;
+          }
+        }
+
+        // next triangle to visit
+        SimplexId next{};
+        const auto nTri{triangulation.getEdgeTriangleNumber(edge)};
+        for(SimplexId i = 0; i < nTri; ++i) {
+          triangulation.getEdgeTriangle(edge, i, next);
+          if(next != curr) {
+            break;
+          }
+        }
+
+        const auto nVisited{trianglesTested.visitedIds_.size()};
+        if(nVisited > 1 && next == trianglesTested.visitedIds_[nVisited - 2]) {
+          // the relaxed point is probably over the edge separating the
+          // current and the last visited triangles
+          projectOnEdge(pi.pt.data(), mno[vid[0]].data(), mno[vid[1]].data(),
+                        res.pt.data());
+          // check that projected point is indeed on segment
+          res.projSuccess = isPointOnSegment(
+            res.pt.data(), mno[vid[0]].data(), mno[vid[1]].data());
+          if(!res.projSuccess) {
+            // if not, replace with nearest triangle vertex
+            triangulation.getVertexPoint(
+              tverts[vid[0]], res.pt[0], res.pt[1], res.pt[2]);
+            res.projSuccess = true;
+          }
+          break;
+        }
+
+        if(!trianglesTested.isVisited_[next]) {
+          trianglesToTest.push(next);
+        }
+      }
+
+      const size_t maxTrChecked = 100;
+
+      if(res.projSuccess && res.trianglesChecked > maxTrChecked) {
+        res.projSuccess = false;
+      }
+
+      std::array<float, 3> nearestCoords{};
+      triangulation.getVertexPoint(
+        pi.nearestVertex, nearestCoords[0], nearestCoords[1], nearestCoords[2]);
+      if(Geometry::distance(res.pt.data(), pi.pt.data())
+         > 5.0 * Geometry::distance(res.pt.data(), nearestCoords.data())) {
+        res.projSuccess = false;
+        if(triangulationToSmooth.getDimensionality() == 2
+           && !reverseProjection) {
+          // clean trianglesTested
+          for(const auto t : trianglesTested.visitedIds_) {
+            trianglesTested.isVisited_[t] = false;
+          }
+          trianglesTested.visitedIds_.clear();
+          return findProjection(pi, trianglesTested, dists, trianglesToTest,
+                                true, triangulationToSmooth, triangulation);
+        }
+      }
+
+      if(!res.projSuccess) {
+        // replace proj by the nearest vertex?
+        res.nearestVertex = Geometry::getNearestSurfaceVertex(
+          pi.pt.data(), dists, triangulation);
+        triangulation.getVertexPoint(
+          res.nearestVertex, res.pt[0], res.pt[1], res.pt[2]);
+      }
+
+      return res;
+    }
 
   } // namespace Geometry
 } // namespace ttk
