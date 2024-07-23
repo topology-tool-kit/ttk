@@ -185,7 +185,7 @@ namespace ttk {
               BranchMappingDistance branchDist;
               branchDist.setBaseMetric(branchMetric_);
               branchDist.setAssignmentSolver(assignmentSolverID_);
-              branchDist.setSquared(not distanceSquaredRoot_);
+              branchDist.setSquared(distanceSquaredRoot_);
               branchDist.setEpsilonTree1(epsilonTree1_);
               branchDist.setEpsilonTree2(epsilonTree2_);
               branchDist.setEpsilon2Tree1(epsilon2Tree1_);
@@ -202,7 +202,7 @@ namespace ttk {
               PathMappingDistance pathDist;
               pathDist.setBaseMetric(pathMetric_);
               pathDist.setAssignmentSolver(assignmentSolverID_);
-              pathDist.setSquared(not distanceSquaredRoot_);
+              pathDist.setSquared(distanceSquaredRoot_);
               pathDist.setComputeMapping(true);
               pathDist.setEpsilonTree1(epsilonTree1_);
               pathDist.setEpsilonTree2(epsilonTree2_);
