@@ -1510,10 +1510,13 @@ namespace ttk {
 
       std::vector<dataType> distances(trees.size(), -1);
       if(baseModule_ == 2) {
-        // std::vector<std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
-        //                                   std::pair<ftm::idNode, ftm::idNode>>>>
+        // std::vector<std::vector<std::pair<std::pair<ftm::idNode,
+        // ftm::idNode>,
+        //                                   std::pair<ftm::idNode,
+        //                                   ftm::idNode>>>>
         //   matchings_path(trees.size());
-        // std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
+        // std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode,
+        // double>>>
         //   matchings(trees.size());
         // assignment_path<dataType>(trees, baryMergeTree, matchings_path,
         // distances);
@@ -1527,7 +1530,8 @@ namespace ttk {
         //   for(auto m : matchings_path[i]) {
         //     matchedNodes[m.second.first] = m.first.first;
         //     matchedNodes[m.second.second] = m.first.second;
-        //     // matchedCost[m.first.first] = PathMappingDistance::editCost_Persistence<dataType>(m.first.first,m.first.second,m.second.first,m.second.second,trees[i],&(baryMergeTree.tree);
+        //     // matchedCost[m.first.first] =
+        //     PathMappingDistance::editCost_Persistence<dataType>(m.first.first,m.first.second,m.second.first,m.second.second,trees[i],&(baryMergeTree.tree);
         //     if(m.first.second == trees[i]->getRoot()){
         //       matchedCost[m.first.second] = matchedCost[m.first.first];
         //     }

@@ -696,16 +696,21 @@ namespace ttk {
             continue;
           matchedNodes[m.first.first] = m.second.first;
           matchedNodes[m.first.second] = m.second.second;
-          matchedCost[m.first.first] = this->baseMetric_ == 0 ? editCost_Wasserstein1<dataType>(
-                      m.first.first,m.first.second,m.second.first,m.second.second,tree1,tree2)
-                    : this->baseMetric_ == 1 ? editCost_Wasserstein2<dataType>(
-                        m.first.first,m.first.second,m.second.first,m.second.second,tree1,tree2)
-                    : this->baseMetric_ == 2
-                      ? editCost_Persistence<dataType>(
-                        m.first.first,m.first.second,m.second.first,m.second.second,tree1,tree2)
-                      : editCost_Shifting<dataType>(
-                        m.first.first,m.first.second,m.second.first,m.second.second,tree1,tree2);
-          if(m.first.second == tree1->getRoot()){
+          matchedCost[m.first.first]
+            = this->baseMetric_ == 0 ? editCost_Wasserstein1<dataType>(
+                m.first.first, m.first.second, m.second.first, m.second.second,
+                tree1, tree2)
+              : this->baseMetric_ == 1 ? editCost_Wasserstein2<dataType>(
+                  m.first.first, m.first.second, m.second.first,
+                  m.second.second, tree1, tree2)
+              : this->baseMetric_ == 2
+                ? editCost_Persistence<dataType>(m.first.first, m.first.second,
+                                                 m.second.first,
+                                                 m.second.second, tree1, tree2)
+                : editCost_Shifting<dataType>(m.first.first, m.first.second,
+                                              m.second.first, m.second.second,
+                                              tree1, tree2);
+          if(m.first.second == tree1->getRoot()) {
             matchedCost[m.first.second] = matchedCost[m.first.first];
           }
         }
