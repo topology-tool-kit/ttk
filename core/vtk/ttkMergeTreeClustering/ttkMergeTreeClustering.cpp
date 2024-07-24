@@ -413,17 +413,6 @@ int ttkMergeTreeClustering::runCompute(
       trees1NodeCorrMesh = mergeTreeBarycenter.getTreesNodeCorr();
       finalDistances = mergeTreeBarycenter.getFinalDistances();
 
-      /*std::cout << "Path Mappings:\n";
-      for(auto matching : outputMatchings_path[0]) {
-        std::cout << "---------------------------\n";
-        std::cout << intermediateMTrees[i]->printTree().str() << std:::
-        for(auto m : matching) {
-          std::cout << "(" << m.first.first << "," << m.first.second << ") - ";
-          std::cout << "(" << m.second.first << "," << m.second.second << ")"
-                    << std::endl;
-        }
-        std::cout << "---------------------------\n";
-      }*/
     } else {
       MergeTreeClustering<dataType> mergeTreeClustering;
       mergeTreeClustering.setAssignmentSolver(AssignmentSolver);

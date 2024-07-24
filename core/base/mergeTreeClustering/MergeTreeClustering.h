@@ -449,23 +449,8 @@ namespace ttk {
                                           std::pair<ftm::idNode, ftm::idNode>>>>
           matching_path(trees.size());
         if(baseModule_ == 2) {
-          // assignment_path<dataType>(
-          //   assignedTrees[i], centroids[i], matching_path, distances);
           assignment<dataType>(
             assignedTrees[i], centroids[i], matching, matching_path, distances);
-          // for(unsigned int j = 0; j < assignedTrees[i].size(); j++) {
-          //   std::vector<int> matchedNodes(
-          //     assignedTrees[i][j]->getNumberOfNodes(), -1);
-          //   for(auto m : matching_path[j]) {
-          //     matchedNodes[m.second.first] = m.first.first;
-          //     matchedNodes[m.second.second] = m.first.second;
-          //   }
-          //   for(ftm::idNode k = 0; k < matchedNodes.size(); k++) {
-          //     if(matchedNodes[k] >= 0)
-          //       matching[j].emplace_back(
-          //         std::make_tuple(matchedNodes[k], k, 0.0));
-          //   }
-          // }
           matchingsC[i] = matching;
         } else {
           assignment<dataType>(assignedTrees[i], centroids[i], matching,
