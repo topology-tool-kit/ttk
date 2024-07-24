@@ -188,8 +188,14 @@ private:
       std::vector<
         std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs2));
-    outputMatchings_path.clear();
-    outputMatchings_path.resize(NumberOfBarycenters);
+    outputMatchings_path = std::vector<std::vector<
+      std::vector<std::pair<std::pair<ttk::ftm::idNode, ttk::ftm::idNode>,
+                            std::pair<ttk::ftm::idNode, ttk::ftm::idNode>>>>>(
+      NumberOfBarycenters,
+      std::vector<
+        std::vector<std::pair<std::pair<ttk::ftm::idNode, ttk::ftm::idNode>,
+                              std::pair<ttk::ftm::idNode, ttk::ftm::idNode>>>>(
+        numInputs));
 
     // Barycenter
     barycentersS

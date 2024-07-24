@@ -750,6 +750,7 @@ namespace ttk {
                         *outputMatching) {
 
       std::vector<int> matchedNodes(tree1->getNumberOfNodes(), -1);
+      std::vector<double> matchedCost(tree1->getNumberOfNodes(), -1);
       std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
                             std::pair<ftm::idNode, ftm::idNode>>>
         mapping;
@@ -759,11 +760,54 @@ namespace ttk {
         for(auto m : mapping) {
           matchedNodes[m.first.first] = m.second.first;
           matchedNodes[m.first.second] = m.second.second;
+          matchedCost[m.first.first] = editCost_Persistence<dataType>(m.first.first,m.first.second,m.second.first,m.second.second,tree1,tree2);
+          if(m.first.second == tree1->getRoot()){
+            matchedCost[m.first.second] = matchedCost[m.first.first];
+          }
         }
         for(ftm::idNode i = 0; i < matchedNodes.size(); i++) {
-          if(matchedNodes[i] >= 0)
+          if(matchedNodes[i] >= 0){
             outputMatching->emplace_back(
-              std::make_tuple(i, matchedNodes[i], 0.0));
+              std::make_tuple(i, matchedNodes[i], matchedCost[i]));
+          }
+        }
+      }
+
+      return res;
+    }
+
+    template <class dataType>
+    dataType
+      computeDistance(ftm::FTMTree_MT *tree1,
+                      ftm::FTMTree_MT *tree2,
+                      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
+                        *outputMatching,
+                      std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                                           std::pair<ftm::idNode, ftm::idNode>>>
+                       *outputMatching_path) {
+
+      std::vector<int> matchedNodes(tree1->getNumberOfNodes(), -1);
+      std::vector<double> matchedCost(tree1->getNumberOfNodes(), -1);
+      // std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+      //                       std::pair<ftm::idNode, ftm::idNode>>>
+      //   mapping;
+      dataType res = computeDistance<dataType>(tree1, tree2, outputMatching_path);
+      // *outputMatching_path = mapping;
+      if(computeMapping_ && outputMatching) {
+        outputMatching->clear();
+        for(auto m : *outputMatching_path) {
+          matchedNodes[m.first.first] = m.second.first;
+          matchedNodes[m.first.second] = m.second.second;
+          matchedCost[m.first.first] = editCost_Persistence<dataType>(m.first.first,m.first.second,m.second.first,m.second.second,tree1,tree2);
+          if(m.first.second == tree1->getRoot()){
+            matchedCost[m.first.second] = matchedCost[m.first.first];
+          }
+        }
+        for(ftm::idNode i = 0; i < matchedNodes.size(); i++) {
+          if(matchedNodes[i] >= 0){
+            outputMatching->emplace_back(
+              std::make_tuple(i, matchedNodes[i], matchedCost[i]));
+          }
         }
       }
 
