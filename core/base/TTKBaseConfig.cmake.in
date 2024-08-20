@@ -17,8 +17,9 @@ if (@TTK_ENABLE_QHULL@ AND @Qhull_FOUND@)
   find_dependency(Qhull REQUIRED)
 endif()
 
-if (@TTK_ENABLE_TORCH@ AND TORCH_FOUND)
-  find_dependency(Torch REQUIRED)
+if (@TTK_ENABLE_TORCH@)
+  set(Torch_DIR "@Torch_DIR@" CACHE PATH "Use TTK Torch dir" FORCE)
+  find_dependency(Torch REQUIRED @Torch_DIR@)
 endif()
 
 if (@TTK_ENABLE_ZFP@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)

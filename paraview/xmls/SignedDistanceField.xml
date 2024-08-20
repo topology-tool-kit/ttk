@@ -99,8 +99,10 @@ Proc. Natl. Acad. Sci., 93, 4, pp.1591--1595, 1996
       
       ${DEBUG_WIDGETS}
 
-      <PropertyGroup panel_widget="Line" label="Input options">
-        
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SamplingDimensions" /> 
+        <Property name="ExpandBox" />
+        <Property name="Backend" />
       </PropertyGroup>
 
       <Hints>
