@@ -97,6 +97,7 @@ private:
   bool oldKS = KeepSubtree;
   double JoinSplitMixtureCoefficient = 0.5;
   bool ComputeBarycenter = false;
+  bool oldComputeBarycenter = ComputeBarycenter;
   unsigned int NumberOfBarycenters = 1;
   double BarycenterSizeLimitPercent = 0.0;
   bool Deterministic = false;
@@ -280,6 +281,12 @@ public:
       BranchDecomposition = oldBD;
       NormalizedWasserstein = oldNW;
       KeepSubtree = oldKS;
+    }
+    if(Backend == 1 or Backend == 3) //  edit distance or branch mapping
+      ComputeBarycenter = oldComputeBarycenter;
+    if(newBackend == 1 or newBackend == 3) {
+      oldComputeBarycenter = ComputeBarycenter;
+      ComputeBarycenter = false;
     }
     Backend = newBackend;
     Modified();
