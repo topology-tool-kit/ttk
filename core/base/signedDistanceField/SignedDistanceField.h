@@ -132,6 +132,7 @@ namespace ttk {
     unsigned int xResolution_{1}, yResolution_{1}, zResolution_{1};
     std::array<double, 3> spacing_{1.0, 1.0, 1.0};
     std::array<double, 3> invSpacingSquared_{1.0, 1.0, 1.0};
+    bool expandBox_ = true;
     int backend_ = 0;
     int fastMarchingOrder_ = 1;
   };
@@ -575,7 +576,7 @@ int ttk::SignedDistanceField::execute(
       vertexId = i * xResolution_;
       dirDimension = 0;
     } else if(i < yResolution_ * zResolution_ + xResolution_ * zResolution_) {
-      // O_y = {a * r_x * r_y + b | a in N / r_z N, a in N / r_x N}
+      // O_y = {a * r_x * r_y + b | a in N / r_z N, b in N / r_x N}
       unsigned int ind = i - yResolution_ * zResolution_;
       vertexId = (int)(ind / xResolution_) * xResolution_ * yResolution_
                  + ind % xResolution_;
@@ -591,6 +592,28 @@ int ttk::SignedDistanceField::execute(
     float ray_origin[3];
     boundingTriangulation->getVertexPoint(
       vertexId, ray_origin[0], ray_origin[1], ray_origin[2]);
+
+    if(not expandBox_) {
+      int dirToShift[3] = {0, 0, 0};
+      int shiftCounter = 0;
+      for(int dim = 0; dim < 3; ++dim) {
+        for(int j = -1; j < 2; j += 2) {
+          int neighborId = getNeighbor(vertexId, dim, j);
+          if(neighborId == -1) {
+            dirToShift[dim] = j * -1;
+            ++shiftCounter;
+          }
+        }
+      }
+      if(shiftCounter >= 2) {
+        for(int dim = 0; dim < 3; ++dim) {
+          if(dim == dirDimension)
+            continue;
+          ray_origin[dim] += dirToShift[dim] * 1e-3 * spacing_[dim];
+        }
+      }
+    }
+
     float ray_dir[3] = {0, 0, 0};
     ray_dir[dirDimension] = spacing_[dirDimension];
     Ray ray(ray_dir, ray_origin);
@@ -598,6 +621,7 @@ int ttk::SignedDistanceField::execute(
     std::vector<float> distances;
     bool wasHit = bvh.intersect(ray, bvhConnectivityList.data(),
                                 bvhCoordinates.data(), triangles, distances);
+
     // For each edge of this ray check if it is intersecting a triangle
     if(wasHit) {
       unsigned int rayNoVertices

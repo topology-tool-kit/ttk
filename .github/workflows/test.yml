@@ -443,8 +443,8 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge boost glew eigen spectralib zfp  \
-          scikit-learn graphviz ninja websocketpp sccache=0.4.2 python=3.10 zlib qhull llvm-openmp clangxx
+        conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
+          scikit-learn graphviz ninja sccache=0.4.2 python=3.10 zlib qhull llvm-openmp clangxx
         # add sccache to PATH
         echo "$CONDA_ROOT/bin" >> $GITHUB_PATH
         # add TTK & ParaView install folders to PATH

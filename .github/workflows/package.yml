@@ -325,8 +325,8 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn llvm-openmp graphviz websocketpp clangxx
+        conda install -c conda-forge "qt>=5.12" libboost-devel eigen spectralib zfp \
+          scikit-learn llvm-openmp graphviz clangxx
 
     - name: Remove hosted Python
       shell: bash
@@ -411,8 +411,8 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz websocketpp
+        conda install -c conda-forge "qt>=5.12" libboost-devel eigen spectralib zfp \
+          scikit-learn openmp graphviz 
 
     - name: Remove hosted Python
       shell: bash

@@ -230,6 +230,7 @@ int ttkSignedDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
 
   int ret{};
 
+  expandBox_ = ExpandBox;
   backend_ = Backend;
   fastMarchingOrder_ = FastMarchingOrder;
   ttkVtkTemplate2Macro(
