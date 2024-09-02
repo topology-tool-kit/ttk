@@ -582,7 +582,7 @@ namespace ttk {
       ftm::MergeTree<dataType> &mTree2Int = (saveTree_ ? mTree2Copy : mTree2);
       ftm::FTMTree_MT *tree1 = &(mTree1Int.tree);
       ftm::FTMTree_MT *tree2 = &(mTree2Int.tree);
-      if(not isCalled_) {
+      if(not isCalled_ and not isPersistenceDiagram_) {
         verifyMergeTreeStructure<dataType>(tree1);
         verifyMergeTreeStructure<dataType>(tree2);
       }
