@@ -16,13 +16,18 @@
 /// \b Related \b publications \n
 /// "Generalized Topological Simplification of Scalar Fields on Surfaces" \n
 /// Julien Tierny, Valerio Pascucci \n
-/// Proc. of IEEE VIS 2012.\n
-/// IEEE Transactions on Visualization and Computer Graphics, 2012.
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2012.
 ///
-/// "Localized Topological Simplification of Scalar Data"
-/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+/// "Localized Topological Simplification of Scalar Data" \n
+/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny \n
+/// IEEE Transactions on Visualization and Computer Graphics.\n
 /// Proc. of IEEE VIS 2020.
-/// IEEE Transactions on Visualization and Computer Graphics
+///
+/// "A Practical Solver for Scalar Data Topological Simplification"\n
+/// Mohamed Kissi, Mathieu Pont, Joshua A. Levine, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2024.
 ///
 /// \sa ttkTopologicalSimplification.cpp %for a usage example.
 ///
@@ -92,9 +97,11 @@
 #pragma once
 
 // base code includes
+
 #include <Debug.h>
 #include <LegacyTopologicalSimplification.h>
 #include <LocalizedTopologicalSimplification.h>
+#include <TopologicalOptimization.h>
 #include <Triangulation.h>
 
 #include <cmath>
@@ -108,7 +115,7 @@ namespace ttk {
   public:
     TopologicalSimplification();
 
-    enum class BACKEND { LEGACY, LTS };
+    enum class BACKEND { LEGACY, LTS, TO };
     /*
      * Either execute this file "legacy" algorithm, or the
      * lts algorithm. The choice depends on the value of the variable backend_.
@@ -122,7 +129,8 @@ namespace ttk {
                 SimplexId *const offsets,
                 const SimplexId constraintNumber,
                 const bool addPerturbation,
-                const triangulationType &triangulation);
+                triangulationType &triangulation,
+                const ttk::DiagramType &constraintDiagram = {});
 
     inline void setBackend(const BACKEND arg) {
       backend_ = arg;
@@ -142,6 +150,12 @@ namespace ttk {
           ltsObject_.preconditionTriangulation(triangulation);
           break;
 
+        case BACKEND::TO:
+          topologyOptimizer_.setDebugLevel(debugLevel_);
+          topologyOptimizer_.setThreadNumber(threadNumber_);
+          topologyOptimizer_.preconditionTriangulation(triangulation);
+          break;
+
         default:
           this->printErr(
             "Error, the backend for topological simplification is invalid");
@@ -154,6 +168,48 @@ namespace ttk {
     BACKEND backend_{BACKEND::LTS};
     LegacyTopologicalSimplification legacyObject_;
     lts::LocalizedTopologicalSimplification ltsObject_;
+    ttk::TopologicalOptimization topologyOptimizer_;
+
+    SimplexId vertexNumber_{};
+    bool UseFastPersistenceUpdate{true};
+    bool FastAssignmentUpdate{true};
+    int EpochNumber{1000};
+
+    // if PDCMethod == 0 then we use Progressive approach
+    // if PDCMethod == 1 then we use Classical Auction approach
+    int PDCMethod{1};
+
+    // if MethodOptimization == 0 then we use direct optimization
+    // if MethodOptimization == 1 then we use Adam
+    int MethodOptimization{0};
+
+    // if FinePairManagement == 0 then we let the algorithm choose
+    // if FinePairManagement == 1 then we fill the domain
+    // if FinePairManagement == 2 then we cut the domain
+    int FinePairManagement{0};
+
+    // Adam
+    bool ChooseLearningRate{false};
+    double LearningRate{0.0001};
+
+    // Direct Optimization : Gradient Step Size
+    double Alpha{0.5};
+
+    // Stopping criterion: when the loss becomes less than a percentage (e.g.
+    // 1%) of the original loss (between input diagram and simplified diagram)
+    double CoefStopCondition{0.01};
+
+    //
+    bool OptimizationWithoutMatching{false};
+    int ThresholdMethod{1};
+    double Threshold{0.01};
+    int LowerThreshold{-1};
+    int UpperThreshold{2};
+    int PairTypeToDelete{1};
+
+    bool ConstraintAveraging{true};
+
+    int PrintFrequency{10};
   };
 } // namespace ttk
 
@@ -166,7 +222,8 @@ int ttk::TopologicalSimplification::execute(
   SimplexId *const offsets,
   const SimplexId constraintNumber,
   const bool addPerturbation,
-  const triangulationType &triangulation) {
+  triangulationType &triangulation,
+  const ttk::DiagramType &constraintDiagram) {
   switch(backend_) {
     case BACKEND::LTS:
       return ltsObject_
@@ -178,6 +235,29 @@ int ttk::TopologicalSimplification::execute(
                                    inputOffsets, offsets, constraintNumber,
                                    triangulation);
 
+    case BACKEND::TO:
+      topologyOptimizer_.setUseFastPersistenceUpdate(UseFastPersistenceUpdate);
+      topologyOptimizer_.setFastAssignmentUpdate(FastAssignmentUpdate);
+      topologyOptimizer_.setEpochNumber(EpochNumber);
+      topologyOptimizer_.setPDCMethod(PDCMethod);
+      topologyOptimizer_.setMethodOptimization(MethodOptimization);
+      topologyOptimizer_.setFinePairManagement(FinePairManagement);
+      topologyOptimizer_.setChooseLearningRate(ChooseLearningRate);
+      topologyOptimizer_.setLearningRate(LearningRate);
+      topologyOptimizer_.setAlpha(Alpha);
+      topologyOptimizer_.setCoefStopCondition(CoefStopCondition);
+      topologyOptimizer_.setOptimizationWithoutMatching(
+        OptimizationWithoutMatching);
+      topologyOptimizer_.setThresholdMethod(ThresholdMethod);
+      topologyOptimizer_.setThresholdPersistence(Threshold);
+      topologyOptimizer_.setLowerThreshold(LowerThreshold);
+      topologyOptimizer_.setUpperThreshold(UpperThreshold);
+      topologyOptimizer_.setPairTypeToDelete(PairTypeToDelete);
+      topologyOptimizer_.setConstraintAveraging(ConstraintAveraging);
+      topologyOptimizer_.setPrintFrequency(PrintFrequency);
+
+      return topologyOptimizer_.execute(inputScalars, outputScalars, offsets,
+                                        &triangulation, constraintDiagram);
     default:
       this->printErr(
         "Error, the backend for topological simplification is invalid");

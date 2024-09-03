@@ -38,13 +38,18 @@
 /// \b Related \b publications \n
 /// "Generalized Topological Simplification of Scalar Fields on Surfaces" \n
 /// Julien Tierny, Valerio Pascucci \n
-/// Proc. of IEEE VIS 2012.\n
-/// IEEE Transactions on Visualization and Computer Graphics, 2012.
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2012.
 ///
-/// "Localized Topological Simplification of Scalar Data"
-/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+/// "Localized Topological Simplification of Scalar Data" \n
+/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny \n
+/// IEEE Transactions on Visualization and Computer Graphics.\n
 /// Proc. of IEEE VIS 2020.
-/// IEEE Transactions on Visualization and Computer Graphics
+///
+/// "A Practical Solver for Scalar Data Topological Simplification"\n
+/// Mohamed Kissi, Mathieu Pont, Joshua A. Levine, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2024.
 ///
 /// \sa ttkTopologicalSimplificationByPersistence
 /// \sa ttkScalarFieldCriticalPoints
@@ -126,6 +131,8 @@
 // ttk code includes
 #include <TopologicalSimplification.h>
 #include <ttkAlgorithm.h>
+#include <ttkPersistenceDiagramUtils.h>
+#include <ttkUtils.h>
 
 class vtkDataArray;
 
@@ -149,11 +156,65 @@ public:
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
-  vtkSetMacro(UseLTS, bool);
-  vtkGetMacro(UseLTS, bool);
+  vtkSetMacro(Method, int);
+  vtkGetMacro(Method, int);
 
   vtkSetMacro(PersistenceThreshold, double);
   vtkGetMacro(PersistenceThreshold, double);
+
+  vtkSetMacro(UseFastPersistenceUpdate, bool);
+  vtkGetMacro(UseFastPersistenceUpdate, bool);
+
+  vtkSetMacro(FastAssignmentUpdate, bool);
+  vtkGetMacro(FastAssignmentUpdate, bool);
+
+  vtkSetMacro(EpochNumber, int);
+  vtkGetMacro(EpochNumber, int);
+
+  vtkSetMacro(PDCMethod, int);
+  vtkGetMacro(PDCMethod, int);
+
+  vtkSetMacro(MethodOptimization, int);
+  vtkGetMacro(MethodOptimization, int);
+
+  vtkSetMacro(FinePairManagement, int);
+  vtkGetMacro(FinePairManagement, int);
+
+  vtkSetMacro(ChooseLearningRate, bool);
+  vtkGetMacro(ChooseLearningRate, bool);
+
+  vtkSetMacro(LearningRate, double);
+  vtkGetMacro(LearningRate, double);
+
+  vtkSetMacro(Alpha, double);
+  vtkGetMacro(Alpha, double);
+
+  vtkSetMacro(CoefStopCondition, double);
+  vtkGetMacro(CoefStopCondition, double);
+
+  vtkSetMacro(OptimizationWithoutMatching, bool);
+  vtkGetMacro(OptimizationWithoutMatching, bool);
+
+  vtkSetMacro(ThresholdMethod, int);
+  vtkGetMacro(ThresholdMethod, int);
+
+  vtkSetMacro(Threshold, double);
+  vtkGetMacro(Threshold, double);
+
+  vtkSetMacro(LowerThreshold, int);
+  vtkGetMacro(LowerThreshold, int);
+
+  vtkSetMacro(UpperThreshold, int);
+  vtkGetMacro(UpperThreshold, int);
+
+  vtkSetMacro(PairTypeToDelete, int);
+  vtkGetMacro(PairTypeToDelete, int);
+
+  vtkSetMacro(ConstraintAveraging, bool);
+  vtkGetMacro(ConstraintAveraging, bool);
+
+  vtkSetMacro(PrintFrequency, int);
+  vtkGetMacro(PrintFrequency, int);
 
 protected:
   ttkTopologicalSimplification();
@@ -169,6 +230,6 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
-  bool UseLTS{true};
+  int Method{0};
   double PersistenceThreshold{0};
 };
