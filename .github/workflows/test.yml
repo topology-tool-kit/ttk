@@ -45,7 +45,7 @@ jobs:
       CCACHE_MAXSIZE: 500M
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Install Ubuntu dependencies
@@ -134,7 +134,7 @@ jobs:
       uses: ./.github/actions/test-ttk-unix
 
     - name: Upload TTK .deb package for fast install in tests
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-for-tests-${{ matrix.os }}.deb
         path: build/ttk.deb
@@ -148,7 +148,7 @@ jobs:
 
     - name: Upload ccache archive
       if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-ccache-${{ matrix.os }}
         path: /home/runner/ttk-ccache.tar.gz
@@ -188,7 +188,7 @@ jobs:
         sudo apt install ./ttk-paraview-headless.deb
 
     - name: Fetch TTK packages we just built in the test-build-ubuntu job
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ttk-for-tests-${{ matrix.os }}.deb
 
@@ -196,7 +196,7 @@ jobs:
       run: |
         sudo apt install ./ttk.deb
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -245,7 +245,7 @@ jobs:
 
     - name: Upload result screenshots
       if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshotTests'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
@@ -283,7 +283,7 @@ jobs:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
       CCACHE_MAXSIZE: 200M
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -295,7 +295,7 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget llvm libomp ninja open-mpi
+        brew install llvm ninja open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy qhull ccache
         # prepend ccache to system path
@@ -367,7 +367,7 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -387,7 +387,7 @@ jobs:
 
     - name: Upload result screenshots
       if: steps.validate.outcome == 'failure'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
@@ -416,7 +416,7 @@ jobs:
 
     - name: Upload ccache archive
       if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-ccache-macOS
         path: /Users/runner/work/ttk/ttk-ccache.tar.gz
@@ -435,7 +435,7 @@ jobs:
       CONDA_ROOT: C:\Miniconda
       SCCACHE_CACHE_SIZE: 200M
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -580,7 +580,7 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -620,7 +620,7 @@ jobs:
 
     - name: Upload sccache archive
       if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-sccache-windows
         path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
@@ -667,7 +667,7 @@ jobs:
           })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2

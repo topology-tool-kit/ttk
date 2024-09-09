@@ -26,7 +26,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Install Ubuntu dependencies
@@ -86,7 +86,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload TTK .deb package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-${{ matrix.os }}.deb
         path: build/ttk.deb
@@ -101,7 +101,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Fetch TTK-ParaView headless Debian package
@@ -110,7 +110,7 @@ jobs:
           https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.deb
 
     - name: Fetch TTK .deb artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ttk-${{ matrix.os }}.deb
 
@@ -129,7 +129,7 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -168,7 +168,7 @@ jobs:
   build-macos:
     runs-on: macos-12
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -181,7 +181,7 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget llvm libomp mesa glew qt@5 ninja 
+        brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost eigen graphviz numpy websocketpp 
 
@@ -230,7 +230,7 @@ jobs:
         cpack -G TGZ
 
     - name: Upload compressed binaries
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk.tar.gz
         path: build/ttk.tar.gz
@@ -242,7 +242,7 @@ jobs:
     needs: build-macos
     runs-on: macos-12
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -255,7 +255,7 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget llvm libomp mesa glew qt@5 ninja 
+        brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost eigen graphviz numpy websocketpp 
 
@@ -264,7 +264,7 @@ jobs:
         wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
 
     - name: Fetch TTK .tar.gz artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ttk.tar.gz
 
@@ -287,7 +287,7 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -317,7 +317,7 @@ jobs:
     env:
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -387,7 +387,7 @@ jobs:
         cpack -C Release -G NSIS64
 
     - name: Upload TTK .exe package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk.exe
         path: build/ttk.exe
@@ -403,7 +403,7 @@ jobs:
       TTK_DIR: C:\Program Files\TTK
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -424,7 +424,7 @@ jobs:
         curl.exe -OL https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
 
     - name: Fetch TTK .exe artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ttk.exe
 
@@ -484,7 +484,7 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -552,7 +552,7 @@ jobs:
           })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
