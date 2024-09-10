@@ -19,6 +19,8 @@
 
             - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
 
+            - https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/
+
             </Documentation>
 
             <InputProperty name="Input" port_index="0" clean_command="RemoveAllInputs" command="AddInputConnection" multiple_input="1">

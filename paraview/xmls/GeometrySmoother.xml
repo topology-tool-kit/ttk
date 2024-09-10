@@ -34,6 +34,8 @@
 
         - https://topology-tool-kit.github.io/examples/morseMolecule/
 
+        - https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/
+
       </Documentation>
       <InputProperty
         name="Input"

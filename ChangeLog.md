@@ -2,12 +2,14 @@
 =
 ### dev
 - Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)
+- Topological simplification optimization (IEEE VIS 2024)
 - TopoMap dimensionality reduction (IEEE TVCG 2020)
 - TTK is Getting MPI-ready! (IEEE TVCG 2024)
 - ExTreeM merge tree computation backend (IEEE TVCG 2024)
 - Ripser integration
 - DMS performance improvements (allocation)
 - Saddle connector reversal performance improvements
+- Signed distance fields
 - Migration to ParaView 5.12
 - Switch to C++17
 - Bug fixes
