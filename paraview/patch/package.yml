@@ -18,9 +18,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
     - name: Install Ubuntu dependencies
@@ -62,7 +62,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload Debian package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-paraview-${{ matrix.os }}
         path: build/ttk-paraview.deb
@@ -72,9 +72,12 @@ jobs:
   # macOS #
   # ----- #
   build-macos:
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-12, macos-14]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
     - name: Remove hosted Python
@@ -87,7 +90,7 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget libomp mesa glew qt@5 ninja python
+        brew install mesa glew qt@5 ninja 
 
     - name: Create & configure ParaView build directory
       run: |
@@ -110,9 +113,9 @@ jobs:
         cpack -G TGZ
 
     - name: Upload compressed binaries
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ttk-paraview-macOS
+        name: ttk-paraview-${{ matrix.os }}
         path: build/ttk-paraview.tar.gz
 
 
@@ -125,7 +128,7 @@ jobs:
       CONDA_ROOT: C:\Miniconda
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
     - uses: s-weigand/setup-conda@v1
@@ -148,6 +151,7 @@ jobs:
         cd b
         cmake ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DCMAKE_AUTOUIC=OFF ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DVTKm_MODULE_ENABLE_vtkm_filter_scalar_topology=NO ^
           -G"Visual Studio 17 2022" ^
@@ -167,9 +171,9 @@ jobs:
         mv ttk-paraview.exe $GITHUB_WORKSPACE
 
     - name: Upload install executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ttk-paraview-windows
+        name: ttk-paraview-windows-2022
         path: ttk-paraview.exe
 
 
@@ -209,7 +213,7 @@ jobs:
           })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
@@ -227,20 +231,36 @@ jobs:
         file: ttk-paraview-ubuntu-22.04/ttk-paraview.deb
         asset_name: ttk-paraview-$tag-ubuntu-22.04.deb
 
-    - name: Upload .tar.gz as Release Asset
+    - name: Upload Ubuntu Noble Numbat .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-macOS/ttk-paraview.tar.gz
-        asset_name: ttk-paraview-$tag.tar.gz
+        file: ttk-paraview-ubuntu-24.04/ttk-paraview.deb
+        asset_name: ttk-paraview-$tag-ubuntu-24.04.deb
+
+    - name: Upload MacOS 14 (arm64) .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-macos-14/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-$tag-macos-14-arm64.tar.gz
+
+    - name: Upload MacOS 12 .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-macos-12/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-$tag-macos-12.tar.gz
 
     - name: Upload .exe as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-windows/ttk-paraview.exe
+        file: ttk-paraview-windows-2022/ttk-paraview.exe
         asset_name: ttk-paraview-$tag.exe
 
     - name: Delete package artifacts

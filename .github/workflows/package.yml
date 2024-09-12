@@ -190,8 +190,8 @@ jobs:
 
     - name: Fetch & install TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
-        tar xzf ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-macos-12.tar.gz
+        tar xzf ttk-paraview-${{ env.PV_TAG }}-macos-12.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
         pvpython -m pip install scikit-learn
 
@@ -261,7 +261,7 @@ jobs:
 
     - name: Fetch TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-macos-12.tar.gz
 
     - name: Fetch TTK .tar.gz artifact
       uses: actions/download-artifact@v4.1.7
@@ -270,7 +270,7 @@ jobs:
 
     - name: Install binary archives packages
       run: |
-        tar xzf ttk-paraview-${{ env.PV_TAG}}.tar.gz
+        tar xzf ttk-paraview-${{ env.PV_TAG}}-macos-12.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
         tar xzf ttk.tar.gz
         sudo cp -r ttk/* /usr/local

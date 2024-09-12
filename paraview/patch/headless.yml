@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
     - name: Install Ubuntu dependencies
@@ -51,7 +51,7 @@ jobs:
     - name: Build ParaView
       run: |
         cd build
-        cmake --build . --parallel
+        cmake --build . --parallel 
 
     - name: Create ParaView package
       run: |
@@ -59,7 +59,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload Debian package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-paraview-headless-${{ matrix.os }}
         path: build/ttk-paraview.deb
@@ -69,12 +69,15 @@ jobs:
   # macOS #
   # ----- #
   build-macos:
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-12, macos-14]
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
       CCACHE_MAXSIZE: 200M
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
     - name: Remove hosted Python
@@ -87,7 +90,7 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget libomp ninja python open-mpi
+        brew install ninja open-mpi
 
     - name: Create & configure ParaView build directory
       run: |
@@ -110,9 +113,9 @@ jobs:
         cpack -G TGZ
 
     - name: Upload compressed binaries
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ttk-paraview-headless-macOS
+        name: ttk-paraview-headless-${{ matrix.os }}
         path: build/ttk-paraview.tar.gz
 
 
@@ -125,7 +128,7 @@ jobs:
       CONDA_ROOT: C:\Miniconda
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
     - uses: s-weigand/setup-conda@v1
@@ -149,6 +152,7 @@ jobs:
         cmake ^
           -DPARAVIEW_USE_QT=OFF ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DCMAKE_AUTOUIC=OFF ^
           -DCMAKE_BUILD_TYPE=Release ^
           -DVTKm_MODULE_ENABLE_vtkm_filter_scalar_topology=NO ^
           -G"Visual Studio 17 2022" ^
@@ -168,9 +172,9 @@ jobs:
         mv ttk-paraview.exe $GITHUB_WORKSPACE
 
     - name: Upload install executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ttk-paraview-headless-windows
+        name: ttk-paraview-headless-windows-2022
         path: ttk-paraview.exe
 
 
@@ -210,7 +214,7 @@ jobs:
           })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
@@ -228,20 +232,29 @@ jobs:
         file: ttk-paraview-headless-ubuntu-22.04/ttk-paraview.deb
         asset_name: ttk-paraview-headless-ubuntu-22.04.deb
 
-    - name: Upload .tar.gz as Release Asset
+    - name: Upload MacOS 14 (arm64) .tar.gz as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-headless-macOS/ttk-paraview.tar.gz
-        asset_name: ttk-paraview-headless.tar.gz
+        file: ttk-paraview-headless-macos-14/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-headless-macos-14-arm64.tar.gz
+
+    - name: Upload MacOS 12 .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-headless-macos-12/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-headless-macos-12.tar.gz
+
 
     - name: Upload .exe as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-headless-windows/ttk-paraview.exe
+        file: ttk-paraview-headless-windows-2022/ttk-paraview.exe
         asset_name: ttk-paraview-headless.exe
 
     - name: Delete package artifacts
