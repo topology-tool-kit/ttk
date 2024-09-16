@@ -10,7 +10,7 @@
 - DMS performance improvements (allocation)
 - Saddle connector reversal performance improvements
 - Signed distance fields
-- Migration to ParaView 5.12
+- Migration to ParaView 5.12, 5.13
 - Switch to C++17
 - Bug fixes
 

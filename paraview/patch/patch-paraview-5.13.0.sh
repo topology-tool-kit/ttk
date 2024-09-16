@@ -74,9 +74,8 @@ mkdir -p TTK/Data/
 cp ${PATCH_DIR}/data/* TTK/Data/
 cp TTK/Data/*pvsm Qt/ApplicationComponents/Resources/ExampleVisualizations/
 cp TTK/Data/*png Qt/ApplicationComponents/Resources/Thumbnails/
-# the patch below makes the build fail under macos-14...
-#$PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
-#  < "${PATCH_DIR}/paraview-5.8.0-vtkPVFileInformation.cxx.patch"
+$PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
+  < "${PATCH_DIR}/paraview-5.13.0-vtkPVFileInformation.cxx.patch"
 $PATCH_BIN Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
   < "${PATCH_DIR}/paraview-5.13.0-ApplicationComponents.patch"
 $PATCH_BIN Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx \

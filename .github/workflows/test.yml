@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PV_TAG: v5.12.0-headless
+  PV_TAG: v5.13.0-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -39,7 +39,7 @@ jobs:
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
 
     steps:
     - uses: actions/checkout@v4
@@ -59,11 +59,11 @@ jobs:
           libsqlite3-dev \
           libwebsocketpp-dev \
           graphviz \
+          python3-sklearn \
           ninja-build \
           zlib1g-dev \
           libqhull-dev \
           dpkg-dev
-        sudo python3 -m pip install scikit-learn
         cargo install sccache --version 0.4.2 --locked
         echo "PATH=/root/.cargo/bin:$PATH" >> $GITHUB_ENV
 
@@ -92,6 +92,7 @@ jobs:
       run: |
         sudo apt install ./ttk-paraview-headless.deb
 
+    # TODO: more aggressive warnings? (ubuntu-24.04)
     - name: Create & configure TTK build directory
       run: |
         mkdir build
@@ -143,13 +144,12 @@ jobs:
     needs: test-build-ubuntu
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
         testSet: [pyTests, screenshotTests]
     steps:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
-        sudo python3 -m pip install scikit-learn
 
     - name: Install Torch
       shell: bash
@@ -201,18 +201,21 @@ jobs:
       run: |
         VERS=$(hostnamectl | grep "Operating System")
         # Ubuntu 22.04 OOM killer also kills the parent process...
-        if [[ "$VERS" == *"22.04"* ]]; then
+        if [[ "$VERS" == *"22.04"* ]] || [[ "$VERS" == *"24.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
           rm ttk-data/states/mergeTreePGA.pvsm
           rm ttk-data/states/mergeTreeTemporalReduction.pvsm
           rm ttk-data/states/persistentGenerators_darkSky.pvsm
         fi
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm ttk-data/states/nestedTrackingFromOverlap.py
 
         cd ttk-data/tests
         mkdir output_screenshots
         if ! python3 -u validate.py; then
 
-          if [[ "$VERS" == *"22.04"* ]]; then
+          if [[ "$VERS" == *"22.04"* ]] || [[ "$VERS" == *"24.04"* ]]; then
             # weird opacity difference between the two Ubuntus
             rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_1.png
             rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_2.png
@@ -235,6 +238,9 @@ jobs:
       if: matrix.testSet == 'pyTests'
       run: |
         cd ttk-data
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm python/nestedTrackingFromOverlap.py
         python3 -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
@@ -257,8 +263,13 @@ jobs:
   # Test macOS build #
   # -----------------#
   test-build-macos:
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-12, macos-14]
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    env:
+      DYLD_LIBRARY_PATH: /usr/local/lib
 
     steps:
     - uses: actions/checkout@v4
@@ -275,7 +286,7 @@ jobs:
         brew install --cask xquartz
         brew install llvm ninja open-mpi
         # TTK dependencies
-        brew install boost eigen graphviz numpy qhull
+        brew install boost eigen graphviz spectra sqlite zlib numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
@@ -287,11 +298,18 @@ jobs:
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-macos-12.tar.gz
+        if [[ "${{ matrix.os }}" == "macos-12" ]]; then
+          wget -O ttk-paraview-headless.tar.gz \
+            https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.tar.gz
+        fi
+        if [[ "${{ matrix.os }}" == "macos-14" ]]; then
+          wget -O ttk-paraview-headless.tar.gz \
+            https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}-arm64.tar.gz
+        fi
 
     - name: Install ParaView
       run: |
-        tar xzf ttk-paraview-headless-macos-12.tar.gz
+        tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
         pvpython -m pip install --break-system-packages scikit-learn
 
@@ -352,6 +370,9 @@ jobs:
       id: validate
       continue-on-error: true
       run: |
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm ttk-data/states/nestedTrackingFromOverlap.py
         cd ttk-data/tests
         mkdir output_screenshots
         pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
@@ -369,6 +390,9 @@ jobs:
     - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm python/nestedTrackingFromOverlap.py
         pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
@@ -400,7 +424,8 @@ jobs:
       shell: bash
       run: |
         conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
-          scikit-learn graphviz ninja python=3.10 zlib qhull llvm-openmp clangxx
+          sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
+          llvm-openmp clangxx
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -549,6 +574,7 @@ jobs:
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
+        rm python/nestedTrackingFromOverlap.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
