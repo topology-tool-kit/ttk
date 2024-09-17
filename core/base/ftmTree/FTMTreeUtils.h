@@ -148,7 +148,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    void getTreeScalars(ftm::FTMTree_MT *tree,
+    void getTreeScalars(const ftm::FTMTree_MT *tree,
                         std::vector<dataType> &scalarsVector) {
       scalarsVector.clear();
       for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
@@ -162,7 +162,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    MergeTree<dataType> copyMergeTree(ftm::FTMTree_MT *tree,
+    MergeTree<dataType> copyMergeTree(const ftm::FTMTree_MT *tree,
                                       bool doSplitMultiPersPairs = false) {
       std::vector<dataType> scalarsVector;
       getTreeScalars<dataType>(tree, scalarsVector);
@@ -201,7 +201,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    MergeTree<dataType> copyMergeTree(MergeTree<dataType> &mergeTree,
+    MergeTree<dataType> copyMergeTree(const MergeTree<dataType> &mergeTree,
                                       bool doSplitMultiPersPairs = false) {
       return copyMergeTree<dataType>(&(mergeTree.tree), doSplitMultiPersPairs);
     }

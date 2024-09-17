@@ -390,7 +390,7 @@ namespace ttk {
         return mt_data_.nodes->size();
       }
 
-      inline Node *getNode(idNode nodeId) {
+      inline Node *getNode(idNode nodeId) const {
         return &((*mt_data_.nodes)[nodeId]);
       }
 
@@ -599,146 +599,149 @@ namespace ttk {
       // --------------------
       // Is
       // --------------------
-      bool isNodeOriginDefined(idNode nodeId);
+      bool isNodeOriginDefined(idNode nodeId) const;
 
-      bool isRoot(idNode nodeId);
+      bool isRoot(idNode nodeId) const;
 
-      bool isLeaf(idNode nodeId);
+      bool isLeaf(idNode nodeId) const;
 
-      bool isNodeAlone(idNode nodeId);
+      bool isNodeAlone(idNode nodeId) const;
 
-      bool isFullMerge();
+      bool isFullMerge() const;
 
-      bool isBranchOrigin(idNode nodeId);
+      bool isBranchOrigin(idNode nodeId) const;
 
       template <class dataType>
-      bool isJoinTree();
+      bool isJoinTree() const;
 
       template <class dataType>
       bool isImportantPair(idNode nodeId,
                            double threshold,
                            std::vector<double> &excludeLower,
-                           std::vector<double> &excludeHigher);
+                           std::vector<double> &excludeHigher) const;
 
       template <class dataType>
-      bool isImportantPair(idNode nodeId, double threshold);
+      bool isImportantPair(idNode nodeId, double threshold) const;
 
-      bool isNodeMerged(idNode nodeId);
+      bool isNodeMerged(idNode nodeId) const;
 
-      bool isNodeIdInconsistent(idNode nodeId);
+      bool isNodeIdInconsistent(idNode nodeId) const;
 
-      bool isThereOnlyOnePersistencePair();
+      bool isThereOnlyOnePersistencePair() const;
 
       // Do not normalize node is if root or son of a merged root
-      bool notNeedToNormalize(idNode nodeId);
+      bool notNeedToNormalize(idNode nodeId) const;
 
-      bool isMultiPersPair(idNode nodeId);
-
-      template <class dataType>
-      bool isParentInconsistent(ftm::idNode nodeId);
+      bool isMultiPersPair(idNode nodeId) const;
 
       template <class dataType>
-      bool verifyBranchDecompositionInconsistency();
+      bool isParentInconsistent(ftm::idNode nodeId) const;
+
+      template <class dataType>
+      bool verifyBranchDecompositionInconsistency() const;
 
       // --------------------
       // Get
       // --------------------
-      idNode getRoot();
+      idNode getRoot() const;
 
-      idNode getParentSafe(idNode nodeId);
+      idNode getParentSafe(idNode nodeId) const;
 
-      void getChildren(idNode nodeId, std::vector<idNode> &res);
+      void getChildren(idNode nodeId, std::vector<idNode> &res) const;
 
-      void getLeavesFromTree(std::vector<idNode> &res);
+      void getLeavesFromTree(std::vector<idNode> &res) const;
 
-      int getNumberOfLeavesFromTree();
+      int getNumberOfLeavesFromTree() const;
 
-      int getNumberOfNodeAlone();
+      int getNumberOfNodeAlone() const;
 
-      int getRealNumberOfNodes();
+      int getRealNumberOfNodes() const;
 
       template <class dataType>
-      idNode getMergedRootOrigin();
+      idNode getMergedRootOrigin() const;
 
       void getBranchOriginsFromThisBranch(
-        idNode node, std::tuple<std::vector<idNode>, std::vector<idNode>> &res);
+        idNode node,
+        std::tuple<std::vector<idNode>, std::vector<idNode>> &res) const;
+
+      void
+        getTreeBranching(std::vector<idNode> &branching,
+                         std::vector<int> &branchingID,
+                         std::vector<std::vector<idNode>> &nodeBranching) const;
 
       void getTreeBranching(std::vector<idNode> &branching,
-                            std::vector<int> &branchingID,
-                            std::vector<std::vector<idNode>> &nodeBranching);
+                            std::vector<int> &branchingID) const;
 
-      void getTreeBranching(std::vector<idNode> &branching,
-                            std::vector<int> &branchingID);
+      void getAllRoots(std::vector<idNode> &res) const;
 
-      void getAllRoots(std::vector<idNode> &res);
+      int getNumberOfRoot() const;
 
-      int getNumberOfRoot();
+      int getNumberOfChildren(idNode nodeId) const;
 
-      int getNumberOfChildren(idNode nodeId);
+      int getTreeDepth() const;
 
-      int getTreeDepth();
+      int getNodeLevel(idNode nodeId) const;
 
-      int getNodeLevel(idNode nodeId);
+      void getAllNodeLevel(std::vector<int> &res) const;
 
-      void getAllNodeLevel(std::vector<int> &res);
-
-      void getLevelToNode(std::vector<std::vector<idNode>> &res);
+      void getLevelToNode(std::vector<std::vector<idNode>> &res) const;
 
       void getBranchSubtree(std::vector<idNode> &branching,
                             idNode branchRoot,
-                            std::vector<idNode> &res);
+                            std::vector<idNode> &res) const;
 
       template <class dataType>
-      idNode getLowestNode(idNode nodeStart);
+      idNode getLowestNode(idNode nodeStart) const;
 
       // --------------------
       // Persistence
       // --------------------
       template <class dataType>
       std::tuple<dataType, dataType> getBirthDeathFromIds(idNode nodeId1,
-                                                          idNode nodeId2);
+                                                          idNode nodeId2) const;
 
       template <class dataType>
-      std::tuple<dataType, dataType> getBirthDeathNodeFromIds(idNode nodeId1,
-                                                              idNode nodeId2);
+      std::tuple<dataType, dataType>
+        getBirthDeathNodeFromIds(idNode nodeId1, idNode nodeId2) const;
 
       template <class dataType>
-      std::tuple<dataType, dataType> getBirthDeath(idNode nodeId);
+      std::tuple<dataType, dataType> getBirthDeath(idNode nodeId) const;
 
       template <class dataType>
-      std::tuple<ftm::idNode, ftm::idNode> getBirthDeathNode(idNode nodeId);
+      std::tuple<ftm::idNode, ftm::idNode>
+        getBirthDeathNode(idNode nodeId) const;
 
       template <class dataType>
-      std::tuple<dataType, dataType> getMergedRootBirthDeath();
+      std::tuple<dataType, dataType> getMergedRootBirthDeath() const;
 
       template <class dataType>
-      std::tuple<ftm::idNode, ftm::idNode> getMergedRootBirthDeathNode();
+      std::tuple<ftm::idNode, ftm::idNode> getMergedRootBirthDeathNode() const;
 
       template <class dataType>
-      dataType getBirth(idNode nodeId);
+      dataType getBirth(idNode nodeId) const;
 
       template <class dataType>
-      dataType getNodePersistence(idNode nodeId);
+      dataType getNodePersistence(idNode nodeId) const;
 
       template <class dataType>
-      dataType getMaximumPersistence();
+      dataType getMaximumPersistence() const;
 
       template <class dataType>
-      ftm::idNode getSecondMaximumPersistenceNode();
+      ftm::idNode getSecondMaximumPersistenceNode() const;
 
       template <class dataType>
-      dataType getSecondMaximumPersistence();
+      dataType getSecondMaximumPersistence() const;
 
       template <class dataType>
       void getPersistencePairsFromTree(
         std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> &pairs,
-        bool useBD);
+        bool useBD) const;
 
       template <class dataType>
-      std::vector<ftm::idNode> getMultiPersOrigins(bool useBD);
+      std::vector<ftm::idNode> getMultiPersOrigins(bool useBD) const;
 
       void getMultiPersOriginsVectorFromTree(
-        std::vector<std::vector<idNode>> &res);
+        std::vector<std::vector<idNode>> &res) const;
 
       // --------------------
       // Set
@@ -762,41 +765,41 @@ namespace ttk {
       // --------------------
       // Create/Delete/Modify Tree
       // --------------------
-      void copyMergeTreeStructure(FTMTree_MT *tree);
+      void copyMergeTreeStructure(const FTMTree_MT *tree);
 
       // --------------------
       // Utils
       // --------------------
-      void printNodeSS(idNode node, std::stringstream &ss);
+      void printNodeSS(idNode node, std::stringstream &ss) const;
 
       template <class dataType>
-      std::stringstream printNode2(idNode nodeId, bool doPrint = true);
+      std::stringstream printNode2(idNode nodeId, bool doPrint = true) const;
 
       template <class dataType>
-      std::stringstream printMergedRoot(bool doPrint = true);
+      std::stringstream printMergedRoot(bool doPrint = true) const;
 
-      std::stringstream printSubTree(idNode subRoot);
+      std::stringstream printSubTree(idNode subRoot) const;
 
-      std::stringstream printTree(bool doPrint = true);
+      std::stringstream printTree(bool doPrint = true) const;
 
-      std::stringstream printTreeStats(bool doPrint = true);
+      std::stringstream printTreeStats(bool doPrint = true) const;
 
       template <class dataType>
       std::stringstream printTreeScalars(bool printNodeAlone = true,
-                                         bool doPrint = true);
+                                         bool doPrint = true) const;
 
       template <class dataType>
       std::stringstream printPairsFromTree(bool useBD = false,
                                            bool printPairs = true,
-                                           bool doPrint = true);
+                                           bool doPrint = true) const;
 
       std::stringstream printMultiPersOriginsVectorFromTree(bool doPrint
-                                                            = true);
+                                                            = true) const;
 
       template <class dataType>
       std::stringstream printMultiPersPairsFromTree(bool useBD = false,
                                                     bool printPairs = true,
-                                                    bool doPrint = true);
+                                                    bool doPrint = true) const;
 
       // ----------------------------------------
       // End of utils functions

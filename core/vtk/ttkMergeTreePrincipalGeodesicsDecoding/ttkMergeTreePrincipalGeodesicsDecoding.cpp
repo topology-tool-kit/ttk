@@ -487,7 +487,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
   // ------------------------------------------
   std::vector<std::vector<ttk::ftm::idNode>> matchingMatrix;
   if(!baryMatchings_.empty())
-    getMatchingMatrix<double>(
+    ttk::axa::getMatchingMatrix<double>(
       baryMTree[0], inputMTrees, baryMatchings_, matchingMatrix);
   // TODO compute matching to barycenter if correlation matrix is not provided
   if(transferInputTreesInformation_
@@ -628,7 +628,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
         ttk::ftm::MergeTree<dataType> baryMT;
         ttk::ftm::mergeTreeDoubleToTemplate<dataType>(baryMTree[0], baryMT);
         std::vector<ttk::ftm::idNode> matchingVector;
-        getInverseMatchingVector(
+        ttk::axa::getInverseMatchingVector(
           mt, baryMT, recBaryMatchings[index], matchingVector);
         std::vector<int> baryNodeID(mt.tree.getNumberOfNodes(), -1);
         for(unsigned int n = 0; n < vSize_; ++n) {
@@ -645,7 +645,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
         ttk::ftm::mergeTreeDoubleToTemplate<dataType>(
           inputMTrees[index], inputMT);
         std::vector<ttk::ftm::idNode> matchingVector;
-        getInverseMatchingVector(
+        ttk::axa::getInverseMatchingVector(
           mt, inputMT, recInputMatchings[index], matchingVector);
         std::vector<int> baryNodeID(mt.tree.getNumberOfNodes(), -1);
         for(unsigned int n = 0; n < vSize_; ++n) {

@@ -99,15 +99,6 @@ public:
     vtkAlgorithm::SetInputArrayToProcess(0, 2, 0, 6, name);
   }
 
-  void SetDoCompute(bool doCompute) {
-    doCompute_ = doCompute;
-    Modified();
-    resetDataVisualization();
-  }
-  bool GetDoCompute() {
-    return doCompute_;
-  }
-
   void SetNormalizedWasserstein(bool nW) {
     normalizedWasserstein_ = nW;
     Modified();
