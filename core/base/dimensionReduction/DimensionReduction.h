@@ -22,7 +22,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
 ///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
 ///   Digits 64-Dimensions example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge

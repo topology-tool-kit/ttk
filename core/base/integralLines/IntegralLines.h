@@ -12,6 +12,11 @@
 /// lines along the edges of the input triangulation.
 ///
 /// \sa ttkIntegralLines.cpp %for a usage example.
+///
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
 
 #pragma once
 

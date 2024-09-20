@@ -9,7 +9,10 @@
 /// In distributed, using GlobalOrder set to True, this module will compute a
 /// global order, otherwise each process will locally compute its order.
 ///
-
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
 #pragma once
 
 // ttk common includes

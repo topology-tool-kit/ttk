@@ -16,6 +16,11 @@
 ///
 /// \sa ttk::ttkArrayPreconditioning
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
 
 #pragma once
 

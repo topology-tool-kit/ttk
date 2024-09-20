@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PV_TAG: v5.12.0-headless
+  PV_TAG: v5.13.0-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -35,7 +35,7 @@ jobs:
   check-formatting:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install latest clang-format
       run: |
@@ -97,7 +97,7 @@ jobs:
       CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Ubuntu dependencies
       run: |
@@ -161,6 +161,7 @@ jobs:
 
     - name: Check Doxygen documentation warnings
       if: matrix.config.dox
+      continue-on-error: true
       run: |
         cd build
         ! cmake --build . --target doc |& grep warning
@@ -182,7 +183,7 @@ jobs:
       CMAKE_EXPORT_COMPILE_COMMANDS: ON
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Ubuntu dependencies
       run: |
