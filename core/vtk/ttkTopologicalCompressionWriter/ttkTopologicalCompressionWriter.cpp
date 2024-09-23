@@ -52,8 +52,8 @@ int ttkTopologicalCompressionWriter::Write() {
   }
   this->preconditionTriangulation(triangulation);
 
-  const auto inputOffsets
-    = this->GetOrderArray(vtkDataSet::SafeDownCast(input), 0, 1, false);
+  const auto inputOffsets = this->GetOrderArray(
+    vtkDataSet::SafeDownCast(input), 0, triangulation, false, 1, false);
 
   vtkSmartPointer<vtkDataArray> outputScalarField;
 
@@ -105,7 +105,7 @@ int ttkTopologicalCompressionWriter::Write() {
     return 0;
   }
 
-  int dt = inputScalarField->GetDataType();
+  int const dt = inputScalarField->GetDataType();
   auto vp = static_cast<double *>(ttkUtils::GetVoidPointer(inputScalarField));
 
   this->setFileName(FileName);

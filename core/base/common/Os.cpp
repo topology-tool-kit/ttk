@@ -176,7 +176,7 @@ namespace ttk {
       msg = "Could not open directory `";
       msg += directoryName;
       msg += "'...";
-      Debug dbg;
+      const Debug dbg;
       dbg.printErr(msg);
     } else {
       struct dirent *dirEntry;

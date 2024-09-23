@@ -1,4 +1,5 @@
 #include <DimensionReduction.h>
+#include <TopoMap.h>
 
 #include <map>
 
@@ -16,6 +17,9 @@ using namespace ttk;
 
 DimensionReduction::DimensionReduction() {
   this->setDebugMsgPrefix("DimensionReduction");
+
+  // default backend
+  this->setInputMethod(METHOD::MDS);
 
 #ifdef TTK_ENABLE_SCIKIT_LEARN
   auto finalize_callback = []() { Py_Finalize(); };
@@ -38,22 +42,40 @@ DimensionReduction::DimensionReduction() {
 #endif
 }
 
-bool DimensionReduction::isPythonFound() const {
-#ifdef TTK_ENABLE_SCIKIT_LEARN
-  return true;
-#else
-  this->printErr("Warning: scikit-learn support disabled: Python/Numpy may "
-                 "not be installed properly");
-  this->printErr("Module features disabled.");
-  return false;
-#endif
-}
-
 int DimensionReduction::execute(
   std::vector<std::vector<double>> &outputEmbedding,
   const std::vector<double> &inputMatrix,
   const int nRows,
-  const int nColumns) const {
+  const int nColumns,
+  int *insertionTimeForTopomap) const {
+
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+  TTK_FORCE_USE(nColumns);
+#endif
+
+  Timer t;
+
+  if(this->Method == METHOD::TOPOMAP) {
+    TopoMap topomap(
+      this->topomap_AngularSampleNb, topomap_CheckMST, topomap_Strategy);
+    topomap.setDebugLevel(this->debugLevel_);
+    topomap.setThreadNumber(this->threadNumber_);
+
+    std::vector<double> coordsTopomap(2 * nRows);
+    topomap.execute<double>(coordsTopomap.data(), insertionTimeForTopomap,
+                            inputMatrix, IsInputADistanceMatrix, nRows);
+    outputEmbedding.resize(2);
+    outputEmbedding[0].resize(nRows);
+    outputEmbedding[1].resize(nRows);
+    for(int i = 0; i < nRows; i++) {
+      outputEmbedding[0][i] = coordsTopomap[2 * i];
+      outputEmbedding[1][i] = coordsTopomap[2 * i + 1];
+    }
+
+    this->printMsg(
+      "Computed TopoMap", 1.0, t.getElapsedTime(), this->threadNumber_);
+    return 0;
+  }
 
 #ifdef TTK_ENABLE_SCIKIT_LEARN
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -67,9 +89,8 @@ int DimensionReduction::execute(
     return -4;
 #endif
 
-  Timer t;
-
   const int numberOfComponents = std::max(2, this->NumberOfComponents);
+
   const int numberOfNeighbors = std::max(1, this->NumberOfNeighbors);
 
   // declared here to avoid crossing initialization with goto

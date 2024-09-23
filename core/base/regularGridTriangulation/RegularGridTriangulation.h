@@ -81,6 +81,8 @@ namespace ttk {
   protected:
     std::array<SimplexId, 3> dimensions_; // dimensions
     int dimensionality_;
+    float origin_[3]; //
+    float spacing_[3]; //
 
     virtual void vertexToPosition2d(const SimplexId vertex,
                                     SimplexId p[2]) const = 0;

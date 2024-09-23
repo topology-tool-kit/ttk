@@ -1,5 +1,5 @@
-#include <ttkFTMTreeUtils.h>
 #include <ttkMergeTreeDistanceMatrix.h>
+#include <ttkMergeTreeUtils.h>
 #include <ttkUtils.h>
 
 #include <vtkDataObject.h> // For port information
@@ -102,7 +102,7 @@ int ttkMergeTreeDistanceMatrix::run(
   // Construct trees
   const int numInputs = inputTrees.size();
   std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
-  bool useSadMaxPairs = (mixtureCoefficient_ == 0); // only for PD support
+  bool const useSadMaxPairs = (mixtureCoefficient_ == 0); // only for PD support
   isPersistenceDiagram_
     = constructTrees(inputTrees, intermediateTrees, useSadMaxPairs);
   if(not isPersistenceDiagram_
@@ -199,9 +199,9 @@ int ttkMergeTreeDistanceMatrix::run(
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad
     = [](std::string &colName, const size_t numberCols, const size_t colIdx) {
-        std::string max{std::to_string(numberCols - 1)};
-        std::string cur{std::to_string(colIdx)};
-        std::string zer(max.size() - cur.size(), '0');
+        std::string const max{std::to_string(numberCols - 1)};
+        std::string const cur{std::to_string(colIdx)};
+        std::string const zer(max.size() - cur.size(), '0');
         colName.append(zer).append(cur);
       };
 
@@ -292,7 +292,7 @@ int ttkMergeTreeDistanceMatrix::RequestData(
     for(auto paramName : paramNames) {
       auto array = blocks->GetFieldData()->GetArray(paramName.c_str());
       if(array) {
-        double value = array->GetTuple1(0);
+        double const value = array->GetTuple1(0);
         setParamValueFromName(paramName, value);
         printMsg(" - " + paramName + " = " + std::to_string(value));
       } else

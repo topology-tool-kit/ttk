@@ -119,7 +119,7 @@ namespace ttk {
         ++cptDivide;
       }
       alpha /= cptDivide;
-      double m = alpha / (1 + alpha);
+      double const m = alpha / (1 + alpha);
       return m;
     }
 
@@ -172,19 +172,20 @@ namespace ttk {
       if(newBirthV1 > newDeathV1 and newBirthV2 > newDeathV2) {
         shortener = true;
 
-        double divisor
+        double const divisor
           = (vNew[node][1] - vNew[node][0]) / (baryDeath - baryBirth);
         vNew[node][0] /= divisor;
         vNew[node][1] /= divisor;
-        double divisor2
+        double const divisor2
           = (v2New[node][0] - v2New[node][1]) / (baryDeath - baryBirth);
         v2New[node][0] /= divisor2;
         v2New[node][1] /= divisor2;
       } else if(newBirthV1 > newDeathV1 or newBirthV2 > newDeathV2) {
-        double newT = (baryDeath - vNew[node][1] - baryBirth + vNew[node][0])
-                      / (vNew[node][0] + v2New[node][0]
-                         - (vNew[node][1] + v2New[node][1]));
-        double m = getGeodesicVectorMiddle(vNew[node], v2New[node]);
+        double const newT
+          = (baryDeath - vNew[node][1] - baryBirth + vNew[node][0])
+            / (vNew[node][0] + v2New[node][0]
+               - (vNew[node][1] + v2New[node][1]));
+        double const m = getGeodesicVectorMiddle(vNew[node], v2New[node]);
         if(newBirthV1 > newDeathV1)
           updateT(newT, m, tMin, tMax, true);
         if(newBirthV2 > newDeathV2)
@@ -225,7 +226,7 @@ namespace ttk {
       auto parentDeathV2 = 1.0;
 
       //
-      bool extremOutPathIn
+      bool const extremOutPathIn
         = ((newDeathV1 > parentDeathV1 and not(newBirthV1 < parentBirthV1)
             and not(newDeathV2 > parentDeathV2) and newBirthV2 < parentBirthV2)
            or (not(newDeathV1 > parentDeathV1) and newBirthV1 < parentBirthV1
@@ -273,18 +274,18 @@ namespace ttk {
       if(((newDeathV1 > parentDeathV1 or newBirthV1 < parentBirthV1)
           != (newDeathV2 > parentDeathV2 or newBirthV2 < parentBirthV2))
          or extremOutPathIn) {
-        double m = getGeodesicVectorMiddle(vNew[node], v2New[node]);
+        double const m = getGeodesicVectorMiddle(vNew[node], v2New[node]);
         if(newDeathV1 > parentDeathV1 or newDeathV2 > parentDeathV2) {
-          double newT = (deathParent - baryDeath + vNew[node][1])
-                        / (vNew[node][1] + v2New[node][1]);
+          double const newT = (deathParent - baryDeath + vNew[node][1])
+                              / (vNew[node][1] + v2New[node][1]);
           if(newDeathV1 > parentDeathV1)
             updateT(newT, m, tMin, tMax, true);
           if(newDeathV2 > parentDeathV2)
             updateT(newT, m, tMin, tMax, false);
         }
         if(newBirthV1 < parentBirthV1 or newBirthV2 < parentBirthV2) {
-          double newT = (birthParent - baryBirth + vNew[node][0])
-                        / (vNew[node][0] + v2New[node][0]);
+          double const newT = (birthParent - baryBirth + vNew[node][0])
+                              / (vNew[node][0] + v2New[node][0]);
           if(newBirthV1 < parentBirthV1)
             updateT(newT, m, tMin, tMax, true);
           if(newBirthV2 < parentBirthV2)
@@ -306,8 +307,8 @@ namespace ttk {
                                         double tMax,
                                         const std::string &msg,
                                         std::stringstream &ssT) {
-      double tNew = (t * (tMax - tMin) + tMin);
-      std::streamsize sSize = std::cout.precision();
+      double const tNew = (t * (tMax - tMin) + tMin);
+      std::streamsize const sSize = std::cout.precision();
       ssT << std::setprecision(12) << std::endl << msg << std::endl;
       ssT << "interBirth : "
           << birth - vNew[i][0] + tNew * (vNew[i][0] + v2New[i][0]) << " _ "
@@ -358,7 +359,7 @@ namespace ttk {
       }
 
       // - Compute new t
-      double tNew = t * (tMax - tMin) + tMin;
+      double const tNew = t * (tMax - tMin) + tMin;
 
       if(diagonalShortener or nestingShortener)
         printWrn("[getTNew] shortener");
@@ -396,7 +397,7 @@ namespace ttk {
       queue.emplace(baryTree->getRoot());
       int noNestingShortener = 0, noDiagonalShortener = 0;
       while(!queue.empty()) {
-        ftm::idNode i = queue.front();
+        ftm::idNode const i = queue.front();
         queue.pop();
 
         // - Get node information
@@ -419,7 +420,7 @@ namespace ttk {
 
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         std::stringstream ssT;
-        std::streamsize sSize2 = std::cout.precision();
+        std::streamsize const sSize2 = std::cout.precision();
         ssT << std::setprecision(12);
         ssT << "info" << std::endl;
         ssT << "birth death : " << birth << " ___ " << death << std::endl;
@@ -447,7 +448,7 @@ namespace ttk {
         // --------------------------------------------------------------------
 
         // - Adjust Diagonal T
-        bool diagonalShortener
+        bool const diagonalShortener
           = adjustDiagonalT(birth, death, i, vNew, v2New, tMin, tMax);
         noDiagonalShortener += diagonalShortener;
 
@@ -459,7 +460,7 @@ namespace ttk {
 
         // - Adjust Nesting T
         if(normalizedWasserstein_ and !baryTree->notNeedToNormalize(i)) {
-          bool nestingShortener = adjustNestingT(
+          bool const nestingShortener = adjustNestingT(
             barycenter, birth, death, i, vNew, v2New, tMin, tMax);
           noNestingShortener += nestingShortener;
 
@@ -471,13 +472,13 @@ namespace ttk {
         }
 
         // - Compute interpolation
-        double tNew = t * (tMax - tMin) + tMin;
+        double const tNew = t * (tMax - tMin) + tMin;
         double interBirth
           = birth - vNew[i][0] + tNew * (vNew[i][0] + v2New[i][0]);
         double interDeath
           = death - vNew[i][1] + tNew * (vNew[i][1] + v2New[i][1]);
         if(normalizedWasserstein_ and !baryTree->notNeedToNormalize(i)) {
-          double coef = (interParentDeath - interParentBirth);
+          double const coef = (interParentDeath - interParentBirth);
           interBirth *= coef;
           interBirth += interParentBirth;
           interDeath *= coef;
@@ -493,7 +494,7 @@ namespace ttk {
           printErr("NOT A NUMBER");
         }
         // - Verify points below diagonal
-        double eps = POINTS_BELOW_DIAG_TOLERANCE;
+        double const eps = POINTS_BELOW_DIAG_TOLERANCE;
         if(interpolationVector[nodeBirth] > interpolationVector[nodeDeath]
            and interpolationVector[nodeBirth] - interpolationVector[nodeDeath]
                  < eps) {
@@ -502,7 +503,7 @@ namespace ttk {
         if(interpolationVector[nodeBirth] > interpolationVector[nodeDeath]) {
           ++cptBelowDiagonal;
           printMsg(ssT.str());
-          std::streamsize sSize = std::cout.precision();
+          std::streamsize const sSize = std::cout.precision();
           std::stringstream ss;
           ss << std::setprecision(12) << interpolationVector[nodeBirth] << " > "
              << interpolationVector[nodeDeath];
@@ -510,7 +511,7 @@ namespace ttk {
           std::cout.precision(sSize);
         }
         // - Verify nesting condition
-        bool verifyNesting = !baryTree->notNeedToNormalize(i);
+        bool const verifyNesting = !baryTree->notNeedToNormalize(i);
         if(normalizedWasserstein_ and verifyNesting) {
           if(interpolationVector[nodeBirth] < interParentBirth
              and (interParentBirth - interpolationVector[nodeBirth]) < eps)
@@ -534,7 +535,7 @@ namespace ttk {
                 or interpolationVector[nodeDeath] > interParentDeath)) {
           ++cptNotNesting;
           printMsg(ssT.str());
-          std::streamsize sSize = std::cout.precision();
+          std::streamsize const sSize = std::cout.precision();
           std::stringstream ss;
           ss << std::setprecision(12) << interpolationVector[nodeBirth] << " _ "
              << interpolationVector[nodeDeath] << " --- " << interParentBirth

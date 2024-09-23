@@ -62,8 +62,8 @@ int ttk::CinemaImagingNative::renderImage(
   const bool &orthographicProjection,
   const double &viewAngle) const {
   ttk::Timer timer;
-  int resX = resolution[0];
-  int resY = resolution[1];
+  int const resX = resolution[0];
+  int const resY = resolution[1];
 
   this->printMsg("Rendering Image ("
                    + std::string(orthographicProjection ? "O" : "P") + "|"
@@ -75,7 +75,7 @@ int ttk::CinemaImagingNative::renderImage(
   const double camSize[2] = {aspect * camHeight, camHeight};
 
   const auto normalize = [](double out[3], const double in[3]) {
-    double temp = sqrt(in[0] * in[0] + in[1] * in[1] + in[2] * in[2]);
+    double const temp = sqrt(in[0] * in[0] + in[1] * in[1] + in[2] * in[2]);
     out[0] = in[0] / temp;
     out[1] = in[1] / temp;
     out[2] = in[2] / temp;
@@ -97,37 +97,37 @@ int ttk::CinemaImagingNative::renderImage(
   normalize(camUpTrue, camUpTrue);
 
   // Compute pixel size in world coordinates
-  double pixelWidthWorld = camSize[0] / resolution[0];
-  double pixelHeightWorld = camSize[1] / resolution[1];
+  double const pixelWidthWorld = camSize[0] / resolution[0];
+  double const pixelHeightWorld = camSize[1] / resolution[1];
 
   // Optimization: precompute half of the camera size to reduce the number of
   // operations in the for loop. Include a half pixel offset (-0.5) to center
   // vertices at pixel centers
-  double camWidthWorldHalf = 0.5 * camSize[0] - 0.5 * pixelWidthWorld;
-  double camHeightWorldHalf = 0.5 * camSize[1] - 0.5 * pixelHeightWorld;
+  double const camWidthWorldHalf = 0.5 * camSize[0] - 0.5 * pixelWidthWorld;
+  double const camHeightWorldHalf = 0.5 * camSize[1] - 0.5 * pixelHeightWorld;
 
   // Optimization: reorient camera model to bottom left corner to reduce
   // operations in for loop
-  double camPosCorner[3] = {camPos[0] - camRight[0] * camWidthWorldHalf
-                              - camUpTrue[0] * camHeightWorldHalf,
-                            camPos[1] - camRight[1] * camWidthWorldHalf
-                              - camUpTrue[1] * camHeightWorldHalf,
-                            camPos[2] - camRight[2] * camWidthWorldHalf
-                              - camUpTrue[2] * camHeightWorldHalf};
+  double const camPosCorner[3] = {camPos[0] - camRight[0] * camWidthWorldHalf
+                                    - camUpTrue[0] * camHeightWorldHalf,
+                                  camPos[1] - camRight[1] * camWidthWorldHalf
+                                    - camUpTrue[1] * camHeightWorldHalf,
+                                  camPos[2] - camRight[2] * camWidthWorldHalf
+                                    - camUpTrue[2] * camHeightWorldHalf};
 
-  float nan = std::numeric_limits<float>::quiet_NaN();
+  float const nan = std::numeric_limits<float>::quiet_NaN();
   if(orthographicProjection) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
     for(int y = 0; y < resY; y++) {
-      double v = ((double)y) * pixelHeightWorld;
+      double const v = ((double)y) * pixelHeightWorld;
 
       size_t pixelIndex = y * resX;
       size_t bcIndex = 2 * pixelIndex;
 
       for(int x = 0; x < resX; x++) {
-        double u = ((double)x) * pixelWidthWorld;
+        double const u = ((double)x) * pixelWidthWorld;
 
         depthBuffer[pixelIndex] = nan;
         primitiveIds[pixelIndex] = CinemaImaging::INVALID_ID;
@@ -135,16 +135,19 @@ int ttk::CinemaImagingNative::renderImage(
         barycentricCoordinates[bcIndex + 1] = nan;
 
         // set origin
-        float org_x = camPosCorner[0] + u * camRight[0] + v * camUpTrue[0];
-        float org_y = camPosCorner[1] + u * camRight[1] + v * camUpTrue[1];
-        float org_z = camPosCorner[2] + u * camRight[2] + v * camUpTrue[2];
+        float const org_x
+          = camPosCorner[0] + u * camRight[0] + v * camUpTrue[0];
+        float const org_y
+          = camPosCorner[1] + u * camRight[1] + v * camUpTrue[1];
+        float const org_z
+          = camPosCorner[2] + u * camRight[2] + v * camUpTrue[2];
 
         float ray_origin[3] = {org_x, org_y, org_z};
 
         // set dir
-        float dir_x = camDir[0];
-        float dir_y = camDir[1];
-        float dir_z = camDir[2];
+        float const dir_x = camDir[0];
+        float const dir_y = camDir[1];
+        float const dir_z = camDir[2];
 
         float ray_dir[3] = {dir_x, dir_y, dir_z};
 
@@ -165,18 +168,19 @@ int ttk::CinemaImagingNative::renderImage(
       }
     }
   } else {
-    double factor = (viewAngle / 180.0 * 3.141592653589793) / resolution[0];
+    double const factor
+      = (viewAngle / 180.0 * 3.141592653589793) / resolution[0];
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
     for(int y = 0; y < resY; y++) {
-      double v = (y - resY * 0.5) * factor;
+      double const v = (y - resY * 0.5) * factor;
       size_t pixelIndex = y * resX;
       size_t bcIndex = 2 * pixelIndex;
 
       for(int x = 0; x < resX; x++) {
-        double u = (x - resX * 0.5) * factor;
+        double const u = (x - resX * 0.5) * factor;
 
         depthBuffer[pixelIndex] = nan;
         primitiveIds[pixelIndex] = CinemaImaging::INVALID_ID;
@@ -184,15 +188,15 @@ int ttk::CinemaImagingNative::renderImage(
         barycentricCoordinates[bcIndex + 1] = nan;
 
         // set origin
-        float org_x = camPos[0];
-        float org_y = camPos[1];
-        float org_z = camPos[2];
+        float const org_x = camPos[0];
+        float const org_y = camPos[1];
+        float const org_z = camPos[2];
 
         float ray_origin[3] = {org_x, org_y, org_z};
         // set dir
-        float dir_x = camDir[0] + u * camRight[0] + v * camUpTrue[0];
-        float dir_y = camDir[1] + u * camRight[1] + v * camUpTrue[1];
-        float dir_z = camDir[2] + u * camRight[2] + v * camUpTrue[2];
+        float const dir_x = camDir[0] + u * camRight[0] + v * camUpTrue[0];
+        float const dir_y = camDir[1] + u * camRight[1] + v * camUpTrue[1];
+        float const dir_z = camDir[2] + u * camRight[2] + v * camUpTrue[2];
 
         float ray_dir[3] = {dir_x, dir_y, dir_z};
 

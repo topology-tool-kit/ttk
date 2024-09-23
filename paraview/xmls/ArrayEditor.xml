@@ -8,13 +8,15 @@
         This filter adds data arrays to a 'vtkDataObject' (called target) based on a string or point/cell/field data of an optional second 'vtkDataObject' (called source). This filter can also be used to directly edit an array (including renaming, type conversion, and reindexing).
 
         Online examples:
-                
+ 
         - https://topology-tool-kit.github.io/examples/cinemaIO/
 
         - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
 
+        - https://topology-tool-kit.github.io/examples/mergeTreeWAE/
+
         - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
-        
+
       </Documentation>
 
       <!-- Inputs -->

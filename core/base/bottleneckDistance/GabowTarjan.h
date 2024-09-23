@@ -53,27 +53,32 @@ namespace ttk {
 
       // Connect diagonal points.
       for(unsigned int i = Size1; i < MaxSize; ++i)
-        for(unsigned int j = MaxSize + Size2; j < 2 * MaxSize; ++j)
-          Edges.emplace_back(Edge(i, j, (double)0));
+        for(unsigned int j = MaxSize + Size2; j < 2 * MaxSize; ++j) {
+          const Edge localEdge(i, j, (double)0);
+          Edges.emplace_back(localEdge);
+        }
 
       // Connect real points.
       for(unsigned int i = 0; i < Size1; ++i) {
         unsigned int k = MaxSize;
         for(unsigned int j = 0; j < Size2; ++j) {
           auto val = (*C_)[i][j];
-          Edges.emplace_back(Edge(i, k++, val));
+          const Edge localEdge(i, k++, val);
+          Edges.emplace_back(localEdge);
         }
       }
 
       // Connect real points with their diagonal.
       for(unsigned int i = 0; i < Size1; ++i) {
         auto val = (*C_)[i][Size2];
-        Edges.emplace_back(Edge(i, MaxSize + Size2 + i, val));
+        const Edge localEdge(i, MaxSize + Size2 + i, val);
+        Edges.emplace_back(localEdge);
       }
 
       for(unsigned int j = 0, k = MaxSize; j < Size2; ++j, ++k) {
         auto val = (*C_)[Size1][j];
-        Edges.emplace_back(Edge(Size1 + (k - MaxSize), k, val));
+        const Edge localEdge(Size1 + (k - MaxSize), k, val);
+        Edges.emplace_back(localEdge);
       }
 
       std::sort(Edges.begin(), Edges.end());

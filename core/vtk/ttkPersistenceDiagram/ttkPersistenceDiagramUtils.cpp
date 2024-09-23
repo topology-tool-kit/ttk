@@ -11,7 +11,7 @@
 #include <vtkTransformFilter.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkVersion.h> // for VTK_VERSION_CHECK via ParaView 5.8.1
+#include <vtkVersionMacros.h> // for VTK_VERSION_CHECK
 
 int VTUToDiagram(ttk::DiagramType &diagram,
                  vtkUnstructuredGrid *vtu,
@@ -22,20 +22,20 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   const auto points = vtu->GetPoints();
 
   if(pd == nullptr) {
-    dbg.printErr("VTU diagram with NULL Point Data");
+    dbg.printWrn("VTU diagram with NULL Point Data");
     return -1;
   }
   if(cd == nullptr) {
-    dbg.printErr("VTU diagram with NULL Cell Data");
+    dbg.printWrn("VTU diagram with NULL Cell Data");
     return -2;
   }
   if(points == nullptr) {
-    dbg.printErr("VTU with no points");
+    dbg.printWrn("VTU with no points");
     return -3;
   }
 
   // cell data
-  const auto pairId = vtkIntArray::SafeDownCast(
+  const auto pairId = ttkSimplexIdTypeArray::SafeDownCast(
     cd->GetArray(ttk::PersistencePairIdentifierName));
   const auto pairType
     = vtkIntArray::SafeDownCast(cd->GetArray(ttk::PersistencePairTypeName));
@@ -44,8 +44,8 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   const auto isFinite = cd->GetArray(ttk::PersistenceIsFinite);
 
   // point data
-  const auto vertexId
-    = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
+  const auto vertexId = ttkSimplexIdTypeArray::SafeDownCast(
+    pd->GetArray(ttk::VertexScalarFieldName));
   const auto critType
     = vtkIntArray::SafeDownCast(pd->GetArray(ttk::PersistenceCriticalTypeName));
   const auto coords = vtkFloatArray::SafeDownCast(
@@ -54,31 +54,31 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   const bool embed = coords == nullptr;
 
   if(pairId == nullptr) {
-    dbg.printErr("Missing PairIdentifier cell data array");
+    dbg.printWrn("Missing PairIdentifier cell data array");
     return -5;
   }
   if(pairType == nullptr) {
-    dbg.printErr("Missing PairType cell data array");
+    dbg.printWrn("Missing PairType cell data array");
     return -6;
   }
   if(pairPers == nullptr) {
-    dbg.printErr("Missing Persistence cell data array");
+    dbg.printWrn("Missing Persistence cell data array");
     return -7;
   }
   if(vertexId == nullptr) {
-    dbg.printErr("Missing ttkVertexScalarField point data array");
+    dbg.printWrn("Missing ttkVertexScalarField point data array");
     return -8;
   }
   if(critType == nullptr) {
-    dbg.printErr("Missing CriticalType point data array");
+    dbg.printWrn("Missing CriticalType point data array");
     return -9;
   }
   if(birthScalars == nullptr) {
-    dbg.printErr("Missing Birth cell data array");
+    dbg.printWrn("Missing Birth cell data array");
     return -10;
   }
   if(isFinite == nullptr) {
-    dbg.printErr("Missing IsFinite cell data array");
+    dbg.printWrn("Missing IsFinite cell data array");
     return -12;
   }
 
@@ -95,7 +95,7 @@ int VTUToDiagram(ttk::DiagramType &diagram,
   }
 
   if(nPairs < 1) {
-    dbg.printErr("Diagram has no pairs");
+    dbg.printWrn("Diagram has no pairs");
     return -4;
   }
 
@@ -161,7 +161,7 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
                  const bool embedInDomain) {
 
   if(diagram.empty()) {
-    dbg.printErr("Empty diagram");
+    dbg.printWrn("Empty diagram");
     return -1;
   }
 
@@ -169,7 +169,7 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
   const auto cd = vtu->GetCellData();
 
   if(pd == nullptr || cd == nullptr) {
-    dbg.printErr("Grid has no point data or no cell data");
+    dbg.printWrn("Grid has no point data or no cell data");
     return -2;
   }
 
@@ -206,12 +206,12 @@ int DiagramToVTU(vtkUnstructuredGrid *vtu,
   pairsDim->SetNumberOfTuples(diagram.size());
   cd->AddArray(pairsDim);
 
-  vtkSmartPointer<vtkDataArray> persistence{inputScalars->NewInstance()};
+  vtkSmartPointer<vtkDataArray> const persistence{inputScalars->NewInstance()};
   persistence->SetName(ttk::PersistenceName);
   persistence->SetNumberOfTuples(diagram.size());
   cd->AddArray(persistence);
 
-  vtkSmartPointer<vtkDataArray> birthScalars{inputScalars->NewInstance()};
+  vtkSmartPointer<vtkDataArray> const birthScalars{inputScalars->NewInstance()};
   birthScalars->SetName(ttk::PersistenceBirthName);
   birthScalars->SetNumberOfTuples(diagram.size());
   cd->AddArray(birthScalars);
@@ -386,7 +386,7 @@ int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
   auto pers = inputDiagram->GetCellData()->GetArray(ttk::PersistenceName);
 
   if(birth == nullptr || pers == nullptr) {
-    dbg.printErr("Missing Birth or Persistence arrays");
+    dbg.printWrn("Missing Birth or Persistence arrays");
     return 1;
   }
 
@@ -402,7 +402,7 @@ int ProjectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
 
   if(birth->GetNumberOfTuples() != nPoints / 2
      || pers->GetNumberOfTuples() != nPoints / 2) {
-    dbg.printErr("Wrong number of tuples for Birth or Persistence arrays");
+    dbg.printWrn("Wrong number of tuples for Birth or Persistence arrays");
     return 2;
   }
 

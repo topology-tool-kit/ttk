@@ -61,10 +61,10 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   for(size_t k = 0; k < trackings.size(); ++k) {
     const ttk::trackingTuple &tt = trackings[k];
 
-    int numStart = std::get<0>(tt);
+    int const numStart = std::get<0>(tt);
     //     int numEnd = std::get<1>(tt);
     const std::vector<ttk::SimplexId> &chain = std::get<2>(tt);
-    int chainLength = chain.size();
+    int const chainLength = chain.size();
 
     if(chainLength <= 1) {
       dbg.printErr("Got an unexpected 0-size chain.");
@@ -73,8 +73,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
     for(int c = 0; c < chainLength - 1; ++c) {
       const auto &matchings1 = outputMatchings[numStart + c];
-      int d1id = numStart + c;
-      int d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
+      int const d1id = numStart + c;
+      int const d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
       const auto &diagram1 = inputPersistenceDiagrams[d1id];
       const auto &diagram2 = inputPersistenceDiagrams[d2id];
 
@@ -141,10 +141,10 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       if(doPostProc) {
         const auto &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
-          int min = *(connected.begin());
+          int const min = *(connected.begin());
           const ttk::trackingTuple &ttt = trackings[min];
           // int numStart2 = std::get<0>(ttt);
-          int numEnd2 = std::get<1>(ttt);
+          int const numEnd2 = std::get<1>(ttt);
           if((numEnd2 > 0 && numStart + c > numEnd2 + 1) && min < (int)k) {
             dbg.printMsg("Switched " + std::to_string(k) + " for "
                          + std::to_string(min));
@@ -227,11 +227,11 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
                                   || point2Type2 == CriticalType::Saddle2
                                 ? CriticalType::Saddle2
                                 : CriticalType::Saddle1;
-      bool t21Ex = point2Type1 == CriticalType::Local_minimum
-                   || point2Type1 == CriticalType::Local_maximum;
-      bool t22Ex = point2Type2 == CriticalType::Local_minimum
-                   || point2Type2 == CriticalType::Local_maximum;
-      bool bothEx2 = t21Ex && t22Ex;
+      bool const t21Ex = point2Type1 == CriticalType::Local_minimum
+                         || point2Type1 == CriticalType::Local_maximum;
+      bool const t22Ex = point2Type2 == CriticalType::Local_minimum
+                         || point2Type2 == CriticalType::Local_maximum;
+      bool const bothEx2 = t21Ex && t22Ex;
       if(bothEx2) {
         x2 = point2Type2 == CriticalType::Local_maximum ? pair1.death.coords[0]
                                                         : pair1.birth.coords[0];
@@ -295,7 +295,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::GetData(outputVector, 0);
 
   // Number of input files
-  int numInputs = inputVector[0]->GetNumberOfInformationObjects();
+  int const numInputs = inputVector[0]->GetNumberOfInformationObjects();
   this->printMsg("Number of inputs: " + std::to_string(numInputs));
 
   // Get input data
@@ -309,10 +309,10 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   std::vector<std::vector<ttk::MatchingType>> outputMatchings(numInputs - 1);
 
   // Input parameters.
-  double spacing = Spacing;
-  std::string algorithm = DistanceAlgorithm;
-  double tolerance = Tolerance;
-  std::string wasserstein = WassersteinMetric;
+  double const spacing = Spacing;
+  std::string const algorithm = DistanceAlgorithm;
+  double const tolerance = Tolerance;
+  std::string const wasserstein = WassersteinMetric;
 
   // Transform inputs into the right structure.
   for(int i = 0; i < numInputs; ++i) {
@@ -331,7 +331,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     outputDiags[2 * i + 0]->ShallowCopy(inputVTUs[i]);
     outputDiags[2 * i + 1]->ShallowCopy(inputVTUs[i + 1]);
 
-    int status = augmentDiagrams(
+    int const status = augmentDiagrams(
       outputMatchings[i], outputDiags[2 * i + 0], outputDiags[2 * i + 1]);
     if(status < 0)
       return -2;
@@ -369,8 +369,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
 
   vtkUnstructuredGrid *outputMesh = vtkUnstructuredGrid::SafeDownCast(mesh);
 
-  vtkNew<vtkPoints> points{};
-  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
+  vtkNew<vtkPoints> const points{};
+  vtkNew<vtkUnstructuredGrid> const persistenceDiagram{};
 
   vtkNew<vtkDoubleArray> persistenceScalars{};
   vtkNew<vtkDoubleArray> valueScalars{};
@@ -399,7 +399,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
                              trackingTupleToMerged, PostProcThresh);
 
   // bool Is3D = true;
-  bool useGeometricSpacing = UseGeometricSpacing;
+  bool const useGeometricSpacing = UseGeometricSpacing;
   // auto spacing = (float) Spacing;
 
   // std::vector<trackingTuple> trackings = *trackingsBase;

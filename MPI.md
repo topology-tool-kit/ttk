@@ -8,7 +8,7 @@ In order to use MPI, Paraview needs to be compiled with MPI support. This can be
 parallelized using both threads and MPI processes simultaneously. Some filters require the use of threads to function using MPI. To measure the computation time of a TTK filter, the variable `TTK_ENABLE_MPI_TIME` needs to be set to `ON`.
 
 ### Environment variables
-Some TTK filters require a level of thread support not provided by Paraview by default. Obtaining the right level of thread support is MPI implementation dependent. For OpenMPI, it is done by setting the environment variable ` OMPI_MPI_THREAD_LEVEL` to 1. For MPICH, it is done by setting the environment variable `MPIR_CVAR_DEFAULT_THREAD_LEVEL` to 1. 
+Some TTK filters require a level of thread support not provided by Paraview by default. Obtaining the right level of thread support is MPI implementation dependent. For OpenMPI, it is done by setting the environment variable ` OMPI_MPI_THREAD_LEVEL` to `MPI_FUNNELELD` (here, 1). For MPICH, it is done by setting the environment variable `MPIR_CVAR_DEFAULT_THREAD_LEVEL` to 1. 
 
 To specify the number of threads to use during execution, the environment variable `OMP_NUM_THREADS` can be used.
 

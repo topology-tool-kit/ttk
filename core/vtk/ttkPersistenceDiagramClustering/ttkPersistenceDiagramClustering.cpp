@@ -78,6 +78,13 @@ int ttkPersistenceDiagramClustering::RequestData(
     this->printErr("No input detected");
     return 0;
   }
+  if(numInputs != 2 and NonMatchingWeight != 1.0) {
+    // We need to modify the update of the barycenter by taking into account the
+    // non-matching weight
+    printWrn("Custom weight only supported for pairwise distance.");
+    printWrn("Non-matching weight is set to 1.");
+    NonMatchingWeight = 1.0;
+  }
 
   // Get output pointers
   auto output_clusters = vtkMultiBlockDataSet::GetData(outputVector, 0);
@@ -147,6 +154,8 @@ int ttkPersistenceDiagramClustering::RequestData(
       pdBarycenter.setThreadNumber(threadNumber_);
       pdBarycenter.setAlpha(Alpha);
       pdBarycenter.setLambda(Lambda);
+      pdBarycenter.setNonMatchingWeight(NonMatchingWeight);
+      pdBarycenter.setDeltaLim(DeltaLim);
       pdBarycenter.execute(
         intermediateDiagrams_, final_centroids_[0], all_matchings_);
 
@@ -259,12 +268,14 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     vtu->GetPointData()->AddArray(pointPers);
 
     // diagonal uses two existing points
+    const auto persArray = vtu->GetCellData()->GetArray("Persistence");
     for(int j = 0; j < vtu->GetNumberOfCells() - 1; ++j) {
-      const auto persArray = vtu->GetCellData()->GetArray("Persistence");
       const auto pers = persArray->GetTuple1(j);
       pointPers->SetTuple1(2 * j + 0, pers);
       pointPers->SetTuple1(2 * j + 1, pers);
     }
+    pointPers->SetTuple1(vtu->GetNumberOfPoints() - 1,
+                         persArray->GetTuple1(vtu->GetNumberOfCells() - 1));
 
     const auto cid = inv_clustering[i];
     const auto &matchings{matchingsPerCluster[cid][i]};

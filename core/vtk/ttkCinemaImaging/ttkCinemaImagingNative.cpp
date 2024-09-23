@@ -38,7 +38,7 @@ int ttk::ttkCinemaImagingNative::RenderVTKObject(
   this->printMsg(ttk::debug::Separator::L2);
   float *samplingPositions
     = static_cast<float *>(ttkUtils::GetVoidPointer(inputGrid->GetPoints()));
-  int nSamplingPositions = inputGrid->GetNumberOfPoints();
+  int const nSamplingPositions = inputGrid->GetNumberOfPoints();
   auto camParameters = inputGrid->GetPointData();
   auto camUp = static_cast<double *>(
     ttkUtils::GetVoidPointer(camParameters->GetArray("CamUp")));
@@ -59,7 +59,7 @@ int ttk::ttkCinemaImagingNative::RenderVTKObject(
     ttkUtils::GetVoidPointer(inputObjectCells->GetConnectivityArray()));
 
   ttk::Timer test;
-  BoundingVolumeHierarchy<vtkIdType> bvh(
+  BoundingVolumeHierarchy<vtkIdType> const bvh(
     static_cast<float *>(ttkUtils::GetVoidPointer(inputObject->GetPoints())),
     inputObjectConnectivityList, inputObjectCells->GetNumberOfCells());
 
@@ -77,7 +77,7 @@ int ttk::ttkCinemaImagingNative::RenderVTKObject(
     outputImage->SetOrigin(0, 0, 0);
     outputImage->AllocateScalars(VTK_FLOAT, 1);
 
-    size_t nPixels = resolution[i * 2] * resolution[i * 2 + 1];
+    size_t const nPixels = resolution[i * 2] * resolution[i * 2 + 1];
     auto outputImagePD = outputImage->GetPointData();
 
     auto depthBuffer = outputImagePD->GetArray(0);

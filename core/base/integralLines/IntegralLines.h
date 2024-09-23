@@ -12,6 +12,11 @@
 /// lines along the edges of the input triangulation.
 ///
 /// \sa ttkIntegralLines.cpp %for a usage example.
+///
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
 
 #pragma once
 
@@ -403,9 +408,9 @@ void ttk::IntegralLines::receiveElement(
 
   // Create integral line object on this process
   int threadNum{0};
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
   threadNum = omp_get_thread_num();
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
 
   ttk::intgl::IntegralLine *integralLine
     = outputIntegralLines_->at(threadNum).addArrayElement(
@@ -463,14 +468,14 @@ void ttk::IntegralLines::storeToSendIfNecessary(
           = integralLine->localVertexIdentifier.back();
         element.LocalVertexIdentifier1
           = integralLine->localVertexIdentifier.at(size - 2);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
         toSend_
           ->at(neighborsToId_.find(rankArray)->second)[omp_get_thread_num()]
           .push_back(element);
 #else
         toSend_->at(neighborsToId_.find(rankArray)->second)[0].push_back(
           element);
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
         isMax = true;
       }
     }
@@ -484,7 +489,7 @@ inline void
                                      ttk::SimplexId &fnext,
                                      std::vector<ttk::SimplexId> &component,
                                      const SimplexId *offsets) const {
-  ttk::SimplexId elementInComponentNumber = component.size();
+  ttk::SimplexId const elementInComponentNumber = component.size();
   for(ttk::SimplexId k = 0; k < elementInComponentNumber; ++k) {
     if(direction_ == static_cast<int>(Direction::Forward)) {
       if(fnext < offsets[component[k]]) {
@@ -516,7 +521,7 @@ void ttk::IntegralLines::computeIntegralLine(
     std::vector<std::vector<ttk::SimplexId>> upperComponents;
     std::vector<std::vector<ttk::SimplexId>> lowerComponents;
     // Computation of the critical type
-    char criticalType
+    char const criticalType
       = this->scalarFieldCriticalPoints_.getCriticalType<triangulationType>(
         v, offsets, triangulation, &upperComponents, &lowerComponents);
     // End of integral line if an appropriate maxima is reached
@@ -528,9 +533,9 @@ void ttk::IntegralLines::computeIntegralLine(
 #ifdef TTK_ENABLE_MPI
       if(ttk::isRunningWithMPI()
          && triangulation->getVertexRank(v) == ttk::MPIrank_) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic update seq_cst
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
         ttk::intgl::finishedElement_++;
       } else {
         this->storeToSendIfNecessary<triangulationType>(
@@ -550,15 +555,15 @@ void ttk::IntegralLines::computeIntegralLine(
          && EnableForking) {
         // For each connected components, the max (or the min) is computed
         // and a task is created to further the computation of the integral line
-        ttk::SimplexId numberOfComponents = components->size();
+        ttk::SimplexId const numberOfComponents = components->size();
 #ifdef TTK_ENABLE_MPI
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic update seq_cst
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
         ttk::intgl::finishedElement_++;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp atomic update seq_cst
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
         ttk::intgl::addedElement_ += numberOfComponents;
 #endif
         isMax = true;
@@ -571,14 +576,14 @@ void ttk::IntegralLines::computeIntegralLine(
           ttk::SimplexId forkIdentifier
             = triangulation->getVertexGlobalId(vnext);
 #else
-          ttk::SimplexId forkIdentifier = vnext;
+          ttk::SimplexId const forkIdentifier = vnext;
 #endif
           triangulation->getVertexPoint(vnext, p1[0], p1[1], p1[2]);
-          double distanceFork = Geometry::distance(p0, p1, 3);
+          double const distanceFork = Geometry::distance(p0, p1, 3);
           int threadNum{0};
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
           threadNum = omp_get_thread_num();
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
           ttk::intgl::IntegralLine *integralLineFork
             = outputIntegralLines_->at(threadNum).addArrayElement(
               ttk::intgl::IntegralLine{
@@ -589,10 +594,10 @@ void ttk::IntegralLines::computeIntegralLine(
                    integralLine->localVertexIdentifier.back() + 1}),
                 integralLine->seedIdentifier, forkIdentifier});
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(integralLineFork)
           {
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
 #ifdef TTK_ENABLE_MPI
             bool hasBeenSent = false;
             this->storeToSendIfNecessary<triangulationType>(
@@ -604,15 +609,15 @@ void ttk::IntegralLines::computeIntegralLine(
 #ifdef TTK_ENABLE_MPI
             }
 #endif
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
           }
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
         }
       } else {
         // In case the vertex is not a saddle point, all neighbor vertices
         // are used for the computation
         components->clear();
-        ttk::SimplexId neighborNumber
+        ttk::SimplexId const neighborNumber
           = triangulation->getVertexNeighborNumber(v);
         components->push_back(std::vector<ttk::SimplexId>());
         ttk::SimplexId id;
@@ -655,7 +660,7 @@ void ttk::IntegralLines::prepareForTask(
   std::vector<SimplexId> *seeds) const {
 
   for(SimplexId j = 0; j < nbElement; j++) {
-    SimplexId v{seeds->at(j + startingIndex)};
+    SimplexId const v{seeds->at(j + startingIndex)};
     int seedIdentifier;
 #ifdef TTK_ENABLE_MPI
     seedIdentifier = triangulation->getVertexGlobalId(v);
@@ -663,9 +668,9 @@ void ttk::IntegralLines::prepareForTask(
     seedIdentifier = v;
 #endif
     int threadNum{0};
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
     threadNum = omp_get_thread_num();
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
     chunkIntegralLine[j] = outputIntegralLines_->at(threadNum).addArrayElement(
       ttk::intgl::IntegralLine{
         std::vector<ttk::SimplexId>(1, v), std::vector<double>(1, 0),
@@ -679,17 +684,17 @@ void ttk::IntegralLines::createTask(
   std::vector<ttk::intgl::IntegralLine *> &chunkIntegralLine,
   const ttk::SimplexId *offsets,
   int nbElement) const {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(chunkIntegralLine)
   {
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
     for(int j = 0; j < nbElement; j++) {
       this->computeIntegralLine<triangulationType>(
         triangulation, chunkIntegralLine[j], offsets);
     }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
   }
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
 }
 
 template <class triangulationType>
@@ -705,8 +710,8 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
   Timer t;
 
   std::vector<ttk::intgl::IntegralLine *> chunkIntegralLine(chunkSize_);
-  int taskNumber = (int)seedNumber_ / chunkSize_;
-#ifdef TTK_ENABLE_OPENMP
+  int const taskNumber = (int)seedNumber_ / chunkSize_;
+#ifdef TTK_ENABLE_OPENMP4
 #ifdef TTK_ENABLE_MPI
 #pragma omp parallel shared(                                        \
   ttk::intgl::finishedElement_, toSend_, ttk::intgl::addedElement_) \
@@ -718,14 +723,14 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
 #endif // TTK_ENABLE_MPI
 #pragma omp master
     {
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
       for(SimplexId i = 0; i < taskNumber; ++i) {
         this->prepareForTask<triangulationType>(
           triangulation, chunkIntegralLine, i * chunkSize_, chunkSize_, seeds);
         this->createTask<triangulationType>(
           triangulation, chunkIntegralLine, offsets, chunkSize_);
       }
-      int rest = seedNumber_ % chunkSize_;
+      int const rest = seedNumber_ % chunkSize_;
       if(rest > 0) {
         this->prepareForTask<triangulationType>(
           triangulation, chunkIntegralLine, taskNumber * chunkSize_, rest,
@@ -733,7 +738,7 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
         this->createTask<triangulationType>(
           triangulation, chunkIntegralLine, offsets, rest);
       }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
     }
   }
 #endif
@@ -809,13 +814,13 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
           send_buf[i].clear();
         }
         // Extraction of the received data and creation of the tasks
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel shared(ttk::intgl::finishedElement_, toSend_) \
   num_threads(threadNumber_)
         {
 #pragma omp master
           {
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
             index = 0;
             taskSize = std::min(
               (ttk::SimplexId)std::max(totalMessageSize / (threadNumber_ * 100),
@@ -833,10 +838,10 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
               this->createTask<triangulationType>(
                 triangulation, chunkIntegralLine, offsets, index);
             }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
           }
         }
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
       }
     }
   }
@@ -864,7 +869,7 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   ttk::SimplexId realCellNumber = 0;
   ttk::SimplexId intervalSize;
   // Counts vertices and edges number (with and without ghosts)
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for reduction(+:outputVertexNumber,outputCellNumber,realCellNumber,realVertexNumber) schedule(static,1) private(intervalSize)
 #endif
   for(int thread = 0; thread < threadNumber_; thread++) {
@@ -1041,7 +1046,7 @@ inline int ttk::IntegralLines::exchangeGhosts(
     globalIdsToReceive[i].resize(2 * unmatchedGhosts[i].size());
   }
   // The sending buffer is prepared
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for
 #endif
   for(int i = 0; i < neighborNumber_; i++) {
@@ -1063,7 +1068,7 @@ inline int ttk::IntegralLines::exchangeGhosts(
   }
   // The global identifiers of ghosts are inserted in the globalVertexId
   // and globalCellId vectors
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for
 #endif
   for(int i = 0; i < neighborNumber_; i++) {

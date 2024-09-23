@@ -68,7 +68,8 @@ int ttkIdentifyByScalarField::RequestData(vtkInformation *ttkNotUsed(request),
   if(!inputScalars_)
     return 0;
 
-  int inputArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
+  int const inputArrayAssociation
+    = this->GetInputArrayAssociation(0, inputVector);
 
   if(inputArrayAssociation > 1 || inputArrayAssociation < 0) {
     printErr("input array has to be cell data or point data.");
@@ -91,7 +92,7 @@ int ttkIdentifyByScalarField::RequestData(vtkInformation *ttkNotUsed(request),
 
   this->printMsg("Computing Identifiers", 1, t.getElapsedTime(), 1);
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> ids
+  vtkSmartPointer<ttkSimplexIdTypeArray> const ids
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   ids->SetNumberOfComponents(1);
   ids->SetNumberOfTuples(numberOfValues);

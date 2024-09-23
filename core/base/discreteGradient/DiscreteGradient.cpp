@@ -24,11 +24,26 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
   }
 
   // clear & init gradient memory
-  for(int i = 0; i < dimensionality_; ++i) {
-    (*gradient_)[2 * i].clear();
-    (*gradient_)[2 * i].resize(numberOfCells[i], -1);
-    (*gradient_)[2 * i + 1].clear();
-    (*gradient_)[2 * i + 1].resize(numberOfCells[i + 1], -1);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel master num_threads(threadNumber_)
+#endif
+  {
+    for(int i = 0; i < dimensionality_; ++i) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+      {
+        (*gradient_)[2 * i].clear();
+        (*gradient_)[2 * i].resize(numberOfCells[i], -1);
+      }
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+      {
+        (*gradient_)[2 * i + 1].clear();
+        (*gradient_)[2 * i + 1].resize(numberOfCells[i + 1], -1);
+      }
+    }
   }
 
   std::vector<std::vector<std::string>> rows{

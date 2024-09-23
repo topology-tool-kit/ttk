@@ -10,7 +10,7 @@ bool ttk::GabowTarjan::DFS(int v) {
 
   // for every adjacent vertex u of v
   for(unsigned int i = 0; i < Connections[v].size(); ++i) {
-    int u = Connections[v][i];
+    const int u = Connections[v][i];
     if(Layers[Pair[u] + 1] == Layers[v + 1] + 1) {
       if(DFS(Pair[u])) {
         Pair[u] = v;
@@ -46,11 +46,11 @@ bool ttk::GabowTarjan::BFS() {
 
   // Search the vertices in the queue
   while(!vertexQueue.empty()) {
-    int v = vertexQueue.front();
+    const int v = vertexQueue.front();
     vertexQueue.pop();
     if(Layers[v + 1] > Layers[0]) {
       for(unsigned int i = 0; i < Connections[v].size(); ++i) {
-        int u = Connections[v][i];
+        const int u = Connections[v][i];
         // Check if the vertex has an edge to the match vertex
         if(Layers[Pair[u] + 1] < 0) {
           // Set the layer of the vertex (it can be NIL) which is matched to the
@@ -100,19 +100,17 @@ double ttk::GabowTarjan::Distance() {
   // First non added edge is an iterator pointing to the first edge
   // in Edges which was added to the Connections
   unsigned int firstNotAddedEdge = 0;
-  unsigned int nbEdges = (unsigned int)Edges.size();
+  const unsigned int nbEdges = (unsigned int)Edges.size();
 
   unsigned int lowerBound = 0;
   unsigned int upperBound = nbEdges;
   unsigned int guessEdge = (lowerBound + nbEdges) / 2;
 
-  std::map<int, int> offPairings;
-
   // Repeat till all the vertices are matched
   while(matching < MaxSize) {
     // Save initial matching.
     matching0 = matching;
-    unsigned int oldGuessEdge = guessEdge;
+    const unsigned int oldGuessEdge = guessEdge;
 
     currentWeight = Edges[guessEdge].weight;
     while(Edges[guessEdge].weight == currentWeight && guessEdge < nbEdges)
@@ -124,8 +122,8 @@ double ttk::GabowTarjan::Distance() {
 
     // Add the edges with the current weight (distance) to the connection matrix
     while(firstNotAddedEdge >= guessEdge) {
-      int v1 = Edges[firstNotAddedEdge].v1;
-      int v2 = Edges[firstNotAddedEdge].v2;
+      const int v1 = Edges[firstNotAddedEdge].v1;
+      const int v2 = Edges[firstNotAddedEdge].v2;
 
       std::vector<int> vec1 = Connections[v1];
       vec1.erase(std::remove(vec1.begin(), vec1.end(), v2), vec1.end());
@@ -137,8 +135,8 @@ double ttk::GabowTarjan::Distance() {
     // Edges[firstNotAddedEdge].weight == currentWeight && firstNotAddedEdge <
     // nbEdges
     while(firstNotAddedEdge < guessEdge) {
-      int v1 = Edges[firstNotAddedEdge].v1;
-      int v2 = Edges[firstNotAddedEdge].v2;
+      const int v1 = Edges[firstNotAddedEdge].v1;
+      const int v2 = Edges[firstNotAddedEdge].v2;
 
       Connections[v1].push_back(v2);
       ++firstNotAddedEdge;
@@ -175,8 +173,6 @@ double ttk::GabowTarjan::Distance() {
 
       // Check if we did not run out of edges. This should never happen.
       if(firstNotAddedEdge == nbEdges) {
-        std::stringstream msg;
-        ttk::Debug d;
         this->printMsg("Not enough edges to find the matching!");
         // return -1;
         return currentWeight;
@@ -199,14 +195,14 @@ double ttk::GabowTarjan::Distance() {
 }
 
 void ttk::GabowTarjan::printCurrentMatching() {
-  int size = 2 * MaxSize;
+  const int size = 2 * MaxSize;
   std::vector<int> missedPlaces;
 
   {
     std::stringstream msg;
     msg << "Assignment matrix: " << std::endl;
     for(int i = 0; i < size; ++i) {
-      int k = Pair[i];
+      const int k = Pair[i];
       if(k < 0 || k > size)
         missedPlaces.push_back(i);
       for(int j = 0; j < size; ++j) {
@@ -220,7 +216,6 @@ void ttk::GabowTarjan::printCurrentMatching() {
 
   {
     std::stringstream msg;
-    ttk::Debug d;
     msg << "Missed:" << std::endl;
     for(unsigned int i = 0; i < missedPlaces.size(); ++i) {
       msg << missedPlaces.at(i) << " ";
@@ -232,7 +227,7 @@ void ttk::GabowTarjan::printCurrentMatching() {
 
 int ttk::GabowTarjan::run(std::vector<MatchingType> &matchings) {
   // Compute distance.
-  double dist = this->Distance();
+  const double dist = this->Distance();
   this->printMsg("Computed distance " + std::to_string(dist));
 
   // Fill matchings.
@@ -242,7 +237,7 @@ int ttk::GabowTarjan::run(std::vector<MatchingType> &matchings) {
     if(Pair[i] == -1)
       continue;
 
-    int j = Pair[i] - MaxSize;
+    const int j = Pair[i] - MaxSize;
     if(j <= -1 || (j < (int)Size2 && Pair[j + MaxSize] != (int)i)) {
       this->printErr("Hopcroft-Karp built an invalid matching.");
       // return -1;
@@ -259,7 +254,7 @@ int ttk::GabowTarjan::run(std::vector<MatchingType> &matchings) {
     if(Pair[j] == -1)
       continue;
 
-    int i = Pair[j] - MaxSize - Size2;
+    const int i = Pair[j] - MaxSize - Size2;
     if(i > -1 && (i >= (int)Size1 || Pair[i + MaxSize + Size2] != (int)j)) {
       this->printErr("Hopcroft-Karp built an invalid matching.");
       // return -1;

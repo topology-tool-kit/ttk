@@ -38,11 +38,12 @@ int ttkIcosphere::RequestData(vtkInformation *ttkNotUsed(request),
                               vtkInformationVector **ttkNotUsed(inputVector),
                               vtkInformationVector *outputVector) {
   // get parameter
-  size_t nSpheres = this->Centers ? this->Centers->GetNumberOfTuples() : 1;
-  size_t nSubdivisions = this->GetNumberOfSubdivisions();
-  double radius = this->GetRadius();
+  size_t const nSpheres
+    = this->Centers ? this->Centers->GetNumberOfTuples() : 1;
+  size_t const nSubdivisions = this->GetNumberOfSubdivisions();
+  double const radius = this->GetRadius();
 
-  bool useDoublePrecision
+  bool const useDoublePrecision
     = this->Centers ? this->Centers->GetDataType() == VTK_DOUBLE : false;
 
   // prepare the output buffers

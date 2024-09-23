@@ -27,12 +27,12 @@ void ttk::PersistenceDiagramBarycenter::execute(
     DiagramType &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
-      PersistencePair &t = CTDiagram[j];
+      PersistencePair const &t = CTDiagram[j];
 
-      ttk::CriticalType nt1 = t.birth.type;
-      ttk::CriticalType nt2 = t.death.type;
+      ttk::CriticalType const nt1 = t.birth.type;
+      ttk::CriticalType const nt2 = t.death.type;
 
-      double dt = t.persistence();
+      double const dt = t.persistence();
       // if (abs<double>(dt) < zeroThresh) continue;
       if(dt > 0) {
         if(nt1 == ttk::CriticalType::Local_minimum
@@ -99,7 +99,9 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_min.setEarlyStoppage(early_stoppage_);
     bary_min.setEpsilonDecreases(epsilon_decreases_);
     bary_min.setReinitPrices(reinit_prices_);
+    bary_min.setNonMatchingWeight(nonMatchingWeight_);
     bary_min.setDiagrams(&data_min);
+    bary_min.setDeltaLim(delta_lim_);
     matching_min = bary_min.execute(barycenter_min);
     min_cost = bary_min.getCost();
     total_cost += min_cost;
@@ -126,7 +128,9 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_sad.setEpsilonDecreases(epsilon_decreases_);
     bary_sad.setDeterministic(deterministic_);
     bary_sad.setReinitPrices(reinit_prices_);
+    bary_sad.setNonMatchingWeight(nonMatchingWeight_);
     bary_sad.setDiagrams(&data_sad);
+    bary_sad.setDeltaLim(delta_lim_);
     matching_sad = bary_sad.execute(barycenter_sad);
     sad_cost = bary_sad.getCost();
     total_cost += sad_cost;
@@ -153,7 +157,9 @@ void ttk::PersistenceDiagramBarycenter::execute(
     bary_max.setDeterministic(deterministic_);
     bary_max.setEpsilonDecreases(epsilon_decreases_);
     bary_max.setReinitPrices(reinit_prices_);
+    bary_max.setNonMatchingWeight(nonMatchingWeight_);
     bary_max.setDiagrams(&data_max);
+    bary_max.setDeltaLim(delta_lim_);
     matching_max = bary_max.execute(barycenter_max);
     max_cost = bary_max.getCost();
     total_cost += max_cost;
@@ -169,7 +175,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     if(do_min) {
       for(size_t j = 0; j < matching_min[i].size(); j++) {
         MatchingType t = matching_min[i][j];
-        int bidder_id = std::get<0>(t);
+        int const bidder_id = std::get<0>(t);
         std::get<0>(t) = data_min_idx[i][bidder_id];
         if(std::get<1>(t) < 0) {
           std::get<1>(t) = -1;
@@ -181,7 +187,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     if(do_sad) {
       for(size_t j = 0; j < matching_sad[i].size(); j++) {
         MatchingType t = matching_sad[i][j];
-        int bidder_id = std::get<0>(t);
+        int const bidder_id = std::get<0>(t);
         std::get<0>(t) = data_sad_idx[i][bidder_id];
         if(std::get<1>(t) >= 0) {
           std::get<1>(t) = std::get<1>(t) + barycenter_min.size();
@@ -195,7 +201,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
     if(do_max) {
       for(size_t j = 0; j < matching_max[i].size(); j++) {
         MatchingType t = matching_max[i][j];
-        int bidder_id = std::get<0>(t);
+        int const bidder_id = std::get<0>(t);
         std::get<0>(t) = data_max_idx[i][bidder_id];
         if(std::get<1>(t) >= 0) {
           std::get<1>(t)
@@ -207,7 +213,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
       }
     }
   }
-  // Reconstruct barcenter
+  // Reconstruct barycenter
   for(size_t j = 0; j < barycenter_min.size(); j++) {
     const auto &dt = barycenter_min[j];
     barycenter.push_back(dt);
@@ -243,8 +249,8 @@ void ttk::PersistenceDiagramBarycenter::execute(
     DiagramType &CTDiagram = intermediateDiagrams[i];
     for(unsigned j = 0; j < all_matchings[0][i].size(); j++) {
       MatchingType t = all_matchings[0][i][j];
-      int bidder_id = std::get<0>(t);
-      int bary_id = std::get<1>(t);
+      int const bidder_id = std::get<0>(t);
+      int const bary_id = std::get<1>(t);
 
       const auto &bidder = CTDiagram[bidder_id];
       number_of_matchings_for_point[bary_id] += 1;

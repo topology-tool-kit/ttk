@@ -85,7 +85,7 @@ namespace ttk {
     }
     /// Add a vertex, returns it's index
     int addVertex() {
-      Vertex newVertex;
+      Vertex const newVertex;
       vertexList_.push_back(newVertex);
       return (int)vertexList_.size() - 1;
     }
@@ -96,7 +96,7 @@ namespace ttk {
     /// Add an edge between the vertex start and end, returns it's index
     int addEdge(const int &start, const int &end) {
       if((start < (int)vertexList_.size()) && (end < (int)vertexList_.size())) {
-        Edge newEdge(start, end);
+        Edge const newEdge(start, end);
         edgeList_.push_back(newEdge);
         vertexList_[start].edgeIdx_.push_back(edgeList_.size() - 1);
         vertexList_[end].edgeIdx_.push_back(edgeList_.size() - 1);
@@ -690,7 +690,7 @@ namespace ttk {
       int superArcId = tree->getVertexSuperArcId(vertexId);
       // If superArcId == -1, it may be a leaf so look for the nearest super arc
       if(superArcId == -1) {
-        int nodeId = tree->getVertexNodeId(vertexId);
+        int const nodeId = tree->getVertexNodeId(vertexId);
         if(tree->getNode(nodeId)->getNumberOfUpSuperArcs()) {
           superArcId = tree->getNode(nodeId)->getUpSuperArcId(0);
         } else if(tree->getNode(nodeId)->getNumberOfDownSuperArcs()) {
@@ -1002,7 +1002,7 @@ int ttk::MandatoryCriticalPoints::buildSubTrees(
   for(int i = 0; i < vertexNumber_; i++) {
     bool isLowerMin = true;
     bool isUpperMax = true;
-    SimplexId neighborNumber = triangulation.getVertexNeighborNumber(i);
+    SimplexId const neighborNumber = triangulation.getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
       SimplexId neighborId{-1};
       triangulation.getVertexNeighbor(i, j, neighborId);
@@ -1111,19 +1111,19 @@ int ttk::MandatoryCriticalPoints::computeSaddleComponent(
   idQueue.push(seedVertexId);
 
   while(!(idQueue.empty())) {
-    int vertexId = idQueue.front();
+    int const vertexId = idQueue.front();
     idQueue.pop();
     if(!isVisited[vertexId]) {
       isVisited[vertexId] = true;
-      double lowerValue = lowerVertexScalars_[vertexId];
-      double upperValue = upperVertexScalars_[vertexId];
+      double const lowerValue = lowerVertexScalars_[vertexId];
+      double const upperValue = upperVertexScalars_[vertexId];
       if((pointType == PointType::JoinSaddle && (!(lowerValue > upInterval))
           && (upperValue > lowInterval))
          || (pointType == PointType::SplitSaddle
              && (!(upperValue < lowInterval)) && (lowerValue < upInterval))) {
         componentVertexList.push_back(vertexId);
         // Neighbors
-        SimplexId neighborNumber
+        SimplexId const neighborNumber
           = triangulation.getVertexNeighborNumber(vertexId);
         for(SimplexId i = 0; i < neighborNumber; i++) {
           SimplexId neighborVertexId;

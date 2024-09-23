@@ -265,7 +265,7 @@ namespace ttk {
       }
 
       idSuperArc openArc(const idNode downId, Propagation *p = nullptr) {
-        idSuperArc newArc = arcs_.getNext();
+        idSuperArc const newArc = arcs_.getNext();
         arcs_[newArc].setDownNodeId(downId);
         if(p) {
           arcs_[newArc].setUfProp(p->getId());
@@ -288,7 +288,7 @@ namespace ttk {
       }
 
       idSuperArc makeHiddenArc(Propagation *const lp) {
-        idSuperArc newArc = arcs_.getNext();
+        idSuperArc const newArc = arcs_.getNext();
         arcs_[newArc].hide();
         arcs_[newArc].setUfProp(lp->getId());
         return newArc;

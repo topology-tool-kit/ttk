@@ -190,13 +190,14 @@ int ttk::ReebSpace::preMergeSheets(const SimplexId &sheetId0,
   // 1. add the vertices and tets of 0 to 1
   for(size_t i = 0; i < originalData_.sheet3List_[sheetId0].vertexList_.size();
       i++) {
-    SimplexId vertexId = originalData_.sheet3List_[sheetId0].vertexList_[i];
+    SimplexId const vertexId
+      = originalData_.sheet3List_[sheetId0].vertexList_[i];
     originalData_.sheet3List_[sheetId1].vertexList_.push_back(vertexId);
     originalData_.vertex2sheet3_[vertexId] = sheetId1;
   }
   for(size_t i = 0; i < originalData_.sheet3List_[sheetId0].tetList_.size();
       i++) {
-    SimplexId tetId = originalData_.sheet3List_[sheetId0].tetList_[i];
+    SimplexId const tetId = originalData_.sheet3List_[sheetId0].tetList_[i];
     originalData_.sheet3List_[sheetId1].tetList_.push_back(tetId);
     originalData_.tet2sheet3_[tetId] = sheetId1;
   }
@@ -260,7 +261,7 @@ int ttk::ReebSpace::prepareSimplification() {
 
       for(size_t j = 0; j < currentData_.sheet1List_[i].sheet0List_.size();
           j++) {
-        SimplexId sheet0Id = currentData_.sheet1List_[i].sheet0List_[j];
+        SimplexId const sheet0Id = currentData_.sheet1List_[i].sheet0List_[j];
         currentData_.sheet0List_[sheet0Id].pruned_ = true;
       }
     }

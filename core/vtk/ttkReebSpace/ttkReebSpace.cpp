@@ -47,7 +47,7 @@ int ttkReebSpace::dispatch(const dataTypeU *const uField,
                            const dataTypeV *const vField,
                            ttk::Triangulation *const triangulation) {
 
-  bool VaryingValues = this->setRangeDrivenOctree(UseOctreeAcceleration);
+  bool const VaryingValues = this->setRangeDrivenOctree(UseOctreeAcceleration);
 
   bool VaryingTriangulation = false;
   if(triangulation->isEmpty())
@@ -86,12 +86,18 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
   auto sheet2 = vtkUnstructuredGrid::GetData(outputVector, 2);
   auto sheet3 = vtkDataSet::GetData(outputVector, 3);
 
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    return -3;
+  }
+  this->preconditionTriangulation(triangulation);
+
   const auto uComponent = this->GetInputArrayToProcess(0, inputVector);
   const auto vComponent = this->GetInputArrayToProcess(1, inputVector);
-  const auto offsetFieldU
-    = this->GetOrderArray(input, 0, 2, ForceInputOffsetScalarField);
-  const auto offsetFieldV
-    = this->GetOrderArray(input, 1, 3, ForceInputOffsetScalarField);
+  const auto offsetFieldU = this->GetOrderArray(
+    input, 0, triangulation, false, 2, ForceInputOffsetScalarField);
+  const auto offsetFieldV = this->GetOrderArray(
+    input, 1, triangulation, false, 3, ForceInputOffsetScalarField);
 
   // check data components
 
@@ -101,12 +107,6 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
 
   this->printMsg("U-component: `" + std::string{uComponent->GetName()} + "'");
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(triangulation == nullptr) {
-    return -3;
-  }
-  this->preconditionTriangulation(triangulation);
 
   this->setSosOffsetsU(
     static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsetFieldU)));
@@ -145,7 +145,7 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
   const auto sheet0segmentation = this->get0sheetSegmentation();
   int vertexNumber = 0;
   for(size_t i = 0; i < sheet0segmentation->size(); i++) {
-    int sheet0Id = (*sheet0segmentation)[i];
+    int const sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
       const ReebSpace::Sheet0 *sheet = this->get0sheet(sheet0Id);
       if(sheet != nullptr && !sheet->pruned_) {
@@ -153,7 +153,7 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
       }
     }
   }
-  vtkNew<vtkPoints> sheet0Points{};
+  vtkNew<vtkPoints> const sheet0Points{};
   if(!sheet0->GetPoints())
     sheet0->SetPoints(sheet0Points);
 
@@ -198,7 +198,7 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
   vertexNumber = 0;
   double *p = nullptr;
   for(size_t i = 0; i < sheet0segmentation->size(); i++) {
-    int sheet0Id = (*sheet0segmentation)[i];
+    int const sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
 
       const ReebSpace::Sheet0 *sheet = this->get0sheet(sheet0Id);
@@ -250,7 +250,7 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
   // CellData: edgeId, type, sheetId
   const auto sheet1segmentation = this->get1sheetSegmentation();
 
-  vtkNew<vtkPoints> sheet1Points{};
+  vtkNew<vtkPoints> const sheet1Points{};
   sheet1->SetPoints(sheet1Points);
 
   vtkNew<vtkCellArray> sheet1Edges{};
@@ -301,7 +301,7 @@ int ttkReebSpace::RequestData(vtkInformation *ttkNotUsed(request),
 
   for(size_t i = 0; i < sheet1segmentation->size(); i++) {
 
-    int sheet1Id = (*sheet1segmentation)[i];
+    int const sheet1Id = (*sheet1segmentation)[i];
 
     if(sheet1Id != -1) {
 

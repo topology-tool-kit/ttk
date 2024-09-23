@@ -201,8 +201,8 @@ namespace ttk {
 
       std::vector<std::vector<int>> predecessors1(tree1->getNumberOfNodes());
       std::vector<std::vector<int>> predecessors2(tree2->getNumberOfNodes());
-      int rootID1 = tree1->getRoot();
-      int rootID2 = tree2->getRoot();
+      int const rootID1 = tree1->getRoot();
+      int const rootID2 = tree2->getRoot();
       std::vector<int> preorder1(tree1->getNumberOfNodes());
       std::vector<int> preorder2(tree2->getNumberOfNodes());
 
@@ -212,14 +212,14 @@ namespace ttk {
       stack.push(rootID1);
       int count = tree1->getNumberOfNodes() - 1;
       while(!stack.empty()) {
-        int nIdx = stack.top();
+        int const nIdx = stack.top();
         stack.pop();
         preorder1[count] = nIdx;
         count--;
         depth1 = std::max((int)predecessors1[nIdx].size(), depth1);
         std::vector<ftm::idNode> children;
         tree1->getChildren(nIdx, children);
-        for(int cIdx : children) {
+        for(int const cIdx : children) {
           stack.push(cIdx);
           predecessors1[cIdx].reserve(predecessors1[nIdx].size() + 1);
           predecessors1[cIdx].insert(predecessors1[cIdx].end(),
@@ -231,14 +231,14 @@ namespace ttk {
       stack.push(rootID2);
       count = tree2->getNumberOfNodes() - 1;
       while(!stack.empty()) {
-        int nIdx = stack.top();
+        int const nIdx = stack.top();
         stack.pop();
         preorder2[count] = nIdx;
         count--;
         depth2 = std::max((int)predecessors2[nIdx].size(), depth2);
         std::vector<ftm::idNode> children;
         tree2->getChildren(nIdx, children);
-        for(int cIdx : children) {
+        for(int const cIdx : children) {
           stack.push(cIdx);
           predecessors2[cIdx].reserve(predecessors2[nIdx].size() + 1);
           predecessors2[cIdx].insert(predecessors2[cIdx].end(),
@@ -250,10 +250,10 @@ namespace ttk {
 
       size_t nn1 = tree1->getNumberOfNodes();
       size_t nn2 = tree2->getNumberOfNodes();
-      size_t dim1 = 1;
-      size_t dim2 = (nn1 + 1) * dim1;
-      size_t dim3 = (depth1 + 1) * dim2;
-      size_t dim4 = (nn2 + 1) * dim3;
+      size_t const dim1 = 1;
+      size_t const dim2 = (nn1 + 1) * dim1;
+      size_t const dim3 = (depth1 + 1) * dim2;
+      size_t const dim4 = (nn2 + 1) * dim3;
 
       std::vector<dataType> memT((nn1 + 1) * (depth1 + 1) * (nn2 + 1)
                                  * (depth2 + 1));
@@ -426,10 +426,10 @@ namespace ttk {
                 // all possible main branches of second tree (child2_mb) Then
                 // try all possible matchings of subtrees
                 if(children1.size() == 2 && children2.size() == 2) {
-                  int child11 = children1[0];
-                  int child12 = children1[1];
-                  int child21 = children2[0];
-                  int child22 = children2[1];
+                  int const child11 = children1[0];
+                  int const child12 = children1[1];
+                  int const child21 = children2[0];
+                  int const child22 = children2[1];
                   d = std::min<dataType>(
                     d,
                     memT[child11 + (l1 + 1) * dim2 + child21 * dim3
@@ -463,8 +463,8 @@ namespace ttk {
                         topo2_.end());
 
                       auto f = [&](unsigned r, unsigned c) {
-                        int c1 = r < topo1_.size() ? topo1_[r] : -1;
-                        int c2 = c < topo2_.size() ? topo2_[c] : -1;
+                        int const c1 = r < topo1_.size() ? topo1_[r] : -1;
+                        int const c2 = c < topo2_.size() ? topo2_[c] : -1;
                         return memT[c1 + 1 * dim2 + c2 * dim3 + 1 * dim4];
                       };
                       int size = std::max(topo1_.size(), topo2_.size()) + 1;

@@ -200,9 +200,9 @@ int PeriodicImplicitTriangulation::checkAcceleration() {
       isAccelerated_ = true;
     }
   } else if(dimensionality_ == 2) {
-    bool isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
-    bool isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
-    bool allDimensionsArePowerOfTwo = (isDi and isDj);
+    bool const isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
+    bool const isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
+    bool const allDimensionsArePowerOfTwo = (isDi and isDj);
 
     if(allDimensionsArePowerOfTwo) {
       mod_[0] = dimensions_[Di_] - 1;
@@ -640,7 +640,7 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
-  if(!ttk::hasInitializedMPI()) {
+  if(!ttk::isRunningWithMPI()) {
     return -1;
   }
   if(this->metaGrid_ == nullptr) {
@@ -655,84 +655,39 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
 
   Timer tm{};
 
-  // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
-  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
+  this->neighborCellBBoxes_.resize(ttk::MPIsize_);
 
-  // number of local cells (with ghost cells but without the additional periodic
-  // cells)
-  const auto nLocCells{(this->dimensions_[0] - 1) * (this->dimensions_[1] - 1)
-                       * (this->dimensions_[2] - 1) * nTetraPerCube};
-
-  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
+  const auto spacing{this->metaGrid_->spacing_};
+  const auto origin{this->metaGrid_->origin_};
 
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
-  auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
-  // "good" starting values?
-  localBBox = {
-    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
-    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
-    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
-  };
-  const auto &dims{this->metaGrid_->getGridDimensions()};
 
-  for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    // only keep non-ghost cells
-    if(this->cellGhost_[lcid / nTetraPerCube] != 0) {
-      continue;
+  double globalBounds[6]{
+    origin[0], origin[0] + (this->metaGrid_->dimensions_[0] - 1) * spacing[0],
+    origin[1], origin[1] + (this->metaGrid_->dimensions_[1] - 1) * spacing[1],
+    origin[2], origin[2] + (this->metaGrid_->dimensions_[1] - 1) * spacing[2]};
+  auto &Bbox{this->neighborCellBBoxes_[ttk::MPIrank_]};
+  for(int i = 0; i < 3; i++) {
+    if(std::abs(globalBounds[2 * i] - boundingBox_[2 * i]) > spacing[i] / 2) {
+      Bbox[2 * i] = boundingBox_[2 * i] + spacing[i];
+    } else {
+      Bbox[2 * i] = boundingBox_[2 * i];
     }
-    // local vertex coordinates
-    std::array<SimplexId, 3> p{};
-    if(this->dimensionality_ == 3) {
-      this->tetrahedronToPosition(lcid, p.data());
-    } else if(this->dimensionality_ == 2) {
-      this->triangleToPosition2d(lcid, p.data());
-      // compatibility with tetrahedronToPosition; fix a bounding box
-      // error in the first axis
-      p[0] /= 2;
+    Bbox[2 * i] -= isBoundaryPeriodic[2 * i] * spacing[i];
+    if(std::abs(globalBounds[2 * i + 1] - boundingBox_[2 * i + 1])
+       > spacing[i] / 2) {
+      Bbox[2 * i + 1] = boundingBox_[2 * i + 1] - spacing[i];
+    } else {
+      Bbox[2 * i + 1] = boundingBox_[2 * i + 1];
     }
-
-    // global vertex coordinates
-    p[0] += this->localGridOffset_[0];
-    p[1] += this->localGridOffset_[1];
-    p[2] += this->localGridOffset_[2];
-
-    if(p[0] < localBBox[0]) {
-      localBBox[0] = max(p[0], static_cast<ttk::SimplexId>(0));
-    }
-    if(p[0] > localBBox[1]) {
-      localBBox[1] = min(p[0], dims[0]);
-    }
-    if(p[1] < localBBox[2]) {
-      localBBox[2] = max(p[1], static_cast<ttk::SimplexId>(0));
-    }
-    if(p[1] > localBBox[3]) {
-      localBBox[3] = min(p[1], dims[1]);
-    }
-    if(p[2] < localBBox[4]) {
-      localBBox[4] = max(p[2], static_cast<ttk::SimplexId>(0));
-    }
-    if(p[2] > localBBox[5]) {
-      localBBox[5] = min(p[2], dims[2]);
-    }
+    Bbox[2 * i + 1] += isBoundaryPeriodic[2 * i + 1] * spacing[i];
   }
-  localBBox[0] -= isBoundaryPeriodic[0];
-  if(dimensionality_ > 1) {
-    localBBox[2] -= isBoundaryPeriodic[2];
-    if(dimensionality_ > 2)
-      localBBox[4] -= isBoundaryPeriodic[4];
-  }
-
-  localBBox[1]++;
-  localBBox[3]++;
-  localBBox[5]++;
 
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
-    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
-                 this->neighborCellBBoxes_[neigh].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
-                 MPI_STATUS_IGNORE);
+    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6, MPI_DOUBLE,
+                 neigh, ttk::MPIrank_, this->neighborCellBBoxes_[neigh].data(),
+                 6, MPI_DOUBLE, neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedCells_ = true;

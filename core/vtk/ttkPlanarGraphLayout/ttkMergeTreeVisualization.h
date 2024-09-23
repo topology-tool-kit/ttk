@@ -304,13 +304,14 @@ public:
       for(unsigned int j = 0; j < cArraysValues[i].size(); ++j) {
         // Add value depending on type (vtkAbstractArray can not be used here)
         if(type == 0) {
-          double doubleValue = (*(std::vector<double> *)&(cArraysValues[i]))[j];
+          double const doubleValue
+            = (*(std::vector<double> *)&(cArraysValues[i]))[j];
           customDoubleArrayVtk->SetValue(j, doubleValue);
         } else if(type == 1) {
-          int intValue = (*(std::vector<int> *)&(cArraysValues[i]))[j];
+          int const intValue = (*(std::vector<int> *)&(cArraysValues[i]))[j];
           customIntArrayVtk->SetValue(j, intValue);
         } else {
-          std::string stringValue
+          std::string const stringValue
             = (*(std::vector<std::string> *)&(cArraysValues[i]))[j];
           customStringArrayVtk->SetValue(j, stringValue);
         }
@@ -326,7 +327,7 @@ public:
                         std::vector<int> &treeNodeIdRev) {
     double valueRange[2];
     treeNodeIdArray->GetRange(valueRange);
-    int maxValue = valueRange[1];
+    int const maxValue = valueRange[1];
     treeNodeIdRev.clear();
     treeNodeIdRev.resize(maxValue + 1);
     for(int i = 0; i < treeNodeIdArray->GetNumberOfValues(); ++i)
@@ -409,7 +410,7 @@ public:
                           std::vector<FTMTree_MT *> &barycenters) {
     int numInputs = trees.size();
     int NumberOfBarycenters = barycenters.size();
-    bool clusteringOutput = (NumberOfBarycenters != 0);
+    bool const clusteringOutput = (NumberOfBarycenters != 0);
     NumberOfBarycenters
       = std::max(NumberOfBarycenters, 1); // to always enter the outer loop
     if(not clusteringOutput)
@@ -451,7 +452,7 @@ public:
           vtkIdType pointIds[2];
           idNode tree1NodeId = std::get<0>(match);
           idNode tree2NodeId = std::get<1>(match);
-          double cost = std::get<2>(match);
+          double const cost = std::get<2>(match);
           FTMTree_MT *tree1;
           FTMTree_MT *tree2 = trees[i];
           if(not clusteringOutput) {
@@ -462,16 +463,18 @@ public:
 
           // Get first point
           printMsg("// Get first point", ttk::debug::Priority::VERBOSE);
-          SimplexId pointToGet1 = clusteringOutput ? nodeCorr2[c][tree1NodeId]
-                                                   : nodeCorr1[0][tree1NodeId];
+          SimplexId const pointToGet1 = clusteringOutput
+                                          ? nodeCorr2[c][tree1NodeId]
+                                          : nodeCorr1[0][tree1NodeId];
           double *point1 = vtkOutputNode2->GetPoints()->GetPoint(pointToGet1);
           const SimplexId nextPointId1 = pointsM->InsertNextPoint(point1);
           pointIds[0] = nextPointId1;
 
           // Get second point
           printMsg("// Get second point", ttk::debug::Priority::VERBOSE);
-          SimplexId pointToGet2 = clusteringOutput ? nodeCorr1[i][tree2NodeId]
-                                                   : nodeCorr1[1][tree2NodeId];
+          SimplexId const pointToGet2 = clusteringOutput
+                                          ? nodeCorr1[i][tree2NodeId]
+                                          : nodeCorr1[1][tree2NodeId];
           double *point2 = vtkOutputNode1->GetPoints()->GetPoint(pointToGet2);
           const SimplexId nextPointId2 = pointsM->InsertNextPoint(point2);
           pointIds[1] = nextPointId2;
@@ -499,13 +502,13 @@ public:
           // Add matching type
           printMsg("// Add matching type", ttk::debug::Priority::VERBOSE);
           int thisType = 0;
-          int tree1NodeDown
+          int const tree1NodeDown
             = tree1->getNode(tree1NodeId)->getNumberOfDownSuperArcs();
-          int tree1NodeUp
+          int const tree1NodeUp
             = tree1->getNode(tree1NodeId)->getNumberOfUpSuperArcs();
-          int tree2NodeDown
+          int const tree2NodeDown
             = tree2->getNode(tree2NodeId)->getNumberOfDownSuperArcs();
-          int tree2NodeUp
+          int const tree2NodeUp
             = tree2->getNode(tree2NodeId)->getNumberOfUpSuperArcs();
           if(tree1NodeDown != 0 and tree1NodeUp != 0 and tree2NodeDown != 0
              and tree2NodeUp != 0)
@@ -523,7 +526,7 @@ public:
             "// Add mean matched persistence", ttk::debug::Priority::VERBOSE);
           double tree1Pers = tree1->getNodePersistence<dataType>(tree1NodeId);
           double tree2Pers = tree2->getNodePersistence<dataType>(tree2NodeId);
-          double meanPersistence = (tree1Pers + tree2Pers) / 2;
+          double const meanPersistence = (tree1Pers + tree2Pers) / 2;
           matchPers->InsertNextTuple1(meanPersistence);
 
           // Add cost
@@ -575,12 +578,12 @@ public:
   void makeTreesOutput(std::vector<FTMTree_MT *> &trees,
                        std::vector<FTMTree_MT *> &barycenters) {
     int numInputs = trees.size();
-    int numInputsOri = numInputs;
+    int const numInputsOri = numInputs;
     int NumberOfBarycenters = barycenters.size();
-    bool clusteringOutput = (NumberOfBarycenters != 0);
+    bool const clusteringOutput = (NumberOfBarycenters != 0);
     NumberOfBarycenters
       = std::max(NumberOfBarycenters, 1); // to always enter the outer loop
-    bool embeddedDiagram = not PlanarLayout and isPersistenceDiagram;
+    bool const embeddedDiagram = not PlanarLayout and isPersistenceDiagram;
 
     // TreeNodeIdRev
     for(int i = 0; i < numInputs; ++i) {
@@ -638,7 +641,7 @@ public:
     // Make Trees Output
     // ----------------------------------------------------------------------
     printMsg("--- Make Trees Output", ttk::debug::Priority::VERBOSE);
-    std::vector<FTMTree_MT *> treesOri(trees);
+    std::vector<FTMTree_MT *> const treesOri(trees);
     if(ShiftMode == 1) { // Star Barycenter
       trees.clear();
       clusteringAssignment.clear();
@@ -655,8 +658,8 @@ public:
     // Node fields
     vtkNew<vtkIntArray> criticalType{};
     criticalType->SetName(ttk::PersistenceCriticalTypeName);
-    vtkNew<vtkFloatArray> persistenceNode{};
-    persistenceNode->SetName("Persistence");
+    vtkNew<vtkDoubleArray> persistenceNode{};
+    persistenceNode->SetName(ttk::PersistenceName);
     vtkNew<vtkIntArray> clusterIDNode{};
     clusterIDNode->SetName("ClusterID");
     vtkNew<vtkIntArray> isDummyNode{};
@@ -689,8 +692,6 @@ public:
     vtkNew<vtkIntArray> persistenceBaryOrderNode{};
     persistenceBaryOrderNode->SetName("PersistenceBarycenterOrder");
 
-    vtkNew<vtkDoubleArray> pairPersistenceNode{};
-    pairPersistenceNode->SetName(ttk::PersistenceName);
     vtkNew<vtkDoubleArray> pairBirthNode{};
     pairBirthNode->SetName(ttk::PersistenceBirthName);
 
@@ -712,8 +713,8 @@ public:
       customStringArrays.size());
 
     // Arc fields
-    vtkNew<vtkFloatArray> persistenceArc{};
-    persistenceArc->SetName("Persistence");
+    vtkNew<vtkDoubleArray> persistenceArc{};
+    persistenceArc->SetName(ttk::PersistenceName);
     vtkNew<vtkIntArray> clusterIDArc{};
     clusterIDArc->SetName("ClusterID");
     vtkNew<vtkIntArray> isImportantPairsArc{};
@@ -747,8 +748,6 @@ public:
     pairType->SetName(ttk::PersistencePairTypeName);
     vtkNew<vtkIntArray> pairIsFinite{};
     pairIsFinite->SetName(ttk::PersistenceIsFinite);
-    vtkNew<vtkDoubleArray> pairPersistence{};
-    pairPersistence->SetName(ttk::PersistenceName);
     vtkNew<vtkDoubleArray> pairBirth{};
     pairBirth->SetName(ttk::PersistenceBirthName);
 
@@ -780,7 +779,7 @@ public:
     // Iterate through all clusters
     // --------------------------------------------------------
     printMsg("Iterate through all clusters", ttk::debug::Priority::VERBOSE);
-    double importantPairsOriginal = importantPairs_;
+    double const importantPairsOriginal = importantPairs_;
     for(int c = 0; c < NumberOfBarycenters; ++c) {
 
       // Get persistence order
@@ -791,7 +790,7 @@ public:
           pairsBary;
         barycenters[c]->getPersistencePairsFromTree<dataType>(pairsBary, false);
         for(unsigned int j = 0; j < pairsBary.size(); ++j) {
-          int index = pairsBary.size() - 1 - j;
+          int const index = pairsBary.size() - 1 - j;
           baryPersistenceOrder[std::get<0>(pairsBary[j])] = index;
           baryPersistenceOrder[std::get<1>(pairsBary[j])] = index;
         }
@@ -810,7 +809,7 @@ public:
           continue;
         noSample += 1;
       }
-      double radius = delta_max * 2 * DimensionSpacing;
+      double const radius = delta_max * 2 * DimensionSpacing;
       int iSample = 0 + iSampleOffset - 1;
 
       if(c < NumberOfBarycenters - 1)
@@ -878,10 +877,10 @@ public:
 
         // Get shift
         printMsg("// Get shift", ttk::debug::Priority::VERBOSE);
-        double angle = 360.0 / noSample * iSample;
-        double pi = M_PI;
+        double const angle = 360.0 / noSample * iSample;
+        double const pi = M_PI;
         double diff_x = 0, diff_y = 0;
-        double alphaShift
+        double const alphaShift
           = BarycenterPositionAlpha ? (-radius + 2 * radius * Alpha) * -1 : 0;
         switch(ShiftMode) {
           case -1:
@@ -978,9 +977,9 @@ public:
         std::queue<idNode> queue;
         queue.emplace(trees[i]->getRoot());
         while(!queue.empty()) {
-          idNode node = queue.front();
+          idNode const node = queue.front();
           queue.pop();
-          idNode nodeOrigin = trees[i]->getNode(node)->getOrigin();
+          idNode const nodeOrigin = trees[i]->getNode(node)->getOrigin();
 
           // Push children to the queue
           printMsg(
@@ -1047,7 +1046,7 @@ public:
 
           // Bary percentage matching
           if(ShiftMode == 1) { // Star Barycenter
-            float percentMatchT = noMatched * 100 / numInputs;
+            float const percentMatchT = noMatched * 100 / numInputs;
             allBaryPercentMatch[c][node] = percentMatchT;
           }
 
@@ -1102,7 +1101,7 @@ public:
               }
             }
           }
-          SimplexId nextPointId = points->InsertNextPoint(point);
+          SimplexId const nextPointId = points->InsertNextPoint(point);
           treeSimplexId[node] = nextPointId;
           nodeCorr[i][node] = nextPointId;
           if(dummyNode)
@@ -1110,7 +1109,7 @@ public:
           if(isPersistenceDiagram)
             nodeCorr[i][node] = nextPointId;
 
-          idNode nodeBranching
+          idNode const nodeBranching
             = ((PlanarLayout and branchDecompositionPlanarLayout_)
                    or isPersistenceDiagram
                  ? node
@@ -1125,9 +1124,9 @@ public:
             vtkIdType pointIds[2];
             pointIds[0] = treeSimplexId[node];
 
-            idNode nodeParent = trees[i]->getParentSafe(node);
+            idNode const nodeParent = trees[i]->getParentSafe(node);
             // TODO too many dummy cells are created
-            bool dummyCell
+            bool const dummyCell
               = PlanarLayout and not branchDecompositionPlanarLayout_
                 and (node < treeBranching.size()
                      and treeBranching[node] == nodeParent)
@@ -1140,7 +1139,7 @@ public:
               double dummyPoint[3]
                 = {point[0], layout[layoutCorr[nodeParent] + 1] + diff_y,
                    0. + diff_z};
-              SimplexId dummyPointId = treeDummySimplexId[nodeParent];
+              SimplexId const dummyPointId = treeDummySimplexId[nodeParent];
               points->SetPoint(dummyPointId, dummyPoint);
               vtkIdType dummyPointIds[2];
               dummyPointIds[0] = dummyPointId;
@@ -1155,7 +1154,7 @@ public:
             // --------------
             // Arc field
             // --------------
-            int toAdd = (dummyCell ? 2 : 1);
+            int const toAdd = (dummyCell ? 2 : 1);
             for(int toAddT = 0; toAddT < toAdd; ++toAddT) {
               // Add arc matching percentage
               if(ShiftMode == 1) { // Star Barycenter
@@ -1178,7 +1177,7 @@ public:
 
               // Add branch ID
               if(not isPersistenceDiagram) {
-                int tBranchID = treeBranchingID[node];
+                int const tBranchID = treeBranchingID[node];
                 branchID->InsertNextTuple1(tBranchID);
               }
 
@@ -1191,14 +1190,20 @@ public:
               // Add arc persistence
               printMsg(
                 "// Push arc persistence", ttk::debug::Priority::VERBOSE);
-              idNode nodeToGetPers = nodeBranching;
-              double persToAdd
+              idNode const nodeToGetPers
+                = (isPersistenceDiagram ? node : nodeBranching);
+              double const persToAdd
                 = trees[i]->getNodePersistence<dataType>(nodeToGetPers);
               persistenceArc->InsertNextTuple1(persToAdd);
 
+              // Add birth
+              auto birthDeath
+                = trees[i]->getBirthDeath<dataType>(nodeToGetPers);
+              pairBirth->InsertNextTuple1(std::get<0>(birthDeath));
+
               // Add arc persistence barycenter and order
               if(clusteringOutput and ShiftMode != 1) {
-                idNode nodeToGet = nodeBranching;
+                idNode const nodeToGet = nodeBranching;
                 if(treeMatching[nodeToGet] < allBaryBranchingID[c].size()) {
                   persistenceBaryArc->InsertTuple1(
                     cellCount, barycenters[c]->getNodePersistence<dataType>(
@@ -1216,7 +1221,7 @@ public:
 
               // Add isImportantPair
               bool isImportant = false;
-              idNode nodeToGetImportance = nodeBranching;
+              idNode const nodeToGetImportance = nodeBranching;
               isImportant = trees[i]->isImportantPair<dataType>(
                 nodeToGetImportance, importantPairs_,
                 excludeImportantPairsLowerValues_,
@@ -1224,7 +1229,7 @@ public:
               isImportantPairsArc->InsertNextTuple1(isImportant);
 
               // Add isDummyArc
-              bool isDummy = toAdd == 2 and toAddT == 0;
+              bool const isDummy = toAdd == 2 and toAddT == 0;
               isDummyArc->InsertNextTuple1(isDummy);
 
               // Add isInterpolatedTree
@@ -1233,14 +1238,8 @@ public:
               // Add pairIdentifier
               pairIdentifier->InsertNextTuple1(treeSimplexId[node]);
 
-              // Add birth and death
-              auto birthDeath = trees[i]->getBirthDeath<dataType>(node);
-              pairBirth->InsertNextTuple1(std::get<0>(birthDeath));
-              pairPersistence->InsertNextTuple1(std::get<1>(birthDeath)
-                                                - std::get<0>(birthDeath));
-
               // Add isMinMaxPair
-              bool isMinMaxPair
+              bool const isMinMaxPair
                 = (trees[i]->isRoot(node) and not trees[i]->isLeaf(node))
                   or (trees[i]->isRoot(nodeOrigin)
                       and not trees[i]->isLeaf(nodeOrigin));
@@ -1250,7 +1249,7 @@ public:
               pairType->InsertNextTuple1(0);
 
               // Add isMultiPersPairArc
-              bool isMultiPersPair
+              bool const isMultiPersPair
                 = (trees[i]->isMultiPersPair(nodeBranching)
                    or trees[i]->isMultiPersPair(
                      trees[i]->getNode(nodeBranching)->getOrigin()));
@@ -1274,7 +1273,7 @@ public:
           // --------------
           // Node field
           // --------------
-          int toAdd = (dummyNode ? 2 : 1);
+          int const toAdd = (dummyNode ? 2 : 1);
           for(int toAddT = 0; toAddT < toAdd; ++toAddT) {
             // Add node id
             nodeID->InsertNextTuple1(treeSimplexId[node]);
@@ -1329,8 +1328,8 @@ public:
                      ? (isPDSadMax or nodeIsRoot ? locMax : saddle1)
                      : (not isPDSadMax or nodeIsRoot ? locMin : saddle2));
               if(embeddedDiagram) {
-                bool nodeSup = trees[i]->getValue<dataType>(node)
-                               > trees[i]->getValue<dataType>(nodeOrigin);
+                bool const nodeSup = trees[i]->getValue<dataType>(node)
+                                     > trees[i]->getValue<dataType>(nodeOrigin);
                 criticalTypeT
                   = ((nodeSup and toAddT == 1) or (not nodeSup and toAddT == 0)
                        ? (isPDSadMax or nodeIsRoot ? locMax : saddle1)
@@ -1371,6 +1370,10 @@ public:
             persistenceNode->InsertNextTuple1(
               trees[i]->getNodePersistence<dataType>(node));
 
+            // Add birth
+            auto birthDeath = trees[i]->getBirthDeath<dataType>(node);
+            pairBirthNode->InsertNextTuple1(std::get<0>(birthDeath));
+
             // Add node persistence barycenter
             if(clusteringOutput and ShiftMode != 1) {
               if(treeMatching[node] < allBaryBranchingID[c].size()) {
@@ -1389,18 +1392,12 @@ public:
             treeIDNode->InsertNextTuple1(i + iSampleOffset);
 
             // Add isDummyNode
-            bool isDummy
+            bool const isDummy
               = toAdd == 2 and toAddT == 1 and !trees[i]->isRoot(node);
             isDummyNode->InsertNextTuple1(isDummy);
 
             // Add isInterpolatedTree
             isInterpolatedTreeNode->InsertNextTuple1(isInterpolatedTree);
-
-            // Add birth and death
-            auto birthDeath = trees[i]->getBirthDeath<dataType>(node);
-            pairBirthNode->InsertNextTuple1(std::get<0>(birthDeath));
-            pairPersistenceNode->InsertNextTuple1(std::get<1>(birthDeath)
-                                                  - std::get<0>(birthDeath));
 
             // Add isImportantPair
             bool isImportant = false;
@@ -1426,9 +1423,10 @@ public:
 
             // Add isMultiPersPairArc
             printMsg("// isMultiPersPairArc", ttk::debug::Priority::VERBOSE);
-            bool isMultiPersPair = (trees[i]->isMultiPersPair(node)
-                                    or trees[i]->isMultiPersPair(
-                                      trees[i]->getNode(node)->getOrigin()));
+            bool const isMultiPersPair
+              = (trees[i]->isMultiPersPair(node)
+                 or trees[i]->isMultiPersPair(
+                   trees[i]->getNode(node)->getOrigin()));
             isMultiPersPairNode->InsertNextTuple1(isMultiPersPair);
 
             // Add custom arrays
@@ -1458,7 +1456,7 @@ public:
 
           pairIdentifier->InsertNextTuple1(-1);
           pairType->InsertNextTuple1(-1);
-          pairPersistence->InsertNextTuple1(-1);
+          persistenceArc->InsertNextTuple1(-1);
           pairIsFinite->InsertNextTuple1(0);
           pairBirth->InsertNextTuple1(0);
 
@@ -1467,7 +1465,7 @@ public:
           for(unsigned int ca = 0; ca < customIntArrays.size(); ++ca)
             customCellIntArraysValues[ca].push_back(-1);
           for(unsigned int ca = 0; ca < customStringArrays.size(); ++ca)
-            customCellStringArraysValues[ca].push_back("");
+            customCellStringArraysValues[ca].emplace_back("");
 
           isMultiPersPairArc->InsertNextTuple1(0);
           clusterIDArc->InsertNextTuple1(clusteringAssignment[i]);
@@ -1571,7 +1569,6 @@ public:
       if(!treesNodes.empty() and ShiftMode != 1)
         vtkOutputNode->GetPointData()->AddArray(coordinates);
     }
-    vtkOutputNode->GetPointData()->AddArray(pairPersistenceNode);
     vtkOutputNode->GetPointData()->AddArray(pairBirthNode);
 
     // - Manage arc output
@@ -1609,7 +1606,6 @@ public:
       vtkArcs->GetCellData()->AddArray(pairType);
       vtkArcs->GetCellData()->AddArray(pairIsFinite);
     }
-    vtkArcs->GetCellData()->AddArray(pairPersistence);
     vtkArcs->GetCellData()->AddArray(pairBirth);
     if(vtkOutputArc == vtkOutputNode)
       vtkArcs->GetPointData()->ShallowCopy(vtkOutputNode->GetPointData());
@@ -1646,7 +1642,7 @@ public:
     std::queue<idNode> queue;
     queue.emplace(tree->getRoot());
     while(!queue.empty()) {
-      idNode node = queue.front();
+      idNode const node = queue.front();
       queue.pop();
       double *point = treeNodes->GetPoints()->GetPoint(nodeCorrT[node]);
       x_min = std::min(x_min, point[0]);

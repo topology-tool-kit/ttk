@@ -27,7 +27,7 @@
 ///
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
-/// \sa ttkFTMTree
+/// \sa ttkMergeTree
 /// \sa ttkIdentifiers
 /// \sa ttk::HarmonicField
 ///

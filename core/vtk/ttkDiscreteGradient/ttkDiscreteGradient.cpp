@@ -71,7 +71,7 @@ int ttkDiscreteGradient::fillCriticalPoints(
   cellIds->SetName("CellId");
   cellIds->SetNumberOfTuples(nPoints);
 
-  vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
+  vtkSmartPointer<vtkDataArray> const cellScalars{inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!cellScalars) {
     this->printErr("vtkDataArray allocation problem.");
@@ -244,7 +244,7 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  int keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
+  int const keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
   if(keepGoing < 2) {
     return keepGoing;
   }
@@ -267,7 +267,7 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
 
   const auto inputScalars = this->GetInputArrayToProcess(0, input);
   auto inputOffsets = ttkAlgorithm::GetOrderArray(
-    input, 0, 1, this->ForceInputOffsetScalarField);
+    input, 0, triangulation, false, 1, this->ForceInputOffsetScalarField);
 
   if(inputScalars == nullptr || inputOffsets == nullptr) {
     this->printErr("Input scalar arrays are NULL");

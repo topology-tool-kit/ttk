@@ -83,14 +83,14 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
   this->printMsg("  Second clustering column: "
                  + std::string(intArray2->GetName()));
 
-  size_t nbVal1 = inputClustering1->GetNumberOfTuples();
-  size_t nbVal2 = inputClustering2->GetNumberOfTuples();
+  size_t const nbVal1 = inputClustering1->GetNumberOfTuples();
+  size_t const nbVal2 = inputClustering2->GetNumberOfTuples();
 
   if(nbVal1 != nbVal2) {
     this->printMsg("Error : the two clusterings must have the same size\n");
     return 0;
   }
-  size_t nbVal = nbVal1;
+  size_t const nbVal = nbVal1;
 
   double nmiValue = 0, ariValue = 0;
   this->execute(values1, values2, nbVal, nmiValue, ariValue);

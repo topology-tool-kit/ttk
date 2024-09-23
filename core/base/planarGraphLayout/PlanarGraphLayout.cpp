@@ -1,6 +1,6 @@
 #include <PlanarGraphLayout.h>
 
-#if TTK_ENABLE_GRAPHVIZ
+#ifdef TTK_ENABLE_GRAPHVIZ
 #include <cgraph.h>
 #include <gvc.h>
 #endif
@@ -37,7 +37,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
     Agnode_t *n = agnode(G, const_cast<char *>(std::to_string(i).data()), 0);
     if(n != nullptr) {
       auto &coord = ND_coord(n);
-      size_t offset = i * 2;
+      size_t const offset = i * 2;
       layout[offset] = coord.x / 72; // points to inches
       layout[offset + 1] = coord.y / 72; // points to inches
     }

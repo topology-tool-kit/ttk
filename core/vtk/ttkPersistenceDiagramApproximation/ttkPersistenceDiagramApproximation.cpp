@@ -97,7 +97,7 @@ int ttkPersistenceDiagramApproximation::dispatch(
   }
 
   // convert CTDiagram to vtkUnstructuredGrid
-  vtkNew<vtkUnstructuredGrid> vtu{};
+  vtkNew<vtkUnstructuredGrid> const vtu{};
   DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
                triangulation->getDimensionality(), this->ShowInsideDomain);
 
@@ -141,8 +141,8 @@ int ttkPersistenceDiagramApproximation::RequestData(
   }
 #endif
 
-  vtkDataArray *offsetField
-    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
+  vtkDataArray *offsetField = this->GetOrderArray(
+    input, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {
@@ -167,7 +167,7 @@ int ttkPersistenceDiagramApproximation::RequestData(
   outputMonotonyOffsets->SetName("outputMonotonyffsets");
   outputMonotonyOffsets->FillComponent(0, 0);
 
-  vtkSmartPointer<vtkDataArray> outputScalars
+  vtkSmartPointer<vtkDataArray> const outputScalars
     = vtkSmartPointer<vtkDataArray>::Take(inputScalars->NewInstance());
   outputScalars->SetNumberOfComponents(1);
   outputScalars->SetNumberOfTuples(inputScalars->GetNumberOfTuples());
@@ -221,7 +221,7 @@ int ttkPersistenceDiagramApproximation::drawBottleneckBounds(
 
   vtkNew<vtkUnstructuredGrid> bounds{};
   double *range = inputScalarsArray->GetRange(0);
-  double delta = (range[1] - range[0]) * Epsilon;
+  double const delta = (range[1] - range[0]) * Epsilon;
   // std::cout << "DELTA for BOUNDS " << delta << " " << getEpsilon() <<
   // std::endl;
 
@@ -261,10 +261,10 @@ int ttkPersistenceDiagramApproximation::drawBottleneckBounds(
     const auto sa = outputScalars[a];
     const auto sb = outputScalars[b];
     if(sb - sa >= 2 * delta) {
-      vtkIdType p0 = points->InsertNextPoint(sa - delta, sb - delta, 0);
-      vtkIdType p1 = points->InsertNextPoint(sa + delta, sb - delta, 0);
-      vtkIdType p2 = points->InsertNextPoint(sa - delta, sb + delta, 0);
-      vtkIdType p3 = points->InsertNextPoint(sa + delta, sb + delta, 0);
+      vtkIdType const p0 = points->InsertNextPoint(sa - delta, sb - delta, 0);
+      vtkIdType const p1 = points->InsertNextPoint(sa + delta, sb - delta, 0);
+      vtkIdType const p2 = points->InsertNextPoint(sa - delta, sb + delta, 0);
+      vtkIdType const p3 = points->InsertNextPoint(sa + delta, sb + delta, 0);
 
       vtkNew<vtkIdList> quad{};
       quad->InsertNextId(p0);
@@ -305,10 +305,10 @@ int ttkPersistenceDiagramApproximation::drawBottleneckBounds(
   const auto s2 = inputScalars[diagram[0].death.id];
   auto s1 = inputScalars[diagram.back().birth.id];
   s1 = s1 > s2 / 2 ? s1 : s2 / 2;
-  vtkIdType p0 = points->InsertNextPoint(s0, s0, 0);
-  vtkIdType p1 = points->InsertNextPoint(s0, s0 + 2 * delta, 0);
-  vtkIdType p2 = points->InsertNextPoint(s1, s1, 0);
-  vtkIdType p3 = points->InsertNextPoint(s1, s1 + 2 * delta, 0);
+  vtkIdType const p0 = points->InsertNextPoint(s0, s0, 0);
+  vtkIdType const p1 = points->InsertNextPoint(s0, s0 + 2 * delta, 0);
+  vtkIdType const p2 = points->InsertNextPoint(s1, s1, 0);
+  vtkIdType const p3 = points->InsertNextPoint(s1, s1 + 2 * delta, 0);
 
   vtkNew<vtkIdList> quad{};
   quad->InsertNextId(p0);

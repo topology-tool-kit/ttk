@@ -80,7 +80,8 @@ namespace ttk {
         size++;
 
         // add neihbors
-        size_t nNeighbors = triangulation->getVertexNeighborNumber(cIndex);
+        size_t const nNeighbors
+          = triangulation->getVertexNeighborNumber(cIndex);
         for(size_t i = 0; i < nNeighbors; i++) {
           TID nIndex{-1};
           triangulation->getVertexNeighbor(cIndex, i, nIndex);
@@ -110,7 +111,7 @@ namespace ttk {
                                const DT *featureMask = nullptr,
                                const DT backgroundThreshold = 0) const {
       Timer timer;
-      std::string msg
+      std::string const msg
         = "Initializing IDs"
           + std::string(featureMask
                           ? (" with BT: " + std::to_string(backgroundThreshold))
@@ -134,7 +135,7 @@ namespace ttk {
                                    int *componentIds,
                                    const TT *triangulation) const {
 
-      TID nVertices = triangulation->getNumberOfVertices();
+      TID const nVertices = triangulation->getNumberOfVertices();
 
       Timer timer;
       const std::string msg = "Computing Connected Components";

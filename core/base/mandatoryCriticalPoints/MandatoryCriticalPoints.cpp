@@ -113,14 +113,14 @@ int MandatoryCriticalPoints::buildMandatoryTree(
     if(isExtremumSimplified[i])
       continue;
     // New point in the graph
-    int extremumGraphPoint = mdtTree.addVertex();
+    int const extremumGraphPoint = mdtTree.addVertex();
     mdtTreePointComponentId.push_back(i);
     mdtTreePointType.push_back(extremumType);
 
     mdtTreePointLowInterval.push_back(extremumInterval[i].first);
     mdtTreePointUpInterval.push_back(extremumInterval[i].second);
     // Look for the saddle and connect if there is one
-    int parentSaddle = mdtExtremumParentSaddle[i];
+    int const parentSaddle = mdtExtremumParentSaddle[i];
     // If no parent saddle, end the loop
     if(parentSaddle == -1)
       break;
@@ -129,8 +129,8 @@ int MandatoryCriticalPoints::buildMandatoryTree(
       saddleGraphVertex[parentSaddle] = mdtTree.addVertex();
       mdtTreePointComponentId.push_back(parentSaddle);
       mdtTreePointType.push_back(saddleType);
-      int lowerVertex = mandatorySaddleVertices[parentSaddle].first;
-      int upperVertex = mandatorySaddleVertices[parentSaddle].second;
+      int const lowerVertex = mandatorySaddleVertices[parentSaddle].first;
+      int const upperVertex = mandatorySaddleVertices[parentSaddle].second;
       mdtTreePointLowInterval.push_back(lowerVertexScalars_[lowerVertex]);
       mdtTreePointUpInterval.push_back(upperVertexScalars_[upperVertex]);
     }
@@ -172,13 +172,13 @@ int MandatoryCriticalPoints::buildMandatoryTree(
         saddleGraphVertex[i] = mdtTree.addVertex();
         mdtTreePointComponentId.push_back(i);
         mdtTreePointType.push_back(saddleType);
-        int lowerVertex = mandatorySaddleVertices[i].first;
-        int upperVertex = mandatorySaddleVertices[i].second;
+        int const lowerVertex = mandatorySaddleVertices[i].first;
+        int const upperVertex = mandatorySaddleVertices[i].second;
         mdtTreePointLowInterval.push_back(lowerVertexScalars_[lowerVertex]);
         mdtTreePointUpInterval.push_back(upperVertexScalars_[upperVertex]);
       }
       // Look for the saddle above and connect if there is one
-      int parentSaddle = mdtSaddleParentSaddle[i];
+      int const parentSaddle = mdtSaddleParentSaddle[i];
       // If the parent is different from the saddle itself, create it and
       // connect
       if(parentSaddle != i) {
@@ -187,8 +187,8 @@ int MandatoryCriticalPoints::buildMandatoryTree(
           saddleGraphVertex[parentSaddle] = mdtTree.addVertex();
           mdtTreePointComponentId.push_back(parentSaddle);
           mdtTreePointType.push_back(saddleType);
-          int lowerVertex = mandatorySaddleVertices[parentSaddle].first;
-          int upperVertex = mandatorySaddleVertices[parentSaddle].second;
+          int const lowerVertex = mandatorySaddleVertices[parentSaddle].first;
+          int const upperVertex = mandatorySaddleVertices[parentSaddle].second;
           mdtTreePointLowInterval.push_back(lowerVertexScalars_[lowerVertex]);
           mdtTreePointUpInterval.push_back(upperVertexScalars_[upperVertex]);
         }
@@ -198,7 +198,7 @@ int MandatoryCriticalPoints::buildMandatoryTree(
         mdtTreeEdgeSwitchable.push_back(
           areSaddlesSwitchables(treeType, parentSaddle, i));
       } else { // It is the root, create the global extremum to connect with it
-        int globalOtherExtremumGraphPoint = mdtTree.addVertex();
+        int const globalOtherExtremumGraphPoint = mdtTree.addVertex();
         mdtTreePointComponentId.push_back(-1);
         mdtTreePointType.push_back(otherExtremumType);
         mdtTreePointLowInterval.push_back(globalOtherExtremumValue);
@@ -307,7 +307,7 @@ int MandatoryCriticalPoints::buildPairs(
     }
   }
   // Sort pair by increasing value of d(S,M) (.second)
-  criticalPointPairComparison pairComparison;
+  criticalPointPairComparison const pairComparison;
   std::sort(extremaSaddlePair.begin(), extremaSaddlePair.end(), pairComparison);
 
   const std::string treeName = treeType == TreeType::JoinTree
@@ -365,7 +365,7 @@ int MandatoryCriticalPoints::computePlanarLayout(
   // Root down point
   int downRootPointId = -1;
   if(mdtTree.getVertex(rootGraphPointId).getNumberOfEdges() == 1) {
-    int edgeId = mdtTree.getVertex(rootGraphPointId).getEdgeIdx(0);
+    int const edgeId = mdtTree.getVertex(rootGraphPointId).getEdgeIdx(0);
     if(mdtTree.getEdge(edgeId).getVertexIdx().first == rootGraphPointId) {
       downRootPointId = mdtTree.getEdge(edgeId).getVertexIdx().second;
     }
@@ -390,14 +390,14 @@ int MandatoryCriticalPoints::computePlanarLayout(
 
   while(!graphPointQueue.empty()) {
 
-    int graphPoint = graphPointQueue.front();
+    int const graphPoint = graphPointQueue.front();
     graphPointQueue.pop();
 
     // Number Of Down Edges
-    int numberOfEdges = mdtTree.getVertex(graphPoint).getNumberOfEdges();
+    int const numberOfEdges = mdtTree.getVertex(graphPoint).getNumberOfEdges();
     int numberOfDownEdges = 0;
     for(int i = 0; i < numberOfEdges; i++) {
-      int edgeId = mdtTree.getVertex(graphPoint).getEdgeIdx(i);
+      int const edgeId = mdtTree.getVertex(graphPoint).getEdgeIdx(i);
       if(mdtTree.getEdge(edgeId).getVertexIdx().first == graphPoint) {
         numberOfDownEdges++;
       }
@@ -413,7 +413,7 @@ int MandatoryCriticalPoints::computePlanarLayout(
     int downPointCount = 0;
     // Interval splitting for down points
     for(int i = 0; i < numberOfEdges; i++) {
-      int edgeId = mdtTree.getVertex(graphPoint).getEdgeIdx(i);
+      int const edgeId = mdtTree.getVertex(graphPoint).getEdgeIdx(i);
       int downGraphPoint = -1;
       if(mdtTree.getEdge(edgeId).getVertexIdx().first == graphPoint) {
         downGraphPoint = mdtTree.getEdge(edgeId).getVertexIdx().second;
@@ -446,7 +446,7 @@ int MandatoryCriticalPoints::computePlanarLayout(
 
   /* X coordinates */
   // Sorting
-  pairComparison xCoordCmp;
+  pairComparison const xCoordCmp;
   std::sort(xOrder.begin(), xOrder.end(), xCoordCmp);
   // X coordinates for all points except root (global extremum)
   int pointCount = 0;
@@ -489,14 +489,14 @@ int MandatoryCriticalPoints::computeExtremumComponent(
   // Clear the list
   componentVertexList.clear();
   // Get the super arc id of the vertex
-  int superArcId = getVertexSuperArcId(seedVertexId, &tree);
+  int const superArcId = getVertexSuperArcId(seedVertexId, &tree);
   // Get the sub tree root super arc
-  int rootSuperArcId = getSubTreeRootSuperArcId(&tree, superArcId, value);
+  int const rootSuperArcId = getSubTreeRootSuperArcId(&tree, superArcId, value);
   // Get the list of the sub tree super arc ids
   std::vector<int> subTreeSuperArcId;
   getSubTreeSuperArcIds(&tree, rootSuperArcId, subTreeSuperArcId);
   // Comparison
-  int sign = (pointType == PointType::Minimum) ? 1 : -1;
+  int const sign = (pointType == PointType::Minimum) ? 1 : -1;
   // Compute each super arc
   for(int i = 0; i < (int)subTreeSuperArcId.size(); i++) {
     const SuperArc *superArc = tree.getSuperArc(subTreeSuperArcId[i]);
@@ -505,30 +505,30 @@ int MandatoryCriticalPoints::computeExtremumComponent(
     if(subTreeSuperArcId[i] == rootSuperArcId) {
       // Test the value for each regular node
       for(int j = 0; j < numberOfRegularNodes; j++) {
-        int regularNodeId = superArc->getRegularNodeId(j);
-        double nodeScalar = tree.getNodeScalar(regularNodeId);
+        int const regularNodeId = superArc->getRegularNodeId(j);
+        double const nodeScalar = tree.getNodeScalar(regularNodeId);
         if(!((sign * nodeScalar) > (sign * value))) {
-          int vertexId = tree.getNode(regularNodeId)->getVertexId();
+          int const vertexId = tree.getNode(regularNodeId)->getVertexId();
           componentVertexList.push_back(vertexId);
         }
       }
       // Down node
-      int downNodeId = superArc->getDownNodeId();
-      double nodeScalar = tree.getNodeScalar(downNodeId);
+      int const downNodeId = superArc->getDownNodeId();
+      double const nodeScalar = tree.getNodeScalar(downNodeId);
       if(!((sign * nodeScalar) > (sign * value))) {
-        int vertexId = tree.getNode(downNodeId)->getVertexId();
+        int const vertexId = tree.getNode(downNodeId)->getVertexId();
         componentVertexList.push_back(vertexId);
       }
     } else {
       // Take all regular nodes
       for(int j = 0; j < numberOfRegularNodes; j++) {
-        int regularNodeId = superArc->getRegularNodeId(j);
-        int vertexId = tree.getNode(regularNodeId)->getVertexId();
+        int const regularNodeId = superArc->getRegularNodeId(j);
+        int const vertexId = tree.getNode(regularNodeId)->getVertexId();
         componentVertexList.push_back(vertexId);
       }
       // Take down node
-      int downNodeId = superArc->getDownNodeId();
-      int vertexId = tree.getNode(downNodeId)->getVertexId();
+      int const downNodeId = superArc->getDownNodeId();
+      int const vertexId = tree.getNode(downNodeId)->getVertexId();
       componentVertexList.push_back(vertexId);
     }
   }
@@ -557,10 +557,10 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
   // Extremum list in the first tree
   const std::vector<int> &extremumList = *firstTree.getExtremumList();
   // Some tmp variables
-  size_t extremumNumber = extremumList.size();
+  size_t const extremumNumber = extremumList.size();
   std::vector<int> vertexId(extremumNumber);
   std::vector<double> vertexValue(extremumNumber);
-  std::vector<int> superArcId(extremumNumber);
+  std::vector<int> const superArcId(extremumNumber);
   // vector<int> rootSuperArcId(extremumNumber);
   std::vector<int> subTreeSuperArcId; // vector<vector<int> >
                                       // subTreeSuperArcId(extremumNumber);
@@ -583,7 +583,8 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
     // Vertex Value (first tree)
     firstTree.getVertexScalar(vertexId[i], vertexValue[i]);
     // Super Arc Id (second tree)
-    int secondTreeSuperArcId = getVertexSuperArcId(vertexId[i], &secondTree);
+    int const secondTreeSuperArcId
+      = getVertexSuperArcId(vertexId[i], &secondTree);
     // Root Super Arc Id (second tree) of the sub tree containing the vertex and
     // rooted at the value of the vertex in the first scalar field
     int rootSuperArcId = -1;
@@ -600,13 +601,13 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
       std::queue<int> superArcQueue;
       superArcQueue.push(rootSuperArcId);
       while(isMandatory && (!superArcQueue.empty())) {
-        int spaId = superArcQueue.front();
+        int const spaId = superArcQueue.front();
         superArcQueue.pop();
         if(isSuperArcAlreadyVisited[spaId]) {
           isMandatory = false;
         } else {
-          int downNodeId = secondTree.getSuperArc(spaId)->getDownNodeId();
-          int numberOfDownSuperArcs
+          int const downNodeId = secondTree.getSuperArc(spaId)->getDownNodeId();
+          int const numberOfDownSuperArcs
             = secondTree.getNode(downNodeId)->getNumberOfDownSuperArcs();
           if(numberOfDownSuperArcs > 0) {
             for(int j = 0; j < numberOfDownSuperArcs; j++) {
@@ -628,9 +629,9 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
       criticalInterval.emplace_back(vertexValue[i], vertexValue[i]);
       for(int j = 0; j < (int)subTreeSuperArcId.size(); j++) {
         isSuperArcAlreadyVisited[subTreeSuperArcId[j]] = true;
-        int downNodeId
+        int const downNodeId
           = secondTree.getSuperArc(subTreeSuperArcId[j])->getDownNodeId();
-        double downNodeValue = secondTree.getNodeScalar(downNodeId);
+        double const downNodeValue = secondTree.getNodeScalar(downNodeId);
         if(pointType == PointType::Minimum) {
           if(downNodeValue < criticalInterval.back().first) {
             criticalInterval.back().first = downNodeValue;
@@ -791,14 +792,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         }
         if(!saddleFound) {
           // Get the upper super arc
-          int upNodeId = upperTree.getSuperArc(upperSuperArcId)->getUpNodeId();
+          int const upNodeId
+            = upperTree.getSuperArc(upperSuperArcId)->getUpNodeId();
           upperSuperArcId = upperTree.getNode(upNodeId)->getUpSuperArcId(0);
           if(upperSuperArcId == -1) {
             rootReached = true;
           }
         } else {
           if(!multipleSaddleFound) {
-            int saddleId
+            int const saddleId
               = upperTree.getSuperArc(upperSuperArcId)->getDownNodeId();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
@@ -828,14 +830,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         }
         if(!saddleFound) {
           // Get the upper super arc
-          int upNodeId = lowerTree.getSuperArc(lowerSuperArcId)->getUpNodeId();
+          int const upNodeId
+            = lowerTree.getSuperArc(lowerSuperArcId)->getUpNodeId();
           lowerSuperArcId = lowerTree.getNode(upNodeId)->getUpSuperArcId(0);
           if(lowerSuperArcId == -1) {
             rootReached = true;
           }
         } else {
           if(!multipleSaddleFound) {
-            int saddleId
+            int const saddleId
               = lowerTree.getSuperArc(lowerSuperArcId)->getDownNodeId();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
@@ -875,7 +878,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #pragma omp for
 #endif
     for(int i = 0; i < (int)upperSaddleList.size(); i++) {
-      int superArcId
+      int const superArcId
         = upperTree.getNode(upperSaddleList[i])->getUpSuperArcId(0);
       upperTransverse[superArcId] = i;
     }
@@ -884,7 +887,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #pragma omp for
 #endif
     for(int i = 0; i < (int)lowerSaddleList.size(); i++) {
-      int superArcId
+      int const superArcId
         = lowerTree.getNode(lowerSaddleList[i])->getUpSuperArcId(0);
       lowerTransverse[superArcId] = i;
     }
@@ -922,7 +925,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       // Upper Tree
       superArcId = getVertexSuperArcId(mandatoryExtremumVertex[i], &upperTree);
       while((superArcId != -1) && (upperTransverse[superArcId] == -1)) {
-        int nodeId = upperTree.getSuperArc(superArcId)->getUpNodeId();
+        int const nodeId = upperTree.getSuperArc(superArcId)->getUpNodeId();
         superArcId = upperTree.getNode(nodeId)->getUpSuperArcId(0);
       }
       if(superArcId != -1) {
@@ -939,7 +942,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       // Lower Tree
       superArcId = getVertexSuperArcId(mandatoryExtremumVertex[i], &lowerTree);
       while((superArcId != -1) && (lowerTransverse[superArcId] == -1)) {
-        int nodeId = lowerTree.getSuperArc(superArcId)->getUpNodeId();
+        int const nodeId = lowerTree.getSuperArc(superArcId)->getUpNodeId();
         superArcId = lowerTree.getNode(nodeId)->getUpSuperArcId(0);
       }
       if(superArcId != -1) {
@@ -962,12 +965,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       int superArcId
         = upperTree.getNode(upperSaddleList[i])->getUpSuperArcId(0);
       do {
-        int nodeId = upperTree.getSuperArc(superArcId)->getUpNodeId();
+        int const nodeId = upperTree.getSuperArc(superArcId)->getUpNodeId();
         superArcId = upperTree.getNode(nodeId)->getUpSuperArcId(0);
       } while((superArcId != -1) && (upperTransverse[superArcId] == -1));
       if(superArcId != -1) {
-        int lcaSuccessorSaddleId = extremaNumber + i;
-        int lcaAncestorSaddleId = extremaNumber + upperTransverse[superArcId];
+        int const lcaSuccessorSaddleId = extremaNumber + i;
+        int const lcaAncestorSaddleId
+          = extremaNumber + upperTransverse[superArcId];
         // Ancestor
         upperLca.getNode(lcaSuccessorSaddleId).setAncestor(lcaAncestorSaddleId);
 // Successor
@@ -986,12 +990,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       int superArcId
         = lowerTree.getNode(lowerSaddleList[i])->getUpSuperArcId(0);
       do {
-        int nodeId = lowerTree.getSuperArc(superArcId)->getUpNodeId();
+        int const nodeId = lowerTree.getSuperArc(superArcId)->getUpNodeId();
         superArcId = lowerTree.getNode(nodeId)->getUpSuperArcId(0);
       } while((superArcId != -1) && (lowerTransverse[superArcId] == -1));
       if(superArcId != -1) {
-        int lcaSuccessorSaddleId = extremaNumber + i;
-        int lcaAncestorSaddleId = extremaNumber + lowerTransverse[superArcId];
+        int const lcaSuccessorSaddleId = extremaNumber + i;
+        int const lcaAncestorSaddleId
+          = extremaNumber + lowerTransverse[superArcId];
         // Ancestor
         lowerLca.getNode(lcaSuccessorSaddleId).setAncestor(lcaAncestorSaddleId);
 // Successor
@@ -1028,7 +1033,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     localUpperToLowerLinks.resize(upperSaddleList.size());
     localMergedExtrema.resize(lowerSaddleList.size());
     // Number of iterations (triangular loop without diagonal)
-    unsigned int kmax = (extremaNumber * (extremaNumber - 1)) / 2;
+    unsigned int const kmax = (extremaNumber * (extremaNumber - 1)) / 2;
 // Loop over pairs of extrema
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp for
@@ -1040,8 +1045,8 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         i = extremaNumber - i - 2;
         j = extremaNumber - j - 1;
       }
-      int uppLCA = upperLca.query(i, j) - extremaNumber;
-      int lowLCA = lowerLca.query(i, j) - extremaNumber;
+      int const uppLCA = upperLca.query(i, j) - extremaNumber;
+      int const lowLCA = lowerLca.query(i, j) - extremaNumber;
       localLowerToUpperLinks[lowLCA].push_back(uppLCA);
       localUpperToLowerLinks[uppLCA].push_back(lowLCA);
       localMergedExtrema[lowLCA].push_back(i);
@@ -1125,7 +1130,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       // New component
       lowComponent.emplace_back();
       uppComponent.emplace_back();
-      int componentId = static_cast<int>(lowComponent.size()) - 1;
+      int const componentId = static_cast<int>(lowComponent.size()) - 1;
       lowComponent[componentId].push_back(i);
       isLowerVisited[i] = true;
       // Lists of neighbors
@@ -1142,7 +1147,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
           // For each neighbors
           for(unsigned int k = 0; k < (*linkList)[currentList[j]].size(); k++) {
             // Get the neighbor id;
-            int neighbor = (*linkList)[currentList[j]][k];
+            int const neighbor = (*linkList)[currentList[j]][k];
             // Check if it's already visited
             if(!(*isVisited)[neighbor]) {
               // If not visited, mark it and add it
@@ -1166,7 +1171,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   }
 
   // Find pairs of vertices and list of merged extrema
-  int numberOfComponents = static_cast<int>(lowComponent.size());
+  int const numberOfComponents = static_cast<int>(lowComponent.size());
   mandatorySaddleVertex.resize(numberOfComponents, std::pair<int, int>(-1, -1));
   std::vector<std::vector<int>> mandatoryMergedExtrema_tmp;
   mandatoryMergedExtrema_tmp.resize(numberOfComponents, std::vector<int>());
@@ -1178,8 +1183,8 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     mandatorySaddleVertex[i].first = lowerTree.getNode(nodeId)->getVertexId();
     for(unsigned int j = 0; j < lowComponent[i].size(); j++) {
       // First saddle
-      int nId = lowerSaddleList[lowComponent[i][j]];
-      double nodeScalar = lowerTree.getNodeScalar(nId);
+      int const nId = lowerSaddleList[lowComponent[i][j]];
+      double const nodeScalar = lowerTree.getNodeScalar(nId);
       double refScalar = 0;
       lowerTree.getVertexScalar(mandatorySaddleVertex[i].first, refScalar);
       if(nodeScalar < refScalar) {
@@ -1200,8 +1205,8 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     mandatorySaddleVertex[i].second = upperTree.getNode(nodeId)->getVertexId();
     for(unsigned int j = 0; j < uppComponent[i].size(); j++) {
       // First saddle
-      int nId = upperSaddleList[uppComponent[i][j]];
-      double nodeScalar = upperTree.getNodeScalar(nId);
+      int const nId = upperSaddleList[uppComponent[i][j]];
+      double const nodeScalar = upperTree.getNodeScalar(nId);
       double refScalar = 0;
       upperTree.getVertexScalar(mandatorySaddleVertex[i].second, refScalar);
       if(nodeScalar > refScalar) {
@@ -1215,7 +1220,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   for(unsigned int i = 0; i < mandatoryMergedExtrema_tmp.size(); i++) {
     std::sort(mandatoryMergedExtrema_tmp[i].begin(),
               mandatoryMergedExtrema_tmp[i].end());
-    std::vector<int>::iterator newEnd
+    std::vector<int>::iterator const newEnd
       = unique(mandatoryMergedExtrema_tmp[i].begin(),
                mandatoryMergedExtrema_tmp[i].end());
     mandatoryMergedExtrema_tmp[i].resize(
@@ -1224,7 +1229,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     order.emplace_back(i, mandatoryMergedExtrema_tmp[i].size());
   }
   // Sort by number of merged extrema
-  mandatorySaddleComparison cmp;
+  mandatorySaddleComparison const cmp;
   std::sort(order.begin(), order.end(), cmp);
   // Reorder for output
   mandatoryMergedExtrema.clear();
@@ -1308,10 +1313,10 @@ int MandatoryCriticalPoints::getSubTreeRootSuperArcId(
     // Value of the vertex associated with the node
     double upNodeValue = tree->getNodeScalar(upNodeId);
     // While condition
-    int sign = tree->isJoinTree() ? 1 : -1;
+    int const sign = tree->isJoinTree() ? 1 : -1;
     // Climb up the tree
     while(!((sign * targetValue) < (sign * upNodeValue))) {
-      int numberOfUpSuperArcs
+      int const numberOfUpSuperArcs
         = tree->getNode(upNodeId)->getNumberOfUpSuperArcs();
       if(numberOfUpSuperArcs > 0) {
         superArcId = tree->getNode(upNodeId)->getUpSuperArcId(0);
@@ -1330,10 +1335,10 @@ int MandatoryCriticalPoints::findCommonAncestorNodeId(
   const SubLevelSetTree *tree,
   const int &vertexId0,
   const int &vertexId1) const {
-  int numberOfSuperArcs = tree->getNumberOfSuperArcs();
+  int const numberOfSuperArcs = tree->getNumberOfSuperArcs();
   std::vector<bool> isSuperArcVisited(numberOfSuperArcs, false);
-  int superArcId0 = getVertexSuperArcId(vertexId0, tree);
-  int superArcId1 = getVertexSuperArcId(vertexId1, tree);
+  int const superArcId0 = getVertexSuperArcId(vertexId0, tree);
+  int const superArcId1 = getVertexSuperArcId(vertexId1, tree);
   int superArcId = superArcId0;
   do {
     isSuperArcVisited[superArcId] = true;
@@ -1356,9 +1361,9 @@ void MandatoryCriticalPoints::getSubTreeSuperArcIds(
   std::queue<int> superArcIdsToCompute;
   superArcIdsToCompute.push(rootSuperArcId);
   while(!superArcIdsToCompute.empty()) {
-    int superArcId = superArcIdsToCompute.front();
-    int downNodeId = tree->getSuperArc(superArcId)->getDownNodeId();
-    int numberOfUpSuperArcs
+    int const superArcId = superArcIdsToCompute.front();
+    int const downNodeId = tree->getSuperArc(superArcId)->getDownNodeId();
+    int const numberOfUpSuperArcs
       = tree->getNode(downNodeId)->getNumberOfDownSuperArcs();
     if(numberOfUpSuperArcs > 0) {
       for(int i = 0; i < numberOfUpSuperArcs; i++)
@@ -1447,7 +1452,7 @@ int MandatoryCriticalPoints::simplify(
     }
     if(!saddleSimplified[i]) {
       for(size_t j = 0; j < mergedExtrema[i].size(); j++) {
-        int extremaId = mergedExtrema[i][j];
+        int const extremaId = mergedExtrema[i][j];
         if(!extremumSimplified[extremaId]) {
           // If the extrema is not already connected, define the parent
           if(extremumParentSaddle[extremaId] == -1) {

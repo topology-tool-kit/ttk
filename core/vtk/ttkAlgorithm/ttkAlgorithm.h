@@ -113,13 +113,44 @@ public:
    * identifier field, or with a user-provided offset field through
    * the \p enforceArrayIndex parameter and the \p arrayIndex. The
    * generated sorted offset field is then attached to the input
-   * vtkDataset \p inputData.
+   * vtkDataset \p inputData. The argument getGlobalOrder, when set to true,
+   * triggers a computation of a global order array, over all MPI processes.
+   * The triangulation argument is only required when getGlobalOrder is set
+   * to true.
    */
   vtkDataArray *GetOrderArray(vtkDataSet *const inputData,
                               const int scalarArrayIdx,
+                              ttk::Triangulation *triangulation,
+                              const bool getGlobalOrder = false,
                               const int orderArrayIdx = 0,
                               const bool enforceOrderArrayIdx = false);
 
+  /**
+   * Checks whether the global order should be global or not, then triggers the
+   * computation accordingly.
+   */
+  vtkDataArray *
+    checkForGlobalAndComputeOrderArray(vtkDataSet *const inputData,
+                                       vtkDataArray *scalarArray,
+                                       const int scalarArrayIdx,
+                                       const bool getGlobalOrder,
+                                       vtkDataArray *orderArray,
+                                       ttk::Triangulation *triangulation,
+                                       const bool enforceOrderArrayIdx);
+
+  /**
+   * Initializes and computes the order array. When using MPI processes,
+   * the order will be local when getGlobalOrder is set to false, and global
+   * otherwise. This function is called in GetOrderArray and should not be
+   * called directly in other functions or algorithms.
+   */
+
+  vtkDataArray *ComputeOrderArray(vtkDataSet *const inputData,
+                                  vtkDataArray *scalarArray,
+                                  const int scalarArrayIdx,
+                                  const bool getGlobalOrder,
+                                  vtkDataArray *oldOrderArray,
+                                  ttk::Triangulation *triangulation);
   /**
    * Retrieve an identifier field and provides a ttk::SimplexId
    * pointer to the underlying buffer.
@@ -262,6 +293,7 @@ protected:
    */
   void MPIPipelinePreconditioning(vtkDataSet *input,
                                   std::vector<int> &neighbors,
+                                  std::map<int, int> &neighToId,
                                   ttk::Triangulation *triangulation = nullptr);
 
   /**
@@ -285,7 +317,8 @@ protected:
   int GenerateGlobalIds(
     vtkDataSet *input,
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> &vertGtoL,
-    std::vector<int> &neighborRanks);
+    std::vector<int> &neighborRanks,
+    std::map<int, int> &neighborsToId);
 
   /**
    * This method is called in GetTriangulation, after the triangulation as been

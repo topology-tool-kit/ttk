@@ -100,8 +100,8 @@ namespace ttk {
   template <class dataType>
   dataType getMaxValue(std::vector<std::vector<dataType>> &matrix,
                        bool balancedAsgn) {
-    unsigned int nRows = matrix.size();
-    unsigned int nCols = matrix[0].size();
+    unsigned int const nRows = matrix.size();
+    unsigned int const nCols = matrix[0].size();
     dataType maxValue = std::numeric_limits<dataType>::lowest();
     for(unsigned int i = 0; i < nRows; ++i) {
       for(unsigned int j = 0; j < nCols; ++j) {
@@ -155,13 +155,13 @@ namespace ttk {
   template <typename dataType>
   void AssignmentAuction<dataType>::makeBalancedMatrix(
     std::vector<std::vector<dataType>> &matrix) {
-    unsigned int nRows = matrix.size();
-    unsigned int nCols = matrix[0].size();
+    unsigned int const nRows = matrix.size();
+    unsigned int const nCols = matrix[0].size();
     matrix[nRows - 1][nCols - 1] = 0;
 
     // Add rows
     for(unsigned int i = 0; i < nCols - 2; ++i) {
-      std::vector<dataType> newLine(matrix[nRows - 1]);
+      std::vector<dataType> const newLine(matrix[nRows - 1]);
       matrix.push_back(newLine);
     }
     // Add columns
@@ -183,7 +183,7 @@ namespace ttk {
       unassignedBidders.push(i);
 
     while(!unassignedBidders.empty()) {
-      int bidderId = unassignedBidders.front();
+      int const bidderId = unassignedBidders.front();
       unassignedBidders.pop();
 
       // Get good with highest value
@@ -214,7 +214,7 @@ namespace ttk {
         bestSecondValue = bestValue;
 
       // Update price
-      double delta = abs<dataType>(bestValue - bestSecondValue) + epsilon;
+      double const delta = abs<dataType>(bestValue - bestSecondValue) + epsilon;
       double newPrice = goodPrices[bestGoodId] + delta;
       if(newPrice > std::numeric_limits<double>::max() / 2) {
         // Avoid price explosion
@@ -253,7 +253,8 @@ namespace ttk {
     dataType bestCost = std::numeric_limits<dataType>::max();
 
     // Try to avoid price war
-    double tempPrice = *std::max_element(goodPrices.begin(), goodPrices.end());
+    double const tempPrice
+      = *std::max_element(goodPrices.begin(), goodPrices.end());
     std::vector<double> savedPrices;
     for(unsigned int i = 0; i < goodPrices.size(); ++i) {
       auto old = goodPrices[i];
@@ -293,8 +294,8 @@ namespace ttk {
     // Create output matching
     for(unsigned int bidderId = 0; bidderId < bidderAssignments.size();
         ++bidderId) {
-      int i = bidderId;
-      int j = bidderAssignments[bidderId];
+      int const i = bidderId;
+      int const j = bidderAssignments[bidderId];
       if(this->balancedAssignment
          or (not this->balancedAssignment
              and not(i >= this->rowSize - 1 and j >= this->colSize - 1))) {
@@ -346,8 +347,8 @@ namespace ttk {
     dataType d = 0;
     for(unsigned int bidderId = 0; bidderId < bidderAssignments.size();
         ++bidderId) {
-      int i = bidderId;
-      int j = bidderAssignments[bidderId];
+      int const i = bidderId;
+      int const j = bidderAssignments[bidderId];
       d += cMatrix[i][j];
     }
     return d;

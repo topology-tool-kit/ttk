@@ -271,7 +271,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation(
   // subdivise every triangle
   for(SimplexId i = 0; i < nTriangles_; ++i) {
     // id of triangle barycenter
-    SimplexId bary = nVertices_ + nEdges_ + i;
+    const SimplexId bary = nVertices_ + nEdges_ + i;
 
     for(SimplexId j = 0; j < inputTriangl.getTriangleEdgeNumber(i); ++j) {
       // edge id
@@ -279,7 +279,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation(
       inputTriangl.getTriangleEdge(i, j, e);
 
       // id of middle of edge e
-      SimplexId em = nVertices_ + e;
+      const SimplexId em = nVertices_ + e;
 
       // edge vertices
       SimplexId a{}, b{};

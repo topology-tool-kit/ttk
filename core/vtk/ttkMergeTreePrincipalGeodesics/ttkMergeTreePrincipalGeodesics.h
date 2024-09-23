@@ -39,6 +39,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
 
 #pragma once
 
@@ -113,12 +116,12 @@ public:
   }
 
   void SetNumberOfGeodesics(unsigned int numberOfGeodesics) {
-    numberOfGeodesics_ = numberOfGeodesics;
+    numberOfAxes_ = numberOfGeodesics;
     Modified();
     resetDataVisualization();
   }
   unsigned int GetNumberOfGeodesics() {
-    return numberOfGeodesics_;
+    return numberOfAxes_;
   }
 
   void SetNumberOfProjectionIntervals(unsigned int intervals) {

@@ -63,8 +63,9 @@ int ttk::RangeMinimumQuery<DataType>::preprocess(const bool silent) {
   Timer t;
 
   // Compute the size of the matrix
-  int sizeOfArray = static_cast<int>(input_end_ - input_);
-  int numberOfBlocs = static_cast<unsigned int>(log2(sizeOfArray + 1)) + 1;
+  int const sizeOfArray = static_cast<int>(input_end_ - input_);
+  int const numberOfBlocs
+    = static_cast<unsigned int>(log2(sizeOfArray + 1)) + 1;
 
   // Init the matrix
   table_.resize(sizeOfArray);
@@ -106,7 +107,7 @@ int ttk::RangeMinimumQuery<DataType>::query(int i, int j) const {
 #endif
 
   // Compute size of blocs (2^k) to use
-  int k = static_cast<int>(log2(j - i + 1));
+  int const k = static_cast<int>(log2(j - i + 1));
   // Compute the range minimum
   if(input_[table_[i][k]] <= input_[table_[j - (1 << k) + 1][k]]) {
     return table_[i][k];

@@ -2512,7 +2512,7 @@ namespace ttk {
 
       std::array<float, 3> p{};
       for(int i = 0; i < 4; ++i) {
-        SimplexId triangleId;
+        SimplexId triangleId{-1};
         getCellTriangle(tetraId, i, triangleId);
         getTriangleIncenter(triangleId, p.data());
         incenter[0] += p[0];
@@ -2600,6 +2600,11 @@ namespace ttk {
     }
     virtual int preconditionDistributedCells() {
       return 0;
+    }
+
+    inline void setBoundingBox(const double *const bBox) {
+      this->boundingBox_
+        = {bBox[0], bBox[1], bBox[2], bBox[3], bBox[4], bBox[5]};
     }
 
     // This method should be called to initialize and populate the
@@ -2877,6 +2882,14 @@ namespace ttk {
       return this->neighborRanks_;
     }
 
+    virtual inline std::map<int, int> &getNeighborsToId() {
+      return this->neighborsToId_;
+    }
+
+    virtual inline const std::map<int, int> &getNeighborsToId() const {
+      return this->neighborsToId_;
+    }
+
     virtual inline const std::vector<std::array<ttk::SimplexId, 6>> &
       getNeighborVertexBBoxes() const {
       return this->neighborVertexBBoxes_;
@@ -2965,6 +2978,23 @@ namespace ttk {
         globalCellId = localCellId;
       }
       return 0;
+    }
+
+    inline bool isOrderArrayGlobal(const void *data) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isOrderArrayGlobal_.find(data) != isOrderArrayGlobal_.end())
+#endif
+        return isOrderArrayGlobal_.at(data);
+#ifndef TTK_ENABLE_KAMIKAZE
+      else {
+        printErr("No global array flag has been found for this scalar field");
+        return false;
+      }
+#endif
+    }
+
+    inline void setIsOrderArrayGlobal(const void *data, bool flag) {
+      isOrderArrayGlobal_[data] = flag;
     }
 
   protected:
@@ -3821,6 +3851,8 @@ namespace ttk {
 
     // list of neighboring ranks (sharing ghost cells to current rank)
     std::vector<int> neighborRanks_{};
+    // list of ids in the neighborRanks_ vector of neighboring ranks
+    std::map<int, int> neighborsToId_{};
     // global ids of (local) ghost cells per each MPI (neighboring) rank
     std::vector<std::vector<SimplexId>> ghostCellsPerOwner_{};
     // global ids of local (owned) cells that are ghost cells of other
@@ -3834,7 +3866,8 @@ namespace ttk {
     // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
     std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
     // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
-    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
+    std::vector<std::array<double, 6>> neighborCellBBoxes_{};
+    std::array<double, 6> boundingBox_{};
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedExchangeGhostCells_{false};
@@ -3843,6 +3876,7 @@ namespace ttk {
     bool hasPreconditionedDistributedVertices_{false};
     bool hasPreconditionedExchangeGhostVertices_{false};
     bool hasPreconditionedGlobalBoundary_{false};
+    std::map<const void *, bool> isOrderArrayGlobal_;
 
 #endif // TTK_ENABLE_MPI
 

@@ -142,6 +142,10 @@ int ttkPointSetToSurface::RequestData(vtkInformation *ttkNotUsed(request),
   // Create new grid
   vtkNew<vtkPolyData> vtkOutput{};
   vtkOutput->DeepCopy(input);
+  auto numberOfCells = (nUniqueXValues - 1) * nUniqueYValues
+                       + nUniqueXValues * (nUniqueYValues - 1)
+                       + (nUniqueXValues - 1) * (nUniqueYValues - 1);
+  vtkOutput->Allocate(numberOfCells);
 
   for(unsigned int i = 0; i < nUniqueXValues; ++i) {
     for(unsigned int j = 0; j < nUniqueYValues; ++j) {

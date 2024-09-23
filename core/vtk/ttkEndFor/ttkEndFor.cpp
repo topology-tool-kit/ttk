@@ -66,10 +66,10 @@ int ttkEndFor::RequestData(vtkInformation *request,
   }
 
   // get iteration info
-  int i = forEach->GetIterationIdx() - 1;
-  int n = forEach->GetIterationNumber();
+  int const i = forEach->GetIterationIdx() - 1;
+  int const n = forEach->GetIterationNumber();
 
-  bool isRepeatedIteration = this->LastIterationIdx == i && i > 0;
+  bool const isRepeatedIteration = this->LastIterationIdx == i && i > 0;
   this->LastIterationIdx = i;
 
   if(isRepeatedIteration)

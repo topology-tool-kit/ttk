@@ -179,19 +179,30 @@ namespace ttk {
       }
     }
 
+    inline void setNonMatchingWeight(double nonMatchingWeight) {
+      nonMatchingWeight_ = nonMatchingWeight;
+    }
+
     double getCost() {
       return cost_;
+    }
+
+    inline void setDeltaLim(double delta_lim) {
+      delta_lim_ = delta_lim;
     }
 
   protected:
     // std::vector<bool> precision_objective_;
     std::vector<double> precision_;
 
+    double delta_lim_{0.01};
+
     // to kill any randomness
     bool deterministic_{false};
 
     std::string method_{"Partial Bidding"};
     int wasserstein_{2};
+    double nonMatchingWeight_ = 1.0;
 
     double geometrical_factor_{1.0};
 

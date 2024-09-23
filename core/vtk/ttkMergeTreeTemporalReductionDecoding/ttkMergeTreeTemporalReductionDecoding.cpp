@@ -1,6 +1,6 @@
 #include <ttkMergeTreeTemporalReductionDecoding.h>
 
-#include <ttkFTMTreeUtils.h>
+#include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
 
 #include <vtkInformation.h>
@@ -123,19 +123,24 @@ int ttkMergeTreeTemporalReductionDecoding::RequestData(
     resetDataVisualization();
 
   std::vector<std::tuple<double, int, int, int, int>> coefs;
-  int totalInputs = inputTrees.size() + table->GetNumberOfRows();
+  int const totalInputs = inputTrees.size() + table->GetNumberOfRows();
   std::vector<bool> interpolatedTrees(totalInputs, false);
   for(int i = 0; i < table->GetNumberOfRows(); ++i) {
-    double alpha = vtkDataArray::SafeDownCast(table->GetColumnByName("Alpha"))
-                     ->GetTuple1(i);
-    int index1R = vtkDataArray::SafeDownCast(table->GetColumnByName("Index1_R"))
-                    ->GetTuple1(i);
-    int index2R = vtkDataArray::SafeDownCast(table->GetColumnByName("Index2_R"))
-                    ->GetTuple1(i);
-    int index1 = vtkDataArray::SafeDownCast(table->GetColumnByName("Index1"))
-                   ->GetTuple1(i);
-    int index2 = vtkDataArray::SafeDownCast(table->GetColumnByName("Index2"))
-                   ->GetTuple1(i);
+    double const alpha
+      = vtkDataArray::SafeDownCast(table->GetColumnByName("Alpha"))
+          ->GetTuple1(i);
+    int const index1R
+      = vtkDataArray::SafeDownCast(table->GetColumnByName("Index1_R"))
+          ->GetTuple1(i);
+    int const index2R
+      = vtkDataArray::SafeDownCast(table->GetColumnByName("Index2_R"))
+          ->GetTuple1(i);
+    int const index1
+      = vtkDataArray::SafeDownCast(table->GetColumnByName("Index1"))
+          ->GetTuple1(i);
+    int const index2
+      = vtkDataArray::SafeDownCast(table->GetColumnByName("Index2"))
+          ->GetTuple1(i);
 
     coefs.emplace_back(alpha, index1R, index2R, index1, index2);
     for(int j = index1 + 1; j < index2; ++j)
@@ -199,7 +204,7 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
   std::vector<std::tuple<double, int, int, int, int>> &coefs,
   std::vector<bool> &interpolatedTrees) {
-  bool OutputSegmentation = false; // TODO
+  bool const OutputSegmentation = false; // TODO
   // ------------------------------------------------------------------------------------
   // --- Create output
   // ------------------------------------------------------------------------------------
@@ -244,16 +249,16 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   mergeTreeToFTMTree<dataType>(intermediateMTrees, trees);
 
   output_sequence->SetNumberOfBlocks((OutputSegmentation ? 3 : 2));
-  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockNodes
+  vtkSmartPointer<vtkMultiBlockDataSet> const vtkBlockNodes
     = vtkSmartPointer<vtkMultiBlockDataSet>::New();
   vtkBlockNodes->SetNumberOfBlocks(intermediateMTrees.size());
   output_sequence->SetBlock(0, vtkBlockNodes);
-  vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockArcs
+  vtkSmartPointer<vtkMultiBlockDataSet> const vtkBlockArcs
     = vtkSmartPointer<vtkMultiBlockDataSet>::New();
   vtkBlockArcs->SetNumberOfBlocks(intermediateMTrees.size());
   output_sequence->SetBlock(1, vtkBlockArcs);
   if(OutputSegmentation) {
-    vtkSmartPointer<vtkMultiBlockDataSet> vtkBlockSegs
+    vtkSmartPointer<vtkMultiBlockDataSet> const vtkBlockSegs
       = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     vtkBlockSegs->SetNumberOfBlocks(intermediateMTrees.size());
     output_sequence->SetBlock(2, vtkBlockSegs);
@@ -263,11 +268,11 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   std::vector<std::vector<SimplexId>> nodeCorr(intermediateMTrees.size());
   int cptInterpolatedTree = 0;
   for(size_t i = 0; i < intermediateMTrees.size(); ++i) {
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputNode1
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputArc1
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputArc1
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputSegmentation1
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputSegmentation1
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     ttkMergeTreeVisualization visuMaker;
@@ -363,13 +368,13 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
   output_matchings->SetNumberOfBlocks(intermediateMTrees.size() - 1);
   for(size_t i = 0; i < intermediateMTrees.size() - 1; ++i) {
     // Declare vtk objects
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputMatching
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputMatching
       = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode1
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputNode1
       = vtkUnstructuredGrid::SafeDownCast(
         vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(0))
           ->GetBlock(i));
-    vtkSmartPointer<vtkUnstructuredGrid> vtkOutputNode2
+    vtkSmartPointer<vtkUnstructuredGrid> const vtkOutputNode2
       = vtkUnstructuredGrid::SafeDownCast(
         vtkMultiBlockDataSet::SafeDownCast(output_sequence->GetBlock(0))
           ->GetBlock(i + 1));

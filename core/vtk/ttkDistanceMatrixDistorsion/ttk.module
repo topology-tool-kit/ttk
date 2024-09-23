@@ -1,9 +1,0 @@
-NAME
-  ttkDistanceMatrixDistorsion
-SOURCES
-  ttkDistanceMatrixDistorsion.cpp
-HEADERS
-  ttkDistanceMatrixDistorsion.h
-DEPENDS
-  distanceMatrixDistorsion
-  ttkAlgorithm

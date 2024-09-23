@@ -17,11 +17,11 @@ namespace ttk {
         // single leaf search for both tree
         // When executed from CT, both minima and maxima are extracted
         Timer precomputeTime;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel num_threads(threadNumber_)
 #endif
         {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp single nowait
 #endif
           { leafSearch(mesh); }
@@ -41,28 +41,28 @@ namespace ttk {
 
       // JT & ST
       // clang-format off
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel num_threads(threadNumber_)
 #endif
       {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp single nowait
 #endif
         {
           if(tt == TreeType::Join || bothMT) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             jt_.build(mesh, tt == TreeType::Contour);
           }
           if(tt == TreeType::Split || bothMT) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task UNTIED() if(threadNumber_ > 1)
 #endif
             st_.build(mesh, tt == TreeType::Contour);
           }
         }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
       }
@@ -114,7 +114,7 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
 
   // Extrema extract and launch tasks
   for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(chunkId)
 #endif
     {
@@ -150,7 +150,7 @@ int FTMTree_CT::leafSearch(const triangulationType *mesh) {
     }
   }
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
   return 0;

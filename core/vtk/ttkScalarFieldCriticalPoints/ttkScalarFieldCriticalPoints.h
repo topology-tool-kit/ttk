@@ -66,6 +66,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
 ///   Uncertain Starting Vortex example</a> \n
 ///

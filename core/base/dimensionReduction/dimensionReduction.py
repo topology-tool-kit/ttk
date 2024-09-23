@@ -1,13 +1,13 @@
 def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
 
-    import importlib
+    import importlib.util
 
     # if numpy, scipy and sklearn are not found
     not_found = False
 
     # check if modules are installed
     for mod in ["numpy", "scipy", "sklearn"]:
-        if importlib.find_loader(mod) is None:
+        if importlib.util.find_spec(mod) is None:
             not_found = True
             print("[DimensionReduction] Python error: " + mod + " module not found.")
 

@@ -108,10 +108,10 @@ int ttkTopologicalCompressionReader::RequestData(
     DataExtent[i] = this->getDataExtent()[i];
     DataExtent[3 + i] = this->getDataExtent()[3 + i];
   }
-  int nx = 1 + DataExtent[1] - DataExtent[0];
-  int ny = 1 + DataExtent[3] - DataExtent[2];
-  int nz = 1 + DataExtent[5] - DataExtent[4];
-  int vertexNumber = nx * ny * nz;
+  int const nx = 1 + DataExtent[1] - DataExtent[0];
+  int const ny = 1 + DataExtent[3] - DataExtent[2];
+  int const nz = 1 + DataExtent[5] - DataExtent[4];
+  int const vertexNumber = nx * ny * nz;
   ZFPOnly = this->getZFPOnly();
 
   vtkNew<vtkImageData> mesh{};
@@ -179,9 +179,9 @@ vtkImageData *ttkTopologicalCompressionReader::GetOutput() {
 }
 
 void ttkTopologicalCompressionReader::BuildMesh(vtkImageData *mesh) const {
-  int nx = 1 + DataExtent[1] - DataExtent[0];
-  int ny = 1 + DataExtent[3] - DataExtent[2];
-  int nz = 1 + DataExtent[5] - DataExtent[4];
+  int const nx = 1 + DataExtent[1] - DataExtent[0];
+  int const ny = 1 + DataExtent[3] - DataExtent[2];
+  int const nz = 1 + DataExtent[5] - DataExtent[4];
   mesh->SetDimensions(nx, ny, nz);
   mesh->SetSpacing(DataSpacing[0], DataSpacing[1], DataSpacing[2]);
   mesh->SetOrigin(DataOrigin[0], DataOrigin[1], DataOrigin[2]);

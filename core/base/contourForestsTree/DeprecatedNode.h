@@ -139,13 +139,13 @@ namespace ttk {
       }
 
       inline idSuperArc clearDownSuperArcs() {
-        idSuperArc s = vect_downSuperArcList_.size();
+        const idSuperArc s = vect_downSuperArcList_.size();
         vect_downSuperArcList_.clear();
         return s;
       }
 
       inline idSuperArc clearUpSuperArcs() {
-        idSuperArc s = vect_upSuperArcList_.size();
+        const idSuperArc s = vect_upSuperArcList_.size();
         vect_upSuperArcList_.clear();
         return s;
       }

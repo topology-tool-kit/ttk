@@ -197,7 +197,7 @@ int ttk::MeshGraph::execute(
     for(size_t i = 0; i < nInputPoints; i++) {
       const CT *coord = &inputPoints[i * 3];
 
-      size_t q = i * 9; // i*3*3
+      size_t const q = i * 9; // i*3*3
       // a
       outputPoints[q] = coord[0];
       outputPoints[q + 1] = coord[1];
@@ -226,9 +226,9 @@ int ttk::MeshGraph::execute(
 
     // Lambda function that linearly interpolates two point locations
     auto getMidPoint = [&](const size_t &m, const size_t &i, const size_t &j) {
-      size_t mp = m * 3;
-      size_t ip = i * 3;
-      size_t jp = j * 3;
+      size_t const mp = m * 3;
+      size_t const ip = i * 3;
+      size_t const jp = j * 3;
       for(size_t k = 0; k < 3; k++)
         outputPoints[mp + k]
           = (outputPoints[ip + k] + outputPoints[jp + k]) / 2;
@@ -242,9 +242,9 @@ int ttk::MeshGraph::execute(
             n = 0.5 * (0.5 * q0 + 0.5 * n) + 0.5 * (0.5 * n + 0.5 * q2);
           };
 
-          size_t mi = m * 3;
-          size_t p0i = p0 * 3; // first point
-          size_t p1i = p1 * 3; // second point
+          size_t const mi = m * 3;
+          size_t const p0i = p0 * 3; // first point
+          size_t const p1i = p1 * 3; // second point
 
           for(size_t i = 0; i < 3; i++)
             outputPoints[mi + i]
@@ -262,26 +262,26 @@ int ttk::MeshGraph::execute(
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
       size_t temp = i * 2;
-      size_t aInputIndex = (size_t)inputConnectivityArray[temp++];
-      size_t bInputIndex = (size_t)inputConnectivityArray[temp];
+      size_t const aInputIndex = (size_t)inputConnectivityArray[temp++];
+      size_t const bInputIndex = (size_t)inputConnectivityArray[temp];
 
       // already computed points
-      size_t a = aInputIndex * 3;
-      size_t a0 = a + 1;
-      size_t a1 = a + 2;
-      size_t b = bInputIndex * 3;
-      size_t b0 = b + 1;
-      size_t b1 = b + 2;
+      size_t const a = aInputIndex * 3;
+      size_t const a0 = a + 1;
+      size_t const a1 = a + 2;
+      size_t const b = bInputIndex * 3;
+      size_t const b0 = b + 1;
+      size_t const b1 = b + 2;
 
       // points to compute
-      size_t offset = edgePointOffset + i * 7;
-      size_t m0 = offset;
-      size_t m1 = offset + 1;
-      size_t a0m0 = offset + 2;
-      size_t m0b0 = offset + 3;
-      size_t b1m1 = offset + 4;
-      size_t m1a1 = offset + 5;
-      size_t c = offset + 6;
+      size_t const offset = edgePointOffset + i * 7;
+      size_t const m0 = offset;
+      size_t const m1 = offset + 1;
+      size_t const a0m0 = offset + 2;
+      size_t const m0b0 = offset + 3;
+      size_t const b1m1 = offset + 4;
+      size_t const m1a1 = offset + 5;
+      size_t const c = offset + 6;
 
       getMidPoint(m0, a0, b0);
       getMidPoint(m1, a1, b1);
@@ -399,9 +399,9 @@ int ttk::MeshGraph::execute2(
                   {"#Subdivisions", std::to_string(nSubdivisions)}});
   this->printMsg(debug::Separator::L2);
 
-  size_t subdivisionOffset = nInputPoints * 2;
-  size_t nSubdivisionPoints = nSubdivisions * 2;
-  size_t outputPointsSubdivisonOffset = nSubdivisionPoints * 3;
+  size_t const subdivisionOffset = nInputPoints * 2;
+  size_t const nSubdivisionPoints = nSubdivisions * 2;
+  size_t const outputPointsSubdivisonOffset = nSubdivisionPoints * 3;
 
   // ---------------------------------------------------------------------------
   // Compute Output Point Locations
@@ -423,7 +423,7 @@ int ttk::MeshGraph::execute2(
     for(size_t i = 0; i < nInputPoints; i++) {
       const CT *coords = &inputPoints[i * 3];
 
-      size_t q = i * 6;
+      size_t const q = i * 6;
       outputPoints[q] = coords[0];
       outputPoints[q + 1] = coords[1];
       outputPoints[q + 2] = coords[2];
@@ -441,19 +441,19 @@ int ttk::MeshGraph::execute2(
     // -------------------------------------------------------------------------
     // Compute SubPoints
     // -------------------------------------------------------------------------
-    size_t q = subdivisionOffset * 3;
-    float nSubdivisionsP1 = nSubdivisions + 1;
+    size_t const q = subdivisionOffset * 3;
+    float const nSubdivisionsP1 = nSubdivisions + 1;
 
     auto computeBezierPoint = [&](const size_t &no0, const size_t &no1,
                                   const size_t &subdOffset,
                                   const float lambda) {
-      float lambdaI = 1 - lambda;
+      float const lambdaI = 1 - lambda;
 
-      float lambda_2 = lambda * lambda;
-      float lambda_3 = lambda * lambda_2;
+      float const lambda_2 = lambda * lambda;
+      float const lambda_3 = lambda * lambda_2;
 
-      float lambdaI_2 = lambdaI * lambdaI;
-      float lambdaI_3 = lambdaI * lambdaI_2;
+      float const lambdaI_2 = lambdaI * lambdaI;
+      float const lambdaI_3 = lambdaI * lambdaI_2;
 
       float m0[3];
       float m1[3];
@@ -501,7 +501,7 @@ int ttk::MeshGraph::execute2(
     Timer t;
     this->printMsg("Computing mesh cells", 0, debug::LineMode::REPLACE);
 
-    size_t cellSize = this->computeOutputCellSize(nSubdivisions);
+    size_t const cellSize = this->computeOutputCellSize(nSubdivisions);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -562,14 +562,14 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputPoints; i++) {
-      size_t q = i * 3;
+      size_t const q = i * 3;
       // a, a0, a1
       outputPointData[q] = inputPointData[i];
       outputPointData[q + 1] = inputPointData[i];
       outputPointData[q + 2] = inputPointData[i];
     }
 
-    size_t edgePointOffset = nInputPoints * 3;
+    size_t const edgePointOffset = nInputPoints * 3;
 
 // Iterate over input cells and assign point data of intermediate points
 #ifdef TTK_ENABLE_OPENMP
@@ -577,20 +577,20 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
       size_t temp = i * 2;
-      size_t aInputIndex = (size_t)inputConnectivityArray[temp++];
-      size_t bInputIndex = (size_t)inputConnectivityArray[temp];
+      size_t const aInputIndex = (size_t)inputConnectivityArray[temp++];
+      size_t const bInputIndex = (size_t)inputConnectivityArray[temp];
 
-      size_t a = aInputIndex * 3;
-      size_t b = bInputIndex * 3;
+      size_t const a = aInputIndex * 3;
+      size_t const b = bInputIndex * 3;
 
-      size_t offset = edgePointOffset + i * 7;
-      size_t m0 = offset;
-      size_t m1 = offset + 1;
-      size_t a0m0 = offset + 2;
-      size_t m0b0 = offset + 3;
-      size_t b1m1 = offset + 4;
-      size_t m1a1 = offset + 5;
-      size_t c = offset + 6;
+      size_t const offset = edgePointOffset + i * 7;
+      size_t const m0 = offset;
+      size_t const m1 = offset + 1;
+      size_t const a0m0 = offset + 2;
+      size_t const m0b0 = offset + 3;
+      size_t const b1m1 = offset + 4;
+      size_t const m1a1 = offset + 5;
+      size_t const c = offset + 6;
 
       outputPointData[c] = (DT)((outputPointData[a] + outputPointData[b]) / 2);
       outputPointData[m0] = outputPointData[c];
@@ -611,27 +611,27 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputPoints; i++) {
-      size_t offset = i * 2;
+      size_t const offset = i * 2;
       auto &v = inputPointData[i];
       outputPointData[offset] = v;
       outputPointData[offset + 1] = v;
     }
 
     // Intermediate Points
-    size_t subdivisionOffset = nInputPoints * 2;
-    size_t nSubdivisionPoints = nSubdivisions * 2;
+    size_t const subdivisionOffset = nInputPoints * 2;
+    size_t const nSubdivisionPoints = nSubdivisions * 2;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t q = i * 2;
+      size_t const q = i * 2;
       IT c0 = inputConnectivityArray[q];
       DT c0V = inputPointData[c0];
 
-      size_t temp = subdivisionOffset + i * nSubdivisionPoints;
+      size_t const temp = subdivisionOffset + i * nSubdivisionPoints;
       for(size_t j = 0; j < nSubdivisions; j++) {
-        size_t q2 = temp + j * 2;
+        size_t const q2 = temp + j * 2;
         outputPointData[q2] = c0V;
         outputPointData[q2 + 1] = c0V;
       }
@@ -656,7 +656,7 @@ int ttk::MeshGraph::mapInputCellDataToOutputCellData(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t offset = i * 2;
+      size_t const offset = i * 2;
       outputCellData[offset] = inputCellData[i];
       outputCellData[offset + 1] = inputCellData[i];
     }

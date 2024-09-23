@@ -69,12 +69,13 @@ namespace ttk {
     inline int buildGradient(const void *const scalars,
                              const size_t scalarsMTime,
                              const SimplexId *const offsets,
-                             const triangulationType &triangulation) {
+                             const triangulationType &triangulation,
+                             const std::vector<bool> *updateMask = nullptr) {
       this->dg_.setDebugLevel(this->debugLevel_);
       this->dg_.setThreadNumber(this->threadNumber_);
       this->dg_.setInputOffsets(offsets);
       this->dg_.setInputScalarField(scalars, scalarsMTime);
-      return this->dg_.buildGradient(triangulation);
+      return this->dg_.buildGradient(triangulation, false, updateMask);
     }
 
     /**
@@ -433,24 +434,73 @@ namespace ttk {
       if(dim > 3 || dim < 1) {
         return;
       }
-      this->firstRepMin_.resize(triangulation.getNumberOfVertices());
-      if(dim > 1) {
-        this->firstRepMax_.resize(triangulation.getNumberOfCells());
-      }
-      if(dim > 2) {
-        this->critEdges_.resize(triangulation.getNumberOfEdges());
-        this->edgeTrianglePartner_.resize(triangulation.getNumberOfEdges(), -1);
-        this->onBoundary_.resize(triangulation.getNumberOfEdges(), false);
-        this->s2Mapping_.resize(triangulation.getNumberOfTriangles(), -1);
-        this->s1Mapping_.resize(triangulation.getNumberOfEdges(), -1);
-      }
-      for(int i = 0; i < dim + 1; ++i) {
-        this->pairedCritCells_[i].resize(
-          this->dg_.getNumberOfCells(i, triangulation), false);
-      }
-      for(int i = 1; i < dim + 1; ++i) {
-        this->critCellsOrder_[i].resize(
-          this->dg_.getNumberOfCells(i, triangulation), -1);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel master num_threads(threadNumber_)
+#endif
+      {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif // TTK_ENABLE_OPENMP
+        this->firstRepMin_.resize(triangulation.getNumberOfVertices());
+        if(dim > 1) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->firstRepMax_.resize(triangulation.getNumberOfCells());
+        }
+        if(dim > 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->critEdges_.resize(triangulation.getNumberOfEdges());
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->edgeTrianglePartner_.resize(
+            triangulation.getNumberOfEdges(), -1);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->onBoundary_.resize(triangulation.getNumberOfEdges(), false);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->s2Mapping_.resize(triangulation.getNumberOfTriangles(), -1);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->s1Mapping_.resize(triangulation.getNumberOfEdges(), -1);
+        }
+        for(int i = 0; i < dim + 1; ++i) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->pairedCritCells_[i].resize(
+            this->dg_.getNumberOfCells(i, triangulation), false);
+        }
+        // NOTE:
+        // a for loop used to stand here, but gcc 13 looks buggy with it...
+        if(dim >= 1) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->critCellsOrder_[1].resize(
+            this->dg_.getNumberOfCells(1, triangulation), -1);
+        }
+        if(dim >= 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->critCellsOrder_[2].resize(
+            this->dg_.getNumberOfCells(2, triangulation), -1);
+        }
+        if(dim >= 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task
+#endif
+          this->critCellsOrder_[3].resize(
+            this->dg_.getNumberOfCells(3, triangulation), -1);
+        }
       }
       this->printMsg("Memory allocations", 1.0, tm.getElapsedTime(), 1,
                      debug::LineMode::NEW, debug::Priority::DETAIL);
@@ -509,7 +559,7 @@ std::vector<std::vector<SimplexId>>
     const auto followVPath = [this, &mins, &triangulation](const SimplexId v) {
       std::vector<Cell> vpath{};
       this->dg_.getDescendingPath(Cell{0, v}, vpath, triangulation);
-      Cell &lastCell = vpath.back();
+      const Cell &lastCell = vpath.back();
       if(lastCell.dim_ == 0 && this->dg_.isCellCritical(lastCell)) {
         mins.emplace_back(lastCell.id_);
       }
@@ -558,7 +608,7 @@ std::vector<std::vector<SimplexId>>
       = [this, dim, &maxs, &triangulation](const SimplexId v) {
           std::vector<Cell> vpath{};
           this->dg_.getAscendingPath(Cell{dim, v}, vpath, triangulation);
-          Cell &lastCell = vpath.back();
+          const Cell &lastCell = vpath.back();
           if(lastCell.dim_ == dim && this->dg_.isCellCritical(lastCell)) {
             maxs.emplace_back(lastCell.id_);
           } else if(lastCell.dim_ == dim - 1) {
@@ -905,8 +955,6 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
     }
   }
 
-  Timer tmpar{};
-
   if(this->Compute2SaddlesChildren) {
     this->s2Children_.resize(saddles2.size());
   }
@@ -949,10 +997,10 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
 
   // compute 2-saddles boundaries in parallel
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic) \
   firstprivate(onBoundary)
-#endif // TTK_ENABLE_OPENMP
+#endif // TTK_ENABLE_OPENMP4
   for(size_t i = 0; i < saddles2.size(); ++i) {
     // 2-saddles sorted in increasing order
     const auto s2 = saddles2[i];
@@ -964,6 +1012,7 @@ void ttk::DiscreteMorseSandwich::getSaddleSaddlePairs(
   Timer tmseq{};
 
   // extract saddle-saddle pairs from computed boundaries
+
   for(size_t i = 0; i < saddles2.size(); ++i) {
     if(!s2Boundaries[i].empty()) {
       const auto s2 = saddles2[i];
@@ -1258,7 +1307,7 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
     nBoundComp = std::max(nBoundComp, 0);
 
     // print Betti numbers
-    std::vector<std::vector<std::string>> rows{
+    const std::vector<std::vector<std::string>> rows{
       {" #Connected components", std::to_string(nConnComp)},
       {" #Topological handles", std::to_string(nHandles)},
       {" #Cavities", std::to_string(nCavities)},

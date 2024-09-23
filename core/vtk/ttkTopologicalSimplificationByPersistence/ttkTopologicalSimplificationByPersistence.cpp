@@ -64,7 +64,13 @@ int ttkTopologicalSimplificationByPersistence::RequestData(
   if(inputScalars->GetNumberOfComponents() != 1)
     return !this->printErr("Input array needs to be a scalar array.");
 
-  auto inputOrder = this->GetOrderArray(inputDataSet, 0);
+  // retrieve and precondition triangulation
+  auto triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
+  if(!triangulation)
+    return 0;
+  this->preconditionTriangulation(triangulation);
+
+  auto inputOrder = this->GetOrderArray(inputDataSet, 0, triangulation, false);
   if(!inputOrder)
     return 0;
 
@@ -75,12 +81,6 @@ int ttkTopologicalSimplificationByPersistence::RequestData(
   auto outputOrder
     = vtkSmartPointer<vtkDataArray>::Take(inputOrder->NewInstance());
   outputOrder->DeepCopy(inputOrder);
-
-  // retrieve and precondition triangulation
-  auto triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
-  if(!triangulation)
-    return 0;
-  this->preconditionTriangulation(triangulation);
 
   double persistenceThreshold = this->PersistenceThreshold;
   if(!this->ThresholdIsAbsolute) {

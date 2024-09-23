@@ -1,0 +1,11 @@
+--- CMake/ParaViewOptions.cmake	2024-08-21 20:55:47.000000000 +0200
++++ CMake/ParaViewOptions.cmake	2024-09-10 09:45:14.806684986 +0200
+@@ -128,7 +128,7 @@
+   unset(_has_fortran)
+ endif()
+ 
+-vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON OFF)
++vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON ON)
+ option(PARAVIEW_USE_PYTHON "Enable/Disable Python scripting support" "${python_default}")
+ 
+ option(PARAVIEW_USE_SERIALIZATION "Enable/Disable Serialization support" OFF)

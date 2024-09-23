@@ -68,16 +68,13 @@ namespace ttk {
       // Compute Octree
       // -----------------------------------------------------------------------
       {
-        // start a local timer for this subprocedure
-        ttk::Timer localTimer;
-
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!triangulation)
           return -1;
 #endif
 
         SimplexId vertexNumber = triangulation->getNumberOfVertices();
-        SimplexId cellNumber = triangulation->getNumberOfCells();
+        SimplexId const cellNumber = triangulation->getNumberOfCells();
 
         // create the octree
         Octree preOctree(triangulation, argument);

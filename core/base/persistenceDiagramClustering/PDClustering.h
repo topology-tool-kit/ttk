@@ -204,6 +204,10 @@ namespace ttk {
       deltaLim_ = deltaLim;
     }
 
+    inline void setNonMatchingWeight(double nonMatchingWeight) {
+      nonMatchingWeight_ = nonMatchingWeight;
+    }
+
     inline void printClustering() {
       std::string msg{};
       for(int c = 0; c < k_; ++c) {
@@ -261,6 +265,7 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double lambda_;
+    double nonMatchingWeight_ = 1.0;
 
     int k_;
     int numberOfInputs_;

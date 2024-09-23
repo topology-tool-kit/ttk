@@ -90,7 +90,8 @@ int ttkTopologicalCompression::RequestData(vtkInformation *ttkNotUsed(request),
 
   const auto vertexNumber = inputScalarField->GetNumberOfTuples();
 
-  const auto inputOffsets = this->GetOrderArray(input, 0, 1, false);
+  const auto inputOffsets
+    = this->GetOrderArray(input, 0, triangulation, false, 1, false);
 
   // allocate the memory for the output scalar field
   vtkSmartPointer<vtkDataArray> outputScalarField{};

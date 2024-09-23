@@ -65,7 +65,7 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
       tmpGrid->GetNumberOfCells());
 
     // make the call thread-safe
-    vtkNew<vtkGenericCell> threadCell{};
+    vtkNew<vtkGenericCell> const threadCell{};
     tmpGrid->GetCell(0, threadCell);
     double value = 0;
     for(int j = 0; j < tmpGrid->GetPointData()->GetNumberOfArrays(); j++) {
@@ -241,7 +241,7 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
       //   make a cell out of that
       for(int k = 0; k < (int)cell->GetNumberOfPoints(); k++) {
 
-        SimplexId vertexId = cell->GetPointId(k);
+        SimplexId const vertexId = cell->GetPointId(k);
 
         if(cell->GetCellDimension() == 2) {
           // insert the id of the vertex
@@ -252,8 +252,8 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
           for(size_t l = 0; l < edgeMap.size(); l++) {
 
             vtkCell *edge = cell->GetEdge(l);
-            SimplexId vertexId0 = edge->GetPointId(0);
-            SimplexId vertexId1 = edge->GetPointId(1);
+            SimplexId const vertexId0 = edge->GetPointId(0);
+            SimplexId const vertexId1 = edge->GetPointId(1);
 
             if((vertexId == vertexId0) || (vertexId == vertexId1)) {
               // add the point id to the cell
@@ -271,8 +271,8 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
               l++) {
 
             vtkCell *edge = cell->GetEdge(l);
-            SimplexId vertexId0 = edge->GetPointId(0);
-            SimplexId vertexId1 = edge->GetPointId(1);
+            SimplexId const vertexId0 = edge->GetPointId(0);
+            SimplexId const vertexId1 = edge->GetPointId(1);
 
             if((l != firstEdge)
                && ((vertexId == vertexId0) || (vertexId == vertexId1))) {
@@ -292,8 +292,8 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
           for(size_t l = 0; l < edgeMap.size(); l++) {
 
             vtkCell *edge = cell->GetEdge(l);
-            SimplexId vertexId0 = edge->GetPointId(0);
-            SimplexId vertexId1 = edge->GetPointId(1);
+            SimplexId const vertexId0 = edge->GetPointId(0);
+            SimplexId const vertexId1 = edge->GetPointId(1);
 
             if((vertexId == vertexId0) || (vertexId == vertexId1)) {
               // add the point id to the cell
@@ -347,8 +347,8 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
             // both should be in
 
             vtkCell *edge = cell->GetEdge(l);
-            SimplexId vertexId0 = edge->GetPointId(0);
-            SimplexId vertexId1 = edge->GetPointId(1);
+            SimplexId const vertexId0 = edge->GetPointId(0);
+            SimplexId const vertexId1 = edge->GetPointId(1);
 
             // check if this edge belongs to the face identified right before
             bool vertex0In = false;
@@ -378,8 +378,8 @@ int ttkMeshSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
               l++) {
 
             vtkCell *edge = cell->GetEdge(l);
-            SimplexId vertexId0 = edge->GetPointId(0);
-            SimplexId vertexId1 = edge->GetPointId(1);
+            SimplexId const vertexId0 = edge->GetPointId(0);
+            SimplexId const vertexId1 = edge->GetPointId(1);
 
             if((l != firstEdge) && (l != secondEdge)
                && ((vertexId == vertexId0) || (vertexId == vertexId1))) {

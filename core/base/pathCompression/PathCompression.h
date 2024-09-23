@@ -145,6 +145,17 @@ namespace ttk {
       const triangulationType &triangulation) const;
 
     /**
+     * Enable/Disable computation of the geometrical embedding of the
+     * manifolds of the critical points.
+     */
+    inline void setComputeSegmentation(const bool doAscending,
+                                       const bool doDescending,
+                                       const bool doMorseSmale) {
+      this->ComputeAscendingSegmentation = doAscending;
+      this->ComputeDescendingSegmentation = doDescending;
+      this->ComputeMSSegmentationHash = doMorseSmale;
+    }
+    /**
      * @brief Computes a MS segmentation hash
      *
      * Computes a hash from the ascending and descending segmentation as keys.
@@ -237,7 +248,7 @@ int ttk::PathCompression::computePathCompression(
     // find the largest and smallest neighbor for each vertex
     for(SimplexId i = 0; i < nVertices; i++) {
       SimplexId neighborId{0};
-      SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
+      SimplexId const numNeighbors = triangulation.getVertexNeighborNumber(i);
 
       bool hasLargerNeighbor = false;
       SimplexId &dmi = dscSegmentation[i];
@@ -271,7 +282,7 @@ int ttk::PathCompression::computePathCompression(
     // compress paths until no changes occur
     while(lnActiveVertices > 0) {
       for(size_t i = 0; i < lnActiveVertices; i++) {
-        SimplexId &v = lActiveVertices[i];
+        SimplexId const &v = lActiveVertices[i];
         SimplexId &vDsc = dscSegmentation[v];
         SimplexId &vAsc = ascSegmentation[v];
 
@@ -330,7 +341,7 @@ int ttk::PathCompression::computePathCompressionSingle(
     // find the largest neighbor for each vertex
     for(SimplexId i = 0; i < nVertices; i++) {
       SimplexId neighborId{0};
-      SimplexId numNeighbors = triangulation.getVertexNeighborNumber(i);
+      SimplexId const numNeighbors = triangulation.getVertexNeighborNumber(i);
 
       bool hasLargerNeighbor = false;
       SimplexId &mi = segmentation[i];
@@ -364,7 +375,7 @@ int ttk::PathCompression::computePathCompressionSingle(
     // compress paths until no changes occur
     while(lnActiveVertices > 0) {
       for(size_t i = 0; i < lnActiveVertices; i++) {
-        SimplexId &v = lActiveVertices[i];
+        SimplexId const &v = lActiveVertices[i];
         SimplexId &vMan = segmentation[v];
 
 // compress paths

@@ -78,7 +78,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *ttkNotUsed(request),
     this->FocalPoint[0], this->FocalPoint[1], this->FocalPoint[2]};
   std::vector<double> defaultNearFar{this->NearFar[0], this->NearFar[1]};
   double defaultHeight = this->Height;
-  double defaultAngle = this->Angle;
+  double const defaultAngle = this->Angle;
 
   if(this->AutoFocalPoint || this->AutoNearFar || this->AutoHeight) {
 
@@ -128,7 +128,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *ttkNotUsed(request),
   auto aInputGrid
     = vtkSmartPointer<vtkPointSet>::Take(inputGrid->NewInstance());
   aInputGrid->ShallowCopy(inputGrid);
-  int n = aInputGrid->GetNumberOfPoints();
+  int const n = aInputGrid->GetNumberOfPoints();
   auto aInputGridPD = aInputGrid->GetPointData();
 
   ttkCinemaImaging::EnsureGridData(
@@ -212,13 +212,13 @@ int ttkCinemaImaging::RequestDataSingle(
   const std::vector<double> &ttkNotUsed(defaultNearFar),
   const double ttkNotUsed(defaultHeight),
   const double ttkNotUsed(defaultAngle)) {
-  ttk::Timer globalTimer;
+  ttk::Timer const globalTimer;
 
   auto cells = ttkCinemaImaging::GetCells(inputObject);
   if(!cells)
     return 0;
 
-  size_t nTriangles = cells->GetNumberOfCells();
+  size_t const nTriangles = cells->GetNumberOfCells();
   // make sure that cells consists only of triangles
   {
     auto offsets = static_cast<vtkIdType *>(
@@ -273,7 +273,7 @@ int ttkCinemaImaging::AddFieldDataArray(vtkFieldData *fd,
   if(!array)
     return 0;
 
-  size_t nComponents = array->GetNumberOfComponents();
+  size_t const nComponents = array->GetNumberOfComponents();
 
   auto newArray = vtkSmartPointer<vtkDoubleArray>::New();
   newArray->SetName(name.empty() ? array->GetName() : name.data());
@@ -316,7 +316,7 @@ int ttkCinemaImaging::ComputeDirFromFocalPoint(vtkPointSet *inputGrid) {
   auto focal = static_cast<double *>(ttkUtils::GetVoidPointer(
     inputGrid->GetPointData()->GetArray("CamFocalPoint")));
 
-  int nTuples = inputGrid->GetNumberOfPoints();
+  int const nTuples = inputGrid->GetNumberOfPoints();
 
   auto newArray = vtkSmartPointer<vtkDoubleArray>::New();
   newArray->SetName("CamDirection");
@@ -340,7 +340,7 @@ int ttkCinemaImaging::EnsureGridData(vtkPointData *fd,
   auto array = vtkDoubleArray::SafeDownCast(fd->GetArray(name.data()));
 
   if(!array) {
-    int nComponents = defaultValues.size();
+    int const nComponents = defaultValues.size();
 
     auto newArray = vtkSmartPointer<vtkDoubleArray>::New();
     newArray->SetName(name.data());
@@ -403,7 +403,7 @@ int ttkCinemaImaging::MapPointAndCellData(
   auto outputImagePD = outputImage->GetPointData();
   int dim[3];
   outputImage->GetDimensions(dim);
-  size_t nPixels = dim[0] * dim[1];
+  size_t const nPixels = dim[0] * dim[1];
 
   const size_t nInputObjectPDArrays = inputObjectPD->GetNumberOfArrays();
   const size_t nInputObjectCDArrays = inputObjectCD->GetNumberOfArrays();

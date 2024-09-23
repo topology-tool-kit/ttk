@@ -48,7 +48,7 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
 
   Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  int keepGoing = checkEmptyMPIInput<Triangulation>(triangulation);
+  int const keepGoing = checkEmptyMPIInput<Triangulation>(triangulation);
   if(keepGoing < 2) {
     return keepGoing;
   }
@@ -70,7 +70,7 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
     ForceInputMaskScalarField, 1, ttk::MaskScalarFieldName, input);
 
   // preparing the output
-  vtkSmartPointer<vtkDataArray> outputArray
+  vtkSmartPointer<vtkDataArray> const outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputScalarField->NewInstance());
   outputArray->SetName(inputScalarField->GetName());
   outputArray->SetNumberOfComponents(1);

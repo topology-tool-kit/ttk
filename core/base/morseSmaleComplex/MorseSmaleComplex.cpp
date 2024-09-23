@@ -7,10 +7,14 @@ ttk::MorseSmaleComplex::MorseSmaleComplex() {
 void ttk::MorseSmaleComplex::flattenSeparatricesVectors(
   std::vector<std::vector<Separatrix>> &separatrices) const {
 
+  if(separatrices.empty())
+    return;
+
   std::vector<size_t> partialSizes{0};
   for(const auto &sep : separatrices) {
     partialSizes.emplace_back(partialSizes.back() + sep.size());
   }
+
   separatrices[0].resize(partialSizes.back());
 
 #ifdef TTK_ENABLE_OPENMP

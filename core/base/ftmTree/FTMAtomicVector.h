@@ -91,7 +91,7 @@ namespace ttk {
       reset();
 
       // Remove old content
-      std::size_t oldSize = std::vector<type>::size();
+      std::size_t const oldSize = std::vector<type>::size();
       std::vector<type>::clear();
       reserve(oldSize);
     }

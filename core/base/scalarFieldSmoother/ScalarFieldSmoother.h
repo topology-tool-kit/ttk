@@ -33,11 +33,26 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
+///   Tree Wasserstein Auto-Encoder example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">
 ///   Morse Molecule example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
 ///   segmentation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
 
 #pragma once
 
@@ -109,13 +124,16 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
     return -4;
 #endif
 
-  SimplexId vertexNumber = triangulation->getNumberOfVertices();
+  SimplexId const vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
 
   dataType *outputData = (dataType *)outputData_;
   dataType *inputData = (dataType *)inputData_;
   // init the output
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber; i++) {
     for(int j = 0; j < dimensionNumber_; j++) {
       outputData[dimensionNumber_ * i + j]
@@ -156,6 +174,9 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
 
     if(numberOfIterations) {
       // assign the tmpData back to the output
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
       for(SimplexId i = 0; i < vertexNumber; i++) {
         for(int j = 0; j < dimensionNumber_; j++) {
           // only set value for unmasked points

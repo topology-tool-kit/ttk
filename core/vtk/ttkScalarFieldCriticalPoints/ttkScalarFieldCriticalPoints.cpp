@@ -57,7 +57,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  int keepGoing = checkEmptyMPIInput<Triangulation>(triangulation);
+  int const keepGoing = checkEmptyMPIInput<Triangulation>(triangulation);
   if(keepGoing < 2) {
     return keepGoing;
   }
@@ -74,8 +74,8 @@ int ttkScalarFieldCriticalPoints::RequestData(
   if(!inputScalarField)
     return 0;
 
-  vtkDataArray *offsetField
-    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
+  vtkDataArray *offsetField = this->GetOrderArray(
+    input, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
   // setting up the base layer
   this->preconditionTriangulation(triangulation);
@@ -176,7 +176,8 @@ int ttkScalarFieldCriticalPoints::RequestData(
     for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
 
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
-      vtkSmartPointer<vtkDataArray> scalarArray{scalarField->NewInstance()};
+      vtkSmartPointer<vtkDataArray> const scalarArray{
+        scalarField->NewInstance()};
 
       scalarArray->SetNumberOfComponents(scalarField->GetNumberOfComponents());
       scalarArray->SetNumberOfTuples(criticalPoints_.size());

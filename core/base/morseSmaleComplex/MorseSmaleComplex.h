@@ -70,6 +70,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky</a>\n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
 ///   example</a> \n
 ///
@@ -413,6 +416,7 @@ namespace ttk {
     bool ReturnSaddleConnectors{false};
     double SaddleConnectorsPersistenceThreshold{};
     bool ThresholdIsAbsolute{false};
+    bool ForceLoopFreeGradient{true};
   };
 } // namespace ttk
 
@@ -674,6 +678,9 @@ int ttk::MorseSmaleComplex::getAscendingSeparatrices1(
   std::vector<Separatrix> &separatrices,
   const triangulationType &triangulation) const {
 
+  if(saddles.empty())
+    return 0;
+
   const auto dim{triangulation.getDimensionality()};
 
   // Triangulation method pointers for 3D
@@ -728,6 +735,9 @@ int ttk::MorseSmaleComplex::getSaddleConnectors(
   const std::vector<SimplexId> &saddles2,
   std::vector<Separatrix> &separatrices,
   const triangulationType &triangulation) const {
+
+  if(saddles2.empty())
+    return 0;
 
   const auto nTriangles = triangulation.getNumberOfTriangles();
   // visited triangles (one vector per thread)
@@ -1748,51 +1758,93 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
 
   size_t nReturned{};
 
-  // offset from firstSadSadPair should index s2Children and simplifyS2
-  const auto &s2Children{dms.get2SaddlesChildren()};
-  std::vector<bool> simplifyS2(s2Children.size(), true);
-
+  // Sort pairs to process by persistence
+  std::vector<std::tuple<size_t, dataType>> pairs;
   for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
     const auto &pair{dms_pairs[i]};
+    pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
+  }
+  const auto comparePersistence
+    = [](const std::tuple<size_t, dataType> &pair1,
+         const std::tuple<size_t, dataType> &pair2) {
+        return std::get<1>(pair1) < std::get<1>(pair2);
+      };
+  TTK_PSORT(
+    this->threadNumber_, pairs.begin(), pairs.end(), comparePersistence);
 
-    if(pair.type != 1 || getPersistence(pair) > persistenceThreshold) {
+  std::vector<std::tuple<dataType, SimplexId, SimplexId>> skippedPairsPers;
+
+  // Process pairs
+  for(const auto &pairTup : pairs) {
+    const auto &pairIndex = std::get<0>(pairTup);
+    const auto &pair{dms_pairs[pairIndex]};
+    const auto &pairPersistence = std::get<1>(pairTup);
+
+    if(pair.type != 1 || pairPersistence > persistenceThreshold) {
       continue;
     }
 
-    const auto o{i - firstSadSadPair};
     const Cell birth{1, pair.birth};
     const Cell death{2, pair.death};
-    bool skip{false};
-    for(const auto child : s2Children[o]) {
-      if(!simplifyS2[child]) {
-        skip = true;
-        break;
-      }
-    }
-    if(skip) {
-      this->printMsg("Skipping saddle connector " + birth.to_string() + " -> "
-                       + death.to_string(),
-                     debug::Priority::DETAIL);
-      simplifyS2[o] = false;
-      continue;
-    }
+
     // 1. get the 2-saddle wall
     VisitedMask mask{isVisited, visitedTriangles};
     this->discreteGradient_.getDescendingWall(death, mask, triangulation);
     // 2. get the saddle connector
     std::vector<Cell> vpath{};
+    bool disableForkReversal = not ForceLoopFreeGradient;
     this->discreteGradient_.getAscendingPathThroughWall(
-      birth, death, isVisited, &vpath, triangulation, true);
+      birth, death, isVisited, &vpath, triangulation, disableForkReversal);
     // 3. reverse the gradient on the saddle connector path
     if(vpath.back() == death) {
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
-      nReturned++;
+
+      // 3.1 Detect cycle
+      bool cycle = false;
+      if(ForceLoopFreeGradient) {
+        cycle
+          = this->discreteGradient_.detectGradientCycle(birth, triangulation);
+      } else {
+        std::vector<bool> isVisitedUpdated(
+          triangulation.getNumberOfTriangles(), false);
+        std::vector<SimplexId> visitedTrianglesUpdated{};
+        VisitedMask maskUpdated{isVisitedUpdated, visitedTrianglesUpdated};
+        discreteGradient_.getDescendingWall(death, maskUpdated, triangulation);
+        discreteGradient_.getAscendingPathThroughWall(
+          birth, death, isVisitedUpdated, nullptr, triangulation, false, true,
+          &cycle);
+      }
+      if(cycle) {
+        this->discreteGradient_.reverseAscendingPathOnWall(
+          vpath, triangulation, true);
+        this->printMsg("Could not return saddle connector " + birth.to_string()
+                         + " -> " + death.to_string()
+                         + " without creating a cycle.",
+                       debug::Priority::VERBOSE);
+        if(this->debugLevel_ == (int)debug::Priority::DETAIL)
+          skippedPairsPers.emplace_back(
+            std::make_tuple(pairPersistence, pair.birth, pair.death));
+      } else
+        nReturned++;
+
     } else {
       this->printMsg("Could not return saddle connector " + birth.to_string()
                        + " -> " + death.to_string(),
-                     debug::Priority::DETAIL);
-      simplifyS2[o] = false;
+                     debug::Priority::VERBOSE);
+      if(this->debugLevel_ == (int)debug::Priority::DETAIL)
+        skippedPairsPers.emplace_back(
+          std::make_tuple(pairPersistence, pair.birth, pair.death));
     }
+  }
+
+  if(this->debugLevel_ == (int)debug::Priority::DETAIL) {
+    TTK_PSORT(
+      this->threadNumber_, skippedPairsPers.begin(), skippedPairsPers.end());
+    for(unsigned int i = 0; i < skippedPairsPers.size(); ++i)
+      this->printMsg(std::to_string(i) + " "
+                     + std::to_string(std::get<1>(skippedPairsPers[i])) + " "
+                     + std::to_string(std::get<2>(skippedPairsPers[i])) + " "
+                     + std::to_string(std::get<0>(skippedPairsPers[i])));
   }
 
   this->printMsg("Returned " + std::to_string(nReturned) + " saddle connectors",

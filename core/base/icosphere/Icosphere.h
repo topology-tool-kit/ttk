@@ -143,7 +143,7 @@ namespace ttk {
         &processedEdges,
       DT *vertexCoords,
       IT &vertexIndex) const {
-      bool firstIsSmaller = i < j;
+      bool const firstIsSmaller = i < j;
       IT a = firstIsSmaller ? i : j;
       IT b = firstIsSmaller ? j : i;
 
@@ -286,7 +286,7 @@ int ttk::Icosphere::computeIcosphere(
 
     // if uneven number of nSubdivisions then copy temp buffer to output buffer
     if(nSubdivisions > 0 && nSubdivisions % 2 != 0) {
-      size_t n = nTriangles * 3;
+      size_t const n = nTriangles * 3;
       for(size_t i = 0; i < n; i++)
         connectivityList[i] = connectivityListTemp[i];
     }
@@ -320,7 +320,7 @@ int ttk::Icosphere::translateIcosphere(DT *vertexCoords,
   }
 
   // connectivity list
-  size_t vertexIdOffset = icosphereIndex * nVerticesPerIcosphere;
+  size_t const vertexIdOffset = icosphereIndex * nVerticesPerIcosphere;
   for(size_t i = 0, limit = nTrianglesPerIcosphere * 3; i < limit;) {
     connectivityList[connectivityListOffset++]
       = connectivityList[i++] + vertexIdOffset;
@@ -373,7 +373,7 @@ int ttk::Icosphere::computeIcospheres(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nSpheres; i++) {
-      size_t n = nVerticesPerIcosphere * 3;
+      size_t const n = nVerticesPerIcosphere * 3;
       size_t offset = i * n;
       for(size_t j = 0; j < n; j++)
         normals[offset++] = vertexCoords[j];

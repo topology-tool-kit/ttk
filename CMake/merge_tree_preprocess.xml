@@ -55,7 +55,7 @@ panel_visibility="advanced">
   </PropertyWidgetDecorator>
   </Hints>
   <Documentation>
-    
+    When merging a saddle point that was already merged to other saddle points before, this option allows to consider not the saddle point itself but the farthest saddle among the ones that were already merge to it before. "Farthest" means here the saddle with lowest value for join tree and highest value for split tree.
   </Documentation>
   <BooleanDomain name="bool"/>
 </IntVectorProperty>

@@ -314,12 +314,12 @@ int ttk::RangeDrivenOctree::buildNode(
   nodeList_.back().rangeBox_ = rangeBox;
   nodeList_.back().domainBox_ = domainBox;
 
-  float rangeArea = (rangeBox.first.second - rangeBox.first.first)
-                    * (rangeBox.second.second - rangeBox.second.first);
+  float const rangeArea = (rangeBox.first.second - rangeBox.first.first)
+                          * (rangeBox.second.second - rangeBox.second.first);
 
-  float domainVolume = (domainBox[0].second - domainBox[0].first)
-                       * (domainBox[1].second - domainBox[1].first)
-                       * (domainBox[2].second - domainBox[2].first);
+  float const domainVolume = (domainBox[0].second - domainBox[0].first)
+                             * (domainBox[1].second - domainBox[1].first)
+                             * (domainBox[2].second - domainBox[2].first);
 
   if(((SimplexId)cellList.size() > leafMinimumCellNumber_)
      && (rangeArea > leafMinimumRangeAreaRatio_ * rangeArea_)
@@ -334,11 +334,11 @@ int ttk::RangeDrivenOctree::buildNode(
       childRangeBox{};
     std::array<std::vector<SimplexId>, 8> childCellList{};
 
-    float midX
+    float const midX
       = domainBox[0].first + (domainBox[0].second - domainBox[0].first) / 2.0;
-    float midY
+    float const midY
       = domainBox[1].first + (domainBox[1].second - domainBox[1].first) / 2.0;
-    float midZ
+    float const midZ
       = domainBox[2].first + (domainBox[2].second - domainBox[2].first) / 2.0;
 
     // 0 - - -

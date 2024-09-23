@@ -671,7 +671,7 @@ inline int ttk::FiberSurface::computeCase0(
   const triangulationType *const triangulation) const {
 
   // that one's easy, make just one triangle
-  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId const vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
   // alloc 1 more triangle
   (*polygonEdgeTriangleLists_[polygonEdgeId])
@@ -815,7 +815,7 @@ inline int ttk::FiberSurface::computeCase1(
   const double &v2,
   const triangulationType *const triangulation) const {
 
-  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId const vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
   // alloc 5 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 5);
@@ -828,7 +828,8 @@ inline int ttk::FiberSurface::computeCase1(
   }
 
   // alloc 3 more triangles
-  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId const triangleId
+    = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 3);
 
   for(int i = 0; i < 3; i++) {
@@ -1004,7 +1005,7 @@ inline int ttk::FiberSurface::computeCase2(
   const double &v2,
   const triangulationType *const triangulation) const {
 
-  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId const vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
   // alloc 4 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 4);
@@ -1017,7 +1018,8 @@ inline int ttk::FiberSurface::computeCase2(
   }
 
   // alloc 2 more triangles
-  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId const triangleId
+    = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 2);
 
   for(int i = 0; i < 2; i++) {
@@ -1177,7 +1179,7 @@ inline int ttk::FiberSurface::computeCase3(
   const double &v2,
   const triangulationType *const triangulation) const {
 
-  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId const vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
   // alloc 3 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 3);
@@ -1190,7 +1192,8 @@ inline int ttk::FiberSurface::computeCase3(
   }
 
   // alloc 1 more triangle
-  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId const triangleId
+    = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 1);
 
   (*polygonEdgeTriangleLists_[polygonEdgeId])[triangleId].tetId_ = tetId;
@@ -1317,7 +1320,7 @@ inline int ttk::FiberSurface::computeCase4(
   const double &v2,
   const triangulationType *const triangulation) const {
 
-  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId const vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
   // alloc 4 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 4);
@@ -1330,7 +1333,8 @@ inline int ttk::FiberSurface::computeCase4(
   }
 
   // alloc 2 more triangles
-  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId const triangleId
+    = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 2);
 
   for(int i = 0; i < 2; i++) {
@@ -1502,7 +1506,7 @@ inline int ttk::FiberSurface::computeContour(
 
   do {
 
-    SimplexId tetId = tetQueue.front();
+    SimplexId const tetId = tetQueue.front();
     tetQueue.pop();
 
     if(!visitedTets[tetId]) {
@@ -1512,7 +1516,7 @@ inline int ttk::FiberSurface::computeContour(
 
       if(createdVertices) {
         // only propagate if we created a triangle
-        SimplexId tetNeighborNumber
+        SimplexId const tetNeighborNumber
           = triangulation->getCellNeighborNumber(tetId);
 
         for(SimplexId i = 0; i < tetNeighborNumber; i++) {
@@ -2189,7 +2193,7 @@ inline int ttk::FiberSurface::processTetrahedron(
             for(SimplexId k = 0; k < (SimplexId)colinearVertices.size(); k++) {
               if(j != k) {
 
-                double distance = Geometry::distance(
+                double const distance = Geometry::distance(
                   (*polygonEdgeVertexLists_[polygonEdgeId])
                     [createdVertexList[colinearVertices[j]]]
                       .p_.data(),
@@ -2371,7 +2375,7 @@ inline int ttk::FiberSurface::remeshIntersections() const {
     for(SimplexId j = 0; j < (SimplexId)polygonEdgeTriangleLists_[i]->size();
         j++) {
 
-      SimplexId tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
+      SimplexId const tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
 
       tetIntersections[tetId].emplace_back();
 
@@ -2409,7 +2413,7 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)tetList.size(); i++) {
-    SimplexId tetId = tetList[i];
+    SimplexId const tetId = tetList[i];
 
     // pre-process by merging nearby vertices...?
 
@@ -2428,13 +2432,15 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 
       // if we re-mesh, we add new triangles at the end of the list.
       // there's no need to check intersections with those.
-      SimplexId originalTriangleNumber
+      SimplexId const originalTriangleNumber
         = (SimplexId)tetIntersections[tetId].size();
 
       for(SimplexId k = 0; k < originalTriangleNumber; k++) {
 
-        SimplexId polygonEdgeId0 = tetIntersections[tetId][j].polygonEdgeId_;
-        SimplexId polygonEdgeId1 = tetIntersections[tetId][k].polygonEdgeId_;
+        SimplexId const polygonEdgeId0
+          = tetIntersections[tetId][j].polygonEdgeId_;
+        SimplexId const polygonEdgeId1
+          = tetIntersections[tetId][k].polygonEdgeId_;
 
         if((j != k) && (polygonEdgeId0 != polygonEdgeId1)) {
           // cases 3, 4 and 6 of the fiber surface table (multiple triangle
@@ -2454,7 +2460,7 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 
           // compute the intersection
           std::pair<double, double> intersection;
-          bool hasIntersection = Geometry::computeSegmentIntersection(
+          bool const hasIntersection = Geometry::computeSegmentIntersection(
             edge0point0.first, edge0point0.second, edge0point1.first,
             edge0point1.second, edge1point0.first, edge1point0.second,
             edge1point1.first, edge1point1.second, intersection.first,
@@ -2486,7 +2492,7 @@ inline int ttk::FiberSurface::remeshIntersections() const {
   for(SimplexId i = 0; i < (SimplexId)tetNewVertices.size(); i++) {
     for(SimplexId j = 0; j < (SimplexId)tetNewVertices[i].size(); j++) {
 
-      SimplexId localId = (*globalVertexList_).size();
+      SimplexId const localId = (*globalVertexList_).size();
       tetNewVertices[i][j].localId_ = localId;
       (*globalVertexList_).push_back(tetNewVertices[i][j]);
     }

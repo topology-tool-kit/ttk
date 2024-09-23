@@ -1,0 +1,11 @@
+NAME
+  ttkMergeTreeAutoencoderDecoding
+SOURCES
+  ttkMergeTreeAutoencoderDecoding.cpp
+HEADERS
+  ttkMergeTreeAutoencoderDecoding.h
+DEPENDS
+  mergeTreeAutoencoderDecoding
+  ttkAlgorithm
+  ttkMergeTree
+  ttkMergeTreeAutoencoder

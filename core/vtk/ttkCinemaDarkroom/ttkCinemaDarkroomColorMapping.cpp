@@ -41,7 +41,7 @@ int mapScalarsToColor(unsigned char *color,
 
     const double value = (double)array[i];
     if(std::isnan(value)) {
-      size_t idx = i * 3;
+      size_t const idx = i * 3;
       color[idx + 0] = 255.0 * nanColor[0];
       color[idx + 1] = 255.0 * nanColor[1];
       color[idx + 2] = 255.0 * nanColor[2];
@@ -59,12 +59,12 @@ int mapScalarsToColor(unsigned char *color,
       }
     }
 
-    double lambda = (normalizedValue - colorMap[ki * 4])
-                    / (colorMap[(ki + 1) * 4] - colorMap[ki * 4]);
-    double lambdaInv = 1 - lambda;
+    double const lambda = (normalizedValue - colorMap[ki * 4])
+                          / (colorMap[(ki + 1) * 4] - colorMap[ki * 4]);
+    double const lambdaInv = 1 - lambda;
 
-    size_t idx = i * 3;
-    size_t idx2 = ki * 4;
+    size_t const idx = i * 3;
+    size_t const idx2 = ki * 4;
     color[idx + 0]
       = 255.0 * (lambdaInv * colorMap[idx2 + 1] + lambda * colorMap[idx2 + 5]);
     color[idx + 1]
@@ -97,7 +97,7 @@ int ttkCinemaDarkroomColorMapping::RequestData(
     return 0;
   }
 
-  size_t nPixels = scalarArray->GetNumberOfTuples();
+  size_t const nPixels = scalarArray->GetNumberOfTuples();
 
   double range[2];
   scalarArray->GetRange(range);
@@ -125,7 +125,7 @@ int ttkCinemaDarkroomColorMapping::RequestData(
     manualColorMap[7] = this->SingleColor[2];
     colorMap = &manualColorMap;
   } else if(this->ColorMap == -2) {
-    int status = ttkUtils::stringListToDoubleVector(
+    int const status = ttkUtils::stringListToDoubleVector(
       this->ManualColorMap, manualColorMap);
     if(!status || manualColorMap.size() < 8 || manualColorMap.size() % 4 != 0) {
       this->printErr("Invalid manual color map input.");

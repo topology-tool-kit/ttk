@@ -73,8 +73,8 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
     for(int i = 0; i < nTables; i++) {
       auto inTable = inTables[i];
 
-      size_t nc = inTable->GetNumberOfColumns();
-      size_t nr = inTable->GetNumberOfRows();
+      size_t const nc = inTable->GetNumberOfColumns();
+      size_t const nr = inTable->GetNumberOfRows();
       std::vector<bool> isNumeric(nc);
 
       std::vector<size_t> includeColumns(nc);
@@ -217,7 +217,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
   int csvNColumns = 0;
   int csvNRows = 0;
 
-  int status
+  int const status
     = this->execute(sqlTableDefinitions, sqlInsertStatements, finalQueryString,
                     csvResult, csvNColumns, csvNRows);
 
@@ -251,7 +251,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *ttkNotUsed(request),
         continue;
       auto inFD = inTable->GetFieldData();
 
-      size_t n = inFD->GetNumberOfArrays();
+      size_t const n = inFD->GetNumberOfArrays();
       for(size_t i = 0; i < n; i++) {
         auto iArray = inFD->GetAbstractArray(i);
         if(!outFD->GetAbstractArray(iArray->GetName())) {

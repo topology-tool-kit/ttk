@@ -72,13 +72,13 @@ int ttkPersistentGenerators::dispatch(vtkPolyData *output,
   ccId->SetName("ComponentId");
   vtkNew<vtkUnsignedCharArray> iFin{};
   iFin->SetName(ttk::PersistenceIsFinite);
-  vtkSmartPointer<vtkDataArray> pers{inputScalarsArray->NewInstance()};
+  vtkSmartPointer<vtkDataArray> const pers{inputScalarsArray->NewInstance()};
   pers->SetName(ttk::PersistenceName);
   vtkNew<vtkSignedCharArray> mask{};
   mask->SetName(ttk::MaskScalarFieldName);
   vtkNew<ttkSimplexIdTypeArray> vertsId{};
   vertsId->SetName(ttk::VertexScalarFieldName);
-  vtkSmartPointer<vtkDataArray> sf{inputScalarsArray->NewInstance()};
+  vtkSmartPointer<vtkDataArray> const sf{inputScalarsArray->NewInstance()};
   sf->SetName(inputScalarsArray->GetName());
   vtkNew<vtkSignedCharArray> nbOnBoundary{};
   nbOnBoundary->SetNumberOfComponents(1);
@@ -196,8 +196,8 @@ int ttkPersistentGenerators::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  vtkDataArray *offsetField
-    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
+  vtkDataArray *offsetField = this->GetOrderArray(
+    input, 0, triangulation, false, 1, ForceInputOffsetScalarField);
   if(offsetField == nullptr) {
     this->printErr("Wrong input offsets");
     return 0;

@@ -30,9 +30,11 @@ namespace ttk {
                               double geometricalFactor,
                               double lambda,
                               double delta_lim,
-                              bool use_kdTree)
+                              bool use_kdTree,
+                              double nonMatchingWeight = 1.0)
       : wasserstein_{wasserstein}, geometricalFactor_{geometricalFactor},
-        lambda_{lambda}, delta_lim_{delta_lim}, use_kdt_{use_kdTree} {
+        lambda_{lambda}, delta_lim_{delta_lim}, use_kdt_{use_kdTree},
+        nonMatchingWeight_{nonMatchingWeight} {
     }
 
     PersistenceDiagramAuction(BidderDiagram &bidders,
@@ -45,7 +47,8 @@ namespace ttk {
                               std::vector<KDT *> &correspondence_kdt_map,
                               double epsilon = {},
                               double initial_diag_price = {},
-                              bool use_kdTree = true)
+                              bool use_kdTree = true,
+                              double nonMatchingWeight = 1.0)
       : kdt_{kdt}, correspondence_kdt_map_{correspondence_kdt_map},
         bidders_{bidders}, goods_{goods} {
 
@@ -54,7 +57,7 @@ namespace ttk {
 
       for(int i = 0; i < n_bidders_; i++) {
         // Add diagonal goods
-        Bidder &b = bidders_[i];
+        Bidder const &b = bidders_[i];
         Good g{b.x_, b.y_, true, -b.id_ - 1};
         g.projectOnDiagonal();
         if(b.diagonal_price_ > 0) {
@@ -63,12 +66,12 @@ namespace ttk {
           g.setPrice(initial_diag_price);
         }
         diagonal_goods_.emplace_back(g);
-        std::pair<int, double> pair = std::make_pair(i, g.getPrice());
+        std::pair<int, double> const pair = std::make_pair(i, g.getPrice());
         diagonal_queue_.push(pair);
       }
       for(int i = 0; i < n_goods_; i++) {
         // Add diagonal bidders
-        Good &g = goods_[i];
+        Good const &g = goods_[i];
         Bidder b{g.x_, g.y_, true, -g.id_ - 1};
         b.projectOnDiagonal();
         b.setPositionInAuction(bidders_.size());
@@ -80,6 +83,7 @@ namespace ttk {
       delta_lim_ = delta_lim;
       geometricalFactor_ = geometricalFactor;
       lambda_ = lambda;
+      nonMatchingWeight_ = nonMatchingWeight;
 
       use_kdt_ = (use_kdTree && !goods_.empty());
     }
@@ -103,16 +107,16 @@ namespace ttk {
 
       for(int i = 0; i < n_bidders_; i++) {
         // Add diagonal goods
-        Bidder &b = bidders_[i];
+        Bidder const &b = bidders_[i];
         Good g{b.x_, b.y_, true, -b.id_ - 1};
         g.projectOnDiagonal();
         diagonal_goods_.emplace_back(g);
-        std::pair<int, double> pair = std::make_pair(i, g.getPrice());
+        std::pair<int, double> const pair = std::make_pair(i, g.getPrice());
         diagonal_queue_.push(pair);
       }
       for(int i = 0; i < n_goods_; i++) {
         // Add diagonal bidders
-        Good &g = goods_[i];
+        Good const &g = goods_[i];
         Bidder b{g.x_, g.y_, true, -g.id_ - 1};
         b.projectOnDiagonal();
         b.setPositionInAuction(bidders_.size());
@@ -134,16 +138,16 @@ namespace ttk {
       this->setGoods(diagram2);
       for(int i = 0; i < n_bidders_; i++) {
         // Add diagonal goods
-        Bidder &b = bidders_[i];
+        Bidder const &b = bidders_[i];
         Good g{b.x_, b.y_, true, -b.id_ - 1};
         g.projectOnDiagonal();
         diagonal_goods_.emplace_back(g);
-        std::pair<int, double> pair = std::make_pair(i, g.getPrice());
+        std::pair<int, double> const pair = std::make_pair(i, g.getPrice());
         diagonal_queue_.push(pair);
       }
       for(int i = 0; i < n_goods_; i++) {
         // Add diagonal bidders
-        Good &g = goods_[i];
+        Good const &g = goods_[i];
         Bidder b{g.x_, g.y_, true, -g.id_ - 1};
         b.projectOnDiagonal();
         b.setPositionInAuction(bidders_.size());
@@ -169,15 +173,15 @@ namespace ttk {
 
     void setGoods(const DiagramType &diagram2) {
       for(size_t i = 0; i < diagram2.size(); i++) {
-        // Add bidder to bidders
-        Good g{diagram2[i], static_cast<int>(i), lambda_};
+        // Add good to goods
+        Good const g{diagram2[i], static_cast<int>(i), lambda_};
         goods_.emplace_back(g);
       }
       n_goods_ = goods_.size();
     }
 
     void buildKDTree() {
-      Timer t;
+      Timer const t;
       default_kdt_ = KDT{true, wasserstein_};
       const int dimension
         = geometricalFactor_ >= 1 ? (geometricalFactor_ <= 0 ? 3 : 2) : 5;
@@ -205,13 +209,13 @@ namespace ttk {
     void initializeEpsilon() {
       double max_persistence = 0;
       for(const auto &b : this->bidders_) {
-        double persistence = b.getPersistence();
+        double const persistence = b.getPersistence();
         if(persistence > max_persistence) {
           max_persistence = persistence;
         }
       }
       for(const auto &g : this->goods_) {
-        double persistence = g.getPersistence();
+        double const persistence = g.getPersistence();
         if(persistence > max_persistence) {
           max_persistence = persistence;
         }
@@ -239,20 +243,21 @@ namespace ttk {
     double getMatchingDistance() {
       double d = 0;
       for(size_t i = 0; i < bidders_.size(); i++) {
-        Bidder &b = bidders_[i];
-        d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
+        Bidder const &b = bidders_[i];
+        d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_,
+                    nonMatchingWeight_);
       }
       return d;
     }
 
     double getRelativePrecision() {
-      double d = this->getMatchingDistance();
+      double const d = this->getMatchingDistance();
       if(d < 1e-6 or d <= (lowerBoundCost_ * lowerBoundCostWeight_)) {
         return 0;
       }
-      double denominator = d - bidders_.size() * epsilon_;
+      double const denominator = d - bidders_.size() * epsilon_;
       if(denominator <= 0) {
-        return 1;
+        return std::numeric_limits<double>::max();
       } else {
         return Geometry::pow(d / denominator, 1 / ((float)wasserstein_)) - 1;
       }
@@ -271,7 +276,7 @@ namespace ttk {
       }
       double min_price = std::numeric_limits<double>::max();
       for(size_t i = 0; i < diagonal_goods_.size(); i++) {
-        double price = diagonal_goods_[i].getPrice();
+        double const price = diagonal_goods_[i].getPrice();
         if(price < min_price) {
           min_price = price;
         }
@@ -280,7 +285,7 @@ namespace ttk {
     }
 
   protected:
-    int wasserstein_{2}; // Power in Wassertsein distance (by default set to 2)
+    int wasserstein_{2}; // Power in Wasserstein distance (by default set to 2)
     BidderDiagram default_bidders_{};
     BidderDiagram &bidders_{default_bidders_};
     GoodDiagram default_goods_{};
@@ -297,15 +302,16 @@ namespace ttk {
 
     double epsilon_{1};
     double geometricalFactor_{};
-    double lambda_{};
     // lambda : 0<=lambda<=1
     // parametrizes the point used for the physical (critical) coordinates of
     // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
+    double lambda_{};
     double delta_lim_{};
     double lowerBoundCost_, lowerBoundCostWeight_;
     bool use_kdt_{true};
+    double nonMatchingWeight_ = 1.0;
 
   }; // namespace ttk
 } // namespace ttk

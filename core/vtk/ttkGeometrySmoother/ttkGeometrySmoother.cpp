@@ -45,7 +45,7 @@ int ttkGeometrySmoother::RequestData(vtkInformation *ttkNotUsed(request),
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
 
-  int keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
+  int const keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
   if(keepGoing < 2) {
     return keepGoing;
   }

@@ -81,7 +81,7 @@ namespace ttk {
       }
 
       bool hide() {
-        bool old = visible_;
+        bool const old = visible_;
         visible_ = false;
         return old;
       }

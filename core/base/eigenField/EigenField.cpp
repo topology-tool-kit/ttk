@@ -60,7 +60,7 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
   solver.init();
 
   // number of eigenpairs correctly computed
-  int nconv = solver.compute(Spectra::SortRule::LargestAlge);
+  int const nconv = solver.compute(Spectra::SortRule::LargestAlge);
 
   switch(solver.info()) {
     case Spectra::CompInfo::NumericalIssue:

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <array>
 #include <limits>
 
 // base code includes
@@ -61,12 +62,12 @@ namespace ttk {
       return 0;
     }
 
-    inline int setScalarMin(double *scalarMin) {
+    inline int setScalarMin(const std::array<double, 2> &scalarMin) {
       scalarMin_ = scalarMin;
       return 0;
     }
 
-    inline int setScalarMax(double *scalarMax) {
+    inline int setScalarMax(const std::array<double, 2> &scalarMax) {
       scalarMax_ = scalarMax;
       return 0;
     }
@@ -86,8 +87,8 @@ namespace ttk {
     bool withDummyValue_;
     double dummyValue_;
     SimplexId resolutions_[2];
-    double *scalarMin_;
-    double *scalarMax_;
+    std::array<double, 2> scalarMin_{0, 0};
+    std::array<double, 2> scalarMax_{0, 0};
     std::vector<std::vector<double>> *density_;
     std::vector<std::vector<char>> *validPointMask_;
   };
@@ -206,14 +207,14 @@ int ttk::ContinuousScatterPlot::execute(
       Geometry::crossProduct(v13, v12, a);
       Geometry::crossProduct(v12, v14, b);
       Geometry::crossProduct(v14, v13, c);
-      double det = Geometry::dotProduct(v14, a);
+      const double det = Geometry::dotProduct(v14, a);
       if(det == 0.) {
         for(int k = 0; k < 3; ++k) {
           g0[k] = 0.0;
           g1[k] = 0.0;
         }
       } else {
-        double invDet = 1.0 / det;
+        const double invDet = 1.0 / det;
         for(int k = 0; k < 3; ++k) {
           g0[k] = (s14[0] * a[k] + s13[0] * b[k] + s12[0] * c[k]) * invDet;
           g1[k] = (s14[1] * a[k] + s13[1] * b[k] + s12[1] * c[k]) * invDet;
@@ -247,7 +248,7 @@ int ttk::ContinuousScatterPlot::execute(
     int index[4]{0, 1, 2, 3};
     bool isInTriangle{}; // True if the tetra is class 0
 
-    bool zCrossProductsSigns[4]
+    const bool zCrossProductsSigns[4]
       = {(data[1][0] - data[0][0]) * (data[2][1] - data[0][1])
              - (data[1][1] - data[0][1]) * (data[2][0] - data[0][0])
            > 0,
@@ -399,12 +400,12 @@ int ttk::ContinuousScatterPlot::execute(
         = Geometry::distance(data[index[0]], imaginaryPosition);
       double diagonalLength
         = Geometry::distance(data[index[0]], data[index[1]]);
-      double r0 = distanceToIntersection / diagonalLength;
+      const double r0 = distanceToIntersection / diagonalLength;
 
       distanceToIntersection
         = Geometry::distance(data[index[2]], imaginaryPosition);
       diagonalLength = Geometry::distance(data[index[2]], data[index[3]]);
-      double r1 = distanceToIntersection / diagonalLength;
+      const double r1 = distanceToIntersection / diagonalLength;
 
       double p0[3];
       double p1[3];

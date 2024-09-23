@@ -42,9 +42,9 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  Timer t;
+  Timer const t;
 
-  int keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
+  int const keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
   if(keepGoing < 2) {
     return keepGoing;
   }
@@ -59,7 +59,7 @@ int ttkIdentifiers::RequestData(vtkInformation *ttkNotUsed(request),
   // vtkPolyData, the global identifiers are always stored as vtkDataArrays
   // automatically during preconditioning
 
-  ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
+  ttk::SimplexId const numberOfVertices = triangulation->getNumberOfVertices();
   vtkNew<vtkIdTypeArray> globalPointIds;
   globalPointIds->SetNumberOfTuples(numberOfVertices);
   globalPointIds->SetNumberOfComponents(1);

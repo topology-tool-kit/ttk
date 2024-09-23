@@ -2,6 +2,23 @@
 =
 ### dev
 
+### 1.3.0
+- Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)
+- Topological simplification optimization (IEEE VIS 2024)
+- TopoMap dimensionality reduction (IEEE TVCG 2020)
+- TTK is Getting MPI-ready! (IEEE TVCG 2024)
+- ExTreeM merge tree computation backend (IEEE TVCG 2024)
+- Ripser integration
+- DMS performance improvements (allocation)
+- Saddle connector reversal performance improvements
+- Signed distance fields
+- Array preconditioning improvements (fast MPI implementation)
+- Migration to ParaView 5.12, 5.13
+- CI extensions (sccache, ubuntu-24.04, macos-14)
+- Switch to C++17
+- Bug fixes
+
+
 ### 1.2
 - Principal Geodesic Analysis of Merge Trees / Pers. Diagrams (IEEE TVCG 2023)
 - Parallel Computation of Morse-Smale Segmentations (IEEE TVCG 2023)
@@ -15,7 +32,7 @@
 - Wasserstein distance performance improvements
 - Support for Persistence Diagrams in Merge Tree Clustering
 - Clustering scores (NMI/ARI)
-- Dimensionality reduction metric preservation score (DistanceMatrixDistorsion)
+- Dimensionality reduction metric preservation score (DistanceMatrixDistortion)
 - On-surface smoothing
 - API improvements
 - Bug fixes

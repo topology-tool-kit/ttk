@@ -198,7 +198,7 @@ int FiberSurface::computeTriangleIntersection(
   std::vector<std::vector<IntersectionTriangle>> &tetIntersections,
   std::vector<std::vector<Vertex>> &tetNewVertices) const {
 
-  SimplexId commonVertexNumber = getNumberOfCommonVertices(
+  SimplexId const commonVertexNumber = getNumberOfCommonVertices(
     tetId, triangleId0, triangleId1, tetIntersections);
 
   // make sure the two triangles are not already adjacent
@@ -413,7 +413,7 @@ int FiberSurface::computeTriangleIntersection(
     return -4;
 
   // 3. create the two new vertices A and B
-  SimplexId vertexIdA = newVertexNumber;
+  SimplexId const vertexIdA = newVertexNumber;
   newVertexNumber++;
   tetNewVertices[tetId].resize(tetNewVertices[tetId].size() + 1);
   for(int i = 0; i < 3; i++)
@@ -433,7 +433,7 @@ int FiberSurface::computeTriangleIntersection(
       + baryA[2] * tetIntersections[tetId][triangleId].t_[2];
   tetNewVertices[tetId].back().isIntersectionPoint_ = true;
 
-  SimplexId vertexIdB = newVertexNumber;
+  SimplexId const vertexIdB = newVertexNumber;
   newVertexNumber++;
   tetNewVertices[tetId].resize(tetNewVertices[tetId].size() + 1);
   for(int i = 0; i < 3; i++)
@@ -464,7 +464,7 @@ int FiberSurface::computeTriangleIntersection(
   // special case where a, b and p+2 are actually aligned
   // we should detect a colinear triangle and test the opposite diagonal instead
   // a, b, (pivotVertexId+1)%3
-  SimplexId ret = createNewIntersectionTriangle(
+  SimplexId const ret = createNewIntersectionTriangle(
     tetId, triangleId, -vertexIdA, -vertexIdB, (pivotVertexId + 2) % 3,
     tetNewVertices, newTriangleNumber, tetIntersections, &intersection);
   if(ret == -1) {
@@ -609,14 +609,14 @@ int FiberSurface::flipEdges() const {
     for(SimplexId j = 0; j < (SimplexId)polygonEdgeTriangleLists_[i]->size();
         j++) {
 
-      SimplexId tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
+      SimplexId const tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
 
       if(!inQueue[tetId]) {
         inQueue[tetId] = true;
         tetList.push_back(tetId);
       }
 
-      tetTriangles[tetId].push_back(pair<SimplexId, SimplexId>(i, j));
+      tetTriangles[tetId].emplace_back(i, j);
     }
   }
 
@@ -625,7 +625,7 @@ int FiberSurface::flipEdges() const {
 #endif
   for(SimplexId i = 0; i < (SimplexId)tetList.size(); i++) {
 
-    SimplexId tetId = tetList[i];
+    SimplexId const tetId = tetList[i];
 
     if(tetTriangles[tetId].size() >= 2) {
 
@@ -741,7 +741,7 @@ int FiberSurface::flipEdges(
           SimplexId otherNonCommonVertexId = -1;
 
           for(int k = 0; k < 3; k++) {
-            SimplexId vertexId
+            SimplexId const vertexId
               = (*polygonEdgeTriangleLists_[triangles[j].first])[triangles[j]
                                                                    .second]
                   .vertexIds_[k];
@@ -1014,7 +1014,7 @@ bool FiberSurface::isEdgeAngleCollapsible(
          || (starNeighbors[i].second == source)
          || (starNeighbors[i].second == destination)) {
 
-        double localAngle = Geometry::angle(
+        double const localAngle = Geometry::angle(
           (*globalVertexList_)[starNeighbors[i].first].p_.data(),
           (*globalVertexList_)[pivotVertexId].p_.data(),
           (*globalVertexList_)[pivotVertexId].p_.data(),
@@ -1073,7 +1073,7 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
   // this is the case when the tetId of the two triangles is the same.
   // THAT is not OK
 
-  SimplexId initVertexNumber = (*globalVertexList_).size();
+  SimplexId const initVertexNumber = (*globalVertexList_).size();
 
   for(SimplexId it = 0; it < (SimplexId)(*globalVertexList_).size(); it++) {
     // avoid infinite loops
@@ -1090,7 +1090,8 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
           j++) {
 
         for(int k = 0; k < 3; k++) {
-          SimplexId vertexId = (*polygonEdgeTriangleLists_[i])[j].vertexIds_[k];
+          SimplexId const vertexId
+            = (*polygonEdgeTriangleLists_[i])[j].vertexIds_[k];
 
           vertexTriangleNeighbors[vertexId].resize(
             vertexTriangleNeighbors[vertexId].size() + 1);
@@ -1101,7 +1102,7 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
 
           for(int l = 0; l < 3; l++) {
             if(l != k) {
-              SimplexId otherVertexId
+              SimplexId const otherVertexId
                 = (*polygonEdgeTriangleLists_[i])[j].vertexIds_[l];
 
               if(vertexTriangleNeighbors[vertexId].back().first == -1) {
@@ -1143,9 +1144,9 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
         // find the smallest edge on this triangle
         for(int k = 0; k < 3; k++) {
 
-          SimplexId vertexId0
+          SimplexId const vertexId0
             = (*polygonEdgeTriangleLists_[i])[j].vertexIds_[k];
-          SimplexId vertexId1
+          SimplexId const vertexId1
             = (*polygonEdgeTriangleLists_[i])[j].vertexIds_[(k + 1) % 3];
 
           bool areAlreadySnapped = true;
@@ -1164,7 +1165,7 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
           }
 
           if(!areAlreadySnapped) {
-            double distance
+            double const distance
               = Geometry::distance((*globalVertexList_)[vertexId0].p_.data(),
                                    (*globalVertexList_)[vertexId1].p_.data());
 
@@ -1176,10 +1177,10 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
         }
 
         if((minDistance != -1) && (minDistance < distanceThreshold)) {
-          SimplexId vertexId0
+          SimplexId const vertexId0
             = (*polygonEdgeTriangleLists_[i])[j].vertexIds_[minimizer];
-          SimplexId vertexId1 = (*polygonEdgeTriangleLists_[i])[j]
-                                  .vertexIds_[(minimizer + 1) % 3];
+          SimplexId const vertexId1 = (*polygonEdgeTriangleLists_[i])[j]
+                                        .vertexIds_[(minimizer + 1) % 3];
 
           // find the number of common neighbors
           vector<SimplexId> commonNeighbors;
@@ -1558,7 +1559,8 @@ int FiberSurface::snapToBasePoint(const vector<vector<double>> &basePoints,
   double minDistance = -1;
 
   for(SimplexId i = 0; i < (SimplexId)basePoints.size(); i++) {
-    double distance = Geometry::distance(basePoints[i].data(), v.p_.data());
+    double const distance
+      = Geometry::distance(basePoints[i].data(), v.p_.data());
     if((minDistance < 0) || (distance < minDistance)) {
       minDistance = distance;
       minimizer = i;
@@ -1588,14 +1590,14 @@ int FiberSurface::snapVertexBarycentrics() const {
     for(SimplexId j = 0; j < (SimplexId)polygonEdgeTriangleLists_[i]->size();
         j++) {
 
-      SimplexId tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
+      SimplexId const tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
 
       if(!inQueue[tetId]) {
         inQueue[tetId] = true;
         tetList.push_back(tetId);
       }
 
-      tetTriangles[tetId].push_back(pair<SimplexId, SimplexId>(i, j));
+      tetTriangles[tetId].emplace_back(i, j);
     }
   }
 
@@ -1621,7 +1623,7 @@ int FiberSurface::snapVertexBarycentrics(
       (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]);
 
     for(int j = 0; j < 3; j++) {
-      SimplexId vertexId = t->vertexIds_[j];
+      SimplexId const vertexId = t->vertexIds_[j];
 
       // check for each triangle of the tet
       double minimum = -DBL_MAX;
@@ -1632,9 +1634,9 @@ int FiberSurface::snapVertexBarycentrics(
         for(int l = k + 1; l < 3; l++) {
           for(int m = l + 1; m < 4; m++) {
 
-            SimplexId vertexId0 = tetList_[5 * tetId + 1 + k];
-            SimplexId vertexId1 = tetList_[5 * tetId + 1 + l];
-            SimplexId vertexId2 = tetList_[5 * tetId + 1 + m];
+            SimplexId const vertexId0 = tetList_[5 * tetId + 1 + k];
+            SimplexId const vertexId1 = tetList_[5 * tetId + 1 + l];
+            SimplexId const vertexId2 = tetList_[5 * tetId + 1 + m];
 
             std::array<double, 3> p0{}, p1{}, p2{};
 

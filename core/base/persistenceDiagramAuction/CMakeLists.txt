@@ -7,5 +7,4 @@ ttk_add_base_library(persistenceDiagramAuction
   DEPENDS
     kdTree
     persistenceDiagram
-    triangulation
 )

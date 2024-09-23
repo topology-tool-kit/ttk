@@ -122,7 +122,7 @@ void Segments::resize(const vector<SimplexId> &sizes) {
 #endif
 
   segments_.reserve(sizes.size());
-  for(SimplexId size : sizes) {
+  for(SimplexId const size : sizes) {
     segments_.emplace_back(size);
   }
 }

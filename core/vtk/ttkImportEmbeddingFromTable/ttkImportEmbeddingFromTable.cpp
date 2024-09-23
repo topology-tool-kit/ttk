@@ -83,7 +83,6 @@ int ttkImportEmbeddingFromTable::RequestData(
                          : vtkDataArray::SafeDownCast(
                            inputTable->GetColumnByName(ZColumn.data()));
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
     printErr("invalid input columns.");
     return -1;
@@ -99,9 +98,8 @@ int ttkImportEmbeddingFromTable::RequestData(
     printErr("input columns has different data types.");
     return -1;
   }
-#endif
 
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> const points = vtkSmartPointer<vtkPoints>::New();
   points->SetNumberOfPoints(numberOfPoints);
 
   switch(xarr->GetDataType()) {

@@ -1423,6 +1423,14 @@ namespace ttk {
       return abstractTriangulation_->getNeighborRanks();
     }
 
+    inline std::map<int, int> &getNeighborsToId() override {
+      return abstractTriangulation_->getNeighborsToId();
+    }
+
+    inline const std::map<int, int> &getNeighborsToId() const override {
+      return abstractTriangulation_->getNeighborsToId();
+    }
+
     inline const std::vector<std::array<ttk::SimplexId, 6>> &
       getNeighborVertexBBoxes() const override {
       return abstractTriangulation_->getNeighborVertexBBoxes();
@@ -1502,6 +1510,14 @@ namespace ttk {
 #endif
       return this->abstractTriangulation_->getDistributedGlobalCellId(
         localCellId, cellDim, globalCellId);
+    }
+
+    inline bool isOrderArrayGlobal(const void *data) const {
+      return this->abstractTriangulation_->isOrderArrayGlobal(data);
+    }
+
+    inline void setIsOrderArrayGlobal(const void *data, bool flag) {
+      this->abstractTriangulation_->setIsOrderArrayGlobal(data, flag);
     }
 
 #endif // TTK_ENABLE_MPI

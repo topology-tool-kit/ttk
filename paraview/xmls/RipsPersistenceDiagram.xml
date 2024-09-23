@@ -1,0 +1,89 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkRipsPersistenceDiagram" class="ttkRipsPersistenceDiagram" label="TTK RipsPersistenceDiagram">
+      <Documentation long_help="RipsPersistenceDiagram Long" short_help="RipsPersistenceDiagram Short">
+        TTK plugin for the computation of the persistence diagram of Rips complexes.
+
+        This plugin computes the persistence diagram of the Rips complex of the
+        input point cloud or distance matrix. The X-coordinate of each pair
+        corresponds to its birth, while its smallest and highest Y-coordinates
+        correspond to its birth and death respectively.
+
+        In practice, the diagram is represented by a vtkUnstructuredGrid. Each
+        vertex of this mesh represent a critical point of the input data. It is
+        associated with point data (vertexId, critical type). Each vertical edge
+        of this mesh represent a persistence pair. It is associated with cell data
+        (persistence of the pair, critical index of the extremum of the pair).
+        The diagonal of the diagram can be filtered out by considering its
+        PairIdentifier value (set at -1).
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+        </DataTypeDomain>
+        <Documentation>Point cloud to process.</Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty
+              name="SimplexMaximumDimension"
+              label="Simplex maximum dimension"
+              command="SetSimplexMaximumDimension"
+              number_of_elements="1"
+              default_values="1">
+      <Documentation>
+          Simplex maximum dimension in the Rips complex.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+              name="SimplexMaximumDiameter"
+              label="Simplex maximum diameter"
+              command="SetSimplexMaximumDiameter"
+              number_of_elements="1"
+              default_values="1.0">
+        <Documentation>
+          Simplex maximum diameter in the Rips complex.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+              name="InputIsDistanceMatrix"
+              label="Input is a distance matrix"
+              command="SetInputIsDistanceMatrix"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to read the input table as a distance matrix instead of a point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SimplexMaximumDimension" />
+        <Property name="SimplexMaximumDiameter" />
+        <Property name="InputIsDistanceMatrix" />
+      </PropertyGroup>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      <PropertyGroup panel_widget="Line" label="Output options">
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

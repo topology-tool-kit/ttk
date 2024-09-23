@@ -78,17 +78,17 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
   if((ascendingManifoldArray) || (descendingManifoldArray))
     isSegmentation = true;
 
-  vtkSmartPointer<vtkDoubleArray> persistenceArray
+  vtkSmartPointer<vtkDoubleArray> const persistenceArray
     = vtkSmartPointer<vtkDoubleArray>::New();
   persistenceArray->SetName(ttk::PersistenceName);
 
-  vtkSmartPointer<vtkIntArray> pairTypeArray
+  vtkSmartPointer<vtkIntArray> const pairTypeArray
     = vtkSmartPointer<vtkIntArray>::New();
   pairTypeArray->SetName(ttk::PersistencePairTypeName);
 
   if(!isSegmentation) {
 
-    int cellNumber = output->GetNumberOfCells();
+    int const cellNumber = output->GetNumberOfCells();
 
     persistenceArray->SetNumberOfTuples(cellNumber);
     pairTypeArray->SetNumberOfTuples(cellNumber);
@@ -103,8 +103,8 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
       } else {
         sourceArray->GetTuple(i, &cellId);
       }
-      double persistence = simplex2persistence_[(int)cellId];
-      double pairType = simplex2pairType_[(int)cellId];
+      double const persistence = simplex2persistence_[(int)cellId];
+      double const pairType = simplex2pairType_[(int)cellId];
       persistenceArray->SetTuple(i, &persistence);
       pairTypeArray->SetTuple(i, &pairType);
     }
@@ -119,7 +119,7 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
       return -4;
     }
 
-    int vertexNumber = output->GetNumberOfPoints();
+    int const vertexNumber = output->GetNumberOfPoints();
 
     persistenceArray->SetNumberOfTuples(vertexNumber);
     pairTypeArray->SetNumberOfTuples(vertexNumber);
@@ -137,8 +137,8 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
         ascendingManifoldArray->GetTuple(i, &extremumId);
         cellId = max2simplex_[(int)extremumId];
       }
-      double persistence = simplex2persistence_[cellId];
-      double pairType = simplex2pairType_[cellId];
+      double const persistence = simplex2persistence_[cellId];
+      double const pairType = simplex2pairType_[cellId];
       persistenceArray->SetTuple(i, &persistence);
       pairTypeArray->SetTuple(i, &pairType);
     }
@@ -191,11 +191,11 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     return -2;
   }
 
-  int maximumVertexId = vertexIdArray->GetMaxNorm();
+  int const maximumVertexId = vertexIdArray->GetMaxNorm();
   std::vector<double> vertex2persistence(maximumVertexId + 1, -1);
   std::vector<int> vertex2pairType(maximumVertexId + 1, -1);
 
-  int cellNumber = persistenceDiagram->GetNumberOfCells();
+  int const cellNumber = persistenceDiagram->GetNumberOfCells();
 
   // NOTE: multi-saddle prevent a parallel loop here.
   for(int i = 0; i < cellNumber; i++) {
@@ -208,8 +208,8 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
 
       vtkNew<vtkGenericCell> c;
       persistenceDiagram->GetCell(i, c);
-      int pointId0 = c->GetPointId(0);
-      int pointId1 = c->GetPointId(1);
+      int const pointId0 = c->GetPointId(0);
+      int const pointId1 = c->GetPointId(1);
 
       double persistence = -1;
       persistenceArray->GetTuple(i, &persistence);
@@ -232,11 +232,11 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     }
   }
 
-  int maximumSimplexId = criticalCellIdArray->GetMaxNorm();
+  int const maximumSimplexId = criticalCellIdArray->GetMaxNorm();
   simplex2persistence_.resize(maximumSimplexId + 1, -1);
   simplex2pairType_.resize(maximumSimplexId + 1, -1);
 
-  int criticalPointNumber = criticalCellIdArray->GetNumberOfTuples();
+  int const criticalPointNumber = criticalCellIdArray->GetNumberOfTuples();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -256,7 +256,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
   // useful if the module is called on the segmentation output of the
   // morse-smale complex; then, we'll get the dimension right).
   if(stableManifold->GetNumberOfCells()) {
-    int cellType = stableManifold->GetCellType(0);
+    int const cellType = stableManifold->GetCellType(0);
     int dimension = -1;
     if((cellType == VTK_TETRA) || (cellType == VTK_VOXEL))
       dimension = 3;

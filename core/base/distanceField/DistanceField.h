@@ -89,8 +89,6 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
   SimplexId *origin = static_cast<SimplexId *>(outputIdentifiers_);
   SimplexId *seg = static_cast<SimplexId *>(outputSegmentation_);
 
-  Timer t;
-
   std::fill(dist, dist + vertexNumber_, std::numeric_limits<dataType>::max());
   std::fill(origin, origin + vertexNumber_, -1);
 
@@ -110,7 +108,7 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(size_t i = 0; i < sources.size(); ++i) {
-    int ret = Dijkstra::shortestPath<dataType>(
+    int const ret = Dijkstra::shortestPath<dataType>(
       sources[i], *triangulation_, scalars[i]);
     if(ret != 0) {
       this->printErr(

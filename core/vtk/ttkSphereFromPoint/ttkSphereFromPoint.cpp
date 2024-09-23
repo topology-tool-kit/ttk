@@ -96,7 +96,7 @@ int ttkSphereFromPoint::RequestData(vtkInformation *ttkNotUsed(request),
 
     sphereList_.resize(input->GetNumberOfPoints());
   } else if((SimplexId)sphereList_.size() < input->GetNumberOfPoints()) {
-    SimplexId oldSize = sphereList_.size();
+    SimplexId const oldSize = sphereList_.size();
 
     sphereList_.resize(input->GetNumberOfPoints());
 

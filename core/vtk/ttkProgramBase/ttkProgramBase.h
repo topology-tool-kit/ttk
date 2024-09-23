@@ -146,7 +146,7 @@ int ttkProgramBase::save(const int &outputPortId) const {
   std::stringstream fileName;
   fileName << outputPath_ << "_port#" << outputPortId << "." << extension;
 
-  vtkSmartPointer<vtkWriterClass> writer
+  vtkSmartPointer<vtkWriterClass> const writer
     = vtkSmartPointer<vtkWriterClass>::New();
   writer->SetFileName(fileName.str().data());
   writer->SetInputData(vtkWrapper_->GetOutput(outputPortId));

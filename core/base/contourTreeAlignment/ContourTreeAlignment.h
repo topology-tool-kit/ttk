@@ -427,7 +427,7 @@ int ttk::ContourTreeAlignment::execute(
 
   Timer timer;
 
-  size_t nTrees = nVertices.size();
+  const size_t nTrees = nVertices.size();
 
   std::vector<float *> scalars(nTrees);
   for(size_t t = 0; t < nTrees; t++) {
@@ -451,10 +451,10 @@ int ttk::ContourTreeAlignment::execute(
     tableLines.push_back(
       {"cellId", "vId0", "vId1", "scalar0", "scalar1", "region", "segId"});
     for(size_t i = 0; i < nEdges[t]; i++) {
-      long long vertexId0 = topologies[t][i * 2 + 0];
-      long long vertexId1 = topologies[t][i * 2 + 1];
-      int regionSize = regionSizes[t][i];
-      int segmentationId = segmentationIds[t][i];
+      const long long vertexId0 = topologies[t][i * 2 + 0];
+      const long long vertexId1 = topologies[t][i * 2 + 1];
+      const int regionSize = regionSizes[t][i];
+      const int segmentationId = segmentationIds[t][i];
       scalarType scalarOfVertexId0 = scalars[t][vertexId0];
       scalarType scalarOfVertexId1 = scalars[t][vertexId1];
 
@@ -662,9 +662,9 @@ int ttk::ContourTreeAlignment::execute(
     outputBranchIds.push_back(node->branchID);
     std::vector<long long> refs(nTrees, -1);
     std::vector<long long> segRefs(nTrees, -1);
-    for(std::pair<int, int> ref : node->nodeRefs) {
+    for(auto ref : node->nodeRefs) {
       refs[permutation[ref.first]] = ref.second;
-      int eId
+      const int eId
         = contourtrees[ref.first]->getGraph().first[ref.second]->edgeList[0];
       segRefs[permutation[ref.first]]
         = contourtrees[ref.first]->getGraph().second[eId]->segId;
@@ -694,7 +694,7 @@ int ttk::ContourTreeAlignment::execute(
     }
 
     std::vector<long long> arcRefs(nTrees, -1);
-    for(std::pair<int, int> ref : edge->arcRefs) {
+    for(auto ref : edge->arcRefs) {
       arcRefs[permutation[ref.first]] = ref.second;
     }
     for(int ref : arcRefs) {

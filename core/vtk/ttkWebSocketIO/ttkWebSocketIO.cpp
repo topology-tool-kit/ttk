@@ -177,7 +177,8 @@ int ttkWebSocketIO::ParseVtkDataObjectFromJSON(const std::string &json) {
       auto nPoints
         = jsonGetValue<int>(jsonVtkDataSet, "points.coordinates.nTuples");
 
-      vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+      vtkSmartPointer<vtkPoints> const points
+        = vtkSmartPointer<vtkPoints>::New();
       points->SetNumberOfPoints(nPoints);
 
       jsonArrayToArray<float>(jsonVtkDataSet, "points.coordinates.data",
@@ -246,8 +247,9 @@ int ttkWebSocketIO::ParseVtkDataObjectFromJSON(const std::string &json) {
       // parse point data
       for(const auto &pda : fdJSON.get_child(fdKey)) {
         const auto &jsonArray = pda.second;
-        size_t nComponents = jsonGetValue<size_t>(jsonArray, "nComponents");
-        size_t nTuples = jsonGetValue<size_t>(jsonArray, "nTuples");
+        size_t const nComponents
+          = jsonGetValue<size_t>(jsonArray, "nComponents");
+        size_t const nTuples = jsonGetValue<size_t>(jsonArray, "nTuples");
 
         auto array = vtkSmartPointer<vtkAbstractArray>::Take(
           vtkDataArray::CreateArray(jsonGetValue<int>(jsonArray, "dataType")));
@@ -462,7 +464,7 @@ int ttkWebSocketIO::SendVtkDataObject(vtkDataObject *object) {
            {"fieldData", block->GetFieldData()}};
 
       for(auto &attribute : attributes) {
-        size_t nArrays = attribute.second->GetNumberOfArrays();
+        size_t const nArrays = attribute.second->GetNumberOfArrays();
 
         for(size_t i = 0; i < nArrays; i++) {
           auto array = attribute.second->GetAbstractArray(i);

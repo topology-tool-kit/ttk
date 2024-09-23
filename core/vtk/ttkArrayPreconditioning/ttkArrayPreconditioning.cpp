@@ -51,7 +51,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   auto output = vtkDataSet::GetData(outputVector);
   ttk::Timer tm{};
 
-  int keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
+  int const keepGoing = checkEmptyMPIInput<vtkDataSet>(input);
   if(keepGoing < 2) {
     return keepGoing;
   }
@@ -61,7 +61,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   output->ShallowCopy(input);
 
   auto pointData = input->GetPointData();
-  size_t nVertices = input->GetNumberOfPoints();
+  size_t const nVertices = input->GetNumberOfPoints();
 
   std::vector<vtkDataArray *> scalarArrays{};
 
@@ -89,6 +89,8 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
 #ifdef TTK_ENABLE_MPI
   if(GlobalOrder) {
     if(ttk::isRunningWithMPI()) {
+
+      this->preconditionTriangulation(triangulation);
       // add the order array for every scalar array, except the ghostcells, the
       // rankarray and the global ids
       for(auto scalarArray : scalarArrays) {
@@ -104,26 +106,18 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
           orderArray->SetNumberOfTuples(nVertices);
 
           this->printMsg(std::to_string(scalarArray->GetDataType()));
-          ttkTypeMacroA(
-            scalarArray->GetDataType(),
-            (status = processScalarArray(
-               ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
-               ttkUtils::GetPointer<T0>(scalarArray),
-               [triangulation](const ttk::SimplexId a) {
-                 return triangulation->getVertexGlobalId(a);
-               },
-               [triangulation](const ttk::SimplexId a) {
-                 return triangulation->getVertexRank(a);
-               },
-               [triangulation](const ttk::SimplexId a) {
-                 return triangulation->getVertexLocalId(a);
-               },
-               nVertices, BurstSize, triangulation->getNeighborRanks())));
+          ttkTypeMacroAT(scalarArray->GetDataType(), triangulation->getType(),
+                         (status = processScalarArray<T0, T1>(
+                            static_cast<const T1 *>(triangulation->getData()),
+                            ttkUtils::GetPointer<ttk::SimplexId>(orderArray),
+                            ttkUtils::GetPointer<T0>(scalarArray), nVertices)));
 
           // On error cancel filter execution
           if(status != 1)
             return 0;
           output->GetPointData()->AddArray(orderArray);
+          triangulation->setIsOrderArrayGlobal(
+            ttkUtils::GetVoidPointer(scalarArray), true);
         }
       }
       this->printMsg("Preconditioned selected scalar arrays", 1.0,
@@ -150,7 +144,10 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
         static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray)),
         this->threadNumber_));
     }
-
+#ifdef TTK_ENABLE_MPI
+    triangulation->setIsOrderArrayGlobal(
+      ttkUtils::GetVoidPointer(scalarArray), false);
+#endif // TTK_ENABLE_MPI
     output->GetPointData()->AddArray(orderArray);
     this->printMsg("Generated order array for scalar array `"
                    + std::string{scalarArray->GetName()} + "'");

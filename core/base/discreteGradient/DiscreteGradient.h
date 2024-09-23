@@ -101,7 +101,8 @@ triangulation.
        */
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
-                        bool bypassCache = false);
+                        bool bypassCache = false,
+                        const std::vector<bool> *updateMask = nullptr);
 
       /**
        * Set the input scalar function.
@@ -255,8 +256,16 @@ in the gradient.
                                        std::vector<Cell> *const vpath,
                                        const triangulationType &triangulation,
                                        const bool stopIfMultiConnected = false,
-                                       const bool enableCycleDetector
-                                       = false) const;
+                                       const bool enableCycleDetector = false,
+                                       bool *const cycleFound = nullptr) const;
+
+      /**
+       * Detect the presence of a cycle on a edge-triangle path starting from an
+       * edge.
+       */
+      template <typename triangulationType>
+      bool detectGradientCycle(const Cell &cell,
+                               const triangulationType &triangulation) const;
 
       /**
        * Return the 2-separatrice terminating at the given 2-saddle.
@@ -385,6 +394,23 @@ in the gradient.
                             const triangulationType &triangulation) const;
 
       /**
+       * @brief Store the subcomplexes around vertex for which offset
+       * at vertex is maximum
+       *
+       * @param[in] a Vertex Id
+       *
+       * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
+       * 3-cells)
+       */
+      template <typename triangulationType>
+      inline void lowerStarWithMask(lowerStarType &ls,
+                                    const SimplexId a,
+                                    const SimplexId *const offsets,
+                                    const triangulationType &triangulation,
+                                    const std::vector<bool> *updateMask
+                                    = nullptr) const;
+
+      /**
        * @brief Return the number of unpaired faces of a given cell in
        * a lower star
        *
@@ -427,6 +453,18 @@ in the gradient.
       template <typename triangulationType>
       int processLowerStars(const SimplexId *const offsets,
                             const triangulationType &triangulation);
+
+      /**
+       * Implements the ProcessLowerStars algorithm from "Theory and
+       * Algorithms for Constructing Discrete Morse Complexes from
+       * Grayscale Digital Images", V. Robins, P. J. Wood,
+       * A. P. Sheppard
+       */
+      template <typename triangulationType>
+      int processLowerStarsWithMask(const SimplexId *const offsets,
+                                    const triangulationType &triangulation,
+                                    const std::vector<bool> *updateMask
+                                    = nullptr);
 
       /**
        * @brief Initialize/Allocate discrete gradient memory
@@ -485,9 +523,9 @@ gradient, false otherwise.
        * Reverse the given ascending VPath restricted on a 2-separatrice.
        */
       template <typename triangulationType>
-      int reverseAscendingPathOnWall(
-        const std::vector<Cell> &vpath,
-        const triangulationType &triangulation) const;
+      int reverseAscendingPathOnWall(const std::vector<Cell> &vpath,
+                                     const triangulationType &triangulation,
+                                     bool cancelReversal = false) const;
 
       /**
        * Reverse the given descending VPath restricted on a 2-separatrice.

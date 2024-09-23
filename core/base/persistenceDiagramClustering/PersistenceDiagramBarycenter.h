@@ -82,6 +82,14 @@ namespace ttk {
       early_stoppage_ = early_stoppage;
     }
 
+    inline void setNonMatchingWeight(const double nonMatchingWeight) {
+      nonMatchingWeight_ = nonMatchingWeight;
+    }
+
+    inline void setDeltaLim(double deltaLim) {
+      delta_lim_ = deltaLim;
+    }
+
   protected:
     bool deterministic_{true};
     int method_;
@@ -90,6 +98,8 @@ namespace ttk {
     bool use_progressive_{true};
     double alpha_{1.0};
     double lambda_{1.0};
+    double nonMatchingWeight_ = 1.0;
+    double delta_lim_{0.01};
 
     int points_added_;
     int points_deleted_;

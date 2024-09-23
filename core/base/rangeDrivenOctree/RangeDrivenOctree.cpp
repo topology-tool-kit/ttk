@@ -51,7 +51,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
   queryResultNumber_ = 0;
   cellList.clear();
 
-  SimplexId ret = rangeSegmentQuery(p0, p1, rootId_, cellList);
+  SimplexId const ret = rangeSegmentQuery(p0, p1, rootId_, cellList);
 
   if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
     this->printMsg("Query done", 1.0, t.getElapsedTime(), this->threadNumber_,
@@ -368,7 +368,7 @@ bool RangeDrivenOctree::segmentIntersection(
   double P = (p1.second - p0.second) / denP;
   if(!P)
     P = DBL_EPSILON;
-  double bP = p1.second - P * p1.first;
+  double const bP = p1.second - P * p1.first;
 
   if(horizontal) {
     y = q0.second;

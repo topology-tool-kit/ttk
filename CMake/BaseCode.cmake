@@ -22,6 +22,15 @@ function(ttk_add_base_library library)
     PROPERTIES
       POSITION_INDEPENDENT_CODE TRUE
     )
+
+  if(TTK_ENABLE_SHARED_BASE_LIBRARIES AND MSVC)
+    set_target_properties(${library}
+      PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+  endif()
+
+
   target_include_directories(${library}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -95,6 +104,9 @@ function(ttk_add_base_template_library library)
 
   if(TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP)
+    if(TTK_ENABLE_OPENMP4)
+      target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP4)
+    endif()
     target_link_libraries(${library} INTERFACE OpenMP::OpenMP_CXX)
   endif()
 
@@ -149,6 +161,9 @@ function(ttk_set_compile_options library)
 
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
+    if (TTK_ENABLE_OPENMP4)
+      target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP4)
+    endif()
     target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
   endif()
 
@@ -159,6 +174,9 @@ function(ttk_set_compile_options library)
     if (TTK_ENABLE_MPI_TIME)
       target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI_TIME)
     endif()
+    if (TTK_ENABLE_MPI_RANK_ID_INT)
+      target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI_RANK_ID_INT)  
+    endif()  
   endif()
 
   if (TTK_ENABLE_64BIT_IDS)

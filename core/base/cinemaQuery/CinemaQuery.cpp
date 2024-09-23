@@ -1,7 +1,7 @@
 #include <CinemaQuery.h>
 #include <iostream>
 
-#if TTK_ENABLE_SQLITE3
+#ifdef TTK_ENABLE_SQLITE3
 #include <sqlite3.h>
 #endif
 
@@ -18,7 +18,7 @@ int ttk::CinemaQuery::execute(
   int &csvNColumns,
   int &csvNRows) const {
 
-#if TTK_ENABLE_SQLITE3
+#ifdef TTK_ENABLE_SQLITE3
   // print input
   {
     std::vector<std::string> sqlLines;

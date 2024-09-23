@@ -1,0 +1,10 @@
+NAME
+  ttkReebGraph
+SOURCES
+  ttkReebGraph.cpp
+HEADERS
+  ttkReebGraph.h
+  ttkReebGraphStructures.h
+DEPENDS
+  ftrGraph
+  ttkAlgorithm

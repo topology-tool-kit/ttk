@@ -3145,8 +3145,8 @@ SimplexId
      and pLocal[2] == gridDecimatedDimensions_[2] - 1) {
     p2 -= decimation_ - nbvoxels_[2] % decimation_;
   }
-  SimplexId globalId = p0 + p1 * gridDimensions_[0]
-                       + p2 * gridDimensions_[0] * gridDimensions_[1];
+  SimplexId const globalId = p0 + p1 * gridDimensions_[0]
+                             + p2 * gridDimensions_[0] * gridDimensions_[1];
 
   return globalId;
 }
@@ -3699,7 +3699,7 @@ void MultiresTriangulation::getImpactedVerticesABCDEFGH(
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
 
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)
      and (p[2] % previous_decimation)) {
     localNeighborId0 = 1;
@@ -3736,7 +3736,7 @@ void MultiresTriangulation::getImpactedVerticesABDC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)) {
     localNeighborId0 = 1;
@@ -3758,7 +3758,7 @@ void MultiresTriangulation::getImpactedVerticesEFHG(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)) {
     localNeighborId0 = 5;
@@ -3780,7 +3780,7 @@ void MultiresTriangulation::getImpactedVerticesAEGC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[1] % previous_decimation) and (p[2] % previous_decimation)) {
     localNeighborId0 = 0;
@@ -3801,7 +3801,7 @@ void MultiresTriangulation::getImpactedVerticesBFHD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[1] % previous_decimation) and (p[2] % previous_decimation)) {
     localNeighborId0 = 8;
@@ -3822,7 +3822,7 @@ void MultiresTriangulation::getImpactedVerticesAEFB(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[2] % previous_decimation)) {
     localNeighborId0 = 3;
@@ -3843,7 +3843,7 @@ void MultiresTriangulation::getImpactedVerticesGHDC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[2] % previous_decimation)) {
     localNeighborId0 = 3;
@@ -3864,7 +3864,7 @@ void MultiresTriangulation::getImpactedVerticesAB(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 0;
@@ -3877,7 +3877,7 @@ void MultiresTriangulation::getImpactedVerticesCD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 1;
@@ -3890,7 +3890,7 @@ void MultiresTriangulation::getImpactedVerticesEF(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 1;
@@ -3903,7 +3903,7 @@ void MultiresTriangulation::getImpactedVerticesGH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 7;
@@ -3916,7 +3916,7 @@ void MultiresTriangulation::getImpactedVerticesAC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 0;
@@ -3929,7 +3929,7 @@ void MultiresTriangulation::getImpactedVerticesBD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 2;
@@ -3942,7 +3942,7 @@ void MultiresTriangulation::getImpactedVerticesEG(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 4;
@@ -3955,7 +3955,7 @@ void MultiresTriangulation::getImpactedVerticesFH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 5;
@@ -3968,7 +3968,7 @@ void MultiresTriangulation::getImpactedVerticesAE(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 4;
@@ -3982,7 +3982,7 @@ void MultiresTriangulation::getImpactedVerticesBF(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 7;
@@ -3996,7 +3996,7 @@ void MultiresTriangulation::getImpactedVerticesCG(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 2;
@@ -4010,7 +4010,7 @@ void MultiresTriangulation::getImpactedVerticesDH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 5;
@@ -4024,7 +4024,7 @@ void MultiresTriangulation::getImpactedVertices2dABCD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)) {
     localNeighborId0 = 2;
@@ -4046,7 +4046,7 @@ void MultiresTriangulation::getImpactedVertices2dAB(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 0;
@@ -4060,7 +4060,7 @@ void MultiresTriangulation::getImpactedVertices2dCD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 0;
@@ -4074,7 +4074,7 @@ void MultiresTriangulation::getImpactedVertices2dAC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 0;
@@ -4087,7 +4087,7 @@ void MultiresTriangulation::getImpactedVertices2dBD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  int previous_decimation = pow(2, (decimationLevel_ + 1));
+  int const previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 2;
@@ -4146,9 +4146,9 @@ std::vector<SimplexId>
     if(p[2] == nbvoxels_[2])
       vk.erase(vk.begin() + 2);
 
-    for(SimplexId i : vi) {
-      for(SimplexId j : vj) {
-        for(SimplexId k : vk) {
+    for(SimplexId const i : vi) {
+      for(SimplexId const j : vj) {
+        for(SimplexId const k : vk) {
           if(i != 0 or j != 0 or k != 0)
             result.push_back(vertexId + i + j * vshift_[0] + k * vshift_[1]);
         }
@@ -4189,8 +4189,8 @@ std::vector<SimplexId>
     if(p[1] == nbvoxels_[1])
       vj.erase(vj.begin() + 2);
 
-    for(SimplexId i : vi) {
-      for(SimplexId j : vj) {
+    for(SimplexId const i : vi) {
+      for(SimplexId const j : vj) {
         if(i != 0 or j != 0) {
           result.push_back(vertexId + i + j * vshift_[Di_]);
         }
@@ -4313,7 +4313,7 @@ int MultiresTriangulation::getVertexBoundaryIndex(
 
 void MultiresTriangulation::findBoundaryRepresentatives(
   std::vector<SimplexId> &boundaryRepresentatives) {
-  int currentDecimationLevel = decimationLevel_;
+  int const currentDecimationLevel = decimationLevel_;
   setDecimationLevel(0);
   if(dimensionality_ == 3) { // here gridDimension[i] > 1 for all i =0,1,2
     boundaryRepresentatives.resize(27, -1);

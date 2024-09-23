@@ -3,6 +3,8 @@ ttk_add_base_library(arrayPreconditioning
     ArrayPreconditioning.cpp
   HEADERS
     ArrayPreconditioning.h
+    psort.h
   DEPENDS
     common
+    triangulation
 )

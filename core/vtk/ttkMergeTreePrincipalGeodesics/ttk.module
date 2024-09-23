@@ -6,6 +6,6 @@ HEADERS
   ttkMergeTreePrincipalGeodesics.h
 DEPENDS
   mergeTreePrincipalGeodesics
-  ttkFTMTree
+  ttkMergeTree
   ttkPlanarGraphLayout
   ttkAlgorithm

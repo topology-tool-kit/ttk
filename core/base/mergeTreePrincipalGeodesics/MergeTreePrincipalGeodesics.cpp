@@ -5,7 +5,7 @@ namespace ttk {
     std::vector<std::vector<std::vector<double>>> &vS,
     std::vector<std::vector<std::vector<double>>> &v2s,
     bool doPrint) {
-    unsigned int geodesicNumber = vS.size() - 1;
+    unsigned int const geodesicNumber = vS.size() - 1;
     if(geodesicNumber == 0)
       return 0.0;
     if(doPrint)
@@ -14,7 +14,7 @@ namespace ttk {
     std::vector<std::vector<double>> sumVs;
     ttk::Geometry::multiAddVectorsFlatten(vS, v2s, sumVs);
     for(unsigned int i = 0; i < geodesicNumber; ++i) {
-      double scalarProd
+      double const scalarProd
         = ttk::Geometry::dotProduct(sumVs[i], sumVs[geodesicNumber]);
       cost += scalarProd * scalarProd;
       if(doPrint and geodesicNumber < 4) {

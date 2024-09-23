@@ -60,7 +60,7 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
                                  vtkInformationVector *outputVector) {
 
   using ttk::SimplexId;
-  ttk::Timer t;
+  ttk::Timer const t;
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
   const auto polygon = vtkUnstructuredGrid::GetData(inputVector[1]);
@@ -114,15 +114,21 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
 
   inputPolygon_.clear();
 
+  SimplexId const cellNumber = polygon->GetNumberOfCells();
+  vtkCellArray *connectivity = polygon->GetCells();
+
+  if(connectivity->GetData()->GetNumberOfTuples() < 3 * cellNumber) {
+    this->printErr("Error: ill-defined range polygon.");
+    return 0;
+  }
+
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-  const long long int *cellArray
-    = polygon->GetCells()->GetData()->GetPointer(0);
+  const long long int *cellArray = connectivity->GetData()->GetPointer(0);
 #else
-  int *pt = polygon->GetCells()->GetPointer();
+  int *pt = connectivity->GetPointer();
   long long extra_pt = *pt;
   const long long int *cellArray = &extra_pt;
 #endif
-  SimplexId cellNumber = polygon->GetNumberOfCells();
 
   SimplexId vertexId0, vertexId1;
   std::pair<std::pair<double, double>, std::pair<double, double>> rangeEdge;

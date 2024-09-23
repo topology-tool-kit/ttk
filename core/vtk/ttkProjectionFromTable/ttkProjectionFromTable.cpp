@@ -233,7 +233,7 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
     // Merge data of arrays in surface also in table or add empty data
     for(int j = 0; j < output->GetPointData()->GetNumberOfArrays(); ++j) {
       auto outputArray = output->GetPointData()->GetAbstractArray(j);
-      std::string name = outputArray->GetName();
+      std::string const name = outputArray->GetName();
       auto array = coefficients->GetColumnByName(name.c_str());
       if(array) {
         outputArray->InsertNextTuple(i, array);
@@ -253,7 +253,7 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
-  int noPointsOri = output->GetNumberOfPoints() - inputPoints.size();
+  int const noPointsOri = output->GetNumberOfPoints() - inputPoints.size();
 
   // Merge data of arrays in table also in surface or add empty data
   std::set<std::string> toGet;
@@ -261,7 +261,7 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
     auto inputArray = coefficients->GetColumn(j);
     auto dataArray = vtkDataArray::SafeDownCast(inputArray);
     auto stringArray = vtkStringArray::SafeDownCast(inputArray);
-    std::string name = inputArray->GetName();
+    std::string const name = inputArray->GetName();
     auto array = output->GetPointData()->GetAbstractArray(name.c_str());
     if(not array and (dataArray or stringArray))
       toGet.insert(name);
@@ -278,7 +278,7 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
       // if is surface
       if(i < noPointsOri) {
         if(dataArray) {
-          double val = std::nan("");
+          double const val = std::nan("");
           dataArray->SetTuple1(i, val);
         } else if(stringArray) {
           stringArray->SetValue(i, "");
@@ -300,7 +300,7 @@ int ttkProjectionFromTable::RequestData(vtkInformation *ttkNotUsed(request),
   isSurfaceArray->SetName("isSurface");
   isSurfaceArray->SetNumberOfTuples(output->GetNumberOfPoints());
   for(int i = 0; i < output->GetNumberOfPoints(); ++i) {
-    bool isSurface = (i < noPointsOri);
+    bool const isSurface = (i < noPointsOri);
     isSurfaceArray->SetTuple1(i, isSurface);
   }
   output->GetPointData()->AddArray(isSurfaceArray);

@@ -13,6 +13,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
 
 #pragma once
 
@@ -176,7 +179,8 @@ namespace ttk {
               mergeTreeDistance.setPostprocess(false);
               mergeTreeDistance.setIsPersistenceDiagram(isPersistenceDiagram_);
               if(useDoubleInput_) {
-                double weight = mixDistancesMinMaxPairWeight(isFirstInput);
+                double const weight
+                  = mixDistancesMinMaxPairWeight(isFirstInput);
                 mergeTreeDistance.setMinMaxPairWeight(weight);
                 mergeTreeDistance.setDistanceSquaredRoot(true);
               }

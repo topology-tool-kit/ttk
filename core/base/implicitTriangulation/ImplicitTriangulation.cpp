@@ -250,9 +250,9 @@ int ImplicitTriangulation::checkAcceleration() {
       isAccelerated_ = true;
     }
   } else if(dimensionality_ == 2) {
-    bool isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
-    bool isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
-    bool allDimensionsArePowerOfTwo = (isDi and isDj);
+    bool const isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
+    bool const isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
+    bool const allDimensionsArePowerOfTwo = (isDi and isDj);
 
     if(allDimensionsArePowerOfTwo) {
       mod_[0] = dimensions_[Di_] - 1;
@@ -355,144 +355,6 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
     return (TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId) == 1);
 
   return false;
-}
-
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexNeighbor)(const SimplexId &vertexId,
-                     const int &localNeighborId,
-                     SimplexId &neighborId) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(localNeighborId < 0
-     or localNeighborId >= getVertexNeighborNumber(vertexId))
-    return -1;
-#endif // !TTK_ENABLE_KAMIKAZE
-
-  switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      neighborId = vertexId + this->vertexNeighborABCDEFGH_[localNeighborId];
-      break;
-    case VertexPosition::FRONT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborABCD_[localNeighborId];
-      break;
-    case VertexPosition::BACK_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborEFGH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborAEFB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborGHDC_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborAEGC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_FACE_3D:
-      neighborId = vertexId + this->vertexNeighborBFHD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      neighborId = vertexId + this->vertexNeighborAB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      neighborId = vertexId + this->vertexNeighborCD_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      neighborId = vertexId + this->vertexNeighborAC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      neighborId = vertexId + this->vertexNeighborBD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      neighborId = vertexId + this->vertexNeighborEF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      neighborId = vertexId + this->vertexNeighborGH_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      neighborId = vertexId + this->vertexNeighborEG_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      neighborId = vertexId + this->vertexNeighborFH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      neighborId = vertexId + this->vertexNeighborAE_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      neighborId = vertexId + this->vertexNeighborBF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      neighborId = vertexId + this->vertexNeighborCG_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      neighborId = vertexId + this->vertexNeighborDH_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      neighborId = vertexId + this->vertexNeighborA_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      neighborId = vertexId + this->vertexNeighborB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      neighborId = vertexId + this->vertexNeighborC_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      neighborId = vertexId + this->vertexNeighborD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      neighborId = vertexId + this->vertexNeighborE_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      neighborId = vertexId + this->vertexNeighborF_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      neighborId = vertexId + this->vertexNeighborG_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      neighborId = vertexId + this->vertexNeighborH_[localNeighborId];
-      break;
-    case VertexPosition::CENTER_2D:
-      neighborId = vertexId + this->vertexNeighbor2dABCD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dAB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dCD_[localNeighborId];
-      break;
-    case VertexPosition::LEFT_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dAC_[localNeighborId];
-      break;
-    case VertexPosition::RIGHT_EDGE_2D:
-      neighborId = vertexId + this->vertexNeighbor2dBD_[localNeighborId];
-      break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      neighborId = vertexId + this->vertexNeighbor2dA_[localNeighborId];
-      break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      neighborId = vertexId + this->vertexNeighbor2dB_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      neighborId = vertexId + this->vertexNeighbor2dC_[localNeighborId];
-      break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      neighborId = vertexId + this->vertexNeighbor2dD_[localNeighborId];
-      break;
-    case VertexPosition::CENTER_1D:
-      neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
-      break;
-    case VertexPosition::LEFT_CORNER_1D:
-      neighborId = vertexId + 1;
-      break;
-    case VertexPosition::RIGHT_CORNER_1D:
-      neighborId = vertexId - 1;
-      break;
-    default:
-      neighborId = -1;
-      break;
-  }
-
-  return 0;
 }
 
 const vector<vector<SimplexId>> *
@@ -3074,7 +2936,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
-  if(!ttk::hasInitializedMPI()) {
+  if(!ttk::isRunningWithMPI()) {
     return -1;
   }
   if(this->cellGhost_ == nullptr) {
@@ -3086,75 +2948,36 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
 
   Timer tm{};
 
-  // number of local cells (with ghost cells...)
-  const auto nLocCells{this->getNumberOfCells()};
-
-  // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
-  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
-  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
-
   this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
+  const auto spacing{this->metaGrid_->spacing_};
+  const auto origin{this->metaGrid_->origin_};
+
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
-  auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
-  // "good" starting values?
-  localBBox = {
-    this->localGridOffset_[0] + this->dimensions_[0], this->localGridOffset_[0],
-    this->localGridOffset_[1] + this->dimensions_[1], this->localGridOffset_[1],
-    this->localGridOffset_[2] + this->dimensions_[2], this->localGridOffset_[2],
-  };
 
-  for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    // only keep non-ghost cells
-    if(this->cellGhost_[lcid / nTetraPerCube] == 1) {
-      continue;
+  double globalBounds[6]{
+    origin[0], origin[0] + (this->metaGrid_->dimensions_[0] - 1) * spacing[0],
+    origin[1], origin[1] + (this->metaGrid_->dimensions_[1] - 1) * spacing[1],
+    origin[2], origin[2] + (this->metaGrid_->dimensions_[2] - 1) * spacing[2]};
+  auto &Bbox{this->neighborCellBBoxes_[ttk::MPIrank_]};
+  for(int i = 0; i < 3; i++) {
+    if(std::abs(globalBounds[2 * i] - boundingBox_[2 * i]) > spacing[i] / 2) {
+      Bbox[2 * i] = boundingBox_[2 * i] + spacing[i];
+    } else {
+      Bbox[2 * i] = boundingBox_[2 * i];
     }
-    // local vertex coordinates
-    std::array<SimplexId, 3> p{};
-    if(this->dimensionality_ == 3) {
-      this->tetrahedronToPosition(lcid, p.data());
-    } else if(this->dimensionality_ == 2) {
-      this->triangleToPosition2d(lcid, p.data());
-      // compatibility with tetrahedronToPosition; fix a bounding box
-      // error in the first axis
-      p[0] /= 2;
-    }
-
-    // global vertex coordinates
-    p[0] += this->localGridOffset_[0];
-    p[1] += this->localGridOffset_[1];
-    p[2] += this->localGridOffset_[2];
-
-    if(p[0] < localBBox[0]) {
-      localBBox[0] = p[0];
-    }
-    if(p[0] > localBBox[1]) {
-      localBBox[1] = p[0];
-    }
-    if(p[1] < localBBox[2]) {
-      localBBox[2] = p[1];
-    }
-    if(p[1] > localBBox[3]) {
-      localBBox[3] = p[1];
-    }
-    if(p[2] < localBBox[4]) {
-      localBBox[4] = p[2];
-    }
-    if(p[2] > localBBox[5]) {
-      localBBox[5] = p[2];
+    if(std::abs(globalBounds[2 * i + 1] - boundingBox_[2 * i + 1])
+       > spacing[i] / 2) {
+      Bbox[2 * i + 1] = boundingBox_[2 * i + 1] - spacing[i];
+    } else {
+      Bbox[2 * i + 1] = boundingBox_[2 * i + 1];
     }
   }
-  localBBox[1]++;
-  localBBox[3]++;
-  localBBox[5]++;
-
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
-    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
-                 this->neighborCellBBoxes_[neigh].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
-                 MPI_STATUS_IGNORE);
+    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6, MPI_DOUBLE,
+                 neigh, ttk::MPIrank_, this->neighborCellBBoxes_[neigh].data(),
+                 6, MPI_DOUBLE, neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedCells_ = true;
@@ -3173,6 +2996,8 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   if(this->metaGrid_ != nullptr) {
     return;
   }
+
+  this->setBoundingBox(bounds);
 
   // Reorganize bounds to only execute Allreduce twice
   std::array<double, 6> tempBounds = {
@@ -3215,8 +3040,8 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
-  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
-                                globalBounds[2], this->spacing_[0],
+  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[2],
+                                globalBounds[4], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],
                                 dimensions[0], dimensions[1], dimensions[2]);
   this->metaGrid_->preconditionBoundaryVertices();
@@ -3349,26 +3174,13 @@ int ttk::ImplicitTriangulation::getCellRankInternal(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const auto nVertsCell{this->getCellVertexNumber(lcid)};
-  std::vector<bool> inRank(nVertsCell);
+  float p[3] = {0, 0, 0};
+  this->metaGrid_->getCellIncenter(
+    this->getCellGlobalId(lcid), this->dimensionality_, p);
   for(const auto neigh : this->neighborRanks_) {
-    std::fill(inRank.begin(), inRank.end(), false);
     const auto &bbox{this->neighborCellBBoxes_[neigh]};
-    for(SimplexId i = 0; i < nVertsCell; ++i) {
-      SimplexId v{};
-      this->getCellVertex(lcid, i, v);
-      if(this->vertexGhost_[v] == 0) {
-        inRank[i] = true;
-      } else {
-        const auto p{this->getVertGlobalCoords(v)};
-        if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
-           && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
-          inRank[i] = true;
-        }
-      }
-    }
-    if(std::all_of(
-         inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
+    if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2] && p[1] <= bbox[3]
+       && p[2] >= bbox[4] && p[2] <= bbox[5]) {
       return neigh;
     }
   }

@@ -158,7 +158,7 @@ void FTMTree_MT::buildSegmentation() {
       for(SimplexId i = lowerBound; i < upperBound; ++i) {
         const auto vert = scalars_->sortedVertices[i];
         if(isCorrespondingArc(vert)) {
-          idSuperArc sa = getCorrespondingSuperArcId(vert);
+          idSuperArc const sa = getCorrespondingSuperArcId(vert);
           SimplexId vertToAdd;
           if(mt_data_.visitOrder[vert] != nullVertex) {
             // Opposite order for Split Tree
@@ -305,7 +305,7 @@ void FTMTree_MT::delNode(idNode node) {
     }
 #endif
 
-    idSuperArc downArc = mainNode->getDownSuperArcId(0);
+    idSuperArc const downArc = mainNode->getDownSuperArcId(0);
     Node *downNode = getNode((*mt_data_.superArcs)[downArc].getDownNodeId());
 
     downNode->removeUpSuperArc(downArc);
@@ -317,8 +317,8 @@ void FTMTree_MT::delNode(idNode node) {
     // We delete the upArc of this node,
     // if there is a down arc, we reattach it to the upNode
 
-    idSuperArc upArc = mainNode->getUpSuperArcId(0);
-    idNode upId = (*mt_data_.superArcs)[upArc].getUpNodeId();
+    idSuperArc const upArc = mainNode->getUpSuperArcId(0);
+    idNode const upId = (*mt_data_.superArcs)[upArc].getUpNodeId();
     Node *upNode = getNode(upId);
 
     upNode->removeDownSuperArc(upArc);
@@ -328,7 +328,7 @@ void FTMTree_MT::delNode(idNode node) {
       // Have one down arc
 
       // Reconnect
-      idSuperArc downArc = mainNode->getDownSuperArcId(0);
+      idSuperArc const downArc = mainNode->getDownSuperArcId(0);
       (*mt_data_.superArcs)[downArc].setUpNodeId(upId);
       upNode->addDownSuperArcId(downArc);
       mainNode->clearDownSuperArcs();
@@ -430,7 +430,7 @@ idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm) {
   if(isCorrespondingNode(node->getVertexId())) {
     Node *myNode = vertex2Node(node->getVertexId());
     // If it has been hidden / replaced we need to re-make it
-    idSuperArc correspondingArcId = myNode->getUpSuperArcId(0);
+    idSuperArc const correspondingArcId = myNode->getUpSuperArcId(0);
     updateCorrespondingArc(myNode->getVertexId(), correspondingArcId);
   }
 
@@ -484,7 +484,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
     return getCorrespondingNodeId(vertexId);
   }
 
-  idNode newNodeId = mt_data_.nodes->getNext();
+  idNode const newNodeId = mt_data_.nodes->getNext();
   (*mt_data_.nodes)[newNodeId].setVertexId(vertexId);
   (*mt_data_.nodes)[newNodeId].setTermination(term);
   updateCorrespondingNode(vertexId, newNodeId);
@@ -499,7 +499,7 @@ idNode FTMTree_MT::makeNode(const Node *const n, SimplexId) {
 idSuperArc FTMTree_MT::makeSuperArc(idNode downNodeId, idNode upNodeId)
 
 {
-  idSuperArc newSuperArcId = mt_data_.superArcs->getNext();
+  idSuperArc const newSuperArcId = mt_data_.superArcs->getNext();
   (*mt_data_.superArcs)[newSuperArcId].setDownNodeId(downNodeId);
   (*mt_data_.superArcs)[newSuperArcId].setUpNodeId(upNodeId);
 
@@ -559,11 +559,11 @@ void FTMTree_MT::normalizeIds() {
   std::queue<tuple<idNode, bool>> q;
   std::stack<tuple<idNode, bool>> qr;
   for(const idNode n : mt_data_.leaves) {
-    bool goUp = isJT() || isST() || getNode(n)->getNumberOfUpSuperArcs();
+    bool const goUp = isJT() || isST() || getNode(n)->getNumberOfUpSuperArcs();
     if(goUp)
-      q.emplace(make_tuple(n, goUp));
+      q.emplace(n, goUp);
     else
-      qr.emplace(make_tuple(n, goUp));
+      qr.emplace(n, goUp);
   }
 
   while(!qr.empty()) {
@@ -598,7 +598,7 @@ void FTMTree_MT::normalizeIds() {
           getSuperArc(currentArcId)->setNormalizeIds(nIdMin++);
         }
         if(!seenUp[currentArcId]) {
-          q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
+          q.emplace(getArcParentNode(currentArcId, goUp), goUp);
           seenUp[currentArcId] = true;
         }
       } else {
@@ -606,7 +606,7 @@ void FTMTree_MT::normalizeIds() {
           getSuperArc(currentArcId)->setNormalizeIds(nIdMax--);
         }
         if(!seenDown[currentArcId]) {
-          q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
+          q.emplace(getArcParentNode(currentArcId, goUp), goUp);
           seenDown[currentArcId] = true;
         }
       }
@@ -632,7 +632,7 @@ idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId) {
   }
 #endif
 
-  idSuperArc newSuperArcId = mt_data_.superArcs->getNext();
+  idSuperArc const newSuperArcId = mt_data_.superArcs->getNext();
   (*mt_data_.superArcs)[newSuperArcId].setDownNodeId(downNodeId);
   (*mt_data_.nodes)[downNodeId].addUpSuperArcId(newSuperArcId);
 
@@ -734,12 +734,6 @@ int FTMTree_MT::printTime(Timer &t,
     for(int i = 3; i < debugLevel; i++)
       st << "-";
     st << s;
-
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-    const auto nbScalars = scalars_->size;
-    int speed = nbScalars / t.getElapsedTime();
-    st << " at " << speed << " vert/s";
-#endif
 
     this->printMsg(st.str(), 1, t.getElapsedTime(), this->threadNumber_);
   }
@@ -1006,18 +1000,7 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-  // count added
-  SimplexId tot = 0;
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-  for(const auto &l : *mt_data_.trunkSegments) {
-    SimplexId arcSize = 0;
-    for(const auto &v : l) {
-      arcSize += v.size();
-    }
-    tot += arcSize;
-  }
-#endif
-  return tot;
+  return {};
 }
 
 SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
@@ -1031,10 +1014,9 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
   const auto chunkSize = getChunkSize(sizeBackBone, nbTasksThreads);
   const auto chunkNb = getChunkCount(sizeBackBone, nbTasksThreads);
   // si pas efficace vecteur de la taille de node ici a la place de acc
-  SimplexId tot = 0;
   for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId) shared(trunkVerts, tot) \
+#pragma omp task firstprivate(chunkId) shared(trunkVerts) \
   OPTIONAL_PRIORITY(isPrior())
 #endif
     {
@@ -1062,12 +1044,6 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
               const idSuperArc oldArc
                 = upArcFromVert(trunkVerts[oldVertInRange]);
               getSuperArc(oldArc)->atomicIncVisited(acc);
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif
-              tot += acc;
-#endif
               acc = 1;
             }
           }
@@ -1078,18 +1054,12 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
         = getCorrespondingNodeId(trunkVerts[lastVertInRange]);
       const idSuperArc upArc = getNode(baseNode)->getUpSuperArcId(0);
       getSuperArc(upArc)->atomicIncVisited(acc);
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif
-      tot += acc;
-#endif
     } // end task
   }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-  return tot;
+  return {};
 }
 
 std::ostream &ttk::ftm::operator<<(std::ostream &o,

@@ -1,0 +1,9 @@
+NAME
+  ttkRipsPersistenceDiagram
+SOURCES
+  ttkRipsPersistenceDiagram.cpp
+HEADERS
+  ttkRipsPersistenceDiagram.h
+DEPENDS
+  ripsPersistenceDiagram
+  ttkAlgorithm

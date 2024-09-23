@@ -77,7 +77,8 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     vtkNew<vtkPoints> points{};
     vtkNew<vtkSignedCharArray> cellDimensions{};
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
-    vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
+    vtkSmartPointer<vtkDataArray> const cellScalars{
+      inputScalars->NewInstance()};
     vtkNew<vtkSignedCharArray> isOnBoundary{};
     vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
     vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};
@@ -433,7 +434,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 
   auto inputOffsets = ttkAlgorithm::GetOrderArray(
-    input, 0, 1, this->ForceInputOffsetScalarField);
+    input, 0, triangulation, false, 1, this->ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets == nullptr) {

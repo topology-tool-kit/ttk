@@ -37,6 +37,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
 ///   Tree Feature Tracking example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
+///   tree Wasserstein Auto-Encoder example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
 
@@ -96,6 +99,7 @@ private:
   int pathMetric = 0;
   int branchMetric = 0;
   int baseModule = 0;
+  double NonMatchingWeight = 1.0;
 
   // Output Options
   bool OutputTrees = true;
@@ -340,6 +344,13 @@ public:
     pathMetric = m;
     Modified();
   }
+
+  void SetNonMatchingWeight(double weight) {
+    NonMatchingWeight = weight;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(NonMatchingWeight, double);
 
   // Output Options
   vtkSetMacro(BarycenterPositionAlpha, bool);

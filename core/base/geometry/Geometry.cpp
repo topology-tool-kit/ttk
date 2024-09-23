@@ -17,6 +17,13 @@ T Geometry::angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
 }
 
 template <typename T>
+T Geometry::angle2D(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
+  double vecA[2] = {vA1[0] - vA0[0], vA1[1] - vA0[1]};
+  double vecB[2] = {vB1[0] - vB0[0], vB1[1] - vB0[1]};
+  return atan2(vecB[1], vecB[0]) - atan2(vecA[1], vecA[0]);
+}
+
+template <typename T>
 bool Geometry::areVectorsColinear(const T *vA0,
                                   const T *vA1,
                                   const T *vB0,
@@ -114,10 +121,21 @@ bool Geometry::areVectorsColinear(const T *vA0,
       return true;
     }
   }
-
   k[0] = k[1] = k[2] = 0;
 
   return false;
+}
+
+template <typename T>
+bool Geometry::isTriangleColinear2D(const T *pptA,
+                                    const T *pptB,
+                                    const T *pptC,
+                                    const T tolerance) {
+  double ptA[2] = {pptA[0], pptA[1]}, ptB[2] = {pptB[0], pptB[1]},
+         ptC[2] = {pptC[0], pptC[1]};
+  return fabs(ptA[0] * (ptB[1] - ptC[1]) + ptB[0] * (ptC[1] - ptA[1])
+              + ptC[0] * (ptA[1] - ptB[1]))
+         <= tolerance;
 }
 
 template <typename T>
@@ -280,7 +298,7 @@ int Geometry::computeTriangleAreaFromSides(const T s0,
                                            const T s2,
                                            T &area) {
 
-  double s = (s0 + s1 + s2) / 2.0;
+  double const s = (s0 + s1 + s2) / 2.0;
   area = std::sqrt(s * (s - s0) * (s - s1) * (s - s2));
 
   return 0;
@@ -514,6 +532,60 @@ T Geometry::magnitude(const T *o, const T *d) {
   }
 
   return sqrt(mag);
+}
+
+template <typename T>
+void Geometry::projectOnTrianglePlane(const T *p,
+                                      const T *a,
+                                      const T *normTri,
+                                      T *out) {
+  std::array<T, 3> ap{};
+  subtractVectors(a, p, ap.data());
+  std::array<T, 3> normTriScaled{};
+  scaleVector(normTri, dotProduct(normTri, ap.data()), normTriScaled.data());
+  subtractVectors(normTriScaled.data(), p, out);
+}
+
+template <typename T>
+void Geometry::projectOnEdge(const T *p, const T *a, const T *b, T *out) {
+  std::array<T, 3> ab{};
+  subtractVectors(a, b, ab.data());
+  std::array<T, 3> ap{};
+  subtractVectors(a, p, ap.data());
+  std::array<T, 3> abScaled{};
+  scaleVector(
+    ab.data(),
+    dotProduct(ap.data(), ab.data()) / dotProduct(ab.data(), ab.data()),
+    abScaled.data());
+  addVectors(a, abScaled.data(), out);
+}
+
+template <typename T>
+void Geometry::computeTriangleNormal(const T *a,
+                                     const T *b,
+                                     const T *c,
+                                     T *out) {
+
+  // triangle normal: cross product of two edges
+  // ab, ac vectors
+  std::array<T, 3> ab{};
+  subtractVectors(a, b, ab.data());
+  std::array<T, 3> ac{};
+  subtractVectors(a, c, ac.data());
+  // compute ab ^ ac
+  crossProduct(ab.data(), ac.data(), out);
+  // magnitude
+  const auto mag = magnitude(out);
+
+  if(mag > powf(10, -FLT_DIG)) {
+    // unitary normal vector
+    scaleVector(out, 1 / mag, out);
+    return;
+  }
+
+  out[0] = -1.0F;
+  out[1] = -1.0F;
+  out[2] = -1.0F;
 }
 
 template <typename T>
@@ -754,9 +826,13 @@ void Geometry::transposeMatrix(const std::vector<std::vector<T>> &a,
 #define GEOMETRY_SPECIALIZE(TYPE)                                              \
   template TYPE Geometry::angle<TYPE>(                                         \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                   \
+  template TYPE Geometry::angle2D<TYPE>(                                       \
+    TYPE const *, TYPE const *, TYPE const *, TYPE const *);                   \
   template bool Geometry::areVectorsColinear<TYPE>(                            \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *,                    \
     std::array<TYPE, 3> *, TYPE const *);                                      \
+  template bool Geometry::isTriangleColinear2D<TYPE>(                          \
+    TYPE const *, TYPE const *, TYPE const *, TYPE const);                     \
   template int Geometry::computeBarycentricCoordinates<TYPE>(                  \
     TYPE const *, TYPE const *, TYPE const *, std::array<TYPE, 2> &,           \
     int const &);                                                              \
@@ -809,6 +885,12 @@ void Geometry::transposeMatrix(const std::vector<std::vector<T>> &a,
   template TYPE Geometry::magnitudeFlatten<TYPE>(                              \
     std::vector<std::vector<TYPE>> const &);                                   \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);         \
+  template void Geometry::projectOnTrianglePlane<TYPE>(                        \
+    TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
+  template void Geometry::projectOnEdge<TYPE>(                                 \
+    TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
+  template void Geometry::computeTriangleNormal<TYPE>(                         \
+    TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
   template int Geometry::subtractVectors<TYPE>(                                \
     TYPE const *, TYPE const *, TYPE *, int const &);                          \
   template int Geometry::subtractVectors<TYPE>(std::vector<TYPE> const &,      \

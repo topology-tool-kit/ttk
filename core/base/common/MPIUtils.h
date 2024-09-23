@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -122,7 +123,7 @@ namespace ttk {
     MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
-    int tagMultiplier = rankToSend + 1;
+    const int tagMultiplier = rankToSend + 1;
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors.size();
@@ -189,7 +190,7 @@ namespace ttk {
     MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
-    int tagMultiplier = rankToSend + 1;
+    const int tagMultiplier = rankToSend + 1;
     int valuesTag = 103 * tagMultiplier;
     if(rankToSend == ttk::MPIrank_) {
       int neighborNumber = neighbors.size();
@@ -202,6 +203,7 @@ namespace ttk {
         if(nValues > 0) {
           MPI_Recv(receivedValues.data(), nValues * dimensionNumber, MPI_DT,
                    neighbors.at(r), valuesTag, communicator, MPI_STATUS_IGNORE);
+#pragma omp parallel for
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               DT receivedVal = receivedValues[i * dimensionNumber + j];
@@ -225,6 +227,7 @@ namespace ttk {
         if(nValues > 0) {
           // assemble the scalar values
           std::vector<DT> valuesToSend(nValues * dimensionNumber);
+#pragma omp parallel for
           for(ttk::SimplexId i = 0; i < nValues; i++) {
             for(int j = 0; j < dimensionNumber; j++) {
               ttk::SimplexId globalId = ghostVerticesForThisRank[i];
@@ -280,7 +283,7 @@ namespace ttk {
                                               const IT nVerts,
                                               MPI_Comm communicator,
                                               const int dimensionNumber) {
-    int neighborNumber = neighbors.size();
+    const int neighborNumber = neighbors.size();
     if(!ttk::isRunningWithMPI()) {
       return -1;
     }
@@ -290,7 +293,7 @@ namespace ttk {
     MPI_Datatype MPI_GIT = getMPIType(static_cast<globalIdType>(0));
     // we need unique tags for each rankToSend, otherwise messages might become
     // entangled
-    int tagMultiplier = rankToSend + 1;
+    const int tagMultiplier = rankToSend + 1;
     int amountTag = 101 * tagMultiplier;
     int idsTag = 102 * tagMultiplier;
     int valuesTag = 103 * tagMultiplier;
@@ -379,6 +382,7 @@ namespace ttk {
    */
   template <typename IT, typename GVR>
   int preconditionNeighborsUsingRankArray(std::vector<int> &neighbors,
+                                          std::map<int, int> &neighborsToId,
                                           const GVR &getVertexRank,
                                           const IT nVerts,
                                           MPI_Comm communicator) {
@@ -420,7 +424,7 @@ namespace ttk {
       auto end = rootVector.begin();
       for(int i = 0; i < ttk::MPIsize_; i++) {
         end = begin + sizes[i];
-        std::unordered_set<int> s(begin, end);
+        const std::unordered_set<int> s(begin, end);
         setsFromRanks[i] = s;
         begin = end;
       }
@@ -458,16 +462,21 @@ namespace ttk {
                  MPI_INT, receivedNeighbors.data(), receivedSize, MPI_INT, 0,
                  communicator);
     // then we turn the vector back into a set
-    std::unordered_set<int> finalSet(
+    const std::unordered_set<int> finalSet(
       receivedNeighbors.begin(), receivedNeighbors.end());
     neighborSet = finalSet;
 
     // We copy the set as a vector
     neighbors.clear();
-    for(int neighbor : neighborSet) {
+    for(const int neighbor : neighborSet) {
       neighbors.push_back(neighbor);
     }
     std::sort(neighbors.begin(), neighbors.end());
+    int neighborNumber = neighbors.size();
+    neighborsToId.clear();
+    for(int i = 0; i < neighborNumber; i++) {
+      neighborsToId[neighbors[i]] = i;
+    }
 
     return 0;
   }
@@ -494,11 +503,77 @@ namespace ttk {
     if(!triangulation->hasPreconditionedDistributedCells()) {
       return -1;
     }
-    for(int r = 0; r < ttk::MPIsize_; r++) {
-      getGhostCellScalars<DT, triangulationType>(
-        scalarArray, triangulation, r, communicator, dimensionNumber);
-      MPI_Barrier(communicator);
+    const std::vector<int> &neighbors = triangulation->getNeighborRanks();
+    const int neighborNumber = neighbors.size();
+    const std::map<int, int> &neighborsToId = triangulation->getNeighborsToId();
+    if(!ttk::isRunningWithMPI()) {
+      return -1;
     }
+
+    std::vector<std::vector<DT>> receivedValues(
+      neighborNumber, std::vector<DT>());
+    std::vector<std::vector<DT>> valuesToSend(
+      neighborNumber, std::vector<DT>());
+    MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
+    const auto &ghostCellsPerOwner = triangulation->getGhostCellsPerOwner();
+    const auto &remoteGhostCells = triangulation->getRemoteGhostCells();
+    for(int i = 0; i < neighborNumber; i++) {
+      receivedValues[i].resize(ghostCellsPerOwner[neighbors[i]].size()
+                               * dimensionNumber);
+      valuesToSend[i].resize(remoteGhostCells[neighbors[i]].size()
+                             * dimensionNumber);
+    }
+    for(int i = 0; i < neighborNumber; i++) {
+      ttk::SimplexId nValues = remoteGhostCells[neighbors[i]].size();
+#pragma omp parallel for
+      for(ttk::SimplexId j = 0; j < nValues; j++) {
+        for(int k = 0; k < dimensionNumber; k++) {
+          ttk::SimplexId globalId = remoteGhostCells[neighbors[i]][j];
+          ttk::SimplexId localId = triangulation->getCellLocalId(globalId);
+          valuesToSend[i].at(j * dimensionNumber + k)
+            = scalarArray[localId * dimensionNumber + k];
+        }
+      }
+    }
+
+    std::vector<MPI_Request> sendRequests(neighborNumber);
+    std::vector<MPI_Request> recvRequests(neighborNumber);
+    for(int i = 0; i < neighborNumber; i++) {
+      MPI_Isend(valuesToSend[i].data(), valuesToSend[i].size(), MPI_DT,
+                neighbors[i], 0, communicator, &sendRequests[i]);
+      MPI_Irecv(receivedValues[i].data(), receivedValues[i].size(), MPI_DT,
+                neighbors[i], 0, communicator, &recvRequests[i]);
+    }
+
+    std::vector<MPI_Status> recvStatus(neighborNumber);
+    std::vector<int> recvCompleted(neighborNumber, 0);
+    int recvPerformedCount = 0;
+    int recvPerformedCountTotal = 0;
+    int r;
+    int rId;
+    while(recvPerformedCountTotal < neighborNumber) {
+      MPI_Waitsome(neighborNumber, recvRequests.data(), &recvPerformedCount,
+                   recvCompleted.data(), recvStatus.data());
+      if(recvPerformedCount > 0) {
+        for(int i = 0; i < recvPerformedCount; i++) {
+          r = recvStatus[i].MPI_SOURCE;
+          rId = neighborsToId.at(r);
+          ttk::SimplexId nValues = ghostCellsPerOwner[r].size();
+#pragma omp parallel for
+          for(ttk::SimplexId j = 0; j < nValues; j++) {
+            for(int k = 0; k < dimensionNumber; k++) {
+              DT receivedVal = receivedValues[rId][j * dimensionNumber + k];
+              ttk::SimplexId globalId = ghostCellsPerOwner[r][j];
+              ttk::SimplexId localId = triangulation->getCellLocalId(globalId);
+              scalarArray[localId * dimensionNumber + k] = receivedVal;
+            }
+          }
+        }
+        recvPerformedCountTotal += recvPerformedCount;
+      }
+    }
+    MPI_Waitall(neighborNumber, sendRequests.data(), MPI_STATUSES_IGNORE);
+
     return 0;
   }
 
@@ -513,11 +588,80 @@ namespace ttk {
     if(!triangulation->hasPreconditionedDistributedVertices()) {
       return -1;
     }
-    for(int r = 0; r < ttk::MPIsize_; r++) {
-      getGhostVertexScalars<DT, triangulationType>(
-        scalarArray, triangulation, r, communicator, dimensionNumber);
-      MPI_Barrier(communicator);
+    const std::vector<int> &neighbors = triangulation->getNeighborRanks();
+    const int neighborNumber = neighbors.size();
+    const std::map<int, int> &neighborsToId = triangulation->getNeighborsToId();
+
+    if(!ttk::isRunningWithMPI()) {
+      return -1;
     }
+
+    std::vector<std::vector<DT>> receivedValues(
+      neighborNumber, std::vector<DT>());
+    std::vector<std::vector<DT>> valuesToSend(
+      neighborNumber, std::vector<DT>());
+    MPI_Datatype MPI_DT = getMPIType(static_cast<DT>(0));
+    const auto &ghostVerticesPerOwner
+      = triangulation->getGhostVerticesPerOwner();
+    const auto &remoteGhostVertices = triangulation->getRemoteGhostVertices();
+    for(int i = 0; i < neighborNumber; i++) {
+      receivedValues[i].resize(ghostVerticesPerOwner[neighbors[i]].size()
+                               * dimensionNumber);
+      valuesToSend[i].resize(remoteGhostVertices[neighbors[i]].size()
+                             * dimensionNumber);
+    }
+    for(int i = 0; i < neighborNumber; i++) {
+      ttk::SimplexId nValues = remoteGhostVertices[neighbors[i]].size();
+#pragma omp parallel for
+      for(ttk::SimplexId j = 0; j < nValues; j++) {
+        for(int k = 0; k < dimensionNumber; k++) {
+          ttk::SimplexId globalId = remoteGhostVertices[neighbors[i]][j];
+          ttk::SimplexId localId = triangulation->getVertexLocalId(globalId);
+          valuesToSend[i].at(j * dimensionNumber + k)
+            = scalarArray[localId * dimensionNumber + k];
+        }
+      }
+    }
+
+    std::vector<MPI_Request> sendRequests(neighborNumber);
+    std::vector<MPI_Request> recvRequests(neighborNumber);
+    for(int i = 0; i < neighborNumber; i++) {
+      MPI_Isend(valuesToSend[i].data(), valuesToSend[i].size(), MPI_DT,
+                neighbors[i], 0, communicator, &sendRequests[i]);
+      MPI_Irecv(receivedValues[i].data(), receivedValues[i].size(), MPI_DT,
+                neighbors[i], 0, communicator, &recvRequests[i]);
+    }
+
+    std::vector<MPI_Status> recvStatus(neighborNumber);
+    std::vector<int> recvCompleted(neighborNumber, 0);
+    int recvPerformedCount = 0;
+    int recvPerformedCountTotal = 0;
+    int r;
+    int rId;
+    while(recvPerformedCountTotal < neighborNumber) {
+      MPI_Waitsome(neighborNumber, recvRequests.data(), &recvPerformedCount,
+                   recvCompleted.data(), recvStatus.data());
+      if(recvPerformedCount > 0) {
+        for(int i = 0; i < recvPerformedCount; i++) {
+          r = recvStatus[i].MPI_SOURCE;
+          rId = neighborsToId.at(r);
+          ttk::SimplexId nValues = ghostVerticesPerOwner[r].size();
+#pragma omp parallel for
+          for(ttk::SimplexId j = 0; j < nValues; j++) {
+            for(int k = 0; k < dimensionNumber; k++) {
+              DT receivedVal = receivedValues[rId][j * dimensionNumber + k];
+              ttk::SimplexId globalId = ghostVerticesPerOwner[r][j];
+              ttk::SimplexId localId
+                = triangulation->getVertexLocalId(globalId);
+              scalarArray[localId * dimensionNumber + k] = receivedVal;
+            }
+          }
+        }
+        recvPerformedCountTotal += recvPerformedCount;
+      }
+    }
+    MPI_Waitall(neighborNumber, sendRequests.data(), MPI_STATUSES_IGNORE);
+
     return 0;
   }
 
@@ -580,7 +724,9 @@ namespace ttk {
   }
 
   void inline preconditionNeighborsUsingBoundingBox(
-    double *boundingBox, std::vector<int> &neighbors) {
+    double *boundingBox,
+    std::vector<int> &neighbors,
+    std::map<int, int> &neighborsToId) {
 
     std::vector<std::array<double, 6>> rankBoundingBoxes(ttk::MPIsize_);
     std::copy(
@@ -589,7 +735,7 @@ namespace ttk {
       MPI_Bcast(rankBoundingBoxes[r].data(), 6, MPI_DOUBLE, r, ttk::MPIcomm_);
     }
 
-    double epsilon = 0.00001;
+    const double epsilon = 0.00001;
     // inflate our own bounding box by epsilon
     for(int i = 0; i < 6; i++) {
       if(i % 2 == 0)
@@ -605,6 +751,11 @@ namespace ttk {
           neighbors.push_back(i);
         }
       }
+    }
+    neighborsToId.clear();
+    int neighborNumber = neighbors.size();
+    for(int i = 0; i < neighborNumber; i++) {
+      neighborsToId[neighbors[i]] = i;
     }
   }
 
@@ -622,19 +773,20 @@ namespace ttk {
                                const unsigned char *ghostCells,
                                int nVertices,
                                double *boundingBox,
-                               std::vector<int> &neighbors) {
+                               std::vector<int> &neighbors,
+                               std::map<int, int> &neighborsToId) {
     if(neighbors.empty()) {
-      ttk::preconditionNeighborsUsingBoundingBox(boundingBox, neighbors);
+      ttk::preconditionNeighborsUsingBoundingBox(
+        boundingBox, neighbors, neighborsToId);
     }
     MPI_Datatype MIT = ttk::getMPIType(ttk::SimplexId{});
     std::vector<ttk::SimplexId> currentRankUnknownIds;
-    std::vector<std::vector<ttk::SimplexId>> allUnknownIds(ttk::MPIsize_);
     std::unordered_set<ttk::SimplexId> gIdSet;
     std::unordered_map<ttk::SimplexId, ttk::SimplexId> gIdToLocalMap;
 
     for(int i = 0; i < nVertices; i++) {
-      int ghostCellVal = ghostCells[i];
-      ttk::SimplexId globalId = globalIds[i];
+      const int ghostCellVal = ghostCells[i];
+      const ttk::SimplexId globalId = globalIds[i];
       if(ghostCellVal == 0) {
         // if the ghost cell value is 0, then this vertex mainly belongs to
         // this rank
@@ -655,7 +807,7 @@ namespace ttk {
     receivedGlobals.resize(sizeOfCurrentRank);
     ttk::SimplexId sizeOfNeighbor;
     std::vector<ttk::SimplexId> neighborUnknownIds;
-    for(int neighbor : neighbors) {
+    for(const int neighbor : neighbors) {
       // we first send the size and then all needed ids to the neighbor
       MPI_Sendrecv(&sizeOfCurrentRank, 1, MIT, neighbor, ttk::MPIrank_,
                    &sizeOfNeighbor, 1, MIT, neighbor, neighbor, ttk::MPIcomm_,
@@ -670,7 +822,7 @@ namespace ttk {
 
       // then we check if the needed globalid values are present in the local
       // globalid set if so, we send the rank value to the requesting rank
-      for(ttk::SimplexId gId : neighborUnknownIds) {
+      for(const ttk::SimplexId gId : neighborUnknownIds) {
         if(gIdSet.count(gId)) {
           // add the value to the vector which will be sent
           gIdsToSend.push_back(gId);
@@ -687,8 +839,8 @@ namespace ttk {
       MPI_Get_count(&status, MIT, &amount);
       receivedGlobals.resize(amount);
 
-      for(ttk::SimplexId receivedGlobal : receivedGlobals) {
-        ttk::SimplexId localVal = gIdToLocalMap[receivedGlobal];
+      for(const ttk::SimplexId receivedGlobal : receivedGlobals) {
+        const ttk::SimplexId localVal = gIdToLocalMap[receivedGlobal];
         rankArray[localVal] = neighbor;
       }
       // cleanup
@@ -932,19 +1084,19 @@ namespace ttk {
                        const GVLID &getVertexLocalId,
                        const size_t nVerts,
                        const int burstSize,
-                       std::vector<int> &neighbors) {
+                       std::vector<int> &neighbors,
+                       std::map<int, int> &neighborsToId) {
     int intTag = 101;
     int structTag = 102;
     if(neighbors.empty()) {
       ttk::preconditionNeighborsUsingRankArray(
-        neighbors, getVertexRank, nVerts, ttk::MPIcomm_);
+        neighbors, neighborsToId, getVertexRank, nVerts, ttk::MPIcomm_);
     }
     MPI_Barrier(ttk::MPIcomm_);
 
     using IT = decltype(getVertexGlobalId(0));
     MPI_Datatype MPI_IT = ttk::getMPIType(static_cast<IT>(0));
 
-    ttk::Timer fillAndSortTimer;
     std::vector<value<DT, IT>> sortingValues;
     populateVector(
       sortingValues, nVerts, scalarArray, getVertexGlobalId, getVertexRank);
@@ -959,7 +1111,6 @@ namespace ttk {
 
     std::vector<IT> orderedValuesForRank;
     IT processedValueCounter = 0;
-    ttk::Timer mergeTimer;
     IT localSize = sortingValues.size();
     IT totalSize;
     // get the complete size  of the dataset by summing up the local sizes
@@ -1024,7 +1175,6 @@ namespace ttk {
     // all ranks do the following
     MPI_Barrier(ttk::MPIcomm_);
 
-    ttk::Timer orderTimer;
     buildArrayForReceivedData<IT>(orderedValuesForRank.size(),
                                   orderedValuesForRank.data(), getVertexLocalId,
                                   orderArray, ttk::globalThreadNumber_);

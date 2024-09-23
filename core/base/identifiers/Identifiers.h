@@ -197,16 +197,15 @@ namespace ttk {
     }
 
     void initializeNeighbors(double *boundingBox,
-                             std::vector<int> &neighborRanks) {
+                             std::vector<int> &neighborRanks,
+                             std::map<int, int> &neighborsToId) {
       if(neighborRanks.empty()) {
-        preconditionNeighborsUsingBoundingBox(boundingBox, neighborRanks);
+        preconditionNeighborsUsingBoundingBox(
+          boundingBox, neighborRanks, neighborsToId);
       }
       neighbors_ = &neighborRanks;
-      neighborToId_.clear();
       neighborNumber_ = neighbors_->size();
-      for(int i = 0; i < neighborNumber_; i++) {
-        neighborToId_[neighbors_->at(i)] = i;
-      }
+      neighborToId_ = neighborsToId;
     }
 
     /**

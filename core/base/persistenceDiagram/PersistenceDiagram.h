@@ -91,7 +91,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
 ///   Digits 64-Dimensions example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
@@ -121,8 +121,23 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
 ///   Diagram Distance example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramWAE/">Persistence
+///   Diagram Wasserstein Auto-Encoder example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/">Topological
+///   Optimization for Torus Repair example</a>\n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
 ///   example</a> \n
@@ -211,7 +226,8 @@ namespace ttk {
                 const scalarType *inputScalars,
                 const size_t scalarsMTime,
                 const SimplexId *inputOffsets,
-                const triangulationType *triangulation);
+                const triangulationType *triangulation,
+                const std::vector<bool> *updateMask = nullptr);
 
     template <typename scalarType, class triangulationType>
     int executeFTM(std::vector<PersistencePair> &CTDiagram,
@@ -238,7 +254,9 @@ namespace ttk {
                                      const scalarType *inputScalars,
                                      const size_t scalarsMTime,
                                      const SimplexId *inputOffsets,
-                                     const triangulationType *triangulation);
+                                     const triangulationType *triangulation,
+                                     const std::vector<bool> *updateMask
+                                     = nullptr);
 
     template <class triangulationType>
     void checkProgressivityRequirement(const triangulationType *triangulation);
@@ -376,7 +394,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
                                      const scalarType *inputScalars,
                                      const size_t scalarsMTime,
                                      const SimplexId *inputOffsets,
-                                     const triangulationType *triangulation) {
+                                     const triangulationType *triangulation,
+                                     const std::vector<bool> *updateMask) {
 
   printMsg(ttk::debug::Separator::L1);
 
@@ -390,8 +409,8 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
       executePersistentSimplex(CTDiagram, inputOffsets, triangulation);
       break;
     case BACKEND::DISCRETE_MORSE_SANDWICH:
-      executeDiscreteMorseSandwich(
-        CTDiagram, inputScalars, scalarsMTime, inputOffsets, triangulation);
+      executeDiscreteMorseSandwich(CTDiagram, inputScalars, scalarsMTime,
+                                   inputOffsets, triangulation, updateMask);
       break;
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       executeProgressiveTopology(CTDiagram, inputOffsets, triangulation);
@@ -425,7 +444,7 @@ int ttk::PersistenceDiagram::executePersistentSimplex(
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
-  Timer tm{};
+  Timer const tm{};
   const auto dim = triangulation->getDimensionality();
 
   std::vector<ttk::PersistentSimplexPairs::PersistencePair> pairs{};
@@ -497,12 +516,14 @@ int ttk::PersistenceDiagram::executeDiscreteMorseSandwich(
   const scalarType *inputScalars,
   const size_t scalarsMTime,
   const SimplexId *inputOffsets,
-  const triangulationType *triangulation) {
+  const triangulationType *triangulation,
+  const std::vector<bool> *updateMask) {
 
-  Timer tm{};
+  Timer const tm{};
   const auto dim = triangulation->getDimensionality();
 
-  dms_.buildGradient(inputScalars, scalarsMTime, inputOffsets, *triangulation);
+  dms_.buildGradient(
+    inputScalars, scalarsMTime, inputOffsets, *triangulation, updateMask);
   std::vector<DiscreteMorseSandwich::PersistencePair> dms_pairs{};
   dms_.computePersistencePairs(
     dms_pairs, inputOffsets, *triangulation, this->IgnoreBoundary);

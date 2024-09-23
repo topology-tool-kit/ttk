@@ -55,7 +55,7 @@ idPartition ContourForests::vertex2partition(const SimplexId &v) {
 
 void ContourForests::initInterfaces() {
   // We have nbThread_ partition of the same size through all vertices
-  size_t partitionSize = scalars_->size / parallelParams_.nbPartitions;
+  const size_t partitionSize = scalars_->size / parallelParams_.nbPartitions;
 
   // ------------------
   // Seeds
@@ -343,7 +343,7 @@ void ContourForests::unifyTree(const char treetype) {
 
     for(auto &l : currentTree->treeData_.leaves) {
       Node *curNode = currentTree->getNode(l);
-      SimplexId leafVert = curNode->getVertexId();
+      const SimplexId leafVert = curNode->getVertexId();
 
       // Condition to keep
 

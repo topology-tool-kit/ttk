@@ -77,7 +77,7 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  SimplexId numberOfPixels
+  SimplexId const numberOfPixels
     = ScatterplotResolution[0] * ScatterplotResolution[1];
 #ifndef TTK_ENABLE_KAMIKAZE
   // no pixels
@@ -94,7 +94,7 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
     validPointMask[k].resize(ScatterplotResolution[1], 0);
   }
 
-  SimplexId numberOfPoints = input->GetNumberOfPoints();
+  SimplexId const numberOfPoints = input->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points
   if(numberOfPoints < 1) {
@@ -103,11 +103,11 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
-  double scalarMin[2];
-  double scalarMax[2];
+  std::array<double, 2> scalarMin{0, 0};
+  std::array<double, 2> scalarMax{0, 0};
   for(SimplexId k = 0; k < numberOfPoints; ++k) {
-    double d1 = inputScalars1->GetTuple1(k);
-    double d2 = inputScalars2->GetTuple1(k);
+    double const d1 = inputScalars1->GetTuple1(k);
+    double const d2 = inputScalars2->GetTuple1(k);
 
     if(!k or scalarMin[0] > d1)
       scalarMin[0] = d1;
@@ -194,8 +194,8 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
   for(SimplexId i = 0; i < ScatterplotResolution[0]; i++) {
     for(SimplexId j = 0; j < ScatterplotResolution[1]; j++) {
       // positions:
-      double x = imageMin[0] + i * imageDelta[0];
-      double y = imageMin[1] + j * imageDelta[1];
+      double const x = imageMin[0] + i * imageDelta[0];
+      double const y = imageMin[1] + j * imageDelta[1];
       pts->SetPoint(id, x, y, 0);
 
       // scalars:
@@ -204,8 +204,8 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
       // density
       densityScalars->SetTuple1(id, density[i][j]);
       // original scalar fields
-      double d1 = scalarMin[0] + i * delta[0];
-      double d2 = scalarMin[1] + j * delta[1];
+      double const d1 = scalarMin[0] + i * delta[0];
+      double const d2 = scalarMin[1] + j * delta[1];
       scalars1->SetTuple1(id, d1);
       scalars2->SetTuple1(id, d2);
       if(i < ScatterplotResolution[0] - 1

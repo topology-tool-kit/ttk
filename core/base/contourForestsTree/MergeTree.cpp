@@ -220,7 +220,7 @@ idSuperArc MergeTree::openSuperArc(const idNode &downNodeId,
   }
 #endif
 
-  idSuperArc newSuperArcId = treeData_.superArcs.size();
+  const idSuperArc newSuperArcId = treeData_.superArcs.size();
   treeData_.superArcs.emplace_back(downNodeId, nullNodes, overlapB, overlapA,
                                    treeData_.partition, treeData_.partition);
   treeData_.nodes[downNodeId].addUpSuperArcId(newSuperArcId);
@@ -235,7 +235,7 @@ idSuperArc MergeTree::makeSuperArc(const idNode &downNodeId,
                                    const bool overlapA,
                                    pair<SimplexId, bool> *vertexList,
                                    SimplexId vertexSize) {
-  idSuperArc newSuperArcId = treeData_.superArcs.size();
+  const idSuperArc newSuperArcId = treeData_.superArcs.size();
 
   if(downNodeId != upNodeId) {
     treeData_.superArcs.emplace_back(downNodeId, upNodeId, overlapB, overlapA,
@@ -526,7 +526,7 @@ idNode MergeTree::makeNode(const SimplexId &vertexId, const SimplexId &term) {
     return getCorrespondingNodeId(vertexId);
   }
 
-  SimplexId size_base = (SimplexId)treeData_.nodes.size();
+  const SimplexId size_base = (SimplexId)treeData_.nodes.size();
   treeData_.nodes.emplace_back(vertexId, term);
   updateCorrespondingNode(vertexId, size_base);
 
@@ -564,7 +564,7 @@ void MergeTree::delNode(
     }
 #endif
 
-    idSuperArc downArc = mainNode->getDownSuperArcId(0);
+    const idSuperArc downArc = mainNode->getDownSuperArcId(0);
     Node *downNode = getNode(treeData_.superArcs[downArc].getDownNodeId());
     downNode->removeUpSuperArc(downArc);
     mainNode->clearDownSuperArcs();
@@ -580,8 +580,8 @@ void MergeTree::delNode(
     // We delete the upArc,
     // if there is a down arc, we reattach it to the upNode
 
-    idSuperArc upArc = mainNode->getUpSuperArcId(0);
-    idNode upId = treeData_.superArcs[upArc].getUpNodeId();
+    const idSuperArc upArc = mainNode->getUpSuperArcId(0);
+    const idNode upId = treeData_.superArcs[upArc].getUpNodeId();
     Node *upNode = getNode(upId);
 
     upNode->removeDownSuperArc(upArc);
@@ -723,7 +723,7 @@ idSuperArc MergeTree::insertNode(Node *node, const bool segment) {
                           return isLower(a.first, b.first);
                         });
 
-    SimplexId newNodePos = newNodePosPtr - tmpSA->getVertList();
+    const SimplexId newNodePos = newNodePosPtr - tmpSA->getVertList();
 
     getSuperArc(newSA)->setVertList(newNodePosPtr);
     getSuperArc(newSA)->setVertSize(tmpSA->getVertSize() - newNodePos);
@@ -797,7 +797,7 @@ idSuperArc MergeTree::reverseInsertNode(Node *node, const bool segment) {
                           return isLower(a.first, b.first);
                         });
 
-    SimplexId newNodePos = newNodePosPtr - tmpSA->getVertList();
+    const SimplexId newNodePos = newNodePosPtr - tmpSA->getVertList();
 
     getSuperArc(newSA)->setVertList(tmpSA->getVertList());
     getSuperArc(newSA)->setVertSize(newNodePos);
@@ -1244,8 +1244,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
   if(upNode == downNode) {
     // several degen. nodes adjacent
     // Prefer down for JT / ST
-    idSuperArc tmpDown = newDownArc(downNode, ufArray);
-    idSuperArc tmpUp = newUpArc(upNode, ufArray);
+    const idSuperArc tmpDown = newDownArc(downNode, ufArray);
+    const idSuperArc tmpUp = newUpArc(upNode, ufArray);
 
     if(tmpDown == nullSuperArc) {
       upNode = getSuperArc(tmpUp)->getUpNodeId();

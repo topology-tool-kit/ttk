@@ -44,7 +44,7 @@ int ttkCinemaDarkroomCamera::SyncWithParaViewCamera() {
   this->printMsg(
     "Updating Camera Parameters", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
-  std::string code(R"(
+  std::string const code(R"(
 from paraview.simple import GetActiveView
 from paraview.simple import FindSource
 

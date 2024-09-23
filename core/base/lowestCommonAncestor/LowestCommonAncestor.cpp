@@ -43,9 +43,9 @@ int ttk::LowestCommonAncestor::preprocess() {
 
 int ttk::LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
   // Bloc of i
-  int blocI = i / blocSize_;
+  int const blocI = i / blocSize_;
   // Bloc of j
-  int blocJ = j / blocSize_;
+  int const blocJ = j / blocSize_;
   // If i and j are in different blocs
   if(blocI != blocJ) {
     // Positions and values of the 3 range minima to compare
@@ -79,9 +79,10 @@ int ttk::LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
 
 int ttk::LowestCommonAncestor::computeBlocs() {
   // Size and number of blocs
-  int sizeOfArray = static_cast<int>(nodeDepth_.size());
+  int const sizeOfArray = static_cast<int>(nodeDepth_.size());
   blocSize_ = static_cast<int>(log2(sizeOfArray) / 2.0);
-  int numberOfBlocs = sizeOfArray / blocSize_ + (sizeOfArray % blocSize_ != 0);
+  int const numberOfBlocs
+    = sizeOfArray / blocSize_ + (sizeOfArray % blocSize_ != 0);
   // Define the bloc ranges
   for(int i = 0; i < numberOfBlocs; i++) {
     std::pair<int, int> range;
@@ -110,7 +111,7 @@ int ttk::LowestCommonAncestor::computeBlocs() {
     }
   }
   // Allocate the query tables
-  int numberOfTables = (1 << (blocSize_ - 1));
+  int const numberOfTables = (1 << (blocSize_ - 1));
   normalizedBlocTable_.resize(numberOfTables);
   for(int i = 0; i < numberOfTables; i++) {
     normalizedBlocTable_[i].resize(blocSize_);
@@ -205,7 +206,7 @@ int ttk::LowestCommonAncestor::eulerianTransverse() {
   std::vector<bool> isVisited(getNumberOfNodes(), false);
   nodeStack.push(rootId);
   while(!nodeStack.empty()) {
-    int nodeId = nodeStack.top();
+    int const nodeId = nodeStack.top();
     nodeStack.pop();
     nodeOrder_.push_back(nodeId);
     nodeDepth_.push_back(depth);
@@ -215,7 +216,7 @@ int ttk::LowestCommonAncestor::eulerianTransverse() {
         nodeStack.push(node_[nodeId].getAncestorId());
       }
       // Add successors
-      int numberOfSuccessors = node_[nodeId].getNumberOfSuccessors();
+      int const numberOfSuccessors = node_[nodeId].getNumberOfSuccessors();
       for(int i = 0; i < numberOfSuccessors; i++) {
         nodeStack.push(node_[nodeId].getSuccessorId(i));
       }

@@ -22,7 +22,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
 ///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
 ///   Digits 64-Dimensions example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
@@ -31,16 +31,29 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/">Persistent
 ///   Generators Household Analysis example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
 ///   Generators Periodic Picture example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
+///   Teaser example</a> \n
 ///
+
+/// \b Related \b publication: \n
+/// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
+/// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
+/// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
+/// Visualization and Computer Graphics 27(2): 561-571, 2020.
 
 #pragma once
 
 #include <Debug.h>
+#include <TopoMap.h>
 
 namespace ttk {
 
@@ -63,6 +76,8 @@ namespace ttk {
       ISOMAP = 4,
       /** Principal Component Analysis */
       PCA = 5,
+      /** TopoMap */
+      TOPOMAP = 6,
     };
 
     inline void setSEParameters(const std::string &Affinity,
@@ -161,6 +176,10 @@ namespace ttk {
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
     }
+    inline void setTopoParameters(const size_t AngularSampleNb, bool CheckMST) {
+      topomap_AngularSampleNb = AngularSampleNb;
+      topomap_CheckMST = CheckMST;
+    }
 
     inline void setInputModulePath(const std::string &modulePath) {
       ModulePath = modulePath;
@@ -175,7 +194,42 @@ namespace ttk {
     }
 
     inline void setInputMethod(METHOD method) {
+
       this->Method = method;
+
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+      if(this->Method != METHOD::TOPOMAP) {
+        this->printWrn("TTK has been built without scikit-learn.");
+        this->printWrn("Defaulting to the `TopoMap` backend.");
+        this->Method = METHOD::TOPOMAP;
+      }
+#endif
+
+      std::string methodName;
+      switch(this->Method) {
+        case METHOD::SE:
+          methodName = "Spectral Embedding";
+          break;
+        case METHOD::LLE:
+          methodName = "Locally Linear Embedding";
+          break;
+        case METHOD::MDS:
+          methodName = "Multi-Dimensional Scaling";
+          break;
+        case METHOD::T_SNE:
+          methodName = "t-distributed Stochastic Neighbor Embedding";
+          break;
+        case METHOD::ISOMAP:
+          methodName = "Isomap Embedding";
+          break;
+        case METHOD::PCA:
+          methodName = "Principal Component Analysis";
+          break;
+        case METHOD::TOPOMAP:
+          methodName = "TopoMap (IEEE VIS 2020)";
+          break;
+      }
+      this->printMsg("Using backend `" + methodName + "`");
     }
 
     inline void setInputNumberOfComponents(const int numberOfComponents) {
@@ -191,6 +245,7 @@ namespace ttk {
     }
 
     inline void setIsInputDistanceMatrix(const bool data) {
+      this->IsInputADistanceMatrix = data;
       if(data) {
         this->se_Affinity = "precomputed";
         this->mds_Dissimilarity = "precomputed";
@@ -204,18 +259,17 @@ namespace ttk {
       }
     }
 
-    bool isPythonFound() const;
-
     int execute(std::vector<std::vector<double>> &outputEmbedding,
                 const std::vector<double> &inputMatrix,
                 const int nRows,
-                const int nColumns) const;
+                const int nColumns,
+                int *insertionTimeForTopoMap = nullptr) const;
 
   protected:
     // se
     std::string se_Affinity{"nearest_neighbors"};
     float se_Gamma{1};
-    std::string se_EigenSolver{"auto"};
+    std::string se_EigenSolver{"None"};
 
     // lle
     float lle_Regularization{1e-3};
@@ -263,15 +317,22 @@ namespace ttk {
     float pca_Tolerance{0};
     std::string pca_MaxIteration{"auto"};
 
+    // TopoMap
+    size_t topomap_AngularSampleNb;
+    bool topomap_CheckMST;
+    TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
+
     // testing
     std::string ModulePath{"default"};
     std::string ModuleName{"dimensionReduction"};
     std::string FunctionName{"doIt"};
 
-    METHOD Method{METHOD::MDS};
+    METHOD Method;
+
     int NumberOfComponents{2};
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
     char majorVersion_{'0'};
+    bool IsInputADistanceMatrix{false};
   };
 } // namespace ttk
