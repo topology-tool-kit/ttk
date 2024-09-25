@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
 ### dev
+
+### 1.3.0
 - Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)
 - Topological simplification optimization (IEEE VIS 2024)
 - TopoMap dimensionality reduction (IEEE TVCG 2020)
@@ -10,7 +12,9 @@
 - DMS performance improvements (allocation)
 - Saddle connector reversal performance improvements
 - Signed distance fields
+- Array preconditioning improvements (fast MPI implementation)
 - Migration to ParaView 5.12, 5.13
+- CI extensions (sccache, ubuntu-24.04, macos-14)
 - Switch to C++17
 - Bug fixes
 
