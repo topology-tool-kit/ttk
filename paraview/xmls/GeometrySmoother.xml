@@ -34,7 +34,11 @@
 
         - https://topology-tool-kit.github.io/examples/morseMolecule/
 
+        - https://topology-tool-kit.github.io/examples/mpiExample/
+
         - https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/
+
+        https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/
 
       </Documentation>
       <InputProperty

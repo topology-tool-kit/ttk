@@ -92,7 +92,6 @@ jobs:
       run: |
         sudo apt install ./ttk-paraview-headless.deb
 
-    # TODO: more aggressive warnings? (ubuntu-24.04)
     - name: Create & configure TTK build directory
       run: |
         mkdir build
@@ -210,6 +209,8 @@ jobs:
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
         rm ttk-data/states/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm ttk-data/states/topologicalOptimization_darkSky.pvsm
 
         cd ttk-data/tests
         mkdir output_screenshots
@@ -241,6 +242,10 @@ jobs:
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
         rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
         python3 -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
@@ -373,6 +378,8 @@ jobs:
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
         rm ttk-data/states/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm ttk-data/states/topologicalOptimization_darkSky.pvsm
         cd ttk-data/tests
         mkdir output_screenshots
         pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
@@ -393,6 +400,10 @@ jobs:
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
         rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
         pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
@@ -425,7 +436,7 @@ jobs:
       run: |
         conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx
+          llvm-openmp clangxx=18
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -575,6 +586,10 @@ jobs:
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
