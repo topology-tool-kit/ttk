@@ -376,7 +376,7 @@ jobs:
         conda install -c conda-forge "qt>=5.12" \
           libboost-devel glew eigen spectralib zfp \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx
+          llvm-openmp clangxx=18
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -480,7 +480,7 @@ jobs:
         conda install -c conda-forge "qt>=5.12" \
           libboost-devel glew eigen spectralib zfp \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx
+          llvm-openmp clangxx=18
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
