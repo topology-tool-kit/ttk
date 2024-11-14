@@ -10,6 +10,7 @@
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -537,5 +538,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
       pointData->AddArray(morseSmaleManifold);
   }
 
+  for (int i = 0; i < outputVector->GetNumberOfInformationObjects(); ++i) {
+        vtkInformation* info = outputVector->GetInformationObject(i);
+        info->Print(std::cout);  
+        }
   return !ret;
 }
