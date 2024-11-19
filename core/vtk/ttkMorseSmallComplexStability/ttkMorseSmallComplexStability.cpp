@@ -4,7 +4,6 @@
 #include <vtkInformationVector.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkMultiBlockDataSet.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -31,157 +30,91 @@ vtkStandardNewMacro(ttkMorseSmallComplexStability);
  */
 ttkMorseSmallComplexStability::ttkMorseSmallComplexStability() {
   this->SetNumberOfInputPorts(1);
-  this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfOutputPorts(2);
 }
 
-/**
- * TODO 8: Specify the required input data type of each input port
- *
- * This method specifies the required input object data types of the
- * filter by adding the vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE() key to
- * the port information.
- */
+
 int ttkMorseSmallComplexStability::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
     return 1;
   }
   return 0;
 }
 
-/**
- * TODO 9: Specify the data object type of each output port
- *
- * This method specifies in the port information object the data type of the
- * corresponding output objects. It is possible to either explicitly
- * specify a type by adding a vtkDataObject::DATA_TYPE_NAME() key:
- *
- *      info->Set( vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid" );
- *
- * or to pass a type of an input port to an output port by adding the
- * ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT() key (see below).
- *
- * Note: prior to the execution of the RequestData method the pipeline will
- * initialize empty output data objects based on this information.
- */
 int ttkMorseSmallComplexStability::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
     return 1;
   }
+	if(port == 1){
+		info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+	}	
   return 0;
 }
 
-/**
- * TODO 10: Pass VTK data to the base code and convert base code output to VTK
- *
- * This method is called during the pipeline execution to update the
- * already initialized output data objects based on the given input
- * data objects and filter parameters.
- *
- * Note:
- *     1) The passed input data objects are validated based on the information
- *        provided by the FillInputPortInformation method.
- *     2) The output objects are already initialized based on the information
- *        provided by the FillOutputPortInformation method.
- */
+
+int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_Separatrices,
+                                            vtkUnstructuredGrid* &minimalGraph,
+                                            std::vector<vtkSmartPointer<vtkIntArray>> &edgesOccurences){
+    //Build graph from separatrices
+    //--> output : vector<vector<int>> vertexLocalToGlobal, 
+    //              vector<vector<std::pair<int , int>>> edges, (id de chaque edge = separatrixId)
+    //              vector<vector<int>> mapLocalToGlobal
+    //Build equivalent classes with assignement : 
+    //--> output : vector<vector<int>> classIdToVertexId
+    //Build N adjacency matrices from the other vectors
+    // --> output : for n < N vector<vector<int>> matrix_n for (int i = 0 ; i < edges_n.size(); i++); 
+    //                                                          matrix_n[classIdToVertexId[edges_n[i]].first][classIdToVertxId[edges_[i].second]]=1
+    //Build 1 occurence matrix 
+    // --> somme des adjacency matrices : std::vector<std::vector<int>> ocurrenceMatrix
+    //Build for n < N std::vector<int> occurenceCount_n
+    // --> output : occurenceCount_n[i]=occurenceMatrix[classIdToVertexId[edges_n[i]].first][classIdToVertxId[edges_[i].second]]
+    //Build partial isomorphic graphs : 
+    // --> for index i_1, ... i_k, build graph from the adjacency matrix matrix_i_1 && ... && matrix_i_k 
+    // --> vertices are barycenters of each equivalent class of vertices
+    return 1;
+                                            }
+
+
 int ttkMorseSmallComplexStability::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
 
-  
-  // Loop through all vtkInformation objects in the vtkInformationVector
-  for (int i = 0; i < (*inputVector)->GetNumberOfInformationObjects(); ++i)
+    for (int i = 0; i < (*inputVector)->GetNumberOfInformationObjects(); ++i)
   {
-      // Get the vtkInformation object at the current index
       vtkInformation* info = (*inputVector)->GetInformationObject(i);
-      // Print all key-value pairs in the vtkInformation object
       info->Print(cout);
   }
+  
+  auto minimalGraph = vtkUnstructuredGrid::GetData(outputVector, 1);
 
-  // Get input data (pointer to vtkDataObject, parent block id)
-  //std::vector<std::pair<vtkDataObject *, size_t>> blocks{};
-//
- 
-  // Get input object from input vector
-  // Note: has to be a vtkDataSet as required by FillInputPortInformation
-  vtkMultiBlockDataSet* multiBlockInput = vtkMultiBlockDataSet::SafeDownCast(input);
-  if(multiBlockInput == nullptr){
-    this->printErr("Only one dataset");
+  vtkMultiBlockDataSet *input1_Separatrices= vtkMultiBlockDataSet::GetData(inputVector[0]);
+
+  int n_blocks = input1_Separatrices->GetNumberOfBlocks();
+  std::vector<vtkSmartPointer<vtkIntArray>> edgesOccurences(n_blocks);
+
+  if(input1_Separatrices == nullptr){
+    this->printErr("No edges to perform calculation.");
     return -1;
   }
 
-  int n_blocks = multiBlockInput->GetNumberOfBlocks();
+  int status = 0; 
+  status = this->execute(input1_Separatrices,
+                          minimalGraph,
+                          edgesOccurences);
 
-  std::vector<vtkDataSet*> inputs;
-  for (int i = 0; i < n_blocks ; i++){
-    vtkDataSet* newInput = multiBlockInput.GetBlock(i);
-    inputs.push_back(newInput);
-  } 
-
-  
-  vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
-  if(!inputArray) {
-    this->printErr("Unable to retrieve input array.");
-    return 0;
-  }
-
-  // To make sure that the selected array can be processed by this filter,
-  // one should also check that the array association and format is correct.
-  if(this->GetInputArrayAssociation(0, inputVector) != 0) {
-    this->printErr("Input array needs to be a point data array.");
-    return 0;
-  }
-  if(inputArray->GetNumberOfComponents() != 1) {
-    this->printErr("Input array needs to be a scalar array.");
-    return 0;
-  }
-
-  // If all checks pass then log which array is going to be processed.
-  this->printMsg("Starting computation...");
-  this->printMsg("  Scalar Array: " + std::string(inputArray->GetName()));
-
-  // Create an output array that has the same data type as the input array
-  // Note: vtkSmartPointers are well documented
-  //       (https://vtk.org/Wiki/VTK/Tutorials/SmartPointers)
-  vtkSmartPointer<vtkDataArray> const outputArray
-    = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
-  outputArray->SetName(this->OutputArrayName.data()); // set array name
-  outputArray->SetNumberOfComponents(1); // only one component per tuple
-  outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
-
-  // Get ttk::triangulation of the input vtkDataSet (will create one if one does
-  // not exist already).
-  ttk::Triangulation *triangulation
-    = ttkAlgorithm::GetTriangulation(inputDataSet);
-  if(!triangulation)
-    return 0;
-
-  // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
-  this->preconditionTriangulation(triangulation); // implemented in base class
-
-  // Templatize over the different input array data types and call the base code
-  int status = 0; // this integer checks if the base code returns an error
-  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
-                      (status = this->computeAverages<VTK_TT, TTK_TT>(
-                         (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
-                         (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
-                         (TTK_TT *)triangulation->getData())));
-
-  // On error cancel filter execution
   if(status != 1)
     return 0;
 
-  // Get output vtkDataSet (which was already instantiated based on the
-  // information provided by FillOutputPortInformation)
-  vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 0);
+  vtkMultiBlockDataSet *output1_Separatrices = vtkMultiBlockDataSet::GetData(outputVector, 0);
 
-  // make a SHALLOW copy of the input
-  outputDataSet->ShallowCopy(inputDataSet);
+  output1_Separatrices->ShallowCopy(input1_Separatrices);
 
-  // add to the output point data the computed output array
-  outputDataSet->GetPointData()->AddArray(outputArray);
+  for (size_t i = 0 ; i < output1_Separatrices->GetNumberOfBlocks(); i++){
+    ((vtkDataSet*)(output1_Separatrices->GetBlock(i)))->GetPointData()->AddArray(edgesOccurences[i]);
+  }
 
-  // return success
   return 1;
 }

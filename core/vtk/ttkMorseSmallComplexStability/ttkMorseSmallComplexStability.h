@@ -13,30 +13,14 @@
 /// the data values of an input point data array defined on the input
 /// vtkDataSet.
 ///
-/// \param Input vtkDataSet.
-/// \param Output vtkDataSet.
-///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
-///
-/// The input data array needs to be specified via the standard VTK call
-/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
-/// \param idx 0 (FIXED: the first array the algorithm requires)
-/// \param port 0 (FIXED: first port)
-/// \param connection 0 (FIXED: first connection)
-/// \param fieldAssociation 0 (FIXED: point data)
-/// \param arrayName (DYNAMIC: string identifier of the input array)
-///
-/// See the corresponding standalone program for a usage example:
-///   - standalone/MorseSmallComplexStability/main.cpp
-///
-/// See the related ParaView example state files for usage examples within a
-/// VTK pipeline.
-///
 /// \sa ttk::MorseSmallComplexStability
 /// \sa ttkAlgorithm
 
 #pragma once
+
+
+#include<vtkMultiBlockDataSet.h>
+#include<vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkMorseSmallComplexStabilityModule.h>
@@ -70,8 +54,7 @@
 #include <MorseSmallComplexStability.h>
 
 class TTKMORSESMALLCOMPLEXSTABILITY_EXPORT ttkMorseSmallComplexStability
-  : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
-  ,
+  : public ttkAlgorithm, 
     protected ttk::MorseSmallComplexStability // and we inherit from the base class
 {
 private:
@@ -104,23 +87,14 @@ protected:
   ttkMorseSmallComplexStability();
   ~ttkMorseSmallComplexStability() override = default;
 
-  /**
-   * TODO 8: Specify the input data type of each input port
-   *         (see cpp file)
-   */
   int FillInputPortInformation(int port, vtkInformation *info) override;
-
-  /**
-   * TODO 9: Specify the data object type of each output port
-   *         (see cpp file)
-   */
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  /**
-   * TODO 10: Pass VTK data to the base code and convert base code output to VTK
-   *          (see cpp file)
-   */
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+
+  int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices,
+              vtkUnstructuredGrid* &minimalGraph,
+              std::vector<vtkSmartPointer<vtkIntArray>> &edgesOccurences);
 };
