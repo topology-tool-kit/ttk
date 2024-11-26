@@ -7,6 +7,7 @@
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkDataObjectTypes.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -94,6 +95,13 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
+  int type = input->GetDataObjectType();
+  const char* typeName = vtkDataObjectTypes::GetClassNameFromTypeId(type);
+  std::cout<<"type of input in requestdata  = "<<typeName<<std::endl;
+
+
+  std::cout<<"normalizer 1"<<std::endl;
+
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
 
@@ -115,6 +123,8 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   // prepare the output
   output->ShallowCopy(input);
   output->GetPointData()->AddArray(outputArray);
+
+  std::cout<<"normalizer 2"<<std::endl;
 
   return 1;
 }

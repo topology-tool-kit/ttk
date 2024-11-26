@@ -16,6 +16,10 @@
 #include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkDataObjectTypes.h>
+#include <vtkImageData.h>
+#include <vtkAbstractArray.h>
+
 
 vtkStandardNewMacro(ttkMorseSmaleComplex);
 
@@ -41,6 +45,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
     return 1;
   } else if(port == 3) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    //info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
     return 1;
   }
   return 0;
@@ -48,10 +53,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
 
 template <typename vtkArrayType, typename vectorType>
 void setArray(vtkArrayType &vtkArray, vectorType &vector) {
-  vtkArray->SetNumberOfTuples(vector.size());
-  for(unsigned int i = 0; i < vector.size(); i++) {
-    vtkArray->SetValue(i, vector[i]);
-  }
+  ttkUtils::SetVoidArray(vtkArray, vector.data(), vector.size(), vtkAbstractArray::DeleteMethod::VTK_DATA_ARRAY_FREE);
 }
 
 template <typename scalarType, typename triangulationType>
@@ -62,14 +64,18 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
                                    const SimplexId *const inputOffsets,
                                    const triangulationType &triangulation) {
 
+  std::cout<<"balise 3.0"<<std::endl<<std::endl;
+
   const int dimensionality = triangulation.getDimensionality();
   const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
 
-  OutputCriticalPoints criticalPoints_{};
-  Output1Separatrices separatrices1_{};
-  Output2Separatrices separatrices2_{};
+
+  OutputCriticalPoints* criticalPoints_perso = new OutputCriticalPoints();
+  Output1Separatrices* separatrices1_perso = new Output1Separatrices();
+  Output2Separatrices* separatrices2_perso = new Output2Separatrices();
+
   const int ret = this->execute(
-    criticalPoints_, separatrices1_, separatrices2_, segmentations_, scalars,
+    *criticalPoints_perso, *separatrices1_perso, *separatrices2_perso, segmentations_, scalars,
     inputScalars->GetMTime(), inputOffsets, triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -78,6 +84,11 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     return -1;
   }
 #endif
+
+  int type = outputCriticalPoints->GetDataObjectType();
+  const char* typeName = vtkDataObjectTypes::GetClassNameFromTypeId(type);
+
+  std::cout<<"type of output critical point = "<<typeName<<std::endl;
 
   // critical points
   {
@@ -89,7 +100,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     vtkNew<vtkSignedCharArray> isOnBoundary{};
     vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
     vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};
-    const auto nPoints = criticalPoints_.points_.size();
+    const auto nPoints = criticalPoints_perso->points_.size();
 
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!points || !cellDimensions || !cellIds || !cellScalars || !isOnBoundary
@@ -101,13 +112,28 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 
     points->SetNumberOfPoints(nPoints);
 
+    std::cout<<"nombre de points critique = "<<nPoints<<std::endl;
+
+    std::cout<<"nombre de cell ids = "<<criticalPoints_perso->cellIds_.size()<<std::endl;
+
+    for (int i = 0 ; i < criticalPoints_perso->cellIds_.size(); i++){
+      std::cout<<criticalPoints_perso->cellIds_[i]<<",  ";
+    }
+    std::cout<<std::endl;
+
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName(ttk::MorseSmaleCellDimensionName);
-    setArray(cellDimensions, criticalPoints_.cellDimensions_);
+    setArray(cellDimensions, criticalPoints_perso->cellDimensions_);
 
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName(ttk::MorseSmaleCellIdName);
-    setArray(cellIds, criticalPoints_.cellIds_);
+    setArray(cellIds, criticalPoints_perso->cellIds_);
+
+    std::cout<<"vtkDataArry cell ids  :"<<std::endl;
+    for (int i = 0 ; i < cellIds->GetNumberOfTuples(); i++){
+      std::cout<<cellIds->GetValue(i)<<"  ";
+    }
+    std::cout<<std::endl;
 
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(inputScalars->GetName());
@@ -116,27 +142,27 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t i = 0; i < nPoints; ++i) {
-      points->SetPoint(i, criticalPoints_.points_[i].data());
+      points->SetPoint(i, criticalPoints_perso->points_[i].data());
       cellScalars->SetTuple1(
-        i, scalars[criticalPoints_.PLVertexIdentifiers_[i]]);
+        i, scalars[criticalPoints_perso->PLVertexIdentifiers_[i]]);
     }
 
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName(ttk::MorseSmaleBoundaryName);
-    setArray(isOnBoundary, criticalPoints_.isOnBoundary_);
+    setArray(isOnBoundary, criticalPoints_perso->isOnBoundary_);
 
     PLVertexIdentifiers->SetNumberOfComponents(1);
     PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-    setArray(PLVertexIdentifiers, criticalPoints_.PLVertexIdentifiers_);
+    setArray(PLVertexIdentifiers, criticalPoints_perso->PLVertexIdentifiers_);
 
     manifoldSizeScalars->SetNumberOfComponents(1);
     manifoldSizeScalars->SetName(ttk::MorseSmaleManifoldSizeName);
     if(!ComputeAscendingSegmentation or !ComputeDescendingSegmentation) {
-      criticalPoints_.manifoldSize_.resize(nPoints);
-      std::fill(criticalPoints_.manifoldSize_.begin(),
-                criticalPoints_.manifoldSize_.end(), -1);
+      criticalPoints_perso->manifoldSize_.resize(nPoints);
+      std::fill(criticalPoints_perso->manifoldSize_.begin(),
+                criticalPoints_perso->manifoldSize_.end(), -1);
     }
-    setArray(manifoldSizeScalars, criticalPoints_.manifoldSize_);
+    setArray(manifoldSizeScalars, criticalPoints_perso->manifoldSize_);
 
     ttkUtils::CellVertexFromPoints(outputCriticalPoints, points);
 
@@ -154,10 +180,24 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     pointData->AddArray(isOnBoundary);
     pointData->AddArray(PLVertexIdentifiers);
     pointData->AddArray(manifoldSizeScalars);
+
+    std::cout<<"final array name = "<<ttk::MorseSmaleCellIdName<<std::endl;
+    vtkIntArray* retrievedArray = vtkIntArray::SafeDownCast(pointData->GetArray(ttk::MorseSmaleCellIdName));
+
+    std::cout<<"vtkArray from pointData : "<<std::endl;
+    if(retrievedArray!=nullptr){
+      std::cout<<"size of retrieved array = "<<retrievedArray->GetNumberOfTuples()<<std::endl;
+      for (int i = 0 ; i < retrievedArray->GetNumberOfTuples(); i++){
+        std::cout<<retrievedArray->GetValue(i)<<",  ";
+      }
+      std::cout<<std::endl;
+    }
   }
   // 1-separatrices
   if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1
      or ComputeSaddleConnectors) {
+
+    std::cout<<"balise 3.1"<<std::endl;
 
     vtkNew<vtkFloatArray> pointsCoords{};
     vtkNew<vtkSignedCharArray> smoothingMask{};
@@ -182,65 +222,64 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     }
 #endif
 
+    std::cout<<"balise 3.2"<<std::endl;
+
     pointsCoords->SetNumberOfComponents(3);
-    pointsCoords->SetNumberOfTuples(separatrices1_.pt.numberOfPoints_);
-    for(int i = 0; i < separatrices1_.pt.numberOfPoints_; i++) {
-      pointsCoords->SetTuple3(i, separatrices1_.pt.points_[3 * i],
-                              separatrices1_.pt.points_[3 * i + 1],
-                              separatrices1_.pt.points_[3 * i + 2]);
-    }
+    setArray(pointsCoords, separatrices1_perso->pt.points_);
 
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
-    setArray(smoothingMask, separatrices1_.pt.smoothingMask_);
+    setArray(smoothingMask, separatrices1_perso->pt.smoothingMask_);
 
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName(ttk::MorseSmaleCellDimensionName);
-    setArray(cellDimensions, separatrices1_.pt.cellDimensions_);
+    setArray(cellDimensions, separatrices1_perso->pt.cellDimensions_);
 
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName(ttk::MorseSmaleCellIdName);
-    setArray(cellIds, separatrices1_.pt.cellIds_);
+    setArray(cellIds, separatrices1_perso->pt.cellIds_);
 
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName(ttk::MorseSmaleSourceIdName);
-    setArray(sourceIds, separatrices1_.cl.sourceIds_);
+    setArray(sourceIds, separatrices1_perso->cl.sourceIds_);
 
     destinationIds->SetNumberOfComponents(1);
     destinationIds->SetName(ttk::MorseSmaleDestinationIdName);
-    setArray(destinationIds, separatrices1_.cl.destinationIds_);
+    setArray(destinationIds, separatrices1_perso->cl.destinationIds_);
 
     separatrixIds->SetNumberOfComponents(1);
     separatrixIds->SetName(ttk::MorseSmaleSeparatrixIdName);
-    setArray(separatrixIds, separatrices1_.cl.separatrixIds_);
+    setArray(separatrixIds, separatrices1_perso->cl.separatrixIds_);
 
     separatrixTypes->SetNumberOfComponents(1);
     separatrixTypes->SetName(ttk::MorseSmaleSeparatrixTypeName);
-    setArray(separatrixTypes, separatrices1_.cl.separatrixTypes_);
+    setArray(separatrixTypes, separatrices1_perso->cl.separatrixTypes_);
 
     separatrixFunctionMaxima->SetNumberOfComponents(1);
     separatrixFunctionMaxima->SetName(ttk::MorseSmaleSeparatrixMaximumName);
     separatrixFunctionMaxima->SetNumberOfTuples(
-      separatrices1_.cl.numberOfCells_);
+      separatrices1_perso->cl.numberOfCells_);
 
     separatrixFunctionMinima->SetNumberOfComponents(1);
     separatrixFunctionMinima->SetName(ttk::MorseSmaleSeparatrixMinimumName);
     separatrixFunctionMinima->SetNumberOfTuples(
-      separatrices1_.cl.numberOfCells_);
+      separatrices1_perso->cl.numberOfCells_);
 
     separatrixFunctionDiffs->SetNumberOfComponents(1);
     separatrixFunctionDiffs->SetName(ttk::MorseSmaleSeparatrixDifferenceName);
     separatrixFunctionDiffs->SetNumberOfTuples(
-      separatrices1_.cl.numberOfCells_);
+      separatrices1_perso->cl.numberOfCells_);
+
+    std::cout<<"balise 3.3"<<std::endl;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices1_.cl.numberOfCells_; ++i) {
-      const auto sepId = separatrices1_.cl.separatrixIds_[i];
+    for(SimplexId i = 0; i < separatrices1_perso->cl.numberOfCells_; ++i) {
+      const auto sepId = separatrices1_perso->cl.separatrixIds_[i];
       // inputScalars->GetTuple1 not thread safe...
-      const auto min = scalars[separatrices1_.cl.sepFuncMinId_[sepId]];
-      const auto max = scalars[separatrices1_.cl.sepFuncMaxId_[sepId]];
+      const auto min = scalars[separatrices1_perso->cl.sepFuncMinId_[sepId]];
+      const auto max = scalars[separatrices1_perso->cl.sepFuncMaxId_[sepId]];
       separatrixFunctionMinima->SetTuple1(i, min);
       separatrixFunctionMaxima->SetTuple1(i, max);
       separatrixFunctionDiffs->SetTuple1(i, max - min);
@@ -248,20 +287,26 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName(ttk::MorseSmaleCriticalPointsOnBoundaryName);
-    setArray(isOnBoundary, separatrices1_.cl.isOnBoundary_);
+    setArray(isOnBoundary, separatrices1_perso->cl.isOnBoundary_);
 
     vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(separatrices1_.cl.numberOfCells_ + 1);
+    offsets->SetNumberOfTuples(separatrices1_perso->cl.numberOfCells_ + 1);
     connectivity->SetNumberOfComponents(1);
-    setArray(connectivity, separatrices1_.cl.connectivity_);
+    setArray(connectivity, separatrices1_perso->cl.connectivity_);
+
+std::cout<<"balise 3.4"<<std::endl;
+
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices1_.cl.numberOfCells_ + 1; ++i) {
+    for(SimplexId i = 0; i < separatrices1_perso->cl.numberOfCells_ + 1; ++i) {
       offsets->SetTuple1(i, 2 * i);
     }
+
+    std::cout<<"balise 3.5"<<std::endl;
+
 
     vtkNew<vtkPoints> points{};
     points->SetData(pointsCoords);
@@ -283,6 +328,9 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     }
 #endif
 
+    std::cout<<"balise 3.6"<<std::endl;
+
+
     pointData->AddArray(smoothingMask);
     pointData->AddArray(cellDimensions);
     pointData->AddArray(cellIds);
@@ -295,9 +343,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     cellData->AddArray(separatrixFunctionMinima);
     cellData->AddArray(separatrixFunctionDiffs);
     cellData->AddArray(isOnBoundary);
+    
+    std::cout<<"balise 3.7"<<std::endl;
+
   }
 
-  // 2-separatrices
+// 2-separatrices
   if(dimensionality == 3
      and (ComputeAscendingSeparatrices2 or ComputeDescendingSeparatrices2)) {
 
@@ -403,18 +454,24 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     cellData->AddArray(separatrixFunctionDiffs);
     cellData->AddArray(isOnBoundary);
   }
-  return ret;
+   return ret;
 }
 
 int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  const auto input = vtkDataSet::GetData(inputVector[0]);
+  const auto input = vtkImageData::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
   auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
   auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
   auto outputMorseComplexes = vtkDataSet::GetData(outputVector, 3);
+
+  int type = input->GetDataObjectType();
+  const char* typeName = vtkDataObjectTypes::GetClassNameFromTypeId(type);
+  std::cout<<"type of input in requestdata  = "<<typeName<<std::endl;
+
+  std::cout<<"balise 1"<<std::endl;
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -485,6 +542,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   }
 #endif
 
+  std::cout<<"balise 2"<<std::endl;
+
   ascendingManifold->SetNumberOfComponents(1);
   ascendingManifold->SetNumberOfTuples(numberOfVertices);
   ascendingManifold->SetName(ttk::MorseSmaleAscendingName);
@@ -507,6 +566,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
 
   int ret{};
 
+  std::cout<<"balise 3"<<std::endl;
+
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
     (ret = dispatch<VTK_TT, TTK_TT>(
@@ -517,6 +578,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   if(ret != 0) {
     return -1;
   }
+
+  std::cout<<"balise 4"<<std::endl;
+
 
   outputMorseComplexes->ShallowCopy(input);
   // morse complexes
@@ -529,6 +593,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
     }
 #endif
 
+  std::cout<<"balise 5"<<std::endl;
+
+
     if(ComputeDescendingSegmentation)
       pointData->AddArray(descendingManifold);
     if(ComputeAscendingSegmentation)
@@ -538,9 +605,5 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
       pointData->AddArray(morseSmaleManifold);
   }
 
-  for (int i = 0; i < outputVector->GetNumberOfInformationObjects(); ++i) {
-        vtkInformation* info = outputVector->GetInformationObject(i);
-        info->Print(std::cout);  
-        }
   return !ret;
 }
