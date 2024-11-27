@@ -53,7 +53,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
 template <typename vtkArrayType, typename vectorType>
 void setArray(vtkArrayType &vtkArray, vectorType &vector) {
   vtkArray->SetNumberOfTuples(vector.size());
-  for (int i = 0 ; i < vector.size(); i++){
+  for (unsigned int i = 0 ; i < vector.size(); i++){
     vtkArray->SetValue(i, vector[i]);
   }
 }
@@ -188,7 +188,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices1_.pt.points_);
+    pointsCoords->SetNumberOfTuples(separatrices1_.pt.numberOfPoints_);
+    for (int i = 0 ; i < separatrices1_.pt.numberOfPoints_; i++){
+      pointsCoords->SetTuple3(i, separatrices1_.pt.points_[3*i], 
+                              separatrices1_.pt.points_[3*i+1], 
+                              separatrices1_.pt.points_[3*i+2]);
+    }
 
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
@@ -321,7 +326,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices2_.pt.points_);
+    pointsCoords->SetNumberOfTuples(separatrices2_.pt.points_.size());
+    for (int i = 0 ; i < separatrices2_.pt.points_.size(); i++){
+      pointsCoords->SetTuple3(i, separatrices2_.pt.points_[0], 
+                              separatrices2_.pt.points_[1], 
+                              separatrices2_.pt.points_[2]);
+    }
 
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName(ttk::MorseSmaleSourceIdName);
