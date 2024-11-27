@@ -94,14 +94,7 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
-
-  int type = input->GetDataObjectType();
-  const char* typeName = vtkDataObjectTypes::GetClassNameFromTypeId(type);
-  std::cout<<"type of input in requestdata  = "<<typeName<<std::endl;
-
-
-  std::cout<<"normalizer 1"<<std::endl;
-
+  
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
 
