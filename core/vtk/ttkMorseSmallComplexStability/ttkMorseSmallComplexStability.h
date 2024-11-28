@@ -90,6 +90,8 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
+
+
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
@@ -97,4 +99,8 @@ protected:
   int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices,
               vtkUnstructuredGrid* &minimalGraph,
               std::vector<vtkSmartPointer<vtkIntArray>> &edgesOccurences);
+
+  int graphFromSeparatrices(vtkDataSet* block, 
+                            std::vector<int> &localToGlobal, 
+                            std::vector<std::pair<int, int>> &edges){
 };

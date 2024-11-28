@@ -12,6 +12,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <vector>
+#include <utility>
+
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
 vtkStandardNewMacro(ttkMorseSmallComplexStability);
@@ -54,23 +57,79 @@ int ttkMorseSmallComplexStability::FillOutputPortInformation(int port, vtkInform
   return 0;
 }
 
+int ttkMorseSmallComplexStability::graphFromSeparatrices(vtkDataSet* block, 
+                                                          std::vector<int> &localToGlobal, 
+                                                          std::vector<std::pair<int, int>> &edges){
+
+}
 
 int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_Separatrices,
                                             vtkUnstructuredGrid* &minimalGraph,
                                             std::vector<vtkSmartPointer<vtkIntArray>> &edgesOccurences){
+    
+
+    int n_blocks = multiBlock1_Separatrices->GetNumberOfBlocks();
+    std::vector<std::vector<int>> localToGlobal(n_blocks);
+    std::vector<std::vector<std::pair<int, int>>> edges(n_blocks);
+    std::vector<std::vector<std::array<double, 3>>> coords(n_blocks);
+    std::vector<std::vector<float>> sfValues(n_blocks);
+
     //Build graph from separatrices
     //--> output : vector<vector<int>> vertexLocalToGlobal, 
     //              vector<vector<std::pair<int , int>>> edges, (id de chaque edge = separatrixId)
-    //              vector<vector<int>> mapLocalToGlobal
+
+    //Build coords vector of vertex and scalar values of vertex
+    // --> output : std::vector<std::vector<std::array<double, 3>>> coordinates
+    //              std::vector<std::vector<float>> sfValues;
+    
+    for (int i = 0 ; i < n_blocks ; i++){
+      vtkDataSet* block = vtkDataSet::SafeDownCast(multiBlock1_Separatrices->GetBlock(i));
+      ttkMorseSmallComplexStability::prepareData(block, localToGlobal[i], edges[i], coords[i], sfValues[i]);
+    }
+
     //Build equivalent classes with assignement : 
     //--> output : vector<vector<int>> classIdToVertexId
+
+    std::vector<std::vector<int>> classIdToVertexId(n_blocks);
+    this->buildVertexEquivalenceClasses(coords, sfValues, classIdToVertexId);
+   
     //Build N adjacency matrices from the other vectors
     // --> output : for n < N vector<vector<int>> matrix_n for (int i = 0 ; i < edges_n.size(); i++); 
     //                                                          matrix_n[classIdToVertexId[edges_n[i]].first][classIdToVertxId[edges_[i].second]]=1
+
+    using GraphMatrix = std::vector<std::vector<int>>; 
+    std::vector<GraphMatrix> adjacencyMatrices(n_blocks);
+    this->buildAdjacencyMatrices(adjacencyMatrices, classToVertexId);
+
     //Build 1 occurence matrix 
     // --> somme des adjacency matrices : std::vector<std::vector<int>> ocurrenceMatrix
+
+    GraphMatrix occurenceMatrix;
+    this->buildOccurenceMatrix(adjacencyMatrices, occurenceMatrix);
+
     //Build for n < N std::vector<int> occurenceCount_n
     // --> output : occurenceCount_n[i]=occurenceMatrix[classIdToVertexId[edges_n[i]].first][classIdToVertxId[edges_[i].second]]
+
+    std::vector<std::vector<int>> occurenceCountForEachEdge;
+    ttkMorseSmallComplexStability::countOccurencesOfEdges(occurenceMatrix, classIdToVertexId, occurenceCountForEachEdge);
+    for (int i = 0 ; i < n_blocks ; i++){
+
+      vtkDataSet* block = vtkDataSet::SafeDownCast(multiBlock1_Separatrices->GetBlock(i));
+      int cellNumber = block->GetNumberOrCells();
+
+      vtkCellData* blockCellData = block->GetCellData();
+      vtkDataArray* separatrixIds = blockCellData->GetAray(ttk::MorseSmaleSeparatrixIdName);
+      vtkNew<vtkIntArray> occurenceCount;
+      occurencesCount->SetNumberOfTuples(cellNumber);
+      occurencesCount->SetNumberOfComponents(1);
+
+      for (int j = 0 ; j < cellNumber ; j++){
+        int currentSeparatrixId = separatrixIds->GetValue(j);
+        int newOccurenceCount = occurenceCountForEachEdge[i][currentSeparatrixId];
+        cellNumber->SetTuple1(j, newOccurenceCount);
+      }
+    }
+
     //Build partial isomorphic graphs : 
     // --> for index i_1, ... i_k, build graph from the adjacency matrix matrix_i_1 && ... && matrix_i_k 
     // --> vertices are barycenters of each equivalent class of vertices
