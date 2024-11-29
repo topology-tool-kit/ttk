@@ -100,7 +100,32 @@ protected:
               vtkUnstructuredGrid* &minimalGraph,
               std::vector<vtkSmartPointer<vtkIntArray>> &edgesOccurences);
 
-  int graphFromSeparatrices(vtkDataSet* block, 
-                            std::vector<int> &localToGlobal, 
-                            std::vector<std::pair<int, int>> &edges){
+  void updateVertexData(const int &globalId, 
+                        const vtkIdType &pointId, 
+                        vtkPoints* points,
+                        std::vector<std::array<double, 3>> &coords, 
+                        std::vector<int> &localToGlobal,
+                        int &localId);
+
+
+  void computePointIds(vtkCell* cell_1,
+                        vtkCell* cell_2,
+                        const int &sourceGlobalId,
+                        const int &destinationGlobalId,
+                        vtkDataSet* block,
+                        vtkIdType &srcPointId,
+                        vtkIdType &destPointId);
+
+  void updateVertexLinkList(std::vector<std::vector<int>> &vertexLinks, 
+                              const int &v1, 
+                              const int &v2);
+
+  void appendPoint(vtkPoints* points, 
+                    const int &index, 
+                    std::vector<std::array<double, 3>> &coords){
+  int prepareData(vtkDataSet* block, 
+                  std::vector<int> &localToGlobal, 
+                  std::vector<std::pair<int, int>> &edges,
+                  std::vector<std::array<double, 3>> &coords,
+                  std::vector<float>&sfValues);
 };

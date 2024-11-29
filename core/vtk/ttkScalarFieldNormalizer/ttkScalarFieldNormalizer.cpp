@@ -117,7 +117,5 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
   output->ShallowCopy(input);
   output->GetPointData()->AddArray(outputArray);
 
-  std::cout<<"normalizer 2"<<std::endl;
-
   return 1;
 }
