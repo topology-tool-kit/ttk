@@ -101,30 +101,28 @@ protected:
                               std::vector<int> &localToGlobal,
                               int &localId);
 
+  void updateVertexData(const int &globalId, 
+                        const vtkidType &pointId, 
+                        const vtkPoints* points,
+                        std::vector<std::array<double, 3>> &coords, 
+                        std::vector<int> &localToGlobal,
+                        int &localId);
 
-  void computePointIds(const int &cellId_1,
-                        const int &cellId_2,
-                        const int &sourceGlobalId,
-                        const int &destinationGlobalId,
-                        vtkDataSet* block,
-                        vtkIdType &srcPointId,
-                        vtkIdType &destPointId);
+  void computePointIds(const vtkCell* cell_1,
+                      const vtkCell* cell_2,
+                      const int &sourceGlobalId,
+                      const int &destinationGlobalId,
+                      const vtkDataSet &block,
+                      vtkIdType &srcPointId,
+                      vtkIdType &destPointId);
 
-  void updateAdjacencyMatrix(const int &sourceLocalId,
-                              const int &destinationLocalId,
-                              const int &separatrixLocalId,
-                              std::vector<std::vector<int>> &adjacencyMatrix);
-                                                              
-  void appendPoint(vtkPoints* points, 
-                    const int &index, 
-                    std::vector<std::array<double, 3>> &coords);
-
-  void computeGraphMinor(const std::vector<std::vector<int>> &adjacencyMatrixFull, 
-                          GraphMatrix &adjacencyMatrix);
+  void updateVertexLinksList(std::vector<std::vector<int>> &vertexLinks, 
+                              const int &v1, 
+                              const int &v2);
 
   int prepareData(vtkDataSet* block, 
                   std::vector<int> &localToGlobal, 
-                  GraphMatrix &adjacencyMatrix,
-                  std::vector<std::array<double, 3>> &coords);
-  
+                  std::vector<std::pair<int, int>> &edges,
+                  std::vector<std::array<double, 3>> &coords,
+                  std::vector<float>&sfValues);
 };
