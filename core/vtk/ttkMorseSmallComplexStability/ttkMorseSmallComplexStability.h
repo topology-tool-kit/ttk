@@ -90,42 +90,41 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-
+  using GraphMatrix = std::vector<std::vector<std::optional<std::pair<int, int>>>>;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices,
-              vtkUnstructuredGrid* &minimalGraph,
-              std::vector<vtkSmartPointer<vtkIntArray>> &edgesOccurences);
-
-  void updateVertexData(const int &globalId, 
-                        const vtkIdType &pointId, 
-                        vtkPoints* points,
-                        std::vector<std::array<double, 3>> &coords, 
-                        std::vector<int> &localToGlobal,
-                        int &localId);
+  int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices);
+  void updateVisitedVertices(const int &globalId, 
+                              std::vector<int> &localToGlobal,
+                              int &localId);
 
 
-  void computePointIds(vtkCell* cell_1,
-                        vtkCell* cell_2,
+  void computePointIds(const int &cellId_1,
+                        const int &cellId_2,
                         const int &sourceGlobalId,
                         const int &destinationGlobalId,
                         vtkDataSet* block,
                         vtkIdType &srcPointId,
                         vtkIdType &destPointId);
 
-  void updateVertexLinkList(std::vector<std::vector<int>> &vertexLinks, 
-                              const int &v1, 
-                              const int &v2);
-
+  void updateAdjacencyMatrix(const int &sourceLocalId,
+                              const int &destinationLocalId,
+                              const int &separatrixLocalId,
+                              std::vector<std::vector<int>> &adjacencyMatrix);
+                                                              
   void appendPoint(vtkPoints* points, 
                     const int &index, 
-                    std::vector<std::array<double, 3>> &coords){
+                    std::vector<std::array<double, 3>> &coords);
+
+  void computeGraphMinor(const std::vector<std::vector<int>> &adjacencyMatrixFull, 
+                          GraphMatrix &adjacencyMatrix);
+
   int prepareData(vtkDataSet* block, 
                   std::vector<int> &localToGlobal, 
-                  std::vector<std::pair<int, int>> &edges,
-                  std::vector<std::array<double, 3>> &coords,
-                  std::vector<float>&sfValues);
+                  GraphMatrix &adjacencyMatrix,
+                  std::vector<std::array<double, 3>> &coords);
+  
 };
