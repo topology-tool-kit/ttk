@@ -97,6 +97,7 @@ protected:
                   vtkInformationVector *outputVector) override;
 
   int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices);
+  
   void updateVisitedVertices(const int &globalId, 
                               std::vector<int> &localToGlobal,
                               int &localId);
