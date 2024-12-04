@@ -327,7 +327,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 
     pointsCoords->SetNumberOfComponents(3);
     pointsCoords->SetNumberOfTuples(separatrices2_.pt.points_.size());
-    for (int i = 0 ; i < separatrices2_.pt.points_.size(); i++){
+    for (int i = 0 ; i < separatrices2_.pt.numberOfPoints_; i++){
       pointsCoords->SetTuple3(i, separatrices2_.pt.points_[0], 
                               separatrices2_.pt.points_[1], 
                               separatrices2_.pt.points_[2]);

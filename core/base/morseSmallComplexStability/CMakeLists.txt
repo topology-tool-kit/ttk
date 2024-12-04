@@ -5,4 +5,5 @@ ttk_add_base_library(morseSmallComplexStability
     MorseSmallComplexStability.h
   DEPENDS
     triangulation
+    assignmentSolver
 )

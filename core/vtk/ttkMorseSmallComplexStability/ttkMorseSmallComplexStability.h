@@ -90,15 +90,15 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  using GraphMatrix = std::vector<std::vector<std::optional<std::pair<int, int>>>>;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices);
+  int execute(vtkMultiBlockDataSet* &multiBlock1_Separatrices,
+              vtkMultiBlockDataSet* &output1_Separatrices);
   
-  void updateVisitedVertices(const int &globalId, 
+  bool updateVisitedVertices(const int &globalId, 
                               std::vector<int> &localToGlobal,
                               int &localId);
 
@@ -123,7 +123,8 @@ protected:
 
   int prepareData(vtkDataSet* block, 
                   std::vector<int> &localToGlobal, 
-                  std::vector<std::pair<int, int>> &edges,
+                  GraphMatrix &adjacencyMatrix,
                   std::vector<std::array<double, 3>> &coords,
-                  std::vector<float>&sfValues);
+                  int &n_separatrices);
+  
 };

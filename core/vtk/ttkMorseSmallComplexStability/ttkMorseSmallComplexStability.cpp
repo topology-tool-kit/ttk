@@ -14,10 +14,6 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <vector>
-#include <utility>
-#include <queue>
-
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
 vtkStandardNewMacro(ttkMorseSmallComplexStability);
@@ -56,17 +52,14 @@ int ttkMorseSmallComplexStability::FillOutputPortInformation(int port, vtkInform
   return 0;
 }
 
-void ttkMorseSmallComplexStability::updateVertexData(const int &globalId, 
-                                                      const vtkidType &pointId, 
-                                                      const vtkPoints* points,
-                                                      std::vector<std::array<double, 3>> &coords, 
-                                                      std::vector<int> &localToGlobal
-                                                      int &localId){
+bool ttkMorseSmallComplexStability::updateVisitedVertices(const int &globalId, 
+                                                          std::vector<int> &localToGlobal,
+                                                          int &localId){
   
   for (int i = 0 ; i < localToGlobal.size();i++ ){
     if (localToGlobal[i]==globalId){
       localId=i;
-      return;
+      return true;
     }
   }
   if(localId==-1){
@@ -76,7 +69,7 @@ void ttkMorseSmallComplexStability::updateVertexData(const int &globalId,
     points->GetPoint(pointId, sourceCoords.data());
     coords.push_back(newCoords);
   }
-  return;
+  return false;
 }
 
 void ttkMorseSmallComplexStability::updateAdjacencyMatrix(const int &sourceLocalId,
@@ -85,10 +78,11 @@ void ttkMorseSmallComplexStability::updateAdjacencyMatrix(const int &sourceLocal
                                                             std::vector<std::vector<int>> &adjacencyMatrix){
   int n_row = adjacencyMatrix.size();
   int n_col = n_row == 0 ? 0 : adjacencyMatrix[0].size();
-  //std::cout<<"m x n = "<<n_row<<",  "<<n_col<<std::endl;
   if(sourceLocalId < n_row){
     if(destinationLocalId < n_col){
+      if(adjacencyMatrix[sourceLocalId][destinationLocalId]!=-1)std::cout<<"multiple edge found"<<std::endl;
       adjacencyMatrix[sourceLocalId][destinationLocalId] = separatrixLocalId;
+
     }else{
       for (int i = 0 ; i < n_row ; i++){
         adjacencyMatrix[i].push_back(-1);
@@ -153,9 +147,10 @@ void ttkMorseSmallComplexStability::computeGraphMinor(const std::vector<std::vec
   for (int i = 0 ; i < n_row ; i++){
     for (int j = 0 ; j < n_col ; j++){
       if(adjacencyMatrixFull[i][j]!=-1){
-        for (int k = i + 1 ; k < n_row ; k++){
+        for (int k = i+1 ; k < n_row ; k++){
           if(adjacencyMatrixFull[k][j]!=-1){
             std::optional<std::pair<int, int>> newEdge = std::make_pair(adjacencyMatrixFull[k][j], adjacencyMatrixFull[i][j]);
+            if(adjacencyMatrix[i][k].has_value())std::cout<<"multiple edge in reduced matrix"<<std::endl;
             adjacencyMatrix[i][k] = newEdge;
           }
         }
@@ -175,13 +170,15 @@ void ttkMorseSmallComplexStability::appendPoint(vtkPoints* points,
 int ttkMorseSmallComplexStability::prepareData(vtkDataSet* block, 
                                                 std::vector<int> &localToGlobal, 
                                                 GraphMatrix &adjacencyMatrix,
-                                                std::vector<std::array<double, 3>> &coords){
+                                                std::vector<std::array<double, 3>> &coords,
+                                                int &n_separatrices){
   
+
+
   vtkPoints* points = block->GetPoints();
   vtkPointData* pointData = block->GetPointData();
-  vtkSignedCharArray* ttkScalarMask = vtkSignedCharArray::SafeDownCast(block->GetPointData()->GetArray(ttk::MaskScalarFieldName));
-  vtkSignedCharArray* cellDimensions = vtkSignedCharArray::SafeDownCast(block->GetPointData()->GetArray(ttk::MorseSmaleCellDimensionName));
-  
+
+  //vtkSignedCharArray* cellDimensions = vtkSignedCharArray::SafeDownCast(block->GetPointData()->GetArray(ttk::MorseSmaleCellDimensionName));  
 
   vtkCellData* cellData = block->GetCellData();
   ttkSimplexIdTypeArray *separatrixIds = ttkSimplexIdTypeArray::SafeDownCast(cellData->GetArray(ttk::MorseSmaleSeparatrixIdName));
@@ -220,109 +217,96 @@ int ttkMorseSmallComplexStability::prepareData(vtkDataSet* block,
                     sourcePointId, 
                     destinationPointId);
 
-    updateVisitedVertices(sourceGlobalId, sourceLocalToGlobal, sourceLocalId);
-    updateVisitedVertices(destinationGlobalId, destinationLocalToGlobal, destinationLocalId);
+    bool foundSource = updateVisitedVertices(sourceGlobalId, sourceLocalToGlobal, sourceLocalId);
+    bool foundDestination = updateVisitedVertices(destinationGlobalId, destinationLocalToGlobal, destinationLocalId);
 //    std::cout<<"source point id = "<<sourcePointId<<std::endl;
 //    std::cout<<"destination point id = "<<destinationPointId<<std::endl;
-    appendPoint(points, sourcePointId, coords);
+    if(!foundDestination)appendPoint(points, destinationPointId, coords);
     //std::cout<<"sourceLocalId = "<<sourceLocalId<<",   destinationLocalId = "<<destinationLocalId<<std::endl;
     //std::cout<<"separatrixLocalId = "<<separatrixLocalId<<std::endl;
-    updateAdjacencyMatrix(sourceLocalId, destinationLocalId, separatrixLocalId, adjacencyMatrixFull);
+    updateAdjacencyMatrix(destinationLocalId, sourceLocalId, separatrixLocalId, adjacencyMatrixFull);
     cellId_1 = cellId_2 + 1;
   }
-  localToGlobal = std::move(sourceLocalToGlobal);
-//  for (int i = 0 ; i < adjacencyMatrixFull.size(); i++){
-//    for (int j = 0 ;j < adjacencyMatrixFull[i].size(); j++){
-//      std::cout<<adjacencyMatrixFull[i][j]<<"  ";
-//    }
-//    std::cout<<std::endl;
-//  }
+
+  n_separatrices=separatrixLocalId+1;
+  localToGlobal = std::move(destinationLocalToGlobal);
+
+for (int i = 0 ; i < adjacencyMatrixFull.size(); i++){
+  for (int j = 0 ;j < adjacencyMatrixFull[i].size(); j++){
+    std::cout<<adjacencyMatrixFull[i][j]<<"  ";
+  }
+  std::cout<<std::endl;
+}
 //
  computeGraphMinor(adjacencyMatrixFull, adjacencyMatrix);
-//  std::cout<<std::endl;
-//
-//  for (int i = 0 ; i < adjacencyMatrix.size(); i++){
-//    for (int j = 0 ;j < adjacencyMatrix[i].size(); j++){
-//      if(adjacencyMatrix[i][j].has_value()){
-//        std::cout<<"("<<adjacencyMatrix[i][j].value().first<<",  "<<adjacencyMatrix[i][j].value().second<<")  ";
-//      }
-//      else std::cout<<"X "; 
-//    }
-//    std::cout<<std::endl;
-//  }
+ 
+std::cout<<std::endl;
+
+ for (int i = 0 ; i < adjacencyMatrix.size(); i++){
+  for (int j = 0 ;j < adjacencyMatrix[i].size(); j++){
+    if(adjacencyMatrix[i][j].has_value()){
+      std::cout<<"("<<adjacencyMatrix[i][j].value().first<<", "<<adjacencyMatrix[i][j].value().second<<") ";
+    }
+    else std::cout<<"(X,  X) "; 
+  }
+  std::cout<<std::endl;
+}
   return 1;
 }
 
-int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_Separatrices){    
+int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_Separatrices, vtkMultiBlockDataSet* &output1_Separatrices){    
 
 
     int n_blocks = multiBlock1_Separatrices->GetNumberOfBlocks();
     std::vector<std::vector<int>> LocalToGlobal(n_blocks);
-    std::vector<std::vector<std::pair<int, int>>> Edges(n_blocks);
-    std::vector<std::vector<std::array<double, 3>>> Coords(n_blocks);
-    std::vector<std::vector<float>> SfValues(n_blocks);
-
-    //Build graph from separatrices
-    //--> output : vector<vector<int>> vertexLocalToGlobal, 
-    //              vector<vector<std::pair<int , int>>> edges, (id de chaque edge = separatrixId)
-
-    //Build coords vector of vertex and scalar values of vertex
-    // --> output : std::vector<std::vector<std::array<double, 3>>> coordinates
-    //              std::vector<std::vector<float>> sfValues;
-    
+    std::vector<GraphMatrix> adjacencyMatrices(n_blocks);
+    std::vector<std::vector<std::array<double, 3>>> coords(n_blocks);
+    std::vector<int> separatrixCountForEachBlock(n_blocks);
     for (int i = 0 ; i < n_blocks ; i++){
       vtkDataSet* block = vtkDataSet::SafeDownCast(multiBlock1_Separatrices->GetBlock(i));
-      ttkMorseSmallComplexStability::prepareData(block, LocalToGlobal[i], Edges[i], Coords[i], SfValues[i]);
+      std::cout<<"block "<<i<<" processing..."<<std::endl;
+      ttkMorseSmallComplexStability::prepareData(block, LocalToGlobal[i], adjacencyMatrices[i], coords[i], separatrixCountForEachBlock[i]);
     }
 
-    ////Build equivalent classes with assignement : 
-    ////--> output : vector<vector<int>> classIdToVertexId
-//
-    //std::vector<std::vector<int>> classIdToVertexId(n_blocks);
-    //this->buildVertexEquivalenceClasses(coords, sfValues, classIdToVertexId);
-   //
-    ////Build N adjacency matrices from the other vectors
-    //// --> output : for n < N vector<vector<int>> matrix_n for (int i = 0 ; i < edges_n.size(); i++); 
-    ////                                                          matrix_n[classIdToVertexId[edges_n[i]].first][classIdToVertxId[edges_[i].second]]=1
-//
-    //using GraphMatrix = std::vector<std::vector<int>>; 
-    //std::vector<GraphMatrix> adjacencyMatrices(n_blocks);
-    //this->buildAdjacencyMatrices(adjacencyMatrices, classToVertexId);
-//
-    ////Build 1 occurence matrix 
-    //// --> somme des adjacency matrices : std::vector<std::vector<int>> ocurrenceMatrix
-//
-    //GraphMatrix occurenceMatrix;
-    //this->buildOccurenceMatrix(adjacencyMatrices, occurenceMatrix);
-//
-    ////Build for n < N std::vector<int> occurenceCount_n
-    //// --> output : occurenceCount_n[i]=occurenceMatrix[classIdToVertexId[edges_n[i]].first][classIdToVertxId[edges_[i].second]]
-//
-    //std::vector<std::vector<int>> occurenceCountForEachEdge;
-    //ttkMorseSmallComplexStability::countOccurencesOfEdges(occurenceMatrix, classIdToVertexId, occurenceCountForEachEdge);
-    //for (int i = 0 ; i < n_blocks ; i++){
-//
-    //  vtkDataSet* block = vtkDataSet::SafeDownCast(multiBlock1_Separatrices->GetBlock(i));
-    //  int cellNumber = block->GetNumberOrCells();
-//
-    //  vtkCellData* blockCellData = block->GetCellData();
-    //  vtkDataArray* separatrixIds = blockCellData->GetAray(ttk::MorseSmaleSeparatrixIdName);
-    //  vtkNew<vtkIntArray> occurenceCount;
-    //  occurencesCount->SetNumberOfTuples(cellNumber);
-    //  occurencesCount->SetNumberOfComponents(1);
-//
-    //  for (int j = 0 ; j < cellNumber ; j++){
-    //    int currentSeparatrixId = separatrixIds->GetValue(j);
-    //    int newOccurenceCount = occurenceCountForEachEdge[i][currentSeparatrixId];
-    //    cellNumber->SetTuple1(j, newOccurenceCount);
-    //  }
-    //}
-//
-    ////Build partial isomorphic graphs : 
-    //// --> for index i_1, ... i_k, build graph from the adjacency matrix matrix_i_1 && ... && matrix_i_k 
-    //// --> vertices are barycenters of each equivalent class of vertices
+    std::vector<std::vector<int>>edgeOccurenceForEachBlock(n_blocks);
+
+    if(!this->buildOccurenceArrays(adjacencyMatrices, 
+                              separatrixCountForEachBlock, 
+                              coords,
+                              edgeOccurenceForEachBlock)){
+                              
+      printErr("Could not compute occurence array.");
+      return 0;      
+    };
+
+    for (int i = 0 ; i < n_blocks ; i++){
+
+      vtkDataSet* block = vtkDataSet::SafeDownCast(output1_Separatrices->GetBlock(i));
+      int cellNumber = block->GetNumberOfCells();
+      vtkCellData* blockCellData = block->GetCellData();
+      ttkSimplexIdTypeArray *separatrixIds = ttkSimplexIdTypeArray::SafeDownCast(blockCellData->GetArray(ttk::MorseSmaleSeparatrixIdName));
+
+      vtkNew<vtkIntArray> occurenceCount;
+      occurenceCount->SetNumberOfComponents(1);
+      occurenceCount->SetName(ttk::MorseSmaleStabilityOccurenceCount);
+
+      vtkIdType currentCellId = 0;
+      int currentSeparatrixId = separatrixIds->GetValue(currentCellId);
+      int separatrixCount = 0;
+      occurenceCount->InsertNextValue(edgeOccurenceForEachBlock[i][separatrixCount]);
+
+      for (int j = 1 ; j < cellNumber ; j++){
+        if(separatrixIds->GetValue(j)!=currentSeparatrixId){
+          currentSeparatrixId = separatrixIds->GetValue(j);
+          separatrixCount++;
+        }
+        occurenceCount->InsertNextValue(edgeOccurenceForEachBlock[i][separatrixCount]);
+      }
+      blockCellData->AddArray(occurenceCount);
+    }
     return 1;
-                                            }
+      
+  }
 
 
 int ttkMorseSmallComplexStability::RequestData(vtkInformation *ttkNotUsed(request),
@@ -335,9 +319,7 @@ int ttkMorseSmallComplexStability::RequestData(vtkInformation *ttkNotUsed(reques
       info->Print(cout);
   }
   
-  vtkMultiBlockDataSet *input1_Separatrices= vtkMultiBlockDataSet::GetData(inputVector[0]);
-
-  int n_blocks = input1_Separatrices->GetNumberOfBlocks();
+  vtkMultiBlockDataSet *input1_Separatrices = vtkMultiBlockDataSet::GetData(inputVector[0]);
 
   if(input1_Separatrices == nullptr){
     this->printErr("No edges to perform calculation.");
@@ -345,15 +327,15 @@ int ttkMorseSmallComplexStability::RequestData(vtkInformation *ttkNotUsed(reques
   }
 
   int status = 0; 
-  status = this->execute(input1_Separatrices);
+  vtkMultiBlockDataSet *output1_Separatrices = vtkMultiBlockDataSet::GetData(outputVector, 0);
+  output1_Separatrices->ShallowCopy(input1_Separatrices);
+
+  status = this->execute(input1_Separatrices, output1_Separatrices);
+
+  std::cout<<"balise finale"<<std::endl;
 
   if(status != 1)
     return 0;
-
-  vtkMultiBlockDataSet *output1_Separatrices = vtkMultiBlockDataSet::GetData(outputVector, 0);
-
-  output1_Separatrices->ShallowCopy(input1_Separatrices);
-
 
   //for (size_t i = 0 ; i < output1_Separatrices->GetNumberOfBlocks(); i++){
   //  ((vtkDataSet*)(output1_Separatrices->GetBlock(i)))->GetPointData()->AddArray(edgesOccurences[i]);

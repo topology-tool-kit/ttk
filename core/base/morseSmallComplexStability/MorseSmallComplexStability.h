@@ -1,42 +1,47 @@
-/// TODO 1: Provide your information
-///
-/// \ingroup base
-/// \class ttk::MorseSmallComplexStability
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
-///
-/// This module defines the %MorseSmallComplexStability class that computes for each vertex of a
-/// triangulation the average scalar value of itself and its direct neighbors.
-///
-/// \b Related \b publication: \n
-/// 'MorseSmallComplexStability'
-/// Jonas Lukasczyk and Julien Tierny.
-/// TTK Publications.
-/// 2021.
-///
-
 #pragma once
 
-// ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
+#include <optional>
+#include <utility>
+#include <vector>
 
 namespace ttk {
 
-  /**
-   * The MorseSmallComplexStability class provides methods to compute for each vertex of a
-   * triangulation the average scalar value of itself and its direct neighbors.
-   */
+  using MatchingType = std::tuple<int, int, double>;
+
+  
   class MorseSmallComplexStability : virtual public Debug {
 
+  
   public:
+
+    using GraphMatrix = std::vector<std::vector<std::optional<std::pair<int, int>>>>;
+
     MorseSmallComplexStability();
 
-    int preconditionTriangulation(
-      ttk::AbstractTriangulation *triangulation) const {
-      return triangulation->preconditionVertexNeighbors();
-    }
+    int buildOccurenceArrays(const std::vector<GraphMatrix> &adjacencyMatrices, 
+                              const std::vector<int> &separatrixCountForEachBlock,
+                              const std::vector<std::vector<std::array<double, 3>>> &coords,
+                              std::vector<std::vector<int>> &occurencesMatrix);
 
-  }; // MorseSmallComplexStability class
+  private:
 
-} // namespace ttk
+    int buildVertexEquivalenceClasses(const std::vector<std::vector<std::array<double, 3>>> &coords, 
+                                  std::vector<std::vector<int>> &classToVertexId);
+
+    void buildCostMatrix(const std::vector<std::array<double, 3>> &coords1,
+                          const std::vector<std::array<double, 3>> &coords2,
+                          std::vector<std::vector<double>> &matrix);
+
+    void assignmentSolver(std::vector<std::vector<double>> &costMatrix,
+                          std::vector<ttk::MatchingType> &matching);
+
+    void makePartition(const std::vector<std::vector<MatchingType>> &matchings, 
+                        const int &n_blocks,
+                        const int &n_points,
+                        std::vector<std::vector<int>> &partitions);
+
+  };
+
+}
