@@ -47,10 +47,6 @@ void ttk::MorseSmallComplexStability::makePartition(const std::vector<std::vecto
     classIdToVertexIds[i].push_back(std::get<1>(matchings[0][i]));
     previousPositionOfId[std::get<1>(matchings[0][i])]=i;
   }
-  for (int k = 0 ; k < n_points ; k++){
-      std::cout<<previousPositionOfId[k]<<"   ";
-    }
-  std::cout<<std::endl;
   for (int i = 1 ; i < n_blocks - 1 ; i++){
     for (int j = 0 ; j < n_points ; j++){
       int backId = std::get<0>(matchings[i][j]);
@@ -59,10 +55,6 @@ void ttk::MorseSmallComplexStability::makePartition(const std::vector<std::vecto
       switchArray[frontId]=previousPositionOfId[backId];
     }
     previousPositionOfId=switchArray;
-    for (int k = 0 ; k < n_points ; k++){
-      std::cout<<previousPositionOfId[k]<<"   ";
-    }
-    std::cout<<std::endl;
   }
 }
 
@@ -75,8 +67,6 @@ int ttk::MorseSmallComplexStability::buildVertexEquivalenceClasses(
 
   for (int i = 0 ; i < n_blocks - 1 ; i++){
     if (coords[i].size() != coords[i+1].size())allSameSize=false;
-    std::cout<<"coords size for block "<<i<<" = "<<coords[i].size()<<std::endl;
-    std::cout<<"coords size for block "<<i+1<<" = "<<coords[i+1].size()<<std::endl;
   }
   if(!allSameSize){
     return 0;
@@ -89,13 +79,6 @@ int ttk::MorseSmallComplexStability::buildVertexEquivalenceClasses(
     std::vector<std::vector<double>> costMatrix;
     buildCostMatrix(coords[i], coords[i+1], costMatrix);
     assignmentSolver(costMatrix, matchings[i]);
-  }
-  for (int i = 0 ; i < n_blocks - 1 ; i++){
-
-    std::cout<<"matchings from block "<<i<<"to block "<<i+1<<std::endl;
-    for (int j = 0; j < matchings[i].size(); j++){
-      std::cout<<std::get<0>(matchings[i][j])<<", "<<std::get<1>(matchings[i][j])<<std::endl;
-    }
   }
   makePartition(matchings, n_blocks, n_points, classIdToVertexIds);
   return 1;
@@ -114,15 +97,6 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
     return 0;
   }
 
-  for (int i  = 0; i < n_points ; i++){
-    std::cout<<"equivalence class "<<i<<std::endl;
-    for (int j = 0 ; j < classIdToVertexIds[i].size(); j++){
-      std::cout<<classIdToVertexIds[i][j]<<", ";
-    }
-    std::cout<<std::endl;
-  }
-  std::cout<<"balise 1"<<std::endl;
-
   std::vector<std::vector<int>> occurenceMatrix(n_points);
   for (int i = 0 ; i < n_points ; i++){
     for (int j = 0 ; j < n_points ; j++){
@@ -134,13 +108,6 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
       }
       occurenceMatrix[i].push_back(occurence);
     }
-  }
-
-  for (int i = 0 ; i < n_points ; i++){
-    for (int j = 0 ; j < n_points ; j++){
-      std::cout<<occurenceMatrix[i][j]<<"  ";
-    }
-    std::cout<<std::endl;
   }
 
   for (int i = 0 ; i < n_blocks ; i++){
@@ -159,13 +126,6 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
         }
       }
     }
-  }
-
-  for (int i = 0 ; i < n_blocks ; i++){
-    for (int j = 0 ; j < edgeOccurenceForEachBlock[i].size() ; j++){
-      std::cout<<edgeOccurenceForEachBlock[i][j]<<"  ";
-    }
-    std::cout<<std::endl;
   }
   return 1;
 } 
