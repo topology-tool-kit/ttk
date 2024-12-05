@@ -128,10 +128,8 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
     for (int j = 0 ; j < n_points ; j++){
       int occurence=0;
       for (int k = 0 ; k < n_blocks ; k++){
-        int tmp1 = classIdToVertexIds[i][k];
-        int tmp2 = classIdToVertexIds[j][k];
-        int vertexId1 = tmp1 > tmp2 ? tmp2 : tmp1;
-        int vertexId2 = tmp1 > tmp2 ? tmp1 : tmp2; 
+        int vertexId1 = classIdToVertexIds[i][k];
+        int vertexId2 = classIdToVertexIds[j][k];
         if(!adjacencyMatrices[k][vertexId1][vertexId2].empty())occurence++;
       }
       occurenceMatrix[i].push_back(occurence);
@@ -149,10 +147,8 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
     edgeOccurenceForEachBlock[i].resize(separatrixCountForEachBlock[i]);
     for (int j = 0 ; j < n_points ; j++){
       for (int k = 0; k < n_points ; k++){
-        int tmp1 = classIdToVertexIds[j][i];
-        int tmp2 = classIdToVertexIds[k][i];
-        int vertexId1 = tmp1 > tmp2 ? tmp2 : tmp1;
-        int vertexId2 = tmp1 > tmp2 ? tmp1 : tmp2; 
+        int vertexId1 = classIdToVertexIds[j][i];
+        int vertexId2 = classIdToVertexIds[k][i];
         if (!adjacencyMatrices[i][vertexId1][vertexId2].empty()){
           for (int l = 0 ; l < adjacencyMatrices[i][vertexId1][vertexId2].size() ; l++){
             int separatrixId1 = adjacencyMatrices[i][vertexId1][vertexId2][l].first;

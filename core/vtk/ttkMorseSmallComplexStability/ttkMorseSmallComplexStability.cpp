@@ -241,18 +241,16 @@ for (int i = 0 ; i < adjacencyMatrixFull.size(); i++){
  computeGraphMinor(adjacencyMatrixFull, adjacencyMatrix);
  
 std::cout<<std::endl;
-for (int i = 0 ; i < adjacencyMatrix.size(); i++){
-  for (int j = 0 ;j < adjacencyMatrix[i].size(); j++){
-    if(!adjacencyMatrix[i][j].empty()){
-      for (int k = 0 ; k < adjacencyMatrix[i][j].size(); k++){
-        std::cout<<"("<<adjacencyMatrix[i][j][k].first<<", "<<adjacencyMatrix[i][j][k].second<<") ";
-      }
-    }
-    else std::cout<<"(X,  X) "; 
-    //<<std::setw(12)
-  }
-  std::cout<<std::endl;
-  }
+
+ //for (int i = 0 ; i < adjacencyMatrix.size(); i++){
+ // for (int j = 0 ;j < adjacencyMatrix[i].size(); j++){
+ //   if(adjacencyMatrix[i][j].size()!has_value=0){
+ //     for (int k = 0 ; k < aj)
+ //     std::cout<<"("<<adjacencyMatrix[i][j][].first<<", "<<adjacencyMatrix[i][j].value().second<<") ";
+ //   }
+ //   else std::cout<<"(X,  X) "; 
+ // }
+ // std::cout<<std::endl;
   return 1;
 }
 
