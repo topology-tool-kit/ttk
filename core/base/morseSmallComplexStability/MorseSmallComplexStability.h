@@ -16,7 +16,7 @@ namespace ttk {
   
   public:
 
-    using GraphMatrix = std::vector<std::vector<std::optional<std::pair<int, int>>>>;
+    using GraphMatrix = std::vector<std::vector<std::vector<std::pair<int, int>>>>;
 
     MorseSmallComplexStability();
 

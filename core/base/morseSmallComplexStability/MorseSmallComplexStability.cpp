@@ -47,6 +47,10 @@ void ttk::MorseSmallComplexStability::makePartition(const std::vector<std::vecto
     classIdToVertexIds[i].push_back(std::get<1>(matchings[0][i]));
     previousPositionOfId[std::get<1>(matchings[0][i])]=i;
   }
+  for (int k = 0 ; k < n_points ; k++){
+      std::cout<<previousPositionOfId[k]<<"   ";
+    }
+  std::cout<<std::endl;
   for (int i = 1 ; i < n_blocks - 1 ; i++){
     for (int j = 0 ; j < n_points ; j++){
       int backId = std::get<0>(matchings[i][j]);
@@ -124,9 +128,11 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
     for (int j = 0 ; j < n_points ; j++){
       int occurence=0;
       for (int k = 0 ; k < n_blocks ; k++){
-        int vertexId1 = classIdToVertexIds[i][k];
-        int vertexId2 = classIdToVertexIds[j][k];
-        if(adjacencyMatrices[k][vertexId1][vertexId2].has_value())occurence++;
+        int tmp1 = classIdToVertexIds[i][k];
+        int tmp2 = classIdToVertexIds[j][k];
+        int vertexId1 = tmp1 > tmp2 ? tmp2 : tmp1;
+        int vertexId2 = tmp1 > tmp2 ? tmp1 : tmp2; 
+        if(!adjacencyMatrices[k][vertexId1][vertexId2].empty())occurence++;
       }
       occurenceMatrix[i].push_back(occurence);
     }
@@ -143,13 +149,17 @@ int ttk::MorseSmallComplexStability::buildOccurenceArrays(const std::vector<Grap
     edgeOccurenceForEachBlock[i].resize(separatrixCountForEachBlock[i]);
     for (int j = 0 ; j < n_points ; j++){
       for (int k = 0; k < n_points ; k++){
-        int vertexId1 = classIdToVertexIds[j][i];
-        int vertexId2 = classIdToVertexIds[k][i];
-        if (adjacencyMatrices[i][vertexId1][vertexId2].has_value()){
-          int separatrixId1 = adjacencyMatrices[i][vertexId1][vertexId2].value().first;
-          int separatrixId2 = adjacencyMatrices[i][vertexId1][vertexId2].value().second;
-          edgeOccurenceForEachBlock[i][separatrixId1]=occurenceMatrix[j][k];
-          edgeOccurenceForEachBlock[i][separatrixId2]=occurenceMatrix[j][k];
+        int tmp1 = classIdToVertexIds[j][i];
+        int tmp2 = classIdToVertexIds[k][i];
+        int vertexId1 = tmp1 > tmp2 ? tmp2 : tmp1;
+        int vertexId2 = tmp1 > tmp2 ? tmp1 : tmp2; 
+        if (!adjacencyMatrices[i][vertexId1][vertexId2].empty()){
+          for (int l = 0 ; l < adjacencyMatrices[i][vertexId1][vertexId2].size() ; l++){
+            int separatrixId1 = adjacencyMatrices[i][vertexId1][vertexId2][l].first;
+            int separatrixId2 = adjacencyMatrices[i][vertexId1][vertexId2][l].second;
+            edgeOccurenceForEachBlock[i][separatrixId1]=occurenceMatrix[j][k];
+            edgeOccurenceForEachBlock[i][separatrixId2]=occurenceMatrix[j][k];
+          }
         }
       }
     }
