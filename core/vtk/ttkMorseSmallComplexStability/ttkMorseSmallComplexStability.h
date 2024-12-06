@@ -1,7 +1,3 @@
-/// TODO 4: Provide your information and **update** the documentation (in
-/// particular regarding the order convention if input arrays need to be
-/// specified with the standard VTK call SetInputArrayToProcess()).
-///
 /// \ingroup vtk
 /// \class ttkMorseSmallComplexStability
 /// \author Your Name Here <your.email@address.here>
@@ -18,39 +14,12 @@
 
 #pragma once
 
-
 #include<vtkMultiBlockDataSet.h>
 #include<vtkUnstructuredGrid.h>
 
-// VTK Module
 #include <ttkMorseSmallComplexStabilityModule.h>
 
-// VTK Includes
 #include <ttkAlgorithm.h>
-
-/* Note on including VTK modules
- *
- * Each VTK module that you include a header from needs to be specified in this
- * module's vtk.module file, either in the DEPENDS or PRIVATE_DEPENDS (if the
- * header is included in the cpp file only) sections.
- *
- * In order to find the corresponding module, check its location within the VTK
- * source code. The VTK module name is composed of the path to the header. You
- * can also find the module name within the vtk.module file located in the same
- * directory as the header file.
- *
- * For example, vtkSphereSource.h is located in directory VTK/Filters/Sources/,
- * so its corresponding VTK module is called VTK::FiltersSources. In this case,
- * the vtk.module file would need to be extended to
- *
- * NAME
- *   ttkMorseSmallComplexStability
- * DEPENDS
- *   ttkAlgorithm
- *   VTK::FiltersSources
- */
-
-// TTK Base Includes
 #include <MorseSmallComplexStability.h>
 
 class TTKMORSESMALLCOMPLEXSTABILITY_EXPORT ttkMorseSmallComplexStability
@@ -58,19 +27,23 @@ class TTKMORSESMALLCOMPLEXSTABILITY_EXPORT ttkMorseSmallComplexStability
     protected ttk::MorseSmallComplexStability // and we inherit from the base class
 {
 private:
-  /**
-   * TODO 5: Add all filter parameters only as private member variables and
-   *         initialize them here.
-   */
-  std::string OutputArrayName{"AveragedScalarField"};
+  bool ComputeOccurenceType0{true};
+  bool ComputeOccurenceType1{false};
+  bool ComputeOccurenceType2{true};
+  bool MergeEdgesOnSaddles{true};
 
 public:
-  /**
-   * TODO 6: Automatically generate getters and setters of filter
-   *         parameters via vtkMacros.
-   */
-  vtkSetMacro(OutputArrayName, const std::string &);
-  vtkGetMacro(OutputArrayName, std::string);
+  //vtkSetMacro(ComputeOccurenceType0, bool);
+  //vtkGetMacro(ComputeOccurenceType0, bool);
+//
+  //vtkSetMacro(ComputeOccurenceType1, bool);
+  //vtkGetMacro(ComputeOccurenceType1, bool);
+//
+  //vtkSetMacro(ComputeOccurenceType2, bool);
+  //vtkGetMacro(ComputeOccurenceType2, bool);
+
+  vtkSetMacro(MergeEdgesOnSaddles, bool);
+  vtkGetMacro(MergeEdgesOnSaddles, bool);
 
   /**
    * This static method and the macro below are VTK conventions on how to
@@ -117,14 +90,24 @@ protected:
                       vtkIdType &srcPointId,
                       vtkIdType &destPointId);
 
-  void updateVertexLinksList(std::vector<std::vector<int>> &vertexLinks, 
-                              const int &v1, 
-                              const int &v2);
+  void updateAdjacencyMatrix(const int &sourceLocalId,
+                              const int &destinationLocalId,
+                              const int &separatrixLocalId,
+                              GraphMatrixFull &adjacencyMatrix);
+                                                              
+  void appendPoint(vtkPoints* points, 
+                    const int &index, 
+                    std::vector<std::array<double, 3>> &coords);
+
+  void computeGraphMinor(const GraphMatrixFull &adjacencyMatrixFull, 
+                          GraphMatrixMinor &adjacencyMatrix);
 
   int prepareData(vtkDataSet* block, 
                   std::vector<int> &localToGlobal, 
-                  GraphMatrix &adjacencyMatrix,
-                  std::vector<std::array<double, 3>> &coords,
+                  GraphMatrixFull &adjacencyMatrixFull,
+                  GraphMatrixMinor &adjacencyMatrixMinor,
+                  std::vector<std::array<double, 3>> &coordsSource,
+                  std::vector<std::array<double, 3>> &coordsDestination,
                   int &n_separatrices);
   
 };
