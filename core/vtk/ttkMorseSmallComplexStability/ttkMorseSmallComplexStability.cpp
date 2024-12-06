@@ -206,16 +206,14 @@ int ttkMorseSmallComplexStability::prepareData(vtkDataSet* block,
     bool foundDestination = updateVisitedVertices(destinationGlobalId, destinationLocalToGlobal, destinationLocalId);
     if(!foundDestination)appendPoint(points, destinationPointId, coordsDestination);
     if(!foundSource && !MergeEdgesOnSaddles)appendPoint(points, sourcePointId, coordsSource);
-    updateAdjacencyMatrix(sourceLocalId,destinationLocalId, separatrixLocalId, adjacencyMatrixFull);
+    updateAdjacencyMatrix(destinationLocalId, sourceLocalId, separatrixLocalId, adjacencyMatrixFull);
     cellId_1 = cellId_2 + 1;
   }
 
   n_separatrices=separatrixLocalId+1;
   localToGlobal = std::move(destinationLocalToGlobal);
 
-  if(MergeEdgesOnSaddles){
-    computeGraphMinor(adjacencyMatrixFull, adjacencyMatrixMinor);
-  }
+  if(MergeEdgesOnSaddles)computeGraphMinor(adjacencyMatrixFull, adjacencyMatrixMinor);
 
   return 1;
 }
@@ -247,25 +245,25 @@ int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_S
                                                   coordsDestination[i], 
                                                   separatrixCountForEachBlock[i]);
     }
+
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(threadNumber_)
     #endif // TTK_ENABLE_OPENMP
     for (int i = 0 ; i < n_blocks ; i++){
-      if(!MergeEdgesOnSaddles){
+      if(MergeEdgesOnSaddles)
+        status = this->buildOccurenceArraysMinor(adjacencyMatricesMinor, 
+                          separatrixCountForEachBlock[i], 
+                          coordsDestination,
+                          i,
+                          edgeOccurenceForEachBlock[i]);
+      else
         status = this->buildOccurenceArraysFull(adjacencyMatricesFull,
                                                 separatrixCountForEachBlock[i],
                                                 coordsSource, 
                                                 coordsDestination,
                                                 i,
                                                 edgeOccurenceForEachBlock[i]);
-      }
-      else{
-        status = this->buildOccurenceArraysMinor(adjacencyMatricesMinor, 
-                  separatrixCountForEachBlock[i], 
-                  coordsDestination,
-                  i,
-                  edgeOccurenceForEachBlock[i]);
-      }
+      
     }
 
     if (status == 0)return status;
@@ -296,6 +294,7 @@ int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_S
           separatrixCount++;
           newValue = (float)edgeOccurenceForEachBlock[i][separatrixCount]/n_blocks;
         }
+        float newValue = edgeOccurenceForEachBlock[i][separatrixCount]/n_blocks;
         occurenceCount->InsertNextValue(newValue);
       }
       blockCellData->AddArray(occurenceCount);

@@ -60,6 +60,7 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysFull(
                                   std::vector<int> &edgeOccurences){
 
   int n_blocks = adjacencyMatricesFull.size();
+
   for (int i = 0 ; i < n_blocks - 1 ; i++){
     if (coordsSource[i].size() != coordsSource[i+1].size() 
           || coordsDestination[i].size() != coordsDestination[i+1].size()){
@@ -86,10 +87,12 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysFull(
       for (int j = 0 ; j < n_destination; j++){
         int thisBlockSourceId = std::get<0>(matchingsSource[otherBlockdIdMatchingsVector][i]);
         int thisBlockDestinationId = std::get<0>(matchingsDestination[otherBlockdIdMatchingsVector][j]);
-        if(adjacencyMatricesFull[block_id][thisBlockSourceId][thisBlockDestinationId]!=-1){
+        if(adjacencyMatricesFull[block_id][thisBlockSourceId][thisBlockDestinationId]!=0){
+          
           int otherBlockSourceId = std::get<1>(matchingsSource[otherBlockdIdMatchingsVector][i]);
           int otherBlockDestinationId = std::get<1>(matchingsDestination[otherBlockdIdMatchingsVector][j]);
-          if(adjacencyMatricesFull[k][otherBlockSourceId][otherBlockDestinationId]!=-1){
+
+          if(adjacencyMatricesFull[k][otherBlockSourceId][otherBlockDestinationId]!=0){
             int separatriceId = adjacencyMatricesFull[block_id][thisBlockSourceId][thisBlockDestinationId];
             edgeOccurences[separatriceId]++;
           }
@@ -129,7 +132,7 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysMinor(const std::vector
         }
       }
     }
-
+  
   for (int k = 0 ; k < n_blocks ; k++){
 
     if(k==block_id)continue;
@@ -137,7 +140,8 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysMinor(const std::vector
     int otherBlockdIdMatchingsVector = k < block_id ? k : k-1; 
 
     for (int i = 0 ; i < n_points ; i++){
-      for (int j = i+1 ; j < n_points ; j++){
+      for (int j = 0 ; j < n_points ; j++){
+
         int tmp1 = std::get<0>(matchings[otherBlockdIdMatchingsVector][i]);
         int tmp2 = std::get<0>(matchings[otherBlockdIdMatchingsVector][j]);
         int thisBlockVertex1 = std::min(tmp1, tmp2);
