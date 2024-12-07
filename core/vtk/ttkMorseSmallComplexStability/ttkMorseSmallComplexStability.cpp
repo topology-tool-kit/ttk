@@ -127,18 +127,18 @@ void ttkMorseSmallComplexStability::computeGraphMinor(const GraphMatrixFull &adj
                                                         GraphMatrixMinor &adjacencyMatrix){
   int n_row = adjacencyMatrixFull.size();
   int n_col = adjacencyMatrixFull[0].size();
-  adjacencyMatrix.resize(n_row);
-  for (int i = 0 ; i < n_row ; i++){
-    adjacencyMatrix[i].resize(n_row);
+  adjacencyMatrix.resize(n_col);
+  for (int i = 0 ; i < n_col ; i++){
+    adjacencyMatrix[i].resize(n_col);
   }
 
   for (int i = 0 ; i < n_row ; i++){
     for (int j = 0 ; j < n_col ; j++){
       if(adjacencyMatrixFull[i][j]!=-1){
-        for (int k = i+1 ; k < n_row ; k++){
-          if(adjacencyMatrixFull[k][j]!=-1){
-            std::pair<int, int> newEdge = std::make_pair(adjacencyMatrixFull[k][j], adjacencyMatrixFull[i][j]);
-            adjacencyMatrix[i][k].push_back(newEdge);
+        for (int k = 0 ; k < j ; k++){
+          if(adjacencyMatrixFull[i][k]!=-1){
+            std::pair<int, int> newEdge = std::make_pair(adjacencyMatrixFull[i][j], adjacencyMatrixFull[i][k]);
+            adjacencyMatrix[k][j].push_back(newEdge);
           }
         }
       }
@@ -206,14 +206,16 @@ int ttkMorseSmallComplexStability::prepareData(vtkDataSet* block,
     bool foundDestination = updateVisitedVertices(destinationGlobalId, destinationLocalToGlobal, destinationLocalId);
     if(!foundDestination)appendPoint(points, destinationPointId, coordsDestination);
     if(!foundSource && !MergeEdgesOnSaddles)appendPoint(points, sourcePointId, coordsSource);
-    updateAdjacencyMatrix(destinationLocalId, sourceLocalId, separatrixLocalId, adjacencyMatrixFull);
+    updateAdjacencyMatrix(sourceLocalId,destinationLocalId, separatrixLocalId, adjacencyMatrixFull);
     cellId_1 = cellId_2 + 1;
   }
 
   n_separatrices=separatrixLocalId+1;
   localToGlobal = std::move(destinationLocalToGlobal);
 
-  if(MergeEdgesOnSaddles)computeGraphMinor(adjacencyMatrixFull, adjacencyMatrixMinor);
+  if(MergeEdgesOnSaddles){
+    computeGraphMinor(adjacencyMatrixFull, adjacencyMatrixMinor);
+  }
 
   return 1;
 }
@@ -245,24 +247,25 @@ int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_S
                                                   coordsDestination[i], 
                                                   separatrixCountForEachBlock[i]);
     }
-
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(threadNumber_)
     #endif // TTK_ENABLE_OPENMP
     for (int i = 0 ; i < n_blocks ; i++){
-      if(!MergeEdgesOnSaddles)
+      if(!MergeEdgesOnSaddles){
         status = this->buildOccurenceArraysFull(adjacencyMatricesFull,
                                                 separatrixCountForEachBlock[i],
                                                 coordsSource, 
                                                 coordsDestination,
                                                 i,
                                                 edgeOccurenceForEachBlock[i]);
-      else
+      }
+      else{
         status = this->buildOccurenceArraysMinor(adjacencyMatricesMinor, 
                   separatrixCountForEachBlock[i], 
                   coordsDestination,
                   i,
                   edgeOccurenceForEachBlock[i]);
+      }
     }
 
     if (status == 0)return status;
@@ -284,14 +287,15 @@ int ttkMorseSmallComplexStability::execute( vtkMultiBlockDataSet* &multiBlock1_S
       vtkIdType currentCellId = 0;
       int currentSeparatrixId = separatrixIds->GetValue(currentCellId);
       int separatrixCount = 0;
-      occurenceCount->InsertNextValue(edgeOccurenceForEachBlock[i][separatrixCount]);
+      float newValue = (float)edgeOccurenceForEachBlock[i][separatrixCount]/n_blocks;
+      occurenceCount->InsertNextValue(newValue);
 
       for (int j = 1 ; j < cellNumber ; j++){
         if(separatrixIds->GetValue(j)!=currentSeparatrixId){
           currentSeparatrixId = separatrixIds->GetValue(j);
           separatrixCount++;
+          newValue = (float)edgeOccurenceForEachBlock[i][separatrixCount]/n_blocks;
         }
-        float newValue = edgeOccurenceForEachBlock[i][separatrixCount]/n_blocks;
         occurenceCount->InsertNextValue(newValue);
       }
       blockCellData->AddArray(occurenceCount);
