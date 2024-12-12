@@ -2,13 +2,16 @@
 #include <ttkMorseSmaleComplex.h>
 #include <ttkUtils.h>
 
+#include <vtkAbstractArray.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
+#include <vtkDataObjectTypes.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -40,6 +43,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
     return 1;
   } else if(port == 3) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    // info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
     return 1;
   }
   return 0;
@@ -47,7 +51,10 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
 
 template <typename vtkArrayType, typename vectorType>
 void setArray(vtkArrayType &vtkArray, vectorType &vector) {
-  ttkUtils::SetVoidArray(vtkArray, vector.data(), vector.size(), 1);
+  vtkArray->SetNumberOfTuples(vector.size());
+  for(unsigned int i = 0; i < vector.size(); i++) {
+    vtkArray->SetValue(i, vector[i]);
+  }
 }
 
 template <typename scalarType, typename triangulationType>
@@ -61,6 +68,9 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
   const int dimensionality = triangulation.getDimensionality();
   const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
 
+  OutputCriticalPoints criticalPoints_{};
+  Output1Separatrices separatrices1_{};
+  Output2Separatrices separatrices2_{};
   const int ret = this->execute(
     criticalPoints_, separatrices1_, separatrices2_, segmentations_, scalars,
     inputScalars->GetMTime(), inputOffsets, triangulation);
@@ -148,7 +158,6 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     pointData->AddArray(PLVertexIdentifiers);
     pointData->AddArray(manifoldSizeScalars);
   }
-
   // 1-separatrices
   if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1
      or ComputeSaddleConnectors) {
@@ -177,7 +186,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices1_.pt.points_);
+    pointsCoords->SetNumberOfTuples(separatrices1_.pt.numberOfPoints_);
+    for(int i = 0; i < separatrices1_.pt.numberOfPoints_; i++) {
+      pointsCoords->SetTuple3(i, separatrices1_.pt.points_[3 * i],
+                              separatrices1_.pt.points_[3 * i + 1],
+                              separatrices1_.pt.points_[3 * i + 2]);
+    }
 
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
@@ -309,7 +323,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices2_.pt.points_);
+    pointsCoords->SetNumberOfTuples(separatrices2_.pt.points_.size());
+    for(int i = 0; i < separatrices2_.pt.numberOfPoints_; i++) {
+      pointsCoords->SetTuple3(i, separatrices2_.pt.points_[3 * i],
+                              separatrices2_.pt.points_[3 * i + 1],
+                              separatrices2_.pt.points_[3 * i + 2]);
+    }
 
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName(ttk::MorseSmaleSourceIdName);
@@ -387,7 +406,6 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     cellData->AddArray(separatrixFunctionDiffs);
     cellData->AddArray(isOnBoundary);
   }
-
   return ret;
 }
 
@@ -395,7 +413,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  const auto input = vtkDataSet::GetData(inputVector[0]);
+  const auto input
+    = vtkImageData::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
   auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
   auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
@@ -469,6 +488,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
     return -1;
   }
 #endif
+
   ascendingManifold->SetNumberOfComponents(1);
   ascendingManifold->SetNumberOfTuples(numberOfVertices);
   ascendingManifold->SetName(ttk::MorseSmaleAscendingName);
