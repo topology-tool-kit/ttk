@@ -668,9 +668,10 @@ namespace ttk {
                 : editCost_Shifting<dataType>(m.first.first, m.first.second,
                                               m.second.first, m.second.second,
                                               tree1, tree2);
-          if(m.first.second == (int)tree1->getRoot()) {
-            matchedCost[m.first.second] = matchedCost[m.first.first];
-          }
+          // if(m.first.second == (int)tree1->getRoot()) {
+          //   matchedCost[m.first.second] = matchedCost[m.first.first];
+          // }
+          matchedCost[m.first.second] = matchedCost[m.first.first];
         }
         for(ftm::idNode i = 0; i < matchedNodes.size(); i++) {
           if(matchedNodes[i] >= 0)
