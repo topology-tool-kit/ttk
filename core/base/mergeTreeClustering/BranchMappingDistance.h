@@ -620,7 +620,7 @@ namespace ttk {
 
         outputMatching->clear();
         std::vector<int> matchedNodes(tree1->getNumberOfNodes(), -1);
-        std::vector<int> matchedCost(tree1->getNumberOfNodes(), -1);
+        std::vector<dataType> matchedCost(tree1->getNumberOfNodes(), -1);
         std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>
           mapping;
         std::vector<int> linkedNodes1(tree1->getNumberOfNodes(), -1);
