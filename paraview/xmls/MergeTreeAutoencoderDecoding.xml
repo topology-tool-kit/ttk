@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkMergeTreeAutoencoderDecoding" class="ttkMergeTreeAutoencoderDecoding" label="TTK MergeTreeAutoencoderDecoding">
+      <Documentation long_help="MergeTreeAutoencoderDecoding Long" short_help="MergeTreeAutoencoderDecoding Short">This VTK filter uses the ttk::MergeTreeAutoencoderDecoding module to compute a decoding of merge trees or persistence diagrams given the parameters of a Wasserstein Auto-Encoder.
+
+Related Publication:
+"Wasserstein Auto-Encoders of Merge Trees (and Persistence Diagrams)"
+Mathieu Pont,  Julien Tierny.
+IEEE Transactions on Visualization and Computer Graphics, 2023
+
+Online examples:
+
+- https://topology-tool-kit.github.io/examples/mergeTreeWAE/
+
+- https://topology-tool-kit.github.io/examples/persistenceDiagramWAE/
+
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="Origins"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Origin of each basis of each layer.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Bases Vectors"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Vectors defining each basis.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Coefficients"
+        port_index="2"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Coefficients of the input trees in each basis.
+        </Documentation>
+      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      
+      <!-- Create a UI group that contains all input parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Input options">
+      </PropertyGroup>
+
+      <!-- Create a UI group that contains all output parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Output options">
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

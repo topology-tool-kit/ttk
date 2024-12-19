@@ -41,13 +41,12 @@ void ttk::PDBarycenter::runMatching(
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
-    double const delta_lim = delta_lim_;
     PersistenceDiagramAuction auction(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, delta_lim, kdt, correspondence_kdt_map,
+      geometrical_factor_, lambda_, delta_lim_, kdt, correspondence_kdt_map,
       epsilon, min_diag_price->at(i), use_kdt, nonMatchingWeight_);
     int n_biddings = 0;
-    auction.initLowerBoundCostWeight(delta_lim);
+    auction.initLowerBoundCostWeight(delta_lim_);
     auction.initLowerBoundCost(i);
     auction.buildUnassignedBidders();
     auction.reinitializeGoods();
@@ -173,27 +172,23 @@ double ttk::PDBarycenter::updateBarycenter(
   double max_shift = 0;
 
   std::vector<size_t> count_diag_matchings(
-    n_goods); // Number of diagonal matchings for each point of the barycenter
-  std::vector<double> x(n_goods);
-  std::vector<double> y(n_goods);
-  std::vector<double> crit_coords_x(n_goods);
-  std::vector<double> crit_coords_y(n_goods);
-  std::vector<double> crit_coords_z(n_goods);
-  for(size_t i = 0; i < n_goods; i++) {
-    count_diag_matchings[i] = 0;
-    x[i] = 0;
-    y[i] = 0;
-    crit_coords_x[i] = 0;
-    crit_coords_y[i] = 0;
-    crit_coords_z[i] = 0;
-  }
-  std::vector<double> min_prices(n_diagrams);
-  for(size_t j = 0; j < n_diagrams; j++) {
-    min_prices[j] = std::numeric_limits<double>::max();
-  }
+    n_goods,
+    0); // Number of diagonal matchings for each point of the barycenter
+  std::vector<double> x(n_goods, 0);
+  std::vector<double> y(n_goods, 0);
+  std::vector<double> crit_coords_x(n_goods, 0);
+  std::vector<double> crit_coords_y(n_goods, 0);
+  std::vector<double> crit_coords_z(n_goods, 0);
+
+  std::vector<double> min_prices(
+    n_diagrams, std::numeric_limits<double>::max());
 
   std::vector<Bidder *>
     points_to_append; // Will collect bidders linked to diagonal
+  std::vector<int> diagonalToNewGood;
+  if(numberOfInputs_ == 2)
+    diagonalToNewGood.resize(current_bidder_diagrams_[0].size()
+                             + current_bidder_diagrams_[1].size());
   // 2. Preprocess the matchings
   for(size_t j = 0; j < matchings.size(); j++) {
     for(size_t i = 0; i < matchings[j].size(); i++) {
@@ -202,6 +197,9 @@ double ttk::PDBarycenter::updateBarycenter(
       if(good_id < 0 && bidder_id >= 0) {
         // Future new barycenter point
         points_to_append.push_back(&current_bidder_diagrams_[j].at(bidder_id));
+        if(numberOfInputs_ == 2)
+          diagonalToNewGood[-good_id - 1]
+            = n_goods + points_to_append.size() - 1;
       }
 
       else if(good_id >= 0 && bidder_id >= 0) {
@@ -341,6 +339,25 @@ double ttk::PDBarycenter::updateBarycenter(
     barycenter_goods_[j] = new_barycenter;
   }
 
+  // final update of matchings here if there are only 2 input diagrams
+  if(numberOfInputs_ == 2) {
+    std::vector<double> costs(n_goods + points_to_append.size(), 0.);
+    for(int i = 0; i < 2; ++i) {
+      for(auto &[b_id, g_id, c] : matchings[i]) {
+        if(g_id < 0 && diagonalToNewGood[-g_id - 1] > 0)
+          g_id = diagonalToNewGood[-g_id - 1];
+        if(g_id >= 0)
+          costs[g_id] += c;
+      }
+    }
+    for(int i = 0; i < 2; ++i) {
+      for(auto &[b_id, g_id, c] : matchings[i]) {
+        if(g_id >= 0)
+          c = costs[g_id] / Geometry::pow(2, wasserstein_);
+      }
+    }
+  }
+
   return max_shift;
 }
 
@@ -370,10 +387,7 @@ void ttk::PDBarycenter::setBidderDiagrams() {
     }
     bidder_diagrams_.push_back(bidders);
     current_bidder_diagrams_.emplace_back();
-    std::vector<int> ids(bidders.size());
-    for(size_t j = 0; j < ids.size(); j++) {
-      ids[j] = -1;
-    }
+    std::vector<int> ids(bidders.size(), -1);
     current_bidder_ids_.push_back(ids);
   }
 }
@@ -432,7 +446,7 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
   // 3. Add the points to the current diagrams
 
   // only to give determinism
-  int compteur_for_adding_points = 0;
+  int counter_for_adding_points = 0;
 
   for(int i = 0; i < numberOfInputs_; i++) {
     int const size = candidates_to_be_added[i].size();
@@ -448,7 +462,7 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
           = current_bidder_diagrams_[i].size() - 1;
 
         int const to_be_added_to_barycenter
-          = deterministic_ ? compteur_for_adding_points % numberOfInputs_
+          = deterministic_ ? counter_for_adding_points % numberOfInputs_
                            : rand() % numberOfInputs_;
         // We add the bidder as a good with probability 1/n_diagrams
         if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
@@ -460,7 +474,7 @@ double ttk::PDBarycenter::enrichCurrentBidderDiagrams(
           }
         }
       }
-      compteur_for_adding_points++;
+      counter_for_adding_points++;
     }
   }
   return new_min_persistence;
@@ -534,7 +548,7 @@ void ttk::PDBarycenter::setInitialBarycenter(double min_persistence) {
       GoodDiagram goods;
       int count = 0;
       for(size_t j = 0; j < CTDiagram->size(); j++) {
-        // Add bidder to bidders
+        // Add good to goods
         Good const g = Good((*CTDiagram)[j], count, lambda_);
         if(g.getPersistence() >= min_persistence) {
           goods.emplace_back(g);
@@ -604,12 +618,8 @@ std::vector<std::vector<ttk::MatchingType>>
 
   double const max_persistence = getMaxPersistence();
 
-  std::vector<double> min_diag_price(numberOfInputs_);
-  std::vector<double> min_price(numberOfInputs_);
-  for(int i = 0; i < numberOfInputs_; i++) {
-    min_diag_price[i] = 0;
-    min_price[i] = 0;
-  }
+  std::vector<double> min_diag_price(numberOfInputs_, 0);
+  std::vector<double> min_price(numberOfInputs_, 0);
 
   int const min_points_to_add = std::numeric_limits<int>::max();
   this->enrichCurrentBidderDiagrams(2 * max_persistence, min_persistence,
@@ -670,7 +680,7 @@ std::vector<std::vector<ttk::MatchingType>>
         last_min_cost_obtained += 1;
       }
 
-      converged = converged || last_min_cost_obtained > 1;
+      converged = last_min_cost_obtained > 1;
       if(numberOfInputs_ == 2)
         finished = true;
     }
@@ -688,10 +698,8 @@ std::vector<std::vector<ttk::MatchingType>>
         current_bidder_diagrams_[i].at(j).setDiagonalPrice(0);
       }
     }
-    for(int i = 0; i < numberOfInputs_; i++) {
-      min_diag_price[i] = 0;
-      min_price[i] = 0;
-    }
+    min_diag_price.assign(numberOfInputs_, 0);
+    min_price.assign(numberOfInputs_, 0);
   }
   barycenter.resize(0);
   for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {

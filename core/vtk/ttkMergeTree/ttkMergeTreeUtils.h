@@ -32,8 +32,11 @@ namespace ttk {
       vtkSmartPointer<vtkDataArray> const nodesScalar
         = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
       scalars->size = nodesScalar->GetNumberOfTuples();
-      auto scalarsValues = std::make_shared<std::vector<dataType>>(
-        nodesScalar->GetNumberOfTuples());
+      if(treeNodeIdArray)
+        scalars->size = std::max(
+          (ttk::SimplexId)treeNodeIdArray->GetRange()[1] + 1, scalars->size);
+      auto scalarsValues
+        = std::make_shared<std::vector<dataType>>(scalars->size);
       for(int i = 0; i < nodesScalar->GetNumberOfTuples(); ++i) {
         int const index = (treeNodeIdArray ? treeNodeIdArray->GetTuple1(i) : i);
         (*scalarsValues)[index] = nodesScalar->GetTuple1(i);
@@ -46,10 +49,7 @@ namespace ttk {
       MergeTree<dataType> mergeTree(scalars, scalarsValues, params);
 
       // Add Nodes
-      vtkSmartPointer<vtkDataArray> const nodesId
-        = treeNodes->GetPointData()->GetArray("NodeId"); // 0: NodeId
-      vtkIdType const nodesNumTuples = nodesId->GetNumberOfTuples();
-      for(vtkIdType i = 0; i < nodesNumTuples; ++i) {
+      for(vtkIdType i = 0; i < scalars->size; ++i) {
         mergeTree.tree.makeNode(i);
       }
 

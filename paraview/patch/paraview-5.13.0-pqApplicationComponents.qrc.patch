@@ -1,0 +1,28 @@
+diff --git a/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc b/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc
+index f10aa07ac..8c70267a5 100644
+--- a/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc
++++ b/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc
+@@ -2,17 +2,11 @@
+ <!-- SPDX-License-Identifier: BSD-3-Clause -->
+ <RCC>
+   <qresource prefix="/pqApplicationComponents">
+-    <file>ExampleVisualizations/CanExample.pvsm</file>
+-    <file>ExampleVisualizations/DiskOutRefExample.pvsm</file>
+-    <file>ExampleVisualizations/HeadSQExample.pvsm</file>
+-    <file>ExampleVisualizations/HotGasAnalysisExample.pvsm</file>
+-    <file>ExampleVisualizations/TosExample.pvsm</file>
+-    <file>ExampleVisualizations/WaveletExample.pvsm</file>
+-    <file>Thumbnails/CanExample.png</file>
+-    <file>Thumbnails/DiskOutRefExample.png</file>
+-    <file>Thumbnails/HeadSQExample.png</file>
+-    <file>Thumbnails/HotGasAnalysisExample.png</file>
+-    <file>Thumbnails/TosExample.png</file>
+-    <file>Thumbnails/WaveletExample.png</file>
++    <file>ExampleVisualizations/Example1.pvsm</file>
++    <file>ExampleVisualizations/Example2.pvsm</file>
++    <file>ExampleVisualizations/Example3.pvsm</file>
++    <file>Thumbnails/Example1.png</file>
++    <file>Thumbnails/Example2.png</file>
++    <file>Thumbnails/Example3.png</file>
+   </qresource>
+ </RCC>

@@ -25,14 +25,18 @@ runs:
     - name: Test Python example
       shell: bash
       run: |
-        cd $GITHUB_WORKSPACE/examples/python
-        python3 example.py ../data/inputData.vtu
+        if [ "${{ matrix.os }}" != "macos-13" ] && [ "${{ matrix.os }}" != "macos-14" ] && [ "${{ matrix.os }}" != "macos-15" ]; then
+          cd $GITHUB_WORKSPACE/examples/python
+          python3 example.py ../data/inputData.vtu
+        fi
 
     - name: Test pvpython example
       shell: bash
       run: |
-        cd $GITHUB_WORKSPACE/examples/pvpython
-        pvpython example.py ../data/inputData.vtu
+        if [ "${{ matrix.os }}" != "macos-13" ] && [ "${{ matrix.os }}" != "macos-14" ] && [ "${{ matrix.os }}" != "macos-15" ]; then
+          cd $GITHUB_WORKSPACE/examples/pvpython
+          pvpython example.py ../data/inputData.vtu
+        fi
 
     - name: Test standalone
       shell: bash

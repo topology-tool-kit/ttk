@@ -17,4 +17,6 @@ if(TTK_ENABLE_QHULL)
   target_compile_definitions(topoMap PUBLIC TTK_ENABLE_QHULL)
 endif()
 
-
+if(NOT TTK_ENABLE_QHULL OR NOT Qhull_FOUND)
+  target_link_libraries(topoMap PUBLIC Boost::boost)
+endif()

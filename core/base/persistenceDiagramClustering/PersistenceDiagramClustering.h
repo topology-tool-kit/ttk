@@ -53,6 +53,46 @@ namespace ttk {
       return this->distances;
     }
 
+    void setTimeLimit(double timeLimit) {
+      this->TimeLimit = timeLimit;
+    }
+
+    void setForceUseOfAlgorithm(bool forceUseOfAlgorithm) {
+      this->ForceUseOfAlgorithm = forceUseOfAlgorithm;
+    }
+
+    void setDeltaLim(double DeltaLimNew) {
+      this->DeltaLim = DeltaLimNew;
+    }
+
+    void setUseAdditionalPrecision(bool Precision) {
+      this->UseAdditionalPrecision = Precision;
+    }
+
+    void setUseProgressive(bool UseProgressive_) {
+      this->UseProgressive = UseProgressive_;
+    }
+
+    void setUseInterruptible(bool UseInterruptible_) {
+      this->UseInterruptible = UseInterruptible_;
+    }
+
+    void setDeterministic(bool Deterministic_) {
+      this->Deterministic = Deterministic_;
+    }
+
+    void setAlpha(double Alpha_) {
+      this->Alpha = Alpha_;
+    }
+
+    void setUseAccelerated(bool UseAccelerated_) {
+      this->UseAccelerated = UseAccelerated_;
+    }
+
+    void setUseKmeansppInit(bool UseKmeansppInit_) {
+      this->UseKmeansppInit = UseKmeansppInit_;
+    }
+
   protected:
     // Critical pairs used for clustering
     // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all

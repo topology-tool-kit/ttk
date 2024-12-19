@@ -2936,7 +2936,7 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
-  if(!ttk::hasInitializedMPI()) {
+  if(!ttk::isRunningWithMPI()) {
     return -1;
   }
   if(this->cellGhost_ == nullptr) {
@@ -2948,89 +2948,36 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
 
   Timer tm{};
 
-  // number of local cells (with ghost cells...)
-  const auto nLocCells{this->getNumberOfCells()};
-
-  // there are 6 tetrahedra per cubic cell (and 2 triangles per square)
-  const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
-  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
-
   this->ghostCellsPerOwner_.resize(ttk::MPIsize_);
 
+  const auto spacing{this->metaGrid_->spacing_};
+  const auto origin{this->metaGrid_->origin_};
+
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
-  auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
 
-  ttk::SimplexId localBBox_x_min{this->localGridOffset_[0]
-                                 + this->dimensions_[0]},
-    localBBox_y_min{this->localGridOffset_[1] + this->dimensions_[1]},
-    localBBox_z_min{this->localGridOffset_[2] + this->dimensions_[2]};
-  ttk::SimplexId localBBox_x_max{this->localGridOffset_[0]},
-    localBBox_y_max{this->localGridOffset_[1]},
-    localBBox_z_max{this->localGridOffset_[2]};
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for reduction(                    \
-  min                                                  \
-  : localBBox_x_min, localBBox_y_min, localBBox_z_min) \
-  reduction(max                                        \
-            : localBBox_x_max, localBBox_y_max, localBBox_z_max)
-#endif
-  for(SimplexId lcid = 0; lcid < nLocCells; ++lcid) {
-    // only keep non-ghost cells
-    if(this->cellGhost_[lcid / nTetraPerCube] == 1) {
-      continue;
+  double globalBounds[6]{
+    origin[0], origin[0] + (this->metaGrid_->dimensions_[0] - 1) * spacing[0],
+    origin[1], origin[1] + (this->metaGrid_->dimensions_[1] - 1) * spacing[1],
+    origin[2], origin[2] + (this->metaGrid_->dimensions_[2] - 1) * spacing[2]};
+  auto &Bbox{this->neighborCellBBoxes_[ttk::MPIrank_]};
+  for(int i = 0; i < 3; i++) {
+    if(std::abs(globalBounds[2 * i] - boundingBox_[2 * i]) > spacing[i] / 2) {
+      Bbox[2 * i] = boundingBox_[2 * i] + spacing[i];
+    } else {
+      Bbox[2 * i] = boundingBox_[2 * i];
     }
-    // local vertex coordinates
-    std::array<SimplexId, 3> p{};
-    if(this->dimensionality_ == 3) {
-      this->tetrahedronToPosition(lcid, p.data());
-    } else if(this->dimensionality_ == 2) {
-      this->triangleToPosition2d(lcid, p.data());
-      // compatibility with tetrahedronToPosition; fix a bounding box
-      // error in the first axis
-      p[0] /= 2;
-    }
-
-    // global vertex coordinates
-    p[0] += this->localGridOffset_[0];
-    p[1] += this->localGridOffset_[1];
-    p[2] += this->localGridOffset_[2];
-
-    if(p[0] < localBBox_x_min) {
-      localBBox_x_min = p[0];
-    }
-    if(p[0] > localBBox_x_max) {
-      localBBox_x_max = p[0];
-    }
-    if(p[1] < localBBox_y_min) {
-      localBBox_y_min = p[1];
-    }
-    if(p[1] > localBBox_y_max) {
-      localBBox_y_max = p[1];
-    }
-    if(p[2] < localBBox_z_min) {
-      localBBox_z_min = p[2];
-    }
-    if(p[2] > localBBox_z_max) {
-      localBBox_z_max = p[2];
+    if(std::abs(globalBounds[2 * i + 1] - boundingBox_[2 * i + 1])
+       > spacing[i] / 2) {
+      Bbox[2 * i + 1] = boundingBox_[2 * i + 1] - spacing[i];
+    } else {
+      Bbox[2 * i + 1] = boundingBox_[2 * i + 1];
     }
   }
-  localBBox_x_max++;
-  localBBox_y_max++;
-  localBBox_z_max++;
-
-  localBBox = {
-    localBBox_x_min, localBBox_x_max, localBBox_y_min,
-    localBBox_y_max, localBBox_z_min, localBBox_z_max,
-  };
-
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
-    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
-                 this->neighborCellBBoxes_[neigh].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
-                 MPI_STATUS_IGNORE);
+    MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6, MPI_DOUBLE,
+                 neigh, ttk::MPIrank_, this->neighborCellBBoxes_[neigh].data(),
+                 6, MPI_DOUBLE, neigh, neigh, ttk::MPIcomm_, MPI_STATUS_IGNORE);
   }
 
   this->hasPreconditionedDistributedCells_ = true;
@@ -3049,6 +2996,8 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   if(this->metaGrid_ != nullptr) {
     return;
   }
+
+  this->setBoundingBox(bounds);
 
   // Reorganize bounds to only execute Allreduce twice
   std::array<double, 6> tempBounds = {
@@ -3091,8 +3040,8 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
-  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
-                                globalBounds[2], this->spacing_[0],
+  this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[2],
+                                globalBounds[4], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],
                                 dimensions[0], dimensions[1], dimensions[2]);
   this->metaGrid_->preconditionBoundaryVertices();
@@ -3225,26 +3174,13 @@ int ttk::ImplicitTriangulation::getCellRankInternal(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const auto nVertsCell{this->getCellVertexNumber(lcid)};
-  std::vector<bool> inRank(nVertsCell);
+  float p[3] = {0, 0, 0};
+  this->metaGrid_->getCellIncenter(
+    this->getCellGlobalId(lcid), this->dimensionality_, p);
   for(const auto neigh : this->neighborRanks_) {
-    std::fill(inRank.begin(), inRank.end(), false);
     const auto &bbox{this->neighborCellBBoxes_[neigh]};
-    for(SimplexId i = 0; i < nVertsCell; ++i) {
-      SimplexId v{};
-      this->getCellVertex(lcid, i, v);
-      if(this->vertexGhost_[v] == 0) {
-        inRank[i] = true;
-      } else {
-        const auto p{this->getVertGlobalCoords(v)};
-        if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2]
-           && p[1] <= bbox[3] && p[2] >= bbox[4] && p[2] <= bbox[5]) {
-          inRank[i] = true;
-        }
-      }
-    }
-    if(std::all_of(
-         inRank.begin(), inRank.end(), [](const bool v) { return v; })) {
+    if(p[0] >= bbox[0] && p[0] <= bbox[1] && p[1] >= bbox[2] && p[1] <= bbox[3]
+       && p[2] >= bbox[4] && p[2] <= bbox[5]) {
       return neigh;
     }
   }

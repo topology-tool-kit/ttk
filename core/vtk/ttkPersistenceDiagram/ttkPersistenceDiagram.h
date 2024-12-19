@@ -107,7 +107,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
 ///   Interaction sites</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions//">Karhunen-Love
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
 ///   Digits 64-Dimensions example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
@@ -137,8 +137,20 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
 ///   Diagram Distance example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
 ///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/">Topological
+///   Optimization for Torus Repair example</a>\n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
 ///   example</a> \n

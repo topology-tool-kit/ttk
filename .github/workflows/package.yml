@@ -12,7 +12,7 @@ on:
       - 'pack*'
 
 env:
-  PV_TAG: v5.12.0
+  PV_TAG: v5.13.0
   PV_REPO: topology-tool-kit/ttk-paraview
 
 jobs:
@@ -24,9 +24,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Install Ubuntu dependencies
@@ -86,7 +86,7 @@ jobs:
         cpack -G DEB
 
     - name: Upload TTK .deb package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk-${{ matrix.os }}.deb
         path: build/ttk.deb
@@ -99,9 +99,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Fetch TTK-ParaView headless Debian package
@@ -110,7 +110,7 @@ jobs:
           https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.deb
 
     - name: Fetch TTK .deb artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ttk-${{ matrix.os }}.deb
 
@@ -126,10 +126,16 @@ jobs:
         # pvpython does not embed the correct PYTHONPATH
         echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
 
+    - name: Set PYTHONPATH for Ubuntu 24.04 pvpython
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
+
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -152,6 +158,11 @@ jobs:
         cd ttk-data
         # no X server
         rm python/geometryApproximation.py
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm python/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
         python3 -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
@@ -166,9 +177,15 @@ jobs:
   # Build macOS #
   # ------------#
   build-macos:
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, macos-15]
+    env:  
+      DYLD_LIBRARY_PATH: /usr/local/lib
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -181,19 +198,19 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget llvm libomp mesa glew qt@5 ninja 
+        brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz numpy websocketpp 
+        brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
 
     - name: Fetch & install TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
-        tar xzf ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.tar.gz
+        tar xzf ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
-        pvpython -m pip install scikit-learn
+        pvpython -m pip install --break-system-packages scikit-learn
 
     - name: Set compilers as environment variables
       run: |
@@ -230,9 +247,9 @@ jobs:
         cpack -G TGZ
 
     - name: Upload compressed binaries
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ttk.tar.gz
+        name: ttk-${{ matrix.os }}.tar.gz
         path: build/ttk.tar.gz
 
   # -----------#
@@ -240,9 +257,14 @@ jobs:
   # -----------#
   test-macos:
     needs: build-macos
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, macos-15]
+    env:
+      DYLD_LIBRARY_PATH: /usr/local/lib
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - name: Remove hosted Python
@@ -255,22 +277,23 @@ jobs:
         # ParaView dependencies
         brew reinstall python
         brew install --cask xquartz
-        brew install wget llvm libomp mesa glew qt@5 ninja 
+        brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz numpy websocketpp 
+        brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
 
     - name: Fetch TTK-ParaView
       run: |
-        wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.tar.gz
+        wget -O ttk-paraview.tar.gz https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.tar.gz
+
 
     - name: Fetch TTK .tar.gz artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
-        name: ttk.tar.gz
+        name: ttk-${{ matrix.os }}.tar.gz
 
     - name: Install binary archives packages
       run: |
-        tar xzf ttk-paraview-${{ env.PV_TAG}}.tar.gz
+        tar xzf ttk-paraview.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
         tar xzf ttk.tar.gz
         sudo cp -r ttk/* /usr/local
@@ -282,12 +305,12 @@ jobs:
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
         # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -297,6 +320,18 @@ jobs:
     - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm python/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
+        # some cases fail only with version 12
+        if [[ "${{ matrix.os }}" == "macos-12" ]]; then
+          rm python/contourTreeAlignment.py
+          rm python/geometryApproximation.py
+          rm python/harmonicSkeleton.py
+          rm python/topologicalOptimization_torus.py
+        fi
         pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
@@ -315,9 +350,11 @@ jobs:
   build-windows:
     runs-on: windows-2022
     env:
+      PV_DIR: C:\Program Files\TTK-ParaView
+      TTK_DIR: C:\Program Files (x86)\ttk
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -325,8 +362,14 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz websocketpp
+        conda install -c conda-forge "qt>=5.12" \
+          libboost-devel glew eigen spectralib zfp \
+          sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
+          llvm-openmp clangxx=18
+        # add TTK & ParaView install folders to PATH
+        echo "$PV_DIR/bin" >> $GITHUB_PATH
+        echo "$TTK_DIR/bin" >> $GITHUB_PATH
+        conda info --all
 
     - name: Remove hosted Python
       shell: bash
@@ -349,10 +392,15 @@ jobs:
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         mkdir build
         cd build
         cmake ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DCMAKE_POLICY_DEFAULT_CMP0074=NEW ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
           -DCMAKE_INSTALL_PREFIX="%ProgramFiles%\TTK" ^
@@ -362,6 +410,8 @@ jobs:
           -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
           -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
           -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
+          -DZLIB_ROOT="%CONDA_ROOT%\Library" ^
+          -DSQLite3_ROOT="%CONDA_ROOT%\Library" ^
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
           -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
@@ -370,14 +420,19 @@ jobs:
           -DTTK_ENABLE_OPENMP=TRUE ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
-          -G"Visual Studio 17 2022" ^
-          -Tclangcl ^
+          -GNinja ^
           ..
 
-    - name: Build TTK
+    - name: Fix clang-cl OpenMP flags in build.ninja
       shell: bash
       run: |
+        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
+
+    - name: Build TTK
+      shell: cmd
+      run: |
         cd build
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake --build . --config Release --parallel
 
     - name: Package TTK
@@ -387,7 +442,7 @@ jobs:
         cpack -C Release -G NSIS64
 
     - name: Upload TTK .exe package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ttk.exe
         path: build/ttk.exe
@@ -403,7 +458,7 @@ jobs:
       TTK_DIR: C:\Program Files\TTK
       CONDA_ROOT: C:\Miniconda
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       name: Checkout TTK source code
 
     - uses: s-weigand/setup-conda@v1
@@ -411,8 +466,14 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge "qt>=5.12" boost eigen spectralib zfp \
-          scikit-learn openmp graphviz websocketpp
+        conda install -c conda-forge "qt>=5.12" \
+          libboost-devel glew eigen spectralib zfp \
+          sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
+          llvm-openmp clangxx=18
+        # add TTK & ParaView install folders to PATH
+        echo "$PV_DIR/bin" >> $GITHUB_PATH
+        echo "$TTK_DIR/bin" >> $GITHUB_PATH
+        conda info --all
 
     - name: Remove hosted Python
       shell: bash
@@ -424,7 +485,7 @@ jobs:
         curl.exe -OL https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}.exe
 
     - name: Fetch TTK .exe artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: ttk.exe
 
@@ -443,24 +504,30 @@ jobs:
     - name: Test C++ example
       shell: cmd
       run: |
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake -G"Visual Studio 17 2022" -Tclangcl ..
+        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
         cmake --build . --config Release --parallel
-        Release\ttkExample-c++.exe -i ..\..\data\inputData.off
+        ttkExample-c++.exe -i ..\..\data\inputData.off
 
     - name: Test VTK-C++ example
       shell: cmd
       run: |
+        set CC=clang-cl.exe
+        set CXX=clang-cl.exe
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake -G"Visual Studio 17 2022" -Tclangcl ..
+        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
         cmake --build . --config Release --parallel
-        Release\ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
+        ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
     - name: Test Python example [TEMPORARILY NOT ENFORCED]
       continue-on-error: true
@@ -484,7 +551,7 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: "topology-tool-kit/ttk-data"
         ref: "dev"
@@ -505,6 +572,9 @@ jobs:
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
+        rm python/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
@@ -552,7 +622,7 @@ jobs:
           })
 
     - name: Fetch all uploaded artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
 
     - name: Upload Ubuntu Focal .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
@@ -570,13 +640,37 @@ jobs:
         file: ttk-ubuntu-22.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-22.04.deb
 
-    - name: Upload macOS binary archives as Release Asset
+    - name: Upload Ubuntu Noble Numbat .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk.tar.gz/ttk.tar.gz
-        asset_name: ttk-$tag.tar.gz
+        file: ttk-ubuntu-24.04.deb/ttk.deb
+        asset_name: ttk-$tag-ubuntu-24.04.deb
+
+    - name: Upload MacOS 13 binary archives as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-macos-13.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag-macos-13.tar.gz
+
+    - name: Upload MacOS 14 binary archives as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-macos-14.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag-macos-14.tar.gz
+
+    - name: Upload MacOS 15 binary archives as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-macos-15.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag-macos-15.tar.gz
 
     - name: Upload Windows .exe as Release Asset
       uses: svenstaro/upload-release-action@v2

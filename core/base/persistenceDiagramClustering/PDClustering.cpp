@@ -1248,10 +1248,7 @@ void ttk::PDClustering::invertClusters() {
   /// diagram.
 
   // Initializes clusters with -1
-  inv_clustering_ = std::vector<int>(numberOfInputs_);
-  for(int i = 0; i < numberOfInputs_; ++i) {
-    inv_clustering_[i] = -1;
-  }
+  inv_clustering_ = std::vector<int>(numberOfInputs_, -1);
 
   // Fill in the clusters
   for(int c = 0; c < k_; ++c) {
@@ -1959,10 +1956,7 @@ void ttk::PDClustering::setBidderDiagrams() {
       bidder_diagrams_min_.emplace_back(bidders);
       current_bidder_diagrams_min_.emplace_back();
       centroids_with_price_min_.emplace_back();
-      std::vector<int> ids(bidders.size());
-      for(size_t j = 0; j < ids.size(); j++) {
-        ids[j] = -1;
-      }
+      std::vector<int> ids(bidders.size(), -1);
       current_bidder_ids_min_.emplace_back(ids);
     }
 
@@ -1983,10 +1977,7 @@ void ttk::PDClustering::setBidderDiagrams() {
       bidder_diagrams_saddle_.emplace_back(bidders);
       current_bidder_diagrams_saddle_.emplace_back();
       centroids_with_price_saddle_.emplace_back();
-      std::vector<int> ids(bidders.size());
-      for(size_t j = 0; j < ids.size(); j++) {
-        ids[j] = -1;
-      }
+      std::vector<int> ids(bidders.size(), -1);
       current_bidder_ids_sad_.emplace_back(ids);
     }
 
@@ -2007,10 +1998,7 @@ void ttk::PDClustering::setBidderDiagrams() {
       bidder_diagrams_max_.emplace_back(bidders);
       current_bidder_diagrams_max_.emplace_back();
       centroids_with_price_max_.emplace_back();
-      std::vector<int> ids(bidders.size());
-      for(size_t j = 0; j < ids.size(); j++) {
-        ids[j] = -1;
-      }
+      std::vector<int> ids(bidders.size(), -1);
       current_bidder_ids_max_.emplace_back(ids);
     }
   }
@@ -2199,7 +2187,7 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
 
   // 3. Add the points to the current diagrams
   if(do_min_) {
-    int compteur_for_adding_points = 0;
+    int counter_for_adding_points = 0;
     for(int i = 0; i < numberOfInputs_; i++) {
       int const size = candidates_to_be_added_min[i].size();
       for(int j = 0; j < std::min(max_points_to_add_min, size); j++) {
@@ -2235,7 +2223,7 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
             r_[i] = true;
           }
           int const to_be_added_to_barycenter
-            = deterministic_ ? compteur_for_adding_points % numberOfInputs_
+            = deterministic_ ? counter_for_adding_points % numberOfInputs_
                              : rand() % numberOfInputs_;
           if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
             for(int k = 0; k < numberOfInputs_; k++) {
@@ -2254,12 +2242,12 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
             centroids_min_[inv_clustering_[i]].emplace_back(g);
           }
         }
-        compteur_for_adding_points++;
+        counter_for_adding_points++;
       }
     }
   }
   if(do_sad_) {
-    int compteur_for_adding_points = 0;
+    int counter_for_adding_points = 0;
     for(int i = 0; i < numberOfInputs_; i++) {
       int const size = candidates_to_be_added_sad[i].size();
       for(int j = 0; j < std::min(max_points_to_add_sad, size); j++) {
@@ -2295,7 +2283,7 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
             r_[i] = true;
           }
           int const to_be_added_to_barycenter
-            = deterministic_ ? compteur_for_adding_points % numberOfInputs_
+            = deterministic_ ? counter_for_adding_points % numberOfInputs_
                              : rand() % numberOfInputs_;
           if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
             for(int k = 0; k < numberOfInputs_; k++) {
@@ -2310,12 +2298,12 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
             }
           }
         }
-        compteur_for_adding_points++;
+        counter_for_adding_points++;
       }
     }
   }
   if(do_max_) {
-    int compteur_for_adding_points = 0;
+    int counter_for_adding_points = 0;
     for(int i = 0; i < numberOfInputs_; i++) {
       int const size = candidates_to_be_added_max[i].size();
       for(int j = 0; j < std::min(max_points_to_add_max, size); j++) {
@@ -2351,7 +2339,7 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
             r_[i] = true;
           }
           int const to_be_added_to_barycenter
-            = deterministic_ ? compteur_for_adding_points % numberOfInputs_
+            = deterministic_ ? counter_for_adding_points % numberOfInputs_
                              : rand() % numberOfInputs_;
           if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
             for(int k = 0; k < numberOfInputs_; k++) {
@@ -2370,7 +2358,7 @@ std::vector<double> ttk::PDClustering::enrichCurrentBidderDiagrams(
             centroids_max_[inv_clustering_[i]].emplace_back(g);
           }
         }
-        compteur_for_adding_points++;
+        counter_for_adding_points++;
       }
     }
   }

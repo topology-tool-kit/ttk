@@ -61,26 +61,6 @@ namespace ttk {
   }
 
   template <class dataType>
-  std::tuple<double, double>
-    getNormalizedBirthDeathDouble(ftm::FTMTree_MT *tree,
-                                  ftm::idNode nodeId,
-                                  dataType newMin = 0.0,
-                                  dataType newMax = 1.0) {
-    auto birthDeath = tree->getBirthDeath<dataType>(nodeId);
-    double birth = std::get<0>(birthDeath);
-    double death = std::get<1>(birthDeath);
-    dataType shiftMin = getMinMaxLocal<dataType>(tree, nodeId);
-    dataType shiftMax = getMinMaxLocal<dataType>(tree, nodeId, false);
-    if((shiftMax - shiftMin) == 0)
-      return std::make_tuple(0, 0);
-    birth = (newMax - newMin) * (birth - shiftMin)
-            / (shiftMax - shiftMin); // + newMin;
-    death = (newMax - newMin) * (death - shiftMin)
-            / (shiftMax - shiftMin); // + newMin;
-    return std::make_tuple(birth, death);
-  }
-
-  template <class dataType>
   std::tuple<dataType, dataType> getNormalizedBirthDeath(ftm::FTMTree_MT *tree,
                                                          ftm::idNode nodeId,
                                                          dataType newMin = 0.0,

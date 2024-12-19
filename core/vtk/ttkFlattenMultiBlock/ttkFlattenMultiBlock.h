@@ -14,8 +14,14 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
+///   tree Wasserstein Auto-Encoder example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
 ///   Tracking from Overlap example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
 
 #pragma once
 

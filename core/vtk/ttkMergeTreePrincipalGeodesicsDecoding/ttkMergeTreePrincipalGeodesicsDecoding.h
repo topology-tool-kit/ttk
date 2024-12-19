@@ -11,8 +11,8 @@
 /// Principal Geodesic Analysis basis and projection coefficients.
 ///
 /// \param Input vtkMultiBlockDataSet Barycenter
-/// \param Input vtkMultiBlockDataSet Geodesics
 /// \param Input vtkTable Coefficients
+/// \param Input vtkTable Geodesics
 /// \param Input vtkTable Branches Correlation
 /// \param Output vtkMultiBlockDataSet Trees
 ///
@@ -32,6 +32,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
 
 #pragma once
 

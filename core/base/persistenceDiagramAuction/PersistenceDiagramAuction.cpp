@@ -278,7 +278,7 @@ int ttk::Bidder::runDiagonalBidding(
   // First, find the lowest and second lowest weights for diagonal goods
   // Take this time to update the weights in the priority queue of the goods
   // tested. It is not necessary to update weights for all diagonal bidders in
-  // the pririty queue since weights can only increase and we are interested
+  // the priority queue since weights can only increase and we are interested
   // only in the lowest ones
   bool updated_top_pair
     = false; // Boolean which equals true iff the top pair in the priority
@@ -396,7 +396,7 @@ int ttk::Bidder::runDiagonalKDTBidding(
   // First, find the lowest and second lowest weights for diagonal goods
   // Take this time to update the weights in the priority queue of the goods
   // tested. It is not necessary to update weights for all diagonal bidders in
-  // the pririty queue since weights can only increase and we are interested
+  // the priority queue since weights can only increase and we are interested
   // only in the lowest ones
   bool updated_top_pair
     = false; // Boolean which equals true iff the top pair in the priority

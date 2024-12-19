@@ -213,7 +213,7 @@ void ttk::PersistenceDiagramBarycenter::execute(
       }
     }
   }
-  // Reconstruct barcenter
+  // Reconstruct barycenter
   for(size_t j = 0; j < barycenter_min.size(); j++) {
     const auto &dt = barycenter_min[j];
     barycenter.push_back(dt);

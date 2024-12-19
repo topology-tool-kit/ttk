@@ -1,0 +1,13 @@
+--- CMakeLists.txt	2024-08-21 20:55:47.000000000 +0200
++++ CMakeLists.txt	2024-09-10 09:45:54.503351833 +0200
+@@ -22,8 +22,8 @@
+ get_property(generator_is_multi_config GLOBAL
+   PROPERTY GENERATOR_IS_MULTI_CONFIG)
+ if (NOT CMAKE_BUILD_TYPE AND NOT generator_is_multi_config)
+-  message(STATUS "Setting build type to 'Debug' as none was specified.")
+-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
++  message(STATUS "Setting build type to 'Release' as none was specified.")
++  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+   # Set the possible values of build type for cmake-gui
+   set_property(CACHE CMAKE_BUILD_TYPE
+     PROPERTY

@@ -19,6 +19,15 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
 ///   Tree Principal Geodesic Analysis example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
+///   tree Wasserstein Auto-Encoder example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramWAE/">Persistence
+///   Diagram Wasserstein Auto-Encoder example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">
 ///   Persistent Generators Periodic Picture example</a> \n
 

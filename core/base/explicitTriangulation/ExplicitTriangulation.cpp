@@ -168,8 +168,8 @@ int ExplicitTriangulation::preconditionEdgeRankArray() {
         SimplexId sid{-1};
         this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(id, i, sid);
         // rule: an edge is owned by the cell in its star with the
-        // lowest global id
-        if(this->cellGid_[sid] < this->cellGid_[min_id]) {
+        // lowest rank
+        if(this->cellRankArray_[sid] < this->cellRankArray_[min_id]) {
           min_id = sid;
         }
       }
@@ -192,8 +192,8 @@ int ExplicitTriangulation::preconditionTriangleRankArray() {
         SimplexId sid{-1};
         this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(id, i, sid);
         // rule: an triangle is owned by the cell in its star with the
-        // lowest global id
-        if(this->cellGid_[sid] < this->cellGid_[min_id]) {
+        // lowest rank
+        if(this->cellRankArray_[sid] < this->cellRankArray_[min_id]) {
           min_id = sid;
         }
       }
@@ -1192,8 +1192,8 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
         continue;
       }
       // rule: an edge is owned by the cell in its star with the
-      // lowest global id
-      if(this->cellGid_[sid] < this->cellGid_[lcid]) {
+      // lowest rank
+      if(this->cellRankArray_[sid] < this->cellRankArray_[lcid]) {
         return true;
         break;
       }
@@ -1335,8 +1335,8 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
             continue;
           }
           // rule: an triangle is owned by the cell in its star with the
-          // lowest global id
-          if(this->cellGid_[sid] < this->cellGid_[lcid]) {
+          // lowest rank
+          if(this->cellRankArray_[sid] < this->cellRankArray_[lcid]) {
             return true;
             break;
           }

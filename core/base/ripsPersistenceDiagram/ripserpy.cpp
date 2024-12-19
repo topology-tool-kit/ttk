@@ -91,15 +91,25 @@ static const std::string clear_line("\r\033[K");
 
 static const size_t num_coefficient_bits = 8;
 
-// 1L on windows is ALWAYS 32 bits, when on unix systems is pointer size
+#if defined(TTK_ENABLE_RIPSER_128BITS_IDS) \
+  && (defined(__GNUC__) || defined(__clang__))
 static const index_t max_simplex_index
   = (__int128(1) << (8 * sizeof(index_t) - 1 - num_coefficient_bits)) - 1;
 
-namespace std {
-  inline std::string to_string(__int128) {
-    return "";
-  }
-} // namespace std
+void check_overflow(index_t i) {
+  if
+#ifdef USE_COEFFICIENTS
+    (i > max_simplex_index)
+#else
+    (i < 0)
+#endif
+    throw std::overflow_error("simplex index " + std::to_string((uint64_t)i)
+                              + " in filtration is larger than maximum index");
+}
+#else
+// 1L on windows is ALWAYS 32 bits, when on unix systems is pointer size
+static const index_t max_simplex_index
+  = (uintptr_t(1) << (8 * sizeof(index_t) - 1 - num_coefficient_bits)) - 1;
 
 void check_overflow(index_t i) {
   if
@@ -112,6 +122,7 @@ void check_overflow(index_t i) {
                               + " in filtration is larger than maximum index "
                               + std::to_string(max_simplex_index));
 }
+#endif
 
 class binomial_coeff_table {
   /* Using flatten matrix */

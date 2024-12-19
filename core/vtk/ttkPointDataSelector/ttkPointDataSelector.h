@@ -13,6 +13,12 @@
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
+///
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
+
 #pragma once
 
 #include <array>

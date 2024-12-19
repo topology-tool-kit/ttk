@@ -34,6 +34,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_skull/">Persistent
 ///   Generators Skull example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
 ///
 
 #pragma once

@@ -1,0 +1,119 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkSignedDistanceField"
+      class="ttkSignedDistanceField"
+      label="TTK SignedDistanceField">
+      <Documentation
+        long_help="TTK plugin for the signed distance field computation of surfaces."
+        short_help="TTK plugin for the signed distance field computation of surfaces.">
+This filter computes a signed distance field given a surface in input.
+
+It implements three backends (accelerated with a BVH data structure):
+
+- The exact backend
+
+- The fast marching backend, this method simulates a "wave" that move starting from the input surface and solve the eikonal equation vertex by vertex to approximate the signed distance field. It corresponds to the the following reference:
+
+J.A. Sethian. 
+A Fast Marching Level Set Method for Monotonically Advancing Fronts, 
+Proc. Natl. Acad. Sci., 93, 4, pp.1591--1595, 1996
+
+- The fast marching band backend, a variant of the fast marching for which all the vertices being not yet updated and nearest the input surface are updated (instead of just one in the fast marching backend). It results in a faster method (due to parallelism) but is a rougher approximation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/
+      </Documentation>
+      
+
+      <InputProperty command="SetInputConnection" name="Input">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <Documentation>
+          This property specifies the dataset whose data will be probed.
+        </Documentation>
+      </InputProperty>
+      
+      <IntVectorProperty command="SetSamplingDimensions"
+                         default_values="100 100 100"
+                         name="SamplingDimensions"
+                         number_of_elements="3"
+                         panel_visibility="default">
+                         <IntRangeDomain name="range" min="1 1 1"/>
+        <Documentation>
+          Resolution of each axis.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+      name="ExpandBox"
+      command="SetExpandBox"
+      label="Expand Box"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          This parameter allows to have an exterior border of resolution 1 in the output bounding box compared to the input surface bounding box.
+        </Documentation>
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty 
+      name="Backend" 
+      command="SetBackend"
+      number_of_elements="1" 
+      default_values="0"
+      panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+            <Entry value="0" text="Exact"/>
+            <Entry value="1" text="Fast Marching [Sethian, 1996]"/>
+            <Entry value="2" text="Fast Marching Band"/>
+        </EnumerationDomain>
+        <Documentation>
+            Method for the signed distance field computation, exact or approximation (fast marching and fast marching band, being an even rougher approximation).
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty 
+      name="FastMarchingOrder" 
+      command="SetFastMarchingOrder"
+      label="Fast Marching Order"
+      number_of_elements="1" 
+      default_values="0"
+      panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+            <Entry value="1" text="1"/>
+            <Entry value="2" text="2"/>
+        </EnumerationDomain>
+         <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Backend"
+                                  value="1" />
+        </Hints>
+        <Documentation>
+            Fast marching order.
+        </Documentation>
+      </IntVectorProperty>
+      
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SamplingDimensions" /> 
+        <Property name="ExpandBox" />
+        <Property name="Backend" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

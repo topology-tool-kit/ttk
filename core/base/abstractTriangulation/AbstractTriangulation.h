@@ -2512,7 +2512,7 @@ namespace ttk {
 
       std::array<float, 3> p{};
       for(int i = 0; i < 4; ++i) {
-        SimplexId triangleId;
+        SimplexId triangleId{-1};
         getCellTriangle(tetraId, i, triangleId);
         getTriangleIncenter(triangleId, p.data());
         incenter[0] += p[0];
@@ -2600,6 +2600,11 @@ namespace ttk {
     }
     virtual int preconditionDistributedCells() {
       return 0;
+    }
+
+    inline void setBoundingBox(const double *const bBox) {
+      this->boundingBox_
+        = {bBox[0], bBox[1], bBox[2], bBox[3], bBox[4], bBox[5]};
     }
 
     // This method should be called to initialize and populate the
@@ -3861,7 +3866,8 @@ namespace ttk {
     // hold the neighboring ranks vertex bounding boxes (metaGrid_ coordinates)
     std::vector<std::array<SimplexId, 6>> neighborVertexBBoxes_{};
     // hold the neighboring ranks cells bounding boxes (metaGrid_ coordinates)
-    std::vector<std::array<SimplexId, 6>> neighborCellBBoxes_{};
+    std::vector<std::array<double, 6>> neighborCellBBoxes_{};
+    std::array<double, 6> boundingBox_{};
 
     bool hasPreconditionedDistributedCells_{false};
     bool hasPreconditionedExchangeGhostCells_{false};

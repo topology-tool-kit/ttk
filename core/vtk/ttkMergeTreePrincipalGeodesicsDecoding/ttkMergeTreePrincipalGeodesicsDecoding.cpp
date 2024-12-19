@@ -1,3 +1,4 @@
+#include <MergeTreeAxesAlgorithmUtils.h>
 #include <ttkMergeTreePrincipalGeodesicsDecoding.h>
 #include <ttkMergeTreeUtils.h>
 
@@ -165,12 +166,13 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   if(inputBary.size() > 1) {
     for(unsigned int i = 0; i < 2; ++i) {
       auto &baryNoNodesT = (i == 0 ? baryNoNodes : baryNoNodes2);
-      while(std::isnan(
-        tableVectors
-          ->GetColumnByName(
-            getTableVectorName(numberOfGeodesics, 0, 0, 0, (i == 1)).c_str())
-          ->GetVariantValue(baryNoNodesT - 1)
-          .ToDouble()))
+      while(
+        std::isnan(tableVectors
+                     ->GetColumnByName(ttk::axa::getTableVectorName(
+                                         numberOfGeodesics, 0, 0, 0, (i == 1))
+                                         .c_str())
+                     ->GetVariantValue(baryNoNodesT - 1)
+                     .ToDouble()))
         --baryNoNodesT;
     }
   }
@@ -183,13 +185,14 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   allTs_.resize(numberOfGeodesics, std::vector<double>(numberOfInputs, 0.0));
   for(unsigned int i = 0; i < numberOfGeodesics; ++i)
     for(unsigned int j = 0; j < numberOfInputs; ++j) {
-      std::string const name = getTableCoefficientName(numberOfGeodesics, i);
+      std::string const name
+        = ttk::axa::getTableCoefficientName(numberOfGeodesics, i);
       allTs_[i][j] = tableCoefficients->GetColumnByName(name.c_str())
                        ->GetVariantValue(j)
                        .ToDouble();
       nonFieldDataNames.push_back(name);
       std::string const normName
-        = getTableCoefficientNormName(numberOfGeodesics, i);
+        = ttk::axa::getTableCoefficientNormName(numberOfGeodesics, i);
       nonFieldDataNames.push_back(normName);
     }
   ttk::Geometry::transposeMatrix(allTs_, allTreesTs_);
@@ -223,10 +226,10 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
     bool const secondInput = (h == 1);
     for(unsigned int i = 0; i < numberOfGeodesics; ++i) {
       for(unsigned int k = 0; k < 2; ++k) {
-        std::string const name1
-          = getTableVectorName(numberOfGeodesics, i, 0, k, secondInput);
-        std::string const name2
-          = getTableVectorName(numberOfGeodesics, i, 1, k, secondInput);
+        std::string const name1 = ttk::axa::getTableVectorName(
+          numberOfGeodesics, i, 0, k, secondInput);
+        std::string const name2 = ttk::axa::getTableVectorName(
+          numberOfGeodesics, i, 1, k, secondInput);
         pVS[i][k] = ttkUtils::GetPointer<double>(vtkDataArray::SafeDownCast(
           tableVectors->GetColumnByName(name1.c_str())));
         pV2s[i][k] = ttkUtils::GetPointer<double>(vtkDataArray::SafeDownCast(
@@ -248,9 +251,10 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
     auto baryNodeIdArray = tableCorrelation->GetColumnByName("BaryNodeId");
 
     for(unsigned int j = 0; j < numberOfGeodesics; ++j) {
-      std::string const name = getTableCorrelationName(numberOfGeodesics, j);
+      std::string const name
+        = ttk::axa::getTableCorrelationName(numberOfGeodesics, j);
       std::string const name2
-        = getTableCorrelationPersName(numberOfGeodesics, j);
+        = ttk::axa::getTableCorrelationPersName(numberOfGeodesics, j);
       pBranchesCorrelationMatrix_[j]
         = ttkUtils::GetPointer<double>(vtkDataArray::SafeDownCast(
           tableCorrelation->GetColumnByName(name.c_str())));
@@ -263,7 +267,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
     // later
     baryMatchings_.resize(numberOfInputs);
     for(unsigned int i = 0; i < numberOfInputs; ++i) {
-      std::string const name = getTableCorrelationTreeName(numberOfInputs, i);
+      std::string const name = ttk::axa::getTableTreeName(numberOfInputs, i);
       auto array = tableCorrelation->GetColumnByName(name.c_str());
       if(array) {
         baryMatchings_[i].resize(tableCorrNoRows);
@@ -578,11 +582,11 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
             corrPers[matchingMatrix[n][i]] = pPersCorrelationMatrix_[g][n];
           }
         }
-        std::string name
-          = getTableCorrelationName(pBranchesCorrelationMatrix_.size(), g);
+        std::string name = ttk::axa::getTableCorrelationName(
+          pBranchesCorrelationMatrix_.size(), g);
         visuMaker.addCustomArray(name, corr);
-        std::string name2
-          = getTableCorrelationPersName(pBranchesCorrelationMatrix_.size(), g);
+        std::string name2 = ttk::axa::getTableCorrelationPersName(
+          pBranchesCorrelationMatrix_.size(), g);
         visuMaker.addCustomArray(name2, corrPers);
       }
       if(!baryMatchings_.empty()) {
@@ -707,13 +711,14 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
 
     for(unsigned int j = 0; j < ts.size(); ++j) {
       vtkNew<vtkDoubleArray> tArray{};
-      std::string const name = getTableCoefficientName(ts.size(), j);
+      std::string const name = ttk::axa::getTableCoefficientName(ts.size(), j);
       tArray->SetName(name.c_str());
       tArray->InsertNextTuple1(ts[j]);
       vtkOutputNode->GetFieldData()->AddArray(tArray);
 
       vtkNew<vtkDoubleArray> scaledTArray{};
-      std::string const name2 = getTableCoefficientNormName(ts.size(), j);
+      std::string const name2
+        = ttk::axa::getTableCoefficientNormName(ts.size(), j);
       scaledTArray->SetName(name2.c_str());
       scaledTArray->InsertNextTuple1(ts[j] * geodesicsDistances_[j]);
       vtkOutputNode->GetFieldData()->AddArray(scaledTArray);

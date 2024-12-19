@@ -10,6 +10,10 @@
           short_help="Array Preconditioning">
         This filter preconditions a vtkDataSet by computing an input
         order array for every selected scalar arrays.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mpiExample/
       </Documentation>
 
       <InputProperty name="Input" command="SetInputConnection">

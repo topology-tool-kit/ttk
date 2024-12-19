@@ -20,7 +20,12 @@
 
         - https://topology-tool-kit.github.io/examples/mergeTreePGA/
 
+        - https://topology-tool-kit.github.io/examples/mergeTreeWAE/
+
         - https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/
+
+        - https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/
+
       </Documentation>
 
       <InputProperty

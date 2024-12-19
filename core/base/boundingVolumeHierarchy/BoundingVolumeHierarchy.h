@@ -281,7 +281,10 @@ namespace ttk {
                    const IT *connectivityList,
                    const float *vertexCoords,
                    int *triangleIndex,
-                   float *distance) const {
+                   float *distance,
+                   std::vector<int> &triangles,
+                   std::vector<float> &distances,
+                   bool segmentIntersection = false) const {
       bool wasHit = false;
       float nearestTriangle = std::numeric_limits<float>::max();
       std::stack<Node *> stack;
@@ -308,11 +311,17 @@ namespace ttk {
               v1 *= 3;
               v2 *= 3;
               hasHit = MollerTrumbore(r, v0, v1, v2, vertexCoords);
-              if(hasHit && r.distance < nearestTriangle) {
-                *triangleIndex = triIdx;
-                nearestTriangle = r.distance;
+              if(hasHit
+                 and (not segmentIntersection
+                      or (r.distance >= 0 and r.distance <= 1))) {
                 wasHit = true;
-                *distance = r.distance;
+                triangles.emplace_back(triIdx);
+                distances.emplace_back(r.distance);
+                if(r.distance < nearestTriangle) {
+                  *triangleIndex = triIdx;
+                  nearestTriangle = r.distance;
+                  *distance = r.distance;
+                }
               }
             }
           } else {
@@ -327,6 +336,30 @@ namespace ttk {
         }
       }
       return wasHit;
+    }
+
+    bool intersect(Ray &r,
+                   const IT *connectivityList,
+                   const float *vertexCoords,
+                   int *triangleIndex,
+                   float *distance,
+                   bool segmentIntersection = false) const {
+      std::vector<int> triangles;
+      std::vector<float> distances;
+      return intersect(r, connectivityList, vertexCoords, triangleIndex,
+                       distance, triangles, distances, segmentIntersection);
+    }
+
+    bool intersect(Ray &r,
+                   const IT *connectivityList,
+                   const float *vertexCoords,
+                   std::vector<int> &triangles,
+                   std::vector<float> &distances,
+                   bool segmentIntersection = false) const {
+      int triangleIndex;
+      float distance;
+      return intersect(r, connectivityList, vertexCoords, &triangleIndex,
+                       &distance, triangles, distances, segmentIntersection);
     }
 
     bool wasNodeHit(const Ray &r, Node *n) const {

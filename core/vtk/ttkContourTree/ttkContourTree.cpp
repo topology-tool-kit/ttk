@@ -134,10 +134,8 @@ int ttkContourTree::RequestData(vtkInformation *ttkNotUsed(request),
   // now proceed for each triangulation obtained.
 
   if(preconditionTriangulation() == 0) {
-#ifndef TTK_ENABLE_KAMIKAZE
     this->printErr("Error : wrong triangulation.");
     return 0;
-#endif
   }
 
   // Fill the vector of scalar/offset, cut the array in pieces if needed
@@ -264,12 +262,10 @@ int ttkContourTree::preconditionTriangulation() {
   for(int cc = 0; cc < nbCC_; cc++) {
     triangulation_[cc]
       = ttkAlgorithm::GetTriangulation(connected_components_[cc]);
-#ifndef TTK_ENABLE_KAMIKAZE
     if(!triangulation_[cc]) {
       this->printErr("Error : ttkTriangulation::getTriangulation() is null.");
       return 0;
     }
-#endif
 
     ftmTree_[cc].tree.setDebugLevel(debugLevel_);
     ftmTree_[cc].tree.setThreadNumber(threadNumber_);

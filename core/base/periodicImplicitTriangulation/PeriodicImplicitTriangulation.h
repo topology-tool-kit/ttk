@@ -265,8 +265,6 @@ namespace ttk {
 
   protected:
     int dimensionality_; //
-    float origin_[3]; //
-    float spacing_[3]; //
     SimplexId nbvoxels_[3]; // nombre de voxels par axe
     SimplexId wrap_[3];
 
@@ -1108,7 +1106,7 @@ inline void
 
 inline void ttk::PeriodicImplicitTriangulation::edgeToPosition(
   const SimplexId edge, const int k, SimplexId p[3]) const {
-  const int e = (k) ? edge - esetshift_[k - 1] : edge;
+  const ttk::SimplexId e = (k) ? edge - esetshift_[k - 1] : edge;
   p[0] = e % eshift_[2 * k];
   p[1] = (e % eshift_[2 * k + 1]) / eshift_[2 * k];
   p[2] = e / eshift_[2 * k + 1];

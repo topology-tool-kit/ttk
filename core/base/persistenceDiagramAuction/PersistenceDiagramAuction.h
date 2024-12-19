@@ -173,7 +173,7 @@ namespace ttk {
 
     void setGoods(const DiagramType &diagram2) {
       for(size_t i = 0; i < diagram2.size(); i++) {
-        // Add bidder to bidders
+        // Add good to goods
         Good const g{diagram2[i], static_cast<int>(i), lambda_};
         goods_.emplace_back(g);
       }
@@ -285,7 +285,7 @@ namespace ttk {
     }
 
   protected:
-    int wasserstein_{2}; // Power in Wassertsein distance (by default set to 2)
+    int wasserstein_{2}; // Power in Wasserstein distance (by default set to 2)
     BidderDiagram default_bidders_{};
     BidderDiagram &bidders_{default_bidders_};
     GoodDiagram default_goods_{};
@@ -302,12 +302,12 @@ namespace ttk {
 
     double epsilon_{1};
     double geometricalFactor_{};
-    double lambda_{};
     // lambda : 0<=lambda<=1
     // parametrizes the point used for the physical (critical) coordinates of
     // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
+    double lambda_{};
     double delta_lim_{};
     double lowerBoundCost_, lowerBoundCostWeight_;
     bool use_kdt_{true};

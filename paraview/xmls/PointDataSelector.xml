@@ -13,6 +13,10 @@
         long_help="TTK fieldSelector plugin."
         short_help="TTK fieldSelector plugin.">
         TTK fieldSelector plugin documentation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mpiExample/
       </Documentation>
       <InputProperty
         name="Input"

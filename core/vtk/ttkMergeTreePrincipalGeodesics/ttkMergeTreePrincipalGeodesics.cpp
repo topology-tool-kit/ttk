@@ -1,3 +1,4 @@
+#include <MergeTreeAxesAlgorithmUtils.h>
 #include <ttkMergeTreePrincipalGeodesics.h>
 #include <ttkMergeTreeUtils.h>
 
@@ -290,8 +291,9 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
     for(unsigned int i = 0; i < (*allTs[t]).size(); ++i) {
       vtkNew<vtkDoubleArray> tArray{};
       auto size = (*allTs[t]).size();
-      std::string const name = (t == 0 ? getTableCoefficientName(size, i)
-                                       : getTableCoefficientNormName(size, i));
+      std::string const name
+        = (t == 0 ? ttk::axa::getTableCoefficientName(size, i)
+                  : ttk::axa::getTableCoefficientNormName(size, i));
       tArray->SetName(name.c_str());
       tArray->SetNumberOfTuples(inputTrees.size());
       for(unsigned int j = 0; j < (*allTs[t])[i].size(); ++j)
@@ -346,8 +348,8 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
       for(unsigned int k = 0; k < 2; ++k) {
         vtkNew<vtkDoubleArray> vectorArray{};
         bool const isSecondInput = (v >= 2);
-        std::string const name
-          = getTableVectorName((*vector).size(), i, v % 2, k, isSecondInput);
+        std::string const name = ttk::axa::getTableVectorName(
+          (*vector).size(), i, v % 2, k, isSecondInput);
         vectorArray->SetName(name.c_str());
         vectorArray->SetNumberOfTuples(maxSize);
         for(unsigned int j = 0; j < (*vector)[i].size(); ++j)
@@ -367,10 +369,10 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
   unsigned int const noRows = branchesCorrelationMatrix_.size();
   for(unsigned int j = 0; j < noCols; ++j) {
     vtkNew<vtkDoubleArray> corrArray{}, persArray{};
-    std::string const name = getTableCorrelationName(noCols, j);
+    std::string const name = ttk::axa::getTableCorrelationName(noCols, j);
     corrArray->SetName(name.c_str());
     corrArray->SetNumberOfTuples(noRows);
-    std::string const name2 = getTableCorrelationPersName(noCols, j);
+    std::string const name2 = ttk::axa::getTableCorrelationPersName(noCols, j);
     persArray->SetName(name2.c_str());
     persArray->SetNumberOfTuples(noRows);
     for(unsigned int i = 0; i < noRows; ++i) {
@@ -394,7 +396,7 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
             ->getOrigin();
   for(unsigned int j = 0; j < inputTrees.size(); ++j) {
     vtkNew<vtkIntArray> corrArray{};
-    std::string const name = getTableCorrelationTreeName(inputTrees.size(), j);
+    std::string const name = ttk::axa::getTableTreeName(inputTrees.size(), j);
     corrArray->SetName(name.c_str());
     corrArray->SetNumberOfTuples(noRows);
     for(unsigned int i = 0; i < noRows; ++i)

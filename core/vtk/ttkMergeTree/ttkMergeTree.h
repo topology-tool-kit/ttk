@@ -68,6 +68,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
 ///   Tree Temporal Reduction</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
+///   tree Wasserstein Auto-Encoder example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeExTreeM/">Merge
 ///   Trees Via ExTreeM</a> \n
 
