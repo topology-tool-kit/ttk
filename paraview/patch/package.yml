@@ -76,19 +76,20 @@ jobs:
     strategy:
       matrix:
         os: [macos-13, macos-14, macos-15]
+    env:
+      CCACHE_DIR: /Users/runner/work/ttk/.ccache
+      CCACHE_MAXSIZE: 200M
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework/
-        sudo rm -rf /usr/local/Frameworks/Python.framework
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
-        brew reinstall python
         brew install --cask xquartz
         brew install mesa glew qt@5 ninja 
 
@@ -98,7 +99,6 @@ jobs:
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \
           $GITHUB_WORKSPACE
 
@@ -111,6 +111,22 @@ jobs:
       run: |
         cd build
         cpack -G TGZ
+
+    - name: Install ParaView
+      run: |
+        cd build
+        sudo cmake --build . --target install
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+
+    - name: Test Python imports
+      run: |
+        python3 -m vtk
+        python3 -m paraview.simple
+        pvpython -m vtk
+        pvpython -m paraview.simple
+      env:
+        DYLD_LIBRARY_PATH: /usr/local/lib
 
     - name: Upload compressed binaries
       uses: actions/upload-artifact@v4

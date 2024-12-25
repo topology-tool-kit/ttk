@@ -188,19 +188,22 @@ jobs:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework/
-        sudo rm -rf /usr/local/Frameworks/Python.framework/
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
-        brew reinstall python
         brew install --cask xquartz
         brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
+
+    - name: Install and setup sccache
+      uses: f3d-app/sccache-setup-action@v1
+      with:
+        key: macos-0
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
@@ -210,7 +213,11 @@ jobs:
         wget https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.tar.gz
         tar xzf ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
         pvpython -m pip install --break-system-packages scikit-learn
+        # pvpython is expecting a vtkpython executable at this path
+        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.12/vtkpython
 
     - name: Set compilers as environment variables
       run: |
@@ -224,8 +231,6 @@ jobs:
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 \
-          -DPython3_FIND_STRATEGY=LOCATION \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -267,24 +272,29 @@ jobs:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework
-        sudo rm -rf /usr/local/Frameworks/Python.framework
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
-        brew reinstall python
         brew install --cask xquartz
         brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
 
+    - name: Install and setup sccache
+      uses: f3d-app/sccache-setup-action@v1
+      with:
+        key: macos-0
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
     - name: Fetch TTK-ParaView
       run: |
         wget -O ttk-paraview.tar.gz https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-${{ env.PV_TAG }}-${{ matrix.os }}.tar.gz
-
 
     - name: Fetch TTK .tar.gz artifact
       uses: actions/download-artifact@v4.1.7
@@ -305,7 +315,9 @@ jobs:
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
         # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        # pvpython is expecting a vtkpython executable at this path
+        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.12/vtkpython
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
@@ -326,7 +338,7 @@ jobs:
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
         # some cases fail only with version 12
-        if [[ "${{ matrix.os }}" == "macos-12" ]]; then
+        if [[ "${{ matrix.os }}" == "macos-13" ]]; then
           rm python/contourTreeAlignment.py
           rm python/geometryApproximation.py
           rm python/harmonicSkeleton.py

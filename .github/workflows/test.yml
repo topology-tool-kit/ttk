@@ -280,14 +280,13 @@ jobs:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework/
-        sudo rm -rf /usr/local/Frameworks/Python.framework/
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
-        brew reinstall python
         brew install --cask xquartz
         brew install llvm ninja open-mpi
         # TTK dependencies
@@ -310,7 +309,11 @@ jobs:
       run: |
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
         pvpython -m pip install --break-system-packages scikit-learn
+        # pvpython is expecting a vtkpython executable at this path
+        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.12/vtkpython
 
     - name: Set compilers as environment variables
       run: |
@@ -349,11 +352,6 @@ jobs:
       shell: bash
       run: sccache --show-stats
 
-    - name: Set PYTHONPATH for macOS pvpython
-      run: |
-        # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
-
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
@@ -365,7 +363,6 @@ jobs:
       name: Checkout ttk-data
 
     - name: Run ttk-data states [NOT ENFORCED]
-      if: false
       id: validate
       continue-on-error: true
       run: |
@@ -374,6 +371,8 @@ jobs:
         rm ttk-data/states/nestedTrackingFromOverlap.py
         # remove examples which fill up the memory
         rm ttk-data/states/topologicalOptimization_darkSky.pvsm
+        # remove examples that take too long to render under mac
+        rm ttk-data/states/persistentGenerators_householdAnalysis.pvsm
         cd ttk-data/tests
         mkdir output_screenshots
         pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
@@ -384,12 +383,11 @@ jobs:
       if: steps.validate.outcome == 'failure'
       uses: actions/upload-artifact@v4
       with:
-        name: screenshots-macOS.tar.gz
+        name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
         retention-days: 10
 
-    - name: Run ttk-data Python scripts [TEMPORARILY NOT ENFORCED]
-      continue-on-error: true
+    - name: Run ttk-data Python scripts
       run: |
         cd ttk-data
         # remove buggy example
