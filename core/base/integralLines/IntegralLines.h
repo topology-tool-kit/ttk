@@ -713,8 +713,8 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
   int const taskNumber = (int)seedNumber_ / chunkSize_;
 #ifdef TTK_ENABLE_OPENMP4
 #ifdef TTK_ENABLE_MPI
-#pragma omp parallel shared(                                        \
-  ttk::intgl::finishedElement_, toSend_, ttk::intgl::addedElement_) \
+#pragma omp parallel shared(                                          \
+    ttk::intgl::finishedElement_, toSend_, ttk::intgl::addedElement_) \
   num_threads(threadNumber_)
   {
 #else
@@ -870,7 +870,9 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   ttk::SimplexId intervalSize;
   // Counts vertices and edges number (with and without ghosts)
 #ifdef TTK_ENABLE_OPENMP4
-#pragma omp parallel for reduction(+:outputVertexNumber,outputCellNumber,realCellNumber,realVertexNumber) schedule(static,1) private(intervalSize)
+#pragma omp parallel for reduction(+ : outputVertexNumber, outputCellNumber, \
+                                     realCellNumber, realVertexNumber)       \
+  schedule(static, 1) private(intervalSize)
 #endif
   for(int thread = 0; thread < threadNumber_; thread++) {
     std::list<std::array<ttk::intgl::IntegralLine,

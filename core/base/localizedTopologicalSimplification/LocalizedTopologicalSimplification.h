@@ -143,7 +143,7 @@ namespace ttk {
         const IT nVertices = triangulation->getNumberOfVertices();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads( \
-  this->threadNumber_) if(nAuthorizedExtremaIndices > 1000)
+    this->threadNumber_) if(nAuthorizedExtremaIndices > 1000)
 #endif // TTK_ENABLE_OPENMP
         for(IT i = 0; i < nAuthorizedExtremaIndices; i++)
           authorizationMask[authorizedExtremaIndices[i]] = -2;
