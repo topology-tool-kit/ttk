@@ -1,13 +1,13 @@
 #include <AssignmentAuction.h>
-#include <MorseSmallComplexStability.h>
+#include <SeparatrixStability.h>
 
 #include <cmath>
-ttk::MorseSmallComplexStability::MorseSmallComplexStability() {
+ttk::SeparatrixStability::SeparatrixStability() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
-  this->setDebugMsgPrefix("MorseSmallComplexStability");
+  this->setDebugMsgPrefix("SeparatrixStability");
 }
 
-void ttk::MorseSmallComplexStability::assignmentSolver(
+void ttk::SeparatrixStability::assignmentSolver(
   std::vector<std::vector<double>> &costMatrix,
   std::vector<ttk::MatchingType> &matching) {
   if(costMatrix.size() > 0) {
@@ -18,7 +18,7 @@ void ttk::MorseSmallComplexStability::assignmentSolver(
   }
 }
 
-void ttk::MorseSmallComplexStability::buildCostMatrix(
+void ttk::SeparatrixStability::buildCostMatrix(
   const std::vector<std::array<double, 3>> &coords1,
   const std::vector<std::array<double, 3>> &coords2,
   std::vector<std::vector<double>> &costMatrix) {
@@ -37,7 +37,7 @@ void ttk::MorseSmallComplexStability::buildCostMatrix(
   }
 }
 
-int ttk::MorseSmallComplexStability::buildMatchingsWithOtherBlocks(
+int ttk::SeparatrixStability::buildMatchingsWithOtherBlocks(
   const std::vector<std::vector<std::array<double, 3>>> &coords,
   const int &block_id,
   std::vector<std::vector<MatchingType>> &matchings) {
@@ -55,15 +55,15 @@ int ttk::MorseSmallComplexStability::buildMatchingsWithOtherBlocks(
   return 1;
 }
 
-int ttk::MorseSmallComplexStability::buildOccurenceArraysFull(
-  const std::vector<GraphMatrixFull> &adjacencyMatricesFull,
+int ttk::SeparatrixStability::buildOccurenceArraysFull(
+  const std::vector<GraphMatrixFull> &ajacencyMatrices,
   const int &n_separatrices,
   const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
   const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
   const int &block_id,
   std::vector<int> &edgeOccurences) {
 
-  int n_blocks = adjacencyMatricesFull.size();
+  int n_blocks = ajacencyMatrices.size();
   for(int i = 0; i < n_blocks - 1; i++) {
     if(coordsSource[i].size() != coordsSource[i + 1].size()
        || coordsDestination[i].size() != coordsDestination[i + 1].size()) {
@@ -72,8 +72,8 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysFull(
     }
   }
 
-  int n_source = adjacencyMatricesFull[0].size();
-  int n_destination = adjacencyMatricesFull[0][0].size();
+  int n_source = ajacencyMatrices[0].size();
+  int n_destination = ajacencyMatrices[0][0].size();
 
   std::vector<std::vector<MatchingType>> matchingsSource(n_blocks - 1);
   std::vector<std::vector<MatchingType>> matchingsDestination(n_blocks - 1);
@@ -94,18 +94,18 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysFull(
           = std::get<0>(matchingsSource[otherBlockdIdMatchingsVector][i]);
         int thisBlockDestinationId
           = std::get<0>(matchingsDestination[otherBlockdIdMatchingsVector][j]);
-        if(adjacencyMatricesFull[block_id][thisBlockSourceId]
+        if(ajacencyMatrices[block_id][thisBlockSourceId]
                                 [thisBlockDestinationId]
            != -1) {
           int otherBlockSourceId
             = std::get<1>(matchingsSource[otherBlockdIdMatchingsVector][i]);
           int otherBlockDestinationId = std::get<1>(
             matchingsDestination[otherBlockdIdMatchingsVector][j]);
-          if(adjacencyMatricesFull[k][otherBlockSourceId]
+          if(ajacencyMatrices[k][otherBlockSourceId]
                                   [otherBlockDestinationId]
              != -1) {
             int separatriceId
-              = adjacencyMatricesFull[block_id][thisBlockSourceId]
+              = ajacencyMatrices[block_id][thisBlockSourceId]
                                      [thisBlockDestinationId];
             edgeOccurences[separatriceId]++;
           }
@@ -116,14 +116,46 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysFull(
   return 1;
 }
 
-int ttk::MorseSmallComplexStability::buildOccurenceArraysMinor(
-  const std::vector<GraphMatrixMinor> &adjacencyMatricesMinor,
+void ttk::SeparatrixStability::computeGraphMinor(
+  const GraphMatrixFull &adjacencyMatrixFull,
+  GraphMatrixMinor &adjacencyMatrix) {
+  int n_row = adjacencyMatrixFull.size();
+  int n_col = adjacencyMatrixFull[0].size();
+  adjacencyMatrix.resize(n_col);
+  for(int i = 0; i < n_col; i++) {
+    adjacencyMatrix[i].resize(n_col);
+  }
+
+  for(int i = 0; i < n_row; i++) {
+    for(int j = 0; j < n_col; j++) {
+      if(adjacencyMatrixFull[i][j] != -1) {
+        for(int k = 0; k < j; k++) {
+          if(adjacencyMatrixFull[i][k] != -1) {
+            std::pair<int, int> newEdge = std::make_pair(
+              adjacencyMatrixFull[i][j], adjacencyMatrixFull[i][k]);
+            adjacencyMatrix[k][j].push_back(newEdge);
+          }
+        }
+      }
+    }
+  }
+}
+
+int ttk::SeparatrixStability::buildOccurenceArraysMinor(
+  const std::vector<GraphMatrixFull> &adjacencyMatricesFull,
   const int &n_separatrices,
   const std::vector<std::vector<std::array<double, 3>>> &coords,
   const int &block_id,
   std::vector<int> &edgeOccurences) {
-  int n_blocks = adjacencyMatricesMinor.size();
-  int n_points = adjacencyMatricesMinor[0].size();
+
+  int n_blocks = adjacencyMatricesFull.size();
+  int n_points = adjacencyMatricesFull[0].size();
+
+  std::vector<GraphMatrixMinor> adjacencyMatricesMinor(n_blocks);
+
+  for (int i = 0 ; i < n_blocks; i++){
+    computeGraphMinor(adjacencyMatricesFull[i], adjacencyMatricesMinor[i]);
+  }
 
   for(int i = 0; i < n_blocks - 1; i++) {
     if(coords[i].size() != coords[i + 1].size()) {
@@ -182,4 +214,33 @@ int ttk::MorseSmallComplexStability::buildOccurenceArraysMinor(
     }
   }
   return 1;
+}
+
+int ttk::SeparatrixStability::buildOccurenceArrays(
+      const std::vector<GraphMatrixFull> &adjacencyMatrices,
+      const std::vector<int> &separatrixCountForEachBlock,
+      const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
+      const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
+      const bool &mergeEdgesOnSaddles,
+      std::vector<std::vector<int>> &edgesOccurencesForEachBlock){
+
+  int n_blocks = adjacencyMatrices.size();
+  int status;
+  #ifdef TTK_ENABLE_OPENMP
+  #pragma omp parallel for num_threads(threadNumber_)
+  #endif // TTK_ENABLE_OPENMP
+
+  for(int i = 0; i < n_blocks; i++) {
+    if(!mergeEdgesOnSaddles) {
+      status = this->buildOccurenceArraysFull(
+        adjacencyMatrices, separatrixCountForEachBlock[i], coordsSource,
+        coordsDestination, i, edgesOccurencesForEachBlock[i]);
+    } else {
+      status = this->buildOccurenceArraysMinor(
+        adjacencyMatrices, separatrixCountForEachBlock[i],
+        coordsDestination, i, edgesOccurencesForEachBlock[i]);
+    }
+  }
+
+  return status;
 }

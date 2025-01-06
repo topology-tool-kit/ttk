@@ -1,15 +1,15 @@
 /// \ingroup vtk
-/// \class ttkMorseSmallComplexStability
+/// \class ttkSeparatrixStability
 /// \author Your Name Here <your.email@address.here>
 /// \date The Date Here.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::MorseSmallComplexStability module.
+/// \brief TTK VTK-filter that wraps the ttk::SeparatrixStability module.
 ///
-/// This VTK filter uses the ttk::MorseSmallComplexStability module to compute
+/// This VTK filter uses the ttk::SeparatrixStability module to compute
 /// an averaging of the data values of an input point data array defined on the
 /// input vtkDataSet.
 ///
-/// \sa ttk::MorseSmallComplexStability
+/// \sa ttk::SeparatrixStability
 /// \sa ttkAlgorithm
 
 #pragma once
@@ -17,16 +17,15 @@
 #include <vtkMultiBlockDataSet.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <ttkMorseSmallComplexStabilityModule.h>
+#include <ttkSeparatrixStabilityModule.h>
 
-#include <MorseSmallComplexStability.h>
+#include <SeparatrixStability.h>
 #include <ttkAlgorithm.h>
 
-class TTKMORSESMALLCOMPLEXSTABILITY_EXPORT ttkMorseSmallComplexStability
+class TTKSEPARATRIXSTABILITY_EXPORT ttkSeparatrixStability
   : public ttkAlgorithm,
-    protected ttk::MorseSmallComplexStability // and we inherit from the base
-                                              // class
-{
+    protected ttk::SeparatrixStability {
+
 private:
   bool ComputeOccurenceType0{true};
   bool ComputeOccurenceType1{false};
@@ -34,32 +33,17 @@ private:
   bool MergeEdgesOnSaddles{true};
 
 public:
-  // vtkSetMacro(ComputeOccurenceType0, bool);
-  // vtkGetMacro(ComputeOccurenceType0, bool);
-  //
-  // vtkSetMacro(ComputeOccurenceType1, bool);
-  // vtkGetMacro(ComputeOccurenceType1, bool);
-  //
-  // vtkSetMacro(ComputeOccurenceType2, bool);
-  // vtkGetMacro(ComputeOccurenceType2, bool);
 
   vtkSetMacro(MergeEdgesOnSaddles, bool);
   vtkGetMacro(MergeEdgesOnSaddles, bool);
 
-  /**
-   * This static method and the macro below are VTK conventions on how to
-   * instantiate VTK objects. You don't have to modify this.
-   */
-  static ttkMorseSmallComplexStability *New();
-  vtkTypeMacro(ttkMorseSmallComplexStability, ttkAlgorithm);
+  static ttkSeparatrixStability *New();
+  vtkTypeMacro(ttkSeparatrixStability, ttkAlgorithm);
 
 protected:
-  /**
-   * TODO 7: Implement the filter constructor and destructor
-   *         (see cpp file)
-   */
-  ttkMorseSmallComplexStability();
-  ~ttkMorseSmallComplexStability() override = default;
+
+  ttkSeparatrixStability();
+  ~ttkSeparatrixStability() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -92,13 +76,9 @@ protected:
                    const int &index,
                    std::vector<std::array<double, 3>> &coords);
 
-  void computeGraphMinor(const GraphMatrixFull &adjacencyMatrixFull,
-                         GraphMatrixMinor &adjacencyMatrix);
-
   int prepareData(vtkDataSet *block,
                   std::vector<int> &localToGlobal,
                   GraphMatrixFull &adjacencyMatrixFull,
-                  GraphMatrixMinor &adjacencyMatrixMinor,
                   std::vector<std::array<double, 3>> &coordsSource,
                   std::vector<std::array<double, 3>> &coordsDestination,
                   int &n_separatrices);

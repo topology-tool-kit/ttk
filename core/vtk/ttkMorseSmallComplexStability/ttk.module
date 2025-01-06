@@ -1,9 +1,0 @@
-NAME
-  ttkMorseSmallComplexStability
-SOURCES
-  ttkMorseSmallComplexStability.cpp
-HEADERS
-  ttkMorseSmallComplexStability.h
-DEPENDS
-  morseSmallComplexStability
-  ttkAlgorithm

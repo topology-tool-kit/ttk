@@ -5,8 +5,8 @@
 <!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkMorseSmallComplexStability" class="ttkMorseSmallComplexStability" label="TTK MorseSmallComplexStability">
-      <Documentation long_help="MorseSmallComplexStability Long" short_help="MorseSmallComplexStability Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+    <SourceProxy name="ttkSeparatrixStability" class="ttkSeparatrixStability" label="TTK SeparatrixStability">
+      <Documentation long_help="SeparatrixStability Long" short_help="SeparatrixStability Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
 
       <InputProperty name="Input" command="SetInputConnection">
         <ProxyGroupDomain name="groups">

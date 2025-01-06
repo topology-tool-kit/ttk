@@ -6,7 +6,7 @@
 
 // TTK Includes
 #include <CommandLineParser.h>
-#include <ttkMorseSmallComplexStability.h>
+#include <ttkSeparatrixStability.h>
 
 // VTK Includes
 #include <vtkCellData.h>
@@ -56,18 +56,18 @@ int main(int argc, char **argv) {
   // Command line output messages.
   // ---------------------------------------------------------------------------
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("MorseSmallComplexStability");
+  msg.setDebugMsgPrefix("SeparatrixStability");
 
   // ---------------------------------------------------------------------------
-  // Initialize ttkMorseSmallComplexStability module (adjust parameters)
+  // Initialize ttkSeparatrixStability module (adjust parameters)
   // ---------------------------------------------------------------------------
-  auto morseSmallComplexStability
-    = vtkSmartPointer<ttkMorseSmallComplexStability>::New();
+  auto SeparatrixStability
+    = vtkSmartPointer<ttkSeparatrixStability>::New();
 
   // ---------------------------------------------------------------------------
   // TODO 14: Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
-  // morseSmallComplexStability->SetOutputArrayName(outputArrayName);
+  // SeparatrixStability->SetOutputArrayName(outputArrayName);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
@@ -109,8 +109,8 @@ int main(int argc, char **argv) {
         return 1;
       }
     } else {
-      // feed input object to ttkMorseSmallComplexStability filter
-      morseSmallComplexStability->SetInputDataObject(i, reader->GetOutput());
+      // feed input object to ttkSeparatrixStability filter
+      SeparatrixStability->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -134,21 +134,21 @@ int main(int argc, char **argv) {
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    morseSmallComplexStability->SetInputArrayToProcess(
+    SeparatrixStability->SetInputArrayToProcess(
       i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
-  // Execute ttkMorseSmallComplexStability filter
+  // Execute ttkSeparatrixStability filter
   // ---------------------------------------------------------------------------
-  morseSmallComplexStability->Update();
+  SeparatrixStability->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < morseSmallComplexStability->GetNumberOfOutputPorts();
+    for(int i = 0; i < SeparatrixStability->GetNumberOfOutputPorts();
         i++) {
-      auto output = morseSmallComplexStability->GetOutputDataObject(i);
+      auto output = SeparatrixStability->GetOutputDataObject(i);
       auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
         vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 

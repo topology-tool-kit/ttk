@@ -1,0 +1,9 @@
+ttk_add_base_library(SeparatrixStability
+  SOURCES
+    SeparatrixStability.cpp
+  HEADERS
+    SeparatrixStability.h
+  DEPENDS
+    triangulation
+    assignmentSolver
+)
