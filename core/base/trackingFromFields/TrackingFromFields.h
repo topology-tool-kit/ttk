@@ -14,7 +14,7 @@
 #include <BottleneckDistance.h>
 #include <PersistenceDiagram.h>
 #include <Triangulation.h>
-
+#include <DiscreteGradient.h>
 namespace ttk {
 
   class TrackingFromFields : virtual public Debug {
@@ -91,26 +91,26 @@ int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
   std::vector<ttk::DiagramType> &persistenceDiagrams,
   const triangulationType *triangulation) {
-
+	
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram;
     persistenceDiagram.setThreadNumber(1);
+    persistenceDiagram.setBackend(ttk::PersistenceDiagram::BACKEND::DISCRETE_MORSE_SANDWICH);
     persistenceDiagram.execute(persistenceDiagrams[i],
                                (dataType *)(inputData_[i]), 0, inputOffsets_[i],
                                triangulation);
-
     // Augment diagram.
-    for(auto &pair : persistenceDiagrams[i]) {
-      triangulation->getVertexPoint(pair.birth.id, pair.birth.coords[0],
-                                    pair.birth.coords[1], pair.birth.coords[2]);
-      triangulation->getVertexPoint(pair.death.id, pair.death.coords[0],
-                                    pair.death.coords[1], pair.death.coords[2]);
-      pair.birth.sfValue = static_cast<double *>(inputData_[i])[pair.birth.id];
-      pair.death.sfValue = static_cast<double *>(inputData_[i])[pair.death.id];
-    }
+    //for(auto &pair : persistenceDiagrams[i]) {
+    //  triangulation->getVertexPoint(pair.birth.id, pair.birth.coords[0],
+    //                                pair.birth.coords[1], pair.birth.coords[2]);
+    //  triangulation->getVertexPoint(pair.death.id, pair.death.coords[0],
+    //                                pair.death.coords[1], pair.death.coords[2]);
+    //  pair.birth.sfValue = static_cast<double *>(inputData_[i])[pair.birth.id];
+    //  pair.death.sfValue = static_cast<double *>(inputData_[i])[pair.death.id];
+    //}
   }
 
   return 0;

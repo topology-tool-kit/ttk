@@ -2,15 +2,6 @@
 #include <ttkMacros.h>
 #include <ttkTrackingFromPersistenceDiagrams.h>
 
-#include <vtkDataArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkTrackingFromPersistenceDiagrams);
 
@@ -55,7 +46,6 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   vtkIntArray *componentIds,
   vtkIntArray *pointTypeScalars,
   const ttk::Debug &dbg) {
-
   using ttk::CriticalType;
   int currentVertex = 0;
   for(size_t k = 0; k < trackings.size(); ++k) {
@@ -70,6 +60,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       dbg.printErr("Got an unexpected 0-size chain.");
       return 0;
     }
+
+
 
     for(int c = 0; c < chainLength - 1; ++c) {
       const auto &matchings1 = outputMatchings[numStart + c];
@@ -134,6 +126,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       }
+
 
       // Postproc component ids.
       int cid = k;
@@ -271,6 +264,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       lengthScalars->InsertTuple1(currentVertex, chainLength);
 
       currentVertex++;
+
     }
   }
 
@@ -285,6 +279,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
   return 0;
 }
+
 
 int ttkTrackingFromPersistenceDiagrams::RequestData(
   vtkInformation *ttkNotUsed(request),
