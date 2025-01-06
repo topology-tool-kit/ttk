@@ -274,7 +274,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic)                     \
   shared(centroids, centroids2, oldCentroids_, oldCentroids2_) \
-    num_threads(this->threadNumber_) if(parallelize_)
+  num_threads(this->threadNumber_) if(parallelize_)
 #endif
         for(unsigned int i = 0; i < centroids.size(); ++i) {
           std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> matching,

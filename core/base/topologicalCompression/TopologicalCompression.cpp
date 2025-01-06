@@ -639,9 +639,10 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
     numberOfVertices *= (1 + dataExtent[2 * i + 1] - dataExtent[2 * i]);
   NbVertices = numberOfVertices;
 
-  int const totalSize = usePersistence ? ComputeTotalSizeForPersistenceDiagram(
-                          getMapping(), getCriticalConstraints(), zfpOnly,
-                          getNbSegments(), getNbVertices(), zfpTolerance)
+  int const totalSize = usePersistence
+                          ? ComputeTotalSizeForPersistenceDiagram(
+                              getMapping(), getCriticalConstraints(), zfpOnly,
+                              getNbSegments(), getNbVertices(), zfpTolerance)
                         : useOther ? ComputeTotalSizeForOther()
                                    : 0;
 

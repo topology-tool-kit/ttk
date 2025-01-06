@@ -85,16 +85,20 @@ namespace ttk {
     float spacing_[3]; //
 
     virtual void vertexToPosition2d(const SimplexId vertex,
-                                    SimplexId p[2]) const = 0;
-    virtual void vertexToPosition(const SimplexId vertex,
-                                  SimplexId p[3]) const = 0;
+                                    SimplexId p[2]) const
+      = 0;
+    virtual void vertexToPosition(const SimplexId vertex, SimplexId p[3]) const
+      = 0;
     virtual void triangleToPosition2d(const SimplexId triangle,
-                                      SimplexId p[2]) const = 0;
+                                      SimplexId p[2]) const
+      = 0;
     virtual void triangleToPosition(const SimplexId triangle,
                                     const int k,
-                                    SimplexId p[3]) const = 0;
+                                    SimplexId p[3]) const
+      = 0;
     virtual void tetrahedronToPosition(const SimplexId tetrahedron,
-                                       SimplexId p[3]) const = 0;
+                                       SimplexId p[3]) const
+      = 0;
 
     SimplexId findEdgeFromVertices(const SimplexId v0,
                                    const SimplexId v1) const;

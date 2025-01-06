@@ -73,15 +73,15 @@ int ttkImportEmbeddingFromTable::RequestData(
   vtkDataArray *xarr = XColumn.empty()
                          ? nullptr
                          : vtkDataArray::SafeDownCast(
-                           inputTable->GetColumnByName(XColumn.data()));
+                             inputTable->GetColumnByName(XColumn.data()));
   vtkDataArray *yarr = YColumn.empty()
                          ? nullptr
                          : vtkDataArray::SafeDownCast(
-                           inputTable->GetColumnByName(YColumn.data()));
+                             inputTable->GetColumnByName(YColumn.data()));
   vtkDataArray *zarr = ZColumn.empty()
                          ? nullptr
                          : vtkDataArray::SafeDownCast(
-                           inputTable->GetColumnByName(ZColumn.data()));
+                             inputTable->GetColumnByName(ZColumn.data()));
 
   if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
     printErr("invalid input columns.");
