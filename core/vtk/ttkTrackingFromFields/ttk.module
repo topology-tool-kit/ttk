@@ -7,4 +7,5 @@ HEADERS
 DEPENDS
   trackingFromFields
   trackingFromPersistenceDiagrams
+  trackingFromCriticalPoints
   ttkAlgorithm

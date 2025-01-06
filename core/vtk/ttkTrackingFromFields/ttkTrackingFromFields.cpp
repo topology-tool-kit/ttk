@@ -38,15 +38,11 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   unsigned long fieldNumber,
   const triangulationType *triangulation) {
 
-  using trackingTuple = ttk::trackingTuple;
-
-  // 1. get persistence diagrams.
   std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
 
   this->performDiagramComputation<dataType, triangulationType>(
     (int)fieldNumber, persistenceDiagrams, triangulation);
 
-  // 2. call feature tracking with threshold.
   std::vector<std::vector<ttk::MatchingType>> outputMatchings(fieldNumber - 1);
 
   double const spacing = Spacing;
@@ -82,8 +78,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   componentIds->SetName("ConnectedComponentId");
   pointTypeScalars->SetName("CriticalType");
 
-  // (+ vertex id)
-  std::vector<trackingTuple> trackingsBase;
+  std::vector<ttk::trackingTuple> trackingsBase;
   tfp.performTracking(persistenceDiagrams, outputMatchings, trackingsBase);
 
   std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size());
@@ -107,13 +102,116 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   return 1;
 }
 
+template <class dataType, class triangulationType>
+int ttkTrackingFromFields::trackWithCriticalPointMatching(
+  vtkUnstructuredGrid *output,
+  unsigned long fieldNumber,
+  const triangulationType *triangulation) {
+
+  float x, y, z;
+  float maxX, minX, maxY, minY, maxZ, minZ;
+  triangulation->getVertexPoint(0, minX, minY, minZ);
+  triangulation->getVertexPoint(0, maxX, maxY, maxZ);
+
+  for(int i = 0; i < triangulation->getNumberOfVertices(); i++) {
+    triangulation->getVertexPoint(i, x, y, z);
+    maxX = std::max(x, maxX);
+    maxX = std::min(x, minX);
+    maxY = std::max(y, maxX);
+    minY = std::min(y, minY);
+    maxZ = std::max(z, maxZ);
+    minZ = std::min(z, minZ);
+  }
+
+  double const costDeathBirth = CostDeathBirth;
+  double const tolerance = (double)Tolerance;
+  float meshDiameter
+    = std::sqrt(std::pow(maxX - minX, 2) + std::pow(maxY - minY, 2)
+                + std::pow(maxZ - minZ, 2));
+  int assignmentMethod = AssignmentMethod;
+  bool adaptDeathBirthCost = AdaptDeathBirthCost;
+  double epsilonAdapt = EpsilonAdapt;
+
+  ttk::TrackingFromCriticalPoints tracker;
+  tracker.setMeshDiameter(meshDiameter);
+  tracker.setTolerance(tolerance);
+  tracker.setEpsilon(costDeathBirth);
+  tracker.setAdaptDeathBirthCost(adaptDeathBirthCost);
+  tracker.setAssignmentMethod(assignmentMethod);
+  tracker.setEpsilonAdapt(epsilonAdapt);
+  tracker.setWeights(PX, PY, PZ, PF);
+
+  tracker.setThreadNumber(this->threadNumber_);
+
+  std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
+  this->performDiagramComputation<dataType, triangulationType>(
+    (int)fieldNumber, persistenceDiagrams, triangulation);
+
+  std::vector<std::vector<ttk::MatchingType>> maximaMatchings(fieldNumber - 1);
+  std::vector<std::vector<ttk::MatchingType>> sad_1_Matchings(fieldNumber - 1);
+  std::vector<std::vector<ttk::MatchingType>> sad_2_Matchings(fieldNumber - 1);
+  std::vector<std::vector<ttk::MatchingType>> minimaMatchings(fieldNumber - 1);
+
+  std::vector<std::vector<ttk::SimplexId>> maxMap(fieldNumber);
+  std::vector<std::vector<ttk::SimplexId>> sad_1Map(fieldNumber);
+  std::vector<std::vector<ttk::SimplexId>> sad_2Map(fieldNumber);
+  std::vector<std::vector<ttk::SimplexId>> minMap(fieldNumber);
+
+  tracker.performMatchings(persistenceDiagrams, maximaMatchings,
+                           sad_1_Matchings, sad_2_Matchings, minimaMatchings,
+                           maxMap, sad_1Map, sad_2Map, minMap);
+
+  vtkNew<vtkPoints> const points{};
+  vtkNew<vtkUnstructuredGrid> const outputMesh{};
+
+  vtkNew<vtkDoubleArray> costs{};
+  vtkNew<vtkDoubleArray> averagePersistences{};
+  vtkNew<vtkDoubleArray> valueScalars{};
+  vtkNew<vtkIntArray> globalVertexIds{};
+  vtkNew<vtkIntArray> lengthScalars{};
+  vtkNew<vtkIntArray> timeScalars{};
+  vtkNew<vtkIntArray> connectedComponentIds{};
+  vtkNew<vtkIntArray> pointsCriticalType{};
+
+  costs->SetName("Costs");
+  averagePersistences->SetName("AveragePersistence");
+  valueScalars->SetName("Scalar");
+  globalVertexIds->SetName("VertexGlobalId");
+  lengthScalars->SetName("ComponentLength");
+  timeScalars->SetName("TimeStep");
+  connectedComponentIds->SetName("ConnectedComponentId");
+  pointsCriticalType->SetName("CriticalType");
+
+  std::vector<ttk::trackingTuple> allTrackings;
+  std::vector<double> allTrackingsMeanPersistence;
+  std::vector<std::vector<double>> allTrackingsCosts;
+
+  unsigned int typesArrayLimits[3] = {};
+  tracker.performTrackings(
+    persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
+    minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
+    allTrackingsCosts, allTrackingsMeanPersistence, typesArrayLimits);
+
+  double const spacing = Spacing;
+  bool const useGeometricSpacing = UseGeometricSpacing;
+
+  ttkTrackingFromPersistenceDiagrams::buildMesh(
+    triangulation, allTrackings, allTrackingsCosts, allTrackingsMeanPersistence,
+    useGeometricSpacing, spacing, points, outputMesh, pointsCriticalType,
+    timeScalars, lengthScalars, globalVertexIds, connectedComponentIds, costs,
+    averagePersistences, typesArrayLimits);
+
+  output->ShallowCopy(outputMesh);
+
+  return 1;
+}
+
 int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
-
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
     return 0;
@@ -177,6 +275,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   std::string const algorithm = DistanceAlgorithm;
   int const pvalg = PVAlgorithm;
   bool useTTKMethod = false;
+  bool trackWithCriticalPoints = (pvalg == 2);
 
   if(pvalg >= 0) {
     switch(pvalg) {
@@ -217,7 +316,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   // 0. get data
   int const fieldNumber = inputScalarFields.size();
   std::vector<void *> inputFields(fieldNumber);
-  for(int i = 0; i < fieldNumber; ++i) {
+  for(int i = 0; i < fieldNumber; i++) {
     inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
   }
   this->setInputScalars(inputFields);
@@ -234,10 +333,15 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInputOffsets(inputOrders);
 
   int status = 0;
-  if(useTTKMethod) {
+  if(useTTKMethod && !trackWithCriticalPoints) {
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
+         output, fieldNumber, (TTK_TT *)triangulation->getData())));
+  } else if(useTTKMethod && trackWithCriticalPoints) {
+    ttkVtkTemplateMacro(
+      inputScalarFields[0]->GetDataType(), triangulation->getType(),
+      (status = this->trackWithCriticalPointMatching<VTK_TT, TTK_TT>(
          output, fieldNumber, (TTK_TT *)triangulation->getData())));
   } else {
     this->printMsg("The specified matching method is not supported.");

@@ -285,8 +285,7 @@ int ttk::ReebSpace::printConnectivity(const ReebSpaceData &data) const {
   msg << data.sheet0List_.size() << " 0-sheets:" << std::endl;
   for(size_t i = 0; i < data.sheet0List_.size(); i++) {
     msg << "3-sheets for 0-sheet #" << i
-        << " [p=" << data.sheet0List_[i].pruned_ << "]"
-        << ": ";
+        << " [p=" << data.sheet0List_[i].pruned_ << "]" << ": ";
     for(size_t j = 0; j < data.sheet0List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet0List_[i].sheet3List_[j] << ", ";
     }
@@ -296,8 +295,7 @@ int ttk::ReebSpace::printConnectivity(const ReebSpaceData &data) const {
   msg << data.sheet1List_.size() << " 1-sheets:" << std::endl;
   for(size_t i = 0; i < data.sheet1List_.size(); i++) {
     msg << "3-sheets for 1-sheet #" << i
-        << " [p=" << data.sheet1List_[i].pruned_ << "]"
-        << ": ";
+        << " [p=" << data.sheet1List_[i].pruned_ << "]" << ": ";
     for(size_t j = 0; j < data.sheet1List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet1List_[i].sheet3List_[j] << ", ";
     }
@@ -307,8 +305,7 @@ int ttk::ReebSpace::printConnectivity(const ReebSpaceData &data) const {
   msg << data.sheet2List_.size() << " 2-sheets:" << std::endl;
   for(size_t i = 0; i < data.sheet2List_.size(); i++) {
     msg << "3-sheets for 2-sheet #" << i
-        << " [p=" << data.sheet2List_[i].pruned_ << "]"
-        << ": ";
+        << " [p=" << data.sheet2List_[i].pruned_ << "]" << ": ";
     for(size_t j = 0; j < data.sheet2List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet2List_[i].sheet3List_[j] << ", ";
     }
@@ -318,8 +315,7 @@ int ttk::ReebSpace::printConnectivity(const ReebSpaceData &data) const {
   msg << data.sheet3List_.size() << " 3-sheets:" << std::endl;
   for(size_t i = 0; i < data.sheet3List_.size(); i++) {
     msg << "3-sheets for 3-sheet #" << i
-        << " [p=" << data.sheet3List_[i].pruned_ << "]"
-        << ": ";
+        << " [p=" << data.sheet3List_[i].pruned_ << "]" << ": ";
     for(size_t j = 0; j < data.sheet3List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet3List_[i].sheet3List_[j] << ", ";
     }
