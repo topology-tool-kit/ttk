@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Initialize ttkMorseSmallComplexStability module (adjust parameters)
   // ---------------------------------------------------------------------------
-  auto morseSmallComplexStability = vtkSmartPointer<ttkMorseSmallComplexStability>::New();
+  auto morseSmallComplexStability
+    = vtkSmartPointer<ttkMorseSmallComplexStability>::New();
 
   // ---------------------------------------------------------------------------
   // TODO 14: Pass custom arguments and options to the module
@@ -133,7 +134,8 @@ int main(int argc, char **argv) {
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    morseSmallComplexStability->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+    morseSmallComplexStability->SetInputArrayToProcess(
+      i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
   // Execute ttkMorseSmallComplexStability filter
@@ -144,7 +146,8 @@ int main(int argc, char **argv) {
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < morseSmallComplexStability->GetNumberOfOutputPorts(); i++) {
+    for(int i = 0; i < morseSmallComplexStability->GetNumberOfOutputPorts();
+        i++) {
       auto output = morseSmallComplexStability->GetOutputDataObject(i);
       auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
         vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));

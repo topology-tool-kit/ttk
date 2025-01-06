@@ -3,11 +3,11 @@
 #include <Geometry.h>
 
 #include <vtkDataArray.h>
+#include <vtkDataObjectTypes.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkDataObjectTypes.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -94,7 +94,7 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *ttkNotUsed(request),
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
-  
+
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
 

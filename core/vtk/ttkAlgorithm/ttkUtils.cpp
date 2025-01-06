@@ -277,7 +277,6 @@ void *ttkUtils::WritePointer(vtkDataArray *array,
   return outPtr;
 }
 
-
 void ttkUtils::SetVoidArray(vtkDataArray *array,
                             void *data,
                             vtkIdType size,

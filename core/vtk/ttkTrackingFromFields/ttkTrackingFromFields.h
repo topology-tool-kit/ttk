@@ -38,7 +38,7 @@
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
-#include <TrackingFromCriticalPoints.h>
+#include <CriticalPointTracking.h>
 #include <TrackingFromFields.h>
 #include <ttkAlgorithm.h>
 #include <ttkTrackingFromFieldsModule.h>
@@ -82,6 +82,9 @@ public:
   vtkSetMacro(RelativeDestructionCost, double);
   vtkGetMacro(RelativeDestructionCost, double);
   /// @}
+
+  vtkSetMacro(AdaptDeathBirthCost, bool);
+  vtkGetMacro(AdaptDeathBirthCost, bool);
 
   vtkSetMacro(AssignmentPrecision, double);
   vtkGetMacro(AssignmentPrecision, double);
