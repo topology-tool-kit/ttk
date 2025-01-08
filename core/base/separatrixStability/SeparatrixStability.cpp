@@ -149,13 +149,15 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   std::vector<int> &edgeOccurences) {
 
   int n_blocks = adjacencyMatricesFull.size();
-  int n_points = adjacencyMatricesFull[0].size();
+  
 
   std::vector<GraphMatrixMinor> adjacencyMatricesMinor(n_blocks);
 
   for (int i = 0 ; i < n_blocks; i++){
     computeGraphMinor(adjacencyMatricesFull[i], adjacencyMatricesMinor[i]);
   }
+
+  int n_points = adjacencyMatricesMinor[0].size();
 
   for(int i = 0; i < n_blocks - 1; i++) {
     if(coords[i].size() != coords[i + 1].size()) {

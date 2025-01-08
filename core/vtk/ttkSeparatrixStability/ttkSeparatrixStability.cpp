@@ -228,8 +228,7 @@ int ttkSeparatrixStability::execute(
       coordsSource[i], coordsDestination[i],
       separatrixCountForEachBlock[i]);
   }
-
-
+  
   status = this->buildOccurenceArrays(adjacencyMatricesFull,  
                                       separatrixCountForEachBlock, 
                                       coordsSource,
