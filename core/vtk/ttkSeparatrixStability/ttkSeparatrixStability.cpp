@@ -147,7 +147,9 @@ int ttkSeparatrixStability::prepareData(
   GraphMatrixFull &adjacencyMatrixFull,
   std::vector<std::array<double, 3>> &coordsSource,
   std::vector<std::array<double, 3>> &coordsDestination,
-  int &n_separatrices) {
+  int &n_separatrices,
+  std::vector<int> &globalSourcePointId,
+  std::vector<int> &globalDestinationPointId) {
 
   vtkPoints *points = block->GetPoints();
 
@@ -189,10 +191,14 @@ int ttkSeparatrixStability::prepareData(
       sourceGlobalId, sourceLocalToGlobal, sourceLocalId);
     bool foundDestination = updateVisitedVertices(
       destinationGlobalId, destinationLocalToGlobal, destinationLocalId);
-    if(!foundDestination)
+    if(!foundDestination){
       appendPoint(points, destinationPointId, coordsDestination);
-    if(!foundSource && !MergeEdgesOnSaddles)
+      globalDestinationPointId.push_back(destinationPointId);
+    }
+    if(!foundSource && !MergeEdgesOnSaddles){
       appendPoint(points, sourcePointId, coordsSource);
+      globalSourcePointId.push_back(sourcePointId);
+    }
     updateAdjacencyMatrix(sourceLocalId, destinationLocalId, separatrixLocalId,
                           adjacencyMatrixFull);
     cellId_1 = cellId_2 + 1;
@@ -217,6 +223,10 @@ int ttkSeparatrixStability::execute(
   std::vector<int> separatrixCountForEachBlock(n_blocks);
   std::vector<std::vector<int>> edgeOccurenceForEachBlock(n_blocks);
   std::vector<std::vector<bool>> isomorphismsForEachBlock(n_blocks);
+  std::vector<std::vector<std::vector<int>>> matchingArrayForEachBlockSource(n_blocks);
+  std::vector<std::vector<std::vector<int>>> matchingArrayForEachBlockDestination(n_blocks);
+  std::vector<std::vector<int>> globalSourcePointIdForEachBlock(n_blocks);
+  std::vector<std::vector<int>> globalDestinationPointIdForEachBlock(n_blocks);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -228,7 +238,9 @@ int ttkSeparatrixStability::execute(
     ttkSeparatrixStability::prepareData(
       block, LocalToGlobal[i], adjacencyMatricesFull[i],
       coordsSource[i], coordsDestination[i],
-      separatrixCountForEachBlock[i]);
+      separatrixCountForEachBlock[i],
+      globalSourcePointIdForEachBlock[i],
+      globalDestinationPointIdForEachBlock[i]);
   }
   
   status = this->buildOccurenceArrays(adjacencyMatricesFull,  
@@ -237,7 +249,9 @@ int ttkSeparatrixStability::execute(
                                       coordsDestination,  
                                       MergeEdgesOnSaddles,
                                       edgeOccurenceForEachBlock,
-                                      isomorphismsForEachBlock);
+                                      isomorphismsForEachBlock,
+                                      matchingArrayForEachBlockSource,
+                                      matchingArrayForEachBlockDestination);
 
   if(status == 0)return status;
 
@@ -303,6 +317,36 @@ int ttkSeparatrixStability::execute(
 
     block->GetCellData()->AddArray(occurenceCount);
     block->GetFieldData()->AddArray(isomorphismClassId);
+
+    for (int j = 0 ; j < n_blocks; j++){
+
+      vtkNew<vtkIntArray> matchingIdForCriticalPoints_j;
+      matchingIdForCriticalPoints_j->SetNumberOfComponents(1);
+      std::string tmp_string = std::string(ttk::SeparatrixStabilityMatchingIdName) 
+                                  + std::to_string(j);
+
+      const char* indexedArrayName = tmp_string.c_str();
+      matchingIdForCriticalPoints_j->SetName(indexedArrayName);
+      vtkPoints* points = block->GetPoints();
+
+      for (int k = 0 ; k < points->GetNumberOfPoints(); k++){
+          matchingIdForCriticalPoints_j->InsertNextValue(-1);
+        }
+
+      for (unsigned int k = 0 ; k < globalDestinationPointIdForEachBlock[i].size(); k++){
+        int globalPointIdThisBlock = globalDestinationPointIdForEachBlock[i][k];
+        int matchingIdOtherBlock = matchingArrayForEachBlockDestination[j][i][k];
+        matchingIdForCriticalPoints_j->SetValue(globalPointIdThisBlock, matchingIdOtherBlock);
+      }
+      if(!MergeEdgesOnSaddles){
+        for (unsigned int k = 0 ; k < globalSourcePointIdForEachBlock[i].size(); k++){
+          int globalPointIdThisBlock = globalSourcePointIdForEachBlock[i][k];
+          int matchingIdOtherBlock = matchingArrayForEachBlockSource[j][i][k];
+          matchingIdForCriticalPoints_j->SetValue(globalPointIdThisBlock, matchingIdOtherBlock);
+        }
+      }
+      block->GetPointData()->AddArray(matchingIdForCriticalPoints_j);
+    }
   }
   return status;
 }

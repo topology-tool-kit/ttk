@@ -62,7 +62,9 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
   const int &block_id,
   std::vector<int> &edgeOccurences,
-  std::vector<bool> &isIsomorphicWith) {
+  std::vector<bool> &isIsomorphicWith,
+  std::vector<std::vector<int>> &matchingArraySource,
+  std::vector<std::vector<int>> &matchingArrayDestination){
 
   int n_blocks = ajacencyMatrices.size();
   for(int i = 0; i < n_blocks - 1; i++) {
@@ -76,6 +78,9 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   int n_source = ajacencyMatrices[0].size();
   int n_destination = ajacencyMatrices[0][0].size();
   isIsomorphicWith.resize(n_blocks, true);
+  matchingArraySource.resize(n_blocks, std::vector<int>(n_source));
+  matchingArrayDestination.resize(n_blocks, std::vector<int>(n_destination));
+
 
   std::vector<std::vector<MatchingType>> matchingsSource(n_blocks - 1);
   std::vector<std::vector<MatchingType>> matchingsDestination(n_blocks - 1);
@@ -87,8 +92,15 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   edgeOccurences.resize(n_separatrices, 1);
 
   for(int k = 0; k < n_blocks; k++) {
-    if(k == block_id)
+    if(k == block_id){
+      for (int i = 0 ; i < n_destination; i++){
+        matchingArrayDestination[k][i]=i;
+      }
+      for (int i = 0 ; i < n_source; i++){
+        matchingArraySource[k][i]=i;
+      }
       continue;
+    }
     int otherBlockdIdMatchingsVector = k < block_id ? k : k - 1;
     for(int i = 0; i < n_source; i++) {
       for(int j = 0; j < n_destination; j++) {
@@ -100,6 +112,8 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
           = std::get<1>(matchingsSource[otherBlockdIdMatchingsVector][i]);
         int otherBlockDestinationId = std::get<1>(
           matchingsDestination[otherBlockdIdMatchingsVector][j]);
+        matchingArraySource[k][otherBlockSourceId]=thisBlockSourceId;
+        matchingArraySource[k][otherBlockDestinationId]=thisBlockDestinationId;
         if(ajacencyMatrices[block_id][thisBlockSourceId]
                                 [thisBlockDestinationId]
           != -1 &&
@@ -155,7 +169,8 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   const std::vector<std::vector<std::array<double, 3>>> &coords,
   const int &block_id,
   std::vector<int> &edgeOccurences,
-  std::vector<bool> &isIsomorphicWith) {
+  std::vector<bool> &isIsomorphicWith,
+  std::vector<std::vector<int>> &matchingArray) {
 
   int n_blocks = adjacencyMatricesFull.size();
   isIsomorphicWith.resize(n_blocks, true);
@@ -168,6 +183,7 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   }
 
   int n_points = adjacencyMatricesMinor[0].size();
+  matchingArray.resize(n_blocks, std::vector<int>(n_points));
 
   for(int i = 0; i < n_blocks - 1; i++) {
     if(coords[i].size() != coords[i + 1].size()) {
@@ -192,15 +208,25 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
 
   for(int k = 0; k < n_blocks; k++) {
 
-    if(k == block_id)
+    if(k == block_id){
+      for (int i = 0 ; i < n_points ; i++){
+        matchingArray[k][i]=i;
+      }
       continue;
+    }
 
     int otherBlockdIdMatchingsVector = k < block_id ? k : k - 1;
 
+    for (int i = 0; i < n_points; i++){
+      int thisBlockPointId = std::get<0>(matchings[otherBlockdIdMatchingsVector][i]);
+      int otherBlockPointId = std::get<1>(matchings[otherBlockdIdMatchingsVector][i]);
+      matchingArray[k][otherBlockPointId]=thisBlockPointId;
+    }
+
     for(int i = 0; i < n_points; i++) {
       for(int j = i + 1; j < n_points; j++) {
-        int tmp1 = std::get<0>(matchings[otherBlockdIdMatchingsVector][i]);
         int tmp2 = std::get<0>(matchings[otherBlockdIdMatchingsVector][j]);
+        int tmp1 = std::get<0>(matchings[otherBlockdIdMatchingsVector][i]);
         int thisBlockVertex1 = std::min(tmp1, tmp2);
         int thisBlockVertex2 = std::max(tmp1, tmp2);
         tmp1 = std::get<1>(matchings[otherBlockdIdMatchingsVector][i]);
@@ -236,7 +262,9 @@ int ttk::SeparatrixStability::buildOccurenceArrays(
       const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
       const bool &mergeEdgesOnSaddles,
       std::vector<std::vector<int>> &edgesOccurencesForEachBlock,
-      std::vector<std::vector<bool>> &isomorphismForEachBlock){
+      std::vector<std::vector<bool>> &isomorphismForEachBlock,
+      std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockSource,
+      std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockDestination){
 
   int n_blocks = adjacencyMatrices.size();
   int status;
@@ -248,11 +276,14 @@ int ttk::SeparatrixStability::buildOccurenceArrays(
     if(!mergeEdgesOnSaddles) {
       status = this->buildOccurenceArraysFull(
         adjacencyMatrices, separatrixCountForEachBlock[i], coordsSource,
-        coordsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i]);
+        coordsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i],
+        matchingArrayForEachBlockSource[i],
+        matchingArrayForEachBlockDestination[i]);
     } else {
       status = this->buildOccurenceArraysMinor(
         adjacencyMatrices, separatrixCountForEachBlock[i],
-        coordsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i]);
+        coordsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i],
+        matchingArrayForEachBlockDestination[i]);
     }
   }
 

@@ -81,5 +81,7 @@ protected:
                   GraphMatrixFull &adjacencyMatrixFull,
                   std::vector<std::array<double, 3>> &coordsSource,
                   std::vector<std::array<double, 3>> &coordsDestination,
-                  int &n_separatrices);
+                  int &n_separatrices,
+                  std::vector<int> &globalSourcePointId,
+                  std::vector<int> &globalDestinationPointId);
 };

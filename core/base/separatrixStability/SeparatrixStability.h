@@ -26,7 +26,9 @@ namespace ttk {
       const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
       const bool &mergeEdgesOnSaddles, 
       std::vector<std::vector<int>> &edgesOccurencesForEachBlock,
-      std::vector<std::vector<bool>> &isomorphismForEachBlock);
+      std::vector<std::vector<bool>> &isomorphismForEachBlock,
+      std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockSource,
+      std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockDestination);
 
   private:
 
@@ -52,7 +54,8 @@ namespace ttk {
       const std::vector<std::vector<std::array<double, 3>>> &coords,
       const int &block_id,
       std::vector<int> &edgeOccurences,
-      std::vector<bool> &isIsomorphicWith);
+      std::vector<bool> &isIsomorphicWith,
+      std::vector<std::vector<int>> &matchingArray);
 
     int buildOccurenceArraysFull(
       const std::vector<GraphMatrixFull> &adjacencyMatrices,
@@ -61,7 +64,9 @@ namespace ttk {
       const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
       const int &block_id,
       std::vector<int> &edgesOccurences,
-      std::vector<bool> &isIsomorphicWith);
+      std::vector<bool> &isIsomorphicWith,
+      std::vector<std::vector<int>> &matchingArraySource,
+      std::vector<std::vector<int>> &matchingArrayDestination);
   };
 
 } // namespace ttk
