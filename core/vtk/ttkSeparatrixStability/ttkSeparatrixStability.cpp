@@ -17,6 +17,7 @@
 
 #include <Timer.h>
 #include <string>
+#include <iomanip>
 
 vtkStandardNewMacro(ttkSeparatrixStability);
 
@@ -215,6 +216,7 @@ int ttkSeparatrixStability::execute(
   std::vector<std::vector<std::array<double, 3>>> coordsSource(n_blocks);
   std::vector<int> separatrixCountForEachBlock(n_blocks);
   std::vector<std::vector<int>> edgeOccurenceForEachBlock(n_blocks);
+  std::vector<std::vector<bool>> isomorphismsForEachBlock(n_blocks);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -234,9 +236,32 @@ int ttkSeparatrixStability::execute(
                                       coordsSource,
                                       coordsDestination,  
                                       MergeEdgesOnSaddles,
-                                      edgeOccurenceForEachBlock);
+                                      edgeOccurenceForEachBlock,
+                                      isomorphismsForEachBlock);
 
   if(status == 0)return status;
+
+  for (int i = 0 ; i < n_blocks ; i++){
+    std::cout<<std::setw(2)<<i<<" : ";
+    for (int j = 0 ; j < n_blocks ; j++){
+      std::cout<<isomorphismsForEachBlock[i][j]<<" ";
+    }
+    std::cout<<std::endl;
+  }
+
+  std::vector<int> classId(n_blocks,-1);
+  int idCount = 0;
+
+  for (int i = 0 ; i < n_blocks ; i++){
+    if (classId[i]!=-1)continue;
+    classId[i]=idCount;
+    for(int j =0; j < n_blocks; j++){
+      if(isomorphismsForEachBlock[i][j]){
+        classId[j]=idCount;
+      }
+    }
+    idCount++;
+  }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -246,13 +271,16 @@ int ttkSeparatrixStability::execute(
     vtkDataSet *block
       = vtkDataSet::SafeDownCast(output1_Separatrices->GetBlock(i));
     int cellNumber = block->GetNumberOfCells();
-    vtkCellData *blockCellData = block->GetCellData();
     ttkSimplexIdTypeArray *separatrixIds = ttkSimplexIdTypeArray::SafeDownCast(
-      blockCellData->GetArray(ttk::MorseSmaleSeparatrixIdName));
+      block->GetCellData()->GetArray(ttk::MorseSmaleSeparatrixIdName));
 
     vtkNew<vtkFloatArray> occurenceCount;
     occurenceCount->SetNumberOfComponents(1);
     occurenceCount->SetName(ttk::SeparatrixStabilityOccurenceCount);
+
+    vtkNew<vtkIntArray> isomorphismClassId;
+    isomorphismClassId->SetNumberOfComponents(1);
+    isomorphismClassId->SetName(ttk::SeparatrixStabilityIsomorphismClassId);
 
     vtkIdType currentCellId = 0;
     int currentSeparatrixId = separatrixIds->GetValue(currentCellId);
@@ -270,7 +298,11 @@ int ttkSeparatrixStability::execute(
       }
       occurenceCount->InsertNextValue(newValue);
     }
-    blockCellData->AddArray(occurenceCount);
+
+    isomorphismClassId->InsertNextValue(classId[i]);
+
+    block->GetCellData()->AddArray(occurenceCount);
+    block->GetFieldData()->AddArray(isomorphismClassId);
   }
   return status;
 }
