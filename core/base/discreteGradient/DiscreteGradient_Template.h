@@ -15,6 +15,7 @@
 #pragma once
 
 #include <DiscreteGradient.h>
+#include <random>
 
 using ttk::SimplexId;
 using ttk::dcg::Cell;
@@ -78,7 +79,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
       this->printMsg("Update cached discrete gradient", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
     } else {
-      this->processLowerStars(this->inputOffsets_, triangulation);
+      this->processLowerStarsStochastic(this->inputOffsets_, triangulation);
       this->printMsg("Built discrete gradient", 1.0, tm.getElapsedTime(),
                      this->threadNumber_);
     }
@@ -981,6 +982,273 @@ int DiscreteGradient::processLowerStarsWithMask(
             minId = i;
           }
         }
+
+        auto &c_delta = Lx[1][minId];
+
+        // store x (0-cell) -> delta (1-cell) V-path
+        pairCells(Lx[0][0], c_delta, triangulation);
+
+        // push every 1-cell in Lx that is not delta into pqZero
+        for(auto &alpha : Lx[1]) {
+          if(alpha.id_ != c_delta.id_) {
+            pqZero.push(alpha);
+          }
+        }
+
+        // push into pqOne every coface of delta in Lx (2-cells only,
+        // 3-cells have not any facet paired yet) such that
+        // numUnpairedFaces == 1
+        insertCofacets(c_delta, Lx);
+
+        while(!pqOne.empty() || !pqZero.empty()) {
+          while(!pqOne.empty()) {
+            auto &c_alpha = pqOne.top().get();
+            pqOne.pop();
+            auto unpairedFaces = numUnpairedFaces(c_alpha, Lx);
+            if(unpairedFaces.first == 0) {
+              pqZero.push(c_alpha);
+            } else {
+              auto &c_pair_alpha = Lx[c_alpha.dim_ - 1][unpairedFaces.second];
+
+              // store (pair_alpha) -> (alpha) V-path
+              pairCells(c_pair_alpha, c_alpha, triangulation);
+
+              // add cofaces of c_alpha and c_pair_alpha to pqOne
+              insertCofacets(c_alpha, Lx);
+              insertCofacets(c_pair_alpha, Lx);
+            }
+          }
+
+          // skip pair_alpha from pqZero:
+          // cells in pqZero are not critical if already paired
+          while(!pqZero.empty() && pqZero.top().get().paired_) {
+            pqZero.pop();
+          }
+
+          if(!pqZero.empty()) {
+            auto &c_gamma = pqZero.top().get();
+            pqZero.pop();
+
+            // gamma is a critical cell
+            // mark gamma as paired
+            c_gamma.paired_ = true;
+
+            // add cofacets of c_gamma to pqOne
+            insertCofacets(c_gamma, Lx);
+          }
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
+int DiscreteGradient::processLowerStarsStochastic(
+  const SimplexId *const offsets, const triangulationType &triangulation) {
+
+  // WARNING
+  // If you modify this function, please make sure to also report your edit to
+  // the other implementation of this function, `processLowerStarsWithMask`.
+
+  /* Compute gradient */
+
+  auto nverts = triangulation.getNumberOfVertices();
+
+  // Comparison function for Cells inside priority queues
+  const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
+    return a.lowVerts_ > b.lowVerts_;
+  };
+
+  // Type alias for priority queues
+  using pqType
+    = std::priority_queue<std::reference_wrapper<CellExt>,
+                          std::vector<std::reference_wrapper<CellExt>>,
+                          decltype(orderCells)>;
+
+  // To reduce allocations, priority queues and lowerStar objects are
+  // cleaned & reused between iterations.
+
+  // Priority queues are pushed at the beginning and popped at the
+  // end. To pop the minimum, elements should be sorted in a
+  // decreasing order.
+  pqType pqZero{orderCells}, pqOne{orderCells};
+
+  // store lower star structure
+  lowerStarType Lx;
+
+  for(SimplexId x = 0; x < nverts; x++) {
+
+    // clear priority queues (they should be empty at the end of the
+    // previous iteration)
+    while(!pqZero.empty()) {
+      pqZero.pop();
+    }
+    while(!pqOne.empty()) {
+      pqOne.pop();
+    }
+
+    // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
+    const auto insertCofacets = [&](const CellExt &ca, lowerStarType &ls) {
+      if(ca.dim_ == 1) {
+        for(auto &beta : ls[2]) {
+          if(ls[1][beta.faces_[0]].id_ == ca.id_
+             || ls[1][beta.faces_[1]].id_ == ca.id_) {
+            // edge ca belongs to triangle beta
+            if(numUnpairedFacesTriangle(beta, ls).first == 1) {
+              pqOne.push(beta);
+            }
+          }
+        }
+
+      } else if(ca.dim_ == 2) {
+        for(auto &beta : ls[3]) {
+          if(ls[2][beta.faces_[0]].id_ == ca.id_
+             || ls[2][beta.faces_[1]].id_ == ca.id_
+             || ls[2][beta.faces_[2]].id_ == ca.id_) {
+            // triangle ca belongs to tetra beta
+            if(numUnpairedFacesTetra(beta, ls).first == 1) {
+              pqOne.push(beta);
+            }
+          }
+        }
+      }
+    };
+
+    lowerStar(Lx, x, offsets, triangulation);
+    // In case the vertex is a ghost, the gradient of the
+    // simplices of its star is set to GHOST_GRADIENT
+#ifdef TTK_ENABLE_MPI
+    if(ttk::isRunningWithMPI()
+       && triangulation.getVertexRank(x) != ttk::MPIrank_) {
+      int sizeDim = Lx.size();
+      for(int i = 0; i < sizeDim; i++) {
+        int nCells = Lx[i].size();
+        for(int j = 0; j < nCells; j++) {
+          setCellToGhost(Lx[i][j].dim_, Lx[i][j].id_);
+        }
+      }
+    } else
+#endif // TTK_ENABLE_MPI
+
+    {
+      // Lx[1] empty => x is a local minimum
+      if(!Lx[1].empty()) {
+        size_t minId = 0;
+        float xCoords[3];
+        triangulation.getVertexPoint(x, xCoords[0], xCoords[1], xCoords[2]);
+        std::cout<<"x coords = "<<xCoords[0]<<", "<<xCoords[1]<<", "<<xCoords[2]<<std::endl;
+        //build stencil
+        std::vector<SimplexId> stencilIds(6, -1);//in order +dx, -dx, +dy, -dy, +dz, -dz 
+        std::vector<std::array<float, 3>> stencilCoords(6, {0,0,0});
+        float threshold = 10e-12;
+        const auto nedges = triangulation.getVertexEdgeNumber(x);
+        for(SimplexId i = 0; i < nedges; i++) {
+          SimplexId edgeId;
+          triangulation.getVertexEdge(x, i, edgeId);
+          SimplexId vertexId;
+          triangulation.getEdgeVertex(edgeId, 0, vertexId);
+          if(vertexId == x) {
+            triangulation.getEdgeVertex(edgeId, 1, vertexId);
+          }
+          std::array<float, 3> currentCoords;
+          triangulation.getVertexPoint(vertexId, currentCoords[0], currentCoords[1], currentCoords[2]);
+          if(std::abs(currentCoords[0] - xCoords[0]) < threshold
+              && std::abs(currentCoords[1] - xCoords[1]) < threshold){
+              if(currentCoords[2] -xCoords[2] > threshold){
+               stencilIds[4] = vertexId;
+               stencilCoords[4] = currentCoords;
+              }else if(currentCoords[2] -xCoords[2] < -threshold){
+                stencilIds[5] = vertexId;
+                stencilCoords[5] = currentCoords;
+              }  
+            }else if(std::abs(currentCoords[0] - xCoords[0]) < threshold 
+                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
+              if(currentCoords[1] -xCoords[1] > threshold){
+               stencilIds[2] = vertexId;
+               stencilCoords[2] = currentCoords;
+              }else if(currentCoords[1] -xCoords[1] < -threshold){
+                stencilIds[3] = vertexId;
+                stencilCoords[3] = currentCoords;
+              }  
+            }else if(std::abs(currentCoords[1] - xCoords[1]) < threshold 
+                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
+              if(currentCoords[0] - xCoords[0] > threshold){
+                stencilIds[0] = vertexId;
+                 stencilCoords[0] = currentCoords;
+              }else if(currentCoords[0] - xCoords[0] < -threshold){
+                stencilIds[1] = vertexId;
+                 stencilCoords[1] = currentCoords;
+            }
+          }
+        }
+        std::cout<<std::endl;
+        for (int i = 0 ; i < 6 ; i++){
+          std::cout<<stencilIds[i]<<", ";
+        }
+        std::cout<<std::endl;
+
+        float derivativeDx{}, derivativeDy{}, derivativeDz{};
+        if(stencilIds[0]!=-1 && stencilIds[1]!=-1)derivativeDx=-(offsets[stencilIds[0]] -  offsets[stencilIds[1]]) /std::abs(stencilCoords[0][0] - stencilCoords[1][0]);
+        else if(stencilIds[0]!=-1)derivativeDx=-(offsets[stencilIds[0]] -  offsets[x]) /std::abs(stencilCoords[0][0] - xCoords[0]);
+        else if(stencilIds[1]!=-1)derivativeDx = -(offsets[x] - offsets[stencilIds[1]] ) /std::abs(stencilCoords[1][0] - xCoords[0]);
+        else std::cout<<"ISOLATED POINT"<<std::endl;
+        if(stencilIds[2]!=-1 && stencilIds[3]!=-1)derivativeDy=-(offsets[stencilIds[2]] -  offsets[stencilIds[3]]) /std::abs(stencilCoords[2][1] - stencilCoords[3][1]);
+        else if(stencilIds[2]!=-1)derivativeDy=-(offsets[stencilIds[2]] -  offsets[x]) /std::abs(stencilCoords[2][1] - xCoords[1]);
+        else if(stencilIds[3]!=-1)derivativeDx = -(offsets[x] - offsets[stencilIds[3]] ) /std::abs(stencilCoords[3][1] - xCoords[1]);
+        else std::cout<<"ISOLATED POINT"<<std::endl;
+        if(stencilIds[4]!=-1 && stencilIds[4]!=-1)derivativeDz= -(offsets[stencilIds[4]] -  offsets[stencilIds[5]]) /std::abs(stencilCoords[4][2] - stencilCoords[5][2]);
+        else if(stencilIds[4]!=-1)derivativeDy=-(offsets[stencilIds[4]] -  offsets[x]) /std::abs(stencilCoords[4][2] - xCoords[2]);
+        else if(stencilIds[5]!=-1)derivativeDx = -(offsets[x] - offsets[stencilIds[5]] ) /std::abs(stencilCoords[5][2] - xCoords[2]);
+        else std::cout<<"ISOLATED POINT"<<std::endl;
+
+        std::cout<<std::abs(stencilCoords[0][0] - xCoords[0])<<std::endl;
+        std::cout<<std::abs(stencilCoords[1][0] - xCoords[0])<<std::endl;
+        std::cout<<std::abs(stencilCoords[2][1] - xCoords[1])<<std::endl;
+        std::cout<<std::abs(stencilCoords[3][1] - xCoords[1])<<std::endl;
+        std::cout<<std::abs(stencilCoords[4][2] - xCoords[2])<<std::endl;
+        std::cout<<std::abs(stencilCoords[5][2] - xCoords[2])<<std::endl;
+        std::cout<<"nombre de points dans la lowerStar = "<<Lx[1].size()<<std::endl;
+        std::vector<double> weights;
+        weights.push_back(0);
+        std::vector<int> indexInLowerStar;
+        indexInLowerStar.push_back(0);
+        double totalWeight=0;
+        for(size_t i = 0  ; i < Lx[1].size(); ++i) {
+          SimplexId vertexId;
+          triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
+          if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ ,0, vertexId);
+          std::array<float, 3> newCoords;
+          triangulation.getVertexPoint(vertexId, newCoords[0], newCoords[1], newCoords[2]);
+          float scalarProduct = (newCoords[0]-xCoords[0])*derivativeDx + (newCoords[1]-xCoords[1])*derivativeDy + (newCoords[2]-xCoords[2])*derivativeDz;
+          if(scalarProduct > 0){
+            weights.push_back(scalarProduct+weights[i-1]);
+            totalWeight+=weights[weights.size()-1];
+            indexInLowerStar.push_back(i);
+          }
+        }
+
+        std::cout<<"nombre de candidats dans la lowerStar = "<<weights.size()<<std::endl;
+        for(size_t i = 1  ; i < weights.size(); ++i) {
+          weights[i]/=totalWeight;
+          std::cout<<weights[i]<<std::endl;
+        }
+
+
+
+        std::random_device rd;        
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0.0, 1.0);
+        float random_number = dis(gen);
+        size_t it=1;
+        while(weights[it] < random_number && it < weights.size()-1){
+          it++;
+        }
+        minId = indexInLowerStar[it];
+
+        std::cout<<"balise 3"<<std::endl;
+        std::cout<<"minId found = "<<minId<<std::endl;
 
         auto &c_delta = Lx[1][minId];
 

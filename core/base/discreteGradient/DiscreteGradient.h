@@ -466,6 +466,10 @@ in the gradient.
                                     const std::vector<bool> *updateMask
                                     = nullptr);
 
+      template <typename triangulationType>
+      int processLowerStarsStochastic(const SimplexId *const offsets, 
+                                        const triangulationType &triangulation);
+
       /**
        * @brief Initialize/Allocate discrete gradient memory
        */
