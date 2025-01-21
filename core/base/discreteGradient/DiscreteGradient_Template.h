@@ -1145,7 +1145,6 @@ int DiscreteGradient::processLowerStarsStochastic(
         size_t minId = 0;
         float xCoords[3];
         triangulation.getVertexPoint(x, xCoords[0], xCoords[1], xCoords[2]);
-        std::cout<<"x coords = "<<xCoords[0]<<", "<<xCoords[1]<<", "<<xCoords[2]<<std::endl;
         //build stencil
         std::vector<SimplexId> stencilIds(6, -1);//in order +dx, -dx, +dy, -dy, +dz, -dz 
         std::vector<std::array<float, 3>> stencilCoords(6, {0,0,0});
@@ -1190,31 +1189,21 @@ int DiscreteGradient::processLowerStarsStochastic(
             }
           }
         }
-        std::cout<<std::endl;
-        for (int i = 0 ; i < 6 ; i++){
-          std::cout<<stencilIds[i]<<", ";
-        }
-        std::cout<<std::endl;
 
         int dimension = triangulation.getDimensionality();
-        std::cout<<"dimension = "<<dimension<<std::endl;
         float derivativeDx{}, derivativeDy{}, derivativeDz{};
         if(stencilIds[0]!=-1 && stencilIds[1]!=-1)derivativeDx=-(offsets[stencilIds[0]] -  offsets[stencilIds[1]]) /std::abs(stencilCoords[0][0] - stencilCoords[1][0]);
         else if(stencilIds[0]!=-1 && stencilIds[1]==1)derivativeDx=-(offsets[stencilIds[0]] -  offsets[x]) /std::abs(stencilCoords[0][0] - xCoords[0]);
         else if(stencilIds[1]!=-1 && stencilIds[0]==1)derivativeDx = -(offsets[x] - offsets[stencilIds[1]] ) /std::abs(stencilCoords[1][0] - xCoords[0]);
-        else std::cout<<"ISOLATED POINT"<<std::endl;
         if(stencilIds[2]!=-1 && stencilIds[3]!=-1)derivativeDy=-(offsets[stencilIds[2]] -  offsets[stencilIds[3]]) /std::abs(stencilCoords[2][1] - stencilCoords[3][1]);
         else if(stencilIds[2]!=-1  && stencilIds[3]==1)derivativeDy=-(offsets[stencilIds[2]] -  offsets[x]) /std::abs(stencilCoords[2][1] - xCoords[1]);
         else if(stencilIds[3]!=-1 && stencilIds[2]==1)derivativeDx = -(offsets[x] - offsets[stencilIds[3]] ) /std::abs(stencilCoords[3][1] - xCoords[1]);
-        else std::cout<<"ISOLATED POINT"<<std::endl;
         if(dimension == 3){
           if(stencilIds[4]!=-1 && stencilIds[5]!=-1)derivativeDz= -(offsets[stencilIds[4]] -  offsets[stencilIds[5]]) /std::abs(stencilCoords[4][2] - stencilCoords[5][2]);
           else if(stencilIds[4]!=-1  && stencilIds[5]==1)derivativeDy=-(offsets[stencilIds[4]] -  offsets[x]) /std::abs(stencilCoords[4][2] - xCoords[2]);
           else if(stencilIds[5]!=-1 && stencilIds[4]==1)derivativeDx = -(offsets[x] - offsets[stencilIds[5]] ) /std::abs(stencilCoords[5][2] - xCoords[2]);
-          else std::cout<<"ISOLATED POINT"<<std::endl;
         }
 
-        std::cout<<"nombre de points dans la lowerStar = "<<Lx[1].size()<<std::endl;
         std::vector<double> weights;
         weights.push_back(0);
         std::vector<int> indexInLowerStar;
@@ -1234,20 +1223,9 @@ int DiscreteGradient::processLowerStarsStochastic(
           }
         }
 
-        std::cout<<"nombre de candidats dans la lowerStar = "<<weights.size()-1<<std::endl;
-        std::cout<<"indices des candidats dans la lowerStar : "<<std::endl;
-        for(size_t i = 0 ; i < indexInLowerStar.size(); i++){
-          std::cout<<indexInLowerStar[i]<<", "<<std::endl;
-        }
         for(size_t i = 1  ; i < weights.size(); ++i) {
           weights[i]/=totalWeight;
         }
-
-        std::cout<<"weights : "<<std::endl;
-        for(size_t i = 0  ; i < weights.size(); ++i) {
-          std::cout<<weights[i]<<std::endl;
-        }
-
         std::random_device rd;        
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);
@@ -1260,10 +1238,6 @@ int DiscreteGradient::processLowerStarsStochastic(
           it++;
         }
         minId = indexInLowerStar[it];
-
-        std::cout<<"balise 3"<<std::endl;
-        std::cout<<"minId found = "<<minId<<std::endl;
-
         auto &c_delta = Lx[1][minId];
 
         // store x (0-cell) -> delta (1-cell) V-path
