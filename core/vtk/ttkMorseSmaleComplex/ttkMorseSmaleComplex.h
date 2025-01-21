@@ -163,6 +163,9 @@ public:
   vtkSetMacro(ReturnSaddleConnectors, bool);
   vtkGetMacro(ReturnSaddleConnectors, bool);
 
+  vtkSetMacro(StochasticDiscreteGradient, bool);
+  vtkGetMacro(StochasticDiscreteGradient, bool);
+
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 

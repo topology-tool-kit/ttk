@@ -143,6 +143,18 @@
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="StochasticDiscreteGradient"
+         label="Stochastic Backend For Discrete Gradient"
+         command="SetStochasticDiscreteGradient"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Use stochastic backend to compute discrete gradient field.
+         </Documentation>
+       </IntVectorProperty>
+
        <IntVectorProperty name="ComputeCriticalPoints"
          label="Critical Points"
          command="SetComputeCriticalPoints"

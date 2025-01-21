@@ -223,6 +223,14 @@ namespace ttk {
     }
 
     /**
+     * When true, the discrete gradient will be computed with a discrete backend.
+    */
+
+    inline void setStochasticDiscreteGradient(const bool state) {
+      StochasticDiscreteGradient = state;
+    }
+
+    /**
      * Set the threshold value for post-processing of
      * (saddle,...,saddle) vpaths gradient reversal
      * (default value is 0.0).
@@ -414,6 +422,7 @@ namespace ttk {
     bool ComputeFinalSegmentation{true};
 
     bool ReturnSaddleConnectors{false};
+    bool StochasticDiscreteGradient{false};
     double SaddleConnectorsPersistenceThreshold{};
     bool ThresholdIsAbsolute{false};
     bool ForceLoopFreeGradient{true};
@@ -456,7 +465,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setInputScalarField(scalars, scalarsMTime);
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.buildGradient(
-    triangulation, this->ReturnSaddleConnectors);
+    triangulation, this->ReturnSaddleConnectors, nullptr, this->StochasticDiscreteGradient);
 
   if(this->ReturnSaddleConnectors) {
     auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};

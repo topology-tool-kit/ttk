@@ -102,7 +102,8 @@ triangulation.
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
                         bool bypassCache = false,
-                        const std::vector<bool> *updateMask = nullptr);
+                        const std::vector<bool> *updateMask = nullptr,
+                        const bool stochasticDiscreteGradient = false);
 
       /**
        * Set the input scalar function.
