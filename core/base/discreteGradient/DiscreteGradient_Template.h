@@ -36,8 +36,7 @@ dataType DiscreteGradient::getPersistence(
 template <typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                                     bool bypassCache,
-                                    const std::vector<bool> *updateMask,
-                                    bool stochasticDiscreteGradient) {
+                                    const std::vector<bool> *updateMask) {
 
 
 
@@ -75,17 +74,16 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     this->initMemory(triangulation);
 
     Timer tm{};
-    // compute gradient pairs
-    if(updateMask) {
+
+    if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND){
+      this->processLowerStarsStochastic (this->inputOffsets_, triangulation);
+      this->printMsg("Build stochastic discrete gradient", 1.0, tm.getElapsedTime(), this->threadNumber_);
+    }else if(updateMask) {
       this->processLowerStarsWithMask(
-        this->inputOffsets_, triangulation, updateMask);
+      this->inputOffsets_, triangulation, updateMask);
       this->printMsg("Update cached discrete gradient", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
-    }else if(stochasticDiscreteGradient){
-
-      this->processLowerStarsStochastic(this->inputOffsets_, triangulation);
-      this->printMsg("Build stochastic discrete gradient", 1.0, tm.getElapsedTime());
-    }else {
+    }else if(this->BackEnd == BACKEND::CLASSIC_BACKEND){
       this->processLowerStars(this->inputOffsets_, triangulation);
       this->printMsg("Built discrete gradient", 1.0, tm.getElapsedTime(),
                      this->threadNumber_);
@@ -1084,7 +1082,10 @@ int DiscreteGradient::processLowerStarsStochastic(
 
   // store lower star structure
   lowerStarType Lx;
-
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) \
+firstprivate(Lx, pqZero, pqOne)
+#endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
     // clear priority queues (they should be empty at the end of the
@@ -1142,6 +1143,8 @@ int DiscreteGradient::processLowerStarsStochastic(
     {
       // Lx[1] empty => x is a local minimum
       if(!Lx[1].empty()) {
+        int stencilCard = 0;
+        bool found = false;
         size_t minId = 0;
         float xCoords[3];
         triangulation.getVertexPoint(x, xCoords[0], xCoords[1], xCoords[2]);
@@ -1185,23 +1188,47 @@ int DiscreteGradient::processLowerStarsStochastic(
                  stencilCoords[0] = currentCoords;
               }else if(currentCoords[0] - xCoords[0] < -threshold){
                 stencilIds[1] = vertexId;
-                 stencilCoords[1] = currentCoords;
+                stencilCoords[1] = currentCoords;
+            }
+          }
+          if(std::abs(currentCoords[0] - xCoords[0]) < threshold
+              && std::abs(currentCoords[1] - xCoords[1]) < threshold){
+              if(currentCoords[2] -xCoords[2] > threshold){
+               stencilCard++;
+              }if(currentCoords[2] -xCoords[2] < -threshold){
+               stencilCard++;
+              }  
+            }if(std::abs(currentCoords[0] - xCoords[0]) < threshold 
+                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
+              if(currentCoords[1] -xCoords[1] > threshold){
+               stencilCard++;
+              }if(currentCoords[1] -xCoords[1] < -threshold){
+               stencilCard++;
+              }  
+            }if(std::abs(currentCoords[1] - xCoords[1]) < threshold 
+                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
+              if(currentCoords[0] - xCoords[0] > threshold){
+               stencilCard++;
+              }if(currentCoords[0] - xCoords[0] < -threshold){
+               stencilCard++;
             }
           }
         }
 
+
+        const double* scalars = static_cast<double const *>(this->inputScalarField_.first);
         int dimension = triangulation.getDimensionality();
         float derivativeDx{}, derivativeDy{}, derivativeDz{};
-        if(stencilIds[0]!=-1 && stencilIds[1]!=-1)derivativeDx=-(offsets[stencilIds[0]] -  offsets[stencilIds[1]]) /std::abs(stencilCoords[0][0] - stencilCoords[1][0]);
-        else if(stencilIds[0]!=-1 && stencilIds[1]==1)derivativeDx=-(offsets[stencilIds[0]] -  offsets[x]) /std::abs(stencilCoords[0][0] - xCoords[0]);
-        else if(stencilIds[1]!=-1 && stencilIds[0]==1)derivativeDx = -(offsets[x] - offsets[stencilIds[1]] ) /std::abs(stencilCoords[1][0] - xCoords[0]);
-        if(stencilIds[2]!=-1 && stencilIds[3]!=-1)derivativeDy=-(offsets[stencilIds[2]] -  offsets[stencilIds[3]]) /std::abs(stencilCoords[2][1] - stencilCoords[3][1]);
-        else if(stencilIds[2]!=-1  && stencilIds[3]==1)derivativeDy=-(offsets[stencilIds[2]] -  offsets[x]) /std::abs(stencilCoords[2][1] - xCoords[1]);
-        else if(stencilIds[3]!=-1 && stencilIds[2]==1)derivativeDx = -(offsets[x] - offsets[stencilIds[3]] ) /std::abs(stencilCoords[3][1] - xCoords[1]);
+        if(stencilIds[0]!=-1 && stencilIds[1]!=-1)derivativeDx=-(scalars[stencilIds[0]] -  scalars[stencilIds[1]]) /std::abs(stencilCoords[0][0] - stencilCoords[1][0]);
+        else if(stencilIds[0]!=-1 && stencilIds[1]==1)derivativeDx=-(scalars[stencilIds[0]] -  scalars[x]) /std::abs(stencilCoords[0][0] - xCoords[0]);
+        else if(stencilIds[1]!=-1 && stencilIds[0]==1)derivativeDx = -(scalars[x] - scalars[stencilIds[1]] ) /std::abs(stencilCoords[1][0] - xCoords[0]);
+        if(stencilIds[2]!=-1 && stencilIds[3]!=-1)derivativeDy=-(scalars[stencilIds[2]] -  scalars[stencilIds[3]]) /std::abs(stencilCoords[2][1] - stencilCoords[3][1]);
+        else if(stencilIds[2]!=-1  && stencilIds[3]==1)derivativeDy=-(scalars[stencilIds[2]] -  scalars[x]) /std::abs(stencilCoords[2][1] - xCoords[1]);
+        else if(stencilIds[3]!=-1 && stencilIds[2]==1)derivativeDy = -(scalars[x] - scalars[stencilIds[3]] ) /std::abs(stencilCoords[3][1] - xCoords[1]);
         if(dimension == 3){
-          if(stencilIds[4]!=-1 && stencilIds[5]!=-1)derivativeDz= -(offsets[stencilIds[4]] -  offsets[stencilIds[5]]) /std::abs(stencilCoords[4][2] - stencilCoords[5][2]);
-          else if(stencilIds[4]!=-1  && stencilIds[5]==1)derivativeDy=-(offsets[stencilIds[4]] -  offsets[x]) /std::abs(stencilCoords[4][2] - xCoords[2]);
-          else if(stencilIds[5]!=-1 && stencilIds[4]==1)derivativeDx = -(offsets[x] - offsets[stencilIds[5]] ) /std::abs(stencilCoords[5][2] - xCoords[2]);
+          if(stencilIds[4]!=-1 && stencilIds[5]!=-1)derivativeDz= -(scalars[stencilIds[4]] -  scalars[stencilIds[5]]) /std::abs(stencilCoords[4][2] - stencilCoords[5][2]);
+          else if(stencilIds[4]!=-1  && stencilIds[5]==1)derivativeDz=-(scalars[stencilIds[4]] -  scalars[x]) /std::abs(stencilCoords[4][2] - xCoords[2]);
+          else if(stencilIds[5]!=-1 && stencilIds[4]==1)derivativeDz = -(scalars[x] - scalars[stencilIds[5]] ) /std::abs(stencilCoords[5][2] - xCoords[2]);
         }
 
         std::vector<double> weights;
@@ -1209,34 +1236,52 @@ int DiscreteGradient::processLowerStarsStochastic(
         std::vector<int> indexInLowerStar;
         indexInLowerStar.push_back(0);
         double totalWeight=0;
+
         for(size_t i = 0  ; i < Lx[1].size(); ++i){
           SimplexId vertexId;
           triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
-          if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 0, vertexId);
+          if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 1, vertexId);
           std::array<float, 3> newCoords;
           triangulation.getVertexPoint(vertexId, newCoords[0], newCoords[1], newCoords[2]);
           float scalarProduct = (newCoords[0]-xCoords[0])*derivativeDx + (newCoords[1]-xCoords[1])*derivativeDy + (newCoords[2]-xCoords[2])*derivativeDz;
           if(scalarProduct > 0){
-            weights.push_back(scalarProduct+weights[i-1]);
-            totalWeight+=weights[weights.size()-1];
+            double previousWeight = weights[weights.size()-1];
+            weights.push_back(scalarProduct+previousWeight);
+            totalWeight+=scalarProduct;
+            indexInLowerStar.push_back(i);
+            found = true;
+          }
+        }
+
+        if(!found){
+          double constantWeight = 1./Lx[1].size();
+          for(size_t i = 0  ; i < Lx[1].size(); ++i){
+            SimplexId vertexId;
+            triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
+            if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 1, vertexId);
+            weights.push_back((double)(constantWeight*(i+1)));
             indexInLowerStar.push_back(i);
           }
         }
 
-        for(size_t i = 1  ; i < weights.size(); ++i) {
-          weights[i]/=totalWeight;
+        if(found){
+          for(size_t i = 1  ; i < weights.size(); ++i) {
+            weights[i]/=totalWeight;
+          }
         }
         std::random_device rd;        
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);
         float random_number = dis(gen);
         size_t it=weights.size()-1;
+
         while(weights[it] > random_number && it > 0){
           it--;
         }
-        if(it < weights.size() - 1){
+        if(it < weights.size()-1){
           it++;
         }
+
         minId = indexInLowerStar[it];
         auto &c_delta = Lx[1][minId];
 

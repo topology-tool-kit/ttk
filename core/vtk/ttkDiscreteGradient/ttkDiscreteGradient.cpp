@@ -289,6 +289,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
     ttkUtils::GetVoidPointer(inputScalars), inputScalars->GetMTime());
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
+  BACKEND selectedBackend = Backend == 1 ? BACKEND::STOCHASTIC_BACKEND : BACKEND::CLASSIC_BACKEND;
+  this->setBackend(selectedBackend);
 #ifdef TTK_ENABLE_MPI_TIME
   ttk::Timer t_mpi;
   ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);

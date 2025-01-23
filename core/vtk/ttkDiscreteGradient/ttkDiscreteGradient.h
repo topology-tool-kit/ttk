@@ -61,6 +61,9 @@ public:
   vtkSetMacro(ComputeGradientGlyphs, bool);
   vtkGetMacro(ComputeGradientGlyphs, bool);
 
+  vtkSetMacro(Backend, int);
+  vtkGetMacro(Backend, int);
+
 protected:
   ttkDiscreteGradient();
 
@@ -82,4 +85,5 @@ private:
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
+  int Backend{0};
 };

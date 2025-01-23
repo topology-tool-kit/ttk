@@ -163,8 +163,8 @@ public:
   vtkSetMacro(ReturnSaddleConnectors, bool);
   vtkGetMacro(ReturnSaddleConnectors, bool);
 
-  vtkSetMacro(StochasticDiscreteGradient, bool);
-  vtkGetMacro(StochasticDiscreteGradient, bool);
+  vtkSetMacro(DiscreteGradientBackend, int);
+  vtkGetMacro(DiscreteGradientBackend, int);
 
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
@@ -195,5 +195,6 @@ protected:
 private:
   bool ForceInputOffsetScalarField{};
   int IterationThreshold{-1};
+  int DiscreteGradientBackend{0};
   OutputManifold segmentations_{};
 };

@@ -88,12 +88,18 @@ namespace ttk {
     class DiscreteGradient : virtual public Debug {
 
     public:
+      enum class BACKEND {
+        CLASSIC_BACKEND = 0,
+        STOCHASTIC_BACKEND = 1,
+      };
+
       DiscreteGradient() {
         this->setDebugMsgPrefix("DiscreteGradient");
 #ifdef TTK_ENABLE_MPI
         hasMPISupport_ = true;
 #endif
       }
+
 
       /**
        * Compute the initial gradient field of the input scalar function on the
@@ -102,8 +108,7 @@ triangulation.
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
                         bool bypassCache = false,
-                        const std::vector<bool> *updateMask = nullptr,
-                        const bool stochasticDiscreteGradient = false);
+                        const std::vector<bool> *updateMask = nullptr);
 
       /**
        * Set the input scalar function.
@@ -116,6 +121,10 @@ triangulation.
       inline void setInputScalarField(const void *const data,
                                       const size_t mTime) {
         inputScalarField_ = std::make_pair(data, mTime);
+      }
+
+      inline void setBackend(const BACKEND backend){
+        BackEnd = backend;
       }
 
       /**
@@ -543,6 +552,8 @@ gradient, false otherwise.
     protected:
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
+      BACKEND BackEnd{BACKEND::CLASSIC_BACKEND};
+
 
       // spare storage (bypass cache) for gradient internal structure
       AbstractTriangulation::gradientType localGradient_{};

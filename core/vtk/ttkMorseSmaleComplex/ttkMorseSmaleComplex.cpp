@@ -501,9 +501,10 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                           ttkUtils::GetPointer<SimplexId>(morseSmaleManifold)};
 
   this->setReturnSaddleConnectors(ReturnSaddleConnectors);
-  this->setStochasticDiscreteGradient(StochasticDiscreteGradient);
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
+  DiscreteGradient::BACKEND selectedDiscreteGradientBackend = DiscreteGradientBackend == 1 ?  DiscreteGradient::BACKEND::STOCHASTIC_BACKEND : DiscreteGradient::BACKEND::CLASSIC_BACKEND;
+  this->setDiscreteGradientBackend(selectedDiscreteGradientBackend);
 
   int ret{};
 

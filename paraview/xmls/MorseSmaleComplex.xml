@@ -143,17 +143,21 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="StochasticDiscreteGradient"
-         label="Stochastic Backend For Discrete Gradient"
-         command="SetStochasticDiscreteGradient"
-         number_of_elements="1"
-         default_values="0"
-         panel_visibility="default">
-         <BooleanDomain name="bool"/>
-         <Documentation>
-           Use stochastic backend to compute discrete gradient field.
-         </Documentation>
-       </IntVectorProperty>
+      <IntVectorProperty
+      name="DiscreteGradientBackend"
+      label="DiscreteGradientBackend"
+      command="SetDiscreteGradientBackend"
+        number_of_elements="1"
+        default_values="0"
+        >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Robins Discrete Gradient"/>
+          <Entry value="1" text="Stochastic Discrete Gradient"/>
+        </EnumerationDomain>                      
+        <Documentation>
+          Method to compute discrete gradient field (first step in Morse smale complex computation).
+        </Documentation>
+      </IntVectorProperty>
 
        <IntVectorProperty name="ComputeCriticalPoints"
          label="Critical Points"
