@@ -113,7 +113,7 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
         int otherBlockDestinationId = std::get<1>(
           matchingsDestination[otherBlockdIdMatchingsVector][j]);
         matchingArraySource[k][otherBlockSourceId]=thisBlockSourceId;
-        matchingArraySource[k][otherBlockDestinationId]=thisBlockDestinationId;
+        matchingArrayDestination[k][otherBlockDestinationId]=thisBlockDestinationId;
         if(ajacencyMatrices[block_id][thisBlockSourceId]
                                 [thisBlockDestinationId]
           != -1 &&
@@ -133,6 +133,14 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
               isIsomorphicWith[k]=false;
             }
       }
+    }
+  }
+  //re-index the matching id for the source point so that they are different from the destination point id
+  for (int i = 0 ; i < n_blocks; i++){
+    int sourceSize = matchingArraySource[i].size();
+    int destinationSize = matchingArrayDestination[i].size();
+    for (int j = 0 ; j < sourceSize; j++){
+      matchingArraySource[i][j]+=destinationSize;
     }
   }
   return 1;
