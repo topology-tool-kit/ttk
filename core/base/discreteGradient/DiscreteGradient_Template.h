@@ -1143,96 +1143,19 @@ firstprivate(Lx, pqZero, pqOne)
     {
       // Lx[1] empty => x is a local minimum
       if(!Lx[1].empty()) {
-        int stencilCard = 0;
-        bool found = false;
         size_t minId = 0;
-        float xCoords[3];
+        std::array<float, 3> xCoords;
         triangulation.getVertexPoint(x, xCoords[0], xCoords[1], xCoords[2]);
         //build stencil
-        std::vector<SimplexId> stencilIds(6, -1);//in order +dx, -dx, +dy, -dy, +dz, -dz 
-        std::vector<std::array<float, 3>> stencilCoords(6, {0,0,0});
-        float threshold = 10e-12;
-        const auto nedges = triangulation.getVertexEdgeNumber(x);
-        for(SimplexId i = 0; i < nedges; i++) {
-          SimplexId edgeId;
-          triangulation.getVertexEdge(x, i, edgeId);
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(edgeId, 0, vertexId);
-          if(vertexId == x) {
-            triangulation.getEdgeVertex(edgeId, 1, vertexId);
-          }
-          std::array<float, 3> currentCoords;
-          triangulation.getVertexPoint(vertexId, currentCoords[0], currentCoords[1], currentCoords[2]);
-          if(std::abs(currentCoords[0] - xCoords[0]) < threshold
-              && std::abs(currentCoords[1] - xCoords[1]) < threshold){
-              if(currentCoords[2] -xCoords[2] > threshold){
-               stencilIds[4] = vertexId;
-               stencilCoords[4] = currentCoords;
-              }else if(currentCoords[2] -xCoords[2] < -threshold){
-                stencilIds[5] = vertexId;
-                stencilCoords[5] = currentCoords;
-              }  
-            }else if(std::abs(currentCoords[0] - xCoords[0]) < threshold 
-                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
-              if(currentCoords[1] -xCoords[1] > threshold){
-               stencilIds[2] = vertexId;
-               stencilCoords[2] = currentCoords;
-              }else if(currentCoords[1] -xCoords[1] < -threshold){
-                stencilIds[3] = vertexId;
-                stencilCoords[3] = currentCoords;
-              }  
-            }else if(std::abs(currentCoords[1] - xCoords[1]) < threshold 
-                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
-              if(currentCoords[0] - xCoords[0] > threshold){
-                stencilIds[0] = vertexId;
-                 stencilCoords[0] = currentCoords;
-              }else if(currentCoords[0] - xCoords[0] < -threshold){
-                stencilIds[1] = vertexId;
-                stencilCoords[1] = currentCoords;
-            }
-          }
-          if(std::abs(currentCoords[0] - xCoords[0]) < threshold
-              && std::abs(currentCoords[1] - xCoords[1]) < threshold){
-              if(currentCoords[2] -xCoords[2] > threshold){
-               stencilCard++;
-              }if(currentCoords[2] -xCoords[2] < -threshold){
-               stencilCard++;
-              }  
-            }if(std::abs(currentCoords[0] - xCoords[0]) < threshold 
-                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
-              if(currentCoords[1] -xCoords[1] > threshold){
-               stencilCard++;
-              }if(currentCoords[1] -xCoords[1] < -threshold){
-               stencilCard++;
-              }  
-            }if(std::abs(currentCoords[1] - xCoords[1]) < threshold 
-                      && std::abs(currentCoords[2] - xCoords[2]) < threshold){
-              if(currentCoords[0] - xCoords[0] > threshold){
-               stencilCard++;
-              }if(currentCoords[0] - xCoords[0] < -threshold){
-               stencilCard++;
-            }
-          }
-        }
+        std::vector<SimplexId> stencilIds;//in order +dx, -dx, +dy, -dy, +dz, -dz 
+        std::vector<std::array<float, 3>> stencilCoords;
+        buildStencil(x, xCoords, triangulation, stencilIds, stencilCoords);
 
+        double grad[3];
+        computeDerivatives(x, stencilIds, xCoords, stencilCoords, grad);
 
-        const double* scalars = static_cast<double const *>(this->inputScalarField_.first);
-        int dimension = triangulation.getDimensionality();
-        float derivativeDx{}, derivativeDy{}, derivativeDz{};
-        if(stencilIds[0]!=-1 && stencilIds[1]!=-1)derivativeDx=-(scalars[stencilIds[0]] -  scalars[stencilIds[1]]) /std::abs(stencilCoords[0][0] - stencilCoords[1][0]);
-        else if(stencilIds[0]!=-1 && stencilIds[1]==1)derivativeDx=-(scalars[stencilIds[0]] -  scalars[x]) /std::abs(stencilCoords[0][0] - xCoords[0]);
-        else if(stencilIds[1]!=-1 && stencilIds[0]==1)derivativeDx = -(scalars[x] - scalars[stencilIds[1]] ) /std::abs(stencilCoords[1][0] - xCoords[0]);
-        if(stencilIds[2]!=-1 && stencilIds[3]!=-1)derivativeDy=-(scalars[stencilIds[2]] -  scalars[stencilIds[3]]) /std::abs(stencilCoords[2][1] - stencilCoords[3][1]);
-        else if(stencilIds[2]!=-1  && stencilIds[3]==1)derivativeDy=-(scalars[stencilIds[2]] -  scalars[x]) /std::abs(stencilCoords[2][1] - xCoords[1]);
-        else if(stencilIds[3]!=-1 && stencilIds[2]==1)derivativeDy = -(scalars[x] - scalars[stencilIds[3]] ) /std::abs(stencilCoords[3][1] - xCoords[1]);
-        if(dimension == 3){
-          if(stencilIds[4]!=-1 && stencilIds[5]!=-1)derivativeDz= -(scalars[stencilIds[4]] -  scalars[stencilIds[5]]) /std::abs(stencilCoords[4][2] - stencilCoords[5][2]);
-          else if(stencilIds[4]!=-1  && stencilIds[5]==1)derivativeDz=-(scalars[stencilIds[4]] -  scalars[x]) /std::abs(stencilCoords[4][2] - xCoords[2]);
-          else if(stencilIds[5]!=-1 && stencilIds[4]==1)derivativeDz = -(scalars[x] - scalars[stencilIds[5]] ) /std::abs(stencilCoords[5][2] - xCoords[2]);
-        }
-
-        std::vector<double> weights;
-        weights.push_back(0);
+        std::vector<double> repartitionBounds;
+        repartitionBounds.push_back(0);
         std::vector<int> indexInLowerStar;
         indexInLowerStar.push_back(0);
         double totalWeight=0;
@@ -1243,42 +1166,27 @@ firstprivate(Lx, pqZero, pqOne)
           if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 1, vertexId);
           std::array<float, 3> newCoords;
           triangulation.getVertexPoint(vertexId, newCoords[0], newCoords[1], newCoords[2]);
-          float scalarProduct = (newCoords[0]-xCoords[0])*derivativeDx + (newCoords[1]-xCoords[1])*derivativeDy + (newCoords[2]-xCoords[2])*derivativeDz;
+          float scalarProduct = (newCoords[0]-xCoords[0])*grad[0] + (newCoords[1]-xCoords[1])*grad[1] + (newCoords[2]-xCoords[2])*grad[2];
           if(scalarProduct > 0){
-            double previousWeight = weights[weights.size()-1];
-            weights.push_back(scalarProduct+previousWeight);
+            double previousBound = repartitionBounds[repartitionBounds.size()-1];
+            repartitionBounds.push_back(scalarProduct+previousBound);
             totalWeight+=scalarProduct;
             indexInLowerStar.push_back(i);
-            found = true;
           }
         }
 
-        if(!found){
-          double constantWeight = 1./Lx[1].size();
-          for(size_t i = 0  ; i < Lx[1].size(); ++i){
-            SimplexId vertexId;
-            triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
-            if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 1, vertexId);
-            weights.push_back((double)(constantWeight*(i+1)));
-            indexInLowerStar.push_back(i);
-          }
+
+        for(size_t i = 1  ; i < repartitionBounds.size(); ++i) {
+          repartitionBounds[i]/=totalWeight;
         }
 
-        if(found){
-          for(size_t i = 1  ; i < weights.size(); ++i) {
-            weights[i]/=totalWeight;
-          }
-        }
         std::random_device rd;        
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);
         float random_number = dis(gen);
-        size_t it=weights.size()-1;
+        size_t it=0;
 
-        while(weights[it] > random_number && it > 0){
-          it--;
-        }
-        if(it < weights.size()-1){
+        while(repartitionBounds[it] < random_number){
           it++;
         }
 
@@ -1342,6 +1250,58 @@ firstprivate(Lx, pqZero, pqOne)
   }
 
   return 0;
+}
+
+template<typename triangulationType>
+void DiscreteGradient::buildStencil(const SimplexId &x,
+                                    const std::array<float, 3> xCoords, 
+                                    const triangulationType &triangulation,
+                                    std::vector<SimplexId> stencilIds, 
+                                    std::vector<std::array<float, 3>> stencilCoords){
+  float threshold = 10e-12;
+  const auto nedges = triangulation.getVertexEdgeNumber(x);
+  stencilIds.resize(6, -1);
+  stencilCoords.resize(6, {0,0,0}); 
+  for(SimplexId i = 0; i < nedges; i++) {
+    SimplexId edgeId;
+    triangulation.getVertexEdge(x, i, edgeId);
+    SimplexId vertexId;
+    triangulation.getEdgeVertex(edgeId, 0, vertexId);
+    if(vertexId == x) {
+      triangulation.getEdgeVertex(edgeId, 1, vertexId);
+    }
+    std::array<float, 3> currentCoords;
+    triangulation.getVertexPoint(vertexId, currentCoords[0], currentCoords[1], currentCoords[2]);
+    if(std::abs(currentCoords[0] - xCoords[0]) < threshold
+        && std::abs(currentCoords[1] - xCoords[1]) < threshold){
+        if(currentCoords[2] -xCoords[2] > threshold){
+         stencilIds[4] = vertexId;
+         stencilCoords[4] = currentCoords;
+        }else if(currentCoords[2] -xCoords[2] < -threshold){
+          stencilIds[5] = vertexId;
+          stencilCoords[5] = currentCoords;
+        }  
+      }else if(std::abs(currentCoords[0] - xCoords[0]) < threshold 
+                && std::abs(currentCoords[2] - xCoords[2]) < threshold){
+        if(currentCoords[1] -xCoords[1] > threshold){
+         stencilIds[2] = vertexId;
+         stencilCoords[2] = currentCoords;
+        }else if(currentCoords[1] -xCoords[1] < -threshold){
+          stencilIds[3] = vertexId;
+          stencilCoords[3] = currentCoords;
+        }  
+      }else if(std::abs(currentCoords[1] - xCoords[1]) < threshold 
+                && std::abs(currentCoords[2] - xCoords[2]) < threshold){
+        if(currentCoords[0] - xCoords[0] > threshold){
+          stencilIds[0] = vertexId;
+           stencilCoords[0] = currentCoords;
+        }else if(currentCoords[0] - xCoords[0] < -threshold){
+          stencilIds[1] = vertexId;
+          stencilCoords[1] = currentCoords;
+      }
+    }
+  }
+          
 }
 
 template <typename triangulationType>

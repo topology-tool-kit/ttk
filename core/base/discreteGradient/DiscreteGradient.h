@@ -480,6 +480,22 @@ in the gradient.
       int processLowerStarsStochastic(const SimplexId *const offsets, 
                                         const triangulationType &triangulation);
 
+      template<typename triangulationType>
+      void buildStencil(const SimplexId &x,
+                        const std::array<float, 3> xCoords, 
+                        const triangulationType &triangulation,
+                        std::vector<SimplexId> stencilIds, 
+                        std::vector<std::array<float, 3>> stencilCoords);
+
+      /**
+       * @brief Compute the opposite of numerical gradient at point x with given stencil
+       */
+      void computeDerivatives(const SimplexId &x, 
+                             const std::vector<SimplexId> &stencilIds, 
+                             const std::array<float, 3> &xCoords, 
+                             const std::vector<std::array<float, 3>> &stencilCoords,
+                             double (&grad)[3]);
+
       /**
        * @brief Initialize/Allocate discrete gradient memory
        */
