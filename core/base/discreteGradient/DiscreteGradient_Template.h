@@ -72,17 +72,18 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
 
     // allocate gradient memory
     this->initMemory(triangulation);
-
+    int intToPrint = this->BackEnd == BACKEND::STOCHASTIC_BACKEND ? 1 : 0;
+    std::cout<<"BACKEND = "<<intToPrint<<std::endl;
     Timer tm{};
-
-    if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND){
+    if(updateMask) {
+     this->processLowerStarsWithMask(
+     this->inputOffsets_, triangulation, updateMask);
+     this->printMsg("Update cached discrete gradient", 1.0,
+                tm.getElapsedTime(), this->threadNumber_);
+    }else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND){
       this->processLowerStarsStochastic (this->inputOffsets_, triangulation);
-      this->printMsg("Build stochastic discrete gradient", 1.0, tm.getElapsedTime(), this->threadNumber_);
-    }else if(updateMask) {
-      this->processLowerStarsWithMask(
-      this->inputOffsets_, triangulation, updateMask);
-      this->printMsg("Update cached discrete gradient", 1.0,
-                     tm.getElapsedTime(), this->threadNumber_);
+      this->printMsg("Build stochastic discrete gradient", 1.0, tm.getElapsedTime(), 
+                    this->threadNumber_);
     }else if(this->BackEnd == BACKEND::CLASSIC_BACKEND){
       this->processLowerStars(this->inputOffsets_, triangulation);
       this->printMsg("Built discrete gradient", 1.0, tm.getElapsedTime(),
@@ -1143,6 +1144,7 @@ firstprivate(Lx, pqZero, pqOne)
     {
       // Lx[1] empty => x is a local minimum
       if(!Lx[1].empty()) {
+
         size_t minId = 0;
         std::array<float, 3> xCoords;
         triangulation.getVertexPoint(x, xCoords[0], xCoords[1], xCoords[2]);
@@ -1160,6 +1162,7 @@ firstprivate(Lx, pqZero, pqOne)
         indexInLowerStar.push_back(0);
         double totalWeight=0;
 
+        //std::cout<<"scalar products : "<<std::endl;
         for(size_t i = 0  ; i < Lx[1].size(); ++i){
           SimplexId vertexId;
           triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
@@ -1167,6 +1170,7 @@ firstprivate(Lx, pqZero, pqOne)
           std::array<float, 3> newCoords;
           triangulation.getVertexPoint(vertexId, newCoords[0], newCoords[1], newCoords[2]);
           float scalarProduct = (newCoords[0]-xCoords[0])*grad[0] + (newCoords[1]-xCoords[1])*grad[1] + (newCoords[2]-xCoords[2])*grad[2];
+          //std::cout<<scalarProduct<<"  ";
           if(scalarProduct > 0){
             double previousBound = repartitionBounds[repartitionBounds.size()-1];
             repartitionBounds.push_back(scalarProduct+previousBound);
@@ -1174,7 +1178,7 @@ firstprivate(Lx, pqZero, pqOne)
             indexInLowerStar.push_back(i);
           }
         }
-
+        std::cout<<std::endl;
 
         for(size_t i = 1  ; i < repartitionBounds.size(); ++i) {
           repartitionBounds[i]/=totalWeight;
@@ -1186,12 +1190,49 @@ firstprivate(Lx, pqZero, pqOne)
         float random_number = dis(gen);
         size_t it=0;
 
-        while(repartitionBounds[it] < random_number){
+        while(repartitionBounds[it] < random_number && repartitionBounds.size()>1){
           it++;
         }
 
+
         minId = indexInLowerStar[it];
         auto &c_delta = Lx[1][minId];
+
+        //std::cout<<"center id : "<<x<<std::endl;
+        //float x1{}, x2{}, x3{};
+        //triangulation.getVertexPoint(x, x1, x2, x3);
+        //std::cout<<"["<<x1<<", "<<x2<<", "<<x3<<"]"<<std::endl;
+        //std::cout<<"lowerStar size : "<<Lx[1].size()<<std::endl;
+        //std::cout<<"lowerStar points : "<<std::endl;
+        //for (size_t z = 0 ; z < Lx[1].size(); z++){
+        //  int id;
+        //  triangulation.getEdgeVertex(Lx[1][z].id_,0, id);
+        //  if(id == x)triangulation.getEdgeVertex(Lx[1][z].id_ , 1, id);
+        //  float c1{}, c2{}, c3{};
+        //  triangulation.getVertexPoint(id, c1, c2, c3);
+        //  std::cout<<id<<" : ["<<c1<<", "<<c2<<", "<<c3<<"]"<<std::endl;
+        //}
+        //std::cout<<"grad(x) = ["<<grad[0]<<", "<<grad[1]<<", "<<grad[2]<<"]"<<std::endl;
+        //std::cout<<"stencils : "<<std::endl;
+        //for (size_t z = 0 ; z < stencilIds.size(); z++){
+        // std::cout<<stencilIds[z]<<"  ";
+        //}
+        //std::cout<<std::endl;
+        //std::cout<<"weights : ";
+        //for (size_t z = 0 ; z < repartitionBounds.size(); z++){
+        //  std::cout<<repartitionBounds[z]<<"  ";
+        //}
+        //std::cout<<std::endl;
+        //std::cout<<"randomNumber : "<<random_number<<std::endl;
+        //std::cout<<"arrow direction id : "<<Lx[1][minId].id_<<std::endl;
+        //int arrowDirId;
+        //triangulation.getEdgeVertex(Lx[1][minId].id_,0, arrowDirId);
+        //if(arrowDirId == x)triangulation.getEdgeVertex(Lx[1][minId].id_ , 1, arrowDirId);
+        //std::cout<<"vector : ["<<x<<", "<<arrowDirId<<"]"<<std::endl;
+        //std::cout<<"====================================================="<<std::endl;
+//
+    //
+    
 
         // store x (0-cell) -> delta (1-cell) V-path
         pairCells(Lx[0][0], c_delta, triangulation);
@@ -1245,9 +1286,12 @@ firstprivate(Lx, pqZero, pqOne)
             insertCofacets(c_gamma, Lx);
           }
         }
+
       }
     }
   }
+
+  std::cout<<"out of processLowerStarStochastic"<<std::endl;
 
   return 0;
 }
@@ -1256,8 +1300,8 @@ template<typename triangulationType>
 void DiscreteGradient::buildStencil(const SimplexId &x,
                                     const std::array<float, 3> xCoords, 
                                     const triangulationType &triangulation,
-                                    std::vector<SimplexId> stencilIds, 
-                                    std::vector<std::array<float, 3>> stencilCoords){
+                                    std::vector<SimplexId> &stencilIds, 
+                                    std::vector<std::array<float, 3>> &stencilCoords){
   float threshold = 10e-12;
   const auto nedges = triangulation.getVertexEdgeNumber(x);
   stencilIds.resize(6, -1);

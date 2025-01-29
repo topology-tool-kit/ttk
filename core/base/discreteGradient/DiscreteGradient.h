@@ -484,8 +484,8 @@ in the gradient.
       void buildStencil(const SimplexId &x,
                         const std::array<float, 3> xCoords, 
                         const triangulationType &triangulation,
-                        std::vector<SimplexId> stencilIds, 
-                        std::vector<std::array<float, 3>> stencilCoords);
+                        std::vector<SimplexId> &stencilIds, 
+                        std::vector<std::array<float, 3>> &stencilCoords);
 
       /**
        * @brief Compute the opposite of numerical gradient at point x with given stencil
