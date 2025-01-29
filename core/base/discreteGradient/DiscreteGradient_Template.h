@@ -72,22 +72,24 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
 
     // allocate gradient memory
     this->initMemory(triangulation);
-    int intToPrint = this->BackEnd == BACKEND::STOCHASTIC_BACKEND ? 1 : 0;
-    std::cout<<"BACKEND = "<<intToPrint<<std::endl;
     Timer tm{};
     if(updateMask) {
      this->processLowerStarsWithMask(
      this->inputOffsets_, triangulation, updateMask);
      this->printMsg("Update cached discrete gradient", 1.0,
                 tm.getElapsedTime(), this->threadNumber_);
+     std::cout<<"process lower star with mask"<<std::endl;
     }else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND){
       this->processLowerStarsStochastic (this->inputOffsets_, triangulation);
       this->printMsg("Build stochastic discrete gradient", 1.0, tm.getElapsedTime(), 
                     this->threadNumber_);
+     std::cout<<"process lower star stochastic"<<std::endl;
+
     }else if(this->BackEnd == BACKEND::CLASSIC_BACKEND){
       this->processLowerStars(this->inputOffsets_, triangulation);
       this->printMsg("Built discrete gradient", 1.0, tm.getElapsedTime(),
                      this->threadNumber_);
+     std::cout<<"process lower star robins"<<std::endl;
     }
   } else {
     this->printMsg("Fetched cached discrete gradient");
@@ -99,7 +101,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                      tm.getElapsedTime(), this->threadNumber_);
     }
   }
-
+  std::cout<<"balise 1 ttk"<<std::endl;
   return 0;
 }
 

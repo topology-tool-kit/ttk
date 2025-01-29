@@ -316,6 +316,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
                       (fillCriticalPoints<VTK_TT, TTK_TT>(
                         outputCriticalPoints, inputScalars,
                         *static_cast<TTK_TT *>(triangulation->getData()))));
+                        
+  std::cout<<"balise critical points vtk"<<std::endl;
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
@@ -323,7 +325,10 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
                      (fillGradientGlyphs<TTK_TT>(
                        outputGradientGlyphs,
                        *static_cast<TTK_TT *>(triangulation->getData()))));
+    std::cout<<"balise gradient glyphs vtk"<<std::endl;
+
   }
 
+  std::cout<<"balise fin vtk"<<std::endl;
   return 1;
 }
