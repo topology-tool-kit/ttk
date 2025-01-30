@@ -72,8 +72,6 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
 
     // allocate gradient memory
     this->initMemory(triangulation);
-    int intToPrint = this->BackEnd == BACKEND::STOCHASTIC_BACKEND ? 1 : 0;
-    std::cout<<"BACKEND = "<<intToPrint<<std::endl;
     Timer tm{};
     if(updateMask) {
      this->processLowerStarsWithMask(
@@ -1178,7 +1176,7 @@ firstprivate(Lx, pqZero, pqOne)
             indexInLowerStar.push_back(i);
           }
         }
-        std::cout<<std::endl;
+        //std::cout<<std::endl;
 
         for(size_t i = 1  ; i < repartitionBounds.size(); ++i) {
           repartitionBounds[i]/=totalWeight;
@@ -1230,7 +1228,6 @@ firstprivate(Lx, pqZero, pqOne)
         //if(arrowDirId == x)triangulation.getEdgeVertex(Lx[1][minId].id_ , 1, arrowDirId);
         //std::cout<<"vector : ["<<x<<", "<<arrowDirId<<"]"<<std::endl;
         //std::cout<<"====================================================="<<std::endl;
-//
     //
     
 
@@ -1290,9 +1287,6 @@ firstprivate(Lx, pqZero, pqOne)
       }
     }
   }
-
-  std::cout<<"out of processLowerStarStochastic"<<std::endl;
-
   return 0;
 }
 
