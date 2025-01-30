@@ -1165,8 +1165,10 @@ firstprivate(Lx, pqZero, pqOne)
           SimplexId vertexId;
           triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
           if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 1, vertexId);
+          if(std::find(stencilIds.begin(), stencilIds.end(), vertexId) == stencilIds.end())continue;
           std::array<float, 3> newCoords;
           triangulation.getVertexPoint(vertexId, newCoords[0], newCoords[1], newCoords[2]);
+
           float scalarProduct = (newCoords[0]-xCoords[0])*grad[0] + (newCoords[1]-xCoords[1])*grad[1] + (newCoords[2]-xCoords[2])*grad[2];
           //std::cout<<scalarProduct<<"  ";
           if(scalarProduct > 0){
