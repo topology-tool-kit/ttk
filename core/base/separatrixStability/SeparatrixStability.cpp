@@ -206,10 +206,11 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
 
   for(int i = 0; i < n_points; i++) {
     for(int j = 0; j < n_points; j++) {
-      int n_edge_ij = adjacencyMatricesMinor[block_id][i][j].size();
-      for(auto edge : adjacencyMatricesMinor[block_id][i][j]) {
-        edgeOccurences[edge.first] = n_edge_ij;
-        edgeOccurences[edge.second] = n_edge_ij;
+      if(!adjacencyMatricesMinor[block_id][i][j].empty()) {;
+        for(auto edge : adjacencyMatricesMinor[block_id][i][j]) {
+          edgeOccurences[edge.first] = 1;
+          edgeOccurences[edge.second] = 1;
+        }
       }
     }
   }
@@ -241,20 +242,20 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
         tmp2 = std::get<1>(matchings[otherBlockdIdMatchingsVector][j]);
         int otherBlockVertex1 = std::min(tmp1, tmp2);
         int otherBlockVertex2 = std::max(tmp1, tmp2);
-        int occurenceInOtherBlock
-          = adjacencyMatricesMinor[k][otherBlockVertex1][otherBlockVertex2]
-              .size();
+        bool existsInOtherBlock
+          = !adjacencyMatricesMinor[k][otherBlockVertex1][otherBlockVertex2]
+              .empty();
 
         if(!adjacencyMatricesMinor[block_id][thisBlockVertex1][thisBlockVertex2]
-              .empty() && occurenceInOtherBlock > 0) {
+              .empty() && existsInOtherBlock > 0) {
           for(auto edge : adjacencyMatricesMinor[block_id][thisBlockVertex1]
                                                 [thisBlockVertex2]) {
-            edgeOccurences[edge.first] += occurenceInOtherBlock;
-            edgeOccurences[edge.second] += occurenceInOtherBlock;
+            edgeOccurences[edge.first] += existsInOtherBlock;
+            edgeOccurences[edge.second] += existsInOtherBlock;
           }
         }
         else if((!adjacencyMatricesMinor[block_id][thisBlockVertex1][thisBlockVertex2]
-              .empty()) ^(occurenceInOtherBlock > 0)){
+              .empty()) ^ existsInOtherBlock){
                 isIsomorphicWith[k]=false;
               }
       }

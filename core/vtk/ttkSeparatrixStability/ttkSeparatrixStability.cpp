@@ -335,13 +335,13 @@ int ttkSeparatrixStability::execute(
 
       for (unsigned int k = 0 ; k < globalDestinationPointIdForEachBlock[i].size(); k++){
         int globalPointIdThisBlock = globalDestinationPointIdForEachBlock[i][k];
-        int matchingIdOtherBlock = matchingArrayForEachBlockDestination[i][j][k];        
+        int matchingIdOtherBlock = matchingArrayForEachBlockDestination[j][i][k];        
         matchingIdForCriticalPoints_j->SetValue(globalPointIdThisBlock, matchingIdOtherBlock);
       }
       if(!MergeEdgesOnSaddles){
         for (unsigned int k = 0 ; k < globalSourcePointIdForEachBlock[i].size(); k++){
           int globalPointIdThisBlock = globalSourcePointIdForEachBlock[i][k];
-          int matchingIdOtherBlock = matchingArrayForEachBlockSource[i][j][k];
+          int matchingIdOtherBlock = matchingArrayForEachBlockSource[j][i][k];
           matchingIdForCriticalPoints_j->SetValue(globalPointIdThisBlock, matchingIdOtherBlock);
         }
       }
