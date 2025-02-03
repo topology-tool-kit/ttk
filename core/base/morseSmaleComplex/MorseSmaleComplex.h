@@ -1769,10 +1769,16 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
 
   // Sort pairs to process by persistence
   std::vector<std::tuple<size_t, dataType>> pairs;
-  for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
+  for(size_t i = 0; i < dms_pairs.size(); ++i) {
     const auto &pair{dms_pairs[i]};
-    pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
+    if(pair.type == 1)pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
+    std::cout<<"pair type : "<<pair.type<<std::endl;
+    std::cout<<"birht id : "<<pair.birth<<std::endl;
+    std::cout<<"death id : "<<pair.death<<std::endl;
+    std::cout<<"=============="<<std::endl;
   }
+
+  std::cout<<"number of type 1 pairs = "<<pairs.size()<<std::endl;
   const auto comparePersistence
     = [](const std::tuple<size_t, dataType> &pair1,
          const std::tuple<size_t, dataType> &pair2) {
@@ -1802,10 +1808,26 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     // 2. get the saddle connector
     std::vector<Cell> vpath{};
     bool disableForkReversal = not ForceLoopFreeGradient;
-    this->discreteGradient_.getAscendingPathThroughWall(
+    bool functionReturn = this->discreteGradient_.getAscendingPathThroughWall(
       birth, death, isVisited, &vpath, triangulation, disableForkReversal);
+    
+    std::cout<<"getAscendingPathThroughWall = "<<functionReturn<<std::endl;
+    std::cout<<"size of vpath  = "<<vpath.size()<<std::endl;
+    std::cout<<"vpath birth = "<<vpath.front().id_<<std::endl;
+    std::cout<<"vpath death = "<<vpath.back().id_<<std::endl;
     // 3. reverse the gradient on the saddle connector path
+    bool isClose = false;
+    for (int i = 0 ; i < 3 ; i++){
+      SimplexId edgeId;
+      triangulation.getTriangleEdge(vpath.back().id_, i, edgeId);
+      SimplexId triangleId;
+      triangulation.getEdgeTriangle(edgeId, 0, triangleId);
+      if(triangleId == vpath.back().id_)triangulation.getEdgeTriangle(edgeId, 1, triangleId);
+      if(death.id_ == triangleId)isClose = true;
+      }
+    std::cout<<"death is close from destination : "<<isClose<<std::endl;   
     if(vpath.back() == death) {
+      std::cout<<"entered if"<<std::endl;
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
 
       // 3.1 Detect cycle
@@ -1844,6 +1866,8 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
         skippedPairsPers.emplace_back(
           std::make_tuple(pairPersistence, pair.birth, pair.death));
     }
+    std::cout<<"============"<<std::endl; 
+
   }
 
   if(this->debugLevel_ == (int)debug::Priority::DETAIL) {
