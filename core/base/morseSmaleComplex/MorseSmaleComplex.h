@@ -409,6 +409,11 @@ namespace ttk {
                                const SimplexId *const offsets,
                                const triangulationType &triangulation);
 
+    template <typename dataType, typename triangulationType>
+    int returnSaddleConnectorsStochastic(const triangulationType &triangulation,
+                        const double &persistenceThreshold,
+                        const bool &detectCriticalPoints = true);
+
     dcg::DiscreteGradient discreteGradient_{};
 
     bool ComputeCriticalPoints{true};
@@ -483,8 +488,13 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                      debug::Priority::DETAIL);
     }
 
-    this->returnSaddleConnectors(
-      persistenceThreshold, scalars, offsets, triangulation);
+    if(this->DiscreteGradientBackend == DiscreteGradient::BACKEND::CLASSIC_BACKEND)
+      this->returnSaddleConnectors(
+        persistenceThreshold, scalars, offsets, triangulation);
+    if(this->DiscreteGradientBackend == DiscreteGradient::BACKEND::STOCHASTIC_BACKEND){
+      this->returnSaddleConnectorsStochastic<dataType>(triangulation, persistenceThreshold, true);
+      
+    }
   }
 
   std::array<std::vector<SimplexId>, 4> criticalPoints{};
@@ -1772,13 +1782,8 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
   for(size_t i = 0; i < dms_pairs.size(); ++i) {
     const auto &pair{dms_pairs[i]};
     if(pair.type == 1)pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
-    std::cout<<"pair type : "<<pair.type<<std::endl;
-    std::cout<<"birht id : "<<pair.birth<<std::endl;
-    std::cout<<"death id : "<<pair.death<<std::endl;
-    std::cout<<"=============="<<std::endl;
   }
 
-  std::cout<<"number of type 1 pairs = "<<pairs.size()<<std::endl;
   const auto comparePersistence
     = [](const std::tuple<size_t, dataType> &pair1,
          const std::tuple<size_t, dataType> &pair2) {
@@ -1811,10 +1816,6 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     bool functionReturn = this->discreteGradient_.getAscendingPathThroughWall(
       birth, death, isVisited, &vpath, triangulation, disableForkReversal);
     
-    std::cout<<"getAscendingPathThroughWall = "<<functionReturn<<std::endl;
-    std::cout<<"size of vpath  = "<<vpath.size()<<std::endl;
-    std::cout<<"vpath birth = "<<vpath.front().id_<<std::endl;
-    std::cout<<"vpath death = "<<vpath.back().id_<<std::endl;
     // 3. reverse the gradient on the saddle connector path
     bool isClose = false;
     for (int i = 0 ; i < 3 ; i++){
@@ -1825,9 +1826,7 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
       if(triangleId == vpath.back().id_)triangulation.getEdgeTriangle(edgeId, 1, triangleId);
       if(death.id_ == triangleId)isClose = true;
       }
-    std::cout<<"death is close from destination : "<<isClose<<std::endl;   
     if(vpath.back() == death) {
-      std::cout<<"entered if"<<std::endl;
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
 
       // 3.1 Detect cycle
@@ -1866,7 +1865,6 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
         skippedPairsPers.emplace_back(
           std::make_tuple(pairPersistence, pair.birth, pair.death));
     }
-    std::cout<<"============"<<std::endl; 
 
   }
 
@@ -1882,6 +1880,88 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
 
   this->printMsg("Returned " + std::to_string(nReturned) + " saddle connectors",
                  1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  return 0;
+}
+
+template <typename dataType, typename triangulationType>
+int ttk::MorseSmaleComplex::returnSaddleConnectorsStochastic(
+                            const triangulationType &triangulation,
+                            const double &persistenceThreshold,
+                            const bool &detectCriticalPoints){
+
+  std::vector<std::pair<SimplexId, char>> criticalPoints{};
+  this->discreteGradient_.setSaddleConnectorsPersistenceThreshold(persistenceThreshold);
+
+  if(detectCriticalPoints) {
+
+    std::vector<Cell> criticalCells{};
+   this->discreteGradient_.getCriticalPoints(criticalCells, triangulation);
+
+    criticalPoints.resize(criticalCells.size());
+
+    // iterate over cells to get points (max vertex) and type
+    for(size_t i = 0; i < criticalCells.size(); ++i) {
+      const auto &c = criticalCells[i];
+      criticalPoints[i]
+        = {this->discreteGradient_.getCellGreaterVertex(c, triangulation),
+           static_cast<char>(this->discreteGradient_.criticalTypeFromCellDimension(c.dim_))};
+    }
+
+    // print number of critical cells
+    {
+      // foreach dimension
+      const int numberOfDimensions = this->discreteGradient_.getNumberOfDimensions();
+      std::vector<SimplexId> nDMTCriticalPoints(numberOfDimensions, 0);
+      for(const auto &c : criticalCells) {
+        ++nDMTCriticalPoints[c.dim_];
+      }
+
+      std::vector<SimplexId> nPLInteriorCriticalPoints(numberOfDimensions, 0);
+      for(const auto &cp : criticalPoints) {
+        if(!triangulation.isVertexOnBoundary(cp.first)) {
+          ++nPLInteriorCriticalPoints[cp.second];
+        }
+      }
+
+      std::vector<std::vector<std::string>> rows(numberOfDimensions);
+      for(int i = 0; i < numberOfDimensions; ++i) {
+        rows[i] = std::vector<std::string>{
+          "#" + std::to_string(i) + "-cell(s)",
+          std::to_string(nDMTCriticalPoints[i]) + " (with "
+            + std::to_string(nPLInteriorCriticalPoints[i]) + " interior PL)"};
+      }
+      this->printMsg(rows);
+    }
+  }
+
+  Timer t;
+
+  const bool allowBoundary = true;
+  //const bool returnSaddleConnectors = false;
+  //bool allowBruteForce = false;
+
+  std::vector<char> isPL;
+  this->discreteGradient_.getCriticalPointMap(criticalPoints, isPL);
+
+  //dmt1Saddle2PL_.resize(triangulation.getNumberOfEdges());
+  //std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
+
+  //if(dimensionality_ == 3) {
+  //  this->discreteGradient_.simplifySaddleSaddleConnections1<dataType>(
+  //    criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
+  //    returnSaddleConnectors, triangulation);
+  //  this->discreteGradient_.simplifySaddleSaddleConnections2<dataType>(
+  //    criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
+  //    returnSaddleConnectors, triangulation);
+  //}
+
+  if(triangulation.getDimensionality() == 3) {
+    this->discreteGradient_.filterSaddleConnectors<dataType>(allowBoundary, triangulation);
+  }
+
+  this->printMsg(
+    "Gradient reversed", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }

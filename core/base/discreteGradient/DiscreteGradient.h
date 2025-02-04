@@ -19,7 +19,7 @@
 #include <Geometry.h>
 #include <Triangulation.h>
 #include <VisitedMask.h>
-
+#include <FTMTree.h>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -80,6 +80,170 @@ namespace ttk {
       bool paired_{false};
     };
 
+        /**
+     * Sequence of cells such that two consecutive cells differ in dimension by
+     * one.
+     */
+    struct VPath {
+      explicit VPath() = default;
+
+      explicit VPath(const bool isValid,
+                     const SimplexId segmentId,
+                     const SimplexId source,
+                     const SimplexId destination,
+                     const SimplexId sourceSlot,
+                     const SimplexId destinationSlot,
+                     const double persistence)
+        : isValid_{isValid}, states_{1}, segments_{segmentId}, source_{source},
+          destination_{destination}, sourceSlot_{sourceSlot},
+          destinationSlot_{destinationSlot}, persistence_{persistence} {
+      }
+
+      explicit VPath(const bool isValid,
+                     const std::vector<char> &states,
+                     const std::vector<SimplexId> &segments,
+                     const SimplexId source,
+                     const SimplexId destination,
+                     const SimplexId sourceSlot,
+                     const SimplexId destinationSlot,
+                     const double persistence)
+        : isValid_{isValid}, states_{states}, segments_{segments},
+          source_{source}, destination_{destination}, sourceSlot_{sourceSlot},
+          destinationSlot_{destinationSlot}, persistence_{persistence} {
+      }
+
+      explicit VPath(const bool isValid,
+                     std::vector<char> &&states,
+                     std::vector<SimplexId> &&segments,
+                     const SimplexId source,
+                     const SimplexId destination,
+                     const SimplexId sourceSlot,
+                     const SimplexId destinationSlot,
+                     const double persistence)
+        : isValid_{isValid}, states_{states}, segments_{segments},
+          source_{source}, destination_{destination}, sourceSlot_{sourceSlot},
+          destinationSlot_{destinationSlot}, persistence_{persistence} {
+      }
+
+      /**
+       * Invalidate this vpath so that it is ignored in the simplification
+       * process, free memory for economy reasons.
+       */
+      int invalidate() {
+        isValid_ = false;
+        source_ = -1;
+        destination_ = -1;
+        persistence_ = -1;
+        clear();
+
+        return 0;
+      }
+
+      /**
+       * Free internal segments' memory.
+       */
+      int clear() {
+        states_.clear();
+        segments_.clear();
+
+        return 0;
+      }
+
+      bool isValid_{};
+      std::vector<char> states_{};
+      std::vector<SimplexId> segments_{};
+      SimplexId source_{-1};
+      SimplexId destination_{-1};
+      SimplexId sourceSlot_{-1};
+      SimplexId destinationSlot_{-1};
+      double persistence_{};
+    };
+
+    /**
+     * Limit point of integral lines in the gradient.
+     */
+    struct CriticalPoint {
+      explicit CriticalPoint() = default;
+
+      explicit CriticalPoint(const Cell &cell) : cell_{cell}, numberOfSlots_{} {
+      }
+
+      explicit CriticalPoint(const Cell &cell,
+                             const std::vector<SimplexId> &vpaths)
+        : cell_{cell}, vpaths_{vpaths}, numberOfSlots_{} {
+      }
+
+      explicit CriticalPoint(const Cell &cell, std::vector<SimplexId> &&vpaths)
+        : cell_{cell}, vpaths_{vpaths}, numberOfSlots_{} {
+      }
+
+      /**
+       * Increase the connectivity of the critical point with openmp
+       * acceleration if enabled.
+       */
+      SimplexId omp_addSlot() {
+        SimplexId numberOfSlots = 0;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic capture
+#endif
+        numberOfSlots = (numberOfSlots_++);
+
+        return numberOfSlots;
+      }
+
+      /**
+       * Increase the connectivity of the critical point.
+       */
+      SimplexId addSlot() {
+        return (numberOfSlots_++);
+      }
+
+      /**
+       * Free the connectivity of the critical point from the memory.
+       */
+      int clear() {
+        vpaths_.clear();
+
+        return 0;
+      }
+
+      Cell cell_{};
+      std::vector<SimplexId> vpaths_{};
+      SimplexId numberOfSlots_{};
+    };
+
+        /**
+     * Comparator of saddle-connectors, first compare persistence values then
+     * saddle identifiers and finally vpaths' identifiers.
+     */
+    template <typename dataType>
+    struct SaddleSaddleVPathComparator {
+      bool
+        operator()(const std::tuple<dataType, SimplexId, SimplexId> &v1,
+                   const std::tuple<dataType, SimplexId, SimplexId> &v2) const {
+        const dataType persistence1 = std::get<0>(v1);
+        const dataType persistence2 = std::get<0>(v2);
+
+        const SimplexId vpathId1 = std::get<1>(v1);
+        const SimplexId vpathId2 = std::get<1>(v2);
+
+        const SimplexId saddleId1 = std::get<2>(v1);
+        const SimplexId saddleId2 = std::get<2>(v2);
+
+        if(persistence1 != persistence2) {
+          return (persistence1 < persistence2);
+        }
+
+        if(saddleId1 != saddleId2) {
+          return (saddleId1 < saddleId2);
+        }
+
+        return (vpathId1 < vpathId2);
+      }
+    };
+
+
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
      * TTK assumes that the input dataset is made of only one connected
@@ -125,6 +289,10 @@ triangulation.
 
       inline void setBackend(const BACKEND backend){
         BackEnd = backend;
+      }
+
+      inline void setSaddleConnectorsPersistenceThreshold(double threshold){
+        SaddleConnectorsPersistenceThreshold = threshold;
       }
 
       /**
@@ -355,6 +523,13 @@ in the gradient.
         std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
         const triangulationType &triangulation) const;
 
+      /**
+      * Get the output critical points as a STL vector of cells.
+      */
+      template <typename triangulationType>
+      int getCriticalPoints(std::vector<Cell> &criticalPoints,
+                            const triangulationType &triangulation) const;
+
 #ifdef TTK_ENABLE_MPI
       /**
        * Set the Cell Gradient to GHOST_GRADIENT
@@ -381,6 +556,13 @@ in the gradient.
                             std::vector<SimplexId> &cellsIds,
                             std::vector<char> &cellsDimensions,
                             const triangulationType &triangulation) const;
+
+      /**
+      * @brief Return the critical type corresponding to given
+      * dimension
+      */
+      CriticalType criticalTypeFromCellDimension(const int dim) const;
+
 
     private:
       /**
@@ -437,11 +619,7 @@ in the gradient.
       std::pair<size_t, SimplexId>
         numUnpairedFacesTetra(const CellExt &c, const lowerStarType &ls) const;
 
-      /**
-       * @brief Return the critical type corresponding to given
-       * dimension
-       */
-      CriticalType criticalTypeFromCellDimension(const int dim) const;
+
 
       /**
        * @brief Pair cells into discrete gradient field
@@ -500,6 +678,136 @@ in the gradient.
        * @brief Initialize/Allocate discrete gradient memory
        */
       void initMemory(const AbstractTriangulation &triangulation);
+
+      /**
+      * Get the list of 1-saddles candidates for simplification.
+      */
+
+      template <typename dataType, typename triangulationType>
+      int getRemovableSaddles1(
+        const std::vector<std::pair<SimplexId, char>> &criticalPoints,
+        const bool allowBoundary,
+        std::vector<char> &isRemovableSaddle,
+        std::vector<SimplexId> &pl2dmt_saddle,
+        const triangulationType &triangulation);
+
+      
+      /**
+      * Get the list of 2-saddles candidates for simplification.
+      */
+
+      template <typename dataType, typename triangulationType>
+      int getRemovableSaddles2(
+        const std::vector<std::pair<SimplexId, char>> &criticalPoints,
+        const bool allowBoundary,
+        std::vector<char> &isRemovableSaddle,
+        std::vector<SimplexId> &pl2dmt_saddle,
+        const triangulationType &triangulation);
+
+
+      /**
+      * Create initial Morse-Smale Complex structure and initialize the
+      (2-saddle,...,1-saddle) vpaths
+      * to the simplification process.
+      */
+      template <typename dataType, typename triangulationType>
+      int initializeSaddleSaddleConnections1(
+        const std::vector<char> &isRemovableSaddle1,
+        const std::vector<char> &isRemovableSaddle2,
+        const bool allowBruteForce,
+        std::vector<VPath> &vpaths,
+        std::vector<CriticalPoint> &criticalPoints,
+        std::vector<SimplexId> &saddle1Index,
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation) const;
+
+      /**
+      * Create initial Morse-Smale Complex structure and initialize the
+      (1-saddle,...,2-saddle) vpaths
+      * to the simplification process.
+      */
+
+      template <typename dataType, typename triangulationType>
+      int initializeSaddleSaddleConnections2(
+        const std::vector<char> &isRemovableSaddle1,
+        const std::vector<char> &isRemovableSaddle2,
+        const bool allowBruteForce,
+        std::vector<VPath> &vpaths,
+        std::vector<CriticalPoint> &criticalPoints,
+        std::vector<SimplexId> &saddle1Index,
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation) const;
+
+      /**
+      * Order the (2-saddle,...,1-saddle) vpaths by persistence value.
+      */
+
+      template <typename dataType>
+      int orderSaddleSaddleConnections1(
+        const std::vector<VPath> &vpaths,
+        std::vector<CriticalPoint> &criticalPoints,
+        std::set<std::tuple<dataType, SimplexId, SimplexId>,
+                 SaddleSaddleVPathComparator<dataType>> &S);
+
+
+      /**
+      * Order the (1-saddle,...,2-saddle) vpaths by persistence value.
+      */
+
+      template <typename dataType>
+      int orderSaddleSaddleConnections2(
+        const std::vector<VPath> &vpaths,
+        std::vector<CriticalPoint> &criticalPoints,
+        std::set<std::tuple<dataType, SimplexId, SimplexId>,
+                 SaddleSaddleVPathComparator<dataType>> &S);
+
+
+      /**
+      * Core of the simplification process, modify the gradient and
+      * reverse the selected (2-saddle,...,1-saddle) vpaths to simplify.
+      */
+      template <typename dataType, typename triangulationType>
+      int processSaddleSaddleConnections1(
+        const int iterationThreshold,
+        const std::vector<char> &isPL,
+        const bool allowBoundary,
+        const bool allowBruteForce,
+        const bool returnSaddleConnectors,
+        std::set<std::tuple<dataType, SimplexId, SimplexId>,
+                 SaddleSaddleVPathComparator<dataType>> &S,
+        std::vector<SimplexId> &pl2dmt_saddle1,
+        std::vector<SimplexId> &pl2dmt_saddle2,
+        std::vector<char> &isRemovableSaddle1,
+        std::vector<char> &isRemovableSaddle2,
+        std::vector<VPath> &vpaths,
+        std::vector<CriticalPoint> &criticalPoints,
+        std::vector<SimplexId> &saddle1Index,
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation);
+
+      /**
+       * Core of the simplification process, modify the gradient and
+       * reverse the selected (1-saddle,...,2-saddle) vpaths to simplify.
+       */
+
+      template <typename dataType, typename triangulationType>
+      int processSaddleSaddleConnections2(
+        const int iterationThreshold,
+        const std::vector<char> &isPL,
+        const bool allowBoundary,
+        const bool allowBruteForce,
+        const bool returnSaddleConnectors,
+        std::set<std::tuple<dataType, SimplexId, SimplexId>,
+                 SaddleSaddleVPathComparator<dataType>> &S,
+        std::vector<SimplexId> &pl2dmt_saddle1,
+        std::vector<SimplexId> &pl2dmt_saddle2,
+        std::vector<char> &isRemovableSaddle1,
+        std::vector<char> &isRemovableSaddle2,
+        std::vector<VPath> &vpaths,
+        std::vector<CriticalPoint> &criticalPoints,
+        std::vector<SimplexId> &saddle1Index,
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation);
 
     public:
       /**
@@ -565,8 +873,51 @@ gradient, false otherwise.
         const std::vector<Cell> &vpath,
         const triangulationType &triangulation) const;
 
+      /**
+       * Build the dense representation of the PL critical point list.
+       */
+      int getCriticalPointMap(const std::vector<std::pair<SimplexId, char>> &criticalPoints,
+                                std::vector<char> &isPL);
+
+      
+
+      /**
+       * High-level function that manages the global simplification of
+      (2-saddle,...,1-saddle) vpaths.
+       */
+      template <typename dataType, typename triangulationType>
+      int simplifySaddleSaddleConnections1(
+        const std::vector<std::pair<SimplexId, char>> &criticalPoints,
+        const std::vector<char> &isPL,
+        const int iterationThreshold,
+        const bool allowBoundary,
+        const bool allowBruteForce,
+        const bool returnSaddleConnectors,
+        const triangulationType &triangulation);
+
+      /**
+      * High-level function that manages the global simplification of
+      (1-saddle,...,2-saddle) vpaths.
+      */
+      template <typename dataType, typename triangulationType>
+      int simplifySaddleSaddleConnections2(
+        const std::vector<std::pair<SimplexId, char>> &criticalPoints,
+        const std::vector<char> &isPL,
+        const int iterationThreshold,
+        const bool allowBoundary,
+        const bool allowBruteForce,
+        const bool returnSaddleConnectors,
+        const triangulationType &triangulation);
+
+
+      template <typename dataType, typename triangulationType>
+      int filterSaddleConnectors(const bool allowBoundary,
+                                 const triangulationType &triangulation);
+
     protected:
       int dimensionality_{-1};
+      int IterationThreshold{50};
+      double SaddleConnectorsPersistenceThreshold{};
       SimplexId numberOfVertices_{};
       BACKEND BackEnd{BACKEND::CLASSIC_BACKEND};
 

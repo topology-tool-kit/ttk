@@ -270,6 +270,20 @@ void DiscreteGradient::computeDerivatives(const SimplexId &x,
 
 }
 
+int DiscreteGradient::getCriticalPointMap(
+  const vector<pair<SimplexId, char>> &criticalPoints, vector<char> &isPL) {
+  isPL.resize(numberOfVertices_);
+  std::fill(isPL.begin(), isPL.end(), 0);
+  for(pair<SimplexId, char> criticalPoint : criticalPoints) {
+    const SimplexId criticalPointId = criticalPoint.first;
+    const char criticalPointType = criticalPoint.second;
+
+    isPL[criticalPointId] = criticalPointType;
+  }
+
+  return 0;
+}
+
 
 #ifdef TTK_ENABLE_MPI
 void DiscreteGradient::setCellToGhost(const int cellDim,
