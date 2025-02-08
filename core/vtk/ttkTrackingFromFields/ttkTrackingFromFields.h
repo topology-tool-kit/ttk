@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
+#include <TrackingFromCriticalPoints.h>
 #include <TrackingFromFields.h>
 #include <ttkAlgorithm.h>
 #include <ttkTrackingFromFieldsModule.h>
@@ -73,7 +75,16 @@ public:
   /// @{
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
+
+  vtkSetMacro(RelativeDestructionCost, double);
+  vtkGetMacro(RelativeDestructionCost, double);
   /// @}
+
+  vtkSetMacro(AdaptDeathBirthCost, bool);
+  vtkGetMacro(AdaptDeathBirthCost, bool);
+
+  vtkSetMacro(EpsilonAdapt, double);
+  vtkGetMacro(EpsilonAdapt, double);
 
   /// @brief Importance weight for the X component of the extremum.
   /// @{
@@ -105,6 +116,12 @@ public:
   vtkGetMacro(PS, double);
   /// @}
 
+  /// @brief Importance weight for function values.
+  /// @{
+  vtkSetMacro(PF, double);
+  vtkGetMacro(PF, double);
+  /// @}
+
   /// @brief Value of the parameter p for the Wp (p-th Wasserstein) distance
   /// computation (type "inf" for the Bottleneck distance).
   /// @{
@@ -121,6 +138,9 @@ public:
   /// @{
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
+
+  vtkSetMacro(AssignmentMethod, int);
+  vtkGetMacro(AssignmentMethod, int);
   /// @}
 
   /// @brief For the translation of the second set of critical points even the
@@ -170,9 +190,15 @@ private:
   double Tolerance{1};
   double PX{1};
   double PY{1};
-  double PZ{0};
+  double PZ{1};
   double PE{0};
   double PS{0};
+  double PF{0};
+
+  double RelativeDestructionCost{0.1};
+  double EpsilonAdapt{0.5};
+  int AssignmentMethod{0};
+  bool AdaptDeathBirthCost{false};
 
   // Bottleneck config.
   bool UseGeometricSpacing{false};
@@ -180,11 +206,16 @@ private:
   double PostProcThresh{0.0};
   double Spacing{1.0};
   std::string DistanceAlgorithm{"ttk"};
-  int PVAlgorithm{-1};
+  int PVAlgorithm{2};
   std::string WassersteinMetric{"2"};
 
   template <class dataType, class triangulationType>
   int trackWithPersistenceMatching(vtkUnstructuredGrid *output,
                                    unsigned long fieldNumber,
                                    const triangulationType *triangulation);
+
+  template <class dataType, class triangulationType>
+  int trackWithCriticalPointMatching(vtkUnstructuredGrid *output,
+                                     unsigned long fieldNumber,
+                                     const triangulationType *triangulation);
 };

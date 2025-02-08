@@ -505,16 +505,16 @@ int ttk::TopologicalCompression::ReadFromFile(
   // [fm->] Read data.
   char *buf = reinterpret_cast<char *>(dest);
 
-  //#ifndef _MSC_VER
-  // FILE *fm = fmemopen(buf, destLen, "r+");
-  //#else
+  // #ifndef _MSC_VER
+  //  FILE *fm = fmemopen(buf, destLen, "r+");
+  // #else
   const std::string s = fileName + std::string(".temp");
   const char *ffn = s.c_str();
   FILE *ftemp = fopen(ffn, "wb");
   fwrite(buf, destLen, sizeof(char), ftemp);
   fclose(ftemp);
   FILE *fm = fopen(ffn, "rb");
-  //#endif
+  // #endif
 
   // Do read topology.
   if(!(ZFPOnly)) {
