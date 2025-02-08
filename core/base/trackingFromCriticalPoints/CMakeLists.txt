@@ -1,0 +1,10 @@
+ttk_add_base_library(trackingFromCriticalPoints
+  SOURCES
+		TrackingFromCriticalPoints.cpp
+  HEADERS
+		TrackingFromCriticalPoints.h
+  DEPENDS
+    assignmentSolver
+    persistenceDiagram
+    triangulation
+    )
