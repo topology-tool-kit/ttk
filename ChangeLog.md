@@ -1,6 +1,7 @@
 ## TTK - ChangeLog
 =
 ### dev
+- New backend for TrackingFromFields (critical point based)
 
 ### 1.3.0
 - Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)

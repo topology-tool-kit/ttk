@@ -26,6 +26,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
 ///   tracking example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/trackingFromCriticalPoints/">Tracking
+///   From Critical Points example</a>
 ///
 
 #pragma once
