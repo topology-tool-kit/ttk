@@ -4,8 +4,9 @@ ttk_add_base_library(trackingFromFields
   HEADERS
     TrackingFromFields.h
   DEPENDS
-    persistenceDiagram
     bottleneckDistance
+    persistenceDiagram
+    trackingFromCriticalPoints
     trackingFromPersistenceDiagrams
     triangulation
     )

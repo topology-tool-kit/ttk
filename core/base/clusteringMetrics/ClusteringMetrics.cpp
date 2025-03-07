@@ -114,7 +114,8 @@ int ttk::ClusteringMetrics::computeARI(
 
   double sumNChooseContingency = 0;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_) reduction(+:sumNChooseContingency)
+#pragma omp parallel for num_threads(this->threadNumber_) \
+  reduction(+ : sumNChooseContingency)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i1 = 0; i1 < nCluster1; i1++) {
     for(size_t i2 = 0; i2 < nCluster2; i2++)
@@ -165,7 +166,8 @@ int ttk::ClusteringMetrics::computeNMI(
   double mutualInfo = 0;
   bool invalidCell = false;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_) reduction(+:mutualInfo)
+#pragma omp parallel for num_threads(this->threadNumber_) \
+  reduction(+ : mutualInfo)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i1 = 0; i1 < nCluster1; i1++) {
     for(size_t i2 = 0; i2 < nCluster2; i2++) {
