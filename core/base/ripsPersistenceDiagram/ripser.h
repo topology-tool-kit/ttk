@@ -15,6 +15,8 @@
 #include <sstream>
 #include <unordered_map>
 
+#include <RipsPersistenceDiagramUtils.h>
+
 namespace ripser {
 
   using value_t = double;
@@ -26,14 +28,22 @@ namespace ripser {
 #endif
   using coefficient_t = uint16_t;
 
-  using simplex_t = std::vector<index_t>;
-  using simplex_diam_t = std::pair<simplex_t, value_t>;
-  using pers_pair_t = std::pair<simplex_diam_t, simplex_diam_t>;
-
+  template <typename PersistenceType>
   void ripser(std::vector<std::vector<value_t>> points,
+              PersistenceType &ph,
               value_t threshold,
               index_t dim_max,
               bool distanceMatrix,
-              std::vector<std::vector<pers_pair_t>> &ph);
+              bool criticalEdgesOnly = true,
+              coefficient_t modulus = 2);
+
+  template <typename PersistenceType>
+  void ripser(float *data, int n, int dim,
+              PersistenceType &ph,
+              value_t threshold,
+              index_t dim_max,
+              bool distanceMatrix,
+              bool criticalEdgesOnly = true,
+              coefficient_t modulus = 2);
 
 } // namespace ripser

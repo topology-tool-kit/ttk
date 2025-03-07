@@ -26,29 +26,58 @@
 
 // VTK Includes
 #include <vtkUnstructuredGrid.h>
+#include <ttkMacros.h>
 
 // TTK Includes
 #include <RipsPersistenceDiagram.h>
 #include <ttkAlgorithm.h>
+
+void DiagramToVTU(
+  vtkUnstructuredGrid *vtu,
+  const std::vector<ttk::rpd::Diagram> &diagram,
+  double SimplexMaximumDiameter);
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
     protected ttk::RipsPersistenceDiagram { // and we inherit from the base
                                             // class
 private:
-  int DiagramToVTU(
-    vtkUnstructuredGrid *vtu,
-    const std::vector<std::vector<ripser::pers_pair_t>> &diagram);
+  bool KeepAllDataArrays{true};
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
+  std::vector<std::string> ScalarFields{};
 
 public:
   static ttkRipsPersistenceDiagram *New();
   vtkTypeMacro(ttkRipsPersistenceDiagram, ttkAlgorithm);
+
+  void SetScalarFields(const std::string &s) {
+    ScalarFields.push_back(s);
+    Modified();
+  }
+
+  void ClearScalarFields() {
+    ScalarFields.clear();
+    Modified();
+  }
+
+  vtkSetMacro(KeepAllDataArrays, bool);
+  vtkGetMacro(KeepAllDataArrays, bool);
+
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, const std::string &);
+  vtkGetMacro(RegexpString, std::string);
 
   vtkSetMacro(SimplexMaximumDimension, int);
   vtkGetMacro(SimplexMaximumDimension, int);
 
   vtkSetMacro(SimplexMaximumDiameter, double);
   vtkGetMacro(SimplexMaximumDiameter, double);
+
+  vtkSetMacro(FieldOfCoefficients, int);
+  vtkGetMacro(FieldOfCoefficients, int);
 
   vtkSetMacro(InputIsDistanceMatrix, int);
   vtkGetMacro(InputIsDistanceMatrix, int);
