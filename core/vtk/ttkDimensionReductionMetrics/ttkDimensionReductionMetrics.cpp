@@ -133,6 +133,20 @@ int ttkDimensionReductionMetrics::RequestData(vtkInformation *ttkNotUsed(request
   metricValues->InsertNextValue(m_rmse);
   output->AddColumn(metricValues);
 
+  auto metricRanges = vtkSmartPointer<vtkStringArray>::New();
+  metricRanges->SetName("Range");
+  metricRanges->InsertNextValue("[0,inf)");
+  metricRanges->InsertNextValue("[0,inf)");
+  metricRanges->InsertNextValue("[0,1]");
+  metricRanges->InsertNextValue("[-1,1]");
+  metricRanges->InsertNextValue("[0,1]");
+  metricRanges->InsertNextValue("[0,1]");
+  metricRanges->InsertNextValue("[0,1]");
+  metricRanges->InsertNextValue("[0,1]");
+  metricRanges->InsertNextValue("[0,1]");
+  metricRanges->InsertNextValue("[0,inf)");
+  output->AddColumn(metricRanges);
+
   // return success
   return 1;
 }
