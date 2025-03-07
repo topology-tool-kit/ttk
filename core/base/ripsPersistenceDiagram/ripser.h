@@ -38,7 +38,9 @@ namespace ripser {
               coefficient_t modulus = 2);
 
   template <typename PersistenceType>
-  void ripser(float *data, int n, int dim,
+  void ripser(float *data,
+              int n,
+              int dim,
               PersistenceType &ph,
               value_t threshold,
               index_t dim_max,

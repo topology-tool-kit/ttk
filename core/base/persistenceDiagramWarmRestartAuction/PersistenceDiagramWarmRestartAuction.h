@@ -18,9 +18,9 @@
 namespace ttk {
   using RipsPersistencePair = std::pair<std::pair<std::vector<int>, double>,
                                         std::pair<std::vector<int>, double>>;
-  using ValuesPair = std::pair<double,double>;
+  using ValuesPair = std::pair<double, double>;
 
-  template<typename T>
+  template <typename T>
   class PersistenceDiagramWarmRestartAuction : public Debug {
     using KDT = ttk::PersistenceDiagramAuction::KDT;
 
@@ -30,7 +30,7 @@ namespace ttk {
 
       std::vector<double> coordinates(0);
       std::vector<std::vector<double>> weights(1);
-      for(unsigned i=0; i<goodDiagram.size(); ++i) {
+      for(unsigned i = 0; i < goodDiagram.size(); ++i) {
         const ValuesPair &g = getPair(goodDiagram[i]);
         goods.emplace_back(g.first, g.second, false, i);
         coordinates.push_back(g.first);
@@ -39,29 +39,29 @@ namespace ttk {
       }
 
       kdt = std::make_unique<KDT>(true, wasserstein_);
-      correspondence_kdt_map = kdt->build(coordinates.data(), goodDiagram.size(), 2, weights, 1);
+      correspondence_kdt_map
+        = kdt->build(coordinates.data(), goodDiagram.size(), 2, weights, 1);
     }
 
     void setNewBidder(const std::vector<T> &bidderDiagram) {
       bidders.resize(0);
 
-      for(unsigned i=0; i<bidderDiagram.size(); ++i) {
+      for(unsigned i = 0; i < bidderDiagram.size(); ++i) {
         const ValuesPair &b = getPair(bidderDiagram[i]);
-        Bidder bidder (b.first, b.second, false, i);
+        Bidder bidder(b.first, b.second, false, i);
         bidder.setPositionInAuction(i);
         bidders.emplace_back(bidder);
       }
     }
 
     void reinitializeGoodsPrice() {
-      for (Good &g : goods)
+      for(Good &g : goods)
         g.setPrice(0.);
     }
 
     double runAuction(std::vector<MatchingType> &matchings) {
-      PersistenceDiagramAuction auction(bidders, goods, wasserstein_,
-                                        1., 1., delta_,
-                                        *kdt, correspondence_kdt_map);
+      PersistenceDiagramAuction auction(bidders, goods, wasserstein_, 1., 1.,
+                                        delta_, *kdt, correspondence_kdt_map);
       Timer t;
 
       matchings.resize(0);
@@ -88,27 +88,31 @@ namespace ttk {
     }
 
   private:
-    double wasserstein_ {2.};
-    double delta_ {0.01};
+    double wasserstein_{2.};
+    double delta_{0.01};
 
     std::unique_ptr<KDT> kdt;
-    std::vector<KDT*> correspondence_kdt_map;
+    std::vector<KDT *> correspondence_kdt_map;
 
     GoodDiagram goods;
     BidderDiagram bidders;
 
-    static inline ValuesPair getPair(const T& p) {
+    static inline ValuesPair getPair(const T &p) {
       return {p.first, p.second};
     };
   };
 
   template <>
-  inline ValuesPair PersistenceDiagramWarmRestartAuction<RipsPersistencePair>::getPair(const RipsPersistencePair& p) {
+  inline ValuesPair
+    PersistenceDiagramWarmRestartAuction<RipsPersistencePair>::getPair(
+      const RipsPersistencePair &p) {
     return {p.first.second, p.second.second};
   }
 
   template <>
-  inline ValuesPair PersistenceDiagramWarmRestartAuction<PersistencePair>::getPair(const PersistencePair& p) {
+  inline ValuesPair
+    PersistenceDiagramWarmRestartAuction<PersistencePair>::getPair(
+      const PersistencePair &p) {
     return {p.birth.sfValue, p.death.sfValue};
   }
-}
+} // namespace ttk

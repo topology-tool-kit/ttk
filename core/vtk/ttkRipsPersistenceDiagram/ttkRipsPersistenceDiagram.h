@@ -25,17 +25,16 @@
 #include <ttkRipsPersistenceDiagramModule.h>
 
 // VTK Includes
-#include <vtkUnstructuredGrid.h>
 #include <ttkMacros.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK Includes
 #include <RipsPersistenceDiagram.h>
 #include <ttkAlgorithm.h>
 
-void DiagramToVTU(
-  vtkUnstructuredGrid *vtu,
-  const std::vector<ttk::rpd::Diagram> &diagram,
-  double SimplexMaximumDiameter);
+void DiagramToVTU(vtkUnstructuredGrid *vtu,
+                  const std::vector<ttk::rpd::Diagram> &diagram,
+                  double SimplexMaximumDiameter);
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class

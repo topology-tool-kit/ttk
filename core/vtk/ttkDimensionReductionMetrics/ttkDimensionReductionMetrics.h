@@ -33,7 +33,9 @@
 
 class TTKDIMENSIONREDUCTIONMETRICS_EXPORT ttkDimensionReductionMetrics
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
-  , protected ttk::DimensionReductionMetrics // and we inherit from the base class
+  ,
+    protected ttk::DimensionReductionMetrics // and we inherit from the base
+                                             // class
 {
 private:
   bool SelectInputFieldsWithRegexp{false};

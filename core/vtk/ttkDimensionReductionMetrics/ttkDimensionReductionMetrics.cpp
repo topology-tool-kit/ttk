@@ -3,8 +3,8 @@
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
-#include <vtkTable.h>
 #include <vtkStringArray.h>
+#include <vtkTable.h>
 
 #include <regex>
 
@@ -15,7 +15,8 @@ ttkDimensionReductionMetrics::ttkDimensionReductionMetrics() {
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkDimensionReductionMetrics::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkDimensionReductionMetrics::FillInputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0 || port == 1) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
@@ -23,7 +24,8 @@ int ttkDimensionReductionMetrics::FillInputPortInformation(int port, vtkInformat
   return 0;
 }
 
-int ttkDimensionReductionMetrics::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkDimensionReductionMetrics::FillOutputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
     return 1;
@@ -31,9 +33,10 @@ int ttkDimensionReductionMetrics::FillOutputPortInformation(int port, vtkInforma
   return 0;
 }
 
-int ttkDimensionReductionMetrics::RequestData(vtkInformation *ttkNotUsed(request),
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+int ttkDimensionReductionMetrics::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   vtkTable *representation = vtkTable::GetData(inputVector[1]);
@@ -56,8 +59,8 @@ int ttkDimensionReductionMetrics::RequestData(vtkInformation *ttkNotUsed(request
   }
   if(input->GetNumberOfRows() <= 0 || InputScalarFields.size() <= 0) {
     this->printErr("Input matrix has invalid dimensions (rows: "
-                   + std::to_string(input->GetNumberOfRows())
-                   + ", columns: " + std::to_string(InputScalarFields.size()) + ")");
+                   + std::to_string(input->GetNumberOfRows()) + ", columns: "
+                   + std::to_string(InputScalarFields.size()) + ")");
     return 0;
   }
   std::vector<vtkAbstractArray *> inputArrays;
@@ -85,10 +88,12 @@ int ttkDimensionReductionMetrics::RequestData(vtkInformation *ttkNotUsed(request
       }
     }
   }
-  if(representation->GetNumberOfRows() != numberOfPoints || RepresentationScalarFields.size() <= 0) {
+  if(representation->GetNumberOfRows() != numberOfPoints
+     || RepresentationScalarFields.size() <= 0) {
     this->printErr("Representation matrix has invalid dimensions (rows: "
                    + std::to_string(representation->GetNumberOfRows())
-                   + ", columns: " + std::to_string(RepresentationScalarFields.size()) + ")");
+                   + ", columns: "
+                   + std::to_string(RepresentationScalarFields.size()) + ")");
     return 0;
   }
   std::vector<vtkAbstractArray *> representationArrays;
@@ -100,7 +105,8 @@ int ttkDimensionReductionMetrics::RequestData(vtkInformation *ttkNotUsed(request
   std::vector<std::vector<double>> representationPoints(numberOfPoints);
   for(int i = 0; i < numberOfPoints; ++i) {
     for(int j = 0; j < dimensionLow; ++j)
-      representationPoints[i].push_back(representationArrays[j]->GetVariantValue(i).ToDouble());
+      representationPoints[i].push_back(
+        representationArrays[j]->GetVariantValue(i).ToDouble());
   }
 
   execute(inputPoints, representationPoints);

@@ -11,10 +11,9 @@
 
 vtkStandardNewMacro(ttkRipsPersistenceDiagram);
 
-void DiagramToVTU(
-  vtkUnstructuredGrid *vtu,
-  const std::vector<ttk::rpd::Diagram> &diagram,
-  double SimplexMaximumDiameter) {
+void DiagramToVTU(vtkUnstructuredGrid *vtu,
+                  const std::vector<ttk::rpd::Diagram> &diagram,
+                  double SimplexMaximumDiameter) {
 
   const auto pd = vtu->GetPointData();
   const auto cd = vtu->GetCellData();
@@ -193,17 +192,17 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
       for(int j = 0; j < dimension; ++j)
         points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
     }
-    this->printMsg("Computing Rips persistence diagram",1.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "Computing Rips persistence diagram", 1.0, tm.getElapsedTime(), 1);
     this->printMsg("#dimensions: " + std::to_string(dimension)
                      + ", #points: " + std::to_string(numberOfPoints),
                    0.0, tm.getElapsedTime(), 1);
-  }
-  else {
+  } else {
     const unsigned n = input->GetNumberOfRows();
     if(n != ScalarFields.size()) {
       this->printErr("Input distance matrix is not squared (rows: "
-                     + std::to_string(input->GetNumberOfRows())
-                     + ", columns: " + std::to_string(ScalarFields.size()) + ")");
+                     + std::to_string(input->GetNumberOfRows()) + ", columns: "
+                     + std::to_string(ScalarFields.size()) + ")");
       return 0;
     }
 
@@ -213,10 +212,11 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
         points[0][i * (i - 1) / 2 + j]
           = arrays[j]->GetVariantValue(i).ToDouble();
     }
-    this->printMsg("Computing Rips persistence diagram",1.0, tm.getElapsedTime(), 1);
-    this->printMsg("(" + std::to_string(n) + "x"
-                     + std::to_string(n) + " distance matrix)",
-                   0.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "Computing Rips persistence diagram", 1.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "(" + std::to_string(n) + "x" + std::to_string(n) + " distance matrix)",
+      0.0, tm.getElapsedTime(), 1);
   }
   this->printMsg(
     "Simplex maximum dimension: " + std::to_string(SimplexMaximumDimension),

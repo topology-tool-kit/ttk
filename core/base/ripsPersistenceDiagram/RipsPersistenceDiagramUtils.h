@@ -13,11 +13,11 @@ namespace ttk::rpd {
 
   using Simplex = std::vector<id_t>;
   using FiltratedSimplex = std::pair<Simplex, value_t>;
-  using PersistencePair= std::pair<FiltratedSimplex, FiltratedSimplex>;
+  using PersistencePair = std::pair<FiltratedSimplex, FiltratedSimplex>;
   using Diagram = std::vector<PersistencePair>;
   using MultidimensionalDiagram = std::vector<Diagram>;
 
   using Edge = std::pair<id_t, id_t>;
   using EdgeSet = std::vector<Edge>;
   using EdgeSetSet = std::vector<EdgeSet>;
-}
+} // namespace ttk::rpd
