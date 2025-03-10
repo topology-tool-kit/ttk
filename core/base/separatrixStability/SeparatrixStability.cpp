@@ -152,13 +152,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
       matchingArraySource[i][j]+=destinationSize;
     }
   }
-  std::cout<<"separatrix matching id in block "<<block_id<<std::endl;
-  for (int i = 0 ; i < n_blocks; i++){
-    std::cout<<"  relative to block "<<i<<std::endl;
-    for (int j = 0 ; j < n_separatrices; j++){
-      std::cout<<"    "<<j<<" ---> "<<matchingArraySeparatrix[i][j]<<std::endl;
-    }
-  }
   return 1;
 }
 
@@ -199,8 +192,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
 
   int n_blocks = adjacencyMatricesFull.size();
   isIsomorphicWith.resize(n_blocks, true);
-  std::cout<<"building block "<<block_id<<" arrays"<<std::endl;
-  
 
   std::vector<GraphMatrixMinor> adjacencyMatricesMinor(n_blocks);
 
@@ -239,7 +230,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
       for (int i = 0 ; i < n_points ; i++){
         matchingArray[k][i]=i;
       }
-      assert(matchingArraySeparatrix[k].size() == n_separatrices);
       for (int i = 0 ; i < n_separatrices; i++){
         matchingArraySeparatrix[k][i]=i;
       }
@@ -275,10 +265,7 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
             std::pair<int, int> edgeInOtherBlock = adjacencyMatricesMinor[k][otherBlockVertex1][otherBlockVertex2][0];
             edgeOccurences[edge.first] += existsInOtherBlock;
             edgeOccurences[edge.second] += existsInOtherBlock;
-            std::cout<<"block "<<k<<" separatrix id : "<<edgeInOtherBlock.first<<", "<<edgeInOtherBlock.second<<std::endl;
-            assert(matchingArraySeparatrix.size() > edgeInOtherBlock.first);
             matchingArraySeparatrix[k][edgeInOtherBlock.first]=edge.first;
-            assert(matchingArraySeparatrix.size() > edgeInOtherBlock.second);
             matchingArraySeparatrix[k][edgeInOtherBlock.second]=edge.second;
           }
         }
@@ -287,13 +274,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
                 isIsomorphicWith[k]=false;
               }
       }
-    }
-  }
-  std::cout<<"separatrix matching id in block "<<block_id<<std::endl;
-  for (int i = 0 ; i < n_blocks; i++){
-    std::cout<<"  relative to block "<<i<<std::endl;
-    for (int j = 0 ; j < matchingArraySeparatrix[i].size(); j++){
-      std::cout<<"    "<<j<<" ---> "<<matchingArraySeparatrix[i][j]<<std::endl;
     }
   }
   return 1;
@@ -313,7 +293,6 @@ int ttk::SeparatrixStability::buildOccurenceArrays(
 
   int n_blocks = adjacencyMatrices.size();
   int status;
-  assert(matchingArraySeparatrixForEachBlock.size()==n_blocks);
   for (int i = 0 ; i < n_blocks; i++){
     matchingArraySeparatrixForEachBlock[i].resize(n_blocks);
     for (int j = 0 ; j < n_blocks; j++){

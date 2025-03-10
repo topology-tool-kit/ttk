@@ -257,7 +257,6 @@ int ttkSeparatrixStability::execute(
 
   if(status == 0)return status;
 
-  std::cout<<"CALCULATION DONE"<<std::endl;
 
   for (int i = 0 ; i < n_blocks ; i++){
     std::cout<<std::setw(2)<<i<<" : ";
@@ -281,27 +280,10 @@ int ttkSeparatrixStability::execute(
     idCount++;
   }
 
-
-  std::cout<<"separatrix id array dimensions : "<<std::endl;
-  std::cout<<matchingArraySeparatrixForEachBlock.size()<<std::endl;
-  for (int i = 0 ; i < n_blocks; i++){
-    std::cout<<"  matchingsArraySeparatrixForEachBlock["<<i<<"] = "<<matchingArraySeparatrixForEachBlock[i].size()<<std::endl;
-    for (int j = 0 ; j < matchingArraySeparatrixForEachBlock[i].size(); j++){
-      std::cout<<"    matchignsArraySeparatrixForEAchBlock["<<i<<"]["<<j<<"] = "<<matchingArraySeparatrixForEachBlock[i][j].size()<<std::endl;
-    }
-  }
-
-  std::cout<<"separatrixCount for Each block : "<<std::endl;
-  for (auto c : separatrixCountForEachBlock){
-    std::cout<<c<<std::endl;
-  }
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < n_blocks; i++) {
-
-    std::cout<<"filling infos for block "<<i<<std::endl;
 
     vtkDataSet *block
       = vtkDataSet::SafeDownCast(output1_Separatrices->GetBlock(i));
@@ -345,7 +327,6 @@ int ttkSeparatrixStability::execute(
 
     for (int j = 0 ; j < n_blocks; j++){
       
-      std::cout<<"  filling infos relative to block "<<j<<std::endl;
       
       vtkNew<vtkIntArray> matchingIdForSeparatrix_j;
       matchingIdForSeparatrix_j->SetNumberOfComponents(1);
@@ -358,8 +339,6 @@ int ttkSeparatrixStability::execute(
       
       int currentSeparatrixIdBis = separatrixIds->GetValue(0);
       int separatrixCountBis = 0;
-      std::cout<<"separatrixCountBis = "<<separatrixCountBis<<std::endl;
-      assert(matchingArraySeparatrixForEachBlock[j][i].size() > separatrixCountBis);
       int newId = matchingArraySeparatrixForEachBlock[j][i][separatrixCount];
       matchingIdForSeparatrix_j->InsertNextValue(newId);
       
@@ -367,20 +346,12 @@ int ttkSeparatrixStability::execute(
         if(separatrixIds->GetValue(k) != currentSeparatrixIdBis) {
           currentSeparatrixIdBis = separatrixIds->GetValue(k);
           separatrixCountBis++;
-          std::cout<<"separatrixCountBis = "<<separatrixCountBis<<std::endl;
-          assert(matchingArraySeparatrixForEachBlock[j][i].size() > separatrixCountBis);
           newId = matchingArraySeparatrixForEachBlock[j][i][separatrixCountBis];
         }
-        std::cout<<"cell "<<k<<"/"<<cellNumber<<std::endl;
         matchingIdForSeparatrix_j->InsertNextValue(newId);
       }
-      
-      
-      std::cout<<"filled matchingIdForSeparatrix for block "<<i<<" with respect to block "<<j<<std::endl;
-      
       block->GetCellData()->AddArray(matchingIdForSeparatrix_j);
-      
-      
+
       vtkNew<vtkIntArray> matchingIdForCriticalPoints_j;
     matchingIdForCriticalPoints_j->SetNumberOfComponents(1);
     std::string tmp_string_2 = std::string(ttk::SeparatrixStabilityMatchingIdName) 
