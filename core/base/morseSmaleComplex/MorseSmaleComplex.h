@@ -1728,7 +1728,6 @@ int ttk::MorseSmaleComplex::setFinalSegmentation(
 
   return 0;
 }
-
 template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex::returnSaddleConnectors(
   const double persistenceThreshold,
@@ -1779,11 +1778,10 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
 
   // Sort pairs to process by persistence
   std::vector<std::tuple<size_t, dataType>> pairs;
-  for(size_t i = 0; i < dms_pairs.size(); ++i) {
+  for(size_t i = firstSadSadPair; i < dms_pairs.size(); ++i) {
     const auto &pair{dms_pairs[i]};
-    if(pair.type == 1)pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
+    pairs.emplace_back(std::make_tuple(i, getPersistence(pair)));
   }
-
   const auto comparePersistence
     = [](const std::tuple<size_t, dataType> &pair1,
          const std::tuple<size_t, dataType> &pair2) {
@@ -1813,19 +1811,9 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
     // 2. get the saddle connector
     std::vector<Cell> vpath{};
     bool disableForkReversal = not ForceLoopFreeGradient;
-    bool functionReturn = this->discreteGradient_.getAscendingPathThroughWall(
+    this->discreteGradient_.getAscendingPathThroughWall(
       birth, death, isVisited, &vpath, triangulation, disableForkReversal);
-    
     // 3. reverse the gradient on the saddle connector path
-    bool isClose = false;
-    for (int i = 0 ; i < 3 ; i++){
-      SimplexId edgeId;
-      triangulation.getTriangleEdge(vpath.back().id_, i, edgeId);
-      SimplexId triangleId;
-      triangulation.getEdgeTriangle(edgeId, 0, triangleId);
-      if(triangleId == vpath.back().id_)triangulation.getEdgeTriangle(edgeId, 1, triangleId);
-      if(death.id_ == triangleId)isClose = true;
-      }
     if(vpath.back() == death) {
       this->discreteGradient_.reverseAscendingPathOnWall(vpath, triangulation);
 
@@ -1865,7 +1853,6 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
         skippedPairsPers.emplace_back(
           std::make_tuple(pairPersistence, pair.birth, pair.death));
     }
-
   }
 
   if(this->debugLevel_ == (int)debug::Priority::DETAIL) {
