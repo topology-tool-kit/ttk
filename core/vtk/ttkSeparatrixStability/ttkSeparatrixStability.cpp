@@ -339,7 +339,7 @@ int ttkSeparatrixStability::execute(
       
       int currentSeparatrixIdBis = separatrixIds->GetValue(0);
       int separatrixCountBis = 0;
-      int newId = matchingArraySeparatrixForEachBlock[j][i][separatrixCount];
+      int newId = matchingArraySeparatrixForEachBlock[j][i][separatrixCountBis];
       matchingIdForSeparatrix_j->InsertNextValue(newId);
       
       for(int k = 1; k < cellNumber; k++) {

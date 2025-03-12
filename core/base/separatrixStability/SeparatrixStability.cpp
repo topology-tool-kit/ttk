@@ -152,6 +152,14 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
       matchingArraySource[i][j]+=destinationSize;
     }
   }
+
+  std::cout<<"separatrix matching id in block "<<block_id<<std::endl;
+  for (int i = 0 ; i < n_blocks; i++){
+    std::cout<<"  relative to block "<<i<<std::endl;
+    for (int j = 0 ; j < matchingArraySeparatrix[i].size(); j++){
+      std::cout<<"    "<<j<<" ---> "<<matchingArraySeparatrix[i][j]<<std::endl;
+    }
+  }
   return 1;
 }
 
@@ -224,15 +232,29 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
     }
   }
 
+  int mergeSeparatrixCount{};
+  for (int i = 0 ; i < n_points; i++){
+    for (int j = 0 ; j < n_points; j++){
+      if(!adjacencyMatricesMinor[block_id][i][j].empty()){
+        for(auto e : adjacencyMatricesMinor[block_id][i][j]){
+          int sepId_1=e.first;
+          int sepId_2=e.second;
+          matchingArraySeparatrix[block_id][sepId_1]=mergeSeparatrixCount;
+          matchingArraySeparatrix[block_id][sepId_2]=mergeSeparatrixCount;
+          mergeSeparatrixCount++;
+        }
+
+      }
+    }
+  }
+
   for(int k = 0; k < n_blocks; k++) {
 
     if(k == block_id){
       for (int i = 0 ; i < n_points ; i++){
         matchingArray[k][i]=i;
       }
-      for (int i = 0 ; i < n_separatrices; i++){
-        matchingArraySeparatrix[k][i]=i;
-      }
+
       continue;
     }
 
@@ -265,8 +287,8 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
             std::pair<int, int> edgeInOtherBlock = adjacencyMatricesMinor[k][otherBlockVertex1][otherBlockVertex2][0];
             edgeOccurences[edge.first] += existsInOtherBlock;
             edgeOccurences[edge.second] += existsInOtherBlock;
-            matchingArraySeparatrix[k][edgeInOtherBlock.first]=edge.first;
-            matchingArraySeparatrix[k][edgeInOtherBlock.second]=edge.second;
+            matchingArraySeparatrix[k][edgeInOtherBlock.first]=matchingArraySeparatrix[block_id][edge.first];
+            matchingArraySeparatrix[k][edgeInOtherBlock.second]=matchingArraySeparatrix[block_id][edge.second];
           }
         }
         else if((!adjacencyMatricesMinor[block_id][thisBlockVertex1][thisBlockVertex2]
@@ -274,6 +296,26 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
                 isIsomorphicWith[k]=false;
               }
       }
+    }
+  }
+
+  std::cout<<"adjacency matrix : "<<std::endl;
+  for (int i = 0 ; i < n_points; i++){
+    for (int j = 0 ; j < n_points; j++){
+      if(adjacencyMatricesMinor[block_id][i][j].empty()){
+        std::cout<<"XX XX ";
+      }
+      else{
+        std::cout<<adjacencyMatricesMinor[block_id][i][j][0].first<<" "<<adjacencyMatricesMinor[block_id][i][j][0].second;
+      }
+    }
+    std::cout<<std::endl;
+  }
+  std::cout<<"separatrix matching id in block "<<block_id<<std::endl;
+  for (int i = 0 ; i < n_blocks; i++){
+    std::cout<<"  relative to block "<<i<<std::endl;
+    for (int j = 0 ; j < matchingArraySeparatrix[i].size(); j++){
+      std::cout<<"    "<<j<<" ---> "<<matchingArraySeparatrix[i][j]<<std::endl;
     }
   }
   return 1;
