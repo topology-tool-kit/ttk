@@ -192,11 +192,13 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
     }
   }
   //re-index the matching id for the source point so that they are different from the destination point id
+  int offset = std::max_element(matchingArrayDestination.begin(), matchingArrayDestination.end(), 
+  [](const std::vector<int>& a, const std::vector<int>& b) {
+    return a.size() < b.size();})->size();
   for (int i = 0 ; i < n_blocks; i++){
     int sourceSize = matchingArraySource[i].size();
-    int destinationSize = matchingArrayDestination[i].size();
     for (int j = 0 ; j < sourceSize; j++){
-      matchingArraySource[i][j]+=destinationSize;
+      matchingArraySource[i][j]+=offset;
     }
   }
 

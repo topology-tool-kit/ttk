@@ -18,6 +18,7 @@
 #include <Timer.h>
 #include <string>
 #include <iomanip>
+#include <random>
 
 vtkStandardNewMacro(ttkSeparatrixStability);
 
@@ -252,7 +253,7 @@ int ttkSeparatrixStability::execute(
     std::string blockIdString = std::to_string(i);
     this->printMsg("Number of critical points (min-max) for block " + blockIdString + " : " + destinationSizeString);
     if(!MergeEdgesOnSaddles)
-      this->printMsg("Number of critical points for block (1sad-2sad)" + blockIdString + " : " + sourceSizeString);
+      this->printMsg("Number of critical points (1sad-2sad) for block " + blockIdString + " : " + sourceSizeString);
   }
   
   status = this->buildOccurenceArrays(adjacencyMatricesFull,  
@@ -291,6 +292,44 @@ int ttkSeparatrixStability::execute(
     }
   }
 
+
+  int n_sourceIds =  std::max_element(globalSourcePointIdForEachBlock.begin(), globalSourcePointIdForEachBlock.end(), 
+    [](const std::vector<int>& a, const std::vector<int>& b) {
+    return a.size() < b.size();})->size();
+
+  int n_destinationIds =  std::max_element(globalDestinationPointIdForEachBlock.begin(), globalDestinationPointIdForEachBlock.end(), 
+    [](const std::vector<int>& a, const std::vector<int>& b) {
+    return a.size() < b.size();})->size();
+
+  int n_separatrix = *(std::max_element(separatrixCountForEachBlock.begin(), separatrixCountForEachBlock.end()));
+
+  std::vector<int> shuffleDestinationIds(n_destinationIds);
+  std::vector<int> shuffleSourceIds(n_sourceIds);
+  std::vector<int> shuffleSeparatrixIds(n_separatrix);
+
+  if(ShuffleCriticalPointsIds){
+      for (int i = 0 ; i < n_destinationIds; i++){
+        shuffleDestinationIds[i]=i;
+      }
+      
+      std::random_device rd;
+      std::mt19937 gen(CriticalPointsShuffleSeed);
+      std::shuffle(shuffleDestinationIds.begin(), shuffleDestinationIds.end(), gen);
+      
+      if(!MergeEdgesOnSaddles){
+          for (int i = 0 ; i < n_sourceIds; i++){
+            shuffleSourceIds[i]=i+n_destinationIds;
+          }
+          std::shuffle(shuffleSourceIds.begin(), shuffleSourceIds.end(), gen);
+        }
+      }
+//if(ShuffleSeparatrixIds){
+//  for (int i = 0 ; i < n_separatrix; i++){
+//    shuffleSeparatrixIds[i]=i-1;
+//
+//  }
+//}      
+      
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -377,13 +416,19 @@ int ttkSeparatrixStability::execute(
       
       for (unsigned int k = 0 ; k < globalDestinationPointIdForEachBlock[i].size(); k++){
         int globalPointIdThisBlock = globalDestinationPointIdForEachBlock[i][k];
-        int matchingIdOtherBlock = matchingArrayForEachBlockDestination[j][i][k];        
+        int matchingIdOtherBlock = matchingArrayForEachBlockDestination[j][i][k];
+        if(ShuffleCriticalPointsIds && matchingIdOtherBlock!=-1){
+          matchingIdOtherBlock = shuffleDestinationIds[matchingIdOtherBlock];   
+        }
         matchingIdForCriticalPoints_j->SetValue(globalPointIdThisBlock, matchingIdOtherBlock);
       }
       if(!MergeEdgesOnSaddles){
         for (unsigned int k = 0 ; k < globalSourcePointIdForEachBlock[i].size(); k++){
           int globalPointIdThisBlock = globalSourcePointIdForEachBlock[i][k];
-          int matchingIdOtherBlock = matchingArrayForEachBlockSource[j][i][k];
+          int matchingIdOtherBlock=matchingArrayForEachBlockSource[j][i][k];
+          if(ShuffleCriticalPointsIds && matchingIdOtherBlock!=n_destinationIds - 1){
+            matchingIdOtherBlock = shuffleSourceIds[matchingIdOtherBlock - n_destinationIds];   
+          }
           matchingIdForCriticalPoints_j->SetValue(globalPointIdThisBlock, matchingIdOtherBlock);
         }
       }
