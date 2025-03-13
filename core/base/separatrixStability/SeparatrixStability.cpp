@@ -98,14 +98,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   std::vector<std::vector<int>> &matchingArraySeparatrix){
 
   int n_blocks = adjacencyMatrices.size();
-
-  std::cout<<"===BLOCK "<<block_id<<"==="<<std::endl;
-
-  
-  
- 
-  
-  
   int n_sourceThisBlock = adjacencyMatrices[block_id].size();
   int n_destinationThisBlock = adjacencyMatrices[block_id][0].size();
   
@@ -120,8 +112,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   }
   
   edgeOccurences.resize(n_separatrices, 1);
-
-  std::cout<<"  arrays initialized"<<std::endl;
   
   std::vector<std::vector<MatchingType>> matchingsSource(n_blocks - 1);
   std::vector<std::vector<MatchingType>> matchingsDestination(n_blocks - 1);
@@ -131,33 +121,25 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
     coordsDestination, block_id, matchingsDestination);
     
   
-  std::cout<<"  critical points matched"<<std::endl;
 
   for(int k = 0; k < n_blocks; k++) {
-    std::cout<<"  filling arrays relative to block "<<k<<std::endl;
     
     int n_source = adjacencyMatrices[k].size();
     int n_destination = adjacencyMatrices[k][0].size();
     
     if(k == block_id){
-      std::cout<<"n_sourceThisBlock = "<<n_sourceThisBlock<<std::endl;
-      std::cout<<"n_destinationThisBlock = "<<n_destinationThisBlock<<std::endl;
       for (int i = 0 ; i < n_destination; i++){
         matchingArrayDestination[k][i]=i;
       }
       for (int i = 0 ; i < n_source; i++){
         matchingArraySource[k][i]=i;
       }
-      std::cout<<"n_separatrices = "<<n_separatrices<<std::endl;
-      std::cout<<"matchingArraySeparatrix[block_id].size() = "<<matchingArraySeparatrix[block_id].size()<<std::endl;
       for (int i = 0 ; i < n_separatrices; i++){
         matchingArraySeparatrix[k][i]=i;
       }
       continue;
     }
 
-    std::cout<<"  n_source = "<<n_source<<std::endl;
-    std::cout<<"  n_destination = "<<n_destination<<std::endl;
 
     int otherBlockdIdMatchingsVector = k < block_id ? k : k - 1;
     int matchingsSourceSize = n_source == n_sourceThisBlock ? n_source : n_source + n_sourceThisBlock;
@@ -185,8 +167,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
             
         matchingArrayDestination[k][otherBlockDestinationId]=thisBlockDestinationId;
         matchingArraySource[k][otherBlockSourceId]=thisBlockSourceId;
-        std::cout<<"sources matched = "<<thisBlockSourceId<<"-->"<<otherBlockSourceId<<std::endl;
-        std::cout<<"                                                                    destinations matched = "<<thisBlockDestinationId<<"-->"<<otherBlockDestinationId<<std::endl;
         if(adjacencyMatrices[block_id][thisBlockSourceId]
                                 [thisBlockDestinationId]
           != -1 &&
@@ -259,8 +239,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   std::vector<std::vector<int>> &matchingArraySeparatrix) {
 
 
-  std::cout<<"===BLOCK "<<block_id<<"==="<<std::endl;
-
   int n_blocks = adjacencyMatricesFull.size();
   isIsomorphicWith.resize(n_blocks, true);
 
@@ -270,10 +248,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
     computeGraphMinor(adjacencyMatricesFull[i], adjacencyMatricesMinor[i]);
   }
 
-  for (int i = 0 ; i < n_blocks; i++){
-    std::cout<<"  minor matrix["<<i<<"] dim = "<<adjacencyMatricesMinor[i].size()<<" x "<<adjacencyMatricesMinor[i][0].size()<<std::endl; 
-  }
-
   int n_pointsThisBlock = adjacencyMatricesMinor[block_id].size();
   
   matchingArray.resize(n_blocks, std::vector<int>());
@@ -281,7 +255,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
     matchingArray[i].resize(adjacencyMatricesMinor[i].size(), -2);
   }
 
-  std::cout<<"  n_PointsThisBlock = "<<n_pointsThisBlock<<std::endl;
   for (int i = 0 ; i < n_pointsThisBlock ; i++){
     matchingArray[block_id][i]=i;
   }
@@ -315,23 +288,14 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
     }
   }
 
-  std::cout<<"  arrays initialized"<<std::endl;
-
   std::vector<std::vector<MatchingType>> matchings(n_blocks - 1);
   buildMatchingsWithOtherBlocks(coords, block_id, matchings);
 
-  std::cout<<"  critical points matched"<<std::endl;
-
   for(int k = 0; k < n_blocks; k++) {
-    std::cout<<"  filling arrays relative to block "<<k<<std::endl;
-    int n_points = adjacencyMatricesMinor[k].size();
     if(k == block_id)continue;
-
-    std::cout<<"  n_points block "<<k<<" = "<<n_points<<std::endl;
-
+    int n_points = adjacencyMatricesMinor[k].size();
 
     int otherBlockdIdMatchingsVector = k < block_id ? k : k - 1;
-
     int n_matchings = n_points == n_pointsThisBlock ? n_points : n_points + n_pointsThisBlock;
 
     for (int i = 0; i < n_matchings; i++){
@@ -382,9 +346,6 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
       }
     }
   }
-
-  std::cout<<"========="<<std::endl;
-
   return 1;
 }
 
@@ -409,13 +370,9 @@ int ttk::SeparatrixStability::buildOccurenceArrays(
     }
   }
 
-  for (int i = 0 ; i < n_blocks; i++){
-    std::cout<<"matrix["<<i<<"] dim = "<<adjacencyMatrices[i].size()<<" x "<<adjacencyMatrices[i][0].size()<<std::endl;
-  }
   #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_)
   #endif // TTK_ENABLE_OPENMP
-
   for(int i = 0; i < n_blocks; i++) {
     if(!mergeEdgesOnSaddles) {
       status = this->buildOccurenceArraysFull(

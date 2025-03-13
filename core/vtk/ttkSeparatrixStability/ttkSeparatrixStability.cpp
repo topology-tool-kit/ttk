@@ -267,7 +267,6 @@ int ttkSeparatrixStability::execute(
                                       matchingArraySeparatrixForEachBlock);
 
 
-  //std::cout<<"COMPUTATION DONE"<<std::endl;
 
   if(status == 0)return status;
 
@@ -285,13 +284,6 @@ int ttkSeparatrixStability::execute(
     idCount++;
   }
 
-  //std::cout<<"ISOMORPHISM TRICK"<<std::endl;
-  //for (int i = 0 ; i < n_blocks; i++){
-  //  std::cout<<"BLOCK "<<i<<std::endl;
-  //  std::cout<<"n_destination from prepareData = "<<globalDestinationPointIdForEachBlock[i].size()<<std::endl;
-  //  std::cout<<"n_source from prepareData = "<<globalSourcePointIdForEachBlock[i].size()<<std::endl;
-  //}
-
   for (int i = 0 ; i < n_blocks; i++){
     for (int j = 0 ; j < n_blocks ; j++){
       assert(globalDestinationPointIdForEachBlock[i].size() == matchingArrayForEachBlockDestination[j][i].size());
@@ -299,7 +291,6 @@ int ttkSeparatrixStability::execute(
     }
   }
 
-  std::cout<<"ASSERT DONE"<<std::endl;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -342,11 +333,6 @@ int ttkSeparatrixStability::execute(
 
     block->GetFieldData()->AddArray(isomorphismClassId);
 
-
-    std::cout<<"BEFORE FILLING MATCHINGS IDS"<<std::endl;
-
-
-
     for (int j = 0 ; j < n_blocks; j++){
       
       
@@ -388,8 +374,6 @@ int ttkSeparatrixStability::execute(
         matchingIdForCriticalPoints_j->InsertNextValue(-2);
       }
       
-      std::cout<<"destination matchingArrayForBlock_"<<j<<" relative to block "<<i<<" size = "<<matchingArrayForEachBlockDestination[j][i].size()<<std::endl;
-      if(!MergeEdgesOnSaddles)std::cout<<"source matchingArrayForBlock_"<<j<<" relative to block "<<i<<" size = "<<matchingArrayForEachBlockSource[j][i].size()<<std::endl;
       
       for (unsigned int k = 0 ; k < globalDestinationPointIdForEachBlock[i].size(); k++){
         int globalPointIdThisBlock = globalDestinationPointIdForEachBlock[i][k];
