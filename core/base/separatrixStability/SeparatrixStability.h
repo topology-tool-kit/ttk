@@ -31,6 +31,10 @@ namespace ttk {
       std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockDestination,
       std::vector<std::vector<std::vector<int>>> &matchingArraySeparatrixForEachBlock);
 
+    inline void setEpsilon(double e){
+      epsilon=e;
+    }
+
   private:
 
     int buildMatchingsWithOtherBlocks(
@@ -70,6 +74,9 @@ namespace ttk {
       std::vector<std::vector<int>> &matchingArraySource,
       std::vector<std::vector<int>> &matchingArrayDestination,
       std::vector<std::vector<int>> &matchingArraySeparatrix);
+
+    double epsilon{};
   };
+
 
 } // namespace ttk

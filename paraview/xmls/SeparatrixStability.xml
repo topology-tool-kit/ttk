@@ -32,7 +32,18 @@
         <Documentation>
           Check this box to merge the edges on the saddles points.
         </Documentation>
-      </IntVectorProperty>   
+      </IntVectorProperty> 
+
+      <DoubleVectorProperty
+        name="epsilon"
+        label="Birth/death threshold"
+        command="SetCostDeathBirth"
+        number_of_elements="1"
+        default_values="0.1"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>  
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}

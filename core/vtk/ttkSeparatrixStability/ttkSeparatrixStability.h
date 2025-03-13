@@ -31,11 +31,15 @@ private:
   bool ComputeOccurenceType1{false};
   bool ComputeOccurenceType2{true};
   bool MergeEdgesOnSaddles{true};
+  double CostDeathBirth{};
 
 public:
 
   vtkSetMacro(MergeEdgesOnSaddles, bool);
   vtkGetMacro(MergeEdgesOnSaddles, bool);
+
+  vtkSetMacro(CostDeathBirth, double);
+  vtkGetMacro(CostDeathBirth, double);
 
   static ttkSeparatrixStability *New();
   vtkTypeMacro(ttkSeparatrixStability, ttkAlgorithm);
