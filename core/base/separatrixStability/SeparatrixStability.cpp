@@ -112,11 +112,11 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   isIsomorphicWith.resize(n_blocks, true);
   matchingArraySource.resize(n_blocks, std::vector<int>());
   for (int k = 0; k < n_blocks; k++){
-    matchingArraySource[k].resize(adjacencyMatrices[k].size(),-1);
+    matchingArraySource[k].resize(adjacencyMatrices[k].size(),-2);
   }
   matchingArrayDestination.resize(n_blocks, std::vector<int>());
   for (int k = 0; k < n_blocks; k++){
-    matchingArrayDestination[k].resize(adjacencyMatrices[k][0].size(),-1);
+    matchingArrayDestination[k].resize(adjacencyMatrices[k][0].size(),-2);
   }
   
   edgeOccurences.resize(n_separatrices, 1);
@@ -172,10 +172,16 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
           = std::get<1>(matchingsSource[otherBlockdIdMatchingsVector][i]);
         int otherBlockDestinationId = std::get<1>(
           matchingsDestination[otherBlockdIdMatchingsVector][j]);
-          if(thisBlockSourceId >= n_sourceThisBlock
-            || thisBlockDestinationId >= n_destinationThisBlock
-            || otherBlockDestinationId >= n_destination 
+          if(otherBlockDestinationId >= n_destination
             || otherBlockSourceId >= n_source)continue;
+          if(thisBlockSourceId >= n_sourceThisBlock){
+              matchingArraySource[k][otherBlockSourceId]=-1;
+            }
+          if(thisBlockDestinationId >= n_destinationThisBlock){
+            matchingArrayDestination[k][otherBlockDestinationId]=-1;
+          }
+          if(thisBlockDestinationId >= n_destinationThisBlock
+            || thisBlockSourceId >= n_sourceThisBlock)continue;
             
         matchingArrayDestination[k][otherBlockDestinationId]=thisBlockDestinationId;
         matchingArraySource[k][otherBlockSourceId]=thisBlockSourceId;
@@ -272,7 +278,12 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   
   matchingArray.resize(n_blocks, std::vector<int>());
   for (int i = 0 ; i < n_blocks; i++){
-    matchingArray[i].resize(adjacencyMatricesMinor[i].size(), -1);
+    matchingArray[i].resize(adjacencyMatricesMinor[i].size(), -2);
+  }
+
+  std::cout<<"  n_PointsThisBlock = "<<n_pointsThisBlock<<std::endl;
+  for (int i = 0 ; i < n_pointsThisBlock ; i++){
+    matchingArray[block_id][i]=i;
   }
 
   edgeOccurences.resize(n_separatrices);
@@ -314,13 +325,7 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   for(int k = 0; k < n_blocks; k++) {
     std::cout<<"  filling arrays relative to block "<<k<<std::endl;
     int n_points = adjacencyMatricesMinor[k].size();
-    if(k == block_id){
-      std::cout<<"  n_PointsThisBlock = "<<n_pointsThisBlock<<std::endl;
-      for (int i = 0 ; i < n_pointsThisBlock ; i++){
-        matchingArray[k][i]=i;
-      }
-      continue;
-    }
+    if(k == block_id)continue;
 
     std::cout<<"  n_points block "<<k<<" = "<<n_points<<std::endl;
 
@@ -332,9 +337,12 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
     for (int i = 0; i < n_matchings; i++){
       int thisBlockPointId = std::get<0>(matchings[otherBlockdIdMatchingsVector][i]);
       int otherBlockPointId = std::get<1>(matchings[otherBlockdIdMatchingsVector][i]);
-      if(thisBlockPointId < n_pointsThisBlock){
+      if(otherBlockPointId >= n_points)continue;
+      if(thisBlockPointId >= n_pointsThisBlock){
         matchingArray[k][otherBlockPointId]=-1;
+        continue;
       }
+      matchingArray[k][otherBlockPointId]=matchingArray[block_id][thisBlockPointId];
     }
 
 

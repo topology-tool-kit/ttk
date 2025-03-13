@@ -245,6 +245,15 @@ int ttkSeparatrixStability::execute(
   }
 
   this->setEpsilon(CostDeathBirth);
+
+  for (int i = 0 ; i < n_blocks; i++){
+    std::string destinationSizeString = std::to_string(globalDestinationPointIdForEachBlock[i].size());
+    std::string sourceSizeString = std::to_string(globalSourcePointIdForEachBlock[i].size());
+    std::string blockIdString = std::to_string(i);
+    this->printMsg("Number of critical points (min-max) for block " + blockIdString + " : " + destinationSizeString);
+    if(!MergeEdgesOnSaddles)
+      this->printMsg("Number of critical points for block (1sad-2sad)" + blockIdString + " : " + sourceSizeString);
+  }
   
   status = this->buildOccurenceArrays(adjacencyMatricesFull,  
                                       separatrixCountForEachBlock, 
@@ -258,7 +267,7 @@ int ttkSeparatrixStability::execute(
                                       matchingArraySeparatrixForEachBlock);
 
 
-  std::cout<<"COMPUTATION DONE"<<std::endl;
+  //std::cout<<"COMPUTATION DONE"<<std::endl;
 
   if(status == 0)return status;
 
@@ -276,13 +285,21 @@ int ttkSeparatrixStability::execute(
     idCount++;
   }
 
-  std::cout<<"ISOMORPHISM TRICK"<<std::endl;
+  //std::cout<<"ISOMORPHISM TRICK"<<std::endl;
+  //for (int i = 0 ; i < n_blocks; i++){
+  //  std::cout<<"BLOCK "<<i<<std::endl;
+  //  std::cout<<"n_destination from prepareData = "<<globalDestinationPointIdForEachBlock[i].size()<<std::endl;
+  //  std::cout<<"n_source from prepareData = "<<globalSourcePointIdForEachBlock[i].size()<<std::endl;
+  //}
+
   for (int i = 0 ; i < n_blocks; i++){
-    std::cout<<"BLOCK "<<i<<std::endl;
-    std::cout<<"n_destination from prepareData = "<<globalDestinationPointIdForEachBlock[i].size()<<std::endl;
-    std::cout<<"n_source from prepareData = "<<globalSourcePointIdForEachBlock[i].size()<<std::endl;
+    for (int j = 0 ; j < n_blocks ; j++){
+      assert(globalDestinationPointIdForEachBlock[i].size() == matchingArrayForEachBlockDestination[j][i].size());
+      assert(globalSourcePointIdForEachBlock[i].size() == matchingArrayForEachBlockSource[j][i].size());
+    }
   }
 
+  std::cout<<"ASSERT DONE"<<std::endl;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -357,7 +374,7 @@ int ttkSeparatrixStability::execute(
       }
       block->GetCellData()->AddArray(matchingIdForSeparatrix_j);
       
-      /*
+      
       vtkNew<vtkIntArray> matchingIdForCriticalPoints_j;
       matchingIdForCriticalPoints_j->SetNumberOfComponents(1);
       std::string tmp_string_2 = std::string(ttk::SeparatrixStabilityMatchingIdName) 
@@ -368,11 +385,11 @@ int ttkSeparatrixStability::execute(
       vtkPoints* points = block->GetPoints();
       
       for (int k = 0 ; k < points->GetNumberOfPoints(); k++){
-        matchingIdForCriticalPoints_j->InsertNextValue(-1);
+        matchingIdForCriticalPoints_j->InsertNextValue(-2);
       }
       
       std::cout<<"destination matchingArrayForBlock_"<<j<<" relative to block "<<i<<" size = "<<matchingArrayForEachBlockDestination[j][i].size()<<std::endl;
-      std::cout<<"source matchingArrayForBlock_"<<j<<" relative to block "<<i<<" size = "<<matchingArrayForEachBlockSource[j][i].size()<<std::endl;
+      if(!MergeEdgesOnSaddles)std::cout<<"source matchingArrayForBlock_"<<j<<" relative to block "<<i<<" size = "<<matchingArrayForEachBlockSource[j][i].size()<<std::endl;
       
       for (unsigned int k = 0 ; k < globalDestinationPointIdForEachBlock[i].size(); k++){
         int globalPointIdThisBlock = globalDestinationPointIdForEachBlock[i][k];
@@ -387,7 +404,7 @@ int ttkSeparatrixStability::execute(
         }
       }
       block->GetPointData()->AddArray(matchingIdForCriticalPoints_j);
-      */
+      
   }
 }
 return status;
