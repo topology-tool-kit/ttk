@@ -305,7 +305,7 @@ int ttkSeparatrixStability::execute(
 
   std::vector<int> shuffleDestinationIds(n_destinationIds);
   std::vector<int> shuffleSourceIds(n_sourceIds);
-  std::vector<int> shuffleSeparatrixIds(n_separatrix);
+  std::vector<int> shuffledSeparatrixIds(n_separatrix);
 
   if(ShuffleCriticalPointsIds){
       for (int i = 0 ; i < n_destinationIds; i++){
@@ -323,12 +323,15 @@ int ttkSeparatrixStability::execute(
           std::shuffle(shuffleSourceIds.begin(), shuffleSourceIds.end(), gen);
         }
       }
-//if(ShuffleSeparatrixIds){
-//  for (int i = 0 ; i < n_separatrix; i++){
-//    shuffleSeparatrixIds[i]=i-1;
-//
-//  }
-//}      
+
+  if(ShuffleSeparatrixIds){
+    for (int i = 0 ; i < n_separatrix; i++){
+      shuffledSeparatrixIds[i]=i;
+    }
+    std::random_device rd;
+    std::mt19937 gen(SeparatrixShuffleSeed);
+    std::shuffle(shuffledSeparatrixIds.begin(), shuffledSeparatrixIds.end(), gen);
+  }      
       
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -354,6 +357,7 @@ int ttkSeparatrixStability::execute(
     int separatrixCount = 0;
     float newValue
       = (float)edgeOccurenceForEachBlock[i][separatrixCount] / n_blocks;
+   
     occurenceCount->InsertNextValue(newValue);
 
     for(int j = 1; j < cellNumber; j++) {
@@ -387,6 +391,7 @@ int ttkSeparatrixStability::execute(
       int currentSeparatrixIdBis = separatrixIds->GetValue(0);
       int separatrixCountBis = 0;
       int newId = matchingArraySeparatrixForEachBlock[j][i][separatrixCountBis];
+      if(ShuffleSeparatrixIds && newId!=-1)newId=shuffledSeparatrixIds[newId];
       matchingIdForSeparatrix_j->InsertNextValue(newId);
       
       for(int k = 1; k < cellNumber; k++) {
@@ -394,6 +399,7 @@ int ttkSeparatrixStability::execute(
           currentSeparatrixIdBis = separatrixIds->GetValue(k);
           separatrixCountBis++;
           newId = matchingArraySeparatrixForEachBlock[j][i][separatrixCountBis];
+          if(ShuffleSeparatrixIds && newId!=-1)newId=shuffledSeparatrixIds[newId];
         }
         matchingIdForSeparatrix_j->InsertNextValue(newId);
       }
