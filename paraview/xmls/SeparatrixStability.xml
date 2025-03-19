@@ -21,6 +21,54 @@
       </InputProperty>
 
 
+      <DoubleVectorProperty
+        name="spx"
+        label="X weight"
+        command="SetPX"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the X component of
+          the extremum</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="spy"
+        label="Y weight"
+        command="SetPY"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Y component of
+            the extremum</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="spz"
+        label="Z weight"
+        command="SetPZ"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Z component of
+        the extremum</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="spf"
+        label="F weight"
+        command="SetPF"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the function value of the extremum</Documentation>
+      </DoubleVectorProperty>
+
+
       <IntVectorProperty
         name="MergeEdgesOnSaddles"
         command="SetMergeEdgesOnSaddles"

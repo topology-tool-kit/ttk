@@ -35,6 +35,13 @@ namespace ttk {
       epsilon=e;
     }
 
+    inline void setWeights(const double &px, const double &py, const double &pz, const double &pf){
+      Px=px;
+      Py=py;
+      Pz=pz;
+      Pf=pf;
+    }
+
   private:
 
     int buildMatchingsWithOtherBlocks(
@@ -76,6 +83,10 @@ namespace ttk {
       std::vector<std::vector<int>> &matchingArraySeparatrix);
 
     double epsilon{};
+    double Px{1};
+    double Py{1};
+    double Pz{1};
+    double Pf{1};
   };
 
 

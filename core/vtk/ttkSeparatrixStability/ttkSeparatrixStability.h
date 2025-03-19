@@ -30,6 +30,10 @@ private:
   bool ComputeOccurenceType0{true};
   bool ComputeOccurenceType1{false};
   bool ComputeOccurenceType2{true};
+  double PX{1};
+  double PY{1};
+  double PZ{1};
+  double PF{1};
   bool MergeEdgesOnSaddles{true};
   double CostDeathBirth{};
   bool ShuffleCriticalPointsIds{true};
@@ -38,6 +42,19 @@ private:
   unsigned int CriticalPointsShuffleSeed{0};
 
 public:
+
+
+  vtkSetMacro(PX, double);
+  vtkGetMacro(PX, double);
+
+  vtkSetMacro(PY, double);
+  vtkGetMacro(PY, double);
+
+  vtkSetMacro(PZ, double);
+  vtkGetMacro(PZ, double);
+
+  vtkSetMacro(PF, double);
+  vtkGetMacro(PF, double);
 
   vtkSetMacro(MergeEdgesOnSaddles, bool);
   vtkGetMacro(MergeEdgesOnSaddles, bool);

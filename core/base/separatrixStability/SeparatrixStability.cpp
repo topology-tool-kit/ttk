@@ -32,9 +32,10 @@ void ttk::SeparatrixStability::buildCostMatrix(
     for(int i = 0; i < size_1; i++) {
       for(int j = 0; j < size_1; j++) {
         costMatrix[i][j]
-        = std::sqrt(std::pow(coords1[i][0] - coords2[j][0], 2)
-        + std::pow(coords1[i][1] - coords2[j][1], 2)
-        + std::pow(coords1[i][2] - coords2[j][2], 2));
+        = std::sqrt(
+          Px*std::pow(coords1[i][0] - coords2[j][0], 2)
+        + Py*std::pow(coords1[i][1] - coords2[j][1], 2)
+        + Pz*std::pow(coords1[i][2] - coords2[j][2], 2));
       }
     }
   }
@@ -47,9 +48,10 @@ void ttk::SeparatrixStability::buildCostMatrix(
     for(int i = 0; i < size_1; i++) {
       for(int j = 0; j < size_2; j++) {
         costMatrix[i][j]
-        = std::sqrt(std::pow(coords1[i][0] - coords2[j][0], 2)
-        + std::pow(coords1[i][1] - coords2[j][1], 2)
-        + std::pow(coords1[i][2] - coords2[j][2], 2));
+        = std::sqrt(
+          Px*std::pow(coords1[i][0] - coords2[j][0], 2)
+        + Py*std::pow(coords1[i][1] - coords2[j][1], 2)
+        + Pz*std::pow(coords1[i][2] - coords2[j][2], 2));
       }
     }
     for(int i = size_1; i < size_1+size_2; i++) {

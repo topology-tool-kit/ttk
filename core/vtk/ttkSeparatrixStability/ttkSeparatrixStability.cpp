@@ -246,6 +246,7 @@ int ttkSeparatrixStability::execute(
   }
 
   this->setEpsilon(CostDeathBirth);
+  this->setWeights(PX, PY, PZ, PF);
 
   for (int i = 0 ; i < n_blocks; i++){
     std::string destinationSizeString = std::to_string(globalDestinationPointIdForEachBlock[i].size());
@@ -255,6 +256,7 @@ int ttkSeparatrixStability::execute(
     if(!MergeEdgesOnSaddles)
       this->printMsg("Number of critical points (1sad-2sad) for block " + blockIdString + " : " + sourceSizeString);
   }
+
   
   status = this->buildOccurenceArrays(adjacencyMatricesFull,  
                                       separatrixCountForEachBlock, 
