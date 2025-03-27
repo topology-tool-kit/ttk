@@ -166,6 +166,9 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   vtkNew<vtkDoubleArray> costs{};
   vtkNew<vtkDoubleArray> averagePersistences{};
+  vtkNew<vtkDoubleArray> integratedPersistences{};
+  vtkNew<vtkDoubleArray> maximalPersistences{};
+  vtkNew<vtkDoubleArray> minimalPersistences{};
   vtkNew<vtkDoubleArray> valueScalars{};
   vtkNew<vtkIntArray> globalVertexIds{};
   vtkNew<vtkIntArray> lengthScalars{};
@@ -175,6 +178,9 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   costs->SetName("Costs");
   averagePersistences->SetName("AveragePersistence");
+  integratedPersistences->SetName("IntegratedPersistence");
+  maximalPersistences->SetName("MaximalPersistence");
+  minimalPersistences->SetName("MinimalPersistence");
   valueScalars->SetName("Scalar");
   globalVertexIds->SetName("VertexGlobalId");
   lengthScalars->SetName("ComponentLength");
@@ -183,24 +189,28 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   pointsCriticalType->SetName("CriticalType");
 
   std::vector<ttk::trackingTuple> allTrackings;
-  std::vector<double> allTrackingsMeanPersistence;
   std::vector<std::vector<double>> allTrackingsCosts;
+  std::vector<double> allTrackingsIntegratedPersistences;
+  std::vector<double> allTrackingsMaximalPersistences;
+  std::vector<double> allTrackingsMinimalPersistences;
 
   unsigned int typesArrayLimits[3] = {};
 
   tracker.performTrackings(
     persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
     minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
-    allTrackingsCosts, allTrackingsMeanPersistence, typesArrayLimits);
+    allTrackingsCosts, allTrackingsIntegratedPersistences, allTrackingsMaximalPersistences, 
+    allTrackingsMinimalPersistences, typesArrayLimits);
 
   double const spacing = Spacing;
   bool const useGeometricSpacing = UseGeometricSpacing;
 
   ttkTrackingFromPersistenceDiagrams::buildMesh(
-    triangulation, allTrackings, allTrackingsCosts, allTrackingsMeanPersistence,
+    triangulation, allTrackings, allTrackingsCosts, allTrackingsIntegratedPersistences,
+    allTrackingsMaximalPersistences, allTrackingsMinimalPersistences,
     useGeometricSpacing, spacing, points, outputMesh, pointsCriticalType,
     timeScalars, lengthScalars, globalVertexIds, connectedComponentIds, costs,
-    averagePersistences, typesArrayLimits);
+    averagePersistences, integratedPersistences, maximalPersistences, minimalPersistences, typesArrayLimits);
 
   output->ShallowCopy(outputMesh);
 
@@ -210,6 +220,9 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
+
+  ttk::Timer t{};
+  const auto startTime = t.getElapsedTime();
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -334,6 +347,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInputOffsets(inputOrders);
 
   int status = 0;
+  this->printMsg("Tracking trajectories over "+ std::to_string(fieldNumber) + " timesteps");
   if(useTTKMethod && !trackWithCriticalPoints) {
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
@@ -348,5 +362,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
     this->printMsg("The specified matching method is not supported.");
   }
 
+  const auto endTime = t.getElapsedTime() - startTime;
+  this->printMsg("Trajectories computed", 1, endTime, threadNumber_);
   return status;
 }
