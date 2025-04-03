@@ -319,15 +319,13 @@ void ttk::TrackingFromCriticalPoints::performTrackingForOneType(
         trackingCosts[trackingId].push_back(std::get<2>(matchings[i][j]));
         trackingPersistence[trackingId]
           += persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence();
-        trackingsMaximalPersistences[trackingId]
-          = std::max(trackingsMaximalPersistences[trackingId],
-                      persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence());
-        trackingsMaximalPersistences[trackingId]
-          = std::min(trackingsMinimalPersistences[trackingId],
-                      persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence());
+        double newMax = std::max(trackingsMaximalPersistences[trackingId], persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence());
+        double newMin =  std::min(trackingsMinimalPersistences[trackingId],persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence());
+        trackingsMinimalPersistences[trackingId] = newMin;
+        trackingsMaximalPersistences[trackingId] = newMax;
         sw[endLocalId] = trackingId;
         previousStepMap[startLocalId] = -1;
-      }
+        }
 
       else if(validPair && !wasPreviouslyMatched) {
 

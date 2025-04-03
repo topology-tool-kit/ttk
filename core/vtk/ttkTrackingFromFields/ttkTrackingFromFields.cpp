@@ -108,6 +108,8 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   unsigned long fieldNumber,
   const triangulationType *triangulation) {
 
+  ttk::Timer t{};
+
   float x, y, z;
   float maxX, minX, maxY, minY, maxZ, minZ;
   triangulation->getVertexPoint(0, minX, minY, minZ);
@@ -140,12 +142,17 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.setAssignmentMethod(assignmentMethod);
   tracker.setEpsilonAdapt(epsilonAdapt);
   tracker.setWeights(PX, PY, PZ, PF);
-
+  
+  tracker.setDebugLevel(this->debugLevel_);
   tracker.setThreadNumber(this->threadNumber_);
 
   std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
   this->performDiagramComputation<dataType, triangulationType>(
     (int)fieldNumber, persistenceDiagrams, triangulation);
+
+  this->printMsg("Diagram computed", 1, t.getElapsedTime(), threadNumber_);
+  double previousStepTime = t.getElapsedTime();
+
 
   std::vector<std::vector<ttk::MatchingType>> maximaMatchings(fieldNumber - 1);
   std::vector<std::vector<ttk::MatchingType>> sad_1_Matchings(fieldNumber - 1);
@@ -160,6 +167,9 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.performMatchings(persistenceDiagrams, maximaMatchings,
                            sad_1_Matchings, sad_2_Matchings, minimaMatchings,
                            maxMap, sad_1Map, sad_2Map, minMap);
+  
+  this->printMsg("Matchings computed", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+  previousStepTime = t.getElapsedTime();
 
   vtkNew<vtkPoints> const points{};
   vtkNew<vtkUnstructuredGrid> const outputMesh{};
@@ -202,6 +212,9 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     allTrackingsCosts, allTrackingsIntegratedPersistences, allTrackingsMaximalPersistences, 
     allTrackingsMinimalPersistences, typesArrayLimits);
 
+  this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+  previousStepTime = t.getElapsedTime();
+
   double const spacing = Spacing;
   bool const useGeometricSpacing = UseGeometricSpacing;
 
@@ -211,6 +224,10 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     useGeometricSpacing, spacing, points, outputMesh, pointsCriticalType,
     timeScalars, lengthScalars, globalVertexIds, connectedComponentIds, costs,
     averagePersistences, integratedPersistences, maximalPersistences, minimalPersistences, typesArrayLimits);
+  
+  this->printMsg("Mesh built", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+  this->printMsg("Total run time ", 1, t.getElapsedTime(), this->threadNumber_);
+
 
   output->ShallowCopy(outputMesh);
 
@@ -220,9 +237,6 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
-
-  ttk::Timer t{};
-  const auto startTime = t.getElapsedTime();
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -362,7 +376,6 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
     this->printMsg("The specified matching method is not supported.");
   }
 
-  const auto endTime = t.getElapsedTime() - startTime;
-  this->printMsg("Trajectories computed", 1, endTime, threadNumber_);
+
   return status;
 }
