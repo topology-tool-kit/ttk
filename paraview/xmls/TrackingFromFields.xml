@@ -269,7 +269,8 @@ by a list of scalar fields) and which computes a tracking mesh."
         label="X weight"
         command="SetPX"
         number_of_elements="1"
-        default_values="1">
+        default_values="1"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the X component of
 the critical point.</Documentation>
@@ -280,7 +281,8 @@ the critical point.</Documentation>
         label="Y weight"
         command="SetPY"
         number_of_elements="1"
-        default_values="1">
+        default_values="1"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Y component of
 the critical point.</Documentation>
@@ -291,7 +293,8 @@ the critical point.</Documentation>
         label="Z weight"
         command="SetPZ"
         number_of_elements="1"
-        default_values="1">
+        default_values="1"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Z component of
 the critical point.</Documentation>
@@ -320,7 +323,8 @@ the critical point.</Documentation>
       command="SetUseGeometricSpacing"
       label="Force Z-translation"
       number_of_elements="1"
-      default_values="0">
+      default_values="0"
+      panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
           For the translation of the second set of critical points even the
@@ -334,7 +338,14 @@ the critical point.</Documentation>
         label="Z-Translation"
         command="SetSpacing"
         number_of_elements="1"
-        default_values="1" >
+        default_values="1"
+        panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Use spacing"
+                                   value="1" />
+          </Hints>
         <Documentation>
           Translation on the Z axis between the output representations of the
           persistence diagrams.
