@@ -149,10 +149,14 @@ public:
         lengthScalars->InsertTuple1(edgeCpt, chain.size() - 1);
         connectedComponentIds->InsertTuple1(edgeCpt, i);
         costs->InsertTuple1(edgeCpt, allTrackingsCosts[i][j - 1]);
-        integratedPersistence->InsertTuple1(edgeCpt, allTrackingsIntegratedPersistence[i]);
-        maximalPersistence->InsertTuple1(edgeCpt, allTrackingsMaximalPersistence[i]);
-        minimalPersistence->InsertTuple1(edgeCpt, allTrackingsMinimalPersistence[i]);
-        averagePersistence->InsertTuple1(edgeCpt, allTrackingsIntegratedPersistence[i]/chain.size());
+        integratedPersistence->InsertTuple1(
+          edgeCpt, allTrackingsIntegratedPersistence[i]);
+        maximalPersistence->InsertTuple1(
+          edgeCpt, allTrackingsMaximalPersistence[i]);
+        minimalPersistence->InsertTuple1(
+          edgeCpt, allTrackingsMinimalPersistence[i]);
+        averagePersistence->InsertTuple1(
+          edgeCpt, allTrackingsIntegratedPersistence[i] / chain.size());
         edgeCpt++;
       }
       pointCpt++;
