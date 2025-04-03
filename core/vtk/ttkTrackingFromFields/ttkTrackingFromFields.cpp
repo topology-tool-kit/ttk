@@ -143,7 +143,6 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.setEpsilonAdapt(epsilonAdapt);
   tracker.setWeights(PX, PY, PZ, PF);
   
-  tracker.setDebugLevel(this->debugLevel_);
   tracker.setThreadNumber(this->threadNumber_);
   tracker.setDebugLevel(this->debugLevel_);
 
