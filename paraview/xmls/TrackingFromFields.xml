@@ -99,12 +99,12 @@ by a list of scalar fields) and which computes a tracking mesh."
       label="Backend"
       command="SetPVAlgorithm"
         number_of_elements="1"
-        default_values="0"
+        default_values="2"
         >
         <EnumerationDomain name="enum">
-          <Entry value="0" text="ttk: sparse Munkres (Wasserstein)"/>
-          <Entry value="1" text="ttk:  Gabow-Tarjan (Bottleneck)"/>
-          <Entry value="2" text="ttk:  Tracking with critical points"/>
+          <Entry value="0" text="ttk: Sparse Munkres (Wasserstein)"/>
+          <Entry value="1" text="ttk: Gabow-Tarjan (Bottleneck)"/>
+          <Entry value="2" text="ttk: Tracking from Critical Points"/>
         </EnumerationDomain>                      
         <Documentation>
           Method for computing matchings.
@@ -145,7 +145,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
+<!--      <IntVectorProperty
         name="adaptDeathBirthCost"
         command="SetAdaptDeathBirthCost"
         label="Adaptive desctructive cost"
@@ -159,12 +159,12 @@ by a list of scalar fields) and which computes a tracking mesh."
                                    property="Backend"
                                    value="2" />
         </Hints>
-      </IntVectorProperty>
+      </IntVectorProperty>-->
 
       <DoubleVectorProperty
         name="epsilon"
-        label="Birth/death threshold"
-        command="SetCostDeathBirth"
+        label="Relative destruction cost"
+        command="SetRelativeDestructionCost"
         number_of_elements="1"
         default_values="0.1"
         panel_visibility="advanced">
@@ -183,12 +183,14 @@ by a list of scalar fields) and which computes a tracking mesh."
           </PropertyWidgetDecorator>                                                      
         </Hints>
         <Documentation>
+        Relative cost (with regard to the data span, between 0 and 1) associated with the destruction of a critical point. Set this parameter to larger values to allow for larger displcements for a critical point from one time step to another. Set this parameter to smaller values to prevent a critical point from jumping too far from one time step to another.
         </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
       </DoubleVectorProperty>
 
-      <DoubleVectorProperty
+<!--      <DoubleVectorProperty
         name="epsilon_adapt"
-        label="Adaptative coefficient"
+        label="Adaptive coefficient"
         command="SetEpsilonAdapt"
         number_of_elements="1"
         default_values="0.1"
@@ -209,7 +211,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         </Hints>
         <Documentation>
         </Documentation>
-      </DoubleVectorProperty>
+      </DoubleVectorProperty>-->
 
 
       <DoubleVectorProperty
@@ -270,7 +272,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         default_values="1">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the X component of
-the extremum</Documentation>
+the critical point.</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -281,7 +283,7 @@ the extremum</Documentation>
         default_values="1">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Y component of
-the extremum</Documentation>
+the critical point.</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -292,7 +294,7 @@ the extremum</Documentation>
         default_values="1">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Z component of
-the extremum</Documentation>
+the critical point.</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -300,7 +302,8 @@ the extremum</Documentation>
         label="F weight"
         command="SetPF"
         number_of_elements="1"
-        default_values="1">
+        default_values="0"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
@@ -308,7 +311,7 @@ the extremum</Documentation>
                                    property="Backend"
                                    value="2" />
         </Hints>
-        <Documentation>Importance weight for the function value of the extremum</Documentation>
+        <Documentation>Importance weight for the function value of the critical point.</Documentation>
       </DoubleVectorProperty>
 
 

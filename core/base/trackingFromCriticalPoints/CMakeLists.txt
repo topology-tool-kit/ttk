@@ -4,7 +4,7 @@ ttk_add_base_library(trackingFromCriticalPoints
   HEADERS
 		TrackingFromCriticalPoints.h
   DEPENDS
-		persistenceDiagram
-    triangulation
     assignmentSolver
+    persistenceDiagram
+    triangulation
     )

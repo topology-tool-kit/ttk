@@ -26,6 +26,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
 ///   tracking example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/trackingFromCriticalPoints/">Tracking
+///   From Critical Points example</a>
 ///
 
 #pragma once
@@ -76,8 +79,8 @@ public:
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
 
-  vtkSetMacro(CostDeathBirth, double);
-  vtkGetMacro(CostDeathBirth, double);
+  vtkSetMacro(RelativeDestructionCost, double);
+  vtkGetMacro(RelativeDestructionCost, double);
   /// @}
 
   vtkSetMacro(AdaptDeathBirthCost, bool);
@@ -193,9 +196,9 @@ private:
   double PZ{1};
   double PE{0};
   double PS{0};
-  double PF{1};
+  double PF{0};
 
-  double CostDeathBirth{0.1};
+  double RelativeDestructionCost{0.1};
   double EpsilonAdapt{0.5};
   int AssignmentMethod{0};
   bool AdaptDeathBirthCost{false};
@@ -206,7 +209,7 @@ private:
   double PostProcThresh{0.0};
   double Spacing{1.0};
   std::string DistanceAlgorithm{"ttk"};
-  int PVAlgorithm{-1};
+  int PVAlgorithm{2};
   std::string WassersteinMetric{"2"};
 
   template <class dataType, class triangulationType>

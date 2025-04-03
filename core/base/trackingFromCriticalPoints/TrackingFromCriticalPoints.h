@@ -5,8 +5,8 @@
 ///
 /// \b Online \b examples: \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
-///   tracking example</a>
+///   href="https://topology-tool-kit.github.io/examples/trackingFromCriticalPoints/">Tracking
+///   From Critical Points example</a>
 
 #pragma once
 
@@ -22,16 +22,16 @@ namespace ttk {
   class TrackingFromCriticalPoints : virtual public Debug {
 
   private:
-    double epsilonConstant{10e-1};
-    double epsilonAdapt{0.5};
-    double meshDiameter{1};
-    double tolerance{10e-3};
-    int assignmentMethod{0};
-    double xWeight{1};
-    double yWeight{1};
-    double zWeight{1};
-    double fWeight{1};
-    bool adaptiveDeathBirthCost{false};
+    double epsilonConstant_{10e-1};
+    double epsilonAdapt_{0.5};
+    double meshDiameter_{1};
+    double tolerance_{10e-3};
+    int assignmentMethod_{0};
+    double xWeight_{1};
+    double yWeight_{1};
+    double zWeight_{1};
+    double fWeight_{0};
+    bool adaptiveDeathBirthCost_{false};
 
   public:
     TrackingFromCriticalPoints(){
@@ -40,36 +40,36 @@ namespace ttk {
     }
 
     void setMeshDiameter(double r) {
-      meshDiameter = r;
+      meshDiameter_ = r;
     }
 
     void setEpsilon(double e) {
-      epsilonConstant = e;
+      epsilonConstant_ = e;
     }
 
     void setEpsilonAdapt(double e) {
-      epsilonAdapt = e;
+      epsilonAdapt_ = e;
     }
 
     void setTolerance(double t) {
-      tolerance = t;
+      tolerance_ = t;
     }
 
     void setAssignmentMethod(int a) {
       if(a == 0 || a == 1) {
-        assignmentMethod = a;
+        assignmentMethod_ = a;
       }
     }
 
     void setAdaptDeathBirthCost(bool b) {
-      adaptiveDeathBirthCost = b;
+      adaptiveDeathBirthCost_ = b;
     }
 
     void setWeights(double PX, double PY, double PZ, double PF) {
-      xWeight = PX;
-      yWeight = PY;
-      zWeight = PZ;
-      fWeight = PF;
+      xWeight_ = PX;
+      yWeight_ = PY;
+      zWeight_ = PZ;
+      fWeight_ = PF;
     }
 
     double computeBoundingBoxRadius(const DiagramType &d1,
@@ -91,8 +91,8 @@ namespace ttk {
         minScalar = std::min(minScalar, d2[i].death.sfValue);
       }
 
-      return std::sqrt(std::pow(meshDiameter, 2)
-                       + std::pow(maxScalar - minScalar, 2));
+      return std::sqrt(std::pow(meshDiameter_, 2)
+                       + fWeight_ * std::pow(maxScalar - minScalar, 2));
     }
 
     void
@@ -125,7 +125,7 @@ namespace ttk {
   private:
     double computeRelevantPersistence(const DiagramType &d1,
                                       const DiagramType &d2) {
-      const auto sp = this->tolerance;
+      const auto sp = this->tolerance_;
       const double s = sp > 0.0 && sp < 100.0 ? sp / 100.0 : 0;
 
       std::vector<double> toSort(d1.size() + d2.size());

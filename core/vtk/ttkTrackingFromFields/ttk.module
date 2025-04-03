@@ -5,7 +5,7 @@ SOURCES
 HEADERS
   ttkTrackingFromFields.h
 DEPENDS
+  trackingFromCriticalPoints
   trackingFromFields
   trackingFromPersistenceDiagrams
-  trackingFromCriticalPoints
   ttkAlgorithm

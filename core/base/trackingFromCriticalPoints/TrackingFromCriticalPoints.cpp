@@ -12,10 +12,10 @@ double ttk::TrackingFromCriticalPoints::criticalPointDistance(
   const std::array<float, 3> &coords_p2,
   const double &sfValue_p2,
   const int &p = 2) {
-  return std::pow(xWeight * std::pow(coords_p1[0] - coords_p2[0], p)
-                    + yWeight * std::pow(coords_p1[1] - coords_p2[1], p)
-                    + zWeight * std::pow(coords_p1[2] - coords_p2[2], p)
-                    + fWeight * std::pow(sfValue_p1 - sfValue_p2, p),
+  return std::pow(xWeight_ * std::pow(coords_p1[0] - coords_p2[0], p)
+                    + yWeight_ * std::pow(coords_p1[1] - coords_p2[1], p)
+                    + zWeight_ * std::pow(coords_p1[2] - coords_p2[2], p)
+                    + fWeight_ * std::pow(sfValue_p1 - sfValue_p2, p),
                   1.0 / p);
 }
 
@@ -89,7 +89,7 @@ void ttk::TrackingFromCriticalPoints::buildCostMatrix(
         coords_1[i], sfValues_1[i], coords_2[j], sfValues_2[j]);
     }
   }
-  if(!adaptiveDeathBirthCost) {
+  if(!adaptiveDeathBirthCost_) {
     for(int i = size_1; i < matrix_size; i++) {
       for(int j = 0; j < size_2; j++) {
         matrix[i][j] = costDeathBirth;
@@ -100,14 +100,14 @@ void ttk::TrackingFromCriticalPoints::buildCostMatrix(
         matrix[i][j] = costDeathBirth;
       }
     }
-  } else if(adaptiveDeathBirthCost) {
+  } else if(adaptiveDeathBirthCost_) {
     for(int j = 0; j < size_2; j++) {
       double c = matrix[0][j];
       for(int i = 1; i < size_1; i++) {
         c = matrix[i][j] < c ? matrix[i][j] : c;
       }
       for(int i = size_1; i < matrix_size; i++) {
-        matrix[i][j] = c / (epsilonAdapt);
+        matrix[i][j] = c / (epsilonAdapt_);
       }
     }
 
@@ -117,7 +117,7 @@ void ttk::TrackingFromCriticalPoints::buildCostMatrix(
         d = matrix[i][j] < d ? matrix[i][j] : d;
       }
       for(int j = size_2; j < matrix_size; j++) {
-        matrix[i][j] = d / (epsilonAdapt);
+        matrix[i][j] = d / (epsilonAdapt_);
       }
     }
   }
@@ -185,7 +185,7 @@ this->printMsg("           " + std::to_string(n_min) + " minimas");
   for(int i = 0; i < fieldNumber - 1; i++) {
 
     float costDeathBirth
-      = epsilonConstant
+      = epsilonConstant_
         * computeBoundingBoxRadius(
           persistenceDiagrams[i], persistenceDiagrams[i + 1]);
     int maxSize = (maxCoords[i].size() > 0 && maxCoords[i + 1].size() > 0)
@@ -492,12 +492,12 @@ void ttk::TrackingFromCriticalPoints::assignmentSolver(
   std::vector<std::vector<double>> &costMatrix,
   std::vector<ttk::MatchingType> &matching) {
   if(costMatrix.size() > 0) {
-    if(assignmentMethod == 0) {
+    if(assignmentMethod_ == 0) {
       ttk::AssignmentAuction<double> solver;
       solver.setInput(costMatrix);
       solver.run(matching);
       solver.clearMatrix();
-    } else if(assignmentMethod == 1) {
+    } else if(assignmentMethod_ == 1) {
       ttk::AssignmentMunkres<double> solver;
       solver.setInput(costMatrix);
       solver.run(matching);

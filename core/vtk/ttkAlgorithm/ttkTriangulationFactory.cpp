@@ -185,6 +185,12 @@ RegistryTriangulation
   double spacing[3];
   image->GetSpacing(spacing);
 
+  // 1D (not tested)
+  if(!spacing[1] && !spacing[2])
+    spacing[1] = 1;
+  if(!spacing[2]) // 2D (tested)
+    spacing[2] = 1;
+
   int dimensions[3];
   image->GetDimensions(dimensions);
 

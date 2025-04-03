@@ -110,8 +110,8 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   ttk::Timer t{};
 
-  float x, y, z;
-  float maxX, minX, maxY, minY, maxZ, minZ;
+  float x = 0, y = 0, z = 0;
+  float maxX = 0, minX = 0, maxY = 0, minY = 0, maxZ = 0, minZ = 0;
   triangulation->getVertexPoint(0, minX, minY, minZ);
   triangulation->getVertexPoint(0, maxX, maxY, maxZ);
 
@@ -125,7 +125,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     minZ = std::min(z, minZ);
   }
 
-  double const costDeathBirth = CostDeathBirth;
+  double const relativeDestructionCost = RelativeDestructionCost;
   double const tolerance = (double)Tolerance;
   float meshDiameter
     = std::sqrt(std::pow(maxX - minX, 2) + std::pow(maxY - minY, 2)
@@ -137,7 +137,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   ttk::TrackingFromCriticalPoints tracker;
   tracker.setMeshDiameter(meshDiameter);
   tracker.setTolerance(tolerance);
-  tracker.setEpsilon(costDeathBirth);
+  tracker.setEpsilon(relativeDestructionCost);
   tracker.setAdaptDeathBirthCost(adaptDeathBirthCost);
   tracker.setAssignmentMethod(assignmentMethod);
   tracker.setEpsilonAdapt(epsilonAdapt);
@@ -145,6 +145,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   
   tracker.setDebugLevel(this->debugLevel_);
   tracker.setThreadNumber(this->threadNumber_);
+  tracker.setDebugLevel(this->debugLevel_);
 
   std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
   this->performDiagramComputation<dataType, triangulationType>(
