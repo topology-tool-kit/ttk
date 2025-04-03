@@ -142,7 +142,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.setAssignmentMethod(assignmentMethod);
   tracker.setEpsilonAdapt(epsilonAdapt);
   tracker.setWeights(PX, PY, PZ, PF);
-  
+
   tracker.setThreadNumber(this->threadNumber_);
   tracker.setDebugLevel(this->debugLevel_);
 
@@ -152,7 +152,6 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   this->printMsg("Diagram computed", 1, t.getElapsedTime(), threadNumber_);
   double previousStepTime = t.getElapsedTime();
-
 
   std::vector<std::vector<ttk::MatchingType>> maximaMatchings(fieldNumber - 1);
   std::vector<std::vector<ttk::MatchingType>> sad_1_Matchings(fieldNumber - 1);
@@ -167,8 +166,9 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.performMatchings(persistenceDiagrams, maximaMatchings,
                            sad_1_Matchings, sad_2_Matchings, minimaMatchings,
                            maxMap, sad_1Map, sad_2Map, minMap);
-  
-  this->printMsg("Matchings computed", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+
+  this->printMsg("Matchings computed", 1, t.getElapsedTime() - previousStepTime,
+                 threadNumber_);
   previousStepTime = t.getElapsedTime();
 
   vtkNew<vtkPoints> const points{};
@@ -209,25 +209,28 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.performTrackings(
     persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
     minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
-    allTrackingsCosts, allTrackingsIntegratedPersistences, allTrackingsMaximalPersistences, 
-    allTrackingsMinimalPersistences, typesArrayLimits);
+    allTrackingsCosts, allTrackingsIntegratedPersistences,
+    allTrackingsMaximalPersistences, allTrackingsMinimalPersistences,
+    typesArrayLimits);
 
-  this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+  this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime,
+                 threadNumber_);
   previousStepTime = t.getElapsedTime();
 
   double const spacing = Spacing;
   bool const useGeometricSpacing = UseGeometricSpacing;
 
   ttkTrackingFromPersistenceDiagrams::buildMesh(
-    triangulation, allTrackings, allTrackingsCosts, allTrackingsIntegratedPersistences,
-    allTrackingsMaximalPersistences, allTrackingsMinimalPersistences,
-    useGeometricSpacing, spacing, points, outputMesh, pointsCriticalType,
-    timeScalars, lengthScalars, globalVertexIds, connectedComponentIds, costs,
-    averagePersistences, integratedPersistences, maximalPersistences, minimalPersistences, typesArrayLimits);
-  
-  this->printMsg("Mesh built", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
-  this->printMsg("Total run time ", 1, t.getElapsedTime(), this->threadNumber_);
+    triangulation, allTrackings, allTrackingsCosts,
+    allTrackingsIntegratedPersistences, allTrackingsMaximalPersistences,
+    allTrackingsMinimalPersistences, useGeometricSpacing, spacing, points,
+    outputMesh, pointsCriticalType, timeScalars, lengthScalars, globalVertexIds,
+    connectedComponentIds, costs, averagePersistences, integratedPersistences,
+    maximalPersistences, minimalPersistences, typesArrayLimits);
 
+  this->printMsg(
+    "Mesh built", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+  this->printMsg("Total run time ", 1, t.getElapsedTime(), this->threadNumber_);
 
   output->ShallowCopy(outputMesh);
 
@@ -361,7 +364,8 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInputOffsets(inputOrders);
 
   int status = 0;
-  this->printMsg("Tracking trajectories over "+ std::to_string(fieldNumber) + " timesteps");
+  this->printMsg("Tracking trajectories over " + std::to_string(fieldNumber)
+                 + " timesteps");
   if(useTTKMethod && !trackWithCriticalPoints) {
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
@@ -375,7 +379,6 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   } else {
     this->printMsg("The specified matching method is not supported.");
   }
-
 
   return status;
 }

@@ -34,9 +34,8 @@ namespace ttk {
     bool adaptiveDeathBirthCost_{false};
 
   public:
-    TrackingFromCriticalPoints(){
+    TrackingFromCriticalPoints() {
       this->setDebugMsgPrefix("TrackingFromCriticalPoint");
-
     }
 
     void setMeshDiameter(double r) {
