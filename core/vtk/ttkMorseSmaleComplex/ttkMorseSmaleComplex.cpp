@@ -69,7 +69,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
   Output2Separatrices separatrices2_{};
   const int ret = this->execute(
     criticalPoints_, separatrices1_, separatrices2_, segmentations_, scalars,
-    inputScalars->GetMTime(), inputOffsets, triangulation);
+    inputScalars->GetMTime(), inputOffsets, triangulation, StochasticGradientSeed);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {

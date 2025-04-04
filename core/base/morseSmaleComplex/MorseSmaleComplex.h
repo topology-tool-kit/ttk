@@ -172,7 +172,8 @@ namespace ttk {
                        const dataType *const scalars,
                        const size_t scalarsMTime,
                        const SimplexId *const offsets,
-                       const triangulationType &triangulation);
+                       const triangulationType &triangulation,
+                       const unsigned int &seed=0);
 
     /**
      * Enable/Disable computation of the geometrical embedding of
@@ -446,7 +447,8 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                                     const dataType *const scalars,
                                     const size_t scalarsMTime,
                                     const SimplexId *const offsets,
-                                    const triangulationType &triangulation) {
+                                    const triangulationType &triangulation,
+                                    const unsigned int &seed) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(scalars == nullptr) {
     this->printErr("Input scalar field pointer is null.");
@@ -471,7 +473,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.setBackend(this->DiscreteGradientBackend);
   this->discreteGradient_.buildGradient(
-    triangulation, this->ReturnSaddleConnectors);
+    triangulation, this->ReturnSaddleConnectors,nullptr,seed);
   if(this->ReturnSaddleConnectors) {
     auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};
     if(!this->ThresholdIsAbsolute) {

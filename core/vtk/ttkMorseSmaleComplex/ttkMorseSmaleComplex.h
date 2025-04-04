@@ -175,6 +175,9 @@ public:
   vtkSetMacro(ForceLoopFreeGradient, bool);
   vtkGetMacro(ForceLoopFreeGradient, bool);
 
+  vtkSetMacro(StochasticGradientSeed, unsigned int);
+  vtkGetMacro(StochasticGradientSeed, unsigned int);
+
 protected:
   template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,
@@ -197,4 +200,5 @@ private:
   int IterationThreshold{-1};
   int DiscreteGradientBackend{0};
   OutputManifold segmentations_{};
+  unsigned int StochasticGradientSeed{};
 };

@@ -70,6 +70,24 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name='StochasticGradientSeed'
+                   label='Seed For Random Device In Stochastic Gradient'
+                   command='SetStochasticGradientSeed'
+                   number_of_elements='1'
+                   default_values='0'
+                   panel_visibility='advanced'>
+      <IntRangeDomain name='range' min='1' max='10000' />
+      <Hints>
+      <PropertyWidgetDecorator type='GenericDecorator'
+                             mode='visibility'
+                             property='Backend'
+                             value='1' />
+      </Hints>
+      <Documentation>
+        The seed for the random device used to shuffle critical points ids.
+      </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty
         name="ForceInputOffsetScalarField"
         command="SetForceInputOffsetScalarField"
@@ -123,6 +141,7 @@
           Compute the gradient glyphs.
         </Documentation>
       </IntVectorProperty>
+
 
       ${DEBUG_WIDGETS}
 

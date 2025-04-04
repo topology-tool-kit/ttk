@@ -64,6 +64,10 @@ public:
   vtkSetMacro(Backend, int);
   vtkGetMacro(Backend, int);
 
+  vtkSetMacro(StochasticGradientSeed, unsigned int);
+  vtkGetMacro(StochasticGradientSeed, unsigned int);
+
+
 protected:
   ttkDiscreteGradient();
 
@@ -86,4 +90,5 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
   int Backend{0};
+  unsigned int StochasticGradientSeed{};
 };

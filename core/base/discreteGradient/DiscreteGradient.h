@@ -272,7 +272,8 @@ triangulation.
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
                         bool bypassCache = false,
-                        const std::vector<bool> *updateMask = nullptr);
+                        const std::vector<bool> *updateMask = nullptr,
+                        const unsigned int &seed=0);
 
       /**
        * Set the input scalar function.
@@ -656,7 +657,8 @@ in the gradient.
 
       template <typename triangulationType>
       int processLowerStarsStochastic(const SimplexId *const offsets, 
-                                        const triangulationType &triangulation);
+                                        const triangulationType &triangulation,
+                                        const unsigned int &seed=0);
 
       template<typename triangulationType>
       void buildStencil(const SimplexId &x,
