@@ -11,7 +11,6 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
-#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -414,7 +413,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector *outputVector) {
 
   const auto input
-    = vtkImageData::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
+    = vtkDataSet::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
   auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
   auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
