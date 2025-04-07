@@ -36,10 +36,6 @@ private:
   double PF{1};
   bool MergeEdgesOnSaddles{true};
   double CostDeathBirth{};
-  bool ShuffleCriticalPointsIds{true};
-  bool ShuffleSeparatrixIds{true};
-  unsigned int SeparatrixShuffleSeed{0};
-  unsigned int CriticalPointsShuffleSeed{0};
 
 public:
 
@@ -62,17 +58,6 @@ public:
   vtkSetMacro(CostDeathBirth, double);
   vtkGetMacro(CostDeathBirth, double);
 
-  vtkSetMacro(ShuffleCriticalPointsIds, bool);
-  vtkGetMacro(ShuffleCriticalPointsIds, bool);
-
-  vtkSetMacro(CriticalPointsShuffleSeed, unsigned int);
-  vtkGetMacro(CriticalPointsShuffleSeed, unsigned int);
-
-  vtkSetMacro(ShuffleSeparatrixIds, bool);
-  vtkGetMacro(ShuffleSeparatrixIds, bool);
-
-  vtkSetMacro(SeparatrixShuffleSeed, unsigned int);
-  vtkGetMacro(SeparatrixShuffleSeed, unsigned int);
 
   static ttkSeparatrixStability *New();
   vtkTypeMacro(ttkSeparatrixStability, ttkAlgorithm);
