@@ -62,7 +62,8 @@ int ttk::DistanceMatrixDistortion::execute(
   double totalSum = 0;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_), reduction(+:totalSum)
+#pragma omp parallel for num_threads(this->threadNumber_), \
+  reduction(+ : totalSum)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < n; i++) {
     double sum = 0;

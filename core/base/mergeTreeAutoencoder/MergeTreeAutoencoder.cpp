@@ -1280,8 +1280,9 @@ bool ttk::MergeTreeAutoencoder::forwardStep(
   mtu::TorchMergeTree<float> dummyTMT;
   bool reset = false;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) \
-  if(parallelize_) reduction(||: reset) reduction(+:loss)
+#pragma omp parallel for schedule(dynamic)                                \
+  num_threads(this->threadNumber_) if(parallelize_) reduction(|| : reset) \
+  reduction(+ : loss)
 #endif
   for(unsigned int ind = 0; ind < indexes.size(); ++ind) {
     unsigned int i = indexes[ind];
@@ -1488,8 +1489,8 @@ float ttk::MergeTreeAutoencoder::computeLoss(
   if(useDoubleInput_)
     matchings2.resize(trees2.size());
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) \
-  if(parallelize_) reduction(+:loss)
+#pragma omp parallel for schedule(dynamic) \
+  num_threads(this->threadNumber_) if(parallelize_) reduction(+ : loss)
 #endif
   for(unsigned int ind = 0; ind < indexes.size(); ++ind) {
     unsigned int i = indexes[ind];

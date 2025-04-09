@@ -148,12 +148,14 @@ vtkDataArray *
       ->AddArray(newOrderArray);
   }
 #else
+
   switch(scalarArray->GetDataType()) {
     vtkTemplateMacro(ttk::preconditionOrderArray(
       nVertices, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
       static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(newOrderArray)),
       this->threadNumber_));
   }
+
   inputData
     ->GetAttributesAsFieldData(
       this->GetInputArrayAssociation(scalarArrayIdx, inputData))
