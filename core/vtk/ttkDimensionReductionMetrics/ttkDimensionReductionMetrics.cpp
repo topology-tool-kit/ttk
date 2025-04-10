@@ -127,16 +127,16 @@ int ttkDimensionReductionMetrics::RequestData(
 
   auto metricValues = vtkSmartPointer<vtkDoubleArray>::New();
   metricValues->SetName("Value");
-  metricValues->InsertNextValue(m_w0);
-  metricValues->InsertNextValue(m_w1);
-  metricValues->InsertNextValue(m_ta);
-  metricValues->InsertNextValue(m_lc);
-  metricValues->InsertNextValue(m_trust);
-  metricValues->InsertNextValue(m_cont);
-  metricValues->InsertNextValue(m_lcmc);
-  metricValues->InsertNextValue(m_mrreh);
-  metricValues->InsertNextValue(m_mrrel);
-  metricValues->InsertNextValue(m_rmse);
+  metricValues->InsertNextValue(w0_);
+  metricValues->InsertNextValue(w1_);
+  metricValues->InsertNextValue(ta_);
+  metricValues->InsertNextValue(lc_);
+  metricValues->InsertNextValue(trust_);
+  metricValues->InsertNextValue(cont_);
+  metricValues->InsertNextValue(lcmc_);
+  metricValues->InsertNextValue(mrreh_);
+  metricValues->InsertNextValue(mrrel_);
+  metricValues->InsertNextValue(rmse_);
   output->AddColumn(metricValues);
 
   auto metricRanges = vtkSmartPointer<vtkStringArray>::New();
