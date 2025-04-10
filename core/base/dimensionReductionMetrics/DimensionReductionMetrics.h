@@ -103,8 +103,8 @@ namespace ttk {
         return 0.;
       else
         return inputCompressedDistanceMatrix_[std::max(i, j)
-                                               * (std::max(i, j) - 1) / 2
-                                             + std::min(i, j)];
+                                                * (std::max(i, j) - 1) / 2
+                                              + std::min(i, j)];
     }
 
     inline double latentDM(unsigned i, unsigned j) const {
@@ -112,8 +112,8 @@ namespace ttk {
         return 0.;
       else
         return latentCompressedDistanceMatrix_[std::max(i, j)
-                                                * (std::max(i, j) - 1) / 2
-                                              + std::min(i, j)];
+                                                 * (std::max(i, j) - 1) / 2
+                                               + std::min(i, j)];
     }
 
     void computeTopologicalMetrics();

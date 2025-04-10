@@ -59,7 +59,8 @@ void ttk::DimensionReductionMetrics::execute(
 void ttk::DimensionReductionMetrics::computeTopologicalMetrics() {
   rpd::MultidimensionalDiagram inputPD, latentPD;
   ripser::ripser({inputCompressedDistanceMatrix_}, inputPD, rpd::inf, 1, true);
-  ripser::ripser({latentCompressedDistanceMatrix_}, latentPD, rpd::inf, 1, true);
+  ripser::ripser(
+    {latentCompressedDistanceMatrix_}, latentPD, rpd::inf, 1, true);
   inputPD[0].pop_back();
   latentPD[0].pop_back();
 
@@ -128,7 +129,7 @@ void ttk::DimensionReductionMetrics::computePairwiseDistanceBasedMetrics() {
     sqSumDiff += (x - y) * (x - y);
   }
   lc_ = (Ndis * sumXY - sumX * sumY)
-         / sqrt((Ndis * sqSumX - sumX * sumX) * (Ndis * sqSumY - sumY * sumY));
+        / sqrt((Ndis * sqSumX - sumX * sumX) * (Ndis * sqSumY - sumY * sumY));
   rmse_ = sqrt(sqSumDiff / Ndis);
 }
 
@@ -190,8 +191,8 @@ void ttk::DimensionReductionMetrics::computeRankBasedMetrics() {
   trust_ = 1. - 2 * double(trustworthinessSum) / normalizingTC;
   cont_ = 1. - 2 * double(continuitySum) / normalizingTC;
   lcmc_ = (double(LCMCSum) / (n_ * NeighborhoodSize)
-            - double(NeighborhoodSize) / (n_ - 1))
-           / (1 - double(NeighborhoodSize) / (n_ - 1));
+           - double(NeighborhoodSize) / (n_ - 1))
+          / (1 - double(NeighborhoodSize) / (n_ - 1));
   mrreh_ = inputMRRESum / normalizingMRRE;
   mrrel_ = latentMRRESum / normalizingMRRE;
 }
