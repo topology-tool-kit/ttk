@@ -1,0 +1,10 @@
+ttk_add_base_library(discreteVectorField
+  SOURCES
+    DiscreteVectorField.cpp
+  HEADERS
+    DiscreteVectorField.h
+    DiscreteVectorField_Template.h
+  DEPENDS
+    triangulation
+    surfaceGeometrySmoother
+    )
