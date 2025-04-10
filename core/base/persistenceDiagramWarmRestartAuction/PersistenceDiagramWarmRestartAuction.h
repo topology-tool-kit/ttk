@@ -32,36 +32,36 @@ namespace ttk {
       std::vector<std::vector<double>> weights(1);
       for(unsigned i = 0; i < goodDiagram.size(); ++i) {
         const ValuesPair &g = getPair(goodDiagram[i]);
-        goods.emplace_back(g.first, g.second, false, i);
+        goods_.emplace_back(g.first, g.second, false, i);
         coordinates.push_back(g.first);
         coordinates.push_back(g.second);
         weights[0].push_back(0.);
       }
 
-      kdt = std::make_unique<KDT>(true, wasserstein_);
-      correspondence_kdt_map
-        = kdt->build(coordinates.data(), goodDiagram.size(), 2, weights, 1);
+      kdt_ = std::make_unique<KDT>(true, wasserstein_);
+      correspondence_kdt_map_
+        = kdt_->build(coordinates.data(), goodDiagram.size(), 2, weights, 1);
     }
 
     void setNewBidder(const std::vector<T> &bidderDiagram) {
-      bidders.resize(0);
+      bidders_.resize(0);
 
       for(unsigned i = 0; i < bidderDiagram.size(); ++i) {
         const ValuesPair &b = getPair(bidderDiagram[i]);
         Bidder bidder(b.first, b.second, false, i);
         bidder.setPositionInAuction(i);
-        bidders.emplace_back(bidder);
+        bidders_.emplace_back(bidder);
       }
     }
 
     void reinitializeGoodsPrice() {
-      for(Good &g : goods)
+      for(Good &g : goods_)
         g.setPrice(0.);
     }
 
     double runAuction(std::vector<MatchingType> &matchings) {
-      PersistenceDiagramAuction auction(bidders, goods, wasserstein_, 1., 1.,
-                                        delta_, *kdt, correspondence_kdt_map);
+      PersistenceDiagramAuction auction(bidders_, goods_, wasserstein_, 1., 1.,
+                                        delta_, *kdt_, correspondence_kdt_map_);
       Timer t;
 
       matchings.resize(0);
@@ -91,11 +91,11 @@ namespace ttk {
     double wasserstein_{2.};
     double delta_{0.01};
 
-    std::unique_ptr<KDT> kdt;
-    std::vector<KDT *> correspondence_kdt_map;
+    std::unique_ptr<KDT> kdt_;
+    std::vector<KDT *> correspondence_kdt_map_;
 
-    GoodDiagram goods;
-    BidderDiagram bidders;
+    GoodDiagram goods_;
+    BidderDiagram bidders_;
 
     static inline ValuesPair getPair(const T &p) {
       return {p.first, p.second};

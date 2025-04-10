@@ -36,8 +36,7 @@ namespace ttk {
       double w0, w1, ta, lc, rmse, trust, cont, lcmc, mrreh, mrrel;
     };
     Metrics get() const {
-      return {m_w0,    m_w1,   m_ta,   m_lc,    m_rmse,
-              m_trust, m_cont, m_lcmc, m_mrreh, m_mrrel};
+      return {w0_, w1_, ta_, lc_, rmse_, trust_, cont_, lcmc_, mrreh_, mrrel_};
     }
 
   protected:
@@ -54,67 +53,67 @@ namespace ttk {
 
     /** p-Wasserstein distance between the 0-dimensional persistence diagrams in
      * both space (to the power p) */
-    double m_w0{0.};
+    double w0_{0.};
 
     /** p-Wasserstein distance between the 1-dimensional persistence diagrams in
      * both space (to the power p) */
-    double m_w1{0.};
+    double w1_{0.};
 
     /** Triplet accuracy between the input and the representation, i.e. the
      * percentage of triplets whose distances in both spaces have the same
      * relative order */
-    double m_ta{0.};
+    double ta_{0.};
 
     /** Linear correlation of pairwise distances between the input and the
      * representation */
-    double m_lc{0.};
+    double lc_{0.};
 
     /** Root mean squared error between distance matrices of the input and the
      * representation */
-    double m_rmse{0.};
+    double rmse_{0.};
 
     /** Trustworthiness is penalized when neighbors in the representation are
      * not neighbors in the input */
-    double m_trust{0.};
+    double trust_{0.};
 
     /** Continuity is penalized when neighbors in the input are not neighbors
      * in the representation */
-    double m_cont{0.};
+    double cont_{0.};
 
     /** Local continuity meta criterion translates the similarity of
      * neighborhoods in the input and the representation */
-    double m_lcmc{0.};
+    double lcmc_{0.};
 
     /** Mean relative rank error with respect to the ranks in the
      * representation */
-    double m_mrreh{0.};
+    double mrreh_{0.};
 
     /** Mean relative rank error with respect to the ranks in the input */
-    double m_mrrel{0.};
+    double mrrel_{0.};
 
   private:
-    unsigned N;
-    unsigned dimHigh;
-    unsigned dimLow;
-    std::vector<double> inputCompressedDistanceMatrix;
-    std::vector<double> latentCompressedDistanceMatrix;
+    unsigned n_;
+    unsigned dimHigh_;
+    unsigned dimLow_;
+    std::vector<double> inputCompressedDistanceMatrix_;
+    std::vector<double> latentCompressedDistanceMatrix_;
 
     inline double inputDM(unsigned i, unsigned j) const {
       if(i == j)
         return 0.;
       else
-        return inputCompressedDistanceMatrix[std::max(i, j)
-                                               * (std::max(i, j) - 1) / 2
-                                             + std::min(i, j)];
+        return inputCompressedDistanceMatrix_[std::max(i, j)
+                                                * (std::max(i, j) - 1) / 2
+                                              + std::min(i, j)];
     }
 
     inline double latentDM(unsigned i, unsigned j) const {
       if(i == j)
         return 0.;
       else
-        return latentCompressedDistanceMatrix[std::max(i, j)
-                                                * (std::max(i, j) - 1) / 2
-                                              + std::min(i, j)];
+        return latentCompressedDistanceMatrix_[std::max(i, j)
+                                                 * (std::max(i, j) - 1) / 2
+                                               + std::min(i, j)];
     }
 
     void computeTopologicalMetrics();
