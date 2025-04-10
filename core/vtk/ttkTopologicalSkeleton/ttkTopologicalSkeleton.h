@@ -17,7 +17,6 @@
 /// \param Output1 Output 1-separatrices (vtkPolyData)
 /// \param Output2 Output 2-separatrices (vtkPolyData)
 /// \param Output3 Output data segmentation (vtkDataSet)
-/// \param Output4 Output Vector Glyphs (vtkPolyData)
 ///
 /// The input data array needs to be specified via the standard VTK call
 /// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
@@ -85,9 +84,6 @@ public:
   vtkSetMacro(ComputeFinalSegmentation, bool);
   vtkGetMacro(ComputeFinalSegmentation, bool);
 
-  vtkSetMacro(ComputeVectorGlyphs, bool);
-  vtkGetMacro(ComputeVectorGlyphs, bool);
-
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
 
@@ -117,9 +113,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  template <typename triangulationType>
-  int fillVectorGlyphs(vtkPolyData *const outputVectorGlyphs,
-                       const triangulationType &triangulation);
   int IterationThreshold{-1};
   OutputCriticalPoints criticalPoints_{};
   Output1Separatrices separatrices1_{};

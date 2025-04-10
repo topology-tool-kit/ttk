@@ -35,111 +35,13 @@ int ttkTopologicalSkeleton::FillInputPortInformation(int port,
 
 int ttkTopologicalSkeleton::FillOutputPortInformation(int port,
                                                       vtkInformation *info) {
-  if(port == 0 || port == 1 || port == 2 || port == 4) {
+  if(port == 0 || port == 1 || port == 2) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   } else if(port == 3) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
-  return 0;
-}
-
-template <typename triangulationType>
-int ttkTopologicalSkeleton::fillVectorGlyphs(
-  vtkPolyData *const outputVectorGlyphs,
-  const triangulationType &triangulation) {
-
-  ttk::Timer tm{};
-
-  std::vector<std::array<float, 3>> vectorGlyphs_points;
-  std::vector<char> vectorGlyphs_points_pairOrigins;
-  std::vector<char> vectorGlyphs_cells_pairTypes;
-  std::vector<SimplexId> vectorGlyphs_point_ids{};
-  std::vector<char> vectorGlyphs_point_dimensions{};
-
-  this->setVectorGlyphs(vectorGlyphs_points, vectorGlyphs_points_pairOrigins,
-                        vectorGlyphs_cells_pairTypes, vectorGlyphs_point_ids,
-                        vectorGlyphs_point_dimensions, triangulation);
-
-  const auto nPoints = vectorGlyphs_points.size();
-
-  vtkNew<vtkPoints> points{};
-  points->SetNumberOfPoints(nPoints);
-  vtkNew<vtkSignedCharArray> pairOrigins{};
-  pairOrigins->SetNumberOfComponents(1);
-  pairOrigins->SetName("PairOrigin");
-  pairOrigins->SetNumberOfTuples(nPoints);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nPoints; ++i) {
-    points->SetPoint(i, vectorGlyphs_points[i].data());
-    pairOrigins->SetTuple1(i, vectorGlyphs_points_pairOrigins[i]);
-  }
-  outputVectorGlyphs->SetPoints(points);
-
-  const auto nCells = vectorGlyphs_cells_pairTypes.size();
-
-  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-  offsets->SetNumberOfComponents(1);
-  offsets->SetNumberOfTuples(nCells + 1);
-  connectivity->SetNumberOfComponents(1);
-  connectivity->SetNumberOfTuples(2 * nCells);
-  vtkNew<vtkSignedCharArray> pairTypes{};
-  pairTypes->SetNumberOfComponents(1);
-  pairTypes->SetName("PairType");
-  pairTypes->SetNumberOfTuples(nCells);
-  vtkNew<ttkSimplexIdTypeArray> cellIds{};
-  cellIds->SetNumberOfComponents(1);
-  cellIds->SetName("CellId");
-  cellIds->SetNumberOfTuples(2 * nCells);
-  vtkNew<vtkSignedCharArray> cellDimensions{};
-  cellDimensions->SetNumberOfComponents(1);
-  cellDimensions->SetName("CellDimension");
-  cellDimensions->SetNumberOfTuples(2 * nCells);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nCells; ++i) {
-    offsets->SetTuple1(i, 2 * i);
-    // each glyph/line has unique points
-    connectivity->SetTuple1(2 * i, 2 * i);
-    connectivity->SetTuple1(2 * i + 1, 2 * i + 1);
-    pairTypes->SetTuple1(i, vectorGlyphs_cells_pairTypes[i]);
-    cellIds->SetTuple1(2 * i + 0, vectorGlyphs_point_ids[2 * i + 0]);
-    cellIds->SetTuple1(2 * i + 1, vectorGlyphs_point_ids[2 * i + 1]);
-    cellDimensions->SetTuple1(
-      2 * i + 0, vectorGlyphs_point_dimensions[2 * i + 0]);
-    cellDimensions->SetTuple1(
-      2 * i + 1, vectorGlyphs_point_dimensions[2 * i + 1]);
-  }
-  offsets->SetTuple1(nCells, connectivity->GetNumberOfTuples());
-
-  vtkNew<vtkCellArray> cells{};
-  cells->SetData(offsets, connectivity);
-  outputVectorGlyphs->SetLines(cells);
-
-  vtkPointData *pointData = outputVectorGlyphs->GetPointData();
-  vtkCellData *cellData = outputVectorGlyphs->GetCellData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(pointData == nullptr || cellData == nullptr) {
-    this->printErr("In outputVectorGlyphs point or cell data");
-    return -1;
-  }
-#endif
-
-  pointData->AddArray(pairOrigins);
-  pointData->AddArray(cellIds);
-  pointData->AddArray(cellDimensions);
-  cellData->SetScalars(pairTypes);
-
-  this->printMsg(
-    "Computed vector glyphs", 1.0, tm.getElapsedTime(), this->threadNumber_);
-
   return 0;
 }
 
@@ -426,7 +328,6 @@ int ttkTopologicalSkeleton::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
   auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
   auto outputMorseComplexes = vtkDataSet::GetData(outputVector, 3);
-  auto outputVectorGlyphs = vtkPolyData::GetData(outputVector, 4);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -438,7 +339,7 @@ int ttkTopologicalSkeleton::RequestData(vtkInformation *ttkNotUsed(request),
     return -1;
   }
   if(!outputCriticalPoints or !outputSeparatrices1 or !outputSeparatrices2
-     or !outputMorseComplexes or !outputVectorGlyphs) {
+     or !outputMorseComplexes) {
     this->printErr("Output pointers are NULL.");
     return -1;
   }
@@ -511,13 +412,6 @@ int ttkTopologicalSkeleton::RequestData(vtkInformation *ttkNotUsed(request),
 
   if(ret != 0) {
     return -1;
-  }
-
-  if(ComputeVectorGlyphs) {
-    ttkTemplateMacro(
-      triangulation->getType(),
-      (fillVectorGlyphs<TTK_TT>(
-        outputVectorGlyphs, *static_cast<TTK_TT *>(triangulation->getData()))));
   }
 
   outputMorseComplexes->ShallowCopy(input);

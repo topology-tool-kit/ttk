@@ -160,14 +160,6 @@ namespace ttk {
     }
 
     /**
-     * Enable/Disable displaying the geometric embedding
-     * of discrete vector glyphs
-     */
-    inline void setComputeGlyphs(const bool doGlyphs) {
-      this->ComputeVectorGlyphs = doGlyphs;
-    }
-
-    /**
      * Enable/Disable post-processing vector field reversal of
      * the (saddle,...,saddle) vpaths under a given persistence
      * threshold (disabled by default).
@@ -198,14 +190,6 @@ namespace ttk {
       data->preconditionCellEdges();
       data->preconditionCellNeighbors();
     }
-
-    template <typename triangulationType>
-    int setVectorGlyphs(std::vector<std::array<float, 3>> &points,
-                        std::vector<char> &points_pairOrigins,
-                        std::vector<char> &cells_pairTypes,
-                        std::vector<SimplexId> &cellIds,
-                        std::vector<char> &cellDimensions,
-                        const triangulationType &triangulation) const;
 
   protected:
     /**
@@ -388,7 +372,6 @@ namespace ttk {
     bool ComputeAscendingSegmentation{true};
     bool ComputeDescendingSegmentation{true};
     bool ComputeFinalSegmentation{true};
-    bool ComputeVectorGlyphs{false};
 
     bool RunSimplification{false};
     double SimplificationThreshold{};
@@ -1800,90 +1783,6 @@ int ttk::TopologicalSkeleton::setFinalSegmentation(
   this->printMsg("  Final segmentation computed", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
                  debug::Priority::DETAIL);
-
-  return 0;
-}
-
-template <typename triangulationType>
-int ttk::TopologicalSkeleton::setVectorGlyphs(
-  std::vector<std::array<float, 3>> &points,
-  std::vector<char> &points_pairOrigins,
-  std::vector<char> &cells_pairTypes,
-  std::vector<SimplexId> &cellIds,
-  std::vector<char> &cellDimensions,
-  const triangulationType &triangulation) const {
-
-  const auto nDims = this->simplifierField_.dcvf_.getNumberOfDimensions();
-
-  // number of glyphs per dimension
-  std::vector<size_t> nGlyphsPerDim(nDims);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < nDims - 1; ++i) {
-    const auto nCells
-      = this->simplifierField_.dcvf_.getNumberOfCells(i, triangulation);
-    for(SimplexId j = 0; j < nCells; ++j) {
-      if(this->simplifierField_.dcvf_.getPairedCell(Cell{i, j}, triangulation)
-         > -1) {
-        nGlyphsPerDim[i]++;
-      }
-    }
-  }
-
-  // partial sum of number of vector glyphs
-  std::vector<size_t> offsets(nDims + 1);
-  for(SimplexId i = 0; i < nDims; ++i) {
-    offsets[i + 1] = offsets[i] + nGlyphsPerDim[i];
-  }
-
-  // total number of glyphs
-  const auto nGlyphs = offsets.back();
-
-  // resize arrays accordingly
-  points.resize(2 * nGlyphs);
-  points_pairOrigins.resize(2 * nGlyphs);
-  cells_pairTypes.resize(nGlyphs);
-  cellIds.resize(2 * nGlyphs);
-  cellDimensions.resize(2 * nGlyphs);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < nDims - 1; ++i) {
-    const SimplexId nCells
-      = this->simplifierField_.dcvf_.getNumberOfCells(i, triangulation);
-    size_t nProcessedGlyphs{offsets[i]};
-    for(SimplexId j = 0; j < nCells; ++j) {
-      const Cell c{i, j};
-      const auto pcid
-        = this->simplifierField_.dcvf_.getPairedCell(c, triangulation);
-      if(pcid > -1) {
-        const Cell pc{i + 1, pcid};
-        triangulation.getCellIncenter(
-          c.id_, c.dim_, points[2 * nProcessedGlyphs].data());
-        triangulation.getCellIncenter(
-          pc.id_, pc.dim_, points[2 * nProcessedGlyphs + 1].data());
-        points_pairOrigins[2 * nProcessedGlyphs] = 0;
-        points_pairOrigins[2 * nProcessedGlyphs + 1] = 1;
-        cells_pairTypes[nProcessedGlyphs] = i;
-#ifdef TTK_ENABLE_MPI
-        ttk::SimplexId globalId{-1};
-        triangulation.getDistributedGlobalCellId(j, i, globalId);
-        cellIds[2 * nProcessedGlyphs + 0] = globalId;
-        triangulation.getDistributedGlobalCellId(pcid, i + 1, globalId);
-        cellIds[2 * nProcessedGlyphs + 1] = globalId;
-#else
-        cellIds[2 * nProcessedGlyphs + 0] = j;
-        cellIds[2 * nProcessedGlyphs + 1] = pcid;
-#endif // TTK_ENABLE_MPI
-        cellDimensions[2 * nProcessedGlyphs + 0] = i;
-        cellDimensions[2 * nProcessedGlyphs + 1] = i + 1;
-        nProcessedGlyphs++;
-      }
-    }
-  }
 
   return 0;
 }

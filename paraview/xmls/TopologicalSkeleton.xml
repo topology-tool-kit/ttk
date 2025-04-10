@@ -189,18 +189,6 @@
          </Documentation>
        </IntVectorProperty>
 
-       <IntVectorProperty name="ComputeVectorGlyphs"
-         label="Display Vector Glyphs"
-         command="SetComputeVectorGlyphs"
-         number_of_elements="1"
-         default_values="0"
-         panel_visibility="default">
-         <BooleanDomain name="bool"/>
-         <Documentation>
-           Whether the vector glyphs should be displayed
-         </Documentation>
-       </IntVectorProperty>
-
        <IntVectorProperty name="RunSimplification"
          label="Run Simplification"
          command="SetRunSimplification"
@@ -266,7 +254,6 @@
         <Property name="ComputeAscendingSegmentation"/>
         <Property name="ComputeDescendingSegmentation"/>
         <Property name="ComputeFinalSegmentation"/>
-        <Property name="ComputeVectorGlyphs" />
         <Property name="RunSimplification"/>
         <Property name="SimplificationThreshold"/>
         <Property name="ReverseFullOrbit" />
@@ -276,7 +263,6 @@
       <OutputPort name="1-Separatrices" index="1" id="port1"/>
       <OutputPort name="2-Separatrices" index="2" id="port2"/>
       <OutputPort name="Segmentation" index="3" id="port3"/>
-      <OutputPort name="Vector Glyphs" index="4" id="port4"/>
 
       <Hints>
         <ShowInMenu category="TTK - Vector Data" />
