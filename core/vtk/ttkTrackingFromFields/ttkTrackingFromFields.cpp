@@ -131,16 +131,13 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     = std::sqrt(std::pow(maxX - minX, 2) + std::pow(maxY - minY, 2)
                 + std::pow(maxZ - minZ, 2));
   int assignmentMethod = AssignmentMethod;
-  bool adaptDeathBirthCost = AdaptDeathBirthCost;
   double epsilonAdapt = EpsilonAdapt;
 
   ttk::TrackingFromCriticalPoints tracker;
   tracker.setMeshDiameter(meshDiameter);
   tracker.setTolerance(tolerance);
   tracker.setEpsilon(relativeDestructionCost);
-  tracker.setAdaptDeathBirthCost(adaptDeathBirthCost);
   tracker.setAssignmentMethod(assignmentMethod);
-  tracker.setEpsilonAdapt(epsilonAdapt);
   tracker.setWeights(PX, PY, PZ, PF);
 
   tracker.setThreadNumber(this->threadNumber_);

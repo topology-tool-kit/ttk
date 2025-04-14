@@ -145,22 +145,6 @@ by a list of scalar fields) and which computes a tracking mesh."
         </Documentation>
       </StringVectorProperty>
 
-<!--      <IntVectorProperty
-        name="adaptDeathBirthCost"
-        command="SetAdaptDeathBirthCost"
-        label="Adaptive desctructive cost"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="Backend"
-                                   value="2" />
-        </Hints>
-      </IntVectorProperty>-->
-
       <DoubleVectorProperty
         name="epsilon"
         label="Relative destruction cost"

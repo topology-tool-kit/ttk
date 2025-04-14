@@ -89,7 +89,6 @@ void ttk::TrackingFromCriticalPoints::buildCostMatrix(
         coords_1[i], sfValues_1[i], coords_2[j], sfValues_2[j]);
     }
   }
-  if(!adaptiveDeathBirthCost_) {
     for(int i = size_1; i < matrix_size; i++) {
       for(int j = 0; j < size_2; j++) {
         matrix[i][j] = costDeathBirth;
@@ -100,27 +99,6 @@ void ttk::TrackingFromCriticalPoints::buildCostMatrix(
         matrix[i][j] = costDeathBirth;
       }
     }
-  } else if(adaptiveDeathBirthCost_) {
-    for(int j = 0; j < size_2; j++) {
-      double c = matrix[0][j];
-      for(int i = 1; i < size_1; i++) {
-        c = matrix[i][j] < c ? matrix[i][j] : c;
-      }
-      for(int i = size_1; i < matrix_size; i++) {
-        matrix[i][j] = c / (epsilonAdapt_);
-      }
-    }
-
-    for(int i = 0; i < size_1; i++) {
-      double d = matrix[i][0];
-      for(int j = 1; j < size_2; j++) {
-        d = matrix[i][j] < d ? matrix[i][j] : d;
-      }
-      for(int j = size_2; j < matrix_size; j++) {
-        matrix[i][j] = d / (epsilonAdapt_);
-      }
-    }
-  }
 }
 
 void ttk::TrackingFromCriticalPoints::performMatchings(
@@ -182,10 +160,10 @@ void ttk::TrackingFromCriticalPoints::performMatchings(
     minScalar.begin(), minScalar.end(), 0,
     [](int sum, const std::vector<double> &v) { return sum + v.size(); });
 
-  this->printMsg("Processing " + std::to_string(n_max) + " maximas");
+  this->printMsg("Processing " + std::to_string(n_min) + " maximas");
   this->printMsg("           " + std::to_string(n_sad_1) + " 1_saddles");
   this->printMsg("           " + std::to_string(n_sad_2) + " 2_saddles");
-  this->printMsg("           " + std::to_string(n_min) + " minimas");
+  this->printMsg("           " + std::to_string(n_max) + " minimas");
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -193,7 +171,7 @@ void ttk::TrackingFromCriticalPoints::performMatchings(
   for(int i = 0; i < fieldNumber - 1; i++) {
 
     float costDeathBirth
-      = epsilonConstant_
+      = relativeEpsilon
         * computeBoundingBoxRadius(
           persistenceDiagrams[i], persistenceDiagrams[i + 1]);
     int maxSize = (maxCoords[i].size() > 0 && maxCoords[i + 1].size() > 0)

@@ -22,8 +22,7 @@ namespace ttk {
   class TrackingFromCriticalPoints : virtual public Debug {
 
   private:
-    double epsilonConstant_{10e-1};
-    double epsilonAdapt_{0.5};
+    double relativeEpsilon{10e-1};
     double meshDiameter_{1};
     double tolerance_{10e-3};
     int assignmentMethod_{0};
@@ -31,7 +30,6 @@ namespace ttk {
     double yWeight_{1};
     double zWeight_{1};
     double fWeight_{0};
-    bool adaptiveDeathBirthCost_{false};
 
   public:
     TrackingFromCriticalPoints() {
@@ -43,11 +41,7 @@ namespace ttk {
     }
 
     void setEpsilon(double e) {
-      epsilonConstant_ = e;
-    }
-
-    void setEpsilonAdapt(double e) {
-      epsilonAdapt_ = e;
+      relativeEpsilon = e;
     }
 
     void setTolerance(double t) {
@@ -58,10 +52,6 @@ namespace ttk {
       if(a == 0 || a == 1) {
         assignmentMethod_ = a;
       }
-    }
-
-    void setAdaptDeathBirthCost(bool b) {
-      adaptiveDeathBirthCost_ = b;
     }
 
     void setWeights(double PX, double PY, double PZ, double PF) {

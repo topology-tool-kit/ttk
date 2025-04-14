@@ -83,9 +83,6 @@ public:
   vtkGetMacro(RelativeDestructionCost, double);
   /// @}
 
-  vtkSetMacro(AdaptDeathBirthCost, bool);
-  vtkGetMacro(AdaptDeathBirthCost, bool);
-
   vtkSetMacro(EpsilonAdapt, double);
   vtkGetMacro(EpsilonAdapt, double);
 
@@ -201,7 +198,6 @@ private:
   double RelativeDestructionCost{0.1};
   double EpsilonAdapt{0.5};
   int AssignmentMethod{0};
-  bool AdaptDeathBirthCost{false};
 
   // Bottleneck config.
   bool UseGeometricSpacing{false};
