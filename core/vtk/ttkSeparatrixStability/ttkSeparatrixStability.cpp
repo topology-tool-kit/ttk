@@ -292,18 +292,6 @@ int ttkSeparatrixStability::execute(
       assert(globalSourcePointIdForEachBlock[i].size() == matchingArrayForEachBlockSource[j][i].size());
     }
   }
-
-
-  int n_sourceIds =  std::max_element(globalSourcePointIdForEachBlock.begin(), globalSourcePointIdForEachBlock.end(), 
-    [](const std::vector<int>& a, const std::vector<int>& b) {
-    return a.size() < b.size();})->size();
-
-  int n_destinationIds =  std::max_element(globalDestinationPointIdForEachBlock.begin(), globalDestinationPointIdForEachBlock.end(), 
-    [](const std::vector<int>& a, const std::vector<int>& b) {
-    return a.size() < b.size();})->size();
-
-  int n_separatrix = *(std::max_element(separatrixCountForEachBlock.begin(), separatrixCountForEachBlock.end()));
-   
       
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
