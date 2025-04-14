@@ -48,10 +48,7 @@ public:
 
   vtkSetMacro(PZ, double);
   vtkGetMacro(PZ, double);
-
-  vtkSetMacro(PF, double);
-  vtkGetMacro(PF, double);
-
+  
   vtkSetMacro(MergeEdgesOnSaddles, bool);
   vtkGetMacro(MergeEdgesOnSaddles, bool);
 

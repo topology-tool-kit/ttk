@@ -35,11 +35,10 @@ namespace ttk {
       epsilon=e;
     }
 
-    inline void setWeights(const double &px, const double &py, const double &pz, const double &pf){
+    inline void setWeights(const double &px, const double &py, const double &pz){
       Px=px;
       Py=py;
       Pz=pz;
-      Pf=pf;
     }
 
   private:
@@ -86,7 +85,6 @@ namespace ttk {
     double Px{1};
     double Py{1};
     double Pz{1};
-    double Pf{1};
   };
 
 

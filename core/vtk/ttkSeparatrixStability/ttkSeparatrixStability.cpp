@@ -245,7 +245,7 @@ int ttkSeparatrixStability::execute(
   }
 
   this->setEpsilon(CostDeathBirth);
-  this->setWeights(PX, PY, PZ, PF);
+  this->setWeights(PX, PY, PZ);
 
   for (int i = 0 ; i < n_blocks; i++){
     std::string destinationSizeString = std::to_string(globalDestinationPointIdForEachBlock[i].size());
