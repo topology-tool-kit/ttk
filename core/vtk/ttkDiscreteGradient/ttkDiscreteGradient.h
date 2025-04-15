@@ -67,7 +67,6 @@ public:
   vtkSetMacro(StochasticGradientSeed, unsigned int);
   vtkGetMacro(StochasticGradientSeed, unsigned int);
 
-
 protected:
   ttkDiscreteGradient();
 

@@ -289,7 +289,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
     ttkUtils::GetVoidPointer(inputScalars), inputScalars->GetMTime());
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
-  BACKEND selectedBackend = Backend == 1 ? BACKEND::STOCHASTIC_BACKEND : BACKEND::CLASSIC_BACKEND;
+  BACKEND selectedBackend
+    = Backend == 1 ? BACKEND::STOCHASTIC_BACKEND : BACKEND::CLASSIC_BACKEND;
   this->setBackend(selectedBackend);
 #ifdef TTK_ENABLE_MPI_TIME
   ttk::Timer t_mpi;
@@ -297,7 +298,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
   ttkTemplateMacro(triangulation->getType(),
                    (ret = this->buildGradient<TTK_TT>(
-                      *static_cast<TTK_TT *>(triangulation->getData()), true, nullptr, StochasticGradientSeed)));
+                      *static_cast<TTK_TT *>(triangulation->getData()), true,
+                      nullptr, StochasticGradientSeed)));
 #ifdef TTK_ENABLE_MPI_TIME
   double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
@@ -316,7 +318,6 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
                       (fillCriticalPoints<VTK_TT, TTK_TT>(
                         outputCriticalPoints, inputScalars,
                         *static_cast<TTK_TT *>(triangulation->getData()))));
-                        
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
@@ -324,7 +325,6 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
                      (fillGradientGlyphs<TTK_TT>(
                        outputGradientGlyphs,
                        *static_cast<TTK_TT *>(triangulation->getData()))));
-
   }
 
   return 1;

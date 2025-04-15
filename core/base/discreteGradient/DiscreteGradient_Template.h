@@ -39,8 +39,6 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                                     const std::vector<bool> *updateMask,
                                     const unsigned int &seed) {
 
-
-
   auto &cacheHandler = *triangulation.getGradientCacheHandler();
   const auto findGradient
     = [this, &cacheHandler]() -> AbstractTriangulation::gradientType * {
@@ -75,16 +73,17 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     this->initMemory(triangulation);
     Timer tm{};
     if(updateMask) {
-     this->processLowerStarsWithMask(
-     this->inputOffsets_, triangulation, updateMask);
-     this->printMsg("Update cached discrete gradient", 1.0,
-                tm.getElapsedTime(), this->threadNumber_);
-    }else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND){
-      this->processLowerStarsStochastic (this->inputOffsets_, triangulation, seed);
-      this->printMsg("Build stochastic discrete gradient", 1.0, tm.getElapsedTime(), 
-                    this->threadNumber_);
+      this->processLowerStarsWithMask(
+        this->inputOffsets_, triangulation, updateMask);
+      this->printMsg("Update cached discrete gradient", 1.0,
+                     tm.getElapsedTime(), this->threadNumber_);
+    } else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND) {
+      this->processLowerStarsStochastic(
+        this->inputOffsets_, triangulation, seed);
+      this->printMsg("Build stochastic discrete gradient", 1.0,
+                     tm.getElapsedTime(), this->threadNumber_);
 
-    }else if(this->BackEnd == BACKEND::CLASSIC_BACKEND){
+    } else if(this->BackEnd == BACKEND::CLASSIC_BACKEND) {
       this->processLowerStars(this->inputOffsets_, triangulation);
       this->printMsg("Built discrete gradient", 1.0, tm.getElapsedTime(),
                      this->threadNumber_);
@@ -1073,8 +1072,10 @@ int DiscreteGradient::processLowerStarsWithMask(
 }
 
 template <typename triangulationType>
-int DiscreteGradient::  processLowerStarsStochastic(
-  const SimplexId *const offsets, const triangulationType &triangulation, const unsigned int &seed) {
+int DiscreteGradient::processLowerStarsStochastic(
+  const SimplexId *const offsets,
+  const triangulationType &triangulation,
+  const unsigned int &seed) {
 
   // WARNING
   // If you modify this function, please make sure to also report your edit to
@@ -1106,7 +1107,7 @@ int DiscreteGradient::  processLowerStarsStochastic(
   // store lower star structure
   lowerStarType Lx;
 
-//Compute edge length in directions dx, dy and dz
+  // Compute edge length in directions dx, dy and dz
   float threshold = 10e-12;
   const auto nedges = triangulation.getVertexEdgeNumber(0);
   float x1, x2, x3;
@@ -1121,21 +1122,20 @@ int DiscreteGradient::  processLowerStarsStochastic(
     if(vertexId == 0)
       triangulation.getEdgeVertex(edgeId, 1, vertexId);
     triangulation.getVertexPoint(vertexId, y1, y2, y3);
-    if(std::abs(y1-x1)<threshold && std::abs(y2-x2) < threshold){
-      edgeLengths[2]=std::abs(x3-y3);
+    if(std::abs(y1 - x1) < threshold && std::abs(y2 - x2) < threshold) {
+      edgeLengths[2] = std::abs(x3 - y3);
     }
-    if(std::abs(y2-x2)<threshold && std::abs(y3-x3) < threshold){
-      edgeLengths[0]=std::abs(x1-y1);
+    if(std::abs(y2 - x2) < threshold && std::abs(y3 - x3) < threshold) {
+      edgeLengths[0] = std::abs(x1 - y1);
     }
-    if(std::abs(y1-x1)<threshold && std::abs(y3-x3) < threshold){
-      edgeLengths[1]=std::abs(x2-y2);
+    if(std::abs(y1 - x1) < threshold && std::abs(y3 - x3) < threshold) {
+      edgeLengths[1] = std::abs(x2 - y2);
     }
   }
-  
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) \
-firstprivate(Lx, pqZero, pqOne)
+  firstprivate(Lx, pqZero, pqOne)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
@@ -1198,53 +1198,67 @@ firstprivate(Lx, pqZero, pqOne)
         size_t minId = 0;
         std::array<float, 3> xCoords;
         triangulation.getVertexPoint(x, xCoords[0], xCoords[1], xCoords[2]);
-        //build stencil
-        std::vector<SimplexId> stencilIds;  //in order +dx, -dx, +dy, -dy, +dz, -dz 
+        // build stencil
+        std::vector<SimplexId>
+          stencilIds; // in order +dx, -dx, +dy, -dy, +dz, -dz
         std::vector<float> stencilLengths = edgeLengths;
         buildStencil(x, xCoords, triangulation, stencilIds, stencilLengths);
 
         double grad[3];
-        const double* scalars = static_cast<double const *>(this->inputScalarField_.first);
-        grad[0]=(scalars[stencilIds[0]] - scalars[stencilIds[1]])/stencilLengths[0];
-        grad[1]=(scalars[stencilIds[2]] - scalars[stencilIds[3]])/stencilLengths[1];
-        grad[2]= triangulation.getDimensionality()== 3 ? (scalars[stencilIds[4]] - scalars[stencilIds[5]])/stencilLengths[2] : 0;
+        const double *scalars
+          = static_cast<double const *>(this->inputScalarField_.first);
+        grad[0] = (scalars[stencilIds[0]] - scalars[stencilIds[1]])
+                  / stencilLengths[0];
+        grad[1] = (scalars[stencilIds[2]] - scalars[stencilIds[3]])
+                  / stencilLengths[1];
+        grad[2] = triangulation.getDimensionality() == 3
+                    ? (scalars[stencilIds[4]] - scalars[stencilIds[5]])
+                        / stencilLengths[2]
+                    : 0;
 
         std::vector<double> repartitionBounds;
         repartitionBounds.push_back(0);
         std::vector<int> indexInLowerStar;
         indexInLowerStar.push_back(0);
-        double totalWeight=0;
-        for(size_t i = 0  ; i < Lx[1].size(); ++i){
+        double totalWeight = 0;
+        for(size_t i = 0; i < Lx[1].size(); ++i) {
           SimplexId vertexId;
-          triangulation.getEdgeVertex(Lx[1][i].id_,0, vertexId);
-          if(vertexId == x)triangulation.getEdgeVertex(Lx[1][i].id_ , 1, vertexId);
-          if(std::find(stencilIds.begin(), stencilIds.end(), vertexId) == stencilIds.end())continue;
+          triangulation.getEdgeVertex(Lx[1][i].id_, 0, vertexId);
+          if(vertexId == x)
+            triangulation.getEdgeVertex(Lx[1][i].id_, 1, vertexId);
+          if(std::find(stencilIds.begin(), stencilIds.end(), vertexId)
+             == stencilIds.end())
+            continue;
           std::array<float, 3> newCoords;
-          triangulation.getVertexPoint(vertexId, newCoords[0], newCoords[1], newCoords[2]);
+          triangulation.getVertexPoint(
+            vertexId, newCoords[0], newCoords[1], newCoords[2]);
 
-          float scalarProduct = -(newCoords[0]-xCoords[0])*grad[0] - (newCoords[1]-xCoords[1])*grad[1] - (newCoords[2]-xCoords[2])*grad[2];
-          if(scalarProduct > 0){
-            double previousBound = repartitionBounds[repartitionBounds.size()-1];
-            repartitionBounds.push_back(scalarProduct+previousBound);
-            totalWeight+=scalarProduct;
+          float scalarProduct = -(newCoords[0] - xCoords[0]) * grad[0]
+                                - (newCoords[1] - xCoords[1]) * grad[1]
+                                - (newCoords[2] - xCoords[2]) * grad[2];
+          if(scalarProduct > 0) {
+            double previousBound
+              = repartitionBounds[repartitionBounds.size() - 1];
+            repartitionBounds.push_back(scalarProduct + previousBound);
+            totalWeight += scalarProduct;
             indexInLowerStar.push_back(i);
           }
         }
 
-        for(size_t i = 1  ; i < repartitionBounds.size(); ++i) {
-          repartitionBounds[i]/=totalWeight;
+        for(size_t i = 1; i < repartitionBounds.size(); ++i) {
+          repartitionBounds[i] /= totalWeight;
         }
 
         std::mt19937 gen;
-        gen.seed(seed+x);
+        gen.seed(seed + x);
         std::uniform_real_distribution<float> dis(0.0, 1.0);
         float random_number = dis(gen);
-        size_t it=0;
+        size_t it = 0;
 
-        while(repartitionBounds[it] < random_number && repartitionBounds.size()>1){
+        while(repartitionBounds[it] < random_number
+              && repartitionBounds.size() > 1) {
           it++;
         }
-
 
         minId = indexInLowerStar[it];
         auto &c_delta = Lx[1][minId];
@@ -1301,23 +1315,22 @@ firstprivate(Lx, pqZero, pqOne)
             insertCofacets(c_gamma, Lx);
           }
         }
-
       }
     }
   }
   return 0;
 }
 
-template<typename triangulationType>
+template <typename triangulationType>
 void DiscreteGradient::buildStencil(const SimplexId &x,
-                                    const std::array<float, 3> xCoords, 
+                                    const std::array<float, 3> xCoords,
                                     const triangulationType &triangulation,
-                                    std::vector<SimplexId> &stencilIds, 
-                                    std::vector<float> &stencilLength){
+                                    std::vector<SimplexId> &stencilIds,
+                                    std::vector<float> &stencilLength) {
   float threshold = 10e-12;
   const auto nedges = triangulation.getVertexEdgeNumber(x);
   int dimension = triangulation.getDimensionality();
-  stencilIds.resize(dimension*2, -1);
+  stencilIds.resize(dimension * 2, -1);
   for(SimplexId i = 0; i < nedges; i++) {
     SimplexId edgeId;
     triangulation.getVertexEdge(x, i, edgeId);
@@ -1327,39 +1340,41 @@ void DiscreteGradient::buildStencil(const SimplexId &x,
       triangulation.getEdgeVertex(edgeId, 1, vertexId);
     }
     std::array<float, 3> currentCoords;
-    triangulation.getVertexPoint(vertexId, currentCoords[0], currentCoords[1], currentCoords[2]);
+    triangulation.getVertexPoint(
+      vertexId, currentCoords[0], currentCoords[1], currentCoords[2]);
     if(std::abs(currentCoords[0] - xCoords[0]) < threshold
-        && std::abs(currentCoords[1] - xCoords[1]) < threshold && dimension==3){
-        if(currentCoords[2] -xCoords[2] > threshold){
-         stencilIds[4] = vertexId;
-        }else if(currentCoords[2] -xCoords[2] < -threshold){
-          stencilIds[5] = vertexId;
-        }  
-      }else if(std::abs(currentCoords[0] - xCoords[0]) < threshold 
-                && std::abs(currentCoords[2] - xCoords[2]) < threshold){
-        if(currentCoords[1] -xCoords[1] > threshold){
-         stencilIds[2] = vertexId;
-        }else if(currentCoords[1] -xCoords[1] < -threshold){
-          stencilIds[3] = vertexId;
-        }  
-      }else if(std::abs(currentCoords[1] - xCoords[1]) < threshold 
-                && std::abs(currentCoords[2] - xCoords[2]) < threshold){
-        if(currentCoords[0] - xCoords[0] > threshold){
-          stencilIds[0] = vertexId;
-        }else if(currentCoords[0] - xCoords[0] < -threshold){
-          stencilIds[1] = vertexId;
+       && std::abs(currentCoords[1] - xCoords[1]) < threshold
+       && dimension == 3) {
+      if(currentCoords[2] - xCoords[2] > threshold) {
+        stencilIds[4] = vertexId;
+      } else if(currentCoords[2] - xCoords[2] < -threshold) {
+        stencilIds[5] = vertexId;
+      }
+    } else if(std::abs(currentCoords[0] - xCoords[0]) < threshold
+              && std::abs(currentCoords[2] - xCoords[2]) < threshold) {
+      if(currentCoords[1] - xCoords[1] > threshold) {
+        stencilIds[2] = vertexId;
+      } else if(currentCoords[1] - xCoords[1] < -threshold) {
+        stencilIds[3] = vertexId;
+      }
+    } else if(std::abs(currentCoords[1] - xCoords[1]) < threshold
+              && std::abs(currentCoords[2] - xCoords[2]) < threshold) {
+      if(currentCoords[0] - xCoords[0] > threshold) {
+        stencilIds[0] = vertexId;
+      } else if(currentCoords[0] - xCoords[0] < -threshold) {
+        stencilIds[1] = vertexId;
       }
     }
   }
-  for (int i = 0 ; i < dimension; i++){
-    if(stencilIds[2*i]!=-1 && stencilIds[2*i+1]!=-1){
-      stencilLength[i]*=2;
+  for(int i = 0; i < dimension; i++) {
+    if(stencilIds[2 * i] != -1 && stencilIds[2 * i + 1] != -1) {
+      stencilLength[i] *= 2;
     }
   }
-  for (size_t i = 0 ; i < stencilIds.size(); i++){
-    if(stencilIds[i]==-1)stencilIds[i]=x;
+  for(size_t i = 0; i < stencilIds.size(); i++) {
+    if(stencilIds[i] == -1)
+      stencilIds[i] = x;
   }
-          
 }
 
 template <typename triangulationType>
@@ -2436,7 +2451,6 @@ int DiscreteGradient::setGradientGlyphs(
   return 0;
 }
 
-
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::simplifySaddleSaddleConnections1(
   const std::vector<std::pair<SimplexId, char>> &criticalPoints,
@@ -2543,7 +2557,6 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   return 0;
 }
 
-
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::filterSaddleConnectors(
   const bool allowBoundary, const triangulationType &triangulation) {
@@ -2626,9 +2639,9 @@ int DiscreteGradient::getRemovableSaddles1(
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   isRemovableSaddle.resize(numberOfEdges);
 
-  std::vector<int>dmt1Saddle2PL_(numberOfEdges, -1);
-  //dmt1Saddle2PL_.resize(numberOfEdges);
-  //std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
+  std::vector<int> dmt1Saddle2PL_(numberOfEdges, -1);
+  // dmt1Saddle2PL_.resize(numberOfEdges);
+  // std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   // by default : 1-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2691,8 +2704,8 @@ int DiscreteGradient::getRemovableSaddles2(
   isRemovableSaddle.resize(numberOfTriangles);
 
   std::vector<int> dmt2Saddle2PL_(numberOfTriangles, -1);
-  //dmt2Saddle2PL_.resize(numberOfTriangles);
-  //std::fill(dmt2Saddle2PL_.begin(), dmt2Saddle2PL_.end(), -1);
+  // dmt2Saddle2PL_.resize(numberOfTriangles);
+  // std::fill(dmt2Saddle2PL_.begin(), dmt2Saddle2PL_.end(), -1);
 
   // by default : 2-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2742,7 +2755,6 @@ int DiscreteGradient::getRemovableSaddles2(
 
   return 0;
 }
-
 
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::initializeSaddleSaddleConnections1(
@@ -2876,7 +2888,6 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   return 0;
 }
 
-
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::initializeSaddleSaddleConnections2(
   const std::vector<char> &isRemovableSaddle1,
@@ -3008,7 +3019,6 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   return 0;
 }
 
-
 template <typename dataType>
 int DiscreteGradient::orderSaddleSaddleConnections1(
   const std::vector<VPath> &vpaths,
@@ -3033,7 +3043,6 @@ int DiscreteGradient::orderSaddleSaddleConnections1(
   return 0;
 }
 
-
 template <typename dataType>
 int DiscreteGradient::orderSaddleSaddleConnections2(
   const std::vector<VPath> &vpaths,
@@ -3057,7 +3066,6 @@ int DiscreteGradient::orderSaddleSaddleConnections2(
 
   return 0;
 }
-
 
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::processSaddleSaddleConnections1(
@@ -3115,9 +3123,9 @@ int DiscreteGradient::processSaddleSaddleConnections1(
       getDescendingWall(minSaddle2, mask, triangulation, nullptr, &saddles1);
 
       // check if at least one connection exists
-      auto isFound = std::find_if(
-      saddles1.begin(), saddles1.end(),
-      [&](const auto &s) { return s == minSaddle1.id_; });      
+      auto isFound
+        = std::find_if(saddles1.begin(), saddles1.end(),
+                       [&](const auto &s) { return s == minSaddle1.id_; });
       if(isFound == saddles1.end()) {
         ++numberOfIterations;
         continue;
@@ -3173,7 +3181,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
               if(numberOfRemainingSaddles1 == 0) {
                 isRemovableSaddle1[dmt_saddle1Id] = false;
                 pl2dmt_saddle1[vertexId] = dmt_saddle1Id;
-                //dmt1Saddle2PL_[dmt_saddle1Id] = vertexId;
+                // dmt1Saddle2PL_[dmt_saddle1Id] = vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3181,7 +3189,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
                 isRemovableSaddle1[dmt_saddle1Id] = false;
                 isRemovableSaddle1[savedId] = false;
                 pl2dmt_saddle1[vertexId] = savedId;
-                //dmt1Saddle2PL_[savedId] = vertexId;
+                // dmt1Saddle2PL_[savedId] = vertexId;
                 break;
               }
             } else if(pl2dmt_saddle1[vertexId] == dmt_saddle1Id) {
@@ -3235,7 +3243,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
               if(numberOfRemainingSaddles2 == 0) {
                 isRemovableSaddle2[dmt_saddle2Id] = false;
                 pl2dmt_saddle2[vertexId] = dmt_saddle2Id;
-                //dmt2Saddle2PL_[dmt_saddle2Id] = vertexId;
+                // dmt2Saddle2PL_[dmt_saddle2Id] = vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3243,7 +3251,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
                 isRemovableSaddle2[dmt_saddle2Id] = false;
                 isRemovableSaddle2[savedId] = false;
                 pl2dmt_saddle2[vertexId] = savedId;
-                //dmt2Saddle2PL_[savedId] = vertexId;
+                // dmt2Saddle2PL_[savedId] = vertexId;
                 break;
               }
             } else if(pl2dmt_saddle2[vertexId] == dmt_saddle2Id) {
@@ -3263,7 +3271,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
 
     if(vpath.isValid_) {
       // add persistence pair to collection if necessary
-      //if(CollectPersistencePairs and outputPersistencePairs_) {
+      // if(CollectPersistencePairs and outputPersistencePairs_) {
       //  const Cell &minSaddle1 = criticalPoints[vpath.source_].cell_;
       //  const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
       //  outputPersistencePairs_->push_back({minSaddle1, minSaddle2});
@@ -3448,9 +3456,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   return 0;
 }
 
-
 template <typename dataType, typename triangulationType>
-int DiscreteGradient::  processSaddleSaddleConnections2(
+int DiscreteGradient::processSaddleSaddleConnections2(
   const int iterationThreshold,
   const std::vector<char> &isPL,
   const bool allowBoundary,
@@ -3508,9 +3515,9 @@ int DiscreteGradient::  processSaddleSaddleConnections2(
       getAscendingWall(minSaddle1, mask, triangulation, nullptr, &saddles2);
 
       // check if at least one connection exists
-      auto isFound = std::find_if(
-      saddles2.begin(), saddles2.end(),
-      [&](const auto &s) { return s == minSaddle2.id_; });      
+      auto isFound
+        = std::find_if(saddles2.begin(), saddles2.end(),
+                       [&](const auto &s) { return s == minSaddle2.id_; });
 
       if(isFound == saddles2.end()) {
         ++numberOfIterations;
@@ -3567,7 +3574,7 @@ int DiscreteGradient::  processSaddleSaddleConnections2(
               if(numberOfRemainingSaddles1 == 0) {
                 isRemovableSaddle1[dmt_saddle1Id] = false;
                 pl2dmt_saddle1[vertexId] = dmt_saddle1Id;
-                //dmt1Saddle2PL_[dmt_saddle1Id] = vertexId;
+                // dmt1Saddle2PL_[dmt_saddle1Id] = vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3575,7 +3582,7 @@ int DiscreteGradient::  processSaddleSaddleConnections2(
                 isRemovableSaddle1[dmt_saddle1Id] = false;
                 isRemovableSaddle1[savedId] = false;
                 pl2dmt_saddle1[vertexId] = savedId;
-                //dmt1Saddle2PL_[savedId] = vertexId;
+                // dmt1Saddle2PL_[savedId] = vertexId;
                 break;
               }
             } else if(pl2dmt_saddle1[vertexId] == dmt_saddle1Id) {
@@ -3655,7 +3662,7 @@ int DiscreteGradient::  processSaddleSaddleConnections2(
 
     if(vpath.isValid_) {
       // add persistence pair to collection if necessary
-      //if(CollectPersistencePairs and outputPersistencePairs_) {
+      // if(CollectPersistencePairs and outputPersistencePairs_) {
       //  const Cell &minSaddle1 = criticalPoints[vpath.source_].cell_;
       //  const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
       //  outputPersistencePairs_->push_back({minSaddle1, minSaddle2});
@@ -3838,4 +3845,3 @@ int DiscreteGradient::  processSaddleSaddleConnections2(
 
   return 0;
 }
-
