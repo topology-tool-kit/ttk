@@ -173,7 +173,7 @@ namespace ttk {
                        const size_t scalarsMTime,
                        const SimplexId *const offsets,
                        const triangulationType &triangulation,
-                       const unsigned int &seed=0);
+                       const unsigned int &seed = 0);
 
     /**
      * Enable/Disable computation of the geometrical embedding of
@@ -224,10 +224,12 @@ namespace ttk {
     }
 
     /**
-     * When true, the discrete gradient will be computed with a discrete backend.
-    */
+     * When true, the discrete gradient will be computed with a discrete
+     * backend.
+     */
 
-    inline void setDiscreteGradientBackend(const DiscreteGradient::BACKEND selectedBackend) {
+    inline void setDiscreteGradientBackend(
+      const DiscreteGradient::BACKEND selectedBackend) {
       DiscreteGradientBackend = selectedBackend;
     }
 
@@ -412,8 +414,9 @@ namespace ttk {
 
     template <typename dataType, typename triangulationType>
     int returnSaddleConnectorsStochastic(const triangulationType &triangulation,
-                        const double &persistenceThreshold,
-                        const bool &detectCriticalPoints = true);
+                                         const double &persistenceThreshold,
+                                         const bool &detectCriticalPoints
+                                         = true);
 
     dcg::DiscreteGradient discreteGradient_{};
 
@@ -473,7 +476,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.setBackend(this->DiscreteGradientBackend);
   this->discreteGradient_.buildGradient(
-    triangulation, this->ReturnSaddleConnectors,nullptr,seed);
+    triangulation, this->ReturnSaddleConnectors, nullptr, seed);
   if(this->ReturnSaddleConnectors) {
     auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};
     if(!this->ThresholdIsAbsolute) {
@@ -490,12 +493,14 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
                      debug::Priority::DETAIL);
     }
 
-    if(this->DiscreteGradientBackend == DiscreteGradient::BACKEND::CLASSIC_BACKEND)
+    if(this->DiscreteGradientBackend
+       == DiscreteGradient::BACKEND::CLASSIC_BACKEND)
       this->returnSaddleConnectors(
         persistenceThreshold, scalars, offsets, triangulation);
-    if(this->DiscreteGradientBackend == DiscreteGradient::BACKEND::STOCHASTIC_BACKEND){
-      this->returnSaddleConnectorsStochastic<dataType>(triangulation, persistenceThreshold, true);
-      
+    if(this->DiscreteGradientBackend
+       == DiscreteGradient::BACKEND::STOCHASTIC_BACKEND) {
+      this->returnSaddleConnectorsStochastic<dataType>(
+        triangulation, persistenceThreshold, true);
     }
   }
 
@@ -1875,17 +1880,18 @@ int ttk::MorseSmaleComplex::returnSaddleConnectors(
 
 template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex::returnSaddleConnectorsStochastic(
-                            const triangulationType &triangulation,
-                            const double &persistenceThreshold,
-                            const bool &detectCriticalPoints){
+  const triangulationType &triangulation,
+  const double &persistenceThreshold,
+  const bool &detectCriticalPoints) {
 
   std::vector<std::pair<SimplexId, char>> criticalPoints{};
-  this->discreteGradient_.setSaddleConnectorsPersistenceThreshold(persistenceThreshold);
+  this->discreteGradient_.setSaddleConnectorsPersistenceThreshold(
+    persistenceThreshold);
 
   if(detectCriticalPoints) {
 
     std::vector<Cell> criticalCells{};
-   this->discreteGradient_.getCriticalPoints(criticalCells, triangulation);
+    this->discreteGradient_.getCriticalPoints(criticalCells, triangulation);
 
     criticalPoints.resize(criticalCells.size());
 
@@ -1894,13 +1900,15 @@ int ttk::MorseSmaleComplex::returnSaddleConnectorsStochastic(
       const auto &c = criticalCells[i];
       criticalPoints[i]
         = {this->discreteGradient_.getCellGreaterVertex(c, triangulation),
-           static_cast<char>(this->discreteGradient_.criticalTypeFromCellDimension(c.dim_))};
+           static_cast<char>(
+             this->discreteGradient_.criticalTypeFromCellDimension(c.dim_))};
     }
 
     // print number of critical cells
     {
       // foreach dimension
-      const int numberOfDimensions = this->discreteGradient_.getNumberOfDimensions();
+      const int numberOfDimensions
+        = this->discreteGradient_.getNumberOfDimensions();
       std::vector<SimplexId> nDMTCriticalPoints(numberOfDimensions, 0);
       for(const auto &c : criticalCells) {
         ++nDMTCriticalPoints[c.dim_];
@@ -1927,26 +1935,27 @@ int ttk::MorseSmaleComplex::returnSaddleConnectorsStochastic(
   Timer t;
 
   const bool allowBoundary = true;
-  //const bool returnSaddleConnectors = false;
-  //bool allowBruteForce = false;
+  // const bool returnSaddleConnectors = false;
+  // bool allowBruteForce = false;
 
   std::vector<char> isPL;
   this->discreteGradient_.getCriticalPointMap(criticalPoints, isPL);
 
-  //dmt1Saddle2PL_.resize(triangulation.getNumberOfEdges());
-  //std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
+  // dmt1Saddle2PL_.resize(triangulation.getNumberOfEdges());
+  // std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
-  //if(dimensionality_ == 3) {
-  //  this->discreteGradient_.simplifySaddleSaddleConnections1<dataType>(
-  //    criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
-  //    returnSaddleConnectors, triangulation);
-  //  this->discreteGradient_.simplifySaddleSaddleConnections2<dataType>(
-  //    criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
-  //    returnSaddleConnectors, triangulation);
-  //}
+  // if(dimensionality_ == 3) {
+  //   this->discreteGradient_.simplifySaddleSaddleConnections1<dataType>(
+  //     criticalPoints, isPL, IterationThreshold, allowBoundary,
+  //     allowBruteForce, returnSaddleConnectors, triangulation);
+  //   this->discreteGradient_.simplifySaddleSaddleConnections2<dataType>(
+  //     criticalPoints, isPL, IterationThreshold, allowBoundary,
+  //     allowBruteForce, returnSaddleConnectors, triangulation);
+  // }
 
   if(triangulation.getDimensionality() == 3) {
-    this->discreteGradient_.filterSaddleConnectors<dataType>(allowBoundary, triangulation);
+    this->discreteGradient_.filterSaddleConnectors<dataType>(
+      allowBoundary, triangulation);
   }
 
   this->printMsg(
