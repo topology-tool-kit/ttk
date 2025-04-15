@@ -21,7 +21,7 @@ vtkStandardNewMacro(ttkTopologicalSkeleton);
 ttkTopologicalSkeleton::ttkTopologicalSkeleton() {
   this->setDebugMsgPrefix("TopologicalSkeleton");
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(5);
+  SetNumberOfOutputPorts(4);
 }
 
 int ttkTopologicalSkeleton::FillInputPortInformation(int port,

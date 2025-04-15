@@ -334,13 +334,13 @@ inline bool DiscreteVectorField::compare(const triangulationType &triangulation,
                                          SimplexId vertexB,
                                          float &weightValue) const {
   weightValue = 0; // Silences unassignment warnings
-  SimplexId numberOfVertices = triangulation.getNumberOfVertices();
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexA == -1 || vertexB == -1) {
     this->printErr("Passed Null value to compare()");
     return vertexA < vertexB;
   }
+  SimplexId numberOfVertices = triangulation.getNumberOfVertices();
   if(vertexA < 0 || vertexB < 0 || vertexA >= numberOfVertices
      || vertexB >= numberOfVertices) {
     std::cout << vertexA << "," << vertexB << std::endl;

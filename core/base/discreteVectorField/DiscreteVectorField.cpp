@@ -24,7 +24,7 @@ void DiscreteVectorField::initMemory(
     numberOfCells[i] = this->getNumberOfCells(i, triangulation);
   }
 
-  // clear & init gradient memory
+  // clear & init discrete vectors memory
   for(int i = 0; i < dimensionality_; ++i) {
     (*vectors_)[2 * i].clear();
     (*vectors_)[2 * i].resize(numberOfCells[i], -1);
@@ -48,7 +48,7 @@ void DiscreteVectorField::initMemory(
   }
 
   this->printMsg(rows);
-  this->printMsg("Initialized discrete gradient memory", 1.0,
+  this->printMsg("Initialized discrete vectors memory", 1.0,
                  tm.getElapsedTime(), this->threadNumber_);
 }
 
