@@ -43,7 +43,6 @@
 #include <ttkIdentifierRandomizerModule.h>
 #include <vtkMultiBlockDataSet.h>
 
-
 // ttk code includes
 #include <ttkAlgorithm.h>
 
@@ -72,9 +71,9 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   template <typename T>
-  int shuffleScalarFieldValuesMultiBlock(vtkMultiBlockDataSet *input, 
-                                          vtkMultiBlockDataSet* output, 
-                                          const int nThreads = 1);
+  int shuffleScalarFieldValuesMultiBlock(vtkMultiBlockDataSet *input,
+                                         vtkMultiBlockDataSet *output,
+                                         const int nThreads = 1);
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
