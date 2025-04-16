@@ -1,5 +1,15 @@
 #include <RipsPersistenceDiagram.h>
 
+static bool isPrime(int n) {
+  if(n <= 1)
+    return false;
+  for(int d = 2; d * d <= n; ++d) {
+    if(n % d == 0)
+      return false;
+  }
+  return true;
+}
+
 ttk::RipsPersistenceDiagram::RipsPersistenceDiagram() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("RipsPersistenceDiagram");
@@ -7,10 +17,14 @@ ttk::RipsPersistenceDiagram::RipsPersistenceDiagram() {
 
 int ttk::RipsPersistenceDiagram::execute(
   const std::vector<std::vector<double>> &points,
-  std::vector<std::vector<ripser::pers_pair_t>> &ph) const {
+  rpd::MultidimensionalDiagram &ph) const {
 
-  ripser::ripser(points, SimplexMaximumDiameter, SimplexMaximumDimension,
-                 InputIsDistanceMatrix, ph);
+  if(isPrime(FieldOfCoefficients))
+    ripser::ripser(points, ph, SimplexMaximumDiameter, SimplexMaximumDimension,
+                   InputIsDistanceMatrix, false, FieldOfCoefficients);
+  else
+    printErr("The chosen p=" + std::to_string(FieldOfCoefficients)
+             + " is not prime");
 
   return 0;
 }
