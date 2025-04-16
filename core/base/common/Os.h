@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-//#define SINGLE_PRECISION
+// #define SINGLE_PRECISION
 
 #ifdef SINGLE_PRECISION
 #define REAL_TYPE float
