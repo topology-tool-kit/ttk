@@ -133,9 +133,9 @@ int ttkIdentifierRandomizer::shuffleScalarFieldValuesMultiBlock(vtkMultiBlockDat
   }
 
   // write shuffled values inside the output scalar field
-  //#ifdef TTK_ENABLE_OPENMP
-  //#pragma omp parallel for num_threads(nThreads)
-  //#endif // TTK_ENABLE_OPENMP
+  #ifdef TTK_ENABLE_OPENMP
+  #pragma omp parallel for num_threads(nThreads)
+  #endif // TTK_ENABLE_OPENMP
   for (int i = 0 ; i < n_blocks; ++i){
     vtkDataSet *block = vtkDataSet::SafeDownCast(input->GetBlock(i));
     vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, block);
