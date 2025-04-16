@@ -113,9 +113,6 @@ int ttkIdentifierRandomizer::shuffleScalarFieldValuesMultiBlock(vtkMultiBlockDat
   TTK_PSORT(nThreads, inputValues.begin(), inputValues.end());
   const auto last = std::unique(inputValues.begin(), inputValues.end());
   inputValues.erase(last, inputValues.end());
-  for ( auto &v : inputValues){
-    std::cout<<v<<" "<<std::endl;
-  }
   std::vector<T> shuffledValues(inputValues.size());
   if(CompactRange) {
     std::iota(shuffledValues.begin(), shuffledValues.end(), T{});
@@ -246,8 +243,6 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *ttkNotUsed(request),
           vtkDataSet *block = vtkDataSet::SafeDownCast(input_mb->GetBlock(i));
           if(!block)printMsg("Block "+ std::to_string(i) + " invalid.");
           vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, block);
-
-          std::cout<<"for 1."<<i<<std::endl;
 
           if(!inputScalarField){
             printWrn("Block " + std::to_string(i) + " does not have the required input scalar field as data array.");
