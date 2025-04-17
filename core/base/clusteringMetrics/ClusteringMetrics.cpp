@@ -1,5 +1,5 @@
 #include <ClusteringMetrics.h>
-#include <Geometry.h> // To check wheter a double is zero.
+#include <Geometry.h> // To check whether a double is zero.
 #include <cmath> // For the log2 function
 #include <map>
 #include <vector>

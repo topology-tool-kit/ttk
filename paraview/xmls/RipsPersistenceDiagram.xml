@@ -30,7 +30,88 @@
         <Documentation>Point cloud to process.</Documentation>
       </InputProperty>
 
+      <IntVectorProperty
+              name="SelectFieldsWithRegexp"
+              label="Select Fields with a Regexp"
+              command="SetSelectFieldsWithRegexp"
+              number_of_elements="1"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetScalarFields"
+                            clean_command="ClearScalarFields"
+                            label="Input Columns"
+                            name="ScalarFields"
+                            number_of_elements="0"
+                            default_values="1"
+                            number_of_elements_per_command="1"
+                            repeat_command="1">
+        <ArrayListDomain name="array_list"
+                         default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+                      function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+              name="Regexp"
+              command="SetRegexpString"
+              number_of_elements="1"
+              default_values=".*" >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          This regexp will be used to filter the chosen fields. Only
+          matching ones will be selected.
+        </Documentation>
+      </StringVectorProperty>
+
       <!-- INPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty
+              name="InputIsDistanceMatrix"
+              label="Input is a distance matrix"
+              command="SetInputIsDistanceMatrix"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
+        <Documentation>
+          Check this box to read the input table as a distance matrix instead of a point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputIsDistanceMatrix" />
+        <Property name="SelectFieldsWithRegexp" />
+        <Property name="ScalarFields" />
+        <Property name="Regexp" />
+      </PropertyGroup>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
 
       <IntVectorProperty
               name="SimplexMaximumDimension"
@@ -38,7 +119,7 @@
               command="SetSimplexMaximumDimension"
               number_of_elements="1"
               default_values="1">
-      <Documentation>
+        <Documentation>
           Simplex maximum dimension in the Rips complex.
         </Documentation>
       </IntVectorProperty>
@@ -55,26 +136,23 @@
       </DoubleVectorProperty>
 
       <IntVectorProperty
-              name="InputIsDistanceMatrix"
-              label="Input is a distance matrix"
-              command="SetInputIsDistanceMatrix"
+              name="FieldOfCoefficients"
+              label="Field of coefficients"
+              command="SetFieldOfCoefficients"
               number_of_elements="1"
-              panel_visibility="advanced"
-              default_values="0">
-        <BooleanDomain name="bool"/>
+              default_values="2">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
         <Documentation>
-          Check this box to read the input table as a distance matrix instead of a point cloud.
+          Prime integer p, by default 2. The homology will be computed with coefficients in the field Z/pZ.
         </Documentation>
       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Input options">
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SimplexMaximumDimension" />
         <Property name="SimplexMaximumDiameter" />
-        <Property name="InputIsDistanceMatrix" />
-      </PropertyGroup>
-
-      <!-- OUTPUT PARAMETER WIDGETS -->
-      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="FieldOfCoefficients" />
       </PropertyGroup>
 
       <!-- DEBUG -->
