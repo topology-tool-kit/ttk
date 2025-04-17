@@ -39,7 +39,7 @@ jobs:
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
 
     steps:
     - uses: actions/checkout@v4
@@ -143,7 +143,7 @@ jobs:
     needs: test-build-ubuntu
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
         testSet: [pyTests, screenshotTests]
     steps:
     - name: Install Ubuntu dependencies
