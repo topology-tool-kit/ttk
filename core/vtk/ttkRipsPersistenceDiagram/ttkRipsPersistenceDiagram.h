@@ -32,22 +32,34 @@
 #include <RipsPersistenceDiagram.h>
 #include <ttkAlgorithm.h>
 
-void DiagramToVTU(vtkUnstructuredGrid *vtu,
-                  const std::vector<ttk::rpd::Diagram> &diagram,
-                  double SimplexMaximumDiameter);
+/**
+ * @brief Converts a Rips Persistence Diagram in the
+ * ttk::rpd::MultidimensionalDiagram format to the VTK Unstructured Grid format.
+ *
+ * @param[out] vtu Output VTK Unstructured Grid
+ * @param[in] diagram ttk::rpd::MultidimensionalDiagram to be converted
+ * @param[in] SimplexMaximumDiameter Maximum diameter of simplices (to cap
+ * infinite pairs)
+ */
+TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
+  DiagramToVTU(vtkUnstructuredGrid *vtu,
+               const ttk::rpd::MultidimensionalDiagram &diagram,
+               double SimplexMaximumDiameter);
 
-void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
-                     vtkPoints *inputPoints,
-                     const std::vector<ttk::rpd::Generator> &generators,
-                     bool parametrize = true);
-
-void MakeVtkPoints(vtkPoints *points,
-                   const std::vector<std::vector<double>> &pointsData);
-
-void ParametrizeGenerator(
-  std::unordered_map<ttk::rpd::Edge, double, boost::hash<ttk::rpd::Edge>>
-    &parametrization,
-  const ttk::rpd::Generator &generator);
+/**
+ * @brief Converts a vector of 1-dimensional persistent generators in the
+ * ttk::rpd::Generator format to the VTK Unstructured Grid format.
+ *
+ * @param[out] vtu Output VTK Unstructured Grid
+ * @param[in] inputPoints vtkPoints used to embed the generators
+ * @param[in] generators Vector of ttk::rpd::Generator to be converted
+ * @param[in] parametrize Whether to parametrize the generators
+ */
+TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
+  GeneratorsToVTU(vtkUnstructuredGrid *vtu,
+                  vtkPoints *inputPoints,
+                  const std::vector<ttk::rpd::Generator> &generators,
+                  bool parametrize = true);
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
