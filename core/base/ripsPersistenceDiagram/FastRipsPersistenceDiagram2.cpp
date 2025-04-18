@@ -367,6 +367,8 @@ void FastRipsPersistenceDiagram2::computePolygonRipsDeath(
   // loop on polygons
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for if(parallel)
+#else
+  TTK_FORCE_USE(parallel);
 #endif // TTK_ENABLE_OPENMP
   for(unsigned poly = 0; poly < N_polys; ++poly) {
     if(deathPoly_[poly].d != inf) { // deal only with true polygons
@@ -645,6 +647,8 @@ void FastRipsPersistenceDiagram2::executePolygonPairCells(
   // loop on polygons
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for if(parallel)
+#else
+  TTK_FORCE_USE(parallel);
 #endif // TTK_ENABLE_OPENMP
   for(unsigned poly = 0; poly < N_polys; ++poly) {
     if(deathPoly_[poly].d != inf) { // deal only with true polygons
