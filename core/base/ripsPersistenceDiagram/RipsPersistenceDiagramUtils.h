@@ -6,10 +6,14 @@
 
 #include <vector>
 
+#include <boost/dynamic_bitset.hpp>
+
 namespace ttk::rpd {
   using id_t = int;
   using value_t = double;
   constexpr value_t inf = std::numeric_limits<value_t>::infinity();
+
+  using PointCloud = std::vector<std::vector<double>>;
 
   using Simplex = std::vector<id_t>;
   using FiltratedSimplex = std::pair<Simplex, value_t>;
@@ -19,5 +23,62 @@ namespace ttk::rpd {
 
   using Edge = std::pair<id_t, id_t>;
   using EdgeSet = std::vector<Edge>;
-  using EdgeSetSet = std::vector<EdgeSet>;
+  using EdgeSets3 = std::array<EdgeSet, 3>;
+  using EdgeSets4 = std::array<EdgeSet, 4>;
+  enum CRIT : std::uint8_t { MST, RNG, MML, CASC };
+  using Cascade = EdgeSet;
+
+  using Generator = std::pair<EdgeSet, std::pair<value_t,value_t>>;
+
+  struct FiltratedEdge {
+    std::pair<id_t, id_t> e;
+    value_t d;
+  };
+  FiltratedEdge max(FiltratedEdge a, FiltratedEdge b);
+
+  struct FiltratedQuadEdge {
+    std::pair<id_t, id_t> e;
+    int f1;
+    int f2;
+    value_t d;
+  };
+
+  struct FiltratedTriangle {
+    std::tuple<id_t, id_t, id_t> t;
+    value_t d;
+  };
+
+  class UnionFind {
+  private:
+    std::vector<int> parent_, rank_;
+  public:
+    explicit UnionFind(unsigned n);
+    int find(int x);
+    void merge(int x, int y);
+    int mergeRet(int x, int y);
+    [[nodiscard]] bool isRoot(int x) const;
+  };
+
+  class BoundaryContainer {
+  public:
+    BoundaryContainer(std::vector<id_t> &simplices, unsigned size) : ids_(simplices) {
+      mask_.resize(size, false);
+      for(id_t const &id : ids_)
+        mask_[id] = true;
+    }
+    void exclusiveAddBoundary(std::vector<id_t> const &boundary) {
+      for(id_t const &id : boundary) {
+        if(!mask_[id])
+          ids_.emplace_back(id);
+        else
+          ids_.erase(std::find(ids_.begin(), ids_.end(), id));
+        mask_.flip(id);
+      }
+    }
+
+  private:
+    std::vector<id_t> &ids_;
+    boost::dynamic_bitset<> mask_;
+  };
+
 } // namespace ttk::rpd

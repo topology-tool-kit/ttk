@@ -25,8 +25,8 @@
 #include <ttkRipsPersistenceDiagramModule.h>
 
 // VTK Includes
-#include <ttkMacros.h>
 #include <vtkUnstructuredGrid.h>
+#include <ttkMacros.h>
 
 // TTK Includes
 #include <RipsPersistenceDiagram.h>
@@ -35,6 +35,20 @@
 void DiagramToVTU(vtkUnstructuredGrid *vtu,
                   const std::vector<ttk::rpd::Diagram> &diagram,
                   double SimplexMaximumDiameter);
+
+void GeneratorsToVTU(
+  vtkUnstructuredGrid *vtu,
+  vtkPoints *inputPoints,
+  const std::vector<ttk::rpd::Generator> &generators,
+  bool parametrize = true);
+
+void MakeVtkPoints(
+  vtkPoints *points,
+  const std::vector<std::vector<double>>& pointsData);
+
+void ParametrizeGenerator(
+  std::unordered_map<ttk::rpd::Edge, double, boost::hash<ttk::rpd::Edge>> &parametrization,
+  const ttk::rpd::Generator &generator);
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
@@ -69,6 +83,9 @@ public:
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
   vtkSetMacro(SimplexMaximumDimension, int);
   vtkGetMacro(SimplexMaximumDimension, int);
 
@@ -78,8 +95,14 @@ public:
   vtkSetMacro(FieldOfCoefficients, int);
   vtkGetMacro(FieldOfCoefficients, int);
 
-  vtkSetMacro(InputIsDistanceMatrix, int);
-  vtkGetMacro(InputIsDistanceMatrix, int);
+  vtkSetMacro(InputIsDistanceMatrix, bool);
+  vtkGetMacro(InputIsDistanceMatrix, bool);
+
+  vtkSetMacro(DelaunayRips, bool);
+  vtkGetMacro(DelaunayRips, bool);
+
+  vtkSetMacro(OutputGenerators, bool);
+  vtkGetMacro(OutputGenerators, bool);
 
 protected:
   ttkRipsPersistenceDiagram();

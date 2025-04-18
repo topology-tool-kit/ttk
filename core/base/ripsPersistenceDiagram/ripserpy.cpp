@@ -701,7 +701,7 @@ public:
                                FiltratedSimplex{{int(vertices_of_edge[0]),
                                                  int(vertices_of_edge[1])},
                                                 get_diameter(e)});
-          } else if constexpr(std::is_same_v<PersistenceType, EdgeSetSet>)
+          } else if constexpr(std::is_same_v<PersistenceType, EdgeSets3>)
             ph[0].emplace_back(vertices_of_edge[0], vertices_of_edge[1]);
         }
       } else
@@ -822,7 +822,7 @@ public:
                           std::vector<diameter_entry_t>,
                           greater_diameter_or_smaller_index<diameter_entry_t>>;
 
-  // not in original ripser: for keeping only critical edges instead of
+  // not in the original ripser: for keeping only critical edges instead of
   // simplices
   Edge find_longest_edge(const Simplex &vertices) const {
     const double l1 = dist(vertices[0], vertices[1]);
@@ -912,7 +912,7 @@ public:
                   ph[dim].emplace_back(
                     FiltratedSimplex{vertices_birth, diameter},
                     FiltratedSimplex{vertices_death, death});
-              } else if constexpr(std::is_same_v<PersistenceType, EdgeSetSet>) {
+              } else if constexpr(std::is_same_v<PersistenceType, EdgeSets3>) {
                 ph[2 * dim - 1].emplace_back(
                   vertices_birth[0], vertices_birth[1]);
                 ph[2 * dim].emplace_back(find_longest_edge(vertices_death));
@@ -1131,8 +1131,8 @@ void ripser::ripser(std::vector<std::vector<value_t>> points,
 
   if constexpr(std::is_same_v<PersistenceType, MultidimensionalDiagram>)
     ph = MultidimensionalDiagram(dim_max + 1);
-  else if constexpr(std::is_same_v<PersistenceType, EdgeSetSet>)
-    ph = EdgeSetSet(2 * dim_max + 1);
+  else if constexpr(std::is_same_v<PersistenceType, EdgeSets3>)
+    dim_max = std::max(dim_max, static_cast<index_t>(1));
 
   if(!distanceMatrix) {
     if(threshold < inf) {
@@ -1171,7 +1171,7 @@ template void ripser::ripser(std::vector<std::vector<value_t>> points,
                              bool criticalEdgesOnly,
                              coefficient_t modulus);
 template void ripser::ripser(std::vector<std::vector<value_t>> points,
-                             EdgeSetSet &ph,
+                             EdgeSets3 &ph,
                              value_t threshold,
                              index_t dim_max,
                              bool distanceMatrix,
@@ -1210,7 +1210,7 @@ template void ripser::ripser(float *data,
 template void ripser::ripser(float *data,
                              int n,
                              int dim,
-                             EdgeSetSet &ph,
+                             EdgeSets3 &ph,
                              value_t threshold,
                              index_t dim_max,
                              bool distanceMatrix,
