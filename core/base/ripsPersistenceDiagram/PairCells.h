@@ -83,20 +83,6 @@ namespace ttk::rpd {
       return compressedDM_[j * (j - 1) / 2 + i];
     }
 
-    const std::function<bool(id_t, id_t)> compTriangles = [&](id_t i, id_t j) {
-      if(triangles_[i].d == triangles_[j].d)
-        return triangles_[i].t < triangles_[j].t;
-      else
-        return triangles_[i].d < triangles_[j].d;
-    };
-
-    const std::function<bool(id_t, id_t)> compEdges = [&](id_t i, id_t j) {
-      if(edges_[i].d == edges_[j].d)
-        return edges_[i].e < edges_[j].e;
-      else
-        return edges_[i].d < edges_[j].d;
-    };
-
     void initialize();
     void initializeWithBound();
 

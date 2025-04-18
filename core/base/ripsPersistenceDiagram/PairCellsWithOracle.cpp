@@ -81,9 +81,10 @@ void ttk::rpd::PairCellsWithOracle::initializeWithBound() {
   std::iota(edgesIndices_.begin(), edgesIndices_.end(), 0);
   if(parallelSort_)
     TTK_PSORT(globalThreadNumber_, edgesIndices_.begin(), edgesIndices_.end(),
-              compEdges)
+              [&](id_t i, id_t j) { return edges_[i] < edges_[j]; })
   else
-    std::sort(edgesIndices_.begin(), edgesIndices_.end(), compEdges);
+    std::sort(edgesIndices_.begin(), edgesIndices_.end(),
+              [&](id_t i, id_t j) { return edges_[i] < edges_[j]; });
   for(unsigned i = 0; i < edgesIndices_.size(); ++i)
     edgesOrder_[edgesIndices_[i]] = i;
 }

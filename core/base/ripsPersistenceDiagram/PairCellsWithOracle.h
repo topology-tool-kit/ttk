@@ -70,13 +70,6 @@ namespace ttk::rpd {
                            + std::min(i, j)];
     }
 
-    const std::function<bool(id_t, id_t)> compEdges = [&](id_t i, id_t j) {
-      if(edges_[i].d == edges_[j].d)
-        return edges_[i].e < edges_[j].e;
-      else
-        return edges_[i].d < edges_[j].d;
-    };
-
     void initializeWithBound();
     void pairCellsWithOracle();
     void eliminateBoundaryWithOracle(id_t t_id, id_t e_id);

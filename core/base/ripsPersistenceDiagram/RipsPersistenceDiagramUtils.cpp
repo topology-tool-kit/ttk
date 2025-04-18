@@ -1,12 +1,5 @@
 #include <RipsPersistenceDiagramUtils.h>
 
-ttk::rpd::FiltratedEdge ttk::rpd::max(FiltratedEdge a, FiltratedEdge b) {
-  if(a.d > b.d)
-    return a;
-  else
-    return b;
-}
-
 ttk::rpd::UnionFind::UnionFind(unsigned n) {
   parent_.resize(n);
   rank_.resize(n, 0);

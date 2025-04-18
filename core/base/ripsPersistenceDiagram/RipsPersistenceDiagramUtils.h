@@ -34,7 +34,12 @@ namespace ttk::rpd {
     std::pair<id_t, id_t> e;
     value_t d;
   };
-  FiltratedEdge max(FiltratedEdge a, FiltratedEdge b);
+  inline FiltratedEdge max(const FiltratedEdge &a, const FiltratedEdge &b) {
+    if(a.d > b.d)
+      return a;
+    else
+      return b;
+  }
 
   struct FiltratedQuadEdge {
     std::pair<id_t, id_t> e;
@@ -47,6 +52,19 @@ namespace ttk::rpd {
     std::tuple<id_t, id_t, id_t> t;
     value_t d;
   };
+
+  inline bool operator<(const FiltratedEdge &e1, const FiltratedEdge &e2) {
+    if(e1.d == e2.d)
+      return e1.e < e2.e;
+    return e1.d < e2.d;
+  }
+
+  inline bool operator<(const FiltratedTriangle &f1,
+                        const FiltratedTriangle &f2) {
+    if(f1.d == f2.d)
+      return f1.t < f2.t;
+    return f1.d < f2.d;
+  }
 
   class UnionFind {
   private:

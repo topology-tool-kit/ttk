@@ -160,9 +160,10 @@ void PairCells::executeKruskal() {
   std::iota(edgesIndices_.begin(), edgesIndices_.end(), 0);
   if(parallelSort_)
     TTK_PSORT(globalThreadNumber_, edgesIndices_.begin(), edgesIndices_.end(),
-              compEdges)
+              [&](id_t i, id_t j) { return edges_[i] < edges_[j]; })
   else
-    std::sort(edgesIndices_.begin(), edgesIndices_.end(), compEdges);
+    std::sort(edgesIndices_.begin(), edgesIndices_.end(),
+              [&](id_t i, id_t j) { return edges_[i] < edges_[j]; });
   symbolicPerturbation();
   for(unsigned i = 0; i < edgesIndices_.size(); ++i)
     edgesOrder_[edgesIndices_[i]] = i;
@@ -193,9 +194,11 @@ void PairCells::symbolicPerturbation(
     if(!generic) {
       if(parallelSort_)
         TTK_PSORT(globalThreadNumber_, edgesIndices_.begin(),
-                  edgesIndices_.end(), compEdges)
+                  edgesIndices_.end(),
+                  [&](id_t i, id_t j) { return edges_[i] < edges_[j]; })
       else
-        std::sort(edgesIndices_.begin(), edgesIndices_.end(), compEdges);
+        std::sort(edgesIndices_.begin(), edgesIndices_.end(),
+                  [&](id_t i, id_t j) { return edges_[i] < edges_[j]; });
     }
   } while(!generic);
 }
@@ -210,10 +213,11 @@ void PairCells::apparentPairs() {
   std::iota(trianglesIndices_.begin(), trianglesIndices_.end(), 0);
   if(parallelSort_)
     TTK_PSORT(globalThreadNumber_, trianglesIndices_.begin(),
-              trianglesIndices_.end(), compTriangles)
+              trianglesIndices_.end(),
+              [&](id_t i, id_t j) { return triangles_[i] < triangles_[j]; })
   else
-    std::sort(
-      trianglesIndices_.begin(), trianglesIndices_.end(), compTriangles);
+    std::sort(trianglesIndices_.begin(), trianglesIndices_.end(),
+              [&](id_t i, id_t j) { return triangles_[i] < triangles_[j]; });
 
   // apparent pairs
   id_t t = 0;
