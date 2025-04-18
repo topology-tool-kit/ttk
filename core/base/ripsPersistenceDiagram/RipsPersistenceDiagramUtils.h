@@ -28,7 +28,7 @@ namespace ttk::rpd {
   enum CRIT : std::uint8_t { MST, RNG, MML, CASC };
   using Cascade = EdgeSet;
 
-  using Generator = std::pair<EdgeSet, std::pair<value_t,value_t>>;
+  using Generator = std::pair<EdgeSet, std::pair<value_t, value_t>>;
 
   struct FiltratedEdge {
     std::pair<id_t, id_t> e;
@@ -51,6 +51,7 @@ namespace ttk::rpd {
   class UnionFind {
   private:
     std::vector<int> parent_, rank_;
+
   public:
     explicit UnionFind(unsigned n);
     int find(int x);
@@ -61,7 +62,8 @@ namespace ttk::rpd {
 
   class BoundaryContainer {
   public:
-    BoundaryContainer(std::vector<id_t> &simplices, unsigned size) : ids_(simplices) {
+    BoundaryContainer(std::vector<id_t> &simplices, unsigned size)
+      : ids_(simplices) {
       mask_.resize(size, false);
       for(id_t const &id : ids_)
         mask_[id] = true;

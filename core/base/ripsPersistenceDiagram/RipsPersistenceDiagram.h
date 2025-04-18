@@ -48,7 +48,7 @@ namespace ttk {
                 rpd::MultidimensionalDiagram &ph,
                 std::vector<rpd::Generator> &generators) const;
 
-      protected:
+  protected:
     /** BackEnd */
     BACKEND BackEnd{BACKEND::RIPSER};
     /** Max dimension of computed persistence diagram */

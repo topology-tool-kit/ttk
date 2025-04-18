@@ -32,7 +32,9 @@
 
 class TTKRIPSPERSISTENCEGENERATORS_EXPORT ttkRipsPersistenceGenerators
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
-  , protected ttk::RipsPersistenceGenerators // and we inherit from the base class
+  ,
+    protected ttk::RipsPersistenceGenerators // and we inherit from the base
+                                             // class
 {
 private:
   bool KeepAllDataArrays{true};

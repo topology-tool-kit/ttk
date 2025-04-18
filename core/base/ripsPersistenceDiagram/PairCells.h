@@ -25,68 +25,73 @@ namespace ttk::rpd {
   public:
 #ifdef TTK_ENABLE_CGAL
     PairCells(const std::vector<CGAL::Epick::Point_2> &points,
-              double upperBound=inf,
-              bool parallelSort=false,
-              bool parallelMatrixConstruction=false);
+              double upperBound = inf,
+              bool parallelSort = false,
+              bool parallelMatrixConstruction = false);
 #endif
     PairCells(const PointCloud &points,
-              bool distanceMatrix=false,
-              double upperBound=inf,
-              bool parallelSort=false,
-              bool parallelMatrixConstruction=false);
-    PairCells(float* data, int n, int dim,
-              double upperBound=inf,
-              bool parallelSort=false,
-              bool parallelMatrixConstruction=false);
+              bool distanceMatrix = false,
+              double upperBound = inf,
+              bool parallelSort = false,
+              bool parallelMatrixConstruction = false);
+    PairCells(float *data,
+              int n,
+              int dim,
+              double upperBound = inf,
+              bool parallelSort = false,
+              bool parallelMatrixConstruction = false);
 
     void run();
 
     void getDiagram(MultidimensionalDiagram &diagrams) const;
-    void getDiagramAndGenerators(MultidimensionalDiagram &diagrams, std::vector<Generator> &generators) const;
+    void getDiagramAndGenerators(MultidimensionalDiagram &diagrams,
+                                 std::vector<Generator> &generators) const;
 
     void getCascades(std::vector<Cascade> &cascades, EdgeSets3 &critical) const;
     void getCascades(EdgeSets4 &critical) const;
-    void enrichCascades(std::set<Edge> &cascadeSet, EdgeSets4 &critical, std::vector<int> const& globalIndices) const;
+    void enrichCascades(std::set<Edge> &cascadeSet,
+                        EdgeSets4 &critical,
+                        std::vector<int> const &globalIndices) const;
 
   private:
     const int n_;
-    std::vector<double> compressedDM_ {};
+    std::vector<double> compressedDM_{};
     const double bound_;
     const bool parallelSort_;
     const bool parallelMatrixConstruction_;
 
-    std::vector<FiltratedEdge> edges_ {};
-    std::vector<FiltratedTriangle> triangles_ {};
-    std::vector<id_t> edgesIndices_ {};
-    std::vector<id_t> edgesOrder_ {};
-    std::vector<id_t> trianglesIndices_ {};
+    std::vector<FiltratedEdge> edges_{};
+    std::vector<FiltratedTriangle> triangles_{};
+    std::vector<id_t> edgesIndices_{};
+    std::vector<id_t> edgesOrder_{};
+    std::vector<id_t> trianglesIndices_{};
 
-    std::vector<id_t> edgesPartner_ {};
-    std::vector<id_t> trianglesPartner_ {};
-    std::vector<std::vector<id_t>> boundaries_ {};
-    int nEdges_ {};
-    int nPairedEdges_ {0};
-    int nTriangles_ {};
+    std::vector<id_t> edgesPartner_{};
+    std::vector<id_t> trianglesPartner_{};
+    std::vector<std::vector<id_t>> boundaries_{};
+    int nEdges_{};
+    int nPairedEdges_{0};
+    int nTriangles_{};
 
-    std::vector<std::vector<id_t>> cascadeEdges_ {};
+    std::vector<std::vector<id_t>> cascadeEdges_{};
 
     /**
      * distance matrix access function
      * \pre i < j
      */
-    double& DM(unsigned i, unsigned j) {
+    double &DM(unsigned i, unsigned j) {
       return compressedDM_[j * (j - 1) / 2 + i];
     }
 
-    const std::function<bool(id_t,id_t)> compTriangles = [&](id_t i, id_t j) {
-      if (triangles_[i].d == triangles_[j].d)
+    const std::function<bool(id_t, id_t)> compTriangles = [&](id_t i, id_t j) {
+      if(triangles_[i].d == triangles_[j].d)
         return triangles_[i].t < triangles_[j].t;
       else
         return triangles_[i].d < triangles_[j].d;
     };
 
-    const std::function<bool(id_t,id_t)> compEdges = [&](id_t i, id_t j) {
-      if (edges_[i].d == edges_[j].d)
+    const std::function<bool(id_t, id_t)> compEdges = [&](id_t i, id_t j) {
+      if(edges_[i].d == edges_[j].d)
         return edges_[i].e < edges_[j].e;
       else
         return edges_[i].d < edges_[j].d;
@@ -96,10 +101,11 @@ namespace ttk::rpd {
     void initializeWithBound();
 
     void executeKruskal();
-    void symbolicPerturbation(double eps = std::numeric_limits<float>::epsilon());
+    void symbolicPerturbation(double eps
+                              = std::numeric_limits<float>::epsilon());
     void apparentPairs();
 
     void pairCells();
     id_t eliminateBoundaries(id_t s);
   };
-}
+} // namespace ttk::rpd

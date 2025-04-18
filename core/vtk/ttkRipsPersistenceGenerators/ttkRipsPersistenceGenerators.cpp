@@ -1,5 +1,5 @@
-#include <ttkRipsPersistenceGenerators.h>
 #include <ttkRipsPersistenceDiagram.h>
+#include <ttkRipsPersistenceGenerators.h>
 
 #include <vtkCellData.h>
 #include <vtkInformation.h>
@@ -14,7 +14,8 @@ ttkRipsPersistenceGenerators::ttkRipsPersistenceGenerators() {
   this->SetNumberOfOutputPorts(2);
 }
 
-int ttkRipsPersistenceGenerators::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkRipsPersistenceGenerators::FillInputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
@@ -25,7 +26,8 @@ int ttkRipsPersistenceGenerators::FillInputPortInformation(int port, vtkInformat
   return 0;
 }
 
-int ttkRipsPersistenceGenerators::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkRipsPersistenceGenerators::FillOutputPortInformation(
+  int port, vtkInformation *info) {
   if(port == 0 || port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
@@ -33,9 +35,10 @@ int ttkRipsPersistenceGenerators::FillOutputPortInformation(int port, vtkInforma
   return 0;
 }
 
-int ttkRipsPersistenceGenerators::RequestData(vtkInformation *ttkNotUsed(request),
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+int ttkRipsPersistenceGenerators::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
   ttk::Timer tm{};
 
@@ -66,12 +69,10 @@ int ttkRipsPersistenceGenerators::RequestData(vtkInformation *ttkNotUsed(request
                    + std::to_string(input->GetNumberOfRows())
                    + ", columns: " + std::to_string(ScalarFields.size()) + ")");
     return 0;
-  }
-  else if (input->GetNumberOfRows() != pointSet->GetNumberOfPoints()) {
+  } else if(input->GetNumberOfRows() != pointSet->GetNumberOfPoints()) {
     this->printErr("Input and 3D representation have different");
     this->printErr("numbers of points: resp. "
-                   + std::to_string(input->GetNumberOfRows())
-                   + " and "
+                   + std::to_string(input->GetNumberOfRows()) + " and "
                    + std::to_string(pointSet->GetNumberOfPoints()));
     return 0;
   }
@@ -89,7 +90,8 @@ int ttkRipsPersistenceGenerators::RequestData(vtkInformation *ttkNotUsed(request
       points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
   }
 
-  this->printMsg("Computing Rips pers. generators",0.0, tm.getElapsedTime(), 1);
+  this->printMsg(
+    "Computing Rips pers. generators", 0.0, tm.getElapsedTime(), 1);
   this->printMsg("#dimensions: " + std::to_string(dimension)
                    + ", #points: " + std::to_string(numberOfPoints),
                  0.0, tm.getElapsedTime(), 1);
@@ -98,7 +100,8 @@ int ttkRipsPersistenceGenerators::RequestData(vtkInformation *ttkNotUsed(request
   std::vector<ttk::rpd::Generator> generators(0);
   this->execute(points, diagram, generators);
 
-  GeneratorsToVTU(outputGenerators, pointSet->GetPoints(), generators, !OutputCascade);
+  GeneratorsToVTU(
+    outputGenerators, pointSet->GetPoints(), generators, !OutputCascade);
   DiagramToVTU(outputPersistenceDiagram, diagram, SimplexMaximumDiameter);
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);

@@ -25,8 +25,8 @@
 #include <ttkRipsPersistenceDiagramModule.h>
 
 // VTK Includes
-#include <vtkUnstructuredGrid.h>
 #include <ttkMacros.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK Includes
 #include <RipsPersistenceDiagram.h>
@@ -36,18 +36,17 @@ void DiagramToVTU(vtkUnstructuredGrid *vtu,
                   const std::vector<ttk::rpd::Diagram> &diagram,
                   double SimplexMaximumDiameter);
 
-void GeneratorsToVTU(
-  vtkUnstructuredGrid *vtu,
-  vtkPoints *inputPoints,
-  const std::vector<ttk::rpd::Generator> &generators,
-  bool parametrize = true);
+void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
+                     vtkPoints *inputPoints,
+                     const std::vector<ttk::rpd::Generator> &generators,
+                     bool parametrize = true);
 
-void MakeVtkPoints(
-  vtkPoints *points,
-  const std::vector<std::vector<double>>& pointsData);
+void MakeVtkPoints(vtkPoints *points,
+                   const std::vector<std::vector<double>> &pointsData);
 
 void ParametrizeGenerator(
-  std::unordered_map<ttk::rpd::Edge, double, boost::hash<ttk::rpd::Edge>> &parametrization,
+  std::unordered_map<ttk::rpd::Edge, double, boost::hash<ttk::rpd::Edge>>
+    &parametrization,
   const ttk::rpd::Generator &generator);
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram

@@ -28,24 +28,30 @@ namespace ttk {
     void execute(const std::vector<std::vector<double>> &points,
                  rpd::MultidimensionalDiagram &diagrams,
                  std::vector<rpd::Generator> &generators) const {
-      rpd::PairCellsWithOracle::callOracle(points, diagrams, SimplexMaximumDiameter);
+      rpd::PairCellsWithOracle::callOracle(
+        points, diagrams, SimplexMaximumDiameter);
       rpd::PairCellsWithOracle pc(points, diagrams, false, false);
       pc.setDebugLevel(debugLevel_);
       pc.run();
-      if (!OutputCascade)
+      if(!OutputCascade)
         pc.getGenerators(generators);
       else {
         rpd::EdgeSets4 criticalAndCascade;
         pc.getCascades(criticalAndCascade);
-        generators.emplace_back(criticalAndCascade[0], std::make_pair(0., 0.)); // MST
-        generators.emplace_back(criticalAndCascade[1], std::make_pair(1., 1.)); // RNG
-        generators.emplace_back(criticalAndCascade[2], std::make_pair(2., 2.)); // MML
-        generators.emplace_back(criticalAndCascade[3], std::make_pair(3., 3.)); // cascade
+        generators.emplace_back(
+          criticalAndCascade[0], std::make_pair(0., 0.)); // MST
+        generators.emplace_back(
+          criticalAndCascade[1], std::make_pair(1., 1.)); // RNG
+        generators.emplace_back(
+          criticalAndCascade[2], std::make_pair(2., 2.)); // MML
+        generators.emplace_back(
+          criticalAndCascade[3], std::make_pair(3., 3.)); // cascade
       }
     }
+
   protected:
-    double SimplexMaximumDiameter {rpd::inf};
+    double SimplexMaximumDiameter{rpd::inf};
     bool OutputCascade{false};
   };
 
-}
+} // namespace ttk

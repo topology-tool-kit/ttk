@@ -1,7 +1,7 @@
 #include <RipsPersistenceDiagramUtils.h>
 
 ttk::rpd::FiltratedEdge ttk::rpd::max(FiltratedEdge a, FiltratedEdge b) {
-  if (a.d > b.d)
+  if(a.d > b.d)
     return a;
   else
     return b;
@@ -10,12 +10,12 @@ ttk::rpd::FiltratedEdge ttk::rpd::max(FiltratedEdge a, FiltratedEdge b) {
 ttk::rpd::UnionFind::UnionFind(unsigned n) {
   parent_.resize(n);
   rank_.resize(n, 0);
-  for (unsigned i = 0; i < n; i++)
+  for(unsigned i = 0; i < n; i++)
     parent_[i] = i;
 }
 
 int ttk::rpd::UnionFind::find(int x) {
-  if (parent_[x] == x)
+  if(parent_[x] == x)
     return x;
   return parent_[x] = find(parent_[x]); // path compression
 }
@@ -23,10 +23,10 @@ int ttk::rpd::UnionFind::find(int x) {
 void ttk::rpd::UnionFind::merge(int x, int y) {
   const int rootX = find(x);
   const int rootY = find(y);
-  if (rootX != rootY) {
-    if (rank_[rootX] > rank_[rootY])
+  if(rootX != rootY) {
+    if(rank_[rootX] > rank_[rootY])
       parent_[rootY] = rootX;
-    else if (rank_[rootX] < rank_[rootY])
+    else if(rank_[rootX] < rank_[rootY])
       parent_[rootX] = rootY;
     else {
       parent_[rootY] = rootX;
@@ -38,10 +38,10 @@ void ttk::rpd::UnionFind::merge(int x, int y) {
 int ttk::rpd::UnionFind::mergeRet(int x, int y) {
   const int rootX = find(x);
   const int rootY = find(y);
-  if (rootX != rootY) {
-    if (rank_[rootX] > rank_[rootY])
+  if(rootX != rootY) {
+    if(rank_[rootX] > rank_[rootY])
       return parent_[rootY] = rootX;
-    else if (rank_[rootX] < rank_[rootY])
+    else if(rank_[rootX] < rank_[rootY])
       return parent_[rootX] = rootY;
     else {
       rank_[rootX]++;

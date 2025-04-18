@@ -23,9 +23,9 @@ namespace ttk::rpd {
   class PairCellsWithOracle : virtual public Debug {
   public:
     PairCellsWithOracle(const PointCloud &points,
-                        MultidimensionalDiagram const& oracle,
-                        bool distanceMatrix=false,
-                        bool parallelSort=false);
+                        MultidimensionalDiagram const &oracle,
+                        bool distanceMatrix = false,
+                        bool parallelSort = false);
 
     void run();
 
@@ -40,35 +40,38 @@ namespace ttk::rpd {
 
   private:
     const int n_;
-    std::vector<double> compressedDM_ {};
+    std::vector<double> compressedDM_{};
     const bool parallelSort_;
 
-    MultidimensionalDiagram const& oracle_;
-    double bound_ {0.};
+    MultidimensionalDiagram const &oracle_;
+    double bound_{0.};
 
     std::unordered_map<Edge, id_t, boost::hash<Edge>> edgeToIndex_;
-    std::vector<std::set<id_t, std::greater<>>> graph_ {}; //std::greater to match the reverse co-lexicographic order used in Ripser
-    std::vector<FiltratedEdge> edges_ {};
-    std::vector<FiltratedTriangle> triangles_ {};
-    std::vector<id_t> edgesIndices_ {};
-    std::vector<id_t> edgesOrder_ {};
+    std::vector<std::set<id_t, std::greater<>>>
+      graph_{}; // std::greater to match the reverse co-lexicographic order used
+                // in Ripser
+    std::vector<FiltratedEdge> edges_{};
+    std::vector<FiltratedTriangle> triangles_{};
+    std::vector<id_t> edgesIndices_{};
+    std::vector<id_t> edgesOrder_{};
 
-    std::vector<id_t> edgesPartner_ {};
-    std::vector<id_t> trianglesPartner_ {};
-    std::vector<std::vector<id_t>> boundaries_ {};
-    int nEdges_ {};
+    std::vector<id_t> edgesPartner_{};
+    std::vector<id_t> trianglesPartner_{};
+    std::vector<std::vector<id_t>> boundaries_{};
+    int nEdges_{};
 
-    std::vector<std::vector<id_t>> cascadeEdges_ {};
+    std::vector<std::vector<id_t>> cascadeEdges_{};
 
     /**
      * distance matrix access function
      */
-    double& DM(unsigned i, unsigned j) {
-      return compressedDM_[std::max(i,j) * (std::max(i,j) - 1) / 2 + std::min(i,j)];
+    double &DM(unsigned i, unsigned j) {
+      return compressedDM_[std::max(i, j) * (std::max(i, j) - 1) / 2
+                           + std::min(i, j)];
     }
 
-    const std::function<bool(id_t,id_t)> compEdges = [&](id_t i, id_t j) {
-      if (edges_[i].d == edges_[j].d)
+    const std::function<bool(id_t, id_t)> compEdges = [&](id_t i, id_t j) {
+      if(edges_[i].d == edges_[j].d)
         return edges_[i].e < edges_[j].e;
       else
         return edges_[i].d < edges_[j].d;
@@ -80,12 +83,12 @@ namespace ttk::rpd {
 
     template <typename EdgeSets>
     void fillRNG(EdgeSets &critical) const {
-      for (auto const& [birth, death] : oracle_[0]) {
-        if (death.second < inf)
+      for(auto const &[birth, death] : oracle_[0]) {
+        if(death.second < inf)
           critical[0].emplace_back(death.first[0], death.first[1]);
       }
-      for (auto const& [birth, death] : oracle_[1])
+      for(auto const &[birth, death] : oracle_[1])
         critical[1].emplace_back(birth.first[0], birth.first[1]);
     }
   };
-}
+} // namespace ttk::rpd
