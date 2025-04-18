@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <array>
 #include <vector>
 
 #include <boost/dynamic_bitset.hpp>
