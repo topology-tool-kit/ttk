@@ -19,6 +19,8 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #endif
 
+#include <set>
+
 namespace ttk::rpd {
 
   class PairCells : virtual public Debug {

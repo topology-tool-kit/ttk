@@ -1,5 +1,7 @@
 #include <PairCells.h>
 
+#include <numeric>
+
 using namespace ttk::rpd;
 
 #ifdef TTK_ENABLE_CGAL
@@ -97,6 +99,8 @@ void PairCells::initialize() {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for if(parallelMatrixConstruction_)
+#else
+  TTK_FORCE_USE(parallelMatrixConstruction_);
 #endif // TTK_ENABLE_OPENMP
   for(id_t i = 0; i < n_ - 2; ++i) {
     const unsigned index_i

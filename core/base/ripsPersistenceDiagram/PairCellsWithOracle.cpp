@@ -1,6 +1,8 @@
 #include <PairCellsWithOracle.h>
 #include <ripser.h>
 
+#include <numeric>
+
 ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
   const PointCloud &points,
   MultidimensionalDiagram const &oracle,

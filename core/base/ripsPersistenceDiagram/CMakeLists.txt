@@ -24,6 +24,8 @@ if (TTK_ENABLE_RIPSER_128BITS_IDS)
   target_compile_definitions(ripsPersistenceDiagram PUBLIC TTK_ENABLE_RIPSER_128BITS_IDS)
 endif()
 
+target_link_libraries(ripsPersistenceDiagram PUBLIC Boost::boost)
+
 if(TTK_ENABLE_CGAL)
   target_compile_definitions(ripsPersistenceDiagram PUBLIC TTK_ENABLE_CGAL)
   target_link_libraries(ripsPersistenceDiagram PRIVATE ${CGAL_LIBRARIES})
