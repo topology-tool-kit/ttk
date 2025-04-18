@@ -105,6 +105,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
@@ -191,6 +192,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
