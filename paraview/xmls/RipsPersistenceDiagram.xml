@@ -122,7 +122,7 @@
               panel_visibility="advanced" >
         <EnumerationDomain name="enum">
           <Entry value="0" text="Ripser (JACT 2021)"/>
-          <Entry value="1" text="Geometric"/>
+          <Entry value="1" text="Geometric (only in 2D)"/>
         </EnumerationDomain>
         <Documentation>
           Backend for the computation of the Rips persistence diagram.
