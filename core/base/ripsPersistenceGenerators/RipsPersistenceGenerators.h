@@ -39,13 +39,13 @@ namespace ttk {
         rpd::EdgeSets4 criticalAndCascade;
         pc.getCascades(criticalAndCascade);
         generators.emplace_back(
-          criticalAndCascade[0], std::make_pair(0., 0.)); // MST
+          criticalAndCascade[rpd::DEATH0], std::make_pair(0., 0.));
         generators.emplace_back(
-          criticalAndCascade[1], std::make_pair(1., 1.)); // RNG
+          criticalAndCascade[rpd::BIRTH1], std::make_pair(1., 1.));
         generators.emplace_back(
-          criticalAndCascade[2], std::make_pair(2., 2.)); // MML
+          criticalAndCascade[rpd::DEATH1], std::make_pair(2., 2.));
         generators.emplace_back(
-          criticalAndCascade[3], std::make_pair(3., 3.)); // cascade
+          criticalAndCascade[rpd::CASC1], std::make_pair(3., 3.));
       }
     }
 

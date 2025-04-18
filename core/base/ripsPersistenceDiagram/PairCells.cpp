@@ -319,12 +319,12 @@ void PairCells::getCascades(std::vector<Cascade> &cascades,
                             EdgeSets3 &critical) const {
   for(const id_t &e : edgesIndices_) {
     if(edgesPartner_[e] == -2) // MST
-      critical[MST].emplace_back(edges_[e].e);
+      critical[DEATH0].emplace_back(edges_[e].e);
     else if(edgesPartner_[e] > 0
             && edges_[e].d < triangles_[edgesPartner_[e]].d) {
       const Edge &killerEdge = edges_[cascadeEdges_[edgesPartner_[e]][0]].e;
-      critical[RNG].emplace_back(edges_[e].e); // RNG edge
-      critical[MML].emplace_back(killerEdge); // MML edge
+      critical[BIRTH1].emplace_back(edges_[e].e); // RNG edge
+      critical[DEATH1].emplace_back(killerEdge); // MML edge
       Cascade cascade = {killerEdge};
       for(unsigned i = 1; i < cascadeEdges_[edgesPartner_[e]].size() - 1; ++i)
         cascade.emplace_back(edges_[cascadeEdges_[edgesPartner_[e]][i]].e);
@@ -337,18 +337,18 @@ void PairCells::getCascades(EdgeSets4 &critical) const {
   std::set<id_t> cascadeSet;
   for(const id_t &e : edgesIndices_) {
     if(edgesPartner_[e] == -2) // MST
-      critical[MST].emplace_back(edges_[e].e);
+      critical[DEATH0].emplace_back(edges_[e].e);
     else if(edgesPartner_[e] > 0
             && edges_[e].d < triangles_[edgesPartner_[e]].d) {
       const Edge &killerEdge = edges_[cascadeEdges_[edgesPartner_[e]][0]].e;
-      critical[RNG].emplace_back(edges_[e].e); // RNG edge
-      critical[MML].emplace_back(killerEdge); // MML edge
+      critical[BIRTH1].emplace_back(edges_[e].e); // RNG edge
+      critical[DEATH1].emplace_back(killerEdge); // MML edge
       for(unsigned i = 1; i < cascadeEdges_[edgesPartner_[e]].size() - 1; ++i)
         cascadeSet.insert(cascadeEdges_[edgesPartner_[e]][i]);
     }
   }
   for(const id_t &e : cascadeSet)
-    critical[CASC].emplace_back(edges_[e].e);
+    critical[CASC1].emplace_back(edges_[e].e);
 }
 
 void PairCells::enrichCascades(std::set<Edge> &cascadeSet,
@@ -357,8 +357,9 @@ void PairCells::enrichCascades(std::set<Edge> &cascadeSet,
   for(const id_t &e : edgesIndices_) {
     if(edgesPartner_[e] > 0 && edges_[e].d < triangles_[edgesPartner_[e]].d) {
       const Edge &killerEdge = edges_[cascadeEdges_[edgesPartner_[e]][0]].e;
-      critical[MML].emplace_back(globalIndices[killerEdge.first],
-                                 globalIndices[killerEdge.second]); // MML edge
+      critical[DEATH1].emplace_back(
+        globalIndices[killerEdge.first],
+        globalIndices[killerEdge.second]); // MML edge
       for(unsigned i = 1; i < cascadeEdges_[edgesPartner_[e]].size() - 1; ++i) {
         const Edge &edge = edges_[cascadeEdges_[edgesPartner_[e]][i]].e;
         cascadeSet.emplace(

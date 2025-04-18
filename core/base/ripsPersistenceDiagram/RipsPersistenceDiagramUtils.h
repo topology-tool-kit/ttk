@@ -25,7 +25,7 @@ namespace ttk::rpd {
   using EdgeSet = std::vector<Edge>;
   using EdgeSets3 = std::array<EdgeSet, 3>;
   using EdgeSets4 = std::array<EdgeSet, 4>;
-  enum CRIT : std::uint8_t { MST, RNG, MML, CASC };
+  enum CRIT : std::uint8_t { DEATH0, BIRTH1, DEATH1, CASC1 };
   using Cascade = EdgeSet;
 
   using Generator = std::pair<EdgeSet, std::pair<value_t, value_t>>;

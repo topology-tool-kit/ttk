@@ -150,7 +150,7 @@ void ttk::rpd::PairCellsWithOracle::getCascades(std::vector<Cascade> &cascades,
                                                 EdgeSets3 &critical) const {
   fillRNG(critical);
   for(auto const &c : cascadeEdges_) {
-    critical[MML].emplace_back(edges_[c[0]].e);
+    critical[DEATH1].emplace_back(edges_[c[0]].e);
     Cascade cascade;
     for(id_t const &e_id : c)
       cascade.emplace_back(edges_[e_id].e);
@@ -162,10 +162,10 @@ void ttk::rpd::PairCellsWithOracle::getCascades(EdgeSets4 &critical) const {
   fillRNG(critical);
   std::set<id_t> cascadeSet;
   for(auto const &c : cascadeEdges_) {
-    critical[MML].emplace_back(edges_[c[0]].e);
+    critical[DEATH1].emplace_back(edges_[c[0]].e);
     for(unsigned i = 1; i < c.size(); ++i)
       cascadeSet.insert(c[i]);
   }
   for(const id_t &e_id : cascadeSet)
-    critical[CASC].emplace_back(edges_[e_id].e);
+    critical[CASC1].emplace_back(edges_[e_id].e);
 }
