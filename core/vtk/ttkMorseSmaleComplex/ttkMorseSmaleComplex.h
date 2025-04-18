@@ -192,8 +192,5 @@ protected:
 private:
   bool ForceInputOffsetScalarField{};
   int IterationThreshold{-1};
-  OutputCriticalPoints criticalPoints_{};
-  Output1Separatrices separatrices1_{};
-  Output2Separatrices separatrices2_{};
   OutputManifold segmentations_{};
 };
