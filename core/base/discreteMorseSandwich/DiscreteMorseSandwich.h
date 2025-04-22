@@ -435,7 +435,8 @@ namespace ttk {
         return;
       }
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel master num_threads(threadNumber_)
+#pragma omp parallel num_threads(threadNumber_)
+#pragma omp master
 #endif
       {
 #ifdef TTK_ENABLE_OPENMP
