@@ -25,7 +25,8 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
 
   // clear & init gradient memory
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel master num_threads(threadNumber_)
+#pragma omp parallel num_threads(threadNumber_)
+#pragma omp master
 #endif
   {
     for(int i = 0; i < dimensionality_; ++i) {
