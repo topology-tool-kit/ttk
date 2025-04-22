@@ -1,0 +1,9 @@
+NAME
+  ttkBettiNumbers
+SOURCES
+  ttkBettiNumbers.cpp
+HEADERS
+  ttkBettiNumbers.h
+DEPENDS
+  bettiNumbers
+  ttkAlgorithm
