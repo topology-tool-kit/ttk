@@ -161,8 +161,9 @@ int DiscreteVectorField::setManifoldSize(
 
   // descending manifold cells size
   if(!criticalCellsByDim[0].empty()) {
+    const SimplexId nMin =static_cast<SimplexId>(criticalCellsByDim[0].size());
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-      if(descendingManifold[i] != -1) {
+      if(descendingManifold[i] != -1 && descendingManifold[i]<nMin) {
         manifoldSize[descendingManifold[i]]++;
       }
     }
@@ -171,10 +172,10 @@ int DiscreteVectorField::setManifoldSize(
   if(!criticalCellsByDim[dim].empty()) {
     // index of first maximum in critical points array
     const auto nFirstMaximum{nCritPoints - criticalCellsByDim[dim].size()};
-
+    const SimplexId nMax = static_cast<SimplexId>(criticalCellsByDim[dim].size());
     // ascending manifold cells size
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-      if(ascendingManifold[i] != -1) {
+      if(ascendingManifold[i] != -1 && ascendingManifold[i]<nMax) {
         manifoldSize[ascendingManifold[i] + nFirstMaximum]++;
       }
     }

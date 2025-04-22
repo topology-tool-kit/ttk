@@ -160,7 +160,7 @@ namespace ttk {
         pairs.clear();
         // Simplify based on smallest options
         while(!options.empty()
-              and numCriticalPoints > static_cast<int>(criticalThreshold)) {
+              and numCriticalPoints-2 > static_cast<int>(criticalThreshold)) {
           CandidatePair bestOption = options.top();
           // Ensure the critical pair is still valid  (need the end(is it a
           // cycle that still exists?))

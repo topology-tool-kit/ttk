@@ -337,7 +337,8 @@ namespace ttk {
     template <typename triangulationType>
     int setAscendingSegmentation(const std::vector<SimplexId> &maxima,
                                  SimplexId *const morseSmaleManifold,
-                                 const triangulationType &triangulation) const;
+                                 const triangulationType &triangulation,
+                                SimplexId &numSources) const;
 
     /**
      * Compute the descending manifold of the 'sinks'
@@ -545,10 +546,11 @@ int ttk::TopologicalSkeleton::execute(OutputCriticalPoints &outCP,
 
   if(ComputeAscendingSegmentation || ComputeDescendingSegmentation) {
     Timer tmp;
+    SimplexId numSources{0};
 
     if(ComputeAscendingSegmentation) {
       setAscendingSegmentation(
-        criticalPoints[dim], outManifold.ascending_, triangulation);
+        criticalPoints[dim], outManifold.ascending_, triangulation, numSources);
     }
     if(ComputeDescendingSegmentation) {
       setDescendingSegmentation(
@@ -556,7 +558,7 @@ int ttk::TopologicalSkeleton::execute(OutputCriticalPoints &outCP,
     }
     if(ComputeAscendingSegmentation && ComputeDescendingSegmentation
        && ComputeFinalSegmentation) {
-      setFinalSegmentation(criticalPoints[dim].size(), outManifold.ascending_,
+      setFinalSegmentation(numSources, outManifold.ascending_,
                            outManifold.descending_, outManifold.morseSmale_,
                            triangulation);
     }
@@ -869,7 +871,8 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
   // cells visited during the propagation alongside one integral line
   std::vector<SimplexId> visited{};
   // all marked cells
-  std::vector<uint8_t> hasChecked(nCells, 0);
+  std::vector<uint8_t> hasChecked;
+  hasChecked.resize(nCells, 0);
   // cycle detection array
   std::vector<char> isCycle;
   isCycle.resize(nCells, 0);
@@ -896,6 +899,10 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
 // Critical section to safely update cycleVpaths
 #pragma omp critical
         { cycleVpaths.push_back(cyclePath); }
+        break;
+      }
+      //Break if critical cell
+      if(this->simplifierField_.dcvf_.isCellCritical(Cell{dim, curr})) {
         break;
       }
       // follow a V-path till an already marked cell is reached
@@ -926,7 +933,6 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
 
   SimplexId nCycles = cycleVpaths.size();
   separatrices.resize(nCycles);
-
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -1535,7 +1541,8 @@ template <typename triangulationType>
 int ttk::TopologicalSkeleton::setAscendingSegmentation(
   const std::vector<SimplexId> &maxima,
   SimplexId *const morseSmaleManifold,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation,
+  SimplexId &numSources) const {
 
   if(morseSmaleManifold == nullptr) {
     this->printErr("Could not compute ascending segmentation");
@@ -1640,6 +1647,8 @@ int ttk::TopologicalSkeleton::setAscendingSegmentation(
     // put segmentation infos from cells to points
     morseSmaleManifold[i] = morseSmaleManifoldOnCells[starId];
   }
+
+  numSources = static_cast<SimplexId>(nMax);
 
   this->printMsg("  Ascending segmentation computed", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
@@ -1762,7 +1771,7 @@ int ttk::TopologicalSkeleton::setFinalSegmentation(
   TTK_PSORT(
     this->threadNumber_, sparseRegionIds.begin(), sparseRegionIds.end());
   const auto last = std::unique(sparseRegionIds.begin(), sparseRegionIds.end());
-  sparseRegionIds.erase(last, sparseRegionIds.end());
+  sparseRegionIds.erase(last, sparseRegionIds.end()); //
 
   // "sparse region id" -> "dense region id"
   std::map<SimplexId, size_t> sparseToDenseRegionId{};

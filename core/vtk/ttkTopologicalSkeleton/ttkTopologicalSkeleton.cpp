@@ -137,7 +137,7 @@ int ttkTopologicalSkeleton::dispatch(vtkDataArray *const inputVectors,
     pointData->AddArray(cellIds);
     pointData->AddArray(isOnBoundary);
     pointData->AddArray(PLVertexIdentifiers);
-    pointData->AddArray(manifoldSizeScalars);
+    // pointData->AddArray(manifoldSizeScalars);
   }
 
   // 1-separatrices
