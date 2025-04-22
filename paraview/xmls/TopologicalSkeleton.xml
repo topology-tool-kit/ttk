@@ -177,7 +177,7 @@
        </IntVectorProperty>
 
        <IntVectorProperty name="ComputeFinalSegmentation"
-         label="Morse-Smale Complex Segmentation"
+         label="Intersecting Segmentation"
          command="SetComputeFinalSegmentation"
          number_of_elements="1"
          default_values="1"
@@ -185,7 +185,7 @@
          <BooleanDomain name="bool"/>
          <Documentation>
            Whether the domain should be segmented based on the intersection 
-           of ascending and descending paths(Morse-Smale).
+           of ascending and descending paths(similar to Morse-Smale).
          </Documentation>
        </IntVectorProperty>
 
