@@ -131,7 +131,6 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     = std::sqrt(std::pow(maxX - minX, 2) + std::pow(maxY - minY, 2)
                 + std::pow(maxZ - minZ, 2));
   int assignmentMethod = AssignmentMethod;
-  double epsilonAdapt = EpsilonAdapt;
 
   ttk::TrackingFromCriticalPoints tracker;
   tracker.setMeshDiameter(meshDiameter);
