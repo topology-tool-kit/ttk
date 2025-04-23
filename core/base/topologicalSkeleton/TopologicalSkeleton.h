@@ -338,7 +338,7 @@ namespace ttk {
     int setAscendingSegmentation(const std::vector<SimplexId> &maxima,
                                  SimplexId *const morseSmaleManifold,
                                  const triangulationType &triangulation,
-                                SimplexId &numSources) const;
+                                 SimplexId &numSources) const;
 
     /**
      * Compute the descending manifold of the 'sinks'
@@ -901,7 +901,7 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
         { cycleVpaths.push_back(cyclePath); }
         break;
       }
-      //Break if critical cell
+      // Break if critical cell
       if(this->simplifierField_.dcvf_.isCellCritical(Cell{dim, curr})) {
         break;
       }
