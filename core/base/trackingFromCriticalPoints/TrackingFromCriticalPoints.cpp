@@ -89,16 +89,16 @@ void ttk::TrackingFromCriticalPoints::buildCostMatrix(
         coords_1[i], sfValues_1[i], coords_2[j], sfValues_2[j]);
     }
   }
-    for(int i = size_1; i < matrix_size; i++) {
-      for(int j = 0; j < size_2; j++) {
-        matrix[i][j] = costDeathBirth;
-      }
+  for(int i = size_1; i < matrix_size; i++) {
+    for(int j = 0; j < size_2; j++) {
+      matrix[i][j] = costDeathBirth;
     }
-    for(int i = 0; i < size_1; i++) {
-      for(int j = size_2; j < matrix_size; j++) {
-        matrix[i][j] = costDeathBirth;
-      }
+  }
+  for(int i = 0; i < size_1; i++) {
+    for(int j = size_2; j < matrix_size; j++) {
+      matrix[i][j] = costDeathBirth;
     }
+  }
 }
 
 void ttk::TrackingFromCriticalPoints::performMatchings(
