@@ -76,6 +76,8 @@ private:
   bool ConstructSurface = false;
   bool ProcessSecondInput = false;
 
+  int DiagramPairTypes = 0;
+
   // ----------------------
   // Data for visualization
   // ----------------------
