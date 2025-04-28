@@ -1,10 +1,11 @@
 #pragma once
 
+#include <DiscreteGradient.h>
 #include <DiscreteVectorField.h>
 
 using ttk::SimplexId;
-using ttk::dcvf::Cell;
-using ttk::dcvf::CellExt;
+using ttk::dcg::Cell;
+using ttk::dcvf::CellOutExt;
 using ttk::dcvf::DiscreteVectorField;
 
 template <typename dataType, typename triangulationType>
@@ -384,7 +385,7 @@ inline void DiscreteVectorField::OutwardStar(
   }
 
   // a belongs to its outward star
-  os[0].emplace_back(CellExt{0, a});
+  os[0].emplace_back(CellOutExt{0, a});
 
   // store outward edges
   const auto nedges = triangulation.getVertexEdgeNumber(a);
@@ -400,11 +401,11 @@ inline void DiscreteVectorField::OutwardStar(
     float edgeWeight{0};
     if(compare<dataType, triangulationType>(
          triangulation, a, vertexId, edgeWeight)) {
-      os[1].emplace_back(CellExt{1,
-                                 edgeId,
-                                 {vertexId, -1, -1},
-                                 {-(edgeWeight), -INFINITY, -INFINITY},
-                                 {}});
+      os[1].emplace_back(CellOutExt{1,
+                                    edgeId,
+                                    {vertexId, -1, -1},
+                                    {-(edgeWeight), -INFINITY, -INFINITY},
+                                    {}});
     }
   }
 
@@ -455,7 +456,7 @@ inline void DiscreteVectorField::OutwardStar(
             lowVertWeights[1] = -(edgeWeight1);
           }
           os[2].emplace_back(
-            CellExt{2, triangleId, lowVerts, lowVertWeights, faces});
+            CellOutExt{2, triangleId, lowVerts, lowVertWeights, faces});
         }
       };
 
@@ -554,7 +555,7 @@ inline void DiscreteVectorField::OutwardStar(
                     lowVertWeights
                       .rend()); // Sort in decreasing order e.g.,(-1, -2, -3)
           os[3].emplace_back(
-            CellExt{3, cellId, lowVerts, lowVertWeights, faces});
+            CellOutExt{3, cellId, lowVerts, lowVertWeights, faces});
         }
       }
     }
@@ -563,7 +564,7 @@ inline void DiscreteVectorField::OutwardStar(
 
 template <typename triangulationType>
 inline void DiscreteVectorField::pairCells(
-  CellExt &alpha, CellExt &beta, const triangulationType &triangulation) {
+  CellOutExt &alpha, CellOutExt &beta, const triangulationType &triangulation) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
   char localBId{0}, localAId{0};
   SimplexId a{}, b{};
@@ -638,14 +639,15 @@ int DiscreteVectorField::processOutwardStars(
   auto nverts = triangulation.getNumberOfVertices();
 
   // Comparison function for Cells inside priority queues
-  const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
+  const auto orderCells
+    = [&](const CellOutExt &a, const CellOutExt &b) -> bool {
     return a.lowVertWeights_ > b.lowVertWeights_;
   };
 
   // Type alias for priority queues
   using pqType
-    = std::priority_queue<std::reference_wrapper<CellExt>,
-                          std::vector<std::reference_wrapper<CellExt>>,
+    = std::priority_queue<std::reference_wrapper<CellOutExt>,
+                          std::vector<std::reference_wrapper<CellOutExt>>,
                           decltype(orderCells)>;
 
   // To reduce allocations, priority queues and outwardStar objects are
@@ -675,7 +677,7 @@ int DiscreteVectorField::processOutwardStars(
     }
 
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
-    const auto insertCofacets = [&](const CellExt &ca, outwardStarType &ls) {
+    const auto insertCofacets = [&](const CellOutExt &ca, outwardStarType &ls) {
       if(ca.dim_ == 1) {
         for(auto &beta : ls[2]) {
           if(ls[1][beta.faces_[0]].id_ == ca.id_
@@ -930,7 +932,7 @@ int DiscreteVectorField::getDescendingPath(
         // Otherwise simulate the vpath connected with new saddle.
         if(!reverseFullOrbit) {
           // If desired, remove vpath around the cycle
-          while(vpath.back() != Cell(0, currentId)) {
+          while(!(vpath.back() == Cell(0, currentId))) {
             vpath.pop_back();
           }
         }
@@ -953,7 +955,7 @@ int DiscreteVectorField::getDescendingPath(
           for(SimplexId i = 0; i < triangleNumber; ++i) {
             SimplexId triangle;
             std::vector<Cell> newVpath;
-            newVpath.push_back(
+            newVpath.emplace_back(
               Cell(1, connectedEdgeId)); // Add saddle to vpath for persistence
                                          // calculation
             std::vector<char> ascIsCycle;
@@ -982,7 +984,7 @@ int DiscreteVectorField::getDescendingPath(
           }
           // Update the vpath with new path
           for(Cell newCell : vpathBest) {
-            vpath.push_back(newCell);
+            vpath.emplace_back(newCell);
           }
           numAlternates = 1 + bestAlternates;
           break;
@@ -990,7 +992,7 @@ int DiscreteVectorField::getDescendingPath(
       }
       // add a vertex
       const Cell vertex(0, currentId);
-      vpath.push_back(vertex);
+      vpath.emplace_back(vertex);
 
       if(isCellCritical(vertex)) {
         break;
@@ -1003,7 +1005,7 @@ int DiscreteVectorField::getDescendingPath(
 
       // add an edge
       const Cell edge(1, connectedEdgeId);
-      vpath.push_back(edge);
+      vpath.emplace_back(edge);
 
       if(isCellCritical(edge)) {
         break;
@@ -1049,7 +1051,7 @@ int DiscreteVectorField::getDescendingPathRecursive(
           if(vpath.size() == 0) {
             // add a vertex
             const Cell vertex(0, currentId);
-            vpath.push_back(vertex);
+            vpath.emplace_back(vertex);
           }
           break; // Already seen in previous recursive loop
         }
@@ -1062,7 +1064,7 @@ int DiscreteVectorField::getDescendingPathRecursive(
         // Otherwise simulate the vpath connected with new saddle
         if(!reverseFullOrbit) {
           // Remove vpath around the cycle(if desired)
-          while(vpath.back() != Cell(0, currentId)) {
+          while(!(vpath.back() == Cell(0, currentId))) {
             vpath.pop_back();
           }
         }
@@ -1085,7 +1087,7 @@ int DiscreteVectorField::getDescendingPathRecursive(
           for(SimplexId i = 0; i < triangleNumber; ++i) {
             SimplexId triangle;
             std::vector<Cell> newVpath;
-            newVpath.push_back(Cell(1, connectedEdgeId));
+            newVpath.emplace_back(Cell(1, connectedEdgeId));
             triangulation.getEdgeTriangle(connectedEdgeId, i, triangle);
             Cell firstTriangle = Cell(2, triangle);
             int alternates
@@ -1110,7 +1112,7 @@ int DiscreteVectorField::getDescendingPathRecursive(
           }
           // Update the vpath with new path
           for(Cell newCell : vpathBest) {
-            vpath.push_back(newCell);
+            vpath.emplace_back(newCell);
           }
           numAlternates = 1 + bestAlternates;
           break;
@@ -1118,7 +1120,7 @@ int DiscreteVectorField::getDescendingPathRecursive(
       }
       // add a vertex
       const Cell vertex(0, currentId);
-      vpath.push_back(vertex);
+      vpath.emplace_back(vertex);
 
       if(isCellCritical(vertex)) {
         break;
@@ -1131,7 +1133,7 @@ int DiscreteVectorField::getDescendingPathRecursive(
 
       // add an edge
       const Cell edge(1, connectedEdgeId);
-      vpath.push_back(edge);
+      vpath.emplace_back(edge);
 
       if(isCellCritical(edge)) {
         break;
@@ -1173,7 +1175,7 @@ bool DiscreteVectorField::getDescendingPathThroughWall(
   if(dimensionality_ == 3) {
     // add the 2-saddle to the path
     if(vpath != nullptr) {
-      vpath->push_back(saddle2);
+      vpath->emplace_back(saddle2);
     }
 
     SimplexId currentId = -1;
@@ -1186,7 +1188,7 @@ bool DiscreteVectorField::getDescendingPathThroughWall(
           // saddle2 can be adjacent to saddle1 on the wall
           if(isCellCritical(Cell(1, edgeId))) {
             if(vpath != nullptr) {
-              vpath->push_back(Cell(1, edgeId));
+              vpath->emplace_back(Cell(1, edgeId));
             }
             return false;
           }
@@ -1219,7 +1221,7 @@ bool DiscreteVectorField::getDescendingPathThroughWall(
       // add an edge
       const Cell edge(1, currentId);
       if(vpath != nullptr) {
-        vpath->push_back(edge);
+        vpath->emplace_back(edge);
       }
 
       if(isCellCritical(edge)) {
@@ -1231,7 +1233,7 @@ bool DiscreteVectorField::getDescendingPathThroughWall(
       // add a triangle
       const Cell triangle(2, connectedTriangleId);
       if(vpath != nullptr) {
-        vpath->push_back(triangle);
+        vpath->emplace_back(triangle);
       }
 
       if(isCellCritical(triangle)) {
@@ -1288,7 +1290,7 @@ int DiscreteVectorField::getAscendingPath(
           // Else, simulate finding the next path on the saddle
           if(!reverseFullOrbit) {
             // First, Remove vpath around the cycle
-            while(vpath.back() != Cell(2, currentId)) {
+            while(!(vpath.back() == Cell(2, currentId))) {
               vpath.pop_back();
             }
           }
@@ -1302,8 +1304,8 @@ int DiscreteVectorField::getAscendingPath(
             connectedEdgeId = vpath.back().id_;
             vpath.pop_back(); // Added back later
           }
-          // vpath.push_back(Cell(1, connectedEdgeId));//Need to add the saddle
-          // skipping over(handled later)
+          // vpath.emplace_back(Cell(1, connectedEdgeId));//Need to add the
+          // saddle skipping over(handled later)
           float bestWeight{std::numeric_limits<float>::max()};
           int bestAlternates{0};
           bool firstCellCritical{false};
@@ -1311,7 +1313,7 @@ int DiscreteVectorField::getAscendingPath(
           for(int i = 0; i < 2; ++i) {
             SimplexId vertex;
             std::vector<Cell> newVpath;
-            newVpath.push_back(Cell(1, connectedEdgeId));
+            newVpath.emplace_back(Cell(1, connectedEdgeId));
             const SimplexId numberOfVerts = triangulation.getNumberOfVertices();
             std::vector<char> descIsCycle;
             descIsCycle.resize(numberOfVerts, 0);
@@ -1338,7 +1340,7 @@ int DiscreteVectorField::getAscendingPath(
           }
           // Update the vpath with new path
           for(Cell newCell : vpathBest) {
-            vpath.push_back(newCell);
+            vpath.emplace_back(newCell);
           }
           numAlternates = 1 + bestAlternates;
           break;
@@ -1346,7 +1348,7 @@ int DiscreteVectorField::getAscendingPath(
 
         // add a triangle
         const Cell triangle(2, currentId);
-        vpath.push_back(triangle);
+        vpath.emplace_back(triangle);
 
         if(isCellCritical(triangle)) {
           break;
@@ -1360,7 +1362,7 @@ int DiscreteVectorField::getAscendingPath(
 
         // add an edge
         const Cell edge(1, connectedEdgeId);
-        vpath.push_back(edge);
+        vpath.emplace_back(edge);
 
         if(isCellCritical(edge)) {
           break;
@@ -1398,7 +1400,7 @@ int DiscreteVectorField::getAscendingPath(
 
         // add a tetra
         const Cell tetra(3, currentId);
-        vpath.push_back(tetra);
+        vpath.emplace_back(tetra);
 
         if(isCellCritical(tetra)) {
           break;
@@ -1412,7 +1414,7 @@ int DiscreteVectorField::getAscendingPath(
 
         // add a triangle
         const Cell triangle(2, connectedTriangleId);
-        vpath.push_back(triangle);
+        vpath.emplace_back(triangle);
 
         if(isCellCritical(triangle)) {
           break;
@@ -1463,7 +1465,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
             if(vpath.size() == 0) {
               // add a triangle
               const Cell triangle(2, currentId);
-              vpath.push_back(triangle);
+              vpath.emplace_back(triangle);
             }
             break; // Already traced path previously
           }
@@ -1475,7 +1477,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
           // Simulate finding the next path on the saddle
           // First, Remove vpath around the cycle(if we don't want to trace it)
           if(!reverseFullOrbit) {
-            while(vpath.back() != Cell(2, currentId)) {
+            while(!(vpath.back() == Cell(2, currentId))) {
               vpath.pop_back();
             }
           }
@@ -1496,7 +1498,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
           for(int i = 0; i < 2; ++i) {
             SimplexId vertex;
             std::vector<Cell> newVpath;
-            newVpath.push_back(Cell(1, connectedEdgeId));
+            newVpath.emplace_back(Cell(1, connectedEdgeId));
             triangulation.getEdgeVertex(connectedEdgeId, i, vertex);
             Cell firstVertex = Cell(0, vertex);
             int alternates
@@ -1521,7 +1523,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
           }
           // Update the vpath with new path
           for(Cell newCell : vpathBest) {
-            vpath.push_back(newCell);
+            vpath.emplace_back(newCell);
           }
           numAlternates = 1 + bestAlternates;
           break;
@@ -1529,7 +1531,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
 
         // add a triangle
         const Cell triangle(2, currentId);
-        vpath.push_back(triangle);
+        vpath.emplace_back(triangle);
 
         if(isCellCritical(triangle)) {
           break;
@@ -1543,7 +1545,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
 
         // add an edge
         const Cell edge(1, connectedEdgeId);
-        vpath.push_back(edge);
+        vpath.emplace_back(edge);
 
         if(isCellCritical(edge)) {
           break;
@@ -1581,7 +1583,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
 
         // add a tetra
         const Cell tetra(3, currentId);
-        vpath.push_back(tetra);
+        vpath.emplace_back(tetra);
 
         if(isCellCritical(tetra)) {
           break;
@@ -1595,7 +1597,7 @@ int DiscreteVectorField::getAscendingPathRecursive(
 
         // add a triangle
         const Cell triangle(2, connectedTriangleId);
-        vpath.push_back(triangle);
+        vpath.emplace_back(triangle);
 
         if(isCellCritical(triangle)) {
           break;
@@ -1637,7 +1639,7 @@ void DiscreteVectorField::getAscendingPathThroughWall(
   if(dimensionality_ == 3) {
     // add the 1-saddle to the path
     if(vpath != nullptr) {
-      vpath->push_back(saddle1);
+      vpath->emplace_back(saddle1);
     }
 
     SimplexId currentId = -1;
@@ -1652,7 +1654,7 @@ void DiscreteVectorField::getAscendingPathThroughWall(
           // saddle1 can be adjacent to saddle2 on the wall
           if(isCellCritical(Cell(2, triangleId))) {
             if(vpath != nullptr) {
-              vpath->push_back(Cell(2, triangleId));
+              vpath->emplace_back(Cell(2, triangleId));
             }
             return;
           }
@@ -1660,7 +1662,7 @@ void DiscreteVectorField::getAscendingPathThroughWall(
             currentId = triangleId;
             ++nconnections;
           } else {
-            alternatePathStack.push_back(triangleId);
+            alternatePathStack.emplace_back(triangleId);
           }
         }
       }
@@ -1689,7 +1691,7 @@ void DiscreteVectorField::getAscendingPathThroughWall(
       // add a triangle
       const Cell triangle(2, currentId);
       if(vpath != nullptr) {
-        vpath->push_back(triangle);
+        vpath->emplace_back(triangle);
       }
 
       if(isCellCritical(triangle)) {
@@ -1702,7 +1704,7 @@ void DiscreteVectorField::getAscendingPathThroughWall(
       // add an edge
       const Cell edge(1, connectedEdgeId);
       if(vpath != nullptr) {
-        vpath->push_back(edge);
+        vpath->emplace_back(edge);
       }
 
       if(isCellCritical(edge)) {
@@ -1722,7 +1724,7 @@ void DiscreteVectorField::getAscendingPathThroughWall(
             currentId = triangleId;
             ++nconnections;
           } else {
-            alternatePathStack.push_back(triangleId);
+            alternatePathStack.emplace_back(triangleId);
           }
         }
       }
@@ -1777,7 +1779,7 @@ int DiscreteVectorField::getDescendingWall(
 
           // add the triangle
           if(wall != nullptr) {
-            wall->push_back(Cell(2, triangleId));
+            wall->emplace_back(Cell(2, triangleId));
           }
 
           for(int j = 0; j < 3; ++j) {
@@ -1840,7 +1842,7 @@ int DiscreteVectorField::getAscendingWall(
 
           // add the edge
           if(wall != nullptr) {
-            wall->push_back(Cell(1, edgeId));
+            wall->emplace_back(Cell(1, edgeId));
           }
 
           const SimplexId triangleNumber
@@ -2012,9 +2014,9 @@ int DiscreteVectorField::reverseAlternatingPath(
     }
     // Assume the first cell is always an edge
     for(SimplexId i = 0; i < numberOfCellsInPath; i += 2) {
-      currentVpath.push_back(vpath[i]);
+      currentVpath.emplace_back(vpath[i]);
       if(currentDim == vpath[i + 1].dim_) {
-        currentVpath.push_back(vpath[i + 1]);
+        currentVpath.emplace_back(vpath[i + 1]);
       } else {
         if(currentDim == 0) {
           reverseDescendingPath(currentVpath, triangulation);
@@ -2022,9 +2024,9 @@ int DiscreteVectorField::reverseAlternatingPath(
           reverseAscendingPath(currentVpath, triangulation);
         }
         currentVpath.clear();
-        currentVpath.push_back(vpath[i]);
+        currentVpath.emplace_back(vpath[i]);
         currentDim = vpath[i + 1].dim_;
-        currentVpath.push_back(vpath[i + 1]);
+        currentVpath.emplace_back(vpath[i + 1]);
       }
     }
     if(currentDim == 0) {

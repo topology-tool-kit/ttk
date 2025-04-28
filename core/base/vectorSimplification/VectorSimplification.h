@@ -29,7 +29,7 @@
 
 #include <DiscreteVectorField.h>
 
-using ttk::dcvf::Cell;
+using ttk::dcg::Cell;
 
 #include <algorithm>
 #include <numeric>
@@ -160,7 +160,8 @@ namespace ttk {
         pairs.clear();
         // Simplify based on smallest options
         while(!options.empty()
-              and numCriticalPoints-2 >= static_cast<int>(criticalThreshold)) {
+              and numCriticalPoints - 2
+                    >= static_cast<int>(criticalThreshold)) {
           CandidatePair bestOption = options.top();
           // Ensure the critical pair is still valid  (need the end(is it a
           // cycle that still exists?))
@@ -216,9 +217,9 @@ namespace ttk {
           std::vector<Cell> vpath;
           // Add the saddle
           if(bestOption.type == 0) {
-            vpath.push_back(Cell(1, bestOption.death));
+            vpath.emplace_back(Cell(1, bestOption.death));
           } else if(bestOption.type == 2) {
-            vpath.push_back(Cell(1, bestOption.birth));
+            vpath.emplace_back(Cell(1, bestOption.birth));
           }
           // Then trace desc/asc path
           if(bestOption.nextCell.dim_ == 0) {

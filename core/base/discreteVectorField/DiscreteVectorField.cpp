@@ -53,7 +53,7 @@ void DiscreteVectorField::initMemory(
 }
 
 std::pair<size_t, SimplexId>
-  DiscreteVectorField::numUnpairedFaces(const CellExt &c,
+  DiscreteVectorField::numUnpairedFaces(const CellOutExt &c,
                                         const outwardStarType &ls) const {
   // c.dim_ cannot be <= 1
   if(c.dim_ == 2) {
@@ -66,7 +66,7 @@ std::pair<size_t, SimplexId>
 }
 
 std::pair<size_t, SimplexId> DiscreteVectorField::numUnpairedFacesTriangle(
-  const CellExt &c, const outwardStarType &ls) const {
+  const CellOutExt &c, const outwardStarType &ls) const {
   // number of unpaired faces
   std::pair<size_t, SimplexId> res{0, -1};
 
@@ -83,7 +83,7 @@ std::pair<size_t, SimplexId> DiscreteVectorField::numUnpairedFacesTriangle(
 }
 
 std::pair<size_t, SimplexId>
-  DiscreteVectorField::numUnpairedFacesTetra(const CellExt &c,
+  DiscreteVectorField::numUnpairedFacesTetra(const CellOutExt &c,
                                              const outwardStarType &ls) const {
   // number of unpaired faces
   std::pair<size_t, SimplexId> res{0, -1};
@@ -161,9 +161,9 @@ int DiscreteVectorField::setManifoldSize(
 
   // descending manifold cells size
   if(!criticalCellsByDim[0].empty()) {
-    const SimplexId nMin =static_cast<SimplexId>(criticalCellsByDim[0].size());
+    const SimplexId nMin = static_cast<SimplexId>(criticalCellsByDim[0].size());
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-      if(descendingManifold[i] != -1 && descendingManifold[i]<nMin) {
+      if(descendingManifold[i] != -1 && descendingManifold[i] < nMin) {
         manifoldSize[descendingManifold[i]]++;
       }
     }
@@ -172,10 +172,11 @@ int DiscreteVectorField::setManifoldSize(
   if(!criticalCellsByDim[dim].empty()) {
     // index of first maximum in critical points array
     const auto nFirstMaximum{nCritPoints - criticalCellsByDim[dim].size()};
-    const SimplexId nMax = static_cast<SimplexId>(criticalCellsByDim[dim].size());
+    const SimplexId nMax
+      = static_cast<SimplexId>(criticalCellsByDim[dim].size());
     // ascending manifold cells size
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-      if(ascendingManifold[i] != -1 && ascendingManifold[i]<nMax) {
+      if(ascendingManifold[i] != -1 && ascendingManifold[i] < nMax) {
         manifoldSize[ascendingManifold[i] + nFirstMaximum]++;
       }
     }

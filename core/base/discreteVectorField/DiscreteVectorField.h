@@ -15,6 +15,7 @@
 #pragma once
 
 // base code includes
+#include <DiscreteGradient.h>
 #include <Geometry.h>
 #include <SurfaceGeometrySmoother.h>
 #include <Triangulation.h>
@@ -27,50 +28,25 @@
 #include <set>
 #include <utility>
 
+using ttk::dcg::Cell;
+
 namespace ttk {
 
   namespace dcvf {
-    /**
-     * Basic concept of cell, so it must be able to identify any cell of any
-     * dimension.
-     */
-    struct Cell {
-      explicit Cell() = default;
-
-      explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
-      }
-
-      inline bool operator==(const Cell &other) const {
-        return std::tie(this->dim_, this->id_)
-               == std::tie(other.dim_, other.id_);
-      }
-
-      inline bool operator!=(const Cell &other) const {
-        return !(*this == other);
-      }
-
-      inline std::string to_string() const {
-        return '{' + std::to_string(this->dim_) + ' '
-               + std::to_string(this->id_) + '}';
-      }
-
-      int dim_{-1};
-      SimplexId id_{-1};
-    };
 
     enum connectionValue { NULL_CONNECTION = -1, GHOST_CONNECTION = -2 };
 
     /**
      * @brief Extended Cell structure for processOutwardStars
      */
-    struct CellExt : Cell {
-      explicit CellExt(const int dim, const SimplexId id) : Cell{dim, id} {
+    struct CellOutExt : Cell {
+      explicit CellOutExt(const int dim, const SimplexId id) : Cell{dim, id} {
       }
-      explicit CellExt(const int dim,
-                       const SimplexId id,
-                       const std::array<SimplexId, 3> &lowVerts,
-                       const std::array<float, 3> &lowVertWeights,
-                       const std::array<uint8_t, 3> &faces)
+      explicit CellOutExt(const int dim,
+                          const SimplexId id,
+                          const std::array<SimplexId, 3> &lowVerts,
+                          const std::array<float, 3> &lowVertWeights,
+                          const std::array<uint8_t, 3> &faces)
         : Cell{dim, id}, lowVerts_{lowVerts},
           lowVertWeights_{lowVertWeights}, faces_{faces} {
       }
@@ -418,7 +394,7 @@ namespace ttk {
       /**
        * Type alias for Outward stars of a given cell
        */
-      using outwardStarType = std::array<std::vector<CellExt>, 4>;
+      using outwardStarType = std::array<std::vector<CellOutExt>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -444,12 +420,12 @@ namespace ttk {
        * @return Number of unpaired faces and a face id
        */
       std::pair<size_t, SimplexId>
-        numUnpairedFaces(const CellExt &c, const outwardStarType &ls) const;
+        numUnpairedFaces(const CellOutExt &c, const outwardStarType &ls) const;
       std::pair<size_t, SimplexId>
-        numUnpairedFacesTriangle(const CellExt &c,
+        numUnpairedFacesTriangle(const CellOutExt &c,
                                  const outwardStarType &ls) const;
       std::pair<size_t, SimplexId>
-        numUnpairedFacesTetra(const CellExt &c,
+        numUnpairedFacesTetra(const CellOutExt &c,
                               const outwardStarType &ls) const;
 
       /**
@@ -459,8 +435,8 @@ namespace ttk {
        * @param[in] beta Cell of higher dimension
        */
       template <typename triangulationType>
-      inline void pairCells(CellExt &alpha,
-                            CellExt &beta,
+      inline void pairCells(CellOutExt &alpha,
+                            CellOutExt &beta,
                             const triangulationType &triangulation);
 
       /**

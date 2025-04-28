@@ -198,15 +198,15 @@ namespace ttk {
      */
     struct Separatrix {
       /** Source cell of the separatrix. */
-      dcvf::Cell source_;
+      dcg::Cell source_;
       /** Destination cell of the separatrix. */
-      dcvf::Cell destination_;
+      dcg::Cell destination_;
       /**
        * Container of ids. Each id addresses a separate
        * container corresponding to a dense representation
        * of the geometry (i.e. separatricesGeometry).
        */
-      std::vector<dcvf::Cell> geometry_;
+      std::vector<dcg::Cell> geometry_;
     };
 
     /**
@@ -619,7 +619,7 @@ int ttk::TopologicalSkeleton::getDescendingSeparatrices1(
         triangulation.getEdgeVertex(saddle1.id_, j, vertexId);
 
         std::vector<Cell> vpath;
-        vpath.push_back(saddle1);
+        vpath.emplace_back(saddle1);
         simplifierField_.dcvf_.getDescendingPath<dataType, triangulationType>(
           Cell(0, vertexId), vpath, triangulation, true);
 
@@ -793,15 +793,15 @@ int ttk::TopologicalSkeleton::getAttractingCycles1(
       if(isCycle[curr] == 1) {
         std::vector<Cell> cyclePath{Cell{0, curr}};
         while(visited.back() != curr) {
-          cyclePath.push_back(Cell{0, visited.back()});
+          cyclePath.emplace_back(Cell{0, visited.back()});
 
           hasChecked[visited.back()] = 1;
           visited.pop_back();
         }
-        cyclePath.push_back(Cell{0, curr});
+        cyclePath.emplace_back(Cell{0, curr});
 // Critical section to safely update cycleVpaths
 #pragma omp critical
-        { cycleVpaths.push_back(cyclePath); }
+        { cycleVpaths.emplace_back(cyclePath); }
         break;
       }
       if(this->simplifierField_.dcvf_.isCellCritical(Cell{0, curr})) {
@@ -891,14 +891,14 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
       if(isCycle[curr] == 1) {
         std::vector<Cell> cyclePath{Cell{dim, curr}};
         while(visited.back() != curr) {
-          cyclePath.push_back(Cell{dim, visited.back()});
+          cyclePath.emplace_back(Cell{dim, visited.back()});
           hasChecked[visited.back()] = 1;
           visited.pop_back();
         }
-        cyclePath.push_back(Cell{dim, curr});
+        cyclePath.emplace_back(Cell{dim, curr});
 // Critical section to safely update cycleVpaths
 #pragma omp critical
-        { cycleVpaths.push_back(cyclePath); }
+        { cycleVpaths.emplace_back(cyclePath); }
         break;
       }
       // Break if critical cell
@@ -1006,9 +1006,9 @@ int ttk::TopologicalSkeleton::setSeparatrices1(
     const auto &sepGeom = sep.geometry_;
     const auto sepId = separatrixId + i;
     // saddle (asc/desc sep) or saddle1 (saddle connector)
-    const dcvf::Cell &src = sep.source_;
+    const dcg::Cell &src = sep.source_;
     // extremum/ cycle (asc/desc sep) or saddle2 (saddle connector)
-    const dcvf::Cell &dst = sep.destination_;
+    const dcg::Cell &dst = sep.destination_;
 
     // get separatrix type
     const auto saddleConnector
@@ -1258,7 +1258,7 @@ int ttk::TopologicalSkeleton::setAscendingSeparatrices2(
     const auto &sepGeom = sep.geometry_;
     const auto &sepSaddles = separatricesSaddles[i];
     const auto sepId = separatrixId + i;
-    const dcvf::Cell &src = sep.source_; // saddle1
+    const auto &src = sep.source_; // saddle1
 
     // get boundary condition
     const char onBoundary
@@ -1447,7 +1447,7 @@ int ttk::TopologicalSkeleton::setDescendingSeparatrices2(
     const auto &sepGeom = sep.geometry_;
     const auto &sepSaddles = separatricesSaddles[i];
     const auto sepId = separatrixId + i;
-    const dcvf::Cell &src = sep.source_; // saddle2
+    const auto &src = sep.source_; // saddle2
     const char sepType = 2;
 
     // get boundary condition
