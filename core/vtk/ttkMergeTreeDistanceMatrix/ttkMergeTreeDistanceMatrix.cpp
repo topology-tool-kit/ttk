@@ -102,14 +102,16 @@ int ttkMergeTreeDistanceMatrix::run(
   // Construct trees
   const int numInputs = inputTrees.size();
   std::vector<MergeTree<dataType>> intermediateTrees, intermediateTrees2;
-  bool const useSadMaxPairs = (mixtureCoefficient_ == 0); // only for PD support
-  isPersistenceDiagram_
-    = constructTrees(inputTrees, intermediateTrees, useSadMaxPairs);
+  bool const useSecondPairsType
+    = (mixtureCoefficient_ == 0); // only for PD support
+  isPersistenceDiagram_ = constructTrees(
+    inputTrees, intermediateTrees, useSecondPairsType, DiagramPairTypes);
   if(not isPersistenceDiagram_
      or (mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1)) {
     auto &inputTrees2ToUse
       = (not isPersistenceDiagram_ ? inputTrees2 : inputTrees);
-    constructTrees(inputTrees2ToUse, intermediateTrees2, !useSadMaxPairs);
+    constructTrees(inputTrees2ToUse, intermediateTrees2, !useSecondPairsType,
+                   DiagramPairTypes);
   }
 
   // Verify parameters
