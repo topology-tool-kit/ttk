@@ -48,6 +48,9 @@ public:
 
   vtkSetMacro(PZ, double);
   vtkGetMacro(PZ, double);
+
+  vtkSetMacro(PF, double);
+  vtkGetMacro(PF, double);
   
   vtkSetMacro(MergeEdgesOnSaddles, bool);
   vtkGetMacro(MergeEdgesOnSaddles, bool);
@@ -93,13 +96,18 @@ protected:
 
   void appendPoint(vtkPoints *points,
                    const int &index,
-                   std::vector<std::array<double, 3>> &coords);
+                   const double &scalar,
+                   std::vector<std::array<double, 3>> &coords,
+                   std::vector<double> &scalars);
+
 
   int prepareData(vtkDataSet *block,
                   std::vector<int> &localToGlobal,
                   GraphMatrixFull &adjacencyMatrixFull,
                   std::vector<std::array<double, 3>> &coordsSource,
                   std::vector<std::array<double, 3>> &coordsDestination,
+                  std::vector<double> &scalarsSource,
+                  std::vector<double> &scalarsDestinatoin,
                   int &n_separatrices,
                   std::vector<int> &globalSourcePointId,
                   std::vector<int> &globalDestinationPointId);

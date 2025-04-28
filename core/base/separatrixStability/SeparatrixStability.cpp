@@ -21,6 +21,8 @@ void ttk::SeparatrixStability::assignmentSolver(
 void ttk::SeparatrixStability::buildCostMatrix(
   const std::vector<std::array<double, 3>> &coords1,
   const std::vector<std::array<double, 3>> &coords2,
+  const std::vector<double> &scalars1,
+  const std::vector<double> &scalars2,
   std::vector<std::vector<double>> &costMatrix) {
   int size_1 = coords1.size();
   int size_2 = coords2.size();
@@ -35,7 +37,8 @@ void ttk::SeparatrixStability::buildCostMatrix(
         = std::sqrt(
           Px*std::pow(coords1[i][0] - coords2[j][0], 2)
         + Py*std::pow(coords1[i][1] - coords2[j][1], 2)
-        + Pz*std::pow(coords1[i][2] - coords2[j][2], 2));
+        + Pz*std::pow(coords1[i][2] - coords2[j][2], 2)
+        + Pf*std::pow(scalars1[i] - scalars2[j], 2));
       }
     }
   }
@@ -71,6 +74,7 @@ void ttk::SeparatrixStability::buildCostMatrix(
 
 int ttk::SeparatrixStability::buildMatchingsWithOtherBlocks(
   const std::vector<std::vector<std::array<double, 3>>> &coords,
+  const std::vector<std::vector<double>> &scalars,
   const int &block_id,
   std::vector<std::vector<MatchingType>> &matchings) {
 
@@ -81,7 +85,7 @@ int ttk::SeparatrixStability::buildMatchingsWithOtherBlocks(
       continue;
     std::vector<std::vector<double>> costMatrix;
     int blockIdInMatchingVector = i < block_id ? i : i - 1;
-    buildCostMatrix(coords[block_id], coords[i], costMatrix);
+    buildCostMatrix(coords[block_id], coords[i], scalars[block_id], scalars[i], costMatrix);
     assignmentSolver(costMatrix, matchings[blockIdInMatchingVector]);
   }
   return 1;
@@ -92,6 +96,8 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   const int &n_separatrices,
   const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
   const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
+  const std::vector<std::vector<double>> &scalarsSource,
+  const std::vector<std::vector<double>> &scalarsDestination,
   const int &block_id,
   std::vector<int> &edgeOccurences,
   std::vector<bool> &isIsomorphicWith,
@@ -118,9 +124,9 @@ int ttk::SeparatrixStability::buildOccurenceArraysFull(
   std::vector<std::vector<MatchingType>> matchingsSource(n_blocks - 1);
   std::vector<std::vector<MatchingType>> matchingsDestination(n_blocks - 1);
   
-  buildMatchingsWithOtherBlocks(coordsSource, block_id, matchingsSource);
+  buildMatchingsWithOtherBlocks(coordsSource, scalarsSource, block_id, matchingsSource);
   buildMatchingsWithOtherBlocks(
-    coordsDestination, block_id, matchingsDestination);
+    coordsDestination, scalarsDestination, block_id, matchingsDestination);
     
   
 
@@ -236,6 +242,7 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   const std::vector<GraphMatrixFull> &adjacencyMatricesFull,
   const int &n_separatrices,
   const std::vector<std::vector<std::array<double, 3>>> &coords,
+  const std::vector<std::vector<double>> &scalars,
   const int &block_id,
   std::vector<int> &edgeOccurences,
   std::vector<bool> &isIsomorphicWith,
@@ -293,7 +300,7 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
   }
 
   std::vector<std::vector<MatchingType>> matchings(n_blocks - 1);
-  buildMatchingsWithOtherBlocks(coords, block_id, matchings);
+  buildMatchingsWithOtherBlocks(coords, scalars, block_id, matchings);
 
   for(int k = 0; k < n_blocks; k++) {
     if(k == block_id)continue;
@@ -354,16 +361,18 @@ int ttk::SeparatrixStability::buildOccurenceArraysMinor(
 }
 
 int ttk::SeparatrixStability::buildOccurenceArrays(
-      const std::vector<GraphMatrixFull> &adjacencyMatrices,
-      const std::vector<int> &separatrixCountForEachBlock,
-      const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
-      const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
-      const bool &mergeEdgesOnSaddles,
-      std::vector<std::vector<int>> &edgesOccurencesForEachBlock,
-      std::vector<std::vector<bool>> &isomorphismForEachBlock,
-      std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockSource,
-      std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockDestination,
-      std::vector<std::vector<std::vector<int>>> &matchingArraySeparatrixForEachBlock){
+    const std::vector<GraphMatrixFull> &adjacencyMatrices,
+    const std::vector<int> &separatrixCountForEachBlock ,
+    const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
+    const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
+    const std::vector<std::vector<double>> &scalarsSource,
+    const std::vector<std::vector<double>> &scalarsDestination,
+    const bool &mergeEdgesOnSaddles, 
+    std::vector<std::vector<int>> &edgesOccurencesForEachBlock,
+    std::vector<std::vector<bool>> &isomorphismForEachBlock,
+    std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockSource,
+    std::vector<std::vector<std::vector<int>>> &matchingArrayForEachBlockDestination,
+    std::vector<std::vector<std::vector<int>>> &matchingArraySeparatrixForEachBlock){
 
   int n_blocks = adjacencyMatrices.size();
   int status;
@@ -381,14 +390,14 @@ int ttk::SeparatrixStability::buildOccurenceArrays(
     if(!mergeEdgesOnSaddles) {
       status = this->buildOccurenceArraysFull(
         adjacencyMatrices, separatrixCountForEachBlock[i], coordsSource,
-        coordsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i],
+        coordsDestination, scalarsSource, scalarsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i],
         matchingArrayForEachBlockSource[i],
         matchingArrayForEachBlockDestination[i],
         matchingArraySeparatrixForEachBlock[i]);
     } else {
       status = this->buildOccurenceArraysMinor(
         adjacencyMatrices, separatrixCountForEachBlock[i],
-        coordsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i],
+        coordsDestination, scalarsDestination, i, edgesOccurencesForEachBlock[i], isomorphismForEachBlock[i],
         matchingArrayForEachBlockDestination[i],
         matchingArraySeparatrixForEachBlock[i]);
     }

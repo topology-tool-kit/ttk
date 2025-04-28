@@ -24,6 +24,8 @@ namespace ttk {
       const std::vector<int> &separatrixCountForEachBlock ,
       const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
       const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
+      const std::vector<std::vector<double>> &scalarsSource,
+      const std::vector<std::vector<double>> &scalarsDestination,
       const bool &mergeEdgesOnSaddles, 
       std::vector<std::vector<int>> &edgesOccurencesForEachBlock,
       std::vector<std::vector<bool>> &isomorphismForEachBlock,
@@ -35,16 +37,18 @@ namespace ttk {
       epsilon=e;
     }
 
-    inline void setWeights(const double &px, const double &py, const double &pz){
+    inline void setWeights(const double &px, const double &py, const double &pz, const double &pf){
       Px=px;
       Py=py;
       Pz=pz;
+      Pf=pf;
     }
 
   private:
 
     int buildMatchingsWithOtherBlocks(
       const std::vector<std::vector<std::array<double, 3>>> &coords,
+      const std::vector<std::vector<double>> &scalars,
       const int &block_id,
       std::vector<std::vector<MatchingType>> &matchings);
 
@@ -53,6 +57,8 @@ namespace ttk {
 
     void buildCostMatrix(const std::vector<std::array<double, 3>> &coords1,
                          const std::vector<std::array<double, 3>> &coords2,
+                         const std::vector<double> &scalars1,
+                         const std::vector<double> &scalars2,
                          std::vector<std::vector<double>> &matrix);
 
     void assignmentSolver(std::vector<std::vector<double>> &costMatrix,
@@ -63,6 +69,7 @@ namespace ttk {
       const std::vector<GraphMatrixFull> &adjacencyMatrices,
       const int &n_separatrices,
       const std::vector<std::vector<std::array<double, 3>>> &coords,
+      const std::vector<std::vector<double>> &scalars,
       const int &block_id,
       std::vector<int> &edgeOccurences,
       std::vector<bool> &isIsomorphicWith,
@@ -74,6 +81,8 @@ namespace ttk {
       const int &n_separatrices,
       const std::vector<std::vector<std::array<double, 3>>> &coordsSource,
       const std::vector<std::vector<std::array<double, 3>>> &coordsDestination,
+      const std::vector<std::vector<double>> &scalarsSource,
+      const std::vector<std::vector<double>> &scalarsDestination,
       const int &block_id,
       std::vector<int> &edgesOccurences,
       std::vector<bool> &isIsomorphicWith,
@@ -85,6 +94,7 @@ namespace ttk {
     double Px{1};
     double Py{1};
     double Pz{1};
+    double Pf{1};
   };
 
 
