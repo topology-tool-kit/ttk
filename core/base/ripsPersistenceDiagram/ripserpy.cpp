@@ -56,7 +56,16 @@ derivative works thereof, in binary and source code form.
 
 */
 
-#include "ripser.h"
+#include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <numeric>
+#include <queue>
+#include <unordered_map>
+
+#include <ripser.h>
 
 using namespace ripser;
 using namespace ttk::rpd;
@@ -422,7 +431,7 @@ struct sparse_distance_matrix {
     return neighbors.size();
   }
 
-  // not in original ripser: for keeping only critical edges instead of
+  // not in the original ripser: for keeping only critical edges instead of
   // simplices
   value_t operator()(const index_t i, const index_t j) const {
     for(auto const &[index, diameter] : neighbors[i]) {
@@ -538,7 +547,8 @@ class Ripser {
   index_t n, dim_max;
   const value_t threshold;
   const float ratio;
-  const bool critical_edges_only; // not in original ripser
+  const bool critical_edges_only; // not in the original ripser
+  const bool infinite_pairs; // not in the original ripser
   const coefficient_t modulus;
   const binomial_coeff_table binomial_coeff;
   const std::vector<coefficient_t> multiplicative_inverse;
@@ -568,10 +578,12 @@ public:
          value_t _threshold,
          float _ratio,
          bool _critical_edges_only,
+         bool _infinite_pairs,
          coefficient_t _modulus)
     : dist(std::move(_dist)), n(dist.size()), dim_max(_dim_max),
       threshold(_threshold), ratio(_ratio),
-      critical_edges_only(_critical_edges_only), modulus(_modulus),
+      critical_edges_only(_critical_edges_only),
+      infinite_pairs(_infinite_pairs), modulus(_modulus),
       binomial_coeff(n, dim_max + 2),
       multiplicative_inverse(multiplicative_inverse_vector(_modulus)) {
   }
@@ -937,9 +949,12 @@ public:
           Simplex vertices_birth(dim + 1);
           get_simplex_vertices(
             get_index(column_to_reduce), dim, n, vertices_birth.rbegin());
-          if constexpr(std::is_same_v<PersistenceType, MultidimensionalDiagram>)
-            ph[dim].emplace_back(FiltratedSimplex{vertices_birth, diameter},
-                                 FiltratedSimplex{{-1}, inf});
+          if constexpr(std::is_same_v<PersistenceType,
+                                      MultidimensionalDiagram>) {
+            if(infinite_pairs)
+              ph[dim].emplace_back(FiltratedSimplex{vertices_birth, diameter},
+                                   FiltratedSimplex{{-1}, inf});
+          }
           break;
         }
       }
@@ -1126,6 +1141,7 @@ void ripser::ripser(std::vector<std::vector<value_t>> points,
                     index_t dim_max,
                     bool distanceMatrix,
                     bool criticalEdgesOnly,
+                    bool infinitePairs,
                     coefficient_t modulus) {
   const double ratio = 1.;
 
@@ -1138,27 +1154,27 @@ void ripser::ripser(std::vector<std::vector<value_t>> points,
     if(threshold < inf) {
       const euclidean_distance_matrix eucl_dist(std::move(points));
       sparse_distance_matrix dist(eucl_dist, threshold);
-      Ripser<sparse_distance_matrix> ripser(
-        std::move(dist), dim_max, threshold, ratio, criticalEdgesOnly, modulus);
+      Ripser ripser(std::move(dist), dim_max, threshold, ratio,
+                    criticalEdgesOnly, infinitePairs, modulus);
       ripser.compute_barcodes(ph);
     } else {
       compressed_lower_distance_matrix dist(
         euclidean_distance_matrix(std::move(points)));
-      Ripser<compressed_lower_distance_matrix> ripser(
-        std::move(dist), dim_max, threshold, ratio, criticalEdgesOnly, modulus);
+      Ripser ripser(std::move(dist), dim_max, threshold, ratio,
+                    criticalEdgesOnly, infinitePairs, modulus);
       ripser.compute_barcodes(ph);
     }
   } else {
     if(threshold < inf) {
       const compressed_lower_distance_matrix lower_dist(std::move(points[0]));
       sparse_distance_matrix dist(lower_dist, threshold);
-      Ripser<sparse_distance_matrix> ripser(
-        std::move(dist), dim_max, threshold, ratio, criticalEdgesOnly, modulus);
+      Ripser ripser(std::move(dist), dim_max, threshold, ratio,
+                    criticalEdgesOnly, infinitePairs, modulus);
       ripser.compute_barcodes(ph);
     } else {
       compressed_lower_distance_matrix dist(std::move(points[0]));
-      Ripser<compressed_lower_distance_matrix> ripser(
-        std::move(dist), dim_max, threshold, ratio, criticalEdgesOnly, modulus);
+      Ripser ripser(std::move(dist), dim_max, threshold, ratio,
+                    criticalEdgesOnly, infinitePairs, modulus);
       ripser.compute_barcodes(ph);
     }
   }
@@ -1169,6 +1185,7 @@ template void ripser::ripser(std::vector<std::vector<value_t>> points,
                              index_t dim_max,
                              bool distanceMatrix,
                              bool criticalEdgesOnly,
+                             bool infinitePairs,
                              coefficient_t modulus);
 template void ripser::ripser(std::vector<std::vector<value_t>> points,
                              EdgeSets3 &ph,
@@ -1176,43 +1193,5 @@ template void ripser::ripser(std::vector<std::vector<value_t>> points,
                              index_t dim_max,
                              bool distanceMatrix,
                              bool criticalEdgesOnly,
-                             coefficient_t modulus);
-
-template <typename PersistenceType>
-void ripser::ripser(float *data,
-                    int n,
-                    int dim,
-                    PersistenceType &ph,
-                    value_t threshold,
-                    index_t dim_max,
-                    bool distanceMatrix,
-                    bool criticalEdgesOnly,
-                    coefficient_t modulus) {
-
-  std::vector<std::vector<value_t>> points(n);
-  for(int i = 0; i < n; ++i) {
-    for(int j = 0; j < dim; ++j)
-      points[i].push_back(data[dim * i + j]);
-  }
-
-  ripser(
-    points, ph, threshold, dim_max, distanceMatrix, criticalEdgesOnly, modulus);
-}
-template void ripser::ripser(float *data,
-                             int n,
-                             int dim,
-                             MultidimensionalDiagram &ph,
-                             value_t threshold,
-                             index_t dim_max,
-                             bool distanceMatrix,
-                             bool criticalEdgesOnly,
-                             coefficient_t modulus);
-template void ripser::ripser(float *data,
-                             int n,
-                             int dim,
-                             EdgeSets3 &ph,
-                             value_t threshold,
-                             index_t dim_max,
-                             bool distanceMatrix,
-                             bool criticalEdgesOnly,
+                             bool infinitePairs,
                              coefficient_t modulus);

@@ -30,7 +30,7 @@ ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
 void ttk::rpd::PairCellsWithOracle::callOracle(const PointCloud &points,
                                                MultidimensionalDiagram &oracle,
                                                double threshold) {
-  ripser::ripser(points, oracle, threshold, 1, false, false);
+  ripser::ripser(points, oracle, threshold, 1, false, false, false);
 
   std::sort(
     oracle[1].begin(), oracle[1].end(),
