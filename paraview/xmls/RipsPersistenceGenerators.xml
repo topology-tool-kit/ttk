@@ -93,16 +93,16 @@
       </PropertyGroup>
 
       <!-- OUTPUT PARAMETER WIDGETS -->
-      <DoubleVectorProperty
+      <StringVectorProperty
               name="SimplexMaximumDiameter"
               label="Simplex maximum diameter"
               command="SetSimplexMaximumDiameter"
               number_of_elements="1"
-              default_values="1.0">
+              default_values="inf">
         <Documentation>
-          Simplex maximum diameter in the Rips complex.
+          Simplex maximum diameter in the Rips complex (type "inf" for unlimited diameter).
         </Documentation>
-      </DoubleVectorProperty>
+      </StringVectorProperty>
 
       <IntVectorProperty
               name="OutputCascade"

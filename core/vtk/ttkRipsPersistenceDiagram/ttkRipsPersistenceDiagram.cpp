@@ -63,6 +63,8 @@ void DiagramToVTU(vtkUnstructuredGrid *vtu,
   int n_pairs = 0;
   for(auto const &diagram_d : diagram)
     n_pairs += diagram_d.size();
+  if(SimplexMaximumDiameter == ttk::rpd::inf)
+    n_pairs--;
 
   // point data arrays
   vtkNew<ttkSimplexIdTypeArray> vertsId{};
@@ -115,6 +117,10 @@ void DiagramToVTU(vtkUnstructuredGrid *vtu,
   double birth_max = 0.;
   for(unsigned d = 0; d < diagram.size(); ++d) {
     for(auto const &pair : diagram[d]) {
+      if(d == 0 && pair.second.second == ttk::rpd::inf
+         && SimplexMaximumDiameter == ttk::rpd::inf)
+        continue;
+
       const unsigned i0 = 2 * i, i1 = 2 * i + 1;
       pairsId->SetTuple1(i, i);
       pairsDim->SetTuple1(i, d);
@@ -366,7 +372,9 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
     MakeVtkPoints(vtkPoints, points);
     GeneratorsToVTU(outputPersistenceDiagram, vtkPoints, generators, true);
   } else
-    DiagramToVTU(outputPersistenceDiagram, diagram, SimplexMaximumDiameter);
+    DiagramToVTU(
+      outputPersistenceDiagram, diagram,
+      (BackEnd == BACKEND::GEOMETRY) ? ttk::rpd::inf : SimplexMaximumDiameter);
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
 

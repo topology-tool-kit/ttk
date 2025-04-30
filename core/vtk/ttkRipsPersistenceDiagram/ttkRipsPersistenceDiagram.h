@@ -85,6 +85,14 @@ public:
     Modified();
   }
 
+  void SetSimplexMaximumDiameter(const std::string &data) {
+    SimplexMaximumDiameter = stod(data);
+    Modified();
+  }
+  std::string GetSimplexMaximumDiameter() {
+    return std::to_string(SimplexMaximumDiameter);
+  }
+
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
@@ -99,9 +107,6 @@ public:
 
   vtkSetMacro(SimplexMaximumDimension, int);
   vtkGetMacro(SimplexMaximumDimension, int);
-
-  vtkSetMacro(SimplexMaximumDiameter, double);
-  vtkGetMacro(SimplexMaximumDiameter, double);
 
   vtkSetMacro(FieldOfCoefficients, int);
   vtkGetMacro(FieldOfCoefficients, int);

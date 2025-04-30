@@ -143,19 +143,19 @@
         </Documentation>
       </IntVectorProperty>
 
-      <DoubleVectorProperty
+      <StringVectorProperty
               name="SimplexMaximumDiameter"
               label="Simplex maximum diameter"
               command="SetSimplexMaximumDiameter"
               number_of_elements="1"
-              default_values="1.0">
-<!--        <Hints>-->
-<!--          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />-->
-<!--        </Hints>-->
+              default_values="inf">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
         <Documentation>
-          Simplex maximum diameter in the Rips complex.
+          Simplex maximum diameter in the Rips complex (type "inf" for unlimited diameter).
         </Documentation>
-      </DoubleVectorProperty>
+      </StringVectorProperty>
 
       <IntVectorProperty
               name="FieldOfCoefficients"
