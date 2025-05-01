@@ -171,7 +171,7 @@ void ttk::TrackingFromCriticalPoints::performMatchings(
   for(int i = 0; i < fieldNumber - 1; i++) {
 
     float costDeathBirth
-      = relativeEpsilon
+      = relativeEpsilon_
         * computeBoundingBoxRadius(
           persistenceDiagrams[i], persistenceDiagrams[i + 1]);
     int maxSize = (maxCoords[i].size() > 0 && maxCoords[i + 1].size() > 0)
