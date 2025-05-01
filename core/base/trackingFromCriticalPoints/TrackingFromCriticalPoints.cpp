@@ -160,10 +160,10 @@ void ttk::TrackingFromCriticalPoints::performMatchings(
     minScalar.begin(), minScalar.end(), 0,
     [](int sum, const std::vector<double> &v) { return sum + v.size(); });
 
-  this->printMsg("Processing " + std::to_string(n_min) + " minimas");
-  this->printMsg("           " + std::to_string(n_sad_1) + " 1_saddles");
-  this->printMsg("           " + std::to_string(n_sad_2) + " 2_saddles");
-  this->printMsg("           " + std::to_string(n_max) + " maximas");
+  this->printMsg("Processing " + std::to_string(n_min) + " minima");
+  this->printMsg("           " + std::to_string(n_sad_1) + " 1-saddles");
+  this->printMsg("           " + std::to_string(n_sad_2) + " 2-saddles");
+  this->printMsg("           " + std::to_string(n_max) + " maxima");
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
