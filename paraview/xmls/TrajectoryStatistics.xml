@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkTrajectoryStatistics" class="ttkTrajectoryStatistics" label="TTK TrajectoryStatistics">
+      <Documentation long_help="Computes trajectory statistics including start/end frame, duration, length, and mean velocities for tracked cell components." short_help="Trajectory statistics for tracked components"/>
+
+      <!-- INPUT DATA OBJECT -->
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <Documentation>A vtkUnstructuredGrid containing cell data arrays 'ConnectedComponentId' and 'TimeStep'.</Documentation>
+      </InputProperty>
+
+      <!-- No parameter widgets: the filter uses fixed array names in code -->
+
+      <!-- DEBUG WIDGETS -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Misc"/>
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
+

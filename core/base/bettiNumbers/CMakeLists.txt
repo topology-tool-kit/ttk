@@ -1,3 +1,4 @@
+
 ttk_add_base_library(bettiNumbers
   SOURCES
     BettiNumbers.cpp
@@ -7,3 +8,4 @@ ttk_add_base_library(bettiNumbers
     triangulation
     unionFind
 )
+
