@@ -180,10 +180,9 @@ int ttkBettiNumbers::RequestData(vtkInformation *ttkNotUsed(request),
 
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
-    
+  
   status = this->execute();
-
-  // On error cancel filter execution
+  
   if(status != 1)
     return 0;
 

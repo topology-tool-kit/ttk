@@ -20,7 +20,7 @@
 // ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
-#include <UnionFind.h> 
+#include <UnionFind.h>
 
 namespace ttk {
 
@@ -43,27 +43,22 @@ namespace ttk {
      */
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation)  {
+      triangulation->preconditionVertexNeighbors();
+      triangulation->preconditionEdges();
+      
       triangulation_ = triangulation;
-      return triangulation->preconditionEdges();
+      
+      return 0;
     }
 
-    /**
-     * TODO 3: Implementation of the algorithm.
-     *
-     *         Note: If the algorithm requires a triangulation then this
-     *               method must be called after the triangulation has been
-     *               preconditioned for the upcoming operations.
-     */
     int execute();
 
-    int getB0() const { return B0_; }
-    
+    int getB0() { return B0; };
+
   private:
-    ttk::AbstractTriangulation *triangulation_ = nullptr;
-    int B0_ = -1;
-    int B1_ = -1;
-    int B2_ = -1;
+    int B0 = -1;
+    ttk::AbstractTriangulation *triangulation_;
 
   }; // BettiNumbers class
 
-  } // namespace ttk
+} // namespace ttk
