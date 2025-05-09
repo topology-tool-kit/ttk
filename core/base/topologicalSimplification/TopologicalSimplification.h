@@ -47,6 +47,8 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
 ///   Tree Alignment example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cosmicWeb/">
+///   Cosmic Web example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
