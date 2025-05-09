@@ -51,6 +51,8 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
 ///   Tree Alignment example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cosmicWeb/">
+///   Cosmic Web example</a> \n
 
 #pragma once
 #include <ttkTopologicalSimplificationByPersistenceModule.h>
