@@ -185,7 +185,7 @@
          <BooleanDomain name="bool"/>
          <Documentation>
            Whether the domain should be segmented based on the intersection 
-           of ascending and descending paths(similar to Morse-Smale).
+           of ascending and descending paths (similar to Morse-Smale).
          </Documentation>
        </IntVectorProperty>
 
