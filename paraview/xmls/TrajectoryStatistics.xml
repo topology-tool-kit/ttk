@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkTrajectoryStatistics" class="ttkTrajectoryStatistics" label="TTK TrajectoryStatistics">
-      <Documentation long_help="Computes trajectory statistics including start/end frame, duration, length, and mean velocities for tracked cell components." short_help="Trajectory statistics for tracked components"/>
+      <Documentation long_help="Trajectory Stat" short_help="Trajectory statistics after Tracking From Field"/>
 
       <!-- INPUT DATA OBJECT -->
       <InputProperty name="Input" command="SetInputConnection">
@@ -13,10 +13,14 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
-        <Documentation>A vtkUnstructuredGrid containing cell data arrays 'ConnectedComponentId' and 'TimeStep'.</Documentation>
+        <Documentation>Output From TrackingFromField.</Documentation>
       </InputProperty>
 
-      <!-- No parameter widgets: the filter uses fixed array names in code -->
+      <!-- OUTPUT PARAMETER WIDGETS -->
+
+
+
+
 
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
