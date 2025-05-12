@@ -20,17 +20,9 @@ int ttk::RipsPersistenceDiagram::execute(
   rpd::MultidimensionalDiagram &ph,
   std::vector<rpd::Generator> &generators) const {
 
-  if(BackEnd == BACKEND::RIPSER) {
-    if(isPrime(FieldOfCoefficients))
-      ripser::ripser(points, ph, SimplexMaximumDiameter,
-                     SimplexMaximumDimension, InputIsDistanceMatrix, false,
-                     true, FieldOfCoefficients);
-    else
-      printErr("The chosen p=" + std::to_string(FieldOfCoefficients)
-               + " is not prime");
-  }
+  bool forceRipser = false;
 
-  else if(BackEnd == BACKEND::GEOMETRY) {
+  if(BackEnd == BACKEND::GEOMETRY) {
 #ifdef TTK_ENABLE_CGAL
     if(points[0].size() == 2) {
       rpd::FastRipsPersistenceDiagram2 FRPD(points);
@@ -41,12 +33,27 @@ int ttk::RipsPersistenceDiagram::execute(
         FRPD.computeRips0And1Persistence(ph, false, false);
       if(OutputGenerators)
         FRPD.exportRips1Generators(generators);
-    } else
-      printErr("Geometric method only implemented for dim 2.");
+    } else {
+      printWrn("Geometric method only implemented for dim 2.");
+      printWrn("Ripser will be used instead.");
+      forceRipser = true;
+    }
 #else
     TTK_FORCE_USE(generators);
-    this->printErr("TTK was not compiled with CGAL support enabled.");
+    printWrn("TTK was not compiled with CGAL.");
+    printWrn("Ripser will be used instead.");
+    forceRipser = true;
 #endif
+  }
+
+  if(BackEnd == BACKEND::RIPSER || forceRipser) {
+    if(isPrime(FieldOfCoefficients))
+      ripser::ripser(points, ph, SimplexMaximumDiameter,
+                     SimplexMaximumDimension, InputIsDistanceMatrix, false,
+                     true, FieldOfCoefficients);
+    else
+      printErr("The chosen p=" + std::to_string(FieldOfCoefficients)
+               + " is not prime");
   }
 
   return 0;

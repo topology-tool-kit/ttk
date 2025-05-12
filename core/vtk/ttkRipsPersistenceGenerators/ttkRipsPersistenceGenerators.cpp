@@ -102,7 +102,8 @@ int ttkRipsPersistenceGenerators::RequestData(
   else {
     const unsigned n = input->GetNumberOfRows();
     if(n != ScalarFields.size()) {
-      this->printErr("Input distance matrix is not squared (rows: "
+      this->printErr("Input distance matrix is not squared.");
+      this->printErr("(rows: "
                      + std::to_string(input->GetNumberOfRows()) + ", columns: "
                      + std::to_string(ScalarFields.size()) + ")");
       return 0;
