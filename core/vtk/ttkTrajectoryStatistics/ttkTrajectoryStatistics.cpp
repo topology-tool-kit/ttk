@@ -8,6 +8,8 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkSmartPointer.h>
+#include <vtkIntArray.h>
+#include <vtkDoubleArray.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -23,7 +25,7 @@ vtkStandardNewMacro(ttkTrajectoryStatistics);
 
 ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
-  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
 
@@ -33,6 +35,13 @@ int ttkTrajectoryStatistics::FillInputPortInformation(int port, vtkInformation *
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
     return 1;
   }
+
+  if(port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(),
+              "vtkDataSet");
+    return 1;
+  }
+
   return 0;
 }
 
@@ -56,23 +65,29 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
+  vtkDataSet *inputDataSet = vtkDataSet::GetData(inputVector[1]);
+  if (!inputDataSet) {
+    this->printErr("Invalid input : vtkDataSet missing");
+    return 0;
+  }
+
 
   vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
             inputGrid->GetCellData()->GetArray("ConnectedComponentId"));
   vtkIntArray *timeArray = vtkIntArray::SafeDownCast(
             inputGrid->GetPointData()->GetArray("TimeStep"));
+  vtkIntArray *vertexGlobalIdArray = vtkIntArray::SafeDownCast(
+            inputGrid->GetPointData()->GetArray("VertexGlobalId"));
+  vtkIntArray *compLength = vtkIntArray::SafeDownCast(
+            inputGrid->GetCellData()->GetArray("ComponentLength"));
 
-  if (!compIdArray){
-    this->printErr("ConnectrdComponentId missing");
+  if (!compIdArray || !timeArray || !vertexGlobalIdArray || !compLength){
+    this->printErr("Missing data in input vtu");
     return 0;
   }
 
-  if (!timeArray){
-    this->printErr(" TimeStep missing");
-    return 0;
-  }
 
-  this->printMsg("Extraction ConnectedComponentId && TimeStep done");
+  this->printMsg("Extraction ConnectedComponentId && TimeStep && VertexGlobalId done");
 
   vtkIdType numCells = inputGrid->GetNumberOfCells();
 
@@ -91,8 +106,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   const size_t numTraj = groupTraj.size();
 
-  std::vector<std::vector<int>> trajTime(numTraj); // TimeStep
+  std::vector<std::vector<int>>    trajTime(numTraj); // TimeStep
   std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj), trajZ(numTraj); // coord
+  std::vector<std::vector<int>>    trajVertexId(numTraj);  // VertexGlobalId
 
   vtkNew<vtkIdList> cellPointsIds;
   size_t trajIndex = 0;
@@ -102,22 +118,17 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     std::vector<vtkIdType> pointsIds; 
     pointsIds.reserve(cellIds.size()*2);
 
-    this->printMsg("Allocation pointIds done");
 
     // recup tt les points de la traj
     for (vtkIdType cellId : cellIds){
         cellPointsIds->Reset();
-        this->printMsg("Getting cell : "+ std::to_string(cellId));
         inputGrid->GetCellPoints(cellId, cellPointsIds);
-        this->printMsg("Got it");
         vtkIdType numPts = cellPointsIds->GetNumberOfIds();
         for (vtkIdType i=0; i<numPts; ++i){
-            this->printMsg("pushing it");
             pointsIds.push_back(cellPointsIds->GetId(i));
         }   
     }
 
-    this->printMsg("All Points in pointIds (with double)");
 
     std::sort(pointsIds.begin(), pointsIds.end());
     pointsIds.erase(std::unique(pointsIds.begin(), pointsIds.end()), 
@@ -133,26 +144,51 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     trajX[trajIndex].reserve(numPoints);
     trajY[trajIndex].reserve(numPoints);
     trajZ[trajIndex].reserve(numPoints);
+    trajVertexId[trajIndex].reserve(numPoints); 
 
     for (vtkIdType pointId : pointsIds){
         int t = timeArray->GetValue(pointId);
         double coords[3];
+        int globalId = vertexGlobalIdArray->GetValue(pointId);
         inputGrid->GetPoint(pointId, coords);
         trajTime[trajIndex].push_back(t);
         trajX[trajIndex].push_back(coords[0]);
         trajY[trajIndex].push_back(coords[1]);
         trajZ[trajIndex].push_back(coords[2]);
+        trajVertexId[trajIndex].push_back(globalId);
     }
     ++trajIndex;
   }
 
   //Appel core/base
   std::vector<int> startFrames(numTraj), endFrames(numTraj), durations(numTraj);
-  std::vector<double> lengths(numTraj);
-  std::vector<double> moyVelX(numTraj), moyVelY(numTraj);
-
-  //int status = this->execute(...);
+  std::vector<double> VX(numTraj), VY(numTraj);
   
+  
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
+  if(!triangulation)
+    return 0;
+
+  this->preconditionTriangulation(triangulation);
+
+  int status = 0;
+
+  status = this->execute(
+                    trajTime, 
+                    trajX,
+                    trajY,
+                    trajZ,
+                    trajVertexId,
+                    startFrames,
+                    endFrames,
+                    durations,
+                    VX,
+                    VY,
+                    triangulation->getData()
+                    );
+  
+  if (status != 1)
+    return 0;
 
   // Construction vtkTable
   
@@ -164,56 +200,46 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   //Colonnes
   
-  //vtkSmartPointer<vtkIntArray> colStartFrame = vtkSmartPointer<vtkIntArray>::New();
-  //colStartFrame->SetName("StartFrame");
-  //colStartFrame->SetNumerOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
-  //  colStartFrame->SetValue(i, startFrames[i]);
-  //}
+  vtkSmartPointer<vtkIntArray> colStartFrame = vtkSmartPointer<vtkIntArray>::New();
+  colStartFrame->SetName("StartFrame");
+  colStartFrame->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
+    colStartFrame->SetValue(i, startFrames[i]);
+  }
 
-  //vtkSmartPointer<vtkIntArray> colEndFrame = vtkSmartPointer<vtkIntArray>::New();
-  //colEndFrame->SetName("EndFrame");
-  //colEndFrame->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
-  //  colEndFrame->SetValue(i, endFrames[i]);
-  //}
+  vtkSmartPointer<vtkIntArray> colEndFrame = vtkSmartPointer<vtkIntArray>::New();
+  colEndFrame->SetName("EndFrame");
+  colEndFrame->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
+    colEndFrame->SetValue(i, endFrames[i]);
+  }
 
-  //vtkSmartPointer<vtkIntArray> colDuration = vtkSmartPointer<vtkIntArray>::New();
-  //colDuration->SetName("Duration");
-  //colDuration->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
-  //  colDuration->SetValue(i, durations[i]);
-  //}
+  vtkSmartPointer<vtkIntArray> colDuration = vtkSmartPointer<vtkIntArray>::New();
+  colDuration->SetName("Duration");
+  colDuration->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
+    colDuration->SetValue(i, durations[i]);
+  }
 
-  //vtkSmartPointer<vtkDoubleArray> colLength = 
-  //                          vtkSmartPointer<vtkDoubleArray>::New();
-  //colLength->SetName("Length");
-  //colLength->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
-  //  colLength->SetValue(i, lengths[i]);
-  //}
+  vtkSmartPointer<vtkDoubleArray> colVX = vtkSmartPointer<vtkDoubleArray>::New();
+  colVX->SetName("VX");
+  colVX->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
+    colVX->SetValue(i, VX[i]);
+  }
 
-  //vtkSmartPointer<vtkDoubleArray> colMoyVelX = 
-  //                   vtkSmartPointer<vtkDoubleArray>::New();
-  //colMoyVelX->SetName("moyVelX");
-  //colMoyVelX->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
-  //  colMoyVelX->SetValue(i, moyVelX[i]);
-  //}
+  vtkSmartPointer<vtkDoubleArray> colVY = vtkSmartPointer<vtkDoubleArray>::New();
+  colVY->SetName("VY");
+  colVY->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
+    colVY->SetValue(i, VY[i]);
+  }
+
+  outputTable->AddColumn(colStartFrame);
+  outputTable->AddColumn(colEndFrame);
+  outputTable->AddColumn(colDuration);
+  outputTable->AddColumn(colVX);
+  outputTable->AddColumn(colVY);
   
-  //vtkSmartPointer<vtkDoubleArray> colMoyVelY = 
-  //                vtkSmartPointer<vtkDoubleArray>::New();
-  //colMoyVelY->SetName("MeanVelY");
-  //colMoyVelY->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < static_cast<vtkIdType>(numTraj); ++i) {
-  //  colMoyVelY->SetValue(i, meanVelY[i]);
-  //}
-  
-  //outputTable->AddColumn(colStartFrame);
-  //outputTable->AddColumn(colEndFrame);
-  //outputTable->AddColumn(colDuration);
-  //outputTable->AddColumn(colLength);
-  //outputTable->AddColumn(colMoyVelX);
-  //outputTable->AddColumn(colMoyVelY);
   return 1;
 }
