@@ -60,12 +60,19 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
             inputGrid->GetCellData()->GetArray("ConnectedComponentId"));
   vtkIntArray *timeArray = vtkIntArray::SafeDownCast(
-            inputGrid->GetCellData()->GetArray("TimeStep"));
+            inputGrid->GetPointData()->GetArray("TimeStep"));
 
-  if (!compIdArray || !timeArray){
-    this->printErr("ConnectedComponentId or TimeStep missing");
+  if (!compIdArray){
+    this->printErr("ConnectrdComponentId missing");
     return 0;
   }
+
+  if (!timeArray){
+    this->printErr(" TimeStep missing");
+    return 0;
+  }
+
+  this->printMsg("Extraction ConnectedComponentId && TimeStep done");
 
   vtkIdType numCells = inputGrid->GetNumberOfCells();
 
@@ -80,6 +87,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     groupTraj[trajId].push_back(cellId);
   }
 
+  this->printMsg("Traj Id Array created");
+
   const size_t numTraj = groupTraj.size();
 
   std::vector<std::vector<int>> trajTime(numTraj); // TimeStep
@@ -93,15 +102,22 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     std::vector<vtkIdType> pointsIds; 
     pointsIds.reserve(cellIds.size()*2);
 
+    this->printMsg("Allocation pointIds done");
+
     // recup tt les points de la traj
     for (vtkIdType cellId : cellIds){
-        cellPointsIds.Reset();
+        cellPointsIds->Reset();
+        this->printMsg("Getting cell : "+ std::to_string(cellId));
         inputGrid->GetCellPoints(cellId, cellPointsIds);
+        this->printMsg("Got it");
         vtkIdType numPts = cellPointsIds->GetNumberOfIds();
         for (vtkIdType i=0; i<numPts; ++i){
+            this->printMsg("pushing it");
             pointsIds.push_back(cellPointsIds->GetId(i));
         }   
     }
+
+    this->printMsg("All Points in pointIds (with double)");
 
     std::sort(pointsIds.begin(), pointsIds.end());
     pointsIds.erase(std::unique(pointsIds.begin(), pointsIds.end()), 
@@ -109,6 +125,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     std::sort(pointsIds.begin(), pointsIds.end(), [&](vtkIdType a, vtkIdType b){
         return timeArray->GetValue(a) < timeArray->GetValue(b);
     }); // tri TimeStep
+
+    this->printMsg("All unique points extrac from traj : " + std::to_string(trajIndex));
 
     const size_t numPoints = pointsIds.size();
     trajTime[trajIndex].reserve(numPoints);
