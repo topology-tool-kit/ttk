@@ -56,7 +56,8 @@ namespace ttk {
       matchings.resize(inputTrees.size());
       dataType reconstructionError = 0.0;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) reduction(+:reconstructionError)
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_) \
+  reduction(+ : reconstructionError)
 #endif
       for(unsigned int i = 0; i < inputTrees.size(); ++i) {
         ftm::MergeTree<dataType> reconstructedTree;

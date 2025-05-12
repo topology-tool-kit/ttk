@@ -275,6 +275,7 @@ namespace ttk {
     initFirstRound();
     while(not stoppingCriterion(this->costMatrix)) {
       initBiddersAndGoods();
+
       runAuctionRound(this->costMatrix);
 
       dataType cost = getMatchingDistance(this->costMatrix);

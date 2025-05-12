@@ -40,13 +40,15 @@ namespace ttk {
      * @param[out] ph Computed Rips persistence diagram
      */
     int execute(const std::vector<std::vector<double>> &points,
-                std::vector<std::vector<ripser::pers_pair_t>> &ph) const;
+                rpd::MultidimensionalDiagram &ph) const;
 
   protected:
     /** Max dimension of computed persistence diagram */
     int SimplexMaximumDimension{1};
     /** Rips threshold */
     double SimplexMaximumDiameter{1.0};
+    /** Field of coefficients */
+    int FieldOfCoefficients{2};
     /** is input a distance matrix */
     int InputIsDistanceMatrix{0};
 
