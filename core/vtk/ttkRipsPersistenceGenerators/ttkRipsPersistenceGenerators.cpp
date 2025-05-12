@@ -82,19 +82,44 @@ int ttkRipsPersistenceGenerators::RequestData(
   for(const auto &s : ScalarFields)
     arrays.push_back(input->GetColumnByName(s.data()));
 
-  const int numberOfPoints = input->GetNumberOfRows();
-  const int dimension = ScalarFields.size();
-  std::vector<std::vector<double>> points(numberOfPoints);
-  for(int i = 0; i < numberOfPoints; ++i) {
-    for(int j = 0; j < dimension; ++j)
-      points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
+  std::vector<std::vector<double>> points;
+
+  if (!InputIsDistanceMatrix) {
+    const int numberOfPoints = input->GetNumberOfRows();
+    const int dimension = ScalarFields.size();
+    points.resize(numberOfPoints);
+    for(int i = 0; i < numberOfPoints; ++i) {
+      for(int j = 0; j < dimension; ++j)
+        points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
+    }
+    this->printMsg(
+    "Computing Rips pers. generators", 0.0, tm.getElapsedTime(), 1);
+    this->printMsg("#dimensions: " + std::to_string(dimension)
+                     + ", #points: " + std::to_string(numberOfPoints),
+                   0.0, tm.getElapsedTime(), 1);
   }
 
-  this->printMsg(
-    "Computing Rips pers. generators", 0.0, tm.getElapsedTime(), 1);
-  this->printMsg("#dimensions: " + std::to_string(dimension)
-                   + ", #points: " + std::to_string(numberOfPoints),
-                 0.0, tm.getElapsedTime(), 1);
+  else {
+    const unsigned n = input->GetNumberOfRows();
+    if(n != ScalarFields.size()) {
+      this->printErr("Input distance matrix is not squared (rows: "
+                     + std::to_string(input->GetNumberOfRows()) + ", columns: "
+                     + std::to_string(ScalarFields.size()) + ")");
+      return 0;
+    }
+
+    points = {std::vector<double>(n * (n - 1) / 2)};
+    for(unsigned i = 1; i < n; ++i) {
+      for(unsigned j = 0; j < i; ++j)
+        points[0][i * (i - 1) / 2 + j]
+          = arrays[j]->GetVariantValue(i).ToDouble();
+    }
+    this->printMsg(
+      "Computing Rips pers. generators", 0.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "(" + std::to_string(n) + "x" + std::to_string(n) + " distance matrix)",
+      0.0, tm.getElapsedTime(), 1);
+  }
 
   std::vector<ttk::rpd::Diagram> diagram(0);
   std::vector<ttk::rpd::Generator> generators(0);

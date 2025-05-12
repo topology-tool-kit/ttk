@@ -28,9 +28,8 @@ namespace ttk {
     void execute(const std::vector<std::vector<double>> &points,
                  rpd::MultidimensionalDiagram &diagrams,
                  std::vector<rpd::Generator> &generators) const {
-      rpd::PairCellsWithOracle::callOracle(
-        points, diagrams, SimplexMaximumDiameter);
-      rpd::PairCellsWithOracle pc(points, diagrams, false, false);
+      rpd::PairCellsWithOracle::callOracle(points, diagrams, SimplexMaximumDiameter, InputIsDistanceMatrix);
+      rpd::PairCellsWithOracle pc(points, diagrams, InputIsDistanceMatrix, false);
       pc.setDebugLevel(debugLevel_);
       pc.run();
       if(!OutputCascade)
@@ -50,7 +49,11 @@ namespace ttk {
     }
 
   protected:
+    /** Rips diameter threshold */
     double SimplexMaximumDiameter{rpd::inf};
+    /** is input a distance matrix */
+    bool InputIsDistanceMatrix{false};
+    /** output cascade */
     bool OutputCascade{false};
   };
 

@@ -89,7 +89,27 @@
 
       <!-- INPUT PARAMETER WIDGETS -->
 
+      <IntVectorProperty
+              name="InputIsDistanceMatrix"
+              label="Input is a distance matrix"
+              command="SetInputIsDistanceMatrix"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
+        <Documentation>
+          Check this box to read the input table as a distance matrix instead of a point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputIsDistanceMatrix" />
+        <Property name="SelectFieldsWithRegexp" />
+        <Property name="ScalarFields" />
+        <Property name="Regexp" />
       </PropertyGroup>
 
       <!-- OUTPUT PARAMETER WIDGETS -->

@@ -53,8 +53,8 @@ namespace ttk {
     BACKEND BackEnd{BACKEND::RIPSER};
     /** Max dimension of computed persistence diagram */
     int SimplexMaximumDimension{1};
-    /** Rips threshold */
-    double SimplexMaximumDiameter{1.0};
+    /** Rips diameter threshold */
+    double SimplexMaximumDiameter{rpd::inf};
     /** Field of coefficients */
     int FieldOfCoefficients{2};
     /** is input a distance matrix */

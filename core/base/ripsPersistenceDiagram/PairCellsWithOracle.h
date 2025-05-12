@@ -36,7 +36,8 @@ namespace ttk::rpd {
 
     static void callOracle(const PointCloud &points,
                            MultidimensionalDiagram &oracle,
-                           double threshold = inf);
+                           double threshold = inf,
+                           bool distanceMatrix = false);
 
   private:
     const int n_;

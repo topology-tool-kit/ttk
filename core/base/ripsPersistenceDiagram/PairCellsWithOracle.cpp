@@ -8,7 +8,7 @@ ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
   MultidimensionalDiagram const &oracle,
   bool distanceMatrix,
   bool parallelSort)
-  : n_(points.size()), parallelSort_(parallelSort), oracle_(oracle) {
+  : n_(distanceMatrix ? (1+sqrt(1+8*points[0].size()))/2 : points.size()), parallelSort_(parallelSort), oracle_(oracle) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("PairCellsWithOracle");
 
@@ -29,8 +29,9 @@ ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
 
 void ttk::rpd::PairCellsWithOracle::callOracle(const PointCloud &points,
                                                MultidimensionalDiagram &oracle,
-                                               double threshold) {
-  ripser::ripser(points, oracle, threshold, 1, false, false, false);
+                                               double threshold,
+                                               bool distanceMatrix) {
+  ripser::ripser(points, oracle, threshold, 1, distanceMatrix, false, false);
 
   std::sort(
     oracle[1].begin(), oracle[1].end(),

@@ -73,6 +73,9 @@ public:
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
+  vtkSetMacro(InputIsDistanceMatrix, bool);
+  vtkGetMacro(InputIsDistanceMatrix, bool);
+
   vtkSetMacro(OutputCascade, bool);
   vtkGetMacro(OutputCascade, bool);
 

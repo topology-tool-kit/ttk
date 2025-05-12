@@ -27,7 +27,7 @@ PairCells::PairCells(const PointCloud &points,
                      double upperBound,
                      bool parallelSort,
                      bool parallelMatrixConstruction)
-  : n_(points.size()), bound_(upperBound), parallelSort_(parallelSort),
+  : n_(distanceMatrix ? (1+sqrt(1+8*points[0].size()))/2 : points.size()), bound_(upperBound), parallelSort_(parallelSort),
     parallelMatrixConstruction_(parallelMatrixConstruction) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("PairCells");
