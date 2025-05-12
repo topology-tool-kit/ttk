@@ -332,9 +332,9 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
     const unsigned n = input->GetNumberOfRows();
     if(n != ScalarFields.size()) {
       this->printErr("Input distance matrix is not squared.");
-      this->printErr("(rows: "
-                     + std::to_string(input->GetNumberOfRows()) + ", columns: "
-                     + std::to_string(ScalarFields.size()) + ")");
+      this->printErr("(rows: " + std::to_string(input->GetNumberOfRows())
+                     + ", columns: " + std::to_string(ScalarFields.size())
+                     + ")");
       return 0;
     }
 

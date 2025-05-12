@@ -8,7 +8,9 @@ ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
   MultidimensionalDiagram const &oracle,
   bool distanceMatrix,
   bool parallelSort)
-  : n_(distanceMatrix ? (1+sqrt(1+8*points[0].size()))/2 : points.size()), parallelSort_(parallelSort), oracle_(oracle) {
+  : n_(distanceMatrix ? (1 + sqrt(1 + 8 * points[0].size())) / 2
+                      : points.size()),
+    parallelSort_(parallelSort), oracle_(oracle) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("PairCellsWithOracle");
 

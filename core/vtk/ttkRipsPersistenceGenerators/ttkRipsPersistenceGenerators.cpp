@@ -84,7 +84,7 @@ int ttkRipsPersistenceGenerators::RequestData(
 
   std::vector<std::vector<double>> points;
 
-  if (!InputIsDistanceMatrix) {
+  if(!InputIsDistanceMatrix) {
     const int numberOfPoints = input->GetNumberOfRows();
     const int dimension = ScalarFields.size();
     points.resize(numberOfPoints);
@@ -93,7 +93,7 @@ int ttkRipsPersistenceGenerators::RequestData(
         points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
     }
     this->printMsg(
-    "Computing Rips pers. generators", 0.0, tm.getElapsedTime(), 1);
+      "Computing Rips pers. generators", 0.0, tm.getElapsedTime(), 1);
     this->printMsg("#dimensions: " + std::to_string(dimension)
                      + ", #points: " + std::to_string(numberOfPoints),
                    0.0, tm.getElapsedTime(), 1);
@@ -103,9 +103,9 @@ int ttkRipsPersistenceGenerators::RequestData(
     const unsigned n = input->GetNumberOfRows();
     if(n != ScalarFields.size()) {
       this->printErr("Input distance matrix is not squared.");
-      this->printErr("(rows: "
-                     + std::to_string(input->GetNumberOfRows()) + ", columns: "
-                     + std::to_string(ScalarFields.size()) + ")");
+      this->printErr("(rows: " + std::to_string(input->GetNumberOfRows())
+                     + ", columns: " + std::to_string(ScalarFields.size())
+                     + ")");
       return 0;
     }
 
