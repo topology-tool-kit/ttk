@@ -185,13 +185,11 @@ void FastRipsPersistenceDiagram2::computeRips0And1Persistence(
 
   if constexpr(std::is_same_v<T, MultidimensionalDiagram>) {
     computePolygonRipsDeath(parallelMML, UF, index_polys);
-    // pComputePolygonRipsDeath(UF, index_polys);
     printMsg("MML edges computed", 0., tm_.getElapsedTime());
     UnionFind UF_poly(deathPoly_.size());
     compute1PH(critical, UF_poly, ph);
   } else if constexpr(std::is_same_v<T, EdgeSets3>) {
     computePolygonRipsDeath(parallelMML, UF, index_polys);
-    // pComputePolygonRipsDeath(UF, index_polys);
     printMsg("MML edges computed", 0., tm_.getElapsedTime());
     for(FiltratedEdge const &poly : deathPoly_) {
       if(poly.d != inf)
@@ -284,8 +282,6 @@ void FastRipsPersistenceDiagram2::compute1PH(
   std::iota(latest.begin(), latest.end(), 0);
   birthPoly_.resize(deathPoly_.size());
 
-  // for (FiltratedQuadEdge const& e : std::ranges::reverse_view(critical)) { /*
-  // requires C++ 20 (#include <ranges>)*/
   for(auto it = critical.rbegin(); it != critical.rend(); ++it) {
     const FiltratedQuadEdge e = *it;
 
