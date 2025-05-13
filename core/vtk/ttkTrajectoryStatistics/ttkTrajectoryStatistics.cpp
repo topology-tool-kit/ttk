@@ -26,7 +26,7 @@ vtkStandardNewMacro(ttkTrajectoryStatistics);
 ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
   this->SetNumberOfInputPorts(2);
-  this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfOutputPorts(2);
 }
 
 
@@ -51,6 +51,12 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
     return 1;
   }
+
+  if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+
   return 0;
 }
 
@@ -137,8 +143,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
         return timeArray->GetValue(a) < timeArray->GetValue(b);
     }); // tri TimeStep
 
-    this->printMsg("All unique points extrac from traj : " + std::to_string(trajIndex));
-
     const size_t numPoints = pointsIds.size();
     trajTime[trajIndex].reserve(numPoints);
     trajX[trajIndex].reserve(numPoints);
@@ -160,11 +164,93 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     ++trajIndex;
   }
 
+  this->printMsg("Pre-fetching done, "+ std::to_string(trajIndex) + " unique trajectory find");
+
   //Appel core/base
   std::vector<int> startFrames(numTraj), endFrames(numTraj), durations(numTraj);
-  std::vector<double> VX(numTraj), VY(numTraj);
+  std::vector<double> VX(numTraj), VY(numTraj), surfMin(numTraj), surfMax(numTraj), surfMoy(numTraj);
+   
+
+  std::vector<vtkDataArray *> inputScalarFieldsRaw;
+  std::vector<vtkDataArray *> inputScalarFields;
+  const auto pointData= inputDataSet->GetPointData();
+
+  if (!pointData){
+    this->printErr("scalarArray missing");
+    return 0;
+  }
+
+  int numberOfInputFields = pointData->GetNumberOfArrays();
+  this->printMsg("numFrame = " + std::to_string(numberOfInputFields));
   
-  
+  vtkDataArray *firstScalarField = pointData->GetArray(0);
+
+  for(int i = 0; i < numberOfInputFields; ++i) {
+    vtkDataArray *currentScalarField = pointData->GetArray(i);
+    if(currentScalarField == nullptr
+       || currentScalarField->GetName() == nullptr) {
+      continue;
+    }
+    std::string const sfname{currentScalarField->GetName()};
+    if(sfname.rfind("_Order") == (sfname.size() - 6)) {
+      continue;
+    }
+    if(firstScalarField->GetDataType() != currentScalarField->GetDataType()) {
+      this->printErr("Inconsistent field data type or size between fields `"
+                     + std::string{firstScalarField->GetName()} + "' and `"
+                     + sfname + "'");
+      return -1;
+    }
+    inputScalarFieldsRaw.push_back(currentScalarField);
+  }
+
+  std::sort(inputScalarFieldsRaw.begin(), inputScalarFieldsRaw.end(),
+            [](vtkDataArray *a, vtkDataArray *b) {
+              std::string s1 = a->GetName();
+              std::string s2 = b->GetName();
+              return std::lexicographical_compare(
+                s1.begin(), s1.end(), s2.begin(), s2.end());
+            });
+
+  numberOfInputFields = inputScalarFieldsRaw.size();
+  this->printMsg("New number of frame = " + std::to_string(numberOfInputFields));
+  for(int i = 0; i < numberOfInputFields ; i++) {
+    vtkDataArray *currentScalarField = inputScalarFieldsRaw[i];
+    // Print scalar field names:
+    // std::cout << currentScalarField->GetName() << std::endl;
+    inputScalarFields.push_back(currentScalarField);
+  }
+
+  const int nFields = static_cast<int>(inputScalarFields.size());
+  if(nFields == 0) {
+    this->printErr("No scalar fields selected after sampling.");
+    return 0;
+  }
+
+  vtkIdType nPts = inputScalarFields[0]->GetNumberOfTuples();
+  this->printMsg("nombre de points : " + std::to_string(nPts));
+
+
+  for(int f = 1; f < nFields; ++f) {
+    if(inputScalarFields[f]->GetNumberOfTuples() != nPts) {
+        this->printErr("Scalar fields have inconsistent number of points.");
+        return 0;
+    }
+  }
+
+  std::vector<std::vector<double>> vertexScalars(
+    nPts, std::vector<double>(nFields)
+  );
+
+  for(int f = 0; f < nFields; ++f) {
+    vtkDataArray *fieldArr = inputScalarFields[f];
+    for(vtkIdType pid = 0; pid < nPts; ++pid) {
+      vertexScalars[pid][f] = fieldArr->GetTuple1(pid);
+    }
+  }
+
+  this->printMsg("Scalars recup");
+
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation)
     return 0;
@@ -179,24 +265,35 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                     trajY,
                     trajZ,
                     trajVertexId,
+                    vertexScalars,
                     startFrames,
                     endFrames,
                     durations,
                     VX,
                     VY,
+                    surfMin, 
+                    surfMax,
+                    surfMoy,
                     triangulation->getData()
                     );
   
   if (status != 1)
     return 0;
 
-  // Construction vtkTable
-  
+  // OUTPUT 
+
   vtkTable *outputTable = vtkTable::GetData(outputVector, 0);
   if (!outputTable){
     this->printErr("output vtkTable");
     return 0;
   }
+
+  vtkUnstructuredGrid *outputGrid = vtkUnstructuredGrid::GetData(outputVector, 1);
+  if(!outputGrid) {
+    this->printErr("Null output grid.");
+    return 0;
+  }
+
 
   //Colonnes
   
@@ -240,6 +337,52 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTable->AddColumn(colDuration);
   outputTable->AddColumn(colVX);
   outputTable->AddColumn(colVY);
+
+  // NEW VTU 
   
+  vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
+  newPoints->SetDataType(inputGrid->GetPoints()->GetDataType());
+  outputGrid->SetPoints(newPoints);
+  outputGrid->Allocate(numCells);  
+ 
+  std::vector<vtkIdType> oldToNewPointId(inputGrid->GetNumberOfPoints(), -1);
+  vtkNew<vtkIdList> cellPointIds;
+  vtkSmartPointer<vtkIntArray> newTrajIdArray = vtkSmartPointer<vtkIntArray>::New();
+  newTrajIdArray->SetName("NewTrajectoryId");
+  newTrajIdArray->SetNumberOfTuples(numCells);
+
+  vtkIdType outCellId = 0;
+  size_t trajIndexx = 0;
+  for(const auto &trajEntry : groupTraj) {
+    // trajEntry.first = ancien ConnectedComponentId, trajEntry.second = liste de cellIds
+    for(vtkIdType cellId : trajEntry.second) {
+        cellPointIds->Reset();
+        inputGrid->GetCellPoints(cellId, cellPointIds);
+        vtkIdType n = cellPointIds->GetNumberOfIds();
+        std::vector<vtkIdType> newPtIds;
+        newPtIds.reserve(n);
+        for(vtkIdType i = 0; i < n; ++i) {
+            vtkIdType oldPid = cellPointIds->GetId(i);
+            // Si le point n'a pas encore été ajouté, on l'ajoute
+            if(oldToNewPointId[oldPid] < 0) {
+                double coord[3];
+                inputGrid->GetPoint(oldPid, coord);
+                vtkIdType newPid = newPoints->InsertNextPoint(coord);
+                oldToNewPointId[oldPid] = newPid;
+            }
+        newPtIds.push_back(oldToNewPointId[oldPid]);
+        }
+        // Ajout de la cellule (même type VTK que l’originale) avec les nouveaux IDs de points
+        outputGrid->InsertNextCell(inputGrid->GetCellType(cellId), n, newPtIds.data());
+        // Assigner l'ID de trajectoire nouveau à cette cellule
+        newTrajIdArray->SetValue(outCellId++, static_cast<int>(trajIndexx));
+    }
+    ++trajIndexx;
+  }
+
+  outputGrid->GetCellData()->AddArray(newTrajIdArray);
+
+  this->printMsg("Fin TrajectoryStatistic");
+
   return 1;
 }
