@@ -5,7 +5,7 @@ ttk_add_base_library(ripsPersistenceDiagram
     FastRipsPersistenceDiagram2.cpp
     PairCells.cpp
     PairCellsWithOracle.cpp
-    ripserpy.cpp
+    ripser.cpp
   HEADERS
     RipsPersistenceDiagram.h
     RipsPersistenceDiagramUtils.h
