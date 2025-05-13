@@ -51,9 +51,11 @@ int ttk::RipsPersistenceDiagram::execute(
       ripser::ripser(points, ph, SimplexMaximumDiameter,
                      SimplexMaximumDimension, InputIsDistanceMatrix, false,
                      true, FieldOfCoefficients);
-    else
+    else {
       printErr("The chosen p=" + std::to_string(FieldOfCoefficients)
                + " is not prime");
+      return 1;
+    }
   }
 
   return 0;
