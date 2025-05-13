@@ -42,8 +42,19 @@ namespace ttk {
      */
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
+      triangulation->preconditionVertexNeighbors();
       return triangulation->preconditionVertexNeighbors();
     }
+
+     int findSurface(
+                    ttk::SimplexId                          vertexId,
+                    std::vector<ttk::SimplexId>            &surfVertex,
+                    const std::vector<std::vector<double>> &vertexScalars,
+                    std::vector<char>                      &visited,
+                    const double                            threshold,
+                    int                                     frame,
+                    const ttk::AbstractTriangulation       *triangulation
+    ); 
 
     /**
      * TODO 3: Implementation of the algorithm.
@@ -57,11 +68,15 @@ namespace ttk {
                 std::vector<std::vector<double>> &trajY,         //input
                 std::vector<std::vector<double>> &trajZ,         //input 
                 std::vector<std::vector<int>>    &trajVertexId,   //input
+                std::vector<std::vector<double>> vertexScalars,
                 std::vector<int> &startFrames,          //output
                 std::vector<int> &endFrames,            //output
                 std::vector<int> &durations,            //output
                 std::vector<double> &VX,
                 std::vector<double> &VY,
+                std::vector<double> &surfMin,
+                std::vector<double> &surfMax,
+                std::vector<double> &surfMoy,
                 ttk::AbstractTriangulation*triangulation);
 
   }; // TrajectoryStatistics class
