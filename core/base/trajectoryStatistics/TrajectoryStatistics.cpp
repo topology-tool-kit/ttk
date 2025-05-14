@@ -1,5 +1,6 @@
 #include <TrajectoryStatistics.h>
 #include <Triangulation.h>
+#include <numeric>
 
 ttk::TrajectoryStatistics::TrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
@@ -17,10 +18,10 @@ int ttk::TrajectoryStatistics::findSurface(
   surfVertex.clear();
   // pile de DFS
   std::vector<ttk::SimplexId> stack;
-  stack.reserve(1024);
+  stack.reserve(256);
   stack.push_back(startId);
 
-  const double maxVal = threshold * 1.2;
+  const double maxVal = threshold * 2.2;
   //this->printMsg("critical value : " + std::to_string(threshold) + " new thresh : " + std::to_string(maxVal)); 
   bool anyAdded = false;
 
@@ -31,7 +32,7 @@ int ttk::TrajectoryStatistics::findSurface(
     visited[vId] = 1;
 
     double val = vertexScalars[vId][frame];
-    if(val > maxVal) continue;
+    if(val > maxVal || val < threshold) continue; // minLocal < x < thresh
 
     // on accepte ce sommet
     surfVertex.push_back(vId);
@@ -68,6 +69,7 @@ int ttk::TrajectoryStatistics::execute(
                 std::vector<double> &surfMin,
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMoy,
+                std::vector<std::vector<std::vector<ttk::SimplexId>>> &allVertexDebris,
                 ttk::AbstractTriangulation *triangulation)  {
 
 
@@ -108,36 +110,45 @@ int ttk::TrajectoryStatistics::execute(
     // Surface
    
 
-    std::vector<std::vector<std::vector<ttk::SimplexId>>> allVertexDebris(numTraj);
 //    #ifdef TTK_ENABLE_OPENMP
 //    #pragma omp parallel for num_threads(this->threadNumber_)
 //    #endif
+
+    std::vector<char> visited(triangulation->getNumberOfVertices(), 0);
+    std::vector<ttk::SimplexId> surfVertex;
+
     for(int i = 0; i < static_cast<int>(numTraj); ++i) {
         const int trajSize = static_cast<int>(trajVertexId[i].size());
         std::vector<int> trajSurfaces(trajSize);
+        allVertexDebris[i].resize(trajSize);
 
         for(int j = 0; j < trajSize; ++j) {
             const int frame    = trajTime[i][j];
             const ttk::SimplexId vid = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
 
             const double thresh = vertexScalars[vid][frame];
-
-            std::vector<char> visited(vertexScalars.size(), 0);
-            std::vector<ttk::SimplexId> surfVertex;
-            surfVertex.reserve(64); // hypothèse d'une taille moyenne
+            
+            std::fill(visited.begin(), visited.end(), 0);
+            surfVertex.clear();
 
             findSurface(vid, surfVertex, vertexScalars, visited, thresh,frame,  triangulation);
             
             //this->printMsg("nombre de sommet trouvé = " + std::to_string(surfVertex.size()));
-            //allVertexDebris[i][frame] = std::move(surfVertex);     
-            trajSurfaces.push_back(surfVertex.size());
-            
+            allVertexDebris[i][j] = surfVertex;     
+            trajSurfaces[j] = surfVertex.size();
         }
-        std::sort(trajSurfaces.begin(), trajSurfaces.end(), [&](int a, int b){
-                return a < b;
-        });
-        this->printMsg("Traj : " + std::to_string(i) + " surf min = " + std::to_string(trajSurfaces[0]) + " surf max = " + std::to_string(trajSurfaces.back()));
+        
+        auto minmax = std::minmax_element(trajSurfaces.begin(), trajSurfaces.end());
+        surfMin[i] = *minmax.first;
+        surfMax[i] = *minmax.second;
+
+        int sum = std::accumulate(
+            trajSurfaces.begin(), trajSurfaces.end(), 0
+        );
+        surfMoy[i] = sum / static_cast<double>(trajSurfaces.size());
+
     }
+
 
     this->printMsg("End base");
     

@@ -26,7 +26,7 @@ vtkStandardNewMacro(ttkTrajectoryStatistics);
 ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
   this->SetNumberOfInputPorts(2);
-  this->SetNumberOfOutputPorts(2);
+  this->SetNumberOfOutputPorts(3);
 }
 
 
@@ -53,6 +53,11 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
   }
 
   if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+
+  if (port == 2) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
@@ -168,8 +173,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   //Appel core/base
   std::vector<int> startFrames(numTraj), endFrames(numTraj), durations(numTraj);
-  std::vector<double> VX(numTraj), VY(numTraj), surfMin(numTraj), surfMax(numTraj), surfMoy(numTraj);
-   
+  std::vector<double> VX(numTraj), VY(numTraj), 
+                      surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
+  std::vector<std::vector<std::vector<ttk::SimplexId>>> allVertexDebris(numTraj);
 
   std::vector<vtkDataArray *> inputScalarFieldsRaw;
   std::vector<vtkDataArray *> inputScalarFields;
@@ -273,7 +279,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                     VY,
                     surfMin, 
                     surfMax,
-                    surfMoy,
+                    surfMean,
+                    allVertexDebris,
                     triangulation->getData()
                     );
   
@@ -294,6 +301,11 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
+  vtkUnstructuredGrid *outputUG = vtkUnstructuredGrid::GetData(outputVector, 2);
+  if(!outputGrid) {
+    this->printErr("Null output grid2.");
+    return 0;
+  }
 
   //Colonnes
   
@@ -332,13 +344,37 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     colVY->SetValue(i, VY[i]);
   }
 
+  vtkSmartPointer<vtkDoubleArray> colSurfMin = vtkSmartPointer<vtkDoubleArray>::New();
+  colSurfMin->SetName("SurfaceMin");
+  colSurfMin->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < numTraj; ++i) {
+    colSurfMin->SetValue(i, surfMin[i]);
+  }
+  vtkSmartPointer<vtkDoubleArray> colSurfMax = vtkSmartPointer<vtkDoubleArray>::New();
+  colSurfMax->SetName("SurfaceMax");
+  colSurfMax->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < numTraj; ++i) {
+    colSurfMax->SetValue(i, surfMax[i]);
+  }
+  vtkSmartPointer<vtkDoubleArray> colSurfMean = vtkSmartPointer<vtkDoubleArray>::New();
+  colSurfMean->SetName("SurfaceMean");
+  colSurfMean->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < numTraj; ++i) {
+    colSurfMean->SetValue(i, surfMean[i]);
+  }
+  
   outputTable->AddColumn(colStartFrame);
   outputTable->AddColumn(colEndFrame);
   outputTable->AddColumn(colDuration);
   outputTable->AddColumn(colVX);
   outputTable->AddColumn(colVY);
+  outputTable->AddColumn(colSurfMin);
+  outputTable->AddColumn(colSurfMax);
+  outputTable->AddColumn(colSurfMean);
 
-  // NEW VTU 
+
+
+  // NEW VTU trajID
   
   vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
   newPoints->SetDataType(inputGrid->GetPoints()->GetDataType());
@@ -381,6 +417,63 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   outputGrid->GetCellData()->AddArray(newTrajIdArray);
+
+  // VTU sommet surface
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New(); 
+  vtkSmartPointer<vtkIntArray> frameArray = vtkSmartPointer<vtkIntArray>::New(); 
+  vtkSmartPointer<vtkIntArray> trajIdArray = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIntArray> vertexIdArray = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkDoubleArray> scalarValArray = vtkSmartPointer<vtkDoubleArray>::New();
+  
+  frameArray->SetName("Frame");
+  trajIdArray->SetName("TrajectoryId");
+  vertexIdArray->SetName("VertexId");
+  scalarValArray->SetName("ScalarValue");
+
+  //vtkIdType currentPointId = 0;
+  const int z_translation = 10;
+  for(size_t trajId = 0; trajId < allVertexDebris.size(); ++trajId) {
+    const auto &trajectorySurfaces = allVertexDebris[trajId];
+    const auto &frames = trajTime[trajId];
+
+    for(size_t localId = 0; localId < trajectorySurfaces.size(); ++localId) {
+      int frame = frames[localId];
+      int frame_for_input = frame +1;
+      std::ostringstream oss;
+      oss << std::setw(4) << std::setfill('0') << frame_for_input;
+      std::string arrayName = oss.str();
+
+      vtkDataArray *scalarArray = inputDataSet->GetPointData()->GetArray(arrayName.c_str());
+      if(!scalarArray) {
+        this->printErr("Array '" + arrayName + "' not found.");
+        continue;
+      }
+
+      const auto &surfaceVertexIds = trajectorySurfaces[localId];
+      for(const auto vertexId : surfaceVertexIds) {
+        double coords[3];
+        inputDataSet->GetPoint(vertexId, coords);
+        coords[2] = z_translation * frame;
+        points->InsertNextPoint(coords);
+
+        //outputUG->InsertNextCell(VTK_VERTEX, 1, &currentPointId);
+        //currentPointId++;
+        
+        frameArray->InsertNextValue(frame);
+        trajIdArray->InsertNextValue(static_cast<int>(trajId));
+        vertexIdArray->InsertNextValue(static_cast<int>(vertexId));
+        scalarValArray->InsertNextValue(scalarArray->GetTuple1(vertexId));
+      }
+    }
+  }
+  
+        
+  outputUG->SetPoints(points);
+  outputUG->GetPointData()->AddArray(frameArray);
+  outputUG->GetPointData()->AddArray(trajIdArray);
+  outputUG->GetPointData()->AddArray(vertexIdArray);
+  outputUG->GetPointData()->AddArray(scalarValArray);
 
   this->printMsg("Fin TrajectoryStatistic");
 

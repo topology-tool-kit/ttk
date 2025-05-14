@@ -77,6 +77,7 @@ namespace ttk {
                 std::vector<double> &surfMin,
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMoy,
+                std::vector<std::vector<std::vector<ttk::SimplexId>>> &allVertexDebris,
                 ttk::AbstractTriangulation*triangulation);
 
   }; // TrajectoryStatistics class
