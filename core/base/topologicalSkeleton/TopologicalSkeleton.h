@@ -922,6 +922,10 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
         }
         break;
       }
+      //Handle critical cell
+      if(this->simplifierField_.dcvf_.isCellCritical(Cell{dim, curr})) {
+        break;
+      }
       // follow a V-path till an already marked cell is reached
       // Break when reaching a cycle
       const auto paired{this->simplifierField_.dcvf_.getPairedCell(
