@@ -75,6 +75,12 @@
          default_values="1"
          panel_visibility="default">
          <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
          <Documentation>
            Whether Ascending Separatrices (extending from saddles) should be computed.
          </Documentation>
@@ -87,22 +93,35 @@
          default_values="1"
          panel_visibility="default">
          <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
          <Documentation>
            Whether Descending Separatrices (extending from saddles) should be computed.
          </Documentation>
        </IntVectorProperty>
 
-       <IntVectorProperty name="ComputeSaddleConnectors"
+       <!-- <IntVectorProperty name="ComputeSaddleConnectors"
          label="Saddle Connectors"
          command="SetComputeSaddleConnectors"
          number_of_elements="1"
-         default_values="1"
+         default_values="0"
          panel_visibility="default">
          <BooleanDomain name="bool"/>
+         <Hints>
+            <WarnOnPropertyChange onlyonce="true">
+              <Text title="Usage Warning">
+            This computation has not been extensively tested in 3D especially with a lot of rotation.
+              </Text>
+            </WarnOnPropertyChange>
+          </Hints>
          <Documentation>
            Whether saddle-1 to saddle-2 lines should be computed.
          </Documentation>
-       </IntVectorProperty>
+       </IntVectorProperty> -->
 
        <IntVectorProperty name="ComputeAttractingCycles1"
          label="Attracting 1-Cycles"
@@ -128,7 +147,7 @@
          </Documentation>
        </IntVectorProperty>
 
-       <IntVectorProperty name="ComputeAscendingSeparatrices2"
+       <!-- <IntVectorProperty name="ComputeAscendingSeparatrices2"
          label="Ascending 2-Separatrices"
          command="SetComputeAscendingSeparatrices2"
          number_of_elements="1"
@@ -150,7 +169,7 @@
          <Documentation>
            Whether the descending 2 separatrices (surfaces) should be computed.
          </Documentation>
-       </IntVectorProperty>
+       </IntVectorProperty> -->
 
        <IntVectorProperty name="ComputeAscendingSegmentation"
          label="Ascending Segmentation"
@@ -159,6 +178,12 @@
          default_values="1"
          panel_visibility="default">
          <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
          <Documentation>
            Whether the domain should be segmented based on ascending paths.
          </Documentation>
@@ -171,6 +196,12 @@
          default_values="1"
          panel_visibility="default">
          <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
          <Documentation>
            Whether the domain should be segmented based on descending paths.
          </Documentation>
@@ -183,6 +214,20 @@
          default_values="1"
          panel_visibility="default">
          <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeDescendingSegmentation"
+            value="1" />
+          <PropertyWidgetDecorator type="GenericDecorator"
+          mode="visibility"
+          property="ComputeAscendingSegmentation"
+          value="1" />
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
          <Documentation>
            Whether the domain should be segmented based on the intersection 
            of ascending and descending paths (similar to Morse-Smale).
@@ -246,14 +291,15 @@
         <Property name="ComputeCriticalPoints"/>
         <Property name="ComputeAscendingSeparatrices1"/>
         <Property name="ComputeDescendingSeparatrices1"/>
-        <Property name="ComputeSaddleConnectors"/>
+        <!-- <Property name="ComputeSaddleConnectors"/>  -->
         <Property name="ComputeAttractingCycles1" />
         <Property name="ComputeRepellingCycles1" />
-        <Property name="ComputeAscendingSeparatrices2"/>
-        <Property name="ComputeDescendingSeparatrices2"/>
+        <!-- <Property name="ComputeAscendingSeparatrices2"/> -->
+        <!-- <Property name="ComputeDescendingSeparatrices2"/> -->
         <Property name="ComputeAscendingSegmentation"/>
         <Property name="ComputeDescendingSegmentation"/>
         <Property name="ComputeFinalSegmentation"/>
+        <Property name="ComputeVectorGlyphs" />
         <Property name="RunSimplification"/>
         <Property name="SimplificationThreshold"/>
         <Property name="ReverseFullOrbit" />
