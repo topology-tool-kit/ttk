@@ -175,7 +175,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<int> startFrames(numTraj), endFrames(numTraj), durations(numTraj);
   std::vector<double> VX(numTraj), VY(numTraj), 
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
-  std::vector<std::vector<std::vector<ttk::SimplexId>>> allVertexDebris(numTraj);
+  std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
 
   std::vector<vtkDataArray *> inputScalarFieldsRaw;
   std::vector<vtkDataArray *> inputScalarFields;
@@ -265,6 +265,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   int status = 0;
 
+  int frameSurf = 0;
+
   status = this->execute(
                     trajTime, 
                     trajX,
@@ -281,11 +283,19 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                     surfMax,
                     surfMean,
                     allVertexDebris,
+                    frameSurf,
                     triangulation->getData()
                     );
   
   if (status != 1)
     return 0;
+
+  vertexScalars.clear();
+  trajX.clear();
+  trajY.clear();
+  trajZ.clear();
+  trajVertexId.clear();
+
 
   // OUTPUT 
 
@@ -399,7 +409,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
         newPtIds.reserve(n);
         for(vtkIdType i = 0; i < n; ++i) {
             vtkIdType oldPid = cellPointIds->GetId(i);
-            // Si le point n'a pas encore été ajouté, on l'ajoute
             if(oldToNewPointId[oldPid] < 0) {
                 double coord[3];
                 inputGrid->GetPoint(oldPid, coord);
@@ -421,12 +430,10 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   // VTU sommet surface
   
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New(); 
-  vtkSmartPointer<vtkIntArray> frameArray = vtkSmartPointer<vtkIntArray>::New(); 
   vtkSmartPointer<vtkIntArray> trajIdArray = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> vertexIdArray = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkDoubleArray> scalarValArray = vtkSmartPointer<vtkDoubleArray>::New();
   
-  frameArray->SetName("Frame");
   trajIdArray->SetName("TrajectoryId");
   vertexIdArray->SetName("VertexId");
   scalarValArray->SetName("ScalarValue");
@@ -434,12 +441,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   //vtkIdType currentPointId = 0;
   const int z_translation = 10;
   for(size_t trajId = 0; trajId < allVertexDebris.size(); ++trajId) {
-    const auto &trajectorySurfaces = allVertexDebris[trajId];
-    const auto &frames = trajTime[trajId];
 
-    for(size_t localId = 0; localId < trajectorySurfaces.size(); ++localId) {
-      int frame = frames[localId];
-      int frame_for_input = frame +1;
+      int frame_for_input = frameSurf +1;
       std::ostringstream oss;
       oss << std::setw(4) << std::setfill('0') << frame_for_input;
       std::string arrayName = oss.str();
@@ -450,27 +453,24 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
         continue;
       }
 
-      const auto &surfaceVertexIds = trajectorySurfaces[localId];
+      const auto &surfaceVertexIds = allVertexDebris[trajId];
       for(const auto vertexId : surfaceVertexIds) {
         double coords[3];
         inputDataSet->GetPoint(vertexId, coords);
-        coords[2] = z_translation * frame;
+        coords[2] = z_translation * frameSurf;
         points->InsertNextPoint(coords);
 
         //outputUG->InsertNextCell(VTK_VERTEX, 1, &currentPointId);
         //currentPointId++;
         
-        frameArray->InsertNextValue(frame);
         trajIdArray->InsertNextValue(static_cast<int>(trajId));
         vertexIdArray->InsertNextValue(static_cast<int>(vertexId));
         scalarValArray->InsertNextValue(scalarArray->GetTuple1(vertexId));
       }
-    }
   }
   
         
   outputUG->SetPoints(points);
-  outputUG->GetPointData()->AddArray(frameArray);
   outputUG->GetPointData()->AddArray(trajIdArray);
   outputUG->GetPointData()->AddArray(vertexIdArray);
   outputUG->GetPointData()->AddArray(scalarValArray);
