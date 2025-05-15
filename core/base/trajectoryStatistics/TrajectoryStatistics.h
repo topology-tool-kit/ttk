@@ -68,7 +68,7 @@ namespace ttk {
                 std::vector<std::vector<double>> &trajY,         //input
                 std::vector<std::vector<double>> &trajZ,         //input 
                 std::vector<std::vector<int>>    &trajVertexId,   //input
-                std::vector<std::vector<double>> vertexScalars,
+                std::vector<std::vector<double>> &vertexScalars,
                 std::vector<int> &startFrames,          //output
                 std::vector<int> &endFrames,            //output
                 std::vector<int> &durations,            //output
@@ -77,7 +77,8 @@ namespace ttk {
                 std::vector<double> &surfMin,
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMoy,
-                std::vector<std::vector<std::vector<ttk::SimplexId>>> &allVertexDebris,
+                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                int frameSurf,
                 ttk::AbstractTriangulation*triangulation);
 
   }; // TrajectoryStatistics class

@@ -21,7 +21,7 @@ int ttk::TrajectoryStatistics::findSurface(
   stack.reserve(256);
   stack.push_back(startId);
 
-  const double maxVal = threshold * 2.3;
+  const double maxVal = threshold * 1.5;
   //this->printMsg("critical value : " + std::to_string(threshold) + " new thresh : " + std::to_string(maxVal)); 
   bool anyAdded = false;
 
@@ -69,8 +69,7 @@ int ttk::TrajectoryStatistics::execute(
                 std::vector<double> &surfMin,
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMoy,
-                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-                int frameSurf,
+                std::vector<std::vector<std::vector<ttk::SimplexId>>> &allVertexDebris,
                 ttk::AbstractTriangulation *triangulation)  {
 
 
@@ -121,6 +120,7 @@ int ttk::TrajectoryStatistics::execute(
     for(int i = 0; i < static_cast<int>(numTraj); ++i) {
         const int trajSize = static_cast<int>(trajVertexId[i].size());
         std::vector<int> trajSurfaces(trajSize);
+        allVertexDebris[i].resize(trajSize);
 
         for(int j = 0; j < trajSize; ++j) {
             const int frame    = trajTime[i][j];
@@ -134,8 +134,7 @@ int ttk::TrajectoryStatistics::execute(
             findSurface(vid, surfVertex, vertexScalars, visited, thresh,frame,  triangulation);
             
             //this->printMsg("nombre de sommet trouvé = " + std::to_string(surfVertex.size()));
-            if (frame == frameSurf)
-                allVertexDebris[i] = surfVertex;     
+            allVertexDebris[i][j] = surfVertex;     
             trajSurfaces[j] = surfVertex.size();
         }
         
