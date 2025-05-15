@@ -922,7 +922,7 @@ int ttk::TopologicalSkeleton::getRepellingCycles1(
         }
         break;
       }
-      //Handle critical cell
+      // Handle critical cell
       if(this->simplifierField_.dcvf_.isCellCritical(Cell{dim, curr})) {
         break;
       }
