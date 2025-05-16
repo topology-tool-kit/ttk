@@ -4,6 +4,7 @@
 
 #include <vtkDataArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkCharArray.h>
 #include <vtkTable.h> 
 #include <vtkPointData.h>
 #include <vtkCellData.h>
@@ -58,7 +59,7 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
   }
 
   if (port == 2) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 1);
     return 1;
   }
 
@@ -265,7 +266,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   int status = 0;
 
-  int frameSurf = 0;
 
   status = this->execute(
                     trajTime, 
@@ -283,7 +283,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                     surfMax,
                     surfMean,
                     allVertexDebris,
-                    frameSurf,
+                    frameSurface,
                     triangulation->getData()
                     );
   
@@ -311,7 +311,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  vtkUnstructuredGrid *outputUG = vtkUnstructuredGrid::GetData(outputVector, 2);
+  vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 2);
   if(!outputGrid) {
     this->printErr("Null output grid2.");
     return 0;
@@ -384,96 +384,45 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
 
 
-  // NEW VTU trajID
   
-  vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
-  newPoints->SetDataType(inputGrid->GetPoints()->GetDataType());
-  outputGrid->SetPoints(newPoints);
-  outputGrid->Allocate(numCells);  
- 
-  std::vector<vtkIdType> oldToNewPointId(inputGrid->GetNumberOfPoints(), -1);
-  vtkNew<vtkIdList> cellPointIds;
+  outputGrid->ShallowCopy(inputGrid);
+  
   vtkSmartPointer<vtkIntArray> newTrajIdArray = vtkSmartPointer<vtkIntArray>::New();
   newTrajIdArray->SetName("NewTrajectoryId");
-  newTrajIdArray->SetNumberOfTuples(numCells);
+  newTrajIdArray->SetNumberOfTuples(inputGrid->GetNumberOfCells());
 
   vtkIdType outCellId = 0;
   size_t trajIndexx = 0;
   for(const auto &trajEntry : groupTraj) {
-    // trajEntry.first = ancien ConnectedComponentId, trajEntry.second = liste de cellIds
     for(vtkIdType cellId : trajEntry.second) {
-        cellPointIds->Reset();
-        inputGrid->GetCellPoints(cellId, cellPointIds);
-        vtkIdType n = cellPointIds->GetNumberOfIds();
-        std::vector<vtkIdType> newPtIds;
-        newPtIds.reserve(n);
-        for(vtkIdType i = 0; i < n; ++i) {
-            vtkIdType oldPid = cellPointIds->GetId(i);
-            if(oldToNewPointId[oldPid] < 0) {
-                double coord[3];
-                inputGrid->GetPoint(oldPid, coord);
-                vtkIdType newPid = newPoints->InsertNextPoint(coord);
-                oldToNewPointId[oldPid] = newPid;
-            }
-        newPtIds.push_back(oldToNewPointId[oldPid]);
-        }
-        // Ajout de la cellule (même type VTK que l’originale) avec les nouveaux IDs de points
-        outputGrid->InsertNextCell(inputGrid->GetCellType(cellId), n, newPtIds.data());
-        // Assigner l'ID de trajectoire nouveau à cette cellule
-        newTrajIdArray->SetValue(outCellId++, static_cast<int>(trajIndexx));
+      newTrajIdArray->SetValue(cellId, static_cast<int>(trajIndexx));
     }
     ++trajIndexx;
   }
 
-  outputGrid->GetCellData()->AddArray(newTrajIdArray);
+  outputGrid->GetCellData()->AddArray(newTrajIdArray); 
 
-  // VTU sommet surface
-  
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New(); 
-  vtkSmartPointer<vtkIntArray> trajIdArray = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> vertexIdArray = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkDoubleArray> scalarValArray = vtkSmartPointer<vtkDoubleArray>::New();
-  
-  trajIdArray->SetName("TrajectoryId");
-  vertexIdArray->SetName("VertexId");
-  scalarValArray->SetName("ScalarValue");
 
-  //vtkIdType currentPointId = 0;
-  const int z_translation = 10;
+  vtkSmartPointer<vtkDataSet> copy = vtkSmartPointer<vtkDataSet>::Take(inputDataSet->NewInstance());
+  copy->ShallowCopy(inputDataSet); 
+  outputDataSet->ShallowCopy(copy); 
+
+  vtkSmartPointer<vtkCharArray> surfaceVertexArray = vtkSmartPointer<vtkCharArray>::New();
+  surfaceVertexArray->SetName("SurfaceVertex");
+
+  vtkIdType numPoints = inputDataSet->GetNumberOfPoints();
+  surfaceVertexArray->SetNumberOfTuples(numPoints);
+  surfaceVertexArray->FillComponent(0, 0); // tous les points à 0 (false)
+
   for(size_t trajId = 0; trajId < allVertexDebris.size(); ++trajId) {
-
-      int frame_for_input = frameSurf +1;
-      std::ostringstream oss;
-      oss << std::setw(4) << std::setfill('0') << frame_for_input;
-      std::string arrayName = oss.str();
-
-      vtkDataArray *scalarArray = inputDataSet->GetPointData()->GetArray(arrayName.c_str());
-      if(!scalarArray) {
-        this->printErr("Array '" + arrayName + "' not found.");
-        continue;
-      }
-
-      const auto &surfaceVertexIds = allVertexDebris[trajId];
-      for(const auto vertexId : surfaceVertexIds) {
-        double coords[3];
-        inputDataSet->GetPoint(vertexId, coords);
-        coords[2] = z_translation * frameSurf;
-        points->InsertNextPoint(coords);
-
-        //outputUG->InsertNextCell(VTK_VERTEX, 1, &currentPointId);
-        //currentPointId++;
-        
-        trajIdArray->InsertNextValue(static_cast<int>(trajId));
-        vertexIdArray->InsertNextValue(static_cast<int>(vertexId));
-        scalarValArray->InsertNextValue(scalarArray->GetTuple1(vertexId));
-      }
+    const auto &trajSurfaces = allVertexDebris[trajId];
+    for(const auto vertexId : trajSurfaces) {
+        if(vertexId >= 0 && vertexId < numPoints)
+          surfaceVertexArray->SetValue(vertexId, 1); // true
+    }
   }
-  
-        
-  outputUG->SetPoints(points);
-  outputUG->GetPointData()->AddArray(trajIdArray);
-  outputUG->GetPointData()->AddArray(vertexIdArray);
-  outputUG->GetPointData()->AddArray(scalarValArray);
+
+  outputDataSet->GetPointData()->AddArray(surfaceVertexArray);
 
   this->printMsg("Fin TrajectoryStatistic");
 
