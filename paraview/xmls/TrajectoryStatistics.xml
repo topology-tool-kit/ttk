@@ -31,7 +31,16 @@
 
 
 
-
+      <IntVectorProperty
+        name="frameSurface"
+        command="SetframeSurface"
+        label="Frame Surface"
+        number_of_elements="1"
+        default_values="0">
+        <Documentation>
+            On which frame to show the surface vertex
+        </Documentation>
+      </IntVectorProperty>
 
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}

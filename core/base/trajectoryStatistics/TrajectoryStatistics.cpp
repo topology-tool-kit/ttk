@@ -16,7 +16,6 @@ int ttk::TrajectoryStatistics::findSurface(
   const ttk::AbstractTriangulation       *triangulation
 ) {
   surfVertex.clear();
-  // pile de DFS
   std::vector<ttk::SimplexId> stack;
   stack.reserve(256);
   stack.push_back(startId);

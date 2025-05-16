@@ -74,10 +74,7 @@ class TTKTRAJECTORYSTATISTICS_EXPORT ttkTrajectoryStatistics
     protected ttk::TrajectoryStatistics 
 {
 private:
-  /**
-   * TODO 5: Add all filter parameters only as private member variables and
-   *         initialize them here.
-   */
+  int frameSurface{0}; 
 
 public:
   /**
@@ -88,6 +85,10 @@ public:
 
   static ttkTrajectoryStatistics *New();
   vtkTypeMacro(ttkTrajectoryStatistics, ttkAlgorithm);
+
+  vtkSetMacro(frameSurface, int);
+  vtkGetMacro(frameSurface, int);
+
 
 protected:
 
