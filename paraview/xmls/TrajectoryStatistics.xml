@@ -42,6 +42,19 @@
         </Documentation>
       </IntVectorProperty>
 
+      <DoubleVectorProperty
+        name="errSurf"
+        command="SeterrSurf"
+        label="Erreur BFS Surface"
+        number_of_elements="1"
+        default_values="0.0">
+        <Documentation>
+            On which frame to show the surface vertex
+        </Documentation>
+      </DoubleVectorProperty>
+
+  
+
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
 

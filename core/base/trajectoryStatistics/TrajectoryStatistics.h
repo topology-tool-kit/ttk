@@ -47,12 +47,14 @@ namespace ttk {
     }
 
      int findSurface(
-                    ttk::SimplexId                          vertexId,
+                    ttk::SimplexId                         vertexId,
                     std::vector<ttk::SimplexId>            &surfVertex,
                     const std::vector<std::vector<double>> &vertexScalars,
                     std::vector<char>                      &visited,
-                    const double                            threshold,
-                    int                                     frame,
+                    const double                           threshold,
+                    int                                    frame,
+                    double                                 errSurf,
+                    double                                 maxVal,
                     const ttk::AbstractTriangulation       *triangulation
     ); 
 
@@ -79,6 +81,7 @@ namespace ttk {
                 std::vector<double> &surfMoy,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
+                double errSurf,
                 ttk::AbstractTriangulation*triangulation);
 
   }; // TrajectoryStatistics class
