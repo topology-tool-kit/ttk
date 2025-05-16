@@ -284,6 +284,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                     surfMean,
                     allVertexDebris,
                     frameSurface,
+                    errSurf,
                     triangulation->getData()
                     );
   

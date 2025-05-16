@@ -75,6 +75,7 @@ class TTKTRAJECTORYSTATISTICS_EXPORT ttkTrajectoryStatistics
 {
 private:
   int frameSurface{0}; 
+  double errSurf{0.0};
 
 public:
   /**
@@ -88,6 +89,9 @@ public:
 
   vtkSetMacro(frameSurface, int);
   vtkGetMacro(frameSurface, int);
+
+  vtkSetMacro(errSurf, double);
+  vtkGetMacro(errSurf, double);
 
 
 protected:
