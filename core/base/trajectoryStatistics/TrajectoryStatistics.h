@@ -80,6 +80,7 @@ namespace ttk {
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMoy,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                std::vector<ttk::SimplexId> &excludedCriticalPoints,
                 int frameSurf,
                 double errSurf,
                 ttk::AbstractTriangulation*triangulation);
