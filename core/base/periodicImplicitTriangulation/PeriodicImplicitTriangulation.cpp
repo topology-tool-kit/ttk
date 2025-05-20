@@ -1259,7 +1259,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
 
   vertexId = -1;
   const auto &p = this->underlying().getTriangleCoords(triangleId);
-  const SimplexId wrapXRight = (p[0] / 2 == nbvoxels_[Di_]) ? -wrap_[0] : 0;
+  const SimplexId wrapXRight = (p[0] == nbvoxels_[Di_]) ? -wrap_[0] : 0;
   const SimplexId wrapYBottom = (p[1] == nbvoxels_[Dj_]) ? -wrap_[1] : 0;
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
@@ -1283,21 +1283,21 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
       break;
     case TrianglePosition::TOP_2D:
       if(localVertexId == 0) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0];
+        vertexId = p[0] + p[1] * vshift_[0];
       } else if(localVertexId == 1) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
+        vertexId = p[0] + p[1] * vshift_[0] + 1 + wrapXRight;
       } else if(localVertexId == 2) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
+        vertexId = p[0] + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
       }
       break;
     case TrianglePosition::BOTTOM_2D:
       if(localVertexId == 0) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
+        vertexId = p[0] + p[1] * vshift_[0] + 1 + wrapXRight;
       } else if(localVertexId == 1) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1 + wrapXRight
+        vertexId = p[0] + p[1] * vshift_[0] + vshift_[0] + 1 + wrapXRight
                    + wrapYBottom;
       } else if(localVertexId == 2) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
+        vertexId = p[0] + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
       }
       break;
     default:
@@ -1321,7 +1321,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
 
   edgeId = -1;
   const auto &p = this->underlying().getTriangleCoords(triangleId);
-  const SimplexId wrapXRight = (p[0] / 2 == nbvoxels_[Di_]) ? -wrap_[0] : 0;
+  const SimplexId wrapXRight = (p[0] == nbvoxels_[Di_]) ? -wrap_[0] : 0;
   const SimplexId wrapYBottom = (p[1] == nbvoxels_[Dj_]) ? -wrap_[1] : 0;
   const SimplexId id = triangleId % 2;
 
@@ -1352,21 +1352,20 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
       break;
     case TrianglePosition::TOP_2D:
       if(localEdgeId == 0) {
-        edgeId = p[0] / 2 + p[1] * eshift_[0];
+        edgeId = p[0] + p[1] * eshift_[0];
       } else if(localEdgeId == 1) {
-        edgeId = esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
+        edgeId = esetshift_[0] + p[0] + p[1] * eshift_[2];
       } else if(localEdgeId == 2) {
-        edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+        edgeId = esetshift_[1] + p[0] + p[1] * eshift_[4];
       }
       break;
     case TrianglePosition::BOTTOM_2D:
       if(localEdgeId == 0) {
-        edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0] + wrapYBottom;
+        edgeId = p[0] + (p[1] + 1) * eshift_[0] + wrapYBottom;
       } else if(localEdgeId == 1) {
-        edgeId
-          = esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2] + wrapXRight;
+        edgeId = esetshift_[0] + (p[0] + 1) + p[1] * eshift_[2] + wrapXRight;
       } else if(localEdgeId == 2) {
-        edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+        edgeId = esetshift_[1] + p[0] + p[1] * eshift_[4];
       }
       break;
     default:
@@ -1593,7 +1592,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
   switch(this->underlying().getTrianglePosition(triangleId)) {
     case TrianglePosition::BOTTOM_2D:
 
-      if(p[0] / 2 == nbvoxels_[Di_] and p[1] == nbvoxels_[Dj_]) {
+      if(p[0] == nbvoxels_[Di_] and p[1] == nbvoxels_[Dj_]) {
         if(localNeighborId == 0) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 1) {
@@ -1602,7 +1601,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
           neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
         }
 
-      } else if(p[0] / 2 == nbvoxels_[Di_]) {
+      } else if(p[0] == nbvoxels_[Di_]) {
         if(localNeighborId == 0) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 1) {
@@ -1633,7 +1632,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
 
     case TrianglePosition::TOP_2D:
 
-      if(p[0] / 2 == 0 and p[1] == 0) {
+      if(p[0] == 0 and p[1] == 0) {
         if(localNeighborId == 0) {
           neighborId = triangleId + 1;
         } else if(localNeighborId == 1) {
@@ -1642,7 +1641,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
           neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
         }
 
-      } else if(p[0] / 2 == 0) {
+      } else if(p[0] == 0) {
         if(localNeighborId == 0) {
           neighborId = triangleId + 1;
         } else if(localNeighborId == 1) {
