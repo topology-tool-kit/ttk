@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include <PersistenceDiagramWarmRestartAuction.h>
-#include <RipsPersistenceDiagram.h>
 #include <PairCells.h>
 #include <PairCellsWithOracle.h>
+#include <PersistenceDiagramWarmRestartAuction.h>
+#include <RipsPersistenceDiagram.h>
 
 #ifdef TTK_ENABLE_TORCH
 #include <torch/torch.h>
@@ -49,7 +49,9 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_TORCH
 
-    TopologicalLoss(const torch::Tensor &input, std::vector<std::vector<double>> const& points, REGUL regul);
+    TopologicalLoss(const torch::Tensor &input,
+                    std::vector<std::vector<double>> const &points,
+                    REGUL regul);
 
     torch::Tensor computeLoss(const torch::Tensor &latent);
 
@@ -57,15 +59,18 @@ namespace ttk {
     const torch::Tensor input_;
     const std::vector<std::vector<double>> &points_;
     const REGUL regul_;
-    const torch::Reduction::Reduction reduction_ {torch::Reduction::Mean};
-    const torch::DeviceType device {torch::kCPU};
+    const torch::Reduction::Reduction reduction_{torch::Reduction::Mean};
+    const torch::DeviceType device{torch::kCPU};
     torch::Tensor latent_;
     int latentDimension;
 
     /* persistence containers */
     rpd::MultidimensionalDiagram inputPD;
-    std::array<torch::Tensor,4> inputCriticalPairIndices; // [0] is MST, [1] is RNG-MST, [2] is MML, [3] is strict cascade if required
-    std::unique_ptr<PersistenceDiagramWarmRestartAuction<rpd::PersistencePair>> auction {nullptr};
+    std::array<torch::Tensor, 4>
+      inputCriticalPairIndices; // [0] is MST, [1] is RNG-MST, [2] is MML, [3]
+                                // is strict cascade if required
+    std::unique_ptr<PersistenceDiagramWarmRestartAuction<rpd::PersistencePair>>
+      auction{nullptr};
 
     /* persistence computation methods */
     void precomputeInputPersistence();
@@ -76,19 +81,22 @@ namespace ttk {
 
     /* tensor tools */
     inline torch::Tensor pairsToTorch(const rpd::EdgeSet &edges) const;
-    static inline torch::Tensor diffDistances(const torch::Tensor &data, const torch::Tensor &indices);
+    static inline torch::Tensor diffDistances(const torch::Tensor &data,
+                                              const torch::Tensor &indices);
     inline torch::Tensor diffEdgeSetMSE(const torch::Tensor &indices) const;
-    torch::Tensor diffPD(const torch::Tensor &points, const rpd::Diagram &PD, const std::vector<unsigned> &indices) const;
+    torch::Tensor diffPD(const torch::Tensor &points,
+                         const rpd::Diagram &PD,
+                         const std::vector<unsigned> &indices) const;
 
     /* TopoAE-like distances */
     template <typename EdgeSets>
     inline torch::Tensor diffRNGMML(const EdgeSets &latentCritical) const {
-      return diffEdgeSetMSE(inputCriticalPairIndices[0]) +
-             diffEdgeSetMSE(inputCriticalPairIndices[1]) +
-             diffEdgeSetMSE(inputCriticalPairIndices[2]) +
-             diffEdgeSetMSE(pairsToTorch(latentCritical[0])) +
-             diffEdgeSetMSE(pairsToTorch(latentCritical[1])) +
-             diffEdgeSetMSE(pairsToTorch(latentCritical[2]));
+      return diffEdgeSetMSE(inputCriticalPairIndices[0])
+             + diffEdgeSetMSE(inputCriticalPairIndices[1])
+             + diffEdgeSetMSE(inputCriticalPairIndices[2])
+             + diffEdgeSetMSE(pairsToTorch(latentCritical[0]))
+             + diffEdgeSetMSE(pairsToTorch(latentCritical[1]))
+             + diffEdgeSetMSE(pairsToTorch(latentCritical[2]));
     }
     torch::Tensor diffTopoAELoss() const;
     torch::Tensor diffTopoAELossDim1() const;
@@ -103,6 +111,5 @@ namespace ttk {
     torch::Tensor diffW1() const;
 
 #endif
-
   };
-}
+} // namespace ttk

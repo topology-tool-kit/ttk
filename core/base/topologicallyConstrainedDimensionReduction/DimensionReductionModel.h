@@ -24,7 +24,7 @@
 namespace ttk {
 
   /**
-  * Abstract base class for dimension reduction models
+   * Abstract base class for dimension reduction models
    */
   class DimensionReductionModel : public torch::nn::Module {
   public:
@@ -34,13 +34,16 @@ namespace ttk {
   }; // DimensionReductionModel class
 
   /**
-  * The AutoEncoder class provides a Torch-based autoencoder class for
-  * autoencoder-based dimension reduction
+   * The AutoEncoder class provides a Torch-based autoencoder class for
+   * autoencoder-based dimension reduction
    */
   class AutoEncoder : public DimensionReductionModel {
   public:
-    AutoEncoder(int inputDim, int latentDim, const std::string &layersDescription,
-                const std::string &activation = "ReLU", bool useBN=true);
+    AutoEncoder(int inputDim,
+                int latentDim,
+                const std::string &layersDescription,
+                const std::string &activation = "ReLU",
+                bool useBN = true);
 
     inline torch::Tensor forward(torch::Tensor const &x) override {
       return decoder->forward(encoder->forward(x));
@@ -54,7 +57,7 @@ namespace ttk {
       return decoder->forward(x);
     }
 
-    static bool isStringValid(const std::string& s);
+    static bool isStringValid(const std::string &s);
 
   private:
     torch::nn::Sequential encoder;
@@ -62,13 +65,17 @@ namespace ttk {
   }; // AutoEncoder class
 
   /**
-  * The AutoDecoder class provides a Torch-based autodecoder class for
-  * autodecoder-based dimension reduction
+   * The AutoDecoder class provides a Torch-based autodecoder class for
+   * autodecoder-based dimension reduction
    */
   class AutoDecoder : public DimensionReductionModel {
   public:
-    AutoDecoder(int inputDim, int inputSize, int latentDim, const std::string &layersDescription,
-                const std::string &activation = "ReLU", bool useBN=true);
+    AutoDecoder(int inputDim,
+                int inputSize,
+                int latentDim,
+                const std::string &layersDescription,
+                const std::string &activation = "ReLU",
+                bool useBN = true);
 
     inline torch::Tensor forward(torch::Tensor const & /*x*/) override {
       return decoder->forward(latent);
@@ -88,18 +95,18 @@ namespace ttk {
   }; // AutoDecoder class
 
   /**
-  * The DirectOptimization class provides a Torch-based dummy class for
-  * dimension reduction based on the direct optimization of the point cloud
+   * The DirectOptimization class provides a Torch-based dummy class for
+   * dimension reduction based on the direct optimization of the point cloud
    */
   class DirectOptimization : public DimensionReductionModel {
   public:
     DirectOptimization(int inputSize, int latentDim);
 
-    inline torch::Tensor forward(torch::Tensor const & x) override {
+    inline torch::Tensor forward(torch::Tensor const &x) override {
       return x;
     }
 
-    inline torch::Tensor encode(torch::Tensor const & x) override {
+    inline torch::Tensor encode(torch::Tensor const &x) override {
       input = x;
       return latent;
     }
@@ -114,13 +121,16 @@ namespace ttk {
   }; // DirectOptimization class
 
   /**
-  * The ConvolutionalAutoEncoder class provides a Torch-based convolutional
-  * autoencoder class for autoencoder-based dimension reduction of image
-  * datasets
+   * The ConvolutionalAutoEncoder class provides a Torch-based convolutional
+   * autoencoder class for autoencoder-based dimension reduction of image
+   * datasets
    */
   class ConvolutionalAutoEncoder : public DimensionReductionModel {
   public:
-    ConvolutionalAutoEncoder(int imageSide, int latentDim, const std::string &layersDescription, bool useBN);
+    ConvolutionalAutoEncoder(int imageSide,
+                             int latentDim,
+                             const std::string &layersDescription,
+                             bool useBN);
 
     inline torch::Tensor forward(torch::Tensor const &x) override {
       return decoder->forward(encoder->forward(x));
@@ -134,13 +144,13 @@ namespace ttk {
       return decoder->forward(x);
     }
 
-    static bool isStringValid(const std::string& s);
+    static bool isStringValid(const std::string &s);
 
   private:
     torch::nn::Sequential encoder;
     torch::nn::Sequential decoder;
   }; // ConvolutionalAutoEncoder class
 
-}
+} // namespace ttk
 
 #endif

@@ -70,10 +70,21 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_TORCH
 
-    TCDR(bool useCUDA, bool deterministic, int seed, int numberOfComponents, int epochs, double learningRate,
-         OPTIMIZER optimizer, REGUL method, MODEL modelType, const std::string &architecture,
-         const std::string &activation, int batchSize, bool batchNormalization,
-         double regCoefficient, bool inputIsImages);
+    TCDR(bool useCUDA,
+         bool deterministic,
+         int seed,
+         int numberOfComponents,
+         int epochs,
+         double learningRate,
+         OPTIMIZER optimizer,
+         REGUL method,
+         MODEL modelType,
+         const std::string &architecture,
+         const std::string &activation,
+         int batchSize,
+         bool batchNormalization,
+         double regCoefficient,
+         bool inputIsImages);
 
     /**
      * @brief Computes the projection with an AutoEncoder
@@ -85,7 +96,7 @@ namespace ttk {
      * @param[in] n the number of input points
      *
      * @return 0 in case of success.
-    */
+     */
     int execute(std::vector<std::vector<double>> &outputEmbedding,
                 const std::vector<double> &inputMatrix,
                 size_t n);
@@ -105,10 +116,10 @@ namespace ttk {
     const double RegCoefficient;
 
   private:
-    torch::DeviceType device {torch::kCPU};
-    std::shared_ptr<DimensionReductionModel> model {nullptr};
-    std::shared_ptr<torch::optim::Optimizer> torchOptimizer {nullptr};
-    std::shared_ptr<TopologicalLoss> topologicalLossContainer {nullptr};
+    torch::DeviceType device{torch::kCPU};
+    std::shared_ptr<DimensionReductionModel> model{nullptr};
+    std::shared_ptr<torch::optim::Optimizer> torchOptimizer{nullptr};
+    std::shared_ptr<TopologicalLoss> topologicalLossContainer{nullptr};
 
     void optimize(const torch::Tensor &input) const;
     void optimizeSimple(const torch::Tensor &input) const;
@@ -119,4 +130,4 @@ namespace ttk {
 
   }; // TCDR class
 
-}
+} // namespace ttk

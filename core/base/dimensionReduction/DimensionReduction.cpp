@@ -77,18 +77,21 @@ int DimensionReduction::execute(
 
   if(this->Method == METHOD::AE) {
 #ifdef TTK_ENABLE_TORCH
-    TCDR tcdr(ae_CUDA, ae_Deterministic, ae_Seed, NumberOfComponents, ae_Epochs, ae_LearningRate, ae_Optimizer, ae_Method, ae_Model, ae_Architecture, ae_Activation, ae_BatchSize, ae_BatchNormalization, ae_RegCoefficient, IsInputImages);
+    TCDR tcdr(ae_CUDA, ae_Deterministic, ae_Seed, NumberOfComponents, ae_Epochs,
+              ae_LearningRate, ae_Optimizer, ae_Method, ae_Model,
+              ae_Architecture, ae_Activation, ae_BatchSize,
+              ae_BatchNormalization, ae_RegCoefficient, IsInputImages);
     tcdr.setDebugLevel(debugLevel_);
     tcdr.setThreadNumber(threadNumber_);
 
     outputEmbedding.resize(NumberOfComponents);
-    for (int d = 0; d < NumberOfComponents; d++)
+    for(int d = 0; d < NumberOfComponents; d++)
       outputEmbedding[d].resize(nRows);
 
     tcdr.execute(outputEmbedding, inputMatrix, nRows);
 
-    this->printMsg(
-      "Computed AE dimension reduction", 1.0, t.getElapsedTime(), threadNumber_);
+    this->printMsg("Computed AE dimension reduction", 1.0, t.getElapsedTime(),
+                   threadNumber_);
     return 0;
 #else
     this->printErr("Unavailable backend: Torch is required.");
