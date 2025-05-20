@@ -2,8 +2,6 @@
 
 #ifdef TTK_ENABLE_TORCH
 
-#define TTK_W1REG_WITH_TOPOAE0
-
 using namespace torch::indexing;
 
 ttk::TopologicalLoss::TopologicalLoss(const torch::Tensor &input,const std::vector<std::vector<double>> &points, REGUL regul) : input_(input), points_(points), regul_(regul), device(input.device().type()) {
@@ -23,11 +21,7 @@ torch::Tensor ttk::TopologicalLoss::computeLoss(const torch::Tensor &latent) {
   else if (regul_ == REGUL::ASYMMETRIC_CASCADE)
     return diffAsymmetricCascadeAELoss();
   else if (regul_ == REGUL::W_DIM1)
-#ifdef TTK_W1REG_WITH_TOPOAE0
     return diffW1() + diffTopoAELoss();
-#else
-    return diffW1();
-#endif
 
   return torch::zeros({1}, device);
 }
