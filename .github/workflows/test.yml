@@ -52,6 +52,7 @@ jobs:
         sudo apt install -y \
           cargo \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
@@ -290,7 +291,7 @@ jobs:
         brew install --cask xquartz
         brew install llvm ninja open-mpi
         # TTK dependencies
-        brew install boost eigen graphviz spectra sqlite zlib numpy qhull
+        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1

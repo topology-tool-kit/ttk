@@ -105,6 +105,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
@@ -153,10 +154,12 @@ jobs:
 
     - name: Use Clang static analyzer
       if: matrix.config.sa
+      # "FastRipsPersistenceDiagram2.cpp" is excluded because static analysis fails on CGAL's "Mpzf.h" file
       run: |
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
+        | grep -v "FastRipsPersistenceDiagram2.cpp" \
         | xargs -n1 -P$(nproc) clang-tidy -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
@@ -191,6 +194,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \

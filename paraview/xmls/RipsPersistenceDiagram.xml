@@ -114,26 +114,48 @@
       <!-- OUTPUT PARAMETER WIDGETS -->
 
       <IntVectorProperty
+              name="BackEnd"
+              label="Backend"
+              command="SetBackEnd"
+              number_of_elements="1"
+              default_values="0"
+              panel_visibility="advanced" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Ripser (JACT 2021)"/>
+          <Entry value="1" text="Geometric (only in 2D)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Backend for the computation of the Rips persistence diagram.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
               name="SimplexMaximumDimension"
               label="Simplex maximum dimension"
               command="SetSimplexMaximumDimension"
               number_of_elements="1"
               default_values="1">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
         <Documentation>
           Simplex maximum dimension in the Rips complex.
         </Documentation>
       </IntVectorProperty>
 
-      <DoubleVectorProperty
+      <StringVectorProperty
               name="SimplexMaximumDiameter"
               label="Simplex maximum diameter"
               command="SetSimplexMaximumDiameter"
               number_of_elements="1"
-              default_values="1.0">
+              default_values="inf">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
         <Documentation>
-          Simplex maximum diameter in the Rips complex.
+          Simplex maximum diameter in the Rips complex (type "inf" for unlimited diameter).
         </Documentation>
-      </DoubleVectorProperty>
+      </StringVectorProperty>
 
       <IntVectorProperty
               name="FieldOfCoefficients"
@@ -149,10 +171,45 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+              name="DelaunayRips"
+              label="Compute Delaunay-Rips persistence diagram"
+              command="SetDelaunayRips"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="1" />
+        </Hints>
+        <Documentation>
+          Check this box to compute the persistence diagram of the Delaunay-Rips complex (faster) instead of the Rips complex (slower).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+              name="OutputGenerators"
+              label="Output 1-generators"
+              command="SetOutputGenerators"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="1" />
+        </Hints>
+        <Documentation>
+          Check this box to output generators of the 1-dimensional homology (only in 2D).
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="BackEnd" />
         <Property name="SimplexMaximumDimension" />
         <Property name="SimplexMaximumDiameter" />
         <Property name="FieldOfCoefficients" />
+        <Property name="DelaunayRips" />
+        <Property name="OutputGenerators" />
       </PropertyGroup>
 
       <!-- DEBUG -->
