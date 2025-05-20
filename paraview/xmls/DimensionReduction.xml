@@ -18,7 +18,7 @@
         Online examples:
 
         - https://topology-tool-kit.github.io/examples/1manifoldLearning/
-        
+
         - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
 
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
@@ -129,6 +129,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
           <Entry value="4" text="Isomap Embedding"/>
           <Entry value="5" text="Principal Component Analysis" />
           <Entry value="6" text="TopoMap (IEEE VIS 2020)" />
+          <Entry value="7" text="Autoencoder" />
         </EnumerationDomain>
         <Documentation>
         </Documentation>
@@ -168,7 +169,11 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
                                        mode="visibility"
                                        property="Method"
                                        value="5" />
-         
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="7" />
+
              </Expression>
           </PropertyWidgetDecorator>
         </Hints>
@@ -211,7 +216,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
                                        mode="visibility"
                                        property="Method"
                                        value="5" />
-         
+
              </Expression>
           </PropertyWidgetDecorator>
         </Hints>
@@ -268,6 +273,24 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
           The Spectral Embedding and MDS methods can be fed directly
           with dissimilarity (distance) matrices instead of raw point
           clouds.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="InputImages"
+        label="Input represents images (use convolutional layers)"
+        command="SetIsInputImages"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="7" />
+        </Hints>
+        <Documentation>
+          Check this box if the input represents an image dataset. An autoencoder with convolutional layers will be used
+          instead of an autoencoder with dense layers only. The images are supposed to be square.
         </Documentation>
       </IntVectorProperty>
 
@@ -669,7 +692,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         <Documentation>
         </Documentation>
       </StringVectorProperty>
-      
+
       <StringVectorProperty name="iso_Metric"
         label="Metric"
         command="Setiso_Metric"
@@ -740,11 +763,11 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       </StringVectorProperty>
 
       <IntVectorProperty name="topomap_Strategy"
-                         label="MST Algorithm"
-                         command="Settopomap_Strategy"
-                         number_of_elements="1"
-                         default_values="0"
-                         panel_visibility="advanced">
+        label="MST Algorithm"
+        command="Settopomap_Strategy"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
         <EnumerationDomain name="enum">
           <Entry value="0" text="Kruskal"/>
           <Entry value="1" text="Prim"/>
@@ -753,8 +776,6 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         </Documentation>
       </IntVectorProperty>
 
-
-
       <IntVectorProperty
         name="topomap_AngularSampleNb"
         label="Angular samples"
@@ -762,30 +783,235 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         number_of_elements="1"
         default_values="2"
         panel_visibility="advanced">
-      <IntRangeDomain name="range" min="1" max="100" />
-      <Documentation>
-        When projecting in 2D, we regularly need to merge two already projected subsets of the points. We put them apart the right distance, but we may rotate each by some angle between two bounds. We test several angles and keep the best one. This parameter defines how many tests we do for each rotation. Beware, this parameter appears squared in the algorithm complexity.
-      </Documentation>
-    </IntVectorProperty>
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Documentation>
+          When projecting in 2D, we regularly need to merge two already projected subsets of the points. We put them apart the right distance, but we may rotate each by some angle between two bounds. We test several angles and keep the best one. This parameter defines how many tests we do for each rotation. Beware, this parameter appears squared in the algorithm complexity.
+        </Documentation>
+      </IntVectorProperty>
 
+      <IntVectorProperty
+        name="topomap_CheckMST"
+        label="MST Preservation Check"
+        command="Settopomap_CheckMST"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This way to embed points in 2D is based on preserving the lengths of the edges selected by Kruskal Algorithm to build a spanning tree. Checking this box enables testing that these lengths are indeed preserved. This test is very quick.
+        </Documentation>
+      </IntVectorProperty>
 
+      <IntVectorProperty name="ae_Method"
+        label="Loss function"
+        command="Setae_Method"
+        number_of_elements="1"
+        default_values="4"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+            <Entry value="0" text="Simple Autoencoder"/>
+            <Entry value="1" text="Topological Autoencoder (ICML 2020)"/>
+            <Entry value="2" text="Topological Autoencoder with dimension 1"/>
+            <Entry value="3" text="Cascade Autoencoder"/>
+            <Entry value="4" text="Asymmetric Cascade Autoencoder"/>
+            <Entry value="5" text="W1 regularization"/>
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
 
+      <DoubleVectorProperty name="ae_RegCoefficient"
+        label="Regularization coefficient"
+        command="Setae_RegCoefficient"
+        number_of_elements="1"
+        default_values="1e-2"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ae_Method"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ae_Method"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ae_Method"
+                                       value="3" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ae_Method"
+                                       value="4" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ae_Method"
+                                       value="5" />
+             </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Coefficient applied to the chosen topological regularization term during the optimization.
+        </Documentation>
+      </DoubleVectorProperty>
 
-    <IntVectorProperty
-      name="topomap_CheckMST"
-      label="MST Preservation Check"
-      command="Settopomap_CheckMST"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-    <BooleanDomain name="bool"/>
+      <IntVectorProperty name="ae_Epochs"
+        label="Number of epochs"
+        command="Setae_Epochs"
+        number_of_elements="1"
+        default_values="1000"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="1000" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
 
-    <Documentation>
-      This way to embedd points in 2D is based on preserving the lengths of the edges selected by Kruskal Algortihm to build a spanning tree. Checking this box enables testing that these lengths are indeed preserved. This test is very quick.
-    </Documentation>
-  </IntVectorProperty>
+      <IntVectorProperty name="ae_BatchSize"
+        label="Batch size"
+        command="Setae_BatchSize"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="1000" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ae_Method"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Batch size used during the optimization. Put 0 to use the whole dataset at each iteration.
+        </Documentation>
+      </IntVectorProperty>
 
+      <DoubleVectorProperty name="ae_LearningRate"
+        label="Learning rate"
+        command="Setae_LearningRate"
+        number_of_elements="1"
+        default_values="1e-2"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
 
+      <IntVectorProperty name="ae_Optimizer"
+        label="Optimizer"
+        command="Setae_Optimizer"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+            <Entry value="0" text="ADAM"/>
+            <Entry value="1" text="SGD"/>
+            <Entry value="2" text="LBFGS"/>
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <!--IntVectorProperty name="ae_Model"
+        label="Model"
+        command="Setae_Model"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+            <Entry value="0" text="Autoencoder"/>
+            <Entry value="1" text="Autodecoder"/>
+            <Entry value="2" text="Direct optimization"/>
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty-->
+
+      <StringVectorProperty name="ae_Architecture"
+        label="Hidden layers"
+        command="Setae_Architecture"
+        number_of_elements="1"
+        default_values="32 32"
+        panel_visibility="advanced">
+        <Documentation>
+          Size of the hidden layers in the encoder network. The number of integers controls the number of hidden layers. The decoder network will have the same number of hidden layers with sizes in the reverse order.
+          In case of convolutional layers, use the syntax c{#output channels}/{stride}: for example c8/2 creates a convolutional layer with an 8-channels, half-resolution output.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ae_Activation"
+        label="Activation function"
+        command="Setae_Activation"
+        number_of_elements="1"
+        default_values="ReLU"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="ReLU"/>
+          <String value="Tanh"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="ae_BatchNormalization"
+        label="Use batch normalization"
+        command="Setae_BatchNormalization"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ae_Deterministic"
+        label="Enforce determinism"
+        command="Setae_Deterministic"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this to make the behavior of LibTorch as deterministic as possible (deterministic algorithms, fixed seeds), for example for reproducibility purpose. In this case, CUDA is disabled and the CPU will be used instead.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ae_Seed"
+        label="Random seed"
+        command="Setae_Seed"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain/>
+        <Documentation>
+          Set the seed for randomness.
+        </Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ae_Deterministic"
+                                   value="1" />
+        </Hints>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ae_CUDA"
+        label="Use CUDA if available"
+        command="Setae_CUDA"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use CUDA if available. If no CUDA device is available, or this is not checked, the CPU will be used instead.
+        </Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ae_Deterministic"
+                                   value="0" />
+        </Hints>
+      </IntVectorProperty>
 
   <StringVectorProperty name="ModulePath"
     label="Module Path"
@@ -841,6 +1067,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="InputDistanceMatrix" />
+        <Property name="InputImages" />
         <Property name="SelectFieldsWithRegexp" />
         <Property name="ScalarFields" />
         <Property name="Regexp" />
@@ -943,7 +1170,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
             property="Method"
             value="5" />
         </Hints>
-    </PropertyGroup>
+      </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="TopoMap (IEEE VIS 2020)">
         <Property name="topomap_Strategy" />
@@ -956,7 +1183,29 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
             value="6" />
         </Hints>
       </PropertyGroup>
-      
+
+      <PropertyGroup panel_widget="Line" label="Autoencoder">
+        <Property name="ae_Method" />
+        <Property name="ae_RegCoefficient" />
+        <Property name="ae_Epochs" />
+        <Property name="ae_BatchSize" />
+        <Property name="ae_Optimizer" />
+        <Property name="ae_LearningRate" />
+        <!--Property name="ae_Model" /-->
+        <Property name="ae_Architecture" />
+        <Property name="ae_Activation" />
+        <Property name="ae_BatchNormalization" />
+        <Property name="ae_Deterministic" />
+        <Property name="ae_Seed" />
+        <Property name="ae_CUDA" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="7" />
+        </Hints>
+      </PropertyGroup>
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="ModulePath" />
         <Property name="ModuleName" />

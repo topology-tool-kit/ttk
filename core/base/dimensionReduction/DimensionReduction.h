@@ -54,6 +54,7 @@
 
 #include <Debug.h>
 #include <TopoMap.h>
+#include <TopologicallyConstrainedDimensionReduction.h>
 
 namespace ttk {
 
@@ -78,6 +79,8 @@ namespace ttk {
       PCA = 5,
       /** TopoMap */
       TOPOMAP = 6,
+      /** AutoEncoder */
+      AE = 7,
     };
 
     inline void setSEParameters(const std::string &Affinity,
@@ -228,6 +231,9 @@ namespace ttk {
         case METHOD::TOPOMAP:
           methodName = "TopoMap (IEEE VIS 2020)";
           break;
+        case METHOD::AE:
+          methodName = "Autoencoder";
+          break;
       }
       this->printMsg("Using backend `" + methodName + "`");
     }
@@ -322,6 +328,21 @@ namespace ttk {
     bool topomap_CheckMST;
     TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
 
+    // AutoEncoder
+    bool ae_CUDA{true};
+    bool ae_Deterministic{false};
+    int ae_Seed{0};
+    int ae_Epochs{1000};
+    double ae_LearningRate{1e-2};
+    TCDR::OPTIMIZER ae_Optimizer{TCDR::OPTIMIZER::ADAM};
+    TCDR::REGUL ae_Method{TCDR::REGUL::ASYMMETRIC_CASCADE};
+    TCDR::MODEL ae_Model{TCDR::MODEL::AUTOENCODER};
+    std::string ae_Architecture{"32 32"};
+    std::string ae_Activation{"ReLU"};
+    int ae_BatchSize{0};
+    bool ae_BatchNormalization{true};
+    double ae_RegCoefficient{1e-2};
+
     // testing
     std::string ModulePath{"default"};
     std::string ModuleName{"dimensionReduction"};
@@ -334,5 +355,6 @@ namespace ttk {
     int IsDeterministic{true};
     char majorVersion_{'0'};
     bool IsInputADistanceMatrix{false};
+    bool IsInputImages{false};
   };
 } // namespace ttk

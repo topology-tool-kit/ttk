@@ -63,6 +63,7 @@
 // TTK includes
 #include <DimensionReduction.h>
 #include <TopoMap.h>
+#include <TopologicallyConstrainedDimensionReduction.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 
@@ -243,6 +244,49 @@ public:
 
   ttkSetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
   vtkGetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
+
+  // AutoEncoder
+  vtkSetMacro(ae_CUDA, bool);
+  vtkGetMacro(ae_CUDA, bool);
+
+  vtkSetMacro(ae_Deterministic, bool);
+  vtkGetMacro(ae_Deterministic, bool);
+
+  vtkSetMacro(ae_Seed, int);
+  vtkGetMacro(ae_Seed, int);
+
+  vtkSetMacro(ae_Epochs, int);
+  vtkGetMacro(ae_Epochs, int);
+
+  vtkSetMacro(ae_LearningRate, double);
+  vtkGetMacro(ae_LearningRate, double);
+
+  ttkSetEnumMacro(ae_Method, ttk::TCDR::REGUL);
+  vtkGetEnumMacro(ae_Method, ttk::TCDR::REGUL);
+
+  ttkSetEnumMacro(ae_Optimizer, ttk::TCDR::OPTIMIZER);
+  vtkGetEnumMacro(ae_Optimizer, ttk::TCDR::OPTIMIZER);
+
+  ttkSetEnumMacro(ae_Model, ttk::TCDR::MODEL);
+  vtkGetEnumMacro(ae_Model, ttk::TCDR::MODEL);
+
+  vtkSetMacro(ae_Architecture, const std::string &);
+  vtkGetMacro(ae_Architecture, std::string);
+
+  vtkSetMacro(ae_Activation, const std::string &);
+  vtkGetMacro(ae_Activation, std::string);
+
+  vtkSetMacro(ae_BatchSize, int);
+  vtkGetMacro(ae_BatchSize, int);
+
+  vtkSetMacro(ae_BatchNormalization, bool);
+  vtkGetMacro(ae_BatchNormalization, bool);
+
+  vtkSetMacro(ae_RegCoefficient, double);
+  vtkGetMacro(ae_RegCoefficient, double);
+
+  vtkSetMacro(IsInputImages, bool);
+  vtkGetMacro(IsInputImages, bool);
 
   // testing
   vtkSetMacro(ModulePath, const std::string &);
