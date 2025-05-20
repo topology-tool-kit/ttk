@@ -58,6 +58,11 @@
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
 
+      <OutputPort name="Traj Table" index="0" id="port1"/>
+      <OutputPort name="Traj VTU" index="1" id="port1"/>
+      <OutputPort name="Surface VTI" index="2" id="port2"/>
+
+
       <!-- MENU CATEGORY -->
       <Hints>
         <ShowInMenu category="TTK - Misc"/>

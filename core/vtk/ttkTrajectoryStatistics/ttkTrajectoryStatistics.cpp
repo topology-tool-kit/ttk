@@ -177,6 +177,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<double> VX(numTraj), VY(numTraj), 
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
   std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
+  std::vector<ttk::SimplexId> excludedCriticalPoints;
 
   std::vector<vtkDataArray *> inputScalarFieldsRaw;
   std::vector<vtkDataArray *> inputScalarFields;
@@ -283,6 +284,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                     surfMax,
                     surfMean,
                     allVertexDebris,
+                    excludedCriticalPoints,
                     frameSurface,
                     errSurf,
                     triangulation->getData()
@@ -406,22 +408,38 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   vtkSmartPointer<vtkDataSet> copy = vtkSmartPointer<vtkDataSet>::Take(inputDataSet->NewInstance());
   copy->ShallowCopy(inputDataSet); 
-  outputDataSet->ShallowCopy(copy); 
+  outputDataSet->ShallowCopy(copy);
 
-  vtkSmartPointer<vtkCharArray> surfaceVertexArray = vtkSmartPointer<vtkCharArray>::New();
-  surfaceVertexArray->SetName("SurfaceVertex");
 
   vtkIdType numPoints = inputDataSet->GetNumberOfPoints();
+
+  vtkSmartPointer<vtkIntArray> surfaceVertexArray = vtkSmartPointer<vtkIntArray>::New();
+  surfaceVertexArray->SetName("SurfaceVertex");
+
   surfaceVertexArray->SetNumberOfTuples(numPoints);
   surfaceVertexArray->FillComponent(0, 0); // tous les points à 0 (false)
 
+
+
+  for (size_t i = 0; i < excludedCriticalPoints.size(); i++){
+    surfaceVertexArray->SetValue(excludedCriticalPoints[i], 2);
+  }
   for(size_t trajId = 0; trajId < allVertexDebris.size(); ++trajId) {
     const auto &trajSurfaces = allVertexDebris[trajId];
     for(const auto vertexId : trajSurfaces) {
-        if(vertexId >= 0 && vertexId < numPoints)
-          surfaceVertexArray->SetValue(vertexId, 1); // true
+        if(vertexId >= 0 && vertexId < numPoints){
+          int doublon = surfaceVertexArray->GetValue(vertexId);
+          if (doublon == 1){
+            surfaceVertexArray->SetValue(vertexId, 3);
+          }
+          else  {
+            surfaceVertexArray->SetValue(vertexId, 1); // true
+          }
+        }
     }
   }
+
+
 
   outputDataSet->GetPointData()->AddArray(surfaceVertexArray);
 
