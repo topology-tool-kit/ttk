@@ -15,7 +15,7 @@
 
 #include <Debug.h>
 #include <RipsPersistenceDiagramUtils.h>
-
+#include <boost/functional/hash.hpp>
 #include <set>
 
 namespace ttk::rpd {

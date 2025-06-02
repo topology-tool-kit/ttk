@@ -6,6 +6,7 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkTable.h>
+#include <boost/functional/hash.hpp>
 
 #include <regex>
 
