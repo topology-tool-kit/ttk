@@ -267,28 +267,28 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   int status = 0;
 
-
-  status = this->execute(
-                    trajTime, 
-                    trajX,
-                    trajY,
-                    trajZ,
-                    trajVertexId,
-                    vertexScalars,
-                    startFrames,
-                    endFrames,
-                    durations,
-                    VX,
-                    VY,
-                    surfMin, 
-                    surfMax,
-                    surfMean,
-                    allVertexDebris,
-                    excludedCriticalPoints,
-                    frameSurface,
-                    errSurf,
-                    triangulation->getData()
-                    );
+  ttkVtkTemplateMacro(inputScalarFields[0]->GetDataType(), triangulation->getType(),
+      (status = this->execute<VTK_TT, TTK_TT>(
+                        trajTime, 
+                        trajX,
+                        trajY,
+                        trajZ,
+                        trajVertexId,
+                        vertexScalars,
+                        startFrames,
+                        endFrames,
+                        durations,
+                        VX,
+                        VY,
+                        surfMin, 
+                        surfMax,
+                        surfMean,
+                        allVertexDebris,
+                        excludedCriticalPoints,
+                        frameSurface,
+                        errSurf,
+                        (TTK_TT *)triangulation->getData()
+                        )));
   
   if (status != 1)
     return 0;
