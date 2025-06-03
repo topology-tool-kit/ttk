@@ -76,6 +76,8 @@ class TTKTRAJECTORYSTATISTICS_EXPORT ttkTrajectoryStatistics
 private:
   int frameSurface{0}; 
   double errSurf{0.0};
+  bool addThresh{true};
+  bool gradThresh{false};
 
 public:
   /**
@@ -92,6 +94,12 @@ public:
 
   vtkSetMacro(errSurf, double);
   vtkGetMacro(errSurf, double);
+
+  vtkSetMacro(addThresh, bool);
+  vtkGetMacro(addThresh, bool);
+
+  vtkSetMacro(gradThresh, bool);
+  vtkGetMacro(gradThresh, bool);
 
 
 protected:

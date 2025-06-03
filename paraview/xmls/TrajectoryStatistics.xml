@@ -49,11 +49,36 @@
         number_of_elements="1"
         default_values="0.0">
         <Documentation>
-            On which frame to show the surface vertex
+           Seuil méthode addition surface  
         </Documentation>
       </DoubleVectorProperty>
 
-  
+       <IntVectorProperty
+        name="addThresh"
+        command="SetaddThresh"
+        label="Méthode addition surface"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+           Méthode addition estimation surface 
+        </Documentation>
+      </IntVectorProperty>
+
+       <IntVectorProperty
+        name="gradThresh"
+        command="SetgradThresh"
+        label="Méthode norme gradient surface"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+           Méthode norme gradient estimation surface 
+        </Documentation>
+      </IntVectorProperty> 
+
 
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}

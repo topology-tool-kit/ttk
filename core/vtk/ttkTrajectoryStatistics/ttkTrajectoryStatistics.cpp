@@ -119,7 +119,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   const size_t numTraj = groupTraj.size();
 
   std::vector<std::vector<int>>    trajTime(numTraj); // TimeStep
-  std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj), trajZ(numTraj); // coord
+  
   std::vector<std::vector<int>>    trajVertexId(numTraj);  // VertexGlobalId
 
   vtkNew<vtkIdList> cellPointsIds;
@@ -151,20 +151,13 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
     const size_t numPoints = pointsIds.size();
     trajTime[trajIndex].reserve(numPoints);
-    trajX[trajIndex].reserve(numPoints);
-    trajY[trajIndex].reserve(numPoints);
-    trajZ[trajIndex].reserve(numPoints);
+
     trajVertexId[trajIndex].reserve(numPoints); 
 
     for (vtkIdType pointId : pointsIds){
         int t = timeArray->GetValue(pointId);
-        double coords[3];
         int globalId = vertexGlobalIdArray->GetValue(pointId);
-        inputGrid->GetPoint(pointId, coords);
         trajTime[trajIndex].push_back(t);
-        trajX[trajIndex].push_back(coords[0]);
-        trajY[trajIndex].push_back(coords[1]);
-        trajZ[trajIndex].push_back(coords[2]);
         trajVertexId[trajIndex].push_back(globalId);
     }
     ++trajIndex;
@@ -229,12 +222,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     inputScalarFields.push_back(currentScalarField);
   }
 
-  const int nFields = static_cast<int>(inputScalarFields.size());
-  if(nFields == 0) {
-    this->printErr("No scalar fields selected after sampling.");
-    return 0;
-  }
-
   int const fieldNumber = inputScalarFields.size();
   std::vector<void *> inputFields(fieldNumber);
   for(int i = 0; i < fieldNumber; i++) {
@@ -249,15 +236,35 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
 
   this->preconditionTriangulation(triangulation);
-
+  
+  int surfMethods = 1;
+  if (gradThresh && !addThresh)
+    surfMethods = 2;
+  else if (addThresh && !gradThresh)
+    surfMethods = 1;
+  else {
+    this->printErr("0 ou + que 2 méthodes choisis pour les surfaces");
+    return 0;
+  }
+   
+  const int nPts = inputScalarFields[0]->GetNumberOfTuples();
+  this->printMsg("nPts = " + std::to_string(nPts));
+  std::vector<double> coordsX(nPts), coordsY(nPts),coordsZ(nPts); // coord
+  for (vtkIdType i = 0; i<nPts; i++){
+    double coords[3];
+    inputDataSet->GetPoint(i, coords);
+    coordsX[i] = coords[0];
+    coordsY[i] = coords[1];
+    coordsZ[i] = coords[2];
+  }  
   int status = 0;
 
   ttkVtkTemplateMacro(inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->execute<VTK_TT, TTK_TT>(
                         trajTime, 
-                        trajX,
-                        trajY,
-                        trajZ,
+                        coordsX,
+                        coordsY,
+                        coordsZ,
                         trajVertexId,
                         startFrames,
                         endFrames,
@@ -271,15 +278,14 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         excludedCriticalPoints,
                         frameSurface,
                         errSurf,
+                        surfMethods,
                         (TTK_TT *)triangulation->getData()
                         )));
   
   if (status != 1)
     return 0;
 
-  trajX.clear();
-  trajY.clear();
-  trajZ.clear();
+
   trajVertexId.clear();
 
 
