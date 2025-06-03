@@ -235,27 +235,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  vtkIdType nPts = inputScalarFields[0]->GetNumberOfTuples();
-  this->printMsg("nombre de points : " + std::to_string(nPts));
-
-
-  for(int f = 1; f < nFields; ++f) {
-    if(inputScalarFields[f]->GetNumberOfTuples() != nPts) {
-        this->printErr("Scalar fields have inconsistent number of points.");
-        return 0;
-    }
+  int const fieldNumber = inputScalarFields.size();
+  std::vector<void *> inputFields(fieldNumber);
+  for(int i = 0; i < fieldNumber; i++) {
+    inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
   }
-
-  std::vector<std::vector<double>> vertexScalars(
-    nPts, std::vector<double>(nFields)
-  );
-
-  for(int f = 0; f < nFields; ++f) {
-    vtkDataArray *fieldArr = inputScalarFields[f];
-    for(vtkIdType pid = 0; pid < nPts; ++pid) {
-      vertexScalars[pid][f] = fieldArr->GetTuple1(pid);
-    }
-  }
+  this->setInputScalars(inputFields);
 
   this->printMsg("Scalars recup");
 
@@ -274,7 +259,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         trajY,
                         trajZ,
                         trajVertexId,
-                        vertexScalars,
                         startFrames,
                         endFrames,
                         durations,
@@ -293,7 +277,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   if (status != 1)
     return 0;
 
-  vertexScalars.clear();
   trajX.clear();
   trajY.clear();
   trajZ.clear();

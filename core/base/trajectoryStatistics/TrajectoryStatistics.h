@@ -45,14 +45,14 @@ namespace ttk {
       triangulation->preconditionVertexNeighbors();
       return triangulation->preconditionVertexNeighbors();
     }
-    
+
+    template <class dataType>
     int findSurface(
                     ttk::SimplexId                         vertexId,
                     std::vector<ttk::SimplexId>            &surfVertex,
-                    const std::vector<std::vector<double>> &vertexScalars,
+                    const dataType                         *frameScalars,
                     std::vector<char>                      &visited,
                     const double                           threshold,
-                    int                                    frame,
                     double                                 errSurf,
                     double                                 maxVal,
                     const ttk::AbstractTriangulation    *triangulation
@@ -72,7 +72,6 @@ namespace ttk {
                 std::vector<std::vector<double>> &trajY,         //input
                 std::vector<std::vector<double>> &trajZ,         //input 
                 std::vector<std::vector<int>>    &trajVertexId,   //input
-                std::vector<std::vector<double>> &vertexScalars,
                 std::vector<int> &startFrames,          //output
                 std::vector<int> &endFrames,            //output
                 std::vector<int> &durations,            //output
@@ -87,19 +86,26 @@ namespace ttk {
                 double errSurf,
                 const triangulationType *triangulation);
 
+    inline void setInputScalars(std::vector<void *> &is) {
+      inputData_ = is;
+    }
+
+    protected: 
+        std::vector<void *> inputData_{};
+
+
   }; // TrajectoryStatistics class
 
 } // namespace ttk
 
 
-
+template<class dataType>
 int ttk::TrajectoryStatistics::findSurface(
   ttk::SimplexId                         startId,
   std::vector<ttk::SimplexId>            &surfVertex,
-  const std::vector<std::vector<double>> &vertexScalars,
+  const dataType                         *frameScalars,
   std::vector<char>                      &visited,
   const double                           local_min,
-  int                                    frame,
   double                                 errSurf,
   double                                 maxVal,
   const ttk::AbstractTriangulation      *triangulation
@@ -121,7 +127,7 @@ int ttk::TrajectoryStatistics::findSurface(
     if(visited[vId]) continue;
     visited[vId] = 1;
 
-    double val = vertexScalars[vId][frame];
+    double val = frameScalars[vId];
     if(val > threshold || val < local_min) continue; // local_min < val < threshold
 
     // Ce sommet est accepté dans la surface
@@ -147,7 +153,6 @@ int ttk::TrajectoryStatistics::execute(
                 std::vector<std::vector<double>> &trajY,
                 std::vector<std::vector<double>> &trajZ,
                 std::vector<std::vector<int>>    &trajVertexId,
-                std::vector<std::vector<double>> &vertexScalars,
                 std::vector<int>                &startFrames,
                 std::vector<int>                &endFrames,
                 std::vector<int>                &durations,
@@ -164,6 +169,9 @@ int ttk::TrajectoryStatistics::execute(
 
     const int numTraj = static_cast<int>(trajTime.size());
     const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
+    const size_t numFrames = inputData_.size();
+    const int  nPts = triangulation->getNumberOfVertices();
+
 
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_)
@@ -200,12 +208,11 @@ int ttk::TrajectoryStatistics::execute(
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_) reduction(max: maxVal)
     #endif
-    for(size_t v = 0; v < vertexScalars.size(); ++v) {
-        if(!vertexScalars[v].empty()) {
-            double localMax = *std::max_element(vertexScalars[v].begin(), vertexScalars[v].end());
-            if(localMax > maxVal) {
-                maxVal = localMax;
-            }
+    for(size_t v = 0; v < numFrames; ++v) {
+        auto *scalars = static_cast<dataType*>(inputData_[v]);
+        double localMax = *std::max_element(scalars, scalars + nPts);
+        if(localMax > maxVal) {
+            maxVal = localMax;
         }
     }
     this->printMsg("Max = " + std::to_string(maxVal));
@@ -228,12 +235,13 @@ int ttk::TrajectoryStatistics::execute(
             for(int j = 0; j < trajSize; ++j) {
                 const int frame          = trajTime[i][j];
                 const ttk::SimplexId vid = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
-                const double local_min   = vertexScalars[vid][frame];
+                auto *frameScalars = static_cast<dataType*>(inputData_[frame]);
+                const double local_min = frameScalars[vid];
 
                 std::fill(visited.begin(), visited.end(), 0);
                 surfVertex.clear();
 
-                findSurface(vid, surfVertex, vertexScalars, visited, local_min, frame, errSurf, maxVal, triangulation);
+                findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, triangulation);
 
                 if(surfVertex.size() > 500) {
                     surfVertex.clear();
