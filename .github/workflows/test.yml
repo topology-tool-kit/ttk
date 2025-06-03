@@ -258,7 +258,7 @@ jobs:
         diff python/hashes/${{ matrix.os }}.json python/res.json
 
     - name: Delete TTK package artifact
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v5
       # delete package only once
       if: matrix.testSet == 'screenshotTests'
       with:
