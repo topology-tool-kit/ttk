@@ -288,7 +288,7 @@ jobs:
         asset_name: ttk-paraview-headless.exe
 
     - name: Delete package artifacts
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v5
       with:
           name: |
               ttk-paraview-headless*
