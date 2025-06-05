@@ -75,6 +75,7 @@ namespace ttk {
                 int frameSurf,
                 double errSurf,
                 int surfMethods,
+                std::vector<std::vector<double>> gradientNorms,
                 const triangulationType *triangulation);
     inline void setInputScalars(std::vector<void *> &is) {
       inputData_ = is;
@@ -91,18 +92,10 @@ namespace ttk {
                 const double                           threshold,
                 double                                 errSurf,
                 double                                 maxVal,
+                std::vector<double> &gradientNorm,
                 const ttk::AbstractTriangulation    *triangulation
     );
 
-    template <typename datatype>
-    int computeGradientNorm(
-      const std::vector<double> &x,
-      const std::vector<double> &y,
-      const std::vector<double> &z,
-      std::vector<double> &gradientNorm,
-      const datatype *scalarfield, // taille = npts
-      const ttk::AbstractTriangulation *triangulation
-    ); 
 
     int findSurfaceByGradient(
       const ttk::SimplexId startId,
@@ -121,6 +114,7 @@ namespace ttk {
 
 } // namespace ttk
 
+
 template<class dataType>
 int ttk::TrajectoryStatistics::findSurface(
   ttk::SimplexId                         startId,
@@ -130,99 +124,127 @@ int ttk::TrajectoryStatistics::findSurface(
   const double                           local_min,
   double                                 errSurf,
   double                                 maxVal,
-  const ttk::AbstractTriangulation      *triangulation
+  std::vector<double>                    &gradientNorm,
+  const ttk::AbstractTriangulation       *triangulation
 ) {
   surfVertex.clear();
+
+  // Calcul du seuil scalaire (cœur de la tâche)
+  double coeff = (-1.0 * errSurf) / maxVal;
+  const double scalarThreshold = local_min + (coeff * local_min + errSurf);
+
+  // Coefficient pour tolérance sur sigma du gradient
+  const double kSigma = 1.5;
+  // Petite marge pour comparer des doubles
+  const double eps = 1e-6;
+
   std::vector<ttk::SimplexId> stack;
   stack.reserve(128);
   stack.push_back(startId);
 
-  double coeff = (-1.0 * errSurf) / maxVal;
-  const double threshold = local_min + (coeff * local_min + errSurf);
+  // Marqueurs de visite et appartenance à la surface
+  const size_t nPts = gradientNorm.size();
+  std::vector<char> inSurf(nPts, 0);
+
   bool anyAdded = false;
 
-  // Parcours en profondeur (BFS) pour étendre la surface
   while(!stack.empty()) {
-    auto vId = stack.back();
+    const ttk::SimplexId vId = stack.back();
     stack.pop_back();
 
     if(visited[vId]) continue;
     visited[vId] = 1;
 
-    double val = frameScalars[vId];
-    if(val > threshold || val < local_min) continue; // local_min < val < threshold
+    // 1) Acceptation forcée pour le centre
+    if(vId == startId) {
+      surfVertex.push_back(vId);
+      inSurf[vId] = 1;
+      anyAdded = true;
+      const int nNbrs0 = triangulation->getVertexNeighborNumber(vId);
+      for(int j = 0; j < nNbrs0; ++j) {
+        ttk::SimplexId nbr0{-1};
+        triangulation->getVertexNeighbor(vId, j, nbr0);
+        if(!visited[nbr0]) stack.push_back(nbr0);
+      }
+      continue;
+    }
 
-    // Ce sommet est accepté dans la surface
-    surfVertex.push_back(vId);
-    anyAdded = true;
+    // 2) Condition sur la valeur scalaire
+    const double val = static_cast<double>(frameScalars[vId]);
+    if(val >= local_min && val <= scalarThreshold) {
+      surfVertex.push_back(vId);
+      inSurf[vId] = 1;
+      anyAdded = true;
+      const int nNbrs = triangulation->getVertexNeighborNumber(vId);
+      for(int j = 0; j < nNbrs; ++j) {
+        ttk::SimplexId nbr{-1};
+        triangulation->getVertexNeighbor(vId, j, nbr);
+        if(!visited[nbr]) stack.push_back(nbr);
+      }
+      continue;
+    }
 
+    // 3) Condition sur le gradient, avec calcul sur voisins déjà acceptés
     const int nNbrs = triangulation->getVertexNeighborNumber(vId);
+    double sumGrad = 0.0;
+    std::vector<ttk::SimplexId> acceptedNbrs;
+    acceptedNbrs.reserve(nNbrs);
+
     for(int j = 0; j < nNbrs; ++j) {
       ttk::SimplexId nbr{-1};
       triangulation->getVertexNeighbor(vId, j, nbr);
-      if(!visited[nbr]) {
-        stack.push_back(nbr);
+      if(inSurf[nbr]) {
+        sumGrad += gradientNorm[nbr];
+        acceptedNbrs.push_back(nbr);
       }
     }
+
+    const size_t count = acceptedNbrs.size();
+    if(count < 1) {
+      this->printErr("IMPOSSIBLE");
+      // Pas de voisin déjà accepté : on ne propage pas -> normalement
+      // impossible
+      continue;
+    }
+
+    const double meanGrad = sumGrad / static_cast<double>(count);
+    double var = 0.0;
+    for(const auto &nbr : acceptedNbrs) {
+      double diff = gradientNorm[nbr] - meanGrad;
+      var += diff * diff;
+    }
+    const double sigmaGrad = std::sqrt(var / static_cast<double>(count));
+    const double currGrad = gradientNorm[vId];
+    const double delta = std::abs(currGrad - meanGrad);
+
+    bool gradAccepted = false;
+    if(sigmaGrad > eps) {
+      // tolérance normale
+      if(delta <= kSigma * sigmaGrad) gradAccepted = true;
+    } else {
+      // sigmaGrad ≈ 0 : voisins très homogènes
+      // on n'accepte le point que s'il est très proche
+      if(delta <= eps) gradAccepted = true;
+    }
+
+    if(gradAccepted) {
+      surfVertex.push_back(vId);
+      inSurf[vId] = 1;
+      anyAdded = true;
+      for(int j = 0; j < nNbrs; ++j) {
+        ttk::SimplexId nbr{-1};
+        triangulation->getVertexNeighbor(vId, j, nbr);
+        if(!visited[nbr]) stack.push_back(nbr);
+      }
+    }
+    // Sinon on rejette ce sommet (pas de propagation)
   }
+
   return anyAdded ? 1 : 0;
 }
 
 
 
-template <typename datatype>
-int ttk::TrajectoryStatistics::computeGradientNorm(
-  const std::vector<double> &X,
-  const std::vector<double> &Y,
-  const std::vector<double> &Z,
-  std::vector<double> &gradientNorm,
-  const datatype *scalarField, // taille = npts
-  const ttk::AbstractTriangulation *triangulation
-) {
-  const size_t nPts = X.size();
-
-  #pragma omp parallel for num_threads(omp_get_max_threads())
-  for(size_t v = 0; v < nPts; ++v) { 
-    const int nNbrs = triangulation->getVertexNeighborNumber(v);
-    if(nNbrs <= 0)
-      continue;
-
-    double gx = 0.0, gy = 0.0, gz = 0.0;
-    double weightSum = 0.0;
-
-    for(int j = 0; j < nNbrs; ++j) { // calcul gradient local (une direction)
-      ttk::SimplexId nbr = -1;
-      triangulation->getVertexNeighbor(v, j, nbr);
-
-      double dx = X[nbr] - X[v];
-      double dy = Y[nbr] - Y[v];
-      double dz = Z[nbr] - Z[v]; // diff coord
-
-      double distSq = dx * dx + dy * dy + dz * dz; //diff dot
-      if(distSq == 0)
-        continue;
-
-      double w = 1.0 / distSq; // pondération
-      double dv = static_cast<double>(scalarField[nbr]) - static_cast<double>(scalarField[v]); //diff scalar
-    
-      gx += w * dv * dx; // dérivée pour chaque direction
-      gy += w * dv * dy; // avec somme sur tous les voisins
-      gz += w * dv * dz;
-      weightSum += w;
-    }
-
-    if(weightSum > 0.0) { // somme de tt les gradients locaux
-      gx /= weightSum;
-      gy /= weightSum; //normalisation
-      gz /= weightSum;
-      gradientNorm[v] = std::sqrt(gx * gx + gy * gy + gz * gz); //norme
-      //if (v == 0)
-        //this->printMsg("valeur en 0 calculée = " + std::to_string(gradientNorm[v]));
-   } 
-  }
-
-  return 0;
-}
 int ttk::TrajectoryStatistics::findSurfaceByGradient(
   const ttk::SimplexId startId,
   std::vector<ttk::SimplexId> &surfVertex,
@@ -267,13 +289,12 @@ int ttk::TrajectoryStatistics::findSurfaceByGradient(
       ttk::SimplexId nbr{-1};
       triangulation->getVertexNeighbor(vId, j, nbr);
       if(!visited[nbr]) {
-        double neighborGrad = gradientNorm[nbr];
-        double gradJump = std::abs(neighborGrad - gVal);
 
-        // Seuillage sur le saut du gradient
-        if(gradJump < gradientJumpThreshold) {
+        double ratio = gradientNorm[nbr] / (gVal + 1e-12);
+        if(std::abs(1.0 - ratio) < gradientJumpThreshold) {
           stack.push_back(nbr);
         }
+
       }
     }
   }
@@ -303,6 +324,7 @@ int ttk::TrajectoryStatistics::execute(
                 int frameSurf,
                 double errSurf,
                 int surfMethods,
+                std::vector<std::vector<double>> gradientNorms,
                 const triangulationType *triangulation) {
 
     const int numTraj = static_cast<int>(trajTime.size());
@@ -381,9 +403,9 @@ int ttk::TrajectoryStatistics::execute(
                     std::fill(visited.begin(), visited.end(), 0);
                     surfVertex.clear();
 
-                    findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, triangulation);
+                    findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
 
-                    if(surfVertex.size() > 500) {
+                    if(surfVertex.size() > 100) {
                         surfVertex.clear();
                         if(frame == frameSurf) {
                             excludedLocal[i] = vid;
@@ -420,7 +442,6 @@ int ttk::TrajectoryStatistics::execute(
       {
            std::vector<char> visited(numVertices);
            std::vector<ttk::SimplexId> surfVertex;
-           std::vector<double> gradientNorm(nPts);
            #pragma omp for schedule(dynamic)
            for(int i = 0; i < numTraj; ++i) {
       #else
@@ -432,15 +453,12 @@ int ttk::TrajectoryStatistics::execute(
                 const int frame = trajTime[i][j];
                 const ttk::SimplexId vId = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
                 auto *frameScalars = static_cast<dataType*>(inputData_[frame]);
-
                 std::fill(visited.begin(), visited.end(), 0);
-                std::fill(gradientNorm.begin(), gradientNorm.end(), 0);
                 surfVertex.clear();
-                //this->printMsg("frame = " + std::to_string(frame));
-                computeGradientNorm(coordsX, coordsY, coordsZ, gradientNorm, frameScalars, triangulation);
+
                 //this->printMsg("gradient norme 0 =" + std::to_string(gradientNorm[0]));
                 int result;
-                result = findSurfaceByGradient(vId, surfVertex, gradientNorm, visited,errSurf, triangulation);
+                result = findSurfaceByGradient(vId, surfVertex, gradientNorms[frame], visited,errSurf, triangulation);
 
                 if (result == 0){
                     if (frame == frameSurf){

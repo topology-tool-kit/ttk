@@ -2,3 +2,4 @@ NAME
   ttkTrajectoryStatistics
 DEPENDS
   ttkAlgorithm
+  VTK::FiltersGeneral

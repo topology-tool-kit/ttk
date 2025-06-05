@@ -11,6 +11,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkGradientFilter.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -83,7 +84,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-
+/* #######################################################
+ * 
+ *                      TRAJ DATA 
+ *
+ * #######################################################
+*/
   vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
             inputGrid->GetCellData()->GetArray("ConnectedComponentId"));
   vtkIntArray *timeArray = vtkIntArray::SafeDownCast(
@@ -97,9 +103,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Missing data in input vtu");
     return 0;
   }
-
-
-  this->printMsg("Extraction ConnectedComponentId && TimeStep && VertexGlobalId done");
 
   vtkIdType numCells = inputGrid->GetNumberOfCells();
 
@@ -165,13 +168,14 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   this->printMsg("Pre-fetching done, "+ std::to_string(trajIndex) + " unique trajectory find");
 
-  //Appel core/base
-  std::vector<int> startFrames(numTraj), endFrames(numTraj), durations(numTraj);
-  std::vector<double> VX(numTraj), VY(numTraj), 
-                      surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
-  std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
-  std::vector<ttk::SimplexId> excludedCriticalPoints;
 
+
+/* #######################################################
+ * 
+ *               SCALAR DATASET  
+ *
+ * #######################################################
+*/
   std::vector<vtkDataArray *> inputScalarFieldsRaw;
   std::vector<vtkDataArray *> inputScalarFields;
   const auto pointData= inputDataSet->GetPointData();
@@ -213,8 +217,19 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                 s1.begin(), s1.end(), s2.begin(), s2.end());
             });
 
+
+  std::vector<std::vector<double>> gradientNorms;
+  if(!computeAllGradientMagnitudes(inputDataSet,
+                                   inputScalarFieldsRaw,
+                                   gradientNorms)) {
+    this->printErr("Impossible de calculer gradient magnitudes.");
+    return 0;
+  }
+
   numberOfInputFields = inputScalarFieldsRaw.size();
   this->printMsg("New number of frame = " + std::to_string(numberOfInputFields));
+
+
   for(int i = 0; i < numberOfInputFields ; i++) {
     vtkDataArray *currentScalarField = inputScalarFieldsRaw[i];
     // Print scalar field names:
@@ -230,6 +245,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInputScalars(inputFields);
 
   this->printMsg("Scalars recup");
+
+
+
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation)
@@ -257,6 +275,20 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     coordsY[i] = coords[1];
     coordsZ[i] = coords[2];
   }  
+
+/* #######################################################
+ * 
+ *               OUTPUT VECTOR   
+ *
+ * #######################################################
+*/
+
+  std::vector<int> startFrames(numTraj), endFrames(numTraj), durations(numTraj);
+  std::vector<double> VX(numTraj), VY(numTraj), 
+                      surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
+  std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
+  std::vector<ttk::SimplexId> excludedCriticalPoints;
+
   int status = 0;
 
   ttkVtkTemplateMacro(inputScalarFields[0]->GetDataType(), triangulation->getType(),
@@ -279,6 +311,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         frameSurface,
                         errSurf,
                         surfMethods,
+                        gradientNorms,
                         (TTK_TT *)triangulation->getData()
                         )));
   
@@ -286,7 +319,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
 
 
-  trajVertexId.clear();
 
 
   // OUTPUT 
@@ -408,6 +440,17 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   surfaceVertexArray->SetNumberOfTuples(numPoints);
   surfaceVertexArray->FillComponent(0, 0); // tous les points à 0 (false)
 
+  vtkSmartPointer<vtkDoubleArray> gradArray = vtkSmartPointer<vtkDoubleArray>::New();
+  gradArray->SetName("gradArray");
+
+  gradArray->SetNumberOfTuples(numPoints);
+  gradArray->FillComponent(0, 0); 
+  
+  vtkSmartPointer<vtkDoubleArray> trajV = vtkSmartPointer<vtkDoubleArray>::New();
+  trajV->SetName("trajV");
+
+  trajV->SetNumberOfTuples(numPoints);
+  trajV->FillComponent(0, 0);
 
 
   for (size_t i = 0; i < excludedCriticalPoints.size(); i++){
@@ -420,19 +463,98 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
           int doublon = surfaceVertexArray->GetValue(vertexId);
           if (doublon == 1){
             surfaceVertexArray->SetValue(vertexId, 3);
+            trajV->SetValue(vertexId, trajId);
           }
           else  {
             surfaceVertexArray->SetValue(vertexId, 1); // true
+            trajV->SetValue(vertexId, trajId);
           }
         }
     }
   }
 
-
-
+  for (int i =0; i<numPoints; i++){
+    gradArray->SetValue(i, gradientNorms[0][i]);
+  }
   outputDataSet->GetPointData()->AddArray(surfaceVertexArray);
+  outputDataSet->GetPointData()->AddArray(gradArray);
+  outputDataSet->GetPointData()->AddArray(trajV);
 
   this->printMsg("Fin TrajectoryStatistic");
 
   return 1;
 }
+
+
+int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
+  vtkDataSet *inputDataSet,
+  const std::vector<vtkDataArray *> &inputScalarFields,
+  std::vector<std::vector<double>> &gradientNorms
+) {
+  if(!inputDataSet) {
+    this->printErr("inputDataSet is nullptr.");
+    return 0;
+  }
+
+  const size_t nFields = inputScalarFields.size();
+  this->printMsg("nFields = " + std::to_string(nFields));
+  if(nFields == 0) {
+    this->printErr("pas de scalar fields fournis.");
+    return 0;
+  }
+
+  vtkIdType nPts = inputDataSet->GetNumberOfPoints();
+  if(nPts <= 0) {
+    this->printErr("maillage vide (nPts <= 0).");
+    return 0;
+  }
+
+  gradientNorms.clear();
+  gradientNorms.resize(nFields);
+  for(size_t f = 0; f < nFields; ++f) {
+    gradientNorms[f].assign(static_cast<size_t>(nPts), 0.0);
+  }
+
+  // Pour chaque frame (= chacun des inputScalarFields[f])
+  for(size_t f = 0; f < nFields; f++) {
+    vtkDataArray *currScalar = inputScalarFields[f];
+    if(!currScalar || !currScalar->GetName()) {
+      this->printErr("scalar array invalide en frame " + std::to_string(f));
+      return 0;
+    }
+    const char *scalarName = currScalar->GetName();
+
+    // 1) Instanciation de vtkGradientFilter
+    vtkSmartPointer<vtkGradientFilter> gradFilter = vtkSmartPointer<vtkGradientFilter>::New();
+    gradFilter->SetInputData(inputDataSet);
+    gradFilter->SetInputScalars(vtkDataObject::FIELD_ASSOCIATION_POINTS, scalarName);
+
+
+    gradFilter->Update();
+
+    // 3) Récupérer la sortie contenant l’array vectoriel "Gradients_<scalarName>"
+    vtkDataSet *gradOutput = gradFilter->GetOutput();
+    if (!gradOutput){
+        this->printErr("grad output missing");
+    }
+
+    vtkDataArray *gradArray = gradOutput->GetPointData()->GetArray("Gradients");
+    if(!gradArray) {
+      this->printErr(
+            "recup gradArray echec"
+      );
+      return 0;
+    }
+
+    // 4) Calculer la magnitude au niveau de chaque sommet<
+    for(vtkIdType pid = 0; pid < nPts; ++pid) {
+      double gx = gradArray->GetComponent(pid, 0);
+      double gy = gradArray->GetComponent(pid, 1);
+      double gz = gradArray->GetComponent(pid, 2);
+      gradientNorms[f][static_cast<size_t>(pid)] = std::sqrt(gx * gx + gy * gy + gz * gz);
+    }
+  }
+
+  return 1;
+}
+

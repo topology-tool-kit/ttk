@@ -112,6 +112,12 @@ protected:
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
+  int computeAllGradientMagnitudes(
+    vtkDataSet *inputDataSet,
+    const std::vector<vtkDataArray *> &inputScalarFields,
+    std::vector<std::vector<double>> &gradientNorms
+  );
+
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
