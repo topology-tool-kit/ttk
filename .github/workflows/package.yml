@@ -35,6 +35,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libsqlite3-dev \
@@ -198,7 +199,7 @@ jobs:
         brew install --cask xquartz
         brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
+        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
@@ -282,7 +283,7 @@ jobs:
         brew install --cask xquartz
         brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
+        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1

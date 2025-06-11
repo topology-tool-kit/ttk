@@ -22,8 +22,7 @@ namespace ttk {
   class TrackingFromCriticalPoints : virtual public Debug {
 
   private:
-    double epsilonConstant_{10e-1};
-    double epsilonAdapt_{0.5};
+    double relativeEpsilon_{10e-1};
     double meshDiameter_{1};
     double tolerance_{10e-3};
     int assignmentMethod_{0};
@@ -31,21 +30,18 @@ namespace ttk {
     double yWeight_{1};
     double zWeight_{1};
     double fWeight_{0};
-    bool adaptiveDeathBirthCost_{false};
 
   public:
-    TrackingFromCriticalPoints() = default;
+    TrackingFromCriticalPoints() {
+      this->setDebugMsgPrefix("TrackingFromCriticalPoint");
+    }
 
     void setMeshDiameter(double r) {
       meshDiameter_ = r;
     }
 
     void setEpsilon(double e) {
-      epsilonConstant_ = e;
-    }
-
-    void setEpsilonAdapt(double e) {
-      epsilonAdapt_ = e;
+      relativeEpsilon_ = e;
     }
 
     void setTolerance(double t) {
@@ -56,10 +52,6 @@ namespace ttk {
       if(a == 0 || a == 1) {
         assignmentMethod_ = a;
       }
-    }
-
-    void setAdaptDeathBirthCost(bool b) {
-      adaptiveDeathBirthCost_ = b;
     }
 
     void setWeights(double PX, double PY, double PZ, double PF) {
@@ -115,6 +107,8 @@ namespace ttk {
       std::vector<trackingTuple> &allTrackings,
       std::vector<std::vector<double>> &allTrackingsCost,
       std::vector<double> &allTrackingsMeanPersistences,
+      std::vector<double> &allTrackingsMaximalPersistences,
+      std::vector<double> &allTrackingsMinimalPersistences,
       unsigned int (&typesArrayLimits)[3]);
 
   private:
@@ -192,6 +186,8 @@ namespace ttk {
       const CriticalType &currentType,
       std::vector<trackingTuple> &tracking,
       std::vector<std::vector<double>> &trackingCosts,
-      std::vector<double> &trackingPersistence);
+      std::vector<double> &trackingPersistence,
+      std::vector<double> &trackingsMaximalPersistences,
+      std::vector<double> &trackingsMinimalPersistences);
   };
 } // namespace ttk

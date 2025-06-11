@@ -10,7 +10,6 @@
 /// cloud or a distance matrix and computes the persistence diagram of its Rips
 /// complex.
 ///
-/// \sa ttk::Triangulation
 /// \sa ttkRipsPersistenceDiagram.cpp %for a usage example.
 
 #pragma once
@@ -18,6 +17,7 @@
 // ttk common includes
 #include <Debug.h>
 
+#include <FastRipsPersistenceDiagram2.h>
 #include <ripser.h>
 
 namespace ttk {
@@ -30,27 +30,39 @@ namespace ttk {
   class RipsPersistenceDiagram : virtual public Debug {
 
   public:
+    enum class BACKEND : std::uint8_t {
+      RIPSER = 0,
+      GEOMETRY = 1,
+    };
+
     RipsPersistenceDiagram();
 
     /**
      * @brief Main entry point
      *
-     * @param[in] points Input point cloud in any dimension or input distance
-     * matrix
-     * @param[out] ph Computed Rips persistence diagram
+     * @param[in] points Input point cloud or input distance matrix
+     * @param[out] ph Persistence diagram
+     * @param[out] generators Persistent generators, if required
      */
-    int execute(const std::vector<std::vector<double>> &points,
-                rpd::MultidimensionalDiagram &ph) const;
+    int execute(const rpd::PointCloud &points,
+                rpd::MultidimensionalDiagram &ph,
+                std::vector<rpd::Generator> &generators) const;
 
   protected:
+    /** BackEnd */
+    BACKEND BackEnd{BACKEND::RIPSER};
     /** Max dimension of computed persistence diagram */
     int SimplexMaximumDimension{1};
-    /** Rips threshold */
-    double SimplexMaximumDiameter{1.0};
+    /** Rips diameter threshold */
+    double SimplexMaximumDiameter{rpd::inf};
     /** Field of coefficients */
     int FieldOfCoefficients{2};
     /** is input a distance matrix */
-    int InputIsDistanceMatrix{0};
+    bool InputIsDistanceMatrix{false};
+    /** Delaunay-Rips */
+    bool DelaunayRips{false};
+    /** output generators */
+    bool OutputGenerators{false};
 
   }; // RipsPersistenceDiagram class
 

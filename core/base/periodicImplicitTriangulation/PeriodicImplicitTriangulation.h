@@ -794,7 +794,7 @@ inline void ttk::PeriodicImplicitTriangulation::edgeToPosition2d(
 
 inline void ttk::PeriodicImplicitTriangulation::triangleToPosition2d(
   const SimplexId triangle, SimplexId p[2]) const {
-  p[0] = triangle % tshift_[0];
+  p[0] = triangle % tshift_[0] / 2;
   p[1] = triangle / tshift_[0];
 }
 
