@@ -12,6 +12,7 @@
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkGradientFilter.h>
+#include <vtkLine.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -28,7 +29,7 @@ vtkStandardNewMacro(ttkTrajectoryStatistics);
 ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
   this->SetNumberOfInputPorts(2);
-  this->SetNumberOfOutputPorts(3);
+  this->SetNumberOfOutputPorts(4);
 }
 
 
@@ -61,6 +62,11 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
 
   if (port == 2) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 1);
+    return 1;
+  }
+
+  if (port == 3) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
 
@@ -122,7 +128,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   const size_t numTraj = groupTraj.size();
 
   std::vector<std::vector<int>>    trajTime(numTraj); // TimeStep
-  
+  std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj), trajZ(numTraj); 
   std::vector<std::vector<int>>    trajVertexId(numTraj);  // VertexGlobalId
 
   vtkNew<vtkIdList> cellPointsIds;
@@ -162,6 +168,11 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
         int globalId = vertexGlobalIdArray->GetValue(pointId);
         trajTime[trajIndex].push_back(t);
         trajVertexId[trajIndex].push_back(globalId);
+        double coords[3];
+        inputGrid->GetPoint(pointId, coords);
+        trajX[trajIndex].push_back(coords[0]);
+        trajY[trajIndex].push_back(coords[1]);
+        trajZ[trajIndex].push_back(coords[2]);
     }
     ++trajIndex;
   }
@@ -267,14 +278,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
    
   const int nPts = inputScalarFields[0]->GetNumberOfTuples();
   this->printMsg("nPts = " + std::to_string(nPts));
-  std::vector<double> coordsX(nPts), coordsY(nPts),coordsZ(nPts); // coord
-  for (vtkIdType i = 0; i<nPts; i++){
-    double coords[3];
-    inputDataSet->GetPoint(i, coords);
-    coordsX[i] = coords[0];
-    coordsY[i] = coords[1];
-    coordsZ[i] = coords[2];
-  }  
+
 
 /* #######################################################
  * 
@@ -288,15 +292,16 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
   std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
   std::vector<ttk::SimplexId> excludedCriticalPoints;
+  std::vector<std::vector<double>> newTraj(numTraj);
 
   int status = 0;
 
   ttkVtkTemplateMacro(inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->execute<VTK_TT, TTK_TT>(
                         trajTime, 
-                        coordsX,
-                        coordsY,
-                        coordsZ,
+                        trajX,
+                        trajY,
+                        trajZ,
                         trajVertexId,
                         startFrames,
                         endFrames,
@@ -311,6 +316,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         frameSurface,
                         errSurf,
                         surfMethods,
+                        newTraj,
                         gradientNorms,
                         (TTK_TT *)triangulation->getData()
                         )));
@@ -338,6 +344,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 2);
   if(!outputGrid) {
     this->printErr("Null output grid2.");
+    return 0;
+  }
+
+  vtkUnstructuredGrid *outputTraj = vtkUnstructuredGrid::GetData(outputVector, 3);
+  if(!outputTraj) {
+    this->printErr("Null output gridTraj.");
     return 0;
   }
 
@@ -479,6 +491,53 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputDataSet->GetPointData()->AddArray(surfaceVertexArray);
   outputDataSet->GetPointData()->AddArray(gradArray);
   outputDataSet->GetPointData()->AddArray(trajV);
+
+
+
+
+  auto nTraj = static_cast<vtkIdType>(newTraj.size());
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> lines  = vtkSmartPointer<vtkCellArray>::New();
+
+  points->SetNumberOfPoints(2*nTraj);
+  vtkSmartPointer<vtkIntArray> TrajIdArray = vtkSmartPointer<vtkIntArray>::New();
+  TrajIdArray->SetName("NewTrajectoryId");
+  TrajIdArray->SetNumberOfTuples(nTraj);
+  
+
+  for (vtkIdType i = 0; i<nTraj; ++i){
+ 
+    double t0 = static_cast<double>(startFrames[i]);
+    double t1 = static_cast<double>(endFrames[i]);
+
+    const auto &coef = newTraj[i];
+    double x0 = coef[0] * t0 + coef[2];
+    double y0 = coef[1] * t0 + coef[3];
+    double z0 = t0 *10;
+    points->SetPoint(2*i + 0, x0, y0, z0);
+    double x1 = coef[0] * t1 + coef[2];
+    double y1 = coef[1] * t1 + coef[3];
+    double z1 = t1 * 10;
+    points->SetPoint(2*i + 1, x1, y1, z1);
+
+    vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
+    line->GetPointIds()->SetId(0, 2*i + 0);
+    line->GetPointIds()->SetId(1, 2*i + 1);
+    lines->InsertNextCell(line);
+
+
+    TrajIdArray->SetValue(i, i);
+  }
+
+  outputTraj->SetPoints(points);
+  outputTraj->SetCells(VTK_LINE, lines);
+  outputTraj->GetCellData()->AddArray(TrajIdArray);
+
+
+
+
+
+
 
   this->printMsg("Fin TrajectoryStatistic");
 

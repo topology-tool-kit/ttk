@@ -20,6 +20,10 @@
 // ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
+#ifdef TTK_ENABLE_EIGEN
+#include <Eigen/Dense>
+#endif
+
 
 namespace ttk {
 
@@ -58,9 +62,9 @@ namespace ttk {
 
     template <class dataType, class triangulationType>
     int execute(std::vector<std::vector<int>> &trajTime,         //input
-                std::vector<double> &coordsX,
-                std::vector<double> &coordsY,
-                std::vector<double> &coordsZ,
+                std::vector<std::vector<double>> &coordsX,
+                std::vector<std::vector<double>> &coordsY,
+                std::vector<std::vector<double>> &coordsZ,
                 std::vector<std::vector<int>>    &trajVertexId,   //input
                 std::vector<int> &startFrames,          //output
                 std::vector<int> &endFrames,            //output
@@ -75,8 +79,10 @@ namespace ttk {
                 int frameSurf,
                 double errSurf,
                 int surfMethods,
+                std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
                 const triangulationType *triangulation);
+
     inline void setInputScalars(std::vector<void *> &is) {
       inputData_ = is;
     }
@@ -96,16 +102,15 @@ namespace ttk {
                 const ttk::AbstractTriangulation    *triangulation
     );
 
-
-    int findSurfaceByGradient(
-      const ttk::SimplexId startId,
-      std::vector<ttk::SimplexId> &surfVertex,
-      std::vector<double> &gradientNorm,
-      std::vector<char> &visited,
-      double     errSurf,
-      const ttk::AbstractTriangulation *triangulation
-    ); 
-
+    #ifdef TTK_ENABLE_EIGEN
+    #pragma message("TTK_ENABLE_EIGEN is defined in this file")
+    int linearRegression(
+        const std::vector<int> &T,   // times t_i
+        const std::vector<double> &X,   // positions x_i
+        const std::vector<double> &Y,   // positions y_i
+        std::vector<double> &newTraj
+    );
+    #endif
 
     std::vector<void *> inputData_{};
 
@@ -113,6 +118,37 @@ namespace ttk {
   }; // TrajectoryStatistics class
 
 } // namespace ttk
+
+
+
+#ifdef TTK_ENABLE_EIGEN
+int ttk::TrajectoryStatistics::linearRegression(
+  const std::vector<int> &T,   // times t_i
+  const std::vector<double> &X,   // positions x_i
+  const std::vector<double> &Y,   // positions y_i
+  std::vector<double> &newTraj
+) {
+  this->printMsg("being here");
+  const int n = (int)T.size();
+  Eigen::MatrixXd M(n, 2);
+  Eigen::VectorXd vx(n), vy(n);
+  for(int i = 0; i < n; ++i) {
+    M(i,0) = T[i];
+    M(i,1) = 1.0;
+    vx(i) = X[i];
+    vy(i) = Y[i];
+  }
+  // (Mᵀ M) β = Mᵀ v  ⇒ β = [a; b]
+  Eigen::Vector2d bxv = (M.transpose()*M).ldlt().solve(M.transpose()*vx);
+  Eigen::Vector2d byv = (M.transpose()*M).ldlt().solve(M.transpose()*vy);
+  newTraj.push_back(bxv[0]); // ax 
+  newTraj.push_back(byv[0]); // ay ; 
+  newTraj.push_back(bxv[1]); // bx
+  newTraj.push_back(byv[1]); // by
+
+  return 1;
+}
+#endif
 
 
 template<class dataType>
@@ -245,71 +281,14 @@ int ttk::TrajectoryStatistics::findSurface(
 
 
 
-int ttk::TrajectoryStatistics::findSurfaceByGradient(
-  const ttk::SimplexId startId,
-  std::vector<ttk::SimplexId> &surfVertex,
-  std::vector<double> &gradientNorm,
-  std::vector<char> &visited,
-  double     errSurf,
-  const ttk::AbstractTriangulation *triangulation
-) {
-  //this->printMsg("GRADIENT EDGE-BASED METHOD");
-  constexpr size_t maxSurfaceSize = 100;
-  double gradientJumpThreshold = errSurf; // à ajuster
-
-  surfVertex.clear();
-  std::vector<ttk::SimplexId> stack;
-  stack.reserve(128);
-  stack.push_back(startId);
-
-  //const double refGrad = gradientNorm[startId];
-  bool anyAdded = false;
-
-  while(!stack.empty()) {
-    auto vId = stack.back();
-    stack.pop_back();
-
-    if(visited[vId])
-      continue;
-    visited[vId] = 1;
-
-    double gVal = gradientNorm[vId];
-
-    // Ajout du point courant
-    surfVertex.push_back(vId);
-    anyAdded = true;
-
-    if(surfVertex.size() > maxSurfaceSize) {
-      surfVertex.clear(); // trop grand : rejet
-      return 0;
-    }
-
-    const int nNbrs = triangulation->getVertexNeighborNumber(vId);
-    for(int j = 0; j < nNbrs; ++j) {
-      ttk::SimplexId nbr{-1};
-      triangulation->getVertexNeighbor(vId, j, nbr);
-      if(!visited[nbr]) {
-
-        double ratio = gradientNorm[nbr] / (gVal + 1e-12);
-        if(std::abs(1.0 - ratio) < gradientJumpThreshold) {
-          stack.push_back(nbr);
-        }
-
-      }
-    }
-  }
-
-  return anyAdded ? 1 : 0;
-}
-
 
 
 template <class dataType, class triangulationType>
 int ttk::TrajectoryStatistics::execute(
                 std::vector<std::vector<int>>    &trajTime,
-                std::vector<double> &coordsX,
-                std::vector<double> &coordsY,
-                std::vector<double> &coordsZ,
+                std::vector<std::vector<double>> &coordsX,
+                std::vector<std::vector<double>> &coordsY,
+                std::vector<std::vector<double>> &coordsZ,
                 std::vector<std::vector<int>>    &trajVertexId,
                 std::vector<int>                &startFrames,
                 std::vector<int>                &endFrames,
@@ -324,13 +303,23 @@ int ttk::TrajectoryStatistics::execute(
                 int frameSurf,
                 double errSurf,
                 int surfMethods,
+                std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
                 const triangulationType *triangulation) {
+
+    coordsZ[0][0] = surfMethods;
 
     const int numTraj = static_cast<int>(trajTime.size());
     const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
     const size_t numFrames = inputData_.size();
     const int  nPts = triangulation->getNumberOfVertices();
+    
+    #ifdef TTK_ENABLE_EIGEN   
+    for (int i=0; i<numTraj; i++) {
+        this->printMsg("Linear regression traj " + std::to_string(i));
+        linearRegression(trajTime[i],coordsX[i],coordsY[i], newTraj[i]);
+    }
+    #endif
 
 
     #ifdef TTK_ENABLE_OPENMP
@@ -350,13 +339,8 @@ int ttk::TrajectoryStatistics::execute(
         double sommeVY = 0.0;
         const int pointCount = static_cast<int>(trajVertexId[i].size());
         for(int j = 1; j < pointCount; ++j) {
-            const int vId = trajVertexId[i][j];
-            const int pvId = trajVertexId[i][j-1];
-            double dx = coordsX[vId] - coordsX[pvId]; 
-            double dy = coordsY[vId] - coordsY[pvId]; 
-
-
-
+            double dx = coordsX[i][j] - coordsX[i][j-1]; 
+            double dy = coordsY[i][j] - coordsY[i][j-1]; 
             sommeVX += dx;
             sommeVY += dy;
         }
@@ -365,130 +349,76 @@ int ttk::TrajectoryStatistics::execute(
         VY[i] = (numPoints != 0.0 ? sommeVY / numPoints : 0.0);
     }
 
-    if (surfMethods == 1){
-        double maxVal = std::numeric_limits<double>::lowest();
-        #ifdef TTK_ENABLE_OPENMP
-        #pragma omp parallel for num_threads(this->threadNumber_) reduction(max: maxVal)
-        #endif
-        for(size_t v = 0; v < numFrames; ++v) {
-            auto *scalars = static_cast<dataType*>(inputData_[v]);
-            double localMax = *std::max_element(scalars, scalars + nPts);
-            if(localMax > maxVal) {
-                maxVal = localMax;
-            }
+    double maxVal = std::numeric_limits<double>::lowest();
+    #ifdef TTK_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(this->threadNumber_) reduction(max: maxVal)
+    #endif
+    for(size_t v = 0; v < numFrames; ++v) {
+        auto *scalars = static_cast<dataType*>(inputData_[v]);
+        double localMax = *std::max_element(scalars, scalars + nPts);
+        if(localMax > maxVal) {
+            maxVal = localMax;
         }
-        this->printMsg("Max = " + std::to_string(maxVal));
+    }
+    this->printMsg("Max = " + std::to_string(maxVal));
 
-        std::vector<ttk::SimplexId> excludedLocal(numTraj, -1);
+    std::vector<ttk::SimplexId> excludedLocal(numTraj, -1);
 
-        #ifdef TTK_ENABLE_OPENMP
-        #pragma omp parallel num_threads(this->threadNumber_)
-        {
-          std::vector<char> visited(numVertices);
-          std::vector<ttk::SimplexId> surfVertex;
-          #pragma omp for schedule(dynamic)
-          for(int i = 0; i < numTraj; ++i) {
-        #else
-          for(int i = 0; i < numTraj; ++i) {
-        #endif
+    #ifdef TTK_ENABLE_OPENMP
+    #pragma omp parallel num_threads(this->threadNumber_)
+    {
+      std::vector<char> visited(numVertices);
+      std::vector<ttk::SimplexId> surfVertex;
+      #pragma omp for schedule(dynamic)
+      for(int i = 0; i < numTraj; ++i) {
+    #else
+      for(int i = 0; i < numTraj; ++i) {
+    #endif
 
-                const int trajSize = static_cast<int>(trajVertexId[i].size());
-                std::vector<int> trajSurfaces(trajSize);
-                for(int j = 0; j < trajSize; ++j) {
-                    const int frame          = trajTime[i][j];
-                    const ttk::SimplexId vid = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
-                    auto *frameScalars = static_cast<dataType*>(inputData_[frame]);
-                    const double local_min = frameScalars[vid];
-
-                    std::fill(visited.begin(), visited.end(), 0);
-                    surfVertex.clear();
-
-                    findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
-
-                    if(surfVertex.size() > 100) {
-                        surfVertex.clear();
-                        if(frame == frameSurf) {
-                            excludedLocal[i] = vid;
-                        }
-                    }
-
-                    if(frame == frameSurf) {
-                        allVertexDebris[i] = surfVertex;
-                    }
-                    trajSurfaces[j] = static_cast<int>(surfVertex.size());
-                }
-
-                auto [minIt, maxIt] = std::minmax_element(trajSurfaces.begin(), trajSurfaces.end());
-                surfMin[i] = *minIt;
-                surfMax[i] = *maxIt;
-                long sum = std::accumulate(trajSurfaces.begin(), trajSurfaces.end(), 0l);
-                surfMoy[i] = sum / static_cast<double>(trajSurfaces.size());
-          }
-        } 
-
-        excludedCriticalPoints.clear();
-        excludedCriticalPoints.reserve(numTraj);
-        for(int i = 0; i < numTraj; ++i) {
-            if(excludedLocal[i] != -1) {
-                excludedCriticalPoints.push_back(excludedLocal[i]);
-            }
-        }
-    } else if (surfMethods == 2) {
-
-      this->printMsg("GRADIANT METHODE");
-      std::vector<ttk::SimplexId> excludedLocal(numTraj, -1);
-      #ifdef TTK_ENABLE_OPENMP
-      #pragma omp parallel num_threads(this->threadNumber_)
-      {
-           std::vector<char> visited(numVertices);
-           std::vector<ttk::SimplexId> surfVertex;
-           #pragma omp for schedule(dynamic)
-           for(int i = 0; i < numTraj; ++i) {
-      #else
-           for(int i = 0; i < numTraj; ++i) {
-      #endif
-             const int trajSize = static_cast<int>(trajVertexId[i].size());
-             std::vector<int> trajSurfaces(trajSize);
-             for (int j=0; j<trajSize; j++){
-                const int frame = trajTime[i][j];
-                const ttk::SimplexId vId = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
+            const int trajSize = static_cast<int>(trajVertexId[i].size());
+            std::vector<int> trajSurfaces(trajSize);
+            for(int j = 0; j < trajSize; ++j) {
+                const int frame          = trajTime[i][j];
+                const ttk::SimplexId vid = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
                 auto *frameScalars = static_cast<dataType*>(inputData_[frame]);
+                const double local_min = frameScalars[vid];
+
                 std::fill(visited.begin(), visited.end(), 0);
                 surfVertex.clear();
 
-                //this->printMsg("gradient norme 0 =" + std::to_string(gradientNorm[0]));
-                int result;
-                result = findSurfaceByGradient(vId, surfVertex, gradientNorms[frame], visited,errSurf, triangulation);
+                findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
 
-                if (result == 0){
-                    if (frame == frameSurf){
-                        excludedLocal[i] = vId;
+                if(surfVertex.size() > 100) {
+                    surfVertex.clear();
+                    if(frame == frameSurf) {
+                        excludedLocal[i] = vid;
                     }
                 }
-                
-                if (frame == frameSurf) {
+
+                if(frame == frameSurf) {
                     allVertexDebris[i] = surfVertex;
                 }
-                
                 trajSurfaces[j] = static_cast<int>(surfVertex.size());
-
-             }
-             auto [minIt, maxIt] = std::minmax_element(trajSurfaces.begin(), trajSurfaces.end());
-             surfMin[i] = *minIt;
-             surfMax[i] = *maxIt;
-             long sum = std::accumulate(trajSurfaces.begin(), trajSurfaces.end(), 0l);
-             surfMoy[i] = sum / static_cast<double>(trajSurfaces.size());
-           }
-      }
-        excludedCriticalPoints.clear();
-        excludedCriticalPoints.reserve(numTraj);
-        for(int i = 0; i < numTraj; ++i) {
-            if(excludedLocal[i] != -1) {
-                excludedCriticalPoints.push_back(excludedLocal[i]);
             }
+
+            auto [minIt, maxIt] = std::minmax_element(trajSurfaces.begin(), trajSurfaces.end());
+            surfMin[i] = *minIt;
+            surfMax[i] = *maxIt;
+            long sum = std::accumulate(trajSurfaces.begin(), trajSurfaces.end(), 0l);
+            surfMoy[i] = sum / static_cast<double>(trajSurfaces.size());
+      }
+    } 
+
+    excludedCriticalPoints.clear();
+    excludedCriticalPoints.reserve(numTraj);
+    for(int i = 0; i < numTraj; ++i) {
+        if(excludedLocal[i] != -1) {
+            excludedCriticalPoints.push_back(excludedLocal[i]);
         }
     }
-
     this->printMsg("End base");
     return 1;
 }
+
+
+
