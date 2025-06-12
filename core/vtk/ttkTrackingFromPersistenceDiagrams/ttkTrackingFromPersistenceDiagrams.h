@@ -91,9 +91,6 @@ public:
     buildMeshAlt(const triangulationType *triangulation,
               const std::vector<ttk::trackingTuple> &trackings,
               const std::vector<std::vector<double>> &allTrackingsCosts,
-              const std::vector<double> &allTrackingsIntegratedPersistence,
-              const std::vector<double> &allTrackingsMaximalPersistence,
-              const std::vector<double> &allTrackingsMinimalPersistence,
               const std::vector<std::vector<double>> &allTrackingsInstantPersistence,
               const bool useGeometricSpacing,
               const double spacing,
@@ -133,6 +130,10 @@ public:
         z += startTime * spacing;
       points->InsertNextPoint(x, y, z);
       instantPersistence->InsertTuple1(pointCpt, allTrackingsInstantPersistence[i][0]);
+      double currentMaxPersistence = *(std::max_element(allTrackingsInstantPersistence[i].begin(), allTrackingsInstantPersistence[i].end()));
+      double currentMinPersistence = *(std::min_element(allTrackingsInstantPersistence[i].begin(), allTrackingsInstantPersistence[i].end()));
+      double currentIntegratedPersistence = std::accumulate(allTrackingsInstantPersistence[i].begin(), allTrackingsInstantPersistence[i].end(), 0);
+      double currentAveragePersistence = currentIntegratedPersistence/(double)chain.size();
       globalVertexIds->InsertTuple1(pointCpt, (int)chain[0]);
       pointsCriticalType->InsertTuple1(pointCpt, (int)currentType);
       timeScalars->InsertTuple1(pointCpt, startTime);
@@ -152,15 +153,15 @@ public:
         lengthScalars->InsertTuple1(edgeCpt, chain.size() - 1);
         connectedComponentIds->InsertTuple1(edgeCpt, i);
         costs->InsertTuple1(edgeCpt, allTrackingsCosts[i][j - 1]);
-        integratedPersistence->InsertTuple1(
-          edgeCpt, allTrackingsIntegratedPersistence[i]);
-        maximalPersistence->InsertTuple1(
-          edgeCpt, allTrackingsMaximalPersistence[i]);
-        minimalPersistence->InsertTuple1(
-          edgeCpt, allTrackingsMinimalPersistence[i]);
-        averagePersistence->InsertTuple1(
-          edgeCpt, allTrackingsIntegratedPersistence[i] / chain.size());
         instantPersistence->InsertTuple1(pointCpt, allTrackingsInstantPersistence[i][j]);
+        integratedPersistence->InsertTuple1(
+          edgeCpt, currentIntegratedPersistence);
+        maximalPersistence->InsertTuple1(
+          edgeCpt, currentMaxPersistence);
+        minimalPersistence->InsertTuple1(
+          edgeCpt, currentMinPersistence);
+        averagePersistence->InsertTuple1(
+          edgeCpt, currentAveragePersistence);
         edgeCpt++;
       }
       pointCpt++;

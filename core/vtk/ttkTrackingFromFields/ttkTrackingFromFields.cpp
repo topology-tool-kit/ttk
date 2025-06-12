@@ -198,9 +198,6 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   std::vector<ttk::trackingTuple> allTrackings;
   std::vector<std::vector<double>> allTrackingsCosts;
-  std::vector<double> allTrackingsIntegratedPersistences;
-  std::vector<double> allTrackingsMaximalPersistences;
-  std::vector<double> allTrackingsMinimalPersistences;
   std::vector<std::vector<double>> allTrackingsInstantPersistence;
 
   unsigned int typesArrayLimits[3] = {};
@@ -208,8 +205,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.performTrackings(
     persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
     minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
-    allTrackingsCosts, allTrackingsIntegratedPersistences,
-    allTrackingsMaximalPersistences, allTrackingsMinimalPersistences, allTrackingsInstantPersistence,
+    allTrackingsCosts, allTrackingsInstantPersistence,
     typesArrayLimits);
 
   this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime,
@@ -221,8 +217,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   ttkTrackingFromPersistenceDiagrams::buildMeshAlt(
     triangulation, allTrackings, allTrackingsCosts,
-    allTrackingsIntegratedPersistences, allTrackingsMaximalPersistences,
-    allTrackingsMinimalPersistences, allTrackingsInstantPersistence, useGeometricSpacing, spacing, points,
+    allTrackingsInstantPersistence, useGeometricSpacing, spacing, points,
     outputMesh, pointsCriticalType, timeScalars, lengthScalars, globalVertexIds,
     connectedComponentIds, costs, averagePersistences, integratedPersistences,
     maximalPersistences, minimalPersistences, instantPersistences, typesArrayLimits);
