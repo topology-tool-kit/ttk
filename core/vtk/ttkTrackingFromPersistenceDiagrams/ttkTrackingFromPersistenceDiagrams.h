@@ -140,7 +140,7 @@ public:
                              allTrackingsInstantPersistence[i].end()));
       double currentIntegratedPersistence
         = std::accumulate(allTrackingsInstantPersistence[i].begin(),
-                          allTrackingsInstantPersistence[i].end(), 0);
+                          allTrackingsInstantPersistence[i].end(), 0.0);
       double currentAveragePersistence
         = currentIntegratedPersistence / (double)chain.size();
       globalVertexIds->InsertTuple1(pointCpt, (int)chain[0]);
