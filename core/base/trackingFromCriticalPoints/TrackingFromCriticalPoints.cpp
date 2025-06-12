@@ -264,7 +264,9 @@ void ttk::TrackingFromCriticalPoints::performTrackingForOneType(
       std::tuple<int, int, std::vector<SimplexId>> tt
         = std::make_tuple(0, 1, chain);
       trackings.push_back(tt);
-      std::vector<double> newEntry{persistenceDiagrams[0][map[0][startLocalId]].persistence(), persistenceDiagrams[1][map[1][endLocalId]].persistence()};
+      std::vector<double> newEntry{
+        persistenceDiagrams[0][map[0][startLocalId]].persistence(),
+        persistenceDiagrams[1][map[1][endLocalId]].persistence()};
       trackingsInstantPersistences.push_back(newEntry);
       std::vector<double> newCostEntry;
       newCostEntry.push_back(std::get<2>(matchings[0][i]));
@@ -295,7 +297,8 @@ void ttk::TrackingFromCriticalPoints::performTrackingForOneType(
         std::get<1>(trackings[trackingId])++;
         std::get<2>(trackings[trackingId]).push_back(endId);
         trackingCosts[trackingId].push_back(std::get<2>(matchings[i][j]));
-        trackingsInstantPersistences[trackingId].push_back(persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence());
+        trackingsInstantPersistences[trackingId].push_back(
+          persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence());
         sw[endLocalId] = trackingId;
         previousStepMap[startLocalId] = -1;
       }
@@ -313,8 +316,10 @@ void ttk::TrackingFromCriticalPoints::performTrackingForOneType(
         std::vector<double> newCostEntry;
         newCostEntry.push_back(std::get<2>(matchings[i][j]));
         trackingCosts.push_back(newCostEntry);
-        std::vector<double> newEntry{persistenceDiagrams[i][map[i][startLocalId]].persistence(), persistenceDiagrams[i+1][map[i+1][endLocalId]].persistence()};
-        trackingsInstantPersistences.push_back(newEntry); 
+        std::vector<double> newEntry{
+          persistenceDiagrams[i][map[i][startLocalId]].persistence(),
+          persistenceDiagrams[i + 1][map[i + 1][endLocalId]].persistence()};
+        trackingsInstantPersistences.push_back(newEntry);
         sw[endLocalId] = trackings.size() - 1;
       }
     }
@@ -353,9 +358,9 @@ void ttk::TrackingFromCriticalPoints::performTrackings(
   std::vector<std::vector<double>> trackingsInstantPersistencesSad_2;
   std::vector<std::vector<double>> trackingsInstantPersistencesMin;
 
-  performTrackingForOneType(
-    persistenceDiagrams, maximaMatchings, maxMap, CriticalType::Local_maximum,
-    trackingsMax, maxTrackingCost, trackingsInstantPersistencesMax);
+  performTrackingForOneType(persistenceDiagrams, maximaMatchings, maxMap,
+                            CriticalType::Local_maximum, trackingsMax,
+                            maxTrackingCost, trackingsInstantPersistencesMax);
   allTrackings.insert(
     allTrackings.end(), trackingsMax.begin(), trackingsMax.end());
 
@@ -399,9 +404,9 @@ void ttk::TrackingFromCriticalPoints::performTrackings(
                            sad_2_TrackingCost.end());
   typesArrayLimits[2] = allTrackings.size();
 
-  performTrackingForOneType(
-    persistenceDiagrams, minimaMatchings, minMap, CriticalType::Local_minimum,
-    trackingsMin, minTrackingCost, trackingsInstantPersistencesMin);
+  performTrackingForOneType(persistenceDiagrams, minimaMatchings, minMap,
+                            CriticalType::Local_minimum, trackingsMin,
+                            minTrackingCost, trackingsInstantPersistencesMin);
 
   allTrackings.insert(
     allTrackings.end(), trackingsMin.begin(), trackingsMin.end());

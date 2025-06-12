@@ -205,8 +205,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.performTrackings(
     persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
     minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
-    allTrackingsCosts, allTrackingsInstantPersistence,
-    typesArrayLimits);
+    allTrackingsCosts, allTrackingsInstantPersistence, typesArrayLimits);
 
   this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime,
                  threadNumber_);
@@ -220,8 +219,8 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     allTrackingsInstantPersistence, useGeometricSpacing, spacing, points,
     outputMesh, pointsCriticalType, timeScalars, lengthScalars, globalVertexIds,
     connectedComponentIds, costs, averagePersistences, integratedPersistences,
-    maximalPersistences, minimalPersistences, instantPersistences, typesArrayLimits);
-    
+    maximalPersistences, minimalPersistences, instantPersistences,
+    typesArrayLimits);
 
   this->printMsg(
     "Mesh built", 1, t.getElapsedTime() - previousStepTime, threadNumber_);

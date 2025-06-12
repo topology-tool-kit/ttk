@@ -27,8 +27,6 @@ int ttkTrackingFromPersistenceDiagrams::FillOutputPortInformation(
   return 0;
 }
 
-
-
 int ttkTrackingFromPersistenceDiagrams::buildMesh(
   const std::vector<ttk::trackingTuple> &trackings,
   const std::vector<std::vector<ttk::MatchingType>> &outputMatchings,
