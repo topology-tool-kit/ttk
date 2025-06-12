@@ -4,16 +4,7 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <chrono>
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <numeric>
-#include <queue>
-#include <sstream>
-#include <unordered_map>
+#include <RipsPersistenceDiagramUtils.h>
 
 namespace ripser {
 
@@ -26,14 +17,35 @@ namespace ripser {
 #endif
   using coefficient_t = uint16_t;
 
-  using simplex_t = std::vector<index_t>;
-  using simplex_diam_t = std::pair<simplex_t, value_t>;
-  using pers_pair_t = std::pair<simplex_diam_t, simplex_diam_t>;
-
+  template <typename PersistenceType>
   void ripser(std::vector<std::vector<value_t>> points,
+              PersistenceType &ph,
               value_t threshold,
               index_t dim_max,
               bool distanceMatrix,
-              std::vector<std::vector<pers_pair_t>> &ph);
+              bool criticalEdgesOnly = true,
+              bool infinitePairs = true,
+              coefficient_t modulus = 2);
+
+  template <typename PersistenceType>
+  void ripser(float *data,
+              int n,
+              int dim,
+              PersistenceType &ph,
+              value_t threshold,
+              index_t dim_max,
+              bool criticalEdgesOnly = true,
+              bool infinitePairs = true,
+              coefficient_t modulus = 2) {
+
+    std::vector<std::vector<value_t>> points(n);
+    for(int i = 0; i < n; ++i) {
+      for(int j = 0; j < dim; ++j)
+        points[i].push_back(data[dim * i + j]);
+    }
+
+    ripser(points, ph, threshold, dim_max, false, criticalEdgesOnly,
+           infinitePairs, modulus);
+  }
 
 } // namespace ripser

@@ -22,7 +22,7 @@ namespace ttk {
   class TrackingFromCriticalPoints : virtual public Debug {
 
   private:
-    double relativeEpsilon{10e-1};
+    double relativeEpsilon_{10e-1};
     double meshDiameter_{1};
     double tolerance_{10e-3};
     int assignmentMethod_{0};
@@ -41,7 +41,7 @@ namespace ttk {
     }
 
     void setEpsilon(double e) {
-      relativeEpsilon = e;
+      relativeEpsilon_ = e;
     }
 
     void setTolerance(double t) {

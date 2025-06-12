@@ -154,6 +154,11 @@ int ttkMergeTreePrincipalGeodesicsDecoding::RequestData(
   else
     printMsg("Computation without normalized Wasserstein.");
 
+  auto diagramPairTypesArray
+    = tableCoefficients->GetFieldData()->GetArray("DiagramPairTypes");
+  if(diagramPairTypesArray)
+    DiagramPairTypes = diagramPairTypesArray->GetTuple1(0);
+
   // ------------------------------------------------------------------------------------
   // --- Load tables
   // ------------------------------------------------------------------------------------
@@ -316,21 +321,21 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runCompute(
 
   std::vector<ttk::ftm::MergeTree<dataType>> baryDTree, inputDTrees;
 
-  std::vector<bool> useSadMaxPairsVec{false, true};
+  std::vector<bool> useSecondPairsTypeVec{false, true};
   if(not useDoubleInput_ and mixtureCoefficient_ == 0)
-    useSadMaxPairsVec.erase(useSadMaxPairsVec.begin()); // {true}
+    useSecondPairsTypeVec.erase(useSecondPairsTypeVec.begin()); // {true}
   ttk::ftm::constructTrees<dataType>(inputBary, baryDTree, baryTreeNodes,
                                      baryTreeArcs, baryTreeSegmentation,
-                                     useSadMaxPairsVec);
+                                     useSecondPairsTypeVec, DiagramPairTypes);
 
   if(OutputInputTrees
      or (ReconstructInputTrees
          and (computeReconstructionError_ or transferInputTreesInformation_))) {
-    bool const useSadMaxPairs
+    bool const useSecondPairsType
       = (useDoubleInput_ and not processFirstInput) or mixtureCoefficient_ == 0;
     bool const isInputPD = ttk::ftm::constructTrees<dataType>(
       inputTrees, inputDTrees, inputTreesNodes, inputTreesArcs,
-      inputTreesSegmentation, useSadMaxPairs);
+      inputTreesSegmentation, useSecondPairsType, DiagramPairTypes);
     if(not isInputPD and isPersistenceDiagram_)
       mtsFlattening(inputDTrees);
   }

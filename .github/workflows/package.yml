@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -35,6 +35,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libsqlite3-dev \
@@ -99,7 +100,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -198,7 +199,7 @@ jobs:
         brew install --cask xquartz
         brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
+        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
@@ -282,7 +283,7 @@ jobs:
         brew install --cask xquartz
         brew install llvm mesa glew qt@5 ninja 
         # TTK dependencies
-        brew install boost eigen graphviz spectra sqlite zlib numpy qhull 
+        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
@@ -635,14 +636,6 @@ jobs:
 
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v4.1.7
-
-    - name: Upload Ubuntu Focal .deb as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: ttk-ubuntu-20.04.deb/ttk.deb
-        asset_name: ttk-$tag-ubuntu-20.04.deb
 
     - name: Upload Ubuntu Jammy .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
