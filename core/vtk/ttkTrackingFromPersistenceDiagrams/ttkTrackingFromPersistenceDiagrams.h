@@ -88,12 +88,13 @@ public:
 
   template <class triangulationType>
   static int
-    buildMesh(const triangulationType *triangulation,
+    buildMeshAlt(const triangulationType *triangulation,
               const std::vector<ttk::trackingTuple> &trackings,
               const std::vector<std::vector<double>> &allTrackingsCosts,
               const std::vector<double> &allTrackingsIntegratedPersistence,
               const std::vector<double> &allTrackingsMaximalPersistence,
               const std::vector<double> &allTrackingsMinimalPersistence,
+              const std::vector<std::vector<double>> &allTrackingsInstantPersistence,
               const bool useGeometricSpacing,
               const double spacing,
               vtkPoints *points,
@@ -108,6 +109,7 @@ public:
               vtkDoubleArray *integratedPersistence,
               vtkDoubleArray *maximalPersistence,
               vtkDoubleArray *minimalPersistence,
+              vtkDoubleArray *instantPersistence,
               unsigned int *sizes) {
 
     int pointCpt = 0;
@@ -130,6 +132,7 @@ public:
       if(useGeometricSpacing)
         z += startTime * spacing;
       points->InsertNextPoint(x, y, z);
+      instantPersistence->InsertTuple1(pointCpt, allTrackingsInstantPersistence[i][0]);
       globalVertexIds->InsertTuple1(pointCpt, (int)chain[0]);
       pointsCriticalType->InsertTuple1(pointCpt, (int)currentType);
       timeScalars->InsertTuple1(pointCpt, startTime);
@@ -157,6 +160,7 @@ public:
           edgeCpt, allTrackingsMinimalPersistence[i]);
         averagePersistence->InsertTuple1(
           edgeCpt, allTrackingsIntegratedPersistence[i] / chain.size());
+        instantPersistence->InsertTuple1(pointCpt, allTrackingsInstantPersistence[i][j]);
         edgeCpt++;
       }
       pointCpt++;
@@ -169,6 +173,7 @@ public:
     outputMesh->GetCellData()->AddArray(integratedPersistence);
     outputMesh->GetCellData()->AddArray(maximalPersistence);
     outputMesh->GetCellData()->AddArray(minimalPersistence);
+    outputMesh->GetPointData()->AddArray(instantPersistence);
     outputMesh->GetCellData()->AddArray(costs);
     outputMesh->GetPointData()->AddArray(pointsCriticalType);
     outputMesh->GetPointData()->AddArray(timeScalars);
