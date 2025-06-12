@@ -2,6 +2,7 @@
 
 #include <TrackingFromPersistenceDiagrams.h>
 #include <ttkAlgorithm.h>
+#include <numeric>
 
 // VTK Module
 #include <ttkTrackingFromPersistenceDiagramsModule.h>
