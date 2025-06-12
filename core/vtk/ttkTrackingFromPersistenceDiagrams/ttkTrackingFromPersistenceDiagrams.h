@@ -1,8 +1,8 @@
 #pragma once
 
 #include <TrackingFromPersistenceDiagrams.h>
-#include <ttkAlgorithm.h>
 #include <numeric>
+#include <ttkAlgorithm.h>
 
 // VTK Module
 #include <ttkTrackingFromPersistenceDiagramsModule.h>
