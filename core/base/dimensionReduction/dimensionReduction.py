@@ -86,7 +86,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
                 perplexity=tsneParams[0],
                 early_exaggeration=tsneParams[1],
                 learning_rate=tsneParams[2],
-                n_iter=tsneParams[3],
+                max_iter=tsneParams[3],
                 n_iter_without_progress=tsneParams[4],
                 min_grad_norm=tsneParams[5],
                 metric=tsneParams[6],
