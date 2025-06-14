@@ -15,10 +15,12 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
         # at least one module is not installed, aborting...
         return 0
 
+    import sklearn
     from sklearn import manifold
     from sklearn import decomposition
     import numpy as np
     from sys import platform
+    from packaging import version
 
     if platform == "darwin":
         import sklearn
@@ -81,20 +83,36 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
             Y = mds.fit_transform(X)
         elif method == 3:
             tsneParams = params[3]
-            tsne = manifold.TSNE(
-                n_components=ncomponents,
-                perplexity=tsneParams[0],
-                early_exaggeration=tsneParams[1],
-                learning_rate=tsneParams[2],
-                max_iter=tsneParams[3],
-                n_iter_without_progress=tsneParams[4],
-                min_grad_norm=tsneParams[5],
-                metric=tsneParams[6],
-                init=tsneParams[7],
-                verbose=tsneParams[8],
-                method=tsneParams[9],
-                angle=tsneParams[10],
-            )
+            if version.parse(sklearn.__version__) >= version.parse("1.7.0"):
+                tsne = manifold.TSNE(
+                    n_components=ncomponents,
+                    perplexity=tsneParams[0],
+                    early_exaggeration=tsneParams[1],
+                    learning_rate=tsneParams[2],
+                    max_iter=tsneParams[3],
+                    n_iter_without_progress=tsneParams[4],
+                    min_grad_norm=tsneParams[5],
+                    metric=tsneParams[6],
+                    init=tsneParams[7],
+                    verbose=tsneParams[8],
+                    method=tsneParams[9],
+                    angle=tsneParams[10],
+                )
+            else:
+                tsne = manifold.TSNE(
+                    n_components=ncomponents,
+                    perplexity=tsneParams[0],
+                    early_exaggeration=tsneParams[1],
+                    learning_rate=tsneParams[2],
+                    n_iter=tsneParams[3],
+                    n_iter_without_progress=tsneParams[4],
+                    min_grad_norm=tsneParams[5],
+                    metric=tsneParams[6],
+                    init=tsneParams[7],
+                    verbose=tsneParams[8],
+                    method=tsneParams[9],
+                    angle=tsneParams[10],
+                )
             Y = tsne.fit_transform(X)
         elif method == 4:
             isoParams = params[4]
