@@ -22,10 +22,8 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
     from sys import platform
     from packaging import version
 
-    if platform == "darwin":
-        import sklearn
-
-        sklearn.utils.parallel_backend("threading")
+    #if platform == "darwin":
+    #    sklearn.utils.parallel_backend("threading")
 
     if rstate > 0:
         np.random.seed(0)
