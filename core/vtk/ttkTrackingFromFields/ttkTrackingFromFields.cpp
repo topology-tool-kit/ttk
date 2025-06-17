@@ -175,6 +175,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   vtkNew<vtkDoubleArray> integratedPersistences{};
   vtkNew<vtkDoubleArray> maximalPersistences{};
   vtkNew<vtkDoubleArray> minimalPersistences{};
+  vtkNew<vtkDoubleArray> instantPersistences{};
   vtkNew<vtkDoubleArray> valueScalars{};
   vtkNew<vtkIntArray> globalVertexIds{};
   vtkNew<vtkIntArray> lengthScalars{};
@@ -187,6 +188,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   integratedPersistences->SetName("IntegratedPersistence");
   maximalPersistences->SetName("MaximalPersistence");
   minimalPersistences->SetName("MinimalPersistence");
+  instantPersistences->SetName("InstantPersistence");
   valueScalars->SetName("Scalar");
   globalVertexIds->SetName("VertexGlobalId");
   lengthScalars->SetName("ComponentLength");
@@ -196,18 +198,14 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   std::vector<ttk::trackingTuple> allTrackings;
   std::vector<std::vector<double>> allTrackingsCosts;
-  std::vector<double> allTrackingsIntegratedPersistences;
-  std::vector<double> allTrackingsMaximalPersistences;
-  std::vector<double> allTrackingsMinimalPersistences;
+  std::vector<std::vector<double>> allTrackingsInstantPersistence;
 
   unsigned int typesArrayLimits[3] = {};
 
   tracker.performTrackings(
     persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
     minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
-    allTrackingsCosts, allTrackingsIntegratedPersistences,
-    allTrackingsMaximalPersistences, allTrackingsMinimalPersistences,
-    typesArrayLimits);
+    allTrackingsCosts, allTrackingsInstantPersistence, typesArrayLimits);
 
   this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime,
                  threadNumber_);
@@ -216,13 +214,13 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   double const spacing = Spacing;
   bool const useGeometricSpacing = UseGeometricSpacing;
 
-  ttkTrackingFromPersistenceDiagrams::buildMesh(
+  ttkTrackingFromPersistenceDiagrams::buildMeshAlt(
     triangulation, allTrackings, allTrackingsCosts,
-    allTrackingsIntegratedPersistences, allTrackingsMaximalPersistences,
-    allTrackingsMinimalPersistences, useGeometricSpacing, spacing, points,
+    allTrackingsInstantPersistence, useGeometricSpacing, spacing, points,
     outputMesh, pointsCriticalType, timeScalars, lengthScalars, globalVertexIds,
     connectedComponentIds, costs, averagePersistences, integratedPersistences,
-    maximalPersistences, minimalPersistences, typesArrayLimits);
+    maximalPersistences, minimalPersistences, instantPersistences,
+    typesArrayLimits);
 
   this->printMsg(
     "Mesh built", 1, t.getElapsedTime() - previousStepTime, threadNumber_);

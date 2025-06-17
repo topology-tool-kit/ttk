@@ -106,9 +106,7 @@ namespace ttk {
       const std::vector<std::vector<SimplexId>> &minMap,
       std::vector<trackingTuple> &allTrackings,
       std::vector<std::vector<double>> &allTrackingsCost,
-      std::vector<double> &allTrackingsMeanPersistences,
-      std::vector<double> &allTrackingsMaximalPersistences,
-      std::vector<double> &allTrackingsMinimalPersistences,
+      std::vector<std::vector<double>> &allTrackingsInstantPersistences,
       unsigned int (&typesArrayLimits)[3]);
 
   private:
@@ -186,8 +184,6 @@ namespace ttk {
       const CriticalType &currentType,
       std::vector<trackingTuple> &tracking,
       std::vector<std::vector<double>> &trackingCosts,
-      std::vector<double> &trackingPersistence,
-      std::vector<double> &trackingsMaximalPersistences,
-      std::vector<double> &trackingsMinimalPersistences);
+      std::vector<std::vector<double>> &trackingsInstantPersistences);
   };
 } // namespace ttk
