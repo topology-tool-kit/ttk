@@ -86,7 +86,8 @@
       <OutputPort name="Traj Table" index="0" id="port1"/>
       <OutputPort name="Traj VTU" index="1" id="port1"/>
       <OutputPort name="Surface VTI" index="2" id="port2"/>
-      <OutputPort name="New Traj" index="3" id="port3"/>   
+      <OutputPort name="New Traj" index="3" id="port3"/>
+      <OutputPort name="Merge" index="4" id="port4"/>
 
 
       <!-- MENU CATEGORY -->

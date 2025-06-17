@@ -81,6 +81,7 @@ namespace ttk {
                 int surfMethods,
                 std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
+                std::vector<std::vector<int>> &merge,
                 const triangulationType *triangulation);
 
     inline void setInputScalars(std::vector<void *> &is) {
@@ -103,7 +104,6 @@ namespace ttk {
     );
 
     #ifdef TTK_ENABLE_EIGEN
-    #pragma message("TTK_ENABLE_EIGEN is defined in this file")
     int linearRegression(
         const std::vector<int> &T,   // times t_i
         const std::vector<double> &X,   // positions x_i
@@ -111,6 +111,24 @@ namespace ttk {
         std::vector<double> &newTraj
     );
     #endif
+
+
+
+    int computeMeanUnitDirection(
+      const std::vector<std::vector<double>> &coordsX,
+      const std::vector<std::vector<double>> &coordsY,
+      const std::vector<std::vector<double>> &coordsZ,
+      std::vector<double> &meanDx,
+      std::vector<double> &meanDy,
+      std::vector<double> &meanDz
+    );
+
+    int computeMeanUnitDirectionLinear(
+      const std::vector<std::vector<double>> &newTraj,
+      std::vector<double> &meanDx,
+      std::vector<double> &meanDy,
+      std::vector<double> &meanDz
+    ); 
 
     std::vector<void *> inputData_{};
 
@@ -128,7 +146,6 @@ int ttk::TrajectoryStatistics::linearRegression(
   const std::vector<double> &Y,   // positions y_i
   std::vector<double> &newTraj
 ) {
-  this->printMsg("being here");
   const int n = (int)T.size();
   Eigen::MatrixXd M(n, 2);
   Eigen::VectorXd vx(n), vy(n);
@@ -149,6 +166,8 @@ int ttk::TrajectoryStatistics::linearRegression(
   return 1;
 }
 #endif
+
+
 
 
 template<class dataType>
@@ -280,6 +299,101 @@ int ttk::TrajectoryStatistics::findSurface(
 }
 
 
+int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
+  const std::vector<std::vector<double>> &newTraj,
+  std::vector<double> &meanDx,
+  std::vector<double> &meanDy,
+  std::vector<double> &meanDz
+)  {
+  const size_t nTraj = newTraj.size();
+  meanDx.assign(nTraj, 0.0);
+  meanDy.assign(nTraj, 0.0);
+  meanDz.assign(nTraj, 0.0);
+
+  for(size_t i = 0; i < nTraj; ++i) {
+    const auto &coef = newTraj[i]; // [ax, ay, bx, by]
+    if(coef.size() < 2) continue;
+    double ax = coef[0];
+    double ay = coef[1];
+    // Parametric direction vector (dx,dy,dz) = (ax, ay, 1)
+    double dx = ax;
+    double dy = ay;
+    double dz = 1.0;
+    double mag = std::sqrt(dx*dx + dy*dy + dz*dz);
+    if(mag > 0.0) {
+      meanDx[i] = dx / mag;
+      meanDy[i] = dy / mag;
+      meanDz[i] = dz / mag;
+    }
+  }
+
+  return 1;
+}
+
+
+int ttk::TrajectoryStatistics::computeMeanUnitDirection(
+  const std::vector<std::vector<double>> &coordsX,
+  const std::vector<std::vector<double>> &coordsY,
+  const std::vector<std::vector<double>> &coordsZ,
+  std::vector<double> &meanDx,
+  std::vector<double> &meanDy,
+  std::vector<double> &meanDz
+)  {
+  const size_t nTraj = coordsX.size();
+  meanDx.assign(nTraj, 0.0);
+  meanDy.assign(nTraj, 0.0);
+  meanDz.assign(nTraj, 0.0);
+
+  for(size_t i = 0; i < nTraj; ++i) {
+    const auto &xs = coordsX[i];
+    const auto &ys = coordsY[i];
+    const auto &zs = coordsZ[i];
+    const size_t nPts = xs.size();
+
+    if(nPts < 2 || ys.size() != nPts || zs.size() != nPts) {
+      continue;
+    }
+
+    double sumX = 0.0;
+    double sumY = 0.0;
+    double sumZ = 0.0;
+    size_t segmentCount = 0;
+
+    for(size_t j = 0; j + 1 < nPts; ++j) {
+      double dx = xs[j+1] - xs[j];
+      double dy = ys[j+1] - ys[j];
+      double dz = zs[j+1] - zs[j];
+      double norm = std::sqrt(dx*dx + dy*dy + dz*dz);
+      if(norm <= 0.0) {
+        continue; // skip zero-length segments
+      }
+      sumX += dx / norm;
+      sumY += dy / norm;
+      sumZ += dz / norm;
+      ++segmentCount;
+    }
+
+    if(segmentCount > 0) {
+      double avgX = sumX / static_cast<double>(segmentCount);
+      double avgY = sumY / static_cast<double>(segmentCount);
+      double avgZ = sumZ / static_cast<double>(segmentCount);
+
+      // Renormalize 
+      double mag = std::sqrt(avgX*avgX + avgY*avgY + avgZ*avgZ);
+      if(mag > 0.0) {
+        meanDx[i] = avgX / mag;
+        meanDy[i] = avgY / mag;
+        meanDz[i] = avgZ / mag;
+      } else {
+        meanDx[i] = 0.0;
+        meanDy[i] = 0.0;
+        meanDz[i] = 0.0;
+      }
+    }
+  }
+
+  return true;
+}
 
 
 
@@ -305,21 +419,110 @@ int ttk::TrajectoryStatistics::execute(
                 int surfMethods,
                 std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
+                std::vector<std::vector<int>> &merge,
                 const triangulationType *triangulation) {
 
     coordsZ[0][0] = surfMethods;
+    
+
+
 
     const int numTraj = static_cast<int>(trajTime.size());
+    int nTraj = numTraj;
     const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
     const size_t numFrames = inputData_.size();
     const int  nPts = triangulation->getNumberOfVertices();
     
+    
     #ifdef TTK_ENABLE_EIGEN   
     for (int i=0; i<numTraj; i++) {
-        this->printMsg("Linear regression traj " + std::to_string(i));
         linearRegression(trajTime[i],coordsX[i],coordsY[i], newTraj[i]);
     }
     #endif
+    
+    std::vector<double> meanDx(numTraj);
+    std::vector<double> meanDy(numTraj);
+    std::vector<double> meanDz(numTraj);
+
+    computeMeanUnitDirectionLinear(newTraj, meanDx, meanDy, meanDz);
+    std::vector<int> used(numTraj, 0);
+    
+
+    for(size_t i = 0; i < nTraj; ++i) {
+        if(used[i]==1 || used[i] == 3 || trajTime[i].empty()) continue;
+        double bestDot = 0.94;
+        size_t bestJ = nTraj;
+        double bestDist = 1e6;
+
+        // coordinates and time of end of i
+        //const auto &xi = coordsX[i];
+        //const auto &yi = coordsY[i];
+        //const auto &zi = coordsZ[i];
+        int endFrame = trajTime[i].back();
+        //int endVid   = trajVertexId[i].back();
+        //double xEnd = xi.back(), yEnd = yi.back(), zEnd = zi.back();
+        double xEnd = newTraj[i][0] * endFrame + newTraj[i][2];
+        double yEnd = newTraj[i][1] * endFrame + newTraj[i][3];
+        double zEnd = endFrame;
+
+        for(size_t j = 0; j < nTraj; ++j) {
+          if(j == i || used[j]==2 || used[j] == 3 || trajTime[j].empty()) continue;
+          // ensure temporal ordering
+          if(endFrame >= trajTime[j].front() || trajTime[j].front() - endFrame > 5) continue;
+
+          // direction similarity
+          double dot = meanDx[i]*meanDx[j]
+                     + meanDy[i]*meanDy[j]
+                     + meanDz[i]*meanDz[j];
+          if(dot <= bestDot) continue;
+
+          // spatial distance
+          
+          double xTh = newTraj[i][0] * trajTime[j].front() + newTraj[i][2];
+          double yTh = newTraj[i][1] * trajTime[j].front() + newTraj[i][3];
+          double zTh = trajTime[j].front();           
+          double distTh2 = (xTh - xEnd)*(xTh - xEnd) + (yTh - yEnd)*(yTh - yEnd) + (zTh - zEnd)*(zTh - zEnd);  
+          
+          //const auto &xj = coordsX[j];
+          //const auto &yj = coordsY[j];
+          //const auto &zj = coordsZ[j];
+          double xj = newTraj[j][0] * trajTime[j].front() + newTraj[j][2];
+          double yj = newTraj[j][1] * trajTime[j].front() + newTraj[j][3];
+          double zj = trajTime[j].front();
+          
+          //double dx = xj.front() - xEnd;
+          //double dy = yj.front() - yEnd;
+          //double dz = zj.front() - zEnd;
+          double dx = xj - xEnd;
+          double dy = yj - yEnd;  
+          double dz = zj - zEnd;
+          
+          double dist2 = dx*dx + dy*dy + dz*dz;
+          if(dist2 > distTh2*1.1) continue;
+
+          // accept this candidate
+          if (dist2 < bestDist){
+            bestDist = dist2;
+            bestDot = dot;
+            bestJ  = j;
+          }
+        }
+
+        if(bestJ < nTraj) {
+          // record merge
+          int startFrame = trajTime[bestJ].front();
+          int startVid   = trajVertexId[bestJ].front();
+          
+          //merge.push_back({endVid, startVid, endFrame, startFrame});
+          merge.push_back({i, bestJ, endFrame, startFrame});
+          
+          used[i] == 2 ? used[i] = 3 : used[i] = 1;
+          used[bestJ] == 1 ? used[bestJ] = 3 : used[bestJ] = 2;
+        }
+    }
+
+
+    
 
 
     #ifdef TTK_ENABLE_OPENMP

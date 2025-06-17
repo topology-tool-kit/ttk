@@ -29,7 +29,7 @@ vtkStandardNewMacro(ttkTrajectoryStatistics);
 ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
   this->SetNumberOfInputPorts(2);
-  this->SetNumberOfOutputPorts(4);
+  this->SetNumberOfOutputPorts(5);
 }
 
 
@@ -66,6 +66,11 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
   }
 
   if (port == 3) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+
+  if (port == 4) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
@@ -293,6 +298,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
   std::vector<ttk::SimplexId> excludedCriticalPoints;
   std::vector<std::vector<double>> newTraj(numTraj);
+  std::vector<std::vector<int>> merge;
 
   int status = 0;
 
@@ -318,6 +324,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         surfMethods,
                         newTraj,
                         gradientNorms,
+                        merge,
                         (TTK_TT *)triangulation->getData()
                         )));
   
@@ -350,6 +357,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkUnstructuredGrid *outputTraj = vtkUnstructuredGrid::GetData(outputVector, 3);
   if(!outputTraj) {
     this->printErr("Null output gridTraj.");
+    return 0;
+  }
+
+  vtkUnstructuredGrid *outputMerge = vtkUnstructuredGrid::GetData(outputVector, 4);
+  if(!outputMerge) {
+    this->printErr("Null output gridMerge.");
     return 0;
   }
 
@@ -465,6 +478,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   trajV->FillComponent(0, 0);
 
 
+  vtkSmartPointer<vtkDoubleArray> distReg = vtkSmartPointer<vtkDoubleArray>::New();
+  distReg->SetName("distReg");
+
+  distReg->SetNumberOfTuples(numPoints);
+  distReg->FillComponent(0, -1);
+
   for (size_t i = 0; i < excludedCriticalPoints.size(); i++){
     surfaceVertexArray->SetValue(excludedCriticalPoints[i], 2);
   }
@@ -488,10 +507,27 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   for (int i =0; i<numPoints; i++){
     gradArray->SetValue(i, gradientNorms[0][i]);
   }
+
+  for (int i=0; i<trajVertexId.size(); i++){
+    for (int j=0; j<trajVertexId[i].size(); j++){
+        int frame = trajTime[i][j];
+        const auto &coef = newTraj[i];
+        double vX = trajX[i][j];
+        double vY = trajY[i][j];
+        double rX = coef[0]*frame + coef[2];
+        double rY = coef[1] * frame + coef[3];
+
+        double dx2 = (vX - rX) * (vX - rX);
+        double dy2 = (vY - rY) * (vY - rY);
+        distReg->SetValue(trajVertexId[i][j], std::sqrt(dx2 + dy2)); 
+
+    }
+  }
+
   outputDataSet->GetPointData()->AddArray(surfaceVertexArray);
   outputDataSet->GetPointData()->AddArray(gradArray);
   outputDataSet->GetPointData()->AddArray(trajV);
-
+  outputDataSet->GetPointData()->AddArray(distReg);
 
 
 
@@ -513,11 +549,11 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     const auto &coef = newTraj[i];
     double x0 = coef[0] * t0 + coef[2];
     double y0 = coef[1] * t0 + coef[3];
-    double z0 = t0 *10;
+    double z0 = t0  ;
     points->SetPoint(2*i + 0, x0, y0, z0);
     double x1 = coef[0] * t1 + coef[2];
     double y1 = coef[1] * t1 + coef[3];
-    double z1 = t1 * 10;
+    double z1 = t1;
     points->SetPoint(2*i + 1, x1, y1, z1);
 
     vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
@@ -534,9 +570,37 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTraj->GetCellData()->AddArray(TrajIdArray);
 
 
+  vtkSmartPointer<vtkPoints> mergePoints = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> mergeLines  = vtkSmartPointer<vtkCellArray>::New();
 
+  mergePoints->SetNumberOfPoints(2*merge.size());
+  for (int i=0; i<merge.size(); i++){
+    double coords[3];
+    //inputDataSet->GetPoint(merge[i][0], coords);
+    const auto &firstCoef = newTraj[merge[i][0]];
+    coords[0] =  firstCoef[0]*merge[i][2] + firstCoef[2];
+    coords[1] =  firstCoef[1]*merge[i][2] + firstCoef[3];
 
+    coords[2] = merge[i][2];
+    mergePoints->SetPoint(2*i, coords[0], coords[1], coords[2]);
 
+    //inputDataSet->GetPoint(merge[i][1], coords);
+    const auto &secondCoef = newTraj[merge[i][1]];
+    coords[0] =  secondCoef[0]*merge[i][3] + secondCoef[2];
+    coords[1] =  secondCoef[1]*merge[i][3] + secondCoef[3];
+    ;
+    coords[2] = merge[i][3];
+    mergePoints->SetPoint(2*i+1, coords[0], coords[1], coords[2]);
+    
+    vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
+    line->GetPointIds()->SetId(0, 2*i + 0);
+    line->GetPointIds()->SetId(1, 2*i + 1);
+    mergeLines->InsertNextCell(line);
+
+  }
+
+  outputMerge->SetPoints(mergePoints);
+  outputMerge->SetCells(VTK_LINE, mergeLines);
 
 
   this->printMsg("Fin TrajectoryStatistic");
@@ -574,7 +638,6 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
     gradientNorms[f].assign(static_cast<size_t>(nPts), 0.0);
   }
 
-  // Pour chaque frame (= chacun des inputScalarFields[f])
   for(size_t f = 0; f < nFields; f++) {
     vtkDataArray *currScalar = inputScalarFields[f];
     if(!currScalar || !currScalar->GetName()) {
@@ -583,7 +646,6 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
     }
     const char *scalarName = currScalar->GetName();
 
-    // 1) Instanciation de vtkGradientFilter
     vtkSmartPointer<vtkGradientFilter> gradFilter = vtkSmartPointer<vtkGradientFilter>::New();
     gradFilter->SetInputData(inputDataSet);
     gradFilter->SetInputScalars(vtkDataObject::FIELD_ASSOCIATION_POINTS, scalarName);
@@ -591,7 +653,6 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
 
     gradFilter->Update();
 
-    // 3) Récupérer la sortie contenant l’array vectoriel "Gradients_<scalarName>"
     vtkDataSet *gradOutput = gradFilter->GetOutput();
     if (!gradOutput){
         this->printErr("grad output missing");
@@ -605,7 +666,6 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
       return 0;
     }
 
-    // 4) Calculer la magnitude au niveau de chaque sommet<
     for(vtkIdType pid = 0; pid < nPts; ++pid) {
       double gx = gradArray->GetComponent(pid, 0);
       double gy = gradArray->GetComponent(pid, 1);
