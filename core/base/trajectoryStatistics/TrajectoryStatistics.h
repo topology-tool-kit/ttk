@@ -81,7 +81,7 @@ namespace ttk {
                 int surfMethods,
                 std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
-                std::vector<std::vector<int>> &merge,
+                std::vector<std::vector<double>> &merge,
                 const triangulationType *triangulation);
 
     inline void setInputScalars(std::vector<void *> &is) {
@@ -129,6 +129,14 @@ namespace ttk {
       std::vector<double> &meanDy,
       std::vector<double> &meanDz
     ); 
+
+
+// 1) Structure pour stocker une fusion i->j
+    struct FuseRecord {
+      int i, j;           // trajectoire i fusionnée vers trajectoire j
+      int endFrame;       // frame de fin de i
+      int startFrame;     // frame de début de j
+    };
 
     std::vector<void *> inputData_{};
 
@@ -419,7 +427,7 @@ int ttk::TrajectoryStatistics::execute(
                 int surfMethods,
                 std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
-                std::vector<std::vector<int>> &merge,
+                std::vector<std::vector<double>> &merge,
                 const triangulationType *triangulation) {
 
     coordsZ[0][0] = surfMethods;
@@ -445,85 +453,140 @@ int ttk::TrajectoryStatistics::execute(
     std::vector<double> meanDz(numTraj);
 
     computeMeanUnitDirectionLinear(newTraj, meanDx, meanDy, meanDz);
-    std::vector<int> used(numTraj, 0);
+
     
 
+    // === Étape A : collecte des merges directs ===
+    std::vector<FuseRecord> fuseRecords;
+    fuseRecords.reserve(nTraj);
+
+    std::vector<char> usedAsStart(nTraj, false), usedAsEnd(nTraj, false);
+
+    const double similarityThreshold = 0.96;
+    const double maxLinkDist2        = 20.0 * 20.0; // distance² maxi tolérée
+
     for(size_t i = 0; i < nTraj; ++i) {
-        if(used[i]==1 || used[i] == 3 || trajTime[i].empty()) continue;
-        double bestDot = 0.94;
-        size_t bestJ = nTraj;
-        double bestDist = 1e6;
+      if(usedAsStart[i] || trajTime[i].empty()) continue;
 
-        // coordinates and time of end of i
-        //const auto &xi = coordsX[i];
-        //const auto &yi = coordsY[i];
-        //const auto &zi = coordsZ[i];
-        int endFrame = trajTime[i].back();
-        //int endVid   = trajVertexId[i].back();
-        //double xEnd = xi.back(), yEnd = yi.back(), zEnd = zi.back();
-        double xEnd = newTraj[i][0] * endFrame + newTraj[i][2];
-        double yEnd = newTraj[i][1] * endFrame + newTraj[i][3];
-        double zEnd = endFrame;
+      // géométrie et temps de fin de i
+      const int endFrame = trajTime[i].back();
 
-        for(size_t j = 0; j < nTraj; ++j) {
-          if(j == i || used[j]==2 || used[j] == 3 || trajTime[j].empty()) continue;
-          // ensure temporal ordering
-          if(endFrame >= trajTime[j].front() || trajTime[j].front() - endFrame > 5) continue;
+      double bestDot   = similarityThreshold;
+      double bestDist2 = std::numeric_limits<double>::infinity();
+      int    bestJ     = -1;
 
-          // direction similarity
-          double dot = meanDx[i]*meanDx[j]
-                     + meanDy[i]*meanDy[j]
-                     + meanDz[i]*meanDz[j];
-          if(dot <= bestDot) continue;
+      // cherche le j qui maximise dot tout en respectant la distance
+      for(size_t j = 0; j < nTraj; ++j) {
+        if(usedAsEnd[j] || j == i || trajTime[j].empty()) continue;
 
-          // spatial distance
-          
-          double xTh = newTraj[i][0] * trajTime[j].front() + newTraj[i][2];
-          double yTh = newTraj[i][1] * trajTime[j].front() + newTraj[i][3];
-          double zTh = trajTime[j].front();           
-          double distTh2 = (xTh - xEnd)*(xTh - xEnd) + (yTh - yEnd)*(yTh - yEnd) + (zTh - zEnd)*(zTh - zEnd);  
-          
-          //const auto &xj = coordsX[j];
-          //const auto &yj = coordsY[j];
-          //const auto &zj = coordsZ[j];
-          double xj = newTraj[j][0] * trajTime[j].front() + newTraj[j][2];
-          double yj = newTraj[j][1] * trajTime[j].front() + newTraj[j][3];
-          double zj = trajTime[j].front();
-          
-          //double dx = xj.front() - xEnd;
-          //double dy = yj.front() - yEnd;
-          //double dz = zj.front() - zEnd;
-          double dx = xj - xEnd;
-          double dy = yj - yEnd;  
-          double dz = zj - zEnd;
-          
-          double dist2 = dx*dx + dy*dy + dz*dz;
-          if(dist2 > distTh2*1.1) continue;
+        const int startFrame = trajTime[j].front();
+        // contrainte temporelle
+        if(startFrame <= endFrame || startFrame - endFrame > 20) continue;
 
-          // accept this candidate
-          if (dist2 < bestDist){
-            bestDist = dist2;
-            bestDot = dot;
-            bestJ  = j;
-          }
+        // similarité de direction
+        double dot = meanDx[i]*meanDx[j]
+                   + meanDy[i]*meanDy[j]
+                   + meanDz[i]*meanDz[j];
+        if(dot < bestDot) continue;
+
+        // distance² au point projeté
+        const auto &coefI = newTraj[i];
+        const auto &coefJ = newTraj[j];
+        const double xTh = coefI[0] * startFrame + coefI[2];
+        const double yTh = coefI[1] * startFrame + coefI[3];
+        const double zTh = static_cast<double>(startFrame);
+        const double xJ  = coefJ[0] * startFrame + coefJ[2];
+        const double yJ  = coefJ[1] * startFrame + coefJ[3];
+        const double zJ  = static_cast<double>(startFrame);
+
+        const double dx = xJ - xTh;
+        const double dy = yJ - yTh;
+        const double dz = zJ - zTh;
+        const double dist2 = dx*dx + dy*dy + dz*dz;
+        if(dist2 > maxLinkDist2) continue;
+
+        // on garde si c'est mieux
+        if (dist2 < bestDist2){
+            bestDot   = dot;
+            bestDist2 = dist2;
+            bestJ     = static_cast<int>(j);
         }
+      }
 
-        if(bestJ < nTraj) {
-          // record merge
-          int startFrame = trajTime[bestJ].front();
-          int startVid   = trajVertexId[bestJ].front();
-          
-          //merge.push_back({endVid, startVid, endFrame, startFrame});
-          merge.push_back({i, bestJ, endFrame, startFrame});
-          
-          used[i] == 2 ? used[i] = 3 : used[i] = 1;
-          used[bestJ] == 1 ? used[bestJ] = 3 : used[bestJ] = 2;
-        }
+      // enregistrement si on a trouvé un match
+      if(bestJ >= 0) {
+        fuseRecords.push_back({ static_cast<int>(i),
+                                bestJ,
+                                trajTime[i].back(),
+                                trajTime[bestJ].front() });
+        usedAsStart[i] = true;
+        usedAsEnd  [bestJ] = true;
+      }
     }
 
 
-    
+    merge.clear();
+    merge.reserve(nTraj);
+    std::vector<bool> used(fuseRecords.size(), false);
+    for (size_t idx1 = 0; idx1 < fuseRecords.size(); ++idx1) {
+      if (used[idx1]) continue;
+      auto &r1 = fuseRecords[idx1];
+      std::vector<FuseRecord> finalTraj{r1};
+      used[idx1] = true;
 
+      // 1) Chaînage des fuseRecords tant que possible
+      bool extended = true;
+      while (extended) {
+        extended = false;
+        for (size_t idx2 = 0; idx2 < fuseRecords.size(); ++idx2) {
+          if (used[idx2]) continue;
+          auto &r2 = fuseRecords[idx2];
+          if (finalTraj.back().j == r2.i) {
+            finalTraj.push_back(r2);
+            used[idx2] = true;
+            extended = true;
+            break;
+          }
+        }
+      }
+        
+        int capacity = finalTraj.size()*2 + 2;  
+        std::vector<int>    T;  T.reserve(capacity);
+        std::vector<double> X;  X.reserve(capacity);
+        std::vector<double> Y;  Y.reserve(capacity);
+
+        for(const auto &r : finalTraj) {
+          std::vector<int>    T2{trajTime[r.i].front(), r.endFrame};
+          const auto &cI = newTraj[r.i];
+
+          for (int t : T2){
+            X.push_back(cI[0]*t + cI[2]);
+            Y.push_back(cI[1]*t + cI[3]);
+            T.push_back(t);
+          }
+        }
+        
+        FuseRecord &r = finalTraj.back();
+        const auto &cJ = newTraj[r.j];
+        X.push_back(cJ[0]*r.startFrame + cJ[2]);
+        X.push_back(cJ[0]*trajTime[r.j].back() + cJ[2]);
+        Y.push_back(cJ[1]*r.startFrame  + cJ[3]);
+        Y.push_back(cJ[1]*trajTime[r.j].back() + cJ[3]);
+        T.push_back(r.startFrame);
+        T.push_back(trajTime[r.j].back());
+        std::vector<double> lineCoef;
+        linearRegression(T, X, Y, lineCoef);
+        lineCoef.push_back(trajTime[finalTraj[0].i].front());
+        lineCoef.push_back(trajTime[r.j].back());
+        merge.push_back(lineCoef);
+    }
+        
+    //for(size_t i = 0; i < nTraj; ++i) {
+    //  if(!usedAsStart[i] && !usedAsEnd[i] && !trajTime[i].empty()) {
+        // newTraj[i] == { ax, ay, bx, by } pour la trajectoire i
+    //    merge.push_back(newTraj[i]);
+    //  }
+    //}
 
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_)

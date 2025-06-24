@@ -298,7 +298,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
   std::vector<ttk::SimplexId> excludedCriticalPoints;
   std::vector<std::vector<double>> newTraj(numTraj);
-  std::vector<std::vector<int>> merge;
+  std::vector<std::vector<double>> merge;
 
   int status = 0;
 
@@ -575,23 +575,20 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   mergePoints->SetNumberOfPoints(2*merge.size());
   for (int i=0; i<merge.size(); i++){
-    double coords[3];
-    //inputDataSet->GetPoint(merge[i][0], coords);
-    const auto &firstCoef = newTraj[merge[i][0]];
-    coords[0] =  firstCoef[0]*merge[i][2] + firstCoef[2];
-    coords[1] =  firstCoef[1]*merge[i][2] + firstCoef[3];
-
-    coords[2] = merge[i][2];
-    mergePoints->SetPoint(2*i, coords[0], coords[1], coords[2]);
-
-    //inputDataSet->GetPoint(merge[i][1], coords);
-    const auto &secondCoef = newTraj[merge[i][1]];
-    coords[0] =  secondCoef[0]*merge[i][3] + secondCoef[2];
-    coords[1] =  secondCoef[1]*merge[i][3] + secondCoef[3];
-    ;
-    coords[2] = merge[i][3];
-    mergePoints->SetPoint(2*i+1, coords[0], coords[1], coords[2]);
+    double x, y; 
+     
+    const auto &coef = merge[i];
+    const double startFrame = merge[i][4];
+    const double endFrame = merge[i][5];
     
+    x =  coef[0]*startFrame + coef[2];
+    y =  coef[1]*startFrame + coef[3];
+    mergePoints->SetPoint(2*i,x,y, startFrame);
+    
+    x =  coef[0]*endFrame+ coef[2];
+    y =  coef[1]*endFrame + coef[3];
+    mergePoints->SetPoint(2*i+1, x, y, endFrame);
+
     vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
     line->GetPointIds()->SetId(0, 2*i + 0);
     line->GetPointIds()->SetId(1, 2*i + 1);
