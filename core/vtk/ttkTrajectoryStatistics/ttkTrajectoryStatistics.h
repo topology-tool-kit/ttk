@@ -76,8 +76,10 @@ class TTKTRAJECTORYSTATISTICS_EXPORT ttkTrajectoryStatistics
 private:
   int frameSurface{0}; 
   double errSurf{0.0};
-  bool addThresh{true};
-  bool gradThresh{false};
+  double filtreX{1.0};
+  double filtreY{1.0};
+  double maxRadus{40.0};
+  double cosCol{0.96};
 
 public:
   /**
@@ -95,12 +97,17 @@ public:
   vtkSetMacro(errSurf, double);
   vtkGetMacro(errSurf, double);
 
-  vtkSetMacro(addThresh, bool);
-  vtkGetMacro(addThresh, bool);
+  vtkSetMacro(filtreX, double);
+  vtkGetMacro(filtreX, double);
 
-  vtkSetMacro(gradThresh, bool);
-  vtkGetMacro(gradThresh, bool);
+  vtkSetMacro(filtreY, double);
+  vtkGetMacro(filtreY, double);
 
+  vtkSetMacro(cosCol, double);
+  vtkGetMacro(cosCol, double);
+
+  vtkSetMacro(maxRadus, double);
+  vtkGetMacro(maxRadus, double);
 
 protected:
 

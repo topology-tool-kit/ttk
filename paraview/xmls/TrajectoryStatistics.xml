@@ -53,31 +53,49 @@
         </Documentation>
       </DoubleVectorProperty>
 
-       <IntVectorProperty
-        name="addThresh"
-        command="SetaddThresh"
-        label="Méthode addition surface"
+      <DoubleVectorProperty
+        name="filtreX"
+        command="SetfiltreX"
+        label="filtre traj vecteur 1 0 0"
         number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
+        default_values="1.0">
         <Documentation>
-           Méthode addition estimation surface 
+           Seuil méthode addition surface  
         </Documentation>
-      </IntVectorProperty>
+      </DoubleVectorProperty>
 
-       <IntVectorProperty
-        name="gradThresh"
-        command="SetgradThresh"
-        label="Méthode norme gradient surface"
+      <DoubleVectorProperty
+        name="filtreY"
+        command="SetfiltreY"
+        label="filtre traj vecteur 0 1 0"
         number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
+        default_values="1.0">
         <Documentation>
-           Méthode norme gradient estimation surface. 
+           Seuil méthode addition surface  
         </Documentation>
-      </IntVectorProperty> 
+      </DoubleVectorProperty>
+
+       <DoubleVectorProperty
+        name="cosCol"
+        command="SetcosCol"
+        label="Coefficient colinéarité fusion"
+        number_of_elements="1"
+        default_values="0.96">
+        <Documentation>
+           Coefficient mininum de colinéarité pour la fusion  
+        </Documentation>
+      </DoubleVectorProperty>
+
+       <DoubleVectorProperty
+        name="maxRadus"
+        command="SetmaxRadus"
+        label="Rayon max ptTh fusion"
+        number_of_elements="1"
+        default_values="40.0">
+        <Documentation>
+           Seuil méthode addition surface  
+        </Documentation>
+      </DoubleVectorProperty>
 
 
       <!-- DEBUG WIDGETS -->

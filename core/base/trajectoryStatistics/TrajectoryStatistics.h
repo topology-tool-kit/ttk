@@ -62,12 +62,7 @@ namespace ttk {
 
     template <class dataType, class triangulationType>
     int execute(std::vector<std::vector<int>> &trajTime,         //input
-                std::vector<std::vector<double>> &coordsX,
-                std::vector<std::vector<double>> &coordsY,
-                std::vector<std::vector<double>> &coordsZ,
                 std::vector<std::vector<int>>    &trajVertexId,   //input
-                std::vector<int> &startFrames,          //output
-                std::vector<int> &endFrames,            //output
                 std::vector<int> &durations,            //output
                 std::vector<double> &VX,
                 std::vector<double> &VY,
@@ -78,8 +73,6 @@ namespace ttk {
                 std::vector<ttk::SimplexId> &excludedCriticalPoints,
                 int frameSurf,
                 double errSurf,
-                int surfMethods,
-                std::vector<std::vector<double>> &newTraj,
                 std::vector<std::vector<double>> gradientNorms,
                 std::vector<std::vector<double>> &merge,
                 const triangulationType *triangulation);
@@ -87,6 +80,30 @@ namespace ttk {
     inline void setInputScalars(std::vector<void *> &is) {
       inputData_ = is;
     }
+    
+    inline void setFiltreX(double filtre) {
+      filtreX_ = filtre;
+    }
+
+    inline void setFiltreY(double filtre) {
+      filtreY_ = filtre;
+    }
+
+    inline void setCosCol(double filtre) {
+        cosCol_ = filtre;
+    }
+
+    inline void setMaxRadus(double filtre){
+        maxRadus_ = filtre;
+    }
+
+    int correctTrajectory(
+        std::vector<std::vector<int>>    &trajTime,
+        std::vector<std::vector<double>> &coordsX,
+        std::vector<std::vector<double>> &coordsY,
+        std::vector<std::vector<double>> &merge
+    );
+
 
    protected: 
 
@@ -114,15 +131,6 @@ namespace ttk {
 
 
 
-    int computeMeanUnitDirection(
-      const std::vector<std::vector<double>> &coordsX,
-      const std::vector<std::vector<double>> &coordsY,
-      const std::vector<std::vector<double>> &coordsZ,
-      std::vector<double> &meanDx,
-      std::vector<double> &meanDy,
-      std::vector<double> &meanDz
-    );
-
     int computeMeanUnitDirectionLinear(
       const std::vector<std::vector<double>> &newTraj,
       std::vector<double> &meanDx,
@@ -140,6 +148,10 @@ namespace ttk {
 
     std::vector<void *> inputData_{};
 
+    double filtreX_;
+    double filtreY_;
+    double cosCol_;
+    double maxRadus_;
 
   }; // TrajectoryStatistics class
 
@@ -338,116 +350,25 @@ int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
   return 1;
 }
 
-
-int ttk::TrajectoryStatistics::computeMeanUnitDirection(
-  const std::vector<std::vector<double>> &coordsX,
-  const std::vector<std::vector<double>> &coordsY,
-  const std::vector<std::vector<double>> &coordsZ,
-  std::vector<double> &meanDx,
-  std::vector<double> &meanDy,
-  std::vector<double> &meanDz
-)  {
-  const size_t nTraj = coordsX.size();
-  meanDx.assign(nTraj, 0.0);
-  meanDy.assign(nTraj, 0.0);
-  meanDz.assign(nTraj, 0.0);
-
-  for(size_t i = 0; i < nTraj; ++i) {
-    const auto &xs = coordsX[i];
-    const auto &ys = coordsY[i];
-    const auto &zs = coordsZ[i];
-    const size_t nPts = xs.size();
-
-    if(nPts < 2 || ys.size() != nPts || zs.size() != nPts) {
-      continue;
-    }
-
-    double sumX = 0.0;
-    double sumY = 0.0;
-    double sumZ = 0.0;
-    size_t segmentCount = 0;
-
-    for(size_t j = 0; j + 1 < nPts; ++j) {
-      double dx = xs[j+1] - xs[j];
-      double dy = ys[j+1] - ys[j];
-      double dz = zs[j+1] - zs[j];
-      double norm = std::sqrt(dx*dx + dy*dy + dz*dz);
-      if(norm <= 0.0) {
-        continue; // skip zero-length segments
-      }
-      sumX += dx / norm;
-      sumY += dy / norm;
-      sumZ += dz / norm;
-      ++segmentCount;
-    }
-
-    if(segmentCount > 0) {
-      double avgX = sumX / static_cast<double>(segmentCount);
-      double avgY = sumY / static_cast<double>(segmentCount);
-      double avgZ = sumZ / static_cast<double>(segmentCount);
-
-      // Renormalize 
-      double mag = std::sqrt(avgX*avgX + avgY*avgY + avgZ*avgZ);
-      if(mag > 0.0) {
-        meanDx[i] = avgX / mag;
-        meanDy[i] = avgY / mag;
-        meanDz[i] = avgZ / mag;
-      } else {
-        meanDx[i] = 0.0;
-        meanDy[i] = 0.0;
-        meanDz[i] = 0.0;
-      }
-    }
-  }
-
-  return true;
-}
-
-
-
-template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::execute(
-                std::vector<std::vector<int>>    &trajTime,
-                std::vector<std::vector<double>> &coordsX,
-                std::vector<std::vector<double>> &coordsY,
-                std::vector<std::vector<double>> &coordsZ,
-                std::vector<std::vector<int>>    &trajVertexId,
-                std::vector<int>                &startFrames,
-                std::vector<int>                &endFrames,
-                std::vector<int>                &durations,
-                std::vector<double>             &VX,
-                std::vector<double>             &VY,
-                std::vector<double>             &surfMin,
-                std::vector<double>             &surfMax,
-                std::vector<double>             &surfMoy,
-                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-                std::vector<ttk::SimplexId>     &excludedCriticalPoints,
-                int frameSurf,
-                double errSurf,
-                int surfMethods,
-                std::vector<std::vector<double>> &newTraj,
-                std::vector<std::vector<double>> gradientNorms,
-                std::vector<std::vector<double>> &merge,
-                const triangulationType *triangulation) {
-
-    coordsZ[0][0] = surfMethods;
+int ttk::TrajectoryStatistics::correctTrajectory(
+    std::vector<std::vector<int>>    &trajTime,
+    std::vector<std::vector<double>> &coordsX,
+    std::vector<std::vector<double>> &coordsY,
     
-
-
-
+    std::vector<std::vector<double>> &merge
+){
     const int numTraj = static_cast<int>(trajTime.size());
-    int nTraj = numTraj;
-    const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
-    const size_t numFrames = inputData_.size();
-    const int  nPts = triangulation->getNumberOfVertices();
-    
-    
-    #ifdef TTK_ENABLE_EIGEN   
+    std::vector<std::vector<double>> newTraj(numTraj);
+   
+   #ifdef TTK_ENABLE_EIGEN   
     for (int i=0; i<numTraj; i++) {
         linearRegression(trajTime[i],coordsX[i],coordsY[i], newTraj[i]);
     }
     #endif
     
+    this->printMsg("initially i have : " + std::to_string(numTraj) + " unique traj");
+    this->printMsg("After linear i have : " + std::to_string(newTraj.size()) + " traj");
+
     std::vector<double> meanDx(numTraj);
     std::vector<double> meanDy(numTraj);
     std::vector<double> meanDz(numTraj);
@@ -458,14 +379,16 @@ int ttk::TrajectoryStatistics::execute(
 
     // === Étape A : collecte des merges directs ===
     std::vector<FuseRecord> fuseRecords;
-    fuseRecords.reserve(nTraj);
+    fuseRecords.reserve(numTraj);
 
-    std::vector<char> usedAsStart(nTraj, false), usedAsEnd(nTraj, false);
+    std::vector<char> usedAsStart(numTraj, false), usedAsEnd(numTraj, false);
+    
+    this->printMsg("cosCol_ = " + std::to_string(cosCol_) + " maxRadus_ = " + std::to_string(maxRadus_));
 
-    const double similarityThreshold = 0.96;
-    const double maxLinkDist2        = 20.0 * 20.0; // distance² maxi tolérée
+    const double similarityThreshold = cosCol_;
+    const double maxLinkDist2        = maxRadus_; // distance² maxi tolérée
 
-    for(size_t i = 0; i < nTraj; ++i) {
+    for(int i = 0; i < numTraj; ++i) {
       if(usedAsStart[i] || trajTime[i].empty()) continue;
 
       // géométrie et temps de fin de i
@@ -476,7 +399,7 @@ int ttk::TrajectoryStatistics::execute(
       int    bestJ     = -1;
 
       // cherche le j qui maximise dot tout en respectant la distance
-      for(size_t j = 0; j < nTraj; ++j) {
+      for(int j = 0; j < numTraj; ++j) {
         if(usedAsEnd[j] || j == i || trajTime[j].empty()) continue;
 
         const int startFrame = trajTime[j].front();
@@ -524,31 +447,33 @@ int ttk::TrajectoryStatistics::execute(
       }
     }
 
+    this->printMsg("j'ai reperé : " + std::to_string(fuseRecords.size()) + "fusion possible");
 
     merge.clear();
-    merge.reserve(nTraj);
+    merge.reserve(numTraj);
     std::vector<bool> used(fuseRecords.size(), false);
+    int trajLost = 0;
     for (size_t idx1 = 0; idx1 < fuseRecords.size(); ++idx1) {
-      if (used[idx1]) continue;
-      auto &r1 = fuseRecords[idx1];
-      std::vector<FuseRecord> finalTraj{r1};
-      used[idx1] = true;
+    if (used[idx1]) continue;
+        auto &r1 = fuseRecords[idx1];
+        std::vector<FuseRecord> finalTraj{r1};
+        used[idx1] = true;
 
-      // 1) Chaînage des fuseRecords tant que possible
-      bool extended = true;
-      while (extended) {
-        extended = false;
-        for (size_t idx2 = 0; idx2 < fuseRecords.size(); ++idx2) {
-          if (used[idx2]) continue;
-          auto &r2 = fuseRecords[idx2];
-          if (finalTraj.back().j == r2.i) {
-            finalTraj.push_back(r2);
-            used[idx2] = true;
-            extended = true;
-            break;
-          }
+        // 1) Chaînage des fuseRecords tant que possible
+        bool extended = true;
+        while (extended) {
+            extended = false;
+            for (size_t idx2 = 0; idx2 < fuseRecords.size(); ++idx2) {
+              if (used[idx2]) continue;
+              auto &r2 = fuseRecords[idx2];
+              if (finalTraj.back().j == r2.i) {
+                finalTraj.push_back(r2);
+                used[idx2] = true;
+                extended = true;
+                break;
+              }
+            }
         }
-      }
         
         int capacity = finalTraj.size()*2 + 2;  
         std::vector<int>    T;  T.reserve(capacity);
@@ -574,46 +499,89 @@ int ttk::TrajectoryStatistics::execute(
         Y.push_back(cJ[1]*trajTime[r.j].back() + cJ[3]);
         T.push_back(r.startFrame);
         T.push_back(trajTime[r.j].back());
+        
         std::vector<double> lineCoef;
         linearRegression(T, X, Y, lineCoef);
         lineCoef.push_back(trajTime[finalTraj[0].i].front());
         lineCoef.push_back(trajTime[r.j].back());
-        merge.push_back(lineCoef);
-    }
         
-    //for(size_t i = 0; i < nTraj; ++i) {
-    //  if(!usedAsStart[i] && !usedAsEnd[i] && !trajTime[i].empty()) {
-        // newTraj[i] == { ax, ay, bx, by } pour la trajectoire i
-    //    merge.push_back(newTraj[i]);
-    //  }
-    //}
-
-    #ifdef TTK_ENABLE_OPENMP
-    #pragma omp parallel for num_threads(this->threadNumber_)
-    #endif
-    for(int i = 0; i < numTraj; ++i) {
-        startFrames[i] = trajTime[i][0];
-        endFrames[i]   = trajTime[i].back();
-        durations[i]   = endFrames[i] - startFrames[i];
-    }
-
-    #ifdef TTK_ENABLE_OPENMP
-    #pragma omp parallel for num_threads(this->threadNumber_)
-    #endif
-    for(int i = 0; i < numTraj; ++i) {
-        double sommeVX = 0.0;
-        double sommeVY = 0.0;
-        const int pointCount = static_cast<int>(trajVertexId[i].size());
-        for(int j = 1; j < pointCount; ++j) {
-            double dx = coordsX[i][j] - coordsX[i][j-1]; 
-            double dy = coordsY[i][j] - coordsY[i][j-1]; 
-            sommeVX += dx;
-            sommeVY += dy;
+        double mag = std::sqrt(lineCoef[0]*lineCoef[0] + lineCoef[1]*lineCoef[1] + 1); 
+        if ( (0.0 > lineCoef[0]/mag && lineCoef[0]/mag >= filtreX_) && (-filtreY_<lineCoef[1]/mag && lineCoef[1]/mag <= filtreY_)){
+            merge.push_back(lineCoef);
+        } else {
+            trajLost++;
         }
-        double numPoints = static_cast<double>(pointCount) - 1.0;
-        VX[i] = (numPoints != 0.0 ? sommeVX / numPoints : 0.0);
-        VY[i] = (numPoints != 0.0 ? sommeVY / numPoints : 0.0);
     }
+    this->printMsg("première condition a coupé : " +std::to_string(trajLost)); 
+    for(int i = 0; i < numTraj; ++i) {
+      if(!usedAsStart[i] && !usedAsEnd[i] && !trajTime[i].empty()) {
+        //newTraj[i] == { ax, ay, bx, by } pour la trajectoire i
+        if ( (0.0 > meanDx[i] && meanDx[i] >= filtreX_) && (-filtreY_<meanDy[i] && meanDy[i]<= filtreY_)){
+            merge.push_back(newTraj[i]);
+        } else {
+            trajLost++;
+        }
+      }
+    }
+    this->printMsg("Au final j'ai : " + std::to_string(merge.size()) + " traj mais j'ai ai perdu : " + std::to_string(trajLost));
+    this->printMsg("merge done");
+
+    return 1;
+
+
+
+}
+
+
+
+template <class dataType, class triangulationType>
+int ttk::TrajectoryStatistics::execute(
+                std::vector<std::vector<int>>    &trajTime,
+                std::vector<std::vector<int>>    &trajVertexId,
+                std::vector<int>                &durations,
+                std::vector<double>             &VX,
+                std::vector<double>             &VY,
+                std::vector<double>             &surfMin,
+                std::vector<double>             &surfMax,
+                std::vector<double>             &surfMoy,
+                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                std::vector<ttk::SimplexId>     &excludedCriticalPoints,
+                int frameSurf,
+                double errSurf,
+                std::vector<std::vector<double>> gradientNorms,
+                std::vector<std::vector<double>> &finalTraj,
+                const triangulationType *triangulation) {
+
+    
+
+
+
+    const int numTraj = static_cast<int>(trajTime.size());
+    int nTraj = numTraj;
+    const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
+    const size_t numFrames = inputData_.size();
+    const int  nPts = triangulation->getNumberOfVertices();
+
+    
+    const int numMerge = finalTraj.size();
+
+    #ifdef TTK_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(this->threadNumber_)
+    #endif
+    for(int i = 0; i < numMerge; ++i) {
+        durations[i] = finalTraj[i][5] - finalTraj[i][4];
+    }
+
+    #ifdef TTK_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(this->threadNumber_)
+    #endif
+    for(int i = 0; i < numMerge; ++i) {
+        int dt = durations[i]; 
+        VX[i] = (finalTraj[i][0] + finalTraj[i][2])/dt; // vx = (ax + bx) / (tf - t0)
+        VY[i] = (finalTraj[i][0] + finalTraj[i][2])/dt;
+    }
+
+    /* ####################### SURFACE ##########################
 
     double maxVal = std::numeric_limits<double>::lowest();
     #ifdef TTK_ENABLE_OPENMP
@@ -626,7 +594,6 @@ int ttk::TrajectoryStatistics::execute(
             maxVal = localMax;
         }
     }
-    this->printMsg("Max = " + std::to_string(maxVal));
 
     std::vector<ttk::SimplexId> excludedLocal(numTraj, -1);
 
@@ -682,6 +649,10 @@ int ttk::TrajectoryStatistics::execute(
             excludedCriticalPoints.push_back(excludedLocal[i]);
         }
     }
+    */
+
+
+
     this->printMsg("End base");
     return 1;
 }
