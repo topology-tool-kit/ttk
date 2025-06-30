@@ -97,6 +97,17 @@
         </Documentation>
       </DoubleVectorProperty>
 
+      <IntVectorProperty
+        name="maxFrameDist"
+        command="SetmaxFrameDist"
+        label="Max Frame Dist Fusion"
+        number_of_elements="1"
+        default_values="20">
+        <Documentation>
+            On which frame to show the surface vertex
+        </Documentation>
+      </IntVectorProperty>
+
 
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}

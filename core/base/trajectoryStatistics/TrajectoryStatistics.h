@@ -97,11 +97,23 @@ namespace ttk {
         maxRadus_ = filtre;
     }
 
+    inline void setMaxFrameDist(int filtre){
+        maxFrameDist_ = filtre;
+    }
+// 1) Structure pour stocker une fusion i->j
+    struct FuseRecord {
+      int i, j;           // trajectoire i fusionnée vers trajectoire j
+      int endFrame;       // frame de fin de i
+      int startFrame;     // frame de début de j
+      int finalContrib;
+    };
     int correctTrajectory(
         std::vector<std::vector<int>>    &trajTime,
         std::vector<std::vector<double>> &coordsX,
         std::vector<std::vector<double>> &coordsY,
-        std::vector<std::vector<double>> &merge
+        std::vector<std::vector<double>> &merge,
+        std::vector<std::vector<double>> &newTraj,
+        std::vector<FuseRecord> &fuseRecords
     );
 
 
@@ -139,12 +151,7 @@ namespace ttk {
     ); 
 
 
-// 1) Structure pour stocker une fusion i->j
-    struct FuseRecord {
-      int i, j;           // trajectoire i fusionnée vers trajectoire j
-      int endFrame;       // frame de fin de i
-      int startFrame;     // frame de début de j
-    };
+
 
     std::vector<void *> inputData_{};
 
@@ -152,6 +159,7 @@ namespace ttk {
     double filtreY_;
     double cosCol_;
     double maxRadus_;
+    int maxFrameDist_;
 
   }; // TrajectoryStatistics class
 
@@ -182,6 +190,7 @@ int ttk::TrajectoryStatistics::linearRegression(
   newTraj.push_back(byv[0]); // ay ; 
   newTraj.push_back(bxv[1]); // bx
   newTraj.push_back(byv[1]); // by
+  newTraj.push_back(-1); //futurFinalId
 
   return 1;
 }
@@ -354,11 +363,11 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     std::vector<std::vector<int>>    &trajTime,
     std::vector<std::vector<double>> &coordsX,
     std::vector<std::vector<double>> &coordsY,
-    
-    std::vector<std::vector<double>> &merge
+    std::vector<std::vector<double>> &merge,
+    std::vector<std::vector<double>> &newTraj,
+    std::vector<FuseRecord> &fuseRecords
 ){
     const int numTraj = static_cast<int>(trajTime.size());
-    std::vector<std::vector<double>> newTraj(numTraj);
    
    #ifdef TTK_ENABLE_EIGEN   
     for (int i=0; i<numTraj; i++) {
@@ -367,7 +376,6 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     #endif
     
     this->printMsg("initially i have : " + std::to_string(numTraj) + " unique traj");
-    this->printMsg("After linear i have : " + std::to_string(newTraj.size()) + " traj");
 
     std::vector<double> meanDx(numTraj);
     std::vector<double> meanDy(numTraj);
@@ -378,7 +386,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     
 
     // === Étape A : collecte des merges directs ===
-    std::vector<FuseRecord> fuseRecords;
+    
     fuseRecords.reserve(numTraj);
 
     std::vector<char> usedAsStart(numTraj, false), usedAsEnd(numTraj, false);
@@ -404,7 +412,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 
         const int startFrame = trajTime[j].front();
         // contrainte temporelle
-        if(startFrame <= endFrame || startFrame - endFrame > 20) continue;
+        if(startFrame <= endFrame || startFrame - endFrame > maxFrameDist_) continue;
 
         // similarité de direction
         double dot = meanDx[i]*meanDx[j]
@@ -438,10 +446,11 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 
       // enregistrement si on a trouvé un match
       if(bestJ >= 0) {
-        fuseRecords.push_back({ static_cast<int>(i),
+        fuseRecords.push_back({ i,
                                 bestJ,
                                 trajTime[i].back(),
-                                trajTime[bestJ].front() });
+                                trajTime[bestJ].front(),
+                                -1});
         usedAsStart[i] = true;
         usedAsEnd  [bestJ] = true;
       }
@@ -454,12 +463,34 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     std::vector<bool> used(fuseRecords.size(), false);
     int trajLost = 0;
     for (size_t idx1 = 0; idx1 < fuseRecords.size(); ++idx1) {
-    if (used[idx1]) continue;
+        if (used[idx1]) continue;
         auto &r1 = fuseRecords[idx1];
+        int finalId = merge.size();
         std::vector<FuseRecord> finalTraj{r1};
+        r1.finalContrib = finalId;
+        newTraj[r1.i][4] = finalId;
+        newTraj[r1.j][4] = finalId;
         used[idx1] = true;
 
-        // 1) Chaînage des fuseRecords tant que possible
+
+        bool prepended = true;
+        while (prepended) {
+            prepended = false;
+            for (size_t idx2 = 0; idx2 < fuseRecords.size(); ++idx2) {
+                if (used[idx2]) continue;
+                auto &r2 = fuseRecords[idx2];
+                if (r2.j == finalTraj.front().i) {
+                    finalTraj.insert(finalTraj.begin(), r2); // insère au début
+                    r2.finalContrib = finalId;
+                    newTraj[r2.i][4] = finalId;
+                    newTraj[r2.j][4] = finalId;
+                    used[idx2] = true;
+                    prepended = true;
+                    break;
+                }
+            }
+        }
+
         bool extended = true;
         while (extended) {
             extended = false;
@@ -468,6 +499,9 @@ int ttk::TrajectoryStatistics::correctTrajectory(
               auto &r2 = fuseRecords[idx2];
               if (finalTraj.back().j == r2.i) {
                 finalTraj.push_back(r2);
+                r2.finalContrib = finalId;
+                newTraj[r2.i][4] = finalId;
+                newTraj[r2.j][4] = finalId;
                 used[idx2] = true;
                 extended = true;
                 break;
@@ -502,7 +536,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         
         std::vector<double> lineCoef;
         linearRegression(T, X, Y, lineCoef);
-        lineCoef.push_back(trajTime[finalTraj[0].i].front());
+        lineCoef[4] = trajTime[finalTraj[0].i].front();
         lineCoef.push_back(trajTime[r.j].back());
         
         double mag = std::sqrt(lineCoef[0]*lineCoef[0] + lineCoef[1]*lineCoef[1] + 1); 
@@ -517,7 +551,12 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       if(!usedAsStart[i] && !usedAsEnd[i] && !trajTime[i].empty()) {
         //newTraj[i] == { ax, ay, bx, by } pour la trajectoire i
         if ( (0.0 > meanDx[i] && meanDx[i] >= filtreX_) && (-filtreY_<meanDy[i] && meanDy[i]<= filtreY_)){
-            merge.push_back(newTraj[i]);
+            std::vector<double> lineCoef;
+            lineCoef = newTraj[i];
+            lineCoef[4] = trajTime[i].front();
+            lineCoef.push_back(trajTime[i].back());
+            merge.push_back(lineCoef);
+
         } else {
             trajLost++;
         }

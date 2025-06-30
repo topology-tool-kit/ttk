@@ -80,6 +80,7 @@ private:
   double filtreY{1.0};
   double maxRadus{40.0};
   double cosCol{0.96};
+  int maxFrameDist{20};
 
 public:
   /**
@@ -108,6 +109,10 @@ public:
 
   vtkSetMacro(maxRadus, double);
   vtkGetMacro(maxRadus, double);
+    
+  vtkSetMacro(maxFrameDist, int);
+  vtkGetMacro(maxFrameDist, int);
+
 
 protected:
 

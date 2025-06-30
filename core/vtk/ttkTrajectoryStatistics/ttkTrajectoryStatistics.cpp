@@ -254,6 +254,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setFiltreY(filtreY);
   this->setCosCol(cosCol);
   this->setMaxRadus(maxRadus);
+  this->setMaxFrameDist(maxFrameDist);
 
   this->printMsg("Scalars recup");
 
@@ -278,8 +279,10 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   std::vector<std::vector<double>> newTraj(numTraj);
   std::vector<std::vector<double>> finalTraj;
+  std::vector<FuseRecord> fuseRecords;
 
-  this->correctTrajectory(trajTime, trajX, trajY, finalTraj); 
+
+  this->correctTrajectory(trajTime, trajX, trajY, finalTraj,newTraj, fuseRecords); 
 
   std::vector<int>  durations(numTraj);
   std::vector<double> VX(numTraj), VY(numTraj), 
@@ -424,22 +427,77 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
 
   
-  outputGrid->ShallowCopy(inputGrid);
-  
-  vtkSmartPointer<vtkIntArray> newTrajIdArray = vtkSmartPointer<vtkIntArray>::New();
-  newTrajIdArray->SetName("NewTrajectoryId");
-  newTrajIdArray->SetNumberOfTuples(inputGrid->GetNumberOfCells());
+    
+  vtkSmartPointer<vtkPoints> linearPoints = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> linearLines  = vtkSmartPointer<vtkCellArray>::New();
+  linearPoints->SetNumberOfPoints(2*newTraj.size());
 
-  vtkIdType outCellId = 0;
-  size_t trajIndexx = 0;
-  for(const auto &trajEntry : groupTraj) {
-    for(vtkIdType cellId : trajEntry.second) {
-      newTrajIdArray->SetValue(cellId, static_cast<int>(trajIndexx));
-    }
-    ++trajIndexx;
+  vtkSmartPointer<vtkIntArray> linearFinalId = vtkSmartPointer<vtkIntArray>::New();
+  linearFinalId->SetName("linearFinalId");
+  linearFinalId->SetNumberOfTuples(newTraj.size());
+
+  for (int i=0; i<newTraj.size(); i++){
+    double x,y;
+
+    const auto &coef = newTraj[i];
+    const int startFrame = trajTime[i].front(); 
+    const int endFrame = trajTime[i].back();
+    
+    x =  coef[0]*startFrame + coef[2];
+    y =  coef[1]*startFrame + coef[3];
+    linearPoints->SetPoint(2*i, x, y, startFrame);
+    
+    x =  coef[0]*endFrame + coef[2];
+    y =  coef[1]*endFrame + coef[3];
+    linearPoints->SetPoint(2*i+1, x, y, endFrame);
+
+    vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
+    line->GetPointIds()->SetId(0, 2*i + 0);
+    line->GetPointIds()->SetId(1, 2*i + 1);
+    linearLines->InsertNextCell(line);
+    linearFinalId->SetValue(i , coef[4]);
   }
 
-  outputGrid->GetCellData()->AddArray(newTrajIdArray); 
+  outputGrid->SetPoints(linearPoints);
+  outputGrid->SetCells(VTK_LINE, linearLines);
+  outputGrid->GetCellData()->AddArray(linearFinalId);
+
+  vtkSmartPointer<vtkPoints> fusionPoints = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> fusionLines  = vtkSmartPointer<vtkCellArray>::New();
+  fusionPoints->SetNumberOfPoints(2*fuseRecords.size());
+ 
+  vtkSmartPointer<vtkIntArray> fusionFinalId = vtkSmartPointer<vtkIntArray>::New();
+  fusionFinalId->SetName("fusionFinalId");
+  fusionFinalId->SetNumberOfTuples(fuseRecords.size()); 
+
+
+  int count =0;
+  for (FuseRecord &f : fuseRecords){
+    double x,y;
+
+    const auto &coef = newTraj[f.i];
+    const int startFrame = f.startFrame; 
+    const int endFrame = f.endFrame;
+    
+    x =  coef[0]*endFrame + coef[2];
+    y =  coef[1]*endFrame + coef[3];
+    fusionPoints->SetPoint(2*count, x, y, endFrame);
+    const auto &coef2 = newTraj[f.j];
+    x =  coef2[0]*startFrame + coef2[2];
+    y =  coef2[1]*startFrame + coef2[3];
+    fusionPoints->SetPoint(2*count+1, x, y, startFrame);
+
+    vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
+    line->GetPointIds()->SetId(0, 2*count + 0);
+    line->GetPointIds()->SetId(1, 2*count + 1);
+    fusionLines->InsertNextCell(line);
+    fusionFinalId->SetValue(count , coef[4]);
+    count++;
+  }
+
+  outputTraj->SetPoints(fusionPoints);
+  outputTraj->SetCells(VTK_LINE, fusionLines);
+  outputTraj->GetCellData()->AddArray(fusionFinalId);
 
   vtkSmartPointer<vtkPoints> mergePoints = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkCellArray> mergeLines  = vtkSmartPointer<vtkCellArray>::New();
