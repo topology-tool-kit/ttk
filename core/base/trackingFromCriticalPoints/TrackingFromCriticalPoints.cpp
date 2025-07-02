@@ -427,6 +427,7 @@ void ttk::TrackingFromCriticalPoints::assignmentSolver(
     if(assignmentMethod_ == 0) {
       ttk::AssignmentAuction<double> solver;
       solver.setInput(costMatrix);
+      solver.setDeltaLim(assignmentPrecision);
       solver.run(matching);
       solver.clearMatrix();
     } else if(assignmentMethod_ == 1) {

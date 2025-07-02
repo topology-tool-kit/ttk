@@ -153,6 +153,25 @@ by a list of scalar fields) and which computes a tracking mesh."
         default_values="0.1"
         panel_visibility="advanced">
         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                               mode="visibility"
+                               property="Backend"
+                               value="2" />                                                 
+        </Hints>
+        <Documentation>
+        Relative cost (with regard to the data span, between 0 and 1) associated with the destruction of a critical point. Set this parameter to larger values to allow for larger displcements for a critical point from one time step to another. Set this parameter to smaller values to prevent a critical point from jumping too far from one time step to another.
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="deltalim"
+        label="Assignment Precision"
+        command="SetAssignmentPrecision"
+        number_of_elements="1"
+        default_values="0.01"
+        panel_visibility="advanced">
+        <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
             <Expression type="and">
               <PropertyWidgetDecorator type="GenericDecorator"
@@ -161,15 +180,15 @@ by a list of scalar fields) and which computes a tracking mesh."
                                    value="2" />
               <PropertyWidgetDecorator type="GenericDecorator"
                                     mode="visibility"
-                                    property="adaptDeathBirthCost"
+                                    property="AssignmentMethod"
                                     value="0" />
             </Expression>
-          </PropertyWidgetDecorator>                                                      
+          </PropertyWidgetDecorator>                          
         </Hints>
         <Documentation>
         Relative cost (with regard to the data span, between 0 and 1) associated with the destruction of a critical point. Set this parameter to larger values to allow for larger displcements for a critical point from one time step to another. Set this parameter to smaller values to prevent a critical point from jumping too far from one time step to another.
         </Documentation>
-        <DoubleRangeDomain name="range" min="0" max="1" />
+        <DoubleRangeDomain name="range" min="0.000001" max="1" />
       </DoubleVectorProperty>
 
       <DoubleVectorProperty

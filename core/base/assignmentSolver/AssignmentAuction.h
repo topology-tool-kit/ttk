@@ -62,6 +62,10 @@ namespace ttk {
       epsilon = eps;
     }
 
+    inline void setDeltaLim(double delta) {
+      delta_lim=delta;
+    }
+
     inline void setEpsilonDiviserMultiplier(double div) {
       epsilonDiviserMultiplier = div;
     }
