@@ -546,15 +546,18 @@ int ttk::TrajectoryStatistics::correctTrajectory(
             trajLost++;
         }
     }
+    this->printMsg("merge size avant traj non fus = " + std::to_string(merge.size()));
     this->printMsg("première condition a coupé : " +std::to_string(trajLost)); 
     for(int i = 0; i < numTraj; ++i) {
       if(!usedAsStart[i] && !usedAsEnd[i] && !trajTime[i].empty()) {
         //newTraj[i] == { ax, ay, bx, by } pour la trajectoire i
         if ( (0.0 > meanDx[i] && meanDx[i] >= filtreX_) && (-filtreY_<meanDy[i] && meanDy[i]<= filtreY_)){
+            
             std::vector<double> lineCoef;
             lineCoef = newTraj[i];
             lineCoef[4] = trajTime[i].front();
             lineCoef.push_back(trajTime[i].back());
+            newTraj[i][4] = merge.size();
             merge.push_back(lineCoef);
 
         } else {
