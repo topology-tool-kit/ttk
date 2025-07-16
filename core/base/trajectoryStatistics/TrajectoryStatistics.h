@@ -623,7 +623,7 @@ int ttk::TrajectoryStatistics::execute(
         VY[i] = (finalTraj[i][0] + finalTraj[i][2])/dt;
     }
 
-    /* ####################### SURFACE ##########################
+    // ####################### SURFACE ##########################
 
     double maxVal = std::numeric_limits<double>::lowest();
     #ifdef TTK_ENABLE_OPENMP
@@ -660,9 +660,7 @@ int ttk::TrajectoryStatistics::execute(
 
                 std::fill(visited.begin(), visited.end(), 0);
                 surfVertex.clear();
-
                 findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
-
                 if(surfVertex.size() > 100) {
                     surfVertex.clear();
                     if(frame == frameSurf) {
@@ -691,7 +689,7 @@ int ttk::TrajectoryStatistics::execute(
             excludedCriticalPoints.push_back(excludedLocal[i]);
         }
     }
-    */
+    
 
 
 

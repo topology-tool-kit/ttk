@@ -379,9 +379,13 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkSmartPointer<vtkIntArray> colDuration = vtkSmartPointer<vtkIntArray>::New();
   colDuration->SetName("Duration");
   colDuration->SetNumberOfTuples(numMerge);
+  double dur_mean = 0;
   for(vtkIdType i = 0; i < static_cast<vtkIdType>(numMerge); ++i) {
     colDuration->SetValue(i, durations[i]);
+    dur_mean += durations[i];
   }
+  dur_mean = dur_mean/numMerge;
+  this->printMsg("DUREE MOYENNE = "+std::to_string(dur_mean));
 
   vtkSmartPointer<vtkDoubleArray> colVX = vtkSmartPointer<vtkDoubleArray>::New();
   colVX->SetName("VX");
@@ -397,24 +401,44 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     colVY->SetValue(i, VY[i]);
   }
 
-  //vtkSmartPointer<vtkDoubleArray> colSurfMin = vtkSmartPointer<vtkDoubleArray>::New();
-  //colSurfMin->SetName("SurfaceMin");
-  //colSurfMin->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < numTraj; ++i) {
-  //  colSurfMin->SetValue(i, surfMin[i]);
-  //}
-  //vtkSmartPointer<vtkDoubleArray> colSurfMax = vtkSmartPointer<vtkDoubleArray>::New();
-  //colSurfMax->SetName("SurfaceMax");
-  //colSurfMax->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < numTraj; ++i) {
-  //  colSurfMax->SetValue(i, surfMax[i]);
-  //}
-  //vtkSmartPointer<vtkDoubleArray> colSurfMean = vtkSmartPointer<vtkDoubleArray>::New();
-  //colSurfMean->SetName("SurfaceMean");
-  //colSurfMean->SetNumberOfTuples(numTraj);
-  //for(vtkIdType i = 0; i < numTraj; ++i) {
-  //  colSurfMean->SetValue(i, surfMean[i]);
-  //}
+
+  std::vector<std::vector<double>> surfaceFinal(finalTraj.size());
+  std::vector<double> surfFinalMean(finalTraj.size());
+  for (int i=0; i<numTraj; i++){
+    if (newTraj[i][4] != -1)
+     surfaceFinal[newTraj[i][4]].push_back(surfMean[i]);
+  }
+  for (int i=0; i<finalTraj.size(); i++){
+    double sum = 0;
+    for (int j=0;j<surfaceFinal[i].size(); j++){
+        sum += surfaceFinal[i][j];
+    }
+    surfFinalMean[i] = sum/surfaceFinal[i].size();
+  }
+
+/*  vtkSmartPointer<vtkDoubleArray> colSurfMin = vtkSmartPointer<vtkDoubleArray>::New();
+  colSurfMin->SetName("SurfaceMin");
+  colSurfMin->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < numTraj; ++i) {
+    colSurfMin->SetValue(i, surfMin[i]);
+  }
+  vtkSmartPointer<vtkDoubleArray> colSurfMax = vtkSmartPointer<vtkDoubleArray>::New();
+  colSurfMax->SetName("SurfaceMax");
+  colSurfMax->SetNumberOfTuples(numTraj);
+  for(vtkIdType i = 0; i < numTraj; ++i) {
+    colSurfMax->SetValue(i, surfMax[i]);
+  }
+*/
+  vtkSmartPointer<vtkDoubleArray> colSurfMean = vtkSmartPointer<vtkDoubleArray>::New();
+  colSurfMean->SetName("SurfaceMean");
+  colSurfMean->SetNumberOfTuples(finalTraj.size());
+  double surf_mean = 0;
+  for(vtkIdType i = 0; i < finalTraj.size(); ++i) {
+    colSurfMean->SetValue(i, surfFinalMean[i]);
+    surf_mean += surfFinalMean[i];
+  }
+  surf_mean = surf_mean/numMerge;
+  this->printMsg("SURFACE MOYENNE =" +std::to_string(surf_mean));
   
   outputTable->AddColumn(colStartFrame);
   outputTable->AddColumn(colEndFrame);
@@ -423,9 +447,53 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTable->AddColumn(colVY);
   //outputTable->AddColumn(colSurfMin);
   //outputTable->AddColumn(colSurfMax);
-  //outputTable->AddColumn(colSurfMean);
+  outputTable->AddColumn(colSurfMean);
 
 
+  vtkSmartPointer<vtkDataSet> surfOutput = vtkSmartPointer<vtkDataSet>::Take(inputDataSet->NewInstance());
+  surfOutput->ShallowCopy(inputDataSet);
+  outputDataSet->ShallowCopy(surfOutput);
+
+  vtkSmartPointer<vtkCharArray> surfaceVertexArray = vtkSmartPointer<vtkCharArray>::New();
+  surfaceVertexArray->SetName("SurfaceVertex");
+
+  vtkSmartPointer<vtkCharArray> surface= vtkSmartPointer<vtkCharArray>::New();
+  surfaceVertexArray->SetName("SurfaceVertex");
+
+  vtkSmartPointer<vtkIntArray> surfaceTrajId = vtkSmartPointer<vtkIntArray>::New();
+  surfaceTrajId->SetName("FinalTrajId");
+
+
+  vtkIdType numPoints = inputDataSet->GetNumberOfPoints();
+  surfaceVertexArray->SetNumberOfTuples(numPoints);
+  surfaceVertexArray->FillComponent(0, 0); // tous les points à 0 (false)
+
+  surfaceTrajId->SetNumberOfTuples(numPoints);
+  surfaceTrajId->FillComponent(0,-1);
+
+  for (int i=0; i<allVertexDebris.size(); i++){
+      std::vector<ttk::SimplexId> &trajSurface = allVertexDebris[i];
+      int finalId = -1;
+      if (newTraj[i][4] != -1)
+        finalId = newTraj[i][4]; 
+      for(const auto vertexId : trajSurface) {
+        if(vertexId >= 0 && vertexId < numPoints){
+            surfaceTrajId->SetValue(vertexId, finalId);
+            if (surfaceVertexArray->GetValue(vertexId) == 0) 
+                surfaceVertexArray->SetValue(vertexId, 1); // true
+            else
+                surfaceVertexArray->SetValue(vertexId, 2); // doublon
+
+        }
+      }
+  }
+
+  for (const auto vertexId: excludedCriticalPoints){
+    surfaceVertexArray->SetValue(vertexId, 3); // diverge        
+  } 
+
+  outputDataSet->GetPointData()->AddArray(surfaceVertexArray);
+  outputDataSet->GetPointData()->AddArray(surfaceTrajId);
   
     
   vtkSmartPointer<vtkPoints> linearPoints = vtkSmartPointer<vtkPoints>::New();
@@ -435,6 +503,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkSmartPointer<vtkIntArray> linearFinalId = vtkSmartPointer<vtkIntArray>::New();
   linearFinalId->SetName("linearFinalId");
   linearFinalId->SetNumberOfTuples(newTraj.size());
+  //linear 
 
   for (int i=0; i<newTraj.size(); i++){
     double x,y;
@@ -470,7 +539,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   fusionFinalId->SetName("fusionFinalId");
   fusionFinalId->SetNumberOfTuples(fuseRecords.size()); 
 
-
+  // merge 
   int count =0;
   for (FuseRecord &f : fuseRecords){
     double x,y;
@@ -506,6 +575,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   newMergeIdArray->SetName("MergeId");
   newMergeIdArray->SetNumberOfTuples(numMerge);
 
+  //finaltraj
   mergePoints->SetNumberOfPoints(2*finalTraj.size());
   for (int i=0; i<finalTraj.size(); i++){
     double x, y; 
